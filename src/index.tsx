@@ -100,7 +100,7 @@ const routeErrorElement = (
         </p>
         <button
           onClick={() => (window.location.href = '/')}
-          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/30 hover:border-brand-cyan/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
+          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/30 hover:border-neutral-700 text-brand-cyan rounded-md transition-colors font-mono text-sm"
         >
           {translate('router.goHome', initialLocale)}
         </button>

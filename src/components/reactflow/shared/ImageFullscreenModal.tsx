@@ -122,7 +122,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-neutral-950/95 backdrop-blur-sm z-[100] flex items-center justify-center"
+      className="fixed inset-0 bg-neutral-950/95 backdrop-blur-sm z-50 flex items-center justify-center"
       onClick={onClose}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -181,7 +181,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             {/* Close */}
             <Button variant="destructive"
               onClick={onClose}
-              className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-red-500/80 rounded text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
+              className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-destructive/80 rounded text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
               title={t('common.closeEsc')}
             >
               <X size={14} strokeWidth={2} />

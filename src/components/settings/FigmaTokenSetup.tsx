@@ -146,7 +146,7 @@ export const FigmaTokenSetup: React.FC = () => {
             variant="ghost"
             onClick={handleDisconnect}
             disabled={isLoading}
-            className="text-neutral-500 hover:text-red-400 hover:bg-red-500/10 h-9 px-3"
+            className="text-neutral-500 hover:text-destructive hover:bg-destructive/10 h-9 px-3"
           >
             {isLoading ? <GlitchLoader size={14} /> : <Trash2 size={16} />}
           </Button>

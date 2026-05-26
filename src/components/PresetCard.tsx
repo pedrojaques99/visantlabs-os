@@ -69,8 +69,8 @@ export const PresetCard: React.FC<PresetCardProps> = ({
       className={cn(
         'group relative flex flex-col bg-neutral-900/30 border rounded-xl overflow-hidden cursor-pointer transition-all duration-150',
         selected
-          ? 'border-white/20 bg-white/[0.04]'
-          : 'border-white/[0.05] hover:border-white/10 hover:bg-neutral-900/50'
+          ? 'border-white/20 bg-white/5'
+          : 'border-neutral-800 hover:border-white/10 hover:bg-neutral-900/50'
       )}
       onClick={onClick}
     >
@@ -108,7 +108,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             onClick={(e) => { e.stopPropagation(); handleCopy('Copied', 'Failed'); }}
             className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-white transition-colors"
           >
-            {isCopying ? <span className="text-[9px] font-mono">{glitchText}</span> : <Clipboard size={12} />}
+            {isCopying ? <span className="text-[10px] font-mono">{glitchText}</span> : <Clipboard size={12} />}
           </button>
           {isAuthenticated && onDuplicate && (
             <button
@@ -132,7 +132,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             <button
               aria-label={t('common.delete')}
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-red-400 transition-colors"
+              className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-destructive transition-colors"
             >
               <Trash2 size={12} />
             </button>
@@ -169,29 +169,29 @@ export const PresetCard: React.FC<PresetCardProps> = ({
 
         {/* Footer chips */}
         <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
-          <span className={cn('text-[9px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border', config.color,
-            'bg-white/[0.03] border-white/[0.06]')}>
+          <span className={cn('text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border', config.color,
+            'bg-white/[0.03] border-neutral-800')}>
             {config.label}
           </span>
           {migrated.difficulty && (
             <span className={cn(
-              'text-[9px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border bg-white/[0.03] border-white/[0.06]',
+              'text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800',
               migrated.difficulty === 'beginner' ? 'text-green-500' :
-              migrated.difficulty === 'intermediate' ? 'text-yellow-500' : 'text-red-400'
+              migrated.difficulty === 'intermediate' ? 'text-yellow-500' : 'text-destructive'
             )}>
               {migrated.difficulty.slice(0, 3)}
             </span>
           )}
-          <span className="text-[9px] font-mono text-neutral-700 px-1.5 py-0.5 rounded border bg-white/[0.02] border-white/[0.04]">
+          <span className="text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800">
             {migrated.aspectRatio}
           </span>
           {migrated.tags?.slice(0, 2).map((tag) => (
-            <span key={tag} className="text-[9px] font-mono text-neutral-700 px-1.5 py-0.5 rounded border bg-white/[0.02] border-white/[0.04]">
+            <span key={tag} className="text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800">
               #{tag}
             </span>
           ))}
           {(migrated.tags?.length ?? 0) > 2 && (
-            <span className="text-[9px] font-mono text-neutral-800">
+            <span className="text-[10px] font-mono text-neutral-800">
               +{(migrated.tags?.length ?? 0) - 2}
             </span>
           )}

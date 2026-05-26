@@ -317,13 +317,13 @@ export const MockupsPage: React.FC = () => {
         {/* Error Banner */}
         {showErrorBanner && (
           <div className="mb-6">
-            <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3 flex items-center justify-between backdrop-blur-sm">
-              <p className="text-red-400 font-mono text-xs flex-1">{error}</p>
+            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 flex items-center justify-between backdrop-blur-sm">
+              <p className="text-destructive font-mono text-xs flex-1">{error}</p>
               <Button variant="ghost" onClick={() => {
                 setError(null);
                 loadMockups();
               }}
-                className="ml-2 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-mono text-xs rounded transition-colors"
+                className="ml-2 px-3 py-1 bg-destructive/20 hover:bg-destructive/30 text-destructive font-mono text-xs rounded transition-colors"
               >
                 {t('mockupsPage.retry')}
               </Button>

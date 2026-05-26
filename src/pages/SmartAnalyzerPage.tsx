@@ -818,7 +818,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             key={opt.label}
                             className={cn(
                               "flex items-center justify-between p-4 rounded-xl transition-all border border-transparent",
-                              "bg-neutral-900/40 hover:bg-neutral-900/60 hover:border-white/5",
+                              "bg-neutral-900/40 hover:bg-neutral-900/60 hover:border-neutral-800",
                               opt.disabled && "opacity-30 pointer-events-none"
                             )}
                           >
@@ -829,7 +829,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             <Switch
                               checked={opt.value}
                               onCheckedChange={opt.set}
-                              className="data-[state=unchecked]:bg-neutral-800 border border-white/5 shadow-inner"
+                              className="data-[state=unchecked]:bg-neutral-800 border border-neutral-800 shadow-inner"
                             />
                           </div>
                         ))}
@@ -955,7 +955,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                       ].map((opt) => (
                                         <div
                                           key={opt.label}
-                                          className="flex items-center justify-between p-4 rounded-xl bg-neutral-900/40 border border-transparent hover:border-white/5 transition-all"
+                                          className="flex items-center justify-between p-4 rounded-xl bg-neutral-900/40 border border-transparent hover:border-neutral-800 transition-all"
                                         >
                                           <div>
                                             <span className="text-sm text-neutral-300 block leading-none mb-1.5">{opt.label}</span>
@@ -964,7 +964,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                           <Switch
                                             checked={opt.value}
                                             onCheckedChange={opt.set}
-                                            className="data-[state=unchecked]:bg-neutral-800 border border-white/5 shadow-inner"
+                                            className="data-[state=unchecked]:bg-neutral-800 border border-neutral-800 shadow-inner"
                                           />
                                         </div>
                                       ))}
@@ -1029,7 +1029,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
-                                className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-white/5 shadow-2xl"
+                                className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 shadow-2xl"
                               >
                                 <MockupCard
                                   base64Image={v}
@@ -1053,7 +1053,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             key="single-result"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5"
+                            className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-neutral-800"
                           >
                             <MockupCard
                               base64Image={generatedImage}
@@ -1114,7 +1114,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 disabled={isGenerating || isGeneratingVariations}
                                 variant="outline"
                                 className={cn(
-                                  "h-10 px-4 border-white/10 hover:border-brand-cyan/50 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest group",
+                                  "h-10 px-4 border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest group",
                                   isGeneratingVariations && "opacity-80"
                                 )}
                               >
@@ -1199,7 +1199,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                       </div>
 
                       {/* Prompt Suggestions/Refinements */}
-                      <div className="mt-12 space-y-6 pt-8 border-t border-white/5">
+                      <div className="mt-12 space-y-6 pt-8 border-t border-neutral-800">
                         <h4 className="text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-600 font-bold pl-1 flex items-center gap-2">
                           <Plus size={10} /> Dynamic Refinements
                         </h4>
@@ -1223,7 +1223,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                           <div className="relative group/input flex items-center min-w-[240px]">
                             <Input
                               placeholder="Refinar prompt..."
-                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-[10px] font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-brand-cyan/30 focus:shadow-[0_0_20px_-10px_rgba(34,211,238,0.3)] transition-all"
+                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-[10px] font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 focus:shadow-[0_0_20px_-10px_rgba(34,211,238,0.3)] transition-all"
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   const val = e.currentTarget.value.trim();
@@ -1294,7 +1294,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                       <div className="grid gap-3">
                         {result.tokens.colors.map((c, i) => (
                           <div key={i} className="flex items-center gap-4 bg-neutral-950/50 p-3 rounded-2xl border border-neutral-900 group hover:border-neutral-700 transition-all">
-                            <div className="w-10 h-10 rounded-xl shadow-sm border border-white/5" style={{ backgroundColor: c.hex }} />
+                            <div className="w-10 h-10 rounded-xl shadow-sm border border-neutral-800" style={{ backgroundColor: c.hex }} />
                             <div className="flex-1">
                               <span className="text-xs text-neutral-300 block mb-0.5">{c.name}</span>
                               <span className="text-[10px] text-neutral-600 font-mono uppercase tracking-tighter">{c.hex}</span>
@@ -1330,7 +1330,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                   value={publishName}
                   onChange={(e) => setPublishName(e.target.value)}
                   placeholder="E.g. Professional Dashboard Dark"
-                  className="bg-neutral-900 border-neutral-800 h-12 focus:border-brand-cyan/50 focus:ring-0 transition-all rounded-xl"
+                  className="bg-neutral-900 border-neutral-800 h-12 focus:border-neutral-600 focus:ring-0 transition-all rounded-xl"
                 />
               </div>
 

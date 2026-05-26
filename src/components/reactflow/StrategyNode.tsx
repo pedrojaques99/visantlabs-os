@@ -1103,7 +1103,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     nodeData.onCancelGeneration?.(id);
                   }}
                   variant="default"
-                  className="flex-1 px-3 py-2.5 gap-3 border-red-500/50 text-red-400 hover:bg-red-500/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all nodrag nopan"
+                  className="flex-1 px-3 py-2.5 gap-3 border-destructive/50 text-destructive hover:bg-destructive/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all nodrag nopan"
                 >
                   <XCircle size={14} />
                   <span>{t('common.cancel')}</span>
@@ -1228,7 +1228,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                       title={isBlocked ? `Bloqueado: requer ${missingDepsLabels}` : section.label}
                     >
                       {isBlocked && (
-                        <Lock size={12} className="absolute top-1 right-1 text-red-400" />
+                        <Lock size={12} className="absolute top-1 right-1 text-destructive" />
                       )}
                       <span className={cn('text-xs', isBlocked && 'opacity-50')}>{section.emoji}</span>
                       <span className={cn('truncate', isBlocked && 'opacity-50')}>{section.label}</span>
@@ -1274,7 +1274,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 className="p-1 hover:bg-neutral-800 rounded"
                 title={t('canvasNodes.strategyNode.cancelGeneration')}
               >
-                <XCircle size={12} className="text-red-400 hover:text-red-300" />
+                <XCircle size={12} className="text-destructive hover:text-destructive" />
               </NodeButton>
             )}
           </div>
@@ -1335,7 +1335,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         {sectionHasData && !isGeneratingSection && (
                           <div
                             onClick={(e) => handleDeleteSection(section.type, e)}
-                            className="p-1 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                            className="p-1 hover:bg-destructive/20 rounded-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                             title={t('canvasNodes.strategyNode.deleteSection', { section: section.label })}
                             role="button"
                             tabIndex={0}
@@ -1346,7 +1346,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                               }
                             }}
                           >
-                            <X size={12} className="text-red-400 hover:text-red-300" />
+                            <X size={12} className="text-destructive hover:text-destructive" />
                           </div>
                         )}
                         <span className="text-sm">{section.emoji}</span>

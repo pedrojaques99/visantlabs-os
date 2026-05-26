@@ -124,7 +124,7 @@ export const CreativeSetupSidebar: React.FC = () => {
 
   if (showVault && selectedGuideline) {
     return (
-      <aside className="w-[360px] h-full bg-neutral-950 border-r border-white/5 flex flex-col p-6 gap-6 overflow-y-auto custom-scrollbar anim-fade-in">
+      <aside className="w-[360px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-6 gap-6 overflow-y-auto custom-scrollbar anim-fade-in">
         <header className="flex items-center justify-between">
           <button
             onClick={() => setShowVault(false)}
@@ -143,7 +143,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           </div>
           <label className="cursor-pointer group">
             <input type="file" className="hidden" accept="image/*" onChange={handleVaultUpload} disabled={isUploading} />
-            <div className="w-full h-32 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 bg-neutral-900/20 group-hover:bg-neutral-900/40 group-hover:border-brand-cyan/30 transition-all">
+            <div className="w-full h-32 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 bg-neutral-900/20 group-hover:bg-neutral-900/40 group-hover:border-neutral-700 transition-all">
               {isUploading ? (
                 <GlitchLoader size={24} />
               ) : (
@@ -170,7 +170,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                       setUploadedBackgroundUrl(logo.url!);
                       setShowVault(false);
                     }}
-                    className="aspect-square rounded-xl border border-white/5 bg-neutral-900/40 p-2 hover:border-brand-cyan/40 transition-all group overflow-hidden"
+                    className="aspect-square rounded-xl border border-neutral-800 bg-neutral-900/40 p-2 hover:border-neutral-700 transition-all group overflow-hidden"
                   >
                     <img src={getProxiedUrl(logo.url)} alt="Brand logo" className="w-full h-full object-contain group-hover:scale-110 transition-transform" />
                   </button>
@@ -190,7 +190,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                       setUploadedBackgroundUrl(media.url!);
                       setShowVault(false);
                     }}
-                    className="aspect-video rounded-xl border border-white/5 bg-neutral-900/40 p-1.5 hover:border-brand-cyan/40 transition-all group overflow-hidden"
+                    className="aspect-video rounded-xl border border-neutral-800 bg-neutral-900/40 p-1.5 hover:border-neutral-700 transition-all group overflow-hidden"
                   >
                     <img src={getProxiedUrl(media.url)} alt="Brand media" className="w-full h-full object-cover rounded-lg group-hover:scale-110 transition-transform" />
                   </button>
@@ -227,7 +227,7 @@ export const CreativeSetupSidebar: React.FC = () => {
     <aside
       role="region"
       aria-label="Creative Setup"
-      className="w-[360px] h-full bg-neutral-950 border-r border-white/5 flex flex-col p-5 gap-5 overflow-y-auto"
+      className="w-[360px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-5 gap-5 overflow-y-auto"
       data-vsn-section="setup"
     >
       <div className="flex items-center justify-between">
@@ -236,7 +236,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             <h1 className="text-white font-bold text-sm tracking-[0.1em] uppercase">
               Visant Labs<span className="text-brand-cyan">®</span>
             </h1>
-            <span className="px-1.5 py-0.5 rounded-full bg-neutral-900 border border-white/5 text-[10px] font-bold text-neutral-600 uppercase">
+            <span className="px-1.5 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-[10px] font-bold text-neutral-600 uppercase">
               v1.1
             </span>
           </div>
@@ -246,7 +246,7 @@ export const CreativeSetupSidebar: React.FC = () => {
         </div>
         <button
           onClick={() => navigate('/create/projects')}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-neutral-900/60 border border-white/5 hover:border-brand-cyan/30 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-brand-cyan transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-neutral-900/60 border border-neutral-800 hover:border-neutral-700 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-brand-cyan transition-colors"
           title="My Creatives"
           data-vsn-action="open-projects"
         >
@@ -276,7 +276,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           <button
             onClick={() => setWizardOpen(true)}
             disabled={status !== 'setup'}
-            className="w-12 h-12 shrink-0 bg-neutral-950/40 border border-white/5 rounded-xl flex items-center justify-center text-neutral-500 hover:text-brand-cyan hover:border-brand-cyan/30 transition-all hover:bg-neutral-900/60 disabled:opacity-50"
+            className="w-12 h-12 shrink-0 bg-neutral-950/40 border border-neutral-800 rounded-xl flex items-center justify-center text-neutral-500 hover:text-brand-cyan hover:border-neutral-700 transition-all hover:bg-neutral-900/60 disabled:opacity-50"
             title="Nova marca"
           >
             <Plus size={18} />
@@ -295,7 +295,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             disabled={status !== 'setup'}
             placeholder="O que você quer criar hoje?"
             rows={4}
-            className="w-full bg-neutral-900/40 border border-white/5 rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/40 focus:bg-neutral-900/60 transition-all resize-none disabled:opacity-50"
+            className="w-full bg-neutral-900/40 border border-neutral-800 rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 focus:bg-neutral-900/60 transition-all resize-none disabled:opacity-50"
             data-vsn-input="prompt"
           />
           <div className="absolute bottom-3 right-3 text-[10px] font-mono text-neutral-700 pointer-events-none uppercase tracking-tighter">
@@ -316,7 +316,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               disabled={status !== 'setup'}
               className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 group ${format === opt.id
                 ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan shadow-lg shadow-brand-cyan/5'
-                : 'bg-neutral-900/40 border-white/5 text-neutral-500 hover:text-white hover:bg-neutral-900/60 hover:border-white/10'
+                : 'bg-neutral-900/40 border-neutral-800 text-neutral-500 hover:text-white hover:bg-neutral-900/60 hover:border-white/10'
                 }`}
             >
               <opt.icon size={18} strokeWidth={format === opt.id ? 2 : 1.5} className="transition-transform group-hover:scale-110" />
@@ -333,12 +333,12 @@ export const CreativeSetupSidebar: React.FC = () => {
         <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
           Fundo
         </label>
-        <div className="grid grid-cols-3 gap-1.5 p-1 bg-neutral-900/40 rounded-2xl border border-white/5">
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-neutral-900/40 rounded-2xl border border-neutral-800">
           <button
             onClick={() => setBackgroundMode('ai')}
             disabled={status !== 'setup'}
             className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'ai'
-              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
+              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
               : 'text-neutral-500 hover:text-neutral-300'
               }`}
           >
@@ -355,7 +355,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             }}
             disabled={status !== 'setup'}
             className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'brand'
-              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
+              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
               : 'text-neutral-500 hover:text-neutral-300'
               }`}
           >
@@ -365,7 +365,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             onClick={() => setBackgroundMode('upload')}
             disabled={status !== 'setup'}
             className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'upload'
-              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-white/5'
+              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
               : 'text-neutral-500 hover:text-neutral-300'
               }`}
           >
@@ -382,12 +382,12 @@ export const CreativeSetupSidebar: React.FC = () => {
                 onChange={handleLocalUpload}
               />
               {!uploadedBackgroundUrl ? (
-                <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-brand-cyan/30 transition-all flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
+                <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
                   <Upload size={16} className="opacity-40 group-hover:text-brand-cyan transition-colors" />
                   <span className="uppercase tracking-widest">Subir Imagem Local</span>
                 </div>
               ) : (
-                <div className="relative w-full aspect-video rounded-2xl border border-white/5 overflow-hidden bg-neutral-900/40 hover:border-brand-cyan/30 transition-all shadow-2xl">
+                <div className="relative w-full aspect-video rounded-2xl border border-neutral-800 overflow-hidden bg-neutral-900/40 hover:border-neutral-700 transition-all shadow-2xl">
                   <img
                     src={getProxiedUrl(uploadedBackgroundUrl)}
                     alt="Uploaded Asset"
@@ -411,7 +411,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             {!uploadedBackgroundUrl ? (
               <button
                 onClick={() => setShowVault(true)}
-                className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-brand-cyan/30 transition-all flex flex-col items-center gap-2 hover:bg-neutral-900/60"
+                className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 hover:bg-neutral-900/60"
               >
                 <div className="flex flex-col items-center gap-2">
                   <Briefcase size={16} className="opacity-40 hover:text-brand-cyan transition-colors" />
@@ -421,7 +421,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             ) : (
               <div
                 onClick={() => setShowVault(true)}
-                className="group cursor-pointer relative w-full aspect-video rounded-2xl border border-white/5 overflow-hidden bg-neutral-900/40 hover:border-brand-cyan/30 transition-all shadow-2xl"
+                className="group cursor-pointer relative w-full aspect-video rounded-2xl border border-neutral-800 overflow-hidden bg-neutral-900/40 hover:border-neutral-700 transition-all shadow-2xl"
               >
                 <img
                   src={getProxiedUrl(uploadedBackgroundUrl)}

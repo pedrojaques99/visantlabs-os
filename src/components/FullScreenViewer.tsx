@@ -364,7 +364,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               <div className="absolute inset-0">
                 <SkeletonLoader width="100%" height="100%" className="h-full w-full" variant="rectangular" />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="inline-flex items-center justify-center rounded-md bg-neutral-950/30 px-3 py-2 border border-white/5">
+                  <div className="inline-flex items-center justify-center rounded-md bg-neutral-950/30 px-3 py-2 border border-neutral-800">
                     <Pickaxe size={20} className="text-brand-cyan pickaxe-swing" />
                   </div>
                 </div>
@@ -384,7 +384,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               {hasImage && !isLoading && (
                 <Button variant="ghost" onClick={handleDownload}
                   disabled={isDownloading}
-                  className="p-2 rounded-md bg-neutral-950/70 text-neutral-400 hover:text-white hover:bg-neutral-950/60 transition-all backdrop-blur-sm border border-white/5"
+                  className="p-2 rounded-md bg-neutral-950/70 text-neutral-400 hover:text-white hover:bg-neutral-950/60 transition-all backdrop-blur-sm border border-neutral-800"
                   title={t('common.download') || "Download"}
                 >
                   {isDownloading ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
@@ -393,7 +393,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
               {/* RAG Feedback (thumbs up/down) */}
               {generationId && (
-                <div className="flex items-center gap-1 rounded-lg bg-neutral-950/70 backdrop-blur-sm border border-white/5 p-1">
+                <div className="flex items-center gap-1 rounded-lg bg-neutral-950/70 backdrop-blur-sm border border-neutral-800 p-1">
                   <Button variant="ghost" size="icon"
                     aria-label={feedback.rating === 'up' ? "Remover feedback positivo" : "Feedback positivo — melhora o modelo"}
                     onClick={(e) => { e.stopPropagation(); feedback.submit('up'); }}
@@ -413,7 +413,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                     className={cn(
                       "w-8 h-8 rounded-md transition-all",
                       feedback.rating === 'down'
-                        ? "text-red-400 bg-red-400/10 hover:bg-red-400/20"
+                        ? "text-destructive bg-destructive/10 hover:bg-destructive/20"
                         : "text-neutral-400 hover:text-white hover:bg-white/10"
                     )}
                     disabled={feedback.isLoading}
@@ -445,7 +445,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
         {/* Edit Buttons Panel (only shown when props are provided from MockupMachinePage) */}
         {!isLoading && hasImage && showEditButtons && (
-          <div className="flex-shrink-0 flex flex-wrap items-center gap-2 p-3 bg-neutral-950/20 rounded-md border border-white/5">
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-2 p-3 bg-neutral-950/20 rounded-md border border-neutral-800">
             {onNewAngle && availableAngles && availableAngles.length > 0 && (
               <div onClick={(e) => e.stopPropagation()}>
                 <AngleSelector
@@ -500,7 +500,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 onZoomIn();
               }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
                   }`}
@@ -521,7 +521,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 onZoomOut();
               }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
                   }`}
@@ -565,7 +565,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
           <div className="flex-shrink-0">
             <Button variant="ghost" onClick={handleOpenInEditor}
               disabled={isConvertingImage}
-              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
+              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               title="Open in Editor"
             >

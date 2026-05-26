@@ -479,7 +479,7 @@ export const MyOutputsPage: React.FC = () => {
                             handleDelete(mockup._id);
                           }}
                             disabled={deletingId === mockup._id}
-                            className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-red-500/30 rounded text-xs font-mono text-red-400 hover:text-red-300 hover:border-red-400/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
+                            className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-xs font-mono text-destructive hover:text-destructive hover:border-destructive/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
                             aria-label={t('my.outputs.delete_output')}
                           >
                             <Trash2 size={14} />

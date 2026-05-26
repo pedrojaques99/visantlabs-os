@@ -51,7 +51,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
           <p className="text-[11px] text-neutral-700 py-2">No voice values yet. Click + to add.</p>
         )}
         {values.map((v, i) => (
-          <div key={i} className="flex gap-3 items-start py-2.5 border-b border-white/[0.04] last:border-0 group/item">
+          <div key={i} className="flex gap-3 items-start py-2.5 border-b border-neutral-800 last:border-0 group/item">
             <div className="flex-1 min-w-0 space-y-1">
               <Input
                 value={v.title}
@@ -74,7 +74,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
             </div>
             <Button
               variant="ghost" size="icon"
-              className="h-6 w-6 text-neutral-700 hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-all shrink-0 mt-0.5"
+              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-all shrink-0 mt-0.5"
               onClick={() => remove(i)} aria-label="Remove"
             >
               <Trash2 size={10} />

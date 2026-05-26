@@ -55,7 +55,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
 
   return (
     <div className="sticky bottom-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between h-12 border-t border-white/[0.06] bg-neutral-950/90 backdrop-blur-xl">
+      <div className="flex items-center justify-between h-12 border-t border-neutral-800 bg-neutral-950/90 backdrop-blur-xl">
         {/* Left: saved status */}
         <div className="flex items-center gap-2">
           <Check size={12} className="text-green-500/60" />
@@ -81,7 +81,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
               variant="ghost"
               size="sm"
               onClick={() => setOpen(v => !v)}
-              className="h-8 px-3 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-neutral-200 gap-1.5 border border-white/[0.06] hover:border-white/10"
+              className="h-8 px-3 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-neutral-200 gap-1.5 border border-neutral-800 hover:border-white/10"
             >
               <Download size={12} />
               Export
@@ -92,10 +92,10 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
               <div className="absolute right-0 bottom-full mb-2 z-50 w-52 bg-neutral-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden">
                 {groups.map((group, gi) => (
                   <React.Fragment key={group}>
-                    {gi > 0 && <div className="h-px bg-white/[0.04]" />}
+                    {gi > 0 && <div className="h-px bg-white/5" />}
                     <div className="px-3 pt-2 pb-1">
                       <span className={cn(
-                        'text-[9px] font-mono uppercase tracking-widest',
+                        'text-[10px] font-mono uppercase tracking-widest',
                         group === 'AI' ? 'text-brand-cyan/60' : 'text-neutral-600'
                       )}>{group === 'AI' ? 'For AI' : `For ${group}`}</span>
                     </div>
@@ -110,7 +110,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
                             'w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors',
                             item.highlight
                               ? 'text-brand-cyan/90 hover:bg-brand-cyan/[0.08]'
-                              : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                              : 'text-neutral-400 hover:text-white hover:bg-white/5'
                           )}
                         >
                           <Icon size={13} className="shrink-0" />

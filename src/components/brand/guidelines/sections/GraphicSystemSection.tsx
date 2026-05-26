@@ -34,7 +34,7 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({ guid
             <Textarea
               value={toLines(gs.patterns)}
               onChange={(e) => update({ patterns: fromLines(e.target.value) })}
-              className="border-white/[0.06] bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
               placeholder={"Lines de quadra\nPatterns orbitais\nTexturas geométricas"}
             />
           </div>
@@ -43,7 +43,7 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({ guid
             <Textarea
               value={toLines(gs.grafisms)}
               onChange={(e) => update({ grafisms: fromLines(e.target.value) })}
-              className="border-white/[0.06] bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
               placeholder={"Elipses sobrepostas\nFormas com DNA da marca"}
             />
           </div>
@@ -52,7 +52,7 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({ guid
             <Textarea
               value={toLines(gs.imageRules)}
               onChange={(e) => update({ imageRules: fromLines(e.target.value) })}
-              className="border-white/[0.06] bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
               placeholder={"Fotografia sempre com filtro quente\nCortes em diagonal\nSem fundos brancos puros"}
             />
           </div>
@@ -61,7 +61,7 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({ guid
             <Textarea
               value={gs.editorialGrid || ''}
               onChange={(e) => update({ editorialGrid: e.target.value })}
-              className="border-white/[0.06] bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
               placeholder="Malha que organiza posts, páginas, apresentações..."
             />
           </div>

@@ -75,7 +75,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                 {isAnalyzing ? (
                     <div className="flex flex-col items-center justify-center py-12 px-4 animate-in fade-in duration-500">
                         <div className="w-full max-w-sm">
-                            <div className="p-4 rounded-xl bg-neutral-900/30 border border-white/5 backdrop-blur-sm">
+                            <div className="p-4 rounded-xl bg-neutral-900/30 border border-neutral-800 backdrop-blur-sm">
                                 <PremiumGlitchLoader steps={ANALYSIS_STEPS} className="w-full" />
                             </div>
                         </div>
@@ -98,7 +98,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
 
             {/* Bottom Action Area */}
             {!isAnalyzing && (
-                <div className="w-full py-6 border-t border-white/5 flex flex-col items-center gap-3">
+                <div className="w-full py-6 border-t border-neutral-800 flex flex-col items-center gap-3">
                     <div className="flex items-center gap-3 w-full">
                         {onClose && (
                             <Button

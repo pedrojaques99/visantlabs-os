@@ -163,7 +163,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
 
     const baseStyles = variant === 'node'
       ? "w-full px-3 py-2 bg-neutral-950/40 border border-neutral-800 rounded-md text-xs text-neutral-300"
-      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm";
+      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-md text-neutral-200 text-sm";
 
     const focusStyles = "focus:outline-none focus:border-neutral-600";
 
@@ -206,7 +206,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   "border-l-2 border-transparent",
                   "text-neutral-400",
                   isFocused && "bg-neutral-800/60 border-neutral-600 text-neutral-200",
-                  isSelected && "bg-foreground/10 text-foreground border-l border-foreground/50",
+                  isSelected && "bg-foreground/10 text-foreground border-l border-neutral-600",
                   !isSelected && !isFocused && "hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700"
                 )}
               >
@@ -222,9 +222,9 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   <span className="truncate">{option.label}</span>
                   {option.badge && (
                     <span className={cn(
-                      "flex-shrink-0 px-1 py-px rounded text-[9px] font-bold uppercase tracking-wider leading-none",
+                      "flex-shrink-0 px-1 py-px rounded text-[10px] font-bold uppercase tracking-wider leading-none",
                       option.badge === 'latest'    && "bg-brand-cyan/15 text-brand-cyan border border-neutral-800",
-                      option.badge === 'popular'   && "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+                      option.badge === 'popular'   && "bg-green-500/15 text-green-400 border border-green-500/30",
                       option.badge === 'fast'      && "bg-amber-500/15 text-amber-400 border border-amber-500/30",
                       option.badge === 'edit'      && "bg-violet-500/15 text-violet-400 border border-violet-500/30",
                       option.badge === 'pro'       && "bg-orange-500/15 text-orange-400 border border-orange-500/30",
@@ -289,9 +289,9 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             </span>
             {selectedOption?.badge && (
               <span className={cn(
-                "flex-shrink-0 px-1 py-px rounded text-[9px] font-bold uppercase tracking-wider leading-none",
+                "flex-shrink-0 px-1 py-px rounded text-[10px] font-bold uppercase tracking-wider leading-none",
                 selectedOption.badge === 'latest'    && "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30",
-                selectedOption.badge === 'popular'   && "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+                selectedOption.badge === 'popular'   && "bg-green-500/15 text-green-400 border border-green-500/30",
                 selectedOption.badge === 'fast'      && "bg-amber-500/15 text-amber-400 border border-amber-500/30",
                 selectedOption.badge === 'edit'      && "bg-violet-500/15 text-violet-400 border border-violet-500/30",
                 selectedOption.badge === 'pro'       && "bg-orange-500/15 text-orange-400 border border-orange-500/30",

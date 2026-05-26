@@ -55,7 +55,7 @@ const ColorSwatch: React.FC<{
   };
 
   return (
-    <div className="bg-card border border-neutral-800/20 rounded-xl px-6 py-4 hover:border-brand-cyan/20 transition-all">
+    <div className="bg-card border border-neutral-800/20 rounded-xl px-6 py-4 hover:border-neutral-700 transition-all">
       <div className="flex items-start gap-4">
         <div
           className="w-16 h-16 rounded-xl border border-neutral-800/50 flex-shrink-0"
@@ -1790,7 +1790,7 @@ export const DesignSystemPage: React.FC = () => {
                             <GlassPanel padding="md" className="flex-1 min-h-[100px] flex items-center justify-center border-dashed border-white/10">
                               <span className="text-[10px] font-mono text-neutral-600">CONFIGURATION AREA</span>
                             </GlassPanel>
-                            <div className="pt-4 border-t border-white/5">
+                            <div className="pt-4 border-t border-neutral-800">
                               <PremiumButton className="w-full">
                                 CONTINUE
                               </PremiumButton>
@@ -1802,7 +1802,7 @@ export const DesignSystemPage: React.FC = () => {
 
                         <div className="space-y-4">
                           <h4 className="text-sm font-semibold text-neutral-300 font-mono">Real-world Example (Mockup Machine)</h4>
-                          <div className="p-4 bg-neutral-950 border border-white/5 rounded-md overflow-x-auto">
+                          <div className="p-4 bg-neutral-950 border border-neutral-800 rounded-md overflow-x-auto">
                             <pre className="text-[10px] font-mono text-neutral-400">
                               {`/* Simplified Structure */
 <div className="flex flex-col h-full gap-8">

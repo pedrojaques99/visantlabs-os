@@ -46,7 +46,7 @@ const Field: React.FC<{
           }
         }}
         style={{ width }}
-        className="bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-brand-cyan/50"
+        className="bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
       />
       {suffix && <span className="text-neutral-600">{suffix}</span>}
     </label>

@@ -117,18 +117,18 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
       <div className="space-y-4">
         {/* Visual Token Preview */}
         {hasTokens && (
-          <div className="space-y-3 pb-4 border-b border-white/[0.04]">
+          <div className="space-y-3 pb-4 border-b border-neutral-800">
             {/* Color Palette Strip */}
             {guideline.colors && guideline.colors.length > 0 && (
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
                 {guideline.colors.map((c, i) => (
                   <div key={i} className="flex flex-col items-center gap-1 shrink-0">
                     <div
-                      className="w-8 h-8 rounded-md border border-white/[0.08] shadow-sm"
+                      className="w-8 h-8 rounded-md border border-white/10 shadow-sm"
                       style={{ backgroundColor: c.hex }}
                       title={`${c.name} — ${c.hex}`}
                     />
-                    <span className="text-[8px] font-mono text-neutral-600 max-w-[40px] truncate">{c.role || c.name}</span>
+                    <span className="text-[10px] font-mono text-neutral-600 max-w-[40px] truncate">{c.role || c.name}</span>
                   </div>
                 ))}
               </div>
@@ -145,7 +145,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                     >
                       {t.family}
                     </span>
-                    <span className="text-[8px] font-mono text-neutral-600">{t.role} · {t.style || 'Regular'}</span>
+                    <span className="text-[10px] font-mono text-neutral-600">{t.role} · {t.style || 'Regular'}</span>
                   </div>
                 ))}
               </div>
@@ -157,7 +157,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                 {guideline.gradients.slice(0, 6).map((g, i) => (
                   <div
                     key={i}
-                    className="w-16 h-6 rounded-md border border-white/[0.08]"
+                    className="w-16 h-6 rounded-md border border-white/10"
                     style={{ background: g.css || `linear-gradient(${g.angle}deg, ${g.stops.map(s => `${s.color} ${s.position}%`).join(', ')})` }}
                     title={g.name}
                   />
@@ -168,7 +168,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
         )}
 
         {/* Format Tabs */}
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-white/[0.03] border border-neutral-800">
           {(Object.keys(FORMAT_META) as OutputFormat[]).map(fmt => (
             <button
               key={fmt}
@@ -176,8 +176,8 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-mono transition-all',
                 activeFormat === fmt
-                  ? 'bg-white/[0.08] text-neutral-200 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.04]'
+                  ? 'bg-white/10 text-neutral-200 shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
               )}
             >
               {FORMAT_META[fmt].icon}
@@ -209,10 +209,10 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
             </Button>
           </div>
 
-          <div className="rounded-lg border border-white/[0.06] bg-[#0d0d0f] overflow-hidden">
+          <div className="rounded-lg border border-neutral-800 bg-[#0d0d0f] overflow-hidden">
             {/* Filename bar */}
             {currentOutput && (
-              <div className="flex items-center gap-2 px-4 py-2 border-b border-white/[0.04] bg-white/[0.02]">
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-neutral-800 bg-white/[0.03]">
                 <FileCode size={11} className="text-neutral-600" />
                 <span className="text-[10px] font-mono text-neutral-500">{currentOutput.filename}</span>
               </div>
@@ -240,7 +240,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
             variant="ghost"
             size="sm"
             onClick={handleDownloadAll}
-            className="h-7 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan border border-white/[0.06] hover:border-brand-cyan/30"
+            className="h-7 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan border border-neutral-800 hover:border-neutral-700"
           >
             <Download size={11} />
             Download All Formats
@@ -261,7 +261,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
 
 function TokenStat({ label, count }: { label: string; count: number }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/[0.02] border border-white/[0.04]">
+    <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/[0.03] border border-neutral-800">
       <span className={cn(
         'text-sm font-medium tabular-nums',
         count > 0 ? 'text-neutral-300' : 'text-neutral-700'

@@ -77,8 +77,8 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
             className={cn(
               'h-9 text-sm font-mono rounded-md border transition-all duration-200 focus:ring-1',
               theme === 'dark'
-                ? 'bg-black/20 border-white/10 text-neutral-200 placeholder:text-neutral-600 focus:border-brand-cyan/50 focus:ring-brand-cyan/20 shadow-inner'
-                : 'bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-brand-cyan/50 focus:ring-brand-cyan/20 shadow-inner'
+                ? 'bg-black/20 border-white/10 text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:ring-brand-cyan/20 shadow-inner'
+                : 'bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-600 focus:ring-brand-cyan/20 shadow-inner'
             )}
           />
           {/* Smart Suggestions as Badges */}
@@ -101,8 +101,8 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                     selectedTags.includes(tag)
                       ? 'bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan cursor-default'
                       : theme === 'dark'
-                        ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-brand-cyan/30 hover:text-brand-cyan cursor-pointer'
-                        : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-brand-cyan/30 hover:text-brand-cyan cursor-pointer'
+                        ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
+                        : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
                   )}
                 >
                   {translateTag(tag)}

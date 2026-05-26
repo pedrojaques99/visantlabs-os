@@ -588,7 +588,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               e.stopPropagation();
               setShowDeleteModal(true);
             }}
-              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors backdrop-blur-sm border-node border-red-500/30"
+              className="bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors backdrop-blur-sm border-node border-destructive/30"
               title={t('common.delete')}
               onMouseDown={(e) => e.stopPropagation()}
             >

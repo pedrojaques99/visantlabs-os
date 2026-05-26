@@ -128,7 +128,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
         <Button onClick={onExportSvg} disabled={isExporting} variant="ghost" className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2">
           <FileCode size={14} /> Export SVG
         </Button>
-        <Button variant="ghost" onClick={clear} className="w-full text-neutral-600 hover:text-red-400 h-8 text-xs gap-2">
+        <Button variant="ghost" onClick={clear} className="w-full text-neutral-600 hover:text-destructive h-8 text-xs gap-2">
           <Trash2 size={13} /> Clear
         </Button>
       </ToolPanelActions>

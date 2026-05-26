@@ -39,7 +39,7 @@ export const AppShellPanel: React.FC<{
 
 export const AppShellStatusBar: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
   <div className={cn('absolute bottom-3 left-1/2 -translate-x-1/2 z-10', className)}>
-    <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-white/[0.06] text-[10px] text-neutral-600">
+    <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 text-[10px] text-neutral-600">
       {children}
     </div>
   </div>

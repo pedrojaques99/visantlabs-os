@@ -64,7 +64,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
             </Button>
           )}
           {onDelete && (
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-600 hover:text-red-400" onClick={onDelete} disabled={isDeleting} aria-label="Delete guideline">
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-600 hover:text-destructive" onClick={onDelete} disabled={isDeleting} aria-label="Delete guideline">
               <Trash2 size={11} />
             </Button>
           )}
@@ -73,7 +73,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
     >
       <div className="space-y-3 py-1">
         {/* Logo + Name */}
-        <div className="flex items-center gap-3 pb-2 border-b border-white/[0.04]">
+        <div className="flex items-center gap-3 pb-2 border-b border-neutral-800">
           {primaryLogo && (
             <div className="w-9 h-9 shrink-0 flex items-center justify-center rounded overflow-hidden bg-neutral-900/60">
               <img src={primaryLogo.url} alt="Logo" className="max-w-full max-h-full object-contain" />
@@ -97,11 +97,11 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
         <Textarea
           value={local.description}
           onChange={(e) => update({ description: e.target.value })}
-          className="border-white/[0.06] text-xs min-h-[70px] resize-none text-neutral-400 placeholder:text-neutral-700 bg-transparent"
+          className="border-neutral-800 text-xs min-h-[70px] resize-none text-neutral-400 placeholder:text-neutral-700 bg-transparent"
           placeholder="Brand description..."
         />
 
-        <div className="pt-1 border-t border-white/[0.04] flex flex-wrap gap-x-3 gap-y-0">
+        <div className="pt-1 border-t border-neutral-800 flex flex-wrap gap-x-3 gap-y-0">
           {[
             { key: 'website' as const, icon: <Globe size={10} />, placeholder: 'Website' },
             { key: 'portfolio' as const, icon: <Briefcase size={10} />, placeholder: 'Portfolio' },
@@ -113,7 +113,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
             return (
               <div key={key} className={cn(
                 'flex items-center gap-1.5 group/link transition-all',
-                isEmpty ? 'w-fit py-0.5' : 'w-full py-1 border-b border-white/[0.04] last:border-0'
+                isEmpty ? 'w-fit py-0.5' : 'w-full py-1 border-b border-neutral-800 last:border-0'
               )}>
                 <span className={cn('shrink-0 transition-colors', isEmpty ? 'text-neutral-800 group-hover/link:text-neutral-600' : 'text-neutral-600')}>{icon}</span>
                 <Input

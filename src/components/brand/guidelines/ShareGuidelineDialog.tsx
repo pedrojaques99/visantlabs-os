@@ -138,7 +138,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
 
         <div className="space-y-6 py-4">
           {/* Public toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-neutral-800">
             <div className="flex items-center gap-3">
               {isPublic ? (
                 <Globe size={18} className="text-brand-cyan" />
@@ -171,7 +171,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                   <Input
                     value={shareUrl}
                     readOnly
-                    className="pl-9 pr-3 bg-neutral-900/50 border-white/5 text-xs font-mono text-neutral-400"
+                    className="pl-9 pr-3 bg-neutral-900/50 border-neutral-800 text-xs font-mono text-neutral-400"
                   />
                 </div>
                 <Button
@@ -199,7 +199,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
           )}
 
           {/* Divider */}
-          <div className="border-t border-white/5" />
+          <div className="border-t border-neutral-800" />
 
           {/* Invite collaborators */}
           <div className="space-y-3">
@@ -214,13 +214,13 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                 value={inviteEmail}
                 onChange={e => setInviteEmail(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleInvite()}
-                className="flex-1 bg-neutral-900/50 border-white/5 text-xs text-neutral-300 placeholder:text-neutral-700"
+                className="flex-1 bg-neutral-900/50 border-neutral-800 text-xs text-neutral-300 placeholder:text-neutral-700"
               />
               <div className="relative">
                 <select
                   value={inviteRole}
                   onChange={e => setInviteRole(e.target.value as 'editor' | 'viewer')}
-                  className="h-9 appearance-none bg-neutral-900/50 border border-white/5 text-xs text-neutral-400 rounded-md px-3 pr-7 cursor-pointer focus:outline-none focus:border-white/20"
+                  className="h-9 appearance-none bg-neutral-900/50 border border-neutral-800 text-xs text-neutral-400 rounded-md px-3 pr-7 cursor-pointer focus:outline-none focus:border-white/20"
                 >
                   <option value="editor">Editor</option>
                   <option value="viewer">Viewer</option>
@@ -247,7 +247,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                 {collaborators.map(c => (
                   <div
                     key={c.id}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.02] border border-white/5"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] border border-neutral-800"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       {c.picture ? (
@@ -285,7 +285,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end pt-4 border-t border-white/5">
+        <div className="flex justify-end pt-4 border-t border-neutral-800">
           <Button
             variant="ghost"
             onClick={onClose}

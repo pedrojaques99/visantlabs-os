@@ -35,7 +35,7 @@ export const BrandAvatar: React.FC<BrandAvatarProps> = ({
 
     const base = cn(
         'shrink-0 flex items-center justify-center overflow-hidden',
-        'bg-neutral-800 text-neutral-300 border border-white/5',
+        'bg-neutral-800 text-neutral-300 border border-neutral-800',
         roundedClass,
         className
     );

@@ -41,12 +41,12 @@ export const AppShellLegalMenu: React.FC<{ className?: string }> = ({ className 
         </Button>
       </Tooltip>
       {open && (
-        <div className="absolute right-0 top-full mt-1 min-w-[160px] rounded-md border border-white/[0.06] bg-neutral-900/95 backdrop-blur-xl py-1 z-50 shadow-xl">
+        <div className="absolute right-0 top-full mt-1 min-w-[160px] rounded-md border border-neutral-800 bg-neutral-900/95 backdrop-blur-xl py-1 z-50 shadow-xl">
           {items.map((item) => (
             <button
               key={item.path}
               onClick={() => { navigate(item.path); setOpen(false); }}
-              className="w-full text-left px-3 py-1.5 text-[11px] text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors font-mono"
+              className="w-full text-left px-3 py-1.5 text-[11px] text-neutral-400 hover:text-white hover:bg-white/5 transition-colors font-mono"
             >
               {item.label}
             </button>

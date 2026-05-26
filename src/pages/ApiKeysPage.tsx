@@ -226,7 +226,7 @@ export const ApiKeysPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 font-mono mb-4">{t('api.keys.please_sign_in_to_manage_api_keys')}</p>
+          <p className="text-destructive font-mono mb-4">{t('api.keys.please_sign_in_to_manage_api_keys')}</p>
           <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
         </div>
       </div>
@@ -291,7 +291,7 @@ export const ApiKeysPage: React.FC = () => {
           </Card>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono flex items-center gap-2">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
               <X size={16} />
               {error}
             </div>
@@ -354,7 +354,7 @@ export const ApiKeysPage: React.FC = () => {
                       value={newKeyName}
                       onChange={e => setNewKeyName(e.target.value)}
                       placeholder="e.g. Production Agent, CI/CD Pipeline"
-                      className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-brand-cyan/50 transition-colors"
+                      className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors"
                       autoFocus
                     />
                   </div>
@@ -390,7 +390,7 @@ export const ApiKeysPage: React.FC = () => {
                       value={newKeyExpiry}
                       onChange={e => setNewKeyExpiry(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full max-w-xs px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 focus:outline-none focus:border-brand-cyan/50 transition-colors"
+                      className="w-full max-w-xs px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-colors"
                     />
                   </div>
 
@@ -487,7 +487,7 @@ export const ApiKeysPage: React.FC = () => {
                                 Expired
                               </Badge>
                             ) : (
-                              <Badge className="bg-red-500/20 text-red-400 border border-red-500/30 text-xs">
+                              <Badge className="bg-destructive/20 text-destructive border border-destructive/30 text-xs">
                                 Revoked
                               </Badge>
                             )}
@@ -496,7 +496,7 @@ export const ApiKeysPage: React.FC = () => {
                             {key.status === 'active' && (
                               <Button variant="ghost"
                                 onClick={() => setRevokeTarget(key)}
-                                className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+                                className="p-2 text-neutral-500 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                                 title={t('api.keys.revoke_key')}
                               >
                                 <Trash2 size={16} />
@@ -518,8 +518,8 @@ export const ApiKeysPage: React.FC = () => {
               <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl max-w-md w-full mx-4">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-red-500/10 rounded-md">
-                      <AlertTriangle className="h-5 w-5 text-red-400" />
+                    <div className="p-2 bg-destructive/10 rounded-md">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
                     </div>
                     <h3 className="text-lg font-semibold text-neutral-200">{t('api.keys.revoke_api_key')}</h3>
                   </div>
@@ -540,7 +540,7 @@ export const ApiKeysPage: React.FC = () => {
                     <Button variant="destructive"
                       onClick={handleRevokeKey}
                       disabled={isRevoking}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-md text-sm hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2 bg-destructive/20 text-destructive border border-destructive/30 rounded-md text-sm hover:bg-destructive/30 transition-colors disabled:opacity-50"
                     >
                       {isRevoking ? <GlitchLoader size={14} /> : <Trash2 size={14} />}
                       {isRevoking ? 'Revoking...' : 'Revoke Key'}

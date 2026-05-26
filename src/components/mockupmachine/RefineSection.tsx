@@ -244,7 +244,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
         <AdvancedOptions {...advancedOptionsProps} isGenerating={isGenerating} />
 
         {/* Color Palette Panel (collapsible) */}
-        <div className={`mt-2 rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+        <div className={`mt-2 rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800' : 'bg-white/50 border-neutral-200'}`}>
           <Button variant="ghost" onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
@@ -338,8 +338,8 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                     />
                     <Button variant="ghost" onClick={() => colorPickerRef.current?.click()}
                       className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-all duration-200 ${theme === 'dark'
-                        ? 'border-neutral-700/40 text-neutral-400 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-800/50'
-                        : 'border-neutral-300 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-100'
+                        ? 'border-neutral-700/40 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-800/50'
+                        : 'border-neutral-300 text-neutral-500 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-100'
                         }`}
                       title="Add new color"
                     >

@@ -214,7 +214,7 @@ export const ProfilePage: React.FC = () => {
       <PageShell pageId="profile-auth-error" width="5xl" title={t('common.notAuthenticated') || 'Acesso Restrito'}>
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <p className="text-red-400 font-mono mb-4">
+            <p className="text-destructive font-mono mb-4">
               {t('common.notAuthenticated') || 'Please sign in to view your profile'}
             </p>
             <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
@@ -241,7 +241,7 @@ export const ProfilePage: React.FC = () => {
       <div className="space-y-6">
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono flex items-center gap-2">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
               <X size={16} />
               {error}
             </div>

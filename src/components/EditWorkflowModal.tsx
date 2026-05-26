@@ -81,14 +81,14 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                 <div className="p-6 space-y-5">
                     <div className="space-y-2">
                         <MicroTitle as="label" className="ml-1">{t('workflows.edit.name') || 'Name'}</MicroTitle>
-                        <Input value={name} onChange={e => setName(e.target.value)} className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30" />
+                        <Input value={name} onChange={e => setName(e.target.value)} className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600" />
                     </div>
                     <div className="space-y-2">
                         <MicroTitle as="label" className="ml-1">{t('workflows.edit.description') || 'Description'}</MicroTitle>
                         <Textarea
                             value={description}
                             onChange={e => setDescription(e.target.value)}
-                            className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30 h-24 resize-none"
+                            className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 h-24 resize-none"
                         />
                     </div>
                     <div className="flex gap-4">
@@ -122,7 +122,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                     </div>
                     <div className="space-y-2">
                         <MicroTitle as="label" className="ml-1">{t('workflows.edit.tags') || 'Tags (comma separated)'}</MicroTitle>
-                        <Input value={tags} onChange={e => setTags(e.target.value)} className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30" />
+                        <Input value={tags} onChange={e => setTags(e.target.value)} className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600" />
                     </div>
                 </div>
 

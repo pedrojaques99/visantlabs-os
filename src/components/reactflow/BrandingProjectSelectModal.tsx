@@ -110,7 +110,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
       onClick={onClose}
     >
       <div
-        className="bg-neutral-950 border-node border-neutral-800/60 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+        className="bg-neutral-950 border-node border-neutral-800/60 rounded-md shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -149,7 +149,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                 return (
                   <Button variant="ghost" key={projectId}
                     onClick={() => handleSelectProject(project)}
-                    className="w-full px-4 py-3 text-left border rounded-md transition-all bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-neutral-700 hover:bg-neutral-800/50 group"
+                    className="w-full px-4 py-3 text-left border-node rounded-md transition-all bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-neutral-700 hover:bg-neutral-800/50 group"
                   >
                     <div className="flex items-start gap-3">
                       <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />

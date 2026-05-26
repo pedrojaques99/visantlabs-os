@@ -119,7 +119,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
       {showDelete && onDelete && (
         <NodeButton variant="ghost" 
           onClick={(e) => handleClick(e, onDelete)}
-          className="p-1 !text-red-400 !bg-red-500/10 hover:!bg-red-500/20"
+          className="p-1 !text-destructive !bg-destructive/10 hover:!bg-destructive/20"
           title={t(`${translationKeyPrefix}.delete`) || 'Delete'}
           onMouseDown={handleMouseDown}
         >
@@ -194,7 +194,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
       {showRemove && onRemove && (
         <NodeButton variant="ghost" 
           onClick={(e) => handleClick(e, onRemove)}
-          className="p-1 !text-red-400 !bg-red-500/10 hover:!bg-red-500/20"
+          className="p-1 !text-destructive !bg-destructive/10 hover:!bg-destructive/20"
           title={t(`${translationKeyPrefix}.removeLogo`) || t(`${translationKeyPrefix}.remove`) || 'Remove'}
           onMouseDown={handleMouseDown}
         >

@@ -29,8 +29,8 @@ const StreamImage = ({ src, alt, onCrashed }: { src: string; alt: string; onCras
       )}
 
       {hasError ? (
-        <div className="w-full h-32 flex items-center justify-center bg-red-500/5">
-          <AlertCircle size={20} strokeWidth={1} className="text-red-500/20" />
+        <div className="w-full h-32 flex items-center justify-center bg-destructive/5">
+          <AlertCircle size={20} strokeWidth={1} className="text-destructive/20" />
         </div>
       ) : (
         <img
@@ -80,7 +80,7 @@ const ImageCard = memo<ImageCardProps>(({
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0 }}
-    className="group relative rounded-2xl overflow-hidden bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300"
+    className="group relative rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 hover:border-white/10 transition-all duration-300"
   >
     <div
       className="relative cursor-pointer overflow-hidden"
@@ -92,11 +92,11 @@ const ImageCard = memo<ImageCardProps>(({
       {/* Technical Badges */}
       <div className="absolute top-3 left-3 z-10 flex gap-1.5">
         {isHD && (
-          <div className="bg-brand-cyan/80 text-[8px] font-bold px-1.5 py-0.5 rounded text-black uppercase tracking-tighter">
+          <div className="bg-brand-cyan/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-black uppercase tracking-tighter">
             ULTRA HD
           </div>
         )}
-        <div className="bg-black/40 backdrop-blur-sm text-white/50 text-[8px] font-medium px-1.5 py-0.5 rounded border border-white/5 uppercase">
+        <div className="bg-black/40 backdrop-blur-sm text-white/50 text-[10px] font-medium px-1.5 py-0.5 rounded border border-neutral-800 uppercase">
           {img.width}×{img.height}
         </div>
       </div>
@@ -583,7 +583,7 @@ export default function ExtractorPage() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('extractor.encontre_qualquer_imagem')}
                 className="
-                  w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-6 pr-32
+                  w-full bg-white/[0.03] border border-neutral-800 rounded-2xl py-4 px-6 pr-32
                   text-base font-medium text-white/90 focus:outline-none focus:border-white/10
                   transition-all placeholder:text-neutral-600
                 "
@@ -594,7 +594,7 @@ export default function ExtractorPage() {
                   onClick={() => setShowFilters(!showFilters)}
                   className={`
                     aspect-square rounded-xl flex items-center justify-center transition-all
-                    ${showFilters ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-white/[0.02] text-neutral-500 hover:bg-white/5 hover:text-neutral-300'}
+                    ${showFilters ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-white/[0.03] text-neutral-500 hover:bg-white/5 hover:text-neutral-300'}
                   `}
                 >
                   <Diamond size={16} />
@@ -603,7 +603,7 @@ export default function ExtractorPage() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="
-                    aspect-square bg-white/[0.02] text-neutral-500 rounded-xl
+                    aspect-square bg-white/[0.03] text-neutral-500 rounded-xl
                     flex items-center justify-center hover:bg-white/5 hover:text-neutral-300 transition-all
                   "
                 >
@@ -635,7 +635,7 @@ export default function ExtractorPage() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-2xl backdrop-blur-xl"
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white/[0.03] border border-neutral-800 rounded-2xl backdrop-blur-xl"
                 >
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">Grid Zoom ({columns})</label>
@@ -659,7 +659,7 @@ export default function ExtractorPage() {
                         <button
                           key={s}
                           onClick={() => setDesignerParams({ ...designerParams, size: s })}
-                          className={`flex-1 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border ${designerParams.size === s ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-neutral-600'}`}
+                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${designerParams.size === s ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-neutral-800 text-neutral-600'}`}
                         >
                           {s === 'large' ? 'HD+' : 'ANY'}
                         </button>
@@ -682,7 +682,7 @@ export default function ExtractorPage() {
                           key={value}
                           title={hint}
                           onClick={() => setDesignerParams({ ...designerParams, contentMode: value })}
-                          className={`flex-none px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border ${designerParams.contentMode === value ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan' : 'bg-transparent border-white/5 text-neutral-600 hover:text-neutral-400'}`}
+                          className={`flex-none px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${designerParams.contentMode === value ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan' : 'bg-transparent border-neutral-800 text-neutral-600 hover:text-neutral-400'}`}
                         >
                           {label}
                         </button>
@@ -697,7 +697,7 @@ export default function ExtractorPage() {
                         <button
                           key={a}
                           onClick={() => setDesignerParams({ ...designerParams, aspect: a })}
-                          className={`flex-1 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border ${designerParams.aspect === a ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-neutral-600'}`}
+                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${designerParams.aspect === a ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-neutral-800 text-neutral-600'}`}
                         >
                           {a}
                         </button>
@@ -714,7 +714,7 @@ export default function ExtractorPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex items-center gap-2 text-red-400/80 bg-red-500/5 px-4 py-2 rounded-xl self-start border border-red-500/10"
+                  className="flex items-center gap-2 text-destructive/80 bg-destructive/5 px-4 py-2 rounded-xl self-start border border-destructive/10"
                 >
                   <AlertCircle size={14} />
                   <span className="text-[10px] font-medium uppercase tracking-wider">{error}</span>
@@ -733,7 +733,7 @@ export default function ExtractorPage() {
                 <h2 className="text-xs font-medium tracking-tight text-neutral-400 uppercase">
                   {images.length} assets identified
                 </h2>
-                <div className="text-[9px] text-neutral-600 uppercase tracking-widest border-l border-white/5 pl-3">
+                <div className="text-[10px] text-neutral-600 uppercase tracking-widest border-l border-neutral-800 pl-3">
                   HD_SORT_ACTIVE
                 </div>
               </div>
@@ -747,7 +747,7 @@ export default function ExtractorPage() {
                     px-4 py-1.5 rounded-lg text-[10px] font-medium uppercase tracking-wider transition-all border
                     ${batchSelecting 
                       ? 'bg-white/10 border-white/20 text-white' 
-                      : 'bg-transparent border-white/5 text-neutral-500 hover:text-neutral-300 hover:border-white/10'
+                      : 'bg-transparent border-neutral-800 text-neutral-500 hover:text-neutral-300 hover:border-white/10'
                     }
                   `}
                 >
@@ -797,7 +797,7 @@ export default function ExtractorPage() {
             {(hasMore || loading) && images.length === 0 && (
               <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4 pt-10">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-white/5 opacity-40">
+                  <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-neutral-800 opacity-40">
                     <SkeletonLoader width="100%" height="100%" variant="rectangular" />
                   </div>
                 ))}

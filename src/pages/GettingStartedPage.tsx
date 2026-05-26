@@ -478,7 +478,7 @@ export const GettingStartedPage: React.FC = () => {
                     <div className="grid sm:grid-cols-3 gap-4">
                       <Link
                         to="/api/docs"
-                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-brand-cyan/40 hover:bg-neutral-800/60 transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-neutral-700 hover:bg-neutral-800/60 transition-all"
                       >
                         <div className="flex items-center justify-between">
                           <BookOpen size={16} className="text-brand-cyan" />
@@ -489,7 +489,7 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                       <Link
                         to="/settings/api-keys"
-                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-brand-cyan/40 hover:bg-neutral-800/60 transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-neutral-700 hover:bg-neutral-800/60 transition-all"
                       >
                         <div className="flex items-center justify-between">
                           <Key size={16} className="text-brand-cyan" />
@@ -500,7 +500,7 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                       <Link
                         to="/developer/usage"
-                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-brand-cyan/40 hover:bg-neutral-800/60 transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-neutral-700 hover:bg-neutral-800/60 transition-all"
                       >
                         <div className="flex items-center justify-between">
                           <Zap size={16} className="text-brand-cyan" />

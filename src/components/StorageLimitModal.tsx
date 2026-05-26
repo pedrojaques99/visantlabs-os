@@ -50,11 +50,11 @@ export const StorageLimitModal: React.FC<StorageLimitModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-neutral-950/95 backdrop-blur-xl border border-red-500/30 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
+        className="bg-neutral-950/95 backdrop-blur-xl border border-destructive/30 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4 mb-4">
-          <div className="flex-shrink-0 text-red-400">
+          <div className="flex-shrink-0 text-destructive">
             <AlertTriangle size={24} />
           </div>
           <div className="flex-1">
@@ -86,7 +86,7 @@ export const StorageLimitModal: React.FC<StorageLimitModalProps> = ({
           </Button>
           <Button variant="brand"
             onClick={handleUpgrade}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 hover:border-brand-cyan/50 rounded-md transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 hover:border-neutral-700 rounded-md transition-all"
           >
             <CreditCard size={14} />
             <span>Fazer Upgrade</span>

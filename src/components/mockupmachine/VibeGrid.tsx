@@ -51,7 +51,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                   "relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-all duration-300 group overflow-hidden border",
                   isSelected
                     ? "bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]"
-                    : "bg-neutral-900/60 border-white/5 hover:border-white/20 hover:bg-neutral-900/80"
+                    : "bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80"
                 )}
               >
                 {/* Icon Container */}
@@ -65,7 +65,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                 </div>
 
                 <span className={cn(
-                  "text-[9px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight",
+                  "text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight",
                   isSelected ? "text-brand-cyan" : "text-neutral-500 group-hover:text-neutral-300"
                 )}>
                   {seg.name}
@@ -105,7 +105,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                   !selectedSegment && "opacity-20 cursor-not-allowed grayscale",
                   isSelected
                     ? "bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]"
-                    : "bg-neutral-900/60 border-white/5 hover:border-white/20 hover:bg-neutral-900/80"
+                    : "bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80"
                 )}
               >
                 {/* Icon Container */}
@@ -119,7 +119,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                 </div>
 
                 <span className={cn(
-                  "text-[9px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight",
+                  "text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight",
                   isSelected ? "text-brand-cyan" : "text-neutral-500 group-hover:text-neutral-300"
                 )}>
                   {style.name}

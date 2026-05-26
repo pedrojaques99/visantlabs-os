@@ -157,7 +157,7 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
       {/* Main row */}
       <div className="flex items-center font-mono text-[11px] tracking-wider">
         {/* Number */}
-        <span className={`w-6 shrink-0 text-[9px] transition-colors duration-100 ${
+        <span className={`w-6 shrink-0 text-[10px] transition-colors duration-100 ${
           focused && !locked ? 'text-brand-cyan' : 'text-neutral-800'
         }`}>
           {String(num).padStart(2, '0')}
@@ -194,7 +194,7 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
       </div>
 
       {/* Description */}
-      <div className={`pl-9 font-mono text-[9px] tracking-wide transition-colors duration-100 ${
+      <div className={`pl-9 font-mono text-[10px] tracking-wide transition-colors duration-100 ${
         locked ? 'text-neutral-800' : focused ? 'text-neutral-500' : 'text-neutral-700'
       }`} aria-hidden>
         {app.description}
@@ -388,7 +388,7 @@ export const HomePage: React.FC = () => {
       />
 
       <div
-        className="fixed inset-0 bg-black flex items-center justify-center z-[10] overflow-hidden"
+        className="fixed inset-0 bg-black flex items-center justify-center z-10 overflow-hidden"
         data-vsn-page="home"
         data-vsn-component="HomePage"
       >
@@ -470,7 +470,7 @@ export const HomePage: React.FC = () => {
         {isLoggedIn && !isMobile && apps.length > 0 && (
           <motion.p
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
-            className="absolute bottom-6 font-mono text-[9px] text-neutral-800 tracking-widest uppercase select-none"
+            className="absolute bottom-6 font-mono text-[10px] text-neutral-800 tracking-widest uppercase select-none"
             aria-hidden
           >
             ↑ ↓ navigate · enter select

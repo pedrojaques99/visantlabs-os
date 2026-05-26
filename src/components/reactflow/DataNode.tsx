@@ -61,7 +61,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           Data
         </span>
         {fileName && (
-          <span className="ml-auto text-[9px] text-white/35 truncate max-w-[120px]">{fileName}</span>
+          <span className="ml-auto text-[10px] text-white/35 truncate max-w-[120px]">{fileName}</span>
         )}
       </div>
 
@@ -81,7 +81,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         <>
           {/* Row preview table */}
           <div className="px-3 pt-2 pb-1 overflow-x-auto">
-            <table className="w-full text-[9px]">
+            <table className="w-full text-[10px]">
               <thead>
                 <tr>
                   {previewCols.map((col) => (
@@ -128,7 +128,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="text-[9px] text-white/25 hover:text-white/50 transition-colors ml-1"
+              className="text-[10px] text-white/25 hover:text-white/50 transition-colors ml-1"
             >
               Replace
             </button>
@@ -137,7 +137,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           {/* Hint */}
           <div className="px-3 pb-2 flex items-start gap-1">
             <AlertCircle size={9} className="text-white/20 mt-0.5 shrink-0" />
-            <p className="text-[9px] text-white/20 leading-tight">
+            <p className="text-[10px] text-white/20 leading-tight">
               Connect to a Prompt or Edit node — column names become <span className="font-mono text-brand-cyan/40">{`{{variables}}`}</span>
             </p>
           </div>

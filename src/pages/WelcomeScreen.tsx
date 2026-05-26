@@ -448,8 +448,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             {/* Mobile: Simple compact button */}
             <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
               className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${theme === 'dark'
-                ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-brand-cyan/30'
-                : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-brand-cyan/50'
+                ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-neutral-700'
+                : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-neutral-700'
                 }`}
             >
               <div className="flex items-center justify-center w-7 h-7 rounded-md bg-brand-cyan/80">
@@ -472,8 +472,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                   }
                 }}
                 className={`ml-1 p-1 rounded-md transition-colors cursor-pointer ${theme === 'dark'
-                  ? 'hover:bg-neutral-700 text-neutral-500 hover:text-red-400'
-                  : 'hover:bg-neutral-200 text-neutral-400 hover:text-red-500'
+                  ? 'hover:bg-neutral-700 text-neutral-500 hover:text-destructive'
+                  : 'hover:bg-neutral-200 text-neutral-400 hover:text-destructive'
                   }`}
                 aria-label={t('welcome.screen.close_tutorial')}
               >
@@ -530,8 +530,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               setShowTutorialButton(false);
             }}
               className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 z-50 ${theme === 'dark'
-                ? 'bg-neutral-950/80 hover:bg-red-500/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
-                : 'bg-white/80 hover:bg-red-500/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
+                ? 'bg-neutral-950/80 hover:bg-destructive/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
+                : 'bg-white/80 hover:bg-destructive/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 }`}
               title={t('welcome.screen.fechar')}
             >

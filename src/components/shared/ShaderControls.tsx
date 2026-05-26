@@ -170,7 +170,7 @@ const SelectParam: React.FC<{
             key={o.value}
             onClick={() => onChange(o.value)}
             className={cn(
-              'px-2 py-1 rounded text-[9px] uppercase tracking-wider transition-colors',
+              'px-2 py-1 rounded text-[10px] uppercase tracking-wider transition-colors',
               current === o.value
                 ? 'bg-white/10 text-white'
                 : 'bg-white/5 text-neutral-500 hover:bg-white/10'

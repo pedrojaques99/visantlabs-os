@@ -54,7 +54,7 @@ type AccessFilter = 'all' | 'free' | 'premium';
 function AppCardSkeleton({ large = false }: { large?: boolean }) {
   return (
     <div className={cn(
-      'rounded-2xl overflow-hidden bg-white/[0.02] border border-white/[0.05] animate-pulse',
+      'rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 animate-pulse',
       large && 'lg:col-span-2 lg:row-span-2',
     )}>
       <div className={cn('bg-neutral-800/20', large ? 'aspect-[16/9]' : 'aspect-[16/10]')} />
@@ -87,7 +87,7 @@ function HeroCard({ app, variant, hasAccess, onOpen }: HeroCardProps) {
       onClick={() => onOpen(app)}
       className={cn(
         'group relative rounded-2xl overflow-hidden cursor-pointer',
-        'border border-white/[0.06] hover:border-white/[0.15]',
+        'border border-neutral-800 hover:border-white/15',
         'transition-all duration-500 hover:shadow-2xl hover:shadow-brand-cyan/5',
         isPrimary ? 'lg:col-span-2 lg:row-span-2' : '',
       )}
@@ -180,9 +180,9 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(app); } }}
       className={cn(
         'group relative rounded-2xl overflow-hidden flex flex-col',
-        'bg-white/[0.02] border border-white/[0.05]',
+        'bg-white/[0.03] border border-neutral-800',
         'transition-all duration-300 outline-none',
-        'hover:border-white/[0.12] hover:bg-white/[0.035] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20',
+        'hover:border-white/10 hover:bg-white/[0.035] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20',
         'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
         isComingSoon && 'opacity-30 grayscale pointer-events-none',
         app.isHidden && 'border-amber-500/20 opacity-60',
@@ -262,11 +262,11 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
             {app.name}
           </h3>
           {isComingSoon ? (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/[0.04] text-neutral-600 shrink-0">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-neutral-600 shrink-0">
               Soon
             </span>
           ) : app.badgeVariant === 'free' || (app as any).free ? (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/80 shrink-0">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400/80 shrink-0">
               Free
             </span>
           ) : isPremium ? (
@@ -291,7 +291,7 @@ function CategoryHeader({ category, count }: { category: CategoryDef; count: num
     <div className="flex items-end justify-between gap-4 mb-1">
       <div className="space-y-1">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+          <div className="p-2 rounded-xl bg-white/5 border border-neutral-800">
             <Icon size={16} className="text-neutral-400" />
           </div>
           <div>
@@ -519,7 +519,7 @@ export const AppsPage: React.FC = () => {
       {/* ─── Navigation Bar ────────────────────────────────────────────── */}
       <div
         ref={tabBarRef}
-        className="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 mb-10 bg-neutral-950/80 backdrop-blur-xl border-b border-white/[0.04]"
+        className="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 mb-10 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800"
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           {/* Category tabs */}
@@ -529,7 +529,7 @@ export const AppsPage: React.FC = () => {
               className={cn(
                 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition-all',
                 !activeCategory
-                  ? 'bg-white/[0.08] text-white font-medium'
+                  ? 'bg-white/10 text-white font-medium'
                   : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]',
               )}
             >
@@ -554,7 +554,7 @@ export const AppsPage: React.FC = () => {
                   className={cn(
                     'flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition-all',
                     activeCategory === cat.key
-                      ? 'bg-white/[0.08] text-white font-medium'
+                      ? 'bg-white/10 text-white font-medium'
                       : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]',
                   )}
                 >
@@ -570,7 +570,7 @@ export const AppsPage: React.FC = () => {
               );
             })}
 
-            <div className="w-px h-5 bg-white/[0.06] mx-2 shrink-0 hidden sm:block" />
+            <div className="w-px h-5 bg-white/5 mx-2 shrink-0 hidden sm:block" />
 
             {/* Access filter pills */}
             <button
@@ -578,7 +578,7 @@ export const AppsPage: React.FC = () => {
               className={cn(
                 'px-3 py-2 rounded-xl text-sm whitespace-nowrap transition-all hidden sm:block',
                 accessFilter === 'free'
-                  ? 'bg-emerald-500/10 text-emerald-400 font-medium'
+                  ? 'bg-green-500/10 text-green-400 font-medium'
                   : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
               )}
             >
@@ -606,7 +606,7 @@ export const AppsPage: React.FC = () => {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search apps..."
-                className="w-full pl-9 pr-9 py-2 text-sm bg-white/[0.03] border border-white/[0.06] rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.05] transition-all"
+                className="w-full pl-9 pr-9 py-2 text-sm bg-white/[0.03] border border-neutral-800 rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/15 focus:bg-white/5 transition-all"
               />
               {search && (
                 <button
@@ -624,8 +624,8 @@ export const AppsPage: React.FC = () => {
               className={cn(
                 'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border transition-all shrink-0',
                 sortBy === 'name'
-                  ? 'border-white/[0.12] text-neutral-200 bg-white/[0.05]'
-                  : 'border-white/[0.06] text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
+                  ? 'border-white/10 text-neutral-200 bg-white/5'
+                  : 'border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
               )}
             >
               <ArrowUpDown size={14} />
@@ -653,7 +653,7 @@ export const AppsPage: React.FC = () => {
         </div>
       ) : appsByCategory.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[40vh] gap-5 text-center py-20">
-          <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+          <div className="p-5 rounded-2xl bg-white/[0.03] border border-neutral-800">
             <PackageOpen size={48} strokeWidth={1.2} className="text-neutral-700" />
           </div>
           <div className="space-y-2">

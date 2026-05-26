@@ -261,7 +261,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={t('workflows.library.search') || 'Search workflows...'}
-                                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-brand-cyan/30 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
+                                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-neutral-600 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
                             />
                         </div>
 

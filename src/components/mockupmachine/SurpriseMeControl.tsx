@@ -102,7 +102,7 @@ function ToggleRow({
                 "w-8 h-4 rounded-full border transition-all duration-300 relative",
                 checked
                     ? "bg-brand-cyan/20 border-brand-cyan/40"
-                    : dark ? "bg-neutral-900 border-white/5" : "bg-neutral-100 border-neutral-300"
+                    : dark ? "bg-neutral-900 border-neutral-800" : "bg-neutral-100 border-neutral-300"
             )}>
                 <div className={cn(
                     "absolute top-0.5 left-0.5 w-2.5 h-2.5 rounded-full transition-all duration-300",
@@ -270,7 +270,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                     )}>
                         {label}
                         {creditsCount != null && creditsCount > 0 && (
-                            <span className="text-[9px] md:text-[11px] font-semibold opacity-90">
+                            <span className="text-[10px] md:text-[11px] font-semibold opacity-90">
                                 {creditsCount} 💎
                             </span>
                         )}
@@ -412,7 +412,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                         isInline ? "relative mt-0 bg-transparent" : "absolute bottom-full right-0 mb-3 w-72 bg-neutral-900/95"
                     )}>
                         <div className="space-y-5">
-                            <div className="space-y-3 pb-4 border-b border-white/5">
+                            <div className="space-y-3 pb-4 border-b border-neutral-800">
                                 <div className="flex items-center justify-between">
                                     <MicroTitle as="h5" className="font-bold flex items-center gap-2">
                                         <Diamond size={12} className="text-brand-cyan" />
@@ -519,7 +519,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         "flex items-center justify-center w-12 md:w-14 h-12 md:h-14 rounded-xl border transition-all duration-200",
                                         showSettings
                                             ? "bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan"
-                                            : "bg-neutral-900/50 border-white/5 text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300"
+                                            : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300"
                                     )}
                                 >
                                     <Settings size={18} className={cn("md:w-5 md:h-5 transition-transform duration-300", showSettings && "rotate-90")} />
@@ -534,7 +534,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         : "absolute bottom-full right-0 mb-3 w-72"
                                 )}>
                                     <div className="space-y-5">
-                                        <div className="space-y-3 pb-4 border-b border-white/5">
+                                        <div className="space-y-3 pb-4 border-b border-neutral-800">
                                             <div className="flex items-center justify-between">
                                                 <MicroTitle as="h5" className="font-bold flex items-center gap-2">
                                                     <Diamond size={12} className="text-brand-cyan" />

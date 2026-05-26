@@ -305,7 +305,7 @@ export const CommunityProfilePage: React.FC = () => {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 bg-neutral-900/50 border border-neutral-800/60 rounded-md hover:border-brand-cyan/50 hover:bg-neutral-900/80 hover:text-brand-cyan transition-all duration-200"
+        className="p-2 bg-neutral-900/50 border border-neutral-800/60 rounded-md hover:border-neutral-700 hover:bg-neutral-900/80 hover:text-brand-cyan transition-all duration-200"
         title={label}
       >
         {icon}
@@ -338,7 +338,7 @@ export const CommunityProfilePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <p className="text-red-400 font-mono mb-4">{error || 'User not found'}</p>
+              <p className="text-destructive font-mono mb-4">{error || 'User not found'}</p>
               <BackButton className="mb-0" />
             </div>
           </div>
@@ -455,7 +455,7 @@ export const CommunityProfilePage: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => setIsEditModalOpen(true)}
-                          className="ml-2 gap-2 border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10 hover:text-brand-cyan hover:border-brand-cyan/50"
+                          className="ml-2 gap-2 border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10 hover:text-brand-cyan hover:border-neutral-700"
                         >
                           <Edit size={14} />
                           Edit Profile
@@ -541,7 +541,7 @@ export const CommunityProfilePage: React.FC = () => {
                       return (
                         <div
                           key={mockup._id}
-                          className="group relative bg-neutral-900/40 border border-neutral-800/50 rounded-xl overflow-hidden hover:border-brand-cyan/50 hover:shadow-lg hover:shadow-brand-cyan/5 transition-all duration-300 aspect-square cursor-pointer"
+                          className="group relative bg-neutral-900/40 border border-neutral-800/50 rounded-xl overflow-hidden hover:border-neutral-700 hover:shadow-lg hover:shadow-brand-cyan/5 transition-all duration-300 aspect-square cursor-pointer"
                           onClick={() => handleView(mockup)}
                         >
                           <img
@@ -552,7 +552,7 @@ export const CommunityProfilePage: React.FC = () => {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                             <div className="flex items-center gap-2 text-white">
-                              <Heart size={14} className={cn(mockup.isLiked ? "fill-red-500 text-red-500" : "text-white")} />
+                              <Heart size={14} className={cn(mockup.isLiked ? "fill-red-500 text-destructive" : "text-white")} />
                               <span className="text-xs font-mono">{mockup.likesCount || 0}</span>
                             </div>
                           </div>
@@ -580,7 +580,7 @@ export const CommunityProfilePage: React.FC = () => {
                     {workflows.map(workflow => (
                       <GlassPanel
                         key={workflow._id}
-                        className="group overflow-hidden hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300 flex flex-col h-full bg-neutral-900/40"
+                        className="group overflow-hidden hover:border-neutral-700 hover:bg-neutral-800/60 transition-all duration-300 flex flex-col h-full bg-neutral-900/40"
                       >
                         <div
                           className="aspect-video w-full bg-neutral-950 relative overflow-hidden cursor-pointer"
@@ -652,7 +652,7 @@ export const CommunityProfilePage: React.FC = () => {
                                 className={cn(
                                   "flex items-center gap-1.5 text-xs font-mono transition-colors",
                                   workflow.isLikedByUser
-                                    ? "text-red-400 hover:text-red-300"
+                                    ? "text-destructive hover:text-destructive"
                                     : "text-neutral-500 hover:text-neutral-300"
                                 )}
                               >
@@ -689,7 +689,7 @@ export const CommunityProfilePage: React.FC = () => {
                       <GlassPanel
                         asChild
                         key={preset._id || preset.id}
-                        className="group flex flex-col text-left h-full bg-neutral-900/40 hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300 cursor-pointer"
+                        className="group flex flex-col text-left h-full bg-neutral-900/40 hover:border-neutral-700 hover:bg-neutral-800/60 transition-all duration-300 cursor-pointer"
                       >
                         <Button variant="ghost" onClick={() => handlePresetClick(preset)}>
                           <div className="aspect-[3/2] w-full bg-neutral-950 relative overflow-hidden">

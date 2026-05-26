@@ -53,25 +53,25 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({ 
           <div className="space-y-1">
             <MicroTitle className="text-neutral-600">1. Produto</MicroTitle>
             <Input value={cm.product} onChange={(e) => update({ product: e.target.value })}
-              className="h-7 border-white/[0.06] text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
+              className="h-7 border-neutral-800 text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
               placeholder="ex: ITSM para times enxutos de TI" />
           </div>
           <div className="space-y-1">
             <MicroTitle className="text-neutral-600">2. Diferencial</MicroTitle>
             <Input value={cm.differential} onChange={(e) => update({ differential: e.target.value })}
-              className="h-7 border-white/[0.06] text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
+              className="h-7 border-neutral-800 text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
               placeholder="ex: conectar as ferramentas num fluxo único" />
           </div>
           <div className="space-y-1">
             <MicroTitle className="text-neutral-600">3. Elo Emocional</MicroTitle>
             <Input value={cm.emotionalBond} onChange={(e) => update({ emotionalBond: e.target.value })}
-              className="h-7 border-white/[0.06] text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
+              className="h-7 border-neutral-800 text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
               placeholder="ex: alívio de ter o caos operacional sob controle" />
           </div>
         </div>
 
         {hasMessage && (
-          <div className="pt-3 border-t border-white/[0.04]">
+          <div className="pt-3 border-t border-neutral-800">
             <p className="text-[11px] text-neutral-600 font-mono mb-2">Preview</p>
             <p className="text-sm text-neutral-300 leading-relaxed">
               {cm.product && <span className="font-semibold text-neutral-100">{cm.product}</span>}

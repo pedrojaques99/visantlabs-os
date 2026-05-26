@@ -270,7 +270,7 @@ export const CreativeProjectsPage: React.FC = () => {
                   key={project._id}
                   data-vsn-component="creative-project-card"
                   data-vsn-project-id={project._id}
-                  className="bg-[#141414]/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-brand-cyan/40 transition-all duration-500 group cursor-pointer overflow-hidden shadow-xl"
+                  className="bg-[#141414]/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-neutral-700 transition-all duration-500 group cursor-pointer overflow-hidden shadow-xl"
                   onClick={() => {
                     if (editingProjectId !== project._id) handleOpen(project._id);
                   }}
@@ -308,7 +308,7 @@ export const CreativeProjectsPage: React.FC = () => {
                             onBlur={() => handleNameEditSave(project._id)}
                             onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
                             onClick={(e) => e.stopPropagation()}
-                            className="flex-1 font-bold text-neutral-200 font-manrope text-lg bg-transparent border-b border-brand-cyan/40 focus:border-brand-cyan focus:outline-none px-1 h-auto py-0"
+                            className="flex-1 font-bold text-neutral-200 font-manrope text-lg bg-transparent border-b border-brand-cyan/40 focus:border-neutral-600 focus:outline-none px-1 h-auto py-0"
                           />
                         ) : (
                           <h3
@@ -349,7 +349,7 @@ export const CreativeProjectsPage: React.FC = () => {
                         e.stopPropagation();
                         handleOpen(project._id);
                       }}
-                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
+                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
                       Open
@@ -358,7 +358,7 @@ export const CreativeProjectsPage: React.FC = () => {
                       variant="ghost"
                       onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deleteMutation.isPending}
-                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

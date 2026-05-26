@@ -65,7 +65,7 @@ const Thumb: React.FC<ThumbProps> = ({
     >
       {/* Thumbnail body — placeholder canvas. Real render is too heavy at 56px. */}
       <div
-        className="rounded-md overflow-hidden border border-white/10 bg-neutral-900 flex items-center justify-center text-[9px] font-mono uppercase tracking-widest text-neutral-600"
+        className="rounded-md overflow-hidden border border-white/10 bg-neutral-900 flex items-center justify-center text-[10px] font-mono uppercase tracking-widest text-neutral-600"
         style={{ height: THUMB_HEIGHT }}
       >
         {page.format}
@@ -77,7 +77,7 @@ const Thumb: React.FC<ThumbProps> = ({
           type="button"
           onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
           title="Duplicar (Ctrl+Shift+D)"
-          className="w-5 h-5 rounded bg-neutral-900/90 border border-white/10 hover:border-brand-cyan/50 flex items-center justify-center text-neutral-400 hover:text-brand-cyan"
+          className="w-5 h-5 rounded bg-neutral-900/90 border border-white/10 hover:border-neutral-700 flex items-center justify-center text-neutral-400 hover:text-brand-cyan"
         >
           <Copy size={9} />
         </button>
@@ -86,7 +86,7 @@ const Thumb: React.FC<ThumbProps> = ({
             type="button"
             onClick={(e) => { e.stopPropagation(); onRemove(); }}
             title="Remover"
-            className="w-5 h-5 rounded bg-neutral-900/90 border border-white/10 hover:border-red-400/50 flex items-center justify-center text-neutral-400 hover:text-red-400"
+            className="w-5 h-5 rounded bg-neutral-900/90 border border-white/10 hover:border-destructive/50 flex items-center justify-center text-neutral-400 hover:text-destructive"
           >
             <Trash2 size={9} />
           </button>
@@ -100,7 +100,7 @@ const Thumb: React.FC<ThumbProps> = ({
 
       {/* Name + index */}
       <div className="mt-1 flex items-center justify-between gap-1 px-0.5">
-        <span className={`text-[9px] font-mono tabular-nums ${isActive ? 'text-brand-cyan' : 'text-neutral-500'}`}>
+        <span className={`text-[10px] font-mono tabular-nums ${isActive ? 'text-brand-cyan' : 'text-neutral-500'}`}>
           {index + 1}
         </span>
         {editing ? (
@@ -168,7 +168,7 @@ export const PagesPanel: React.FC = () => {
   };
 
   return (
-    <div className="border-t border-white/[0.04] bg-neutral-950/80 backdrop-blur-xl">
+    <div className="border-t border-neutral-800 bg-neutral-950/80 backdrop-blur-xl">
       <div className="flex items-end gap-2 px-4 py-2 overflow-x-auto custom-scrollbar-h">
         {pages.map((page, idx) => (
           <Thumb
@@ -190,7 +190,7 @@ export const PagesPanel: React.FC = () => {
           type="button"
           onClick={() => addPage()}
           title="Adicionar página"
-          className="shrink-0 w-10 rounded-md border border-dashed border-white/10 hover:border-brand-cyan/40 hover:bg-brand-cyan/5 flex items-center justify-center text-neutral-500 hover:text-brand-cyan transition-colors"
+          className="shrink-0 w-10 rounded-md border border-dashed border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 flex items-center justify-center text-neutral-500 hover:text-brand-cyan transition-colors"
           style={{ height: THUMB_HEIGHT }}
         >
           <Plus size={14} />

@@ -73,7 +73,7 @@ const ColorEditRow = ({
       <NodeButton
         variant="ghost"
         size="xs"
-        className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0 shrink-0"
+        className="h-6 w-6 text-neutral-500 hover:text-destructive p-0 shrink-0"
         onClick={onDelete}
       >
         <Trash2 size={12} />
@@ -527,7 +527,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 variant="ghost"
                 size="xs"
                 onClick={handleRemoveLogo}
-                className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
+                className="h-6 w-6 text-neutral-500 hover:text-destructive p-0"
               >
                 <X size={12} />
               </NodeButton>
@@ -578,7 +578,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 variant="ghost"
                 size="xs"
                 onClick={handleRemoveIdentity}
-                className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
+                className="h-6 w-6 text-neutral-500 hover:text-destructive p-0"
               >
                 <X size={12} />
               </NodeButton>

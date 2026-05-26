@@ -151,13 +151,13 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                         {/* Name */}
                         <div className="space-y-2 md:col-span-2">
                             <MicroTitle as="label" className="ml-1">
-                                {t('workflows.saveDialog.name') || 'Workflow Name'} <span className="text-red-400">*</span>
+                                {t('workflows.saveDialog.name') || 'Workflow Name'} <span className="text-destructive">*</span>
                             </MicroTitle>
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder={t('workflows.saveDialog.namePlaceholder') || 'e.g., Brand Identity Workflow'}
-                                className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/50 focus:ring-brand-cyan/20"
+                                className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20"
                             />
                         </div>
 
@@ -190,7 +190,7 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                                 value={tagsInput}
                                 onChange={(e) => setTagsInput(e.target.value)}
                                 placeholder={t('workflows.saveDialog.tagsPlaceholder') || 'branding, logo, identity'}
-                                className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/50 focus:ring-brand-cyan/20"
+                                className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20"
                             />
                         </div>
 
@@ -198,13 +198,13 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                         <div className="space-y-2 md:col-span-2">
                             <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
                                 <Info size={12} className="uppercase" />
-                                {t('workflows.saveDialog.description') || 'Description'} <span className="text-red-400">*</span>
+                                {t('workflows.saveDialog.description') || 'Description'} <span className="text-destructive">*</span>
                             </MicroTitle>
                             <Textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder={t('workflows.saveDialog.descriptionPlaceholder') || 'Describe what this workflow does...'}
-                                className="min-h-[100px] bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/50 focus:ring-brand-cyan/20 resize-none"
+                                className="min-h-[100px] bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20 resize-none"
                             />
                         </div>
 

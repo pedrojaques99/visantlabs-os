@@ -178,7 +178,7 @@ export const UsageDashboardPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 font-mono mb-4">Please sign in to view usage analytics</p>
+          <p className="text-destructive font-mono mb-4">Please sign in to view usage analytics</p>
           <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
         </div>
       </div>
@@ -293,7 +293,7 @@ export const UsageDashboardPage: React.FC = () => {
                   <select
                     value={featureFilter}
                     onChange={e => handleFeatureChange(e.target.value as FeatureFilter)}
-                    className="bg-neutral-800/50 border border-neutral-700/50 text-neutral-400 text-xs font-mono rounded-md px-3 py-1.5 focus:outline-none focus:border-brand-cyan/50"
+                    className="bg-neutral-800/50 border border-neutral-700/50 text-neutral-400 text-xs font-mono rounded-md px-3 py-1.5 focus:outline-none focus:border-neutral-600"
                   >
                     {FEATURE_OPTIONS.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>

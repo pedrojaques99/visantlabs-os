@@ -52,7 +52,7 @@ const NumPair: React.FC<{
           type="number"
           value={Math.round(ax * 100)}
           onChange={(e) => onA(Math.max(0, Math.min(100, Number(e.target.value))) / 100)}
-          className="w-full bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-brand-cyan/50"
+          className="w-full bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
         />
       </label>
       <label className="flex items-center gap-1 text-[10px] font-mono">
@@ -61,7 +61,7 @@ const NumPair: React.FC<{
           type="number"
           value={Math.round(ay * 100)}
           onChange={(e) => onB(Math.max(0, Math.min(100, Number(e.target.value))) / 100)}
-          className="w-full bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-brand-cyan/50"
+          className="w-full bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
         />
       </label>
     </div>

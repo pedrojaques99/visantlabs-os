@@ -62,7 +62,7 @@ export function ToolCallCard({ tc }: ToolCallCardProps) {
         <ChevronDown size={8} className={`shrink-0 text-muted-foreground/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
       {expanded && (
-        <div className="px-2 pb-1.5 text-[9px] border-t border-border/30 space-y-1">
+        <div className="px-2 pb-1.5 text-[10px] border-t border-border/30 space-y-1">
           {tc.args && (
             <pre className="font-mono text-muted-foreground/60 whitespace-pre-wrap break-all leading-relaxed">
               {formatArgs(tc.args)}

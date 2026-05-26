@@ -69,7 +69,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
           <p className="text-[11px] text-neutral-700 py-2">No fonts yet. Click + to add.</p>
         )}
         {local.map((f, i) => (
-          <div key={i} className="flex gap-3 items-start py-2.5 border-b border-white/[0.04] last:border-0 group/font">
+          <div key={i} className="flex gap-3 items-start py-2.5 border-b border-neutral-800 last:border-0 group/font">
             {/* Preview */}
             <div className="w-8 h-8 shrink-0 flex items-center justify-center rounded bg-neutral-900/60">
               <span className="text-base font-bold text-neutral-400" style={{ fontFamily: f.family }}>Aa</span>
@@ -82,16 +82,16 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
                   onChange={(val) => updateFont(i, { family: val })}
                   brandFonts={brandFonts}
                 />
-                <Input value={f.role} onChange={(e) => updateFont(i, { role: e.target.value })} className="h-7 border-white/5 text-xs w-28" placeholder="Role (e.g. Heading)" />
+                <Input value={f.role} onChange={(e) => updateFont(i, { role: e.target.value })} className="h-7 border-neutral-800 text-xs w-28" placeholder="Role (e.g. Heading)" />
               </div>
               <div className="flex gap-1.5">
-                <Input value={f.style} onChange={(e) => updateFont(i, { style: e.target.value })} className="h-7 border-white/5 text-xs w-24" placeholder="Style" />
-                <Input value={f.size} type="number" onChange={(e) => updateFont(i, { size: Number(e.target.value) })} className="h-7 border-white/5 text-xs w-16" placeholder="px" />
-                <Input value={f.lineHeight ?? ''} type="number" step="0.1" onChange={(e) => updateFont(i, { lineHeight: Number(e.target.value) || undefined })} className="h-7 border-white/5 text-xs w-16" placeholder="lh" />
-                <Input value={f.letterSpacing ?? ''} onChange={(e) => updateFont(i, { letterSpacing: e.target.value || undefined })} className="h-7 border-white/5 text-xs w-20" placeholder="ls" />
+                <Input value={f.style} onChange={(e) => updateFont(i, { style: e.target.value })} className="h-7 border-neutral-800 text-xs w-24" placeholder="Style" />
+                <Input value={f.size} type="number" onChange={(e) => updateFont(i, { size: Number(e.target.value) })} className="h-7 border-neutral-800 text-xs w-16" placeholder="px" />
+                <Input value={f.lineHeight ?? ''} type="number" step="0.1" onChange={(e) => updateFont(i, { lineHeight: Number(e.target.value) || undefined })} className="h-7 border-neutral-800 text-xs w-16" placeholder="lh" />
+                <Input value={f.letterSpacing ?? ''} onChange={(e) => updateFont(i, { letterSpacing: e.target.value || undefined })} className="h-7 border-neutral-800 text-xs w-20" placeholder="ls" />
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-700 hover:text-red-400 opacity-0 group-hover/font:opacity-100 transition-all shrink-0" onClick={() => removeFont(i)} aria-label="Remove font">
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-700 hover:text-destructive opacity-0 group-hover/font:opacity-100 transition-all shrink-0" onClick={() => removeFont(i)} aria-label="Remove font">
               <Trash2 size={11} />
             </Button>
           </div>

@@ -410,7 +410,7 @@ export const AdminPresetsPage: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-neutral-400 hover:text-red-400 hover:bg-neutral-800"
+              className="h-8 w-8 text-neutral-400 hover:text-destructive hover:bg-neutral-800"
               onClick={() => handleDelete((row.original.category as PresetType) || 'mockup', row.original.id)}
             >
               <Trash2 className="h-4 w-4" />
@@ -1298,7 +1298,7 @@ export const AdminPresetsPage: React.FC = () => {
                     Acesso negado. Você precisa ser um administrador para acessar esta página.
                   </p>
                   {error && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono">
+                    <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono">
                       {error}
                     </div>
                   )}
@@ -1469,7 +1469,7 @@ export const AdminPresetsPage: React.FC = () => {
             {/* Row 4: Grid */}
             <div className="space-y-6">
               {error && (
-                <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
+                <div className="mb-4 bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono">
                   {error}
                 </div>
               )}
@@ -1477,7 +1477,7 @@ export const AdminPresetsPage: React.FC = () => {
               {batchResult && !isBatchModalOpen && (
                 <div className={`mb-4 border rounded-xl p-4 text-sm font-mono ${batchResult.created > 0
                   ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                  : 'bg-red-500/10 border-red-500/30 text-red-400'
+                  : 'bg-destructive/10 border-destructive/30 text-destructive'
                   }`}>
                   <div className="mb-2">
                     <strong>{t('admin.presets.resultado_da_importao')}</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
@@ -1562,7 +1562,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       {error && (
-                        <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono">
+                        <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono">
                           {error}
                         </div>
                       )}
@@ -1570,7 +1570,7 @@ export const AdminPresetsPage: React.FC = () => {
                       {batchResult && (
                         <div className={`border rounded-md p-4 text-sm font-mono ${batchResult.created > 0
                           ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                          : 'bg-red-500/10 border-red-500/30 text-red-400'
+                          : 'bg-destructive/10 border-destructive/30 text-destructive'
                           }`}>
                           <div className="mb-2">
                             <strong>{t('admin.presets.resultado')}</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
@@ -1641,7 +1641,7 @@ export const AdminPresetsPage: React.FC = () => {
                     </div>
 
                     {error && (
-                      <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono">
+                      <div className="mb-4 bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono">
                         {error}
                       </div>
                     )}
@@ -1713,7 +1713,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   <p className="text-sm text-neutral-400 font-mono">{t('admin.presets.fazendo_upload_da_imagem')}</p>
                                 )}
                                 {imageUploadError && (
-                                  <p className="text-sm text-red-400 font-mono">{imageUploadError}</p>
+                                  <p className="text-sm text-destructive font-mono">{imageUploadError}</p>
                                 )}
                                 {(!formData.id || formData.id.trim() === '') && (
                                   <p className="text-xs text-neutral-500 font-mono">

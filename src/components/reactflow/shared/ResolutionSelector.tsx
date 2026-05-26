@@ -56,9 +56,9 @@ function renderResolutionButton(
       className={cn(
         compact
           ? 'flex-1 flex items-center justify-center gap-1 h-11 px-2 text-xs font-mono transition-all min-w-0'
-          : 'flex flex-col items-center justify-center gap-1 py-2 px-3 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
+          : 'flex flex-col items-center justify-center gap-1 py-2 px-3 text-xs font-mono rounded-md transition-all duration-200 border-node cursor-pointer',
         isSelected
-          ? 'bg-foreground/10 text-foreground border-foreground/40'
+          ? 'bg-foreground/10 text-foreground border-neutral-600'
           : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-700 hover:text-brand-cyan',
         disabled && 'opacity-50 cursor-not-allowed'
       )}

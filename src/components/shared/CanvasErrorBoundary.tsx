@@ -28,8 +28,8 @@ export class CanvasErrorBoundary extends React.Component<Props, State> {
       return (
         <div className="w-full h-full flex items-center justify-center bg-neutral-950">
           <div className="flex flex-col items-center gap-4 max-w-xs text-center">
-            <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
-              <AlertTriangle size={20} className="text-red-400" />
+            <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle size={20} className="text-destructive" />
             </div>
             <div>
               <p className="text-[11px] text-neutral-400 uppercase tracking-widest">

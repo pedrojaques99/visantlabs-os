@@ -56,7 +56,7 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
             <Textarea
               value={manifesto.provocation || ''}
               onChange={(e) => update({ provocation: e.target.value })}
-              className="border-white/[0.06] bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
               placeholder="Pergunta ou imagem que o leitor reconhece..."
             />
           </div>
@@ -65,7 +65,7 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
             <Textarea
               value={manifesto.tension || ''}
               onChange={(e) => update({ tension: e.target.value })}
-              className="border-white/[0.06] bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
               placeholder="O problema, a frustração, o incômodo que a marca resolve..."
             />
           </div>
@@ -74,7 +74,7 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
             <Textarea
               value={manifesto.promise || ''}
               onChange={(e) => update({ promise: e.target.value })}
-              className="border-white/[0.06] bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
               placeholder="O que a marca faz, com quem, para quê. Frase de impacto final..."
             />
           </div>
@@ -85,7 +85,7 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
           <Textarea
             value={manifesto.full || ''}
             onChange={(e) => update({ full: e.target.value })}
-            className="border-white/[0.06] bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[100px] resize-none placeholder:text-neutral-700"
+            className="border-neutral-800 bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[100px] resize-none placeholder:text-neutral-700"
             placeholder="Brand manifesto completo..."
           />
         </div>

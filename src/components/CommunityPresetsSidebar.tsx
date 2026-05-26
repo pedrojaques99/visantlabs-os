@@ -38,7 +38,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono tracking-wide transition-all duration-100 border',
               isActive
-                ? 'bg-white/[0.06] border-white/10 text-neutral-200'
+                ? 'bg-white/5 border-white/10 text-neutral-200'
                 : 'border-transparent text-neutral-600 hover:text-neutral-300 hover:bg-white/[0.03]'
             )}
           >
@@ -57,7 +57,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
           className={cn(
             'shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono border transition-all duration-100',
             filterTag === null
-              ? 'bg-white/[0.06] border-white/10 text-neutral-300'
+              ? 'bg-white/5 border-white/10 text-neutral-300'
               : 'border-transparent text-neutral-700 hover:text-neutral-400'
           )}
         >
@@ -71,7 +71,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             className={cn(
               'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-mono border transition-all duration-100',
               filterTag === tag
-                ? 'bg-white/[0.06] border-white/10 text-neutral-200'
+                ? 'bg-white/5 border-white/10 text-neutral-200'
                 : 'border-transparent text-neutral-700 hover:text-neutral-400'
             )}
           >

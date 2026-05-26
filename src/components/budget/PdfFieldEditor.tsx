@@ -3,6 +3,7 @@ import { User, FileText, Building2, Calendar, Hash, MessageSquare, Type, AlignLe
 import type { PdfFieldMapping, BudgetData } from '@/types/types';
 import { VariableThumbnail } from './VariableThumbnail';
 import { VariableConfigModal } from './VariableConfigModal';
+import { formatDate } from '@/utils/localeUtils';
 
 interface PdfFieldEditorProps {
   fieldMappings: PdfFieldMapping[];
@@ -59,9 +60,9 @@ export const PdfFieldEditor: React.FC<PdfFieldEditorProps> = ({
       case 'brandName':
         return data.brandName || null;
       case 'startDate':
-        return data.startDate ? new Date(data.startDate).toLocaleDateString('pt-BR') : null;
+        return data.startDate ? formatDate(data.startDate) : null;
       case 'endDate':
-        return data.endDate ? new Date(data.endDate).toLocaleDateString('pt-BR') : null;
+        return data.endDate ? formatDate(data.endDate) : null;
       case 'year':
         return data.year || new Date().getFullYear().toString();
       case 'observations':

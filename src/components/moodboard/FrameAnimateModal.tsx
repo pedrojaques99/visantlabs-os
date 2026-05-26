@@ -41,7 +41,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-8">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           className="absolute inset-0 bg-black/80 backdrop-blur-2xl" onClick={onClose}
         />
@@ -106,7 +106,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                 <div className="flex gap-2">
                   {PROMPT_PRESETS.map(p => (
                     <button key={p.id} onClick={() => setPrompt(p.prompt)}
-                      className="px-3 py-1.5 rounded-full bg-neutral-800/50 border border-border/70 text-[9px] font-bold uppercase tracking-widest text-neutral-400 hover:bg-neutral-700 hover:text-white transition-all flex items-center gap-1.5">
+                      className="px-3 py-1.5 rounded-full bg-neutral-800/50 border border-border/70 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:bg-neutral-700 hover:text-white transition-all flex items-center gap-1.5">
                       <Film size={9} />{p.name}
                     </button>
                   ))}

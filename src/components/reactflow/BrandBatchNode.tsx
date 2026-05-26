@@ -15,7 +15,7 @@ const STATUS_ICON: Record<BrandBatchItem['status'], React.ReactNode> = {
   pending: <Clock size={9} className="text-white/30" />,
   running: <GlitchLoader size={9} />,
   done: <CheckCircle2 size={9} className="text-green-400" />,
-  error: <XCircle size={9} className="text-red-400" />,
+  error: <XCircle size={9} className="text-destructive" />,
 };
 
 export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -102,12 +102,12 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         </span>
         <div className="ml-auto flex items-center gap-1.5">
           {hasBrand && (
-            <span className="text-[8px] px-1 py-0.5 rounded bg-amber-400/10 text-amber-400 font-medium">
+            <span className="text-[10px] px-1 py-0.5 rounded bg-amber-400/10 text-amber-400 font-medium">
               BRAND
             </span>
           )}
           <span className={cn(
-            'text-[9px] px-1.5 py-0.5 rounded font-medium',
+            'text-[10px] px-1.5 py-0.5 rounded font-medium',
             status === 'idle' && 'text-white/30 bg-white/5',
             status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
             status === 'done' && 'text-green-400 bg-green-400/10',
@@ -119,12 +119,12 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
       </div>
 
       {/* Connection info */}
-      <div className="px-3 py-1.5 space-y-0.5 border-b border-white/5">
-        <p className="text-[9px] text-white/30">
+      <div className="px-3 py-1.5 space-y-0.5 border-b border-neutral-800">
+        <p className="text-[10px] text-white/30">
           <span className="text-amber-400">●</span>{' '}
           {hasBrand ? <span className="text-white/50">Brand connected</span> : 'Connect BrandCore'}
         </p>
-        <p className="text-[9px] text-white/30">
+        <p className="text-[10px] text-white/30">
           <span className="text-violet-400">●</span>{' '}
           {imageCount > 0
             ? <span className="text-white/50">{imageCount} image{imageCount > 1 ? 's' : ''} connected</span>
@@ -146,7 +146,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
       {/* Settings toggle */}
       <button
         onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-        className="flex items-center gap-1 px-3 py-1 text-[9px] text-white/30 hover:text-white/50 transition-colors w-full"
+        className="flex items-center gap-1 px-3 py-1 text-[10px] text-white/30 hover:text-white/50 transition-colors w-full"
       >
         {isSettingsOpen ? <ChevronUp size={8} /> : <ChevronDown size={8} />}
         Model & Settings
@@ -165,7 +165,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
 
       {/* Credits estimate */}
       {imageCount > 0 && credits > 0 && status === 'idle' && (
-        <div className="px-3 py-1 text-[9px] text-white/25">
+        <div className="px-3 py-1 text-[10px] text-white/25">
           ~{credits} credits for {imageCount} generation{imageCount > 1 ? 's' : ''}
         </div>
       )}
@@ -173,7 +173,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
       {/* Progress */}
       {total > 0 && (
         <div className="px-3 pt-1 pb-1">
-          <div className="flex justify-between text-[9px] text-white/40 mb-1">
+          <div className="flex justify-between text-[10px] text-white/40 mb-1">
             <span>{done} done · {failed} failed · {total - done - failed} left</span>
             <span>{progress}%</span>
           </div>
@@ -206,7 +206,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
                 )}
                 {item.status === 'error' && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <XCircle size={10} className="text-red-400" />
+                    <XCircle size={10} className="text-destructive" />
                   </div>
                 )}
                 {item.status === 'pending' && (
@@ -241,7 +241,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         {isRunning && (
           <button
             onClick={handleCancel}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-red-400/10 hover:bg-red-400/20 text-red-400 text-[10px] font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-[10px] font-medium transition-colors"
           >
             <Square size={10} />
             Cancel

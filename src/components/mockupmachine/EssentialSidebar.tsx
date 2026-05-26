@@ -170,7 +170,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
                showInstructions 
                  ? "bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan" 
-                 : "bg-neutral-900 border border-white/5 text-neutral-600 hover:text-neutral-400 hover:border-white/10"
+                 : "bg-neutral-900 border border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:border-white/10"
             )}
             title={showInstructions ? t('common.hide') : t('common.show')}
           >
@@ -191,7 +191,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 placeholder={t('mockup.scenarioPlaceholder') || 'Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...'}
-                className="w-full h-24 bg-neutral-950/40 border border-white/5 rounded-xl p-4 text-[11px] font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/30 focus:bg-neutral-950/60 transition-all resize-none"
+                className="w-full h-24 bg-neutral-950/40 border border-neutral-800 rounded-xl p-4 text-[11px] font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:bg-neutral-950/60 transition-all resize-none"
               />
             </motion.div>
           )}
@@ -229,7 +229,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
         />
 
         {/* 5. GENERATION SETTINGS (ACCORDION) */}
-        <div className="pt-4 border-t border-white/5">
+        <div className="pt-4 border-t border-neutral-800">
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-[0.1em] mx-auto group"

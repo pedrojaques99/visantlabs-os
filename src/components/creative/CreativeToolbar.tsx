@@ -25,7 +25,7 @@ const Btn: React.FC<{
     className={[
       'p-1.5 rounded transition-colors',
       disabled && 'opacity-30 pointer-events-none',
-      danger && 'text-neutral-400 hover:text-red-400 hover:bg-red-400/10',
+      danger && 'text-neutral-400 hover:text-destructive hover:bg-destructive/10',
       active && !danger && 'bg-brand-cyan/20 text-brand-cyan',
       !active && !danger && 'text-neutral-400 hover:text-white hover:bg-white/5',
     ]
@@ -149,7 +149,7 @@ export const CreativeToolbar: React.FC = () => {
             <select
               value={logoUrl || ''}
               onChange={(e) => updateLogo(e.target.value)}
-              className="bg-neutral-800 text-[10px] font-bold uppercase tracking-widest text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-brand-cyan/40 max-w-[120px] appearance-none cursor-pointer pr-7 transition-all hover:bg-neutral-750"
+              className="bg-neutral-800 text-[10px] font-bold uppercase tracking-widest text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-all hover:bg-neutral-750"
             >
               <option disabled value="">Trocar...</option>
               {allVaultAssets.map((asset, i) => (
@@ -181,7 +181,7 @@ export const CreativeToolbar: React.FC = () => {
             <select
               value={textData.fontFamily}
               onChange={(e) => updateText({ fontFamily: e.target.value })}
-              className="bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 max-w-[120px]"
+              className="bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 max-w-[120px]"
             >
               <option value="Inter, sans-serif">Default</option>
               {fonts.map((f) => (
@@ -196,7 +196,7 @@ export const CreativeToolbar: React.FC = () => {
             onChange={(e) => updateText({ fontSize: Number(e.target.value) })}
             min={8}
             max={400}
-            className="w-14 bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 tabular-nums"
+            className="w-14 bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
           />
 
           <Btn icon={Bold} onClick={() => updateText({ bold: !textData.bold })} active={textData.bold} title="Negrito" />
@@ -282,7 +282,7 @@ export const CreativeToolbar: React.FC = () => {
               onChange={(e) => updateShape({ cornerRadius: Math.max(0, Number(e.target.value)) })}
               min={0}
               max={400}
-              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 tabular-nums"
+              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
             />
           </div>
 
@@ -298,7 +298,7 @@ export const CreativeToolbar: React.FC = () => {
               }}
               min={0}
               max={64}
-              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 tabular-nums"
+              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
             />
             <div className="relative w-[18px] h-[18px]">
               <div
@@ -334,7 +334,7 @@ export const CreativeToolbar: React.FC = () => {
               }}
               min={-360}
               max={360}
-              className="w-14 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-brand-cyan/40 tabular-nums"
+              className="w-14 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
             />
           </div>
           <Divider />

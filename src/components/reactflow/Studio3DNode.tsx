@@ -263,7 +263,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
                   key={m}
                   onClick={() => updateSetting('material', m)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider border-node transition-all',
+                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-all',
                     material === m ? 'bg-white/10 text-white border-white/20' : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
                   )}
                 >
@@ -283,7 +283,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
 
             <button
               onClick={openEditor}
-              className="w-full px-2 py-1 rounded text-[9px] font-mono uppercase tracking-wider border-node bg-brand-cyan/10 text-brand-cyan border-white/20 hover:bg-brand-cyan/20 transition-all text-center"
+              className="w-full px-2 py-1 rounded text-[10px] font-mono uppercase tracking-wider border-node bg-brand-cyan/10 text-brand-cyan border-white/20 hover:bg-brand-cyan/20 transition-all text-center"
             >
               Full Editor
             </button>

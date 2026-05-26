@@ -122,11 +122,11 @@ const PresetDetailModal: React.FC<{
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.15 }}
-        className="bg-neutral-950 border border-white/[0.08] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-neutral-950 border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-neutral-950/95 backdrop-blur-sm border-b border-white/[0.06] px-6 py-4 flex items-center gap-4 z-10">
+        <div className="sticky top-0 bg-neutral-950/95 backdrop-blur-sm border-b border-neutral-800 px-6 py-4 flex items-center gap-4 z-10">
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-semibold text-neutral-100 font-mono truncate">{migrated.name}</h2>
             <p className="text-[11px] text-neutral-500 font-mono mt-0.5 truncate">{migrated.description}</p>
@@ -134,19 +134,19 @@ const PresetDetailModal: React.FC<{
           <div className="flex items-center gap-2 shrink-0">
             {isAuthenticated && onToggleLike && (
               <button onClick={onToggleLike}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.06] text-neutral-500 hover:text-neutral-300 transition-colors text-[11px] font-mono">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-800 text-neutral-500 hover:text-neutral-300 transition-colors text-[11px] font-mono">
                 <Heart size={12} className={isLiked ? 'fill-current text-neutral-300' : ''} />
                 {likesCount > 0 && likesCount}
               </button>
             )}
             {(isOwner || isAuthenticated) && onEdit && (
               <button onClick={onEdit}
-                className="px-3 py-1.5 rounded-lg border border-white/[0.06] text-neutral-500 hover:text-neutral-300 transition-colors text-[11px] font-mono">
+                className="px-3 py-1.5 rounded-lg border border-neutral-800 text-neutral-500 hover:text-neutral-300 transition-colors text-[11px] font-mono">
                 Edit
               </button>
             )}
             <button onClick={onClose}
-              className="p-1.5 rounded-lg border border-white/[0.06] text-neutral-500 hover:text-neutral-300 transition-colors">
+              className="p-1.5 rounded-lg border border-neutral-800 text-neutral-500 hover:text-neutral-300 transition-colors">
               <X size={14} />
             </button>
           </div>
@@ -158,10 +158,10 @@ const PresetDetailModal: React.FC<{
           <div className="md:w-2/5 shrink-0">
             {hasImage ? (
               <img src={migrated.referenceImageUrl} alt={migrated.name} loading="lazy"
-                className="w-full aspect-square object-cover rounded-xl border border-white/[0.06]"
+                className="w-full aspect-square object-cover rounded-xl border border-neutral-800"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div className="w-full aspect-square rounded-xl border border-white/[0.06] bg-neutral-900/30 flex items-center justify-center">
+              <div className="w-full aspect-square rounded-xl border border-neutral-800 bg-neutral-900/30 flex items-center justify-center">
                 <config.icon size={32} className={cn('opacity-20', config.color)} />
               </div>
             )}
@@ -171,23 +171,23 @@ const PresetDetailModal: React.FC<{
           <div className="flex-1 space-y-4 min-w-0">
             {/* Meta chips */}
             <div className="flex flex-wrap gap-1.5">
-              <span className={cn('text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-white/[0.06]', config.color)}>
+              <span className={cn('text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-neutral-800', config.color)}>
                 {config.label}
               </span>
               {migrated.aspectRatio && (
-                <span className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-white/[0.06] text-neutral-600">
+                <span className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-neutral-800 text-neutral-600">
                   {migrated.aspectRatio}
                 </span>
               )}
               {migrated.difficulty && (
-                <span className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-white/[0.06] text-neutral-600">
+                <span className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-neutral-800 text-neutral-600">
                   {migrated.difficulty}
                 </span>
               )}
             </div>
 
             {/* Prompt */}
-            <div className="bg-neutral-900/40 border border-white/[0.06] rounded-xl p-4">
+            <div className="bg-neutral-900/40 border border-neutral-800 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">Prompt</span>
                 <button onClick={copyPrompt}
@@ -204,7 +204,7 @@ const PresetDetailModal: React.FC<{
             {migrated.tags && migrated.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {migrated.tags.map((tag) => (
-                  <span key={tag} className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.02] border-white/[0.05] text-neutral-700">
+                  <span key={tag} className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-neutral-800 text-neutral-700">
                     #{tag}
                   </span>
                 ))}
@@ -214,7 +214,7 @@ const PresetDetailModal: React.FC<{
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-neutral-950/95 backdrop-blur-sm border-t border-white/[0.06] px-6 py-4 flex gap-3">
+        <div className="sticky bottom-0 bg-neutral-950/95 backdrop-blur-sm border-t border-neutral-800 px-6 py-4 flex gap-3">
           <Button variant="surface" className="flex-1" onClick={onOpenInCanvas}>
             Open in Canvas
           </Button>
@@ -524,12 +524,12 @@ export const CommunityPresetsPage: React.FC = () => {
   const headerActions = (
     <div className="flex items-center gap-2">
       {/* View toggle */}
-      <div className="flex bg-white/[0.03] p-0.5 rounded-lg border border-white/[0.06]">
+      <div className="flex bg-white/[0.03] p-0.5 rounded-lg border border-neutral-800">
         {(['all', 'my'] as const).map(mode => (
           <button key={mode}
             onClick={() => handleViewMode(mode)}
             className={cn('px-3 py-1.5 rounded-md text-xs font-mono transition-all',
-              viewMode === mode ? 'bg-white/[0.08] text-neutral-200' : 'text-neutral-600 hover:text-neutral-400'
+              viewMode === mode ? 'bg-white/10 text-neutral-200' : 'text-neutral-600 hover:text-neutral-400'
             )}>
             {mode === 'all' ? t('communityPresets.tabs.all') || 'All' : t('communityPresets.tabs.my') || 'My'}
           </button>
@@ -571,7 +571,7 @@ export const CommunityPresetsPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('community.presets.search_presets')}
-              className="w-48 focus:w-64 pl-8 pr-8 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200"
+              className="w-48 focus:w-64 pl-8 pr-8 py-2 bg-white/[0.03] border border-neutral-800 rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200"
               aria-label={t('community.presets.search_presets_2')}
             />
             {searchQuery && (
@@ -620,7 +620,7 @@ export const CommunityPresetsPage: React.FC = () => {
 
         {/* ── Error ────────────────────────────────────────────────────────── */}
         {error && (
-          <div className="text-xs font-mono text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+          <div className="text-xs font-mono text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3">
             {error}
           </div>
         )}
@@ -629,7 +629,7 @@ export const CommunityPresetsPage: React.FC = () => {
         {isLoading && sorted.length === 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-white/[0.04] bg-neutral-900/20 overflow-hidden animate-pulse">
+              <div key={i} className="rounded-xl border border-neutral-800 bg-neutral-900/20 overflow-hidden animate-pulse">
                 <div className="aspect-[4/3] bg-neutral-900/50" />
                 <div className="p-3 space-y-2">
                   <div className="h-3 bg-neutral-800/50 rounded w-3/4" />
@@ -648,7 +648,7 @@ export const CommunityPresetsPage: React.FC = () => {
             animate={{ opacity: 1 }}
             className="min-h-[280px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20"
           >
-            <div className="p-6 rounded-full bg-white/[0.02] border border-white/[0.04]">
+            <div className="p-6 rounded-full bg-white/[0.03] border border-neutral-800">
               <Layers size={28} strokeWidth={1} className="text-neutral-700" />
             </div>
             <div className="text-center space-y-2">

@@ -208,7 +208,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
           </DialogHeader>
           <DialogBody>
             <div className="flex flex-col items-center gap-3 py-8">
-              <Check size={24} className="text-emerald-400" />
+              <Check size={24} className="text-green-400" />
               <p className="text-xs text-neutral-400">Todos os campos já estão preenchidos.</p>
             </div>
           </DialogBody>
@@ -263,7 +263,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
                               'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-left transition-all',
                               selected.has(key)
                                 ? 'border-amber-500/30 bg-amber-500/[0.06] text-neutral-200'
-                                : 'border-white/[0.06] bg-white/[0.02] text-neutral-500 hover:text-neutral-300'
+                                : 'border-neutral-800 bg-white/[0.03] text-neutral-500 hover:text-neutral-300'
                             )}
                           >
                             <div className={cn(
@@ -318,8 +318,8 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
                       className={cn(
                         'rounded-lg border p-3 transition-all',
                         isExcluded
-                          ? 'border-white/[0.04] bg-white/[0.01] opacity-40'
-                          : 'border-emerald-500/20 bg-emerald-500/[0.04]'
+                          ? 'border-neutral-800 bg-white/[0.03] opacity-40'
+                          : 'border-green-500/20 bg-green-500/[0.04]'
                       )}
                     >
                       <div className="flex items-center justify-between">
@@ -334,7 +334,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
                           onClick={() => toggleExclude(key)}
                           className={cn(
                             'text-[10px] font-mono uppercase tracking-widest transition-colors',
-                            isExcluded ? 'text-neutral-600 hover:text-emerald-400' : 'text-neutral-500 hover:text-red-400'
+                            isExcluded ? 'text-neutral-600 hover:text-green-400' : 'text-neutral-500 hover:text-destructive'
                           )}
                         >
                           {isExcluded ? 'incluir' : 'excluir'}
@@ -368,7 +368,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
                   <Button
                     onClick={handleApply}
                     disabled={updateMutation.isPending || patchKeys.length === excluded.size}
-                    className="h-8 px-4 gap-2 text-xs bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/30"
+                    className="h-8 px-4 gap-2 text-xs bg-green-500/20 border border-green-500/30 text-green-400 hover:bg-green-500/30"
                   >
                     <Check size={12} />
                     Aplicar {patchKeys.length - excluded.size} campo{patchKeys.length - excluded.size !== 1 ? 's' : ''}

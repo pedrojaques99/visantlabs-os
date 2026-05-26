@@ -35,7 +35,7 @@ const Item: React.FC<{
       disabled
         ? 'text-neutral-600 cursor-not-allowed'
         : danger
-        ? 'text-red-400 hover:bg-red-500/10'
+        ? 'text-destructive hover:bg-destructive/10'
         : 'text-neutral-300 hover:bg-white/5 hover:text-white'
     }`}
   >

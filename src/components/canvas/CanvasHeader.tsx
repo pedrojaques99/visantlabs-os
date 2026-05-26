@@ -14,6 +14,7 @@ import { BrandGuidelineWizardModal } from '../mockupmachine/BrandGuidelineWizard
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { canvasApi } from '@/services/canvasApi';
 import { cn } from '@/lib/utils';
+import { formatDate } from '@/utils/localeUtils';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -123,7 +124,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   // Generate a generic project name with timestamp
   const generateGenericName = useCallback(() => {
     const now = new Date();
-    const date = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const date = formatDate(now);
     const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     return `Projeto - ${date} ${time}`;
   }, []);

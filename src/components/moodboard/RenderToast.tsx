@@ -25,7 +25,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
     >
       <div className="w-16 h-16 rounded-xl overflow-hidden bg-neutral-800 flex-shrink-0 relative">
         {thumb ? <img src={thumb} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><GlitchLoader size={16} /></div>}
-        {job.status === 'downloaded' && <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center"><CheckCircle2 size={16} className="text-emerald-400" /></div>}
+        {job.status === 'downloaded' && <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center"><CheckCircle2 size={16} className="text-green-400" /></div>}
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -42,30 +42,30 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
               <motion.div className="h-full bg-white rounded-full" style={{ width: `${job.progress}%` }} transition={{ duration: 0.3 }} />
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[9px] font-mono text-neutral-500">{Math.round(job.progress)}%</span>
-              <span className="text-[9px] font-mono text-neutral-500">{elapsed.toFixed(1)}s</span>
+              <span className="text-[10px] font-mono text-neutral-500">{Math.round(job.progress)}%</span>
+              <span className="text-[10px] font-mono text-neutral-500">{elapsed.toFixed(1)}s</span>
             </div>
           </div>
         )}
 
         {job.status === 'downloaded' && (
           <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5"><CheckCircle2 size={12} className="text-emerald-400" /><span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Saved!</span></div>
-            <span className="text-[9px] font-mono text-neutral-500">{elapsed.toFixed(1)}s</span>
+            <div className="flex items-center gap-1.5"><CheckCircle2 size={12} className="text-green-400" /><span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">Saved!</span></div>
+            <span className="text-[10px] font-mono text-neutral-500">{elapsed.toFixed(1)}s</span>
           </motion.div>
         )}
 
         {job.status === 'completed' && (
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Ready</span>
-            <button onClick={handleDownload} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white text-black text-[9px] font-bold uppercase tracking-widest hover:opacity-90 transition-all">
+            <button onClick={handleDownload} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-all">
               <Download size={10} /> Save
             </button>
           </div>
         )}
 
         {job.status === 'error' && (
-          <div className="flex items-center gap-1.5"><AlertCircle size={12} className="text-red-400" /><span className="text-[10px] text-red-400 truncate font-medium">{job.error || 'Failed'}</span></div>
+          <div className="flex items-center gap-1.5"><AlertCircle size={12} className="text-destructive" /><span className="text-[10px] text-destructive truncate font-medium">{job.error || 'Failed'}</span></div>
         )}
 
         {job.status === 'queued' && (

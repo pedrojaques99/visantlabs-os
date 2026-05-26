@@ -86,7 +86,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                         {filteredPlans.map((plan) => (
                             <Card
                                 key={plan.id}
-                                className="bg-neutral-900/40 border-neutral-800/50 hover:border-brand-cyan/30 transition-all duration-300 flex flex-col group relative overflow-hidden"
+                                className="bg-neutral-900/40 border-neutral-800/50 hover:border-neutral-700 transition-all duration-300 flex flex-col group relative overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 

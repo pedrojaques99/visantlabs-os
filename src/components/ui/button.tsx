@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -31,7 +31,7 @@ const buttonVariants = cva(
         action: "p-1.5 rounded-md text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300",
         // Destructive icon — delete/remove actions
         // Usage: trash icons, remove buttons
-        danger: "p-1.5 rounded-md text-neutral-500 hover:bg-red-500/10 hover:text-red-400",
+        danger: "p-1.5 rounded-md text-neutral-500 hover:bg-destructive/10 hover:text-destructive",
         // ── Menu / dropdown ──────────────────────────────────────────────────
         // Full-width monospace dropdown item
         // Usage: auth dropdowns, footer policy links, language selector

@@ -755,7 +755,7 @@ export const GridPaintPage: React.FC = () => {
                 <ChevronLeft size={14} />
               </Button>
             </Tooltip>
-            <div className="w-px h-4 bg-white/[0.06] mx-1" />
+            <div className="w-px h-4 bg-white/5 mx-1" />
             <MicroTitle className="text-neutral-400 tracking-tight">Grid Paint</MicroTitle>
             <MicroTitle className="text-neutral-600 ml-2">{activeCount} dots</MicroTitle>
           </>
@@ -824,8 +824,8 @@ export const GridPaintPage: React.FC = () => {
       <AppShellPanel visible={showPanel} width={300}>
         <GlassPanel className="h-full overflow-y-auto backdrop-blur-xl bg-neutral-950/80 scrollbar-none rounded-xl">
           {/* Presets */}
-          <div className="p-3 space-y-2 border-b border-white/[0.06]">
-            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Presets</MicroTitle>
+          <div className="p-3 space-y-2 border-b border-neutral-800">
+            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Presets</MicroTitle>
             <div className="grid grid-cols-3 gap-1">
               {Object.entries(PRESETS).map(([name, preset]) => (
                 <Button
@@ -833,7 +833,7 @@ export const GridPaintPage: React.FC = () => {
                   variant="ghost"
                   size="xs"
                   onClick={() => updateConfig(preset)}
-                  className="text-[9px] text-neutral-500 hover:text-white font-medium"
+                  className="text-[10px] text-neutral-500 hover:text-white font-medium"
                 >
                   {name}
                 </Button>
@@ -842,8 +842,8 @@ export const GridPaintPage: React.FC = () => {
           </div>
 
           {/* Seeds */}
-          <div className="p-3 space-y-2 border-b border-white/[0.06]">
-            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('grid.paint.seeds')}</MicroTitle>
+          <div className="p-3 space-y-2 border-b border-neutral-800">
+            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('grid.paint.seeds')}</MicroTitle>
             <div className="grid grid-cols-3 gap-1">
               {Object.keys(SEEDS).map(name => (
                 <Button
@@ -851,7 +851,7 @@ export const GridPaintPage: React.FC = () => {
                   variant="ghost"
                   size="xs"
                   onClick={() => applySeed(name)}
-                  className="text-[9px] text-neutral-500 hover:text-white font-medium"
+                  className="text-[10px] text-neutral-500 hover:text-white font-medium"
                 >
                   {name === 'Random' ? <><Dices size={10} className="mr-0.5" /> {t('grid.paint.rand')}</> : name}
                 </Button>
@@ -860,8 +860,8 @@ export const GridPaintPage: React.FC = () => {
           </div>
 
           {/* Colors */}
-          <div className="p-3 space-y-2.5 border-b border-white/[0.06]">
-            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Color</MicroTitle>
+          <div className="p-3 space-y-2.5 border-b border-neutral-800">
+            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Color</MicroTitle>
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer group">
                 <div className="relative w-7 h-7 rounded-lg border border-white/10 overflow-hidden shadow-inner">
@@ -883,16 +883,16 @@ export const GridPaintPage: React.FC = () => {
           </div>
 
           {/* Frame */}
-          <div className="p-3 space-y-2 border-b border-white/[0.06]">
+          <div className="p-3 space-y-2 border-b border-neutral-800">
             <div className="flex items-center justify-between">
-              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('grid.paint.frame')}</MicroTitle>
-              <MicroTitle className="text-neutral-700 text-[9px]">{grid.cols}×{grid.rows} dots</MicroTitle>
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('grid.paint.frame')}</MicroTitle>
+              <MicroTitle className="text-neutral-700 text-[10px]">{grid.cols}×{grid.rows} dots</MicroTitle>
             </div>
             <div className="flex flex-wrap gap-1">
               {Object.entries(FRAME_PRESETS).map(([label, [w, h]]) => (
                 <Button key={label} variant="ghost" size="xs"
                   onClick={() => updateConfig({ frameW: w, frameH: h })}
-                  className={cn('text-[9px] font-medium', config.frameW === w && config.frameH === h ? 'text-white bg-white/10' : 'text-neutral-600')}
+                  className={cn('text-[10px] font-medium', config.frameW === w && config.frameH === h ? 'text-white bg-white/10' : 'text-neutral-600')}
                 >
                   {label}
                 </Button>
@@ -907,8 +907,8 @@ export const GridPaintPage: React.FC = () => {
           </div>
 
           {/* Shape */}
-          <div className="p-3 space-y-1 border-b border-white/[0.06]">
-            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Shape</MicroTitle>
+          <div className="p-3 space-y-1 border-b border-neutral-800">
+            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Shape</MicroTitle>
             <NodeSlider label={t('grid.paint.dot_radius')} value={config.dotRadius} min={2} max={40} step={1}
               onChange={v => updateConfig({ dotRadius: v })} formatValue={v => `${v}px`} />
             <NodeSlider label={t('grid.paint.blob')} value={config.blobFactor} min={0.05} max={1} step={0.05}
@@ -920,8 +920,8 @@ export const GridPaintPage: React.FC = () => {
           </div>
 
           {/* Stroke */}
-          <div className="p-3 space-y-2.5 border-b border-white/[0.06]">
-            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('grid.paint.stroke')}</MicroTitle>
+          <div className="p-3 space-y-2.5 border-b border-neutral-800">
+            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('grid.paint.stroke')}</MicroTitle>
             <div className="flex items-center justify-between">
               <MicroTitle className="text-neutral-500 text-[10px]">{t('grid.paint.outline_mode')}</MicroTitle>
               <Switch checked={config.strokeOnly} onCheckedChange={v => updateConfig({ strokeOnly: v })} />
@@ -934,7 +934,7 @@ export const GridPaintPage: React.FC = () => {
 
           {/* Connections */}
           <div className="p-3 space-y-2.5">
-            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Connections</MicroTitle>
+            <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Connections</MicroTitle>
             <div className="flex items-center justify-between">
               <MicroTitle className="text-neutral-500 text-[10px]">{t('grid.paint.diagonals')}</MicroTitle>
               <Switch checked={config.connectDiagonals} onCheckedChange={v => updateConfig({ connectDiagonals: v })} />
@@ -949,36 +949,36 @@ export const GridPaintPage: React.FC = () => {
         <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}>
           <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
             {/* Presets */}
-            <div className="p-3 space-y-2 border-b border-white/[0.06]">
-              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Presets</MicroTitle>
+            <div className="p-3 space-y-2 border-b border-neutral-800">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Presets</MicroTitle>
               <div className="grid grid-cols-3 gap-1">
                 {Object.entries(PRESETS).map(([name, preset]) => (
-                  <Button key={name} variant="ghost" size="xs" onClick={() => updateConfig(preset)} className="text-[9px] text-neutral-500 hover:text-white font-medium">{name}</Button>
+                  <Button key={name} variant="ghost" size="xs" onClick={() => updateConfig(preset)} className="text-[10px] text-neutral-500 hover:text-white font-medium">{name}</Button>
                 ))}
               </div>
             </div>
             {/* Seeds */}
-            <div className="p-3 space-y-2 border-b border-white/[0.06]">
-              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('grid.paint.seeds_2')}</MicroTitle>
+            <div className="p-3 space-y-2 border-b border-neutral-800">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('grid.paint.seeds_2')}</MicroTitle>
               <div className="grid grid-cols-3 gap-1">
                 {Object.keys(SEEDS).map(name => (
-                  <Button key={name} variant="ghost" size="xs" onClick={() => applySeed(name)} className="text-[9px] text-neutral-500 hover:text-white font-medium">
+                  <Button key={name} variant="ghost" size="xs" onClick={() => applySeed(name)} className="text-[10px] text-neutral-500 hover:text-white font-medium">
                     {name === 'Random' ? <><Dices size={10} className="mr-0.5" /> {t('grid.paint.rand_2')}</> : name}
                   </Button>
                 ))}
               </div>
             </div>
             {/* Shape */}
-            <div className="p-3 space-y-1 border-b border-white/[0.06]">
-              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Shape</MicroTitle>
+            <div className="p-3 space-y-1 border-b border-neutral-800">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Shape</MicroTitle>
               <NodeSlider label={t('grid.paint.dot_radius_2')} value={config.dotRadius} min={2} max={40} step={1} onChange={v => updateConfig({ dotRadius: v })} formatValue={v => `${v}px`} />
               <NodeSlider label={t('grid.paint.blob_2')} value={config.blobFactor} min={0.05} max={1} step={0.05} onChange={v => updateConfig({ blobFactor: v })} />
               <NodeSlider label="Tension" value={config.curveTension} min={0.05} max={1} step={0.05} onChange={v => updateConfig({ curveTension: v })} />
               <NodeSlider label={t('grid.paint.glow_2')} value={config.glow} min={0} max={30} step={1} onChange={v => updateConfig({ glow: v })} formatValue={v => `${v}px`} />
             </div>
             {/* Stroke */}
-            <div className="p-3 space-y-2.5 border-b border-white/[0.06]">
-              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('grid.paint.stroke_2')}</MicroTitle>
+            <div className="p-3 space-y-2.5 border-b border-neutral-800">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('grid.paint.stroke_2')}</MicroTitle>
               <div className="flex items-center justify-between">
                 <MicroTitle className="text-neutral-500 text-[10px]">{t('grid.paint.outline_mode_2')}</MicroTitle>
                 <Switch checked={config.strokeOnly} onCheckedChange={v => updateConfig({ strokeOnly: v })} />
@@ -989,7 +989,7 @@ export const GridPaintPage: React.FC = () => {
             </div>
             {/* Connections */}
             <div className="p-3 space-y-2.5">
-              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Connections</MicroTitle>
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Connections</MicroTitle>
               <div className="flex items-center justify-between">
                 <MicroTitle className="text-neutral-500 text-[10px]">{t('grid.paint.diagonals_2')}</MicroTitle>
                 <Switch checked={config.connectDiagonals} onCheckedChange={v => updateConfig({ connectDiagonals: v })} />

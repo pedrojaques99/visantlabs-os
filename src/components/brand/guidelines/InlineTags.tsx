@@ -60,13 +60,13 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
         ) : (
           <span
             key={i}
-            className="group/t inline-flex items-center gap-1 px-2 h-6 rounded border border-white/[0.08] bg-neutral-800/30 text-xs text-neutral-300 cursor-pointer hover:border-white/20 hover:bg-neutral-800/50 transition-colors"
+            className="group/t inline-flex items-center gap-1 px-2 h-6 rounded border border-white/10 bg-neutral-800/30 text-xs text-neutral-300 cursor-pointer hover:border-white/20 hover:bg-neutral-800/50 transition-colors"
             onClick={() => { setEditIdx(i); setEditVal(v); }}
           >
             {v}
             <button
               onClick={(e) => { e.stopPropagation(); onChange(values.filter((_, j) => j !== i)); }}
-              className="text-neutral-700 hover:text-red-400 opacity-0 group-hover/t:opacity-100 transition-all"
+              className="text-neutral-700 hover:text-destructive opacity-0 group-hover/t:opacity-100 transition-all"
               aria-label="Remove"
             >
               <X size={9} />
@@ -89,7 +89,7 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="h-6 px-1.5 rounded border border-dashed border-white/[0.06] text-neutral-700 hover:text-neutral-400 hover:border-white/15 transition-colors"
+          className="h-6 px-1.5 rounded border border-dashed border-neutral-800 text-neutral-700 hover:text-neutral-400 hover:border-white/15 transition-colors"
           aria-label="Add"
         >
           <Plus size={10} />

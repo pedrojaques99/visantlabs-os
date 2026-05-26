@@ -94,7 +94,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
           </div>
         </div>
 
-        <GlassPanel padding="sm" className="flex-1 flex flex-col border-white/[0.06] transition-all duration-200">
+        <GlassPanel padding="sm" className="flex-1 flex flex-col border-neutral-800 transition-all duration-200">
           <div className="flex-1 flex flex-col h-full w-full">
             {children}
           </div>

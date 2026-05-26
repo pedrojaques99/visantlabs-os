@@ -27,8 +27,8 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
   const { normalAA } = checkWCAGCompliance(ratio);
   return (
     <span
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider ${
-        normalAA ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider ${
+        normalAA ? 'bg-green-500/10 text-green-400' : 'bg-destructive/10 text-destructive'
       }`}
       title={`${label}: ${ratio.toFixed(1)}:1 — ${normalAA ? 'WCAG AA ✓' : 'Low contrast'}`}
     >
@@ -41,7 +41,7 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
 function ThemePreview({ theme }: { theme: BrandColorTheme }) {
   return (
     <div
-      className="rounded-lg overflow-hidden border border-white/5 shadow-lg"
+      className="rounded-lg overflow-hidden border border-neutral-800 shadow-lg"
       style={{ background: theme.bg }}
     >
       <div className="p-4 space-y-2">
@@ -159,9 +159,9 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="border border-white/[0.06] rounded-xl overflow-hidden bg-neutral-950/40"
+                  className="border border-neutral-800 rounded-xl overflow-hidden bg-neutral-950/40"
                 >
-                  <div className="flex items-center gap-3 px-4 py-2.5 border-b border-white/[0.04]">
+                  <div className="flex items-center gap-3 px-4 py-2.5 border-b border-neutral-800">
                     <div className="flex gap-1">
                       {ROLES.map(r => (
                         <span
@@ -186,7 +186,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                         size="icon"
                         variant="ghost"
                         onClick={() => removeTheme(theme.id)}
-                        className="w-6 h-6 text-neutral-600 hover:text-red-400"
+                        className="w-6 h-6 text-neutral-600 hover:text-destructive"
                       >
                         <Trash2 size={12} />
                       </Button>
@@ -210,7 +210,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                           />
                           {ROLES.map(role => (
                             <div key={role} className="flex items-center gap-2">
-                              <label className="text-[9px] font-mono uppercase tracking-widest text-neutral-600 w-16 shrink-0">
+                              <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 w-16 shrink-0">
                                 {ROLE_LABELS[role]}
                               </label>
                               <div className="flex items-center gap-1.5 flex-1">

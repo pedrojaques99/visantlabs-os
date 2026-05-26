@@ -386,7 +386,7 @@ export const AdminProductsPage: React.FC = () => {
                                     onChange={setSearchQuery}
                                     placeholder={t('admin.products.buscar_produto')}
                                     iconSize={16}
-                                    className="bg-neutral-900 border-neutral-800 focus:border-brand-cyan/50"
+                                    className="bg-neutral-900 border-neutral-800 focus:border-neutral-600"
                                     containerClassName="w-full"
                                 />
                             </div>
@@ -459,7 +459,7 @@ export const AdminProductsPage: React.FC = () => {
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="bg-neutral-950 border border-neutral-800 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 h-9"
+                                                className="bg-neutral-950 border border-neutral-800 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 h-9"
                                                 onClick={() => handleDelete(product.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />

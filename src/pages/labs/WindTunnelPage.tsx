@@ -207,42 +207,42 @@ function ControlsContent({
   return (
     <>
       {/* Presets */}
-      <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Presets</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Presets</MicroTitle>
         <div className="flex flex-wrap gap-1">
           {BUILT_IN_PRESETS.map(p => (
-            <Button key={p.name} variant="ghost" size="xs" onClick={() => onLoadPreset(p)} className="text-[8px] text-neutral-500 hover:text-white">{p.name}</Button>
+            <Button key={p.name} variant="ghost" size="xs" onClick={() => onLoadPreset(p)} className="text-[10px] text-neutral-500 hover:text-white">{p.name}</Button>
           ))}
         </div>
         {userPresets.length > 0 && (
           <div className="flex flex-wrap gap-1 pt-1">
             {userPresets.map((p, i) => (
               <div key={i} className="flex items-center gap-0.5">
-                <Button variant="ghost" size="xs" onClick={() => onLoadPreset(p)} className="text-[8px] text-[var(--brand-cyan)] hover:text-white">{p.name}</Button>
-                <button onClick={() => onDeletePreset(i)} className="text-neutral-700 hover:text-red-400 p-0.5" aria-label={`Delete preset ${p.name}`}><Trash2 size={8} /></button>
+                <Button variant="ghost" size="xs" onClick={() => onLoadPreset(p)} className="text-[10px] text-[var(--brand-cyan)] hover:text-white">{p.name}</Button>
+                <button onClick={() => onDeletePreset(i)} className="text-neutral-700 hover:text-destructive p-0.5" aria-label={`Delete preset ${p.name}`}><Trash2 size={8} /></button>
               </div>
             ))}
           </div>
         )}
-        <Button variant="ghost" size="xs" onClick={onSavePreset} className="text-[9px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1">
+        <Button variant="ghost" size="xs" onClick={onSavePreset} className="text-[10px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1">
           <Save size={10} /> Save Current
         </Button>
       </div>
 
       {/* Obstacle Shape */}
-      <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.obstacle')}</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('wind.tunnel.obstacle')}</MicroTitle>
         <div className="grid grid-cols-3 gap-1">
           {OBSTACLE_SHAPES.map(s => (
-            <Button key={s.key} variant="ghost" size="xs" onClick={() => update('obstacleType', s.key)} className={`text-[9px] font-medium ${config.obstacleType === s.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{s.label}</Button>
+            <Button key={s.key} variant="ghost" size="xs" onClick={() => update('obstacleType', s.key)} className={`text-[10px] font-medium ${config.obstacleType === s.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{s.label}</Button>
           ))}
         </div>
       </div>
 
       {/* Image Upload */}
       {config.obstacleType === 'image' && (
-        <div className="p-3 space-y-2 border-b border-white/[0.06]">
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Image</MicroTitle>
+        <div className="p-3 space-y-2 border-b border-neutral-800">
+          <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Image</MicroTitle>
           <input ref={fileInputRef} type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="hidden" aria-label={t('wind.tunnel.upload_obstacle_image')} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageUpload(file); }} />
           {imageName && (
             <div className="flex items-center gap-1.5">
@@ -250,21 +250,21 @@ function ControlsContent({
               <Button variant="ghost" size="icon-sm" onClick={handleClearImage} className="text-neutral-500 hover:text-white shrink-0" aria-label={t('wind.tunnel.clear_image')}><X size={10} /></Button>
             </div>
           )}
-          <Button variant="ghost" size="xs" onClick={() => fileInputRef.current?.click()} className="text-[9px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1">
+          <Button variant="ghost" size="xs" onClick={() => fileInputRef.current?.click()} className="text-[10px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1">
             <Upload size={10} /> {imageName ? 'Replace' : 'Upload SVG / PNG'}
           </Button>
-          <p className="text-[8px] text-neutral-700 text-center">{t('wind.tunnel.or_drag_drop_onto_canvas')}</p>
+          <p className="text-[10px] text-neutral-700 text-center">{t('wind.tunnel.or_drag_drop_onto_canvas')}</p>
         </div>
       )}
 
       {/* Text Controls */}
       {config.obstacleType === 'text' && (
-        <div className="p-3 space-y-2 border-b border-white/[0.06]">
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Text</MicroTitle>
+        <div className="p-3 space-y-2 border-b border-neutral-800">
+          <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Text</MicroTitle>
           <Input value={config.text} onChange={(e) => update('text', e.target.value)} placeholder="VISANT" maxLength={24} className="h-7 text-xs bg-transparent border-white/10" aria-label={t('wind.tunnel.obstacle_text')} />
           <div className="flex items-center gap-1 flex-wrap">
             {FONT_OPTIONS.map(f => (
-              <Button key={f} variant="ghost" size="xs" onClick={() => update('fontFamily', f)} className={`text-[8px] px-1.5 ${config.fontFamily === f ? 'text-white bg-white/10' : 'text-neutral-600 hover:text-white'}`} style={{ fontFamily: f }}>{f.split(' ')[0]}</Button>
+              <Button key={f} variant="ghost" size="xs" onClick={() => update('fontFamily', f)} className={`text-[10px] px-1.5 ${config.fontFamily === f ? 'text-white bg-white/10' : 'text-neutral-600 hover:text-white'}`} style={{ fontFamily: f }}>{f.split(' ')[0]}</Button>
             ))}
           </div>
           <Button variant="ghost" size="xs" onClick={() => update('bold', !config.bold)} className={`text-[10px] font-bold ${config.bold ? 'text-white bg-white/10' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_bold')}>B</Button>
@@ -272,42 +272,42 @@ function ControlsContent({
       )}
 
       {/* Transform (universal) */}
-      <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.transform')}</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('wind.tunnel.transform')}</MicroTitle>
         <NodeSlider label={t('wind.tunnel.scale')} value={config.obstacleScale} min={10} max={250} step={5} onChange={v => update('obstacleScale', v)} formatValue={v => `${Math.round(v)}%`} />
         <NodeSlider label="X" value={config.obstacleOffsetX} min={-50} max={50} step={1} onChange={v => update('obstacleOffsetX', v)} formatValue={v => String(Math.round(v))} />
         <NodeSlider label="Y" value={config.obstacleOffsetY} min={-50} max={50} step={1} onChange={v => update('obstacleOffsetY', v)} formatValue={v => String(Math.round(v))} />
       </div>
 
       {/* Render Mode */}
-      <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.render')}</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('wind.tunnel.render')}</MicroTitle>
         <div className="flex gap-1">
           {RENDER_MODES.map(m => (
-            <Button key={m.key} variant="ghost" size="xs" onClick={() => update('renderMode', m.key)} className={`text-[9px] flex-1 ${config.renderMode === m.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{m.label}</Button>
+            <Button key={m.key} variant="ghost" size="xs" onClick={() => update('renderMode', m.key)} className={`text-[10px] flex-1 ${config.renderMode === m.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{m.label}</Button>
           ))}
         </div>
       </div>
 
       {/* Color Mode */}
-      <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Color</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Color</MicroTitle>
         <div className="grid grid-cols-2 gap-1">
           {COLOR_MODES.map(m => (
-            <Button key={m.key} variant="ghost" size="xs" onClick={() => update('colorMode', m.key)} className={`text-[9px] ${config.colorMode === m.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{m.label}</Button>
+            <Button key={m.key} variant="ghost" size="xs" onClick={() => update('colorMode', m.key)} className={`text-[10px] ${config.colorMode === m.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{m.label}</Button>
           ))}
         </div>
         {config.colorMode === 'uniform' && (
           <div className="flex items-center gap-2 pt-1">
             <input type="color" value={rgbaToHex(config.baseColor)} onChange={e => update('baseColor', hexToRgba(e.target.value))} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded" />
-            <span className="text-[9px] text-neutral-500">{t('wind.tunnel.particle_color')}</span>
+            <span className="text-[10px] text-neutral-500">{t('wind.tunnel.particle_color')}</span>
           </div>
         )}
       </div>
 
       {/* Simulation Sliders */}
-      <div className="p-3 space-y-3 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.simulation')}</MicroTitle>
+      <div className="p-3 space-y-3 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('wind.tunnel.simulation')}</MicroTitle>
         <NodeSlider label={t('wind.tunnel.wind')} value={config.windSpeed} min={1} max={100} step={1} onChange={v => update('windSpeed', v)} formatValue={v => String(Math.round(v))} />
         <NodeSlider label={t('wind.tunnel.viscosity')} value={config.viscosity} min={1} max={100} step={1} onChange={v => update('viscosity', v)} formatValue={v => String(Math.round(v))} />
         <NodeSlider label={t('wind.tunnel.particles')} value={config.particleCount} min={500} max={15000} step={500} onChange={v => update('particleCount', v)} formatValue={v => String(Math.round(v))} />
@@ -318,18 +318,18 @@ function ControlsContent({
       </div>
 
       {/* Effects */}
-      <div className="p-3 space-y-3 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Effects</MicroTitle>
+      <div className="p-3 space-y-3 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Effects</MicroTitle>
         <NodeSlider label={t('wind.tunnel.glow')} value={config.glowIntensity} min={0} max={30} step={1} onChange={v => update('glowIntensity', v)} formatValue={v => String(Math.round(v))} />
         <NodeSlider label={t('wind.tunnel.perspective')} value={config.perspective} min={0} max={100} step={1} onChange={v => update('perspective', v)} formatValue={v => String(Math.round(v))} />
       </div>
 
       {/* Field Overlay (CFD Visualization) */}
-      <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">Field Overlay</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Field Overlay</MicroTitle>
         <div className="grid grid-cols-2 gap-1">
           {FIELD_OVERLAYS.map(f => (
-            <Button key={f.key} variant="ghost" size="xs" onClick={() => update('fieldOverlay', f.key)} className={`text-[9px] ${config.fieldOverlay === f.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{f.label}</Button>
+            <Button key={f.key} variant="ghost" size="xs" onClick={() => update('fieldOverlay', f.key)} className={`text-[10px] ${config.fieldOverlay === f.key ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-white'}`}>{f.label}</Button>
           ))}
         </div>
         {config.fieldOverlay !== 'none' && (
@@ -337,51 +337,51 @@ function ControlsContent({
         )}
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-neutral-500">Vector Arrows</span>
-          <Button variant="ghost" size="xs" onClick={() => update('showArrows', !config.showArrows)} className={`text-[9px] ${config.showArrows ? 'text-white' : 'text-neutral-600'}`}>{config.showArrows ? 'ON' : 'OFF'}</Button>
+          <Button variant="ghost" size="xs" onClick={() => update('showArrows', !config.showArrows)} className={`text-[10px] ${config.showArrows ? 'text-white' : 'text-neutral-600'}`}>{config.showArrows ? 'ON' : 'OFF'}</Button>
         </div>
       </div>
 
       {/* Appearance */}
-      <div className="p-3 space-y-2 border-b border-white/[0.06]">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[9px]">{t('wind.tunnel.appearance')}</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-neutral-800">
+        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('wind.tunnel.appearance')}</MicroTitle>
         <div className="flex items-center gap-2">
           <input type="color" value={config.bgColor} onChange={e => update('bgColor', e.target.value)} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded" />
-          <span className="text-[9px] text-neutral-500">{t('wind.tunnel.background')}</span>
+          <span className="text-[10px] text-neutral-500">{t('wind.tunnel.background')}</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-neutral-500">{t('wind.tunnel.show_obstacles')}</span>
-          <Button variant="ghost" size="xs" onClick={() => update('showObstacles', !config.showObstacles)} className={`text-[9px] ${config.showObstacles ? 'text-white' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_obstacle_visibility')}>{config.showObstacles ? 'ON' : 'OFF'}</Button>
+          <Button variant="ghost" size="xs" onClick={() => update('showObstacles', !config.showObstacles)} className={`text-[10px] ${config.showObstacles ? 'text-white' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_obstacle_visibility')}>{config.showObstacles ? 'ON' : 'OFF'}</Button>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-neutral-500">{t('wind.tunnel.grid_overlay')}</span>
-          <Button variant="ghost" size="xs" onClick={() => update('showGrid', !config.showGrid)} className={`text-[9px] ${config.showGrid ? 'text-white' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_grid')}>{config.showGrid ? 'ON' : 'OFF'}</Button>
+          <Button variant="ghost" size="xs" onClick={() => update('showGrid', !config.showGrid)} className={`text-[10px] ${config.showGrid ? 'text-white' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_grid')}>{config.showGrid ? 'ON' : 'OFF'}</Button>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-neutral-500">Export Metadata</span>
-          <Button variant="ghost" size="xs" onClick={() => update('exportMetadata', !config.exportMetadata)} className={`text-[9px] ${config.exportMetadata ? 'text-white' : 'text-neutral-600'}`}>{config.exportMetadata ? 'ON' : 'OFF'}</Button>
+          <Button variant="ghost" size="xs" onClick={() => update('exportMetadata', !config.exportMetadata)} className={`text-[10px] ${config.exportMetadata ? 'text-white' : 'text-neutral-600'}`}>{config.exportMetadata ? 'ON' : 'OFF'}</Button>
         </div>
       </div>
 
       {/* Actions */}
       <div className="p-3 space-y-2">
-        <Button variant="ghost" size="xs" onClick={handleResetSim} className="text-[9px] text-neutral-500 hover:text-white w-full">{t('wind.tunnel.restart_simulation')}</Button>
-        <Button variant="ghost" size="xs" onClick={handleReset} className="text-[9px] text-neutral-500 hover:text-white w-full">{t('wind.tunnel.reset_all')}</Button>
+        <Button variant="ghost" size="xs" onClick={handleResetSim} className="text-[10px] text-neutral-500 hover:text-white w-full">{t('wind.tunnel.restart_simulation')}</Button>
+        <Button variant="ghost" size="xs" onClick={handleReset} className="text-[10px] text-neutral-500 hover:text-white w-full">{t('wind.tunnel.reset_all')}</Button>
         <div className="flex gap-1 pt-1">
-          <Button variant="ghost" size="xs" onClick={onCopyJson} className="text-[9px] text-neutral-500 hover:text-white flex-1 flex items-center justify-center gap-1">
+          <Button variant="ghost" size="xs" onClick={onCopyJson} className="text-[10px] text-neutral-500 hover:text-white flex-1 flex items-center justify-center gap-1">
             <ClipboardCopy size={9} /> Copy JSON
           </Button>
-          <Button variant="ghost" size="xs" onClick={onPasteJson} className="text-[9px] text-neutral-500 hover:text-white flex-1 flex items-center justify-center gap-1">
+          <Button variant="ghost" size="xs" onClick={onPasteJson} className="text-[10px] text-neutral-500 hover:text-white flex-1 flex items-center justify-center gap-1">
             <ClipboardPaste size={9} /> Import JSON
           </Button>
         </div>
-        <Button variant="ghost" size="xs" onClick={onShareUrl} className="text-[9px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1">
+        <Button variant="ghost" size="xs" onClick={onShareUrl} className="text-[10px] text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1">
           <Share2 size={9} /> Share URL
         </Button>
       </div>
 
       {/* Shortcuts hint */}
       <div className="p-3 pt-0">
-        <p className="text-[8px] text-neutral-700 leading-relaxed">
+        <p className="text-[10px] text-neutral-700 leading-relaxed">
           Space: pause &middot; Tab: panel &middot; R: restart &middot; Ctrl+E: export &middot; Drag: inject &middot; Right-drag: walls &middot; Scroll: wind
         </p>
       </div>
@@ -621,7 +621,7 @@ export function WindTunnelPage() {
                 <ChevronLeft size={14} />
               </Button>
             </Tooltip>
-            <div className="w-px h-4 bg-white/[0.06] mx-1" />
+            <div className="w-px h-4 bg-white/5 mx-1" />
             <MicroTitle>{t('wind.tunnel.wind_tunnel')}</MicroTitle>
           </>
         }
@@ -644,9 +644,9 @@ export function WindTunnelPage() {
                 </Button>
               </Tooltip>
               {showExportMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-neutral-900/95 backdrop-blur-xl border border-white/[0.08] rounded-lg overflow-hidden z-50 min-w-[120px]">
+                <div className="absolute right-0 top-full mt-1 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-lg overflow-hidden z-50 min-w-[120px]">
                   {[1, 2, 4].map(m => (
-                    <button key={m} onClick={() => handleExport(m)} className="w-full px-3 py-1.5 text-left text-[10px] text-neutral-400 hover:text-white hover:bg-white/[0.06] transition-colors">
+                    <button key={m} onClick={() => handleExport(m)} className="w-full px-3 py-1.5 text-left text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
                       {m}x {m === 1 ? '(Screen)' : m === 2 ? '(2x HD)' : '(4x Print)'}
                     </button>
                   ))}
@@ -655,7 +655,7 @@ export function WindTunnelPage() {
             </div>
             {isRecording ? (
               <Tooltip content="Stop recording" position="bottom">
-                <Button variant="surface" size="xs" onClick={handleStopRecording} className="text-red-400 border-red-500/30">
+                <Button variant="surface" size="xs" onClick={handleStopRecording} className="text-destructive border-destructive/30">
                   <Square size={10} className="mr-1" /> Stop
                 </Button>
               </Tooltip>
@@ -714,7 +714,7 @@ export function WindTunnelPage() {
         {isRecording && (
           <>
             <span className="text-neutral-800">|</span>
-            <span className="text-red-400 animate-pulse">REC</span>
+            <span className="text-destructive animate-pulse">REC</span>
           </>
         )}
         {config.paused && (

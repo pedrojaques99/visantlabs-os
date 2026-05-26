@@ -459,7 +459,7 @@ export const CommunityPage: React.FC = () => {
                 transition={{ delay: 0.4 }}
                 className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-16 max-w-xl"
               >
-                <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
+                <GlassPanel padding="sm" className="bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.membros')}</span>
                     <TrendingUp size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
@@ -469,7 +469,7 @@ export const CommunityPage: React.FC = () => {
                   </p>
                 </GlassPanel>
 
-                <GlassPanel padding="sm" className="bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
+                <GlassPanel padding="sm" className="bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.criaes')}</span>
                     <Diamond size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
@@ -479,7 +479,7 @@ export const CommunityPage: React.FC = () => {
                   </p>
                 </GlassPanel>
 
-                <GlassPanel padding="sm" className="hidden sm:flex bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-colors group">
+                <GlassPanel padding="sm" className="hidden sm:flex bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.publicado')}</span>
                     <ImageIcon size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
@@ -521,7 +521,7 @@ export const CommunityPage: React.FC = () => {
                 {presetTypes.map((category) => (
                   <GlassPanel
                     key={category.type}
-                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-white/10 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer bg-white/[0.01]"
+                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-white/10 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer bg-white/[0.03]"
                     onClick={() => navigate(`/community/presets?type=${category.type}`)}
                   >
                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)] scale-150">
@@ -661,7 +661,7 @@ export const CommunityPage: React.FC = () => {
                     animate={{ opacity: 1 }}
                     className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
                   >
-                    <div className="p-6 rounded-full bg-white/[0.02] border border-white/5">
+                    <div className="p-6 rounded-full bg-white/[0.03] border border-neutral-800">
                       <Workflow size={32} strokeWidth={1} className="text-neutral-700" />
                     </div>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
@@ -743,7 +743,7 @@ export const CommunityPage: React.FC = () => {
                     animate={{ opacity: 1 }}
                     className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
                   >
-                    <div className="p-6 rounded-full bg-white/[0.02] border border-white/5">
+                    <div className="p-6 rounded-full bg-white/[0.03] border border-neutral-800">
                       <ImageIcon size={32} strokeWidth={1} className="text-neutral-700" />
                     </div>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
@@ -774,7 +774,7 @@ export const CommunityPage: React.FC = () => {
 
             {/* GitHub Ecosystem CTA */}
             <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent rounded-md" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/[0.03] to-transparent rounded-md" />
               <GlassPanel padding="none" className="relative z-10 overflow-hidden">
                 <div className="p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="max-w-xl space-y-4 text-center md:text-left">

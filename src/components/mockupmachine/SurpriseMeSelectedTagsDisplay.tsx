@@ -187,7 +187,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   );
 
   return (
-    <div ref={dropdownRef} className={cn("relative flex-1 min-w-0 transition-all", isOpen && "z-[100]")}>
+    <div ref={dropdownRef} className={cn("relative flex-1 min-w-0 transition-all", isOpen && "z-50")}>
       <Button variant="ghost"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -196,7 +196,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           selectedTags.length > 0
             ? theme === 'dark'
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
-              : 'bg-white text-brand-cyan border-brand-cyan/40 hover:border-brand-cyan/60'
+              : 'bg-white text-brand-cyan border-brand-cyan/40 hover:border-neutral-700'
             : theme === 'dark'
               ? 'bg-neutral-800/40 text-neutral-500 border-neutral-700/50 hover:border-neutral-600'
               : 'bg-neutral-100 text-neutral-500 border-neutral-300 hover:border-neutral-400'
@@ -223,7 +223,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       {isOpen && (
         <div
           className={cn(
-            "absolute z-[100] mt-1 w-full rounded-md border shadow-[0_10px_40px_rgba(0,0,0,0.7)] animate-fade-in overflow-hidden backdrop-blur-xl",
+            "absolute z-50 mt-1 w-full rounded-md border shadow-[0_10px_40px_rgba(0,0,0,0.7)] animate-fade-in overflow-hidden backdrop-blur-xl",
             theme === 'dark'
               ? 'bg-neutral-950/98 border-neutral-700/50'
               : 'bg-white border-neutral-200'
@@ -605,7 +605,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
       </div>
 
       {/* Checkboxes - hidden behind Advanced Options */}
-      <div className="mt-2 pt-2 border-t border-neutral-800/10">
+      <div className="mt-2 pt-2 border-t border-neutral-800">
         <div
           className="flex items-center justify-between cursor-pointer group py-1"
           onClick={() => setShowOptions(!showOptions)}

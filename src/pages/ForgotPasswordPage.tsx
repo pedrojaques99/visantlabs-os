@@ -104,8 +104,8 @@ export const ForgotPasswordPage: React.FC = () => {
 
         <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 rounded-md bg-red-500/20 mb-4">
-              <XCircle className="w-8 h-8 text-red-500" />
+            <div className="flex items-center justify-center w-16 h-16 rounded-md bg-destructive/20 mb-4">
+              <XCircle className="w-8 h-8 text-destructive" />
             </div>
             <h1 className="text-2xl font-semibold font-mono text-neutral-200">
               {t('auth.invalidResetLink') || 'Invalid Reset Link'}
@@ -175,8 +175,8 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
 
           {error && (
-            <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-md">
-              <p className="text-xs text-red-400 font-mono">{error}</p>
+            <div className="p-2 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-xs text-destructive font-mono">{error}</p>
             </div>
           )}
 

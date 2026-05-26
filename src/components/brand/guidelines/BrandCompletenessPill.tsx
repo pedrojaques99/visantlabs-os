@@ -23,9 +23,9 @@ interface BrandCompletenessPillProps {
 }
 
 const STATUS_STYLES = {
-  low:    { ring: 'border-red-500/20    bg-red-500/[0.06]    text-red-300',     dot: 'bg-red-400'    },
+  low:    { ring: 'border-destructive/20    bg-destructive/[0.06]    text-destructive',     dot: 'bg-destructive'    },
   medium: { ring: 'border-amber-500/20  bg-amber-500/[0.06]  text-amber-200',   dot: 'bg-amber-400'  },
-  high:   { ring: 'border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-200', dot: 'bg-emerald-400' },
+  high:   { ring: 'border-green-500/20 bg-green-500/[0.06] text-green-400', dot: 'bg-green-500' },
 } as const;
 
 const GROUP_LABELS: Record<CompletenessRule['group'], string> = {
@@ -85,7 +85,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-[320px] p-0 bg-neutral-950/95 backdrop-blur-xl border-white/10">
-        <div className="p-4 border-b border-white/[0.06]">
+        <div className="p-4 border-b border-neutral-800">
           <div className="flex items-baseline justify-between mb-1">
             <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
               Brand completeness
@@ -104,13 +104,13 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
               const pct = Math.round((val.score / val.max) * 100);
               return (
                 <div key={key} className="flex flex-col gap-1">
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-600">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
                     {GROUP_LABELS[key as CompletenessRule['group']]}
                   </span>
-                  <div className="h-1 rounded-full bg-white/[0.04] overflow-hidden">
+                  <div className="h-1 rounded-full bg-white/5 overflow-hidden">
                     <div
                       className={cn('h-full transition-all',
-                        pct >= 75 ? 'bg-emerald-500/60' : pct >= 40 ? 'bg-amber-500/60' : 'bg-red-500/40'
+                        pct >= 75 ? 'bg-green-500/60' : pct >= 40 ? 'bg-amber-500/60' : 'bg-destructive/40'
                       )}
                       style={{ width: `${pct}%` }}
                     />
@@ -123,7 +123,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
 
         <div className="max-h-[260px] overflow-y-auto p-2">
           {missingCount === 0 ? (
-            <div className="flex items-center gap-2 px-2 py-3 text-[11px] text-emerald-300">
+            <div className="flex items-center gap-2 px-2 py-3 text-[11px] text-green-400">
               <CheckCircle2 size={14} />
               Tudo preenchido. Brand pronta pra IA.
             </div>
@@ -136,7 +136,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
                 >
                   <AlertCircle size={12} className="text-amber-400/70 shrink-0" />
                   <span className="text-[11px] text-neutral-300 flex-1 truncate">{rule.label}</span>
-                  <span className="text-[9px] font-mono text-neutral-600 tabular-nums">+{rule.weight}</span>
+                  <span className="text-[10px] font-mono text-neutral-600 tabular-nums">+{rule.weight}</span>
                 </li>
               ))}
             </ul>
@@ -144,7 +144,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
         </div>
 
         {guideline.id && (
-          <div className="p-2 border-t border-white/[0.06]">
+          <div className="p-2 border-t border-neutral-800">
             <Button
               variant="ghost"
               size="sm"

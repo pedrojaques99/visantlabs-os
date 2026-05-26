@@ -55,7 +55,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
 
     return (
         <div
-            className="bg-card border border-neutral-800/50 rounded-md p-4 hover:border-brand-cyan/30 hover:bg-card/80 transition-all group relative cursor-pointer h-full flex flex-col"
+            className="bg-card border border-neutral-800/50 rounded-md p-4 hover:border-neutral-700 hover:bg-card/80 transition-all group relative cursor-pointer h-full flex flex-col"
             onClick={onClick}
         >
             <div className="mb-3">
@@ -120,7 +120,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                     e.stopPropagation();
                                     onDelete?.();
                                 }}
-                                className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 text-neutral-500 hover:bg-destructive/10 hover:text-destructive rounded transition-colors opacity-0 group-hover:opacity-100"
                                 title={t('common.delete') || 'Delete'}
                             >
                                 <Trash2 className="h-4 w-4" />

@@ -123,7 +123,7 @@ export const AboutPage: React.FC = () => {
                   <span className="font-mono text-[11px] text-neutral-500 group-hover:text-neutral-200 transition-colors tracking-wider flex-1">
                     {m.name}
                   </span>
-                  <span className="font-mono text-[9px] text-neutral-800 tracking-widest">
+                  <span className="font-mono text-[10px] text-neutral-800 tracking-widest">
                     {m.role}
                   </span>
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${m.status ? 'bg-green-600' : 'bg-neutral-700'}`} aria-label={m.status ? 'online' : 'offline'} />
@@ -141,7 +141,7 @@ export const AboutPage: React.FC = () => {
               ['Creative technology',                '04'],
             ].map(([item, num], i) => (
               <motion.div key={num} {...fade(i)} className="flex items-center font-mono text-[11px] py-[4px]">
-                <span className="text-neutral-800 w-6 text-[9px]">{num}</span>
+                <span className="text-neutral-800 w-6 text-[10px]">{num}</span>
                 <span className="text-neutral-600">{item}</span>
               </motion.div>
             ))}
@@ -237,7 +237,7 @@ const Section: React.FC<{ label: string; delay: number; children: React.ReactNod
     className="mb-10"
     aria-label={label}
   >
-    <p className="font-mono text-[9px] uppercase tracking-widest text-neutral-800 mb-3">{label}</p>
+    <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-800 mb-3">{label}</p>
     <div className="border-l border-neutral-900 pl-4 flex flex-col">
       {children}
     </div>

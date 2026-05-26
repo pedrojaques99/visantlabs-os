@@ -252,9 +252,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         {!isCollapsed && promptPreview.trim() && (
           <div className="flex items-center gap-2 animate-fade-in">
             {isPromptReady ? (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
-                <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">{t('mockup.promptSynced')}</span>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
+                <div className="w-1 h-1 rounded-full bg-green-500" />
+                <span className="text-[10px] font-mono text-green-400 uppercase tracking-wider">{t('mockup.promptSynced')}</span>
               </div>
             ) : (
               <Tooltip content={t('mockup.outOfSyncTooltip')} position="top">
@@ -293,7 +293,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           onClick={() => setIsCollapsed(false)}
           className={cn(
             "flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-all mt-1",
-            theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-brand-cyan/30 text-neutral-400' : 'bg-white border-neutral-200 hover:border-brand-cyan/50 text-neutral-600'
+            theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-neutral-700 text-neutral-400' : 'bg-white border-neutral-200 hover:border-neutral-700 text-neutral-600'
           )}
         >
           {isGeneratingPrompt ? (
@@ -346,7 +346,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             rows={1}
             className={cn(
               'relative z-10 w-full p-3 rounded-md border whitespace-pre-wrap font-mono text-sm resize-y',
-              'focus:outline-none focus:border-brand-cyan/50 focus:ring-2 focus:ring-brand-cyan/20 focus:ring-offset-0',
+              'focus:outline-none focus:border-neutral-600 focus:ring-2 focus:ring-brand-cyan/20 focus:ring-offset-0',
               'transition-colors duration-200 bg-transparent',
               theme === 'dark'
                 ? 'border-neutral-700/50 text-transparent caret-brand-cyan placeholder:text-neutral-500'

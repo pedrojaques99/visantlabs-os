@@ -441,7 +441,7 @@ function MoodboardStudio() {
               <Upload size={28} className="text-neutral-600" strokeWidth={1} />
               <div className="text-center">
                 <p className="text-[10px] uppercase tracking-[0.4em] font-medium text-neutral-500">{t('moodboard.studio.upload_or_drop_moodboard')}</p>
-                <p className="text-[9px] text-neutral-700 uppercase tracking-[0.2em] mt-2">{t('moodboard.studio.single_image_for_ai_grid_detectio')}</p>
+                <p className="text-[10px] text-neutral-700 uppercase tracking-[0.2em] mt-2">{t('moodboard.studio.single_image_for_ai_grid_detectio')}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -495,7 +495,7 @@ function MoodboardStudio() {
                 <Button variant="secondary" size="sm" onClick={handleRegenAll} disabled={regeneratingIds.size > 0}>
                   <Zap size={13} className="mr-1.5" />
                   Regenerar todos
-                  <span className="ml-1.5 text-[9px] opacity-60">
+                  <span className="ml-1.5 text-[10px] opacity-60">
                     {getCreditsRequired(batchRegenModel, undefined, batchRegenProvider) * croppedImages.filter(c => c.url).length}cr
                   </span>
                 </Button>

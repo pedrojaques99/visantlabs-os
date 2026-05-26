@@ -96,7 +96,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 pl-8 pr-8 text-xs bg-white/[0.02] border-white/5 placeholder:text-neutral-600"
+            className="h-8 pl-8 pr-8 text-xs bg-white/[0.03] border-neutral-800 placeholder:text-neutral-600"
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors">
@@ -111,7 +111,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             <button
               onClick={() => setSelectedFolder(null)}
               className={cn("flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-all",
-                selectedFolder === null ? "bg-white/[0.06] text-neutral-200 border border-white/10" : "bg-white/[0.02] text-neutral-500 border border-white/5 hover:text-neutral-300"
+                selectedFolder === null ? "bg-white/5 text-neutral-200 border border-white/10" : "bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300"
               )}
             >
               <FolderOpen size={10} />All
@@ -119,7 +119,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             {folders.map(folder => (
               <button key={folder} onClick={() => setSelectedFolder(folder)}
                 className={cn("flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-all truncate max-w-[120px]",
-                  selectedFolder === folder ? "bg-white/[0.06] text-neutral-200 border border-white/10" : "bg-white/[0.02] text-neutral-500 border border-white/5 hover:text-neutral-300"
+                  selectedFolder === folder ? "bg-white/5 text-neutral-200 border border-white/10" : "bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300"
                 )}
                 title={folder}
               >
@@ -149,13 +149,13 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all font-mono text-xs border group/item",
                   selectedId === g.id
-                    ? "text-neutral-200 bg-white/[0.04] border-white/10"
+                    ? "text-neutral-200 bg-white/5 border-white/10"
                     : "text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]"
                 )}
               >
                 <div className={cn(
                   "w-5 h-5 rounded-md overflow-hidden border flex items-center justify-center shrink-0 transition-all",
-                  selectedId === g.id ? "border-white/20 bg-white/5" : "border-white/5 bg-neutral-950/50"
+                  selectedId === g.id ? "border-white/20 bg-white/5" : "border-neutral-800 bg-neutral-950/50"
                 )}>
                   {brandLogo?.url ? (
                     <img 
@@ -164,7 +164,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                       className="w-full h-full object-cover opacity-60 group-hover/item:opacity-100 transition-opacity" 
                     />
                   ) : (
-                    <span className="text-[8px] font-bold opacity-30">{initials}</span>
+                    <span className="text-[10px] font-bold opacity-30">{initials}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
@@ -203,7 +203,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                       <DropdownMenuItem onClick={(e) => handleDuplicate(g.id!, e as any)} className="text-xs gap-2" disabled={duplicateMutation.isPending}>
                         <Copy size={12} />Duplicate
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => handleDelete(g.id!, e as any)} className="text-xs gap-2 text-red-400 focus:text-red-400" disabled={deleteMutation.isPending}>
+                      <DropdownMenuItem onClick={(e) => handleDelete(g.id!, e as any)} className="text-xs gap-2 text-destructive focus:text-destructive" disabled={deleteMutation.isPending}>
                         <Trash2 size={12} />Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -222,7 +222,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
           <button
             onClick={onCreate}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 border border-dashed border-white/5 font-mono text-xs uppercase hover:border-white/10 hover:text-neutral-400 transition-all mt-1"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 border border-dashed border-neutral-800 font-mono text-xs uppercase hover:border-white/10 hover:text-neutral-400 transition-all mt-1"
           >
             <Plus size={12} /><span>New Design System</span>
           </button>
@@ -241,7 +241,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           <div className="grid grid-cols-4 gap-1">
             {recentProjects.map(p => (
               <Link key={p.id} to={`/create?project=${p.id}`} title={p.name}>
-                <div className="aspect-square rounded overflow-hidden border border-white/[0.06] bg-neutral-900/60 hover:border-white/15 transition-colors">
+                <div className="aspect-square rounded overflow-hidden border border-neutral-800 bg-neutral-900/60 hover:border-white/15 transition-colors">
                   {p.thumbnailUrl ? (
                     <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
@@ -262,7 +262,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           <Button
             variant="outline"
             onClick={() => { toast.info("Select a project from Branding Machine to sync."); navigate('/branding-machine'); }}
-            className="w-full h-8 bg-white/[0.02] border-white/10 text-neutral-500 hover:text-neutral-200 hover:border-white/20 text-[10px] font-mono uppercase tracking-widest transition-all gap-2"
+            className="w-full h-8 bg-white/[0.03] border-white/10 text-neutral-500 hover:text-neutral-200 hover:border-white/20 text-[10px] font-mono uppercase tracking-widest transition-all gap-2"
           >
             <RefreshCw size={11} />Sync Project
           </Button>

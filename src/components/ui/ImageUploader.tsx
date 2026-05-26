@@ -151,7 +151,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         data-tutorial-target="upload-image"
-        className={`relative block w-full p-4 bg-neutral-950/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${isDragging ? 'border-dashed border-2 border-neutral-800 bg-brand-cyan/10 shadow-2xl shadow-[brand-cyan]/10' : 'border-neutral-800/10 hover:border-neutral-800/20 hover:text-neutral-300'
+        className={`relative block w-full p-4 bg-neutral-950/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${isDragging ? 'border-dashed border-2 border-neutral-800 bg-brand-cyan/10 shadow-2xl shadow-[brand-cyan]/10' : 'border-neutral-800 hover:border-neutral-800/20 hover:text-neutral-300'
           } ${isProcessing ? 'cursor-wait' : ''}`}
       >
         <input
@@ -196,7 +196,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         </div>
       </label>
 
-      {error && <p className="text-center text-red-400/80 text-sm mt-4">{error}</p>}
+      {error && <p className="text-center text-destructive/80 text-sm mt-4">{error}</p>}
 
       {showAuthModal && (
         <AuthModal

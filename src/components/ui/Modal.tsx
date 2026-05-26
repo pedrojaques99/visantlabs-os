@@ -110,7 +110,7 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         className={cn(
           'relative w-full overflow-hidden flex flex-col transition-all duration-500',
-          'bg-neutral-950/98 backdrop-blur-3xl border-t sm:border border-white/10 sm:border-white/5 shadow-[0_30px_100px_rgba(0,0,0,0.8)]',
+          'bg-neutral-950/98 backdrop-blur-3xl border-t sm:border border-white/10 sm:border-neutral-800 shadow-[0_30px_100px_rgba(0,0,0,0.8)]',
           'animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-2 duration-500',
           
           // Mobile Drawer vs Centered Desktop

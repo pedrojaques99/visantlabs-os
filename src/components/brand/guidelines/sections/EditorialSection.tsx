@@ -85,7 +85,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
           <Input
             value={local.voice}
             onChange={(e) => update({ voice: e.target.value })}
-            className="h-7 border-white/5 text-xs text-neutral-400 placeholder:text-neutral-700"
+            className="h-7 border-neutral-800 text-xs text-neutral-400 placeholder:text-neutral-700"
             placeholder="Brand personality..."
           />
         </div>
@@ -99,8 +99,8 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
                 <button key={opt.value} type="button" onClick={() => update({ person: opt.value })}
                   className={cn('flex-1 h-6 rounded border text-[10px] font-mono transition-all',
                     local.person === opt.value
-                      ? 'border-white/20 bg-white/[0.06] text-neutral-200'
-                      : 'border-white/5 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
+                      ? 'border-white/20 bg-white/5 text-neutral-200'
+                      : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
                   )}
                 >{opt.label}</button>
               ))}
@@ -113,8 +113,8 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
                 <button key={opt.value} type="button" onClick={() => update({ emojiPolicy: opt.value })}
                   className={cn('flex-1 h-6 rounded border text-[10px] font-mono transition-all',
                     local.emojiPolicy === opt.value
-                      ? 'border-white/20 bg-white/[0.06] text-neutral-200'
-                      : 'border-white/5 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
+                      ? 'border-white/20 bg-white/5 text-neutral-200'
+                      : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
                   )}
                 >{opt.label}</button>
               ))}

@@ -21,18 +21,18 @@ const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
         {label && (
           <FormLabel {...labelProps}>
             {label}
-            {required && <span className="text-red-400 ml-1">*</span>}
+            {required && <span className="text-destructive ml-1">*</span>}
           </FormLabel>
         )}
         {children}
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-sm text-red-400 font-mono flex items-center gap-2">
+          <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 text-sm text-destructive font-mono flex items-center gap-2">
             <X size={14} />
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-sm text-green-400 font-mono flex items-center gap-2">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-md p-3 text-sm text-green-400 font-mono flex items-center gap-2">
             <Check size={14} />
             {success}
           </div>

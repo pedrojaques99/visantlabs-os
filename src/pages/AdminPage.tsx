@@ -886,9 +886,9 @@ export const AdminPage: React.FC = () => {
         if (!active.length) return <span className="text-neutral-600 text-xs">—</span>;
         return (
           <div className="flex gap-1 flex-wrap">
-            {b.gemini   && <span className="px-1 py-px rounded text-[9px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">G</span>}
-            {b.seedream && <span className="px-1 py-px rounded text-[9px] font-bold bg-orange-500/15 text-orange-400 border border-orange-500/30">SD</span>}
-            {b.openai   && <span className="px-1 py-px rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">OAI</span>}
+            {b.gemini   && <span className="px-1 py-px rounded text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">G</span>}
+            {b.seedream && <span className="px-1 py-px rounded text-[10px] font-bold bg-orange-500/15 text-orange-400 border border-orange-500/30">SD</span>}
+            {b.openai   && <span className="px-1 py-px rounded text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/30">OAI</span>}
           </div>
         );
       },
@@ -951,7 +951,7 @@ export const AdminPage: React.FC = () => {
                       {t('admin.accessDeniedFull')}
                     </p>
                     {error && (
-                      <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
+                      <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono">
                         {error}
                       </div>
                     )}
@@ -1598,7 +1598,7 @@ export const AdminPage: React.FC = () => {
                               <Card key={e.event} className="bg-neutral-900/50 border border-neutral-800/30 rounded-md">
                                 <CardContent className="p-4">
                                   <p className="text-xs text-neutral-500 font-mono mb-2">{e.event.replace(/_/g, ' ')}</p>
-                                  <p className={`text-2xl font-bold font-mono ${e.event === 'generation_failed' ? 'text-red-400' : e.event === 'generation_completed' ? 'text-green-400' : 'text-brand-cyan'}`}>
+                                  <p className={`text-2xl font-bold font-mono ${e.event === 'generation_failed' ? 'text-destructive' : e.event === 'generation_completed' ? 'text-green-400' : 'text-brand-cyan'}`}>
                                     {e.count.toLocaleString()}
                                   </p>
                                 </CardContent>
@@ -1878,18 +1878,18 @@ export const AdminPage: React.FC = () => {
                   <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`p-3 rounded-md ${profitStats.isPositive ? 'bg-blue-500/10' : 'bg-red-500/10'}`}>
-                          <TrendingUp className={`h-6 w-6 ${profitStats.isPositive ? 'text-blue-500' : 'text-red-500'}`} />
+                        <div className={`p-3 rounded-md ${profitStats.isPositive ? 'bg-blue-500/10' : 'bg-destructive/10'}`}>
+                          <TrendingUp className={`h-6 w-6 ${profitStats.isPositive ? 'text-blue-500' : 'text-destructive'}`} />
                         </div>
-                        <Badge variant="outline" className={`text-[10px] bg-neutral-950/70 ${profitStats.isPositive ? 'border-blue-500/30 text-blue-500' : 'border-red-500/30 text-red-500'}`}>
+                        <Badge variant="outline" className={`text-[10px] bg-neutral-950/70 ${profitStats.isPositive ? 'border-blue-500/30 text-blue-500' : 'border-destructive/30 text-destructive'}`}>
                           {profitStats.isPositive ? 'POSITIVO' : 'NEGATIVO'}
                         </Badge>
                       </div>
                       <div>
-                        <p className={`text-3xl font-bold mb-1 font-mono ${profitStats.isPositive ? 'text-blue-500' : 'text-red-500'}`}>
+                        <p className={`text-3xl font-bold mb-1 font-mono ${profitStats.isPositive ? 'text-blue-500' : 'text-destructive'}`}>
                           {profitStats.isPositive ? '+' : ''}{profitStats.profitBRL.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </p>
-                        <p className={`text-sm font-semibold mb-2 font-mono ${profitStats.isPositive ? 'text-blue-400' : 'text-red-400'}`}>
+                        <p className={`text-sm font-semibold mb-2 font-mono ${profitStats.isPositive ? 'text-blue-400' : 'text-destructive'}`}>
                           {profitStats.isPositive ? '+' : ''}{profitStats.profitUSD.toLocaleString('pt-BR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                         <p className="text-sm text-neutral-500 font-mono">{t('admin.totalProfit')}</p>
@@ -2223,14 +2223,14 @@ export const AdminPage: React.FC = () => {
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardContent className="p-5">
                           <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Thumbs Up</p>
-                          <p className="text-4xl font-bold text-emerald-400">{feedbackStats.overall.up}</p>
+                          <p className="text-4xl font-bold text-green-400">{feedbackStats.overall.up}</p>
                           <p className="text-xs text-neutral-500 mt-1">{t('admin.vectorizationeligible')}</p>
                         </CardContent>
                       </Card>
                       <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                         <CardContent className="p-5">
                           <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.thumbs_down')}</p>
-                          <p className="text-4xl font-bold text-red-400">{feedbackStats.overall.down}</p>
+                          <p className="text-4xl font-bold text-destructive">{feedbackStats.overall.down}</p>
                           <p className="text-xs text-neutral-500 mt-1">{t('admin.mongoonly_review_below')}</p>
                         </CardContent>
                       </Card>
@@ -2286,11 +2286,11 @@ export const AdminPage: React.FC = () => {
                               {feedbackStats.featureStats.map((row: any) => (
                                 <TableRow key={row.feature} className="border-neutral-800/50 hover:bg-white/5">
                                   <TableCell className="font-mono text-xs text-neutral-200">{row.feature}</TableCell>
-                                  <TableCell className="text-emerald-400 text-xs font-mono">{row.up}</TableCell>
-                                  <TableCell className="text-red-400 text-xs font-mono">{row.down}</TableCell>
+                                  <TableCell className="text-green-400 text-xs font-mono">{row.up}</TableCell>
+                                  <TableCell className="text-destructive text-xs font-mono">{row.down}</TableCell>
                                   <TableCell className="text-xs font-mono text-neutral-400">{row.total}</TableCell>
                                   <TableCell>
-                                    <Badge className={`text-xs font-mono ${row.approvalRate >= 70 ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800' : row.approvalRate >= 40 ? 'bg-yellow-900/40 text-yellow-400 border-yellow-800' : 'bg-red-900/40 text-red-400 border-red-800'}`}>
+                                    <Badge className={`text-xs font-mono ${row.approvalRate >= 70 ? 'bg-emerald-900/40 text-green-400 border-emerald-800' : row.approvalRate >= 40 ? 'bg-yellow-900/40 text-yellow-400 border-yellow-800' : 'bg-red-900/40 text-destructive border-red-800'}`}>
                                       {row.approvalRate.toFixed(1)}%
                                     </Badge>
                                   </TableCell>
@@ -2326,8 +2326,8 @@ export const AdminPage: React.FC = () => {
                                 {feedbackStats.modelStats.map((r: any) => (
                                   <TableRow key={r.model} className="border-neutral-800/50 hover:bg-white/5">
                                     <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.model}</TableCell>
-                                    <TableCell className="text-emerald-400 text-xs font-mono">{r.up}</TableCell>
-                                    <TableCell className="text-red-400 text-xs font-mono">{r.down}</TableCell>
+                                    <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
+                                    <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
                                     <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
                                   </TableRow>
                                 ))}
@@ -2359,8 +2359,8 @@ export const AdminPage: React.FC = () => {
                                 {feedbackStats.designTypeStats.map((r: any) => (
                                   <TableRow key={r.designType} className="border-neutral-800/50 hover:bg-white/5">
                                     <TableCell className="font-mono text-xs text-neutral-300">{r.designType}</TableCell>
-                                    <TableCell className="text-emerald-400 text-xs font-mono">{r.up}</TableCell>
-                                    <TableCell className="text-red-400 text-xs font-mono">{r.down}</TableCell>
+                                    <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
+                                    <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
                                     <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
                                   </TableRow>
                                 ))}
@@ -2392,8 +2392,8 @@ export const AdminPage: React.FC = () => {
                                 {feedbackStats.vibeStats.map((r: any) => (
                                   <TableRow key={r.vibeId} className="border-neutral-800/50 hover:bg-white/5">
                                     <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.vibeId}</TableCell>
-                                    <TableCell className="text-emerald-400 text-xs font-mono">{r.up}</TableCell>
-                                    <TableCell className="text-red-400 text-xs font-mono">{r.down}</TableCell>
+                                    <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
+                                    <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
                                     <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
                                   </TableRow>
                                 ))}
@@ -2425,8 +2425,8 @@ export const AdminPage: React.FC = () => {
                                 {feedbackStats.brandGuidelineStats.map((r: any) => (
                                   <TableRow key={r.brandGuidelineId} className="border-neutral-800/50 hover:bg-white/5">
                                     <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.brandGuidelineId}</TableCell>
-                                    <TableCell className="text-emerald-400 text-xs font-mono">{r.up}</TableCell>
-                                    <TableCell className="text-red-400 text-xs font-mono">{r.down}</TableCell>
+                                    <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
+                                    <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
                                     <TableCell className="text-xs font-mono text-neutral-400">{r.total}</TableCell>
                                   </TableRow>
                                 ))}
@@ -2489,7 +2489,7 @@ export const AdminPage: React.FC = () => {
                       <CardHeader className="pb-2 cursor-pointer" onClick={() => setDownvotesExpanded(e => !e)}>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm font-mono text-neutral-300 flex items-center gap-2">
-                            <ThumbsDown className="h-4 w-4 text-red-400" />
+                            <ThumbsDown className="h-4 w-4 text-destructive" />
                             Recent Thumbs Down (last 20) — manual curation queue
                           </CardTitle>
                           <ChevronRight className={`h-4 w-4 text-neutral-500 transition-transform ${downvotesExpanded ? 'rotate-90' : ''}`} />
@@ -2554,7 +2554,7 @@ export const AdminPage: React.FC = () => {
 
       {/* Usage History Modal */}
       {isHistoryModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-neutral-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/60 backdrop-blur-sm animate-in fade-in duration-200">
           <Card className="w-full max-w-4xl bg-neutral-900 border-neutral-800 shadow-2xl max-h-[85vh] flex flex-col">
             <CardHeader className="border-b border-neutral-800 pb-4">
               <div className="flex items-center justify-between">

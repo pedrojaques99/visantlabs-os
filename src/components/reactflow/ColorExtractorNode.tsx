@@ -338,7 +338,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
               e.stopPropagation();
               handleRemoveImage();
             }}
-            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border-node border-red-500/20 hover:border-red-500/30"
+            className="bg-destructive/20 hover:bg-destructive/30 text-destructive backdrop-blur-sm border-node border-destructive/20 hover:border-destructive/30"
             title={t('canvasNodes.imageNode.removeImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >

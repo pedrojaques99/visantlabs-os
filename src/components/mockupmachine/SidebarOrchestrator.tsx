@@ -99,13 +99,13 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
       <aside
         id="sidebar-compact"
         className={cn(
-          "relative flex-shrink-0 bg-neutral-950/80 backdrop-blur-3xl border-r border-white/5",
+          "relative flex-shrink-0 bg-neutral-950/80 backdrop-blur-3xl border-r border-neutral-800",
           "h-full w-16 hidden lg:flex flex-col items-center py-8 gap-8 animate-in slide-in-from-left duration-300",
           isSurpriseMeMode && "border-brand-cyan/20 ring-1 ring-brand-cyan/5"
         )}
       >
         {/* Thumb Reference */}
-        <div className="group relative w-11 h-11 rounded-2xl overflow-hidden border border-white/10 hover:border-brand-cyan/40 transition-all cursor-pointer shadow-lg shadow-black/20">
+        <div className="group relative w-11 h-11 rounded-2xl overflow-hidden border border-white/10 hover:border-neutral-700 transition-all cursor-pointer shadow-lg shadow-black/20">
           {uploadedImage?.url ? (
             <img src={uploadedImage.url} alt="Ref" className="w-full h-full object-cover" />
           ) : uploadedImage?.base64 ? (
@@ -143,10 +143,10 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             className={cn(
               "w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative group overflow-visible",
               isOutputsLoading
-                ? "bg-neutral-800 text-neutral-600 border border-white/5"
+                ? "bg-neutral-800 text-neutral-600 border border-neutral-800"
                 : isPromptReady
                   ? "bg-brand-cyan text-black hover:scale-110 active:scale-95 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.25)] ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black"
-                  : "bg-neutral-900 text-neutral-500 hover:text-white border border-white/5 hover:bg-neutral-800"
+                  : "bg-neutral-900 text-neutral-500 hover:text-white border border-neutral-800 hover:bg-neutral-800"
             )}
             title="Generate Outputs"
           >
@@ -165,7 +165,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           {/* Start Over Button */}
           <button
             onClick={onStartOver}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-700 hover:text-red-400 hover:bg-red-500/5 border border-transparent hover:border-red-500/20 transition-all outline-none"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-700 hover:text-destructive hover:bg-destructive/5 border border-transparent hover:border-destructive/20 transition-all outline-none"
             title="Start Over"
           >
             <RotateCcw size={18} />
@@ -208,7 +208,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         }}
       >
         {hasAnalyzed && (
-          <div className="sticky top-0 z-[11] pb-6 bg-transparent flex items-center justify-between">
+          <div className="sticky top-0 z-10 pb-6 bg-transparent flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-brand-cyan shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)] animate-pulse" />
             </div>

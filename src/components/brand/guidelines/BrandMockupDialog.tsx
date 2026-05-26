@@ -256,7 +256,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  className="border-white/[0.06] bg-transparent text-sm text-neutral-300 min-h-[80px] resize-none placeholder:text-neutral-700"
+                  className="border-neutral-800 bg-transparent text-sm text-neutral-300 min-h-[80px] resize-none placeholder:text-neutral-700"
                   placeholder="ex: cartão de visita em mesa de mármore, iluminação quente, flat lay..."
                 />
               </div>
@@ -330,7 +330,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                       'w-full flex items-start gap-3 px-3 py-2.5 rounded-lg border text-left transition-all',
                       selectedSuggestions.has(i)
                         ? 'border-violet-500/30 bg-violet-500/[0.06]'
-                        : 'border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04]'
+                        : 'border-neutral-800 bg-white/[0.03] hover:bg-white/5'
                     )}
                   >
                     <div className={cn(
@@ -343,7 +343,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-xs">{CATEGORY_EMOJI[s.category] || '🎨'}</span>
                         <span className="text-xs font-medium text-neutral-200">{s.label}</span>
-                        <span className="text-[9px] font-mono text-neutral-600 bg-white/[0.04] px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-mono text-neutral-600 bg-white/5 px-1.5 py-0.5 rounded">
                           {s.aspectRatio}
                         </span>
                       </div>
@@ -398,7 +398,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           {/* ── RESULT (single) ── */}
           {view === 'result' && result && batchResults.length === 0 && (
             <div className="space-y-4">
-              <div className="rounded-lg border border-white/[0.06] overflow-hidden bg-neutral-950">
+              <div className="rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950">
                 <img src={result.url} alt="Generated mockup" className="w-full" />
               </div>
               <div className="flex items-center justify-between">
@@ -441,7 +441,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                 batchResults.filter(Boolean).length <= 4 ? 'grid-cols-2' : 'grid-cols-3'
               )}>
                 {batchResults.map((r, i) => r && (
-                  <div key={i} className="group relative rounded-lg border border-white/[0.06] overflow-hidden bg-neutral-950">
+                  <div key={i} className="group relative rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950">
                     <img src={r.url} alt={r.label} className="w-full aspect-square object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                       <div className="flex items-center justify-between w-full">
@@ -487,7 +487,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                   </Button>
                   <Button
                     onClick={() => onOpenChange(false)}
-                    className="h-8 px-4 text-xs bg-white/[0.06] border border-white/15 text-neutral-200 hover:bg-white/[0.10]"
+                    className="h-8 px-4 text-xs bg-white/5 border border-white/15 text-neutral-200 hover:bg-white/10"
                   >
                     Fechar
                   </Button>

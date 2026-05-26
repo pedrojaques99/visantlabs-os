@@ -33,11 +33,11 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
             <div className="flex items-center gap-3 pr-5 border-r border-border">
               <div className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center font-bold text-sm">{selectedCount}</div>
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-500">Selected</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Selected</span>
                 <div className="flex items-center gap-3">
-                  <button onClick={onClearSelection} className="text-[9px] font-bold uppercase tracking-widest text-white hover:opacity-60 transition-colors flex items-center gap-1">Clear <X size={9} /></button>
+                  <button onClick={onClearSelection} className="text-[10px] font-bold uppercase tracking-widest text-white hover:opacity-60 transition-colors flex items-center gap-1">Clear <X size={9} /></button>
                   {selectedCount < totalCount && (
-                    <button onClick={onSelectAll} className="text-[9px] font-bold uppercase tracking-widest text-emerald-500 hover:text-emerald-400 transition-colors">All</button>
+                    <button onClick={onSelectAll} className="text-[10px] font-bold uppercase tracking-widest text-green-500 hover:text-green-400 transition-colors">All</button>
                   )}
                 </div>
               </div>
@@ -65,7 +65,7 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
               <div className="flex items-center gap-1 bg-neutral-900 p-1 rounded-full border border-border">
                 {(['zoom-in', 'zoom-out', 'pan-lr', 'pan-rl', 'fade-in'] as AnimationPreset[]).map(preset => (
                   <button key={preset} onClick={() => onBatchRemotion(preset)}
-                    className="px-2.5 py-1.5 rounded-full hover:bg-white hover:text-black transition-all text-[8px] font-bold uppercase tracking-widest text-neutral-400">
+                    className="px-2.5 py-1.5 rounded-full hover:bg-white hover:text-black transition-all text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                     {preset.split('-')[0]}
                   </button>
                 ))}
@@ -74,7 +74,7 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
               <div className="h-6 w-px bg-neutral-800 mx-1" />
 
               <button onClick={onBatchRemove} title="Remove selected"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-400 hover:text-red-400 hover:border-red-500/40 transition-all">
+                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-400 hover:text-destructive hover:border-destructive/40 transition-all">
                 <Trash2 size={16} strokeWidth={1} />
               </button>
             </div>

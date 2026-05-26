@@ -113,7 +113,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                   delete next[cat];
                   persist(next);
                 }}
-                className="text-neutral-800 hover:text-red-400 opacity-0 group-hover/cat:opacity-100 transition-all ml-1"
+                className="text-neutral-800 hover:text-destructive opacity-0 group-hover/cat:opacity-100 transition-all ml-1"
                 aria-label={`Delete category ${cat}`}
               >
                 <X size={9} />
@@ -139,14 +139,14 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                 ) : (
                   <span
                     key={idx}
-                    className="group/tag inline-flex items-center gap-1 px-2 h-6 rounded border border-white/[0.08] bg-neutral-800/30 text-xs text-neutral-300 cursor-pointer hover:border-white/20 hover:bg-neutral-800/50 transition-colors"
+                    className="group/tag inline-flex items-center gap-1 px-2 h-6 rounded border border-white/10 bg-neutral-800/30 text-xs text-neutral-300 cursor-pointer hover:border-white/20 hover:bg-neutral-800/50 transition-colors"
                     onClick={() => startEdit(cat, idx)}
                     title="Click to edit"
                   >
                     {val}
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteTag(cat, idx); }}
-                      className="text-neutral-700 hover:text-red-400 opacity-0 group-hover/tag:opacity-100 transition-all ml-0.5"
+                      className="text-neutral-700 hover:text-destructive opacity-0 group-hover/tag:opacity-100 transition-all ml-0.5"
                       aria-label="Remove tag"
                     >
                       <X size={9} />
@@ -172,7 +172,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
               ) : (
                 <button
                   onClick={() => setAddingTo(cat)}
-                  className="h-6 px-1.5 rounded border border-dashed border-white/[0.06] text-neutral-700 hover:text-neutral-400 hover:border-white/15 transition-colors"
+                  className="h-6 px-1.5 rounded border border-dashed border-neutral-800 text-neutral-700 hover:text-neutral-400 hover:border-white/15 transition-colors"
                   aria-label={`Add tag to ${cat}`}
                 >
                   <Plus size={10} />

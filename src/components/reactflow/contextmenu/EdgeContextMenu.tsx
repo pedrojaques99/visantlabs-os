@@ -45,7 +45,7 @@ export const EdgeContextMenu: React.FC<EdgeContextMenuProps> = ({
           <div className="p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent flex-1">
             <DropdownMenu.Item
               onSelect={() => { onRemove(); onClose(); }}
-              className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-red-400 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
+              className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-destructive transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
             >
               <Trash2 size={16} className="text-neutral-400 flex-shrink-0" />
               <span className="font-medium text-[11px] tracking-wide flex-1 text-left">Remove Connection</span>

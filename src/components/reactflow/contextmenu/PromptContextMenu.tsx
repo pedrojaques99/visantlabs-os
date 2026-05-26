@@ -110,9 +110,9 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
                             onDelete();
                             onClose();
                         }}
-                        className="w-full px-2 py-1.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
+                        className="w-full px-2 py-1.5 text-left text-sm text-destructive hover:bg-destructive/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
                     >
-                        <Trash2 size={16} className="text-red-400 flex-shrink-0" />
+                        <Trash2 size={16} className="text-destructive flex-shrink-0" />
                         <span className="font-medium text-[11px] tracking-wide flex-1 text-left">{t('common.delete')}</span>
                     </Button>
                 </div>

@@ -44,7 +44,7 @@ const getStatusColor = (status: string) => {
     case 'failed':
     case 'canceled':
     case 'past_due':
-      return 'text-red-400 bg-red-500/10 border-red-500/30';
+      return 'text-destructive bg-destructive/10 border-destructive/30';
     default:
       return 'text-neutral-400 bg-neutral-500/10 border-neutral-500/30';
   }
@@ -133,7 +133,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
               <p className="font-mono text-sm">{t('common.loading')}</p>
             </div>
           ) : error ? (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono">
               {error}
             </div>
           ) : transactions.length === 0 ? (

@@ -146,7 +146,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
     <aside 
       role="region"
       aria-label="Creative Editor"
-      className="w-[360px] h-full bg-neutral-950 border-r border-white/5 flex flex-col p-5 gap-5 overflow-y-auto custom-scrollbar"
+      className="w-[360px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-5 gap-5 overflow-y-auto custom-scrollbar"
     >
       <div className="flex items-center justify-between">
         <button
@@ -162,7 +162,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
         <div className="flex items-center gap-1">
           <button
             onClick={() => navigate('/create/projects')}
-            className="p-1.5 rounded bg-neutral-900 border border-white/5 text-neutral-400 hover:text-brand-cyan transition-colors"
+            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-brand-cyan transition-colors"
             title="My Creatives"
           >
             <FolderOpen size={13} />
@@ -170,7 +170,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
           <button
             onClick={() => undo()}
             disabled={pastStates.length === 0}
-            className="p-1.5 rounded bg-neutral-900 border border-white/5 text-neutral-400 hover:text-brand-cyan disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-brand-cyan disabled:opacity-30 disabled:pointer-events-none transition-colors"
             title="Desfazer (Ctrl+Z)"
           >
             <Undo2 size={13} />
@@ -178,7 +178,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
           <button
             onClick={() => redo()}
             disabled={futureStates.length === 0}
-            className="p-1.5 rounded bg-neutral-900 border border-white/5 text-neutral-400 hover:text-brand-cyan disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-brand-cyan disabled:opacity-30 disabled:pointer-events-none transition-colors"
             title="Refazer (Ctrl+Shift+Z)"
           >
             <Redo2 size={13} />
@@ -202,12 +202,12 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="w-full bg-neutral-900/60 border border-white/10 focus:border-brand-cyan/50 rounded px-2 py-1.5 text-sm font-manrope text-neutral-200 outline-none"
+            className="w-full bg-neutral-900/60 border border-white/10 focus:border-neutral-600 rounded px-2 py-1.5 text-sm font-manrope text-neutral-200 outline-none"
           />
         ) : (
           <button
             onClick={() => setIsEditingName(true)}
-            className="text-left truncate text-sm font-manrope text-neutral-200 hover:text-brand-cyan px-2 py-1.5 border border-transparent hover:border-white/5 rounded transition-colors"
+            className="text-left truncate text-sm font-manrope text-neutral-200 hover:text-brand-cyan px-2 py-1.5 border border-transparent hover:border-neutral-800 rounded transition-colors"
             title="Click to rename"
           >
             {projectName || 'Untitled Creative'}
@@ -217,7 +217,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
 
       {/* Brand Kit Section */}
       {guideline && (
-        <div className="flex flex-col gap-3 pb-4 border-b border-white/5">
+        <div className="flex flex-col gap-3 pb-4 border-b border-neutral-800">
           <div className="flex items-center gap-2">
             <Briefcase size={12} className="text-brand-cyan" />
             <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-300">
@@ -258,7 +258,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               e.dataTransfer.setData('application/vsn-asset-type', 'text');
               e.dataTransfer.dropEffect = 'copy';
             }}
-            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-brand-cyan/30 transition-all flex items-center justify-center gap-1.5"
+            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-all flex items-center justify-center gap-1.5"
           >
             <Type size={12} /> Texto
           </button>
@@ -269,7 +269,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               e.dataTransfer.setData('application/vsn-asset-type', 'shape');
               e.dataTransfer.dropEffect = 'copy';
             }}
-            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-brand-cyan/30 transition-all flex items-center justify-center gap-1.5"
+            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-all flex items-center justify-center gap-1.5"
           >
             <Square size={12} /> Shape
           </button>
@@ -338,7 +338,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                     e.stopPropagation();
                     removeLayer(layer.id);
                   }}
-                  className="text-neutral-700 hover:text-red-400"
+                  className="text-neutral-700 hover:text-destructive"
                 >
                   <Trash2 size={11} />
                 </button>
@@ -362,7 +362,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                   setSelectedLayerIds([]);
                   setBackgroundSelected(true);
                 }}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-mono cursor-pointer transition-colors border-t border-white/5 mt-1 pt-2 ${
+                className={`flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-mono cursor-pointer transition-colors border-t border-neutral-800 mt-1 pt-2 ${
                   backgroundSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan'
                     : 'text-neutral-500 hover:bg-white/5'
@@ -383,7 +383,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
       </div>
 
       {/* Format switcher */}
-      <div className="mt-auto flex flex-col gap-4 border-t border-white/5 pt-4">
+      <div className="mt-auto flex flex-col gap-4 border-t border-neutral-800 pt-4">
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
             Formato
@@ -409,8 +409,8 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
         {isPersistedId(creativeId) && (
           <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-500">
             {autoSaveStatus === 'saving' && <GlitchLoader size={10} />}
-            {autoSaveStatus === 'saved' && <Check size={10} className="text-emerald-400" />}
-            {autoSaveStatus === 'error' && <AlertTriangle size={10} className="text-red-400" />}
+            {autoSaveStatus === 'saved' && <Check size={10} className="text-green-400" />}
+            {autoSaveStatus === 'error' && <AlertTriangle size={10} className="text-destructive" />}
             {autoSaveStatus === 'idle' && <Circle size={10} className="text-neutral-600" />}
             <span>{AUTO_SAVE_LABEL[autoSaveStatus]}</span>
             {lastSavedAt && autoSaveStatus === 'saved' && (
@@ -424,7 +424,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
             variant="ghost"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 py-3 font-mono text-xs font-bold flex items-center justify-center gap-2 bg-neutral-900/60 border border-white/10 hover:border-brand-cyan/40 text-neutral-200 hover:text-brand-cyan disabled:opacity-50"
+            className="flex-1 py-3 font-mono text-xs font-bold flex items-center justify-center gap-2 bg-neutral-900/60 border border-white/10 hover:border-neutral-700 text-neutral-200 hover:text-brand-cyan disabled:opacity-50"
           >
             {isSaving ? <GlitchLoader size={14} /> : <Save size={14} />}
             {isPersistedId(creativeId) ? 'Atualizar' : 'Salvar'}

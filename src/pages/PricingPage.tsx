@@ -293,7 +293,7 @@ export const PricingPage: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono mb-8 text-center animate-fade-in-down">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono mb-8 text-center animate-fade-in-down">
               {error}
             </div>
           )}
@@ -376,7 +376,7 @@ export const PricingPage: React.FC = () => {
                                 <Minus size={24} />
                               </Button>
 
-                              <div className="text-6xl md:text-7xl font-bold text-brand-cyan font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(82,221,235,0.2)]">
+                              <div className="text-6xl md:text-7xl font-bold text-brand-cyan font-mono tracking-tighter drop-shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 20%)]">
                                 {animatedCredits}
                               </div>
 
@@ -502,7 +502,7 @@ export const PricingPage: React.FC = () => {
                       <Card
                         key={plan.id}
                         className={cn(
-                          "relative overflow-hidden transition-all duration-300 hover:border-brand-cyan/50",
+                          "relative overflow-hidden transition-all duration-300 hover:border-neutral-700",
                           index === 1
                             ? "bg-gradient-to-b from-brand-cyan/5 to-transparent border-brand-cyan/30"
                             : "bg-neutral-900/50 border-neutral-800"
@@ -586,7 +586,7 @@ export const PricingPage: React.FC = () => {
                       <Card
                         key={tier.id}
                         className={cn(
-                          "relative overflow-hidden transition-all duration-300 hover:border-brand-cyan/50",
+                          "relative overflow-hidden transition-all duration-300 hover:border-neutral-700",
                           tier.highlighted
                             ? "bg-gradient-to-b from-brand-cyan/5 to-transparent border-brand-cyan/30"
                             : "bg-neutral-900/50 border-neutral-800"
@@ -733,7 +733,7 @@ export const PricingPage: React.FC = () => {
                   href="https://github.com/visantlabs"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
+                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-neutral-700 transition-all group"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">
@@ -748,7 +748,7 @@ export const PricingPage: React.FC = () => {
                   href="https://discord.gg/visantlabs"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
+                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-neutral-700 transition-all group"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">

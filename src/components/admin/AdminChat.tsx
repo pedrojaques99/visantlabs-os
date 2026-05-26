@@ -547,7 +547,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                         className={cn(
                             "bg-neutral-900 overflow-hidden flex",
                             mode === 'modal' 
-                                ? "w-full h-screen md:h-[85vh] md:max-w-4xl rounded-2xl border border-white/5 shadow-2xl" 
+                                ? "w-full h-screen md:h-[85vh] md:max-w-4xl rounded-2xl border border-neutral-800 shadow-2xl" 
                                 : "w-full h-full rounded-none"
                         )}
                     >
@@ -562,7 +562,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
                         {/* Sidebar */}
                         <aside className={cn(
-                            "flex flex-col bg-neutral-950 border-r border-white/5 transition-all duration-200 ease-in-out",
+                            "flex flex-col bg-neutral-950 border-r border-neutral-800 transition-all duration-200 ease-in-out",
                             // Mobile: overlay drawer
                             !isDesktop && "fixed inset-y-0 left-0 z-40 w-72",
                             !isDesktop && !sidebarOpen && "-translate-x-full",
@@ -626,10 +626,10 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                         <button
                                                             onClick={(e) => deleteSession(session._id, e)}
                                                             disabled={deletingSessionId === session._id}
-                                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/10 rounded shrink-0"
+                                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded shrink-0"
                                                             aria-label="Deletar sessão"
                                                         >
-                                                            <Trash2 size={12} className="text-red-500/60 hover:text-red-400" />
+                                                            <Trash2 size={12} className="text-destructive/60 hover:text-destructive" />
                                                         </button>
                                                     )}
                                                 </div>
@@ -641,7 +641,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
                             {/* User footer */}
                             {user && (
-                                <div className="p-3 border-t border-white/5">
+                                <div className="p-3 border-t border-neutral-800">
                                     <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg">
                                         {user.picture ? (
                                             <img
@@ -683,7 +683,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                 </div>
                             )}
                             {/* Header */}
-                            <div className="flex items-center justify-between px-4 md:px-8 py-3 border-b border-white/5 bg-black/20 gap-3">
+                            <div className="flex items-center justify-between px-4 md:px-8 py-3 border-b border-neutral-800 bg-black/20 gap-3">
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
                                     <button
                                         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -779,7 +779,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                     <p className="text-xs text-neutral-500 mt-1 italic">{pending.reason}</p>
                                                 )}
                                             </div>
-                                            <div className="text-xs text-neutral-300 bg-black/30 rounded-lg p-3 border border-white/5 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                            <div className="text-xs text-neutral-300 bg-black/30 rounded-lg p-3 border border-neutral-800 whitespace-pre-wrap max-h-40 overflow-y-auto">
                                                 {pending.content}
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -788,7 +788,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                     type="button"
                                                     onClick={() => approvePending(pending.id)}
                                                     disabled={resolvingPendingId === pending.id}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs rounded-md transition-colors"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-md transition-colors"
                                                 >
                                                     <Check size={12} />
                                                     Aprovar
@@ -798,7 +798,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                     type="button"
                                                     onClick={() => rejectPending(pending.id)}
                                                     disabled={resolvingPendingId === pending.id}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs rounded-md transition-colors"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive text-xs rounded-md transition-colors"
                                                 >
                                                     <X size={12} />
                                                     Rejeitar
@@ -817,7 +817,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                         <div className="w-8 h-8 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center shadow-lg shrink-0">
                                             <Bot size={16} className="text-neutral-300" />
                                         </div>
-                                        <div className="flex-1 max-w-[85%] rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
+                                        <div className="flex-1 max-w-[85%] rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
                                             {activePlan.summary && (
                                                 <p className="text-xs text-neutral-400">{activePlan.summary}</p>
                                             )}
@@ -826,7 +826,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                 <div className="space-y-1.5">
                                                     <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">Variações propostas</p>
                                                     {activePlan.proposals.map((p, i) => (
-                                                        <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-lg bg-black/30 border border-white/5">
+                                                        <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-lg bg-black/30 border border-neutral-800">
                                                             <span className="text-xs text-neutral-500 shrink-0 mt-px">{i + 1}.</span>
                                                             <div className="min-w-0">
                                                                 <p className="text-xs font-medium text-neutral-200">{p.title}</p>
@@ -863,7 +863,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                     type="button"
                                                     onClick={approvePlan}
                                                     disabled={approvingPlan || isLoading}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs rounded-md transition-colors"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-md transition-colors"
                                                 >
                                                     {approvingPlan ? <GlitchLoader size={12} /> : <Check size={12} />}
                                                     Aprovar e gerar
@@ -873,7 +873,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                     type="button"
                                                     onClick={() => { setPendingPlan(null); setPlanAnswers({}); if (activePlan?.id) setDismissedPlanId(activePlan.id); }}
                                                     disabled={approvingPlan}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs rounded-md transition-colors"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive text-xs rounded-md transition-colors"
                                                 >
                                                     <X size={12} />
                                                     Cancelar
@@ -891,14 +891,14 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                         <div className="flex-1 max-w-[80%] space-y-3 py-1.5">
                                             <PremiumGlitchLoader className="!text-xs" />
                                             {inflightToolCalls.some(tc => tc.name === 'generate_or_update_mockup') && (
-                                                <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-xl border border-white/5 bg-white/[0.02] group">
+                                                <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-xl border border-neutral-800 bg-white/[0.03] group">
                                                     <SkeletonLoader width="100%" height="100%" className="h-full w-full" variant="rectangular" />
                                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                         <GlitchPickaxe />
                                                     </div>
                                                     {genElapsed > 0 && (
                                                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-                                                            <span className="px-3 py-1 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/5 text-neutral-400 text-[10px] font-mono shadow-xl">
+                                                            <span className="px-3 py-1 rounded-full bg-neutral-950/60 backdrop-blur-md border border-neutral-800 text-neutral-400 text-[10px] font-mono shadow-xl">
                                                                 {Math.floor(genElapsed / 60)}:{(genElapsed % 60).toString().padStart(2, '0')}
                                                             </span>
                                                         </div>
@@ -906,17 +906,17 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                                 </div>
                                             )}
                                             {inflightToolCalls.length > 0 && (
-                                                <div className="space-y-1.5 pt-2 border-t border-white/5">
+                                                <div className="space-y-1.5 pt-2 border-t border-neutral-800">
                                                     {inflightToolCalls.map(tc => (
                                                         <div
                                                             key={tc.id}
                                                             className={cn(
                                                                 'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-xs',
                                                                 tc.status === 'error'
-                                                                    ? 'bg-red-500/5 border-red-500/20 text-red-300'
+                                                                    ? 'bg-destructive/5 border-destructive/20 text-destructive'
                                                                     : tc.status === 'running'
                                                                     ? 'bg-white/5 border-white/10 text-neutral-200'
-                                                                    : 'bg-white/[0.02] border-white/5 text-neutral-400'
+                                                                    : 'bg-white/[0.03] border-neutral-800 text-neutral-400'
                                                             )}
                                                         >
                                                             {tc.status === 'running' ? (
@@ -942,7 +942,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                             </div>
 
                             {/* Footer / Input */}
-                            <div className="border-t border-white/5 bg-black/40 backdrop-blur-md py-8 px-10">
+                            <div className="border-t border-neutral-800 bg-black/40 backdrop-blur-md py-8 px-10">
                                 <div className="max-w-5xl mx-auto w-full">
                                 {/* File Attachments */}
                                 {attachedFiles.length > 0 && (
@@ -951,7 +951,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                             <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-md border border-white/10 text-xs text-neutral-300">
                                                 {getFileIcon(file.type)}
                                                 <span className="truncate max-w-[120px]">{file.name}</span>
-                                                <button onClick={() => removeFile(i)} className="hover:text-red-400 ml-1" aria-label="Remover anexo">
+                                                <button onClick={() => removeFile(i)} className="hover:text-destructive ml-1" aria-label="Remover anexo">
                                                     <X size={12} />
                                                 </button>
                                             </div>
@@ -975,12 +975,12 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                         className={cn(
                                             'flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors',
                                             planModeActive
-                                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                                ? 'bg-green-500/10 border-green-500/30 text-green-400'
                                                 : 'bg-white/[0.03] border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20'
                                         )}
                                         title="Modo Plano: o agente propõe variações e faz perguntas antes de gerar"
                                     >
-                                        <Diamond size={11} className={planModeActive ? 'text-emerald-400' : 'opacity-50'} />
+                                        <Diamond size={11} className={planModeActive ? 'text-green-400' : 'opacity-50'} />
                                         Modo Plano
                                     </button>
 
@@ -1033,8 +1033,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
                         {/* Right-side panel — Media Kit / Prompt Library */}
                         {isLargeScreen && mediaPanelOpen && (
-                            <aside className="flex flex-col bg-neutral-950 border-l border-white/5 w-80 shrink-0">
-                                <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
+                            <aside className="flex flex-col bg-neutral-950 border-l border-neutral-800 w-80 shrink-0">
+                                <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
                                     <div className="flex items-center bg-white/5 rounded-md p-0.5 gap-px">
                                         {(['media', 'prompts'] as const).map((tab) => (
                                             <button

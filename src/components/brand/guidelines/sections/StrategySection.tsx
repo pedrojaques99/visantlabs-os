@@ -58,7 +58,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
           <Textarea
             value={typeof local.manifesto === 'string' ? local.manifesto : (local.manifesto as any)?.full || ''}
             onChange={(e) => update({ manifesto: e.target.value })}
-            className="border-white/5 min-h-[80px] text-xs resize-none"
+            className="border-neutral-800 min-h-[80px] text-xs resize-none"
             placeholder="Brand manifesto..."
           />
         </div>
@@ -97,7 +97,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuItem
-                  className="text-[10px] text-neutral-600 border-t border-white/5 mt-1 pt-2"
+                  className="text-[10px] text-neutral-600 border-t border-neutral-800 mt-1 pt-2"
                   onClick={() => addItem('archetype')}
                 >
                   + Custom
@@ -109,7 +109,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             const preset = ARCHETYPE_PRESETS.find(p => p.nome === arch.name);
             const img = (arch as any).image || preset?.image;
             return (
-              <div key={i} className="flex gap-3 items-start py-2 border-b border-white/[0.04] last:border-0 group/item">
+              <div key={i} className="flex gap-3 items-start py-2 border-b border-neutral-800 last:border-0 group/item">
                 {img && (
                   <img src={img} alt={arch.name} className="w-8 h-10 object-cover rounded shrink-0 opacity-80" />
                 )}
@@ -124,7 +124,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                     <button
                       type="button"
                       onClick={() => { const a = [...(local.archetypes || [])]; a[i] = { ...a[i], role: arch.role === 'primary' ? 'secondary' : 'primary' }; update({ archetypes: a }); }}
-                      className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
+                      className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
                     >
                       {arch.role || 'primary'}
                     </button>
@@ -139,7 +139,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                     <p className="text-[10px] text-neutral-700 font-mono">{preset.valores.join(' · ')}</p>
                   )}
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-700 hover:text-red-400 opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5" onClick={() => removeItem('archetype', i)} aria-label="Remove">
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5" onClick={() => removeItem('archetype', i)} aria-label="Remove">
                   <Trash2 size={10} />
                 </Button>
               </div>
