@@ -4,7 +4,8 @@ import { ContactShadows, Environment, Stats, MeshReflectorMaterial, AdaptiveDpr,
 import * as THREE from 'three';
 import { useStudio3DStore, ENVIRONMENT_PRESETS, RENDER_QUALITY_CONFIG, type ToneMappingType } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
-import { EffectComposer, Bloom, DepthOfField, Vignette } from '@react-three/postprocessing';
+import { EffectComposer, Bloom, DepthOfField, Vignette, ChromaticAberration, Noise, N8AO } from '@react-three/postprocessing';
+import { BlendFunction } from 'postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
 import { CameraBridge } from './CameraBridge';
 import { ExtrudedSVG } from './engine/ExtrudedSVG';
@@ -70,6 +71,12 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   dofBokehScale: s.dofBokehScale,
   vignetteEnabled: s.vignetteEnabled,
   vignetteIntensity: s.vignetteIntensity,
+  ssaoEnabled: s.ssaoEnabled,
+  ssaoIntensity: s.ssaoIntensity,
+  chromaticAberrationEnabled: s.chromaticAberrationEnabled,
+  chromaticAberrationOffset: s.chromaticAberrationOffset,
+  noiseEnabled: s.noiseEnabled,
+  noiseOpacity: s.noiseOpacity,
   animate: s.animate,
   animateSpeed: s.animateSpeed,
   animateReverse: s.animateReverse,
@@ -323,10 +330,13 @@ function SceneContent() {
           settings={shaderSettings}
           halftoneVariant={halftoneVariant}
         />
-      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled) ? (
+      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled || s.ssaoEnabled || s.chromaticAberrationEnabled || s.noiseEnabled) ? (
         <EffectComposer multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
+          {s.ssaoEnabled && <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />}
           {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}
           {s.dofEnabled && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
+          {s.chromaticAberrationEnabled && <ChromaticAberration offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any} />}
+          {s.noiseEnabled && <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />}
           {s.vignetteEnabled && <Vignette darkness={s.vignetteIntensity} offset={0.3} />}
         </EffectComposer>
       ) : null}

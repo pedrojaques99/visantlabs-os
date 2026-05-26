@@ -323,6 +323,12 @@ interface Studio3DState {
   dofBokehScale: number;
   vignetteEnabled: boolean;
   vignetteIntensity: number;
+  ssaoEnabled: boolean;
+  ssaoIntensity: number;
+  chromaticAberrationEnabled: boolean;
+  chromaticAberrationOffset: number;
+  noiseEnabled: boolean;
+  noiseOpacity: number;
 
   // Animation
   animate: AnimationType;
@@ -416,6 +422,12 @@ interface Studio3DState {
   setDofBokehScale: (v: number) => void;
   setVignetteEnabled: (v: boolean) => void;
   setVignetteIntensity: (v: number) => void;
+  setSsaoEnabled: (v: boolean) => void;
+  setSsaoIntensity: (v: number) => void;
+  setChromaticAberrationEnabled: (v: boolean) => void;
+  setChromaticAberrationOffset: (v: number) => void;
+  setNoiseEnabled: (v: boolean) => void;
+  setNoiseOpacity: (v: number) => void;
   setAnimate: (a: AnimationType) => void;
   setAnimateSpeed: (v: number) => void;
   setAnimateReverse: (v: boolean) => void;
@@ -499,6 +511,12 @@ const INITIAL_STATE = {
   dofBokehScale: 3,
   vignetteEnabled: false,
   vignetteIntensity: 0.5,
+  ssaoEnabled: false,
+  ssaoIntensity: 0.5,
+  chromaticAberrationEnabled: false,
+  chromaticAberrationOffset: 0.002,
+  noiseEnabled: false,
+  noiseOpacity: 0.15,
   animate: 'spin' as AnimationType,
   animateSpeed: 0.3,
   animateReverse: false,
@@ -592,6 +610,12 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setDofBokehScale: (dofBokehScale) => set({ dofBokehScale }),
   setVignetteEnabled: (vignetteEnabled) => set({ vignetteEnabled }),
   setVignetteIntensity: (vignetteIntensity) => set({ vignetteIntensity }),
+  setSsaoEnabled: (ssaoEnabled) => set({ ssaoEnabled }),
+  setSsaoIntensity: (ssaoIntensity) => set({ ssaoIntensity }),
+  setChromaticAberrationEnabled: (chromaticAberrationEnabled) => set({ chromaticAberrationEnabled }),
+  setChromaticAberrationOffset: (chromaticAberrationOffset) => set({ chromaticAberrationOffset }),
+  setNoiseEnabled: (noiseEnabled) => set({ noiseEnabled }),
+  setNoiseOpacity: (noiseOpacity) => set({ noiseOpacity }),
   setAnimate: (animate) => set({ animate }),
   setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
   setAnimateReverse: (animateReverse) => set({ animateReverse }),
@@ -697,6 +721,12 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       bloomThreshold: r(0.3, 1, 0.05),
       vignetteEnabled: Math.random() > 0.7,
       vignetteIntensity: r(0.2, 0.8, 0.05),
+      ssaoEnabled: Math.random() > 0.5,
+      ssaoIntensity: r(0.2, 1.5, 0.1),
+      chromaticAberrationEnabled: Math.random() > 0.8,
+      chromaticAberrationOffset: r(0.001, 0.008, 0.001),
+      noiseEnabled: Math.random() > 0.7,
+      noiseOpacity: r(0.05, 0.25, 0.01),
       shadow: Math.random() > 0.4,
       groundPlane: Math.random() > 0.5,
     });

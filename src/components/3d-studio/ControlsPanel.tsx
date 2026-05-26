@@ -98,6 +98,9 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [textureRotation, setTextureRotation] = useDebouncedSlider(store.textureRotation, store.setTextureRotation);
   const [groundReflection, setGroundReflection] = useDebouncedSlider(store.groundReflection, store.setGroundReflection);
   const [fov, setFov] = useDebouncedSlider(store.fov, store.setFov);
+  const [ssaoIntensity, setSsaoIntensity] = useDebouncedSlider(store.ssaoIntensity, store.setSsaoIntensity);
+  const [chromaticAberrationOffset, setChromaticAberrationOffset] = useDebouncedSlider(store.chromaticAberrationOffset, store.setChromaticAberrationOffset);
+  const [noiseOpacity, setNoiseOpacity] = useDebouncedSlider(store.noiseOpacity, store.setNoiseOpacity);
   const hdriInputRef = useRef<HTMLInputElement>(null);
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>(() => getSavedScenes());
   const [sceneName, setSceneName] = useState('');
@@ -380,10 +383,14 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             ))}
           </ToolPanelGrid>
           <NodeSlider label={t('studio3d.lighting.keyLight')} value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
+          <LightPositionSliders label="Key Position" position={store.lightPosition} onChange={store.setLightPosition} />
           <NodeSlider label={t('studio3d.lighting.ambient')} value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
           <NodeSlider label="Fill Light" value={fillLightIntensity} min={0} max={2} step={0.05} onChange={setFillLightIntensity} />
+          <LightPositionSliders label="Fill Position" position={store.fillLightPosition} onChange={store.setFillLightPosition} />
           <NodeSlider label="Bounce Light" value={bounceLightIntensity} min={0} max={2} step={0.05} onChange={setBounceLightIntensity} />
+          <LightPositionSliders label="Bounce Position" position={store.bounceLightPosition} onChange={store.setBounceLightPosition} />
           <NodeSlider label="Top Light" value={pointLightIntensity} min={0} max={2} step={0.05} onChange={setPointLightIntensity} />
+          <LightPositionSliders label="Top Position" position={store.pointLightPosition} onChange={store.setPointLightPosition} />
         </ToolPanelDisclosure>
 
         {/* ── Environment — HDRI + Background merged ── */}
@@ -589,6 +596,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         {/* ── Effects — post-processing + shaders merged ── */}
         <ToolPanelDisclosure label="Effects" icon={<Sparkles size={13} />} id="sec-effects">
           <div className="space-y-3">
+            <ToolPanelRow label="Ambient Occlusion">
+              <Switch checked={store.ssaoEnabled} onCheckedChange={store.setSsaoEnabled} aria-label="SSAO" />
+            </ToolPanelRow>
+            {store.ssaoEnabled && (
+              <NodeSlider label="AO Intensity" value={ssaoIntensity} min={0} max={2} step={0.05} onChange={setSsaoIntensity} />
+            )}
             <ToolPanelRow label="Bloom">
               <Switch checked={store.bloomEnabled} onCheckedChange={store.setBloomEnabled} aria-label="Bloom" />
             </ToolPanelRow>
@@ -598,6 +611,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 <NodeSlider label="Threshold" value={bloomThreshold} min={0} max={1} step={0.01} onChange={setBloomThreshold} />
               </>
             )}
+            <ToolPanelRow label="Chromatic Aberration">
+              <Switch checked={store.chromaticAberrationEnabled} onCheckedChange={store.setChromaticAberrationEnabled} aria-label="Chromatic aberration" />
+            </ToolPanelRow>
+            {store.chromaticAberrationEnabled && (
+              <NodeSlider label="Offset" value={chromaticAberrationOffset} min={0} max={0.02} step={0.0005} onChange={setChromaticAberrationOffset} />
+            )}
             <ToolPanelRow label="Depth of Field">
               <Switch checked={store.dofEnabled} onCheckedChange={store.setDofEnabled} aria-label="Depth of field" />
             </ToolPanelRow>
@@ -606,6 +625,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 <NodeSlider label="Focus Distance" value={dofFocusDistance} min={0} max={0.1} step={0.001} onChange={setDofFocusDistance} />
                 <NodeSlider label="Bokeh Scale" value={dofBokehScale} min={0} max={10} step={0.1} onChange={setDofBokehScale} />
               </>
+            )}
+            <ToolPanelRow label="Film Grain">
+              <Switch checked={store.noiseEnabled} onCheckedChange={store.setNoiseEnabled} aria-label="Film grain" />
+            </ToolPanelRow>
+            {store.noiseEnabled && (
+              <NodeSlider label="Grain Amount" value={noiseOpacity} min={0} max={0.5} step={0.01} onChange={setNoiseOpacity} />
             )}
             <ToolPanelRow label="Vignette">
               <Switch checked={store.vignetteEnabled} onCheckedChange={store.setVignetteEnabled} aria-label="Vignette" />
@@ -647,6 +672,38 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
     </ToolPanel>
   );
 });
+
+/* ── Light Position XYZ Sliders ─────────── */
+
+const LightPositionSliders: React.FC<{
+  label: string;
+  position: [number, number, number];
+  onChange: (p: [number, number, number]) => void;
+}> = ({ label, position, onChange }) => (
+  <div className="space-y-1 pl-2 border-l border-white/5">
+    <span className="text-[9px] text-neutral-500 uppercase tracking-widest">{label}</span>
+    <div className="grid grid-cols-3 gap-1">
+      {(['X', 'Y', 'Z'] as const).map((axis, i) => (
+        <div key={axis} className="flex flex-col items-center gap-0.5">
+          <span className="text-[8px] text-neutral-600 font-mono">{axis}</span>
+          <input
+            type="number"
+            value={Math.round(position[i] * 10) / 10}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              if (isNaN(v)) return;
+              const next = [...position] as [number, number, number];
+              next[i] = v;
+              onChange(next);
+            }}
+            step={0.5}
+            className="w-full bg-white/5 border border-white/10 rounded px-1 py-0.5 text-[10px] text-center text-white font-mono focus:outline-none focus:border-white/20"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 /* ── Export Panel (collapsible, pinned bottom) ─────────── */
 
