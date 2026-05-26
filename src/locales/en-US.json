@@ -4369,7 +4369,12 @@
       "bevel": "Bevel",
       "smoothness": "Smoothness",
       "thickness": "Thickness",
-      "size": "Size"
+      "size": "Size",
+      "objectScale": "Object Scale",
+      "renderQuality": "Render Quality",
+      "qualityPerformance": "Fast",
+      "qualityBalanced": "Balanced",
+      "qualityHigh": "Quality"
     },
     "scenePresets": {
       "title": "SCENE PRESETS"
@@ -4416,7 +4421,8 @@
       "right": "Right",
       "back": "Back",
       "iso": "Iso",
-      "reset": "Reset"
+      "reset": "Reset",
+      "fov": "Field of View"
     },
     "background": {
       "title": "BACKGROUND",
@@ -4457,6 +4463,7 @@
       "shaderActive": "{shader} shader active",
       "glbDesc": "3D model with materials",
       "objDesc": "Geometry only (no materials)",
+      "turntableDesc": "Full 360° spin — ignores current animation",
       "duration": "Duration (s)",
       "perfectLoop": "Perfect Loop — {duration}s",
       "exporting": "Exporting...",
@@ -4468,6 +4475,9 @@
     "font": {
       "loadFailed": "Font failed to load, using default",
       "loadTimeout": "Font load timed out"
+    },
+    "environment": {
+      "hdriBackground": "HDRI as Background"
     },
     "dropHere": "Drop file here"
   },

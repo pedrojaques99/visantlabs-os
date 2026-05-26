@@ -6,7 +6,7 @@ type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'ch
 
 type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing' | 'physicsFall';
 type ToneMappingType = 'ACES' | 'AgX' | 'Neutral' | 'Reinhard' | 'Cineon' | 'Linear';
-type ExportFormat = 'png' | 'webm' | 'glb' | 'obj';
+type ExportFormat = 'png' | 'webm' | 'glb' | 'obj' | 'turntable';
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 
 interface ScenePreset {
@@ -245,6 +245,12 @@ export const TEXTURE_PRESETS = [
   { id: 'none', label: 'None', url: '' },
 ] as const;
 
+export const RENDER_QUALITY_CONFIG = {
+  performance: { dpr: 1, msaa: 0, shadowRes: 256 },
+  balanced: { dpr: 1.5, msaa: 2, shadowRes: 512 },
+  quality: { dpr: 2, msaa: 4, shadowRes: 1024 },
+} as const;
+
 interface Studio3DState {
   // Input
   svgData: string;
@@ -260,6 +266,10 @@ interface Studio3DState {
   bevelEnabled: boolean;
   bevelThickness: number;
   bevelSize: number;
+  objectScale: number;
+
+  // Performance
+  renderQuality: 'performance' | 'balanced' | 'quality';
 
   // Material
   material: MaterialPreset;
@@ -294,6 +304,7 @@ interface Studio3DState {
   // Environment
   environment: string;
   customHdriUrl: string;
+  hdriBackground: boolean;
   background: string;
   bgType: 'solid' | 'linear' | 'radial';
   bgGradient: { color1: string; color2: string; angle: number };
@@ -327,6 +338,7 @@ interface Studio3DState {
   physicsSize: number;
 
   // Camera
+  fov: number;
   rotationX: number;
   rotationY: number;
   zoom: number;
@@ -355,6 +367,10 @@ interface Studio3DState {
   setInputMode: (mode: 'svg' | 'text') => void;
   setShapeType: (v: 'standard' | 'coin') => void;
   setDepth: (v: number) => void;
+  setObjectScale: (v: number) => void;
+  setRenderQuality: (v: 'performance' | 'balanced' | 'quality') => void;
+  setFov: (v: number) => void;
+  setHdriBackground: (v: boolean) => void;
   setSmoothness: (v: number) => void;
   setBevelEnabled: (v: boolean) => void;
   setBevelThickness: (v: number) => void;
@@ -440,6 +456,8 @@ const INITIAL_STATE = {
   bevelEnabled: true,
   bevelThickness: 0.5,
   bevelSize: 0.5,
+  objectScale: 1,
+  renderQuality: 'balanced' as const,
   material: 'default' as MaterialPreset,
   color: '#00e5ff',
   metalness: 0.5,
@@ -466,6 +484,7 @@ const INITIAL_STATE = {
   groundReflection: 0.5,
   environment: 'studio',
   customHdriUrl: '',
+  hdriBackground: false,
   background: '#0a0a0a',
   bgType: 'solid' as const,
   bgGradient: { color1: '#0a0a0a', color2: '#1a1a2e', angle: 45 },
@@ -489,6 +508,7 @@ const INITIAL_STATE = {
   physicsBounciness: 0.6,
   physicsFriction: 0.1,
   physicsSize: 0.8,
+  fov: 50,
   rotationX: 0,
   rotationY: 0,
   zoom: 8,
@@ -519,6 +539,10 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setInputMode: (mode) => set({ inputMode: mode }),
   setShapeType: (shapeType) => set({ shapeType }),
   setDepth: (depth) => set({ depth }),
+  setObjectScale: (objectScale) => set({ objectScale }),
+  setRenderQuality: (renderQuality) => set({ renderQuality }),
+  setFov: (fov) => set({ fov }),
+  setHdriBackground: (hdriBackground) => set({ hdriBackground }),
   setSmoothness: (smoothness) => set({ smoothness }),
   setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
   setBevelThickness: (bevelThickness) => set({ bevelThickness }),
@@ -580,7 +604,17 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setRotationX: (rotationX) => set({ rotationX }),
   setRotationY: (rotationY) => set({ rotationY }),
   setZoom: (zoom) => set({ zoom }),
-  setExportFormat: (exportFormat) => set({ exportFormat }),
+  setExportFormat: (exportFormat) => {
+    const patch: Record<string, any> = { exportFormat };
+    if ((exportFormat === 'webm' || exportFormat === 'turntable') && get().animate !== 'none') {
+      const loopPeriod = Math.round((2 * Math.PI / get().animateSpeed) * 2) / 2;
+      patch.videoDuration = Math.min(Math.max(loopPeriod, 1), 10);
+    }
+    if (exportFormat === 'turntable') {
+      patch.videoDuration = 4;
+    }
+    set(patch as any);
+  },
   setAspectRatio: (aspectRatio) => set({ aspectRatio }),
   setExportResolution: (exportResolution) => set({ exportResolution }),
   setVideoDuration: (videoDuration) => set({ videoDuration }),
@@ -639,6 +673,8 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       material: pick(materials),
       color: randHex(),
       depth: r(0.1, 3, 0.1),
+      objectScale: r(0.5, 2, 0.1),
+      fov: pick([35, 50, 65, 75]),
       smoothness: r(0, 1, 0.1),
       bevelEnabled: Math.random() > 0.3,
       bevelThickness: r(0.1, 2, 0.1),

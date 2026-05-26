@@ -7,7 +7,7 @@ import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
 const SceneCanvas = React.lazy(() => import('@/components/3d-studio/SceneCanvas').then(m => ({ default: m.SceneCanvas })));
 import { useStudio3DStore } from '@/stores/studio3dStore';
-import { exportPNG, exportVideo, exportGLB, exportOBJ, exportBatchViews } from '@/components/3d-studio/ExportManager';
+import { exportPNG, exportVideo, exportGLB, exportOBJ, exportBatchViews, exportTurntable } from '@/components/3d-studio/ExportManager';
 import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -79,6 +79,17 @@ export const Studio3DPage: React.FC = () => {
         case 'obj':
           if (!sceneHandleRef.current) throw new Error('Scene not ready');
           await exportOBJ(sceneHandleRef.current.scene, name); break;
+        case 'turntable': {
+          const prevAnim = s.animate;
+          const prevSpeed = s.animateSpeed;
+          const turntableDuration = s.videoDuration;
+          const turntableSpeed = (2 * Math.PI) / turntableDuration;
+          store.setState({ animate: 'spin', animateSpeed: turntableSpeed, animateReverse: false });
+          await new Promise(r => setTimeout(r, 100));
+          await exportTurntable(canvas, turntableDuration, name, (p) => s.setExportProgress(p), shader);
+          store.setState({ animate: prevAnim, animateSpeed: prevSpeed });
+          break;
+        }
       }
       toast.success(t('studio3d.export.exported', { format: s.exportFormat.toUpperCase() }));
     } catch { toast.error(t('studio3d.export.exportFailed')); }
@@ -229,6 +240,8 @@ export const Studio3DPage: React.FC = () => {
                 ['5', 'Isometric view'],
                 ['Home', 'Reset camera'],
                 ['+ / -', 'Zoom in / out'],
+                ['Drag', 'Orbit / Rotate'],
+                ['Shift+Drag', 'Pan'],
                 ['Arrow keys', 'Orbit camera'],
                 ['F', 'Toggle FPS stats'],
                 ['Ctrl+Z', 'Undo'],

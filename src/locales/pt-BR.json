@@ -4373,7 +4373,12 @@
       "bevel": "Bevel",
       "smoothness": "Suavidade",
       "thickness": "Espessura",
-      "size": "Tamanho"
+      "size": "Tamanho",
+      "objectScale": "Escala do Objeto",
+      "renderQuality": "Qualidade de Render",
+      "qualityPerformance": "Rápido",
+      "qualityBalanced": "Balanceado",
+      "qualityHigh": "Qualidade"
     },
     "scenePresets": {
       "title": "PRESETS DE CENA"
@@ -4420,7 +4425,8 @@
       "right": "Direita",
       "back": "Trás",
       "iso": "Iso",
-      "reset": "Resetar"
+      "reset": "Resetar",
+      "fov": "Campo de Visão"
     },
     "background": {
       "title": "FUNDO",
@@ -4461,6 +4467,7 @@
       "shaderActive": "Shader {shader} ativo",
       "glbDesc": "Modelo 3D com materiais",
       "objDesc": "Apenas geometria (sem materiais)",
+      "turntableDesc": "Giro 360° completo — ignora animação atual",
       "duration": "Duração (s)",
       "perfectLoop": "Loop Perfeito — {duration}s",
       "exporting": "Exportando...",
@@ -4472,6 +4479,9 @@
     "font": {
       "loadFailed": "Falha ao carregar fonte, usando padrão",
       "loadTimeout": "Tempo esgotado ao carregar fonte"
+    },
+    "environment": {
+      "hdriBackground": "HDRI como Fundo"
     },
     "dropHere": "Solte o arquivo aqui"
   },

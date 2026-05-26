@@ -26,7 +26,7 @@ import {
 } from '@/stores/studio3dStore';
 import {
   Upload, FileText, Type, ChevronRight, Diamond, Download, Save, FolderOpen, Trash2,
-  Sun, Globe, Camera, Palette, Play, Sparkles, Zap, Film, Shuffle,
+  Sun, Globe, Camera, Palette, Play, Sparkles, Zap, Film, Shuffle, Layers, SlidersHorizontal,
 } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import {
@@ -64,6 +64,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [depth, setDepth] = useDebouncedSlider(store.depth, store.setDepth);
+  const [objectScale, setObjectScale] = useDebouncedSlider(store.objectScale, store.setObjectScale);
   const [smoothness, setSmoothness] = useDebouncedSlider(store.smoothness, store.setSmoothness);
   const [bevelThickness, setBevelThickness] = useDebouncedSlider(store.bevelThickness, store.setBevelThickness);
   const [bevelSize, setBevelSize] = useDebouncedSlider(store.bevelSize, store.setBevelSize);
@@ -96,6 +97,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [toneMappingExposure, setToneMappingExposure] = useDebouncedSlider(store.toneMappingExposure, store.setToneMappingExposure);
   const [textureRotation, setTextureRotation] = useDebouncedSlider(store.textureRotation, store.setTextureRotation);
   const [groundReflection, setGroundReflection] = useDebouncedSlider(store.groundReflection, store.setGroundReflection);
+  const [fov, setFov] = useDebouncedSlider(store.fov, store.setFov);
   const hdriInputRef = useRef<HTMLInputElement>(null);
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>(() => getSavedScenes());
   const [sceneName, setSceneName] = useState('');
@@ -154,13 +156,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const SECTION_NAV: SectionNavItem[] = [
     { id: 'sec-scenes', icon: <Film size={14} />, label: 'Scenes' },
     { id: 'sec-material', icon: <Diamond size={14} />, label: 'Material' },
+    { id: 'sec-surface', icon: <Layers size={14} />, label: 'Surface' },
     { id: 'sec-lighting', icon: <Sun size={14} />, label: 'Lighting' },
     { id: 'sec-environment', icon: <Globe size={14} />, label: 'Environment' },
     { id: 'sec-camera', icon: <Camera size={14} />, label: 'Camera' },
-    { id: 'sec-background', icon: <Palette size={14} />, label: 'Background' },
+    { id: 'sec-rendering', icon: <SlidersHorizontal size={14} />, label: 'Rendering' },
     { id: 'sec-animation', icon: <Play size={14} />, label: 'Animation' },
-    { id: 'sec-effects', icon: <Sparkles size={14} />, label: 'Effects' },
-    { id: 'sec-shader', icon: <Zap size={14} />, label: 'Shader FX' },
+    { id: 'sec-effects', icon: <Zap size={14} />, label: 'Effects' },
   ];
 
   return (
@@ -293,6 +295,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             ))}
           </ToolPanelGrid>
           <NodeSlider label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
+          <NodeSlider label={t('studio3d.geometry.objectScale')} value={objectScale} min={0.1} max={5} step={0.05} onChange={setObjectScale} />
           <ToolPanelRow label={t('studio3d.geometry.bevel')}>
             <Switch checked={store.bevelEnabled} onCheckedChange={store.setBevelEnabled} aria-label="Bevel" />
           </ToolPanelRow>
@@ -330,122 +333,102 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
           </button>
         </ToolPanelSection>
 
-        {/* Material — collapsed */}
+        {/* ── Material — presets + color (creative) ── */}
         <ToolPanelDisclosure label={t('studio3d.material.title')} icon={<Diamond size={13} />} id="sec-material" defaultOpen>
-          <MaterialContent
-            store={store}
-            metalness={metalness} setMetalness={setMetalness}
-            roughness={roughness} setRoughness={setRoughness}
-            opacity={opacity} setOpacity={setOpacity}
-            textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity}
-            textureRotation={textureRotation} setTextureRotation={setTextureRotation}
-          />
+          <MaterialCategoryTabs activeCat={MATERIAL_PRESETS.find((m) => m.id === store.material)?.category ?? 'basic'} store={store} />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded border border-white/10 shrink-0" style={{ backgroundColor: store.color }} />
+              <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1">
+                <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                <input
+                  type="text"
+                  value={store.color.replace('#', '').toUpperCase()}
+                  onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setColor(`#${v}`); }}
+                  onBlur={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setColor(`#${v}`); }}
+                  maxLength={6}
+                  aria-label="Material color"
+                  className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                  placeholder="00E5FF"
+                />
+              </div>
+            </div>
+            <div className="custom-color-picker"><HexColorPicker color={store.color} onChange={store.setColor} /></div>
+          </div>
         </ToolPanelDisclosure>
 
-        {/* Lighting — collapsed */}
+        {/* ── Surface — properties + texture (technical) ── */}
+        <ToolPanelDisclosure label="Surface" icon={<Layers size={13} />} id="sec-surface">
+          <div className="space-y-3">
+            <NodeSlider label={t('studio3d.properties.metalness')} value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
+            <NodeSlider label={t('studio3d.properties.roughness')} value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
+            <NodeSlider label={t('studio3d.properties.opacity')} value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
+            <ToolPanelRow label={t('studio3d.properties.wireframe')}>
+              <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} aria-label="Wireframe" />
+            </ToolPanelRow>
+          </div>
+          <TextureControls store={store} textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity} textureRotation={textureRotation} setTextureRotation={setTextureRotation} />
+        </ToolPanelDisclosure>
+
+        {/* ── Lighting — presets + intensities only ── */}
         <ToolPanelDisclosure label={t('studio3d.lighting.title')} icon={<Sun size={13} />} id="sec-lighting">
-          <ToolPanelSection title="Lighting Presets">
-            <ToolPanelGrid cols={3}>
-              {Object.keys(LIGHTING_PRESETS).map((name) => (
-                <ToolPanelChip key={name} onClick={() => store.applyLightingPreset(name)}>
-                  {LIGHTING_PRESETS[name].label}
-                </ToolPanelChip>
-              ))}
-            </ToolPanelGrid>
-          </ToolPanelSection>
+          <ToolPanelGrid cols={3}>
+            {Object.keys(LIGHTING_PRESETS).map((name) => (
+              <ToolPanelChip key={name} onClick={() => store.applyLightingPreset(name)}>
+                {LIGHTING_PRESETS[name].label}
+              </ToolPanelChip>
+            ))}
+          </ToolPanelGrid>
           <NodeSlider label={t('studio3d.lighting.keyLight')} value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
           <NodeSlider label={t('studio3d.lighting.ambient')} value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
           <NodeSlider label="Fill Light" value={fillLightIntensity} min={0} max={2} step={0.05} onChange={setFillLightIntensity} />
           <NodeSlider label="Bounce Light" value={bounceLightIntensity} min={0} max={2} step={0.05} onChange={setBounceLightIntensity} />
           <NodeSlider label="Top Light" value={pointLightIntensity} min={0} max={2} step={0.05} onChange={setPointLightIntensity} />
-          <ToolPanelRow label={t('studio3d.lighting.shadows')}>
-            <Switch checked={store.shadow} onCheckedChange={store.setShadow} aria-label="Shadow" />
-          </ToolPanelRow>
-          {store.shadow && (
-            <ToolPanelGrid cols={3}>
-              {(['low', 'medium', 'high'] as const).map((q) => (
-                <ToolPanelChip key={q} active={store.shadowQuality === q} onClick={() => store.setShadowQuality(q)}>
-                  {q.charAt(0).toUpperCase() + q.slice(1)}
-                </ToolPanelChip>
-              ))}
-            </ToolPanelGrid>
-          )}
-          <ToolPanelRow label="Ground Plane">
-            <Switch checked={store.groundPlane} onCheckedChange={store.setGroundPlane} aria-label="Ground plane" />
-          </ToolPanelRow>
-          {store.groundPlane && (
-            <NodeSlider label="Reflection" value={groundReflection} min={0} max={1} step={0.05} onChange={setGroundReflection} />
-          )}
-          <ToolPanelRow label={t('studio3d.lighting.grid')}>
-            <Switch checked={store.showGrid} onCheckedChange={store.setShowGrid} aria-label="Grid" />
-          </ToolPanelRow>
-          <ToolPanelSection title="Tone Mapping">
-            <ToolPanelGrid cols={3}>
-              {TONE_MAPPING_OPTIONS.map((tm) => (
-                <ToolPanelChip key={tm.id} active={store.toneMapping === tm.id} onClick={() => store.setToneMapping(tm.id)}>
-                  {tm.label}
-                </ToolPanelChip>
-              ))}
-            </ToolPanelGrid>
-            <NodeSlider label="Exposure" value={toneMappingExposure} min={0.1} max={3} step={0.05} onChange={setToneMappingExposure} />
-          </ToolPanelSection>
         </ToolPanelDisclosure>
 
-        {/* Environment / HDRI */}
+        {/* ── Environment — HDRI + Background merged ── */}
         <ToolPanelDisclosure label="Environment" icon={<Globe size={13} />} id="sec-environment">
-          <ToolPanelGrid cols={3}>
-            {ENVIRONMENT_PRESETS.map((env) => (
-              <ToolPanelChip key={env.id} active={store.environment === env.id && !store.customHdriUrl} onClick={() => store.setEnvironment(env.id)}>
-                {env.label}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-          <button
-            onClick={() => hdriInputRef.current?.click()}
-            className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
-          >
-            {store.customHdriUrl ? 'Custom HDRI loaded' : 'Upload .HDR'}
-          </button>
-          <input
-            ref={hdriInputRef}
-            type="file"
-            accept=".hdr,.exr"
-            aria-label="Upload custom HDRI"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const url = URL.createObjectURL(file);
-                store.setCustomHdriUrl(url);
-                toast.success('HDRI loaded');
-              }
-              e.target.value = '';
-            }}
-            className="hidden"
-          />
-          {store.customHdriUrl && (
-            <button onClick={() => store.setEnvironment('studio')} className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors">
-              Remove custom HDRI
+          <ToolPanelSection title="HDRI">
+            <ToolPanelGrid cols={3}>
+              {ENVIRONMENT_PRESETS.map((env) => (
+                <ToolPanelChip key={env.id} active={store.environment === env.id && !store.customHdriUrl} onClick={() => store.setEnvironment(env.id)}>
+                  {env.label}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+            <button
+              onClick={() => hdriInputRef.current?.click()}
+              className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+            >
+              {store.customHdriUrl ? 'Custom HDRI loaded' : 'Upload .HDR'}
             </button>
-          )}
-        </ToolPanelDisclosure>
+            <input
+              ref={hdriInputRef}
+              type="file"
+              accept=".hdr,.exr"
+              aria-label="Upload custom HDRI"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  store.setCustomHdriUrl(url);
+                  toast.success('HDRI loaded');
+                }
+                e.target.value = '';
+              }}
+              className="hidden"
+            />
+            <ToolPanelRow label={t('studio3d.environment.hdriBackground')}>
+              <Switch checked={store.hdriBackground} onCheckedChange={store.setHdriBackground} aria-label="HDRI as background" />
+            </ToolPanelRow>
+            {store.customHdriUrl && (
+              <button onClick={() => store.setEnvironment('studio')} className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors">
+                Remove custom HDRI
+              </button>
+            )}
+          </ToolPanelSection>
 
-        {/* Camera — collapsed */}
-        <ToolPanelDisclosure label={t('studio3d.camera.title')} icon={<Camera size={13} />} id="sec-camera">
-          <ToolPanelGrid cols={3}>
-            {(['front', 'top', 'right', 'back', 'iso'] as const).map((view) => (
-              <ToolPanelChip key={view} active={store._cameraInfo?.view === view} onClick={() => setCameraView(view)}>
-                {t(`studio3d.camera.${view}`)}
-              </ToolPanelChip>
-            ))}
-            <ToolPanelChip onClick={() => resetCamera()}>
-              {t('studio3d.camera.reset')}
-            </ToolPanelChip>
-          </ToolPanelGrid>
-        </ToolPanelDisclosure>
-
-        {/* Background — collapsed */}
-        <ToolPanelDisclosure label={t('studio3d.background.title')} icon={<Palette size={13} />} id="sec-background">
-          <div className="space-y-3">
+          <ToolPanelSection title={t('studio3d.background.title')}>
             <ToolPanelGrid cols={3}>
               {(['solid', 'linear', 'radial'] as const).map((type) => (
                 <ToolPanelChip key={type} active={store.bgType === type} onClick={() => store.setBgType(type)}>
@@ -453,7 +436,6 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 </ToolPanelChip>
               ))}
             </ToolPanelGrid>
-
             {store.bgType === 'solid' ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -466,7 +448,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                       onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setBackground(`#${v}`); }}
                       onBlur={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setBackground(`#${v}`); }}
                       maxLength={6}
-                      aria-label="Background color 1"
+                      aria-label="Background color"
                       className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
                       placeholder="0A0A0A"
                     />
@@ -497,14 +479,72 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 )}
               </div>
             )}
-
             <ToolPanelRow label={t('studio3d.background.transparent')}>
               <Switch checked={store.transparentBg} onCheckedChange={store.setTransparentBg} aria-label="Transparent background" />
             </ToolPanelRow>
-          </div>
+          </ToolPanelSection>
         </ToolPanelDisclosure>
 
-        {/* Animation — collapsed */}
+        {/* ── Camera — views + FOV ── */}
+        <ToolPanelDisclosure label={t('studio3d.camera.title')} icon={<Camera size={13} />} id="sec-camera">
+          <ToolPanelGrid cols={3}>
+            {(['front', 'top', 'right', 'back', 'iso'] as const).map((view) => (
+              <ToolPanelChip key={view} active={store._cameraInfo?.view === view} onClick={() => setCameraView(view)}>
+                {t(`studio3d.camera.${view}`)}
+              </ToolPanelChip>
+            ))}
+            <ToolPanelChip onClick={() => resetCamera()}>
+              {t('studio3d.camera.reset')}
+            </ToolPanelChip>
+          </ToolPanelGrid>
+          <NodeSlider label={t('studio3d.camera.fov')} value={fov} min={15} max={120} step={1} onChange={setFov} />
+        </ToolPanelDisclosure>
+
+        {/* ── Rendering — tone mapping, quality, shadows, ground (technical) ── */}
+        <ToolPanelDisclosure label="Rendering" icon={<SlidersHorizontal size={13} />} id="sec-rendering">
+          <ToolPanelSection title={t('studio3d.geometry.renderQuality')}>
+            <ToolPanelGrid cols={3}>
+              {(['performance', 'balanced', 'quality'] as const).map((q) => (
+                <ToolPanelChip key={q} active={store.renderQuality === q} onClick={() => store.setRenderQuality(q)}>
+                  {t(`studio3d.geometry.quality${q.charAt(0).toUpperCase() + q.slice(1)}`)}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+          </ToolPanelSection>
+          <ToolPanelSection title="Tone Mapping">
+            <ToolPanelGrid cols={3}>
+              {TONE_MAPPING_OPTIONS.map((tm) => (
+                <ToolPanelChip key={tm.id} active={store.toneMapping === tm.id} onClick={() => store.setToneMapping(tm.id)}>
+                  {tm.label}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+            <NodeSlider label="Exposure" value={toneMappingExposure} min={0.1} max={3} step={0.05} onChange={setToneMappingExposure} />
+          </ToolPanelSection>
+          <ToolPanelRow label={t('studio3d.lighting.shadows')}>
+            <Switch checked={store.shadow} onCheckedChange={store.setShadow} aria-label="Shadow" />
+          </ToolPanelRow>
+          {store.shadow && (
+            <ToolPanelGrid cols={3}>
+              {(['low', 'medium', 'high'] as const).map((q) => (
+                <ToolPanelChip key={q} active={store.shadowQuality === q} onClick={() => store.setShadowQuality(q)}>
+                  {q.charAt(0).toUpperCase() + q.slice(1)}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+          )}
+          <ToolPanelRow label="Ground Plane">
+            <Switch checked={store.groundPlane} onCheckedChange={store.setGroundPlane} aria-label="Ground plane" />
+          </ToolPanelRow>
+          {store.groundPlane && (
+            <NodeSlider label="Reflection" value={groundReflection} min={0} max={1} step={0.05} onChange={setGroundReflection} />
+          )}
+          <ToolPanelRow label={t('studio3d.lighting.grid')}>
+            <Switch checked={store.showGrid} onCheckedChange={store.setShowGrid} aria-label="Grid" />
+          </ToolPanelRow>
+        </ToolPanelDisclosure>
+
+        {/* ── Animation ── */}
         <ToolPanelDisclosure label={t('studio3d.animation.type')} icon={<Play size={13} />} id="sec-animation">
           <div className="space-y-3">
             <ToolPanelGrid>
@@ -546,7 +586,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
           </div>
         </ToolPanelDisclosure>
 
-        {/* Effects — collapsed */}
+        {/* ── Effects — post-processing + shaders merged ── */}
         <ToolPanelDisclosure label="Effects" icon={<Sparkles size={13} />} id="sec-effects">
           <div className="space-y-3">
             <ToolPanelRow label="Bloom">
@@ -574,18 +614,16 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
               <NodeSlider label="Darkness" value={vignetteIntensity} min={0} max={1} step={0.01} onChange={setVignetteIntensity} />
             )}
           </div>
-        </ToolPanelDisclosure>
-
-        {/* Shader Post-Processing — collapsed */}
-        <ToolPanelDisclosure label="Shader FX" icon={<Zap size={13} />} id="sec-shader">
-          <ShaderControls
-            enabled={store.shaderEnabled}
-            shaderType={store.shaderType}
-            values={store.shaderValues}
-            onEnabledChange={store.setShaderEnabled}
-            onTypeChange={store.setShaderType}
-            onValueChange={store.setShaderValue}
-          />
+          <ToolPanelSection title="Shader FX">
+            <ShaderControls
+              enabled={store.shaderEnabled}
+              shaderType={store.shaderType}
+              values={store.shaderValues}
+              onEnabledChange={store.setShaderEnabled}
+              onTypeChange={store.setShaderType}
+              onValueChange={store.setShaderValue}
+            />
+          </ToolPanelSection>
         </ToolPanelDisclosure>
       </ToolPanelContent>
 
@@ -646,15 +684,15 @@ const ExportPanel: React.FC<{
             </div>
           )}
 
-          <ToolPanelGrid cols={4}>
-            {(['png', 'webm', 'glb', 'obj'] as const).map((f) => (
+          <ToolPanelGrid cols={3}>
+            {(['png', 'webm', 'turntable', 'glb', 'obj'] as const).map((f) => (
               <ToolPanelChip key={f} active={store.exportFormat === f} onClick={() => store.setExportFormat(f)}>
-                {f}
+                {f === 'turntable' ? '360°' : f}
               </ToolPanelChip>
             ))}
           </ToolPanelGrid>
 
-          {store.exportFormat !== 'glb' && store.exportFormat !== 'obj' && (
+          {store.exportFormat !== 'glb' && store.exportFormat !== 'obj' && store.exportFormat !== 'turntable' && (
             <ToolPanelGrid cols={4}>
               {(Object.keys(ASPECT_RATIOS) as Array<keyof typeof ASPECT_RATIOS>).map((r) => (
                 <ToolPanelChip key={r} active={store.aspectRatio === r} onClick={() => store.setAspectRatio(r)}>
@@ -680,10 +718,15 @@ const ExportPanel: React.FC<{
             </ToolPanelGrid>
           )}
 
-          {store.exportFormat === 'webm' && (
+          {(store.exportFormat === 'webm' || store.exportFormat === 'turntable') && (
             <div className="space-y-2">
               <NodeSlider label={t('studio3d.export.duration')} value={videoDuration} min={1} max={10} step={0.5} onChange={setVideoDuration} />
-              {store.animate !== 'none' && (() => {
+              {store.exportFormat === 'turntable' && (
+                <div className="px-2 py-1.5 rounded bg-white/5 text-[9px] text-neutral-400 uppercase tracking-wider">
+                  {t('studio3d.export.turntableDesc')}
+                </div>
+              )}
+              {store.exportFormat === 'webm' && store.animate !== 'none' && (() => {
                 const loopPeriod = Math.round((2 * Math.PI / store.animateSpeed) * 2) / 2;
                 const clamped = Math.min(Math.max(loopPeriod, 1), 10);
                 return (

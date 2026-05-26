@@ -1,8 +1,8 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { ContactShadows, Environment, Stats, MeshReflectorMaterial } from '@react-three/drei';
+import { ContactShadows, Environment, Stats, MeshReflectorMaterial, AdaptiveDpr, AdaptiveEvents, PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
-import { useStudio3DStore, ENVIRONMENT_PRESETS, type ToneMappingType } from '@/stores/studio3dStore';
+import { useStudio3DStore, ENVIRONMENT_PRESETS, RENDER_QUALITY_CONFIG, type ToneMappingType } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
 import { EffectComposer, Bloom, DepthOfField, Vignette } from '@react-three/postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
@@ -29,6 +29,10 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   bevelEnabled: s.bevelEnabled,
   bevelThickness: s.bevelThickness,
   bevelSize: s.bevelSize,
+  objectScale: s.objectScale,
+  renderQuality: s.renderQuality,
+  fov: s.fov,
+  hdriBackground: s.hdriBackground,
   color: s.color,
   material: s.material,
   metalness: s.metalness,
@@ -132,6 +136,10 @@ function GradientBackground({ type, gradient }: { type: 'linear' | 'radial'; gra
   );
 }
 
+const prefersReducedMotion = typeof window !== 'undefined'
+  ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  : false;
+
 function SceneContent() {
   const s = useStudio3DStore(useShallow(sceneSelector));
   const meshGroupRef = useRef<THREE.Group>(null);
@@ -184,7 +192,7 @@ function SceneContent() {
         resetKey={s.resetKey}
       />
       <LoopAnimation
-        type={s.animate}
+        type={prefersReducedMotion ? 'none' : s.animate}
         speed={s.animateSpeed}
         reverse={s.animateReverse}
         easing={s.animateEasing}
@@ -197,7 +205,7 @@ function SceneContent() {
       <directionalLight position={s.bounceLightPosition} intensity={s.bounceLightIntensity} />
       <pointLight position={s.pointLightPosition} intensity={s.pointLightIntensity} />
 
-      <group ref={animGroupRef}>
+      <group ref={animGroupRef} scale={s.objectScale}>
         {svgString && (
           s.animate === 'physicsFall' ? (
              <PhysicsFallSimulation
@@ -253,7 +261,7 @@ function SceneContent() {
           scale={10}
           blur={2}
           far={4}
-          resolution={s.shadowQuality === 'low' ? 256 : s.shadowQuality === 'high' ? 1024 : 512}
+          resolution={RENDER_QUALITY_CONFIG[s.renderQuality].shadowRes}
         />
       )}
 
@@ -292,7 +300,7 @@ function SceneContent() {
       {(() => {
         const hdriUrl = s.customHdriUrl || ENVIRONMENT_PRESETS.find(p => p.id === s.environment)?.file;
         return hdriUrl ? (
-          <Environment background={false} files={hdriUrl} />
+          <Environment background={s.hdriBackground} files={hdriUrl} />
         ) : (
           <Environment background={false} environmentIntensity={1.5} frames={1}>
             <mesh position={[0, 25, 0]}>
@@ -316,7 +324,7 @@ function SceneContent() {
           halftoneVariant={halftoneVariant}
         />
       ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled) ? (
-        <EffectComposer multisampling={4}>
+        <EffectComposer multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
           {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}
           {s.dofEnabled && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
           {s.vignetteEnabled && <Vignette darkness={s.vignetteIntensity} offset={0.3} />}
@@ -344,6 +352,8 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
     toneMapping: st.toneMapping,
     toneMappingExposure: st.toneMappingExposure,
     showStats: st.showStats,
+    renderQuality: st.renderQuality,
+    fov: st.fov,
   })));
 
   const [sceneHandle, setSceneHandle] = useState<SceneHandle | null>(null);
@@ -354,10 +364,11 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
     <SceneRefContext.Provider value={sceneHandle}>
       <Canvas
         key={s.resetKey}
-        camera={{ position: [0, 0, s.zoom], fov: 50 }}
+        camera={{ position: [0, 0, s.zoom], fov: s.fov }}
+        dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
         style={{ background: bg, width: '100%', height: '100%' }}
         gl={{
-          antialias: true,
+          antialias: s.renderQuality !== 'performance',
           alpha: true,
           preserveDrawingBuffer: true,
           powerPreference: 'default',
@@ -381,6 +392,9 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
           });
         }}
       >
+        <AdaptiveDpr pixelated />
+        <AdaptiveEvents />
+        <PerformanceMonitor />
         <SceneContent />
         {s.showStats && <Stats className="!absolute !left-2 !top-2" />}
       </Canvas>
