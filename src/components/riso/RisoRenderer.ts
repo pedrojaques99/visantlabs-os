@@ -81,10 +81,6 @@ void main() {
 }`;
 
 const FRAGMENT_SHADER = `
-#ifdef GL_OES_standard_derivatives
-#extension GL_OES_standard_derivatives : enable
-#endif
-
 precision highp float;
 
 uniform sampler2D u_texture;
@@ -131,33 +127,7 @@ uniform bool u_inkVisible3;
 
 varying vec2 v_texCoord;
 
-// --- Noise (from HalftoneRenderer) ---
-vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
-
-float simplexNoise(vec2 v) {
-  const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
-  vec2 i = floor(v + dot(v, C.yy));
-  vec2 x0 = v - i + dot(i, C.xx);
-  vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-  vec4 x12 = x0.xyxy + C.xxzz;
-  x12.xy -= i1;
-  i = mod289(i);
-  vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
-  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-  m = m*m; m = m*m;
-  vec3 x = 2.0 * fract(p * C.www) - 1.0;
-  vec3 h = abs(x) - 0.5;
-  vec3 ox = floor(x + 0.5);
-  vec3 a0 = x - ox;
-  m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
-  vec3 g;
-  g.x = a0.x * x0.x + h.x * x0.y;
-  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-  return 130.0 * dot(m, g);
-}
-
+// --- Hash noise ---
 float hash(vec2 p) {
   p = 50.0 * fract(p * 0.3183099 + vec2(0.71, 0.113));
   return fract(p.x * p.y * (p.x + p.y));
@@ -169,102 +139,83 @@ mat2 rotationMatrix(float angle) {
 }
 
 // --- Color separation ---
-// For each pixel, compute how much ink each layer should deposit.
-// Key rules:
-// 1. Light pixels (close to paper) get NO ink — paper shows through
-// 2. Each pixel is primarily "owned" by the nearest ink color
-// 3. Ownership strength determines solid fill vs halftone vs no ink
-
 float getLayerIntensity(vec3 pixel, vec3 ink, vec3 paperRgb,
                         float dist0, float dist1, float dist2, float dist3,
-                        int layerIdx, int totalLayers) {
-  // How close is this pixel to paper color? If very close, no ink at all.
+                        int totalLayers) {
   float paperDist = distance(pixel, paperRgb);
-  float paperThreshold = 0.15;
-  if (paperDist < paperThreshold) return 0.0;
+  if (paperDist < 0.12) return 0.0;
 
-  // Overall darkness of the pixel — light areas get less ink
   float lum = dot(pixel, vec3(0.299, 0.587, 0.114));
   float darkness = 1.0 - lum;
 
-  // Distance from pixel to this ink color
   float myDist = distance(pixel, ink);
 
-  // Find the minimum distance among all layers to determine ownership
   float minDist = dist0;
   if (totalLayers > 1) minDist = min(minDist, dist1);
   if (totalLayers > 2) minDist = min(minDist, dist2);
   if (totalLayers > 3) minDist = min(minDist, dist3);
 
-  // Ownership: how much this layer "claims" this pixel
-  // Closest layer gets most ink; others get much less
-  float closeness = 1.0 - myDist;
-  float bestCloseness = 1.0 - minDist;
   float ownership = 0.0;
-
-  if (myDist <= minDist + 0.01) {
-    // This is the nearest layer — full ownership
+  if (myDist <= minDist + 0.02) {
     ownership = 1.0;
   } else {
-    // Partial contribution for overprint zones
-    float ratio = (minDist + 0.01) / (myDist + 0.01);
-    ownership = ratio * ratio * 0.3;
+    float ratio = (minDist + 0.02) / (myDist + 0.02);
+    ownership = ratio * ratio * ratio * 0.12;
   }
 
-  // Final intensity: ownership * darkness, with a curve for riso look
-  // Solid fill when darkness > 0.6, halftone in mid-tones, nothing in lights
-  float intensity = ownership * smoothstep(0.08, 0.5, darkness) * (0.3 + 0.7 * darkness);
-
+  float intensity = ownership * smoothstep(0.05, 0.45, darkness) * (0.25 + 0.75 * darkness);
   return clamp(intensity, 0.0, 1.0);
 }
 
-// --- Halftone with AA ---
-float halftoneChannel(vec2 st, float channelValue, float angle, float layerSeed) {
-  if (channelValue < 0.02) return 0.0;
+// --- Stochastic riso grain ---
+// Real risograph uses stochastic screening: random noise thresholded by intensity.
+// Sparse speckles at low %, dense grain at mid %, near-solid at high %.
+float risoGrain(vec2 st, float intensity, float angle, float layerSeed) {
+  if (intensity < 0.005) return 0.0;
+  if (intensity > 0.995) return 1.0;
 
   vec2 aspectSt = st;
   aspectSt.x *= u_resolution.x / u_resolution.y;
-  vec2 rotatedSt = rotationMatrix(angle) * aspectSt * u_frequency;
+  vec2 rotSt = rotationMatrix(angle) * aspectSt;
+  vec2 pos = rotSt * u_resolution;
 
-#ifdef GL_OES_standard_derivatives
-  float pixelWidth = length(fwidth(rotatedSt)) * 2.0;
-#else
-  float pixelWidth = 0.02;
-#endif
+  // Grain cell size: dotSize scales particle size, frequency scales density
+  // Larger dotSize = bigger grain particles, higher frequency = finer texture
+  float cellScale = u_frequency / (120.0 * u_dotSize);
+  vec2 cell = floor(pos * cellScale);
+  vec2 f = fract(pos * cellScale) - 0.5;
 
-  vec2 gridPos = floor(rotatedSt);
-  vec2 uv = 2.0 * fract(rotatedSt) - 1.0;
+  // Primary noise per grain cell
+  float n = hash(cell + layerSeed);
 
-  float intensity = clamp(channelValue, 0.0, 1.0);
+  // Medium-scale variation for uneven ink absorption
+  vec2 medCell = floor(pos * cellScale * 0.2);
+  float medNoise = hash(medCell + layerSeed + 43.0);
+  float localIntensity = intensity * (0.85 + 0.3 * medNoise);
 
-  // Dot radius scales with intensity — bigger dots for darker areas
-  float baseRadius = sqrt(intensity) * u_dotSize;
+  // Threshold: intensity determines what fraction of cells get ink
+  float threshold = 1.0 - clamp(localIntensity, 0.0, 1.0);
 
-  // Ink dropout — shrink dots instead of removing them entirely
-  float dropoutHash = hash(gridPos + layerSeed);
-  if (dropoutHash < u_inkDropout) {
-    baseRadius *= smoothstep(0.0, u_inkDropout, dropoutHash);
-  }
+  // Soft transition width — wider at low densities for organic sparse dots
+  float softness = mix(0.1, 0.03, intensity);
+  float grain = smoothstep(threshold - softness, threshold + softness, n);
 
-  // Ink noise — slight density variation
-  float noiseHash = hash(gridPos * 1.7 + layerSeed + 17.0);
-  baseRadius *= 1.0 - u_inkNoise * 0.3 * (noiseHash - 0.5);
+  // Organic dot shape — not perfectly square cells
+  // Use distance from cell center to soften edges
+  float cellDist = length(f) * 1.4;
+  float edgeSoften = smoothstep(1.0, 0.3, cellDist);
+  grain *= mix(1.0, edgeSoften, 0.3 * (1.0 - intensity));
 
-  float dist = length(uv);
-  float radius = baseRadius - dist;
+  // Edge bleed — expand grain particles
+  grain = mix(grain, min(grain * (1.0 + u_edgeBleed * 0.15), 1.0), u_edgeBleed * 0.3);
 
-  // Edge bleed + anti-aliasing
-  float bleedWidth = u_edgeBleed / u_frequency;
-  float aaWidth = clamp(pixelWidth, 0.01, 0.08);
+  // Ink dropout — random cells go blank
+  if (hash(cell + layerSeed + 200.0) < u_inkDropout) grain = 0.0;
 
-  float dot = smoothstep(-bleedWidth - aaWidth, aaWidth, radius);
-
-  // Smooth blend to solid fill for very dark areas — dots merge naturally
-  float solidBlend = smoothstep(0.82, 0.98, intensity);
-  return mix(dot, 0.92 + 0.08 * noiseHash, solidBlend);
+  return clamp(grain, 0.0, 1.0);
 }
 
-// --- Image sampling with contrast/lightness adjustment ---
+// --- Image sampling ---
 vec3 sampleAt(vec2 uv) {
   vec3 color = texture2D(u_texture, clamp(uv, 0.0, 1.0)).rgb;
   color = (color - 0.5) * u_contrast + 0.5 + u_lightness;
@@ -273,31 +224,27 @@ vec3 sampleAt(vec2 uv) {
 
 void main() {
   vec2 st = v_texCoord;
-
-  // Paper grain — high-frequency hash noise for fine organic texture
   vec2 paperCoord = st * u_resolution;
-  float grain = hash(paperCoord * 0.5) * 0.6
-              + hash(paperCoord * 0.25 + 7.3) * 0.3
-              + hash(paperCoord * 0.1 + 13.7) * 0.1;
-  grain = grain - 0.5;
-  // Subtle directional fiber via simplex at high frequency
-  float fiber = simplexNoise(st * vec2(1600.0, 800.0)) * 0.3
-              + simplexNoise(st * vec2(800.0, 400.0)) * 0.4
-              + simplexNoise(st * vec2(400.0, 200.0)) * 0.3;
-  float paperNoiseVal = grain * 0.7 + fiber * 0.3;
+
+  // Paper texture — subtle fiber grain
+  float grain = hash(paperCoord * 0.4) * 0.5
+              + hash(paperCoord * 0.2 + 7.3) * 0.3
+              + hash(paperCoord * 0.08 + 13.7) * 0.2;
+  grain = (grain - 0.5) * u_paperNoise * 0.06;
 
   vec3 paperRgb = u_paperColor.rgb;
-  vec3 paper = paperRgb + u_paperNoise * paperNoiseVal * 0.08;
-  // Ink noise — independent hash for patchy absorption
-  float inkGrain = hash(paperCoord * 0.3 + 31.0) - 0.5;
-  float paperInkMod = 1.0 - u_inkNoise * inkGrain * 0.15;
+  vec3 paper = paperRgb + grain;
+
+  // Ink absorption variation across paper surface
+  float inkAbsorb = hash(paperCoord * 0.15 + 31.0);
+  float absorbMod = 1.0 - u_inkNoise * 0.2 * (inkAbsorb - 0.5);
 
   vec3 result = paper;
 
   // Misregistration in UV space
   vec2 misregUnit = u_misregistration / u_resolution;
 
-  // Sample pixel at each layer's offset to compute distances
+  // Compute distances for color separation
   vec3 p0 = sampleAt(st + u_inkOffset0 * misregUnit);
   vec3 p1 = sampleAt(st + u_inkOffset1 * misregUnit);
   vec3 p2 = sampleAt(st + u_inkOffset2 * misregUnit);
@@ -308,57 +255,46 @@ void main() {
   float d2 = distance(p2, u_inkColor2);
   float d3 = distance(p3, u_inkColor3);
 
-  // --- Layer 0 ---
+  // Each layer: compute intensity, generate grain, multiply-blend ink
+  // Multiply blend = how real transparent inks work (overlaps darken/mix colors)
+
   if (u_inkVisible0 && (u_soloLayer < 0 || u_soloLayer == 0) && u_layerCount > 0) {
     vec2 offsetUV = st + u_inkOffset0 * misregUnit;
     vec3 pixel = sampleAt(offsetUV);
-    float intensity = getLayerIntensity(pixel, u_inkColor0, paperRgb, d0, d1, d2, d3, 0, u_layerCount);
-    float ht = halftoneChannel(offsetUV, intensity, u_inkAngle0, 0.0);
-    float a = u_inkAlpha0 * ht * paperInkMod;
-    result = mix(result, result * u_inkColor0, a);
+    float intensity = getLayerIntensity(pixel, u_inkColor0, paperRgb, d0, d1, d2, d3, u_layerCount);
+    float g = risoGrain(offsetUV, intensity, u_inkAngle0, 0.0);
+    float a = u_inkAlpha0 * g * absorbMod;
+    result = result * mix(vec3(1.0), u_inkColor0, a);
   }
 
-  // --- Layer 1 ---
   if (u_inkVisible1 && (u_soloLayer < 0 || u_soloLayer == 1) && u_layerCount > 1) {
     vec2 offsetUV = st + u_inkOffset1 * misregUnit;
     vec3 pixel = sampleAt(offsetUV);
-    float intensity = getLayerIntensity(pixel, u_inkColor1, paperRgb, d0, d1, d2, d3, 1, u_layerCount);
-    float ht = halftoneChannel(offsetUV, intensity, u_inkAngle1, 100.0);
-    float a = u_inkAlpha1 * ht * paperInkMod;
-    result = mix(result, result * u_inkColor1, a);
+    float intensity = getLayerIntensity(pixel, u_inkColor1, paperRgb, d0, d1, d2, d3, u_layerCount);
+    float g = risoGrain(offsetUV, intensity, u_inkAngle1, 100.0);
+    float a = u_inkAlpha1 * g * absorbMod;
+    result = result * mix(vec3(1.0), u_inkColor1, a);
   }
 
-  // --- Layer 2 ---
   if (u_inkVisible2 && (u_soloLayer < 0 || u_soloLayer == 2) && u_layerCount > 2) {
     vec2 offsetUV = st + u_inkOffset2 * misregUnit;
     vec3 pixel = sampleAt(offsetUV);
-    float intensity = getLayerIntensity(pixel, u_inkColor2, paperRgb, d0, d1, d2, d3, 2, u_layerCount);
-    float ht = halftoneChannel(offsetUV, intensity, u_inkAngle2, 200.0);
-    float a = u_inkAlpha2 * ht * paperInkMod;
-    result = mix(result, result * u_inkColor2, a);
+    float intensity = getLayerIntensity(pixel, u_inkColor2, paperRgb, d0, d1, d2, d3, u_layerCount);
+    float g = risoGrain(offsetUV, intensity, u_inkAngle2, 200.0);
+    float a = u_inkAlpha2 * g * absorbMod;
+    result = result * mix(vec3(1.0), u_inkColor2, a);
   }
 
-  // --- Layer 3 ---
   if (u_inkVisible3 && (u_soloLayer < 0 || u_soloLayer == 3) && u_layerCount > 3) {
     vec2 offsetUV = st + u_inkOffset3 * misregUnit;
     vec3 pixel = sampleAt(offsetUV);
-    float intensity = getLayerIntensity(pixel, u_inkColor3, paperRgb, d0, d1, d2, d3, 3, u_layerCount);
-    float ht = halftoneChannel(offsetUV, intensity, u_inkAngle3, 300.0);
-    float a = u_inkAlpha3 * ht * paperInkMod;
-    result = mix(result, result * u_inkColor3, a);
+    float intensity = getLayerIntensity(pixel, u_inkColor3, paperRgb, d0, d1, d2, d3, u_layerCount);
+    float g = risoGrain(offsetUV, intensity, u_inkAngle3, 300.0);
+    float a = u_inkAlpha3 * g * absorbMod;
+    result = result * mix(vec3(1.0), u_inkColor3, a);
   }
 
-  // Adaptive LOD blend (from HalftoneRenderer)
-#ifdef GL_OES_standard_derivatives
-  float afwidth = 2.0 * u_frequency * max(length(dFdx(st)), length(dFdy(st)));
-  float blend = smoothstep(0.7, 1.4, afwidth);
-#else
-  float blend = 0.0;
-#endif
-
-  vec3 original = sampleAt(st);
-  vec3 finalColor = mix(result, original, blend);
-  gl_FragColor = vec4(finalColor, 1.0);
+  gl_FragColor = vec4(result, 1.0);
 }`;
 
 // --- Color extraction (CPU, runs once on image load) ---

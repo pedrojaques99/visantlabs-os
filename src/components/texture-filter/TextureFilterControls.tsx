@@ -8,7 +8,19 @@ import {
   useTextureFilterStore, BLEND_MODES, TEXTURE_PRESETS, FILTER_PRESETS,
   TEXTURE_FILTER_DEFAULTS, type TextureFilterSettings,
 } from '@/stores/textureFilterStore';
-import { Download, UploadIcon, X, ImageIcon } from 'lucide-react';
+import { Download, UploadIcon, X, ImageIcon, Grid3X3, Layers, Blend, Move, RotateCw, Grid, Palette, Sparkles } from 'lucide-react';
+import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
+
+const SECTION_NAV: SectionNavItem[] = [
+  { id: 'sec-presets', icon: <Grid3X3 size={14} />, label: 'Presets' },
+  { id: 'sec-texture', icon: <Layers size={14} />, label: 'Texture' },
+  { id: 'sec-mode', icon: <Blend size={14} />, label: 'Mode' },
+  { id: 'sec-appearance', icon: <RotateCw size={14} />, label: 'Appearance' },
+  { id: 'sec-position', icon: <Move size={14} />, label: 'Position' },
+  { id: 'sec-tile', icon: <Grid size={14} />, label: 'Tile' },
+  { id: 'sec-color', icon: <Palette size={14} />, label: 'Color' },
+  { id: 'sec-post', icon: <Sparkles size={14} />, label: 'Post-Processing' },
+];
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import { SendToButton } from '@/components/shared/SendToButton';
 import {
@@ -57,7 +69,9 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
   const [offsetY, setOffsetY] = useDebouncedSlider(store.offsetY, (v) => update('offsetY', v));
 
   return (
-    <ToolPanel>
+    <ToolPanel className="flex-row">
+      <SectionNavSidebar items={SECTION_NAV} />
+      <div className="flex-1 flex flex-col overflow-hidden">
       {/* Image header */}
       <ToolPanelHeader>
         {store.imageUrl ? (
@@ -91,7 +105,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
 
       <ToolPanelContent>
         {/* Presets */}
-        <div className="space-y-3">
+        <div id="sec-presets" className="space-y-3 scroll-mt-2">
           <SectionLabel>Presets</SectionLabel>
           <ToolPanelGrid>
             {Object.entries(FILTER_PRESETS).map(([name]) => (
@@ -111,7 +125,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         <ToolPanelDivider />
 
         {/* Texture */}
-        <div className="space-y-3">
+        <div id="sec-texture" className="space-y-3 scroll-mt-2">
           <SectionLabel>Texture</SectionLabel>
           <ToolPanelGrid>
             {TEXTURE_PRESETS.map((p) => (
@@ -137,7 +151,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         <ToolPanelDivider />
 
         {/* Mode: Blend or Mask — mutually exclusive */}
-        <div className="space-y-3">
+        <div id="sec-mode" className="space-y-3 scroll-mt-2">
           <SectionLabel onReset={() => {
             update('blendMode', TEXTURE_FILTER_DEFAULTS.blendMode);
             update('maskMode', false);
@@ -172,7 +186,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         <ToolPanelDivider />
 
         {/* Appearance */}
-        <div className="space-y-3">
+        <div id="sec-appearance" className="space-y-3 scroll-mt-2">
           <SectionLabel onReset={() => {
             update('opacity', TEXTURE_FILTER_DEFAULTS.opacity);
             update('scale', TEXTURE_FILTER_DEFAULTS.scale);
@@ -186,7 +200,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         <ToolPanelDivider />
 
         {/* Position */}
-        <div className="space-y-3">
+        <div id="sec-position" className="space-y-3 scroll-mt-2">
           <SectionLabel onReset={() => {
             update('rotation', 0);
             update('offsetX', 0);
@@ -204,7 +218,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         <ToolPanelDivider />
 
         {/* Tile */}
-        <div className="space-y-3">
+        <div id="sec-tile" className="space-y-3 scroll-mt-2">
           <SectionLabel onReset={() => {
             update('tileGapX', 0);
             update('tileGapY', 0);
@@ -225,7 +239,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         <ToolPanelDivider />
 
         {/* Color */}
-        <ToolPanelDisclosure label="Color">
+        <ToolPanelDisclosure label="Color" id="sec-color">
           <ToolPanelRow label="Original color">
             <Switch checked={store.useOriginalColor} onCheckedChange={(v) => update('useOriginalColor', v)} />
           </ToolPanelRow>
@@ -246,7 +260,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         </ToolPanelDisclosure>
 
         {/* Post-Processing */}
-        <ToolPanelDisclosure label="Post-Processing">
+        <ToolPanelDisclosure label="Post-Processing" id="sec-post">
           <ShaderControls
             enabled={store.shaderEnabled}
             shaderType={store.shaderType}
@@ -271,6 +285,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
           {store.imageUrl && <SendToButton source="texture-filter" imageUrl={store.imageUrl} />}
         </div>
       </ToolPanelActions>
+      </div>
     </ToolPanel>
   );
 });

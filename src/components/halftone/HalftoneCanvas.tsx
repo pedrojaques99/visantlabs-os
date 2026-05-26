@@ -1,9 +1,10 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HalftoneRenderer } from './HalftoneRenderer';
 import { useHalftoneStore } from '@/stores/halftoneStore';
+import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 
 interface HalftoneCanvasProps {
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
@@ -13,15 +14,17 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<HalftoneRenderer | null>(null);
-  const [webglFailed, setWebglFailed] = useState(false);
-  const [isPanning, setIsPanning] = useState(false);
-  const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const [webglFailed, setWebglFailed] = React.useState(false);
 
   const store = useHalftoneStore();
   const settingsJson = useHalftoneStore((s) => JSON.stringify(s.getSettings()));
   const zoom = useHalftoneStore((s) => s.zoom);
   const panX = useHalftoneStore((s) => s.panX);
   const panY = useHalftoneStore((s) => s.panY);
+
+  const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
+    getState: useHalftoneStore.getState,
+  });
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -52,36 +55,8 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
   }, [settingsJson]);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const handler = (e: WheelEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const factor = e.deltaY > 0 ? 0.9 : 1.1;
-      const s = useHalftoneStore.getState();
-      s.setZoom(s.zoom * factor);
-    };
-    container.addEventListener('wheel', handler, { passive: false });
-    return () => container.removeEventListener('wheel', handler);
-  }, [store.imageUrl]);
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
-      e.preventDefault();
-      setIsPanning(true);
-      const s = useHalftoneStore.getState();
-      panStart.current = { x: e.clientX, y: e.clientY, panX: s.panX, panY: s.panY };
-    }
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isPanning) return;
-    const dx = e.clientX - panStart.current.x;
-    const dy = e.clientY - panStart.current.y;
-    useHalftoneStore.getState().setPan(panStart.current.panX + dx, panStart.current.panY + dy);
-  }, [isPanning]);
-
-  const handleMouseUp = useCallback(() => setIsPanning(false), []);
+    return bindWheelToRef(containerRef.current);
+  }, [bindWheelToRef, store.imageUrl]);
 
   if (webglFailed) {
     return (

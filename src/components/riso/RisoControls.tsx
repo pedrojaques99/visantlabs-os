@@ -13,7 +13,18 @@ import {
   ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
-import { Eye, EyeOff, X, ImageIcon, Zap, Loader2, Focus, Download } from 'lucide-react';
+import { Eye, EyeOff, X, ImageIcon, Zap, Loader2, Focus, Download, Grid3X3, Circle, Layers, Palette, Image, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
+
+const SECTION_NAV: SectionNavItem[] = [
+  { id: 'sec-presets', icon: <Grid3X3 size={14} />, label: 'Presets' },
+  { id: 'sec-halftone', icon: <Circle size={14} />, label: 'Halftone' },
+  { id: 'sec-layers', icon: <Layers size={14} />, label: 'Layers' },
+  { id: 'sec-palettes', icon: <Palette size={14} />, label: 'Ink Palettes' },
+  { id: 'sec-image', icon: <Image size={14} />, label: 'Image & Texture' },
+  { id: 'sec-details', icon: <SlidersHorizontal size={14} />, label: 'Layer Details' },
+  { id: 'sec-post', icon: <Sparkles size={14} />, label: 'Post-Processing' },
+];
 
 interface RisoControlsProps {
   onExport: () => void;
@@ -58,7 +69,9 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
   }, [store]);
 
   return (
-    <ToolPanel>
+    <ToolPanel className="flex-row">
+      <SectionNavSidebar items={SECTION_NAV} />
+      <div className="flex-1 flex flex-col overflow-hidden">
       {/* Image header */}
       <ToolPanelHeader>
         {store.imageUrl ? (
@@ -84,7 +97,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
 
       <ToolPanelContent>
         {/* Presets */}
-        <ToolPanelSection title="PRESETS">
+        <ToolPanelSection title="PRESETS" id="sec-presets">
           <ToolPanelGrid>
             {Object.entries(RISO_FULL_PRESETS).map(([name, preset]) => (
               <ToolPanelChip key={name} onClick={() => applyFullPreset(name)}>
@@ -121,7 +134,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
         </ToolPanelRow>
 
         {/* Halftone */}
-        <ToolPanelSection title="HALFTONE">
+        <ToolPanelSection title="HALFTONE" id="sec-halftone">
           <NodeSlider label="Frequency" value={frequency} min={15} max={200} step={1} onChange={setFrequency} />
           <NodeSlider label="Dot Size" value={dotSize} min={0.3} max={1} step={0.01} onChange={setDotSize} />
           <NodeSlider label="Misregistration" value={misregistration} min={0} max={8} step={0.5} onChange={setMisregistration} formatValue={(v) => `${v}px`} />
@@ -129,7 +142,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
 
         {/* Layers */}
         {store.layers.length > 0 && (
-          <ToolPanelSection title="LAYERS">
+          <ToolPanelSection title="LAYERS" id="sec-layers">
             <div className="space-y-2">
               {store.layers.map((layer, i) => (
                 <div key={i} className="flex items-center gap-3 py-1.5">
@@ -148,7 +161,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
         )}
 
         {/* Ink Palettes */}
-        <ToolPanelDisclosure label="Ink Palettes">
+        <ToolPanelDisclosure label="Ink Palettes" id="sec-palettes">
           <ToolPanelGrid>
             {Object.entries(RISO_INK_PRESETS).map(([name, colors]) => (
               <ToolPanelChip key={name} onClick={() => {
@@ -170,7 +183,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
         </ToolPanelDisclosure>
 
         {/* Image & Texture */}
-        <ToolPanelDisclosure label="Image & Texture">
+        <ToolPanelDisclosure label="Image & Texture" id="sec-image">
           <NodeSlider label="Contrast" value={contrast} min={0.3} max={2.5} step={0.01} onChange={setContrast} />
           <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
           <div className="h-px bg-neutral-800/50 my-1" />
@@ -188,7 +201,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
 
         {/* Layer Details */}
         {store.layers.length > 0 && (
-          <ToolPanelDisclosure label="Layer Details">
+          <ToolPanelDisclosure label="Layer Details" id="sec-details">
             <div className="space-y-5">
               {store.layers.map((layer, i) => (
                 <div key={i} className="space-y-3">
@@ -207,7 +220,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
         )}
 
         {/* Post-Processing */}
-        <ToolPanelDisclosure label="Post-Processing">
+        <ToolPanelDisclosure label="Post-Processing" id="sec-post">
           <ShaderControls
             enabled={store.shaderEnabled}
             shaderType={store.shaderType}
@@ -234,6 +247,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
           </Button>
         )}
       </ToolPanelActions>
+      </div>
     </ToolPanel>
   );
 });
