@@ -66,9 +66,9 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-md border transition-all duration-300",
+                  "flex items-center justify-center w-8 h-8 rounded-md border-node transition-all duration-300",
                   isBrandActive
-                    ? "bg-foreground/20 border-foreground/50 text-foreground"
+                    ? "bg-foreground/20 border-neutral-600 text-foreground"
                     : "bg-neutral-900/50 border-neutral-800 text-neutral-600 grayscale opacity-60 hover:opacity-100"
                 )}
               >

@@ -72,7 +72,7 @@ const FormatBadge: React.FC<{ url: string; className?: string }> = ({ url, class
     const isSvg = fmt === 'SVG';
     return (
         <span className={cn(
-            "absolute text-[7px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-[5]",
+            "absolute text-[10px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10",
             isSvg
                 ? "bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30"
                 : "bg-white/10 text-neutral-400 border border-white/10",
@@ -326,7 +326,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             size="sm"
                             onClick={handleBulkDelete}
                             disabled={isBulkDeleting}
-                            className="text-[10px] h-7 bg-red-500 hover:bg-red-600 font-mono"
+                            className="text-[10px] h-7 bg-destructive hover:bg-destructive font-mono"
                         >
                             {isBulkDeleting ? <GlitchLoader size={10} /> : <Trash2 size={10} />}
                             <span className="ml-2 uppercase">Delete</span>
@@ -364,7 +364,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         onClick={(e) => handleItemClick(logo.id, logo.url, 'logo', e)}
                                         className={cn(
                                             "group/logo relative aspect-square rounded-md border transition-all cursor-pointer overflow-hidden",
-                                            isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-white/5 bg-neutral-900/40"
+                                            isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-neutral-800 bg-neutral-900/40"
                                         )}
                                     >
                                         <img
@@ -443,7 +443,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         onClick={(e) => handleItemClick(item.id, item.url, 'image', e)}
                                         className={cn(
                                             "group/media relative aspect-[4/3] rounded-md border transition-all cursor-pointer overflow-hidden",
-                                            isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-white/5 bg-neutral-900/40"
+                                            isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-neutral-800 bg-neutral-900/40"
                                         )}
                                     >
                                         {item.type === 'image' ? (
@@ -463,7 +463,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                                         isSelected && "bg-brand-cyan text-black font-bold"
                                                     )}>
                                                         {item.category && !isSelected && (
-                                                            <span className="text-[7px] uppercase tracking-wider text-neutral-600 bg-white/5 px-1 rounded">
+                                                            <span className="text-[10px] uppercase tracking-wider text-neutral-600 bg-white/5 px-1 rounded">
                                                                 {item.category}
                                                             </span>
                                                         )}
@@ -491,9 +491,9 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                                     }}
                                                     onClick={(e) => e.stopPropagation()}
                                                     className={cn(
-                                                        "h-5 pl-1 pr-4 rounded text-[8px] font-mono uppercase tracking-wider appearance-none cursor-pointer",
+                                                        "h-5 pl-1 pr-4 rounded text-[10px] font-mono uppercase tracking-wider appearance-none cursor-pointer",
                                                         "bg-black/70 backdrop-blur-sm border border-white/10 text-neutral-300",
-                                                        "hover:border-white/20 focus:border-brand-cyan/40 focus:outline-none transition-colors",
+                                                        "hover:border-white/20 focus:border-neutral-600 focus:outline-none transition-colors",
                                                         !item.category && "text-neutral-600"
                                                     )}
                                                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 2px center' }}

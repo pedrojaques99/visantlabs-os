@@ -7,6 +7,7 @@ import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey, hashQuery } from '../lib/cache-utils.js';
 import { prisma } from '../db/prisma.js';
 import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
+import { chargeCredits } from '../lib/credits.js';
 
 const expertRateLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -105,6 +106,7 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
       }
     }
 
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     const result = await knowledgeService.expertChat({
       query,
       userId: req.userId!,

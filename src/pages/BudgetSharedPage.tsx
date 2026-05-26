@@ -31,6 +31,7 @@ import { VisantPageRenderer } from '../components/budget/visant/VisantPageRender
 import { useVisantTemplate } from '@/hooks/useVisantTemplate';
 import { ResponsivePageWrapper } from '../components/budget/visant/ResponsivePageWrapper';
 import { SEO } from '../components/SEO';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export const BudgetSharedPage: React.FC = () => {
   const { shareId } = useParams<{ shareId: string }>();
@@ -385,7 +386,7 @@ const BudgetSharedContent: React.FC<{
   const handleShare = async () => {
     const currentUrl = window.location.href;
     try {
-      await navigator.clipboard.writeText(currentUrl);
+      await copyToClipboard(currentUrl);
       toast.success(t('budget.shared.linkCopied'));
     } catch (error) {
       console.error('Error copying link:', error);

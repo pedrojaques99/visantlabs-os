@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { BrandingData } from '../types/types';
 import { getStepContent } from './brandingHelpers';
+import { formatDate } from '@/utils/localeUtils';
 
 interface TextSegment {
   text: string;
@@ -316,7 +317,7 @@ export const generateBrandingPDF = (
   doc.text('Relatório Completo de Branding', pageWidth / 2, 65, { align: 'center' });
 
   yPosition = 90;
-  addText(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 10);
+  addText(`Data: ${formatDate(new Date())}`, 10);
 
   if (data.name) {
     yPosition += 5;

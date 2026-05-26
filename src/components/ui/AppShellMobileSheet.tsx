@@ -29,7 +29,7 @@ export const AppShellMobileSheet: React.FC<AppShellMobileSheetProps> = ({
   >
     <button
       onClick={onToggle}
-      className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-white/[0.06] text-neutral-400 active:bg-neutral-800/90"
+      className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-neutral-800 text-neutral-400 active:bg-neutral-800/90"
     >
       {open ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
       <span className="text-[11px] uppercase tracking-widest">{label}</span>

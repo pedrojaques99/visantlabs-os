@@ -5,6 +5,7 @@ import type {
     TypographyPair, GraphicSystem, LogoConcept, BrandingData,
 } from '../../src/types/branding.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 
 // ═══════════════════════════════════════════
 // Metodologia Visant — Branding Service v2
@@ -97,7 +98,7 @@ A partir da descrição da marca, extraia:
 
    Para cada pilar: nome + descrição curta de como a marca o pratica.
 
-Descrição da marca: "${prompt}"
+Descrição da marca: "${sanitizeForPrompt(prompt, 5000)}"
 ${langInstruction(prompt)}`;
 
         const response = await getAI().models.generateContent({
@@ -166,7 +167,7 @@ Mapeie 3 camadas:
 Também identifique 4-6 concorrentes estratégicos com análise de posicionamento.
 
 Contexto:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
 ${langInstruction(prompt)}`;
@@ -227,7 +228,7 @@ Perguntas-chave:
 - O que ela teme?
 
 Contexto construído:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
 - Pesquisa: ${previousData.marketResearchV2?.summary || 'N/A'}
@@ -317,7 +318,7 @@ Arquétipos disponíveis:
 ${ARCHETYPES_RAG.map(a => `- ID ${a.id}: ${a.titulo} — ${a.descricao}`).join('\n')}
 
 Contexto construído:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Pilares: ${previousData.pillars?.map(p => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
 - Pesquisa: ${previousData.marketResearchV2?.summary || 'N/A'}
@@ -427,7 +428,7 @@ A frase final do manifesto vira SUGESTÃO DE SLOGAN.
 Escreva o manifesto com emoção, narrativa e alma. Não seja genérico.
 
 Contexto construído:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Pilares: ${previousData.pillars?.map(p => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
 - Persona: ${previousData.personaV2?.name || 'N/A'}, ${previousData.personaV2?.context || 'N/A'}
@@ -478,7 +479,7 @@ Análise SWOT estratégica. Foco em fatores que impactam diferenciação e defen
 - Threats: Forças competitivas que desafiam a posição da marca
 
 Contexto:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
 - Concorrentes: ${previousData.marketResearchV2?.competitors?.map(c => c.name).join(', ') || 'N/A'}
@@ -538,7 +539,7 @@ Crie 5-7 cores, cada uma com:
 Inclua sempre: 1 cor vibrante principal, 1 cor neutra escura (chão), 1 cor clara (respiro/fundo), 2-3 cores de suporte.
 
 Contexto:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
 - Arquétipo primário: ${previousData.archetypesV2?.primary?.title || 'N/A'}
@@ -598,7 +599,7 @@ Sugira fontes REAIS do Google Fonts ou Adobe Fonts. Para cada:
 - rationale: por que essa fonte se encaixa no posicionamento
 
 Contexto:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Arquétipo primário: ${previousData.archetypesV2?.primary?.title || 'N/A'}
 - Arquétipo secundário: ${previousData.archetypesV2?.secondary?.title || 'N/A'}
@@ -659,7 +660,7 @@ Defina os 4 componentes:
 4. GRID EDITORIAL: descrição da malha que organiza posts, páginas, apresentações.
 
 Contexto:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
 - Arquétipos: ${previousData.archetypesV2?.primary?.title || 'N/A'} + ${previousData.archetypesV2?.secondary?.title || 'N/A'}
@@ -715,7 +716,7 @@ Gere DIRETRIZES CONCEITUAIS (não o logo em si):
 3. Notas sobre geometria e grid (ex: "construção em grid circular transmite profissionalismo e longevidade")
 
 Contexto:
-- Marca: "${prompt}"
+- Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Pilares: ${previousData.pillars?.map(p => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
 - Arquétipos: ${previousData.archetypesV2?.primary?.title || 'N/A'} + ${previousData.archetypesV2?.secondary?.title || 'N/A'}

@@ -2,6 +2,7 @@ import { Router } from 'express'
 import rateLimit from 'express-rate-limit'
 import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { extractPdfStreaming } from '../lib/pdf-extract.js'
+import { chargeCredits } from '../lib/credits.js'
 
 const router = Router()
 
@@ -74,6 +75,7 @@ router.post('/', rateLimiter, authenticate, async (req: AuthRequest, res) => {
   }
 
   try {
+    await chargeCredits(req.userId!, 1)
     await extractPdfStreaming(buffer, writeEvent, req.userId)
   } catch (err: any) {
     return res.status(500).json({ error: err.message || 'PDF extraction failed' })

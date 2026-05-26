@@ -161,7 +161,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                     className={`
                       relative flex flex-col items-center p-3 rounded-xl border cursor-pointer transition-all gap-2
                       ${selectedLogos.includes(comp.key)
-                        ? 'bg-brand-cyan/5 border-brand-cyan shadow-[0_0_10px_rgba(0,186,242,0.1)]'
+                        ? 'bg-brand-cyan/5 border-brand-cyan shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 10%)]'
                         : 'bg-neutral-950/50 border-neutral-800 hover:border-neutral-700'}
                     `}
                   >

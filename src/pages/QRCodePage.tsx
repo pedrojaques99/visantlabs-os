@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Download, QrCode } from 'lucide-react';
 import { useLayout } from '@/hooks/useLayout';
+import { loadImage } from '@/utils/imageUtils';
+import { downloadBlob } from '@/utils/clipboard';
 import { FormInput } from '../components/ui/form-input';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
@@ -21,7 +23,7 @@ export const QRCodePage: React.FC = () => {
   const [marginSize, setMarginSize] = useState<number>(4);
   const qrCodeRef = useRef<HTMLDivElement>(null);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!qrCodeRef.current) return;
 
     const svg = qrCodeRef.current.querySelector('svg');
@@ -30,9 +32,12 @@ export const QRCodePage: React.FC = () => {
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const img = new Image();
 
-    img.onload = () => {
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    try {
+      const img = await loadImage(url, null);
       canvas.width = img.width;
       canvas.height = img.height;
       if (ctx) {
@@ -42,29 +47,15 @@ export const QRCodePage: React.FC = () => {
 
         canvas.toBlob((blob) => {
           if (blob) {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `qrcode-${Date.now()}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            downloadBlob(blob, `qrcode-${Date.now()}.png`);
           }
         }, 'image/png');
       }
-    };
-
-    img.onerror = () => {
+    } catch {
       console.error('Failed to load SVG image');
-    };
-
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-    img.src = url;
-
-    // Cleanup
-    setTimeout(() => URL.revokeObjectURL(url), 100);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   };
 
   const hasText = text.trim().length > 0;

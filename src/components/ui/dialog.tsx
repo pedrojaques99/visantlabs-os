@@ -53,13 +53,13 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-neutral-900 border border-white/[0.06] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 flex flex-col max-h-[85vh] w-[90vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-2xl duration-200",
+          "bg-neutral-900 border border-neutral-800 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 flex flex-col max-h-[85vh] w-[90vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-2xl duration-200",
           className
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute top-4 right-4 rounded-lg p-1.5 opacity-50 transition-all hover:opacity-100 hover:bg-white/[0.05] focus:outline-none focus:ring-2  disabled:pointer-events-none">
+        <DialogPrimitive.Close className="absolute top-4 right-4 rounded-lg p-1.5 opacity-50 transition-all hover:opacity-100 hover:bg-white/5 focus:outline-none focus:ring-2  disabled:pointer-events-none">
           <XIcon className="size-4 text-neutral-400" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

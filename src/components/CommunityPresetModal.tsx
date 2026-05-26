@@ -361,7 +361,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto px-6 py-5">
                     {error && (
-                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-md flex items-center gap-2 text-red-400 text-sm">
+                        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-md flex items-center gap-2 text-destructive text-sm">
                             <span>⚠</span>
                             <span>{error}</span>
                         </div>
@@ -441,7 +441,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                         </div>
                                     )}
                                     {imageUploadError && (
-                                        <p className="text-xs text-red-400 mt-2">{imageUploadError}</p>
+                                        <p className="text-xs text-destructive mt-2">{imageUploadError}</p>
                                     )}
                                     {(!formData.name || formData.name.trim() === '') && (
                                         <p className="text-xs text-neutral-500 mt-2">{t('communityPresets.enterPresetNameFirst')}</p>
@@ -469,7 +469,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
                         {/* Category & Preset Type Row */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="relative z-[60]">
+                            <div className="relative z-50">
                                 <MicroTitle as="label" className="mb-1.5">{t('communityPresets.category')} *</MicroTitle>
                                 <Select
                                     options={categoryOptions.map(opt => ({ value: opt.value, label: opt.label }))}
@@ -487,7 +487,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                 />
                             </div>
                             {formData.category === 'presets' && (
-                                <div className="relative z-[60]">
+                                <div className="relative z-50">
                                     <MicroTitle as="label" className="mb-1.5">{t('communityPresets.presetType')} *</MicroTitle>
                                     <Select
                                         options={presetTypeOptions}
@@ -512,7 +512,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                     placeholder={t('communityPresets.descriptionPlaceholder')}
                                 />
                             </div>
-                            <div className="relative z-[50]">
+                            <div className="relative z-50">
                                 <MicroTitle as="label" className="mb-1.5">{t('communityPresets.aspectRatioOptional')}</MicroTitle>
                                 <Select
                                     options={aspectRatioOptions}
@@ -596,7 +596,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                                         tags: formData.tags?.filter((_, i) => i !== index) || [],
                                                     });
                                                 }}
-                                                className="text-neutral-500 hover:text-red-400 transition-colors ml-0.5"
+                                                className="text-neutral-500 hover:text-destructive transition-colors ml-0.5"
                                             >
                                                 <X size={12} />
                                             </Button>

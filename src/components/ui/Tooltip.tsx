@@ -194,7 +194,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {isVisible && !isDismissed && (
         <div
           ref={tooltipRef}
-          className={`fixed z-[100] px-2.5 py-1.5 text-xs font-mono backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in ${theme === 'dark'
+          className={`fixed z-50 px-2.5 py-1.5 text-xs font-mono backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in ${theme === 'dark'
             ? 'text-neutral-300 bg-neutral-900/70 border border-neutral-800/40'
             : 'text-neutral-700 bg-white/70 border border-neutral-200/40'
             }`}

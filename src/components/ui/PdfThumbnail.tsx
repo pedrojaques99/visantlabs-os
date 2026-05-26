@@ -111,7 +111,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 hover:bg-red-500 border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          className="absolute top-1 right-1 w-5 h-5 bg-destructive/80 hover:bg-destructive border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
           title="Remove PDF"
         >
           <X size={10} className="text-white" strokeWidth={3} />

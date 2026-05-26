@@ -48,8 +48,8 @@ export const AnalyzingImageOverlay: React.FC<AnalyzingImageOverlayProps> = ({ is
                 }`}
                 style={{
                     boxShadow: theme === 'dark'
-                        ? '0 0 20px rgba(82, 221, 235, 0.1), inset 0 0 30px rgba(0, 0, 0, 0.3)'
-                        : '0 0 20px rgba(82, 221, 235, 0.15), inset 0 0 30px rgba(255, 255, 255, 0.5)'
+                        ? '0 0 20px oklch(from var(--brand-cyan) l c h / 10%), inset 0 0 30px rgba(0, 0, 0, 0.3)'
+                        : '0 0 20px oklch(from var(--brand-cyan) l c h / 15%), inset 0 0 30px rgba(255, 255, 255, 0.5)'
                 }}>
 
                 {/* Content */}

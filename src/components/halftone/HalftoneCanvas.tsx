@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { loadImage } from '@/utils/imageUtils';
 import { HalftoneRenderer } from './HalftoneRenderer';
 import { useHalftoneStore } from '@/stores/halftoneStore';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
@@ -40,13 +41,10 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
 
   useEffect(() => {
     if (!store.imageUrl || !rendererRef.current) return;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
+    loadImage(store.imageUrl).then((img) => {
       rendererRef.current!.setupTexture(img);
       rendererRef.current!.render(store.getSettings());
-    };
-    img.src = store.imageUrl;
+    });
   }, [store.imageUrl]);
 
   useEffect(() => {

@@ -62,10 +62,10 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
         <Textarea
           value={json}
           onChange={(e) => { setJson(e.target.value); persist(e.target.value); }}
-          className={`border-white/5 text-[10px] font-mono min-h-[120px] resize-none placeholder:text-neutral-700 ${!isValid ? 'border-red-500/30' : ''}`}
+          className={`border-neutral-800 text-[10px] font-mono min-h-[120px] resize-none placeholder:text-neutral-700 ${!isValid ? 'border-destructive/30' : ''}`}
           placeholder={'{"spacing": {"s": "4px"}, "radius": {"m": "10px"}}'}
         />
-        {!isValid && <p className="text-[10px] text-red-400 font-mono">Invalid JSON</p>}
+        {!isValid && <p className="text-[10px] text-destructive font-mono">Invalid JSON</p>}
       </div>
     </SectionBlock>
   );

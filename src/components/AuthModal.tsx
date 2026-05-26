@@ -286,8 +286,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
 
           {authError && (
-            <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-md">
-              <p className="text-xs text-red-400 font-mono">{authError}</p>
+            <div className="p-2 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-xs text-destructive font-mono">{authError}</p>
             </div>
           )}
 

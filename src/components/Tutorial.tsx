@@ -156,8 +156,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                     <div
                       className="tutorial-bento-step-number flex-shrink-0 rounded-md w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 flex items-center justify-center"
                       style={{
-                        backgroundColor: theme === 'dark' ? 'rgba(82, 221, 235, 0.15)' : 'rgba(82, 221, 235, 0.1)',
-                        border: `1px solid ${theme === 'dark' ? 'rgba(82, 221, 235, 0.3)' : 'rgba(82, 221, 235, 0.2)'}`,
+                        backgroundColor: theme === 'dark' ? 'oklch(from var(--brand-cyan) l c h / 15%)' : 'oklch(from var(--brand-cyan) l c h / 10%)',
+                        border: `1px solid ${theme === 'dark' ? 'oklch(from var(--brand-cyan) l c h / 30%)' : 'oklch(from var(--brand-cyan) l c h / 20%)'}`,
                       }}
                     >
                       <p className={`font-mono font-medium leading-normal text-nowrap whitespace-pre text-xs sm:text-sm md:text-base ${theme === 'dark' ? 'text-cyan-300' : 'text-cyan-600'

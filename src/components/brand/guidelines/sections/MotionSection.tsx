@@ -67,7 +67,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
           <div className="flex gap-1">
             {PHILOSOPHY_OPTIONS.map(opt => (
               <button key={opt.value} type="button" onClick={() => patch({ philosophy: opt.value })}
-                className={cn('flex-1 h-6 rounded border text-[9px] font-mono uppercase transition-all', motion.philosophy === opt.value ? 'border-white/20 bg-white/[0.06] text-neutral-200' : 'border-white/5 text-neutral-600 hover:border-white/10')}
+                className={cn('flex-1 h-6 rounded border text-[10px] font-mono uppercase transition-all', motion.philosophy === opt.value ? 'border-white/20 bg-white/5 text-neutral-200' : 'border-neutral-800 text-neutral-600 hover:border-white/10')}
               >{opt.label}</button>
             ))}
           </div>
@@ -79,8 +79,8 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
           <div className="grid grid-cols-3 gap-1.5">
             {(['fast', 'medium', 'slow'] as const).map(key => (
               <div key={key} className="space-y-0.5">
-                <MicroTitle className="text-neutral-700 text-[9px]">{key}</MicroTitle>
-                <Input type="number" value={motion.durations?.[key] ?? DEFAULT_MOTION.durations![key]} onChange={e => patchDuration(key, Number(e.target.value))} className="h-6 border-white/5 text-[10px] font-mono text-center" />
+                <MicroTitle className="text-neutral-700 text-[10px]">{key}</MicroTitle>
+                <Input type="number" value={motion.durations?.[key] ?? DEFAULT_MOTION.durations![key]} onChange={e => patchDuration(key, Number(e.target.value))} className="h-6 border-neutral-800 text-[10px] font-mono text-center" />
               </div>
             ))}
           </div>
@@ -94,12 +94,12 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
             <div className="flex flex-wrap gap-1 pb-1">
               {EASING_PRESETS.map(p => (
                 <button key={p.value} type="button" onClick={() => patch({ easing: p.value })}
-                  className={cn('px-2 h-5 rounded border text-[9px] font-mono transition-all', motion.easing === p.value ? 'border-white/20 bg-white/[0.06] text-neutral-200' : 'border-white/5 text-neutral-600 hover:border-white/10')}
+                  className={cn('px-2 h-5 rounded border text-[10px] font-mono transition-all', motion.easing === p.value ? 'border-white/20 bg-white/5 text-neutral-200' : 'border-neutral-800 text-neutral-600 hover:border-white/10')}
                 >{p.label}</button>
               ))}
             </div>
           </div>
-          <Input value={motion.easing || ''} onChange={e => patch({ easing: e.target.value })} className="h-7 border-white/5 text-[10px] font-mono text-neutral-400 placeholder:text-neutral-700" placeholder="cubic-bezier(x1, y1, x2, y2)" />
+          <Input value={motion.easing || ''} onChange={e => patch({ easing: e.target.value })} className="h-7 border-neutral-800 text-[10px] font-mono text-neutral-400 placeholder:text-neutral-700" placeholder="cubic-bezier(x1, y1, x2, y2)" />
         </div>
 
         {/* Reduced motion: hover-reveal */}

@@ -225,7 +225,7 @@ ${message}
           {/* Subject Field */}
           <div>
             <label className="block text-xs font-mono text-neutral-400 mb-1">
-              {t('support.subject') || 'Subject'} <span className="text-red-400">*</span>
+              {t('support.subject') || 'Subject'} <span className="text-destructive">*</span>
             </label>
             <Input
               type="text"
@@ -240,7 +240,7 @@ ${message}
           {/* Message Field */}
           <div>
             <label className="block text-xs font-mono text-neutral-400 mb-1">
-              {t('support.message') || 'Message'} <span className="text-red-400">*</span>
+              {t('support.message') || 'Message'} <span className="text-destructive">*</span>
             </label>
             <Textarea
               value={message}

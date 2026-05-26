@@ -309,7 +309,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
         <div className="space-y-6">
           <div className="text-center">
             <div className="flex flex-col items-center justify-center gap-2 mb-4">
-              <QrCode size={32} className="text-brand-cyan/60 drop-shadow-[0_0_10px_rgba(82,221,235,0.2)]" />
+              <QrCode size={32} className="text-brand-cyan/60 drop-shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 20%)]" />
               <h2 className="text-2xl font-bold tracking-tight text-neutral-100">
                 {t('pix.title') || 'Pagar com PIX'}
               </h2>
@@ -322,7 +322,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                 {t('pix.credits') || 'CRÉDITOS'}
               </MicroTitle>
               
-              <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-600 uppercase tracking-widest border-t border-neutral-800/10 pt-4 w-full justify-center">
+              <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
                 <span>REPASSE_TRANSPARENTE</span>
                 <span className="w-1 h-1 bg-neutral-800 rounded-full" />
                 <span className="text-brand-cyan/40">
@@ -333,7 +333,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-3 text-sm text-red-400 font-mono flex items-start gap-2">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 text-sm text-destructive font-mono flex items-start gap-2">
               <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -441,7 +441,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
           {/* QR Code Modal */}
           {showQrCodeModal && (qrCode || pixCode) && (
             <div
-              className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setShowQrCodeModal(false);
@@ -518,7 +518,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                   {/* Status - Only show expired if there's an error */}
                   {status === 'expired' && (
                     <div className="w-full">
-                      <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono text-center flex items-center justify-center gap-2">
+                      <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono text-center flex items-center justify-center gap-2">
                         <AlertCircle size={18} />
                         <span>{t('pix.expired') || 'Pagamento expirado'}</span>
                       </div>

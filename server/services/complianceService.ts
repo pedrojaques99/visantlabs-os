@@ -8,6 +8,7 @@
 import { GoogleGenAI } from '@google/genai';
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 // --------------------------------------------------------------------------
@@ -238,7 +239,7 @@ Do's: ${brandDos.join(', ') || 'None specified'}
 Don'ts: ${brandDonts.join(', ') || 'None specified'}
 
 Text to analyze:
-"${text.substring(0, 1000)}"
+"${sanitizeForPrompt(text, 1000)}"
 
 Respond with JSON only:
 {

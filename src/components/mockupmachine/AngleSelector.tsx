@@ -90,7 +90,7 @@ export const AngleSelector: React.FC<AngleSelectorProps> = ({
             {availableAngles.map((angle) => (
               <Button variant="ghost" key={angle}
                 onClick={(e) => handleAngleClick(angle, e)}
-                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-white/5 hover:border-[brand-cyan]/30 transition-all duration-200 text-left"
+                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-neutral-800 hover:border-[brand-cyan]/30 transition-all duration-200 text-left"
                 title={`Change to ${angle}`}
               >
                 {angle}

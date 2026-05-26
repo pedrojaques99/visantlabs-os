@@ -207,7 +207,7 @@ export const Studio3DPage: React.FC = () => {
           <div className="flex flex-col items-center gap-4 text-neutral-500">
             <Upload size={28} strokeWidth={1.2} />
             <p className="text-[11px] uppercase tracking-widest">{t('studio3d.dropHere')}</p>
-            <div className="flex gap-4 mt-2 text-[9px] text-neutral-600 font-mono uppercase tracking-wider">
+            <div className="flex gap-4 mt-2 text-[10px] text-neutral-600 font-mono uppercase tracking-wider">
               <span>{t('studio3d.input.views')}</span>
               <span>{t('studio3d.input.orbit')}</span>
               <span>{t('studio3d.input.zoom')}</span>
@@ -237,7 +237,7 @@ export const Studio3DPage: React.FC = () => {
                 ['Ctrl+\\', 'Toggle panel'],
                 ['?', 'This dialog'],
               ].map(([key, desc]) => (
-                <div key={key} className="flex items-center justify-between py-1 border-b border-white/5 last:border-0">
+                <div key={key} className="flex items-center justify-between py-1 border-b border-neutral-800 last:border-0">
                   <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 font-mono text-[10px]">{key}</kbd>
                   <span className="text-neutral-400">{desc}</span>
                 </div>

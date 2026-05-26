@@ -24,7 +24,7 @@ const PORTAL_CARDS = [
     external: false,
     accent: 'text-brand-cyan',
     bg: 'bg-brand-cyan/5 hover:bg-brand-cyan/10',
-    border: 'border-brand-cyan/20 hover:border-brand-cyan/40',
+    border: 'border-brand-cyan/20 hover:border-neutral-700',
   },
   {
     title: 'Usage Analytics',
@@ -73,7 +73,7 @@ export const DeveloperPortalPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 font-mono mb-4">Please sign in to access the Developer Portal.</p>
+          <p className="text-destructive font-mono mb-4">Please sign in to access the Developer Portal.</p>
           <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
         </div>
       </div>
@@ -87,7 +87,7 @@ export const DeveloperPortalPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
 
           {/* Header Card */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
                 <BreadcrumbWithBack to="/">

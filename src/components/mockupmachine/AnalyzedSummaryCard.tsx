@@ -129,7 +129,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                             className="hidden"
                                         />
                                         <Button variant="ghost" onClick={() => fileInputRef.current?.click()}
-                                            className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-md transition-all duration-200 hover:border-brand-cyan/50 group/btn z-20 opacity-60 group-hover:opacity-100"
+                                            className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-md transition-all duration-200 hover:border-neutral-700 group/btn z-20 opacity-60 group-hover:opacity-100"
                                             title={t('mockup.replaceImage') || 'Replace image'}
                                             aria-label="Replace image"
                                         >
@@ -151,7 +151,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                             <div className="absolute top-2 left-2 z-20 pointer-events-none">
                                 <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/80 backdrop-blur-md rounded border border-brand-cyan/30 shadow-lg animate-fade-in">
                                     <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
-                                    <span className="text-[9px] font-mono text-brand-cyan/90 uppercase tracking-widest">
+                                    <span className="text-[10px] font-mono text-brand-cyan/90 uppercase tracking-widest">
                                         {detectedLanguage}
                                     </span>
                                 </div>
@@ -190,7 +190,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                             className="hidden"
                                         />
                                         <Button variant="ghost" onClick={() => referenceInputRef.current?.click()}
-                                            className="w-12 h-12 rounded-md border border-dashed border-white/20 bg-black/30 backdrop-blur-sm hover:bg-black/50 hover:border-brand-cyan/40 flex items-center justify-center transition-all duration-200 group/add opacity-70 hover:opacity-100"
+                                            className="w-12 h-12 rounded-md border border-dashed border-white/20 bg-black/30 backdrop-blur-sm hover:bg-black/50 hover:border-neutral-700 flex items-center justify-center transition-all duration-200 group/add opacity-70 hover:opacity-100"
                                             title={t('mockup.addReferenceImage') || 'Add Reference'}
                                         >
                                             <Plus size={14} className="text-white/60 group-hover/add:text-brand-cyan" />

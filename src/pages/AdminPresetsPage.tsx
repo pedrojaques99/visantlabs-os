@@ -410,7 +410,7 @@ export const AdminPresetsPage: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-neutral-400 hover:text-red-400 hover:bg-neutral-800"
+              className="h-8 w-8 text-neutral-400 hover:text-destructive hover:bg-neutral-800"
               onClick={() => handleDelete((row.original.category as PresetType) || 'mockup', row.original.id)}
             >
               <Trash2 className="h-4 w-4" />
@@ -1279,7 +1279,7 @@ export const AdminPresetsPage: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto">
-            <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
+            <div className="bg-neutral-900 border border-white/10 rounded-md p-6 md:p-8 space-y-4 text-center">
               {isUserAuthenticated === false ? (
                 <>
                   <p className="text-neutral-400 font-mono mb-4">
@@ -1298,7 +1298,7 @@ export const AdminPresetsPage: React.FC = () => {
                     Acesso negado. Você precisa ser um administrador para acessar esta página.
                   </p>
                   {error && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono">
+                    <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono">
                       {error}
                     </div>
                   )}
@@ -1313,7 +1313,7 @@ export const AdminPresetsPage: React.FC = () => {
             if (val !== 'presets') navigate('/admin');
           }}>
             {/* Row 1: Header */}
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl mb-6">
+            <Card className="bg-neutral-900 border border-white/10 rounded-xl mb-6">
               <CardContent className="p-4 md:p-6">
                 <div className="mb-4">
                   <BreadcrumbWithBack to="/">
@@ -1349,7 +1349,7 @@ export const AdminPresetsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <TabsList className="bg-neutral-900/50 border border-neutral-800/50 p-1 h-auto flex-wrap">
+                  <TabsList className="bg-neutral-900/50 border border-white/10 p-1 h-auto flex-wrap">
                     <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                       {t('admin.dashboard')}
                     </TabsTrigger>
@@ -1469,7 +1469,7 @@ export const AdminPresetsPage: React.FC = () => {
             {/* Row 4: Grid */}
             <div className="space-y-6">
               {error && (
-                <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
+                <div className="mb-4 bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono">
                   {error}
                 </div>
               )}
@@ -1477,7 +1477,7 @@ export const AdminPresetsPage: React.FC = () => {
               {batchResult && !isBatchModalOpen && (
                 <div className={`mb-4 border rounded-xl p-4 text-sm font-mono ${batchResult.created > 0
                   ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                  : 'bg-red-500/10 border-red-500/30 text-red-400'
+                  : 'bg-destructive/10 border-destructive/30 text-destructive'
                   }`}>
                   <div className="mb-2">
                     <strong>{t('admin.presets.resultado_da_importao')}</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
@@ -1496,7 +1496,7 @@ export const AdminPresetsPage: React.FC = () => {
               )}
 
               {currentPresets.length === 0 ? (
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-12 text-center">
                     <p className="text-neutral-500 font-mono">
                       {t('adminPresets.noPresets')}
@@ -1530,7 +1530,7 @@ export const AdminPresetsPage: React.FC = () => {
             {/* Batch Upload Modal */}
             {isBatchModalOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm p-4">
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                   <CardContent className="p-6 md:p-8">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-xl font-semibold text-neutral-200 font-mono">
@@ -1562,7 +1562,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       {error && (
-                        <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono">
+                        <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono">
                           {error}
                         </div>
                       )}
@@ -1570,7 +1570,7 @@ export const AdminPresetsPage: React.FC = () => {
                       {batchResult && (
                         <div className={`border rounded-md p-4 text-sm font-mono ${batchResult.created > 0
                           ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                          : 'bg-red-500/10 border-red-500/30 text-red-400'
+                          : 'bg-destructive/10 border-destructive/30 text-destructive'
                           }`}>
                           <div className="mb-2">
                             <strong>{t('admin.presets.resultado')}</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
@@ -1625,7 +1625,7 @@ export const AdminPresetsPage: React.FC = () => {
                 onClick={handleCancel}
               >
                 <Card
-                  className="bg-neutral-900 border border-neutral-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                  className="bg-neutral-900 border border-white/10 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <CardContent className="p-6 md:p-8">
@@ -1641,7 +1641,7 @@ export const AdminPresetsPage: React.FC = () => {
                     </div>
 
                     {error && (
-                      <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono">
+                      <div className="mb-4 bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono">
                         {error}
                       </div>
                     )}
@@ -1713,7 +1713,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   <p className="text-sm text-neutral-400 font-mono">{t('admin.presets.fazendo_upload_da_imagem')}</p>
                                 )}
                                 {imageUploadError && (
-                                  <p className="text-sm text-red-400 font-mono">{imageUploadError}</p>
+                                  <p className="text-sm text-destructive font-mono">{imageUploadError}</p>
                                 )}
                                 {(!formData.id || formData.id.trim() === '') && (
                                   <p className="text-xs text-neutral-500 font-mono">

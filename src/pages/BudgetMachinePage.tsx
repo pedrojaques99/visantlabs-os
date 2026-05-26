@@ -24,6 +24,7 @@ import { DndContext, PointerSensor, useSensor, useSensors, DragEndEvent, DragSta
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export const BudgetMachinePage: React.FC = () => {
   const { t } = useTranslation();
@@ -339,7 +340,7 @@ export const BudgetMachinePage: React.FC = () => {
       setShareLink(fullUrl);
 
       // Copy to clipboard
-      await navigator.clipboard.writeText(fullUrl);
+      await copyToClipboard(fullUrl);
       setLinkCopied(true);
       toast.success(t('budget.linkCopied') || 'Link copied to clipboard!');
 
@@ -752,7 +753,7 @@ export const BudgetMachinePage: React.FC = () => {
                           className="flex-1 px-3 py-2 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
                         />
                         <Button variant="ghost" onClick={() => {
-                          navigator.clipboard.writeText(shareLink);
+                          copyToClipboard(shareLink);
                           setLinkCopied(true);
                           setTimeout(() => setLinkCopied(false), 2000);
                         }}

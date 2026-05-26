@@ -1,4 +1,5 @@
 import { getProxiedUrl } from './proxyUtils';
+import { loadImage } from '@/utils/imageUtils';
 
 export function base64ToUint8Array(base64: string): Uint8Array {
   const byteCharacters = atob(base64);
@@ -57,32 +58,29 @@ export async function fetchImageAsBlob(url: string): Promise<Blob> {
   }
 }
 
-function convertToPngBlob(blob: Blob): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(blob);
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        URL.revokeObjectURL(objectUrl);
-        reject(new Error('Canvas context failed'));
-        return;
-      }
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob((result) => {
-        URL.revokeObjectURL(objectUrl);
-        result ? resolve(result) : reject(new Error('PNG conversion failed'));
-      }, 'image/png');
-    };
-    img.onerror = () => {
+async function convertToPngBlob(blob: Blob): Promise<Blob> {
+  const objectUrl = URL.createObjectURL(blob);
+  let img: HTMLImageElement;
+  try {
+    img = await loadImage(objectUrl);
+  } catch {
+    URL.revokeObjectURL(objectUrl);
+    throw new Error('Failed to load image for PNG conversion');
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    URL.revokeObjectURL(objectUrl);
+    throw new Error('Canvas context failed');
+  }
+  ctx.drawImage(img, 0, 0);
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((result) => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('Failed to load image for PNG conversion'));
-    };
-    img.src = objectUrl;
+      result ? resolve(result) : reject(new Error('PNG conversion failed'));
+    }, 'image/png');
   });
 }
 

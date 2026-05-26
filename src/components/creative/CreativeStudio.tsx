@@ -275,7 +275,7 @@ export const CreativeStudio: React.FC = () => {
 
       <main className="flex-1 flex flex-col overflow-hidden bg-neutral-950/50">
         {/* ── Top header bar (breadcrumb left, actions right) ── */}
-        <div className="flex items-center justify-between px-6 py-3 shrink-0 border-b border-white/[0.04] z-40">
+        <div className="flex items-center justify-between px-6 py-3 shrink-0 border-b border-neutral-800 z-40">
           <BreadcrumbWithBack to="/create/projects">
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -314,7 +314,7 @@ export const CreativeStudio: React.FC = () => {
               </button>
               <button
                 onClick={() => setStatus('setup')}
-                className="px-5 py-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-brand-cyan/40 transition-all flex items-center gap-2"
+                className="px-5 py-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-neutral-700 transition-all flex items-center gap-2"
               >
                 <Diamond size={12} /> Gerar Novo
               </button>
@@ -337,7 +337,7 @@ export const CreativeStudio: React.FC = () => {
 
         {status === 'generating' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50 bg-black/80 backdrop-blur-xl animate-in fade-in">
-            <div className="p-8 rounded-3xl bg-neutral-900/40 border border-white/5 shadow-2xl flex flex-col items-center gap-6 min-w-[320px]">
+            <div className="p-8 rounded-3xl bg-neutral-900/40 border border-neutral-800 shadow-2xl flex flex-col items-center gap-6 min-w-[320px]">
               <PremiumGlitchLoader className="w-full" />
             </div>
           </div>

@@ -7,7 +7,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, EditNodeData, MockupNodeData, PromptNodeData, AngleNodeData, VideoNodeData, VideoInputNodeData, BrandCoreData, ImageNodeData, OutputNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, ShaderNodeData, UpscaleBicubicNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, BrandNodeData, TextureFilterNodeData, Studio3DNodeData } from '@/types/reactFlow';
+import type { FlowNodeData, EditNodeData, MockupNodeData, PromptNodeData, AngleNodeData, VideoNodeData, VideoInputNodeData, BrandCoreData, ImageNodeData, OutputNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, ShaderNodeData, UpscaleBicubicNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, BrandNodeData, TextureFilterNodeData, Studio3DNodeData, BrandBatchNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { getImageBase64FromNode, getImageUrlFromNode } from './utils/imageSyncUtils';
 
@@ -880,6 +880,101 @@ export const useCanvasNodeSync = ({
                 ...colorExtractorData,
                 ...updates,
               } as ColorExtractorNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
+
+        // Sync BrandBatchNode
+        if (n.type === 'brandBatch') {
+          const bbData = n.data as BrandBatchNodeData;
+          const updates: Partial<BrandBatchNodeData> = {};
+          let nodeHasChanges = false;
+          const connectedEdges = edges.filter(e => e.target === n.id);
+
+          // Sync brand from BrandCore
+          const brandEdge = connectedEdges.find(e =>
+            e.targetHandle === 'brand-in' &&
+            e.source &&
+            (nds.find(src => src.id === e.source)?.type === 'brandCore' ||
+              nds.find(src => src.id === e.source)?.type === 'brand')
+          );
+
+          if (brandEdge) {
+            const sourceNode = nds.find(src => src.id === brandEdge.source);
+            if (sourceNode?.type === 'brandCore') {
+              const brandCoreData = sourceNode.data as BrandCoreData;
+              if (brandCoreData.connectedLogo !== bbData.connectedLogo) {
+                updates.connectedLogo = brandCoreData.connectedLogo;
+                nodeHasChanges = true;
+              }
+              const identity = brandCoreData.connectedImage || brandCoreData.uploadedIdentity || brandCoreData.connectedPdf;
+              if (identity !== bbData.connectedIdentity) {
+                updates.connectedIdentity = identity;
+                nodeHasChanges = true;
+              }
+              const visualPrompts = (brandCoreData as any).visualPrompts;
+              const textDirection = visualPrompts?.compositionPrompt || visualPrompts?.stylePrompt;
+              if (textDirection !== bbData.connectedTextDirection) {
+                updates.connectedTextDirection = textDirection;
+                nodeHasChanges = true;
+              }
+            } else if (sourceNode?.type === 'brand') {
+              const brandData = sourceNode.data as BrandNodeData;
+              const logo = brandData.connectedLogo || brandData.logoBase64 || (brandData as any).logoImage;
+              if (logo !== bbData.connectedLogo) {
+                updates.connectedLogo = logo;
+                nodeHasChanges = true;
+              }
+              const identity = brandData.connectedIdentity || (brandData as any).identityImageBase64;
+              if (identity !== bbData.connectedIdentity) {
+                updates.connectedIdentity = identity;
+                nodeHasChanges = true;
+              }
+            }
+          } else {
+            if (bbData.connectedLogo) { updates.connectedLogo = undefined; nodeHasChanges = true; }
+            if (bbData.connectedIdentity) { updates.connectedIdentity = undefined; nodeHasChanges = true; }
+            if (bbData.connectedTextDirection) { updates.connectedTextDirection = undefined; nodeHasChanges = true; }
+          }
+
+          // Sync image inputs (input-1 to input-8)
+          const connectedImages: string[] = [];
+          for (let idx = 1; idx <= 8; idx++) {
+            const handleId = `input-${idx}`;
+            const imageEdge = connectedEdges.find(e => e.targetHandle === handleId);
+            if (imageEdge) {
+              const sourceNode = nds.find(src => src.id === imageEdge.source);
+              if (sourceNode) {
+                let img: string | undefined;
+                if (sourceNode.type === 'image') {
+                  const d = sourceNode.data as ImageNodeData;
+                  img = d.mockup?.imageBase64 || d.mockup?.imageUrl;
+                } else if (sourceNode.type === 'output') {
+                  const d = sourceNode.data as OutputNodeData;
+                  img = d.resultImageBase64 || d.resultImageUrl;
+                } else if (sourceNode.type === 'logo') {
+                  const d = sourceNode.data as LogoNodeData;
+                  img = d.logoBase64 || d.logoImageUrl;
+                }
+                if (img) connectedImages.push(img);
+              }
+            }
+          }
+
+          const imagesChanged = JSON.stringify(connectedImages) !== JSON.stringify(bbData.connectedImages || []);
+          if (imagesChanged) {
+            updates.connectedImages = connectedImages;
+            nodeHasChanges = true;
+          }
+
+          if (nodeHasChanges && Object.keys(updates).length > 0) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...bbData,
+                ...updates,
+              } as BrandBatchNodeData,
             } as Node<FlowNodeData>;
           }
         }

@@ -11,6 +11,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { formatDateShort } from '@/utils/localeUtils';
 
 interface BudgetTemplateSelectorProps {
   selectedTemplate: string | null;
@@ -141,14 +142,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateString: string) => formatDateShort(dateString);
 
   const truncateText = (text: string, maxLength: number = 60) => {
     if (!text) return '';

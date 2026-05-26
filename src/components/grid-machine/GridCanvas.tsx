@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { generateGridLines, type GridLine, type Point, type Segment } from './SvgAnalyzer';
+import { loadImage } from '@/utils/imageUtils';
 
 export interface GridCanvasHandle {
   getCanvas: () => HTMLCanvasElement | null;
@@ -291,14 +292,16 @@ const svgImageCache = new Map<string, HTMLImageElement>();
 function drawSvgLogo(ctx: CanvasRenderingContext2D, svgStr: string, vb: { x: number; y: number; width: number; height: number }, opacity: number, _scale: number) {
   let img = svgImageCache.get(svgStr);
   if (!img) {
-    img = new Image();
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-    img.src = URL.createObjectURL(blob);
-    svgImageCache.set(svgStr, img);
-    img.onload = () => {
+    const blobUrl = URL.createObjectURL(blob);
+    const placeholder = new Image();
+    svgImageCache.set(svgStr, placeholder);
+    loadImage(blobUrl, null).then((loaded) => {
+      svgImageCache.set(svgStr, loaded);
       const canvas = document.querySelector('.grid-machine-canvas') as HTMLCanvasElement;
       if (canvas) canvas.dispatchEvent(new Event('svgloaded'));
-    };
+    });
+    return;
   }
   if (!img.complete || !img.naturalWidth) return;
   ctx.globalAlpha = opacity;

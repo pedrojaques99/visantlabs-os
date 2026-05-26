@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useNavigate } from 'react-router-dom';
 import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
-import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
+import { getUserLocale, formatPrice, formatDateShort, type CurrencyInfo } from '@/utils/localeUtils';
 import { CREDIT_PACKAGES, getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
 import { getCreditYieldRows } from '@/utils/creditCalculator';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -82,8 +82,7 @@ interface CreditPackagesModalProps {
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return 'N/A';
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return formatDateShort(dateString, 'en-US');
   } catch {
     return 'N/A';
   }
@@ -227,7 +226,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 overflow-hidden" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-xl md:max-w-2xl bg-neutral-950/50 backdrop-blur-3xl border border-white/5 rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] relative max-h-full overflow-hidden flex flex-col animate-scale-in">
+      <div className="w-full max-w-xl md:max-w-2xl bg-neutral-950/50 backdrop-blur-3xl border border-neutral-800 rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] relative max-h-full overflow-hidden flex flex-col animate-scale-in">
         <LinearGradientBackground className="rounded-2xl" fullHeight />
         <Button
           variant="ghost"
@@ -425,7 +424,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             >
                               {cycle === 'monthly' ? (t('pricing.monthly') || 'Mensal') : (t('pricing.yearly') || 'Anual')}
                               {cycle === 'yearly' && (
-                                <span className={`text-[9px] px-1 py-0.5 rounded font-bold ${billingCycle === 'yearly' ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-neutral-800 text-neutral-500'}`}>-16%</span>
+                                <span className={`text-[10px] px-1 py-0.5 rounded font-bold ${billingCycle === 'yearly' ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-neutral-800 text-neutral-500'}`}>-16%</span>
                               )}
                             </button>
                           ))}
@@ -441,7 +440,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               <div key={plan.id} className={`relative bg-neutral-900/40 border rounded-xl p-4 space-y-4 flex flex-col ${isPopular ? 'border-brand-cyan/40' : 'border-neutral-800/50'}`}>
                                 {isPopular && (
                                   <div className="absolute -top-px left-1/2 -translate-x-1/2">
-                                    <Badge className="bg-brand-cyan text-black font-bold text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-b-md rounded-t-none whitespace-nowrap">
+                                    <Badge className="bg-brand-cyan text-black font-bold text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-b-md rounded-t-none whitespace-nowrap">
                                       {t('pricing.popular') || 'Popular'}
                                     </Badge>
                                   </div>
@@ -449,24 +448,24 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                                 {/* Name */}
                                 <div className="pt-1">
-                                  <p className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 mb-0.5">Plano</p>
+                                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-0.5">Plano</p>
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-base font-black text-white leading-tight">{plan.name}</span>
                                     {plan.metadata?.storageMB && parseInt(plan.metadata.storageMB) >= 5120 && (
-                                      <Badge className="bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 text-[9px] px-1">BYOK</Badge>
+                                      <Badge className="bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 text-[10px] px-1">BYOK</Badge>
                                     )}
                                   </div>
                                 </div>
 
                                 {/* Price */}
                                 <div className="border-t border-neutral-800/40 pt-3">
-                                  <p className="text-[9px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
                                     {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : (t('pricing.perMonth') || '/mês')}
                                   </p>
                                   <span className="text-2xl font-black font-mono text-white tabular-nums">
                                     {formatPrice(planPrice, currencyInfo?.currency || 'BRL', currencyInfo?.locale || 'pt-BR')}
                                   </span>
-                                  <div className="flex items-center gap-1 text-[9px] font-mono text-brand-cyan/60 uppercase mt-1">
+                                  <div className="flex items-center gap-1 text-[10px] font-mono text-brand-cyan/60 uppercase mt-1">
                                     <Pickaxe size={9} />
                                     <span>{plan.credits} {t('pricing.creditsLabel') || 'créd/mês'}</span>
                                   </div>

@@ -238,7 +238,7 @@ const CanvasSection: React.FC = () => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
       {CANVAS_NODES.map((node, i) => (
         <FadeIn key={node.label} delay={i * 0.04}>
-          <div className="group flex flex-col gap-2 p-4 rounded-xl border border-white/5 bg-neutral-900/30 hover:bg-neutral-900/60 hover:border-white/10 transition-all duration-200 cursor-default h-full">
+          <div className="group flex flex-col gap-2 p-4 rounded-xl border border-neutral-800 bg-neutral-900/30 hover:bg-neutral-900/60 hover:border-white/10 transition-all duration-200 cursor-default h-full">
             <node.icon size={16} className="text-neutral-400 group-hover:text-brand-cyan transition-colors duration-200" />
             <p className="text-xs font-semibold text-neutral-300">{node.label}</p>
             <p className="text-[10px] text-neutral-600 leading-relaxed">{node.desc}</p>
@@ -395,7 +395,7 @@ const AgencySection: React.FC = () => (
           <div className="flex gap-5 group">
             {/* Connector */}
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full border border-white/10 bg-neutral-900/60 flex items-center justify-center shrink-0 group-hover:border-brand-cyan/40 transition-colors duration-300">
+              <div className="w-8 h-8 rounded-full border border-white/10 bg-neutral-900/60 flex items-center justify-center shrink-0 group-hover:border-neutral-700 transition-colors duration-300">
                 <span className="font-mono text-[10px] text-neutral-500 group-hover:text-brand-cyan transition-colors duration-300">
                   {step.step}
                 </span>
@@ -427,7 +427,7 @@ const AgencySection: React.FC = () => (
           { label: 'On-brand garantido', desc: 'contexto automático' },
           { label: 'Multi-formato', desc: 'CSS · JSON · Tailwind' },
         ].map(item => (
-          <div key={item.label} className="flex flex-col gap-1 p-4 rounded-xl border border-white/5 bg-neutral-900/20">
+          <div key={item.label} className="flex flex-col gap-1 p-4 rounded-xl border border-neutral-800 bg-neutral-900/20">
             <p className="text-xs font-semibold text-neutral-300">{item.label}</p>
             <p className="text-[10px] text-neutral-600 font-mono">{item.desc}</p>
           </div>
@@ -558,7 +558,7 @@ export const OnboardPage: React.FC = () => {
 
           {/* Bottom CTA */}
           <FadeIn>
-            <div className="border-t border-white/5 pt-12 flex flex-col items-center gap-6 text-center">
+            <div className="border-t border-neutral-800 pt-12 flex flex-col items-center gap-6 text-center">
               <MicroTitle className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
                 Pronto para começar?
               </MicroTitle>

@@ -33,7 +33,7 @@ export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
         >
           <div className="w-full max-w-md px-6">
             <motion.div
@@ -51,7 +51,7 @@ export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-black/40 border border-white/5">
+                <div className="p-4 rounded-2xl bg-black/40 border border-neutral-800">
                   <PremiumGlitchLoader steps={steps} />
                 </div>
 

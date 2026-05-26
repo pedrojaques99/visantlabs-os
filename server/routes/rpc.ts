@@ -12,6 +12,7 @@ import { logger } from '../lib/logger.js';
 import { resolveBrandGuideline } from '../lib/brandResolver.js';
 import { buildBrandContextWithKnowledge, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 import { improvePrompt } from '../services/geminiService.js';
+import { chargeCredits } from '../lib/credits.js';
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ const handlers: Partial<Record<OpName, Handler>> = {
     }
 
     const full = `${brandPreamble}${p.prompt}`;
+    if (userId) await chargeCredits(userId, 1);
     const result = await improvePrompt(full);
     return { text: result.improvedPrompt };
   },

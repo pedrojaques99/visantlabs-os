@@ -245,7 +245,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setActionMode('layer')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-white/5 bg-neutral-800/50 hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all group"
+                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-all group"
                 >
                   <Plus size={18} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
@@ -257,7 +257,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                 </button>
                 <button
                   onClick={() => setActionMode('edit')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-white/5 bg-neutral-800/50 hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all group"
+                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-all group"
                 >
                   <Diamond size={18} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
@@ -294,7 +294,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                       : 'Como editar esta região?'
                   }
                   rows={2}
-                  className="w-full bg-neutral-800/60 border border-white/5 rounded-lg px-3 py-2 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/40 resize-none"
+                  className="w-full bg-neutral-800/60 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
                 />
                 <Button
                   variant="brand"

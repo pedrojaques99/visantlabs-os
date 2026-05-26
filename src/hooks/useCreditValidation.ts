@@ -5,6 +5,7 @@ import { isGenerationUnlimited } from '@/utils/unlimitedChecker';
 import { toast } from 'sonner';
 import { useTranslation } from './useTranslation';
 import { isLocalDevelopment } from '@/utils/env';
+import { formatDate } from '@/utils/localeUtils';
 import type { GeminiModel, Resolution } from '@/types/types';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
@@ -119,7 +120,7 @@ export const useCreditValidation = (
       // Only show error if user has no credits available
       if (remaining < actualCreditsNeeded) {
         const resetDate = subscriptionStatus.creditsResetDate
-          ? new Date(subscriptionStatus.creditsResetDate).toLocaleDateString()
+          ? formatDate(subscriptionStatus.creditsResetDate)
           : t('messages.yourNextBillingCycle');
 
         const message = subscriptionStatus.hasActiveSubscription

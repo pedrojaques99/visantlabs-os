@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -34,6 +35,11 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
   const addBlank = () =>
     persist([...local, { name: '', description: '', role: 'primary' } as any]);
 
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const a = patch.strategy?.archetypes;
+    if (Array.isArray(a)) persist(a);
+  }, [persist]);
+
   return (
     <SectionBlock
       id="archetypes"
@@ -41,7 +47,9 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
       title="Archetypes"
       span={span as any}
       actions={
-        <DropdownMenu>
+        <div className="flex items-center gap-1">
+          {local.length === 0 && <AiFieldButton guideline={guideline} section="strategy.archetypes" onResult={handleAiResult} />}
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-5 w-5" aria-label="Add archetype">
               <Plus size={11} />
@@ -57,11 +65,12 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
                 </div>
               </DropdownMenuItem>
             ))}
-            <DropdownMenuItem className="text-[10px] text-neutral-600 border-t border-white/5 mt-1 pt-2" onClick={addBlank}>
+            <DropdownMenuItem className="text-[10px] text-neutral-600 border-t border-neutral-800 mt-1 pt-2" onClick={addBlank}>
               + Custom
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       }
     >
       <div className="space-y-0 py-1">
@@ -70,7 +79,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
           const preset = ARCHETYPE_PRESETS.find(p => p.nome === arch.name);
           const img = (arch as any).image || preset?.image;
           return (
-            <div key={i} className="flex gap-3 items-start py-2 border-b border-white/[0.04] last:border-0 group/item">
+            <div key={i} className="flex gap-3 items-start py-2 border-b border-neutral-800 last:border-0 group/item">
               {img && <img src={img} alt={arch.name} className="w-8 h-10 object-cover rounded shrink-0 opacity-80" />}
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center gap-2">
@@ -78,7 +87,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
                     className="h-6 bg-transparent border-none px-0 text-xs font-medium text-neutral-200 focus-visible:ring-0 placeholder:text-neutral-700 flex-1" placeholder="Name" />
                   <button type="button"
                     onClick={() => set(i, { role: arch.role === 'primary' ? 'secondary' : 'primary' })}
-                    className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0">
+                    className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0">
                     {arch.role || 'primary'}
                   </button>
                 </div>
@@ -86,7 +95,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({ guideline,
                   className="h-6 bg-transparent border-none px-0 text-xs text-neutral-500 focus-visible:ring-0 placeholder:text-neutral-700" placeholder="Objetivo..." />
                 {preset && <p className="text-[10px] text-neutral-700 font-mono">{preset.valores.join(' · ')}</p>}
               </div>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-700 hover:text-red-400 opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5"
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5"
                 onClick={() => remove(i)} aria-label="Remove">
                 <Trash2 size={10} />
               </Button>

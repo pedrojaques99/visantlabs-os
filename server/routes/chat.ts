@@ -4,12 +4,15 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { chatWithLLM } from '../services/llmRouter.js';
 import { env } from '../config/env.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { knowledgeService } from '../services/knowledgeService.js';
 import { buildBrandContextCached } from '../lib/brandContextBuilder.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { chargeCredits } from '../lib/credits.js';
+import { getChatMessageCreditsRequired } from '../../src/utils/creditCalculator.js';
 import { getChatTools, executeChatTool } from '../services/chat/toolRegistry.js';
 import { formatGeminiHistory } from '../lib/chat/history.js';
 import { resolveRagScope } from '../lib/chat/ragScope.js';
@@ -53,8 +56,8 @@ REPERTÓRIO METODOLÓGICO (use para auditar e gerar com profundidade):
 - Manifesto: Provocação → Tensão → Promessa. Frase final vira candidata a slogan.
 - Cascata: cada etapa alimenta a próxima. Pular etapas enfraquece a marca.
 
-${brandContext ? `CONTEXTO DE MARCA:\n${brandContext}\n` : ''}
-${ragContext ? `DOCUMENTOS INGERIDOS:\n${ragContext}\n` : ''}`;
+${brandContext ? `CONTEXTO DE MARCA:\n${sanitizeForPrompt(brandContext, 10000)}\n` : ''}
+${ragContext ? `DOCUMENTOS INGERIDOS:\n${sanitizeForPrompt(ragContext, 10000)}\n` : ''}`;
 }
 
 async function getSession(sessionId: string, userId: string): Promise<ChatSession | null> {
@@ -239,7 +242,14 @@ router.post('/sessions/:id/message', authenticate, chatRateLimiter, async (req: 
     // 4. Histórico no formato Gemini
     const geminiHistory = formatGeminiHistory(session.messages);
 
-    // 5. First call: Chat with tools
+    // 5. Charge credits (1 credit every 4 user messages)
+    const userMsgCount = session.messages.filter((m: any) => m.role === 'user').length + 1;
+    const creditsNeeded = getChatMessageCreditsRequired(userMsgCount);
+    if (creditsNeeded > 0) {
+      await chargeCredits(req.userId!, creditsNeeded);
+    }
+
+    // 6. First call: Chat with tools
     let { text: reply, toolCalls } = await chatWithLLM(
       message,
       '',

@@ -14,6 +14,7 @@ import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/ope
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
+import { deductCreditsAtomically, refundCredits, refundCreditsWithRetry, type DeductionSource } from '../lib/credits.js';
 import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
 import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
 import { rateLimit } from 'express-rate-limit';
@@ -141,345 +142,6 @@ async function uploadImageToR2(
   console.log(`Successfully uploaded image to R2 for user ${userId}: ${imageUrl}`);
 
   return imageUrl;
-}
-
-// Helper function to atomically deduct credits BEFORE generation
-// FIXED: Uses simple $inc operation instead of aggregation pipeline to avoid duplicate deductions
-// Returns information about credit deduction source for proper refund tracking
-async function deductCreditsAtomically(
-  userId: string,
-  creditsToDeduct: number,
-  requestId?: string
-): Promise<{
-  success: true;
-  updatedUser: any;
-  deductionSource: {
-    fromEarned: number;
-    fromMonthly: number;
-  };
-}> {
-  const logPrefix = '[CREDIT]';
-  console.log(`${logPrefix} [deductCreditsAtomically] Starting`, {
-    userId,
-    creditsToDeduct,
-    requestId: requestId || 'no-request-id',
-    timestamp: new Date().toISOString(),
-  });
-
-  await connectToMongoDB();
-  const db = getDb();
-
-  if (creditsToDeduct <= 0) {
-    throw new Error(`Invalid credits to deduct: ${creditsToDeduct}. Must be greater than 0.`);
-  }
-
-  // Get user data first to calculate deduction strategy
-  const userBefore = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-  if (!userBefore) {
-    throw new Error('User not found');
-  }
-
-  const totalCreditsEarnedBefore = userBefore.totalCreditsEarned ?? 0;
-  const monthlyCreditsBefore = userBefore.monthlyCredits ?? 20;
-  const creditsUsedBefore = userBefore.creditsUsed ?? 0;
-  const monthlyCreditsRemainingBefore = Math.max(0, monthlyCreditsBefore - creditsUsedBefore);
-  const totalCreditsBefore = totalCreditsEarnedBefore + monthlyCreditsRemainingBefore;
-
-  console.log(`${logPrefix} [deductCreditsAtomically] User credits before deduction`, {
-    userId,
-    requestId: requestId || 'no-request-id',
-    totalCreditsEarned: totalCreditsEarnedBefore,
-    monthlyCredits: monthlyCreditsBefore,
-    creditsUsed: creditsUsedBefore,
-    monthlyCreditsRemaining: monthlyCreditsRemainingBefore,
-    totalCredits: totalCreditsBefore,
-    creditsToDeduct,
-  });
-
-  // Check if user has enough credits
-  if (totalCreditsBefore < creditsToDeduct) {
-    console.error(`${logPrefix} [deductCreditsAtomically] ❌ Insufficient credits`, {
-      userId,
-      requestId: requestId || 'no-request-id',
-      totalCredits: totalCreditsBefore,
-      creditsToDeduct,
-    });
-    throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${totalCreditsBefore}`);
-  }
-
-  // Calculate deduction strategy: use earned credits first, then monthly
-  const fromEarned = Math.min(totalCreditsEarnedBefore, creditsToDeduct);
-  const fromMonthly = creditsToDeduct - fromEarned;
-
-  console.log(`${logPrefix} [deductCreditsAtomically] Deduction strategy`, {
-    userId,
-    requestId: requestId || 'no-request-id',
-    fromEarned,
-    fromMonthly,
-    creditsToDeduct,
-  });
-
-  // FIXED: Use simple $inc operation which is atomic and reliable
-  // This avoids the issue where aggregation pipelines execute but return null
-  const updateOperation: any = {};
-
-  if (fromEarned > 0) {
-    updateOperation.totalCreditsEarned = -fromEarned;
-  }
-  if (fromMonthly > 0) {
-    updateOperation.creditsUsed = fromMonthly;
-  }
-
-  // Only proceed if we have something to update
-  if (Object.keys(updateOperation).length === 0) {
-    throw new Error('No credits to deduct - calculation error');
-  }
-
-  // Use findOneAndUpdate with $inc for atomic operation
-  // The condition ensures we only update if user still has enough credits
-  const result = await db.collection('users').findOneAndUpdate(
-    {
-      _id: new ObjectId(userId),
-      // Atomic conditions to prevent over-deduction
-      ...(fromEarned > 0 ? { totalCreditsEarned: { $gte: fromEarned } } : {}),
-      ...(fromMonthly > 0 ? {
-        $expr: {
-          $gte: [
-            { $subtract: [{ $ifNull: ['$monthlyCredits', 20] }, { $ifNull: ['$creditsUsed', 0] }] },
-            fromMonthly
-          ]
-        }
-      } : {})
-    },
-    { $inc: updateOperation },
-    { returnDocument: 'after' }
-  );
-
-  console.log(`${logPrefix} [deductCreditsAtomically] Update result`, {
-    userId,
-    requestId: requestId || 'no-request-id',
-    success: !!result,
-    hasValue: !!result,
-  });
-
-  // If update failed (no matching document), verify current state
-  if (!result) {
-    // Re-fetch user to check current state
-    const currentUser = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (!currentUser) {
-      throw new Error('User not found');
-    }
-
-    const currentTotalEarned = currentUser.totalCreditsEarned ?? 0;
-    const currentMonthlyCredits = currentUser.monthlyCredits ?? 20;
-    const currentCreditsUsed = currentUser.creditsUsed ?? 0;
-    const currentMonthlyRemaining = Math.max(0, currentMonthlyCredits - currentCreditsUsed);
-    const currentTotal = currentTotalEarned + currentMonthlyRemaining;
-
-    console.error(`${logPrefix} [deductCreditsAtomically] ❌ Update failed - condition not met`, {
-      userId,
-      requestId: requestId || 'no-request-id',
-      currentTotalEarned,
-      currentMonthlyRemaining,
-      currentTotal,
-      creditsToDeduct,
-      fromEarned,
-      fromMonthly,
-    });
-
-    if (currentTotal < creditsToDeduct) {
-      throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${currentTotal}`);
-    } else {
-      throw new Error(`System error: Failed to deduct credits. Please try again. Available: ${currentTotal}`);
-    }
-  }
-
-  const totalCreditsEarnedAfter = result.totalCreditsEarned ?? 0;
-  const creditsUsedAfter = result.creditsUsed ?? 0;
-  const monthlyCreditsAfter = result.monthlyCredits ?? 20;
-  const monthlyCreditsRemainingAfter = Math.max(0, monthlyCreditsAfter - creditsUsedAfter);
-  const totalCreditsAfter = totalCreditsEarnedAfter + monthlyCreditsRemainingAfter;
-
-  console.log(`${logPrefix} [deductCreditsAtomically] ✅ Success`, {
-    userId,
-    requestId: requestId || 'no-request-id',
-    creditsToDeduct,
-    totalCreditsEarnedBefore,
-    totalCreditsEarnedAfter,
-    creditsUsedBefore,
-    creditsUsedAfter,
-    monthlyCreditsBefore,
-    monthlyCreditsAfter,
-    monthlyCreditsRemainingBefore,
-    monthlyCreditsRemainingAfter,
-    totalCreditsBefore,
-    totalCreditsAfter,
-    creditsDeducted: totalCreditsBefore - totalCreditsAfter,
-    fromEarned,
-    fromMonthly,
-  });
-
-  return {
-    success: true,
-    updatedUser: result,
-    deductionSource: {
-      fromEarned,
-      fromMonthly
-    }
-  };
-}
-
-// Helper function to refund credits with retry mechanism
-// Uses deduction source information to properly refund credits to their original source
-async function refundCreditsWithRetry(
-  userId: string,
-  creditsToRefund: number,
-  deductionSource?: { fromEarned: number; fromMonthly: number },
-  maxRetries: number = 3
-): Promise<void> {
-  const logPrefix = '[CREDIT]';
-  let lastError: any = null;
-
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      await refundCredits(userId, creditsToRefund, deductionSource);
-      if (attempt > 1) {
-        console.log(`${logPrefix} [refundCreditsWithRetry] ✅ Refund succeeded on attempt ${attempt}`, {
-          userId,
-          creditsToRefund,
-          attempt,
-        });
-      }
-      return; // Success - exit retry loop
-    } catch (error: any) {
-      lastError = error;
-      const isLastAttempt = attempt === maxRetries;
-
-      if (isLastAttempt) {
-        // Final attempt failed - will throw after loop
-        console.error(`${logPrefix} [refundCreditsWithRetry] ❌ All ${maxRetries} refund attempts failed`, {
-          userId,
-          creditsToRefund,
-          attempt,
-          error: error.message,
-        });
-      } else {
-        // Wait before retry (exponential backoff: 1s, 2s, 4s)
-        const delayMs = Math.pow(2, attempt - 1) * 1000;
-        console.warn(`${logPrefix} [refundCreditsWithRetry] ⚠️ Refund attempt ${attempt} failed, retrying in ${delayMs}ms...`, {
-          userId,
-          creditsToRefund,
-          attempt,
-          maxRetries,
-          error: error.message,
-        });
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      }
-    }
-  }
-
-  // All retries failed - throw the last error
-  throw lastError;
-}
-
-// Helper function to refund credits if generation fails
-// Uses deduction source information to properly refund credits to their original source
-async function refundCredits(
-  userId: string,
-  creditsToRefund: number,
-  deductionSource?: { fromEarned: number; fromMonthly: number }
-): Promise<void> {
-  await connectToMongoDB();
-  const db = getDb();
-
-  const logPrefix = '[CREDIT]';
-
-  // If deduction source is provided, use it for accurate refund
-  if (deductionSource) {
-    const { fromEarned, fromMonthly } = deductionSource;
-
-    console.log(`${logPrefix} [refundCredits] Refunding with source tracking`, {
-      userId,
-      creditsToRefund,
-      fromEarned,
-      fromMonthly,
-    });
-
-    // Build update based on source
-    const updateFields: any = {};
-
-    // Add back earned credits
-    if (fromEarned > 0) {
-      updateFields.totalCreditsEarned = { $add: [{ $ifNull: ['$totalCreditsEarned', 0] }, fromEarned] };
-    }
-
-    // Reduce creditsUsed (only if monthly credits were used)
-    if (fromMonthly > 0) {
-      updateFields.creditsUsed = {
-        $max: [
-          0, // Ensure creditsUsed never goes negative
-          { $subtract: [{ $ifNull: ['$creditsUsed', 0] }, fromMonthly] }
-        ]
-      };
-    }
-
-    if (Object.keys(updateFields).length > 0) {
-      await db.collection('users').updateOne(
-        { _id: new ObjectId(userId) },
-        [{ $set: updateFields }] as any
-      );
-
-      console.log(`${logPrefix} [refundCredits] ✅ Refunded credits with source tracking`, {
-        userId,
-        fromEarned,
-        fromMonthly,
-        totalRefunded: creditsToRefund,
-      });
-    }
-  } else {
-    // Fallback: if source not provided, add back to totalCreditsEarned
-    // and reduce creditsUsed only if it's positive (to avoid negative values)
-    console.warn(`${logPrefix} [refundCredits] ⚠️ No deduction source provided, using fallback refund`, {
-      userId,
-      creditsToRefund,
-    });
-
-    // Get current user state to determine safe refund
-    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (!user) {
-      throw new Error('User not found for refund');
-    }
-
-    const currentCreditsUsed = user.creditsUsed || 0;
-    const creditsToReduceFromUsed = Math.min(creditsToRefund, currentCreditsUsed);
-    const creditsToAddToEarned = creditsToRefund;
-
-    const updateFields: any = {
-      totalCreditsEarned: { $add: [{ $ifNull: ['$totalCreditsEarned', 0] }, creditsToAddToEarned] }
-    };
-
-    // Only reduce creditsUsed if it's positive and we're refunding some monthly credits
-    if (creditsToReduceFromUsed > 0) {
-      updateFields.creditsUsed = {
-        $max: [
-          0,
-          { $subtract: [{ $ifNull: ['$creditsUsed', 0] }, creditsToReduceFromUsed] }
-        ]
-      };
-    }
-
-    await db.collection('users').updateOne(
-      { _id: new ObjectId(userId) },
-      [{ $set: updateFields }] as any
-    );
-
-    console.log(`${logPrefix} [refundCredits] ✅ Refunded credits (fallback method)`, {
-      userId,
-      creditsToRefund,
-      creditsToAddToEarned,
-      creditsToReduceFromUsed,
-    });
-  }
 }
 
 interface MockupData {
@@ -822,9 +484,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
             const logoReferenceImages: Array<{ base64: string; mimeType: string }> = [];
             for (const logo of sorted.slice(0, 2)) {
               if (!logo.url) continue;
+              if (logo.url.toLowerCase().endsWith('.svg') || logo.url.includes('svg')) continue;
               try {
-                const processed = await processImageInput({ url: logo.url });
-                if (processed) logoReferenceImages.push(processed as any);
+                const processed = await processImageInput({ url: logo.url }) as any;
+                if (processed && processed.mimeType !== 'image/svg+xml') {
+                  logoReferenceImages.push(processed);
+                }
               } catch {
                 // non-critical
               }
@@ -845,9 +510,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
             const mediaReferenceImages: Array<{ base64: string; mimeType: string }> = [];
             for (const media of styleMedia) {
               if (!media.url) continue;
+              if (media.url.toLowerCase().endsWith('.svg') || media.url.includes('svg')) continue;
               try {
-                const processed = await processImageInput({ url: media.url });
-                if (processed) mediaReferenceImages.push(processed as any);
+                const processed = await processImageInput({ url: media.url }) as any;
+                if (processed && processed.mimeType !== 'image/svg+xml') {
+                  mediaReferenceImages.push(processed);
+                }
               } catch {
                 // non-critical
               }

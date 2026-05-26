@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { Upload, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { loadImage } from '@/utils/imageUtils';
 import { RisoRenderer, extractDominantColors } from './RisoRenderer';
 import { useRisoStore } from '@/stores/risoStore';
 import { rgbToHex } from '@/utils/colorUtils';
@@ -46,9 +47,7 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
 
   useEffect(() => {
     if (!store.imageUrl || !rendererRef.current) return;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
+    loadImage(store.imageUrl).then((img) => {
       const renderer = rendererRef.current!;
       renderer.setupTexture(img);
 
@@ -75,8 +74,7 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
       store.setIsAnalyzing(false);
 
       renderer.render({ ...store.getSettings(), layers });
-    };
-    img.src = store.imageUrl;
+    });
   }, [store.imageUrl, store.colorCount]);
 
   useEffect(() => {

@@ -133,6 +133,65 @@ export const translate = (key: string, locale?: Locale, params?: Record<string, 
   return value;
 };
 
+/**
+ * Format a date as dd/mm/yyyy (pt-BR) or mm/dd/yyyy (en-US) based on locale.
+ */
+export const formatDate = (date: string | Date, locale?: Locale): string => {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const loc = locale || getCurrentLocale();
+  return d.toLocaleDateString(loc, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
+/**
+ * Format a date as "May 26, 2026" (en-US) or "26 de mai. de 2026" (pt-BR).
+ */
+export const formatDateShort = (date: string | Date, locale?: Locale): string => {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const loc = locale || getCurrentLocale();
+  return d.toLocaleDateString(loc, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+/**
+ * Format a date with time.
+ */
+export const formatDateTime = (date: string | Date, locale?: Locale): string => {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const loc = locale || getCurrentLocale();
+  return d.toLocaleString(loc, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+/**
+ * Locale-aware currency formatting (BRL for pt-BR, USD for en-US).
+ * Use formatPrice() when you need explicit currency control.
+ */
+export const formatCurrency = (value: number, locale?: Locale): string => {
+  const loc = locale || getCurrentLocale();
+  const currency = loc === 'pt-BR' ? 'BRL' : 'USD';
+  return new Intl.NumberFormat(loc, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
 export const formatPrice = (amount: number, currency: string, locale: string): string => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -269,4 +328,3 @@ export const translateTag = (tag: string, locale?: Locale): string => {
   // If no mapping found, return original tag
   return tag;
 };
-

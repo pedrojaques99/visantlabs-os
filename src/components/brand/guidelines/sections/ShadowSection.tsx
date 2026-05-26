@@ -62,29 +62,29 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
           </div>
         )}
         {items.map((s, si) => (
-          <div key={s.id} className="group/shadow border-b border-white/[0.04] last:border-0 overflow-hidden">
+          <div key={s.id} className="group/shadow border-b border-neutral-800 last:border-0 overflow-hidden">
             {/* Always visible */}
             <div className="flex items-center gap-2 p-2">
-              <div className="w-8 h-8 rounded shrink-0 bg-neutral-800 border border-white/5" style={{ boxShadow: buildShadowCss(s) }} />
+              <div className="w-8 h-8 rounded shrink-0 bg-neutral-800 border border-neutral-800" style={{ boxShadow: buildShadowCss(s) }} />
               <Input value={s.name} onChange={e => update(si, { name: e.target.value })} className="h-6 flex-1 bg-transparent border-none p-0 text-xs text-neutral-300 focus-visible:ring-0 placeholder:text-neutral-700" placeholder="Shadow name" />
-              <span className="text-[9px] font-mono text-neutral-700 truncate max-w-[80px] hidden sm:block">{buildShadowCss(s)}</span>
-              <Button variant="ghost" size="icon" className="h-5 w-5 text-neutral-800 hover:text-red-400 opacity-0 group-hover/shadow:opacity-100 transition-all shrink-0" onClick={() => removeShadow(si)} aria-label="Remove"><Trash2 size={10} /></Button>
+              <span className="text-[10px] font-mono text-neutral-700 truncate max-w-[80px] hidden sm:block">{buildShadowCss(s)}</span>
+              <Button variant="ghost" size="icon" className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/shadow:opacity-100 transition-all shrink-0" onClick={() => removeShadow(si)} aria-label="Remove"><Trash2 size={10} /></Button>
             </div>
             {/* Hover-reveal: detail controls */}
             <div className="hover-reveal group-hover/shadow:max-h-[300px] group-focus-within/shadow:max-h-[300px]">
-              <div className="px-2 pb-2 space-y-2 border-t border-white/[0.04] pt-2">
+              <div className="px-2 pb-2 space-y-2 border-t border-neutral-800 pt-2">
                 <div className="flex gap-1">
                   {(['outer', 'inner', 'glow'] as ShadowType[]).map(t => (
                     <button key={t} type="button" onClick={() => update(si, { type: t })}
-                      className={cn('flex-1 h-6 rounded border text-[9px] font-mono uppercase transition-all', s.type === t ? 'border-white/20 bg-white/[0.06] text-neutral-200' : 'border-white/5 text-neutral-600 hover:border-white/10')}
+                      className={cn('flex-1 h-6 rounded border text-[10px] font-mono uppercase transition-all', s.type === t ? 'border-white/20 bg-white/5 text-neutral-200' : 'border-neutral-800 text-neutral-600 hover:border-white/10')}
                     >{t}</button>
                   ))}
                 </div>
                 <div className="grid grid-cols-4 gap-1.5">
                   {[{ label: 'X', field: 'x' as const }, { label: 'Y', field: 'y' as const }, { label: 'Blur', field: 'blur' as const }, { label: 'Spread', field: 'spread' as const }].map(({ label, field }) => (
                     <div key={field} className="space-y-0.5">
-                      <MicroTitle className="text-neutral-700 text-[9px]">{label}</MicroTitle>
-                      <Input type="number" value={s[field]} onChange={e => update(si, { [field]: Number(e.target.value) })} className="h-6 border-white/5 text-[10px] font-mono text-center" />
+                      <MicroTitle className="text-neutral-700 text-[10px]">{label}</MicroTitle>
+                      <Input type="number" value={s[field]} onChange={e => update(si, { [field]: Number(e.target.value) })} className="h-6 border-neutral-800 text-[10px] font-mono text-center" />
                     </div>
                   ))}
                 </div>

@@ -4,6 +4,7 @@ import type { FlowNodeData, StrategyNodeData } from '@/types/reactFlow';
 import type { BrandingData } from '@/types/types';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
+import { formatDate } from '@/utils/localeUtils';
 
 interface UseStrategyNodeHandlerParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -779,7 +780,7 @@ export const useCanvasStrategyHandler = ({
       };
 
       // Generate default name if not provided
-      const projectName = name.trim() || `Strategy Node - ${new Date().toLocaleDateString()}`;
+      const projectName = name.trim() || `Strategy Node - ${formatDate(new Date())}`;
 
       // Save to branding_projects table
       const savedProject = await brandingApi.save(brandingData, projectId, projectName);

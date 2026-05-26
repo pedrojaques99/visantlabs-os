@@ -152,7 +152,7 @@ export const WaitlistPage: React.FC = () => {
               <div className="pt-4 border-t border-neutral-400/30">
                 <PremiumButton
                   onClick={() => navigate('/')}
-                  className="w-full h-12 bg-neutral-900/80 border-neutral-700/60 hover:border-brand-cyan/50 text-neutral-200 hover:text-brand-cyan shadow-none"
+                  className="w-full h-12 bg-neutral-900/80 border-neutral-700/60 hover:border-neutral-700 text-neutral-200 hover:text-brand-cyan shadow-none"
                   icon={Pickaxe}
                 >
                   {t('waitlist.tryMockupMachineNow') || 'Try Mockup Machine Now'}

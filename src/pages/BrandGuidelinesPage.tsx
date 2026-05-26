@@ -19,7 +19,9 @@ import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSyst
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
-import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check } from 'lucide-react';
+import { BrandAiPopulateDialog } from '@/components/brand/guidelines/BrandAiPopulateDialog';
+import { BrandMockupDialog } from '@/components/brand/guidelines/BrandMockupDialog';
+import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -27,6 +29,7 @@ import { SECTION_TABS, SECTION_BY_ID } from '@/components/brand/guidelines/secti
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
     const { t } = useTranslation();
@@ -98,6 +101,8 @@ export const BrandGuidelinesPage: React.FC = () => {
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [figmaCopied, setFigmaCopied] = useState(false);
     const [activeTabId, setActiveTabId] = useState(SECTION_TABS[0].id);
+    const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
+    const [isMockupOpen, setIsMockupOpen] = useState(false);
     const updateMutation = useUpdateGuideline();
     const queryClient = useQueryClient();
 
@@ -253,12 +258,22 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     <BrandCompletenessPill guideline={selected} />
                                 )}
                                 {selected && (
-                                    <Link to={`/create?brandId=${selected.id}`}>
-                                        <Button className="h-8 px-3 gap-1.5 text-xs bg-white/[0.06] border border-white/15 text-neutral-200 hover:bg-white/[0.10]">
+                                    <>
+                                        <Button
+                                            onClick={() => setIsAiPopulateOpen(true)}
+                                            className="h-8 px-3 gap-1.5 text-xs bg-white/5 border border-white/15 text-neutral-200 hover:bg-white/10"
+                                        >
                                             <Zap size={13} />
                                             <span className="hidden sm:inline">Generate</span>
                                         </Button>
-                                    </Link>
+                                        <Button
+                                            onClick={() => setIsMockupOpen(true)}
+                                            className="h-8 px-3 gap-1.5 text-xs bg-white/5 border border-white/15 text-neutral-200 hover:bg-white/10"
+                                        >
+                                            <Image size={13} />
+                                            <span className="hidden sm:inline">Mockup</span>
+                                        </Button>
+                                    </>
                                 )}
                                 {selected && (
                                     <BrandIngestButton
@@ -270,29 +285,29 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 {selected && (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0 text-neutral-500 hover:text-neutral-300 border border-white/[0.06]">
+                                            <Button variant="ghost" className="h-8 w-8 p-0 text-neutral-500 hover:text-neutral-300 border border-neutral-800">
                                                 <Plus size={14} className="rotate-0" />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="min-w-[160px]">
                                             <button
                                                 onClick={() => setIsShareOpen(true)}
-                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
                                             >
                                                 <Share2 size={13} /> Share
                                             </button>
                                             {selected.isPublic && (
-                                                <Link to={`/brand/${selected.publicSlug}`} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors">
+                                                <Link to={`/brand/${selected.publicSlug}`} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
                                                     <Eye size={13} /> View Public
                                                 </Link>
                                             )}
                                             <button
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText(selected.id!);
+                                                    copyToClipboard(selected.id!);
                                                     setFigmaCopied(true);
                                                     setTimeout(() => setFigmaCopied(false), 2000);
                                                 }}
-                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
                                             >
                                                 {figmaCopied ? <Check size={13} className="text-green-400" /> : <Figma size={13} />}
                                                 {figmaCopied ? 'Copied!' : 'Use in Figma'}
@@ -305,7 +320,7 @@ export const BrandGuidelinesPage: React.FC = () => {
 
                         {/* Tab bar */}
                         {selected && (
-                            <div className="flex items-center border-b border-white/[0.06] mb-6 overflow-x-auto scrollbar-none">
+                            <div className="flex items-center border-b border-neutral-800 mb-6 overflow-x-auto scrollbar-none">
                                 {SECTION_TABS.map((tab) => (
                                     <button
                                         key={tab.id}
@@ -403,7 +418,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                     {selected.validation && Object.values(selected.validation).some(v => v !== 'approved') && (
                                                         <button
                                                             onClick={() => setReviewGuidelineId(selected.id!)}
-                                                            className="mb-6 w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-all group"
+                                                            className="mb-6 w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/5 transition-all group"
                                                         >
                                                             <ClipboardCheck size={16} className="text-neutral-500 group-hover:text-neutral-300 shrink-0 transition-colors" />
                                                             <div className="flex-1 text-left">
@@ -464,6 +479,23 @@ export const BrandGuidelinesPage: React.FC = () => {
                     onUpdate={(updated) => {
                         updateMutation.mutate({ id: updated.id!, data: updated });
                     }}
+                />
+            )}
+
+            {selected && (
+                <BrandAiPopulateDialog
+                    open={isAiPopulateOpen}
+                    onOpenChange={setIsAiPopulateOpen}
+                    guideline={selected}
+                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
+                />
+            )}
+
+            {selected && (
+                <BrandMockupDialog
+                    open={isMockupOpen}
+                    onOpenChange={setIsMockupOpen}
+                    guideline={selected}
                 />
             )}
         </div>

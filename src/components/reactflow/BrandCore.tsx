@@ -16,6 +16,7 @@ import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { pdfToBase64, validatePdfBase64Size, validatePdfFile } from '@/utils/pdfUtils';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { consolidateStrategiesToText } from '@/services/brandPromptService';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -74,7 +75,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
   }, [connectedStrategies, strategicPrompts, id, nodeData]);
 
   const handleCopyPrompt = useCallback((prompt: string, type: string) => {
-    navigator.clipboard.writeText(prompt);
+    copyToClipboard(prompt);
     setCopiedPrompt(type);
     toast.success(t('canvasNodes.brandCore.promptCopied'), { duration: 2000 });
     setTimeout(() => setCopiedPrompt(null), 2000);
@@ -294,7 +295,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         <div className="space-y-4">
           {/* Logo Input */}
           <div className={cn(
-            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
+            "p-3 rounded-md border-node transition-all duration-300 backdrop-blur-sm",
             hasLogo
               ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
               : "bg-neutral-900/40 border-neutral-700/30"
@@ -312,7 +313,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   variant="ghost"
                   size="xs"
                   onClick={handleRemoveLogo}
-                  className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
+                  className="h-6 w-6 text-neutral-500 hover:text-destructive p-0"
                 >
                   <X size={12} />
                 </NodeButton>
@@ -355,7 +356,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
           {/* Identity Input (PDF or Image) */}
           <div className={cn(
-            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
+            "p-3 rounded-md border-node transition-all duration-300 backdrop-blur-sm",
             hasIdentity
               ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
               : "bg-neutral-900/40 border-neutral-700/30"
@@ -373,7 +374,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   variant="ghost"
                   size="xs"
                   onClick={handleRemoveIdentity}
-                  className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
+                  className="h-6 w-6 text-neutral-500 hover:text-destructive p-0"
                 >
                   <X size={12} />
                 </NodeButton>
@@ -416,7 +417,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
           {/* Strategy Input */}
           <div className={cn(
-            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
+            "p-3 rounded-md border-node transition-all duration-300 backdrop-blur-sm",
             hasStrategies
               ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
               : "bg-neutral-900/40 border-neutral-700/30"

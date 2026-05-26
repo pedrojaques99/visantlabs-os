@@ -1,5 +1,6 @@
 import { Type } from '@google/genai';
 import { prisma } from '../db/prisma.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 import { randomUUID } from 'crypto';
@@ -539,7 +540,7 @@ export async function executeAdminChatTool(
   // Resolve brand context: LLM-provided arg > session default.
   const resolvedBrandId = args.brandGuidelineId || sessionBrandGuidelineId;
 
-  let finalPrompt = args.prompt;
+  let finalPrompt = sanitizeForPrompt(args.prompt as string, 3000);
   const referenceImages: Array<{ url: string }> = [];
   let brandCtx: BrandContext | null = null;
 

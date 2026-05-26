@@ -12,10 +12,10 @@ interface KnowledgeSectionProps {
 }
 
 const SOURCE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  pdf: { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+  pdf: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' },
   image: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
   url: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
-  text: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+  text: { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' },
 };
 
 const sourceIcon = (source: BrandKnowledgeFile['source'], size = 14) => {
@@ -205,7 +205,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
             onClick={() => fileInputRef.current?.click()}
             className="w-full flex flex-col items-center justify-center py-10 gap-3 rounded-xl border border-dashed border-white/10 hover:border-white/20 bg-neutral-950/30 transition-colors cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-white/5 border border-neutral-800 flex items-center justify-center">
               <Upload size={18} className="text-neutral-500" />
             </div>
             <div className="text-center">
@@ -230,7 +230,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
               return (
                 <div
                   key={file.id}
-                  className="group relative flex flex-col gap-2 p-3 rounded-xl border border-white/[0.06] bg-neutral-950/50 hover:border-white/[0.12] transition-all"
+                  className="group relative flex flex-col gap-2 p-3 rounded-xl border border-neutral-800 bg-neutral-950/50 hover:border-white/10 transition-all"
                 >
                   {/* Header: icon + source badge */}
                   <div className="flex items-center justify-between gap-2">
@@ -248,7 +248,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
                       type="button"
                       onClick={() => handleDelete(file)}
                       disabled={deletingId === file.id}
-                      className="p-1 opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-all h-auto"
+                      className="p-1 opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-destructive hover:bg-destructive/10 rounded-md transition-all h-auto"
                       aria-label={`Remover ${file.fileName}`}
                     >
                       <Trash2 size={12} />
@@ -262,7 +262,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
 
                   {/* Vector bar */}
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-1 rounded-full bg-white/[0.04] overflow-hidden">
+                    <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
                       <div
                         className={`h-full rounded-full ${colors.bg.replace('/10', '/30')}`}
                         style={{ width: `${barWidth}%` }}

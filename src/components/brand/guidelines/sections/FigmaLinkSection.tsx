@@ -180,7 +180,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
                 size="sm"
                 onClick={handleImportClick}
                 disabled={isPreviewing}
-                className="h-8 px-4 text-[10px] gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/30 transition-all font-bold shadow-[0_0_15px_rgba(0,186,242,0.1)] hover:shadow-[0_0_20px_rgba(0,186,242,0.2)]"
+                className="h-8 px-4 text-[10px] gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/30 transition-all font-bold shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 10%)] hover:shadow-[0_0_20px_oklch(from var(--brand-cyan) l c h / 20%)]"
               >
                 {isPreviewing ? <GlitchLoader size={12} /> : <Figma size={12} />}
                 Importar do Figma
@@ -216,7 +216,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
             size="sm"
             onClick={handleUnlink}
             disabled={isUnlinking}
-            className="h-7 px-2 text-[10px] text-neutral-500 hover:text-red-400 hover:bg-red-500/10"
+            className="h-7 px-2 text-[10px] text-neutral-500 hover:text-destructive hover:bg-destructive/10"
           >
             {isUnlinking ? <GlitchLoader size={10} className="mr-1" /> : <Unlink size={10} className="mr-1" />}
             Desvincular
@@ -234,7 +234,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
               value={figmaUrl}
               onChange={(e) => setFigmaUrl(e.target.value)}
               placeholder="Cole a URL do arquivo Figma..."
-              className="h-8 text-xs bg-white/[0.02] border-white/10 placeholder:text-neutral-600"
+              className="h-8 text-xs bg-white/[0.03] border-white/10 placeholder:text-neutral-600"
               onKeyDown={(e) => e.key === 'Enter' && handleLink()}
             />
             <Button

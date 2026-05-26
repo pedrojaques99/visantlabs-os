@@ -23,7 +23,7 @@ export const SectionNavSidebar: React.FC<SectionNavSidebarProps> = ({ items, cla
   }, []);
 
   return (
-    <div className={cn('shrink-0 flex flex-col items-center gap-1 py-3 px-1 border-r border-white/[0.06] bg-neutral-950/50', className)}>
+    <div className={cn('shrink-0 flex flex-col items-center gap-1 py-3 px-1 border-r border-neutral-800 bg-neutral-950/50', className)}>
       {items.map((s) => (
         <button
           key={s.id}

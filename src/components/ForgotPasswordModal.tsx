@@ -139,8 +139,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               </div>
 
               {error && (
-                <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-md">
-                  <p className="text-xs text-red-400 font-mono">{error}</p>
+                <div className="p-2 bg-destructive/10 border border-destructive/20 rounded-md">
+                  <p className="text-xs text-destructive font-mono">{error}</p>
                 </div>
               )}
 

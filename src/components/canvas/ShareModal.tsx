@@ -6,6 +6,7 @@ import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Input } from '@/components/ui/input';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -87,7 +88,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
   const handleCopyLink = async () => {
     if (!shareUrl) return;
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await copyToClipboard(shareUrl);
       setCopied(true);
       toast.success(t('shareModal.linkCopied'));
       setTimeout(() => setCopied(false), 2000);

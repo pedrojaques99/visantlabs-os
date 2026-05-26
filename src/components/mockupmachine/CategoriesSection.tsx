@@ -548,7 +548,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           </div>
         </Button>
         {isSectionExpanded && (
-          <div className="p-3 pt-0 animate-fade-in border-t border-white/5 mt-1">
+          <div className="p-3 pt-0 animate-fade-in border-t border-neutral-800 mt-1">
             <InstructionsIdentityPanel />
             {/* Comment */}
             {!isComplete && (
@@ -660,10 +660,10 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         'rounded-md border p-2.5 transition-all duration-200',
                         customSelectedTags.length > 0 || isEditingCustom
                           ? theme === 'dark'
-                            ? 'bg-neutral-800/30 border-white/5'
+                            ? 'bg-neutral-800/30 border-neutral-800'
                             : 'bg-white/60 border-neutral-200'
                           : theme === 'dark'
-                            ? 'bg-neutral-900/20 border-white/5'
+                            ? 'bg-neutral-900/20 border-neutral-800'
                             : 'bg-white/30 border-neutral-200/50'
                       )}
                     >
@@ -707,8 +707,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                             className={cn(
                               'px-3 py-1 text-[10px] h-7 transition-all duration-200 focus:ring-0 w-[160px] font-mono rounded-full border animate-in fade-in',
                               theme === 'dark'
-                                ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-brand-cyan/50'
-                                : 'bg-neutral-100 border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-brand-cyan/50'
+                                ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-neutral-600'
+                                : 'bg-neutral-100 border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-neutral-600'
                             )}
                             autoFocus
                           />

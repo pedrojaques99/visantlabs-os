@@ -141,7 +141,7 @@ export const PresetsControl: React.FC = () => {
                             value={presetName}
                             onChange={(e) => setPresetName(e.target.value)}
                             className={cn(
-                                "flex-1 text-sm font-sans px-3 py-2 rounded-md border focus:outline-none focus:border-brand-cyan/50 bg-transparent transition-colors",
+                                "flex-1 text-sm font-sans px-3 py-2 rounded-md border focus:outline-none focus:border-neutral-600 bg-transparent transition-colors",
                                 theme === 'dark' ? "border-neutral-700 text-neutral-200 placeholder:text-neutral-600" : "border-neutral-300 text-neutral-800 placeholder:text-neutral-400"
                             )}
                             autoFocus
@@ -183,7 +183,7 @@ export const PresetsControl: React.FC = () => {
                                     <span className={cn("text-sm transition-colors", theme === 'dark' ? "text-neutral-300 group-hover:text-white" : "text-neutral-700 group-hover:text-black")}>{preset.name}</span>
                                     <Button variant="ghost"
                                         onClick={(e) => handleDelete(e, preset.id)}
-                                        className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                                        className="p-1.5 text-neutral-500 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
                                         title="Remover Preset"
                                     >
                                         <Trash2 size={14} />

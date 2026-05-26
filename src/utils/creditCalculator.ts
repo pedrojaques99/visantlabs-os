@@ -17,33 +17,33 @@ export function getCreditsRequired(
     return 2; // Default fallback
   }
 
-  // OpenAI GPT Image 2
+  // OpenAI GPT Image 2 (~$0.05-$0.21/image, token-based)
   if (provider === 'openai' || isOpenAIImageModel(model)) {
     switch (resolution) {
       case '512px':
       case 'HD':
       case '1K':
-        return 2; // medium quality
+        return 2;
       case '2K':
-        return 4; // high quality, landscape
+        return 3;
       case '4K':
-        return 4; // high quality, portrait
+        return 4;
       default:
         return 2;
     }
   }
 
-  // Seedream / Seededit models (via BytePlus API)
+  // Seedream / Seededit models (BytePlus API, ~$0.025-$0.055/image)
   if (provider === 'seedream' || isSeedreamModel(model)) {
     switch (resolution) {
       case '2K':
-        return 3;
+        return 2;
       case '3K':
-        return 4;
+        return 3;
       case '4K':
-        return 5;
+        return 4;
       default:
-        return 3; // Default 2K
+        return 2;
     }
   }
 
@@ -150,6 +150,10 @@ export function getVideoCreditsRequired(model?: string): number {
   if (model?.startsWith('seedance-')) {
     const isFast = model.includes('fast') || model.includes('lite');
     return isFast ? 20 : 35;
+  }
+  if (model?.startsWith('kling-')) {
+    const isPro = model.includes('master') || model.includes('pro') || model.includes('4k');
+    return isPro ? 30 : 20;
   }
   const isFast = model?.includes('fast') ?? false;
   return isFast ? 15 : 40;

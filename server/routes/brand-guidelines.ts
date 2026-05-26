@@ -16,11 +16,14 @@ import { brandSharedService } from '../services/brandSharedService.js'
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js'
 import { runBrandHealth } from '../lib/brandHealth.js'
 import { compileBrandTokens, type CompileFormat } from '../lib/brand-token-compiler.js'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js'
 import { v4 as uuidv4 } from 'uuid'
 import { vectorService } from '../services/vectorService.js'
 import { knowledgeService } from '../services/knowledgeService.js'
 import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
+import { chargeCredits } from '../lib/credits.js'
 import { calculateChangedFields, createSnapshot, generateChangeNote, generateDiff, formatVersionListItem } from '../lib/versionUtils.js'
 import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js'
 import { BrandGuidelineSchema, BrandGuidelinePatchSchema } from '../../src/lib/brandGuidelineSchema.js'
@@ -335,6 +338,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         return res.status(400).json({ error: `Invalid source: ${source}` })
     }
 
+    await chargeCredits(req.userId!, 1)
     const extracted = await extractBrandData(chunks, imagesToExtract, req.userId)
     const merged = mergeBrandGuidelines(existing as any, extracted)
 
@@ -998,6 +1002,220 @@ router.get('/public/:slug', publicRateLimiter, async (req, res) => {
   } catch (error: any) {
     console.error('[Brand Public] Error:', error)
     res.status(500).json({ error: 'Failed to fetch public guideline' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/ai-populate — generate content for empty brand fields
+router.post('/:id/ai-populate', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const apiKey = await getGeminiApiKey(req.userId)
+    if (!apiKey) return res.status(400).json({ error: 'Gemini API key not configured' })
+
+    const bg = guideline as unknown as BrandGuideline
+    const requestedSections: string[] | undefined = req.body.sections
+
+    // Define all populatable fields and their empty checks (nested JSON structure)
+    const fieldChecks: Record<string, () => boolean> = {
+      'strategy.coreMessage': () => !bg.strategy?.coreMessage?.product,
+      'strategy.pillars': () => !bg.strategy?.pillars?.length,
+      'strategy.manifesto': () => !bg.strategy?.manifesto,
+      'strategy.archetypes': () => !bg.strategy?.archetypes?.length,
+      'strategy.personas': () => !bg.strategy?.personas?.length,
+      'strategy.voiceValues': () => !bg.strategy?.voiceValues?.length,
+      'strategy.positioning': () => !bg.strategy?.positioning?.length,
+      'guidelines.voice': () => !bg.guidelines?.voice,
+      'guidelines.dos': () => !bg.guidelines?.dos?.length,
+      'guidelines.donts': () => !bg.guidelines?.donts?.length,
+      'guidelines.imagery': () => !bg.guidelines?.imagery,
+      'tags': () => !bg.tags || Object.keys(bg.tags).length === 0,
+      'identity.description': () => !bg.identity?.description,
+      'identity.tagline': () => !bg.identity?.tagline,
+    }
+
+    // Filter to requested sections (if provided) and empty fields only
+    const emptyFields = Object.entries(fieldChecks)
+      .filter(([key, isEmpty]) => {
+        if (requestedSections && requestedSections.length > 0) {
+          if (!requestedSections.some(s => key.startsWith(s) || key === s)) return false
+        }
+        return isEmpty()
+      })
+      .map(([key]) => key)
+
+    if (emptyFields.length === 0) {
+      return res.json({ patch: {}, generated: [] })
+    }
+
+    // Build existing brand context for LLM
+    const brandContext = buildBrandContext(bg)
+
+    const systemPrompt = `You are a brand strategist using the Metodologia Visant.
+Given an existing brand's context, generate content for the missing fields listed below.
+Follow the strategic flow: core message → pillars → manifesto → archetypes → voice → personas.
+Use what already exists to inform what you generate — maintain consistency.
+Respond in the same language as the brand's existing content (default: Portuguese BR).
+
+Return ONLY valid JSON matching this nested structure (include only the sections you're generating):
+{
+  "strategy": {
+    "coreMessage": { "product": "...", "differential": "...", "emotionalBond": "..." },
+    "pillars": [{ "value": "Pilar name", "description": "Why it matters" }],
+    "manifesto": { "provocation": "...", "tension": "...", "promise": "...", "full": "..." },
+    "archetypes": [{ "name": "...", "role": "primary|secondary", "description": "...", "examples": ["Brand A"] }],
+    "personas": [{ "name": "...", "age": 28, "occupation": "...", "traits": ["..."], "bio": "...", "desires": ["..."], "painPoints": ["..."] }],
+    "voiceValues": [{ "title": "...", "description": "...", "example": "example phrase" }],
+    "positioning": ["positioning statement"]
+  },
+  "guidelines": {
+    "voice": "overall tone description",
+    "dos": ["do this"],
+    "donts": ["avoid this"],
+    "imagery": "visual style description"
+  },
+  "tags": { "brand_values": ["..."], "tone": ["..."], "aesthetic": ["..."] },
+  "identity": { "description": "...", "tagline": "..." }
+}
+
+Only generate these missing items: ${emptyFields.join(', ')}
+Do NOT include fields that already exist.`
+
+    await chargeCredits(req.userId!, 1)
+
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })
+
+    const result = await model.generateContent([
+      { text: systemPrompt },
+      { text: `Existing brand context:\n${brandContext}\n\nGenerate the missing fields as JSON.` },
+    ])
+
+    const responseText = result.response.text()
+
+    const codeBlock = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
+    let jsonStr = codeBlock ? codeBlock[1].trim() : undefined
+    if (!jsonStr) {
+      const raw = responseText.match(/\{[\s\S]*\}/)
+      jsonStr = raw ? raw[0] : undefined
+    }
+    if (!jsonStr) {
+      return res.status(500).json({ error: 'Failed to parse AI response' })
+    }
+
+    const raw = JSON.parse(jsonStr)
+
+    // Validate: only allow expected top-level keys with correct types
+    const patch: Record<string, any> = {}
+    if (raw.strategy && typeof raw.strategy === 'object' && !Array.isArray(raw.strategy)) {
+      const s: Record<string, any> = {}
+      if (raw.strategy.coreMessage && typeof raw.strategy.coreMessage === 'object') s.coreMessage = raw.strategy.coreMessage
+      if (Array.isArray(raw.strategy.pillars)) s.pillars = raw.strategy.pillars
+      if (raw.strategy.manifesto) s.manifesto = raw.strategy.manifesto
+      if (Array.isArray(raw.strategy.archetypes)) s.archetypes = raw.strategy.archetypes
+      if (Array.isArray(raw.strategy.personas)) s.personas = raw.strategy.personas
+      if (Array.isArray(raw.strategy.voiceValues)) s.voiceValues = raw.strategy.voiceValues
+      if (Array.isArray(raw.strategy.positioning)) s.positioning = raw.strategy.positioning
+      if (Object.keys(s).length > 0) patch.strategy = s
+    }
+    if (raw.guidelines && typeof raw.guidelines === 'object' && !Array.isArray(raw.guidelines)) {
+      const g: Record<string, any> = {}
+      if (typeof raw.guidelines.voice === 'string') g.voice = raw.guidelines.voice
+      if (Array.isArray(raw.guidelines.dos)) g.dos = raw.guidelines.dos
+      if (Array.isArray(raw.guidelines.donts)) g.donts = raw.guidelines.donts
+      if (typeof raw.guidelines.imagery === 'string') g.imagery = raw.guidelines.imagery
+      if (Object.keys(g).length > 0) patch.guidelines = g
+    }
+    if (raw.identity && typeof raw.identity === 'object' && !Array.isArray(raw.identity)) {
+      const id: Record<string, any> = {}
+      if (typeof raw.identity.description === 'string') id.description = raw.identity.description
+      if (typeof raw.identity.tagline === 'string') id.tagline = raw.identity.tagline
+      if (Object.keys(id).length > 0) patch.identity = id
+    }
+    if (raw.tags && typeof raw.tags === 'object' && !Array.isArray(raw.tags)) patch.tags = raw.tags
+
+    res.json({ patch, generated: emptyFields })
+  } catch (error: any) {
+    console.error('[Brand AI Populate] Error:', error)
+    res.status(500).json({ error: 'Failed to generate brand content', message: error?.message })
+  }
+})
+
+// POST /api/brand-guidelines/:id/suggest-mockups — AI suggests mockup prompts based on brand identity
+router.post('/:id/suggest-mockups', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const apiKey = await getGeminiApiKey(req.userId)
+    if (!apiKey) return res.status(400).json({ error: 'Gemini API key not configured' })
+
+    const brandContext = buildBrandContext(guideline as any)
+    const count = Math.min(Math.max(req.body.count || 10, 3), 15)
+
+    const systemPrompt = `You are a creative director for a branding agency. Given a brand's identity, strategy, colors, typography and voice, suggest ${count} compelling mockup scene prompts.
+
+Each prompt should describe ONLY the physical scene/context — NOT the brand's logo, text, or visual design (those are injected automatically as reference images).
+
+Vary across these categories: stationery (cards, letterhead), packaging (boxes, bags, bottles), apparel (t-shirts, caps), signage (storefront, banners), digital (phone screen, laptop), environmental (wall mural, vehicle wrap), merchandise (mugs, pens, notebooks), editorial (magazine spread, poster).
+
+Pick categories that match the brand's industry and personality. A luxury brand gets marble + gold foil; a tech startup gets clean gradients + device mockups; a food brand gets rustic surfaces + natural light.
+
+Return ONLY a JSON array of objects:
+[
+  {
+    "prompt": "scene description for image generation (English, 1-2 sentences)",
+    "category": "stationery|packaging|apparel|signage|digital|environmental|merchandise|editorial",
+    "aspectRatio": "1:1|16:9|9:16|4:3|4:5",
+    "label": "short human-readable label (brand's language, max 4 words)"
+  }
+]`
+
+    await chargeCredits(req.userId!, 1)
+
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })
+
+    const result = await model.generateContent([
+      { text: systemPrompt },
+      { text: `Brand context:\n${brandContext}\n\nSuggest ${count} mockup prompts as JSON array.` },
+    ])
+
+    const responseText = result.response.text()
+    const codeBlock = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
+    let jsonStr = codeBlock ? codeBlock[1].trim() : undefined
+    if (!jsonStr) {
+      const raw = responseText.match(/\[[\s\S]*\]/)
+      jsonStr = raw ? raw[0] : undefined
+    }
+    if (!jsonStr) return res.status(500).json({ error: 'Failed to parse AI response' })
+
+    const suggestions = JSON.parse(jsonStr)
+    if (!Array.isArray(suggestions)) return res.status(500).json({ error: 'Invalid AI response format' })
+
+    const validated = suggestions
+      .filter((s: any) => typeof s.prompt === 'string' && s.prompt.length > 5)
+      .slice(0, count)
+      .map((s: any) => ({
+        prompt: s.prompt,
+        category: s.category || 'stationery',
+        aspectRatio: ['1:1', '16:9', '9:16', '4:3', '4:5'].includes(s.aspectRatio) ? s.aspectRatio : '1:1',
+        label: typeof s.label === 'string' ? s.label.slice(0, 40) : s.category,
+      }))
+
+    res.json({ suggestions: validated })
+  } catch (error: any) {
+    console.error('[Brand Suggest Mockups] Error:', error)
+    res.status(500).json({ error: 'Failed to suggest mockups', message: error?.message })
   }
 })
 
@@ -2175,6 +2393,7 @@ router.post('/:id/apply-fig-tokens', apiRateLimiter, authenticate, async (req: A
         console.log('[apply-fig-tokens] using pre-computed classifications (skipped Gemini reclassify)')
       } else {
         const { extractBrandData } = await import('../lib/brand-extract.js')
+        await chargeCredits(req.userId!, 1)
         const extracted = await extractBrandData([], images, req.userId)
         classifications = normalizeAssetClassifications(extracted.assetClassifications)
       }

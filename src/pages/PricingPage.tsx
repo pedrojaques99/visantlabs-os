@@ -293,7 +293,7 @@ export const PricingPage: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono mb-8 text-center animate-fade-in-down">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono mb-8 text-center animate-fade-in-down">
               {error}
             </div>
           )}
@@ -376,7 +376,7 @@ export const PricingPage: React.FC = () => {
                                 <Minus size={24} />
                               </Button>
 
-                              <div className="text-6xl md:text-7xl font-bold text-brand-cyan font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(82,221,235,0.2)]">
+                              <div className="text-6xl md:text-7xl font-bold text-brand-cyan font-mono tracking-tighter drop-shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 20%)]">
                                 {animatedCredits}
                               </div>
 
@@ -399,7 +399,7 @@ export const PricingPage: React.FC = () => {
                             </MicroTitle>
                           </div>
 
-                          <div className="pt-8 border-t border-neutral-800/50 text-center">
+                          <div className="pt-8 border-t border-white/10 text-center">
                             <div className="text-4xl font-bold text-neutral-100 font-mono mb-1">
                               {formatPrice(animatedPrice, currencyInfo?.currency || 'BRL', currencyInfo?.locale || 'pt-BR')}
                             </div>
@@ -502,7 +502,7 @@ export const PricingPage: React.FC = () => {
                       <Card
                         key={plan.id}
                         className={cn(
-                          "relative overflow-hidden transition-all duration-300 hover:border-brand-cyan/50",
+                          "relative overflow-hidden transition-all duration-300 hover:border-neutral-700",
                           index === 1
                             ? "bg-gradient-to-b from-brand-cyan/5 to-transparent border-brand-cyan/30"
                             : "bg-neutral-900/50 border-neutral-800"
@@ -541,7 +541,7 @@ export const PricingPage: React.FC = () => {
                               : `${plan.storageMB} MB`}
                           </p>
                         </CardHeader>
-                        <CardContent className="pt-4 border-t border-neutral-800/50">
+                        <CardContent className="pt-4 border-t border-white/10">
                           <ul className="space-y-2">
                             {plan.features.map((feature, i) => (
                               <li key={i} className="flex items-center gap-2 text-sm text-neutral-400">
@@ -586,7 +586,7 @@ export const PricingPage: React.FC = () => {
                       <Card
                         key={tier.id}
                         className={cn(
-                          "relative overflow-hidden transition-all duration-300 hover:border-brand-cyan/50",
+                          "relative overflow-hidden transition-all duration-300 hover:border-neutral-700",
                           tier.highlighted
                             ? "bg-gradient-to-b from-brand-cyan/5 to-transparent border-brand-cyan/30"
                             : "bg-neutral-900/50 border-neutral-800"
@@ -607,7 +607,7 @@ export const PricingPage: React.FC = () => {
                           </div>
                           <p className="text-xs text-neutral-500 font-mono mt-1">{tier.rateLimit} req/15min</p>
                         </CardHeader>
-                        <CardContent className="pt-4 border-t border-neutral-800/50">
+                        <CardContent className="pt-4 border-t border-white/10">
                           <ul className="space-y-2 mb-6">
                             {tier.features.map((feature, i) => (
                               <li key={i} className="flex items-center gap-2 text-sm text-neutral-400">
@@ -641,7 +641,7 @@ export const PricingPage: React.FC = () => {
                         </thead>
                         <tbody>
                           {CREDIT_COSTS.map((row, i) => (
-                            <tr key={i} className="border-b border-neutral-800/50 last:border-0">
+                            <tr key={i} className="border-b border-white/10 last:border-0">
                               <td className="py-2 px-3 text-neutral-300">{row.operation}</td>
                               <td className="py-2 px-3 text-right font-mono text-brand-cyan">{row.credits}</td>
                             </tr>
@@ -665,7 +665,7 @@ export const PricingPage: React.FC = () => {
                         </thead>
                         <tbody>
                           {API_TIERS.map((tier) => (
-                            <tr key={tier.id} className="border-b border-neutral-800/50 last:border-0">
+                            <tr key={tier.id} className="border-b border-white/10 last:border-0">
                               <td className={cn("py-2 px-3", tier.highlighted ? "text-brand-cyan font-semibold" : "text-neutral-300")}>{tier.name}</td>
                               <td className="py-2 px-3 text-right font-mono text-neutral-300">{tier.rateLimit.toLocaleString()}</td>
                               <td className="py-2 px-3 text-right font-mono text-neutral-300">{tier.credits.toLocaleString()}</td>
@@ -683,7 +683,7 @@ export const PricingPage: React.FC = () => {
 
         {/* Transparency & Community - Expert Mode */}
         <div className="max-w-4xl mx-auto px-4 pb-24 animate-fade-in-slow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-neutral-800/30">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-white/10">
             {/* Transparency Section */}
             <div className="space-y-6">
               <div className="space-y-2">
@@ -699,11 +699,11 @@ export const PricingPage: React.FC = () => {
               </div>
 
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-neutral-800/40 text-sm">
+                <div className="flex justify-between items-center py-2 border-b border-white/10 text-sm">
                   <span className="text-neutral-400">{t('pricing.google_api_gemini_31')}</span>
                   <span className="text-neutral-200 font-mono">$0.067</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-neutral-800/40 text-sm">
+                <div className="flex justify-between items-center py-2 border-b border-white/10 text-sm">
                   <span className="text-neutral-400">{t('pricing.visant_processingcdn')}</span>
                   <span className="text-neutral-200 font-mono">$0.013</span>
                 </div>
@@ -733,7 +733,7 @@ export const PricingPage: React.FC = () => {
                   href="https://github.com/visantlabs"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
+                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-white/10 rounded-xl hover:border-neutral-700 transition-all group"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">
@@ -748,7 +748,7 @@ export const PricingPage: React.FC = () => {
                   href="https://discord.gg/visantlabs"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-xl hover:border-brand-cyan/40 transition-all group"
+                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-white/10 rounded-xl hover:border-neutral-700 transition-all group"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">

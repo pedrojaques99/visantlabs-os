@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -53,7 +54,7 @@ const Avatar: React.FC<{
             {mediaItems!.map((m) => (
               <button
                 key={m.id}
-                className="aspect-square rounded overflow-hidden border border-white/5 hover:border-white/20 transition-colors"
+                className="aspect-square rounded overflow-hidden border border-neutral-800 hover:border-white/20 transition-colors"
                 onClick={() => onPickImage(m.url)}
               >
                 <img src={m.url} alt={m.label || ''} className="w-full h-full object-cover" />
@@ -80,12 +81,20 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
   const add = () => persist([...personas, { name: '', age: undefined, occupation: '', bio: '', desires: [], painPoints: [], traits: [] }]);
   const remove = (i: number) => persist(personas.filter((_, idx) => idx !== i));
 
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const p = patch.strategy?.personas;
+    if (Array.isArray(p)) persist(p);
+  }, [persist]);
+
   return (
     <SectionBlock id="personas" icon={<User size={14} />} title="Personas" span={span as any}
       actions={
-        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add persona">
-          <Plus size={11} />
-        </Button>
+        <div className="flex items-center gap-1">
+          {personas.length === 0 && <AiFieldButton guideline={guideline} section="strategy.personas" onResult={handleAiResult} />}
+          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add persona">
+            <Plus size={11} />
+          </Button>
+        </div>
       }
     >
       <div className="space-y-0 py-1">
@@ -93,7 +102,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
           <p className="text-[11px] text-neutral-700 py-2">No personas yet. Click + to add.</p>
         )}
         {personas.map((p, i) => (
-          <div key={i} className="group/persona border-b border-white/[0.04] last:border-0 overflow-hidden">
+          <div key={i} className="group/persona border-b border-neutral-800 last:border-0 overflow-hidden">
             {/* Header row: avatar + name + age */}
             <div className="flex items-center gap-3 py-3">
               <Avatar
@@ -122,7 +131,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                 className="h-7 bg-transparent border-none px-0 text-sm text-neutral-500 focus-visible:ring-0 w-10 text-right shrink-0"
                 placeholder="—"
               />
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-700 hover:text-red-400 opacity-0 group-hover/persona:opacity-100 transition-all shrink-0" onClick={() => remove(i)} aria-label="Remove">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/persona:opacity-100 transition-all shrink-0" onClick={() => remove(i)} aria-label="Remove">
                 <Trash2 size={10} />
               </Button>
             </div>
@@ -136,7 +145,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                   <textarea
                     value={p.bio || ''}
                     onChange={(e) => set(i, { bio: e.target.value })}
-                    className="auto-textarea w-full bg-transparent border border-white/[0.06] rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/[0.12] transition-colors"
+                    className="auto-textarea w-full bg-transparent border border-neutral-800 rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-colors"
                     placeholder="Contexto, rotina, mentalidade..."
                   />
                 </div>
@@ -148,7 +157,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                     <textarea
                       value={toLines(p.desires)}
                       onChange={(e) => set(i, { desires: fromLines(e.target.value) })}
-                      className="auto-textarea w-full bg-transparent border border-white/[0.06] rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/[0.12] transition-colors"
+                      className="auto-textarea w-full bg-transparent border border-neutral-800 rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-colors"
                       placeholder={"Reduzir fricção\nROI claro\nTime autônomo"}
                     />
                   </div>
@@ -157,7 +166,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                     <textarea
                       value={toLines(p.painPoints)}
                       onChange={(e) => set(i, { painPoints: fromLines(e.target.value) })}
-                      className="auto-textarea w-full bg-transparent border border-white/[0.06] rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/[0.12] transition-colors"
+                      className="auto-textarea w-full bg-transparent border border-neutral-800 rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-colors"
                       placeholder={"Ferramentas fragmentadas\nSem visibilidade\nOnboarding lento"}
                     />
                   </div>

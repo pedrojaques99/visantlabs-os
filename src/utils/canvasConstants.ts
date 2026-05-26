@@ -21,6 +21,7 @@ export const DROPPABLE_NODE_TYPES = [
     'chat',
     'nodeBuilder',
     'director',
+    'brandBatch',
 ] as const;
 
 export type DroppableNodeType = typeof DROPPABLE_NODE_TYPES[number];

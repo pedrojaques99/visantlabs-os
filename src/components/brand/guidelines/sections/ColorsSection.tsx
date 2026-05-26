@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { checkWCAGCompliance, getContrastRatioPublic, hexToCmyk } from '@/utils/colorUtils';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ColorsSectionProps {
   guideline: BrandGuideline;
@@ -70,7 +71,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
     else if (format === 'css') content = local.map(c => `--color-${(c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}: ${c.hex};`).join('\n');
     else if (format === 'tailwind') { const o: Record<string, string> = {}; local.forEach(c => { o[(c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')] = c.hex; }); content = JSON.stringify(o, null, 2); }
     else content = local.map(c => { const cm = c.cmyk || hexToCmyk(c.hex); return `${c.name || 'Color'}: C${cm.c} M${cm.m} Y${cm.y} K${cm.k}`; }).join('\n');
-    navigator.clipboard.writeText(content);
+    copyToClipboard(content);
     toast.success(`Copied ${local.length} colors as ${format.toUpperCase()}`);
   };
 
@@ -133,7 +134,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             {/* Hex */}
             <span
               className="text-[10px] font-mono text-neutral-500 w-16 text-right cursor-pointer hover:text-neutral-300 transition-colors"
-              onClick={() => { navigator.clipboard.writeText(c.hex); toast.success(`Copied ${c.hex}`); }}
+              onClick={() => { copyToClipboard(c.hex); toast.success(`Copied ${c.hex}`); }}
               title="Copy hex"
             >
               {c.hex}
@@ -142,7 +143,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             <span className="text-[10px] font-mono text-neutral-700 w-28 text-right hidden sm:block">
               {(() => { try { const cm = c.cmyk || hexToCmyk(c.hex); return `C${cm.c} M${cm.m} Y${cm.y} K${cm.k}`; } catch { return ''; } })()}
             </span>
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-800 hover:text-red-400 opacity-0 group-hover/color:opacity-100 transition-all shrink-0" onClick={() => removeColor(i)} aria-label="Remove color">
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-800 hover:text-destructive opacity-0 group-hover/color:opacity-100 transition-all shrink-0" onClick={() => removeColor(i)} aria-label="Remove color">
               <Trash2 size={11} />
             </Button>
           </div>
@@ -153,18 +154,18 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       <AnimatePresence>
         {showWCAG && contrastMatrix.length > 0 && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-            <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
+            <div className="mt-4 pt-4 border-t border-neutral-800 space-y-2">
               <div className="flex items-center justify-between mb-1">
                 <MicroTitle className="text-neutral-500">WCAG Contrast</MicroTitle>
                 <Button variant="ghost" size="icon" className="h-5 w-5 text-neutral-600 hover:text-white" onClick={() => setShowWCAG(false)} aria-label="Close"><X size={10} /></Button>
               </div>
               {contrastMatrix.map((pair, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 rounded-md bg-white/[0.02] border border-white/[0.03]">
+                <div key={i} className="flex items-center gap-2 p-2 rounded-md bg-white/[0.03] border border-white/[0.03]">
                   <div className="w-5 h-5 rounded border border-white/10 shrink-0" style={{ backgroundColor: pair.fg }} />
                   <div className="w-5 h-5 rounded border border-white/10 shrink-0" style={{ backgroundColor: pair.bg }} />
                   <span className="text-[10px] font-mono text-neutral-400 flex-1 truncate">{pair.fgName} / {pair.bgName}</span>
                   <span className="text-[10px] font-mono text-neutral-300 tabular-nums">{pair.ratio.toFixed(2)}:1</span>
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pair.wcagAAA ? 'bg-green-500/20 text-green-400' : pair.wcagAA ? 'bg-white/10 text-neutral-300' : pair.largeAA ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pair.wcagAAA ? 'bg-green-500/20 text-green-400' : pair.wcagAA ? 'bg-white/10 text-neutral-300' : pair.largeAA ? 'bg-amber-500/20 text-amber-400' : 'bg-destructive/20 text-destructive'}`}>
                     {pair.wcagAAA ? 'AAA' : pair.wcagAA ? 'AA' : pair.largeAA ? 'AA Lg' : 'Fail'}
                   </span>
                 </div>

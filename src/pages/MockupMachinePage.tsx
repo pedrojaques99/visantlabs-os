@@ -43,6 +43,7 @@ import { useCreditValidation } from '@/hooks/useCreditValidation';
 import { useAnalysisOverlay } from '@/hooks/useAnalysisOverlay';
 import { formatMockupError } from '@/utils/mockupErrorHandling';
 import { compressImage } from '@/utils/imageCompression';
+import { loadImage } from '@/utils/imageUtils';
 
 const MOCKUP_COUNT = 1;
 
@@ -1605,17 +1606,11 @@ const MockupMachinePageContent: React.FC = () => {
     // Preload the URL before swapping to prevent image flicker
     if (image.base64 && !image.url) {
       mockupApi.uploadTempImage(image.base64, image.mimeType)
-        .then(url => {
-          const img = new Image();
-          img.onload = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
-          };
-          img.onerror = () => {
-            // Keep base64 if URL fails to load
-            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
-          };
-          img.src = url;
-        })
+        .then(url =>
+          loadImage(url, null)
+            .then(() => setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null))
+            .catch(() => setUploadedImage(prev => prev ? ({ ...prev, url }) : null))
+        )
         .catch(err => {
           if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
         });
@@ -1672,16 +1667,11 @@ const MockupMachinePageContent: React.FC = () => {
     // Preload the URL before swapping to prevent image flicker
     if (base64String && !image.url) {
       mockupApi.uploadTempImage(base64String, mimeType)
-        .then(url => {
-          const img = new Image();
-          img.onload = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
-          };
-          img.onerror = () => {
-            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
-          };
-          img.src = url;
-        })
+        .then(url =>
+          loadImage(url, null)
+            .then(() => setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null))
+            .catch(() => setUploadedImage(prev => prev ? ({ ...prev, url }) : null))
+        )
         .catch(err => {
           if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
         });
@@ -2744,8 +2734,8 @@ Generate the new mockup image with the requested changes applied.`;
       
       {/* Dynamic Background */}
       <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(82,221,235,0.05)_0%,transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(82,221,235,0.02)_0%,transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,oklch(from var(--brand-cyan) l c h / 5%)_0%,transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,oklch(from var(--brand-cyan) l c h / 5%)_0%,transparent_50%)]" />
       </div>
 
       <SoftwareApplicationSchema
@@ -2810,14 +2800,14 @@ Generate the new mockup image with the requested changes applied.`;
 
                 {/* Desktop Sidebar Toggle - Subtly docked to the sidebar edge near vertical center */}
                 <div className={cn(
-                  "hidden lg:block absolute z-[45] transition-all duration-300",
+                  "hidden lg:block absolute z-40 transition-all duration-300",
                   isSidebarCollapsed ? "left-0 translate-x-3" : "left-[-20px]"
                 )} style={{ top: 'calc(50% - 20px)' }}>
                   <Button 
                     variant="ghost" 
                     onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     size="icon"
-                    className="w-10 h-10 rounded-full bg-neutral-900 border border-white/5 hover:bg-neutral-800 text-neutral-500 hover:text-white shadow-2xl transition-all group"
+                    className="w-10 h-10 rounded-full bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-neutral-500 hover:text-white shadow-2xl transition-all group"
                     title={isSidebarCollapsed ? (t('mockup.openSidebar') || 'Abrir barra lateral') : (t('mockup.closeSidebar') || 'Fechar barra lateral')}
                     aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                   >

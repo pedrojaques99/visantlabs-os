@@ -245,9 +245,11 @@ export const generateVideo = async (
         }
         if (input.startsWith('http://') || input.startsWith('https://')) {
           const parsed = new URL(input);
-          const blocked = /^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.|169\.254\.|::1|\[::1\])/i;
+          if (parsed.protocol !== 'https:') throw new Error('Only HTTPS URLs are allowed');
+          const blocked = /^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.|169\.254\.|::1|\[::1\]|metadata\.google|169\.254\.169\.254)/i;
           if (blocked.test(parsed.hostname)) throw new Error('Internal URLs are not allowed');
-          const resp = await fetch(input);
+          if (parsed.port && parsed.port !== '443') throw new Error('Non-standard ports are not allowed');
+          const resp = await fetch(input, { redirect: 'error' });
           if (!resp.ok) throw new Error(`Failed to fetch image from URL: ${resp.status}`);
           const buffer = Buffer.from(await resp.arrayBuffer());
           const contentType = resp.headers.get('content-type') || imageMimeType;

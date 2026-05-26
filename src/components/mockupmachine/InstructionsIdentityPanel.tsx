@@ -136,8 +136,8 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 className={cn(
                   'w-full min-h-[80px] p-3 text-sm font-mono rounded-md focus:outline-none resize-none shadow-inner animate-fade-in',
                   theme === 'dark'
-                    ? 'bg-black/10 border border-white/10 text-white placeholder:text-neutral-700 focus:border-brand-cyan/50'
-                    : 'bg-white border border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-brand-cyan/50'
+                    ? 'bg-black/10 border border-white/10 text-white placeholder:text-neutral-700 focus:border-neutral-600'
+                    : 'bg-white border border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-600'
                 )}
               />
             )}

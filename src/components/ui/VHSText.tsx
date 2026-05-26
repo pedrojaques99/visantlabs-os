@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { PersistentShaderRenderer } from '@/utils/shaders/shaderRenderer';
+import { loadImage } from '@/utils/imageUtils';
 
 interface VHSTextProps {
   children: string;
@@ -194,35 +195,28 @@ export const VHSText: React.FC<VHSTextProps> = ({
       // Draw result to canvas and make black background transparent
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (ctx) {
-        const img = new Image();
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
+        const img = await loadImage(resultDataUrl, null);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
 
-            // Get image data to process pixels
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
+        // Get image data to process pixels
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
 
-            // Make black pixels transparent while preserving VHS effect on colored text
-            for (let i = 0; i < data.length; i += 4) {
-              const r = data[i];
-              const g = data[i + 1];
-              const b = data[i + 2];
+        // Make black pixels transparent while preserving VHS effect on colored text
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
 
-              // If pixel is very dark (almost black), make it transparent
-              // Threshold: if all RGB values are below 30, make transparent
-              if (r < 30 && g < 30 && b < 30) {
-                data[i + 3] = 0; // Set alpha to 0 (transparent)
-              }
-            }
+          // If pixel is very dark (almost black), make it transparent
+          // Threshold: if all RGB values are below 30, make transparent
+          if (r < 30 && g < 30 && b < 30) {
+            data[i + 3] = 0; // Set alpha to 0 (transparent)
+          }
+        }
 
-            ctx.putImageData(imageData, 0, 0);
-            resolve();
-          };
-          img.onerror = reject;
-          img.src = resultDataUrl;
-        });
+        ctx.putImageData(imageData, 0, 0);
       }
 
       // Continue rendering

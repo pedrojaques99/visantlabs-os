@@ -17,6 +17,7 @@ import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { Input } from '@/components/ui/input'
+import { copyToClipboard } from '@/utils/clipboard';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -113,7 +114,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
 
   const handleCopyColor = useCallback(async (color: string) => {
     try {
-      await navigator.clipboard.writeText(color);
+      await copyToClipboard(color);
       toast.success(t('canvasNodes.chatNode.messageCopied'), { duration: 2000 });
     } catch (error) {
       console.error('Failed to copy color:', error);
@@ -338,7 +339,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
               e.stopPropagation();
               handleRemoveImage();
             }}
-            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border-node border-red-500/20 hover:border-red-500/30"
+            className="bg-destructive/20 hover:bg-destructive/30 text-destructive backdrop-blur-sm border-node border-destructive/20 hover:border-destructive/30"
             title={t('canvasNodes.imageNode.removeImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >

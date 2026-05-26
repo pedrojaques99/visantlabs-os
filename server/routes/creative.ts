@@ -11,6 +11,7 @@ import {
 import { renderCreativePlan } from '../lib/creative-renderer.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { chargeCredits } from '../lib/credits.js';
 import { prisma } from '../db/prisma.js';
 import {
   planFromBrand,
@@ -228,6 +229,8 @@ router.post(
       ]
         .filter(Boolean)
         .join('\n');
+
+      await chargeCredits(req.userId!, 1);
 
       let plan: Record<string, any>;
       let pickedMedia: { url: string } | null = null;

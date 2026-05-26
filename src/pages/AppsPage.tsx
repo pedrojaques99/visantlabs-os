@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { PageShell } from '../components/ui/PageShell';
@@ -6,55 +6,142 @@ import { cn } from '../lib/utils';
 import {
   ExternalLink,
   Lock,
-  Diamond,
-  Zap,
+  Crown,
+  Palette,
+  Music,
+  Globe,
+  ShieldCheck,
+  PackageOpen,
+  ArrowUpDown,
   Image as ImageIcon,
   Edit3,
   Plus,
   Database,
-  ShieldCheck,
-  PackageOpen,
-  ArrowUpDown,
+  ChevronRight,
+  Search,
+  X,
 } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { appsService, AppConfig } from '@/services/appsService';
 import { AppEditDialog } from '@/components/AppEditDialog';
 import { Button } from '@/components/ui/button';
-import { MicroTitle } from '@/components/ui/MicroTitle';
-import { SearchBar } from '@/components/ui/SearchBar';
 import { toast } from 'sonner';
 
-// ─── Static Data ────────────────────────────────────────────────────────────
+// ─── Category Config ────────────────────────────────────────────────────────
 
-const BADGE_STYLES: Record<string, string> = {
-  featured: 'border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5',
-  premium: 'border-brand-cyan/20 text-brand-cyan/80 bg-brand-cyan/5',
-  free: 'border-white/10 text-neutral-500',
-  comingSoon: 'border-white/5 text-neutral-600',
-  admin: 'border-amber-500/30 text-amber-400 bg-amber-500/5',
+type CategoryDef = {
+  key: string;
+  label: string;
+  description: string;
+  icon: typeof Crown;
 };
 
-const SORT_CYCLE = ['default', 'name', 'free'] as const;
-const SORT_LABELS: Record<string, string> = { default: 'Default', name: 'A–Z', free: 'Free first' };
+const CATEGORY_CONFIG: CategoryDef[] = [
+  { key: 'pro', label: 'Pro Tools', description: 'Professional design & branding suite', icon: Crown },
+  { key: 'creative', label: 'Creative Lab', description: 'Free creative tools to experiment with', icon: Palette },
+  { key: 'audio', label: 'Audio', description: 'Sound & music tools', icon: Music },
+  { key: 'community', label: 'Community', description: 'Open-source experiments & external tools', icon: Globe },
+];
+
+const ADMIN_CATEGORY: CategoryDef = { key: 'admin', label: 'Admin', description: 'Internal tools', icon: ShieldCheck };
+
+type AccessFilter = 'all' | 'free' | 'premium';
 
 // ─── Skeleton ───────────────────────────────────────────────────────────────
 
-function AppCardSkeleton() {
+function AppCardSkeleton({ large = false }: { large?: boolean }) {
   return (
-    <div className="rounded-[--radius] overflow-hidden bg-white/[0.02] border border-white/10 animate-pulse">
-      <div className="aspect-[16/10] bg-neutral-800/30" />
-      <div className="p-5 space-y-4">
-        <div className="space-y-2">
-          <div className="h-4 w-2/3 bg-neutral-800/40 rounded" />
-          <div className="h-3 w-full bg-neutral-800/30 rounded" />
-        </div>
-        <div className="pt-3 border-t border-white/[0.03]">
-          <div className="h-4 w-16 bg-neutral-800/30 rounded" />
-        </div>
+    <div className={cn(
+      'rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 animate-pulse',
+      large && 'lg:col-span-2 lg:row-span-2',
+    )}>
+      <div className={cn('bg-neutral-800/20', large ? 'aspect-[16/9]' : 'aspect-[16/10]')} />
+      <div className="p-5 space-y-3">
+        <div className="h-4 w-1/2 bg-neutral-800/30 rounded-full" />
+        <div className="h-3 w-4/5 bg-neutral-800/20 rounded-full" />
       </div>
     </div>
+  );
+}
+
+// ─── Hero Card ──────────────────────────────────────────────────────────────
+
+interface HeroCardProps {
+  app: any;
+  variant: 'primary' | 'secondary';
+  hasAccess: boolean;
+  onOpen: (app: any) => void;
+}
+
+function HeroCard({ app, variant, hasAccess, onOpen }: HeroCardProps) {
+  const isPrimary = variant === 'primary';
+  const isPremium = app.badgeVariant === 'premium' || app.badgeVariant === 'featured';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      onClick={() => onOpen(app)}
+      className={cn(
+        'group relative rounded-2xl overflow-hidden cursor-pointer',
+        'border border-neutral-800 hover:border-white/15',
+        'transition-all duration-500 hover:shadow-2xl hover:shadow-brand-cyan/5',
+        isPrimary ? 'lg:col-span-2 lg:row-span-2' : '',
+      )}
+    >
+      <div className={cn('relative overflow-hidden', isPrimary ? 'aspect-[16/9]' : 'aspect-[16/10]')}>
+        {app.thumbnail ? (
+          <img
+            src={app.thumbnail}
+            alt={app.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+          />
+        ) : (
+          <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
+            <ImageIcon size={48} className="text-neutral-800" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-neutral-950/10" />
+
+        <div className="absolute inset-0 flex flex-col justify-end p-5 lg:p-7">
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2">
+              {isPremium && (
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan">
+                  Pro
+                </span>
+              )}
+            </div>
+            <h3 className={cn(
+              'font-bold text-white',
+              isPrimary ? 'text-2xl lg:text-3xl' : 'text-lg',
+            )}>
+              {app.name}
+            </h3>
+            <p className={cn(
+              'text-neutral-400 leading-relaxed line-clamp-2',
+              isPrimary ? 'text-sm max-w-lg' : 'text-xs',
+            )}>
+              {app.description || app.desc}
+            </p>
+
+            <div className="pt-2 flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-cyan group-hover:text-white transition-colors">
+                Open app <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </span>
+              {isPremium && !hasAccess && (
+                <span className="text-xs text-neutral-600 flex items-center gap-1">
+                  <Lock size={10} /> Requires Pro
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -71,6 +158,7 @@ interface AppCardProps {
 function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
   const isComingSoon = app.badgeVariant === 'comingSoon';
   const isPremium = app.badgeVariant === 'premium';
+  const isExternal = app.isExternal;
   const description = app.description || app.desc;
 
   const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -81,28 +169,33 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
 
   return (
     <motion.div
-      variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } } }}
+      variants={{
+        hidden: { opacity: 0, y: 12, scale: 0.98 },
+        visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+      }}
       role="button"
       tabIndex={isComingSoon ? -1 : 0}
       aria-label={app.name}
       onClick={() => onOpen(app)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(app); } }}
       className={cn(
-        'group relative rounded-[--radius] overflow-hidden flex flex-col',
-        'bg-white/[0.02] border border-white/10 backdrop-blur-sm',
-        'transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/50 focus-visible:border-brand-cyan/30',
-        !isComingSoon ? 'hover:border-brand-cyan/30 cursor-pointer' : 'opacity-40 grayscale pointer-events-none',
+        'group relative rounded-2xl overflow-hidden flex flex-col',
+        'bg-white/[0.03] border border-neutral-800',
+        'transition-all duration-300 outline-none',
+        'hover:border-white/10 hover:bg-white/[0.035] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20',
+        'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
+        isComingSoon && 'opacity-30 grayscale pointer-events-none',
         app.isHidden && 'border-amber-500/20 opacity-60',
       )}
     >
       {app.isHidden && (
-        <div className="absolute top-0 right-0 z-50 bg-amber-500/90 text-black px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-bl-md">
+        <div className="absolute top-0 right-0 z-50 bg-amber-500/90 text-black px-2.5 py-0.5 text-[10px] font-semibold rounded-bl-xl">
           Hidden
         </div>
       )}
 
       {/* Thumbnail */}
-      <div className="aspect-[16/10] relative overflow-hidden bg-neutral-900/40 border-b border-white/[0.03]">
+      <div className="aspect-[16/10] relative overflow-hidden bg-neutral-900/40">
         {app.thumbnail ? (
           <>
             <img
@@ -110,75 +203,105 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
               alt={app.name}
               loading="lazy"
               onError={handleImgError}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             />
-            <div className="w-full h-full items-center justify-center text-neutral-700 hidden">
-              <ImageIcon size={40} strokeWidth={1.2} />
+            <div className="w-full h-full items-center justify-center text-neutral-800 hidden">
+              <ImageIcon size={32} strokeWidth={1.2} />
             </div>
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-neutral-700">
-            <ImageIcon size={40} strokeWidth={1.2} />
+          <div className="w-full h-full flex items-center justify-center text-neutral-800">
+            <ImageIcon size={32} strokeWidth={1.2} />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-transparent opacity-70 group-hover:opacity-50 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-transparent opacity-80" />
 
+        {/* Hover overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-neutral-950/40 backdrop-blur-[3px]">
+          <span className="text-sm font-medium text-white px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center gap-2 shadow-lg">
+            {isExternal ? 'Launch' : 'Open'}
+            {isExternal ? <ExternalLink size={14} /> : <ChevronRight size={14} />}
+          </span>
+        </div>
+
+        {/* Top-right badge */}
         {isPremium && !hasAccess && (
-          <div className="absolute top-3 right-3 z-20 p-2 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/10 text-brand-cyan">
+          <div className="absolute top-3 right-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan">
             <Lock size={12} />
+          </div>
+        )}
+        {isExternal && !(isPremium && !hasAccess) && (
+          <div className="absolute top-3 right-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-400">
+            <ExternalLink size={12} />
           </div>
         )}
       </div>
 
       {/* Admin Controls */}
       {isAdmin && (
-        <div className="absolute top-3 left-3 z-30 flex gap-2">
+        <div className="absolute top-3 left-3 z-30 flex gap-1.5">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(app); }}
-            className="p-2 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all"
+            className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all"
           >
             <Edit3 size={12} />
           </button>
           {app.databaseInfo && (
-            <div className="px-2 py-1 rounded-full bg-brand-cyan/5 border border-brand-cyan/20 text-brand-cyan flex items-center gap-1.5" title={app.databaseInfo}>
+            <div className="px-2 py-1.5 rounded-xl bg-brand-cyan/5 border border-brand-cyan/20 text-brand-cyan flex items-center gap-1" title={app.databaseInfo}>
               <Database size={10} />
-              <span className="text-[10px] font-mono font-bold truncate max-w-[80px]">{app.databaseInfo}</span>
+              <span className="text-[10px] font-medium truncate max-w-[60px]">{app.databaseInfo}</span>
             </div>
           )}
         </div>
       )}
 
       {/* Body */}
-      <div className="p-5 space-y-4 flex-1 flex flex-col">
-        <div className="space-y-1.5 flex-1">
-          <h3 className="text-base font-bold text-neutral-200 group-hover:text-brand-cyan transition-colors tracking-tight">
+      <div className="p-4 sm:p-5 flex-1 flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-[15px] font-semibold text-neutral-100 group-hover:text-white transition-colors leading-snug">
             {app.name}
           </h3>
-          <p className="text-[11px] font-mono text-neutral-500 leading-relaxed line-clamp-2 min-h-[32px]">
-            {description}
-          </p>
+          {isComingSoon ? (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-neutral-600 shrink-0">
+              Soon
+            </span>
+          ) : app.badgeVariant === 'free' || (app as any).free ? (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400/80 shrink-0">
+              Free
+            </span>
+          ) : isPremium ? (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan/80 shrink-0">
+              Pro
+            </span>
+          ) : null}
         </div>
+        <p className="text-[13px] text-neutral-500 leading-relaxed line-clamp-2 flex-1">
+          {description}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
 
-        <div className="pt-3 flex items-center justify-between border-t border-white/[0.03] mt-auto">
-          {isPremium && !hasAccess ? (
-            <span className="text-[10px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md border border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5 flex items-center gap-1.5">
-              <Lock size={8} /> Premium
-            </span>
-          ) : app.badge ? (
-            <span className={cn('text-[10px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-md border', BADGE_STYLES[app.badgeVariant] || '')}>
-              {app.badge}
-            </span>
-          ) : <span />}
+// ─── Category Section Header ────────────────────────────────────────────────
 
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-600 group-hover:text-brand-cyan transition-colors">
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">
-              {app.isExternal ? 'Launch' : 'Enter'}
-            </span>
-            <ExternalLink size={10} className="translate-x-1 group-hover:translate-x-0 transition-transform" />
+function CategoryHeader({ category, count }: { category: CategoryDef; count: number }) {
+  const Icon = category.icon;
+  return (
+    <div className="flex items-end justify-between gap-4 mb-1">
+      <div className="space-y-1">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-white/5 border border-neutral-800">
+            <Icon size={16} className="text-neutral-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-neutral-200">{category.label}</h2>
+            <p className="text-xs text-neutral-600">{category.description}</p>
           </div>
         </div>
       </div>
-    </motion.div>
+      <span className="text-xs text-neutral-700 pb-0.5">{count} {count === 1 ? 'app' : 'apps'}</span>
+    </div>
   );
 }
 
@@ -197,47 +320,52 @@ export const AppsPage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<typeof SORT_CYCLE[number]>('default');
+  const [accessFilter, setAccessFilter] = useState<AccessFilter>('all');
+  const [sortBy, setSortBy] = useState<'default' | 'name'>('default');
+  const tabBarRef = useRef<HTMLDivElement>(null);
 
   // ─── Static apps config ─────────────────────────────────────────────────
 
   const staticAppsData = useMemo(() => [
-    { id: 'mockup-machine', name: t('apps.mockupMachine.name'), desc: t('apps.mockupMachine.description'), link: '/', badge: t('apps.badge.featured'), badgeVariant: 'featured', thumbnail: '/tools/mockup-machine.webp', category: 'mockup', free: false },
-    { id: 'branding-machine', name: t('apps.brandingMachine.name'), desc: t('apps.brandingMachine.description'), link: '/branding-machine', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/branding-machine.webp', category: 'design', free: false },
-    { id: 'brand-guidelines', name: t('apps.brandGuidelines.name'), desc: t('apps.brandGuidelines.description'), link: '/brand-guidelines', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/brand-guidelines.webp', category: 'design', free: false },
-    { id: 'canvas', name: t('apps.canvas.name'), desc: t('apps.canvas.description'), link: '/canvas', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/canvas.webp', category: 'design', free: false },
-    { id: 'budget-machine', name: t('apps.budgetMachine.name'), desc: t('apps.budgetMachine.description'), link: '/budget-machine', badge: t('apps.badge.comingSoon'), badgeVariant: 'comingSoon', thumbnail: '/tools/budget-machine.webp', category: 'design', free: false },
-    { id: 'colorfy', name: t('apps.colorfy.name'), desc: t('apps.colorfy.description'), link: 'https://gradient-machine.vercel.app/', badge: t('apps.badge.free'), badgeVariant: 'free', thumbnail: '/tools/color-extractor.webp', category: 'design', isExternal: true, free: true },
-    { id: 'halftone-machine', name: t('apps.halftoneMachine.name'), desc: t('apps.halftoneMachine.description'), link: 'https://pedrojaques99.github.io/halftone-machine/', badge: t('apps.badge.free'), badgeVariant: 'free', thumbnail: '/tools/halftone-machine.webp', isExternal: true, category: 'effects', free: true },
+    // Pro Tools
+    { id: 'mockup-machine', name: t('apps.mockupMachine.name'), desc: t('apps.mockupMachine.description'), link: '/', badge: t('apps.badge.featured'), badgeVariant: 'featured', thumbnail: '/tools/mockup-machine.webp', category: 'pro', free: false },
+    { id: 'branding-machine', name: t('apps.brandingMachine.name'), desc: t('apps.brandingMachine.description'), link: '/branding-machine', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/branding-machine.webp', category: 'pro', free: false },
+    { id: 'brand-guidelines', name: t('apps.brandGuidelines.name'), desc: t('apps.brandGuidelines.description'), link: '/brand-guidelines', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/brand-guidelines.webp', category: 'pro', free: false },
+    { id: 'canvas', name: t('apps.canvas.name'), desc: t('apps.canvas.description'), link: '/canvas', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/canvas.webp', category: 'pro', free: false },
+    { id: 'instagram-extractor', name: t('apps.instagramExtractor.name'), desc: t('apps.instagramExtractor.description'), link: '/extractor', thumbnail: '/tools/instagram-extractor.webp', badge: 'NEW', badgeVariant: 'premium', category: 'pro', free: false },
+    { id: 'moodboard-studio', name: t('apps.moodboardStudio.name'), desc: t('apps.moodboardStudio.description'), link: '/moodboard', thumbnail: '/tools/moodboard-studio.webp', badge: 'NEW', badgeVariant: 'premium', category: 'pro', free: false },
+    { id: 'budget-machine', name: t('apps.budgetMachine.name'), desc: t('apps.budgetMachine.description'), link: '/budget-machine', badge: t('apps.badge.comingSoon'), badgeVariant: 'comingSoon', thumbnail: '/tools/budget-machine.webp', category: 'pro', free: false },
+
+    // Creative Lab
+    { id: 'grid-machine', name: t('apps.gridMachine.name'), desc: t('apps.gridMachine.description'), link: '/grid-machine', thumbnail: '/tools/grid-machine.svg', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
+    { id: '3d-studio', name: t('apps.studio3d.name'), desc: t('apps.studio3d.description'), link: '/3d-studio', thumbnail: '/tools/3d-studio.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
+    { id: 'riso-machine', name: 'Riso Machine', desc: 'Authentic risograph print simulator. Auto-extracts ink layers, halftone dots, misregistration, paper texture. Optional AI enhancement.', link: '/riso-machine', thumbnail: '/tools/riso-machine.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
+    { id: 'cmyk-halftone', name: t('apps.cmykHalftone.name'), desc: t('apps.cmykHalftone.description'), link: '/cmyk-halftone', thumbnail: '/tools/cmyk-halftone.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
+    { id: 'texture-filter', name: 'Texture Filter', desc: 'Apply texture overlays to photos and videos. SVG patterns, blend modes, tiling, color control. Export as PNG.', link: '/texture-filter', thumbnail: '/tools/cmyk-halftone.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
+    { id: 'ascii-vortex', name: t('apps.asciiVortex.name'), desc: t('apps.asciiVortex.description'), link: '/ascii-vortex', thumbnail: '/tools/ascii-vortex.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', free: true },
+    { id: 'grid-paint', name: t('apps.gridPaint.name'), desc: t('apps.gridPaint.description'), link: '/grid-paint', thumbnail: '/tools/gridpaint.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', free: true },
+
+    // Audio
     { id: 'youtube-mixer', name: t('apps.youtubeMixer.name'), desc: t('apps.youtubeMixer.description'), link: '/youtube-mixer', thumbnail: '/tools/youtube-mixer.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'audio', free: true },
-    { id: 'ascii-vortex', name: t('apps.asciiVortex.name'), desc: t('apps.asciiVortex.description'), link: '/ascii-vortex', thumbnail: '/tools/ascii-vortex.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'effects', free: true },
-    { id: 'grid-paint', name: t('apps.gridPaint.name'), desc: t('apps.gridPaint.description'), link: '/grid-paint', thumbnail: '/tools/gridpaint.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'effects', free: true },
-    { id: '3d-studio', name: t('apps.studio3d.name'), desc: t('apps.studio3d.description'), link: '/3d-studio', thumbnail: '/tools/3d-studio.webp', badge: 'NEW', badgeVariant: 'free', category: 'effects', free: true },
-    { id: 'cmyk-halftone', name: t('apps.cmykHalftone.name'), desc: t('apps.cmykHalftone.description'), link: '/cmyk-halftone', thumbnail: '/tools/cmyk-halftone.webp', badge: 'NEW', badgeVariant: 'free', category: 'effects', free: true },
-    { id: 'texture-filter', name: 'Texture Filter', desc: 'Apply texture overlays to photos and videos. SVG patterns, blend modes, tiling, color control. Export as PNG.', link: '/texture-filter', thumbnail: '/tools/cmyk-halftone.webp', badge: 'NEW', badgeVariant: 'free', category: 'effects', free: true },
-    { id: 'riso-machine', name: 'Riso Machine', desc: 'Authentic risograph print simulator. Auto-extracts ink layers, halftone dots, misregistration, paper texture. Optional AI enhancement.', link: '/riso-machine', thumbnail: '/tools/riso-machine.webp', badge: 'NEW', badgeVariant: 'free', category: 'effects', free: true },
-    { id: 'grid-machine', name: t('apps.gridMachine.name'), desc: t('apps.gridMachine.description'), link: '/grid-machine', thumbnail: '/tools/grid-machine.svg', badge: 'NEW', badgeVariant: 'free', category: 'design', free: true },
-    { id: 'instagram-extractor', name: t('apps.instagramExtractor.name'), desc: t('apps.instagramExtractor.description'), link: '/extractor', thumbnail: '/tools/instagram-extractor.webp', badge: 'NEW', badgeVariant: 'premium', category: 'design', free: false },
-    { id: 'moodboard-studio', name: t('apps.moodboardStudio.name'), desc: t('apps.moodboardStudio.description'), link: '/moodboard', thumbnail: '/tools/moodboard-studio.webp', badge: 'NEW', badgeVariant: 'premium', category: 'design', free: false },
     { id: 'ellipse-audio', name: t('apps.ellipseAudio.name'), desc: t('apps.ellipseAudio.description'), link: '/elipse-audio-freq', thumbnail: '/tools/elipse-audio.webp', badge: t('apps.badge.free'), badgeVariant: 'free', free: true, category: 'audio' },
-    { id: 'vsn-labs', name: t('apps.vsnLabs.name'), desc: t('apps.vsnLabs.description'), link: 'https://vsn-labs.vercel.app/', thumbnail: '/tools/vsn-labs.webp', badge: t('apps.badge.free'), badgeVariant: 'free', showExternalLink: true, category: 'experimental', isExternal: true, free: true },
-    { id: 'labs', name: 'Labs', desc: 'Generative design experiments and mini-tools. Wind tunnels, reaction diffusion, and more.', link: '/labs', thumbnail: '/tools/labs.webp', badge: 'NEW', badgeVariant: 'free', category: 'experimental', free: true },
+
+    // Community
+    { id: 'colorfy', name: t('apps.colorfy.name'), desc: t('apps.colorfy.description'), link: 'https://gradient-machine.vercel.app/', badge: t('apps.badge.free'), badgeVariant: 'free', thumbnail: '/tools/color-extractor.webp', category: 'community', isExternal: true, free: true },
+    { id: 'halftone-machine', name: t('apps.halftoneMachine.name'), desc: t('apps.halftoneMachine.description'), link: 'https://pedrojaques99.github.io/halftone-machine/', badge: t('apps.badge.free'), badgeVariant: 'free', thumbnail: '/tools/halftone-machine.webp', isExternal: true, category: 'community', free: true },
+    { id: 'vsn-labs', name: t('apps.vsnLabs.name'), desc: t('apps.vsnLabs.description'), link: 'https://vsn-labs.vercel.app/', thumbnail: '/tools/vsn-labs.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'community', isExternal: true, free: true },
+    { id: 'labs', name: 'Labs', desc: 'Generative design experiments and mini-tools. Wind tunnels, reaction diffusion, and more.', link: '/labs', thumbnail: '/tools/labs.webp', badge: 'NEW', badgeVariant: 'free', category: 'community', free: true },
+
+    // Admin
     { id: 'smart-analyzer', name: 'Smart Analyzer', desc: 'AI-powered image analysis. Auto-detects image type and generates optimized prompts for Figma plugin or image generation.', link: '/admin/smart-analyzer', thumbnail: '/tools/smart-analyzer.webp', badge: 'ADMIN', badgeVariant: 'admin', category: 'admin', free: false, adminOnly: true },
   ], [t]);
 
   // ─── Categories ─────────────────────────────────────────────────────────
 
-  const CATEGORIES = useMemo(() => {
-    const cats = [
-      { key: 'mockup', title: 'Mockup Labs', icon: Zap },
-      { key: 'design', title: t('apps.brandingTools'), icon: Diamond },
-      { key: 'effects', title: t('apps.effectsTools'), icon: ImageIcon },
-      { key: 'audio', title: t('apps.audioTools'), icon: Zap },
-      { key: 'experimental', title: 'Experimental', icon: Diamond },
-    ];
-    if (isAdmin) cats.push({ key: 'admin', title: 'Admin Tools', icon: ShieldCheck });
+  const categories = useMemo(() => {
+    const cats = [...CATEGORY_CONFIG];
+    if (isAdmin) cats.push(ADMIN_CATEGORY);
     return cats;
-  }, [t, isAdmin]);
+  }, [isAdmin]);
 
   // ─── Fetch & Sync ───────────────────────────────────────────────────────
 
@@ -261,7 +389,7 @@ export const AppsPage: React.FC = () => {
       const mergedDbApps = data.map(dbApp => {
         const s = staticById.get(dbApp.appId);
         if (!s) return dbApp;
-        return { ...dbApp, name: s.name, description: s.desc, badge: s.badge, thumbnail: s.thumbnail };
+        return { ...dbApp, name: s.name, description: s.desc, badge: s.badge, thumbnail: s.thumbnail, category: s.category };
       });
 
       const missingStaticApps = staticAppsData
@@ -280,37 +408,68 @@ export const AppsPage: React.FC = () => {
 
   useEffect(() => { fetchApps(); }, [fetchApps]);
 
-  // ─── Filtered & Sorted ──────────────────────────────────────────────────
+  // ─── Featured apps for hero (explicit order) ───────────────────────────
+
+  const HERO_ORDER = ['canvas', 'brand-guidelines', '3d-studio', 'cmyk-halftone'];
+
+  const heroApps = useMemo(() => {
+    const byId = new Map(apps.map(a => [(a as any).id || a.appId, a]));
+    return HERO_ORDER.map(id => byId.get(id)).filter(Boolean).slice(0, 3);
+  }, [apps]);
+
+  // ─── Filtered & Sorted ────────────────────────────────────────────────
+
+  const filteredApps = useMemo(() => {
+    const q = search.toLowerCase().trim();
+
+    return apps.filter(app => {
+      if (app.isHidden && !isAdmin) return false;
+      if ((app as any).adminOnly && !isAdmin) return false;
+      if (activeCategory && app.category !== activeCategory) return false;
+      if (accessFilter === 'free' && !(app as any).free && app.badgeVariant !== 'free') return false;
+      if (accessFilter === 'premium' && ((app as any).free || app.badgeVariant === 'free')) return false;
+      if (q) {
+        const name = (app.name || '').toLowerCase();
+        const desc = (app.description || (app as any).desc || '').toLowerCase();
+        if (!name.includes(q) && !desc.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [apps, isAdmin, search, activeCategory, accessFilter]);
+
+  const sortedApps = useMemo(() => {
+    const sorted = [...filteredApps];
+    if (sortBy === 'name') sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    return sorted;
+  }, [filteredApps, sortBy]);
 
   const appsByCategory = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    const categoriesToShow = activeCategory ? CATEGORIES.filter(c => c.key === activeCategory) : CATEGORIES;
+    const categoriesToShow = activeCategory
+      ? categories.filter(c => c.key === activeCategory)
+      : categories;
 
-    return categoriesToShow.map(cat => {
-      let filtered = apps.filter(app => {
-        if (app.isHidden && !isAdmin) return false;
-        if (app.category !== cat.key) return false;
-        if ((app as any).adminOnly && !isAdmin) return false;
-        if (q) {
-          const name = (app.name || '').toLowerCase();
-          const desc = (app.description || (app as any).desc || '').toLowerCase();
-          if (!name.includes(q) && !desc.includes(q)) return false;
-        }
-        return true;
-      });
+    return categoriesToShow
+      .map(cat => ({
+        ...cat,
+        apps: sortedApps.filter(a => a.category === cat.key),
+      }))
+      .filter(cat => cat.apps.length > 0);
+  }, [sortedApps, categories, activeCategory]);
 
-      if (sortBy === 'name') filtered = [...filtered].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-      if (sortBy === 'free') filtered = [...filtered].sort((a, b) => {
-        const aFree = (a as any).free || a.badgeVariant === 'free' ? 0 : 1;
-        const bFree = (b as any).free || b.badgeVariant === 'free' ? 0 : 1;
-        return aFree - bFree;
-      });
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    apps.forEach(app => {
+      if (app.isHidden && !isAdmin) return;
+      if ((app as any).adminOnly && !isAdmin) return;
+      counts[app.category] = (counts[app.category] || 0) + 1;
+    });
+    return counts;
+  }, [apps, isAdmin]);
 
-      return { ...cat, apps: filtered };
-    }).filter(cat => cat.apps.length > 0);
-  }, [apps, CATEGORIES, isAdmin, search, activeCategory, sortBy]);
+  const totalApps = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
+  const hasActiveFilters = !!search || !!activeCategory || accessFilter !== 'all';
 
-  // ─── Handlers ───────────────────────────────────────────────────────────
+  // ─── Handlers ─────────────────────────────────────────────────────────
 
   const openApp = (app: any) => {
     if (app.badgeVariant === 'comingSoon') return;
@@ -319,12 +478,11 @@ export const AppsPage: React.FC = () => {
     else navigate(app.link);
   };
 
-  const cycleSortBy = () => {
-    const idx = SORT_CYCLE.indexOf(sortBy);
-    setSortBy(SORT_CYCLE[(idx + 1) % SORT_CYCLE.length]);
-  };
+  const clearFilters = () => { setSearch(''); setActiveCategory(null); setAccessFilter('all'); };
 
-  // ─── Render ─────────────────────────────────────────────────────────────
+  const showHero = !hasActiveFilters && sortBy === 'default';
+
+  // ─── Render ───────────────────────────────────────────────────────────
 
   return (
     <PageShell
@@ -332,111 +490,224 @@ export const AppsPage: React.FC = () => {
       seoTitle={t('apps.seoTitle')}
       seoDescription={t('apps.seoDescription')}
       title={t('apps.title')}
-      microTitle="Systems // Library"
-      description={t('apps.subtitle')}
+      microTitle="Platform // Tools"
+      description="Explore our creative toolkit — from pro design tools to free experiments."
       breadcrumb={[{ label: t('apps.home'), to: '/' }, { label: t('apps.title') }]}
       actions={isAdmin ? (
         <Button
           onClick={() => { setEditingApp(undefined); setIsDialogOpen(true); }}
           variant="ghost"
-          className="h-9 px-4 gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+          className="h-9 px-4 gap-2 text-xs font-medium text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 rounded-xl"
         >
-          <Plus size={14} /> Add New App
+          <Plus size={14} /> Add App
         </Button>
       ) : undefined}
     >
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-8">
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder={t('apps.searchPlaceholder') !== 'apps.searchPlaceholder' ? t('apps.searchPlaceholder') : 'Search apps...'}
-          containerClassName="w-full sm:w-64"
-        />
+      {/* ─── Hero ──────────────────────────────────────────────────────── */}
+      {showHero && !isLoading && heroApps.length >= 3 && (
+        <section className="mb-14">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
+            <HeroCard app={heroApps[0]} variant="primary" hasAccess={hasAccess} onOpen={openApp} />
+            <div className="flex flex-col gap-3 lg:gap-4">
+              <HeroCard app={heroApps[1]} variant="secondary" hasAccess={hasAccess} onOpen={openApp} />
+              <HeroCard app={heroApps[2]} variant="secondary" hasAccess={hasAccess} onOpen={openApp} />
+            </div>
+          </div>
+        </section>
+      )}
 
-        <div className="flex items-center gap-2 flex-wrap flex-1">
-          {[{ key: null, title: 'All' }, ...CATEGORIES].map(cat => (
+      {/* ─── Navigation Bar ────────────────────────────────────────────── */}
+      <div
+        ref={tabBarRef}
+        className="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 mb-10 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800"
+      >
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          {/* Category tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none flex-1 -mx-1 px-1">
             <button
-              key={cat.key ?? 'all'}
-              onClick={() => setActiveCategory(cat.key === activeCategory ? null : cat.key)}
+              onClick={() => setActiveCategory(null)}
               className={cn(
-                'px-3 py-1.5 text-[11px] sm:text-[10px] font-mono uppercase tracking-widest rounded-md border transition-all',
-                (cat.key === null ? !activeCategory : activeCategory === cat.key)
-                  ? 'border-brand-cyan/30 text-brand-cyan bg-brand-cyan/5'
-                  : 'border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20'
+                'flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition-all',
+                !activeCategory
+                  ? 'bg-white/10 text-white font-medium'
+                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]',
               )}
             >
-              {cat.title}
+              All
+              <span className={cn(
+                'text-[11px] px-1.5 py-0.5 rounded-full',
+                !activeCategory ? 'bg-white/10 text-neutral-300' : 'text-neutral-600',
+              )}>
+                {totalApps}
+              </span>
             </button>
-          ))}
-        </div>
 
-        <button
-          onClick={cycleSortBy}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-[10px] font-mono uppercase tracking-widest rounded-md border border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20 transition-all shrink-0"
-        >
-          <ArrowUpDown size={10} />
-          {SORT_LABELS[sortBy]}
-        </button>
+            {categories.map(cat => {
+              const Icon = cat.icon;
+              const count = categoryCounts[cat.key] || 0;
+              if (count === 0 && cat.key !== 'admin') return null;
+
+              return (
+                <button
+                  key={cat.key}
+                  onClick={() => setActiveCategory(activeCategory === cat.key ? null : cat.key)}
+                  className={cn(
+                    'flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition-all',
+                    activeCategory === cat.key
+                      ? 'bg-white/10 text-white font-medium'
+                      : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]',
+                  )}
+                >
+                  <Icon size={14} />
+                  {cat.label}
+                  <span className={cn(
+                    'text-[11px] px-1.5 py-0.5 rounded-full',
+                    activeCategory === cat.key ? 'bg-white/10 text-neutral-300' : 'text-neutral-600',
+                  )}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+
+            <div className="w-px h-5 bg-white/5 mx-2 shrink-0 hidden sm:block" />
+
+            {/* Access filter pills */}
+            <button
+              onClick={() => setAccessFilter(accessFilter === 'free' ? 'all' : 'free')}
+              className={cn(
+                'px-3 py-2 rounded-xl text-sm whitespace-nowrap transition-all hidden sm:block',
+                accessFilter === 'free'
+                  ? 'bg-green-500/10 text-green-400 font-medium'
+                  : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
+              )}
+            >
+              Free
+            </button>
+            <button
+              onClick={() => setAccessFilter(accessFilter === 'premium' ? 'all' : 'premium')}
+              className={cn(
+                'px-3 py-2 rounded-xl text-sm whitespace-nowrap transition-all hidden sm:block',
+                accessFilter === 'premium'
+                  ? 'bg-brand-cyan/10 text-brand-cyan font-medium'
+                  : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
+              )}
+            >
+              Pro
+            </button>
+          </div>
+
+          {/* Search + Sort */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-56">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search apps..."
+                className="w-full pl-9 pr-9 py-2 text-sm bg-white/[0.03] border border-neutral-800 rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/15 focus:bg-white/5 transition-all"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={() => setSortBy(sortBy === 'default' ? 'name' : 'default')}
+              title={sortBy === 'name' ? 'Sorted A–Z' : 'Sort alphabetically'}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border transition-all shrink-0',
+                sortBy === 'name'
+                  ? 'border-white/10 text-neutral-200 bg-white/5'
+                  : 'border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
+              )}
+            >
+              <ArrowUpDown size={14} />
+              <span className="hidden sm:inline">{sortBy === 'name' ? 'A–Z' : 'Sort'}</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Content */}
+      {/* ─── Content ───────────────────────────────────────────────────── */}
       {isLoading ? (
-        <div className="space-y-16">
-          {[3, 6].map((count, i) => (
-            <section key={i} className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="h-7 w-36 bg-neutral-800/30 rounded-md animate-pulse" />
-                <div className="h-px flex-grow bg-white/[0.03]" />
+        <div className="space-y-14">
+          {showHero && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
+              <AppCardSkeleton large />
+              <div className="flex flex-col gap-3 lg:gap-4">
+                <AppCardSkeleton />
+                <AppCardSkeleton />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {Array.from({ length: count }).map((_, j) => <AppCardSkeleton key={j} />)}
-              </div>
-            </section>
-          ))}
+            </div>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => <AppCardSkeleton key={i} />)}
+          </div>
         </div>
       ) : appsByCategory.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 text-center">
-          <PackageOpen size={64} strokeWidth={1} className="text-neutral-700" />
-          <h3 className="text-xl font-mono uppercase tracking-widest text-neutral-400">
-            {search || activeCategory ? 'No apps found' : 'No apps available'}
-          </h3>
-          <p className="text-sm text-neutral-600 max-w-md">
-            {search || activeCategory ? 'Try a different search or filter.' : t('apps.subtitle')}
-          </p>
+        <div className="flex flex-col items-center justify-center min-h-[40vh] gap-5 text-center py-20">
+          <div className="p-5 rounded-2xl bg-white/[0.03] border border-neutral-800">
+            <PackageOpen size={48} strokeWidth={1.2} className="text-neutral-700" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-neutral-400">
+              {search ? 'No results found' : 'No apps in this category'}
+            </h3>
+            <p className="text-sm text-neutral-600 max-w-sm">
+              {search
+                ? `We couldn't find anything matching "${search}". Try a different term.`
+                : 'Try selecting a different category or clearing your filters.'}
+            </p>
+          </div>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="text-sm font-medium text-brand-cyan hover:text-white transition-colors flex items-center gap-1.5 mt-2"
+            >
+              <X size={14} /> Clear all filters
+            </button>
+          )}
         </div>
       ) : (
-        <motion.div
-          variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
-          initial="hidden"
-          animate="visible"
-          className="space-y-16"
-        >
-          {appsByCategory.map((category) => (
-            <section key={category.key} className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/[0.02] border border-white/10">
-                  <category.icon size={12} className="text-brand-cyan" />
-                  <MicroTitle className="text-neutral-400">{category.title}</MicroTitle>
-                </div>
-                <div className="h-px flex-grow bg-white/[0.03]" />
-              </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${activeCategory}-${accessFilter}-${sortBy}`}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.035 } },
+            }}
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+            className="space-y-14"
+          >
+            {appsByCategory.map((category) => (
+              <section key={category.key}>
+                <CategoryHeader category={category} count={category.apps.length} />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {category.apps.map((app) => (
-                  <AppCard
-                    key={app.id || app.appId}
-                    app={app}
-                    isAdmin={isAdmin}
-                    hasAccess={hasAccess}
-                    onOpen={openApp}
-                    onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </motion.div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-5">
+                  {category.apps.map((app) => (
+                    <AppCard
+                      key={app.id || app.appId}
+                      app={app}
+                      isAdmin={isAdmin}
+                      hasAccess={hasAccess}
+                      onOpen={openApp}
+                      onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       )}
 
       <AppEditDialog

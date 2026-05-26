@@ -7,7 +7,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GlitchPickaxe } from '@/components/ui/GlitchPickaxe';
 import { ReImaginePanel } from '../ReImaginePanel';
 import { useMockupLike } from '@/hooks/useMockupLike';
-import { isSafeUrl } from '@/utils/imageUtils';
+import { isSafeUrl, downloadImage } from '@/utils/imageUtils';
 import type { AspectRatio } from '@/types/types';
 import { GlassPanel } from '../ui/GlassPanel';
 import { cn } from '@/lib/utils';
@@ -141,7 +141,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
     return (
         <GlassPanel
             className={cn(
-                "relative group transition-all duration-300 hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in",
+                "relative group transition-all duration-300 hover:border-neutral-700 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in",
                 aspectRatioClass,
                 className
             )}
@@ -197,7 +197,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
 
             {isLoading && elapsedTime > 0 && !base64Image && (
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-                    <span className="px-3 py-1 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/5 text-neutral-400 text-[10px] font-mono shadow-xl">
+                    <span className="px-3 py-1 rounded-full bg-neutral-950/60 backdrop-blur-md border border-neutral-800 text-neutral-400 text-[10px] font-mono shadow-xl">
                         {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
                     </span>
                 </div>
@@ -211,7 +211,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                         {onRemove && (
                             <Button variant="ghost"
                                 onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                                className="p-2 rounded-md bg-neutral-950/60 backdrop-blur-md text-neutral-400 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-all shadow-lg pointer-events-auto"
+                                className="p-2 rounded-md bg-neutral-950/60 backdrop-blur-md text-neutral-400 hover:bg-destructive/20 hover:text-destructive border border-neutral-800 transition-all shadow-lg pointer-events-auto"
                                 title="Remove"
                             >
                                 <X size={12} />
@@ -222,7 +222,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                 onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
                                 className={`p-2 rounded-md backdrop-blur-md border transition-all shadow-lg pointer-events-auto ${localIsLiked
                                     ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/30'
-                                    : 'bg-neutral-950/60 text-neutral-400 border-white/5 hover:text-white hover:bg-neutral-950/80'
+                                    : 'bg-neutral-950/60 text-neutral-400 border-neutral-800 hover:text-white hover:bg-neutral-950/80'
                                     }`}
                                 title={localIsLiked ? "Remover dos favoritos" : "Salvar nos favoritos"}
                             >
@@ -242,22 +242,9 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                         e.stopPropagation();
                                         e.preventDefault();
                                         try {
-                                            const response = await fetch(imageUrl);
-                                            const blob = await response.blob();
-                                            const url = window.URL.createObjectURL(blob);
-                                            const link = document.createElement('a');
-                                            link.href = url;
-                                            link.download = `mockup-${Date.now()}.png`;
-                                            document.body.appendChild(link);
-                                            link.click();
-                                            document.body.removeChild(link);
-                                            window.URL.revokeObjectURL(url);
+                                            await downloadImage(imageUrl, 'mockup');
                                         } catch (error) {
-                                            const link = document.createElement('a');
-                                            link.href = imageUrl;
-                                            link.download = `mockup-${Date.now()}.png`;
-                                            link.target = '_blank';
-                                            link.click();
+                                            console.error('Download failed:', error);
                                         }
                                     }}
                                 >
@@ -343,7 +330,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                         className={cn(
                                             "w-8 h-8 rounded-md transition-all",
                                             feedback.rating === 'down' 
-                                                ? "text-red-400 bg-red-400/10 hover:bg-red-400/20" 
+                                                ? "text-destructive bg-destructive/10 hover:bg-destructive/20" 
                                                 : "text-neutral-400 hover:text-white hover:bg-white/10"
                                         )}
                                         disabled={feedback.isLoading}

@@ -10,7 +10,7 @@ const STATUS_ICON: Record<BatchResult['status'], React.ReactNode> = {
   pending: <Clock size={9} className="text-white/30" />,
   running: <GlitchLoader size={9} />,
   done: <CheckCircle2 size={9} className="text-green-400" />,
-  error: <XCircle size={9} className="text-red-400" />,
+  error: <XCircle size={9} className="text-destructive" />,
 };
 
 export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -62,7 +62,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           Batch Runner
         </span>
         <span className={cn(
-          'ml-auto text-[9px] px-1.5 py-0.5 rounded font-medium',
+          'ml-auto text-[10px] px-1.5 py-0.5 rounded font-medium',
           status === 'idle' && 'text-white/30 bg-white/5',
           status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
           status === 'done' && 'text-green-400 bg-green-400/10',
@@ -75,10 +75,10 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Connection hints */}
       {status === 'idle' && total === 0 && (
         <div className="px-3 py-2 space-y-1">
-          <p className="text-[9px] text-white/25">
+          <p className="text-[10px] text-white/25">
             <span className="text-purple-400">●</span> Connect a <span className="text-white/40">Data</span> node (rows)
           </p>
-          <p className="text-[9px] text-white/25">
+          <p className="text-[10px] text-white/25">
             <span className="text-blue-400">●</span> Connect a <span className="text-white/40">Prompt</span> node (template)
           </p>
         </div>
@@ -87,7 +87,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Progress */}
       {total > 0 && (
         <div className="px-3 pt-2 pb-1">
-          <div className="flex justify-between text-[9px] text-white/40 mb-1">
+          <div className="flex justify-between text-[10px] text-white/40 mb-1">
             <span>{done} done · {failed} failed · {total - done - failed} left</span>
             <span>{progress}%</span>
           </div>
@@ -106,7 +106,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           {results.map((r) => (
             <div key={r.rowIndex} className="flex items-center gap-2">
               {STATUS_ICON[r.status]}
-              <span className="text-[9px] text-white/40 flex-1 truncate">
+              <span className="text-[10px] text-white/40 flex-1 truncate">
                 Row {r.rowIndex + 1}
                 {r.rowData && Object.values(r.rowData)[0]
                   ? ` — ${String(Object.values(r.rowData)[0]).slice(0, 24)}`
@@ -120,7 +120,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
                 />
               )}
               {r.status === 'error' && r.error && (
-                <span className="text-[8px] text-red-400/70 truncate max-w-[80px]">{r.error}</span>
+                <span className="text-[10px] text-destructive/70 truncate max-w-[80px]">{r.error}</span>
               )}
             </div>
           ))}
@@ -144,7 +144,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
         {isRunning && (
           <button
             onClick={handleCancel}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-red-400/10 hover:bg-red-400/20 text-red-400 text-[10px] font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-[10px] font-medium transition-colors"
           >
             <Square size={10} />
             Cancel

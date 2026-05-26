@@ -4,6 +4,7 @@ import { cleanMarketResearchText } from '../utils/brandingHelpersServer.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 
 const getMongoDB = async () => {
     return { connectToMongoDB, getDb, ObjectId };
@@ -176,7 +177,7 @@ export const generateMarketResearch = async (prompt: string, examples: string[] 
     return withRetry(async () => {
         let sectionPrompt = `Perform a market benchmarking analysis for the following brand description. Provide a concise, objective benchmarking paragraph that compares the brand with the market and competitors.
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 
 Write a single, objective paragraph of market benchmarking. Focus on:
 - Market size and positioning compared to competitors
@@ -268,7 +269,7 @@ export const generateCompetitors = async (prompt: string, marketResearch: string
     return withRetry(async () => {
         let sectionPrompt = `Based on the brand description and market research, identify and analyze the main competitors. Focus on strategic differentiation - identify competitors that challenge the brand's unique positioning.
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 Market Research: "${researchText}"
 
 Return a JSON object with a single key "competitors" which is an array of competitor objects. Each competitor should have:
@@ -347,7 +348,7 @@ export const generateReferences = async (prompt: string, marketResearch: string 
     return withRetry(async () => {
         const sectionPrompt = `Based on the brand description, market research, and competitors, suggest visual references and inspirations that support the brand's strategic differentiation.
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 Market Research: "${researchText}"
 Competitors: ${competitors.join(', ')}
 
@@ -406,7 +407,7 @@ export const generateSWOT = async (prompt: string, marketResearch: string | Bran
     return withRetry(async () => {
         const sectionPrompt = `Perform a SWOT analysis for the following brand. Focus on strategic factors that impact differentiation and competitive defensibility.
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 Market Research: "${researchText}"
 Competitors: ${competitors.join(', ')}
 
@@ -536,7 +537,7 @@ export const generateColorPalettes = async (prompt: string, swot: any, reference
     return withRetry(async () => {
         const sectionPrompt = `Based on the brand description, SWOT analysis, and references, suggest 2 color palettes that support the brand's strategic differentiation.
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 SWOT Analysis: ${JSON.stringify(swot)}
 References: ${references.join(', ')}
 
@@ -650,7 +651,7 @@ export const generateVisualElements = async (prompt: string, colorPalettes: any[
     return withRetry(async () => {
         const sectionPrompt = `Based on the brand description and color palettes, suggest visual elements that represent the brand and support its strategic differentiation.
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 Color Palettes: ${JSON.stringify(colorPalettes)}
 
 Suggest visual elements like shapes, patterns, icons, or design motifs that would represent this brand well and help differentiate it from competitors. Focus on elements that support the brand's "Winning Difference" - not generic design trends.
@@ -738,7 +739,7 @@ export const generateArchetypes = async (prompt: string, marketResearch: string 
 Available Archetypes:
 ${archetypesRAG.map(a => `- ${a.titulo} (${a.tipo}): ${a.descricao}`).join('\n')}
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 Market Research: "${researchText}"
 
 Analyze the brand's values, positioning, target audience, and market insights to determine:
@@ -931,7 +932,7 @@ export const generatePersona = async (prompt: string, marketResearch: string | B
     return withRetry(async () => {
         const sectionPrompt = `Create a detailed persona for the target audience of this brand. Focus on the persona that aligns with the brand's strategic positioning and "Winning Difference".
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 Market Research: "${researchText}"
 
 Return a JSON object with three keys:
@@ -997,7 +998,7 @@ export const generateMockupIdeas = async (prompt: string, allData: BrandingData,
     return withRetry(async () => {
         let sectionPrompt = `Based on all the branding information, suggest mockup ideas that would be coherent with this brand segment and showcase its strategic differentiation.
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 Branding Data: ${JSON.stringify(allData, null, 2)}
 
 Suggest specific mockup ideas (e.g., "Product packaging mockup", "Website homepage mockup", "Social media post mockup") that would showcase this brand effectively.
@@ -1057,7 +1058,7 @@ export const generateMoodboard = async (prompt: string, allData: BrandingData): 
     return withRetry(async () => {
         const sectionPrompt = `Based on all the branding information, create a comprehensive moodboard that synthesizes the brand's visual identity and direction, emphasizing strategic differentiation.
 
-Brand Description: "${prompt}"
+Brand Description: "${sanitizeForPrompt(prompt, 5000)}"
 Branding Data: ${JSON.stringify(allData, null, 2)}
 
 Create a moodboard summary that includes:

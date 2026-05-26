@@ -885,11 +885,39 @@ export interface Studio3DNodeData extends BaseNodeData {
   onOpenEditor?: (nodeId: string) => void;
 }
 
+// Brand Batch Node — collects connected images + brand, generates mockups for each
+export interface BrandBatchItem {
+  index: number;
+  sourceNodeId: string;
+  imageUrl?: string;
+  status: 'pending' | 'running' | 'done' | 'error';
+  outputImageUrl?: string;
+  error?: string;
+}
+
+export interface BrandBatchNodeData extends BaseNodeData {
+  type: 'brandBatch';
+  status: BatchStatus;
+  items: BrandBatchItem[];
+  prompt: string;
+  model?: string;
+  aspectRatio?: string;
+  resolution?: string;
+  connectedLogo?: string;
+  connectedIdentity?: string;
+  connectedTextDirection?: string;
+  connectedStrategyData?: any;
+  connectedImages: string[];
+  onRun?: (nodeId: string) => void;
+  onCancel?: (nodeId: string) => void;
+  onUpdateData?: (nodeId: string, newData: Partial<BrandBatchNodeData>) => void;
+}
+
 // Union type for all node data
-export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData | NodeBuilderData | CustomNodeData | VariablesNodeData | DataNodeData | BatchRunnerNodeData | TextureFilterNodeData | Studio3DNodeData;
+export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData | NodeBuilderData | CustomNodeData | VariablesNodeData | DataNodeData | BatchRunnerNodeData | TextureFilterNodeData | Studio3DNodeData | BrandBatchNodeData;
 
 // Custom node types
-export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat' | 'nodeBuilder' | 'custom' | 'variables' | 'data' | 'batchRunner' | 'textureFilter' | 'studio3d';
+export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat' | 'nodeBuilder' | 'custom' | 'variables' | 'data' | 'batchRunner' | 'textureFilter' | 'studio3d' | 'brandBatch';
 
 // Extended Node type with our custom data
 export type FlowNode = Node<FlowNodeData>;

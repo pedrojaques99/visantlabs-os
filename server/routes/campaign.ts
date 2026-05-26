@@ -10,6 +10,8 @@ import { uploadCanvasImage } from '../services/r2Service.js';
 import { validateExternalUrl, safeFetch } from '../utils/securityValidation.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import OpenAI from 'openai';
+import { chargeCredits, refundCredits } from '../lib/credits.js';
+import { getCreditsRequired } from '../utils/usageTracking.js';
 
 const router = express.Router();
 
@@ -329,6 +331,11 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 
   const safeCount = Math.min(Math.max(1, Number(count) || 10), MAX_COUNT);
 
+  // Charge credits upfront: 1 credit for GPT-4o planning + per-image credits
+  const perImageCredits = getCreditsRequired(model, '1K');
+  const totalCredits = 1 + (perImageCredits * safeCount);
+  const chargeResult = await chargeCredits(req.userId!, totalCredits);
+
   const job: CampaignJob = {
     jobId: nanoid(),
     status: 'planning',
@@ -339,7 +346,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
   };
 
   await saveJob(job);
-  res.status(202).json({ jobId: job.jobId, totalCount: safeCount });
+  res.status(202).json({ jobId: job.jobId, totalCount: safeCount, creditsCharged: chargeResult.creditsDeducted });
 
   // Run async — do not await (fire-and-forget with full error capture inside runCampaign)
   runCampaign({

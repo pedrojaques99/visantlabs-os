@@ -24,11 +24,11 @@ const BADGE_VARIANTS = [
 ];
 
 const CATEGORIES = [
-  { value: 'design', label: 'DESIGN' },
-  { value: 'mockup', label: 'MOCKUP' },
-  { value: 'effects', label: 'EFFECTS' },
+  { value: 'pro', label: 'PRO SUITE' },
+  { value: 'creative', label: 'CREATIVE LAB' },
   { value: 'audio', label: 'AUDIO' },
-  { value: 'experimental', label: 'EXPERIMENTAL' },
+  { value: 'community', label: 'COMMUNITY' },
+  { value: 'admin', label: 'ADMIN' },
 ];
 
 export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClose, onSaved }) => {
@@ -39,7 +39,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
     thumbnail: '',
     badge: '',
     badgeVariant: 'free',
-    category: 'design',
+    category: 'pro',
     isExternal: false,
     free: true,
     span: 'lg:col-span-1',
@@ -74,7 +74,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
         thumbnail: '',
         badge: '',
         badgeVariant: 'free',
-        category: 'design',
+        category: 'pro',
         isExternal: false,
         free: true,
         span: 'lg:col-span-1',
@@ -124,7 +124,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="name"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-brand-cyan/50 h-10"
+                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
                 placeholder="e.g. Mockup Machine"
               />
             </div>
@@ -135,7 +135,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="appId"
                 value={formData.appId || ''}
                 onChange={(e) => setFormData({ ...formData, appId: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-brand-cyan/50 h-10"
+                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
                 placeholder="e.g. mockup-machine"
               />
             </div>
@@ -146,7 +146,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="link"
                 value={formData.link || ''}
                 onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-brand-cyan/50 h-10"
+                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
                 placeholder="e.g. /mockup-machine"
               />
             </div>
@@ -209,7 +209,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="desc"
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-brand-cyan/50 min-h-[80px]"
+                className="bg-white/5 border-white/10 focus:border-neutral-600 min-h-[80px]"
                 placeholder="Brief description of the app functionality..."
               />
             </div>
@@ -220,7 +220,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="databaseInfo"
                 value={formData.databaseInfo || ''}
                 onChange={(e) => setFormData({ ...formData, databaseInfo: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-brand-cyan/50 h-10"
+                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
                 placeholder="e.g. MongoDB: mockups | Prisma: Mockup"
               />
             </div>
@@ -231,7 +231,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="badge"
                 value={formData.badge || ''}
                 onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-brand-cyan/50 h-10"
+                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
                 placeholder="e.g. NEW, BETA"
               />
             </div>
@@ -243,7 +243,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   <img src={formData.thumbnail} alt="App thumbnail" className="w-full h-full object-cover" />
                   <button
                     onClick={() => setFormData({ ...formData, thumbnail: '' })}
-                    className="absolute top-1 right-1 bg-black/60 px-2 py-0.5 rounded-full text-red-500 hover:bg-black/80 transition-colors"
+                    className="absolute top-1 right-1 bg-black/60 px-2 py-0.5 rounded-full text-destructive hover:bg-black/80 transition-colors"
                   >
                     <span className="text-[10px] font-bold">REMOVE</span>
                   </button>
@@ -257,7 +257,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
           </div>
         </DialogBody>
 
-        <DialogFooter className="border-t border-white/5 px-10 py-8">
+        <DialogFooter className="border-t border-neutral-800 px-10 py-8">
           <Button variant="ghost" onClick={onClose} disabled={isSaving} className="text-neutral-500 hover:text-white font-mono text-xs">
             CANCEL
           </Button>

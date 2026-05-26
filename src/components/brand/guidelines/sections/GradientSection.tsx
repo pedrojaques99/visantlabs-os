@@ -64,38 +64,38 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
       <div className="space-y-2 py-1">
         {items.length === 0 && <p className="text-[11px] text-neutral-700 py-2">No gradients yet. Click + to add.</p>}
         {items.map((g, gi) => (
-          <div key={g.id} className="group/grad border-b border-white/[0.04] last:border-0 overflow-hidden">
+          <div key={g.id} className="group/grad border-b border-neutral-800 last:border-0 overflow-hidden">
             {/* Always visible: preview + name */}
             <div className="flex items-center gap-2 p-2">
-              <div className="w-10 h-6 rounded shrink-0 border border-white/5" style={{ background: buildGradientCss(g) }} />
+              <div className="w-10 h-6 rounded shrink-0 border border-neutral-800" style={{ background: buildGradientCss(g) }} />
               <Input value={g.name} onChange={e => updateItem(gi, { name: e.target.value })} className="h-6 flex-1 bg-transparent border-none p-0 text-xs text-neutral-300 focus-visible:ring-0 placeholder:text-neutral-700" placeholder="Gradient name" />
               <span className="text-[10px] font-mono text-neutral-700">{g.type} {g.type === 'linear' ? `${g.angle}°` : ''}</span>
-              <Button variant="ghost" size="icon" className="h-5 w-5 text-neutral-800 hover:text-red-400 opacity-0 group-hover/grad:opacity-100 transition-all shrink-0" onClick={() => removeGradient(gi)} aria-label="Remove"><Trash2 size={10} /></Button>
+              <Button variant="ghost" size="icon" className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/grad:opacity-100 transition-all shrink-0" onClick={() => removeGradient(gi)} aria-label="Remove"><Trash2 size={10} /></Button>
             </div>
             {/* Hover-reveal: detail controls */}
             <div className="hover-reveal group-hover/grad:max-h-[400px] group-focus-within/grad:max-h-[400px]">
-              <div className="pt-1 pb-2 space-y-2 border-t border-white/[0.04]">
+              <div className="pt-1 pb-2 space-y-2 border-t border-neutral-800">
                 <div className="flex gap-2 pt-2">
                   {(['linear', 'radial'] as const).map(t => (
                     <button key={t} type="button" onClick={() => updateItem(gi, { type: t })}
-                      className={cn('flex-1 h-6 rounded border text-[9px] font-mono uppercase transition-all', g.type === t ? 'border-white/20 bg-white/[0.06] text-neutral-200' : 'border-white/5 text-neutral-600 hover:border-white/10')}
+                      className={cn('flex-1 h-6 rounded border text-[10px] font-mono uppercase transition-all', g.type === t ? 'border-white/20 bg-white/5 text-neutral-200' : 'border-neutral-800 text-neutral-600 hover:border-white/10')}
                     >{t}</button>
                   ))}
                   {g.type === 'linear' && (
-                    <Input type="number" value={g.angle} onChange={e => updateItem(gi, { angle: Number(e.target.value) })} className="h-6 w-14 border-white/5 text-[10px] font-mono text-center" min={0} max={360} />
+                    <Input type="number" value={g.angle} onChange={e => updateItem(gi, { angle: Number(e.target.value) })} className="h-6 w-14 border-neutral-800 text-[10px] font-mono text-center" min={0} max={360} />
                   )}
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {(Object.keys(USAGE_LABELS) as GradientUsage[]).map(u => (
                     <button key={u} type="button" onClick={() => updateItem(gi, { usage: u })}
-                      className={cn('px-2 h-5 rounded border text-[9px] font-mono transition-all', g.usage === u ? 'border-white/20 bg-white/[0.06] text-neutral-200' : 'border-white/5 text-neutral-600 hover:border-white/10')}
+                      className={cn('px-2 h-5 rounded border text-[10px] font-mono transition-all', g.usage === u ? 'border-white/20 bg-white/5 text-neutral-200' : 'border-neutral-800 text-neutral-600 hover:border-white/10')}
                     >{USAGE_LABELS[u]}</button>
                   ))}
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <MicroTitle className="text-neutral-700">Stops</MicroTitle>
-                    <button type="button" onClick={() => addStop(gi)} className="text-[9px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors">+ stop</button>
+                    <button type="button" onClick={() => addStop(gi)} className="text-[10px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors">+ stop</button>
                   </div>
                   {g.stops.map((s, si) => (
                     <div key={si} className="flex items-center gap-1.5">
@@ -106,7 +106,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                       <span className="text-[10px] font-mono text-neutral-600 w-14">{s.color}</span>
                       <input type="range" min={0} max={100} value={s.position} onChange={e => updateStop(gi, si, 'position', Number(e.target.value))} className="flex-1 h-1 accent-white" />
                       <span className="text-[10px] font-mono text-neutral-600 w-7 text-right">{s.position}%</span>
-                      {g.stops.length > 2 && <button type="button" onClick={() => removeStop(gi, si)} className="text-neutral-700 hover:text-red-400 transition-colors"><Trash2 size={10} /></button>}
+                      {g.stops.length > 2 && <button type="button" onClick={() => removeStop(gi, si)} className="text-neutral-700 hover:text-destructive transition-colors"><Trash2 size={10} /></button>}
                     </div>
                   ))}
                 </div>

@@ -185,7 +185,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
         </div>
 
         {(subscriptionStatus?.hasActiveSubscription || planName || purchasedCredits) && (
-          <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 mb-8">
+          <div className="bg-neutral-900 border border-white/10 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
               <Pickaxe size={24} className="text-brand-cyan" />
               <h2 className="text-xl font-semibold font-mono text-neutral-200">
@@ -226,7 +226,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
             </ul>
 
             {!planName && subscriptionStatus?.totalCredits !== undefined && (
-              <div className="mt-6 pt-6 border-t border-neutral-800/50">
+              <div className="mt-6 pt-6 border-t border-white/10">
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-400 font-mono text-sm">
                     {t('thankYou.creditsAvailable')}

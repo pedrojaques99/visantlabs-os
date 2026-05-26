@@ -35,7 +35,7 @@ const SectionLabel: React.FC<{ children: React.ReactNode; onReset?: () => void }
     {onReset && (
       <button
         onClick={onReset}
-        className="text-[9px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
+        className="text-[10px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
       >
         Reset
       </button>

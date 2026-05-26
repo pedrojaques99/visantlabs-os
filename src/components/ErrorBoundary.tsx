@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home, Copy, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface Props {
   children: ReactNode;
@@ -163,14 +164,7 @@ export class ErrorBoundary extends Component<Props, State> {
     const errorStack = this.state.errorInfo?.componentStack || '';
     const fullError = `Error: ${errorMessage}\n\nStack:\n${errorStack}`;
 
-    navigator.clipboard.writeText(fullError).then(() => {
-      this.setState({ isCopied: true });
-      setTimeout(() => {
-        this.setState({ isCopied: false });
-      }, 2000);
-    }).catch(() => {
-      // Fallback: just copy the message
-      navigator.clipboard.writeText(errorMessage);
+    copyToClipboard(fullError).then(() => {
       this.setState({ isCopied: true });
       setTimeout(() => {
         this.setState({ isCopied: false });
@@ -224,8 +218,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen bg-black text-neutral-300 flex items-center justify-center p-4">
           <div className="max-w-2xl w-full bg-neutral-950/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-red-500/20 rounded-md">
-                <AlertTriangle className="h-6 w-6 text-red-400" />
+              <div className="p-3 bg-destructive/20 rounded-md">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
               <div>
                 <h1 className="text-xl md:text-2xl font-semibold text-neutral-200 font-mono">
@@ -239,7 +233,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             <div className="bg-neutral-950/70 border border-neutral-800 rounded-md p-4 space-y-2">
               {!isChunkError && (
-                <p className="text-sm font-mono text-red-400 font-semibold">
+                <p className="text-sm font-mono text-destructive font-semibold">
                   {errorMessage}
                 </p>
               )}

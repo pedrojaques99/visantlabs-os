@@ -313,7 +313,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 
                 {/* 2. SurpriseMeSelectedTagsDisplay - ONLY visible in Normal Mode */}
                 {!isSurpriseMeMode && (
-                    <div className="animate-fade-in-up stagger-2 relative z-[60]">
+                    <div className="animate-fade-in-up stagger-2 relative z-50">
                         <SurpriseMeSelectedTagsDisplay
                             onRerollAll={() => handleSurpriseMe(false)}
                             isGenerating={isSidebarGenerating}
@@ -481,8 +481,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     const shouldShowAlert = !hasToken && authenticationRequiredMessage;
 
                     return shouldShowAlert ? (
-                        <div className="mt-4 flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/5 px-4 py-3">
-                            <Lock size={16} className="text-red-400 mt-0.5" />
+                        <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3">
+                            <Lock size={16} className="text-destructive mt-0.5" />
                             <p className="text-xs font-mono text-red-200">
                                 {authenticationRequiredMessage}
                             </p>
@@ -491,7 +491,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                 })()}
 
                 {/* 4. Generation Toolbar (Moved to sidebar) */}
-                <div className="mt-6 pt-6 border-t border-white/5 animate-fade-in-up stagger-5">
+                <div className="mt-6 pt-6 border-t border-neutral-800 animate-fade-in-up stagger-5">
                     <SurpriseMeControl
                         onSurpriseMe={handleSurpriseMe}
                         isGeneratingPrompt={isGeneratingPrompt}

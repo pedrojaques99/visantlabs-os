@@ -4,6 +4,8 @@ import { calculateImageCost } from '../../src/utils/pricing.js';
 import type { GeminiModel, Resolution } from '../../src/types/types.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { OPENAI_IMAGE_MODELS, isOpenAIImageModel } from '../../src/constants/openaiModels.js';
+import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
+import { lookupCredits } from '../lib/pricing-data.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
 
@@ -40,13 +42,16 @@ const TEXT_GENERATION_PRICING: Record<string, { inputPricePer1M: number; outputP
 };
 
 /**
- * Get credits required for image generation based on model and resolution
+ * Get credits required for image generation based on model and resolution.
+ * Derives values from CREDIT_COSTS in pricing-data.ts (single source of truth).
  */
 export function getCreditsRequired(
   model: GeminiModel | string,
   resolution?: Resolution
 ): number {
-  // OpenAI gpt-image-2 — ~$0.04-$0.17/image, mapped to credit tiers
+  const lookup = lookupCredits(model, resolution ? `${resolution}${resolution === '1K' || resolution === 'HD' ? ' (HD)' : ''}` : undefined);
+  if (lookup !== undefined) return lookup;
+
   if (isOpenAIImageModel(model)) {
     switch (resolution) {
       case '512px':
@@ -59,55 +64,53 @@ export function getCreditsRequired(
     }
   }
 
-  if (model === GEMINI_MODELS.FLASH) {
-    return 1;
-  }
-
-  if (model === GEMINI_MODELS.NB2) {
+  if (isSeedreamModel(model)) {
     switch (resolution) {
-      case '512px':
-        return 1;
-      case '1K':
-      case 'HD':
-        return 2;
-      case '2K':
-        return 3;
-      case '4K':
-        return 4; // Official: $0.151 / $0.039 = 3.87 → 4 credits
-      default:
-        return 2;
+      case '2K':  return 2;
+      case '3K':  return 3;
+      case '4K':  return 4;
+      default:    return 2;
     }
   }
 
-  if (model === GEMINI_MODELS.PRO) {
+  if (model === GEMINI_MODELS.FLASH || model === GEMINI_MODELS.IMAGE_FLASH) return 1;
+
+  if (model === GEMINI_MODELS.NB2 || model === GEMINI_MODELS.IMAGE_NB2) {
     switch (resolution) {
+      case '512px': return 1;
       case '1K':
-      case 'HD':
-        return 3;
-      case '2K':
-        return 5;
-      case '4K':
-        return 7;
-      default:
-        // Default to 1K if resolution not specified
-        return 3;
+      case 'HD':    return 2;
+      case '2K':    return 3;
+      case '4K':    return 4;
+      default:      return 2;
     }
   }
 
-  // Fallback to 1 credit for unknown models
+  if (model === GEMINI_MODELS.PRO || model === GEMINI_MODELS.IMAGE_PRO) {
+    switch (resolution) {
+      case '1K':
+      case 'HD':  return 3;
+      case '2K':  return 5;
+      case '4K':  return 7;
+      default:    return 3;
+    }
+  }
+
   return 1;
 }
 
 /**
- * Get credits required for video generation
- * Based on official Veo 3.1 pricing ($0.15-$0.40/sec for 8 second videos)
- * @param model - Veo model identifier
- * @returns Credits required (15 for fast, 40 for standard)
+ * Get credits required for video generation.
+ * Covers Veo, Seedance, and Kling models.
  */
 export function getVideoCreditsRequired(model?: string): number {
   if (model?.startsWith('seedance-')) {
     const isFast = model.includes('fast') || model.includes('lite');
     return isFast ? 20 : 35;
+  }
+  if (model?.startsWith('kling-')) {
+    const isPro = model.includes('master') || model.includes('pro') || model.includes('4k');
+    return isPro ? 30 : 20;
   }
   const isFast = model?.includes('fast') ?? false;
   return isFast ? 15 : 40;

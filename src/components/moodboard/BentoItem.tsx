@@ -70,12 +70,12 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
               />
               {crop.regeneratedUrl && (
                 <div className="absolute bottom-0 inset-x-0 bg-black/80 backdrop-blur-sm p-2 flex items-center justify-between gap-2 z-20">
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1">
                     <Zap size={9} />AI Result
                   </span>
                   <div className="flex gap-1.5">
                     <button onClick={e => { e.stopPropagation(); onDiscardRegenerated?.(crop.id); }}
-                      className="p-1.5 rounded-lg bg-neutral-800 border border-border/70 text-neutral-400 hover:text-red-400 hover:border-red-500/40 transition-all" title="Discard">
+                      className="p-1.5 rounded-lg bg-neutral-800 border border-border/70 text-neutral-400 hover:text-destructive hover:border-destructive/40 transition-all" title="Discard">
                       <RotateCcw size={11} />
                     </button>
                     <button onClick={e => { e.stopPropagation(); onAcceptRegenerated?.(crop.id); }}
@@ -99,13 +99,13 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
                 <div className="w-12 h-12 rounded-full bg-neutral-800 border border-dashed border-border/70 flex items-center justify-center group-hover/upload:scale-110 transition-transform">
                   <Play size={18} className="text-neutral-500 rotate-90" />
                 </div>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-600">Click to add image</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">Click to add image</span>
               </div>
             </div>
           )}
 
           <button onClick={e => { e.stopPropagation(); onRemove(crop.id); }}
-            className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/40 backdrop-blur-md text-neutral-400 border border-white/10 opacity-0 group-hover:opacity-100 hover:bg-red-500/80 hover:text-white transition-all z-10"
+            className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/40 backdrop-blur-md text-neutral-400 border border-white/10 opacity-0 group-hover:opacity-100 hover:bg-destructive/80 hover:text-white transition-all z-10"
           >
             <X size={14} strokeWidth={1.5} />
           </button>
@@ -113,7 +113,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
           {crop.isUpscaling && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
               <GlitchLoader size={20} />
-              <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-neutral-400">Upscaling</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-neutral-400">Upscaling</span>
               {crop.upscaleStartTime && <Timer startTime={crop.upscaleStartTime} />}
             </div>
           )}
@@ -121,7 +121,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
           {crop.isAnimating && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
               <GlitchLoader size={20} />
-              <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-neutral-400">Animating</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-neutral-400">Animating</span>
               {crop.animationStartTime && <Timer startTime={crop.animationStartTime} />}
             </div>
           )}
@@ -137,11 +137,11 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
         <div className="flex-1 p-5 flex flex-col justify-between gap-4">
           <div className="space-y-5">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-[0.2em]">ITEM #{index + 1}</span>
+              <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-[0.2em]">ITEM #{index + 1}</span>
               <div className="flex gap-1.5">
                 {!crop.upscaledUrl && !crop.isUpscaling && crop.url && (
                   <button onClick={() => onUpscale(crop.id)} title="Upscale to 4K"
-                    className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-all text-[8px] font-bold uppercase tracking-widest flex items-center gap-1">
+                    className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
                     <Maximize2 size={13} strokeWidth={1.5} /> 4K
                   </button>
                 )}
@@ -156,11 +156,11 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
             {crop.url && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-1.5"><Film size={11} className="text-neutral-600" /><span className="text-[8px] font-bold uppercase tracking-widest text-neutral-600">Remotion Direction</span></div>
+                  <div className="flex items-center gap-1.5"><Film size={11} className="text-neutral-600" /><span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">Remotion Direction</span></div>
                   <div className="flex flex-wrap gap-1.5">
                     {(['zoom-in', 'zoom-out', 'pan-lr', 'pan-rl', 'fade-in'] as AnimationPreset[]).map(p => (
                       <button key={p} onClick={() => onRemotionAnimate(crop.upscaledUrl || crop.url, p)}
-                        className="px-2.5 py-1 rounded-lg border border-border bg-neutral-900/50 text-[9px] font-medium text-neutral-400 hover:bg-white hover:text-black hover:border-white transition-all capitalize">
+                        className="px-2.5 py-1 rounded-lg border border-border bg-neutral-900/50 text-[10px] font-medium text-neutral-400 hover:bg-white hover:text-black hover:border-white transition-all capitalize">
                         {p.replace('-', ' ')}
                       </button>
                     ))}
@@ -168,7 +168,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-1.5"><Video size={11} className="text-neutral-600" /><span className="text-[8px] font-bold uppercase tracking-widest text-neutral-600">Veo 3 Animation</span></div>
+                  <div className="flex items-center gap-1.5"><Video size={11} className="text-neutral-600" /><span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">Veo 3 Animation</span></div>
                   <div className="flex gap-2">
                     <input type="text" value={prompt} onChange={e => setPrompt(e.target.value)}
                       placeholder="Animation prompt..."
@@ -176,7 +176,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
                       onKeyDown={e => e.key === 'Enter' && handleAnimate()}
                     />
                     <button onClick={handleAnimate} disabled={!prompt.trim() || !crop.url || crop.isAnimating}
-                      className="px-3 py-2 rounded-lg bg-white text-black text-[9px] font-bold uppercase tracking-widest hover:opacity-90 transition-all disabled:opacity-30">
+                      className="px-3 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-all disabled:opacity-30">
                       <Video size={13} />
                     </button>
                   </div>
@@ -184,7 +184,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
 
                 {onRegenerate && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1.5"><Zap size={11} className="text-neutral-600" /><span className="text-[8px] font-bold uppercase tracking-widest text-neutral-600">Regenerate with AI</span></div>
+                    <div className="flex items-center gap-1.5"><Zap size={11} className="text-neutral-600" /><span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">Regenerate with AI</span></div>
                     <div className="flex gap-2 items-center">
                       <ModelSelector
                         type="image"
@@ -196,7 +196,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
                       <button
                         onClick={() => onRegenerate(crop.id, regenModel, regenProvider)}
                         disabled={!crop.url || isRegenerating}
-                        className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-[9px] font-bold uppercase tracking-widest transition-all disabled:opacity-30 flex items-center gap-1.5 shrink-0"
+                        className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-[10px] font-bold uppercase tracking-widest transition-all disabled:opacity-30 flex items-center gap-1.5 shrink-0"
                       >
                         {isRegenerating ? <GlitchLoader size={13} /> : <Zap size={13} />}
                       </button>
@@ -209,8 +209,8 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(({
 
           {crop.upscaledUrl && (
             <div className="flex items-center gap-2 pt-3 border-t border-border">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[8px] font-bold tracking-widest text-neutral-500 uppercase">4K Ready</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase">4K Ready</span>
             </div>
           )}
         </div>

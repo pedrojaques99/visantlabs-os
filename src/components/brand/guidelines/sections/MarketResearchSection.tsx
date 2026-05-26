@@ -34,7 +34,7 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({ gu
             <Textarea
               value={toLines(mr.competitors)}
               onChange={(e) => update({ competitors: fromLines(e.target.value) })}
-              className="border-white/[0.06] bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
               placeholder={"Playtomic\nStrava\nFrontify"}
             />
           </div>
@@ -43,7 +43,7 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({ gu
             <Textarea
               value={toLines(mr.gaps)}
               onChange={(e) => update({ gaps: fromLines(e.target.value) })}
-              className="border-white/[0.06] bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
               placeholder={"Sem DNA cultural\nUI fria e genérica"}
             />
           </div>
@@ -52,7 +52,7 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({ gu
             <Textarea
               value={toLines(mr.opportunities)}
               onChange={(e) => update({ opportunities: fromLines(e.target.value) })}
-              className="border-white/[0.06] bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
               placeholder={"Cultura local\nComunidade ativa"}
             />
           </div>
@@ -63,7 +63,7 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({ gu
           <Textarea
             value={mr.notes || ''}
             onChange={(e) => update({ notes: e.target.value })}
-            className="border-white/[0.06] bg-transparent text-xs text-neutral-400 min-h-[50px] resize-none placeholder:text-neutral-700"
+            className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[50px] resize-none placeholder:text-neutral-700"
             placeholder="Observações sobre o mercado..."
           />
         </div>

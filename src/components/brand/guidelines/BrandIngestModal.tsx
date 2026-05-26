@@ -68,7 +68,7 @@ const ItemCheck: React.FC<{
     className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-white/[0.03] transition-all ${dim && !checked ? 'opacity-30' : ''}`}
     onClick={onToggle}
   >
-    <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${checked ? 'bg-white/[0.15] border-white/30' : 'border-white/[0.15]'}`}>
+    <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${checked ? 'bg-white/15 border-white/30' : 'border-white/15'}`}>
       {checked && <Check size={9} className="text-neutral-200" />}
     </div>
     {children}
@@ -84,9 +84,9 @@ const SectionShell: React.FC<{
   onToggleAll: () => void;
   children?: React.ReactNode;
 }> = ({ label, loading, allChecked, someChecked, onToggleAll, children }) => (
-  <div className={`rounded-md border transition-colors ${someChecked ? 'border-white/[0.10] bg-white/[0.02]' : 'border-white/[0.04]'}`}>
+  <div className={`rounded-md border transition-colors ${someChecked ? 'border-white/10 bg-white/[0.03]' : 'border-neutral-800'}`}>
     <div className="flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none" role="button" tabIndex={0} onClick={onToggleAll} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleAll(); } }}>
-      <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${allChecked ? 'bg-white/[0.12] border-white/20' : someChecked ? 'bg-white/[0.06] border-white/15' : 'border-white/10'}`}>
+      <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${allChecked ? 'bg-white/10 border-white/20' : someChecked ? 'bg-white/5 border-white/15' : 'border-white/10'}`}>
         {allChecked ? <Check size={10} className="text-neutral-300" /> : someChecked ? <div className="w-2 h-0.5 bg-neutral-400 rounded" /> : null}
       </div>
       <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 flex-1">{label}</span>
@@ -98,7 +98,7 @@ const SectionShell: React.FC<{
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 const Skeleton = ({ className = '' }: { className?: string }) => (
-  <div className={`rounded bg-white/[0.04] animate-pulse ${className}`} />
+  <div className={`rounded bg-white/5 animate-pulse ${className}`} />
 );
 
 // ─── Content renderers ────────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ const GradientsSection: React.FC<{ data: any[]; sel: Set<number>; toggle: (i: nu
   <div className="space-y-0">
     {data.map((g, i) => (
       <ItemCheck key={i} checked={sel.has(i)} onToggle={() => toggle(i)} dim>
-        <div className="w-12 h-4 rounded border border-white/[0.06] flex-shrink-0" style={{ background: g.css }} />
+        <div className="w-12 h-4 rounded border border-neutral-800 flex-shrink-0" style={{ background: g.css }} />
         <span className="text-xs text-neutral-400 truncate">{g.name}</span>
       </ItemCheck>
     ))}
@@ -165,7 +165,7 @@ const RadiiSection: React.FC<{ data: number[]; sel: Set<number>; toggle: (i: num
   <div className="flex flex-wrap gap-0.5">
     {data.map((r, i) => (
       <ItemCheck key={i} checked={sel.has(i)} onToggle={() => toggle(i)} dim>
-        <div className="w-5 h-5 bg-neutral-700/40 border border-white/[0.06] flex-shrink-0" style={{ borderRadius: `${r}px` }} />
+        <div className="w-5 h-5 bg-neutral-700/40 border border-neutral-800 flex-shrink-0" style={{ borderRadius: `${r}px` }} />
         <span className="text-[10px] font-mono text-neutral-500">{r}px</span>
       </ItemCheck>
     ))}
@@ -199,7 +199,7 @@ const AssetsSection: React.FC<{ data: string[]; sel: Set<number>; toggle: (i: nu
     {data.map((src, i) => (
       <div
         key={i}
-        className={`relative aspect-square rounded border overflow-hidden cursor-pointer transition-all ${sel.has(i) ? 'border-white/20' : 'border-white/[0.04] opacity-30'}`}
+        className={`relative aspect-square rounded border overflow-hidden cursor-pointer transition-all ${sel.has(i) ? 'border-white/20' : 'border-neutral-800 opacity-30'}`}
         onClick={() => toggle(i)}
       >
         <img src={src} alt="" className="w-full h-full object-contain bg-neutral-900/60 p-0.5" />
@@ -415,11 +415,11 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
       size="lg"
       footer={
         <div className="flex items-center justify-between w-full gap-3">
-          <div className="flex items-center gap-1 rounded border border-white/[0.08] p-0.5">
+          <div className="flex items-center gap-1 rounded border border-white/10 p-0.5">
             {(['merge', 'replace'] as const).map(m => (
               <button key={m} type="button" onClick={() => setMode(m)}
                 title={m === 'merge' ? 'Add selected tokens, keep existing' : 'Replace tokens with selected data'}
-                className={`px-2.5 h-6 rounded text-[10px] font-mono uppercase transition-all ${mode === m ? 'bg-white/[0.08] text-neutral-200' : 'text-neutral-600 hover:text-neutral-400'}`}
+                className={`px-2.5 h-6 rounded text-[10px] font-mono uppercase transition-all ${mode === m ? 'bg-white/10 text-neutral-200' : 'text-neutral-600 hover:text-neutral-400'}`}
               >{m}</button>
             ))}
           </div>
@@ -428,7 +428,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
               <X size={12} /> Discard
             </Button>
             <Button onClick={apply} disabled={applying || totalSelected === 0}
-              className="h-8 px-4 gap-1.5 bg-white/[0.08] border border-white/15 text-neutral-200 hover:bg-white/[0.12] text-xs">
+              className="h-8 px-4 gap-1.5 bg-white/10 border border-white/15 text-neutral-200 hover:bg-white/10 text-xs">
               {applying ? <GlitchLoader size={12} /> : <Check size={12} />}
               {applying ? 'Applying…' : `Apply (${totalSelected})`}
             </Button>
@@ -437,7 +437,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
       }
     >
       <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
-        {state.error && <p className="text-sm text-red-400 font-mono py-4 text-center">{state.error}</p>}
+        {state.error && <p className="text-sm text-destructive font-mono py-4 text-center">{state.error}</p>}
 
         {SECTION_ORDER.map(({ key, label }) => {
           const items = getItems(state, key);

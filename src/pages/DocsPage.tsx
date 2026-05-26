@@ -26,6 +26,7 @@ import {
   buildNavigationWithMcpTools,
   generateTabMarkdown,
 } from './docs/index';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export const DocsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -77,7 +78,7 @@ export const DocsPage: React.FC = () => {
 
   const copyToClipboard = useCallback(async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyToClipboard(text);
     } catch {
       // fallback for non-https contexts
       const el = document.createElement('textarea');
@@ -189,10 +190,10 @@ export const DocsPage: React.FC = () => {
 
   const renderMethodBadge = (method: string) => {
     let className = 'bg-neutral-800 text-neutral-300';
-    if (method === 'GET') className = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+    if (method === 'GET') className = 'bg-green-500/10 text-green-500 border-green-500/20';
     if (method === 'POST') className = 'bg-amber-500/10 text-amber-500 border-amber-500/20';
     if (method === 'PUT') className = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-    if (method === 'DELETE') className = 'bg-red-500/10 text-red-500 border-red-500/20';
+    if (method === 'DELETE') className = 'bg-destructive/10 text-destructive border-destructive/20';
 
     return (
       <Badge variant="outline" className={cn("font-redhatmono uppercase", className)}>
@@ -211,7 +212,7 @@ export const DocsPage: React.FC = () => {
         </CardHeader>
         <CardContent className="px-0 space-y-6">
           {endpoints.map((ep, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-6 hover:border-brand-cyan/50 transition-colors">
+            <div key={i} className="bg-card border border-border rounded-xl p-6 hover:border-neutral-700 transition-colors">
               <div className="flex items-center gap-3 mb-4">
                 {renderMethodBadge(ep.method)}
                 <span className="font-redhatmono text-lg text-foreground font-medium">{ep.path}</span>
@@ -312,8 +313,8 @@ export const DocsPage: React.FC = () => {
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-all duration-200 shrink-0",
                       copied
-                        ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-500"
-                        : "bg-secondary/60 border-border text-muted-foreground hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-brand-cyan/5"
+                        ? "bg-green-500/10 border-green-500/40 text-green-500"
+                        : "bg-secondary/60 border-border text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5"
                     )}
                   >
                     {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -350,7 +351,7 @@ export const DocsPage: React.FC = () => {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsContent value="overview" className="space-y-6 bg-transparent mt-0">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('api')}>
+                      <Card className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1" onClick={() => setActiveTab('api')}>
                         <CardHeader>
                           <Server className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>REST API</CardTitle>
@@ -360,7 +361,7 @@ export const DocsPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('mcp')}>
+                      <Card className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1" onClick={() => setActiveTab('mcp')}>
                         <CardHeader>
                           <Terminal className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>MCP Tools</CardTitle>
@@ -370,7 +371,7 @@ export const DocsPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('plugin')}>
+                      <Card className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1" onClick={() => setActiveTab('plugin')}>
                         <CardHeader>
                           <Puzzle className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>Figma Plugin</CardTitle>
@@ -380,7 +381,7 @@ export const DocsPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('agents')}>
+                      <Card className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1" onClick={() => setActiveTab('agents')}>
                         <CardHeader>
                           <Bot className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>For Agents</CardTitle>
@@ -390,7 +391,7 @@ export const DocsPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('brand-guidelines')}>
+                      <Card className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1" onClick={() => setActiveTab('brand-guidelines')}>
                         <CardHeader>
                           <Diamond className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>Brand Guidelines</CardTitle>
@@ -400,7 +401,7 @@ export const DocsPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('canvas-api')}>
+                      <Card className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1" onClick={() => setActiveTab('canvas-api')}>
                         <CardHeader>
                           <Workflow className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>Canvas API</CardTitle>
@@ -410,7 +411,7 @@ export const DocsPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('pricing')}>
+                      <Card className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1" onClick={() => setActiveTab('pricing')}>
                         <CardHeader>
                           <Coins className="w-8 h-8 text-brand-cyan mb-2" />
                           <CardTitle>Pricing & Credits</CardTitle>
@@ -1334,10 +1335,10 @@ Content-Type: application/json`}</pre>
                           <div key={path + method} className="bg-card border border-border rounded-xl p-5 space-y-3">
                             <div className="flex items-center gap-3">
                               <Badge variant="outline" className={cn("font-redhatmono uppercase", {
-                                'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': method === 'GET',
+                                'bg-green-500/10 text-green-500 border-green-500/20': method === 'GET',
                                 'bg-amber-500/10 text-amber-500 border-amber-500/20': method === 'POST',
                                 'bg-blue-500/10 text-blue-500 border-blue-500/20': method === 'PUT',
-                                'bg-red-500/10 text-red-500 border-red-500/20': method === 'DELETE',
+                                'bg-destructive/10 text-destructive border-destructive/20': method === 'DELETE',
                               })}>{method}</Badge>
                               <span className="font-redhatmono text-foreground font-medium">{path}</span>
                             </div>
@@ -1577,9 +1578,9 @@ Content-Type: application/json`}</pre>
                           <div key={path} className="bg-card border border-border rounded-xl p-5 space-y-3">
                             <div className="flex items-center gap-3">
                               <Badge variant="outline" className={cn("font-redhatmono uppercase", {
-                                'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': method === 'GET',
+                                'bg-green-500/10 text-green-500 border-green-500/20': method === 'GET',
                                 'bg-amber-500/10 text-amber-500 border-amber-500/20': method === 'POST',
-                                'bg-red-500/10 text-red-500 border-red-500/20': method === 'DELETE',
+                                'bg-destructive/10 text-destructive border-destructive/20': method === 'DELETE',
                               })}>{method}</Badge>
                               <span className="font-redhatmono text-foreground font-medium text-sm">{path}</span>
                             </div>
@@ -1635,10 +1636,10 @@ Content-Type: application/json`}</pre>
                           <div key={path} className="bg-card border border-border rounded-xl p-5 space-y-3">
                             <div className="flex items-center gap-3">
                               <Badge variant="outline" className={cn("font-redhatmono uppercase", {
-                                'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': method === 'GET',
+                                'bg-green-500/10 text-green-500 border-green-500/20': method === 'GET',
                                 'bg-amber-500/10 text-amber-500 border-amber-500/20': method === 'POST',
                                 'bg-blue-500/10 text-blue-500 border-blue-500/20': method === 'PUT',
-                                'bg-red-500/10 text-red-500 border-red-500/20': method === 'DELETE',
+                                'bg-destructive/10 text-destructive border-destructive/20': method === 'DELETE',
                               })}>{method}</Badge>
                               <span className="font-redhatmono text-foreground font-medium text-sm">{path}</span>
                             </div>
@@ -1926,7 +1927,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                               <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">Fetch detailed guideline</span></p>
                               <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-blue-400">POST</span> <span className="text-foreground">/api/brand-guidelines</span> <span className="text-muted-foreground">Create new identity vault</span></p>
                               <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-amber-400">PUT</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">Update guideline fields</span></p>
-                              <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-red-400">DELETE</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">Remove guideline permanently</span></p>
+                              <p className="flex justify-between border-b border-border/30 pb-1.5"><span className="text-destructive">DELETE</span> <span className="text-foreground">/api/brand-guidelines/:id</span> <span className="text-muted-foreground">Remove guideline permanently</span></p>
                             </div>
                           </div>
                         </div>
@@ -1961,7 +1962,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                             <div className="font-redhatmono text-xs space-y-2">
                               <p><span className="text-blue-400">POST</span> <span className="text-foreground">/api/brand-guidelines/:id/share</span> <span className="text-muted-foreground">— Enable sharing</span></p>
                               <p><span className="text-green-400">GET</span> <span className="text-foreground">/api/brand-guidelines/public/:slug</span> <span className="text-muted-foreground">— Read public data</span></p>
-                              <p><span className="text-red-400">DELETE</span> <span className="text-foreground">/api/brand-guidelines/:id/share</span> <span className="text-muted-foreground">— Disable sharing</span></p>
+                              <p><span className="text-destructive">DELETE</span> <span className="text-foreground">/api/brand-guidelines/:id/share</span> <span className="text-muted-foreground">— Disable sharing</span></p>
                             </div>
                           </div>
                         </div>

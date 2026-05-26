@@ -161,7 +161,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                   <div
                     key={i}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-xl border-node transition-all duration-500',
+                      'flex items-center gap-3 px-3 py-2 rounded-md border-node transition-all duration-500',
                       isActive
                         ? 'bg-brand-cyan/10 border-brand-cyan/30 shadow-[0_0_12px_rgba(0,195,255,0.08)]'
                         : isPast
@@ -296,7 +296,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             'flex flex-col gap-3 p-4 rounded-2xl border-node bg-brand-cyan/[0.03] border-brand-cyan/30 shadow-[0_0_20px_rgba(0,195,255,0.05)]'
           )}>
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-brand-cyan/10 border-node border-neutral-800">
+              <div className="p-2.5 rounded-md bg-brand-cyan/10 border-node border-neutral-800">
                 <Zap size={20} className="text-brand-cyan" />
               </div>
               <div className="flex-1 min-w-0">
@@ -308,7 +308,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <div className="pt-2 border-t border-neutral-800">
               <button
                 onClick={handleSpawn}
-                className="nodrag nopan w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-brand-cyan text-black font-bold text-[11px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,195,255,0.3)]"
+                className="nodrag nopan w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-brand-cyan text-black font-bold text-[11px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,195,255,0.3)]"
               >
                 <Plus size={14} strokeWidth={3} />
                 Deploy Node to Canvas
@@ -340,7 +340,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             size="sm"
             onClick={handleSend}
             disabled={isLoading || !input.trim() || !!pendingDefinition}
-            className="nodrag nopan rounded-xl p-2 h-9 w-9 bg-brand-cyan hover:bg-brand-cyan/90 disabled:bg-neutral-800 disabled:text-neutral-600"
+            className="nodrag nopan rounded-md p-2 h-9 w-9 bg-brand-cyan hover:bg-brand-cyan/90 disabled:bg-neutral-800 disabled:text-neutral-600"
           >
             <Send size={16} />
           </NodeButton>

@@ -45,7 +45,8 @@ if (!utilityBlock) {
     // Resolve the CSS variable value
     const varName = subpixel[1].match(/var\(([^)]+)\)/)?.[1];
     if (varName) {
-      const varMatch = css.match(new RegExp(`${varName.replace('--', '--')}:\\s*([^;\\n]+)`));
+      const escaped = varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const varMatch = css.match(new RegExp(`${escaped}:\\s*([^;\\n]+)`));
       const value = varMatch?.[1]?.trim();
       if (value) {
         const px = parseFloat(value);

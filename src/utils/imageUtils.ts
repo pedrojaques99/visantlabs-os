@@ -201,4 +201,14 @@ export async function downloadImage(imageUrl: string, filenamePrefix: string = '
   }
 }
 
+export function loadImage(src: string, crossOrigin: string | null = 'anonymous'): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    if (crossOrigin) img.crossOrigin = crossOrigin;
+    img.onload = () => resolve(img);
+    img.onerror = (_e, _s, _l, _c, err) => reject(err ?? new Error(`Failed to load image: ${src}`));
+    img.src = src;
+  });
+}
+
 

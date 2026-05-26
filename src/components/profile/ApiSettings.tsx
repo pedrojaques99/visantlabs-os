@@ -95,7 +95,7 @@ const KeyRow: React.FC<KeyRowProps> = ({
                     type="button"
                     onClick={onDelete}
                     disabled={isLoading}
-                    className="text-xs text-neutral-500 hover:text-red-400 font-mono"
+                    className="text-xs text-neutral-500 hover:text-destructive font-mono"
                 >
                     Remove
                 </Button>

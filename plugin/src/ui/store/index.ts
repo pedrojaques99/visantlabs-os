@@ -29,7 +29,7 @@ export const usePluginStore = create<PluginStore>()(
 
     // Chat
     chatHistory: [],
-    sessionId: (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`),
+    sessionId: crypto.randomUUID(),
     sessionContext: null,
     pendingAttachments: [],
     thinkMode: false,

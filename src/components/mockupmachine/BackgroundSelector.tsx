@@ -92,7 +92,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
               <Button variant="ghost"
                 key={background}
                 onClick={(e) => handleBackgroundClick(background, e)}
-                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-white/5 hover:border-[brand-cyan]/30 transition-all duration-200 text-left"
+                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-neutral-800 hover:border-[brand-cyan]/30 transition-all duration-200 text-left"
                 title={`Change to ${background}`}
               >
                 {background}

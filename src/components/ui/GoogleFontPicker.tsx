@@ -96,7 +96,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                 variant="ghost"
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 bg-neutral-900/50 border border-white/5 rounded-xl text-xs font-mono transition-all",
+                    "w-full flex items-center justify-between px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-xs font-mono transition-all",
                     isOpen ? "border-brand-cyan/30 bg-neutral-900/80 shadow-[0_0_15px_-5px_oklch(0.81_0.156_198.6_/_0.1)]" : "hover:border-white/10"
                 )}
                 style={{ fontFamily: value }}
@@ -107,7 +107,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
 
             {isOpen && (
                 <div className="absolute z-50 w-full mt-2 bg-neutral-950 border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="p-2 border-b border-white/5">
+                    <div className="p-2 border-b border-neutral-800">
                         <div className="relative">
                             <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
                             <Input
@@ -125,13 +125,13 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                     <div className="max-h-60 overflow-y-auto p-1 py-1 scrollbar-thin scrollbar-thumb-white/10">
                         {filteredBrandFonts.length > 0 && (
                             <>
-                                <div className="px-3 pt-2 pb-1 text-[9px] uppercase tracking-widest text-brand-cyan/60 font-mono">Brand Fonts</div>
+                                <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-widest text-brand-cyan/60 font-mono">Brand Fonts</div>
                                 {filteredBrandFonts.map(font => (
                                     <button
                                         key={`brand-${font}`}
                                         onClick={() => handleSelect(font)}
                                         className={cn(
-                                            "w-full text-left px-3 py-2.5 rounded-xl text-xs flex items-center justify-between transition-colors",
+                                            "w-full text-left px-3 py-2.5 rounded-md text-xs flex items-center justify-between transition-colors",
                                             font === value ? "bg-brand-cyan/10 text-brand-cyan" : "text-brand-cyan/80 hover:bg-brand-cyan/5 hover:text-brand-cyan"
                                         )}
                                         style={{ fontFamily: font }}
@@ -140,7 +140,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                                         {font === value && <Check size={12} />}
                                     </button>
                                 ))}
-                                {filteredFonts.length > 0 && <div className="my-1 border-t border-white/5" />}
+                                {filteredFonts.length > 0 && <div className="my-1 border-t border-neutral-800" />}
                             </>
                         )}
                         {filteredFonts.length > 0 ? (
@@ -149,7 +149,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                                     key={font}
                                     onClick={() => handleSelect(font)}
                                     className={cn(
-                                        "w-full text-left px-3 py-2.5 rounded-xl text-xs flex items-center justify-between transition-colors",
+                                        "w-full text-left px-3 py-2.5 rounded-md text-xs flex items-center justify-between transition-colors",
                                         font === value ? "bg-brand-cyan/10 text-brand-cyan" : "text-neutral-400 hover:bg-white/5 hover:text-white"
                                     )}
                                     style={{ fontFamily: font }}

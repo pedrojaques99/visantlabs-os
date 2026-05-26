@@ -15,6 +15,7 @@ import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NodeButton } from './shared/node-button'
 import { NODE_LAYOUT } from '@/constants/nodeLayout';
 import { useBaseNode } from '@/hooks/canvas/useBaseNode';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -67,7 +68,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   const handleCopyText = async () => {
     if (!text.trim()) return;
     try {
-      await navigator.clipboard.writeText(text);
+      await copyToClipboard(text);
       setIsCopied(true);
       toast.success(t('canvasNodes.textNode.copied') || 'Text copied!', { duration: 2000 });
       setTimeout(() => setIsCopied(false), 2000);

@@ -20,6 +20,7 @@ import { type CanvasWorkflow } from '../services/workflowApi';
 import { validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatDateShort } from '@/utils/localeUtils';
 
 // Helper function to get project thumbnail
 const getProjectThumbnail = (project: CanvasProject): string | null => {
@@ -265,14 +266,7 @@ export const CanvasProjectsPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateString: string) => formatDateShort(dateString);
 
   const filteredProjects = useMemo(() => {
     let result = [...projects];
@@ -301,13 +295,13 @@ export const CanvasProjectsPage: React.FC = () => {
           <Search size={18} />
         </Button>
         {showSearch && (
-          <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-800/40 rounded-ml p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
+          <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-ml p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={t('canvas.searchProjects') || 'Search projects...'}
               iconSize={14}
-              className="bg-transparent border-neutral-800/20 text-xs font-mono"
+              className="bg-transparent border-white/10 text-xs font-mono"
               containerClassName="w-full"
               autoFocus
             />
@@ -461,7 +455,7 @@ export const CanvasProjectsPage: React.FC = () => {
               return (
                 <div
                   key={project._id}
-                  className="bg-[#141414]/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-brand-cyan/40 transition-all duration-500 group cursor-pointer overflow-hidden shadow-xl"
+                  className="bg-[#141414]/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-neutral-700 transition-all duration-500 group cursor-pointer overflow-hidden shadow-xl"
                   onClick={() => {
                     if (editingProjectId !== project._id) {
                       handleView(project);
@@ -497,7 +491,7 @@ export const CanvasProjectsPage: React.FC = () => {
                             onBlur={() => handleNameEditSave(project._id)}
                             onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
                             onClick={(e) => e.stopPropagation()}
-                            className="flex-1 font-bold text-neutral-200 font-manrope text-lg bg-transparent border-b border-brand-cyan/40 focus:border-brand-cyan focus:outline-none px-1 h-auto py-0"
+                            className="flex-1 font-bold text-neutral-200 font-manrope text-lg bg-transparent border-b border-brand-cyan/40 focus:border-neutral-600 focus:outline-none px-1 h-auto py-0"
                           />
                         ) : (
                           <h3
@@ -517,8 +511,8 @@ export const CanvasProjectsPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-4 text-[10px] text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60">
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-white/5">{nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}</span>
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-white/5">{edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}</span>
+                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">{nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}</span>
+                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">{edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -526,14 +520,14 @@ export const CanvasProjectsPage: React.FC = () => {
                       e.stopPropagation();
                       handleView(project);
                     }}
-                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
+                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
                       {t('canvas.open') || 'Open'}
                     </Button>
                     <Button variant="ghost" onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
-                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

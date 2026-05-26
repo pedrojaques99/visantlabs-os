@@ -140,11 +140,11 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-neutral-950/70 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/70 backdrop-blur-sm animate-fade-in"
             onClick={onClose}
         >
             <div
-                className="relative bg-neutral-900 border-node border-neutral-800/60 rounded-xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-slide-up"
+                className="relative bg-neutral-900 border-node border-neutral-800/60 rounded-md shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -161,7 +161,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                 {/* Content */}
                 <div className="px-6 py-5 flex-1 overflow-y-auto max-h-[70vh]">
                     {error && (
-                        <div className="mb-4 p-3 bg-red-500/10 border-node border-red-500/30 rounded-md text-red-400 text-sm flex items-center gap-2">
+                        <div className="mb-4 p-3 bg-destructive/10 border-node border-destructive/30 rounded-md text-destructive text-sm flex items-center gap-2">
                             <span>⚠</span>
                             <span>{error}</span>
                         </div>
@@ -200,7 +200,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                 <Button variant="ghost"
                                     onClick={() => setIsPublic(false)}
                                     className={cn(
-                                        "flex flex-col items-start p-3 rounded-md border transition-all text-left",
+                                        "flex flex-col items-start p-3 rounded-md border-node transition-all text-left",
                                         !isPublic
                                             ? "bg-neutral-800/60 border-neutral-600 text-neutral-200"
                                             : "bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30"
@@ -216,7 +216,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                 <Button variant="ghost"
                                     onClick={() => setIsPublic(true)}
                                     className={cn(
-                                        "flex flex-col items-start p-3 rounded-md border transition-all text-left",
+                                        "flex flex-col items-start p-3 rounded-md border-node transition-all text-left",
                                         isPublic
                                             ? "bg-brand-cyan/10 border-neutral-800 text-brand-cyan"
                                             : "bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30"
@@ -266,7 +266,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                             {tag}
                                             <Button variant="ghost"
                                                 onClick={() => setTags(tags.filter((_, i) => i !== idx))}
-                                                className="text-neutral-500 hover:text-red-400 transition-colors ml-0.5"
+                                                className="text-neutral-500 hover:text-destructive transition-colors ml-0.5"
                                             >
                                                 <X size={12} />
                                             </Button>

@@ -12,6 +12,7 @@ import type { BudgetData, PdfFieldMapping } from '@/types/types';
 import { FieldSelectionMenu } from './FieldSelectionMenu';
 import { FieldPropertiesPanel } from './FieldPropertiesPanel';
 import { Button } from '@/components/ui/button'
+import { formatDate } from '@/utils/localeUtils';
 
 // Configure PDF.js worker - use local worker from public folder
 // This ensures it works in all environments including Cloudflare
@@ -75,9 +76,9 @@ const getFieldValue = (data: BudgetData, mapping: PdfFieldMapping): string => {
     case 'brandName':
       return data.brandName;
     case 'startDate':
-      return new Date(data.startDate).toLocaleDateString('pt-BR');
+      return formatDate(data.startDate);
     case 'endDate':
-      return new Date(data.endDate).toLocaleDateString('pt-BR');
+      return formatDate(data.endDate);
     case 'year':
       return data.year || new Date().getFullYear().toString();
     case 'observations':

@@ -90,17 +90,17 @@ export const AuthCallbackPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-md">
+      <div className="bg-neutral-900 border border-white/10 rounded-md p-6 w-full max-w-md">
         <div className="flex items-center gap-3 mb-4">
-          <AlertCircle size={24} className="text-red-400" />
+          <AlertCircle size={24} className="text-destructive" />
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {t('auth.authenticationError') || 'Authentication Error'}
           </h2>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md mb-4">
-            <p className="text-sm text-red-400 font-mono">{error}</p>
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md mb-4">
+            <p className="text-sm text-destructive font-mono">{error}</p>
           </div>
         )}
 

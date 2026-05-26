@@ -203,7 +203,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono flex items-center gap-2">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono flex items-center gap-2">
               <span className="shrink-0">⚠</span>
               <span>{error}</span>
             </div>
@@ -266,7 +266,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Your username"
-              className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
+              className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
             />
             <p className="text-[10px] text-neutral-500 font-mono mt-1 ml-1">
               3-20 characters: letters, numbers, underscores, and hyphens.
@@ -282,7 +282,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell us about yourself..."
-              className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30 h-32 resize-none"
+              className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 h-32 resize-none"
             />
           </div>
 
@@ -303,13 +303,13 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                   placeholder="https://instagram.com/username"
-                  className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
+                  className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
                 />
               </div>
 
               <div className="space-y-2">
                 <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Youtube size={14} className="text-red-500 uppercase" />
+                  <Youtube size={14} className="text-destructive uppercase" />
                   YouTube
                 </MicroTitle>
                 <Input
@@ -317,7 +317,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   value={youtube}
                   onChange={(e) => setYoutube(e.target.value)}
                   placeholder="https://youtube.com/@channel"
-                  className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
+                  className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
                 />
               </div>
 
@@ -331,7 +331,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   value={x}
                   onChange={(e) => setX(e.target.value)}
                   placeholder="https://x.com/username"
-                  className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
+                  className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
                 />
               </div>
 
@@ -345,7 +345,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://yourwebsite.com"
-                  className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
+                  className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
                 />
               </div>
             </div>

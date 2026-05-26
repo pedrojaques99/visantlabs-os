@@ -57,7 +57,7 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
   };
 
   return (
-    <div className="mt-4 pt-3 border-t border-white/5 space-y-2.5 min-w-0">
+    <div className="mt-4 pt-3 border-t border-neutral-800 space-y-2.5 min-w-0">
       <MicroTitle className="text-[10px] text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0 uppercase tracking-wider">
         <Diamond size={11} className="text-brand-cyan shrink-0" />
         <span className="truncate">

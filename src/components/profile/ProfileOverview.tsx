@@ -10,6 +10,8 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatDate } from '@/utils/localeUtils'
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ProfileOverviewProps {
     user: UserType;
@@ -86,7 +88,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
         const referralLink = referralService.getReferralLink(referralStats.referralCode);
 
         try {
-            await navigator.clipboard.writeText(referralLink);
+            await copyToClipboard(referralLink);
             toast.success(t('referral.linkCopied') || 'Link de indicação copiado!');
         } catch (err) {
             console.error('Failed to copy link:', err);
@@ -112,12 +114,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
     // Helper function to format dates
     const formatFriendlyDate = (dateString: string | Date): string => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('pt-BR', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
+        return formatDate(dateString);
     };
 
     return (
@@ -243,7 +240,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 <div className="absolute top-4 right-4 z-20">
                                     <Button variant="brand"
                                         onClick={onBuyCredits}
-                                        className="p-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/20 hover:border-brand-cyan/40 text-brand-cyan rounded-md transition-all flex items-center gap-2 group-hover:scale-105"
+                                        className="p-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/20 hover:border-neutral-700 text-brand-cyan rounded-md transition-all flex items-center gap-2 group-hover:scale-105"
                                         title={t('credits.buyCredits') || "Comprar Créditos"}
                                     >
                                         <Plus size={16} />
@@ -361,7 +358,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                                 type="text"
                                                 value={referralLink}
                                                 readOnly
-                                                className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-neutral-400 group-hover:text-neutral-200 font-mono text-xs focus:outline-none focus:border-brand-cyan/30 transition pr-10"
+                                                className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-neutral-400 group-hover:text-neutral-200 font-mono text-xs focus:outline-none focus:border-neutral-600 transition pr-10"
                                             />
                                             <Button variant="brand"
                                                 onClick={handleCopyReferralLink}

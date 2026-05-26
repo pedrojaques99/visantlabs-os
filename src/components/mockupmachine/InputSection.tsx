@@ -281,7 +281,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {!isLoadingImage && (
           <div className="flex items-center gap-2">
             {/* Design Type Segmented Control */}
-            <div className="flex items-center p-1 bg-neutral-900/50 rounded-xl border border-white/[0.05]">
+            <div className="flex items-center p-1 bg-neutral-900/50 rounded-xl border border-neutral-800">
               <button
                 onClick={() => onDesignTypeChange('layout')}
                 className={cn(
@@ -317,7 +317,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 "w-10 h-10 rounded-xl border transition-all",
                 showInstructions 
                   ? "bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]"
-                  : "bg-neutral-900/50 border-white/[0.05] text-neutral-500 hover:text-white"
+                  : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:text-white"
               )}
               title={t('mockup.addInstructions')}
             >
@@ -333,13 +333,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
             <div className="absolute -inset-px bg-gradient-to-r from-brand-cyan/20 to-transparent rounded-2xl blur-sm opacity-50 transition-opacity group-hover:opacity-100" />
             <Textarea
               placeholder={t('mockup.instructionsPlaceholder') || "Descreva detalhes específicos para a composição (ex: mesa de mármore, iluminação de pôr do sol, estilo tropical brasileiro...)"}
-              className="relative min-h-[100px] bg-neutral-900/40 border-white/10 rounded-2xl text-sm focus:border-brand-cyan/40 focus:ring-brand-cyan/10 transition-all placeholder:text-neutral-700 custom-scrollbar"
+              className="relative min-h-[100px] bg-neutral-900/40 border-white/10 rounded-2xl text-sm focus:border-neutral-600 focus:ring-brand-cyan/10 transition-all placeholder:text-neutral-700 custom-scrollbar"
               value={mockupContext.instructions}
               onChange={(e) => mockupContext.setInstructions(e.target.value)}
             />
             <div className="absolute bottom-3 right-3 flex items-center gap-2 pointer-events-none">
               <Diamond size={12} className="text-brand-cyan opacity-40" />
-              <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">Context Engine Active</span>
+              <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">Context Engine Active</span>
             </div>
           </div>
         </div>
@@ -365,7 +365,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         ) : (
           <label
             htmlFor="image-upload-blank"
-            className="flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed border-white/5 hover:border-brand-cyan/20 bg-white/[0.02] hover:bg-brand-cyan/[0.02] transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed border-neutral-800 hover:border-neutral-700 bg-white/[0.03] hover:bg-brand-cyan/[0.02] transition-all cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-brand-cyan/10 transition-all">
               <Plus className="text-neutral-500 group-hover:text-brand-cyan" size={20} />
@@ -393,7 +393,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {canAddMoreReferences && (
           <label
             htmlFor="multiple-image-upload"
-            className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-white/5 hover:border-white/10 bg-white/[0.01] hover:bg-white/[0.03] transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-neutral-800 hover:border-white/10 bg-white/[0.03] hover:bg-white/[0.03] transition-all cursor-pointer group"
           >
             <Plus className="text-neutral-700 group-hover:text-neutral-500 mb-2" size={16} />
             <span className="text-[10px] font-bold font-mono text-neutral-600 group-hover:text-neutral-400 uppercase tracking-widest">+ Add Reference</span>

@@ -12,6 +12,7 @@ import { FullScreenViewer } from '../../FullScreenViewer';
 
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { copyToClipboard } from '@/utils/clipboard';
 export interface ChatMessageProps {
   id?: string;
   role: 'user' | 'assistant' | 'model'; // 'model' is used in BrandingExpertChat
@@ -47,7 +48,7 @@ const CreativeProjectCard: React.FC<{
 }> = ({ project, onViewImage }) => {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div className="group space-y-3 p-4 bg-white/[0.03] rounded-xl border border-white/5 shadow-sm hover:border-white/10 transition-all duration-200">
+    <div className="group space-y-3 p-4 bg-white/[0.03] rounded-xl border border-neutral-800 shadow-sm hover:border-white/10 transition-all duration-200">
       <img
         src={project.imageUrl}
         alt={project.prompt}
@@ -124,7 +125,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const handleCopy = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(content);
+      await copyToClipboard(content);
       setIsCopied(true);
       toast.success(t('canvasNodes.chatNode.messageCopied') || 'Copiado!');
       setTimeout(() => setIsCopied(false), 2000);
@@ -140,7 +141,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       {showAvatar && (
         <div className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm border",
-          !isAssistant ? "bg-neutral-800 border-white/5" : "bg-neutral-900 border-brand-cyan/20"
+          !isAssistant ? "bg-neutral-800 border-neutral-800" : "bg-neutral-900 border-brand-cyan/20"
         )}>
           {!isAssistant ? (
             <User size={16} className="text-neutral-400" />
@@ -154,7 +155,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         "max-w-[85%] md:max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed relative group transition-all border",
         !isAssistant 
           ? "bg-brand-cyan/10 border-brand-cyan/20 text-neutral-100" 
-          : "bg-white/5 border-white/5 text-neutral-300"
+          : "bg-white/5 border-neutral-800 text-neutral-300"
       )}>
         {/* Copy Button */}
         <Button
@@ -225,12 +226,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     className={cn(
                       'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-[11px] font-mono transition-colors',
                       isError
-                        ? 'bg-red-500/5 border-red-500/20 text-red-300'
+                        ? 'bg-destructive/5 border-destructive/20 text-destructive'
                         : isRunning
                         ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80'
                         : isExpanded
                         ? 'bg-white/5 border-white/10 text-neutral-300'
-                        : 'bg-white/[0.02] border-white/5 text-neutral-400',
+                        : 'bg-white/[0.03] border-neutral-800 text-neutral-400',
                       hasDetail && !isRunning && 'hover:bg-white/5 hover:border-white/10 cursor-pointer'
                     )}
                   >
@@ -256,7 +257,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   </button>
 
                   {isExpanded && call.args && (
-                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-lg bg-black/30 border border-white/5 text-[11px] space-y-2">
+                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-lg bg-black/30 border border-neutral-800 text-[11px] space-y-2">
                       {call.name === 'propose_creative_plan' && (
                         <>
                           {call.args.summary && (
@@ -356,8 +357,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
               className={cn(
                 'p-1.5 rounded transition-colors',
                 feedback.rating === 'down'
-                  ? 'bg-red-400/20 text-red-400'
-                  : 'text-neutral-500 hover:text-red-400 hover:bg-red-400/10'
+                  ? 'bg-destructive/20 text-destructive'
+                  : 'text-neutral-500 hover:text-destructive hover:bg-destructive/10'
               )}
               title={feedback.rating === 'down' ? 'Undo feedback' : 'Not helpful'}
             >

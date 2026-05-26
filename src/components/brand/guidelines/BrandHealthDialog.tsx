@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Brain, CheckCircle2, AlertTriangle, XOctagon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BrandHealthReport, BrandHealthInsight } from '@/services/brandGuidelineApi';
+import { formatDateTime } from '@/utils/localeUtils';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface BrandHealthDialogProps {
@@ -23,9 +24,9 @@ interface BrandHealthDialogProps {
 }
 
 const LEVEL_STYLES: Record<BrandHealthInsight['level'], { icon: React.ComponentType<{ size?: number; className?: string }>; cls: string }> = {
-  pass: { icon: CheckCircle2,  cls: 'text-emerald-300 bg-emerald-500/[0.08] border-emerald-500/20' },
+  pass: { icon: CheckCircle2,  cls: 'text-green-400 bg-green-500/[0.08] border-green-500/20' },
   warn: { icon: AlertTriangle, cls: 'text-amber-200    bg-amber-500/[0.08]    border-amber-500/20'  },
-  fail: { icon: XOctagon,      cls: 'text-red-300     bg-red-500/[0.08]      border-red-500/20'    },
+  fail: { icon: XOctagon,      cls: 'text-destructive     bg-destructive/[0.08]      border-destructive/20'    },
 };
 
 export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
@@ -63,7 +64,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
 
           {error && !isLoading && (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
-              <XOctagon size={20} className="text-red-400" />
+              <XOctagon size={20} className="text-destructive" />
               <p className="text-xs text-neutral-400 max-w-md">{error}</p>
               {onRetry && (
                 <Button variant="ghost" size="sm" onClick={onRetry} className="text-[10px] font-mono uppercase tracking-widest">
@@ -75,7 +76,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
 
           {!isLoading && !error && report && (
             <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-neutral-800">
                 <div className="text-3xl font-bold text-brand-cyan tabular-nums">
                   {report.score}
                 </div>
@@ -108,7 +109,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline gap-2 flex-wrap">
                               <span className="font-bold">{ins.title}</span>
-                              <span className="text-[9px] font-mono uppercase tracking-widest opacity-50">
+                              <span className="text-[10px] font-mono uppercase tracking-widest opacity-50">
                                 {ins.category}
                               </span>
                             </div>
@@ -130,7 +131,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                     {report.recommendations.map((rec, i) => (
                       <li
                         key={i}
-                        className="p-3 rounded-lg border border-white/[0.06] bg-white/[0.02]"
+                        className="p-3 rounded-lg border border-neutral-800 bg-white/[0.03]"
                       >
                         <p className="text-xs text-neutral-200 font-semibold">{rec.action}</p>
                         <p className="mt-1 text-[11px] text-neutral-500 leading-snug">{rec.reason}</p>
@@ -140,9 +141,9 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-3 border-t border-white/[0.04]">
-                <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-widest">
-                  {report.model} · {new Date(report.generatedAt).toLocaleString()}
+              <div className="flex items-center justify-between pt-3 border-t border-neutral-800">
+                <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest">
+                  {report.model} · {formatDateTime(report.generatedAt)}
                 </span>
                 {onRetry && (
                   <Button

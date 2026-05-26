@@ -22,6 +22,7 @@ import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit, Layout } from 'lucide-r
 import type { CustomPdfPreset } from '../types/types';
 import { SEO } from '../components/SEO';
 import { Button } from '@/components/ui/button'
+import { formatDateShort } from '@/utils/localeUtils';
 
 export const MyBudgetsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -140,14 +141,7 @@ export const MyBudgetsPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateString: string) => formatDateShort(dateString);
 
   const truncateText = (text: string, maxLength: number = 120) => {
     if (!text) return '';
@@ -221,7 +215,7 @@ export const MyBudgetsPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button variant="ghost" onClick={() => navigate('/budget-machine')}
-                className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-xs font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 hover:text-brand-cyan rounded-md text-xs font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Layout className="h-3.5 w-3.5" />
                 {t('budget.selectTemplate') || 'Ver Templates'}
@@ -294,14 +288,14 @@ export const MyBudgetsPage: React.FC = () => {
 
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" onClick={() => handleEditPreset(presetId)}
-                            className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                            className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Edit className="h-4 w-4" />
                             {t('common.edit') || 'Edit'}
                           </Button>
                           <Button variant="ghost" onClick={(e) => handleDeletePresetClick(presetId, e)}
                             disabled={deletingPresetId === presetId}
-                            className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                            className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -372,7 +366,7 @@ export const MyBudgetsPage: React.FC = () => {
                     </Button>
                     <Button variant="ghost" onClick={(e) => handleDeleteClick(budget._id, e)}
                       disabled={deletingId === budget._id}
-                      className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

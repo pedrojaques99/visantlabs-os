@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { BookOpen } from 'lucide-react';
 import type { BrandGuideline, BrandManifesto } from '@/lib/figma-types';
 
@@ -35,9 +36,19 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
   };
 
   const hasStructured = manifesto.provocation || manifesto.tension || manifesto.promise;
+  const isEmpty = !manifesto.provocation && !manifesto.tension && !manifesto.promise && !manifesto.full;
+
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const m = patch.strategy?.manifesto;
+    if (!m) return;
+    if (typeof m === 'string') persist({ ...manifesto, full: m });
+    else persist({ ...manifesto, ...m });
+  }, [persist, manifesto]);
 
   return (
-    <SectionBlock id="manifesto" icon={<BookOpen size={14} />} title="Manifesto" span={span as any}>
+    <SectionBlock id="manifesto" icon={<BookOpen size={14} />} title="Manifesto" span={span as any}
+      actions={isEmpty ? <AiFieldButton guideline={guideline} section="strategy.manifesto" onResult={handleAiResult} /> : undefined}
+    >
       <div className="space-y-4 py-1">
         <div className="space-y-3">
           <div className="space-y-1">
@@ -45,7 +56,7 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
             <Textarea
               value={manifesto.provocation || ''}
               onChange={(e) => update({ provocation: e.target.value })}
-              className="border-white/[0.06] bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
               placeholder="Pergunta ou imagem que o leitor reconhece..."
             />
           </div>
@@ -54,7 +65,7 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
             <Textarea
               value={manifesto.tension || ''}
               onChange={(e) => update({ tension: e.target.value })}
-              className="border-white/[0.06] bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
               placeholder="O problema, a frustração, o incômodo que a marca resolve..."
             />
           </div>
@@ -63,7 +74,7 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
             <Textarea
               value={manifesto.promise || ''}
               onChange={(e) => update({ promise: e.target.value })}
-              className="border-white/[0.06] bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
+              className="border-neutral-800 bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[60px] resize-none placeholder:text-neutral-700"
               placeholder="O que a marca faz, com quem, para quê. Frase de impacto final..."
             />
           </div>
@@ -74,7 +85,7 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
           <Textarea
             value={manifesto.full || ''}
             onChange={(e) => update({ full: e.target.value })}
-            className="border-white/[0.06] bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[100px] resize-none placeholder:text-neutral-700"
+            className="border-neutral-800 bg-transparent text-sm text-neutral-300 leading-relaxed min-h-[100px] resize-none placeholder:text-neutral-700"
             placeholder="Brand manifesto completo..."
           />
         </div>

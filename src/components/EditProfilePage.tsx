@@ -223,7 +223,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           onClick={(e) => e.stopPropagation()}
         >
           <div className="text-center">
-            <p className="font-mono mb-4 text-red-400">
+            <p className="font-mono mb-4 text-destructive">
               {t('common.notAuthenticated') || 'Please sign in to edit your profile'}
             </p>
             <Button variant="ghost"
@@ -274,8 +274,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             <div className="space-y-3 mb-8">
               {error && (
                 <div className={`rounded-xl p-4 text-sm font-mono flex items-center gap-2 ${theme === 'dark'
-                  ? 'bg-red-500/10 border border-red-500/30 text-red-400'
-                  : 'bg-red-50 border border-red-200 text-red-600'
+                  ? 'bg-destructive/10 border border-destructive/30 text-destructive'
+                  : 'bg-red-50 border border-red-200 text-destructive'
                   }`}>
                   <X size={16} />
                   {error}

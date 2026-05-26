@@ -20,6 +20,7 @@ import { GEMINI_MODELS } from '../constants/geminiModels';
 import { getCreditsRequired } from '../utils/creditCalculator';
 import { ModelSelector } from '../components/shared/ModelSelector';
 import { API_BASE } from '@/config/api';
+import { loadImage } from '@/utils/imageUtils';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
 import { useTranslation } from '@/hooks/useTranslation';
@@ -133,12 +134,9 @@ function MoodboardStudio() {
   useEffect(() => { saveSession(sourceImage, croppedImages); }, [sourceImage, croppedImages]);
 
   const getImageDimensions = (url: string): Promise<{ width: number; height: number }> =>
-    new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => resolve({ width: img.width, height: img.height });
-      img.onerror = () => resolve({ width: 1920, height: 1080 });
-      img.src = url;
-    });
+    loadImage(url, null)
+      .then(img => ({ width: img.width, height: img.height }))
+      .catch(() => ({ width: 1920, height: 1080 }));
 
   const handleAISuggest = useCallback(async (itemsToSuggest?: CroppedImage[]) => {
     const targets = itemsToSuggest || (selectedIds.size > 0 ? croppedImages.filter(c => selectedIds.has(c.id)) : croppedImages);
@@ -217,9 +215,7 @@ function MoodboardStudio() {
       const { boxes } = await moodboardApi.detectGrid(sourceImage);
       if (boxes.length === 0) { toast.error(t('moodboard.studio.no_grid_detected_try_a_moodboard_')); return; }
 
-      const img = new Image();
-      img.src = sourceImage;
-      await new Promise(r => (img.onload = r));
+      const img = await loadImage(sourceImage, null);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
       const newCrops: CroppedImage[] = [];
@@ -441,7 +437,7 @@ function MoodboardStudio() {
               <Upload size={28} className="text-neutral-600" strokeWidth={1} />
               <div className="text-center">
                 <p className="text-[10px] uppercase tracking-[0.4em] font-medium text-neutral-500">{t('moodboard.studio.upload_or_drop_moodboard')}</p>
-                <p className="text-[9px] text-neutral-700 uppercase tracking-[0.2em] mt-2">{t('moodboard.studio.single_image_for_ai_grid_detectio')}</p>
+                <p className="text-[10px] text-neutral-700 uppercase tracking-[0.2em] mt-2">{t('moodboard.studio.single_image_for_ai_grid_detectio')}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -495,7 +491,7 @@ function MoodboardStudio() {
                 <Button variant="secondary" size="sm" onClick={handleRegenAll} disabled={regeneratingIds.size > 0}>
                   <Zap size={13} className="mr-1.5" />
                   Regenerar todos
-                  <span className="ml-1.5 text-[9px] opacity-60">
+                  <span className="ml-1.5 text-[10px] opacity-60">
                     {getCreditsRequired(batchRegenModel, undefined, batchRegenProvider) * croppedImages.filter(c => c.url).length}cr
                   </span>
                 </Button>

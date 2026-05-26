@@ -477,7 +477,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                         onChange={(e) => setName(e.target.value)}
                         placeholder={t('mockup.brandNamePlaceholder')}
                         disabled={isSubmitting || isIngesting}
-                        className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/50 transition-colors disabled:opacity-50"
+                        className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
                     />
                 </div>
 
@@ -492,7 +492,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                         onChange={(e) => setUrl(e.target.value)}
                         placeholder={t('mockup.brandWizardUrlPlaceholder')}
                         disabled={isSubmitting || isIngesting}
-                        className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/50 transition-colors disabled:opacity-50"
+                        className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
                     />
                     {hasUrl && (
                         <MicroTitle as="p" className="text-neutral-600 mt-0.5 lowercase">
@@ -522,7 +522,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                                 type="button"
                                 onClick={() => pdfInputRef.current?.click()}
                                 disabled={isSubmitting || isIngesting}
-                                className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px]"
+                                className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-neutral-800 hover:border-neutral-700 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px]"
                             >
                                 <div className="flex items-center gap-2">
                                     <FileText size={16} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
@@ -568,7 +568,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                             type="button"
                             onClick={() => imageInputRef.current?.click()}
                             disabled={isSubmitting || isIngesting || imageFiles.length >= 10}
-                            className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/5 hover:border-brand-cyan/30 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px] disabled:opacity-30"
+                            className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-neutral-800 hover:border-neutral-700 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px] disabled:opacity-30"
                         >
                             <div className="flex items-center gap-2">
                                 <ImageIcon size={16} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
@@ -585,7 +585,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 {imagePreviews.length > 0 && (
                     <div className="grid grid-cols-5 gap-2 mt-1">
                         {imagePreviews.map((preview, index) => (
-                            <div key={index} className="relative group aspect-square rounded bg-neutral-900 border border-white/5 overflow-hidden">
+                            <div key={index} className="relative group aspect-square rounded bg-neutral-900 border border-neutral-800 overflow-hidden">
                                 <img src={preview} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
                                 <button
                                     type="button"
@@ -635,7 +635,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                                     type="button"
                                     onClick={() => figFileInputRef.current?.click()}
                                     disabled={isSubmitting || isIngesting}
-                                    className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono text-neutral-500 hover:text-neutral-200 border border-white/5 hover:border-white/15 rounded transition-all disabled:opacity-40"
+                                    className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono text-neutral-500 hover:text-neutral-200 border border-neutral-800 hover:border-white/15 rounded transition-all disabled:opacity-40"
                                 >
                                     <Upload size={10} />
                                     .fig file
@@ -650,7 +650,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                         onChange={(e) => setFigmaUrl(e.target.value)}
                         placeholder="figma.com/file/... ou figma.com/design/..."
                         disabled={isSubmitting || isIngesting}
-                        className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-brand-cyan/50 transition-colors disabled:opacity-50"
+                        className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
                     />
                     {hasFigma && (
                         <MicroTitle as="p" className="text-neutral-600 mt-0.5 lowercase">
@@ -666,7 +666,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
 
             {/* Media Kit — only in edit mode (guideline must exist for uploads) */}
             {isEditMode && editGuideline?.id && (
-                <div className="mt-6 pt-5 border-t border-white/5">
+                <div className="mt-6 pt-5 border-t border-neutral-800">
                     <MediaKitGallery
                         guidelineId={editGuideline.id}
                         media={media || []}

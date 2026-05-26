@@ -65,7 +65,7 @@ export const NodeFeedbackButtons: React.FC<NodeFeedbackButtonsProps> = ({
         title={generationId ? (feedback.rating === 'down' ? 'Remover feedback' : 'Ruim (Reportar)') : 'Sem generationId'}
         className={cn(
           'transition-colors',
-          feedback.rating === 'down' && '!text-red-400 !bg-red-400/10',
+          feedback.rating === 'down' && '!text-destructive !bg-destructive/10',
         )}
       >
         <ThumbsDown size={12} className={cn(feedback.rating === 'down' && 'fill-current')} />

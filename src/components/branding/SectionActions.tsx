@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
 import { extractTextFromContent } from '@/utils/brandingHelpers';
 import { Button } from '@/components/ui/button';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface SectionActionsProps {
   hasData: boolean;
@@ -50,7 +51,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
         toast.error(t('branding.copyEmpty') || 'No content to copy');
         return;
       }
-      await navigator.clipboard.writeText(text);
+      await copyToClipboard(text);
       setCopied(true);
       toast.success(t('branding.copied') || 'Copied to clipboard');
       setTimeout(() => setCopied(false), 2000);

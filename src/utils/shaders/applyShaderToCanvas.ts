@@ -6,6 +6,7 @@
 
 import type { ShaderSettings } from './shaderRenderer';
 import { applyShaderEffect } from './shaderRenderer';
+import { loadImage } from '@/utils/imageUtils';
 
 export async function applyShaderToCanvas(
   sourceCanvas: HTMLCanvasElement,
@@ -18,12 +19,8 @@ export async function applyShaderToCanvas(
     settings,
   );
 
-  const img = new Image();
-  await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = () => reject(new Error('Failed to load shader result'));
-    img.src = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
-  });
+  const imgSrc = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
+  const img = await loadImage(imgSrc, null);
 
   const out = document.createElement('canvas');
   out.width = sourceCanvas.width;

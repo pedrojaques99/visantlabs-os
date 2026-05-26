@@ -42,6 +42,12 @@ export type FigmaEffect = {
 
 export type RGBA = { r: number; g: number; b: number; a: number };
 
+export type BlendMode =
+  | 'NORMAL' | 'MULTIPLY' | 'SCREEN' | 'OVERLAY'
+  | 'DARKEN' | 'LIGHTEN' | 'COLOR_DODGE' | 'COLOR_BURN'
+  | 'HARD_LIGHT' | 'SOFT_LIGHT' | 'DIFFERENCE' | 'EXCLUSION'
+  | 'HUE' | 'SATURATION' | 'COLOR' | 'LUMINOSITY';
+
 // ── Template Scanning ──
 
 export interface TemplateSpec {
@@ -52,7 +58,7 @@ export interface TemplateSpec {
   childCount: number;
 }
 
-// ── Figma Operations (39 types) ──
+// ── Figma Operations ──
 
 export type FigmaOperation =
   // ═══ PAGE CREATION ═══
@@ -85,6 +91,11 @@ export type FigmaOperation =
       cornerRadius?: number;
       cornerSmoothing?: number;
       clipsContent?: boolean;
+      effects?: FigmaEffect[];
+      constraints?: { horizontal: string; vertical: string };
+      blendMode?: BlendMode;
+      isMask?: boolean;
+      visible?: boolean;
       layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
       primaryAxisSizingMode?: 'FIXED' | 'AUTO';
       counterAxisSizingMode?: 'FIXED' | 'AUTO';
@@ -120,10 +131,20 @@ export type FigmaOperation =
       rotation?: number;
       fills?: FigmaPaint[];
       cornerRadius?: number;
+      cornerSmoothing?: number;
+      topLeftRadius?: number;
+      topRightRadius?: number;
+      bottomLeftRadius?: number;
+      bottomRightRadius?: number;
       strokes?: FigmaPaint[];
       strokeWeight?: number;
+      strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
+      dashPattern?: number[];
       opacity?: number;
       effects?: FigmaEffect[];
+      blendMode?: BlendMode;
+      isMask?: boolean;
+      visible?: boolean;
       constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'FILL';
@@ -144,8 +165,13 @@ export type FigmaOperation =
       fills?: FigmaPaint[];
       strokes?: FigmaPaint[];
       strokeWeight?: number;
+      strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
+      dashPattern?: number[];
       opacity?: number;
       effects?: FigmaEffect[];
+      blendMode?: BlendMode;
+      isMask?: boolean;
+      visible?: boolean;
       constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'FILL';
@@ -161,6 +187,7 @@ export type FigmaOperation =
       content: string;
       fontFamily?: string;
       fontStyle?: string;
+      fontWeight?: number;
       fontSize?: number;
       lineHeight?: string | { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
       letterSpacing?: string | { value: number; unit: 'PIXELS' | 'PERCENT' };
@@ -191,6 +218,11 @@ export type FigmaOperation =
     height?: number;
     x?: number;
     y?: number;
+    opacity?: number;
+    rotation?: number;
+    layoutSizingHorizontal?: 'FIXED' | 'FILL' | 'HUG';
+    layoutSizingVertical?: 'FIXED' | 'FILL' | 'HUG';
+    componentProperties?: Record<string, string | boolean>;
   }
   // ═══ FASE 2: Advanced Creation ═══
   | {
@@ -304,6 +336,9 @@ export type FigmaOperation =
     strokes: FigmaPaint[];
     strokeWeight?: number;
     strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
+    strokeCap?: 'NONE' | 'ROUND' | 'SQUARE' | 'ARROW_LINES' | 'ARROW_EQUILATERAL';
+    strokeJoin?: 'MITER' | 'BEVEL' | 'ROUND';
+    dashPattern?: number[];
   }
   | {
     type: 'SET_IMAGE_FILL';
@@ -404,8 +439,24 @@ export type FigmaOperation =
   | { type: 'GROUP_NODES'; nodeIds: string[]; name: string }
   | { type: 'UNGROUP'; nodeId: string }
   | { type: 'DETACH_INSTANCE'; nodeId: string }
-  | { type: 'DELETE_NODE'; nodeId: string }
-  | { type: 'SELECT_AND_ZOOM'; nodeId: string }
+  | { type: 'DELETE_NODE'; nodeId: string; ref?: string }
+  | { type: 'SELECT_AND_ZOOM'; nodeId?: string; ref?: string }
+  | {
+    type: 'SWAP_INSTANCE';
+    nodeId?: string;
+    ref?: string;
+    componentKey: string;
+  }
+  | {
+    type: 'SET_EXPORT_SETTINGS';
+    nodeId?: string;
+    ref?: string;
+    exportSettings: Array<{
+      format: 'PNG' | 'JPG' | 'SVG' | 'PDF';
+      suffix?: string;
+      constraint?: { type: 'SCALE' | 'WIDTH' | 'HEIGHT'; value: number };
+    }>;
+  }
   | { type: 'CREATE_STICKY_PROMPT'; prompt: string; name: string }
   | { type: 'UNDO_LAST_BATCH' }
   | { type: 'RECOLOR_NODE'; ref?: string; nodeId?: string; props: { fills: FigmaPaint[] } }
@@ -500,23 +551,7 @@ export type FigmaOperation =
   | {
     type: 'SET_BLEND_MODE';
     nodeId: string;
-    blendMode:
-    | 'NORMAL'
-    | 'MULTIPLY'
-    | 'SCREEN'
-    | 'OVERLAY'
-    | 'DARKEN'
-    | 'LIGHTEN'
-    | 'COLOR_DODGE'
-    | 'COLOR_BURN'
-    | 'HARD_LIGHT'
-    | 'SOFT_LIGHT'
-    | 'DIFFERENCE'
-    | 'EXCLUSION'
-    | 'HUE'
-    | 'SATURATION'
-    | 'COLOR'
-    | 'LUMINOSITY';
+    blendMode: BlendMode;
   }
   | {
     type: 'SET_INDIVIDUAL_CORNERS';

@@ -4,18 +4,18 @@ import { cn } from "@/lib/utils"
 import { GlitchLoader } from "./GlitchLoader"
 
 const formButtonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold font-mono transition-all duration-300 focus:outline-none focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none disabled:opacity-50 uppercase",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold font-mono transition-all duration-300 focus:outline-none focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none disabled:opacity-50 uppercase",
   {
     variants: {
       variant: {
         primary:
           "bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg shadow-[brand-cyan]/20 hover:scale-[1.02] active:scale-95",
         outline:
-          "border border-neutral-800/10 bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:border-neutral-700 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
+          "border border-neutral-800 bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:border-neutral-700 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
         ghost:
           "bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
         destructive:
-          "bg-red-500/80 hover:bg-red-500 text-white shadow-lg shadow-red-500/20 hover:scale-[1.02] active:scale-95",
+          "bg-destructive/80 hover:bg-destructive text-white shadow-lg shadow-red-500/20 hover:scale-[1.02] active:scale-95",
       },
       size: {
         default: "h-10 px-4 py-2",

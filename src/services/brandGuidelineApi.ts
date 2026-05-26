@@ -150,6 +150,32 @@ export const brandGuidelineApi = {
     return result;
   },
 
+  async suggestMockups(id: string, count = 10): Promise<{ suggestions: Array<{ prompt: string; category: string; aspectRatio: string; label: string }> }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/suggest-mockups`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ count }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || err.error || 'Failed to suggest mockups');
+    }
+    return response.json();
+  },
+
+  async aiPopulate(id: string, sections?: string[]): Promise<{ patch: Record<string, any>; generated: string[] }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/ai-populate`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ sections }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || err.error || 'Failed to generate brand content');
+    }
+    return response.json();
+  },
+
   // ── Media Kit ──
 
   async uploadMedia(guidelineId: string, base64Data: string, label?: string, contentType?: string): Promise<{ media: any; allMedia: any[] }> {

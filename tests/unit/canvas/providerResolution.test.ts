@@ -50,8 +50,8 @@ describe('getCreditsRequired — OpenAI', () => {
     expect(getCreditsRequired(OPENAI_IMAGE_MODELS.GPT_IMAGE_2, '1K', 'openai')).toBe(2);
   });
 
-  it('returns 4 credits for 2K (high quality)', () => {
-    expect(getCreditsRequired(OPENAI_IMAGE_MODELS.GPT_IMAGE_2, '2K', 'openai')).toBe(4);
+  it('returns 3 credits for 2K (high quality)', () => {
+    expect(getCreditsRequired(OPENAI_IMAGE_MODELS.GPT_IMAGE_2, '2K', 'openai')).toBe(3);
   });
 
   it('returns 4 credits for 4K (high quality)', () => {
@@ -65,7 +65,7 @@ describe('getCreditsRequired — OpenAI', () => {
 
   it('gemini and seedream credits are unaffected', () => {
     expect(getCreditsRequired(GEMINI_MODELS.IMAGE_FLASH, undefined, 'gemini')).toBe(1);
-    expect(getCreditsRequired(SEEDREAM_MODELS.SD_4_5, '2K', 'seedream')).toBe(3);
-    expect(getCreditsRequired(SEEDREAM_MODELS.SD_4_5, '4K', 'seedream')).toBe(5);
+    expect(getCreditsRequired(SEEDREAM_MODELS.SD_4_5, '2K', 'seedream')).toBe(2);
+    expect(getCreditsRequired(SEEDREAM_MODELS.SD_4_5, '4K', 'seedream')).toBe(4);
   });
 });

@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { AiFieldButton } from '../AiFieldButton';
 import { FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -62,8 +63,21 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
     persist(next);
   };
 
+  const isEmpty = !local.voice && local.dos.length === 0;
+
+  const handleAiResult = useCallback((patch: Record<string, any>) => {
+    const gl = patch.guidelines;
+    if (!gl) return;
+    const next = { ...local };
+    if (gl.voice) next.voice = gl.voice;
+    if (Array.isArray(gl.dos)) next.dos = gl.dos;
+    persist(next);
+  }, [persist, local]);
+
   return (
-    <SectionBlock id="editorial" icon={<FileText size={14} />} title="Editorial" span={span as any}>
+    <SectionBlock id="editorial" icon={<FileText size={14} />} title="Editorial" span={span as any}
+      actions={isEmpty ? <AiFieldButton guideline={guideline} section="guidelines" onResult={handleAiResult} /> : undefined}
+    >
       <div className="space-y-3 py-1">
         {/* Voice */}
         <div className="space-y-1">
@@ -71,7 +85,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
           <Input
             value={local.voice}
             onChange={(e) => update({ voice: e.target.value })}
-            className="h-7 border-white/5 text-xs text-neutral-400 placeholder:text-neutral-700"
+            className="h-7 border-neutral-800 text-xs text-neutral-400 placeholder:text-neutral-700"
             placeholder="Brand personality..."
           />
         </div>
@@ -85,8 +99,8 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
                 <button key={opt.value} type="button" onClick={() => update({ person: opt.value })}
                   className={cn('flex-1 h-6 rounded border text-[10px] font-mono transition-all',
                     local.person === opt.value
-                      ? 'border-white/20 bg-white/[0.06] text-neutral-200'
-                      : 'border-white/5 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
+                      ? 'border-white/20 bg-white/5 text-neutral-200'
+                      : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
                   )}
                 >{opt.label}</button>
               ))}
@@ -99,8 +113,8 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
                 <button key={opt.value} type="button" onClick={() => update({ emojiPolicy: opt.value })}
                   className={cn('flex-1 h-6 rounded border text-[10px] font-mono transition-all',
                     local.emojiPolicy === opt.value
-                      ? 'border-white/20 bg-white/[0.06] text-neutral-200'
-                      : 'border-white/5 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
+                      ? 'border-white/20 bg-white/5 text-neutral-200'
+                      : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
                   )}
                 >{opt.label}</button>
               ))}

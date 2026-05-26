@@ -7,7 +7,8 @@ import { validateExternalUrl, getErrorMessage, safeFetch, SSRFValidationError } 
 import { rateLimit } from 'express-rate-limit';
 import { LRUCache } from 'lru-cache';
 import { uploadImage, isR2Configured } from '../services/r2Service.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { chargeCredits } from '../lib/credits.js';
 import { mediaSessionCache } from '../lib/mediaSessionCache.js';
 import { redisClient } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
@@ -444,6 +445,7 @@ router.post('/extract-doc', authenticate, apiRateLimiter, async (req: Request, r
     const apiKey = getGoogleApiKey();
     if (!apiKey) throw new Error('AI API Key not configured');
 
+    await chargeCredits((req as unknown as AuthRequest).userId!, 1);
     const genAI = new GoogleGenAI({ apiKey });
     const result = await genAI.models.generateContent({
       model: GEMINI_MODELS.IMAGE_NB2,

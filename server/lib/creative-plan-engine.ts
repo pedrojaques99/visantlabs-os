@@ -92,16 +92,8 @@ export class PlanValidationError extends Error {
   }
 }
 
-// Strip C0/C1 control chars + role-injection markers before interpolating into prompts.
-export function sanitizeForPrompt(s: string | undefined | null, maxLen = 2000): string {
-  if (!s) return '';
-  let out = '';
-  for (let i = 0; i < s.length && out.length < maxLen; i++) {
-    const code = s.charCodeAt(i);
-    out += code < 0x20 || code === 0x7f ? ' ' : s[i];
-  }
-  return out.replace(/<\/?(system|model|assistant|user)>/gi, '').slice(0, maxLen);
-}
+import { sanitizeForPrompt } from '../utils/promptSanitize';
+export { sanitizeForPrompt };
 
 interface PlanInput {
   prompt: string;

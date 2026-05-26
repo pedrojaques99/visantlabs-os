@@ -22,7 +22,7 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
       <Textarea
         value={text}
         onChange={(e) => persist(e.target.value)}
-        className="border-white/5 text-xs min-h-[100px] resize-none text-neutral-400 placeholder:text-neutral-700"
+        className="border-neutral-800 text-xs min-h-[100px] resize-none text-neutral-400 placeholder:text-neutral-700"
         placeholder="Accessibility guidelines and universal design standards..."
       />
     </SectionBlock>

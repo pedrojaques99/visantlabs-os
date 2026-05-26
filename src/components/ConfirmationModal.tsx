@@ -56,8 +56,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       button: 'bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border-yellow-500/30 hover:border-yellow-500/50'
     },
     danger: {
-      icon: 'text-red-400',
-      button: 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border-red-500/30 hover:border-red-500/50'
+      icon: 'text-destructive',
+      button: 'bg-destructive/20 hover:bg-destructive/30 text-destructive border-destructive/30 hover:border-destructive/50'
     },
     info: {
       icon: 'text-brand-cyan',

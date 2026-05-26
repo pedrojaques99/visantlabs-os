@@ -4,6 +4,7 @@ import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { redisClient, isRedisHealthy } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
 
@@ -33,6 +34,7 @@ import type { UploadedImage, GeminiModel, Resolution } from '../../src/types/typ
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
+import { chargeCredits } from '../lib/credits.js';
 
 const router = express.Router();
 
@@ -65,6 +67,7 @@ router.post('/improve-prompt', apiRateLimiter, authenticate, async (req: AuthReq
       // User doesn't have API key, will use system key
     }
 
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     const result = await improvePrompt(prompt, userApiKey);
 
     // 💾 CACHE SET
@@ -147,6 +150,7 @@ router.post('/describe-image', apiRateLimiter, authenticate, async (req: AuthReq
       // User doesn't have API key, will use system key
     }
 
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     const result = await describeImage(imageInput, userApiKey);
 
     // 💾 CACHE SET
@@ -226,6 +230,7 @@ router.post('/suggest-categories', apiRateLimiter, authenticate, async (req: Aut
       // User doesn't have API key, will use system key
     }
 
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     const result = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
 
     // 💾 CACHE SET
@@ -314,7 +319,7 @@ router.post('/refine-suggestions', refineSuggestionsLimiter, authenticate, async
       // Will use system key
     }
 
-    // Get available tags for validation
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     const availableTags = await getAllAvailableTags();
 
     const result = await refineSuggestions({
@@ -452,6 +457,7 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
       }
     }
 
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: calling analyzeMockupSetup');
     const result = await analyzeMockupSetup(
       baseImage as UploadedImage,
@@ -597,6 +603,7 @@ router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: 
       }
     }
 
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     const result = await generateSmartPrompt({
       baseImage: baseImage || null,
       designType,
@@ -674,6 +681,7 @@ router.post('/suggest-prompt-variations', apiRateLimiter, authenticate, async (r
       // User doesn't have API key, will use system key
     }
 
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     const result = await suggestPromptVariations(prompt, userApiKey);
 
     // 💾 CACHE SET
@@ -750,6 +758,7 @@ router.post('/change-object', apiRateLimiter, authenticate, async (req: AuthRequ
       // User doesn't have API key, will use system key
     }
 
+    await chargeCredits(req.userId!, 2, { isUserApiKey: !!userApiKey });
     const imageBase64 = await changeObjectInMockup(
       baseImage as UploadedImage,
       newObject,
@@ -811,6 +820,7 @@ router.post('/apply-theme', apiRateLimiter, authenticate, async (req: AuthReques
       // User doesn't have API key, will use system key
     }
 
+    await chargeCredits(req.userId!, 2, { isUserApiKey: !!userApiKey });
     const imageBase64 = await applyThemeToMockup(
       baseImage as UploadedImage,
       themes,
@@ -893,7 +903,8 @@ router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRe
       }
     }
 
-    // Import Gemini SDK for streaming
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
+
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const { GENERIC_SYSTEM_PROMPT } = await import('../services/geminiService.js');
     const apiKey = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
@@ -982,8 +993,10 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
   if (!brief) return res.status(400).json({ error: 'brief is required' });
 
   try {
-    const apiKey = await getGeminiApiKey(req.userId!);
+    const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
+    const apiKey = userOwnKey || await getGeminiApiKey(req.userId!);
     if (!apiKey) throw new Error('Gemini API key not configured');
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey });
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH });
@@ -994,11 +1007,11 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
       if (g) brandContext = buildBrandContextForImageGen(g as any);
     }
 
-    const styleHint = style ? `Style preference: ${style}.` : '';
+    const styleHint = style ? `Style preference: ${sanitizeForPrompt(style, 200)}.` : '';
     const prompt = `${brandContext ? `Brand context:\n${brandContext}\n\n` : ''}You are a professional brand naming strategist.
 Generate exactly ${count} creative and memorable name suggestions for the following brief.
 ${styleHint}
-Brief: ${brief}
+Brief: ${sanitizeForPrompt(brief, 2000)}
 
 Rules:
 - Mix different naming approaches: invented words, compound words, metaphors, real words repurposed
@@ -1025,8 +1038,10 @@ router.post('/extract-colors', apiRateLimiter, authenticate, async (req: AuthReq
   if (!image) return res.status(400).json({ error: 'image is required' });
 
   try {
-    const apiKey = await getGeminiApiKey(req.userId!);
+    const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
+    const apiKey = userOwnKey || await getGeminiApiKey(req.userId!);
     if (!apiKey) throw new Error('Gemini API key not configured');
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey });
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH });
@@ -1090,6 +1105,7 @@ router.post('/riso-enhance', apiRateLimiter, authenticate, async (req: AuthReque
       // Will use system key
     }
 
+    await chargeCredits(req.userId!, 2, { isUserApiKey: !!userApiKey });
     const { resolveImageBase64 } = await import('../services/geminiService.js');
     const { GoogleGenAI, Modality } = await import('@google/genai');
 

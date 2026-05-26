@@ -160,8 +160,8 @@ export const PublicBrandGuideline: React.FC = () => {
   if (error || !guideline) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-6">
-        <GlassPanel padding="lg" className="relative z-10 max-w-md text-center border-red-500/10 bg-red-500/[0.02]">
-          <AlertCircle size={48} className="mx-auto text-red-500/40 mb-4" />
+        <GlassPanel padding="lg" className="relative z-10 max-w-md text-center border-destructive/10 bg-destructive/[0.02]">
+          <AlertCircle size={48} className="mx-auto text-destructive/40 mb-4" />
           <h1 className="text-xl font-bold text-neutral-200 mb-2 font-manrope">{t('public.brand.guideline.access_denied')}</h1>
           <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
             {error || 'This brand guideline is either private or does not exist in our secure vault.'}
@@ -258,7 +258,7 @@ export const PublicBrandGuideline: React.FC = () => {
             theme === 'brand'
               ? "bg-[var(--accent)] text-[var(--accent-text)] border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]"
               : theme === 'dark'
-                ? "bg-neutral-900 border-white/5 text-white hover:bg-neutral-800"
+                ? "bg-neutral-900 border-neutral-800 text-white hover:bg-neutral-800"
                 : "bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm"
           )}
         >
@@ -272,7 +272,7 @@ export const PublicBrandGuideline: React.FC = () => {
           className={cn(
             "h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest",
             theme === 'dark'
-              ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white"
+              ? "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
               : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
           )}
         >
@@ -285,7 +285,7 @@ export const PublicBrandGuideline: React.FC = () => {
           className={cn(
             "h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest",
             theme === 'dark'
-              ? "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-white"
+              ? "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
               : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
           )}
         >
@@ -385,7 +385,7 @@ export const PublicBrandGuideline: React.FC = () => {
               <MicroTitle className="text-[var(--accent)] tracking-[0.15em] font-bold opacity-70">
                 Brand Preview
               </MicroTitle>
-              <span className="text-[9px] font-mono uppercase tracking-widest opacity-30">
+              <span className="text-[10px] font-mono uppercase tracking-widest opacity-30">
                 Live · local render
               </span>
             </div>
@@ -427,7 +427,7 @@ export const PublicBrandGuideline: React.FC = () => {
                         key={f.id}
                         type="button"
                         onClick={() => handleExportMock(f.id)}
-                        className="w-full text-left px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+                        className="w-full text-left px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
                       >
                         {f.label}
                       </button>
@@ -450,7 +450,7 @@ export const PublicBrandGuideline: React.FC = () => {
                     <span key={i} className="w-3 h-3 rounded-full border border-[var(--brand-text)]/10" style={{ background: c.hex }} />
                   ))}
                 </div>
-                <div className="flex items-center gap-3 text-[9px] font-mono uppercase tracking-widest opacity-40">
+                <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest opacity-40">
                   <span>{tokens.headingFamily.match(/^['"]?([^'",]+)/)?.[1] || 'Inter'}</span>
                   <span>·</span>
                   <span>{tokens.primaryColor}</span>

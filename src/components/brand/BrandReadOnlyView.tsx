@@ -8,6 +8,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { FullScreenViewer } from '@/components/FullScreenViewer';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export type BrandViewSection =
   | 'identity'
@@ -612,7 +613,7 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({ guideline, com
   const handleClick = useCallback(
     (hex: string, item: { name?: string; role?: string }) => {
       if (onColorClick) return onColorClick(hex, item);
-      navigator.clipboard.writeText(hex);
+      copyToClipboard(hex);
       toast.success(`Copied ${hex}`);
     },
     [onColorClick]

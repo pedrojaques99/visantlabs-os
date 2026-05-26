@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { BudgetData, Deliverable } from '../types/types';
 import { generateCustomBudgetPDF } from './generateCustomBudgetPDF';
+import { formatDate, formatCurrency } from '@/utils/localeUtils';
 
 export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => string) => {
   // If custom PDF is provided, use it instead
@@ -77,25 +78,6 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
     yPosition += 5;
   };
 
-  // Format currency
-  const formatCurrency = (value: number): string => {
-    return value.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
-  };
-
-  // Format date
-  const formatDate = (dateString: string): string => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
-
   // Calculate totals
   const calculateTotal = (deliverable: Deliverable): number => {
     return deliverable.quantity * deliverable.unitValue;
@@ -108,11 +90,7 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
   // Header with Logo
   if (data.brandLogo) {
     try {
-      // Try to add logo (base64 image)
-      const img = new Image();
-      img.src = data.brandLogo;
-
-      // Wait for image to load (synchronous approach for jsPDF)
+      // Add logo (base64 image) directly to jsPDF
       const imgData = data.brandLogo;
       const imgWidth = 40;
       const imgHeight = 40;

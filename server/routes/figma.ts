@@ -7,6 +7,7 @@ import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { chargeCredits } from '../lib/credits.js';
 import { redisClient } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
 
@@ -52,6 +53,7 @@ router.post('/generate', apiRateLimiter, authenticate, async (req: AuthRequest, 
       // Use system key
     }
 
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
     const result = await generateFigmaOperations(prompt.trim(), context, userApiKey);
 
     // 💾 CACHE SET

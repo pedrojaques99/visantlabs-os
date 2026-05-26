@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { API_BASE } from '@/config/api';
 import { useTranslation } from '@/hooks/useTranslation';
+import { copyToClipboard } from '@/utils/clipboard';
+import { formatDateShort } from '@/utils/localeUtils';
 
 interface ApiKeyRaw {
   id: string;
@@ -179,7 +181,7 @@ export const ApiKeysPage: React.FC = () => {
 
   const handleCopyKey = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyToClipboard(text);
       setCopied(true);
       toast.success(t('api.keys.copied_to_clipboard'));
       setTimeout(() => setCopied(false), 2000);
@@ -196,11 +198,7 @@ export const ApiKeysPage: React.FC = () => {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateShort(dateStr, 'en-US');
   };
 
   const scopeColor = (scope: string) => {
@@ -226,7 +224,7 @@ export const ApiKeysPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 font-mono mb-4">{t('api.keys.please_sign_in_to_manage_api_keys')}</p>
+          <p className="text-destructive font-mono mb-4">{t('api.keys.please_sign_in_to_manage_api_keys')}</p>
           <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
         </div>
       </div>
@@ -243,7 +241,7 @@ export const ApiKeysPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
 
           {/* Header Card */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
                 <BreadcrumbWithBack to="/developer">
@@ -291,7 +289,7 @@ export const ApiKeysPage: React.FC = () => {
           </Card>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono flex items-center gap-2">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
               <X size={16} />
               {error}
             </div>
@@ -339,7 +337,7 @@ export const ApiKeysPage: React.FC = () => {
 
           {/* Create Key Form */}
           {showCreateForm && (
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+            <Card className="bg-neutral-900 border border-white/10 rounded-xl">
               <CardContent className="p-4 md:p-6">
                 <h2 className="text-lg font-semibold text-neutral-200 mb-4 flex items-center gap-2">
                   <Shield size={18} className="text-brand-cyan" />
@@ -354,7 +352,7 @@ export const ApiKeysPage: React.FC = () => {
                       value={newKeyName}
                       onChange={e => setNewKeyName(e.target.value)}
                       placeholder="e.g. Production Agent, CI/CD Pipeline"
-                      className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-brand-cyan/50 transition-colors"
+                      className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors"
                       autoFocus
                     />
                   </div>
@@ -390,7 +388,7 @@ export const ApiKeysPage: React.FC = () => {
                       value={newKeyExpiry}
                       onChange={e => setNewKeyExpiry(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full max-w-xs px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 focus:outline-none focus:border-brand-cyan/50 transition-colors"
+                      className="w-full max-w-xs px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-colors"
                     />
                   </div>
 
@@ -418,7 +416,7 @@ export const ApiKeysPage: React.FC = () => {
           )}
 
           {/* Keys List */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-0">
               {isLoading ? (
                 <div className="p-8 flex items-center justify-center">
@@ -436,7 +434,7 @@ export const ApiKeysPage: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800/50">
+                      <tr className="border-b border-white/10">
                         <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Name</th>
                         <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.key')}</th>
                         <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.scopes_2')}</th>
@@ -448,7 +446,7 @@ export const ApiKeysPage: React.FC = () => {
                     </thead>
                     <tbody>
                       {keys.map(key => (
-                        <tr key={key.id} className="border-b border-neutral-800/30 hover:bg-neutral-800/20 transition-colors">
+                        <tr key={key.id} className="border-b border-white/10 hover:bg-neutral-800/20 transition-colors">
                           <td className="p-4 text-neutral-200 font-medium">{key.name}</td>
                           <td className="p-4">
                             <code className="text-neutral-500 font-mono text-xs bg-neutral-800/50 px-2 py-1 rounded">
@@ -487,7 +485,7 @@ export const ApiKeysPage: React.FC = () => {
                                 Expired
                               </Badge>
                             ) : (
-                              <Badge className="bg-red-500/20 text-red-400 border border-red-500/30 text-xs">
+                              <Badge className="bg-destructive/20 text-destructive border border-destructive/30 text-xs">
                                 Revoked
                               </Badge>
                             )}
@@ -496,7 +494,7 @@ export const ApiKeysPage: React.FC = () => {
                             {key.status === 'active' && (
                               <Button variant="ghost"
                                 onClick={() => setRevokeTarget(key)}
-                                className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+                                className="p-2 text-neutral-500 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                                 title={t('api.keys.revoke_key')}
                               >
                                 <Trash2 size={16} />
@@ -515,11 +513,11 @@ export const ApiKeysPage: React.FC = () => {
           {/* Revoke Confirmation Overlay */}
           {revokeTarget && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl max-w-md w-full mx-4">
+              <Card className="bg-neutral-900 border border-white/10 rounded-xl max-w-md w-full mx-4">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-red-500/10 rounded-md">
-                      <AlertTriangle className="h-5 w-5 text-red-400" />
+                    <div className="p-2 bg-destructive/10 rounded-md">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
                     </div>
                     <h3 className="text-lg font-semibold text-neutral-200">{t('api.keys.revoke_api_key')}</h3>
                   </div>
@@ -540,7 +538,7 @@ export const ApiKeysPage: React.FC = () => {
                     <Button variant="destructive"
                       onClick={handleRevokeKey}
                       disabled={isRevoking}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-md text-sm hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2 bg-destructive/20 text-destructive border border-destructive/30 rounded-md text-sm hover:bg-destructive/30 transition-colors disabled:opacity-50"
                     >
                       {isRevoking ? <GlitchLoader size={14} /> : <Trash2 size={14} />}
                       {isRevoking ? 'Revoking...' : 'Revoke Key'}
