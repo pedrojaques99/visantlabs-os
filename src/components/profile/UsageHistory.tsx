@@ -7,6 +7,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button'
+import { formatDateTime } from '@/utils/localeUtils'
 
 interface UsageHistoryProps {
     isAuthenticated: boolean;
@@ -68,14 +69,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
 
     // Helper to format dates
     const formatFriendlyDateTime = (dateString: string | Date): string => {
-        const date = new Date(dateString);
-        return date.toLocaleString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        return formatDateTime(dateString);
     };
 
     // Calculate statistics (mix of server stats and local fallback if needed)

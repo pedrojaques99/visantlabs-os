@@ -223,7 +223,7 @@ export const UsageDashboardPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
 
           {/* Header Card */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
                 <BreadcrumbWithBack to="/settings/api-keys">
@@ -264,7 +264,7 @@ export const UsageDashboardPage: React.FC = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {statCards.map(card => (
-              <Card key={card.label} className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+              <Card key={card.label} className="bg-neutral-900 border border-white/10 rounded-xl">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
                     {card.icon}
@@ -282,7 +282,7 @@ export const UsageDashboardPage: React.FC = () => {
           </div>
 
           {/* Chart Section */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                 <h2 className="text-base font-semibold text-neutral-200 font-manrope">
@@ -335,7 +335,7 @@ export const UsageDashboardPage: React.FC = () => {
           </Card>
 
           {/* Feature Breakdown */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <h2 className="text-base font-semibold text-neutral-200 font-manrope mb-4">
                 Feature Breakdown

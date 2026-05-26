@@ -6,6 +6,7 @@ import { subscriptionService, type TransactionRecord } from '../services/subscri
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button'
 import { MicroTitle } from '@/components/ui/MicroTitle'
+import { formatDateTime } from '@/utils/localeUtils'
 
 interface TransactionsModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ const formatCurrency = (amount: number, currency: string) => {
 
 const formatDate = (isoDate: string) => {
   try {
-    return new Date(isoDate).toLocaleString();
+    return formatDateTime(isoDate);
   } catch {
     return isoDate;
   }

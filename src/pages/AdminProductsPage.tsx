@@ -406,11 +406,11 @@ export const AdminProductsPage: React.FC = () => {
                                         </Badge>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div className="flex items-center justify-between text-sm py-2 border-b border-neutral-800/50">
+                                        <div className="flex items-center justify-between text-sm py-2 border-b border-white/10">
                                             <span className="text-neutral-500">{t('admin.products.preo_brl')}</span>
                                             <span className="text-neutral-200 font-bold">R$ {product.priceBRL.toFixed(2)}</span>
                                         </div>
-                                        <div className="flex items-center justify-between text-sm py-2 border-b border-neutral-800/50">
+                                        <div className="flex items-center justify-between text-sm py-2 border-b border-white/10">
                                             <span className="text-neutral-500">{t('admin.products.crditos')}</span>
                                             <span className="text-brand-cyan font-mono">{product.credits}</span>
                                         </div>

@@ -248,7 +248,7 @@ export const ProfilePage: React.FC = () => {
           )}
 
           <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+            <Card className="bg-neutral-900 border border-white/10 rounded-xl">
               <CardContent className="p-2">
                 <TabsList className="bg-transparent border-0 w-full justify-start overflow-x-auto">
                   <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6">

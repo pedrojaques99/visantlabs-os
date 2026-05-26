@@ -44,7 +44,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
 
   return (
     <div className="relative group rounded-lg overflow-hidden border border-neutral-800/70 bg-neutral-950">
-      <div className="flex items-center justify-between px-4 py-2 bg-neutral-900/80 border-b border-neutral-800/50">
+      <div className="flex items-center justify-between px-4 py-2 bg-neutral-900/80 border-b border-white/10">
         <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">{langLabel[language]}</span>
         <button
           onClick={handleCopy}
@@ -274,7 +274,7 @@ export const GettingStartedPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-24 relative z-10">
 
           {/* Header Card */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl mb-8">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl mb-8">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
                 <BreadcrumbWithBack to="/docs">
@@ -334,7 +334,7 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Authentication ── */}
               <section id="authentication">
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="p-2 bg-brand-cyan/10 rounded-lg">
@@ -381,7 +381,7 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Brand Generation ── */}
               <section id="brand-generation">
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="p-2 bg-purple-500/10 rounded-lg">
@@ -411,7 +411,7 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Mockup Generation ── */}
               <section id="mockup-generation">
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="p-2 bg-amber-500/10 rounded-lg">
@@ -441,7 +441,7 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Creative Studio ── */}
               <section id="creative-studio">
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="p-2 bg-green-500/10 rounded-lg">
@@ -472,7 +472,7 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Next Steps ── */}
               <section id="next-steps">
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold font-manrope text-neutral-200 mb-5">Next Steps</h2>
                     <div className="grid sm:grid-cols-3 gap-4">

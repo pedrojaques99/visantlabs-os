@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { loadImage } from '@/utils/imageUtils';
 import { useTextureFilterStore } from '@/stores/textureFilterStore';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 
@@ -30,13 +31,10 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
 
   const loadTexture = useCallback((src: string) => {
     setTextureLoaded(false);
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
+    loadImage(src).then((img) => {
       textureImgRef.current = img;
       setTextureLoaded(true);
-    };
-    img.src = src;
+    });
   }, []);
 
   useEffect(() => {
@@ -165,14 +163,11 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
       };
       return () => cancelAnimationFrame(animFrameRef.current);
     } else {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
+      loadImage(store.imageUrl).then((img) => {
         sourceImgRef.current = img;
         renderFrame(img);
         if (canvasRef.current) onCanvasReady(canvasRef.current);
-      };
-      img.src = store.imageUrl;
+      });
     }
   }, [store.imageUrl, store.mediaType, onCanvasReady, renderFrame]);
 

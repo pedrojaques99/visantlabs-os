@@ -81,7 +81,7 @@ export const ForgotPasswordPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
 
-        <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+        <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-green-500/20 mb-4">
               <CheckCircle2 className="w-8 h-8 text-green-500" />
@@ -102,7 +102,7 @@ export const ForgotPasswordPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
 
-        <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+        <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-destructive/20 mb-4">
               <XCircle className="w-8 h-8 text-destructive" />
@@ -128,7 +128,7 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
 
-      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+      <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
         <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-brand-cyan/20">
           <Lock className="w-8 h-8 text-brand-cyan" />
         </div>

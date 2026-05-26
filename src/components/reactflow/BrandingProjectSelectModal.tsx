@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatDateShort } from '@/utils/localeUtils'
 
 interface BrandingProject {
   _id?: string;
@@ -94,12 +95,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateShort(dateString);
   };
 
   if (!isOpen) return null;

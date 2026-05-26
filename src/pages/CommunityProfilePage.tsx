@@ -389,7 +389,7 @@ export const CommunityProfilePage: React.FC = () => {
             </div>
 
             {/* Profile Header Card */}
-            <div className="relative mb-8 rounded-md overflow-hidden bg-neutral-900/20 border border-neutral-800/50">
+            <div className="relative mb-8 rounded-md overflow-hidden bg-neutral-900/20 border border-white/10">
 
               {/* Cover Image */}
               <div className="h-48 md:h-64 relative w-full bg-neutral-900/50 overflow-hidden">
@@ -495,7 +495,7 @@ export const CommunityProfilePage: React.FC = () => {
             {/* Content Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="flex items-center justify-between mb-6">
-                <TabsList className="bg-neutral-900/50 border border-neutral-800/50">
+                <TabsList className="bg-neutral-900/50 border border-white/10">
                   <TabsTrigger value="mockups" className="gap-2">
                     <ImageIcon size={14} />
                     Mockups
@@ -523,7 +523,7 @@ export const CommunityProfilePage: React.FC = () => {
               {/* Mockups Tab */}
               <TabsContent value="mockups" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 {mockups.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-neutral-800/50 rounded-xl border-dashed">
+                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <ImageIcon size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
                     <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
                       No mockups yet
@@ -541,7 +541,7 @@ export const CommunityProfilePage: React.FC = () => {
                       return (
                         <div
                           key={mockup._id}
-                          className="group relative bg-neutral-900/40 border border-neutral-800/50 rounded-xl overflow-hidden hover:border-neutral-700 hover:shadow-lg hover:shadow-brand-cyan/5 transition-all duration-300 aspect-square cursor-pointer"
+                          className="group relative bg-neutral-900/40 border border-white/10 rounded-xl overflow-hidden hover:border-neutral-700 hover:shadow-lg hover:shadow-brand-cyan/5 transition-all duration-300 aspect-square cursor-pointer"
                           onClick={() => handleView(mockup)}
                         >
                           <img
@@ -566,7 +566,7 @@ export const CommunityProfilePage: React.FC = () => {
               {/* Workflows Tab */}
               <TabsContent value="workflows" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 {workflows.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-neutral-800/50 rounded-xl border-dashed">
+                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <Workflow size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
                     <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
                       No workflows yet
@@ -642,7 +642,7 @@ export const CommunityProfilePage: React.FC = () => {
                             {workflow.description}
                           </p>
 
-                          <div className="flex items-center justify-between pt-3 border-t border-neutral-800/50 mt-auto">
+                          <div className="flex items-center justify-between pt-3 border-t border-white/10 mt-auto">
                             <div className="flex items-center gap-1 text-neutral-500 text-xs font-mono">
                               <span>{workflow.nodes?.length || 0} nodes</span>
                             </div>
@@ -674,7 +674,7 @@ export const CommunityProfilePage: React.FC = () => {
               {/* Presets Tab */}
               <TabsContent value="presets" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 {allPresets.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-neutral-800/50 rounded-xl border-dashed">
+                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <Diamond size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
                     <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
                       No presets yet

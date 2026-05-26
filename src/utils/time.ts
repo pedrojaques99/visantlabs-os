@@ -1,3 +1,5 @@
+import { formatDate } from '@/utils/localeUtils';
+
 export function relativeTime(ts: number | string): string {
   const time = typeof ts === 'string' ? new Date(ts).getTime() : ts;
   const diff = Math.floor((Date.now() - time) / 1000);
@@ -5,7 +7,7 @@ export function relativeTime(ts: number | string): string {
   if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return new Date(time).toLocaleDateString();
+  return formatDate(new Date(time));
 }
 
 export function formatDuration(start?: string, end?: string): string | null {

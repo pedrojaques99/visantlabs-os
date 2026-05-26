@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, FileText, ChevronDown, ChevronUp, Edit, Pickaxe, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, MapPin, RefreshCw, Pencil, Heart, ThumbsUp, ThumbsDown, Download } from 'lucide-react';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
-import { translateTag } from '@/utils/localeUtils';
+import { translateTag, formatDateShort } from '@/utils/localeUtils';
 import { SkeletonLoader } from './ui/SkeletonLoader';
 import { AngleSelector } from './mockupmachine/AngleSelector';
 import { BackgroundSelector } from './mockupmachine/BackgroundSelector';
@@ -286,14 +286,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return formatDateShort(dateString, 'en-US');
   };
 
   useEffect(() => {

@@ -146,7 +146,7 @@ function formatCurrency(cents: number, currency: 'BRL' | 'USD'): string {
 const AdminDashboardSkeleton: React.FC = () => (
   <div className="space-y-6 animate-in fade-in duration-300">
     {/* Tabs Skeleton */}
-    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+    <Card className="bg-neutral-900 border border-white/10 rounded-xl">
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex gap-2">
@@ -162,7 +162,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     {/* KPI Cards Grid Skeleton */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       {[...Array(4)].map((_, i) => (
-        <Card key={i} className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+        <Card key={i} className="bg-neutral-900 border border-white/10 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <SkeletonLoader width="410px" height="410px" className="rounded-md" />
@@ -179,7 +179,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     </div>
 
     {/* Revenue Card Skeleton */}
-    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+    <Card className="bg-neutral-900 border border-white/10 rounded-xl">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -204,7 +204,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     </Card>
 
     {/* Chart Skeleton */}
-    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+    <Card className="bg-neutral-900 border border-white/10 rounded-xl">
       <CardHeader>
         <SkeletonLoader width="200px" height="24px" className="rounded mb-2" />
         <SkeletonLoader width="280px" height="16px" className="rounded" />
@@ -226,7 +226,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     {/* Referral Stats Skeleton */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
       {[...Array(3)].map((_, i) => (
-        <Card key={i} className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+        <Card key={i} className="bg-neutral-900 border border-white/10 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <SkeletonLoader width="410px" height="410px" className="rounded-md" />
@@ -932,7 +932,7 @@ export const AdminPage: React.FC = () => {
 
           {/* Access Denied States */}
           {!isCheckingAuth && !isAuthenticated && !isLoading && (
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl max-w-md mx-auto">
+            <Card className="bg-neutral-900 border border-white/10 rounded-xl max-w-md mx-auto">
               <CardContent className="p-6 md:p-8 space-y-4 text-center">
                 {isUserAuthenticated === false ? (
                   <>
@@ -986,7 +986,7 @@ export const AdminPage: React.FC = () => {
               className="space-y-6"
             >
               {/* Unified Header */}
-              <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl mb-6">
+              <Card className="bg-neutral-900 border border-white/10 rounded-xl mb-6">
                 <CardContent className="p-4 md:p-6">
                   {/* Breadcrumb */}
                   <div className="mb-4">
@@ -1006,7 +1006,7 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Separator */}
-                  <div className="border-t border-neutral-800/50 mb-4"></div>
+                  <div className="border-t border-white/10 mb-4"></div>
 
                   {/* Icon | Title | Description */}
                   <div className="flex items-center gap-3 mb-4">
@@ -1022,11 +1022,11 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Separator */}
-                  <div className="border-t border-neutral-800/50 mb-4"></div>
+                  <div className="border-t border-white/10 mb-4"></div>
 
                   {/* Navbar abas | Botão atualizar (somente icon) */}
                   <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
-                    <TabsList className="bg-neutral-900/50 border border-neutral-800/50 p-1 h-auto flex-wrap">
+                    <TabsList className="bg-neutral-900/50 border border-white/10 p-1 h-auto flex-wrap">
                       <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.dashboard')}
                       </TabsTrigger>
@@ -1068,7 +1068,7 @@ export const AdminPage: React.FC = () => {
                       disabled={isLoading}
                       variant="outline"
                       size="sm"
-                      className="flex items-center justify-center border-neutral-800/50 hover:bg-neutral-800/50 h-9 w-9 p-0"
+                      className="flex items-center justify-center border-white/10 hover:bg-neutral-800/50 h-9 w-9 p-0"
                     >
                       <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                     </Button>
@@ -1081,7 +1081,7 @@ export const AdminPage: React.FC = () => {
                 {/* KPI Grid - Top Level Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                   {/* Total Users */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1103,7 +1103,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Active Subscriptions */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1121,7 +1121,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Total Transactions */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1139,7 +1139,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* New Users (Last 30 Days) */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1169,7 +1169,7 @@ export const AdminPage: React.FC = () => {
                 {/* Additional Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {/* Total Mockups */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1187,7 +1187,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Total Credits Used */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1205,7 +1205,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Total Storage Used */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1224,7 +1224,7 @@ export const AdminPage: React.FC = () => {
                 </div>
 
                 {/* User Growth Chart */}
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardHeader>
                     <CardTitle className="text-neutral-300">{t('admin.userGrowth')}</CardTitle>
                     <CardDescription className="text-neutral-500">{t('admin.newUsersLast30Days')}</CardDescription>
@@ -1279,7 +1279,7 @@ export const AdminPage: React.FC = () => {
                 <TabsContent value="generations" className={`space-y-6 ${activeTab === 'generations' ? 'admin-tab-enter' : ''}`}>
                   {/* Summary KPIs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1296,7 +1296,7 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1313,7 +1313,7 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1330,7 +1330,7 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1358,7 +1358,7 @@ export const AdminPage: React.FC = () => {
                         const stats = data.generationStats.byFeature[feature];
                         const total = stats.images + stats.videos + stats.textSteps + stats.promptGenerations;
                         return (
-                          <Card key={feature} className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                          <Card key={feature} className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1399,7 +1399,7 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Model Usage Chart */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                     <CardHeader>
                       <CardTitle className="text-neutral-300 flex items-center gap-2">
                         <Image className="h-5 w-5 text-brand-cyan" />
@@ -1439,7 +1439,7 @@ export const AdminPage: React.FC = () => {
                   {/* Detailed Breakdowns Grid */}
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     {/* Images by Model */}
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <Image className="h-5 w-5 text-brand-cyan" />
@@ -1452,12 +1452,12 @@ export const AdminPage: React.FC = () => {
                       <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {Object.entries(data.generationStats.imagesByModel).map(([model, stats]) => (
-                            <Card key={model} className="bg-neutral-900/50 border border-neutral-800/30 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                            <Card key={model} className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                               <CardContent className="p-4">
                                 <p className="text-xs font-semibold text-brand-cyan font-mono mb-2 truncate" title={model}>{model}</p>
                                 <p className="text-2xl font-bold text-neutral-300 font-mono mb-3">{stats.total}</p>
                                 {Object.keys(stats.byResolution).length > 0 && (
-                                  <div className="mt-3 pt-3 border-t border-neutral-800/50">
+                                  <div className="mt-3 pt-3 border-t border-white/10">
                                     <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">{t('admin.resolues')}</p>
                                     <div className="flex flex-wrap gap-1">
                                       {Object.entries(stats.byResolution).map(([resolution, count]) => (
@@ -1476,7 +1476,7 @@ export const AdminPage: React.FC = () => {
                     </Card>
 
                     {/* Videos by Model */}
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <Image className="h-5 w-5 text-brand-cyan" />
@@ -1492,7 +1492,7 @@ export const AdminPage: React.FC = () => {
                           <p className="text-sm text-neutral-500 font-mono">{t('admin.totalVideos')}</p>
                         </div>
                         {Object.keys(data.generationStats.videos.byModel).length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-neutral-800/50">
+                          <div className="mt-4 pt-4 border-t border-white/10">
                             <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">{t('admin.byModel')}:</p>
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(data.generationStats.videos.byModel).map(([model, count]) => (
@@ -1508,7 +1508,7 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Text Tokens Section */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                     <CardHeader>
                       <CardTitle className="text-neutral-300 flex items-center gap-2">
                         <Type className="h-5 w-5 text-brand-cyan" />
@@ -1521,7 +1521,7 @@ export const AdminPage: React.FC = () => {
                     <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {/* Branding Steps */}
-                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.brandingSteps')}</p>
                             <p className="text-2xl font-bold text-neutral-300 font-mono">{data.generationStats.textTokens.totalSteps}</p>
@@ -1529,7 +1529,7 @@ export const AdminPage: React.FC = () => {
                         </Card>
 
                         {/* Input Tokens */}
-                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.inputTokens')}</p>
                             <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.textTokens.inputTokens.toLocaleString()}</p>
@@ -1537,7 +1537,7 @@ export const AdminPage: React.FC = () => {
                         </Card>
 
                         {/* Output Tokens */}
-                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.outputTokens')}</p>
                             <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.textTokens.outputTokens.toLocaleString()}</p>
@@ -1545,7 +1545,7 @@ export const AdminPage: React.FC = () => {
                         </Card>
 
                         {/* Analysis Cost */}
-                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.analysisCost')}</p>
                             <p className="text-2xl font-bold text-green-400 font-mono">
@@ -1555,7 +1555,7 @@ export const AdminPage: React.FC = () => {
                         </Card>
 
                         {/* Prompt Gen Total */}
-                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.promptGenTotal')}</p>
                             <p className="text-2xl font-bold text-neutral-300 font-mono">{data.generationStats.byFeature['prompt-generation'].total}</p>
@@ -1563,7 +1563,7 @@ export const AdminPage: React.FC = () => {
                         </Card>
 
                         {/* Prompt Input Tokens */}
-                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.promptInput')}</p>
                             <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.byFeature['prompt-generation'].inputTokens.toLocaleString()}</p>
@@ -1574,7 +1574,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Canvas Node Analytics */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                     <CardHeader>
                       <CardTitle className="text-neutral-300 flex items-center gap-2">
                         <Database className="h-5 w-5 text-brand-cyan" />
@@ -1595,7 +1595,7 @@ export const AdminPage: React.FC = () => {
                           {/* Event type KPIs */}
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {canvasEventStats.byEvent.map((e) => (
-                              <Card key={e.event} className="bg-neutral-900/50 border border-neutral-800/30 rounded-md">
+                              <Card key={e.event} className="bg-neutral-900/50 border border-white/10 rounded-md">
                                 <CardContent className="p-4">
                                   <p className="text-xs text-neutral-500 font-mono mb-2">{e.event.replace(/_/g, ' ')}</p>
                                   <p className={`text-2xl font-bold font-mono ${e.event === 'generation_failed' ? 'text-destructive' : e.event === 'generation_completed' ? 'text-green-400' : 'text-brand-cyan'}`}>
@@ -1681,7 +1681,7 @@ export const AdminPage: React.FC = () => {
               <TabsContent value="users" className={`space-y-6 ${activeTab === 'users' ? 'admin-tab-enter' : ''}`}>
                 {/* Summary Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1698,7 +1698,7 @@ export const AdminPage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1715,7 +1715,7 @@ export const AdminPage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1732,7 +1732,7 @@ export const AdminPage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1753,7 +1753,7 @@ export const AdminPage: React.FC = () => {
                 {/* Referral Stats */}
                 {data.referralStats && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1774,7 +1774,7 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1791,7 +1791,7 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-md">
@@ -1811,7 +1811,7 @@ export const AdminPage: React.FC = () => {
                 )}
 
                 {/* Table Card */}
-                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
+                <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
                   <CardContent className="p-6">
                     <DataTable
                       columns={columns}
@@ -1830,7 +1830,7 @@ export const AdminPage: React.FC = () => {
                 {/* Financial Overview - Revenue, Cost, Profit */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   {/* Revenue Total Card */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-green-500/10 rounded-md">
@@ -1851,7 +1851,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Total Cost Card */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-orange-500/10 rounded-md">
@@ -1875,7 +1875,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Profit Card */}
-                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
+                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-md ${profitStats.isPositive ? 'bg-blue-500/10' : 'bg-destructive/10'}`}>
@@ -1903,7 +1903,7 @@ export const AdminPage: React.FC = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
                   {/* Revenue Chart */}
                   {data.revenueTimeSeries && data.revenueTimeSeries.length > 0 && (
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-green-500/30 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-green-500/30 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <DollarSign className="h-5 w-5 text-green-500" />
@@ -1967,7 +1967,7 @@ export const AdminPage: React.FC = () => {
 
                   {/* Cost Chart */}
                   {data.costTimeSeries && data.costTimeSeries.length > 0 && (
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <Database className="h-5 w-5 text-orange-500" />
@@ -2037,7 +2037,7 @@ export const AdminPage: React.FC = () => {
                   <>
                     {/* Daily Cost Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-md">
@@ -2057,7 +2057,7 @@ export const AdminPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-md">
@@ -2077,7 +2077,7 @@ export const AdminPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-md">
@@ -2097,7 +2097,7 @@ export const AdminPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-md">
@@ -2119,7 +2119,7 @@ export const AdminPage: React.FC = () => {
                     </div>
 
                     {/* Daily Cost Chart */}
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <Database className="h-5 w-5 text-orange-500" />
@@ -2199,7 +2199,7 @@ export const AdminPage: React.FC = () => {
                     variant="outline"
                     onClick={() => fetchFeedbackStats(feedbackFeatureFilter)}
                     disabled={feedbackLoading}
-                    className="border-neutral-800/50 hover:bg-neutral-800/50 h-9 w-9 p-0"
+                    className="border-white/10 hover:bg-neutral-800/50 h-9 w-9 p-0"
                   >
                     <RefreshCw className={`h-4 w-4 ${feedbackLoading ? 'animate-spin' : ''}`} />
                   </Button>
@@ -2213,28 +2213,28 @@ export const AdminPage: React.FC = () => {
                   <>
                     {/* KPI Cards */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardContent className="p-5">
                           <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.approval_rate')}</p>
                           <p className="text-4xl font-bold text-brand-cyan">{feedbackStats.overall.approvalRate.toFixed(1)}%</p>
                           <p className="text-xs text-neutral-500 mt-1">{feedbackStats.overall.total} total ratings (30d)</p>
                         </CardContent>
                       </Card>
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardContent className="p-5">
                           <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Thumbs Up</p>
                           <p className="text-4xl font-bold text-green-400">{feedbackStats.overall.up}</p>
                           <p className="text-xs text-neutral-500 mt-1">{t('admin.vectorizationeligible')}</p>
                         </CardContent>
                       </Card>
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardContent className="p-5">
                           <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.thumbs_down')}</p>
                           <p className="text-4xl font-bold text-destructive">{feedbackStats.overall.down}</p>
                           <p className="text-xs text-neutral-500 mt-1">{t('admin.mongoonly_review_below')}</p>
                         </CardContent>
                       </Card>
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardContent className="p-5">
                           <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.vectorized_proxy')}</p>
                           <p className="text-4xl font-bold text-purple-400">{feedbackStats.vectorizedCount}</p>
@@ -2245,7 +2245,7 @@ export const AdminPage: React.FC = () => {
 
                     {/* Daily time series */}
                     {feedbackStats.timeSeries.length > 0 && (
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.daily_feedback_30d')}</CardTitle>
                         </CardHeader>
@@ -2267,7 +2267,7 @@ export const AdminPage: React.FC = () => {
 
                     {/* Feature breakdown table */}
                     {feedbackStats.featureStats.length > 0 && (
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.feature_breakdown')}</CardTitle>
                         </CardHeader>
@@ -2284,7 +2284,7 @@ export const AdminPage: React.FC = () => {
                             </TableHeader>
                             <TableBody>
                               {feedbackStats.featureStats.map((row: any) => (
-                                <TableRow key={row.feature} className="border-neutral-800/50 hover:bg-white/5">
+                                <TableRow key={row.feature} className="border-white/10 hover:bg-white/5">
                                   <TableCell className="font-mono text-xs text-neutral-200">{row.feature}</TableCell>
                                   <TableCell className="text-green-400 text-xs font-mono">{row.up}</TableCell>
                                   <TableCell className="text-destructive text-xs font-mono">{row.down}</TableCell>
@@ -2305,7 +2305,7 @@ export const AdminPage: React.FC = () => {
                     {/* Models / Design Types / Vibes / Brand Guidelines — 4 compact tables */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Models */}
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_models_by_approval')}</CardTitle>
                         </CardHeader>
@@ -2324,7 +2324,7 @@ export const AdminPage: React.FC = () => {
                               </TableHeader>
                               <TableBody>
                                 {feedbackStats.modelStats.map((r: any) => (
-                                  <TableRow key={r.model} className="border-neutral-800/50 hover:bg-white/5">
+                                  <TableRow key={r.model} className="border-white/10 hover:bg-white/5">
                                     <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.model}</TableCell>
                                     <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
                                     <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
@@ -2338,7 +2338,7 @@ export const AdminPage: React.FC = () => {
                       </Card>
 
                       {/* Design Types */}
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_design_types')}</CardTitle>
                         </CardHeader>
@@ -2357,7 +2357,7 @@ export const AdminPage: React.FC = () => {
                               </TableHeader>
                               <TableBody>
                                 {feedbackStats.designTypeStats.map((r: any) => (
-                                  <TableRow key={r.designType} className="border-neutral-800/50 hover:bg-white/5">
+                                  <TableRow key={r.designType} className="border-white/10 hover:bg-white/5">
                                     <TableCell className="font-mono text-xs text-neutral-300">{r.designType}</TableCell>
                                     <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
                                     <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
@@ -2371,7 +2371,7 @@ export const AdminPage: React.FC = () => {
                       </Card>
 
                       {/* Vibes */}
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_vibes')}</CardTitle>
                         </CardHeader>
@@ -2390,7 +2390,7 @@ export const AdminPage: React.FC = () => {
                               </TableHeader>
                               <TableBody>
                                 {feedbackStats.vibeStats.map((r: any) => (
-                                  <TableRow key={r.vibeId} className="border-neutral-800/50 hover:bg-white/5">
+                                  <TableRow key={r.vibeId} className="border-white/10 hover:bg-white/5">
                                     <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.vibeId}</TableCell>
                                     <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
                                     <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
@@ -2404,7 +2404,7 @@ export const AdminPage: React.FC = () => {
                       </Card>
 
                       {/* Brand Guidelines */}
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_brand_guidelines')}</CardTitle>
                         </CardHeader>
@@ -2423,7 +2423,7 @@ export const AdminPage: React.FC = () => {
                               </TableHeader>
                               <TableBody>
                                 {feedbackStats.brandGuidelineStats.map((r: any) => (
-                                  <TableRow key={r.brandGuidelineId} className="border-neutral-800/50 hover:bg-white/5">
+                                  <TableRow key={r.brandGuidelineId} className="border-white/10 hover:bg-white/5">
                                     <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.brandGuidelineId}</TableCell>
                                     <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
                                     <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
@@ -2440,7 +2440,7 @@ export const AdminPage: React.FC = () => {
                     {/* Tags sections */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Tags mais utilizadas */}
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-3">
                           <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.tags_mais_utilizadas')}</CardTitle>
                           <CardDescription className="text-xs text-neutral-500">{t('admin.top_20_by_usage_count')}</CardDescription>
@@ -2462,7 +2462,7 @@ export const AdminPage: React.FC = () => {
                       </Card>
 
                       {/* Tags mais votadas */}
-                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-3">
                           <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.tags_mais_votadas')}</CardTitle>
                           <CardDescription className="text-xs text-neutral-500">{t('admin.top_20_by_approval_rate_min_3_ratings')}</CardDescription>
@@ -2485,7 +2485,7 @@ export const AdminPage: React.FC = () => {
                     </div>
 
                     {/* Recent downvotes */}
-                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                       <CardHeader className="pb-2 cursor-pointer" onClick={() => setDownvotesExpanded(e => !e)}>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm font-mono text-neutral-300 flex items-center gap-2">
@@ -2513,7 +2513,7 @@ export const AdminPage: React.FC = () => {
                                 </TableHeader>
                                 <TableBody>
                                   {feedbackStats.recentDownvotes.map((r: any, i: number) => (
-                                    <TableRow key={r.generationId || i} className="border-neutral-800/50 hover:bg-white/5">
+                                    <TableRow key={r.generationId || i} className="border-white/10 hover:bg-white/5">
                                       <TableCell className="font-mono text-xs text-neutral-400 max-w-[200px]">
                                         <span title={r.prompt}>{r.prompt ? r.prompt.slice(0, 80) + (r.prompt.length > 80 ? '…' : '') : '—'}</span>
                                       </TableCell>
@@ -2602,7 +2602,7 @@ export const AdminPage: React.FC = () => {
                     </TableHeader>
                     <TableBody>
                       {historyRecords.map((record) => (
-                        <TableRow key={record.id} className="border-neutral-800/50 hover:bg-white/5">
+                        <TableRow key={record.id} className="border-white/10 hover:bg-white/5">
                           <TableCell className="py-3 text-[11px] font-mono text-neutral-400">
                             {new Date(record.timestamp).toLocaleString('pt-BR', {
                               day: '2-digit',

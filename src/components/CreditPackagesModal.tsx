@@ -82,8 +82,7 @@ interface CreditPackagesModalProps {
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return 'N/A';
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return formatDateShort(dateString, 'en-US');
   } catch {
     return 'N/A';
   }

@@ -23,6 +23,7 @@ import { vectorService } from '../services/vectorService.js'
 import { knowledgeService } from '../services/knowledgeService.js'
 import { checkBrandCompliance, type ComplianceCheckInput } from '../services/complianceService.js'
 import { getGeminiApiKey } from '../utils/geminiApiKey.js'
+import { chargeCredits } from '../lib/credits.js'
 import { calculateChangedFields, createSnapshot, generateChangeNote, generateDiff, formatVersionListItem } from '../lib/versionUtils.js'
 import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js'
 import { BrandGuidelineSchema, BrandGuidelinePatchSchema } from '../../src/lib/brandGuidelineSchema.js'
@@ -1084,6 +1085,8 @@ Return ONLY valid JSON matching this nested structure (include only the sections
 Only generate these missing items: ${emptyFields.join(', ')}
 Do NOT include fields that already exist.`
 
+    await chargeCredits(req.userId!, 1)
+
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })
 
@@ -1175,6 +1178,8 @@ Return ONLY a JSON array of objects:
     "label": "short human-readable label (brand's language, max 4 words)"
   }
 ]`
+
+    await chargeCredits(req.userId!, 1)
 
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })

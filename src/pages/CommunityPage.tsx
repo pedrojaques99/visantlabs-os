@@ -549,7 +549,7 @@ export const CommunityPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="space-y-2 pt-4 border-t border-neutral-800/50 max-h-48 overflow-y-auto w-full">
+                    <div className="space-y-2 pt-4 border-t border-white/10 max-h-48 overflow-y-auto w-full">
                       {category.presets.length > 0 ? (
                         category.presets.map((preset: any, index: number) => (
                           <div
@@ -592,7 +592,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="bg-neutral-900/20 border border-neutral-800/50 rounded-md p-6">
+                    <div key={i} className="bg-neutral-900/20 border border-white/10 rounded-md p-6">
                       <div className="aspect-video bg-neutral-900 rounded-md mb-4" />
                       <div className="h-4 bg-neutral-900 rounded mb-2" />
                       <div className="h-3 bg-neutral-900 rounded w-2/3" />
@@ -632,7 +632,7 @@ export const CommunityPage: React.FC = () => {
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2 pt-3 border-t border-neutral-800/50">
+                        <div className="flex items-center gap-2 pt-3 border-t border-white/10">
                           <span
                             className={cn(
                               'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
@@ -674,7 +674,7 @@ export const CommunityPage: React.FC = () => {
               {workflows.length > 8 && (
                 <div className="flex justify-center mt-8">
                   <Button variant="ghost" onClick={() => setShowWorkflowLibrary(true)}
-                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-white/10 rounded-full transition-all text-sm font-mono group"
                   >
                     Ver todos os workflows
                     <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
@@ -704,7 +704,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-neutral-900 rounded-md border border-neutral-800/50" />
+                    <div key={i} className="aspect-square bg-neutral-900 rounded-md border border-white/10" />
                   ))
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
@@ -756,7 +756,7 @@ export const CommunityPage: React.FC = () => {
               {allPublicMockups.length > 10 && (
                 <div className="flex justify-center mt-8">
                   <Button variant="ghost" onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
-                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-white/10 rounded-full transition-all text-sm font-mono group"
                   >
                     {isGalleryExpanded ? (
                       <>

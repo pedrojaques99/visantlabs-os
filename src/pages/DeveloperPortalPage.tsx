@@ -87,7 +87,7 @@ export const DeveloperPortalPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
 
           {/* Header Card */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
                 <BreadcrumbWithBack to="/">

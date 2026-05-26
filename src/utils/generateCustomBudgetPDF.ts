@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import type { BudgetData, PdfFieldMapping } from '../types/types';
+import { formatDate } from '@/utils/localeUtils';
 
 // Helper to get field value from BudgetData or custom value
 const getFieldValue = (data: BudgetData, mapping: PdfFieldMapping): string => {
@@ -20,9 +21,9 @@ const getFieldValue = (data: BudgetData, mapping: PdfFieldMapping): string => {
     case 'brandName':
       return data.brandName;
     case 'startDate':
-      return new Date(data.startDate).toLocaleDateString('pt-BR');
+      return formatDate(data.startDate);
     case 'endDate':
-      return new Date(data.endDate).toLocaleDateString('pt-BR');
+      return formatDate(data.endDate);
     case 'year':
       return data.year || new Date().getFullYear().toString();
     case 'observations':

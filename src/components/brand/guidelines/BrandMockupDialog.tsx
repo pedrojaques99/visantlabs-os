@@ -12,7 +12,7 @@ import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSe
 import { mockupApi } from '@/services/mockupApi';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { getCreditsRequired } from '@/utils/creditCalculator';
-import { Image, Download, RotateCcw, Save, Sparkles, Check } from 'lucide-react';
+import { Image, Download, RotateCcw, Save, Zap, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -249,7 +249,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                     onClick={handleSurpriseMe}
                     className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-violet-400 hover:text-violet-300 transition-colors"
                   >
-                    <Sparkles size={10} />
+                    <Zap size={10} />
                     Surprise me
                   </button>
                 </div>
@@ -365,7 +365,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                   disabled={selectedSuggestions.size === 0}
                   className="h-8 px-4 gap-2 text-xs bg-violet-500/20 border border-violet-500/30 text-violet-200 hover:bg-violet-500/30"
                 >
-                  <Sparkles size={12} />
+                  <Zap size={12} />
                   Gerar {selectedSuggestions.size} mockup{selectedSuggestions.size !== 1 ? 's' : ''}
                 </Button>
               </div>

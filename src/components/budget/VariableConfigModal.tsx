@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { FormInput } from '@/components/ui/form-input';
 import type { BudgetData } from '@/types/types';
 import { Button } from '@/components/ui/button'
+import { formatDate } from '@/utils/localeUtils';
 
 interface VariableConfigModalProps {
   isOpen: boolean;
@@ -27,9 +28,9 @@ const getDefaultValue = (data: BudgetData, fieldId: string): string => {
     case 'brandName':
       return data.brandName;
     case 'startDate':
-      return new Date(data.startDate).toLocaleDateString('pt-BR');
+      return formatDate(data.startDate);
     case 'endDate':
-      return new Date(data.endDate).toLocaleDateString('pt-BR');
+      return formatDate(data.endDate);
     case 'year':
       return data.year || new Date().getFullYear().toString();
     case 'observations':

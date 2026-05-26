@@ -6,6 +6,7 @@ import { RisoCanvas } from '@/components/riso/RisoCanvas';
 import { RisoControls } from '@/components/riso/RisoControls';
 import { useRisoStore } from '@/stores/risoStore';
 import { useExportCanvas } from '@/hooks/useExportCanvas';
+import { loadImage } from '@/utils/imageUtils';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
 
@@ -85,13 +86,9 @@ export const RisoMachinePage: React.FC = () => {
       }
       const data = await res.json();
       if (data.imageUrl) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          store.getState().setImageUrl(data.imageUrl, 'ai-enhanced.png');
-          toast.success('AI Riso enhancement applied');
-        };
-        img.src = data.imageUrl;
+        await loadImage(data.imageUrl);
+        store.getState().setImageUrl(data.imageUrl, 'ai-enhanced.png');
+        toast.success('AI Riso enhancement applied');
       }
     } catch (err: any) {
       toast.error(err?.message || 'AI enhancement unavailable');

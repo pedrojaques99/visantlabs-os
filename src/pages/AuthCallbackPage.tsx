@@ -90,7 +90,7 @@ export const AuthCallbackPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-md">
+      <div className="bg-neutral-900 border border-white/10 rounded-md p-6 w-full max-w-md">
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle size={24} className="text-destructive" />
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">

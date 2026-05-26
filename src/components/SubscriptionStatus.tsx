@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { CreditCard, ExternalLink } from 'lucide-react';
 import { subscriptionService } from '../services/subscriptionService';
 import type { SubscriptionStatus as SubscriptionStatusType } from '../services/subscriptionService';
+import { formatDateShort } from '@/utils/localeUtils';
 
 interface SubscriptionStatusProps {
   subscriptionStatus: SubscriptionStatusType;
@@ -12,8 +13,7 @@ interface SubscriptionStatusProps {
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return 'N/A';
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return formatDateShort(dateString, 'en-US');
   } catch {
     return 'N/A';
   }

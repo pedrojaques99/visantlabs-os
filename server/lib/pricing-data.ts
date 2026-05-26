@@ -12,7 +12,7 @@ export interface PricingTier {
   resolution: string;
   googlePriceUSD: number;
   creditsRequired: number;
-  category: 'image' | 'video' | 'chat' | 'branding';
+  category: 'image' | 'video' | 'chat' | 'branding' | 'text';
 }
 
 export interface CreditPackage {
@@ -94,6 +94,7 @@ export const GOOGLE_OFFICIAL_PRICING = {
 } as const;
 
 export const CREDIT_COSTS: PricingTier[] = [
+  // ── Gemini Image ──
   { model: 'Gemini 2.5 Flash', modelId: 'gemini-2.5-flash-image', resolution: '~1K (HD)', googlePriceUSD: 0.039, creditsRequired: 1, category: 'image' },
   { model: 'Gemini 3.1 Flash', modelId: 'gemini-3.1-flash-image-preview', resolution: '512px', googlePriceUSD: 0.045, creditsRequired: 1, category: 'image' },
   { model: 'Gemini 3.1 Flash', modelId: 'gemini-3.1-flash-image-preview', resolution: '1K (HD)', googlePriceUSD: 0.067, creditsRequired: 2, category: 'image' },
@@ -102,11 +103,52 @@ export const CREDIT_COSTS: PricingTier[] = [
   { model: 'Gemini 3 Pro', modelId: 'gemini-3-pro-image-preview', resolution: '1K (HD)', googlePriceUSD: 0.134, creditsRequired: 3, category: 'image' },
   { model: 'Gemini 3 Pro', modelId: 'gemini-3-pro-image-preview', resolution: '2K', googlePriceUSD: 0.134, creditsRequired: 5, category: 'image' },
   { model: 'Gemini 3 Pro', modelId: 'gemini-3-pro-image-preview', resolution: '4K', googlePriceUSD: 0.24, creditsRequired: 7, category: 'image' },
+  // ── OpenAI Image (gpt-image-2, token-based, estimates per image) ──
+  { model: 'GPT Image 2', modelId: 'gpt-image-2', resolution: '1K (HD)', googlePriceUSD: 0.053, creditsRequired: 2, category: 'image' },
+  { model: 'GPT Image 2', modelId: 'gpt-image-2', resolution: '2K', googlePriceUSD: 0.12, creditsRequired: 3, category: 'image' },
+  { model: 'GPT Image 2', modelId: 'gpt-image-2', resolution: '4K', googlePriceUSD: 0.211, creditsRequired: 4, category: 'image' },
+  // ── Seedream Image (BytePlus API) ──
+  { model: 'Seedream 5 Lite', modelId: 'seedream-5-0-lite', resolution: '2K', googlePriceUSD: 0.035, creditsRequired: 2, category: 'image' },
+  { model: 'Seedream 5 Lite', modelId: 'seedream-5-0-lite', resolution: '3K', googlePriceUSD: 0.045, creditsRequired: 3, category: 'image' },
+  { model: 'Seedream 5 Lite', modelId: 'seedream-5-0-lite', resolution: '4K', googlePriceUSD: 0.055, creditsRequired: 4, category: 'image' },
+  { model: 'Seedream 4.5', modelId: 'seedream-4.5', resolution: '2K', googlePriceUSD: 0.04, creditsRequired: 2, category: 'image' },
+  { model: 'Seedream 4.5', modelId: 'seedream-4.5', resolution: '3K', googlePriceUSD: 0.045, creditsRequired: 3, category: 'image' },
+  { model: 'Seedream 4.5', modelId: 'seedream-4.5', resolution: '4K', googlePriceUSD: 0.055, creditsRequired: 4, category: 'image' },
+  { model: 'Seedream 4.0', modelId: 'seedream-4.0', resolution: '2K', googlePriceUSD: 0.025, creditsRequired: 2, category: 'image' },
+  { model: 'Seedream 4.0', modelId: 'seedream-4.0', resolution: '3K', googlePriceUSD: 0.035, creditsRequired: 3, category: 'image' },
+  { model: 'Seedream 4.0', modelId: 'seedream-4.0', resolution: '4K', googlePriceUSD: 0.045, creditsRequired: 4, category: 'image' },
+  // ── Veo Video (Google, per-second × 8s default) ──
   { model: 'Veo 3.1 Fast', modelId: 'veo-3.1-fast-generate-preview', resolution: '720p/1080p (8s)', googlePriceUSD: 1.20, creditsRequired: 15, category: 'video' },
   { model: 'Veo 3.1 Standard', modelId: 'veo-3.1-generate-preview', resolution: '720p/1080p (8s)', googlePriceUSD: 3.20, creditsRequired: 40, category: 'video' },
+  // ── Seedance Video (ByteDance, ~$0.092/s × 5s) ──
+  { model: 'Seedance Fast', modelId: 'seedance-fast', resolution: '720p (5s)', googlePriceUSD: 0.46, creditsRequired: 20, category: 'video' },
+  { model: 'Seedance Standard', modelId: 'seedance-standard', resolution: '720p (5s)', googlePriceUSD: 0.92, creditsRequired: 35, category: 'video' },
+  // ── Kling Video (Kuaishou, ~$0.10-0.14/s × 5s avg) ──
+  { model: 'Kling Standard', modelId: 'kling-standard', resolution: '720p (5s)', googlePriceUSD: 0.50, creditsRequired: 20, category: 'video' },
+  { model: 'Kling Pro', modelId: 'kling-pro', resolution: '1080p (5s)', googlePriceUSD: 0.70, creditsRequired: 30, category: 'video' },
+  // ── Text / Chat / Analysis ──
   { model: 'AI Chat', modelId: 'gemini-2.5-flash', resolution: '4 messages', googlePriceUSD: 0.001, creditsRequired: 1, category: 'chat' },
   { model: 'Brand Analysis', modelId: 'gemini-2.5-flash', resolution: 'Complete (10 steps)', googlePriceUSD: 0.01, creditsRequired: 10, category: 'branding' },
+  { model: 'AI Text (single call)', modelId: 'gemini-text-single', resolution: '~2K tokens', googlePriceUSD: 0.001, creditsRequired: 1, category: 'text' },
 ];
+
+// ── Lookup helpers (single source of truth for credit calculations) ──
+
+const _creditLookup = new Map<string, number>();
+for (const tier of CREDIT_COSTS) {
+  _creditLookup.set(`${tier.modelId}:${tier.resolution}`, tier.creditsRequired);
+}
+
+export function lookupCredits(modelId: string, resolution?: string): number | undefined {
+  if (resolution) {
+    const exact = _creditLookup.get(`${modelId}:${resolution}`);
+    if (exact !== undefined) return exact;
+  }
+  for (const tier of CREDIT_COSTS) {
+    if (tier.modelId === modelId) return tier.creditsRequired;
+  }
+  return undefined;
+}
 
 export const CREDIT_PACKAGES: CreditPackage[] = [
   { credits: 20, priceBRL: 9.90, priceUSD: 1.80, pricePerCreditUSD: 0.09, imagesHD: 10, images4K: 5, videosFast: 1, videosStandard: 0 },

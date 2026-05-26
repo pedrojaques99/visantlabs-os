@@ -10,6 +10,8 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { chargeCredits } from '../lib/credits.js';
+import { getChatMessageCreditsRequired } from '../../src/utils/creditCalculator.js';
 import { getChatTools, executeChatTool } from '../services/chat/toolRegistry.js';
 import { formatGeminiHistory } from '../lib/chat/history.js';
 import { resolveRagScope } from '../lib/chat/ragScope.js';
@@ -239,7 +241,14 @@ router.post('/sessions/:id/message', authenticate, chatRateLimiter, async (req: 
     // 4. Histórico no formato Gemini
     const geminiHistory = formatGeminiHistory(session.messages);
 
-    // 5. First call: Chat with tools
+    // 5. Charge credits (1 credit every 4 user messages)
+    const userMsgCount = session.messages.filter((m: any) => m.role === 'user').length + 1;
+    const creditsNeeded = getChatMessageCreditsRequired(userMsgCount);
+    if (creditsNeeded > 0) {
+      await chargeCredits(req.userId!, creditsNeeded);
+    }
+
+    // 6. First call: Chat with tools
     let { text: reply, toolCalls } = await chatWithLLM(
       message,
       '',

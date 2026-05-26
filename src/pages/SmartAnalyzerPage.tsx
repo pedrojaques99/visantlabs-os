@@ -1260,7 +1260,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                     <h4 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2 pl-1">
                       <ImageIcon size={12} /> Source Context
                     </h4>
-                    <GlassPanel padding="none" className="rounded-2xl overflow-hidden border-neutral-800/40 opacity-80 hover:opacity-100 transition-opacity">
+                    <GlassPanel padding="none" className="rounded-2xl overflow-hidden border-white/10 opacity-80 hover:opacity-100 transition-opacity">
                       <img
                         src={image?.preview}
                         alt="Source"
@@ -1278,7 +1278,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {result.tags.map((tag) => (
-                          <span key={tag} className="text-[10px] font-mono px-3 py-2 rounded-xl bg-neutral-900/50 border border-neutral-800/50 text-neutral-500 transition-colors hover:text-white hover:border-neutral-700">
+                          <span key={tag} className="text-[10px] font-mono px-3 py-2 rounded-xl bg-neutral-900/50 border border-white/10 text-neutral-500 transition-colors hover:text-white hover:border-neutral-700">
                             {tag}
                           </span>
                         ))}
@@ -1336,7 +1336,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
               <div className="space-y-4">
                 <label className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest font-bold">Tags</label>
-                <div className="flex flex-wrap gap-2 min-h-[40px] p-4 bg-neutral-900/50 rounded-xl border border-neutral-800/50">
+                <div className="flex flex-wrap gap-2 min-h-[40px] p-4 bg-neutral-900/50 rounded-xl border border-white/10">
                   {publishTags.map((tag) => (
                     <span key={tag} className="flex items-center gap-2 bg-neutral-900 text-neutral-300 px-3 py-1.5 rounded-lg text-[11px] font-mono border border-neutral-800">
                       {tag}

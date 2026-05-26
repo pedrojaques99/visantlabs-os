@@ -243,7 +243,7 @@ export const ApiKeysPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
 
           {/* Header Card */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
                 <BreadcrumbWithBack to="/developer">
@@ -339,7 +339,7 @@ export const ApiKeysPage: React.FC = () => {
 
           {/* Create Key Form */}
           {showCreateForm && (
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+            <Card className="bg-neutral-900 border border-white/10 rounded-xl">
               <CardContent className="p-4 md:p-6">
                 <h2 className="text-lg font-semibold text-neutral-200 mb-4 flex items-center gap-2">
                   <Shield size={18} className="text-brand-cyan" />
@@ -418,7 +418,7 @@ export const ApiKeysPage: React.FC = () => {
           )}
 
           {/* Keys List */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-0">
               {isLoading ? (
                 <div className="p-8 flex items-center justify-center">
@@ -436,7 +436,7 @@ export const ApiKeysPage: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800/50">
+                      <tr className="border-b border-white/10">
                         <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Name</th>
                         <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.key')}</th>
                         <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.scopes_2')}</th>
@@ -448,7 +448,7 @@ export const ApiKeysPage: React.FC = () => {
                     </thead>
                     <tbody>
                       {keys.map(key => (
-                        <tr key={key.id} className="border-b border-neutral-800/30 hover:bg-neutral-800/20 transition-colors">
+                        <tr key={key.id} className="border-b border-white/10 hover:bg-neutral-800/20 transition-colors">
                           <td className="p-4 text-neutral-200 font-medium">{key.name}</td>
                           <td className="p-4">
                             <code className="text-neutral-500 font-mono text-xs bg-neutral-800/50 px-2 py-1 rounded">
@@ -515,7 +515,7 @@ export const ApiKeysPage: React.FC = () => {
           {/* Revoke Confirmation Overlay */}
           {revokeTarget && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl max-w-md w-full mx-4">
+              <Card className="bg-neutral-900 border border-white/10 rounded-xl max-w-md w-full mx-4">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-destructive/10 rounded-md">

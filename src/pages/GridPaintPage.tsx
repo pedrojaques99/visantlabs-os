@@ -785,7 +785,7 @@ export const GridPaintPage: React.FC = () => {
 
       {/* Bottom toolbar */}
       <div className={cn('fixed left-1/2 -translate-x-1/2 z-30 transition-all duration-300', isMobile ? (mobileSheetOpen ? 'bottom-[calc(45%+8px)]' : 'bottom-[56px]') : 'bottom-4')}>
-        <div className="flex items-center gap-0.5 backdrop-blur-xl border border-neutral-800/50 rounded-xl px-1.5 py-1 shadow-lg" style={{ backgroundColor: '#0a0a0add' }}>
+        <div className="flex items-center gap-0.5 backdrop-blur-xl border border-white/10 rounded-xl px-1.5 py-1 shadow-lg" style={{ backgroundColor: '#0a0a0add' }}>
 
           <Tooltip content="Zoom Out" position="top">
             <Button variant="ghost" className="w-9 h-9 flex items-center justify-center rounded-md" onClick={() => setZoom(z => Math.max(0.3, z - 0.15))}>

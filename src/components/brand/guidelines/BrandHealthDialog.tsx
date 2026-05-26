@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Brain, CheckCircle2, AlertTriangle, XOctagon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BrandHealthReport, BrandHealthInsight } from '@/services/brandGuidelineApi';
+import { formatDateTime } from '@/utils/localeUtils';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader'
 interface BrandHealthDialogProps {
@@ -142,7 +143,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
 
               <div className="flex items-center justify-between pt-3 border-t border-neutral-800">
                 <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest">
-                  {report.model} · {new Date(report.generatedAt).toLocaleString()}
+                  {report.model} · {formatDateTime(report.generatedAt)}
                 </span>
                 {onRetry && (
                   <Button

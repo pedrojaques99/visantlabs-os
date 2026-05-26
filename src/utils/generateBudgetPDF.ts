@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { BudgetData, Deliverable } from '../types/types';
 import { generateCustomBudgetPDF } from './generateCustomBudgetPDF';
+import { formatDate, formatCurrency } from '@/utils/localeUtils';
 
 export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => string) => {
   // If custom PDF is provided, use it instead
@@ -75,25 +76,6 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
     yPosition += 10;
     addText(text, fontSize, true, primaryColor as [number, number, number]);
     yPosition += 5;
-  };
-
-  // Format currency
-  const formatCurrency = (value: number): string => {
-    return value.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
-  };
-
-  // Format date
-  const formatDate = (dateString: string): string => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
   };
 
   // Calculate totals

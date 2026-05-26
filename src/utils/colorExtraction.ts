@@ -1,3 +1,5 @@
+import { loadImage } from '@/utils/imageUtils';
+
 /**
  * Extracts up to 10 most frequent and well-contrasted colors from an image
  */
@@ -85,27 +87,27 @@ export async function extractColors(
   maxColors: number = 10,
   shouldRandomize: boolean = false
 ): Promise<ColorExtractionResult> {
-  return new Promise((resolve, reject) => {
     // Validate input
     if (!base64 || typeof base64 !== 'string') {
-      reject(new Error('Invalid base64: must be a non-empty string'));
-      return;
+      throw new Error('Invalid base64: must be a non-empty string');
     }
     if (!mimeType || typeof mimeType !== 'string') {
-      reject(new Error('Invalid mimeType: must be a non-empty string'));
-      return;
+      throw new Error('Invalid mimeType: must be a non-empty string');
     }
 
-    const img = new Image();
     const dataUrl = base64.startsWith('data:') ? base64 : `data:${mimeType};base64,${base64}`;
 
-    img.onload = () => {
-      try {
+    let img: HTMLImageElement;
+    try {
+      img = await loadImage(dataUrl, null);
+    } catch {
+      throw new Error('Failed to load image for color extraction');
+    }
+
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) {
-          reject(new Error('Could not get canvas context'));
-          return;
+          throw new Error('Could not get canvas context');
         }
 
         canvas.width = img.width;
@@ -292,20 +294,9 @@ export async function extractColors(
           }
         }
 
-        resolve({
+        return {
           colors: selectedColors.map(c => c.hex),
-        });
-      } catch (error) {
-        reject(error);
-      }
-    };
-
-    img.onerror = () => {
-      reject(new Error('Failed to load image for color extraction'));
-    };
-
-    img.src = dataUrl;
-  });
+        };
 }
 
 

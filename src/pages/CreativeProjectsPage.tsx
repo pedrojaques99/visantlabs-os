@@ -144,13 +144,13 @@ export const CreativeProjectsPage: React.FC = () => {
           <Search size={18} />
         </Button>
         {showSearch && (
-          <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-800/40 rounded-ml p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
+          <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-ml p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={t('creative.projects.search_project_name')}
               iconSize={14}
-              className="bg-transparent border-neutral-800/20 text-xs font-mono"
+              className="bg-transparent border-white/10 text-xs font-mono"
               containerClassName="w-full"
               autoFocus
             />
