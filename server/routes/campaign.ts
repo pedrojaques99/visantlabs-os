@@ -8,6 +8,7 @@ import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateMockup as generateGeminiImage } from '../services/geminiService.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
 import { validateExternalUrl, safeFetch } from '../utils/securityValidation.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import OpenAI from 'openai';
 import { chargeCredits, refundCredits } from '../lib/credits.js';
@@ -147,7 +148,7 @@ Each prompt must be 80-150 words. No explanations — only the JSON.`;
       { role: 'system', content: systemPrompt },
       {
         role: 'user',
-        content: `Campaign brief: ${brief}\n\nGenerate ${count} prompts for these pairs:\n${JSON.stringify(planned, null, 2)}`,
+        content: `Campaign brief: ${sanitizeForPrompt(brief, 2000)}\n\nGenerate ${count} prompts for these pairs:\n${JSON.stringify(planned, null, 2)}`,
       },
     ],
     response_format: { type: 'json_object' },

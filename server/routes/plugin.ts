@@ -8,6 +8,7 @@ import path from 'path';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
 import { isSafeId, ensureString } from '../utils/validation.js';
+import { sanitizeForPrompt, sanitizePromptArray } from '../utils/promptSanitize.js';
 import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey, hashObject } from '../lib/cache-utils.js';
@@ -682,7 +683,7 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
         .filter(Boolean);
 
       const selectionContext = selectionTextContent.length > 0
-        ? `\n\nSELECTED ELEMENTS TEXT CONTENT (${selectionTextContent.length} text nodes):\n${selectionTextContent.slice(0, 200).join('\n')}`
+        ? `\n\nSELECTED ELEMENTS TEXT CONTENT (${selectionTextContent.length} text nodes):\n${sanitizeForPrompt(selectionTextContent.slice(0, 200).join('\n'), 5000)}`
         : '';
 
       const prePassPrompt = `You are a Figma design assistant deciding which tools to use before generating design operations.
@@ -2028,14 +2029,16 @@ router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, 
     let userBase = mode === 'figma-plugin' ? FIGMA_OPERATIONS_USER : SMART_ANALYZER_USER;
 
     if (refinements && Array.isArray(refinements) && refinements.length > 0) {
+      const safeCurrentPrompt = sanitizeForPrompt(currentPrompt, 3000);
+      const safeRefinements = sanitizePromptArray(refinements, 500).join(', ');
       systemBase += `\n\nREFINAMENTO DE PROMPT:
       - O usuário deseja alterar o prompt gerado anteriormente.
-      - Prompt Original: "${currentPrompt}"
-      - Novas instruções/mudanças desejadas: ${refinements.join(', ')}
+      - Prompt Original: "${safeCurrentPrompt}"
+      - Novas instruções/mudanças desejadas: ${safeRefinements}
       - Sua tarefa é REESCREVER o prompt (ou operações) incorporando essas mudanças de forma fluida e profissional.
       - Mantenha a consistência com a imagem original, mas priorize as novas instruções.`;
-      
-      userBase = `Com base na imagem e no prompt original "${currentPrompt}", gere uma nova versão do prompt incorporando: ${refinements.join(', ')}.`;
+
+      userBase = `Com base na imagem e no prompt original "${safeCurrentPrompt}", gere uma nova versão do prompt incorporando: ${safeRefinements}.`;
     }
 
     // MODE: Figma Plugin Operations

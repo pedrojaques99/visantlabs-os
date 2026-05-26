@@ -4,6 +4,7 @@ import { validateAdmin } from '../middleware/adminAuth.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { chatWithLLM } from '../services/llmRouter.js';
 import { knowledgeService } from '../services/knowledgeService.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { buildBrandContextCached } from '../lib/brandContextBuilder.js';
 import { parseUrl } from '../lib/brand-parse.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
@@ -702,7 +703,7 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
     // 7. Smart title on first message (fire-and-forget, non-blocking)
     if (session.messages.length === 0) {
       chatWithLLM(
-        `Resuma em no máximo 5 palavras, sem pontuação: "${message.slice(0, 300)}"`,
+        `Resuma em no máximo 5 palavras, sem pontuação: "${sanitizeForPrompt(message, 300)}"`,
         '',
         [],
         { provider: 'gemini', apiKey: userApiKey, model: GEMINI_MODELS.TEXT }
@@ -828,7 +829,7 @@ router.post('/sessions/:id/message/stream', validateAdmin, async (req: AuthReque
 
     if (session.messages.length === 0) {
       chatWithLLM(
-        `Resuma em no máximo 5 palavras, sem pontuação: "${message.slice(0, 300)}"`,
+        `Resuma em no máximo 5 palavras, sem pontuação: "${sanitizeForPrompt(message, 300)}"`,
         '',
         [],
         { provider: 'gemini', apiKey: userApiKey, model: GEMINI_MODELS.TEXT }

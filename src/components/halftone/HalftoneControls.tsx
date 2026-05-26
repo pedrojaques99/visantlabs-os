@@ -1,29 +1,23 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { Eye, EyeOff, ImageIcon, X, Download, Grid3X3, Layers, Droplets, Blend, Circle, Image, Palette, SlidersHorizontal } from 'lucide-react';
-import { ShaderControls } from '@/components/shared/ShaderControls';
+import { Eye, EyeOff, ImageIcon, X, Download } from 'lucide-react';
 import { SendToButton } from '@/components/shared/SendToButton';
 import {
   ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
-import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 
-const SECTION_NAV: SectionNavItem[] = [
-  { id: 'sec-presets', icon: <Grid3X3 size={14} />, label: 'Presets' },
-  { id: 'sec-halftone', icon: <Circle size={14} />, label: 'Halftone' },
-  { id: 'sec-channels', icon: <Layers size={14} />, label: 'Channels' },
-  { id: 'sec-blend', icon: <Blend size={14} />, label: 'Blend' },
-  { id: 'sec-dot', icon: <Droplets size={14} />, label: 'Dot Advanced' },
-  { id: 'sec-image', icon: <Image size={14} />, label: 'Image & Texture' },
-  { id: 'sec-ink', icon: <Palette size={14} />, label: 'Ink Colors' },
-  { id: 'sec-post', icon: <SlidersHorizontal size={14} />, label: 'Post-Processing' },
-];
+const TABS = [
+  { id: 'halftone', label: 'Halftone' },
+  { id: 'color', label: 'Color' },
+] as const;
+
+type TabId = typeof TABS[number]['id'];
 
 interface HalftoneControlsProps {
   onExport: () => void;
@@ -31,6 +25,7 @@ interface HalftoneControlsProps {
 
 export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ onExport }) => {
   const store = useHalftoneStore();
+  const [activeTab, setActiveTab] = useState<TabId>('halftone');
 
   const update = useCallback(<K extends string>(key: K, value: any) => {
     store.updateSetting(key as any, value);
@@ -58,9 +53,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
   const [paperAlpha, setPaperAlpha] = useDebouncedSlider(store.paperAlpha, (v) => update('paperAlpha', v));
 
   return (
-    <ToolPanel className="flex-row">
-      <SectionNavSidebar items={SECTION_NAV} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <ToolPanel>
       {/* Image header */}
       <ToolPanelHeader>
         {store.imageUrl ? (
@@ -84,91 +77,105 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         )}
       </ToolPanelHeader>
 
+      {/* Tab bar */}
+      <div className="shrink-0 flex border-b border-neutral-800/50">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              'flex-1 py-2 text-[10px] font-mono uppercase tracking-widest transition-colors',
+              activeTab === tab.id
+                ? 'text-white border-b border-white'
+                : 'text-neutral-600 hover:text-neutral-400'
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <ToolPanelContent>
-        {/* Presets */}
-        <ToolPanelSection title="PRESETS" id="sec-presets">
-          <ToolPanelGrid>
-            {Object.keys(HALFTONE_PRESETS).map((name) => (
-              <ToolPanelChip key={name} onClick={() => store.applyPreset(name)}>{name}</ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-        </ToolPanelSection>
+        {activeTab === 'halftone' && (
+          <>
+            {/* Presets */}
+            <ToolPanelSection title="PRESETS">
+              <ToolPanelGrid>
+                {Object.keys(HALFTONE_PRESETS).map((name) => (
+                  <ToolPanelChip key={name} onClick={() => store.applyPreset(name)}>{name}</ToolPanelChip>
+                ))}
+              </ToolPanelGrid>
+            </ToolPanelSection>
 
-        {/* Halftone */}
-        <ToolPanelSection title="HALFTONE" id="sec-halftone">
-          <NodeSlider label="Frequency" value={frequency} min={20} max={500} step={1} onChange={setFrequency} />
-          <NodeSlider label="Dot Size" value={dotSize} min={0.1} max={1} step={0.01} onChange={setDotSize} />
-        </ToolPanelSection>
+            {/* Halftone */}
+            <ToolPanelSection title="HALFTONE">
+              <NodeSlider label="Frequency" value={frequency} min={20} max={500} step={1} onChange={setFrequency} />
+              <NodeSlider label="Dot Size" value={dotSize} min={0.1} max={1} step={0.01} onChange={setDotSize} />
+            </ToolPanelSection>
 
-        {/* Channels */}
-        <ToolPanelSection title="CHANNELS" id="sec-channels">
-          <div className="space-y-2">
-            <ChannelToggle label="Cyan" color="#00FFFF" visible={store.showCyan} onToggle={(v) => store.updateSetting('showCyan', v)} />
-            <ChannelToggle label="Magenta" color="#FF00FF" visible={store.showMagenta} onToggle={(v) => store.updateSetting('showMagenta', v)} />
-            <ChannelToggle label="Yellow" color="#FFFF00" visible={store.showYellow} onToggle={(v) => store.updateSetting('showYellow', v)} />
-            <ChannelToggle label="Black" color="#333333" visible={store.showBlack} onToggle={(v) => store.updateSetting('showBlack', v)} />
-          </div>
-        </ToolPanelSection>
+            {/* Channels */}
+            <ToolPanelSection title="CHANNELS">
+              <div className="space-y-2">
+                <ChannelToggle label="Cyan" color="#00FFFF" visible={store.showCyan} onToggle={(v) => store.updateSetting('showCyan', v)} />
+                <ChannelToggle label="Magenta" color="#FF00FF" visible={store.showMagenta} onToggle={(v) => store.updateSetting('showMagenta', v)} />
+                <ChannelToggle label="Yellow" color="#FFFF00" visible={store.showYellow} onToggle={(v) => store.updateSetting('showYellow', v)} />
+                <ChannelToggle label="Black" color="#333333" visible={store.showBlack} onToggle={(v) => store.updateSetting('showBlack', v)} />
+              </div>
+            </ToolPanelSection>
 
-        {/* Blend Mode */}
-        <ToolPanelSection title="BLEND" id="sec-blend">
-          <ToolPanelGrid>
-            {BLEND_MODES.map((m) => (
-              <ToolPanelChip key={m.id} active={store.blendMode === m.id} onClick={() => store.updateSetting('blendMode', m.id)}>
-                {m.label}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-        </ToolPanelSection>
+            {/* Blend Mode */}
+            <ToolPanelSection title="BLEND">
+              <ToolPanelGrid>
+                {BLEND_MODES.map((m) => (
+                  <ToolPanelChip key={m.id} active={store.blendMode === m.id} onClick={() => store.updateSetting('blendMode', m.id)}>
+                    {m.label}
+                  </ToolPanelChip>
+                ))}
+              </ToolPanelGrid>
+            </ToolPanelSection>
 
-        {/* Dot Advanced */}
-        <ToolPanelDisclosure label="Dot Advanced" id="sec-dot">
-          <NodeSlider label="Roughness" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
-          <NodeSlider label="Edge Fuzz" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
-          <NodeSlider label="Randomness" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
-          <NodeSlider label="Threshold" value={threshold} min={0} max={0.5} step={0.01} onChange={setThreshold} />
-        </ToolPanelDisclosure>
+            {/* Dot Advanced */}
+            <ToolPanelDisclosure label="Dot Advanced">
+              <NodeSlider label="Roughness" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
+              <NodeSlider label="Edge Fuzz" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
+              <NodeSlider label="Randomness" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
+              <NodeSlider label="Threshold" value={threshold} min={0} max={0.5} step={0.01} onChange={setThreshold} />
+            </ToolPanelDisclosure>
+          </>
+        )}
 
-        {/* Image & Texture */}
-        <ToolPanelDisclosure label="Image & Texture" id="sec-image">
-          <NodeSlider label="Contrast" value={contrast} min={0.3} max={2} step={0.01} onChange={setContrast} />
-          <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
-          <NodeSlider label="Blur" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
-          <div className="h-px bg-neutral-800/50 my-1" />
-          <NodeSlider label="Paper Noise" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
-          <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
-        </ToolPanelDisclosure>
+        {activeTab === 'color' && (
+          <>
+            {/* Image & Texture */}
+            <ToolPanelSection title="IMAGE & TEXTURE">
+              <NodeSlider label="Contrast" value={contrast} min={0.3} max={2} step={0.01} onChange={setContrast} />
+              <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
+              <NodeSlider label="Blur" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
+              <div className="h-px bg-neutral-800/50 my-1" />
+              <NodeSlider label="Paper Noise" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
+              <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
+            </ToolPanelSection>
 
-        {/* Ink Colors */}
-        <ToolPanelDisclosure label="Ink Colors" id="sec-ink">
-          <div className="space-y-5">
-            <InkSection title="Cyan" color={store.cyanInk} alpha={cyanAlpha} angle={cyanAngle} onColor={(v) => store.updateSetting('cyanInk', v)} onAlpha={setCyanAlpha} onAngle={setCyanAngle} />
-            <InkSection title="Magenta" color={store.magentaInk} alpha={magentaAlpha} angle={magentaAngle} onColor={(v) => store.updateSetting('magentaInk', v)} onAlpha={setMagentaAlpha} onAngle={setMagentaAngle} />
-            <InkSection title="Yellow" color={store.yellowInk} alpha={yellowAlpha} angle={yellowAngle} onColor={(v) => store.updateSetting('yellowInk', v)} onAlpha={setYellowAlpha} onAngle={setYellowAngle} />
-            <InkSection title="Black" color={store.blackInk} alpha={blackAlpha} angle={blackAngle} onColor={(v) => store.updateSetting('blackInk', v)} onAlpha={setBlackAlpha} onAngle={setBlackAngle} />
-            <div className="space-y-3">
-              <ToolPanelRow label="Paper">
-                <div className="flex items-center gap-2">
-                  <input type="color" value={store.paperColor} onChange={(e) => store.updateSetting('paperColor', e.target.value)} aria-label="Paper color" className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
-                  <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
+            {/* Ink Colors */}
+            <ToolPanelSection title="INK COLORS">
+              <div className="space-y-5">
+                <InkSection title="Cyan" color={store.cyanInk} alpha={cyanAlpha} angle={cyanAngle} onColor={(v) => store.updateSetting('cyanInk', v)} onAlpha={setCyanAlpha} onAngle={setCyanAngle} />
+                <InkSection title="Magenta" color={store.magentaInk} alpha={magentaAlpha} angle={magentaAngle} onColor={(v) => store.updateSetting('magentaInk', v)} onAlpha={setMagentaAlpha} onAngle={setMagentaAngle} />
+                <InkSection title="Yellow" color={store.yellowInk} alpha={yellowAlpha} angle={yellowAngle} onColor={(v) => store.updateSetting('yellowInk', v)} onAlpha={setYellowAlpha} onAngle={setYellowAngle} />
+                <InkSection title="Black" color={store.blackInk} alpha={blackAlpha} angle={blackAngle} onColor={(v) => store.updateSetting('blackInk', v)} onAlpha={setBlackAlpha} onAngle={setBlackAngle} />
+                <div className="space-y-3">
+                  <ToolPanelRow label="Paper">
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={store.paperColor} onChange={(e) => store.updateSetting('paperColor', e.target.value)} aria-label="Paper color" className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
+                      <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
+                    </div>
+                  </ToolPanelRow>
+                  <NodeSlider label="Opacity" value={paperAlpha} min={0} max={1} step={0.01} onChange={setPaperAlpha} />
                 </div>
-              </ToolPanelRow>
-              <NodeSlider label="Opacity" value={paperAlpha} min={0} max={1} step={0.01} onChange={setPaperAlpha} />
-            </div>
-          </div>
-        </ToolPanelDisclosure>
-
-        {/* Post-Processing */}
-        <ToolPanelDisclosure label="Post-Processing" id="sec-post">
-          <ShaderControls
-            enabled={store.shaderEnabled}
-            shaderType={store.shaderType}
-            values={store.shaderValues}
-            onEnabledChange={store.setShaderEnabled}
-            onTypeChange={store.setShaderType}
-            onValueChange={store.setShaderValue}
-          />
-        </ToolPanelDisclosure>
+              </div>
+            </ToolPanelSection>
+          </>
+        )}
       </ToolPanelContent>
 
       {/* Actions */}
@@ -181,7 +188,6 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
           {store.imageUrl && <SendToButton source="halftone" imageUrl={store.imageUrl} />}
         </div>
       </ToolPanelActions>
-      </div>
     </ToolPanel>
   );
 });

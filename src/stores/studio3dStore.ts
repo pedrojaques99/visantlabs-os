@@ -6,7 +6,7 @@ type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'ch
 
 type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'spinFloat' | 'swing' | 'physicsFall';
 type ToneMappingType = 'ACES' | 'AgX' | 'Neutral' | 'Reinhard' | 'Cineon' | 'Linear';
-type ExportFormat = 'png' | 'webm' | 'glb' | 'obj';
+type ExportFormat = 'png' | 'webm' | 'glb' | 'obj' | 'turntable';
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 
 interface ScenePreset {
@@ -245,13 +245,20 @@ export const TEXTURE_PRESETS = [
   { id: 'none', label: 'None', url: '' },
 ] as const;
 
+export const RENDER_QUALITY_CONFIG = {
+  performance: { dpr: 1, msaa: 0, shadowRes: 256 },
+  balanced: { dpr: 1.5, msaa: 2, shadowRes: 512 },
+  quality: { dpr: 2, msaa: 4, shadowRes: 1024 },
+} as const;
+
 interface Studio3DState {
   // Input
   svgData: string;
-  inputMode: 'svg' | 'text';
+  inputMode: 'svg' | 'text' | 'model';
   text: string;
   font: string;
   fileName: string;
+  modelUrl: string;
 
   // Geometry
   shapeType: 'standard' | 'coin';
@@ -260,6 +267,10 @@ interface Studio3DState {
   bevelEnabled: boolean;
   bevelThickness: number;
   bevelSize: number;
+  objectScale: number;
+
+  // Performance
+  renderQuality: 'performance' | 'balanced' | 'quality';
 
   // Material
   material: MaterialPreset;
@@ -294,6 +305,7 @@ interface Studio3DState {
   // Environment
   environment: string;
   customHdriUrl: string;
+  hdriBackground: boolean;
   background: string;
   bgType: 'solid' | 'linear' | 'radial';
   bgGradient: { color1: string; color2: string; angle: number };
@@ -312,6 +324,25 @@ interface Studio3DState {
   dofBokehScale: number;
   vignetteEnabled: boolean;
   vignetteIntensity: number;
+  ssaoEnabled: boolean;
+  ssaoIntensity: number;
+  chromaticAberrationEnabled: boolean;
+  chromaticAberrationOffset: number;
+  noiseEnabled: boolean;
+  noiseOpacity: number;
+  colorGradingEnabled: boolean;
+  cgBrightness: number;
+  cgContrast: number;
+  cgHue: number;
+  cgSaturation: number;
+
+  // PBR texture maps
+  normalMapUrl: string;
+  roughnessMapUrl: string;
+  metalnessMapUrl: string;
+
+  // Camera mode
+  orthographic: boolean;
 
   // Animation
   animate: AnimationType;
@@ -327,6 +358,7 @@ interface Studio3DState {
   physicsSize: number;
 
   // Camera
+  fov: number;
   rotationX: number;
   rotationY: number;
   zoom: number;
@@ -352,9 +384,14 @@ interface Studio3DState {
   setSvgData: (svg: string, fileName?: string) => void;
   setText: (text: string) => void;
   setFont: (font: string) => void;
-  setInputMode: (mode: 'svg' | 'text') => void;
+  setInputMode: (mode: 'svg' | 'text' | 'model') => void;
+  setModelUrl: (url: string, fileName?: string) => void;
   setShapeType: (v: 'standard' | 'coin') => void;
   setDepth: (v: number) => void;
+  setObjectScale: (v: number) => void;
+  setRenderQuality: (v: 'performance' | 'balanced' | 'quality') => void;
+  setFov: (v: number) => void;
+  setHdriBackground: (v: boolean) => void;
   setSmoothness: (v: number) => void;
   setBevelEnabled: (v: boolean) => void;
   setBevelThickness: (v: number) => void;
@@ -400,6 +437,21 @@ interface Studio3DState {
   setDofBokehScale: (v: number) => void;
   setVignetteEnabled: (v: boolean) => void;
   setVignetteIntensity: (v: number) => void;
+  setSsaoEnabled: (v: boolean) => void;
+  setSsaoIntensity: (v: number) => void;
+  setChromaticAberrationEnabled: (v: boolean) => void;
+  setChromaticAberrationOffset: (v: number) => void;
+  setNoiseEnabled: (v: boolean) => void;
+  setNoiseOpacity: (v: number) => void;
+  setColorGradingEnabled: (v: boolean) => void;
+  setCgBrightness: (v: number) => void;
+  setCgContrast: (v: number) => void;
+  setCgHue: (v: number) => void;
+  setCgSaturation: (v: number) => void;
+  setNormalMapUrl: (v: string) => void;
+  setRoughnessMapUrl: (v: string) => void;
+  setMetalnessMapUrl: (v: string) => void;
+  setOrthographic: (v: boolean) => void;
   setAnimate: (a: AnimationType) => void;
   setAnimateSpeed: (v: number) => void;
   setAnimateReverse: (v: boolean) => void;
@@ -434,12 +486,15 @@ const INITIAL_STATE = {
   text: '',
   font: 'DM Sans',
   fileName: '',
+  modelUrl: '',
   shapeType: 'standard' as const,
   depth: 0.9,
   smoothness: 0.2,
   bevelEnabled: true,
   bevelThickness: 0.5,
   bevelSize: 0.5,
+  objectScale: 1,
+  renderQuality: 'balanced' as const,
   material: 'default' as MaterialPreset,
   color: '#00e5ff',
   metalness: 0.5,
@@ -466,6 +521,7 @@ const INITIAL_STATE = {
   groundReflection: 0.5,
   environment: 'studio',
   customHdriUrl: '',
+  hdriBackground: false,
   background: '#0a0a0a',
   bgType: 'solid' as const,
   bgGradient: { color1: '#0a0a0a', color2: '#1a1a2e', angle: 45 },
@@ -480,6 +536,21 @@ const INITIAL_STATE = {
   dofBokehScale: 3,
   vignetteEnabled: false,
   vignetteIntensity: 0.5,
+  ssaoEnabled: false,
+  ssaoIntensity: 0.5,
+  chromaticAberrationEnabled: false,
+  chromaticAberrationOffset: 0.002,
+  noiseEnabled: false,
+  noiseOpacity: 0.15,
+  colorGradingEnabled: false,
+  cgBrightness: 0,
+  cgContrast: 0,
+  cgHue: 0,
+  cgSaturation: 0,
+  normalMapUrl: '',
+  roughnessMapUrl: '',
+  metalnessMapUrl: '',
+  orthographic: false,
   animate: 'spin' as AnimationType,
   animateSpeed: 0.3,
   animateReverse: false,
@@ -489,6 +560,7 @@ const INITIAL_STATE = {
   physicsBounciness: 0.6,
   physicsFriction: 0.1,
   physicsSize: 0.8,
+  fov: 50,
   rotationX: 0,
   rotationY: 0,
   zoom: 8,
@@ -516,9 +588,14 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setSvgData: (svg: string, fileName?: string) => set({ svgData: svg, fileName: fileName || '', inputMode: 'svg' }),
   setText: (text) => set({ text }),
   setFont: (font) => set({ font }),
-  setInputMode: (mode) => set({ inputMode: mode }),
+  setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
+  setModelUrl: (url, fileName) => set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
   setShapeType: (shapeType) => set({ shapeType }),
   setDepth: (depth) => set({ depth }),
+  setObjectScale: (objectScale) => set({ objectScale }),
+  setRenderQuality: (renderQuality) => set({ renderQuality }),
+  setFov: (fov) => set({ fov }),
+  setHdriBackground: (hdriBackground) => set({ hdriBackground }),
   setSmoothness: (smoothness) => set({ smoothness }),
   setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
   setBevelThickness: (bevelThickness) => set({ bevelThickness }),
@@ -568,6 +645,21 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setDofBokehScale: (dofBokehScale) => set({ dofBokehScale }),
   setVignetteEnabled: (vignetteEnabled) => set({ vignetteEnabled }),
   setVignetteIntensity: (vignetteIntensity) => set({ vignetteIntensity }),
+  setSsaoEnabled: (ssaoEnabled) => set({ ssaoEnabled }),
+  setSsaoIntensity: (ssaoIntensity) => set({ ssaoIntensity }),
+  setChromaticAberrationEnabled: (chromaticAberrationEnabled) => set({ chromaticAberrationEnabled }),
+  setChromaticAberrationOffset: (chromaticAberrationOffset) => set({ chromaticAberrationOffset }),
+  setNoiseEnabled: (noiseEnabled) => set({ noiseEnabled }),
+  setNoiseOpacity: (noiseOpacity) => set({ noiseOpacity }),
+  setColorGradingEnabled: (colorGradingEnabled) => set({ colorGradingEnabled }),
+  setCgBrightness: (cgBrightness) => set({ cgBrightness }),
+  setCgContrast: (cgContrast) => set({ cgContrast }),
+  setCgHue: (cgHue) => set({ cgHue }),
+  setCgSaturation: (cgSaturation) => set({ cgSaturation }),
+  setNormalMapUrl: (normalMapUrl) => set({ normalMapUrl }),
+  setRoughnessMapUrl: (roughnessMapUrl) => set({ roughnessMapUrl }),
+  setMetalnessMapUrl: (metalnessMapUrl) => set({ metalnessMapUrl }),
+  setOrthographic: (orthographic) => set({ orthographic }),
   setAnimate: (animate) => set({ animate }),
   setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
   setAnimateReverse: (animateReverse) => set({ animateReverse }),
@@ -580,7 +672,17 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setRotationX: (rotationX) => set({ rotationX }),
   setRotationY: (rotationY) => set({ rotationY }),
   setZoom: (zoom) => set({ zoom }),
-  setExportFormat: (exportFormat) => set({ exportFormat }),
+  setExportFormat: (exportFormat) => {
+    const patch: Record<string, any> = { exportFormat };
+    if ((exportFormat === 'webm' || exportFormat === 'turntable') && get().animate !== 'none') {
+      const loopPeriod = Math.round((2 * Math.PI / get().animateSpeed) * 2) / 2;
+      patch.videoDuration = Math.min(Math.max(loopPeriod, 1), 10);
+    }
+    if (exportFormat === 'turntable') {
+      patch.videoDuration = 4;
+    }
+    set(patch as any);
+  },
   setAspectRatio: (aspectRatio) => set({ aspectRatio }),
   setExportResolution: (exportResolution) => set({ exportResolution }),
   setVideoDuration: (videoDuration) => set({ videoDuration }),
@@ -639,6 +741,8 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       material: pick(materials),
       color: randHex(),
       depth: r(0.1, 3, 0.1),
+      objectScale: r(0.5, 2, 0.1),
+      fov: pick([35, 50, 65, 75]),
       smoothness: r(0, 1, 0.1),
       bevelEnabled: Math.random() > 0.3,
       bevelThickness: r(0.1, 2, 0.1),
@@ -661,6 +765,12 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       bloomThreshold: r(0.3, 1, 0.05),
       vignetteEnabled: Math.random() > 0.7,
       vignetteIntensity: r(0.2, 0.8, 0.05),
+      ssaoEnabled: Math.random() > 0.5,
+      ssaoIntensity: r(0.2, 1.5, 0.1),
+      chromaticAberrationEnabled: Math.random() > 0.8,
+      chromaticAberrationOffset: r(0.001, 0.008, 0.001),
+      noiseEnabled: Math.random() > 0.7,
+      noiseOpacity: r(0.05, 0.25, 0.01),
       shadow: Math.random() > 0.4,
       groundPlane: Math.random() > 0.5,
     });
@@ -682,7 +792,11 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   },
 ));
 
-// Scene save/load (localStorage)
+// Scene save/load (cloud API with localStorage fallback)
+const API_BASE = (() => {
+  try { return (import.meta as any).env?.VITE_API_URL || '/api'; } catch { return '/api'; }
+})();
+
 const SCENES_KEY = 'visant-3d-scenes';
 
 export interface SavedScene {
@@ -692,13 +806,29 @@ export interface SavedScene {
   config: Record<string, any>;
 }
 
-export function getSavedScenes(): SavedScene[] {
-  try {
-    return JSON.parse(localStorage.getItem(SCENES_KEY) || '[]');
-  } catch { return []; }
+function getCachedScenes(): SavedScene[] {
+  try { return JSON.parse(localStorage.getItem(SCENES_KEY) || '[]'); } catch { return []; }
 }
 
-export function saveScene(name: string): SavedScene {
+export async function getSavedScenes(): Promise<SavedScene[]> {
+  try {
+    const res = await fetch(`${API_BASE}/studio3d`, { credentials: 'include' });
+    if (!res.ok) return getCachedScenes();
+    const data = await res.json();
+    const scenes: SavedScene[] = (data.scenes || []).map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      savedAt: new Date(s.updatedAt || s.createdAt).getTime(),
+      config: s.config || {},
+    }));
+    localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+    return scenes;
+  } catch {
+    return getCachedScenes();
+  }
+}
+
+export async function saveScene(name: string): Promise<SavedScene | null> {
   const state = useStudio3DStore.getState();
   const exclude = new Set(['_cameraControlsRef', '_cameraInfo', 'panelVisible', 'activeTab', 'isLoading', 'isExporting', 'resetKey']);
   const config: Record<string, any> = {};
@@ -709,16 +839,67 @@ export function saveScene(name: string): SavedScene {
   config.shaderType = state.shaderType;
   config.shaderValues = state.shaderValues;
 
-  const scene: SavedScene = { id: crypto.randomUUID(), name, savedAt: Date.now(), config };
-  const scenes = getSavedScenes();
-  scenes.unshift(scene);
-  if (scenes.length > 50) scenes.length = 50;
-  localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
-  return scene;
+  try {
+    const res = await fetch(`${API_BASE}/studio3d`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        config,
+        svgData: state.svgData || undefined,
+        inputMode: state.inputMode,
+        text: state.text || undefined,
+        font: state.font || undefined,
+      }),
+    });
+    if (!res.ok) throw new Error('save failed');
+    const data = await res.json();
+    const scene: SavedScene = {
+      id: data.scene.id,
+      name: data.scene.name,
+      savedAt: new Date(data.scene.createdAt).getTime(),
+      config,
+    };
+    const scenes = getCachedScenes();
+    scenes.unshift(scene);
+    if (scenes.length > 50) scenes.length = 50;
+    localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+    return scene;
+  } catch {
+    // Fallback to localStorage only
+    const scene: SavedScene = { id: crypto.randomUUID(), name, savedAt: Date.now(), config };
+    const scenes = getCachedScenes();
+    scenes.unshift(scene);
+    if (scenes.length > 50) scenes.length = 50;
+    localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+    return scene;
+  }
 }
 
-export function loadScene(id: string) {
-  const scene = getSavedScenes().find(s => s.id === id);
+export async function loadScene(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/studio3d/${id}`, { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.scene?.config) {
+        useStudio3DStore.getState().applyConfig(data.scene.config);
+        if (data.scene.config.shaderEnabled !== undefined) {
+          useStudio3DStore.setState({
+            shaderEnabled: data.scene.config.shaderEnabled,
+            shaderType: data.scene.config.shaderType,
+            shaderValues: data.scene.config.shaderValues || {},
+          });
+        }
+        if (data.scene.svgData) {
+          useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
+        }
+        return true;
+      }
+    }
+  } catch {}
+  // Fallback to localStorage
+  const scene = getCachedScenes().find(s => s.id === id);
   if (!scene) return false;
   useStudio3DStore.getState().applyConfig(scene.config as any);
   if (scene.config.shaderEnabled !== undefined) {
@@ -731,7 +912,11 @@ export function loadScene(id: string) {
   return true;
 }
 
-export function deleteScene(id: string) {
-  const scenes = getSavedScenes().filter(s => s.id !== id);
+export async function deleteScene(id: string): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/studio3d/${id}`, { method: 'DELETE', credentials: 'include' });
+  } catch {}
+  // Always clean local cache too
+  const scenes = getCachedScenes().filter(s => s.id !== id);
   localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
 }

@@ -155,10 +155,13 @@ export function SmoothControls({
 }: SmoothControlsProps) {
   const { gl, camera } = useThree();
   const isDragging = useRef(false);
+  const isPanning = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
   const baseRotation = useRef({ x: rotationX, y: rotationY });
   const targetRotation = useRef({ x: rotationX, y: rotationY });
   const targetZoom = useRef(zoom);
+  const panOffset = useRef({ x: 0, y: 0 });
+  const targetPan = useRef({ x: 0, y: 0 });
   const velocity = useRef({ x: 0, y: 0 });
   const cursorOffset = useRef({ x: 0, y: 0 });
   const lastInteraction = useRef(performance.now());
@@ -179,6 +182,7 @@ export function SmoothControls({
     baseRotation.current = { x: rotationX, y: rotationY };
     targetRotation.current = { x: rotationX, y: rotationY };
     velocity.current = { x: 0, y: 0 };
+    targetPan.current = { x: 0, y: 0 };
   }, [rotationX, rotationY, resetKey]);
 
   useEffect(() => { targetZoom.current = zoom; }, [zoom]);
@@ -208,6 +212,8 @@ export function SmoothControls({
       cursorOffset.current.x += (0 - cursorOffset.current.x) * resetDamping;
       cursorOffset.current.y += (0 - cursorOffset.current.y) * resetDamping;
       targetZoom.current += (zoom - targetZoom.current) * resetDamping;
+      targetPan.current.x += (0 - targetPan.current.x) * resetDamping;
+      targetPan.current.y += (0 - targetPan.current.y) * resetDamping;
     }
 
     targetRotation.current.x = baseRotation.current.x + (cursorOrbit ? cursorOffset.current.x : 0);
@@ -222,6 +228,11 @@ export function SmoothControls({
       const responsiveFactor = aspect < 1 ? 1 / aspect : 1;
       camera.position.z += (targetZoom.current * responsiveFactor - camera.position.z) * damping;
     }
+
+    panOffset.current.x += (targetPan.current.x - panOffset.current.x) * damping;
+    panOffset.current.y += (targetPan.current.y - panOffset.current.y) * damping;
+    camera.position.x = panOffset.current.x;
+    camera.position.y = panOffset.current.y;
   });
 
   useEffect(() => {
@@ -254,13 +265,27 @@ export function SmoothControls({
     const activeTouches = new Set<number>();
     const isPinching = () => activeTouches.size >= 2;
 
+    const setCursor = (c: string) => { canvas.style.cursor = c; };
+    if (draggable) setCursor('grab');
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift' && !isDragging.current) setCursor('move');
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift' && !isDragging.current) setCursor('grab');
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+
     const onPointerDown = (e: PointerEvent) => {
       activeTouches.add(e.pointerId);
       if (!draggable || isPinching()) return;
       isDragging.current = true;
+      isPanning.current = e.shiftKey || e.button === 1;
       lastPos.current = { x: e.clientX, y: e.clientY };
       velocity.current = { x: 0, y: 0 };
       canvas.setPointerCapture(e.pointerId);
+      setCursor(isPanning.current ? 'move' : 'grabbing');
       if (resetOnIdle) markActive();
     };
     const onPointerMove = (e: PointerEvent) => {
@@ -268,17 +293,26 @@ export function SmoothControls({
       const dx = e.clientX - lastPos.current.x;
       const dy = e.clientY - lastPos.current.y;
       lastPos.current = { x: e.clientX, y: e.clientY };
-      const sensitivity = 0.01;
-      baseRotation.current.x += dy * sensitivity;
-      baseRotation.current.y += dx * sensitivity;
-      velocity.current = { x: dy * sensitivity, y: dx * sensitivity };
+      if (isPanning.current || e.shiftKey) {
+        if (!isPanning.current) { isPanning.current = true; setCursor('move'); }
+        const panSensitivity = 0.01 * (camera.position.z / 8);
+        targetPan.current.x -= dx * panSensitivity;
+        targetPan.current.y += dy * panSensitivity;
+      } else {
+        const sensitivity = 0.01;
+        baseRotation.current.x += dy * sensitivity;
+        baseRotation.current.y += dx * sensitivity;
+        velocity.current = { x: dy * sensitivity, y: dx * sensitivity };
+      }
     };
     const onPointerUp = (e: PointerEvent) => {
       activeTouches.delete(e.pointerId);
       if (!isDragging.current) return;
       if (activeTouches.size > 0) velocity.current = { x: 0, y: 0 };
       isDragging.current = false;
+      isPanning.current = false;
       canvas.releasePointerCapture(e.pointerId);
+      setCursor(e.shiftKey ? 'move' : 'grab');
       if (resetOnIdle) markActive();
     };
     const onWheel = (e: WheelEvent) => {
@@ -310,9 +344,11 @@ export function SmoothControls({
       }
     };
 
+    const onContextMenu = (e: MouseEvent) => e.preventDefault();
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('contextmenu', onContextMenu);
     if (scrollZoom) {
       canvas.addEventListener('wheel', onWheel, { passive: false });
       canvas.addEventListener('touchstart', onTouchStart, { passive: false });
@@ -322,6 +358,10 @@ export function SmoothControls({
       canvas.removeEventListener('pointerdown', onPointerDown);
       canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('contextmenu', onContextMenu);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      canvas.style.cursor = '';
       canvas.removeEventListener('wheel', onWheel);
       canvas.removeEventListener('touchstart', onTouchStart);
       canvas.removeEventListener('touchmove', onTouchMove);

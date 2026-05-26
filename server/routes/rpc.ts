@@ -8,6 +8,7 @@
 import express from 'express';
 import type { Envelope, OpName, Result, TelemetryEntry } from '../../shared/protocol.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { logger } from '../lib/logger.js';
 import { resolveBrandGuideline } from '../lib/brandResolver.js';
 import { buildBrandContextWithKnowledge, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
@@ -33,7 +34,7 @@ const handlers: Partial<Record<OpName, Handler>> = {
       }
     }
 
-    const full = `${brandPreamble}${p.prompt}`;
+    const full = `${brandPreamble}${sanitizeForPrompt(p.prompt, 5000)}`;
     if (userId) await chargeCredits(userId, 1);
     const result = await improvePrompt(full);
     return { text: result.improvedPrompt };

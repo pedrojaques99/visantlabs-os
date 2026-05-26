@@ -1,13 +1,15 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { ContactShadows, Environment, Stats, MeshReflectorMaterial } from '@react-three/drei';
+import { ContactShadows, Environment, Stats, MeshReflectorMaterial, AdaptiveDpr, AdaptiveEvents, PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
-import { useStudio3DStore, ENVIRONMENT_PRESETS, type ToneMappingType } from '@/stores/studio3dStore';
+import { useStudio3DStore, ENVIRONMENT_PRESETS, RENDER_QUALITY_CONFIG, type ToneMappingType } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
-import { EffectComposer, Bloom, DepthOfField, Vignette } from '@react-three/postprocessing';
+import { EffectComposer, Bloom, DepthOfField, Vignette, ChromaticAberration, Noise, N8AO, HueSaturation, BrightnessContrast } from '@react-three/postprocessing';
+import { BlendFunction } from 'postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
 import { CameraBridge } from './CameraBridge';
 import { ExtrudedSVG } from './engine/ExtrudedSVG';
+import { ImportedModel } from './engine/ImportedModel';
 import { PhysicsFallSimulation } from './engine/PhysicsFallSimulation';
 import { IntroAnimation, LoopAnimation, SmoothControls } from './engine/controls';
 import { resolveMaterial } from './engine/materials';
@@ -29,6 +31,10 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   bevelEnabled: s.bevelEnabled,
   bevelThickness: s.bevelThickness,
   bevelSize: s.bevelSize,
+  objectScale: s.objectScale,
+  renderQuality: s.renderQuality,
+  fov: s.fov,
+  hdriBackground: s.hdriBackground,
   color: s.color,
   material: s.material,
   metalness: s.metalness,
@@ -66,6 +72,21 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   dofBokehScale: s.dofBokehScale,
   vignetteEnabled: s.vignetteEnabled,
   vignetteIntensity: s.vignetteIntensity,
+  ssaoEnabled: s.ssaoEnabled,
+  ssaoIntensity: s.ssaoIntensity,
+  chromaticAberrationEnabled: s.chromaticAberrationEnabled,
+  chromaticAberrationOffset: s.chromaticAberrationOffset,
+  noiseEnabled: s.noiseEnabled,
+  noiseOpacity: s.noiseOpacity,
+  colorGradingEnabled: s.colorGradingEnabled,
+  cgBrightness: s.cgBrightness,
+  cgContrast: s.cgContrast,
+  cgHue: s.cgHue,
+  cgSaturation: s.cgSaturation,
+  normalMapUrl: s.normalMapUrl,
+  roughnessMapUrl: s.roughnessMapUrl,
+  metalnessMapUrl: s.metalnessMapUrl,
+  orthographic: s.orthographic,
   animate: s.animate,
   animateSpeed: s.animateSpeed,
   animateReverse: s.animateReverse,
@@ -79,6 +100,8 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   background: s.background,
   bgType: s.bgType,
   bgGradient: s.bgGradient,
+  inputMode: s.inputMode,
+  modelUrl: s.modelUrl,
   resetKey: s.resetKey,
   shaderEnabled: s.shaderEnabled,
   shaderType: s.shaderType,
@@ -132,6 +155,10 @@ function GradientBackground({ type, gradient }: { type: 'linear' | 'radial'; gra
   );
 }
 
+const prefersReducedMotion = typeof window !== 'undefined'
+  ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  : false;
+
 function SceneContent() {
   const s = useStudio3DStore(useShallow(sceneSelector));
   const meshGroupRef = useRef<THREE.Group>(null);
@@ -184,7 +211,7 @@ function SceneContent() {
         resetKey={s.resetKey}
       />
       <LoopAnimation
-        type={s.animate}
+        type={prefersReducedMotion ? 'none' : s.animate}
         speed={s.animateSpeed}
         reverse={s.animateReverse}
         easing={s.animateEasing}
@@ -197,8 +224,16 @@ function SceneContent() {
       <directionalLight position={s.bounceLightPosition} intensity={s.bounceLightIntensity} />
       <pointLight position={s.pointLightPosition} intensity={s.pointLightIntensity} />
 
-      <group ref={animGroupRef}>
-        {svgString && (
+      <group ref={animGroupRef} scale={s.objectScale}>
+        {s.inputMode === 'model' && s.modelUrl ? (
+          <ImportedModel
+            url={s.modelUrl}
+            groupRef={meshGroupRef}
+            rotationX={s.rotationX}
+            rotationY={s.rotationY}
+            objectScale={1}
+          />
+        ) : svgString && (
           s.animate === 'physicsFall' ? (
              <PhysicsFallSimulation
               key="physics-fall-sim"
@@ -240,6 +275,9 @@ function SceneContent() {
               textureRepeat={s.textureRepeat}
               textureRotation={s.textureRotation}
               textureOpacity={s.textureOpacity}
+              normalMapUrl={s.normalMapUrl || undefined}
+              roughnessMapUrl={s.roughnessMapUrl || undefined}
+              metalnessMapUrl={s.metalnessMapUrl || undefined}
               shapeType={s.shapeType}
             />
           )
@@ -253,7 +291,7 @@ function SceneContent() {
           scale={10}
           blur={2}
           far={4}
-          resolution={s.shadowQuality === 'low' ? 256 : s.shadowQuality === 'high' ? 1024 : 512}
+          resolution={RENDER_QUALITY_CONFIG[s.renderQuality].shadowRes}
         />
       )}
 
@@ -292,7 +330,7 @@ function SceneContent() {
       {(() => {
         const hdriUrl = s.customHdriUrl || ENVIRONMENT_PRESETS.find(p => p.id === s.environment)?.file;
         return hdriUrl ? (
-          <Environment background={false} files={hdriUrl} />
+          <Environment background={s.hdriBackground} files={hdriUrl} />
         ) : (
           <Environment background={false} environmentIntensity={1.5} frames={1}>
             <mesh position={[0, 25, 0]}>
@@ -315,10 +353,15 @@ function SceneContent() {
           settings={shaderSettings}
           halftoneVariant={halftoneVariant}
         />
-      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled) ? (
-        <EffectComposer multisampling={4}>
+      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled || s.ssaoEnabled || s.chromaticAberrationEnabled || s.noiseEnabled || s.colorGradingEnabled) ? (
+        <EffectComposer multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
+          {s.ssaoEnabled && <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />}
           {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}
           {s.dofEnabled && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
+          {s.chromaticAberrationEnabled && <ChromaticAberration offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any} />}
+          {s.noiseEnabled && <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />}
+          {s.colorGradingEnabled && <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />}
+          {s.colorGradingEnabled && <HueSaturation hue={s.cgHue} saturation={s.cgSaturation} />}
           {s.vignetteEnabled && <Vignette darkness={s.vignetteIntensity} offset={0.3} />}
         </EffectComposer>
       ) : null}
@@ -344,6 +387,9 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
     toneMapping: st.toneMapping,
     toneMappingExposure: st.toneMappingExposure,
     showStats: st.showStats,
+    renderQuality: st.renderQuality,
+    fov: st.fov,
+    orthographic: st.orthographic,
   })));
 
   const [sceneHandle, setSceneHandle] = useState<SceneHandle | null>(null);
@@ -353,11 +399,16 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
   return (
     <SceneRefContext.Provider value={sceneHandle}>
       <Canvas
-        key={s.resetKey}
-        camera={{ position: [0, 0, s.zoom], fov: 50 }}
+        key={`${s.resetKey}-${s.orthographic}`}
+        orthographic={s.orthographic}
+        camera={s.orthographic
+          ? { position: [0, 0, s.zoom], zoom: 80 }
+          : { position: [0, 0, s.zoom], fov: s.fov }
+        }
+        dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
         style={{ background: bg, width: '100%', height: '100%' }}
         gl={{
-          antialias: true,
+          antialias: s.renderQuality !== 'performance',
           alpha: true,
           preserveDrawingBuffer: true,
           powerPreference: 'default',
@@ -381,6 +432,9 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
           });
         }}
       >
+        <AdaptiveDpr pixelated />
+        <AdaptiveEvents />
+        <PerformanceMonitor />
         <SceneContent />
         {s.showStats && <Stats className="!absolute !left-2 !top-2" />}
       </Canvas>

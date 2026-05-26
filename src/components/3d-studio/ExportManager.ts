@@ -198,6 +198,65 @@ export async function exportBatchViews(
   downloadBlob(content, `${fileName || '3d-export'}-views.zip`);
 }
 
+export async function exportTurntable(
+  canvas: HTMLCanvasElement,
+  duration: number,
+  fileName: string,
+  onProgress?: (progress: number) => void,
+  shader?: ShaderSettings,
+): Promise<void> {
+  let captureSource = canvas;
+
+  let shaderCanvas: HTMLCanvasElement | undefined;
+  let shaderAnimId: number | undefined;
+  if (shader) {
+    shaderCanvas = document.createElement('canvas');
+    shaderCanvas.width = canvas.width;
+    shaderCanvas.height = canvas.height;
+    const shaderCtx = shaderCanvas.getContext('2d')!;
+    const renderLoop = async () => {
+      try {
+        const processed = await applyShaderToCanvas(canvas, shader);
+        shaderCtx.clearRect(0, 0, shaderCanvas!.width, shaderCanvas!.height);
+        shaderCtx.drawImage(processed, 0, 0);
+      } catch { /* non-fatal */ }
+      shaderAnimId = requestAnimationFrame(renderLoop);
+    };
+    renderLoop();
+    captureSource = shaderCanvas;
+  }
+
+  const stream = captureSource.captureStream(60);
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    ? 'video/webm;codecs=vp9'
+    : 'video/webm';
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
+  const chunks: Blob[] = [];
+  recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+  return new Promise((resolve, reject) => {
+    recorder.onerror = () => {
+      if (shaderAnimId) cancelAnimationFrame(shaderAnimId);
+      reject(new Error('Turntable recording failed'));
+    };
+    recorder.onstop = () => {
+      if (shaderAnimId) cancelAnimationFrame(shaderAnimId);
+      if (chunks.length === 0) { reject(new Error('No frames captured')); return; }
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      downloadBlob(blob, `${fileName || '3d-export'}-turntable.webm`);
+      resolve();
+    };
+    recorder.start(100);
+    const totalMs = duration * 1000;
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      onProgress?.(Math.min(elapsed / totalMs, 1));
+      if (elapsed >= totalMs) { clearInterval(interval); recorder.stop(); }
+    }, 100);
+  });
+}
+
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

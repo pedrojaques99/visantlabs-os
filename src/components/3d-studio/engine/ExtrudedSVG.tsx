@@ -38,6 +38,9 @@ interface ExtrudedSVGProps {
   textureRotation?: number;
   textureOpacity?: number;
   textureOffset?: [number, number];
+  normalMapUrl?: string;
+  roughnessMapUrl?: string;
+  metalnessMapUrl?: string;
   onLoadingChange?: (loading: boolean, progress: number) => void;
   shapeType?: 'standard' | 'coin';
 }
@@ -46,9 +49,13 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
   svgString, depth, smoothness, bevelEnabled = true, bevelThickness = 0.5, bevelSize = 0.5,
   color, materialSettings, rotationX, rotationY, groupRef,
   texture: textureUrl, textureRepeat = 1, textureRotation = 0, textureOpacity = 1, textureOffset = [0, 0],
+  normalMapUrl, roughnessMapUrl, metalnessMapUrl,
   onLoadingChange, shapeType = 'standard',
 }) => {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const [normalMap, setNormalMap] = useState<THREE.Texture | null>(null);
+  const [roughnessMap, setRoughnessMap] = useState<THREE.Texture | null>(null);
+  const [metalnessMap, setMetalnessMap] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
     if (!textureUrl) { setTexture((prev) => { prev?.dispose(); return null; }); return; }
@@ -67,6 +74,45 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       setTexture((prev) => { prev?.dispose(); return null; });
     };
   }, [textureUrl]);
+
+  useEffect(() => {
+    if (!normalMapUrl) { setNormalMap((prev) => { prev?.dispose(); return null; }); return; }
+    const loader = new THREE.TextureLoader();
+    let cancelled = false;
+    loader.load(normalMapUrl, (tex) => {
+      if (cancelled) { tex.dispose(); return; }
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      setNormalMap((prev) => { prev?.dispose(); return tex; });
+    });
+    return () => { cancelled = true; setNormalMap((prev) => { prev?.dispose(); return null; }); };
+  }, [normalMapUrl]);
+
+  useEffect(() => {
+    if (!roughnessMapUrl) { setRoughnessMap((prev) => { prev?.dispose(); return null; }); return; }
+    const loader = new THREE.TextureLoader();
+    let cancelled = false;
+    loader.load(roughnessMapUrl, (tex) => {
+      if (cancelled) { tex.dispose(); return; }
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      setRoughnessMap((prev) => { prev?.dispose(); return tex; });
+    });
+    return () => { cancelled = true; setRoughnessMap((prev) => { prev?.dispose(); return null; }); };
+  }, [roughnessMapUrl]);
+
+  useEffect(() => {
+    if (!metalnessMapUrl) { setMetalnessMap((prev) => { prev?.dispose(); return null; }); return; }
+    const loader = new THREE.TextureLoader();
+    let cancelled = false;
+    loader.load(metalnessMapUrl, (tex) => {
+      if (cancelled) { tex.dispose(); return; }
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      setMetalnessMap((prev) => { prev?.dispose(); return tex; });
+    });
+    return () => { cancelled = true; setMetalnessMap((prev) => { prev?.dispose(); return null; }); };
+  }, [metalnessMapUrl]);
 
   useEffect(() => {
     if (!texture) return;
@@ -226,6 +272,9 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
             <meshPhysicalMaterial
               color={baseColor}
               map={texture ?? undefined}
+              normalMap={normalMap ?? undefined}
+              roughnessMap={roughnessMap ?? undefined}
+              metalnessMap={metalnessMap ?? undefined}
               metalness={materialSettings.metalness}
               roughness={wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness}
               transmission={materialSettings.transmission !== undefined ? materialSettings.transmission : transmissionAmount}

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -7,24 +7,19 @@ import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useRisoStore } from '@/stores/risoStore';
 import { RISO_INK_PRESETS, RISO_FULL_PRESETS } from '@/components/riso/RisoRenderer';
 import { hexToRgb } from '@/utils/colorUtils';
-import { ShaderControls } from '@/components/shared/ShaderControls';
 import { SendToButton } from '@/components/shared/SendToButton';
 import {
   ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
-import { Eye, EyeOff, X, ImageIcon, Zap, Loader2, Focus, Download, Grid3X3, Circle, Layers, Palette, Image, SlidersHorizontal } from 'lucide-react';
-import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
+import { Eye, EyeOff, X, ImageIcon, Zap, Loader2, Focus, Download } from 'lucide-react';
 
-const SECTION_NAV: SectionNavItem[] = [
-  { id: 'sec-presets', icon: <Grid3X3 size={14} />, label: 'Presets' },
-  { id: 'sec-halftone', icon: <Circle size={14} />, label: 'Halftone' },
-  { id: 'sec-layers', icon: <Layers size={14} />, label: 'Layers' },
-  { id: 'sec-palettes', icon: <Palette size={14} />, label: 'Ink Palettes' },
-  { id: 'sec-image', icon: <Image size={14} />, label: 'Image & Texture' },
-  { id: 'sec-details', icon: <SlidersHorizontal size={14} />, label: 'Layer Details' },
-  { id: 'sec-post', icon: <SlidersHorizontal size={14} />, label: 'Post-Processing' },
-];
+const TABS = [
+  { id: 'halftone', label: 'Halftone' },
+  { id: 'color', label: 'Color' },
+] as const;
+
+type TabId = typeof TABS[number]['id'];
 
 interface RisoControlsProps {
   onExport: () => void;
@@ -34,6 +29,7 @@ interface RisoControlsProps {
 
 export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport, onAiEnhance, isAiProcessing }) => {
   const store = useRisoStore();
+  const [activeTab, setActiveTab] = useState<TabId>('halftone');
 
   const update = useCallback(<K extends string>(key: K, value: any) => {
     store.updateSetting(key as any, value);
@@ -69,9 +65,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
   }, [store]);
 
   return (
-    <ToolPanel className="flex-row">
-      <SectionNavSidebar items={SECTION_NAV} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <ToolPanel>
       {/* Image header */}
       <ToolPanelHeader>
         {store.imageUrl ? (
@@ -95,141 +89,155 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
         )}
       </ToolPanelHeader>
 
+      {/* Tab bar */}
+      <div className="shrink-0 flex border-b border-neutral-800/50">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              'flex-1 py-2 text-[10px] font-mono uppercase tracking-widest transition-colors',
+              activeTab === tab.id
+                ? 'text-white border-b border-white'
+                : 'text-neutral-600 hover:text-neutral-400'
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <ToolPanelContent>
-        {/* Presets */}
-        <ToolPanelSection title="PRESETS" id="sec-presets">
-          <ToolPanelGrid>
-            {Object.entries(RISO_FULL_PRESETS).map(([name, preset]) => (
-              <ToolPanelChip key={name} onClick={() => applyFullPreset(name)}>
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-0.5 shrink-0">
-                    {preset.colors.map((c, i) => <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />)}
-                  </div>
-                  <span className="truncate">{name}</span>
-                </div>
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-        </ToolPanelSection>
+        {activeTab === 'halftone' && (
+          <>
+            {/* Presets */}
+            <ToolPanelSection title="PRESETS">
+              <ToolPanelGrid>
+                {Object.entries(RISO_FULL_PRESETS).map(([name, preset]) => (
+                  <ToolPanelChip key={name} onClick={() => applyFullPreset(name)}>
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-0.5 shrink-0">
+                        {preset.colors.map((c, i) => <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />)}
+                      </div>
+                      <span className="truncate">{name}</span>
+                    </div>
+                  </ToolPanelChip>
+                ))}
+              </ToolPanelGrid>
+            </ToolPanelSection>
 
-        {/* Ink count */}
-        <ToolPanelRow label="Ink Layers">
-          <div className="flex gap-1">
-            {[2, 3, 4].map((n) => (
-              <button
-                key={n}
-                aria-label={`Set ink layer count to ${n}`}
-                onClick={() => store.updateSetting('colorCount', n)}
-                className={cn(
-                  'w-8 h-8 rounded-md text-[11px] font-mono transition-all duration-200 border',
-                  store.colorCount === n
-                    ? 'bg-white/10 text-white border-white/20'
-                    : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
-                )}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </ToolPanelRow>
-
-        {/* Halftone */}
-        <ToolPanelSection title="HALFTONE" id="sec-halftone">
-          <NodeSlider label="Frequency" value={frequency} min={15} max={200} step={1} onChange={setFrequency} />
-          <NodeSlider label="Dot Size" value={dotSize} min={0.3} max={1} step={0.01} onChange={setDotSize} />
-          <NodeSlider label="Misregistration" value={misregistration} min={0} max={8} step={0.5} onChange={setMisregistration} formatValue={(v) => `${v}px`} />
-        </ToolPanelSection>
-
-        {/* Layers */}
-        {store.layers.length > 0 && (
-          <ToolPanelSection title="LAYERS" id="sec-layers">
-            <div className="space-y-2">
-              {store.layers.map((layer, i) => (
-                <div key={i} className="flex items-center gap-3 py-1.5">
-                  <input type="color" value={layer.hex} aria-label={`Layer ${i + 1} color`} onChange={(e) => store.updateLayer(i, { hex: e.target.value })} className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0" />
-                  <span className="text-[11px] text-neutral-500 font-mono uppercase flex-1">{layer.hex}</span>
-                  <button aria-label={`Solo layer ${i + 1}`} onClick={() => store.setSoloLayer(i)} className={cn('transition-colors p-1 rounded-md', store.soloLayer === i ? 'text-cyan-400 bg-cyan-400/10' : 'text-neutral-600 hover:text-neutral-300')}>
-                    <Focus size={14} />
+            {/* Ink count */}
+            <ToolPanelRow label="Ink Layers">
+              <div className="flex gap-1">
+                {[2, 3, 4].map((n) => (
+                  <button
+                    key={n}
+                    aria-label={`Set ink layer count to ${n}`}
+                    onClick={() => store.updateSetting('colorCount', n)}
+                    className={cn(
+                      'w-8 h-8 rounded-md text-[11px] font-mono transition-all duration-200 border',
+                      store.colorCount === n
+                        ? 'bg-white/10 text-white border-white/20'
+                        : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
+                    )}
+                  >
+                    {n}
                   </button>
-                  <button aria-label={`Toggle layer ${i + 1} visibility`} onClick={() => store.updateLayer(i, { visible: !layer.visible })} className="text-neutral-500 hover:text-white transition-colors p-1">
-                    {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
-                  </button>
+                ))}
+              </div>
+            </ToolPanelRow>
+
+            {/* Halftone */}
+            <ToolPanelSection title="HALFTONE">
+              <NodeSlider label="Frequency" value={frequency} min={15} max={200} step={1} onChange={setFrequency} />
+              <NodeSlider label="Dot Size" value={dotSize} min={0.3} max={1} step={0.01} onChange={setDotSize} />
+              <NodeSlider label="Misregistration" value={misregistration} min={0} max={8} step={0.5} onChange={setMisregistration} formatValue={(v) => `${v}px`} />
+            </ToolPanelSection>
+
+            {/* Layers */}
+            {store.layers.length > 0 && (
+              <ToolPanelSection title="LAYERS">
+                <div className="space-y-2">
+                  {store.layers.map((layer, i) => (
+                    <div key={i} className="flex items-center gap-3 py-1.5">
+                      <input type="color" value={layer.hex} aria-label={`Layer ${i + 1} color`} onChange={(e) => store.updateLayer(i, { hex: e.target.value })} className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0" />
+                      <span className="text-[11px] text-neutral-500 font-mono uppercase flex-1">{layer.hex}</span>
+                      <button aria-label={`Solo layer ${i + 1}`} onClick={() => store.setSoloLayer(i)} className={cn('transition-colors p-1 rounded-md', store.soloLayer === i ? 'text-cyan-400 bg-cyan-400/10' : 'text-neutral-600 hover:text-neutral-300')}>
+                        <Focus size={14} />
+                      </button>
+                      <button aria-label={`Toggle layer ${i + 1} visibility`} onClick={() => store.updateLayer(i, { visible: !layer.visible })} className="text-neutral-500 hover:text-white transition-colors p-1">
+                        {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </ToolPanelSection>
+              </ToolPanelSection>
+            )}
+          </>
         )}
 
-        {/* Ink Palettes */}
-        <ToolPanelDisclosure label="Ink Palettes" id="sec-palettes">
-          <ToolPanelGrid>
-            {Object.entries(RISO_INK_PRESETS).map(([name, colors]) => (
-              <ToolPanelChip key={name} onClick={() => {
-                const layers = colors.map((hex, i) => ({
-                  color: hexToRgb(hex), hex, visible: true, alpha: 0.85,
-                  angle: i * 22.5, offsetX: [1, -1, 1, -1][i], offsetY: [-1, 1, 1, -1][i],
-                }));
-                store.setLayers(layers);
-              }}>
+        {activeTab === 'color' && (
+          <>
+            {/* Ink Palettes */}
+            <ToolPanelSection title="INK PALETTES">
+              <ToolPanelGrid>
+                {Object.entries(RISO_INK_PRESETS).map(([name, colors]) => (
+                  <ToolPanelChip key={name} onClick={() => {
+                    const layers = colors.map((hex, i) => ({
+                      color: hexToRgb(hex), hex, visible: true, alpha: 0.85,
+                      angle: i * 22.5, offsetX: [1, -1, 1, -1][i], offsetY: [-1, 1, 1, -1][i],
+                    }));
+                    store.setLayers(layers);
+                  }}>
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-0.5 shrink-0">
+                        {colors.map((c, i) => <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />)}
+                      </div>
+                      <span className="truncate">{name}</span>
+                    </div>
+                  </ToolPanelChip>
+                ))}
+              </ToolPanelGrid>
+            </ToolPanelSection>
+
+            {/* Image & Texture */}
+            <ToolPanelSection title="IMAGE & TEXTURE">
+              <NodeSlider label="Contrast" value={contrast} min={0.3} max={2.5} step={0.01} onChange={setContrast} />
+              <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
+              <div className="h-px bg-neutral-800/50 my-1" />
+              <ToolPanelRow label="Paper">
                 <div className="flex items-center gap-2">
-                  <div className="flex gap-0.5 shrink-0">
-                    {colors.map((c, i) => <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />)}
-                  </div>
-                  <span className="truncate">{name}</span>
+                  <input type="color" value={store.paperColor} aria-label="Paper color" onChange={(e) => store.updateSetting('paperColor', e.target.value)} className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
+                  <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
                 </div>
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-        </ToolPanelDisclosure>
+              </ToolPanelRow>
+              <NodeSlider label="Paper Grain" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
+              <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
+              <NodeSlider label="Ink Dropout" value={inkDropout} min={0} max={0.15} step={0.005} onChange={setInkDropout} />
+              <NodeSlider label="Edge Bleed" value={edgeBleed} min={0} max={4} step={0.5} onChange={setEdgeBleed} formatValue={(v) => `${v}px`} />
+            </ToolPanelSection>
 
-        {/* Image & Texture */}
-        <ToolPanelDisclosure label="Image & Texture" id="sec-image">
-          <NodeSlider label="Contrast" value={contrast} min={0.3} max={2.5} step={0.01} onChange={setContrast} />
-          <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
-          <div className="h-px bg-neutral-800/50 my-1" />
-          <ToolPanelRow label="Paper">
-            <div className="flex items-center gap-2">
-              <input type="color" value={store.paperColor} aria-label="Paper color" onChange={(e) => store.updateSetting('paperColor', e.target.value)} className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
-              <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
-            </div>
-          </ToolPanelRow>
-          <NodeSlider label="Paper Grain" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
-          <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
-          <NodeSlider label="Ink Dropout" value={inkDropout} min={0} max={0.15} step={0.005} onChange={setInkDropout} />
-          <NodeSlider label="Edge Bleed" value={edgeBleed} min={0} max={4} step={0.5} onChange={setEdgeBleed} formatValue={(v) => `${v}px`} />
-        </ToolPanelDisclosure>
-
-        {/* Layer Details */}
-        {store.layers.length > 0 && (
-          <ToolPanelDisclosure label="Layer Details" id="sec-details">
-            <div className="space-y-5">
-              {store.layers.map((layer, i) => (
-                <div key={i} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: layer.hex }} />
-                    <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">Layer {i + 1}</span>
-                  </div>
-                  <LayerSlider label="Opacity" value={layer.alpha} min={0} max={1} step={0.01} onChange={(v) => store.updateLayer(i, { alpha: v })} />
-                  <LayerSlider label="Angle" value={layer.angle} min={0} max={90} step={2.5} onChange={(v) => store.updateLayer(i, { angle: v })} formatValue={(v) => `${v}°`} />
-                  <LayerSlider label="Offset X" value={layer.offsetX} min={-5} max={5} step={0.5} onChange={(v) => store.updateLayer(i, { offsetX: v })} formatValue={(v) => `${v}px`} />
-                  <LayerSlider label="Offset Y" value={layer.offsetY} min={-5} max={5} step={0.5} onChange={(v) => store.updateLayer(i, { offsetY: v })} formatValue={(v) => `${v}px`} />
+            {/* Layer Details */}
+            {store.layers.length > 0 && (
+              <ToolPanelDisclosure label="Layer Details">
+                <div className="space-y-5">
+                  {store.layers.map((layer, i) => (
+                    <div key={i} className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: layer.hex }} />
+                        <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">Layer {i + 1}</span>
+                      </div>
+                      <LayerSlider label="Opacity" value={layer.alpha} min={0} max={1} step={0.01} onChange={(v) => store.updateLayer(i, { alpha: v })} />
+                      <LayerSlider label="Angle" value={layer.angle} min={0} max={90} step={2.5} onChange={(v) => store.updateLayer(i, { angle: v })} formatValue={(v) => `${v}°`} />
+                      <LayerSlider label="Offset X" value={layer.offsetX} min={-5} max={5} step={0.5} onChange={(v) => store.updateLayer(i, { offsetX: v })} formatValue={(v) => `${v}px`} />
+                      <LayerSlider label="Offset Y" value={layer.offsetY} min={-5} max={5} step={0.5} onChange={(v) => store.updateLayer(i, { offsetY: v })} formatValue={(v) => `${v}px`} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </ToolPanelDisclosure>
+              </ToolPanelDisclosure>
+            )}
+          </>
         )}
-
-        {/* Post-Processing */}
-        <ToolPanelDisclosure label="Post-Processing" id="sec-post">
-          <ShaderControls
-            enabled={store.shaderEnabled}
-            shaderType={store.shaderType}
-            values={store.shaderValues}
-            onEnabledChange={store.setShaderEnabled}
-            onTypeChange={store.setShaderType}
-            onValueChange={store.setShaderValue}
-          />
-        </ToolPanelDisclosure>
       </ToolPanelContent>
 
       {/* Actions */}
@@ -247,7 +255,6 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
           </Button>
         )}
       </ToolPanelActions>
-      </div>
     </ToolPanel>
   );
 });
