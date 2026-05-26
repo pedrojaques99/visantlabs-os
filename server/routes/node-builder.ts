@@ -8,6 +8,7 @@ import {
 import { prisma } from '../db/prisma.js';
 import type { NodeBuilderLLMResponse, CustomNodeDefinition } from '../../src/types/customNode.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { chargeCredits } from '../lib/credits.js';
 
 const router = Router();
@@ -87,7 +88,7 @@ router.post('/shader-params', authenticate, async (req: AuthRequest, res) => {
     const result = await getAI().models.generateContent({
       model: GEMINI_MODELS.TEXT,
       config: { systemInstruction: SHADER_SELECTOR_SYSTEM_PROMPT },
-      contents: [{ role: 'user', parts: [{ text: `Select shader for: "${description}"` }] }],
+      contents: [{ role: 'user', parts: [{ text: `Select shader for: "${sanitizeForPrompt(description, 500)}"` }] }],
     });
 
     const cleaned = (result.text ?? '').replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();

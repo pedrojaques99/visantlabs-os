@@ -4,6 +4,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { chatWithLLM } from '../services/llmRouter.js';
 import { env } from '../config/env.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { knowledgeService } from '../services/knowledgeService.js';
 import { buildBrandContextCached } from '../lib/brandContextBuilder.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
@@ -55,8 +56,8 @@ REPERTÓRIO METODOLÓGICO (use para auditar e gerar com profundidade):
 - Manifesto: Provocação → Tensão → Promessa. Frase final vira candidata a slogan.
 - Cascata: cada etapa alimenta a próxima. Pular etapas enfraquece a marca.
 
-${brandContext ? `CONTEXTO DE MARCA:\n${brandContext}\n` : ''}
-${ragContext ? `DOCUMENTOS INGERIDOS:\n${ragContext}\n` : ''}`;
+${brandContext ? `CONTEXTO DE MARCA:\n${sanitizeForPrompt(brandContext, 10000)}\n` : ''}
+${ragContext ? `DOCUMENTOS INGERIDOS:\n${sanitizeForPrompt(ragContext, 10000)}\n` : ''}`;
 }
 
 async function getSession(sessionId: string, userId: string): Promise<ChatSession | null> {

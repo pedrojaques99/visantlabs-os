@@ -4,6 +4,7 @@ import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { redisClient, isRedisHealthy } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
 
@@ -1006,11 +1007,11 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
       if (g) brandContext = buildBrandContextForImageGen(g as any);
     }
 
-    const styleHint = style ? `Style preference: ${style}.` : '';
+    const styleHint = style ? `Style preference: ${sanitizeForPrompt(style, 200)}.` : '';
     const prompt = `${brandContext ? `Brand context:\n${brandContext}\n\n` : ''}You are a professional brand naming strategist.
 Generate exactly ${count} creative and memorable name suggestions for the following brief.
 ${styleHint}
-Brief: ${brief}
+Brief: ${sanitizeForPrompt(brief, 2000)}
 
 Rules:
 - Mix different naming approaches: invented words, compound words, metaphors, real words repurposed

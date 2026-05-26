@@ -10,6 +10,7 @@ import { GEMINI_MODELS, isAdvancedModel, getMaxRefImages } from '../../src/const
 import type { FigmaOperation, SerializedContext, EnrichedContext } from '../../src/lib/figma-types.js';
 import { preprocessPrompt, type LinearIssue } from '../utils/linearParser.js';
 import { safeFetch } from '../utils/securityValidation.js';
+import { sanitizeForPrompt, sanitizePromptArray } from '../utils/promptSanitize.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
 import type { AvailableTags } from './tagService.js';
 import { distillBrandGuideline, type BrandBrief } from '../lib/mockup/brandDistiller.js';
@@ -1063,7 +1064,7 @@ export const changeObjectInMockup = async (
   apiKey?: string
 ): Promise<string> => {
   return withRetry(async () => {
-    const prompt = `Keep the same background, environment, lighting, and camera angle, but replace the main object in the image with ${newObject}. The new object should be placed in the same position and orientation as the original object, maintaining the same perspective and composition. The environment, background, and all other elements should remain exactly the same.`;
+    const prompt = `Keep the same background, environment, lighting, and camera angle, but replace the main object in the image with ${sanitizeForPrompt(newObject, 500)}. The new object should be placed in the same position and orientation as the original object, maintaining the same perspective and composition. The environment, background, and all other elements should remain exactly the same.`;
 
     const base64Data = await resolveImageBase64(baseImage);
 
@@ -1116,7 +1117,7 @@ export const applyThemeToMockup = async (
   apiKey?: string
 ): Promise<string> => {
   return withRetry(async () => {
-    const themesText = themes.join(', ');
+    const themesText = sanitizePromptArray(themes, 200).join(', ');
     const prompt = `Apply ${themesText} theme to the scene while keeping the same composition, camera angle, and main object. Transform the background, lighting, colors, and environmental elements to reflect the ${themesText} theme, but maintain the exact same perspective, object placement, and overall structure of the original image.`;
 
     const base64Data = await resolveImageBase64(baseImage);
