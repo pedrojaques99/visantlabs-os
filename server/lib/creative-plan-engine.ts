@@ -92,7 +92,8 @@ export class PlanValidationError extends Error {
   }
 }
 
-export { sanitizeForPrompt } from '../utils/promptSanitize';
+import { sanitizeForPrompt } from '../utils/promptSanitize';
+export { sanitizeForPrompt };
 
 interface PlanInput {
   prompt: string;
