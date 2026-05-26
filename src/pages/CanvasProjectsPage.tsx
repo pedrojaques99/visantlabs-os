@@ -20,6 +20,7 @@ import { type CanvasWorkflow } from '../services/workflowApi';
 import { validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatDateShort } from '@/utils/localeUtils';
 
 // Helper function to get project thumbnail
 const getProjectThumbnail = (project: CanvasProject): string | null => {
@@ -265,14 +266,7 @@ export const CanvasProjectsPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateString: string) => formatDateShort(dateString);
 
   const filteredProjects = useMemo(() => {
     let result = [...projects];

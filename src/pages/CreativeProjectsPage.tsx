@@ -13,6 +13,7 @@ import { useLayout } from '@/hooks/useLayout';
 import { useCreativeProjects, useDeleteCreativeProject, useUpdateCreativeProject } from '@/hooks/queries/useCreativeProjects';
 import { useCreativeStore } from '@/components/creative/store/creativeStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { formatDateShort } from '@/utils/localeUtils';
 
 /**
  * Grid of the user's Creative Studio projects.
@@ -62,12 +63,7 @@ export const CreativeProjectsPage: React.FC = () => {
     });
   }, [projects, searchQuery]);
 
-  const formatDate = (s: string) =>
-    new Date(s).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+  const formatDate = (s: string) => formatDateShort(s);
 
   const handleOpen = (id: string) => navigate(`/create?project=${id}`);
 

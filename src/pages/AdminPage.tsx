@@ -26,6 +26,7 @@ import { getImagePricing } from '@/utils/pricing';
 import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../components/ui/MicroTitle';
+import { formatDate } from '@/utils/localeUtils';
 
 
 interface AdminUser {
@@ -858,7 +859,7 @@ export const AdminPage: React.FC = () => {
     {
       accessorKey: 'createdAt',
       header: t('admin.createdAt'),
-      cell: ({ row }) => <span className="text-xs font-mono text-neutral-400 text-center block">{new Date(row.original.createdAt).toLocaleDateString()}</span>,
+      cell: ({ row }) => <span className="text-xs font-mono text-neutral-400 text-center block">{formatDate(row.original.createdAt)}</span>,
       size: 120,
       enableSorting: true,
     },
@@ -2525,7 +2526,7 @@ export const AdminPage: React.FC = () => {
                                         )) : '—'}
                                       </TableCell>
                                       <TableCell className="text-xs font-mono text-neutral-500">
-                                        {r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-BR') : '—'}
+                                        {r.createdAt ? formatDate(r.createdAt) : '—'}
                                       </TableCell>
                                     </TableRow>
                                   ))}

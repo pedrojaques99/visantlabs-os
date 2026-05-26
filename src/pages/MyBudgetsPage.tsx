@@ -22,6 +22,7 @@ import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit, Layout } from 'lucide-r
 import type { CustomPdfPreset } from '../types/types';
 import { SEO } from '../components/SEO';
 import { Button } from '@/components/ui/button'
+import { formatDateShort } from '@/utils/localeUtils';
 
 export const MyBudgetsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -140,14 +141,7 @@ export const MyBudgetsPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateString: string) => formatDateShort(dateString);
 
   const truncateText = (text: string, maxLength: number = 120) => {
     if (!text) return '';

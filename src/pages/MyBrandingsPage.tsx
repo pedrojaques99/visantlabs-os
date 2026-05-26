@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { FileText, Calendar, Eye, Trash2, FilePenLine } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { Button } from '@/components/ui/button'
+import { formatDateShort } from '@/utils/localeUtils';
 
 export const MyBrandingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -90,14 +91,7 @@ export const MyBrandingsPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (dateString: string) => formatDateShort(dateString);
 
   const truncateText = (text: string, maxLength: number = 120) => {
     if (text.length <= maxLength) return text;

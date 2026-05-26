@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { API_BASE } from '@/config/api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { copyToClipboard } from '@/utils/clipboard';
+import { formatDateShort } from '@/utils/localeUtils';
 
 interface ApiKeyRaw {
   id: string;
@@ -197,11 +198,7 @@ export const ApiKeysPage: React.FC = () => {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateShort(dateStr, 'en-US');
   };
 
   const scopeColor = (scope: string) => {
