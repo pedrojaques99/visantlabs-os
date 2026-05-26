@@ -254,10 +254,11 @@ export const RENDER_QUALITY_CONFIG = {
 interface Studio3DState {
   // Input
   svgData: string;
-  inputMode: 'svg' | 'text';
+  inputMode: 'svg' | 'text' | 'model';
   text: string;
   font: string;
   fileName: string;
+  modelUrl: string;
 
   // Geometry
   shapeType: 'standard' | 'coin';
@@ -383,7 +384,8 @@ interface Studio3DState {
   setSvgData: (svg: string, fileName?: string) => void;
   setText: (text: string) => void;
   setFont: (font: string) => void;
-  setInputMode: (mode: 'svg' | 'text') => void;
+  setInputMode: (mode: 'svg' | 'text' | 'model') => void;
+  setModelUrl: (url: string, fileName?: string) => void;
   setShapeType: (v: 'standard' | 'coin') => void;
   setDepth: (v: number) => void;
   setObjectScale: (v: number) => void;
@@ -484,6 +486,7 @@ const INITIAL_STATE = {
   text: '',
   font: 'DM Sans',
   fileName: '',
+  modelUrl: '',
   shapeType: 'standard' as const,
   depth: 0.9,
   smoothness: 0.2,
@@ -585,7 +588,8 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setSvgData: (svg: string, fileName?: string) => set({ svgData: svg, fileName: fileName || '', inputMode: 'svg' }),
   setText: (text) => set({ text }),
   setFont: (font) => set({ font }),
-  setInputMode: (mode) => set({ inputMode: mode }),
+  setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
+  setModelUrl: (url, fileName) => set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
   setShapeType: (shapeType) => set({ shapeType }),
   setDepth: (depth) => set({ depth }),
   setObjectScale: (objectScale) => set({ objectScale }),
@@ -788,7 +792,11 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   },
 ));
 
-// Scene save/load (localStorage)
+// Scene save/load (cloud API with localStorage fallback)
+const API_BASE = (() => {
+  try { return (import.meta as any).env?.VITE_API_URL || '/api'; } catch { return '/api'; }
+})();
+
 const SCENES_KEY = 'visant-3d-scenes';
 
 export interface SavedScene {
@@ -798,13 +806,29 @@ export interface SavedScene {
   config: Record<string, any>;
 }
 
-export function getSavedScenes(): SavedScene[] {
-  try {
-    return JSON.parse(localStorage.getItem(SCENES_KEY) || '[]');
-  } catch { return []; }
+function getCachedScenes(): SavedScene[] {
+  try { return JSON.parse(localStorage.getItem(SCENES_KEY) || '[]'); } catch { return []; }
 }
 
-export function saveScene(name: string): SavedScene {
+export async function getSavedScenes(): Promise<SavedScene[]> {
+  try {
+    const res = await fetch(`${API_BASE}/studio3d`, { credentials: 'include' });
+    if (!res.ok) return getCachedScenes();
+    const data = await res.json();
+    const scenes: SavedScene[] = (data.scenes || []).map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      savedAt: new Date(s.updatedAt || s.createdAt).getTime(),
+      config: s.config || {},
+    }));
+    localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+    return scenes;
+  } catch {
+    return getCachedScenes();
+  }
+}
+
+export async function saveScene(name: string): Promise<SavedScene | null> {
   const state = useStudio3DStore.getState();
   const exclude = new Set(['_cameraControlsRef', '_cameraInfo', 'panelVisible', 'activeTab', 'isLoading', 'isExporting', 'resetKey']);
   const config: Record<string, any> = {};
@@ -815,16 +839,67 @@ export function saveScene(name: string): SavedScene {
   config.shaderType = state.shaderType;
   config.shaderValues = state.shaderValues;
 
-  const scene: SavedScene = { id: crypto.randomUUID(), name, savedAt: Date.now(), config };
-  const scenes = getSavedScenes();
-  scenes.unshift(scene);
-  if (scenes.length > 50) scenes.length = 50;
-  localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
-  return scene;
+  try {
+    const res = await fetch(`${API_BASE}/studio3d`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        config,
+        svgData: state.svgData || undefined,
+        inputMode: state.inputMode,
+        text: state.text || undefined,
+        font: state.font || undefined,
+      }),
+    });
+    if (!res.ok) throw new Error('save failed');
+    const data = await res.json();
+    const scene: SavedScene = {
+      id: data.scene.id,
+      name: data.scene.name,
+      savedAt: new Date(data.scene.createdAt).getTime(),
+      config,
+    };
+    const scenes = getCachedScenes();
+    scenes.unshift(scene);
+    if (scenes.length > 50) scenes.length = 50;
+    localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+    return scene;
+  } catch {
+    // Fallback to localStorage only
+    const scene: SavedScene = { id: crypto.randomUUID(), name, savedAt: Date.now(), config };
+    const scenes = getCachedScenes();
+    scenes.unshift(scene);
+    if (scenes.length > 50) scenes.length = 50;
+    localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+    return scene;
+  }
 }
 
-export function loadScene(id: string) {
-  const scene = getSavedScenes().find(s => s.id === id);
+export async function loadScene(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/studio3d/${id}`, { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.scene?.config) {
+        useStudio3DStore.getState().applyConfig(data.scene.config);
+        if (data.scene.config.shaderEnabled !== undefined) {
+          useStudio3DStore.setState({
+            shaderEnabled: data.scene.config.shaderEnabled,
+            shaderType: data.scene.config.shaderType,
+            shaderValues: data.scene.config.shaderValues || {},
+          });
+        }
+        if (data.scene.svgData) {
+          useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
+        }
+        return true;
+      }
+    }
+  } catch {}
+  // Fallback to localStorage
+  const scene = getCachedScenes().find(s => s.id === id);
   if (!scene) return false;
   useStudio3DStore.getState().applyConfig(scene.config as any);
   if (scene.config.shaderEnabled !== undefined) {
@@ -837,7 +912,11 @@ export function loadScene(id: string) {
   return true;
 }
 
-export function deleteScene(id: string) {
-  const scenes = getSavedScenes().filter(s => s.id !== id);
+export async function deleteScene(id: string): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/studio3d/${id}`, { method: 'DELETE', credentials: 'include' });
+  } catch {}
+  // Always clean local cache too
+  const scenes = getCachedScenes().filter(s => s.id !== id);
   localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
 }

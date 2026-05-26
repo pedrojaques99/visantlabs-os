@@ -9,6 +9,7 @@ import { BlendFunction } from 'postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
 import { CameraBridge } from './CameraBridge';
 import { ExtrudedSVG } from './engine/ExtrudedSVG';
+import { ImportedModel } from './engine/ImportedModel';
 import { PhysicsFallSimulation } from './engine/PhysicsFallSimulation';
 import { IntroAnimation, LoopAnimation, SmoothControls } from './engine/controls';
 import { resolveMaterial } from './engine/materials';
@@ -99,6 +100,8 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   background: s.background,
   bgType: s.bgType,
   bgGradient: s.bgGradient,
+  inputMode: s.inputMode,
+  modelUrl: s.modelUrl,
   resetKey: s.resetKey,
   shaderEnabled: s.shaderEnabled,
   shaderType: s.shaderType,
@@ -222,7 +225,15 @@ function SceneContent() {
       <pointLight position={s.pointLightPosition} intensity={s.pointLightIntensity} />
 
       <group ref={animGroupRef} scale={s.objectScale}>
-        {svgString && (
+        {s.inputMode === 'model' && s.modelUrl ? (
+          <ImportedModel
+            url={s.modelUrl}
+            groupRef={meshGroupRef}
+            rotationX={s.rotationX}
+            rotationY={s.rotationY}
+            objectScale={1}
+          />
+        ) : svgString && (
           s.animate === 'physicsFall' ? (
              <PhysicsFallSimulation
               key="physics-fall-sim"

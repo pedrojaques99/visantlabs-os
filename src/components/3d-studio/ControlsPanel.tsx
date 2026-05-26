@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useMemo } from 'react';
+import React, { useCallback, useState, useRef, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -26,7 +26,7 @@ import {
 } from '@/stores/studio3dStore';
 import {
   Upload, FileText, Type, ChevronRight, Diamond, Download, Save, FolderOpen, Trash2,
-  Sun, Globe, Camera, Palette, Play, Sparkles, Zap, Film, Shuffle, Layers, SlidersHorizontal,
+  Sun, Globe, Camera, Palette, Play, Sparkles, Zap, Film, Shuffle, Layers, SlidersHorizontal, Box,
 } from 'lucide-react';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import {
@@ -62,6 +62,16 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [showRandomizeConfirm, setShowRandomizeConfirm] = useState(false);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const modelInputRef = useRef<HTMLInputElement>(null);
+
+  const handleModelUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    store.setModelUrl(url, file.name);
+    toast.success(t('studio3d.input.loaded', { fileName: file.name }));
+    e.target.value = '';
+  }, [store, t]);
 
   const [depth, setDepth] = useDebouncedSlider(store.depth, store.setDepth);
   const [objectScale, setObjectScale] = useDebouncedSlider(store.objectScale, store.setObjectScale);
@@ -106,7 +116,16 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
   const [cgHue, setCgHue] = useDebouncedSlider(store.cgHue, store.setCgHue);
   const [cgSaturation, setCgSaturation] = useDebouncedSlider(store.cgSaturation, store.setCgSaturation);
   const hdriInputRef = useRef<HTMLInputElement>(null);
-  const [savedScenes, setSavedScenes] = useState<SavedScene[]>(() => getSavedScenes());
+  const [savedScenes, setSavedScenes] = useState<SavedScene[]>([]);
+  const [scenesLoading, setScenesLoading] = useState(false);
+
+  useEffect(() => {
+    setScenesLoading(true);
+    getSavedScenes().then(scenes => {
+      setSavedScenes(scenes);
+      setScenesLoading(false);
+    });
+  }, []);
   const [sceneName, setSceneName] = useState('');
 
   const processFile = useCallback(async (file: File) => {
@@ -189,9 +208,26 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             <ToolPanelChip active={store.inputMode === 'text'} onClick={() => store.setInputMode('text')}>
               <span className="flex items-center justify-center gap-1"><Type size={12} /> {t('studio3d.input.text')}</span>
             </ToolPanelChip>
+            <ToolPanelChip active={store.inputMode === 'model'} onClick={() => store.setInputMode('model')}>
+              <span className="flex items-center justify-center gap-1"><Box size={12} /> 3D Model</span>
+            </ToolPanelChip>
           </ToolPanelGrid>
 
-          {store.inputMode === 'svg' ? (
+          {store.inputMode === 'model' ? (
+            <div
+              onClick={() => modelInputRef.current?.click()}
+              className={cn(
+                'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-all',
+                'border-white/10 hover:border-white/20'
+              )}
+            >
+              <Upload size={20} className="text-neutral-500" />
+              <span className="text-[10px] uppercase tracking-wider text-neutral-500 text-center">
+                {store.fileName || 'Drop GLB / GLTF'}
+              </span>
+              <input ref={modelInputRef} type="file" accept=".glb,.gltf" onChange={handleModelUpload} className="hidden" aria-label="Upload GLB or GLTF model" />
+            </div>
+          ) : store.inputMode === 'svg' ? (
             <div
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
@@ -249,24 +285,32 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                 className="h-7 px-2 text-[10px]"
                 disabled={!sceneName.trim()}
                 aria-label="Save scene"
-                onClick={() => {
-                  saveScene(sceneName.trim());
-                  setSavedScenes(getSavedScenes());
-                  setSceneName('');
-                  toast.success('Scene saved');
+                onClick={async () => {
+                  const scene = await saveScene(sceneName.trim());
+                  if (scene) {
+                    setSavedScenes(await getSavedScenes());
+                    setSceneName('');
+                    toast.success('Scene saved');
+                  } else {
+                    toast.error('Failed to save scene');
+                  }
                 }}
               >
                 <Save size={12} />
               </Button>
             </div>
+            {scenesLoading && (
+              <div className="text-[10px] text-neutral-600 text-center py-2">Loading scenes...</div>
+            )}
             {savedScenes.length > 0 && (
               <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
                 {savedScenes.map((scene) => (
                   <div key={scene.id} className="flex items-center gap-1.5 group">
                     <button
-                      onClick={() => {
-                        loadScene(scene.id);
-                        toast.success(`Loaded "${scene.name}"`);
+                      onClick={async () => {
+                        const ok = await loadScene(scene.id);
+                        if (ok) toast.success(`Loaded "${scene.name}"`);
+                        else toast.error('Failed to load scene');
                       }}
                       aria-label="Load scene"
                       className="flex-1 text-left px-2 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors truncate"
@@ -275,9 +319,9 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
                       {scene.name}
                     </button>
                     <button
-                      onClick={() => {
-                        deleteScene(scene.id);
-                        setSavedScenes(getSavedScenes());
+                      onClick={async () => {
+                        await deleteScene(scene.id);
+                        setSavedScenes(await getSavedScenes());
                         toast.success('Scene deleted');
                       }}
                       aria-label="Delete scene"

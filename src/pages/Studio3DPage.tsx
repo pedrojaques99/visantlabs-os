@@ -26,7 +26,8 @@ export const Studio3DPage: React.FC = () => {
   const svgData = store((s) => s.svgData);
   const text = store((s) => s.text);
   const inputMode = store((s) => s.inputMode);
-  const isEmpty = inputMode === 'svg' ? !svgData : !text;
+  const modelUrl = store((s) => s.modelUrl);
+  const isEmpty = inputMode === 'svg' ? !svgData : inputMode === 'text' ? !text : !modelUrl;
 
   const panelVisible = store((s) => s.panelVisible);
   const setPanelVisible = store((s) => s.setPanelVisible);
@@ -163,6 +164,10 @@ export const Studio3DPage: React.FC = () => {
     const s = store.getState();
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
       s.setSvgData(await file.text(), file.name);
+      toast.success(t('studio3d.input.loaded', { fileName: file.name }));
+    } else if (file.name.match(/\.(glb|gltf)$/i)) {
+      const url = URL.createObjectURL(file);
+      s.setModelUrl(url, file.name);
       toast.success(t('studio3d.input.loaded', { fileName: file.name }));
     } else if (file.type.startsWith('image/')) {
       s.setIsLoading(true);
