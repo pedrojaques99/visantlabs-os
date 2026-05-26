@@ -157,7 +157,7 @@ export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<st
   },
 };
 
-const R2_HDRI_BASE = 'https://assets.visantlabs.com/hdri';
+const R2_HDRI_BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/hdri';
 
 export type { ToneMappingType };
 export const TONE_MAPPING_OPTIONS: { id: ToneMappingType; label: string }[] = [

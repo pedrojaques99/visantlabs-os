@@ -60,11 +60,15 @@ export function mergeBrandGuidelines(existing: BrandGuideline, incoming: Partial
   // Strategy: only fill empty
   if (incoming.strategy) {
     merged.strategy = merged.strategy || {}
+    if (!merged.strategy.coreMessage?.product && incoming.strategy.coreMessage) merged.strategy.coreMessage = incoming.strategy.coreMessage
+    if (!merged.strategy.pillars?.length && incoming.strategy.pillars?.length) merged.strategy.pillars = incoming.strategy.pillars
     if (!merged.strategy.manifesto && incoming.strategy.manifesto) merged.strategy.manifesto = incoming.strategy.manifesto
-    if (!merged.strategy.positioning && incoming.strategy.positioning) merged.strategy.positioning = incoming.strategy.positioning
+    if (!merged.strategy.positioning?.length && incoming.strategy.positioning?.length) merged.strategy.positioning = incoming.strategy.positioning
     if (!merged.strategy.archetypes?.length && incoming.strategy.archetypes?.length) merged.strategy.archetypes = incoming.strategy.archetypes
     if (!merged.strategy.personas?.length && incoming.strategy.personas?.length) merged.strategy.personas = incoming.strategy.personas
     if (!merged.strategy.voiceValues?.length && incoming.strategy.voiceValues?.length) merged.strategy.voiceValues = incoming.strategy.voiceValues
+    if (!merged.strategy.marketResearch && incoming.strategy.marketResearch) merged.strategy.marketResearch = incoming.strategy.marketResearch
+    if (!merged.strategy.graphicSystem && incoming.strategy.graphicSystem) merged.strategy.graphicSystem = incoming.strategy.graphicSystem
   }
 
 

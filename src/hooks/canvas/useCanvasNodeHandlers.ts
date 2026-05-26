@@ -5,6 +5,7 @@ import { useCallback, useRef, useEffect } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams, NodeBuilderData, CustomNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData, TextureFilterNodeData, Studio3DNodeData } from '@/types/reactFlow';
 import { useBatchRunnerHandlers } from './handlers/useBatchRunnerHandlers';
+import { useBrandBatchHandlers } from './handlers/useBrandBatchHandlers';
 import type { CustomNodeDefinition, MultiOutputConfig } from '@/types/customNode';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
 import { nodeBuilderApi } from '@/services/nodeBuilderApi';
@@ -762,6 +763,13 @@ export const useCanvasNodeHandlers = (
     handleBatchNodeDataUpdate,
   } = useBatchRunnerHandlers({ nodesRef, edgesRef, updateNodeData });
 
+  // ========== BRAND BATCH HANDLERS ==========
+  const {
+    handleBrandBatchRun,
+    handleBrandBatchCancel,
+    handleBrandBatchNodeDataUpdate,
+  } = useBrandBatchHandlers({ nodesRef, edgesRef, updateNodeData, linkedGuideline });
+
   // ========== DATA NODE HANDLER ==========
   const handleDataNodeDataUpdate = useCallback(
     (nodeId: string, newData: Partial<DataNodeData>) => {
@@ -804,6 +812,9 @@ export const useCanvasNodeHandlers = (
       handleBatchCancel,
       handleBatchReset,
       handleBatchNodeDataUpdate,
+      handleBrandBatchRun,
+      handleBrandBatchCancel,
+      handleBrandBatchNodeDataUpdate,
     };
   }, [
     handleLogoNodeUpload,
@@ -823,6 +834,9 @@ export const useCanvasNodeHandlers = (
     handleBatchCancel,
     handleBatchReset,
     handleBatchNodeDataUpdate,
+    handleBrandBatchRun,
+    handleBrandBatchCancel,
+    handleBrandBatchNodeDataUpdate,
   ]);
 
   // ========== NODE BUILDER + CUSTOM NODE HANDLERS ==========
@@ -1070,6 +1084,9 @@ export const useCanvasNodeHandlers = (
     handleBatchCancel,
     handleBatchReset,
     handleBatchNodeDataUpdate,
+    handleBrandBatchRun,
+    handleBrandBatchCancel,
+    handleBrandBatchNodeDataUpdate,
     handlersRef,
     nodesRef,
     updateNodeData,

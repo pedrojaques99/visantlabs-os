@@ -26,6 +26,7 @@ interface CanvasToolbarProps {
   onAddShader?: () => void;
   onAddTextureFilter?: () => void;
   onAddStudio3D?: () => void;
+  onAddBrandBatch?: () => void;
   onAddColorExtractor?: () => void;
   onAddDirector?: () => void;
   onToggleDrawing?: () => void;
@@ -72,6 +73,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onAddShader,
   onAddTextureFilter,
   onAddStudio3D,
+  onAddBrandBatch,
   onAddColorExtractor,
   onAddDirector,
   onToggleDrawing,
@@ -219,6 +221,14 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       category: 'composition' as const,
     }] : []),
     // Branding tools
+    ...(onAddBrandBatch ? [{
+      id: 'brandBatch',
+      icon: <Layers className="w-4 h-4" />,
+      label: 'Brand Batch',
+      tooltip: 'Batch generate with branding applied to all connected images',
+      onClick: onAddBrandBatch,
+      category: 'branding' as const,
+    }] : []),
     ...(onAddColorExtractor ? [{
       id: 'colorExtractor',
       icon: <Building2 className="w-4 h-4" />,
@@ -479,7 +489,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       style={{
         width: `${EXPANDED_WIDTH}px`,
         height: 'auto',
-        maxHeight: 'calc(100vh - 910px)',
+        maxHeight: 'calc(100vh - 140px)',
         backgroundColor: isLight ? `${toolbarBg}dd` : `${toolbarBg}cc`,
         color: textColors.primary,
       }}

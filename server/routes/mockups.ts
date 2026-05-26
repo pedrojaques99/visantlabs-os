@@ -822,9 +822,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
             const logoReferenceImages: Array<{ base64: string; mimeType: string }> = [];
             for (const logo of sorted.slice(0, 2)) {
               if (!logo.url) continue;
+              if (logo.url.toLowerCase().endsWith('.svg') || logo.url.includes('svg')) continue;
               try {
-                const processed = await processImageInput({ url: logo.url });
-                if (processed) logoReferenceImages.push(processed as any);
+                const processed = await processImageInput({ url: logo.url }) as any;
+                if (processed && processed.mimeType !== 'image/svg+xml') {
+                  logoReferenceImages.push(processed);
+                }
               } catch {
                 // non-critical
               }
@@ -845,9 +848,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
             const mediaReferenceImages: Array<{ base64: string; mimeType: string }> = [];
             for (const media of styleMedia) {
               if (!media.url) continue;
+              if (media.url.toLowerCase().endsWith('.svg') || media.url.includes('svg')) continue;
               try {
-                const processed = await processImageInput({ url: media.url });
-                if (processed) mediaReferenceImages.push(processed as any);
+                const processed = await processImageInput({ url: media.url }) as any;
+                if (processed && processed.mimeType !== 'image/svg+xml') {
+                  mediaReferenceImages.push(processed);
+                }
               } catch {
                 // non-critical
               }

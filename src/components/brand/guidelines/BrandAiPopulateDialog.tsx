@@ -137,21 +137,33 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
   const handleApply = useCallback(async () => {
     if (!patch) return;
 
-    const filtered = { ...patch };
-    for (const ex of excluded) {
-      const [top, sub] = ex.split('.');
-      if (sub && filtered[top]) {
-        const copy = { ...filtered[top] };
-        delete copy[sub];
-        if (Object.keys(copy).length === 0) delete filtered[top];
-        else filtered[top] = copy;
+    // Remove excluded fields from patch
+    const filtered: Record<string, any> = {};
+    for (const [top, val] of Object.entries(patch)) {
+      if (excluded.has(top)) continue;
+      if (['strategy', 'guidelines', 'identity'].includes(top) && typeof val === 'object' && !Array.isArray(val)) {
+        const sub: Record<string, any> = {};
+        for (const [k, v] of Object.entries(val)) {
+          if (!excluded.has(`${top}.${k}`)) sub[k] = v;
+        }
+        if (Object.keys(sub).length > 0) filtered[top] = sub;
       } else {
-        delete filtered[top || ex];
+        filtered[top] = val;
+      }
+    }
+
+    // Deep merge with existing guideline data so PUT doesn't overwrite sibling fields
+    const merged: Record<string, any> = {};
+    for (const [top, val] of Object.entries(filtered)) {
+      if (['strategy', 'guidelines', 'identity'].includes(top) && typeof val === 'object' && !Array.isArray(val)) {
+        merged[top] = { ...(guideline as any)[top], ...val };
+      } else {
+        merged[top] = val;
       }
     }
 
     try {
-      await updateMutation.mutateAsync({ id: guideline.id!, data: filtered });
+      await updateMutation.mutateAsync({ id: guideline.id!, data: merged });
       toast.success('Campos preenchidos com sucesso');
       onSuccess?.();
       onOpenChange(false);
@@ -159,7 +171,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
     } catch (err: any) {
       toast.error(err.message || 'Erro ao aplicar');
     }
-  }, [patch, excluded, guideline.id, updateMutation, onSuccess, onOpenChange]);
+  }, [patch, excluded, guideline, updateMutation, onSuccess, onOpenChange]);
 
   const toggleExclude = useCallback((key: string) => {
     setExcluded(prev => {

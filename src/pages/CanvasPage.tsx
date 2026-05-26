@@ -36,6 +36,7 @@ import { CustomNode } from '../components/reactflow/CustomNode';
 import { VariablesNode } from '../components/reactflow/VariablesNode';
 import { DataNode } from '../components/reactflow/DataNode';
 import { BatchRunnerNode } from '../components/reactflow/BatchRunnerNode';
+import { BrandBatchNode } from '../components/reactflow/BrandBatchNode';
 import { TextureFilterNode } from '../components/reactflow/TextureFilterNode';
 import { Studio3DNode } from '../components/reactflow/Studio3DNode';
 import { BrandingProjectSelectModal } from '../components/reactflow/BrandingProjectSelectModal';
@@ -45,7 +46,7 @@ import { EdgeContextMenu } from '../components/reactflow/contextmenu/EdgeContext
 import { ImageContextMenu } from '../components/reactflow/contextmenu/ImageContextMenu';
 import { NodeContextMenu } from '../components/reactflow/contextmenu/NodeContextMenu';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, DirectorNodeData, NodeBuilderData, CustomNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData } from '../types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, DirectorNodeData, NodeBuilderData, CustomNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData, BrandBatchNodeData } from '../types/reactFlow';
 import type { CustomNodeDefinition, MultiOutputConfig } from '../types/customNode';
 import type { Mockup } from '../services/mockupApi';
 import { mockupApi } from '../services/mockupApi';
@@ -138,6 +139,7 @@ const nodeTypes = {
   variables: VariablesNode,
   data: DataNode,
   batchRunner: BatchRunnerNode,
+  brandBatch: BrandBatchNode,
   textureFilter: TextureFilterNode,
   studio3d: Studio3DNode,
 } as const;
@@ -1011,6 +1013,9 @@ export const CanvasPage: React.FC = () => {
     handleBatchRun,
     handleBatchCancel,
     handleBatchNodeDataUpdate,
+    handleBrandBatchRun,
+    handleBrandBatchCancel,
+    handleBrandBatchNodeDataUpdate,
     handleNodeBuilderSendMessage,
     handleNodeBuilderSpawn,
     handleNodeBuilderUpdateData,
@@ -1241,6 +1246,7 @@ export const CanvasPage: React.FC = () => {
     addVariablesNode,
     addDataNode,
     addBatchRunnerNode,
+    addBrandBatchNode,
     addChatNode,
     addDirectorNode,
     addNodeBuilderNode,
@@ -1783,10 +1789,13 @@ export const CanvasPage: React.FC = () => {
       case 'nodeBuilder':
         addNodeBuilderNode(flowToScreen(flowPosition));
         break;
+      case 'brandBatch':
+        addBrandBatchNode(flowToScreen(flowPosition));
+        break;
       default:
         console.warn(`Unknown node type: ${nodeType}`);
     }
-  }, [reactFlowInstance, addPromptNode, addMockupNode, addShaderNode, addAngleNode, addBrandKitNodes, addLogoNode, addPDFNode, addStrategyNode, addBrandCoreNode, addTextNode, addChatNode, addNodeBuilderNode]);
+  }, [reactFlowInstance, addPromptNode, addMockupNode, addShaderNode, addAngleNode, addBrandKitNodes, addLogoNode, addPDFNode, addStrategyNode, addBrandCoreNode, addTextNode, addChatNode, addNodeBuilderNode, addBrandBatchNode]);
 
   /**
    * Resets all context menu states to null.
@@ -2949,6 +2958,23 @@ export const CanvasPage: React.FC = () => {
                 onUpdateData: handleBatchNodeDataUpdate,
                 onDeleteNode: handleDeleteNodeById,
               } as BatchRunnerNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
+        if (n.type === 'brandBatch') {
+          const bbData = n.data as BrandBatchNodeData;
+          const needsUpdate = !bbData.onRun || !handlersRef.current?.handleBrandBatchRun;
+          if (needsUpdate) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...bbData,
+                onRun: handleBrandBatchRun,
+                onCancel: handleBrandBatchCancel,
+                onUpdateData: handleBrandBatchNodeDataUpdate,
+                onDeleteNode: handleDeleteNodeById,
+              } as BrandBatchNodeData,
             } as Node<FlowNodeData>;
           }
         }
@@ -4545,6 +4571,7 @@ export const CanvasPage: React.FC = () => {
           onAddShader={toolbarActions.onAddShader}
           onAddTextureFilter={toolbarActions.onAddTextureFilter}
           onAddStudio3D={toolbarActions.onAddStudio3D}
+          onAddBrandBatch={() => handleAddNode(addBrandBatchNode)}
           onAddDirector={toolbarActions.onAddDirector}
           onToggleDrawing={() => {
             drawing.setIsDrawingMode(!drawing.drawingState.isDrawingMode);

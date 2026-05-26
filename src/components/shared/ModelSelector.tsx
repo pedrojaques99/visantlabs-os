@@ -25,6 +25,11 @@ import { isGenerationUnlimited } from '@/utils/unlimitedChecker';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { GeminiModel, SeedreamModel, ImageProvider, Resolution } from '@/types/types';
+import { DEFAULT_MODEL } from '@/constants/geminiModels';
+
+export function getPreferredImageModel(): string {
+  try { return localStorage.getItem('vsn-preferred-image-model') || DEFAULT_MODEL; } catch { return DEFAULT_MODEL; }
+}
 
 interface ModelSelectorProps {
   selectedModel: string;
@@ -178,6 +183,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     if (disabled || newModel === selectedModel) return;
 
     if (type === 'image') {
+      try { localStorage.setItem('vsn-preferred-image-model', newModel); } catch {}
       const provider: ImageProvider = isSeedreamModel(newModel) ? 'seedream' : isOpenAIImageModel(newModel) ? 'openai' : 'gemini';
       onModelChange(newModel, provider);
 

@@ -1104,12 +1104,112 @@ Do NOT include fields that already exist.`
       return res.status(500).json({ error: 'Failed to parse AI response' })
     }
 
-    const patch = JSON.parse(jsonStr)
+    const raw = JSON.parse(jsonStr)
+
+    // Validate: only allow expected top-level keys with correct types
+    const patch: Record<string, any> = {}
+    if (raw.strategy && typeof raw.strategy === 'object' && !Array.isArray(raw.strategy)) {
+      const s: Record<string, any> = {}
+      if (raw.strategy.coreMessage && typeof raw.strategy.coreMessage === 'object') s.coreMessage = raw.strategy.coreMessage
+      if (Array.isArray(raw.strategy.pillars)) s.pillars = raw.strategy.pillars
+      if (raw.strategy.manifesto) s.manifesto = raw.strategy.manifesto
+      if (Array.isArray(raw.strategy.archetypes)) s.archetypes = raw.strategy.archetypes
+      if (Array.isArray(raw.strategy.personas)) s.personas = raw.strategy.personas
+      if (Array.isArray(raw.strategy.voiceValues)) s.voiceValues = raw.strategy.voiceValues
+      if (Array.isArray(raw.strategy.positioning)) s.positioning = raw.strategy.positioning
+      if (Object.keys(s).length > 0) patch.strategy = s
+    }
+    if (raw.guidelines && typeof raw.guidelines === 'object' && !Array.isArray(raw.guidelines)) {
+      const g: Record<string, any> = {}
+      if (typeof raw.guidelines.voice === 'string') g.voice = raw.guidelines.voice
+      if (Array.isArray(raw.guidelines.dos)) g.dos = raw.guidelines.dos
+      if (Array.isArray(raw.guidelines.donts)) g.donts = raw.guidelines.donts
+      if (typeof raw.guidelines.imagery === 'string') g.imagery = raw.guidelines.imagery
+      if (Object.keys(g).length > 0) patch.guidelines = g
+    }
+    if (raw.identity && typeof raw.identity === 'object' && !Array.isArray(raw.identity)) {
+      const id: Record<string, any> = {}
+      if (typeof raw.identity.description === 'string') id.description = raw.identity.description
+      if (typeof raw.identity.tagline === 'string') id.tagline = raw.identity.tagline
+      if (Object.keys(id).length > 0) patch.identity = id
+    }
+    if (raw.tags && typeof raw.tags === 'object' && !Array.isArray(raw.tags)) patch.tags = raw.tags
 
     res.json({ patch, generated: emptyFields })
   } catch (error: any) {
     console.error('[Brand AI Populate] Error:', error)
     res.status(500).json({ error: 'Failed to generate brand content', message: error?.message })
+  }
+})
+
+// POST /api/brand-guidelines/:id/suggest-mockups — AI suggests mockup prompts based on brand identity
+router.post('/:id/suggest-mockups', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const apiKey = await getGeminiApiKey(req.userId)
+    if (!apiKey) return res.status(400).json({ error: 'Gemini API key not configured' })
+
+    const brandContext = buildBrandContext(guideline as any)
+    const count = Math.min(Math.max(req.body.count || 10, 3), 15)
+
+    const systemPrompt = `You are a creative director for a branding agency. Given a brand's identity, strategy, colors, typography and voice, suggest ${count} compelling mockup scene prompts.
+
+Each prompt should describe ONLY the physical scene/context — NOT the brand's logo, text, or visual design (those are injected automatically as reference images).
+
+Vary across these categories: stationery (cards, letterhead), packaging (boxes, bags, bottles), apparel (t-shirts, caps), signage (storefront, banners), digital (phone screen, laptop), environmental (wall mural, vehicle wrap), merchandise (mugs, pens, notebooks), editorial (magazine spread, poster).
+
+Pick categories that match the brand's industry and personality. A luxury brand gets marble + gold foil; a tech startup gets clean gradients + device mockups; a food brand gets rustic surfaces + natural light.
+
+Return ONLY a JSON array of objects:
+[
+  {
+    "prompt": "scene description for image generation (English, 1-2 sentences)",
+    "category": "stationery|packaging|apparel|signage|digital|environmental|merchandise|editorial",
+    "aspectRatio": "1:1|16:9|9:16|4:3|4:5",
+    "label": "short human-readable label (brand's language, max 4 words)"
+  }
+]`
+
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT })
+
+    const result = await model.generateContent([
+      { text: systemPrompt },
+      { text: `Brand context:\n${brandContext}\n\nSuggest ${count} mockup prompts as JSON array.` },
+    ])
+
+    const responseText = result.response.text()
+    const codeBlock = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
+    let jsonStr = codeBlock ? codeBlock[1].trim() : undefined
+    if (!jsonStr) {
+      const raw = responseText.match(/\[[\s\S]*\]/)
+      jsonStr = raw ? raw[0] : undefined
+    }
+    if (!jsonStr) return res.status(500).json({ error: 'Failed to parse AI response' })
+
+    const suggestions = JSON.parse(jsonStr)
+    if (!Array.isArray(suggestions)) return res.status(500).json({ error: 'Invalid AI response format' })
+
+    const validated = suggestions
+      .filter((s: any) => typeof s.prompt === 'string' && s.prompt.length > 5)
+      .slice(0, count)
+      .map((s: any) => ({
+        prompt: s.prompt,
+        category: s.category || 'stationery',
+        aspectRatio: ['1:1', '16:9', '9:16', '4:3', '4:5'].includes(s.aspectRatio) ? s.aspectRatio : '1:1',
+        label: typeof s.label === 'string' ? s.label.slice(0, 40) : s.category,
+      }))
+
+    res.json({ suggestions: validated })
+  } catch (error: any) {
+    console.error('[Brand Suggest Mockups] Error:', error)
+    res.status(500).json({ error: 'Failed to suggest mockups', message: error?.message })
   }
 })
 

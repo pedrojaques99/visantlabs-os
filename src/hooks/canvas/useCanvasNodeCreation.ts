@@ -1994,6 +1994,55 @@ export const useCanvasNodeCreation = (
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
+  const addBrandBatchNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) {
+      toast.error('Canvas not ready. Please wait a moment and try again.');
+      return;
+    }
+
+    const screenPos = customPosition || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+      if (!position || isNaN(position.x) || isNaN(position.y)) position = { x: 0, y: 0 };
+    } catch {
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const handlers = handlersRef.current as any;
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('brandBatch'),
+      type: 'brandBatch',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: {
+        type: 'brandBatch',
+        status: 'idle',
+        items: [],
+        prompt: 'Apply my branding',
+        connectedImages: [],
+        onRun: handlers?.handleBrandBatchRun || (() => {}),
+        onCancel: handlers?.handleBrandBatchCancel || (() => {}),
+        onUpdateData: handlers?.handleBrandBatchNodeDataUpdate || (() => {}),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
+      } as any,
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => addToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+
+    trackCanvasEvent('node_created', newNode.type, canvasId);
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
+
   const addChatNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
     if (!reactFlowInstance) {
       toast.error('Canvas not ready. Please wait a moment and try again.');
@@ -2192,6 +2241,7 @@ export const useCanvasNodeCreation = (
     addVariablesNode,
     addDataNode,
     addBatchRunnerNode,
+    addBrandBatchNode,
     addChatNode,
     addDirectorNode,
     addNodeBuilderNode,
