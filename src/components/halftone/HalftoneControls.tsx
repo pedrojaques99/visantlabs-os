@@ -119,9 +119,9 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         {/* Blend Mode */}
         <ToolPanelRow label="Blend">
           <Select
-            options={BLEND_MODES.map((m) => ({ value: m.id, label: m.label }))}
-            value={store.blendMode}
-            onChange={(v) => set('blendMode', v)}
+            options={BLEND_MODES.map((m) => ({ value: String(m.id), label: m.label }))}
+            value={String(store.blendMode)}
+            onChange={(v) => set('blendMode', Number(v))}
             variant="node"
           />
         </ToolPanelRow>
