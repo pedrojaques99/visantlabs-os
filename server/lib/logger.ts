@@ -16,6 +16,10 @@ import { env } from '../config/env.js';
  * on developer discipline.
  */
 const redactPaths = [
+  'email',
+  '*.email',
+  'customerEmail',
+  '*.customerEmail',
   'password',
   '*.password',
   'req.body.password',

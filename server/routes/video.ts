@@ -34,9 +34,11 @@ const mockupRateLimiter = rateLimit({
 
 const router = express.Router();
 
-router.get('/test', apiRateLimiter, (req, res) => {
-  res.json({ message: 'Video routes are working', timestamp: new Date().toISOString() });
-});
+if (process.env.NODE_ENV !== 'production') {
+  router.get('/test', apiRateLimiter, (req, res) => {
+    res.json({ message: 'Video routes are working', timestamp: new Date().toISOString() });
+  });
+}
 
 // Generate video (validates and deducts credits BEFORE generation)
 router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
