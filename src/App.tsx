@@ -65,6 +65,7 @@ const HalftonePage = lazyWithRetry(() => import('./pages/HalftonePage').then(m =
 const TextureFilterPage = lazyWithRetry(() => import('./pages/TextureFilterPage').then(m => ({ default: m.TextureFilterPage })));
 const GridMachinePage = lazyWithRetry(() => import('./pages/GridMachinePage').then(m => ({ default: m.GridMachinePage })));
 const RisoMachinePage = lazyWithRetry(() => import('./pages/RisoMachinePage').then(m => ({ default: m.RisoMachinePage })));
+const ImageLabPage = lazyWithRetry(() => import('./pages/ImageLabPage').then(m => ({ default: m.ImageLabPage })));
 const DeveloperPortalPage = lazyWithRetry(() => import('./pages/DeveloperPortalPage').then(m => ({ default: m.DeveloperPortalPage })));
 
 
@@ -111,10 +112,11 @@ const App: React.FC = () => {
                 <Route path="/qrcode" element={<QRCodePage />} />
                 <Route path="/grid-paint" element={<GridPaintPage />} />
                 <Route path="/3d-studio" element={<Studio3DPage />} />
-                <Route path="/cmyk-halftone" element={<HalftonePage />} />
-                <Route path="/texture-filter" element={<TextureFilterPage />} />
+                <Route path="/image-lab" element={<ImageLabPage />} />
+                <Route path="/cmyk-halftone" element={<Navigate to="/image-lab" replace />} />
+                <Route path="/texture-filter" element={<Navigate to="/image-lab" replace />} />
                 <Route path="/grid-machine" element={<GridMachinePage />} />
-                <Route path="/riso-machine" element={<RisoMachinePage />} />
+                <Route path="/riso-machine" element={<Navigate to="/image-lab" replace />} />
                 <Route path="/labs" element={<LabsPage />} />
                 <Route path="/labs/wind-tunnel" element={<WindTunnelPage />} />
                 <Route path="/about" element={<AboutPage />} />

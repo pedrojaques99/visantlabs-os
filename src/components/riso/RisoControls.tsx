@@ -9,10 +9,12 @@ import { RISO_INK_PRESETS, RISO_FULL_PRESETS } from '@/components/riso/RisoRende
 import { hexToRgb } from '@/utils/colorUtils';
 import { SendToButton } from '@/components/shared/SendToButton';
 import {
-  ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
+  ToolPanel, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
-import { Eye, EyeOff, X, ImageIcon, Zap, Loader2, Focus, Download } from 'lucide-react';
+import { ImageLabHeader } from '@/components/shared/ImageLabHeader';
+import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
+import { Eye, EyeOff, Zap, Loader2, Focus, Download } from 'lucide-react';
 
 const TABS = [
   { id: 'halftone', label: 'Halftone' },
@@ -20,6 +22,8 @@ const TABS = [
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
+
+const RISO_PRESET_ITEMS = Object.entries(RISO_FULL_PRESETS).map(([name, p]) => ({ name, colors: p.colors }));
 
 interface RisoControlsProps {
   onExport: () => void;
@@ -66,28 +70,19 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
 
   return (
     <ToolPanel>
-      {/* Image header */}
-      <ToolPanelHeader>
-        {store.imageUrl ? (
-          <div className="flex items-center gap-3">
-            <img src={store.imageUrl} alt={store.fileName} className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0" />
-            <span className="text-[11px] text-neutral-400 font-mono truncate flex-1">{store.fileName}</span>
-            <button aria-label="Clear image" onClick={() => { store.setImageUrl('', ''); store.setLayers([]); }} className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1">
-              <X size={14} />
-            </button>
-          </div>
-        ) : (
-          <label className="flex items-center gap-3 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">
-            <ImageIcon size={16} />
-            <span className="text-[11px] uppercase tracking-widest">Upload image</span>
-            <input type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) { store.setImageUrl(URL.createObjectURL(file), file.name); toast.success(`Loaded ${file.name}`); }
-              if (e.target) e.target.value = '';
-            }} />
-          </label>
-        )}
-      </ToolPanelHeader>
+      <ImageLabHeader
+        imageUrl={store.imageUrl}
+        fileName={store.fileName}
+        onLoad={(url, name) => store.setImageUrl(url, name)}
+        onClear={() => { store.setImageUrl('', ''); store.setLayers([]); }}
+        onResetSettings={() => { store.resetSettings(); store.setLayers([]); }}
+      />
+
+      <PresetThumbnailStrip
+        imageUrl={store.imageUrl}
+        presets={RISO_PRESET_ITEMS}
+        onSelect={(name) => applyFullPreset(name)}
+      />
 
       {/* Tab bar */}
       <div className="shrink-0 flex border-b border-neutral-800/50">
@@ -149,9 +144,9 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
 
             {/* Halftone */}
             <ToolPanelSection title="HALFTONE">
-              <NodeSlider label="Frequency" value={frequency} min={15} max={200} step={1} onChange={setFrequency} />
-              <NodeSlider label="Dot Size" value={dotSize} min={0.3} max={1} step={0.01} onChange={setDotSize} />
-              <NodeSlider label="Misregistration" value={misregistration} min={0} max={8} step={0.5} onChange={setMisregistration} formatValue={(v) => `${v}px`} />
+              <NodeSlider label="Frequency" hint="Screen resolution — higher = finer grain" value={frequency} min={15} max={200} step={1} onChange={setFrequency} />
+              <NodeSlider label="Dot Size" hint="Ink dot coverage per cell" value={dotSize} min={0.3} max={1} step={0.01} onChange={setDotSize} />
+              <NodeSlider label="Misregistration" hint="Layer offset — simulates print alignment error" value={misregistration} min={0} max={8} step={0.5} onChange={setMisregistration} formatValue={(v) => `${v}px`} />
             </ToolPanelSection>
 
             {/* Layers */}
@@ -202,8 +197,8 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
 
             {/* Image & Texture */}
             <ToolPanelSection title="IMAGE & TEXTURE">
-              <NodeSlider label="Contrast" value={contrast} min={0.3} max={2.5} step={0.01} onChange={setContrast} />
-              <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
+              <NodeSlider label="Contrast" hint="Source image contrast before screening" value={contrast} min={0.3} max={2.5} step={0.01} onChange={setContrast} />
+              <NodeSlider label="Lightness" hint="Brighten or darken the source" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
               <div className="h-px bg-neutral-800/50 my-1" />
               <ToolPanelRow label="Paper">
                 <div className="flex items-center gap-2">
@@ -211,10 +206,10 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
                   <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
                 </div>
               </ToolPanelRow>
-              <NodeSlider label="Paper Grain" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
-              <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
-              <NodeSlider label="Ink Dropout" value={inkDropout} min={0} max={0.15} step={0.005} onChange={setInkDropout} />
-              <NodeSlider label="Edge Bleed" value={edgeBleed} min={0} max={4} step={0.5} onChange={setEdgeBleed} formatValue={(v) => `${v}px`} />
+              <NodeSlider label="Paper Grain" hint="Visible paper texture intensity" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
+              <NodeSlider label="Ink Noise" hint="Random ink density variation" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
+              <NodeSlider label="Ink Dropout" hint="Missing ink spots — worn stencil effect" value={inkDropout} min={0} max={0.15} step={0.005} onChange={setInkDropout} />
+              <NodeSlider label="Edge Bleed" hint="Ink spreading beyond shape edges" value={edgeBleed} min={0} max={4} step={0.5} onChange={setEdgeBleed} formatValue={(v) => `${v}px`} />
             </ToolPanelSection>
 
             {/* Layer Details */}
@@ -238,14 +233,14 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({ onExport,
             )}
           </>
         )}
+
       </ToolPanelContent>
 
-      {/* Actions */}
       <ToolPanelActions>
         <div className="flex gap-2 w-full">
-          <Button aria-label="Export PNG" onClick={onExport} disabled={store.isExporting || !store.imageUrl} className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
+          <Button aria-label="Export" onClick={onExport} disabled={store.isExporting || !store.imageUrl} className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
             <Download size={14} />
-            {store.isExporting ? 'Exporting...' : 'Export PNG'}
+            {store.isExporting ? 'Exporting...' : 'Export'}
           </Button>
           {store.imageUrl && <SendToButton source="riso" imageUrl={store.imageUrl} />}
         </div>

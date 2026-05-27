@@ -10,10 +10,11 @@ export interface NodeSliderProps
   step?: number
   onChange: (value: number) => void
   formatValue?: (value: number) => string
+  hint?: string
 }
 
 const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
-  ({ label, value, min, max, step = 0.01, onChange, formatValue, className, onMouseDown, ...props }, ref) => {
+  ({ label, value, min, max, step = 0.01, onChange, formatValue, hint, className, onMouseDown, ...props }, ref) => {
     const percentage = ((value - min) / (max - min)) * 100
     const scrubRef = React.useRef<{ startX: number; startValue: number } | null>(null)
 
@@ -62,7 +63,7 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
     return (
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-mono text-neutral-400">{label}</label>
+          <label className="text-xs font-mono text-neutral-400" title={hint}>{label}</label>
           <span
             className="text-xs font-mono text-neutral-500 cursor-ew-resize select-none hover:text-neutral-300 transition-colors"
             onMouseDown={handleScrubDown}

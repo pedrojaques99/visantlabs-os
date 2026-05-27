@@ -644,7 +644,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           {children}
         </div>
 
-        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && !location.pathname.startsWith('/admin/chat') && !location.pathname.startsWith('/3d-studio') && !location.pathname.startsWith('/cmyk-halftone') && !location.pathname.startsWith('/grid-paint') && !location.pathname.startsWith('/grid-machine') && !location.pathname.startsWith('/labs/wind-tunnel') && location.pathname !== '/' && (
+        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && !location.pathname.startsWith('/admin/chat') && !location.pathname.startsWith('/3d-studio') && !location.pathname.startsWith('/cmyk-halftone') && !location.pathname.startsWith('/image-lab') && !location.pathname.startsWith('/grid-paint') && !location.pathname.startsWith('/grid-machine') && !location.pathname.startsWith('/labs/wind-tunnel') && location.pathname !== '/' && (
           <ASCIIFooter
             className={location.pathname === '/' ? 'hidden lg:block' : ''}
             isDarkMode={location.pathname !== '/waitlist'}
