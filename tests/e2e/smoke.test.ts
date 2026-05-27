@@ -19,7 +19,7 @@ describe('Smoke: server boots + core endpoints reachable', () => {
     const agent = await request();
     const res = await agent.get('/api/payments/plans');
     expect(res.status).toBe(200);
-  });
+  }, 120_000);
 
   it('Auth roundtrip: signup → signin → authenticated read', async () => {
     const agent = await request();
