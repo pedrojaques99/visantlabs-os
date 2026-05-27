@@ -9,11 +9,12 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { SEO } from '@/components/SEO';
 import { AuthModal } from '@/components/AuthModal';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
+import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { GuidelinesSidebar } from '@/components/brand/guidelines/GuidelinesSidebar';
 import { GuidelineDetail } from '@/components/brand/guidelines/GuidelineDetail';
+import { BrandOverview } from '@/components/brand/guidelines/BrandOverview';
 import { BrandRoomProvider } from '@/components/brand/guidelines/BrandCollaborators';
 import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSystemValidation';
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
@@ -21,7 +22,7 @@ import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButt
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
 import { BrandAiPopulateDialog } from '@/components/brand/guidelines/BrandAiPopulateDialog';
 import { BrandMockupDialog } from '@/components/brand/guidelines/BrandMockupDialog';
-import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check, Image } from 'lucide-react';
+import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check, Image, MoreHorizontal, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -35,31 +36,25 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
     const { t } = useTranslation();
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full relative overflow-hidden rounded-3xl border border-white/10 bg-neutral-900/20 backdrop-blur-sm p-12 lg:p-24 flex flex-col items-center justify-center text-center gap-10"
+            className="w-full flex flex-col items-center justify-center text-center py-24 gap-8"
         >
-            <div className="relative z-10">
-                <div className="relative mb-8 inline-flex p-8 rounded-3xl bg-neutral-950/50 border border-white/10">
-                    <Palette size={48} className="text-neutral-500" strokeWidth={1.2} />
-                </div>
+            <Palette size={36} className="text-neutral-700" strokeWidth={1} />
 
-                <div className="space-y-3 max-w-md mx-auto">
-                    <h2 className="text-xl font-semibold text-neutral-200">
-                        {t('brandGuidelines.emptyState')}
-                    </h2>
-                    <p className="text-neutral-500 text-sm leading-relaxed max-w-xs mx-auto">
-                        Crie e organize suas diretrizes de marca em um único lugar centralizado e profissional.
-                    </p>
-                </div>
+            <div className="space-y-2 max-w-sm mx-auto">
+                <h2 className="text-lg font-medium text-neutral-300">
+                    {t('brandGuidelines.emptyState')}
+                </h2>
+                <p className="text-neutral-600 text-sm leading-relaxed">
+                    Crie e organize suas diretrizes de marca em um único lugar.
+                </p>
             </div>
 
-            <div className="relative z-10">
-                <Button onClick={onCreate} variant="outline" className="h-10 px-6 gap-2">
-                    <Plus size={16} />
-                    {t('brandGuidelines.createFirst')}
-                </Button>
-            </div>
+            <Button onClick={onCreate} variant="outline" className="h-9 px-5 gap-2 text-sm">
+                <Plus size={15} />
+                {t('brandGuidelines.createFirst')}
+            </Button>
         </motion.div>
     );
 };
@@ -70,18 +65,12 @@ const NoSelectionState = () => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="w-full min-h-[400px] flex flex-col items-center justify-center text-center gap-6 border border-white/10 rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
+            className="w-full min-h-[360px] flex flex-col items-center justify-center text-center gap-5"
         >
-            <div className="p-6 rounded-full bg-white/5 border border-white/10">
-                <Layers size={32} strokeWidth={1} className="text-neutral-500" />
-            </div>
-
-            <div className="space-y-2">
-                <h3 className="text-neutral-300 font-medium tracking-widest uppercase text-[11px]">{t('brand.guidelines.awaiting_selection')}</h3>
-                <p className="text-neutral-500 text-sm max-w-xs mx-auto">
-                    Selecione uma marca no menu lateral para visualizar e editar suas diretrizes.
-                </p>
-            </div>
+            <Layers size={28} strokeWidth={1} className="text-neutral-700" />
+            <p className="text-neutral-600 text-sm max-w-xs mx-auto">
+                {t('brand.guidelines.awaiting_selection')}
+            </p>
         </motion.div>
     );
 };
@@ -221,14 +210,14 @@ export const BrandGuidelinesPage: React.FC = () => {
                         !isLoading && guidelines.length > 0 ? "max-w-5xl" : "max-w-7xl"
                     )}>
 
-                        {/* Header: brand name + actions */}
-                        <div className="flex items-center justify-between gap-4 mb-3">
+                        {/* Header */}
+                        <div className="flex items-center justify-between gap-4 mb-6">
                             <div className="flex items-center gap-3 min-w-0">
                                 {/* Mobile sidebar trigger */}
                                 <div className="lg:hidden">
                                     <Sheet>
                                         <SheetTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500" aria-label={t('brand.guidelines.open_menu')}>
+                                            <Button variant="ghost" size="icon-md" aria-label={t('brand.guidelines.open_menu')}>
                                                 <AlignLeft className="h-4 w-4" />
                                             </Button>
                                         </SheetTrigger>
@@ -244,104 +233,92 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     </Sheet>
                                 </div>
                                 <div className="min-w-0">
-                                    <h1 className="text-sm font-semibold text-neutral-200 truncate">
+                                    <h1 className="text-base font-semibold text-neutral-100 truncate">
                                         {selected ? (selected.identity?.name || selected.name || 'Untitled') : t('brandGuidelines.title')}
                                     </h1>
-                                    {selected && (
-                                        <p className="text-[10px] text-neutral-600 font-mono mt-0.5">{selected.identity?.tagline || selected.tagline || ''}</p>
+                                    {selected?.identity?.tagline && (
+                                        <p className="text-xs text-neutral-500 mt-0.5 truncate">{selected.identity.tagline}</p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-1.5 shrink-0">
-                                {selected && (
+                            {selected && (
+                                <div className="flex items-center gap-2 shrink-0">
                                     <BrandCompletenessPill guideline={selected} />
-                                )}
-                                {selected && (
-                                    <>
-                                        <Button
-                                            onClick={() => setIsAiPopulateOpen(true)}
-                                            className="h-8 px-3 gap-1.5 text-xs bg-white/5 border border-white/15 text-neutral-200 hover:bg-white/10"
-                                        >
-                                            <Zap size={13} />
-                                            <span className="hidden sm:inline">Generate</span>
-                                        </Button>
-                                        <Button
-                                            onClick={() => setIsMockupOpen(true)}
-                                            className="h-8 px-3 gap-1.5 text-xs bg-white/5 border border-white/15 text-neutral-200 hover:bg-white/10"
-                                        >
-                                            <Image size={13} />
-                                            <span className="hidden sm:inline">Mockup</span>
-                                        </Button>
-                                    </>
-                                )}
-                                {selected && (
-                                    <BrandIngestButton
-                                        guideline={selected}
-                                        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
-                                        triggerRef={ingestTriggerRef}
-                                    />
-                                )}
-                                {selected && (
+                                    <Button
+                                        onClick={() => setIsAiPopulateOpen(true)}
+                                        variant="subtle"
+                                        size="sm"
+                                        className="h-8 gap-1.5 text-xs"
+                                    >
+                                        <Zap size={13} />
+                                        <span className="hidden sm:inline">Generate</span>
+                                    </Button>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0 text-neutral-500 hover:text-neutral-300 border border-neutral-800">
-                                                <Plus size={14} className="rotate-0" />
+                                            <Button variant="ghost" size="icon-md">
+                                                <MoreHorizontal size={16} />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="min-w-[160px]">
-                                            <button
-                                                onClick={() => setIsShareOpen(true)}
-                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
-                                            >
+                                        <DropdownMenuContent align="end" className="min-w-[180px]">
+                                            <Button variant="menuItem" onClick={() => setIsMockupOpen(true)}>
+                                                <Image size={13} /> Mockup
+                                            </Button>
+                                            <Button variant="menuItem" onClick={() => setIsShareOpen(true)}>
                                                 <Share2 size={13} /> Share
-                                            </button>
+                                            </Button>
                                             {selected.isPublic && (
-                                                <Link to={`/brand/${selected.publicSlug}`} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
-                                                    <Eye size={13} /> View Public
-                                                </Link>
+                                                <Button variant="menuItem" asChild>
+                                                    <Link to={`/brand/${selected.publicSlug}`}>
+                                                        <Eye size={13} /> View Public
+                                                    </Link>
+                                                </Button>
                                             )}
-                                            <button
+                                            <Button
+                                                variant="menuItem"
                                                 onClick={() => {
                                                     copyToClipboard(selected.id!);
                                                     setFigmaCopied(true);
                                                     setTimeout(() => setFigmaCopied(false), 2000);
                                                 }}
-                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
                                             >
                                                 {figmaCopied ? <Check size={13} className="text-green-400" /> : <Figma size={13} />}
                                                 {figmaCopied ? 'Copied!' : 'Use in Figma'}
-                                            </button>
+                                            </Button>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                )}
-                            </div>
+                                    <BrandIngestButton
+                                        guideline={selected}
+                                        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
+                                        triggerRef={ingestTriggerRef}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* Tab bar */}
                         {selected && (
-                            <div className="flex items-center border-b border-neutral-800 mb-6 overflow-x-auto scrollbar-none">
+                            <div className="flex items-center border-b border-white/5 mb-8 overflow-x-auto scrollbar-none">
                                 {SECTION_TABS.map((tab) => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTabId(tab.id)}
                                         className={cn(
-                                            'px-4 py-2 text-xs font-mono whitespace-nowrap transition-all border-b-2 -mb-px',
+                                            'px-4 py-2.5 text-xs whitespace-nowrap transition-colors border-b-2 -mb-px',
                                             activeTabId === tab.id
                                                 ? 'text-neutral-200 border-neutral-400'
-                                                : 'text-neutral-600 border-transparent hover:text-neutral-400 hover:border-white/10'
+                                                : 'text-neutral-600 border-transparent hover:text-neutral-400'
                                         )}
                                     >
                                         {tab.label}
                                     </button>
                                 ))}
-                                {/* Section toggle menu */}
                                 {tabSections.length > 0 && (
                                     <div className="ml-auto pl-2 shrink-0">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <button className="flex items-center gap-1 px-2 py-1 text-neutral-700 hover:text-neutral-400 transition-colors mb-[2px]" aria-label={t('brand.guidelines.toggle_sections')}>
-                                                    <Plus size={13} />
+                                                <button className="flex items-center px-2 py-1.5 text-neutral-700 hover:text-neutral-400 transition-colors" aria-label={t('brand.guidelines.toggle_sections')}>
+                                                    <SlidersHorizontal size={13} />
                                                 </button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="min-w-[160px]">
@@ -377,9 +354,9 @@ export const BrandGuidelinesPage: React.FC = () => {
                                     className="flex flex-col items-center justify-center py-40 gap-6"
                                 >
                                     <GlitchLoader size={40} />
-                                    <MicroTitle className="text-white/40 text-[11px] font-mono animate-pulse uppercase tracking-[0.1em]">
-                                        Synchronizing Workspace
-                                    </MicroTitle>
+                                    <p className="text-neutral-600 text-xs animate-pulse">
+                                        Loading...
+                                    </p>
                                 </motion.div>
                             ) : guidelines.length === 0 ? (
                                 <EmptyState key="empty" onCreate={() => handleOpenWizard()} />
@@ -416,33 +393,39 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                 <ErrorBoundary>
                                                     {/* Review trigger button */}
                                                     {selected.validation && Object.values(selected.validation).some(v => v !== 'approved') && (
-                                                        <button
-                                                            onClick={() => setReviewGuidelineId(selected.id!)}
-                                                            className="mb-6 w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/5 transition-all group"
+                                                        <GlassPanel
+                                                            intensity="subtle"
+                                                            asChild
                                                         >
-                                                            <ClipboardCheck size={16} className="text-neutral-500 group-hover:text-neutral-300 shrink-0 transition-colors" />
-                                                            <div className="flex-1 text-left">
-                                                                <p className="text-xs font-semibold text-neutral-300">{t('brand.guidelines.design_system_review_pending')}</p>
-                                                                <p className="text-xs text-neutral-500">
-                                                                    {Object.values(selected.validation).filter(v => v === 'approved').length}/{Object.keys(selected.validation).length} sections approved
+                                                            <button
+                                                                onClick={() => setReviewGuidelineId(selected.id!)}
+                                                                className="mb-8 w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] transition-all group"
+                                                            >
+                                                                <ClipboardCheck size={15} className="text-neutral-600 group-hover:text-neutral-400 shrink-0 transition-colors" />
+                                                                <p className="flex-1 text-left text-xs text-neutral-500 group-hover:text-neutral-400 transition-colors">
+                                                                    {Object.values(selected.validation).filter(v => v === 'approved').length} of {Object.keys(selected.validation).length} sections reviewed
                                                                 </p>
-                                                            </div>
-                                                            <span className="text-xs font-mono text-neutral-600 group-hover:text-neutral-400 transition-colors">{t('brand.guidelines.review')}</span>
-                                                        </button>
+                                                                <span className="text-[11px] text-neutral-600 group-hover:text-neutral-400 transition-colors">{t('brand.guidelines.review')}</span>
+                                                            </button>
+                                                        </GlassPanel>
                                                     )}
-                                                    <BrandRoomProvider
-                                                        guideline={selected}
-                                                        guidelineId={selected.id!}
-                                                        onSave={(patch) => updateMutation.mutate({ id: selected.id!, data: patch })}
-                                                    >
-                                                        <GuidelineDetail
+                                                    {activeTabId === 'overview' ? (
+                                                        <BrandOverview guideline={selected} />
+                                                    ) : (
+                                                        <BrandRoomProvider
                                                             guideline={selected}
-                                                            visibleSections={visibleSections}
-                                                            onHideSection={toggleSection}
-                                                            onOpenWizard={() => handleOpenWizard(selected)}
-                                                            onStartReview={() => setReviewGuidelineId(selected.id!)}
-                                                        />
-                                                    </BrandRoomProvider>
+                                                            guidelineId={selected.id!}
+                                                            onSave={(patch) => updateMutation.mutate({ id: selected.id!, data: patch })}
+                                                        >
+                                                            <GuidelineDetail
+                                                                guideline={selected}
+                                                                visibleSections={visibleSections}
+                                                                onHideSection={toggleSection}
+                                                                onOpenWizard={() => handleOpenWizard(selected)}
+                                                                onStartReview={() => setReviewGuidelineId(selected.id!)}
+                                                            />
+                                                        </BrandRoomProvider>
+                                                    )}
                                                 </ErrorBoundary>
                                             )}
                                         </motion.div>

@@ -36,6 +36,9 @@ const buttonVariants = cva(
         // Full-width monospace dropdown item
         // Usage: auth dropdowns, footer policy links, language selector
         menuItem: "w-full justify-start px-3 py-2 rounded-md text-[10px] font-mono text-neutral-400 hover:text-white hover:bg-neutral-900/50",
+        // ── Subtle surface ─────────────────────────────────────────────────
+        // Low-contrast action — header bars, inline triggers, non-primary CTAs
+        subtle: "bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200",
         // ── Info / variant states ────────────────────────────────────────────
         info: "bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400",
         warning: "bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400",

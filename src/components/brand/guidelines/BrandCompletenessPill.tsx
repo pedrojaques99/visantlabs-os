@@ -71,7 +71,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
         <button
           type="button"
           className={cn(
-            'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-[10px] font-mono uppercase tracking-widest transition-all hover:opacity-90',
+            'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-[11px] font-medium transition-all hover:opacity-90',
             style.ring
           )}
           aria-label={`Brand completeness ${report.score}%`}
@@ -87,7 +87,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
       <DropdownMenuContent align="end" className="w-[320px] p-0 bg-neutral-950/95 backdrop-blur-xl border-white/10">
         <div className="p-4 border-b border-neutral-800">
           <div className="flex items-baseline justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+            <span className="text-[11px] font-medium text-neutral-500">
               Brand completeness
             </span>
             <span className={cn('text-2xl font-bold tabular-nums', style.ring.split(' ').find(c => c.startsWith('text-')))}>
@@ -104,7 +104,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
               const pct = Math.round((val.score / val.max) * 100);
               return (
                 <div key={key} className="flex flex-col gap-1">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+                  <span className="text-[10px] font-medium text-neutral-600">
                     {GROUP_LABELS[key as CompletenessRule['group']]}
                   </span>
                   <div className="h-1 rounded-full bg-white/5 overflow-hidden">
@@ -150,7 +150,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
               size="sm"
               onClick={triggerHealthCheck}
               disabled={healthMutation.isPending}
-              className="w-full h-8 text-[10px] font-mono uppercase tracking-widest gap-2 text-brand-cyan/80 hover:text-brand-cyan hover:bg-brand-cyan/5"
+              className="w-full h-8 text-xs gap-2 text-brand-cyan/80 hover:text-brand-cyan hover:bg-brand-cyan/5"
             >
               <Brain size={11} />
               {healthMutation.isPending ? 'Analisando...' : 'Run Brand Health (IA)'}

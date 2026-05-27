@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Palette, Plus, Trash2, Copy, ShieldCheck, X } from 'lucide-react';
 import {
   DropdownMenu,
@@ -84,25 +83,25 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       actions={(
         <div className="flex items-center gap-1">
           {local.length >= 2 && (
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setShowWCAG(!showWCAG)} title="WCAG Contrast" aria-label="Toggle WCAG matrix">
+            <Button variant="action" size="icon-sm" onClick={() => setShowWCAG(!showWCAG)} title="WCAG Contrast" aria-label="Toggle WCAG matrix">
               <ShieldCheck size={12} />
             </Button>
           )}
           {local.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" aria-label="Copy all colors">
+                <Button variant="action" size="icon-sm" aria-label="Copy all colors">
                   <Copy size={12} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[120px]">
                 {(['json', 'css', 'tailwind', 'cmyk'] as const).map(f => (
-                  <DropdownMenuItem key={f} onClick={() => copyAll(f)} className="text-xs font-mono uppercase">{f === 'css' ? 'CSS Variables' : f}</DropdownMenuItem>
+                  <DropdownMenuItem key={f} onClick={() => copyAll(f)} className="text-xs">{f === 'css' ? 'CSS Variables' : f.toUpperCase()}</DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={addColor} aria-label="Add color">
+          <Button variant="action" size="icon-sm" onClick={addColor} aria-label="Add color">
             <Plus size={12} />
           </Button>
         </div>
@@ -143,7 +142,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             <span className="text-[10px] font-mono text-neutral-700 w-28 text-right hidden sm:block">
               {(() => { try { const cm = c.cmyk || hexToCmyk(c.hex); return `C${cm.c} M${cm.m} Y${cm.y} K${cm.k}`; } catch { return ''; } })()}
             </span>
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-800 hover:text-destructive opacity-0 group-hover/color:opacity-100 transition-all shrink-0" onClick={() => removeColor(i)} aria-label="Remove color">
+            <Button variant="danger" size="icon-sm" className="opacity-0 group-hover/color:opacity-100 transition-all shrink-0" onClick={() => removeColor(i)} aria-label="Remove color">
               <Trash2 size={11} />
             </Button>
           </div>
@@ -156,8 +155,8 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
             <div className="mt-4 pt-4 border-t border-neutral-800 space-y-2">
               <div className="flex items-center justify-between mb-1">
-                <MicroTitle className="text-neutral-500">WCAG Contrast</MicroTitle>
-                <Button variant="ghost" size="icon" className="h-5 w-5 text-neutral-600 hover:text-white" onClick={() => setShowWCAG(false)} aria-label="Close"><X size={10} /></Button>
+                <span className="text-xs font-medium text-neutral-500">WCAG Contrast</span>
+                <Button variant="action" size="icon-sm" onClick={() => setShowWCAG(false)} aria-label="Close"><X size={10} /></Button>
               </div>
               {contrastMatrix.map((pair, i) => (
                 <div key={i} className="flex items-center gap-2 p-2 rounded-md bg-white/[0.03] border border-white/[0.03]">

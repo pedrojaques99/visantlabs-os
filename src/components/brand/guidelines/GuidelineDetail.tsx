@@ -188,7 +188,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8"
         >
           {visibleSections.map(id => (
             <React.Fragment key={id}>
