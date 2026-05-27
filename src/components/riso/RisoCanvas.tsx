@@ -1,12 +1,15 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
-import { toast } from 'sonner';
-import { Upload, Loader2 } from 'lucide-react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { RisoRenderer, extractDominantColors } from './RisoRenderer';
 import { useRisoStore } from '@/stores/risoStore';
 import { rgbToHex } from '@/utils/colorUtils';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
+
+export interface RisoCanvasHandle {
+  getRenderer: () => RisoRenderer | null;
+}
 
 interface RisoCanvasProps {
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
@@ -16,7 +19,7 @@ const REGISTRATION_OFFSETS: [number, number][] = [
   [1, -1], [-1, 1], [1, 1], [-1, -1],
 ];
 
-export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
+export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(({ onCanvasReady }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<RisoRenderer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,6 +31,10 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
   const panX = useRisoStore((s) => s.panX);
   const panY = useRisoStore((s) => s.panY);
   const isAnalyzing = useRisoStore((s) => s.isAnalyzing);
+
+  useImperativeHandle(ref, () => ({
+    getRenderer: () => rendererRef.current,
+  }), []);
 
   const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
     getState: useRisoStore.getState,
@@ -86,16 +93,6 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
     return bindWheelToRef(containerRef.current);
   }, [bindWheelToRef]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file?.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file);
-      store.setImageUrl(url, file.name);
-      toast.success(`Loaded ${file.name}`);
-    }
-  }, [store]);
-
   if (webglFailed) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-neutral-950">
@@ -110,36 +107,11 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
     <div
       ref={containerRef}
       className={cn('w-full h-full flex items-center justify-center overflow-hidden bg-neutral-950', isPanning && 'cursor-grabbing')}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={handleDrop}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {!store.imageUrl && (
-        <label className="flex flex-col items-center justify-center gap-3 cursor-pointer text-neutral-600 hover:text-neutral-300 transition-colors group">
-          <div className="w-16 h-16 rounded-2xl border border-dashed border-neutral-700 group-hover:border-neutral-500 flex items-center justify-center transition-colors">
-            <Upload size={24} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
-          </div>
-          <span className="text-[10px] uppercase tracking-widest">Drop an image or click to upload</span>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const url = URL.createObjectURL(file);
-                store.setImageUrl(url, file.name);
-                toast.success(`Loaded ${file.name}`);
-              }
-              e.target.value = '';
-            }}
-          />
-        </label>
-      )}
-
       {isAnalyzing && (
         <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40 pointer-events-none">
           <div className="flex items-center gap-2 text-neutral-300">
@@ -164,4 +136,4 @@ export const RisoCanvas: React.FC<RisoCanvasProps> = ({ onCanvasReady }) => {
       </div>
     </div>
   );
-};
+});

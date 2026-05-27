@@ -1,20 +1,20 @@
-import React, { useCallback, useState, useMemo, useEffect } from 'react';
+import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Upload, Eye, Split, EyeOff, Library, Settings2 } from 'lucide-react';
+import { Upload, Library, Download, CircleDot, Paintbrush, Undo2, Redo2, RotateCcw, PanelRightOpen, PanelRightClose, Hand, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
-import { HalftoneCanvas } from '@/components/halftone/HalftoneCanvas';
+import { HalftoneCanvas, type HalftoneCanvasHandle } from '@/components/halftone/HalftoneCanvas';
+import { generateHalftoneSvg } from '@/components/halftone/halftone-svg-export';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
-import { TextureFilterCanvas } from '@/components/texture-filter/TextureFilterCanvas';
+import { TextureFilterCanvas, type TextureFilterCanvasHandle } from '@/components/texture-filter/TextureFilterCanvas';
 import { TextureFilterControls } from '@/components/texture-filter/TextureFilterControls';
-import { RisoCanvas } from '@/components/riso/RisoCanvas';
+import { RisoCanvas, type RisoCanvasHandle } from '@/components/riso/RisoCanvas';
 import { RisoControls } from '@/components/riso/RisoControls';
 import { BeforeAfterOverlay } from '@/components/shared/BeforeAfterOverlay';
 import { ExportModal } from '@/components/shared/ExportModal';
 import { ImageLabPresetLibrary } from '@/components/shared/ImageLabPresetLibrary';
-import { ModePreviewSwitcher } from '@/components/shared/ModePreviewSwitcher';
 import { useHalftoneStore, HALFTONE_PRESETS } from '@/stores/halftoneStore';
 import { useTextureFilterStore, FILTER_PRESETS } from '@/stores/textureFilterStore';
 import { useRisoStore } from '@/stores/risoStore';
@@ -25,6 +25,7 @@ import { useExportCanvas } from '@/hooks/useExportCanvas';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
 import { loadImage } from '@/utils/imageUtils';
+import { useMagicHand } from '@/hooks/useMagicHand';
 
 const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso']);
 
@@ -42,47 +43,6 @@ STEP 3: LAYER SIMULATION & OVERPRINT — Multiply blending where inks overlap. 1
 STEP 4: PAPER & INK TEXTURE — Off-white/cream paper with grain. Uneven ink density, speckle, ink dropout.
 STEP 5: FINAL PRINT AESTHETIC — Handmade analog feel. No clean digital look. No shadows, glows, or gradients.
 NEGATIVE PROMPT: smooth gradients, photorealistic rendering, clean digital illustration, anti-aliased edges, perfect color registration, white background, more than 4-5 ink colors, airbrushed tones, 3D shading, HDR, oversaturated digital colors`;
-
-/* ─── Compare Controls ─── */
-
-const CompareControls: React.FC = React.memo(() => {
-  const labStore = useImageLabStore;
-  const compareMode = labStore((s) => s.compareMode);
-  const setCompareMode = labStore((s) => s.setCompareMode);
-  const hasImage = labStore((s) => !!s.sourceUrl);
-
-  if (!hasImage) return null;
-
-  return (
-    <div className="flex items-center gap-1 ml-2">
-      <button
-        onClick={() => setCompareMode(compareMode === 'toggle' ? 'off' : 'toggle')}
-        className={cn(
-          'p-1.5 rounded-md transition-all duration-150',
-          compareMode === 'toggle'
-            ? 'bg-white/10 text-white'
-            : 'text-neutral-600 hover:text-neutral-400'
-        )}
-        title="Before/After toggle (Alt+Z)"
-      >
-        {compareMode === 'toggle' ? <EyeOff size={14} /> : <Eye size={14} />}
-      </button>
-      <button
-        onClick={() => setCompareMode(compareMode === 'split' ? 'off' : 'split')}
-        className={cn(
-          'p-1.5 rounded-md transition-all duration-150',
-          compareMode === 'split'
-            ? 'bg-white/10 text-white'
-            : 'text-neutral-600 hover:text-neutral-400'
-        )}
-        title="Split comparison (Alt+X)"
-      >
-        <Split size={14} />
-      </button>
-    </div>
-  );
-});
-CompareControls.displayName = 'CompareControls';
 
 /* ─── Per-mode state bridge ─── */
 
@@ -116,6 +76,53 @@ function usePerModeState(mode: ImageLabMode) {
   }, [mode, hPanel, hSetPanel, hReset, hFile, hZoom, hUndo, hRedo, hHi, hHl, hImg,
     tPanel, tSetPanel, tReset, tFile, tZoom, tUndo, tRedo, tHi, tHl, tImg,
     rPanel, rSetPanel, rReset, rFile, rZoom, rUndo, rRedo, rHi, rHl, rImg]);
+}
+
+/* ─── Canvas thumbnail hook ─── */
+
+function useCanvasThumbnails(
+  canvasRefsMap: React.MutableRefObject<Record<ImageLabMode, HTMLCanvasElement | null>>,
+) {
+  const hHi = useHalftoneStore((s) => s.historyIndex);
+  const hImg = useHalftoneStore((s) => s.imageUrl);
+  const tHi = useTextureFilterStore((s) => s.historyIndex);
+  const tImg = useTextureFilterStore((s) => s.imageUrl);
+  const rHi = useRisoStore((s) => s.historyIndex);
+  const rImg = useRisoStore((s) => s.imageUrl);
+
+  const [thumbs, setThumbs] = useState<Record<ImageLabMode, string | null>>({
+    halftone: null, texture: null, riso: null,
+  });
+
+  const frameId = useRef<number>(0);
+
+  const capture = useCallback((modeKey: ImageLabMode) => {
+    const canvas = canvasRefsMap.current[modeKey];
+    if (!canvas || canvas.width === 0 || canvas.height === 0) return;
+    cancelAnimationFrame(frameId.current);
+    frameId.current = requestAnimationFrame(() => {
+      try {
+        const tmp = document.createElement('canvas');
+        const size = 72;
+        tmp.width = size;
+        tmp.height = size;
+        const ctx = tmp.getContext('2d');
+        if (!ctx) return;
+        const scale = Math.max(size / canvas.width, size / canvas.height);
+        const w = canvas.width * scale;
+        const h = canvas.height * scale;
+        ctx.drawImage(canvas, (size - w) / 2, (size - h) / 2, w, h);
+        const url = tmp.toDataURL('image/jpeg', 0.6);
+        setThumbs((prev) => ({ ...prev, [modeKey]: url }));
+      } catch { /* tainted canvas, ignore */ }
+    });
+  }, [canvasRefsMap]);
+
+  useEffect(() => { if (hImg) capture('halftone'); }, [hHi, hImg, capture]);
+  useEffect(() => { if (tImg) capture('texture'); }, [tHi, tImg, capture]);
+  useEffect(() => { if (rImg) capture('riso'); }, [rHi, rImg, capture]);
+
+  return thumbs;
 }
 
 /* ─── Preset cycling hook ─── */
@@ -178,6 +185,8 @@ export const ImageLabPage: React.FC = () => {
   const setShowOriginal = labStore((s) => s.setShowOriginal);
   const exportModalOpen = labStore((s) => s.exportModalOpen);
   const setExportModalOpen = labStore((s) => s.setExportModalOpen);
+  const magicHandActive = labStore((s) => s.magicHandActive);
+  const setMagicHandActive = labStore((s) => s.setMagicHandActive);
 
   const halftoneStore = useHalftoneStore;
   const textureStore = useTextureFilterStore;
@@ -210,6 +219,27 @@ export const ImageLabPage: React.FC = () => {
     textureStore.getState().setImageUrl(url, name, mediaType === 'video' ? 'video' : 'image');
   }, []);
 
+  const canvasRefsMap = useRef<Record<ImageLabMode, HTMLCanvasElement | null>>({
+    halftone: null, texture: null, riso: null,
+  });
+  const halftoneRef = useRef<HalftoneCanvasHandle>(null);
+  const risoRef = useRef<RisoCanvasHandle>(null);
+  const textureRef = useRef<TextureFilterCanvasHandle>(null);
+  const magicHandAreaRef = useRef<HTMLDivElement>(null);
+  const thumbs = useCanvasThumbnails(canvasRefsMap);
+
+  useMagicHand(magicHandAreaRef);
+
+  const onHalftoneCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    canvasRefsMap.current.halftone = canvas;
+  }, []);
+  const onTextureCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    canvasRefsMap.current.texture = canvas;
+  }, []);
+  const onRisoCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    canvasRefsMap.current.riso = canvas;
+  }, []);
+
   const { canvasRef, onCanvasReady, exportPng } = useExportCanvas({
     filenamePrefix: `imagelab_${mode}`,
     getShaderSettings: () => {
@@ -218,6 +248,11 @@ export const ImageLabPage: React.FC = () => {
     },
     setIsExporting: (v) => (activeStore.getState() as any).setIsExporting(v),
   });
+
+  useEffect(() => {
+    const active = canvasRefsMap.current[mode];
+    if (active) canvasRef.current = active;
+  }, [mode, canvasRef]);
 
   const getShaderSettings = useCallback(() => {
     const s = activeStore.getState() as any;
@@ -268,6 +303,16 @@ export const ImageLabPage: React.FC = () => {
         setCompareMode(current === 'split' ? 'off' : 'split');
       }
 
+      if (e.key === 'm' && !e.altKey && !e.shiftKey && !e.ctrlKey) {
+        e.preventDefault();
+        setMagicHandActive(!labStore.getState().magicHandActive);
+      }
+
+      if (e.key === 'Escape') {
+        const current = labStore.getState().compareMode;
+        if (current !== 'off') { e.preventDefault(); setCompareMode('off'); }
+      }
+
       if (e.key === '[') { e.preventDefault(); cyclePreset(-1); }
       if (e.key === ']') { e.preventDefault(); cyclePreset(1); }
 
@@ -283,7 +328,7 @@ export const ImageLabPage: React.FC = () => {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleModeChange, setCompareMode, cyclePreset, setExportModalOpen]);
+  }, [handleModeChange, setCompareMode, cyclePreset, setExportModalOpen, setMagicHandActive]);
 
   useEffect(() => {
     if (compareMode !== 'toggle') return;
@@ -337,39 +382,21 @@ export const ImageLabPage: React.FC = () => {
 
   const statusItems = useStatusItems(mode);
 
+  const closePanel = useCallback(() => setPanelVisible(false), [setPanelVisible]);
+
   const controlsPanel = useMemo(() => {
     switch (mode) {
-      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} />;
-      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} />;
-      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} />;
+      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} onClosePanel={closePanel} />;
+      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} onClosePanel={closePanel} />;
+      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} onClosePanel={closePanel} />;
     }
-  }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen]);
+  }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, closePanel]);
 
-  const extraTopBarLeft = useMemo(() => (
-    <>
-      <ModePreviewSwitcher mode={mode} onChange={handleModeChange} />
-      <CompareControls />
-    </>
-  ), [mode, handleModeChange]);
-
-  const extraTopBarRight = useMemo(() => (
-    <div className="flex items-center gap-1">
-      <button
-        onClick={() => setPresetLibraryOpen(true)}
-        className="p-1.5 rounded-md text-neutral-600 hover:text-neutral-400 transition-colors"
-        title="Community Presets (Shift+P)"
-      >
-        <Library size={14} />
-      </button>
-      <button
-        onClick={() => setExportModalOpen(true)}
-        className="p-1.5 rounded-md text-neutral-600 hover:text-neutral-400 transition-colors"
-        title="Export Settings (Shift+E)"
-      >
-        <Settings2 size={14} />
-      </button>
-    </div>
-  ), [setExportModalOpen]);
+  const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(() => [
+    { id: 'halftone', icon: <CircleDot size={16} />, label: 'Halftone' },
+    { id: 'texture', icon: <Paintbrush size={16} />, label: 'Texture' },
+    { id: 'riso', icon: <Printer size={16} />, label: 'Riso' },
+  ], []);
 
   return (
     <>
@@ -383,27 +410,129 @@ export const ImageLabPage: React.FC = () => {
           ? 'All riso settings will return to defaults and extracted layers will be cleared.'
           : `All ${mode} settings will return to defaults.`
         }
-        undo={{ handler: undo, disabled: historyIndex < 0 }}
-        redo={{ handler: redo, disabled: historyIndex >= historyLength - 1 }}
-        extraTopBarLeft={extraTopBarLeft}
-        extraTopBarRight={extraTopBarRight}
         controlsPanel={controlsPanel}
         statusItems={statusItems}
         fileName={fileName}
         isDragOver={isDragOver}
         dragProps={dragProps}
         dropMessage={dropMessage}
+        showLegalMenu={false}
+        hideTopBar
+        canvasClassName="absolute inset-0 transition-all duration-300"
       >
-        {mode === 'halftone' && <HalftoneCanvas onCanvasReady={onCanvasReady} />}
-        {mode === 'texture' && <TextureFilterCanvas onCanvasReady={onCanvasReady} />}
-        {mode === 'riso' && <RisoCanvas onCanvasReady={onCanvasReady} />}
+        {/* Floating left toolbar */}
+        <div className="absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-900/80 backdrop-blur-md border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl">
+          {MODE_ITEMS.map((m) => {
+            const thumb = thumbs[m.id];
+            return (
+              <button
+                key={m.id}
+                onClick={() => handleModeChange(m.id)}
+                title={`${m.label} (${m.id === 'halftone' ? '1' : m.id === 'texture' ? '2' : '3'})`}
+                className={cn(
+                  'relative flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-150 overflow-hidden',
+                  mode === m.id
+                    ? 'ring-1 ring-white/30 shadow-sm'
+                    : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
+                  !thumb && mode === m.id && 'bg-white/10 text-white',
+                )}
+              >
+                {thumb ? (
+                  <>
+                    <img src={thumb} alt={m.label} className={cn(
+                      'absolute inset-0 w-full h-full object-cover transition-opacity',
+                      mode === m.id ? 'opacity-100' : 'opacity-50 hover:opacity-80'
+                    )} />
+                    <span className="relative z-10 text-[7px] font-mono uppercase tracking-wider text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                      {m.label.slice(0, 3)}
+                    </span>
+                  </>
+                ) : m.icon}
+              </button>
+            );
+          })}
+
+          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+
+          {/* Undo / Redo */}
+          <button onClick={undo} disabled={historyIndex < 0} title="Undo (Ctrl+Z)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all">
+            <Undo2 size={15} />
+          </button>
+          <button onClick={redo} disabled={historyIndex >= historyLength - 1} title="Redo (Ctrl+Shift+Z)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all">
+            <Redo2 size={15} />
+          </button>
+
+          {hasImage && (
+            <button
+              onClick={() => setMagicHandActive(!magicHandActive)}
+              title="Magic Hand (M) — drag to shape the effect"
+              className={cn(
+                'flex items-center justify-center w-9 h-9 rounded-lg transition-all',
+                magicHandActive
+                  ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
+              )}
+            >
+              <Hand size={15} />
+            </button>
+          )}
+
+          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+
+          {/* Utilities */}
+          <button onClick={handleReset} title="Reset (R)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
+            <RotateCcw size={15} />
+          </button>
+          <button onClick={() => setPresetLibraryOpen(true)} title="Community Presets (Shift+P)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
+            <Library size={15} />
+          </button>
+          <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
+            <Download size={15} />
+          </button>
+          {!panelVisible && (
+            <button onClick={() => setPanelVisible(true)} title="Show panel (Tab)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
+              <PanelRightOpen size={15} />
+            </button>
+          )}
+        </div>
+
+        <div className={mode !== 'halftone' ? 'hidden' : 'contents'}>
+          <HalftoneCanvas ref={halftoneRef} onCanvasReady={onHalftoneCanvasReady} />
+        </div>
+        <div className={mode !== 'texture' ? 'hidden' : 'contents'}>
+          <TextureFilterCanvas ref={textureRef} onCanvasReady={onTextureCanvasReady} />
+        </div>
+        <div className={mode !== 'riso' ? 'hidden' : 'contents'}>
+          <RisoCanvas ref={risoRef} onCanvasReady={onRisoCanvasReady} />
+        </div>
+
+        <div
+          ref={magicHandAreaRef}
+          className="absolute inset-0 z-10"
+          onWheel={(e) => {
+            e.currentTarget.style.pointerEvents = 'none';
+            requestAnimationFrame(() => {
+              if (magicHandAreaRef.current) {
+                magicHandAreaRef.current.style.pointerEvents =
+                  magicHandActive && hasImage ? 'auto' : 'none';
+              }
+            });
+          }}
+          style={{
+            cursor: magicHandActive && hasImage ? 'grab' : undefined,
+            touchAction: 'none',
+            pointerEvents: magicHandActive && hasImage ? 'auto' : 'none',
+          }}
+        />
 
         <BeforeAfterOverlay sourceUrl={sourceUrl} />
 
         {!hasImage && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="flex flex-col items-center gap-4 text-neutral-500">
-              <Upload size={28} strokeWidth={1.2} />
+          <label className="absolute inset-0 flex items-center justify-center z-10 cursor-pointer">
+            <div className="flex flex-col items-center gap-4 text-neutral-500 group">
+              <div className="w-16 h-16 rounded-2xl border border-dashed border-neutral-700 group-hover:border-neutral-500 flex items-center justify-center transition-colors">
+                <Upload size={24} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+              </div>
               <p className="text-[11px] uppercase tracking-widest">
                 Drop or paste an image{mode === 'texture' ? ' or video' : ''} to begin
               </p>
@@ -414,12 +543,24 @@ export const ImageLabPage: React.FC = () => {
                 <p className="text-[10px] tracking-wide opacity-40">
                   Alt+Z — before/after · Alt+X — split · [ ] — cycle presets
                 </p>
-                <p className="text-[10px] tracking-wide opacity-30">
-                  Shift+E — export · Shift+P — community presets
-                </p>
               </div>
             </div>
-          </div>
+            <input
+              type="file"
+              accept={mode === 'texture' ? 'image/*,video/*' : 'image/*'}
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const isVideo = file.type.startsWith('video/');
+                  const url = URL.createObjectURL(file);
+                  broadcastImage(url, file.name, isVideo ? 'video' : 'image');
+                  toast.success(`Loaded ${file.name}`);
+                }
+                e.target.value = '';
+              }}
+            />
+          </label>
         )}
       </ToolEditorShell>
 
@@ -429,6 +570,36 @@ export const ImageLabPage: React.FC = () => {
         canvasRef={canvasRef}
         filenamePrefix={`imagelab_${mode}`}
         getShaderSettings={getShaderSettings}
+        onExportSvg={mode === 'halftone' ? async () => {
+          const imgUrl = halftoneStore.getState().imageUrl;
+          if (!imgUrl) return undefined;
+          const settings = halftoneStore.getState().getSettings();
+          const img = await loadImage(imgUrl);
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth;
+          c.height = img.naturalHeight;
+          const ctx = c.getContext('2d');
+          if (!ctx) return undefined;
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, c.width, c.height);
+          return generateHalftoneSvg(imageData, settings);
+        } : undefined}
+        onExportScaled={(scale) => {
+          if (mode === 'halftone') {
+            const renderer = halftoneRef.current?.getRenderer();
+            if (!renderer) return undefined;
+            return renderer.renderAtScale(halftoneStore.getState().getSettings(), scale);
+          }
+          if (mode === 'riso') {
+            const renderer = risoRef.current?.getRenderer();
+            if (!renderer) return undefined;
+            return renderer.renderAtScale(risoStore.getState().getSettings(), scale);
+          }
+          if (mode === 'texture') {
+            return textureRef.current?.renderAtScale(scale);
+          }
+          return undefined;
+        }}
       />
 
       <ImageLabPresetLibrary

@@ -150,7 +150,40 @@ export const SEO: React.FC<SEOProps> = ({
     // Update html lang attribute
     document.documentElement.lang = currentLocale === 'pt-BR' ? 'pt-BR' : 'en-US';
 
-  }, [fullTitle, finalDescription, keywords, imageUrl, finalUrl, type, noindex, currentLocale, location.pathname, location.search]);
+    // JSON-LD structured data (Organization + SoftwareApplication)
+    const jsonLdId = 'visant-jsonld';
+    let jsonLdScript = document.getElementById(jsonLdId) as HTMLScriptElement | null;
+    if (!jsonLdScript) {
+      jsonLdScript = document.createElement('script');
+      jsonLdScript.id = jsonLdId;
+      jsonLdScript.type = 'application/ld+json';
+      document.head.appendChild(jsonLdScript);
+    }
+    jsonLdScript.textContent = JSON.stringify([
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Visant Labs',
+        url: siteUrl,
+        logo: `${siteUrl}/og-image.png`,
+        sameAs: [],
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'Visant Labs',
+        applicationCategory: 'DesignApplication',
+        operatingSystem: 'Web',
+        url: siteUrl,
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+      },
+    ]);
+
+  }, [fullTitle, finalDescription, keywords, imageUrl, finalUrl, type, noindex, currentLocale, location.pathname, location.search, siteUrl]);
 
   return null;
 };

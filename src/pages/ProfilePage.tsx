@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { User, X, ShieldCheck } from 'lucide-react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { User, X, ShieldCheck, Trash2 } from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { CreditPackagesModal } from '../components/CreditPackagesModal';
 import { TransactionsModal } from '../components/TransactionsModal';
@@ -15,7 +15,11 @@ import { toast } from 'sonner';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { BackButton } from "../components/ui/BackButton";
+import { Button } from "../components/ui/button";
 import { ApiSettings } from '../components/profile/ApiSettings';
+import { SecuritySettings } from '../components/profile/SecuritySettings';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
 import { ProfileOverview } from '../components/profile/ProfileOverview';
 import { UsageHistory } from '../components/profile/UsageHistory';
 import { API_BASE } from '@/config/api';
@@ -24,6 +28,7 @@ export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated, isCheckingAuth } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // State
   const [user, setUser] = useState<UserType | null>(null);
@@ -37,6 +42,9 @@ export const ProfilePage: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Tab state management
   const [currentTab, setCurrentTab] = useState(searchParams.get('tab') || 'overview');
@@ -287,6 +295,27 @@ export const ProfilePage: React.FC = () => {
 
             <TabsContent value="configuration">
               <ApiSettings />
+
+              <div className="mt-8">
+                <SecuritySettings totpEnabled={user?.totpEnabled} />
+              </div>
+
+              <div className="mt-8 p-4 border border-red-900/30 rounded-lg bg-red-950/10">
+                <h3 className="text-sm font-mono font-semibold text-red-400 mb-2 flex items-center gap-2">
+                  <Trash2 size={14} /> Zona de perigo
+                </h3>
+                <p className="text-xs text-neutral-500 font-mono mb-4">
+                  Ao excluir sua conta, seus dados serao anonimizados e a assinatura cancelada. Esta acao nao pode ser desfeita.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="border-red-800/50 text-red-400 hover:bg-red-950/30 hover:text-red-300"
+                >
+                  Excluir minha conta
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
 
@@ -309,6 +338,48 @@ export const ProfilePage: React.FC = () => {
           window.location.reload();
         }}
       />
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="bg-neutral-900 border-neutral-800">
+          <DialogHeader>
+            <DialogTitle className="text-red-400 font-mono">Excluir conta</DialogTitle>
+            <DialogDescription className="text-neutral-400 text-sm font-mono">
+              Esta acao e irreversivel. Sua assinatura sera cancelada e seus dados anonimizados.
+              Digite <strong className="text-white">EXCLUIR</strong> para confirmar.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            placeholder="Digite EXCLUIR"
+            className="font-mono"
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setIsDeleteDialogOpen(false); setDeleteConfirmText(''); }}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteConfirmText !== 'EXCLUIR' || isDeletingAccount}
+              onClick={async () => {
+                setIsDeletingAccount(true);
+                try {
+                  await authService.deleteAccount();
+                  toast.success('Conta excluída com sucesso.');
+                  navigate('/');
+                } catch (err: any) {
+                  toast.error(err.message || 'Erro ao excluir conta.');
+                } finally {
+                  setIsDeletingAccount(false);
+                  setIsDeleteDialogOpen(false);
+                  setDeleteConfirmText('');
+                }
+              }}
+            >
+              {isDeletingAccount ? 'Excluindo...' : 'Excluir permanentemente'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 };

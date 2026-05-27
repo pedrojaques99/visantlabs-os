@@ -15,6 +15,7 @@ interface ImageLabState {
   splitPosition: number;
 
   exportModalOpen: boolean;
+  magicHandActive: boolean;
 
   setMode: (mode: ImageLabMode) => void;
   setSource: (url: string, fileName: string, mediaType?: 'image' | 'video') => void;
@@ -25,6 +26,7 @@ interface ImageLabState {
   setSplitPosition: (pos: number) => void;
 
   setExportModalOpen: (open: boolean) => void;
+  setMagicHandActive: (active: boolean) => void;
 }
 
 export const useImageLabStore = create<ImageLabState>()((set) => ({
@@ -38,6 +40,7 @@ export const useImageLabStore = create<ImageLabState>()((set) => ({
   splitPosition: 50,
 
   exportModalOpen: false,
+  magicHandActive: false,
 
   setMode: (mode) => set({ mode }),
   setSource: (sourceUrl, sourceFileName, sourceMediaType = 'image') =>
@@ -49,4 +52,5 @@ export const useImageLabStore = create<ImageLabState>()((set) => ({
   setSplitPosition: (splitPosition) => set({ splitPosition }),
 
   setExportModalOpen: (exportModalOpen) => set({ exportModalOpen }),
+  setMagicHandActive: (magicHandActive) => set({ magicHandActive }),
 }));

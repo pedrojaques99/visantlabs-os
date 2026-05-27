@@ -67,6 +67,8 @@ const GridMachinePage = lazyWithRetry(() => import('./pages/GridMachinePage').th
 const RisoMachinePage = lazyWithRetry(() => import('./pages/RisoMachinePage').then(m => ({ default: m.RisoMachinePage })));
 const ImageLabPage = lazyWithRetry(() => import('./pages/ImageLabPage').then(m => ({ default: m.ImageLabPage })));
 const DeveloperPortalPage = lazyWithRetry(() => import('./pages/DeveloperPortalPage').then(m => ({ default: m.DeveloperPortalPage })));
+const VerifyEmailPage = lazyWithRetry(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
+const OnboardingWizardPage = lazyWithRetry(() => import('./pages/OnboardingWizardPage').then(m => ({ default: m.OnboardingWizardPage })));
 
 
 const LoadingFallback = () => (
@@ -133,6 +135,8 @@ const App: React.FC = () => {
                 <Route path="/auth" element={<AuthCallbackPage />} />
                 <Route path="/waitlist" element={<WaitlistPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
+                <Route path="/welcome" element={<OnboardingWizardPage />} />
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/admin/chat" element={<AdminChatPage />} />
                 <Route path="/admin/presets" element={<AdminPresetsPage />} />

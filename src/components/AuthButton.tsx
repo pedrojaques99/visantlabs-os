@@ -52,7 +52,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
   const hcaptchaSiteKey = typeof window !== 'undefined'
     ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY
     : undefined;
-  const captchaEnabled = false; // Temporarily disabled
+  const captchaEnabled = !!hcaptchaSiteKey;
 
   // Load user data when authenticated state changes (sincronizado com contexto)
   useEffect(() => {
@@ -300,18 +300,31 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
 
   const availableCredits = getAvailableCredits();
 
+  const currentStatus = propSubscriptionStatus || subscriptionStatus;
+  const tier = currentStatus?.subscriptionTier;
+  const tierLabel = tier === 'premium' ? 'Vision' : tier === 'pro' ? 'Pro' : 'Free';
+  const tierColor = tier === 'premium' ? 'text-amber-400 border-amber-500/30'
+    : tier === 'pro' ? 'text-violet-400 border-violet-500/30'
+    : 'text-neutral-500 border-neutral-700/50';
+  const isLowCredits = availableCredits > 0 && availableCredits < 5;
+
   if (user) {
     return (
-      <div className="flex items-center gap-3" data-auth-dropdown>
-        {propSubscriptionStatus || subscriptionStatus ? (
-          <Button variant="ghost" onClick={onCreditsClick}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] text-brand-cyan font-mono bg-neutral-900/40 border border-brand-cyan/20 hover:bg-[#252525]/60 hover:border-neutral-700 transition-all cursor-pointer shadow-sm"
-            aria-label={t('auth.availableCredits', { count: availableCredits })}
-            title={t('auth.creditsAvailable', { count: availableCredits })}
-          >
-            <Pickaxe size={12} className="md:w-3 md:h-3 text-brand-cyan" aria-hidden="true" />
-            <span>{availableCredits}</span>
-          </Button>
+      <div className="flex items-center gap-2" data-auth-dropdown>
+        {currentStatus ? (
+          <>
+            <span className={`hidden sm:inline-flex items-center h-6 px-2 rounded text-[9px] font-mono font-medium uppercase tracking-wider border ${tierColor}`}>
+              {tierLabel}
+            </span>
+            <Button variant="ghost" onClick={onCreditsClick}
+              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-neutral-900/40 border hover:bg-[#252525]/60 hover:border-neutral-700 transition-all cursor-pointer shadow-sm ${isLowCredits ? 'text-amber-400 border-amber-500/30' : 'text-brand-cyan border-brand-cyan/20'}`}
+              aria-label={t('auth.availableCredits', { count: availableCredits })}
+              title={isLowCredits ? `Apenas ${availableCredits} creditos restantes` : t('auth.creditsAvailable', { count: availableCredits })}
+            >
+              <Pickaxe size={12} className={`md:w-3 md:h-3 ${isLowCredits ? 'text-amber-400' : 'text-brand-cyan'}`} aria-hidden="true" />
+              <span>{availableCredits}</span>
+            </Button>
+          </>
         ) : null}
         <div className="relative">
           <Button variant="ghost" onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -550,7 +563,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
               )}
 
               <Button variant="brand" type="submit"
-                disabled={isAuthLoading || !email || !password}
+                disabled={isAuthLoading || !email || !password || (isSignUp && captchaEnabled && !captchaToken)}
                 className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
               >
                 {isAuthLoading ? (

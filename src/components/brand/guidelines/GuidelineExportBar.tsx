@@ -59,7 +59,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
         {/* Left: saved status */}
         <div className="flex items-center gap-2">
           <Check size={12} className="text-green-500/60" />
-          <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">Saved</span>
+          <span className="text-[11px] text-neutral-600">Saved</span>
         </div>
 
         {/* Right: Review + Export */}
@@ -69,7 +69,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
               variant="ghost"
               size="sm"
               onClick={onStartReview}
-              className="h-8 px-3 text-[10px] font-mono uppercase tracking-wider text-neutral-500 hover:text-neutral-300 gap-1.5"
+              className="h-8 px-3 text-xs text-neutral-500 hover:text-neutral-300 gap-1.5"
             >
               <ClipboardCheck size={12} />
               Review
@@ -81,7 +81,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
               variant="ghost"
               size="sm"
               onClick={() => setOpen(v => !v)}
-              className="h-8 px-3 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-neutral-200 gap-1.5 border border-neutral-800 hover:border-white/10"
+              className="h-8 px-3 text-xs text-neutral-400 hover:text-neutral-200 gap-1.5 border border-neutral-800 hover:border-white/10"
             >
               <Download size={12} />
               Export
@@ -95,7 +95,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
                     {gi > 0 && <div className="h-px bg-white/5" />}
                     <div className="px-3 pt-2 pb-1">
                       <span className={cn(
-                        'text-[10px] font-mono uppercase tracking-widest',
+                        'text-[10px] font-medium',
                         group === 'AI' ? 'text-brand-cyan/60' : 'text-neutral-600'
                       )}>{group === 'AI' ? 'For AI' : `For ${group}`}</span>
                     </div>

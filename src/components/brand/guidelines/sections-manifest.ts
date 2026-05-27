@@ -109,6 +109,11 @@ export interface SectionTab {
 /** Tab groups shown in admin Brand Guidelines header — mirrors public page structure */
 export const SECTION_TABS: SectionTab[] = [
   {
+    id: 'overview',
+    label: 'Overview',
+    sections: [],
+  },
+  {
     id: 'conceito',
     label: 'Conceito',
     sections: ['identity', 'knowledge', 'figma'],

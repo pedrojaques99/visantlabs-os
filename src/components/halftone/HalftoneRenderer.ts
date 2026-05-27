@@ -480,6 +480,39 @@ export class HalftoneRenderer {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
+  renderAtScale(settings: HalftoneSettings, scale: number): HTMLCanvasElement {
+    if (!this.gl || !this.program || !this.texture || !this.isImageLoaded || scale <= 1) {
+      this.render(settings);
+      return this.canvas;
+    }
+
+    const w = Math.round(this.imageWidth * scale);
+    const h = Math.round(this.imageHeight * scale);
+    const origW = this.imageWidth;
+    const origH = this.imageHeight;
+
+    this.canvas.width = w;
+    this.canvas.height = h;
+    this.gl.viewport(0, 0, w, h);
+    this.imageWidth = w;
+    this.imageHeight = h;
+    this.render(settings);
+
+    const out = document.createElement('canvas');
+    out.width = w;
+    out.height = h;
+    out.getContext('2d')!.drawImage(this.canvas, 0, 0);
+
+    this.canvas.width = origW;
+    this.canvas.height = origH;
+    this.gl.viewport(0, 0, origW, origH);
+    this.imageWidth = origW;
+    this.imageHeight = origH;
+    this.render(settings);
+
+    return out;
+  }
+
   getCanvas(): HTMLCanvasElement {
     return this.canvas;
   }

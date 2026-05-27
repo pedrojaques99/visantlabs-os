@@ -57,6 +57,14 @@ model User {
   ollamaModel          String?   // User's preferred Ollama model (default: llama3.1)
   totalGenerations     Int       @default(0) // Track total images generated across all apps
   totalTokensUsed      Int       @default(0) // Track total tokens used across all apps
+  emailVerified         Boolean   @default(false)
+  verificationToken     String?
+  verificationExpires   DateTime?
+  onboardingCompleted   Boolean   @default(false)
+  totpSecret            String?
+  totpEnabled           Boolean   @default(false)
+  totpBackupCodes       String[]
+  welcomeEmailsSent     Int       @default(0)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
@@ -639,4 +647,17 @@ model AppConfig {
   updatedAt    DateTime? @updatedAt
 
   @@map("app_configs")
+}
+
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  deviceId  String?
+  ip        String?
+  userAgent String?
+  lastUsed  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("sessions")
 }

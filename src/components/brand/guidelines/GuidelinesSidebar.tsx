@@ -84,7 +84,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
   return (
     <div className="flex flex-col h-full bg-transparent p-4 lg:p-6 space-y-6 min-h-0 overflow-y-auto custom-scrollbar">
       <div className="flex-1 space-y-4">
-        <h2 className="text-[10px] font-black font-mono text-neutral-500 uppercase px-1">
+        <h2 className="text-[11px] font-semibold text-neutral-500 px-1">
           Design Systems
         </h2>
 
@@ -110,7 +110,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           <div className="flex flex-wrap gap-1.5 px-1">
             <button
               onClick={() => setSelectedFolder(null)}
-              className={cn("flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-all",
+              className={cn("flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all",
                 selectedFolder === null ? "bg-white/5 text-neutral-200 border border-white/10" : "bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300"
               )}
             >
@@ -118,7 +118,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             </button>
             {folders.map(folder => (
               <button key={folder} onClick={() => setSelectedFolder(folder)}
-                className={cn("flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-all truncate max-w-[120px]",
+                className={cn("flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all truncate max-w-[120px]",
                   selectedFolder === folder ? "bg-white/5 text-neutral-200 border border-white/10" : "bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300"
                 )}
                 title={folder}
@@ -147,7 +147,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                 key={g.id}
                 onClick={() => onSelect(g)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all font-mono text-xs border group/item",
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-xs border group/item",
                   selectedId === g.id
                     ? "text-neutral-200 bg-white/5 border-white/10"
                     : "text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]"
@@ -215,14 +215,14 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
           {filtered.length === 0 && searchQuery && (
             <div className="px-3 py-6 text-center">
-              <p className="text-[10px] font-mono text-neutral-600">No results for "{searchQuery}"</p>
-              <button onClick={() => setSearchQuery('')} className="mt-2 text-[10px] font-mono text-neutral-500 hover:text-neutral-300 transition-colors">Clear</button>
+              <p className="text-[11px] text-neutral-600">No results for "{searchQuery}"</p>
+              <button onClick={() => setSearchQuery('')} className="mt-2 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">Clear</button>
             </div>
           )}
 
           <button
             onClick={onCreate}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 border border-dashed border-neutral-800 font-mono text-xs uppercase hover:border-white/10 hover:text-neutral-400 transition-all mt-1"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 border border-dashed border-neutral-800 text-xs hover:border-white/10 hover:text-neutral-400 transition-all mt-1"
           >
             <Plus size={12} /><span>New Design System</span>
           </button>
@@ -233,8 +233,8 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
       {selectedId && recentProjects.length > 0 && (
         <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">
           <div className="flex items-center justify-between px-1">
-            <p className="text-[10px] font-mono text-neutral-600 uppercase">Recent</p>
-            <Link to={`/create?brandId=${selectedId}`} className="text-[10px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors">
+            <p className="text-[11px] font-medium text-neutral-600">Recent</p>
+            <Link to={`/create?brandId=${selectedId}`} className="text-[11px] text-neutral-700 hover:text-neutral-400 transition-colors">
               + New
             </Link>
           </div>
@@ -258,17 +258,17 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
       <div className="mt-auto space-y-4 pt-4 pb-2">
         <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">
-          <p className="text-[10px] font-mono text-neutral-700 uppercase">Sync from Branding Machine</p>
+          <p className="text-[11px] font-medium text-neutral-700">Sync from Branding Machine</p>
           <Button
-            variant="outline"
+            variant="subtle"
             onClick={() => { toast.info("Select a project from Branding Machine to sync."); navigate('/branding-machine'); }}
-            className="w-full h-8 bg-white/[0.03] border-white/10 text-neutral-500 hover:text-neutral-200 hover:border-white/20 text-[10px] font-mono uppercase tracking-widest transition-all gap-2"
+            className="w-full h-8 text-xs gap-2"
           >
             <RefreshCw size={11} />Sync Project
           </Button>
         </div>
         <div className="px-1 border-t border-white/[0.03] pt-3">
-          <div className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 uppercase px-1">
+          <div className="flex items-center gap-2 text-[11px] text-neutral-600 px-1">
             <Settings size={11} className="opacity-60" />Settings
           </div>
         </div>

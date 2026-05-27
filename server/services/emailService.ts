@@ -11,6 +11,7 @@ const TEMPLATE_IDS = {
   passwordReset: process.env.RESEND_TEMPLATE_PASSWORD_RESET || '',
   creditsPurchased: process.env.RESEND_TEMPLATE_CREDITS_PURCHASED || '',
   newsletterWelcome: process.env.RESEND_TEMPLATE_NEWSLETTER_WELCOME || '',
+  emailVerification: process.env.RESEND_TEMPLATE_EMAIL_VERIFICATION || '',
 };
 
 let resend: Resend | null = null;
@@ -71,6 +72,13 @@ const creditsPurchasedHtml = (
 ${formattedAmount ? `<p>Valor pago: <strong>${formattedAmount}</strong></p>` : ''}
 ${totalCredits !== undefined ? `<p>Total disponível: <strong>${totalCredits} créditos</strong></p>` : ''}
 <a class="btn" href="${dashboardUrl}">Acessar painel</a>`);
+
+const emailVerificationHtml = (userName: string, verifyUrl: string) =>
+  baseHtml(`<h2>Verifique seu email</h2>
+<p>Olá, <strong>${userName}</strong>!</p>
+<p>Clique no botão abaixo para verificar seu email. O link expira em 24 horas.</p>
+<a class="btn" href="${verifyUrl}">Verificar email</a>
+<p style="margin-top:20px;font-size:13px">Se você não criou esta conta, ignore este e-mail.</p>`);
 
 const newsletterWelcomeHtml = (whatsappUrl: string) =>
   baseHtml(`<h2>Obrigado por se inscrever!</h2>
@@ -211,6 +219,38 @@ export const sendCreditsPurchasedEmail = async (params: SendCreditsPurchasedEmai
 export interface SendNewsletterWelcomeEmailParams {
   email: string;
 }
+
+export interface SendVerificationEmailParams {
+  email: string;
+  name?: string;
+  verificationToken: string;
+}
+
+export const sendVerificationEmail = async (params: SendVerificationEmailParams): Promise<void> => {
+  const { email, name, verificationToken } = params;
+
+  const emailService = getEmailService();
+  if (!emailService) {
+    throw new Error('Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.');
+  }
+
+  const verifyUrl = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
+  const userName = name || email.split('@')[0];
+
+  try {
+    await emailService.emails.send(
+      withTemplate(
+        { from: RESEND_FROM_EMAIL, to: email, subject: 'Verifique seu email — Visant Labs' },
+        TEMPLATE_IDS.emailVerification,
+        { USER_NAME: userName, VERIFY_URL: verifyUrl },
+        emailVerificationHtml(userName, verifyUrl),
+      ),
+    );
+  } catch (error: any) {
+    console.error('Error sending verification email:', error);
+    throw new Error(`Failed to send verification email: ${error.message || 'Unknown error'}`);
+  }
+};
 
 export const sendNewsletterWelcomeEmail = async (params: SendNewsletterWelcomeEmailParams): Promise<void> => {
   const { email } = params;

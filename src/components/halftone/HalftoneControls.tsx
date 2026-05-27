@@ -1,59 +1,39 @@
 import React, { useCallback, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { NodeSlider } from '@/components/ui/NodeSlider';
-import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
+import { ScrubInput } from '@/components/ui/ScrubInput';
+import { Select } from '@/components/ui/select';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { Eye, EyeOff, Download } from 'lucide-react';
+import { Eye, EyeOff, Download, ChevronDown } from 'lucide-react';
 import { SendToButton } from '@/components/shared/SendToButton';
 import { ImageLabHeader } from '@/components/shared/ImageLabHeader';
 import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
   ToolPanel, ToolPanelContent, ToolPanelSection,
-  ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
+  ToolPanelDisclosure, ToolPanelActions, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
-
-const TABS = [
-  { id: 'halftone', label: 'Halftone' },
-  { id: 'color', label: 'Color' },
-] as const;
-
-type TabId = typeof TABS[number]['id'];
 
 const HALFTONE_PRESET_ITEMS = Object.keys(HALFTONE_PRESETS).map((name) => ({ name }));
 
+const CHANNELS = [
+  { key: 'Cyan', color: '#00FFFF', showKey: 'showCyan', inkKey: 'cyanInk', alphaKey: 'cyanAlpha', angleKey: 'cyanAngle' },
+  { key: 'Magenta', color: '#FF00FF', showKey: 'showMagenta', inkKey: 'magentaInk', alphaKey: 'magentaAlpha', angleKey: 'magentaAngle' },
+  { key: 'Yellow', color: '#FFFF00', showKey: 'showYellow', inkKey: 'yellowInk', alphaKey: 'yellowAlpha', angleKey: 'yellowAngle' },
+  { key: 'Black', color: '#333333', showKey: 'showBlack', inkKey: 'blackInk', alphaKey: 'blackAlpha', angleKey: 'blackAngle' },
+] as const;
+
 interface HalftoneControlsProps {
   onExport: () => void;
+  onClosePanel?: () => void;
 }
 
-export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ onExport }) => {
+export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ onExport, onClosePanel }) => {
   const store = useHalftoneStore();
-  const [activeTab, setActiveTab] = useState<TabId>('halftone');
+  const [expandedChannel, setExpandedChannel] = useState<number | null>(null);
 
-  const update = useCallback(<K extends string>(key: K, value: any) => {
+  const set = useCallback(<K extends string>(key: K, value: any) => {
     store.updateSetting(key as any, value);
   }, [store]);
-
-  const [frequency, setFrequency] = useDebouncedSlider(store.frequency, (v) => update('frequency', v));
-  const [dotSize, setDotSize] = useDebouncedSlider(store.dotSize, (v) => update('dotSize', v));
-  const [roughness, setRoughness] = useDebouncedSlider(store.roughness, (v) => update('roughness', v));
-  const [fuzz, setFuzz] = useDebouncedSlider(store.fuzz, (v) => update('fuzz', v));
-  const [randomness, setRandomness] = useDebouncedSlider(store.randomness, (v) => update('randomness', v));
-  const [threshold, setThreshold] = useDebouncedSlider(store.threshold, (v) => update('threshold', v));
-  const [contrast, setContrast] = useDebouncedSlider(store.contrast, (v) => update('contrast', v));
-  const [lightness, setLightness] = useDebouncedSlider(store.lightness, (v) => update('lightness', v));
-  const [blur, setBlur] = useDebouncedSlider(store.blur, (v) => update('blur', v));
-  const [paperNoise, setPaperNoise] = useDebouncedSlider(store.paperNoise, (v) => update('paperNoise', v));
-  const [inkNoise, setInkNoise] = useDebouncedSlider(store.inkNoise, (v) => update('inkNoise', v));
-  const [cyanAlpha, setCyanAlpha] = useDebouncedSlider(store.cyanAlpha, (v) => update('cyanAlpha', v));
-  const [cyanAngle, setCyanAngle] = useDebouncedSlider(store.cyanAngle, (v) => update('cyanAngle', v));
-  const [magentaAlpha, setMagentaAlpha] = useDebouncedSlider(store.magentaAlpha, (v) => update('magentaAlpha', v));
-  const [magentaAngle, setMagentaAngle] = useDebouncedSlider(store.magentaAngle, (v) => update('magentaAngle', v));
-  const [yellowAlpha, setYellowAlpha] = useDebouncedSlider(store.yellowAlpha, (v) => update('yellowAlpha', v));
-  const [yellowAngle, setYellowAngle] = useDebouncedSlider(store.yellowAngle, (v) => update('yellowAngle', v));
-  const [blackAlpha, setBlackAlpha] = useDebouncedSlider(store.blackAlpha, (v) => update('blackAlpha', v));
-  const [blackAngle, setBlackAngle] = useDebouncedSlider(store.blackAngle, (v) => update('blackAngle', v));
-  const [paperAlpha, setPaperAlpha] = useDebouncedSlider(store.paperAlpha, (v) => update('paperAlpha', v));
 
   return (
     <ToolPanel>
@@ -63,6 +43,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         onLoad={(url, name) => store.setImageUrl(url, name)}
         onClear={() => store.setImageUrl('', '')}
         onResetSettings={store.resetSettings}
+        onClosePanel={onClosePanel}
       />
 
       <PresetThumbnailStrip
@@ -71,106 +52,100 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         onSelect={(name) => store.applyPreset(name)}
       />
 
-      {/* Tab bar */}
-      <div className="shrink-0 flex border-b border-neutral-800/50">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              'flex-1 py-2 text-[10px] font-mono uppercase tracking-widest transition-colors',
-              activeTab === tab.id
-                ? 'text-white border-b border-white'
-                : 'text-neutral-600 hover:text-neutral-400'
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
       <ToolPanelContent>
-        {activeTab === 'halftone' && (
-          <>
-            {/* Presets */}
-            <ToolPanelSection title="PRESETS">
-              <ToolPanelGrid>
-                {Object.keys(HALFTONE_PRESETS).map((name) => (
-                  <ToolPanelChip key={name} onClick={() => store.applyPreset(name)}>{name}</ToolPanelChip>
-                ))}
-              </ToolPanelGrid>
-            </ToolPanelSection>
+        {/* Halftone */}
+        <ToolPanelSection title="HALFTONE">
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label="Freq" value={store.frequency} min={20} max={500} step={1} onChange={(v) => set('frequency', v)} />
+            <ScrubInput label="Dot" value={store.dotSize} min={0.1} max={1} step={0.01} onChange={(v) => set('dotSize', v)} />
+          </div>
+        </ToolPanelSection>
 
-            {/* Halftone */}
-            <ToolPanelSection title="HALFTONE">
-              <NodeSlider label="Frequency" hint="Lines per inch — higher = finer detail" value={frequency} min={20} max={500} step={1} onChange={setFrequency} />
-              <NodeSlider label="Dot Size" hint="Size of each halftone dot relative to cell" value={dotSize} min={0.1} max={1} step={0.01} onChange={setDotSize} />
-            </ToolPanelSection>
-
-            {/* Channels */}
-            <ToolPanelSection title="CHANNELS">
-              <div className="space-y-2">
-                <ChannelToggle label="Cyan" color="#00FFFF" visible={store.showCyan} onToggle={(v) => store.updateSetting('showCyan', v)} />
-                <ChannelToggle label="Magenta" color="#FF00FF" visible={store.showMagenta} onToggle={(v) => store.updateSetting('showMagenta', v)} />
-                <ChannelToggle label="Yellow" color="#FFFF00" visible={store.showYellow} onToggle={(v) => store.updateSetting('showYellow', v)} />
-                <ChannelToggle label="Black" color="#333333" visible={store.showBlack} onToggle={(v) => store.updateSetting('showBlack', v)} />
-              </div>
-            </ToolPanelSection>
-
-            {/* Blend Mode */}
-            <ToolPanelSection title="BLEND">
-              <ToolPanelGrid>
-                {BLEND_MODES.map((m) => (
-                  <ToolPanelChip key={m.id} active={store.blendMode === m.id} onClick={() => store.updateSetting('blendMode', m.id)}>
-                    {m.label}
-                  </ToolPanelChip>
-                ))}
-              </ToolPanelGrid>
-            </ToolPanelSection>
-
-            {/* Dot Advanced */}
-            <ToolPanelDisclosure label="Dot Advanced">
-              <NodeSlider label="Roughness" hint="Irregular dot edges — simulates worn plate" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
-              <NodeSlider label="Edge Fuzz" hint="Softness of dot boundaries" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
-              <NodeSlider label="Randomness" hint="Dot position jitter — adds organic feel" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
-              <NodeSlider label="Threshold" hint="Minimum brightness to produce a dot" value={threshold} min={0} max={0.5} step={0.01} onChange={setThreshold} />
-            </ToolPanelDisclosure>
-          </>
-        )}
-
-        {activeTab === 'color' && (
-          <>
-            {/* Image & Texture */}
-            <ToolPanelSection title="IMAGE & TEXTURE">
-              <NodeSlider label="Contrast" hint="Image contrast before halftone screening" value={contrast} min={0.3} max={2} step={0.01} onChange={setContrast} />
-              <NodeSlider label="Lightness" hint="Brighten or darken the source image" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
-              <NodeSlider label="Blur" hint="Pre-blur source for smoother dot transitions" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
-              <div className="h-px bg-neutral-800/50 my-1" />
-              <NodeSlider label="Paper Noise" hint="Random grain on the paper background" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
-              <NodeSlider label="Ink Noise" hint="Random variation in ink density" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
-            </ToolPanelSection>
-
-            {/* Ink Colors */}
-            <ToolPanelSection title="INK COLORS">
-              <div className="space-y-5">
-                <InkSection title="Cyan" color={store.cyanInk} alpha={cyanAlpha} angle={cyanAngle} onColor={(v) => store.updateSetting('cyanInk', v)} onAlpha={setCyanAlpha} onAngle={setCyanAngle} />
-                <InkSection title="Magenta" color={store.magentaInk} alpha={magentaAlpha} angle={magentaAngle} onColor={(v) => store.updateSetting('magentaInk', v)} onAlpha={setMagentaAlpha} onAngle={setMagentaAngle} />
-                <InkSection title="Yellow" color={store.yellowInk} alpha={yellowAlpha} angle={yellowAngle} onColor={(v) => store.updateSetting('yellowInk', v)} onAlpha={setYellowAlpha} onAngle={setYellowAngle} />
-                <InkSection title="Black" color={store.blackInk} alpha={blackAlpha} angle={blackAngle} onColor={(v) => store.updateSetting('blackInk', v)} onAlpha={setBlackAlpha} onAngle={setBlackAngle} />
-                <div className="space-y-3">
-                  <ToolPanelRow label="Paper">
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={store.paperColor} onChange={(e) => store.updateSetting('paperColor', e.target.value)} aria-label="Paper color" className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
-                      <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
+        {/* Channels */}
+        <ToolPanelSection title="CHANNELS">
+          <div className="space-y-1">
+            {CHANNELS.map((ch, i) => {
+              const isExpanded = expandedChannel === i;
+              const visible = store[ch.showKey];
+              const inkColor = store[ch.inkKey];
+              return (
+                <div key={ch.key} className={cn('rounded-lg border transition-colors', isExpanded ? 'border-neutral-700 bg-neutral-900/50' : 'border-transparent')}>
+                  <button
+                    onClick={() => setExpandedChannel(isExpanded ? null : i)}
+                    className="flex items-center gap-3 w-full py-2 px-2 hover:bg-neutral-800/30 rounded-lg transition-colors"
+                  >
+                    <input
+                      type="color"
+                      value={inkColor}
+                      aria-label={`${ch.key} ink color`}
+                      onChange={(e) => { e.stopPropagation(); set(ch.inkKey, e.target.value); }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0"
+                    />
+                    <span className="text-[11px] text-neutral-400 font-mono uppercase flex-1 text-left tracking-wider">{ch.key}</span>
+                    <div className="flex items-center gap-1">
+                      <span
+                        role="button"
+                        aria-label={`Toggle ${ch.key} visibility`}
+                        onClick={(e) => { e.stopPropagation(); set(ch.showKey, !visible); }}
+                        className="text-neutral-500 hover:text-white transition-colors p-1"
+                      >
+                        {visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                      </span>
+                      <ChevronDown size={14} className={cn('text-neutral-600 transition-transform', isExpanded && 'rotate-180')} />
                     </div>
-                  </ToolPanelRow>
-                  <NodeSlider label="Opacity" value={paperAlpha} min={0} max={1} step={0.01} onChange={setPaperAlpha} />
+                  </button>
+                  {isExpanded && (
+                    <div className="px-2 pb-2 pt-1 grid grid-cols-2 gap-1.5">
+                      <ScrubInput label="Opacity" value={(store as any)[ch.alphaKey]} min={0} max={1} step={0.01} onChange={(v) => set(ch.alphaKey, v)} />
+                      <ScrubInput label="Angle" value={(store as any)[ch.angleKey]} min={0} max={360} step={5} suffix="°" onChange={(v) => set(ch.angleKey, v)} />
+                    </div>
+                  )}
                 </div>
-              </div>
-            </ToolPanelSection>
-          </>
-        )}
+              );
+            })}
+          </div>
+        </ToolPanelSection>
 
+        {/* Paper */}
+        <ToolPanelRow label="Paper">
+          <div className="flex items-center gap-2">
+            <input type="color" value={store.paperColor} onChange={(e) => set('paperColor', e.target.value)} aria-label="Paper color" className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
+            <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
+          </div>
+        </ToolPanelRow>
+        <ScrubInput label="Paper Opacity" value={store.paperAlpha} min={0} max={1} step={0.01} onChange={(v) => set('paperAlpha', v)} />
+
+        {/* Blend Mode */}
+        <ToolPanelRow label="Blend">
+          <Select
+            options={BLEND_MODES.map((m) => ({ value: String(m.id), label: m.label }))}
+            value={String(store.blendMode)}
+            onChange={(v) => set('blendMode', Number(v))}
+            variant="node"
+          />
+        </ToolPanelRow>
+
+        {/* Image & Texture */}
+        <ToolPanelSection title="IMAGE & TEXTURE">
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label="Contrast" value={store.contrast} min={0.3} max={2} step={0.01} onChange={(v) => set('contrast', v)} />
+            <ScrubInput label="Light" value={store.lightness} min={-0.5} max={0.5} step={0.01} onChange={(v) => set('lightness', v)} />
+            <ScrubInput label="Blur" value={store.blur} min={0} max={30} step={0.5} suffix="px" onChange={(v) => set('blur', v)} />
+            <ScrubInput label="Grain" value={store.paperNoise} min={0} max={1} step={0.01} onChange={(v) => set('paperNoise', v)} />
+          </div>
+          <ScrubInput label="Ink Noise" value={store.inkNoise} min={0} max={1} step={0.01} onChange={(v) => set('inkNoise', v)} />
+        </ToolPanelSection>
+
+        {/* Dot Advanced */}
+        <ToolPanelDisclosure label="Dot Advanced">
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label="Rough" value={store.roughness} min={0} max={2} step={0.05} onChange={(v) => set('roughness', v)} />
+            <ScrubInput label="Fuzz" value={store.fuzz} min={0} max={0.5} step={0.01} onChange={(v) => set('fuzz', v)} />
+            <ScrubInput label="Random" value={store.randomness} min={0} max={0.4} step={0.01} onChange={(v) => set('randomness', v)} />
+            <ScrubInput label="Thresh" value={store.threshold} min={0} max={0.5} step={0.01} onChange={(v) => set('threshold', v)} />
+          </div>
+        </ToolPanelDisclosure>
       </ToolPanelContent>
 
       <ToolPanelActions>
@@ -185,32 +160,3 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
     </ToolPanel>
   );
 });
-
-const InkSection: React.FC<{
-  title: string; color: string; alpha: number; angle: number;
-  onColor: (v: string) => void; onAlpha: (v: number) => void; onAngle: (v: number) => void;
-}> = ({ title, color, alpha, angle, onColor, onAlpha, onAngle }) => (
-  <div className="space-y-3">
-    <div className="flex items-center gap-3">
-      <input type="color" value={color} onChange={(e) => onColor(e.target.value)} aria-label={`${title} ink color`} className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0" />
-      <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest flex-1">{title}</span>
-      <span className="text-[10px] text-neutral-500 font-mono uppercase">{color}</span>
-    </div>
-    <NodeSlider label="Opacity" value={alpha} min={0} max={1} step={0.01} onChange={onAlpha} />
-    <NodeSlider label="Angle" value={angle} min={0} max={360} step={5} onChange={onAngle} formatValue={(v) => `${v}°`} />
-  </div>
-);
-
-const ChannelToggle: React.FC<{
-  label: string; color: string; visible: boolean; onToggle: (v: boolean) => void;
-}> = ({ label, color, visible, onToggle }) => (
-  <div className="flex items-center justify-between py-1">
-    <div className="flex items-center gap-3">
-      <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: color, opacity: visible ? 1 : 0.2 }} />
-      <span className="text-[11px] text-neutral-400 uppercase tracking-wider">{label}</span>
-    </div>
-    <button onClick={() => onToggle(!visible)} aria-label={`Toggle ${label.toLowerCase()} channel`} className="text-neutral-500 hover:text-white transition-colors p-1">
-      {visible ? <Eye size={14} /> : <EyeOff size={14} />}
-    </button>
-  </div>
-);

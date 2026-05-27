@@ -8,7 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { SiGoogle } from '@icons-pack/react-simple-icons';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   useScrollLock(isOpen);
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -45,7 +46,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const hcaptchaSiteKey = typeof window !== 'undefined'
     ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY
     : undefined;
-  const captchaEnabled = false; // Temporarily disabled
+  const captchaEnabled = !!hcaptchaSiteKey;
 
   // Use external state if provided, otherwise use internal state
   const [internalIsSignUp, setInternalIsSignUp] = useState(defaultIsSignUp);
@@ -109,6 +110,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       toast.success(isSignUp ? t('auth.accountCreatedSuccess') : t('auth.signedInSuccess'), { duration: 2000 });
       onSuccess();
+      if (isSignUp) {
+        navigate('/welcome');
+      }
     } catch (error: any) {
       console.error('Email auth error:', error);
       const errorMessage = error.message || String(error);
@@ -292,7 +296,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
 
           <Button variant="brand" type="submit"
-            disabled={isAuthLoading || !email || !password}
+            disabled={isAuthLoading || !email || !password || (isSignUp && captchaEnabled && !captchaToken)}
             className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {isAuthLoading ? (

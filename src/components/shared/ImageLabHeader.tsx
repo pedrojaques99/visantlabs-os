@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { ImageIcon, X, Film, RotateCcw } from 'lucide-react';
+import { ImageIcon, X, Film, RotateCcw, PanelRightClose } from 'lucide-react';
 import { toast } from 'sonner';
 import { useImageLabStore, type ImageLabMode } from '@/stores/imageLabStore';
 import { ToolPanelHeader } from './ToolPanel';
@@ -12,6 +12,7 @@ interface ImageLabHeaderProps {
   onLoad: (url: string, name: string, mediaType: 'image' | 'video') => void;
   onClear: () => void;
   onResetSettings?: () => void;
+  onClosePanel?: () => void;
 }
 
 const MODE_LABELS: Record<ImageLabMode, string> = {
@@ -28,6 +29,7 @@ export const ImageLabHeader: React.FC<ImageLabHeaderProps> = React.memo(({
   onLoad,
   onClear,
   onResetSettings,
+  onClosePanel,
 }) => {
   const mode = useImageLabStore((s) => s.mode);
 
@@ -69,6 +71,11 @@ export const ImageLabHeader: React.FC<ImageLabHeaderProps> = React.memo(({
           <button onClick={onClear} aria-label="Clear image" className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1">
             <X size={14} />
           </button>
+          {onClosePanel && (
+            <button onClick={onClosePanel} aria-label="Hide panel" title="Hide panel (Tab)" className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1 -mr-1">
+              <PanelRightClose size={14} />
+            </button>
+          )}
         </div>
       ) : (
         <label className="flex items-center gap-3 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">

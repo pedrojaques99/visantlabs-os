@@ -4,17 +4,25 @@ import { cn } from '@/lib/utils';
 
 export interface GlassPanelProps extends React.HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  intensity?: 'subtle' | 'default' | 'strong';
   asChild?: boolean;
 }
 
+const intensityStyles = {
+  subtle: "bg-white/[0.02] border-white/[0.04]",
+  default: "bg-white/[0.03] border-white/[0.06]",
+  strong: "bg-white/[0.05] border-neutral-800",
+} as const;
+
 export const GlassPanel = React.forwardRef<HTMLDivElement, GlassPanelProps>(
-  ({ className, padding = 'none', children, asChild = false, ...props }, ref) => {
+  ({ className, padding = 'none', intensity = 'default', children, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "div";
     return (
       <Comp
         ref={ref}
         className={cn(
-          "bg-white/[0.03] border border-neutral-800 rounded-lg flex flex-col relative z-20 transition-colors duration-300",
+          "border rounded-lg flex flex-col relative z-20 transition-colors duration-300",
+          intensityStyles[intensity],
           {
             'p-0': padding === 'none',
             'p-4': padding === 'sm',

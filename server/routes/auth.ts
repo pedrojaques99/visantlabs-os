@@ -5,9 +5,24 @@ import { prisma } from '../db/prisma.js';
 import bcrypt from 'bcryptjs';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getClientIp } from '../utils/auth.js';
+import { recordSession } from './sessions.js';
 import { rateLimit } from 'express-rate-limit';
-// CAPTCHA middleware import removed - CAPTCHA is disabled
-// import { captchaMiddleware } from '../middleware/captcha.js';
+// hCaptcha verification helper
+const verifyHCaptcha = async (token: string): Promise<boolean> => {
+  const secret = process.env.HCAPTCHA_SECRET_KEY;
+  if (!secret) return true; // Skip if not configured
+  try {
+    const resp = await fetch('https://api.hcaptcha.com/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `response=${encodeURIComponent(token)}&secret=${encodeURIComponent(secret)}`,
+    });
+    const data = await resp.json() as { success: boolean };
+    return data.success === true;
+  } catch {
+    return false;
+  }
+};
 import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { signupSchema, signinSchema, forgotPasswordSchema, resetPasswordSchema, formatZodError } from '../utils/schemas.js';
@@ -655,6 +670,9 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
         isAdmin,
         userCategory,
         googleId: user.googleId,
+        emailVerified: user.emailVerified,
+        onboardingCompleted: user.onboardingCompleted,
+        totpEnabled: user.totpEnabled,
       },
     });
   } catch (error) {
@@ -675,6 +693,18 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
       return res.status(400).json({ error: formatZodError(parsed.error) });
     }
     const { email, password, name, referralCode } = parsed.data;
+
+    // Verify CAPTCHA if configured
+    const captchaToken = req.body?.captchaToken;
+    if (process.env.HCAPTCHA_SECRET_KEY) {
+      if (!captchaToken) {
+        return res.status(400).json({ error: 'CAPTCHA verification required' });
+      }
+      const captchaValid = await verifyHCaptcha(captchaToken);
+      if (!captchaValid) {
+        return res.status(400).json({ error: 'CAPTCHA verification failed. Please try again.' });
+      }
+    }
 
     // Check for abuse patterns
     const abuseCheck = await detectAbuse(email.toLowerCase(), ipAddress);
@@ -731,6 +761,14 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
       },
     });
 
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { verificationToken, verificationExpires },
+    });
+
     // Process referral rewards if code provided
     if (referralCode) {
       await processReferralRewards(user.id, referralCode);
@@ -743,21 +781,21 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
     signupSuccessful = true;
     await recordSignupAttempt(email.toLowerCase(), ipAddress, true);
 
-    // Send welcome email
+    // Send verification email (replaces welcome email)
     try {
-      const { sendWelcomeEmail, isEmailConfigured } = await import('../services/emailService.js');
+      const { sendVerificationEmail, isEmailConfigured } = await import('../services/emailService.js');
 
       if (isEmailConfigured()) {
-        await sendWelcomeEmail({
+        await sendVerificationEmail({
           email: user.email,
           name: user.name || undefined,
+          verificationToken,
         });
       } else {
-        console.warn('Email service not configured. Welcome email not sent.');
+        console.warn('Email service not configured. Verification email not sent.');
       }
     } catch (emailError: any) {
-      console.error('Error sending welcome email:', emailError);
-      // Don't fail the request if email fails, but log it
+      console.error('Error sending verification email:', emailError);
     }
 
     // Generate JWT token
@@ -768,6 +806,9 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // Record session
+    recordSession(userId, req).catch(() => {});
+
     res.json({
       token,
       user: {
@@ -776,6 +817,8 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
         name: user.name,
         picture: user.picture,
         username: user.username,
+        emailVerified: false,
+        onboardingCompleted: false,
       },
     });
   } catch (error: any) {
@@ -857,6 +900,9 @@ router.post('/signin', signinRateLimiter, signinBackoff, async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // Record session
+    recordSession(userId, req).catch(() => {});
+
     res.json({
       token,
       user: {
@@ -865,6 +911,8 @@ router.post('/signin', signinRateLimiter, signinBackoff, async (req, res) => {
         name: user.name,
         picture: user.picture,
         username: user.username,
+        emailVerified: user.emailVerified,
+        onboardingCompleted: user.onboardingCompleted,
       },
     });
   } catch (error: any) {
@@ -1149,6 +1197,160 @@ router.put('/profile', apiRateLimiter, authenticate, async (req: AuthRequest, re
   } catch (error: any) {
     console.error('Profile update error:', error);
     res.status(500).json({ error: 'Failed to update profile', message: error.message });
+  }
+});
+
+// Verify email token
+router.post('/verify-email', verifyRateLimiter, async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        verificationToken: token,
+        verificationExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        verificationToken: null,
+        verificationExpires: null,
+      },
+    });
+
+    res.json({ message: 'Email verified successfully' });
+  } catch (error: any) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// Resend verification email
+router.post('/resend-verification', verifyRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.emailVerified) {
+      return res.status(400).json({ error: 'Email already verified' });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { verificationToken, verificationExpires },
+    });
+
+    const { sendVerificationEmail, isEmailConfigured } = await import('../services/emailService.js');
+    if (!isEmailConfigured()) {
+      return res.status(500).json({ error: 'Email service not configured' });
+    }
+
+    await sendVerificationEmail({
+      email: user.email,
+      name: user.name || undefined,
+      verificationToken,
+    });
+
+    res.json({ message: 'Verification email sent' });
+  } catch (error: any) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Failed to resend verification email' });
+  }
+});
+
+// Complete onboarding
+router.post('/complete-onboarding', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId;
+    const { userCategory } = req.body;
+
+    const updateData: Record<string, unknown> = { onboardingCompleted: true };
+    if (userCategory && typeof userCategory === 'string') {
+      updateData.userCategory = userCategory;
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    res.json({ message: 'Onboarding completed' });
+  } catch (error: any) {
+    console.error('Complete onboarding error:', error);
+    res.status(500).json({ error: 'Failed to complete onboarding' });
+  }
+});
+
+// Account deletion (LGPD compliance) — soft delete with 30-day retention
+router.delete('/account', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Cancel Stripe subscription if active
+    if (user.stripeSubscriptionId) {
+      try {
+        const Stripe = (await import('stripe')).default;
+        const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+        if (stripeSecretKey) {
+          const stripe = new Stripe(stripeSecretKey, { apiVersion: '2025-04-30.basil' as any });
+          await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+        }
+      } catch (stripeError) {
+        console.error('Failed to cancel Stripe subscription during account deletion:', stripeError);
+      }
+    }
+
+    // Soft delete: anonymize PII, keep record for 30-day retention
+    const anonymizedEmail = `deleted_${user.id}@deleted.visant.app`;
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: anonymizedEmail,
+        name: 'Deleted User',
+        picture: null,
+        username: null,
+        bio: null,
+        coverImageUrl: null,
+        instagram: null,
+        youtube: null,
+        x: null,
+        website: null,
+        password: null,
+        passwordResetToken: null,
+        googleId: null,
+        stripeSubscriptionId: null,
+        subscriptionStatus: 'deleted',
+        subscriptionTier: 'free',
+        verificationToken: null,
+      },
+    });
+
+    res.json({ message: 'Account scheduled for deletion' });
+  } catch (error: any) {
+    console.error('Account deletion error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 });
 

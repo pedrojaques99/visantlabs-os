@@ -637,6 +637,27 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           userEmail={currentUser?.email || ''}
         />
 
+        {currentUser && currentUser.emailVerified === false && !location.pathname.startsWith('/verify-email') && (
+          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between">
+            <span className="text-amber-300 text-xs font-mono">
+              Verifique seu email para desbloquear todas as funcionalidades.
+            </span>
+            <button
+              onClick={async () => {
+                try {
+                  await authService.resendVerification();
+                  toast.success('Email de verificacao reenviado!');
+                } catch {
+                  toast.error('Erro ao reenviar email.');
+                }
+              }}
+              className="text-amber-400 hover:text-amber-200 text-xs font-mono underline underline-offset-2 transition-colors"
+            >
+              Reenviar email
+            </button>
+          </div>
+        )}
+
         <div className={cn(
           "flex-1 relative",
           location.pathname.startsWith('/canvas/') || location.pathname.startsWith('/mockupmachine') ? "overflow-hidden" : ""

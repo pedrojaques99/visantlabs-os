@@ -17,10 +17,14 @@ interface GenerateButtonProps {
   embed?: boolean;
   buttonRef?: React.RefObject<HTMLButtonElement>;
   creditsRequired?: number;
+  /** Current remaining credits — shows warning when low, disables when 0 */
+  creditsRemaining?: number;
   /** When true, shows "∞ UNLIMITED" instead of credits */
   isUnlimited?: boolean;
   /** Optional message to show when button is disabled */
   disabledReason?: string;
+  /** Callback when user clicks upgrade CTA */
+  onUpgradeClick?: () => void;
 }
 
 export const GenerateButton: React.FC<GenerateButtonProps> = ({
@@ -33,15 +37,22 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
   embed = false,
   buttonRef,
   creditsRequired,
+  creditsRemaining,
   isUnlimited = false,
-  disabledReason
+  disabledReason,
+  onUpgradeClick,
 }) => {
   const { t } = useTranslation();
 
+  const noCredits = !isUnlimited && creditsRemaining !== undefined && creditsRemaining <= 0;
+  const lowCredits = !isUnlimited && creditsRemaining !== undefined && creditsRemaining > 0 && creditsRemaining < 3;
+
   // Determine disabled reason if not provided
-  const computedDisabledReason = disabledReason || (disabled && !isGenerating && !isGeneratingPrompt
-    ? t('mockup.selectModelToGenerate') || 'Select a model to generate'
-    : undefined);
+  const computedDisabledReason = disabledReason
+    || (noCredits ? 'Sem creditos disponíveis' : undefined)
+    || (disabled && !isGenerating && !isGeneratingPrompt
+      ? t('mockup.selectModelToGenerate') || 'Select a model to generate'
+      : undefined);
 
   if (variant === 'floating') {
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
