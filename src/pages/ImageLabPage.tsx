@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { HalftoneCanvas, type HalftoneCanvasHandle } from '@/components/halftone/HalftoneCanvas';
-import { generateHalftoneSvgFromCanvas } from '@/components/halftone/halftone-svg-export';
+import { generateHalftoneSvg } from '@/components/halftone/halftone-svg-export';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
 import { TextureFilterCanvas, type TextureFilterCanvasHandle } from '@/components/texture-filter/TextureFilterCanvas';
 import { TextureFilterControls } from '@/components/texture-filter/TextureFilterControls';
@@ -94,16 +94,20 @@ function useCanvasThumbnails(
     halftone: null, texture: null, riso: null,
   });
 
+  const frameId = useRef<number>(0);
+
   const capture = useCallback((modeKey: ImageLabMode) => {
     const canvas = canvasRefsMap.current[modeKey];
     if (!canvas || canvas.width === 0 || canvas.height === 0) return;
-    requestAnimationFrame(() => {
+    cancelAnimationFrame(frameId.current);
+    frameId.current = requestAnimationFrame(() => {
       try {
         const tmp = document.createElement('canvas');
         const size = 72;
         tmp.width = size;
         tmp.height = size;
-        const ctx = tmp.getContext('2d')!;
+        const ctx = tmp.getContext('2d');
+        if (!ctx) return;
         const scale = Math.max(size / canvas.width, size / canvas.height);
         const w = canvas.width * scale;
         const h = canvas.height * scale;
@@ -574,8 +578,11 @@ export const ImageLabPage: React.FC = () => {
           const c = document.createElement('canvas');
           c.width = img.naturalWidth;
           c.height = img.naturalHeight;
-          c.getContext('2d')!.drawImage(img, 0, 0);
-          return generateHalftoneSvgFromCanvas(c, settings);
+          const ctx = c.getContext('2d');
+          if (!ctx) return undefined;
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, c.width, c.height);
+          return generateHalftoneSvg(imageData, settings);
         } : undefined}
         onExportScaled={(scale) => {
           if (mode === 'halftone') {

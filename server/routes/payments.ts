@@ -40,6 +40,7 @@ const webhookRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 import { isValidObjectId } from '../utils/validation.js';
+import { grantBoxyDownloads, revokeBoxyDownloads } from '../lib/partner-boxy.js';
 
 const router = express.Router();
 
@@ -2159,6 +2160,11 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
               newStatus: updateData.subscriptionStatus,
               newTier: tier,
             });
+
+            // Grant Boxy bonus downloads for active subscriptions
+            if (subscription.status === 'active' && user.email) {
+              grantBoxyDownloads(user.email, tier, subscriptionId).catch(() => {});
+            }
           } else {
             console.warn('⚠️ Subscription update returned 0 modified documents:', { userId: user._id });
           }
@@ -2217,6 +2223,11 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
               userId: user._id,
               creditsResetDate: freeCreditsResetDate.toISOString(),
             });
+
+            // Revoke Boxy bonus downloads on cancellation
+            if (user.email) {
+              revokeBoxyDownloads(user.email, subscription.id).catch(() => {});
+            }
           } else {
             console.warn('⚠️ Subscription cancellation returned 0 modified documents:', { userId: user._id });
           }

@@ -66,8 +66,8 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
           <div className="space-y-1">
             {CHANNELS.map((ch, i) => {
               const isExpanded = expandedChannel === i;
-              const visible = (store as any)[ch.showKey] as boolean;
-              const inkColor = (store as any)[ch.inkKey] as string;
+              const visible = store[ch.showKey];
+              const inkColor = store[ch.inkKey];
               return (
                 <div key={ch.key} className={cn('rounded-lg border transition-colors', isExpanded ? 'border-neutral-700 bg-neutral-900/50' : 'border-transparent')}>
                   <button

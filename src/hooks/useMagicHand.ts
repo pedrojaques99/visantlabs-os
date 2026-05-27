@@ -79,7 +79,7 @@ export function useMagicHand(containerRef: React.RefObject<HTMLDivElement | null
   const dragState = useRef<DragState | null>(null);
   const frameRef = useRef<number>(0);
 
-  const applyUpdates = useCallback((e: PointerEvent) => {
+  const applyUpdates = useCallback((clientX: number, clientY: number) => {
     const drag = dragState.current;
     if (!drag) return;
 
@@ -90,11 +90,11 @@ export function useMagicHand(containerRef: React.RefObject<HTMLDivElement | null
     const store = getStore(mode);
     const map = getParamMap(mode);
 
-    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    const nx = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const ny = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
 
-    const dx = e.clientX - drag.startX;
-    const dy = e.clientY - drag.startY;
+    const dx = clientX - drag.startX;
+    const dy = clientY - drag.startY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const normDist = Math.min(dist / Math.max(rect.width, rect.height), 1);
 
@@ -151,7 +151,7 @@ export function useMagicHand(containerRef: React.RefObject<HTMLDivElement | null
     const clientX = e.clientX;
     const clientY = e.clientY;
     frameRef.current = requestAnimationFrame(() => {
-      applyUpdates({ clientX, clientY } as PointerEvent);
+      applyUpdates(clientX, clientY);
     });
   }, [applyUpdates]);
 

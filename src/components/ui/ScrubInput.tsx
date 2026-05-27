@@ -18,6 +18,7 @@ const ScrubInput = React.memo<ScrubInputProps>(({ label, value, min, max, step =
   const [draft, setDraft] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
   const scrubRef = React.useRef<{ startX: number; startValue: number } | null>(null);
+  const activeListenersRef = React.useRef<{ onMove: (e: MouseEvent) => void; onUp: () => void } | null>(null);
 
   const clamp = React.useCallback((v: number) => {
     const clamped = Math.max(min, Math.min(max, v));
@@ -52,21 +53,31 @@ const ScrubInput = React.memo<ScrubInputProps>(({ label, value, min, max, step =
     };
 
     const onUp = () => {
-      if (scrubRef.current && Math.abs(0) < 2) {
-        // no-op: click handled by onDoubleClick
-      }
       scrubRef.current = null;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      activeListenersRef.current = null;
     };
 
+    activeListenersRef.current = { onMove, onUp };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
     document.body.style.cursor = 'ew-resize';
     document.body.style.userSelect = 'none';
   }, [editing, value, min, max, onChange, clamp]);
+
+  React.useEffect(() => {
+    return () => {
+      if (activeListenersRef.current) {
+        document.removeEventListener('mousemove', activeListenersRef.current.onMove);
+        document.removeEventListener('mouseup', activeListenersRef.current.onUp);
+      }
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, []);
 
   const onWheel = React.useCallback((e: React.WheelEvent) => {
     e.stopPropagation();

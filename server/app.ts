@@ -62,6 +62,7 @@ import webhookRoutes from './routes/webhooks.js';
 import cronRoutes from './routes/cron.js';
 import sessionsRoutes from './routes/sessions.js';
 import totpRoutes from './routes/totp.js';
+import internalRoutes from './routes/internal.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -80,19 +81,28 @@ export function createApp() {
 
   // ── Security Headers & Performance ───────────────────────────────────────
   app.use(helmet({
-    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+    contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com", "https://www.google-analytics.com", "https://*.himetrica.com", "https://*.hcaptcha.com", "https://js.stripe.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "blob:", "https:"],
-        connectSrc: ["'self'", "https://fonts.gstatic.com", "https://api.visantlabs.com", "https://www.visantlabs.com", "https://www.google-analytics.com", "https://www.googletagmanager.com", "https://*.google.com", "https://*.r2.cloudflarestorage.com", "https://*.r2.dev", "https://raw.githack.com", "https://raw.githubusercontent.com", "https://*.himetrica.com", "wss://api.visantlabs.com", "https://api.hcaptcha.com", "https://api.stripe.com", "https://api.figma.com", "https://api.dicebear.com", "https://api.abacatepay.com", "https://api-singapore.klingai.com", "https://ark.ap-southeast-1.byteplusapi.com", "https://google.serper.dev", "https://storage.googleapis.com", "https://api.qrserver.com", "https://*.sentry.io"],
+        connectSrc: [
+          "'self'", "https://fonts.gstatic.com", "https://api.visantlabs.com", "https://www.visantlabs.com",
+          "https://www.google-analytics.com", "https://www.googletagmanager.com", "https://*.google.com",
+          "https://*.r2.cloudflarestorage.com", "https://*.r2.dev", "https://raw.githack.com", "https://raw.githubusercontent.com",
+          "https://*.himetrica.com", "wss://api.visantlabs.com", "https://api.hcaptcha.com", "https://api.stripe.com",
+          "https://api.figma.com", "https://api.dicebear.com", "https://api.abacatepay.com",
+          "https://api-singapore.klingai.com", "https://ark.ap-southeast-1.byteplusapi.com",
+          "https://google.serper.dev", "https://storage.googleapis.com", "https://api.qrserver.com", "https://*.sentry.io",
+          ...(process.env.NODE_ENV !== 'production' ? ["http://localhost:*", "ws://localhost:*"] : []),
+        ],
         frameSrc: ["https://accounts.google.com", "https://www.visantlabs.com", "https://*.hcaptcha.com", "https://js.stripe.com", "https://www.abacatepay.com", "data:", "blob:"],
         mediaSrc: ["'self'", "blob:", "data:"],
         objectSrc: ["'none'"],
       },
-    } : false,
+    },
     crossOriginResourcePolicy: { policy: "cross-origin" }
   }));
   app.use(compression());
@@ -256,6 +266,7 @@ export function createApp() {
     ['/cron', cronRoutes],
     ['/sessions', sessionsRoutes],
     ['/totp', totpRoutes],
+    ['/internal', internalRoutes],
   ];
 
   // OpenAPI spec — public, no auth required
