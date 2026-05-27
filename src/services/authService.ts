@@ -22,6 +22,9 @@ export interface User {
   isAdmin?: boolean;
   userCategory?: string;
   googleId?: string;
+  emailVerified?: boolean;
+  onboardingCompleted?: boolean;
+  totpEnabled?: boolean;
 }
 
 class AuthService {
@@ -609,6 +612,63 @@ class AuthService {
       console.error('getGoogleLinkUrl error:', error);
       throw error;
     }
+  }
+
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Verification failed');
+    return data;
+  }
+
+  async resendVerification(): Promise<{ message: string }> {
+    const authToken = this.getToken();
+    if (!authToken) throw new Error('Authentication required');
+    const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to resend');
+    return data;
+  }
+
+  async deleteAccount(): Promise<{ message: string }> {
+    const authToken = this.getToken();
+    if (!authToken) throw new Error('Authentication required');
+    const response = await fetch(`${API_BASE_URL}/auth/account`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to delete account');
+    this.logout();
+    return data;
+  }
+
+  async completeOnboarding(userCategory?: string): Promise<{ message: string }> {
+    const authToken = this.getToken();
+    if (!authToken) throw new Error('Authentication required');
+    const response = await fetch(`${API_BASE_URL}/auth/complete-onboarding`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({ userCategory }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to complete onboarding');
+    return data;
   }
 }
 
