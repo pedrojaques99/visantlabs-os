@@ -8,7 +8,7 @@ import { downloadBlob } from '@/utils/clipboard';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 
-export type ExportFormat = 'png' | 'jpeg' | 'webp';
+export type ExportFormat = 'png' | 'jpeg' | 'webp' | 'svg';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -16,13 +16,17 @@ interface ExportModalProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   filenamePrefix: string;
   getShaderSettings?: () => ShaderSettings | undefined;
+  onExportSvg?: () => string | Promise<string | undefined> | undefined;
+  onExportScaled?: (scale: number) => HTMLCanvasElement | undefined;
 }
 
-const FORMAT_OPTIONS: { id: ExportFormat; label: string; ext: string; mime: string }[] = [
+const RASTER_FORMATS: { id: ExportFormat; label: string; ext: string; mime: string }[] = [
   { id: 'png', label: 'PNG', ext: 'png', mime: 'image/png' },
   { id: 'jpeg', label: 'JPEG', ext: 'jpg', mime: 'image/jpeg' },
   { id: 'webp', label: 'WebP', ext: 'webp', mime: 'image/webp' },
 ];
+
+const SVG_FORMAT = { id: 'svg' as ExportFormat, label: 'SVG', ext: 'svg', mime: 'image/svg+xml' };
 
 const SCALE_OPTIONS = [
   { id: 1, label: '1×' },
@@ -37,7 +41,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   canvasRef,
   filenamePrefix,
   getShaderSettings,
+  onExportSvg,
+  onExportScaled,
 }) => {
+  const FORMAT_OPTIONS = onExportSvg
+    ? [...RASTER_FORMATS, SVG_FORMAT]
+    : RASTER_FORMATS;
   const [format, setFormat] = useState<ExportFormat>('png');
   const [quality, setQuality] = useState(0.92);
   const [scale, setScale] = useState(1);
@@ -49,6 +58,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     setIsExporting(true);
 
     try {
+      if (format === 'svg') {
+        const svgStr = await onExportSvg?.();
+        if (!svgStr) throw new Error('SVG export not available');
+        const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+        downloadBlob(blob, `${filenamePrefix}_vector_${Date.now()}.svg`);
+        toast.success('Exported SVG (vector)');
+        onClose();
+        return;
+      }
+
       let exportCanvas: HTMLCanvasElement = source;
 
       const shader = getShaderSettings?.();
@@ -57,14 +76,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       }
 
       if (scale !== 1) {
-        const scaled = document.createElement('canvas');
-        scaled.width = exportCanvas.width * scale;
-        scaled.height = exportCanvas.height * scale;
-        const ctx = scaled.getContext('2d')!;
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(exportCanvas, 0, 0, scaled.width, scaled.height);
-        exportCanvas = scaled;
+        const hiRes = onExportScaled?.(scale);
+        if (hiRes) {
+          exportCanvas = hiRes;
+        } else {
+          const scaled = document.createElement('canvas');
+          scaled.width = exportCanvas.width * scale;
+          scaled.height = exportCanvas.height * scale;
+          const ctx = scaled.getContext('2d')!;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(exportCanvas, 0, 0, scaled.width, scaled.height);
+          exportCanvas = scaled;
+        }
       }
 
       const fmt = FORMAT_OPTIONS.find((f) => f.id === format)!;
@@ -87,7 +111,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     } finally {
       setIsExporting(false);
     }
-  }, [canvasRef, format, quality, scale, filenamePrefix, getShaderSettings, onClose]);
+  }, [canvasRef, format, quality, scale, filenamePrefix, getShaderSettings, onExportSvg, onExportScaled, onClose, FORMAT_OPTIONS]);
 
   if (!isOpen) return null;
 
@@ -133,7 +157,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           </div>
 
           {/* Quality (lossy only) */}
-          {format !== 'png' && (
+          {format !== 'png' && format !== 'svg' && (
             <div className="space-y-2">
               <NodeSlider
                 label="Quality"
@@ -147,8 +171,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           )}
 
-          {/* Scale */}
-          <div className="space-y-2">
+          {/* Scale (raster only) */}
+          {format !== 'svg' && <div className="space-y-2">
             <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Scale</span>
             <div className="flex gap-1.5">
               {SCALE_OPTIONS.map((s) => (
@@ -166,12 +190,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
 
           {/* Output info */}
           <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 bg-neutral-900/40 rounded-md px-3 py-2">
             <span>Output</span>
-            <span>{outputW} × {outputH}px</span>
+            <span>{format === 'svg' ? `${sourceW} × ${sourceH} vector` : `${outputW} × ${outputH}px`}</span>
           </div>
         </div>
 

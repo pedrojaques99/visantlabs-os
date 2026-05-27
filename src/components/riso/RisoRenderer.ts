@@ -200,11 +200,10 @@ float risoGrain(vec2 st, float intensity, float angle, float layerSeed) {
   float softness = mix(0.1, 0.03, intensity);
   float grain = smoothstep(threshold - softness, threshold + softness, n);
 
-  // Organic dot shape — not perfectly square cells
-  // Use distance from cell center to soften edges
-  float cellDist = length(f) * 1.4;
-  float edgeSoften = smoothstep(1.0, 0.3, cellDist);
-  grain *= mix(1.0, edgeSoften, 0.3 * (1.0 - intensity));
+  // Round grain particles — sharp radial cutoff from cell center
+  float cellDist = length(f) * 2.0;
+  float edgeSoften = smoothstep(0.95, 0.85, cellDist);
+  grain *= edgeSoften;
 
   // Edge bleed — expand grain particles
   grain = mix(grain, min(grain * (1.0 + u_edgeBleed * 0.15), 1.0), u_edgeBleed * 0.3);
@@ -527,6 +526,39 @@ export class RisoRenderer {
     }
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  renderAtScale(settings: RisoSettings, scale: number): HTMLCanvasElement {
+    if (!this.gl || !this.program || !this.texture || !this.isImageLoaded || scale <= 1) {
+      this.render(settings);
+      return this.canvas;
+    }
+
+    const w = Math.round(this.imageWidth * scale);
+    const h = Math.round(this.imageHeight * scale);
+    const origW = this.imageWidth;
+    const origH = this.imageHeight;
+
+    this.canvas.width = w;
+    this.canvas.height = h;
+    this.gl.viewport(0, 0, w, h);
+    this.imageWidth = w;
+    this.imageHeight = h;
+    this.render(settings);
+
+    const out = document.createElement('canvas');
+    out.width = w;
+    out.height = h;
+    out.getContext('2d')!.drawImage(this.canvas, 0, 0);
+
+    this.canvas.width = origW;
+    this.canvas.height = origH;
+    this.gl.viewport(0, 0, origW, origH);
+    this.imageWidth = origW;
+    this.imageHeight = origH;
+    this.render(settings);
+
+    return out;
   }
 
   getCanvas(): HTMLCanvasElement {

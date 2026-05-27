@@ -1,16 +1,18 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
-import { toast } from 'sonner';
-import { Upload } from 'lucide-react';
+import React, { useRef, useEffect, useCallback, useState, forwardRef, useImperativeHandle } from 'react';
 import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { useTextureFilterStore } from '@/stores/textureFilterStore';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 
+export interface TextureFilterCanvasHandle {
+  renderAtScale: (scale: number) => HTMLCanvasElement | undefined;
+}
+
 interface TextureFilterCanvasProps {
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
 }
 
-export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanvasReady }) => {
+export const TextureFilterCanvas = forwardRef<TextureFilterCanvasHandle, TextureFilterCanvasProps>(({ onCanvasReady }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const textureImgRef = useRef<HTMLImageElement | null>(null);
@@ -24,22 +26,6 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
   const zoom = useTextureFilterStore((s) => s.zoom);
   const panX = useTextureFilterStore((s) => s.panX);
   const panY = useTextureFilterStore((s) => s.panY);
-
-  const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
-    getState: useTextureFilterStore.getState,
-  });
-
-  const loadTexture = useCallback((src: string) => {
-    setTextureLoaded(false);
-    loadImage(src).then((img) => {
-      textureImgRef.current = img;
-      setTextureLoaded(true);
-    });
-  }, []);
-
-  useEffect(() => {
-    loadTexture(store.textureSrc);
-  }, [store.textureSrc, loadTexture]);
 
   const drawTexture = useCallback((ctx: CanvasRenderingContext2D, texture: HTMLImageElement, sw: number, sh: number, settings: ReturnType<typeof store.getSettings>) => {
     const tw = texture.naturalWidth || texture.width;
@@ -73,6 +59,79 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
       ctx.drawImage(texSource, settings.offsetX, settings.offsetY, scaledW, scaledH);
     }
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    renderAtScale: (scale: number) => {
+      const source = sourceImgRef.current;
+      const texture = textureImgRef.current;
+      if (!source || !texture || scale <= 1) return undefined;
+
+      const sw = source.naturalWidth;
+      const sh = source.naturalHeight;
+      const w = Math.round(sw * scale);
+      const h = Math.round(sh * scale);
+
+      const out = document.createElement('canvas');
+      out.width = w;
+      out.height = h;
+      const ctx = out.getContext('2d')!;
+      ctx.scale(scale, scale);
+
+      const settings = useTextureFilterStore.getState().getSettings();
+
+      if (settings.maskMode) {
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = w;
+        maskCanvas.height = h;
+        const mctx = maskCanvas.getContext('2d')!;
+        mctx.scale(scale, scale);
+        if (settings.maskInvert) {
+          mctx.fillStyle = '#ffffff';
+          mctx.fillRect(0, 0, sw, sh);
+          mctx.globalCompositeOperation = 'destination-out';
+        }
+        if (settings.rotation !== 0) {
+          mctx.translate(sw / 2, sh / 2);
+          mctx.rotate((settings.rotation * Math.PI) / 180);
+          mctx.translate(-sw / 2, -sh / 2);
+        }
+        drawTexture(mctx, texture, sw, sh, { ...settings, useOriginalColor: false, textureColor: '#ffffff' });
+
+        ctx.drawImage(source, 0, 0, sw, sh);
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(maskCanvas, 0, 0);
+      } else {
+        ctx.drawImage(source, 0, 0, sw, sh);
+        ctx.globalCompositeOperation = settings.blendMode as GlobalCompositeOperation;
+        ctx.globalAlpha = settings.opacity;
+        if (settings.rotation !== 0) {
+          ctx.translate(sw / 2, sh / 2);
+          ctx.rotate((settings.rotation * Math.PI) / 180);
+          ctx.translate(-sw / 2, -sh / 2);
+        }
+        drawTexture(ctx, texture, sw, sh, settings);
+      }
+
+      return out;
+    },
+  }), [drawTexture]);
+
+  const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
+    getState: useTextureFilterStore.getState,
+  });
+
+  const loadTexture = useCallback((src: string) => {
+    setTextureLoaded(false);
+    loadImage(src).then((img) => {
+      textureImgRef.current = img;
+      setTextureLoaded(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    loadTexture(store.textureSrc);
+  }, [store.textureSrc, loadTexture]);
 
   const renderFrame = useCallback((source: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement) => {
     const canvas = canvasRef.current;
@@ -177,13 +236,6 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
     renderFrame(sourceImgRef.current);
   }, [settingsJson, textureLoaded, renderFrame, store.mediaType]);
 
-  const handleFileInput = useCallback((file: File) => {
-    const isVideo = file.type.startsWith('video/');
-    const url = URL.createObjectURL(file);
-    useTextureFilterStore.getState().setImageUrl(url, file.name, isVideo ? 'video' : 'image');
-    toast.success(`Loaded ${file.name}`);
-  }, []);
-
   useEffect(() => {
     return bindWheelToRef(containerRef.current);
   }, [bindWheelToRef, store.imageUrl]);
@@ -192,33 +244,11 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
     <div
       ref={containerRef}
       className={cn('w-full h-full flex items-center justify-center overflow-hidden bg-neutral-950', isPanning && 'cursor-grabbing')}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        e.preventDefault();
-        const file = e.dataTransfer.files?.[0];
-        if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) handleFileInput(file);
-      }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {!store.imageUrl && (
-        <label className="flex flex-col items-center gap-4 cursor-pointer group">
-          <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-dashed border-neutral-700 group-hover:border-neutral-500 transition-colors flex items-center justify-center">
-            <Upload size={24} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
-          </div>
-          <div className="text-center">
-            <p className="text-[11px] text-neutral-500 uppercase tracking-widest">Drop image or video</p>
-            <p className="text-[10px] text-neutral-600 mt-1">or click to browse</p>
-          </div>
-          <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFileInput(file);
-            if (e.target) e.target.value = '';
-          }} />
-        </label>
-      )}
       <canvas
         ref={canvasRef}
         className={store.imageUrl ? '' : 'hidden'}
@@ -233,4 +263,4 @@ export const TextureFilterCanvas: React.FC<TextureFilterCanvasProps> = ({ onCanv
       <video ref={videoRef} className="hidden" playsInline />
     </div>
   );
-};
+});

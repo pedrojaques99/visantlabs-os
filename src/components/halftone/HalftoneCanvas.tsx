@@ -1,17 +1,19 @@
-import React, { useRef, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
-import { Upload } from 'lucide-react';
+import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { HalftoneRenderer } from './HalftoneRenderer';
 import { useHalftoneStore } from '@/stores/halftoneStore';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 
+export interface HalftoneCanvasHandle {
+  getRenderer: () => HalftoneRenderer | null;
+}
+
 interface HalftoneCanvasProps {
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
 }
 
-export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady }) => {
+export const HalftoneCanvas = forwardRef<HalftoneCanvasHandle, HalftoneCanvasProps>(({ onCanvasReady }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<HalftoneRenderer | null>(null);
@@ -22,6 +24,10 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
   const zoom = useHalftoneStore((s) => s.zoom);
   const panX = useHalftoneStore((s) => s.panX);
   const panY = useHalftoneStore((s) => s.panY);
+
+  useImperativeHandle(ref, () => ({
+    getRenderer: () => rendererRef.current,
+  }), []);
 
   const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
     getState: useHalftoneStore.getState,
@@ -76,29 +82,6 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {!store.imageUrl && (
-        <label className="flex flex-col items-center justify-center gap-3 cursor-pointer text-neutral-600 hover:text-neutral-300 transition-colors group">
-          <div className="w-16 h-16 rounded-2xl border border-dashed border-neutral-700 group-hover:border-neutral-500 flex items-center justify-center transition-colors">
-            <Upload size={24} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
-          </div>
-          <span className="text-[10px] uppercase tracking-widest">Drop an image or click to upload</span>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            aria-label="Upload image"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const url = URL.createObjectURL(file);
-                store.setImageUrl(url, file.name);
-                toast.success(`Loaded ${file.name}`);
-              }
-              e.target.value = '';
-            }}
-          />
-        </label>
-      )}
       <div
         style={{
           transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
@@ -114,4 +97,4 @@ export const HalftoneCanvas: React.FC<HalftoneCanvasProps> = ({ onCanvasReady })
       </div>
     </div>
   );
-};
+});

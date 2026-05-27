@@ -41,6 +41,7 @@ export interface ToolEditorShellProps {
   dragProps?: Record<string, any>;
   dropMessage?: string;
 
+  hideTopBar?: boolean;
   canvasClassName?: string;
   children: React.ReactNode;
 }
@@ -68,6 +69,7 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   isDragOver = false,
   dragProps,
   dropMessage,
+  hideTopBar = false,
   canvasClassName,
   children,
 }) => {
@@ -87,19 +89,21 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
 
   return (
     <AppShell>
-      <ToolEditorTopBar
-        title={title}
-        backTo={backTo}
-        panelVisible={panelVisible}
-        onTogglePanel={() => setPanelVisible(!panelVisible)}
-        onReset={() => setConfirmReset(true)}
-        isMobile={isMobile}
-        undo={undo}
-        redo={redo}
-        extraLeft={extraTopBarLeft}
-        extraRight={extraTopBarRight}
-        showLegalMenu={showLegalMenu}
-      />
+      {!hideTopBar && (
+        <ToolEditorTopBar
+          title={title}
+          backTo={backTo}
+          panelVisible={panelVisible}
+          onTogglePanel={() => setPanelVisible(!panelVisible)}
+          onReset={() => setConfirmReset(true)}
+          isMobile={isMobile}
+          undo={undo}
+          redo={redo}
+          extraLeft={extraTopBarLeft}
+          extraRight={extraTopBarRight}
+          showLegalMenu={showLegalMenu}
+        />
+      )}
 
       <div
         className={canvasClassName || 'absolute inset-0 pt-10 transition-all duration-300'}

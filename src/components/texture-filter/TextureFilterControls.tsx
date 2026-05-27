@@ -1,18 +1,17 @@
 import React, { useCallback } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { NodeSlider } from '@/components/ui/NodeSlider';
+import { ScrubInput } from '@/components/ui/ScrubInput';
+import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import {
   useTextureFilterStore, BLEND_MODES, TEXTURE_PRESETS, FILTER_PRESETS,
   TEXTURE_FILTER_DEFAULTS, type TextureFilterSettings,
 } from '@/stores/textureFilterStore';
-import { Download, UploadIcon, Grid3X3, Layers, Blend, Move, RotateCw, Grid, Palette, SlidersHorizontal } from 'lucide-react';
+import { Download, UploadIcon, Layers, Blend, Move, RotateCw, Grid, Palette, SlidersHorizontal } from 'lucide-react';
 import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 
 const SECTION_NAV: SectionNavItem[] = [
-  { id: 'sec-presets', icon: <Grid3X3 size={14} />, label: 'Presets' },
   { id: 'sec-texture', icon: <Layers size={14} />, label: 'Texture' },
   { id: 'sec-mode', icon: <Blend size={14} />, label: 'Mode' },
   { id: 'sec-appearance', icon: <RotateCw size={14} />, label: 'Appearance' },
@@ -28,7 +27,7 @@ import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
   ToolPanel, ToolPanelContent,
   ToolPanelDivider, ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid,
-  ToolPanelChip, ToolPanelRow,
+  ToolPanelRow,
 } from '@/components/shared/ToolPanel';
 
 const SectionLabel: React.FC<{ children: React.ReactNode; onReset?: () => void }> = ({ children, onReset }) => (
@@ -45,32 +44,21 @@ const SectionLabel: React.FC<{ children: React.ReactNode; onReset?: () => void }
   </div>
 );
 
-const DebouncedSlider: React.FC<{
-  label: string; value: number; min: number; max: number; step: number;
-  onChange: (v: number) => void; formatValue?: (v: number) => string;
-}> = ({ label, value, min, max, step, onChange, formatValue }) => {
-  const [local, setLocal] = useDebouncedSlider(value, onChange);
-  return <NodeSlider label={label} value={local} min={min} max={max} step={step} onChange={setLocal} formatValue={formatValue} />;
-};
 
 const FILTER_PRESET_ITEMS = Object.keys(FILTER_PRESETS).map((name) => ({ name }));
 
 interface TextureFilterControlsProps {
   onExport: () => void;
+  onClosePanel?: () => void;
 }
 
-export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React.memo(({ onExport }) => {
+export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React.memo(({ onExport, onClosePanel }) => {
   const store = useTextureFilterStore();
 
   const update = useCallback(<K extends string>(key: K, value: any) => {
     store.updateSetting(key as any, value);
   }, [store]);
 
-  const [opacity, setOpacity] = useDebouncedSlider(store.opacity, (v) => update('opacity', v));
-  const [scale, setScale] = useDebouncedSlider(store.scale, (v) => update('scale', v));
-  const [rotation, setRotation] = useDebouncedSlider(store.rotation, (v) => update('rotation', v));
-  const [offsetX, setOffsetX] = useDebouncedSlider(store.offsetX, (v) => update('offsetX', v));
-  const [offsetY, setOffsetY] = useDebouncedSlider(store.offsetY, (v) => update('offsetY', v));
 
   return (
     <ToolPanel className="flex-row">
@@ -84,6 +72,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         onLoad={(url, name, mediaType) => store.setImageUrl(url, name, mediaType)}
         onClear={() => store.setImageUrl('', '')}
         onResetSettings={store.resetSettings}
+        onClosePanel={onClosePanel}
       />
 
       <PresetThumbnailStrip
@@ -99,36 +88,18 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
       />
 
       <ToolPanelContent>
-        {/* Presets */}
-        <div id="sec-presets" className="space-y-3 scroll-mt-2">
-          <SectionLabel>Presets</SectionLabel>
-          <ToolPanelGrid>
-            {Object.entries(FILTER_PRESETS).map(([name]) => (
-              <ToolPanelChip key={name} onClick={() => {
-                const preset = FILTER_PRESETS[name];
-                Object.entries(preset).forEach(([k, v]) => {
-                  store.updateSetting(k as keyof TextureFilterSettings, v as any);
-                });
-                toast.success(`Applied "${name}"`);
-              }}>
-                {name}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-        </div>
-
-        <ToolPanelDivider />
-
         {/* Texture */}
         <div id="sec-texture" className="space-y-3 scroll-mt-2">
           <SectionLabel>Texture</SectionLabel>
-          <ToolPanelGrid>
-            {TEXTURE_PRESETS.map((p) => (
-              <ToolPanelChip key={p.name} active={store.textureName === p.name} onClick={() => store.applyPreset(p)}>
-                {p.name}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
+          <Select
+            options={TEXTURE_PRESETS.map((p) => ({ value: p.name, label: p.name }))}
+            value={store.textureName}
+            onChange={(name) => {
+              const p = TEXTURE_PRESETS.find((t) => t.name === name);
+              if (p) store.applyPreset(p);
+            }}
+            variant="node"
+          />
           <label className="flex items-center gap-2 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">
             <UploadIcon size={12} />
             <span className="text-[10px] uppercase tracking-widest">Custom texture</span>
@@ -145,7 +116,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
 
         <ToolPanelDivider />
 
-        {/* Mode: Blend or Mask — mutually exclusive */}
+        {/* Mode */}
         <div id="sec-mode" className="space-y-3 scroll-mt-2">
           <SectionLabel onReset={() => {
             update('blendMode', TEXTURE_FILTER_DEFAULTS.blendMode);
@@ -154,23 +125,27 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
           }}>
             Mode
           </SectionLabel>
-          <ToolPanelGrid>
-            <ToolPanelChip active={!store.maskMode} onClick={() => update('maskMode', false)}>
-              Blend
-            </ToolPanelChip>
-            <ToolPanelChip active={store.maskMode} onClick={() => update('maskMode', true)}>
-              Mask
-            </ToolPanelChip>
-          </ToolPanelGrid>
+          <ToolPanelRow label="Mode">
+            <Select
+              options={[
+                { value: 'blend', label: 'Blend' },
+                { value: 'mask', label: 'Mask' },
+              ]}
+              value={store.maskMode ? 'mask' : 'blend'}
+              onChange={(v) => update('maskMode', v === 'mask')}
+              variant="node"
+            />
+          </ToolPanelRow>
 
           {!store.maskMode ? (
-            <ToolPanelGrid>
-              {BLEND_MODES.map((m) => (
-                <ToolPanelChip key={m.id} active={store.blendMode === m.id} onClick={() => update('blendMode', m.id)}>
-                  {m.label}
-                </ToolPanelChip>
-              ))}
-            </ToolPanelGrid>
+            <ToolPanelRow label="Blend">
+              <Select
+                options={BLEND_MODES.map((m) => ({ value: m.id, label: m.label }))}
+                value={store.blendMode}
+                onChange={(v) => update('blendMode', v)}
+                variant="node"
+              />
+            </ToolPanelRow>
           ) : (
             <ToolPanelRow label="Invert">
               <Switch checked={store.maskInvert} onCheckedChange={(v) => update('maskInvert', v)} />
@@ -188,8 +163,10 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
           }}>
             Appearance
           </SectionLabel>
-          <NodeSlider label="Opacity" value={opacity} onChange={setOpacity} min={0} max={1} step={0.01} />
-          <NodeSlider label="Scale" value={scale} onChange={setScale} min={0.1} max={5} step={0.01} />
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label="Opacity" value={store.opacity} min={0} max={1} step={0.01} onChange={(v) => update('opacity', v)} />
+            <ScrubInput label="Scale" value={store.scale} min={0.1} max={5} step={0.01} onChange={(v) => update('scale', v)} />
+          </div>
         </div>
 
         <ToolPanelDivider />
@@ -203,11 +180,11 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
           }}>
             Position
           </SectionLabel>
-          <NodeSlider label="Rotation" value={rotation} onChange={setRotation} min={0} max={360} step={1} formatValue={(v) => `${Math.round(v)}°`} />
-          <ToolPanelGrid>
-            <NodeSlider label="Offset X" value={offsetX} onChange={setOffsetX} min={-2000} max={2000} step={1} formatValue={(v) => `${Math.round(v)}`} />
-            <NodeSlider label="Offset Y" value={offsetY} onChange={setOffsetY} min={-2000} max={2000} step={1} formatValue={(v) => `${Math.round(v)}`} />
-          </ToolPanelGrid>
+          <ScrubInput label="Rotation" value={store.rotation} min={0} max={360} step={1} suffix="°" onChange={(v) => update('rotation', v)} />
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label="X" value={store.offsetX} min={-2000} max={2000} step={1} suffix="px" onChange={(v) => update('offsetX', v)} />
+            <ScrubInput label="Y" value={store.offsetY} min={-2000} max={2000} step={1} suffix="px" onChange={(v) => update('offsetY', v)} />
+          </div>
         </div>
 
         <ToolPanelDivider />
@@ -225,8 +202,8 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
           </ToolPanelRow>
           {store.tileMode && (
             <ToolPanelGrid>
-              <DebouncedSlider label="Gap X" value={store.tileGapX} onChange={(v) => update('tileGapX', v)} min={-100} max={200} step={1} formatValue={(v) => `${Math.round(v)}px`} />
-              <DebouncedSlider label="Gap Y" value={store.tileGapY} onChange={(v) => update('tileGapY', v)} min={-100} max={200} step={1} formatValue={(v) => `${Math.round(v)}px`} />
+              <ScrubInput label="Gap X" value={store.tileGapX} min={-100} max={200} step={1} suffix="px" onChange={(v) => update('tileGapX', v)} />
+              <ScrubInput label="Gap Y" value={store.tileGapY} min={-100} max={200} step={1} suffix="px" onChange={(v) => update('tileGapY', v)} />
             </ToolPanelGrid>
           )}
         </div>
