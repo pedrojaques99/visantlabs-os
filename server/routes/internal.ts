@@ -1,8 +1,16 @@
 import { Router, Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 
 const router = Router();
+
+const partnerCreditsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const PARTNER_API_KEY = process.env.PARTNER_API_KEY || '';
 
@@ -21,7 +29,7 @@ function validateApiKey(req: Request, res: Response): boolean {
 
 // POST /api/internal/partner-credits
 // Grants or queries credits for a partner platform user (e.g. Boxy)
-router.post('/partner-credits', async (req: Request, res: Response) => {
+router.post('/partner-credits', partnerCreditsLimiter, async (req: Request, res: Response) => {
   if (!validateApiKey(req, res)) return;
 
   const { email, credits, action, source, ref } = req.body;
