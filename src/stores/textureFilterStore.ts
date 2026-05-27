@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
+import { getProceduralTexture } from '@/utils/proceduralTextures';
 
 export type TextureBlendMode = 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'hard-light' | 'color-burn' | 'color-dodge';
 
@@ -21,6 +22,15 @@ export interface TexturePreset {
 
 export const TEXTURE_PRESETS: TexturePreset[] = [
   { name: 'Visant Grid', src: '/textures/visant-grid.svg' },
+  { name: 'Film Grain', src: '__procedural__' },
+  { name: 'Paper', src: '__procedural__' },
+  { name: 'Canvas Weave', src: '__procedural__' },
+  { name: 'Dust & Scratches', src: '__procedural__' },
+  { name: 'Concrete', src: '__procedural__' },
+  { name: 'Diagonal Lines', src: '__procedural__' },
+  { name: 'Crosshatch', src: '__procedural__' },
+  { name: 'Soft Noise', src: '__procedural__' },
+  { name: 'Halftone Dots', src: '__procedural__' },
 ];
 
 export const FILTER_PRESETS: Record<string, Partial<TextureFilterSettings>> = {
@@ -133,7 +143,12 @@ export const useTextureFilterStore = create<TextureFilterState & ShaderSlice>()(
     set({ [key]: value });
   },
 
-  applyPreset: (preset) => set({ textureSrc: preset.src, textureName: preset.name }),
+  applyPreset: (preset) => {
+    const src = preset.src === '__procedural__'
+      ? getProceduralTexture(preset.name) || preset.src
+      : preset.src;
+    set({ textureSrc: src, textureName: preset.name });
+  },
 
   resetSettings: () => set({ ...TEXTURE_FILTER_DEFAULTS, settingsHistory: [], historyIndex: -1 }),
 

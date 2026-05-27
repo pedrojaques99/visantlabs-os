@@ -1,14 +1,15 @@
 import React, { useCallback, useState } from 'react';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { Eye, EyeOff, ImageIcon, X, Download } from 'lucide-react';
+import { Eye, EyeOff, Download } from 'lucide-react';
 import { SendToButton } from '@/components/shared/SendToButton';
+import { ImageLabHeader } from '@/components/shared/ImageLabHeader';
+import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
-  ToolPanel, ToolPanelHeader, ToolPanelContent, ToolPanelSection,
+  ToolPanel, ToolPanelContent, ToolPanelSection,
   ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
 
@@ -18,6 +19,8 @@ const TABS = [
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
+
+const HALFTONE_PRESET_ITEMS = Object.keys(HALFTONE_PRESETS).map((name) => ({ name }));
 
 interface HalftoneControlsProps {
   onExport: () => void;
@@ -54,28 +57,19 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
 
   return (
     <ToolPanel>
-      {/* Image header */}
-      <ToolPanelHeader>
-        {store.imageUrl ? (
-          <div className="flex items-center gap-3">
-            <img src={store.imageUrl} alt={store.fileName} className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0" />
-            <span className="text-[11px] text-neutral-400 font-mono truncate flex-1">{store.fileName}</span>
-            <button onClick={() => store.setImageUrl('', '')} aria-label="Clear image" className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1">
-              <X size={14} />
-            </button>
-          </div>
-        ) : (
-          <label className="flex items-center gap-3 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">
-            <ImageIcon size={16} />
-            <span className="text-[11px] uppercase tracking-widest">Upload image</span>
-            <input type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) { store.setImageUrl(URL.createObjectURL(file), file.name); toast.success(`Loaded ${file.name}`); }
-              if (e.target) e.target.value = '';
-            }} />
-          </label>
-        )}
-      </ToolPanelHeader>
+      <ImageLabHeader
+        imageUrl={store.imageUrl}
+        fileName={store.fileName}
+        onLoad={(url, name) => store.setImageUrl(url, name)}
+        onClear={() => store.setImageUrl('', '')}
+        onResetSettings={store.resetSettings}
+      />
+
+      <PresetThumbnailStrip
+        imageUrl={store.imageUrl}
+        presets={HALFTONE_PRESET_ITEMS}
+        onSelect={(name) => store.applyPreset(name)}
+      />
 
       {/* Tab bar */}
       <div className="shrink-0 flex border-b border-neutral-800/50">
@@ -109,8 +103,8 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
 
             {/* Halftone */}
             <ToolPanelSection title="HALFTONE">
-              <NodeSlider label="Frequency" value={frequency} min={20} max={500} step={1} onChange={setFrequency} />
-              <NodeSlider label="Dot Size" value={dotSize} min={0.1} max={1} step={0.01} onChange={setDotSize} />
+              <NodeSlider label="Frequency" hint="Lines per inch — higher = finer detail" value={frequency} min={20} max={500} step={1} onChange={setFrequency} />
+              <NodeSlider label="Dot Size" hint="Size of each halftone dot relative to cell" value={dotSize} min={0.1} max={1} step={0.01} onChange={setDotSize} />
             </ToolPanelSection>
 
             {/* Channels */}
@@ -136,10 +130,10 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
 
             {/* Dot Advanced */}
             <ToolPanelDisclosure label="Dot Advanced">
-              <NodeSlider label="Roughness" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
-              <NodeSlider label="Edge Fuzz" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
-              <NodeSlider label="Randomness" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
-              <NodeSlider label="Threshold" value={threshold} min={0} max={0.5} step={0.01} onChange={setThreshold} />
+              <NodeSlider label="Roughness" hint="Irregular dot edges — simulates worn plate" value={roughness} min={0} max={2} step={0.05} onChange={setRoughness} />
+              <NodeSlider label="Edge Fuzz" hint="Softness of dot boundaries" value={fuzz} min={0} max={0.5} step={0.01} onChange={setFuzz} />
+              <NodeSlider label="Randomness" hint="Dot position jitter — adds organic feel" value={randomness} min={0} max={0.4} step={0.01} onChange={setRandomness} />
+              <NodeSlider label="Threshold" hint="Minimum brightness to produce a dot" value={threshold} min={0} max={0.5} step={0.01} onChange={setThreshold} />
             </ToolPanelDisclosure>
           </>
         )}
@@ -148,12 +142,12 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
           <>
             {/* Image & Texture */}
             <ToolPanelSection title="IMAGE & TEXTURE">
-              <NodeSlider label="Contrast" value={contrast} min={0.3} max={2} step={0.01} onChange={setContrast} />
-              <NodeSlider label="Lightness" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
-              <NodeSlider label="Blur" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
+              <NodeSlider label="Contrast" hint="Image contrast before halftone screening" value={contrast} min={0.3} max={2} step={0.01} onChange={setContrast} />
+              <NodeSlider label="Lightness" hint="Brighten or darken the source image" value={lightness} min={-0.5} max={0.5} step={0.01} onChange={setLightness} />
+              <NodeSlider label="Blur" hint="Pre-blur source for smoother dot transitions" value={blur} min={0} max={30} step={0.5} onChange={setBlur} />
               <div className="h-px bg-neutral-800/50 my-1" />
-              <NodeSlider label="Paper Noise" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
-              <NodeSlider label="Ink Noise" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
+              <NodeSlider label="Paper Noise" hint="Random grain on the paper background" value={paperNoise} min={0} max={1} step={0.01} onChange={setPaperNoise} />
+              <NodeSlider label="Ink Noise" hint="Random variation in ink density" value={inkNoise} min={0} max={1} step={0.01} onChange={setInkNoise} />
             </ToolPanelSection>
 
             {/* Ink Colors */}
@@ -176,14 +170,14 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
             </ToolPanelSection>
           </>
         )}
+
       </ToolPanelContent>
 
-      {/* Actions */}
       <ToolPanelActions>
         <div className="flex gap-2 w-full">
-          <Button onClick={onExport} disabled={store.isExporting || !store.imageUrl} aria-label="Export PNG" className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
+          <Button onClick={onExport} disabled={store.isExporting || !store.imageUrl} aria-label="Export" className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2">
             <Download size={14} />
-            {store.isExporting ? 'Exporting...' : 'Export PNG'}
+            {store.isExporting ? 'Exporting...' : 'Export'}
           </Button>
           {store.imageUrl && <SendToButton source="halftone" imageUrl={store.imageUrl} />}
         </div>

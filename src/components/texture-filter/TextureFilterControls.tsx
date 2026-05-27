@@ -8,7 +8,7 @@ import {
   useTextureFilterStore, BLEND_MODES, TEXTURE_PRESETS, FILTER_PRESETS,
   TEXTURE_FILTER_DEFAULTS, type TextureFilterSettings,
 } from '@/stores/textureFilterStore';
-import { Download, UploadIcon, X, ImageIcon, Grid3X3, Layers, Blend, Move, RotateCw, Grid, Palette, SlidersHorizontal } from 'lucide-react';
+import { Download, UploadIcon, Grid3X3, Layers, Blend, Move, RotateCw, Grid, Palette, SlidersHorizontal } from 'lucide-react';
 import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 
 const SECTION_NAV: SectionNavItem[] = [
@@ -23,8 +23,10 @@ const SECTION_NAV: SectionNavItem[] = [
 ];
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import { SendToButton } from '@/components/shared/SendToButton';
+import { ImageLabHeader } from '@/components/shared/ImageLabHeader';
+import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
-  ToolPanel, ToolPanelHeader, ToolPanelContent,
+  ToolPanel, ToolPanelContent,
   ToolPanelDivider, ToolPanelDisclosure, ToolPanelActions, ToolPanelGrid,
   ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
@@ -51,6 +53,8 @@ const DebouncedSlider: React.FC<{
   return <NodeSlider label={label} value={local} min={min} max={max} step={step} onChange={setLocal} formatValue={formatValue} />;
 };
 
+const FILTER_PRESET_ITEMS = Object.keys(FILTER_PRESETS).map((name) => ({ name }));
+
 interface TextureFilterControlsProps {
   onExport: () => void;
 }
@@ -72,36 +76,27 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
     <ToolPanel className="flex-row">
       <SectionNavSidebar items={SECTION_NAV} />
       <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Image header */}
-      <ToolPanelHeader>
-        {store.imageUrl ? (
-          <div className="flex items-center gap-3">
-            {store.mediaType === 'image' ? (
-              <img src={store.imageUrl} alt={store.fileName} className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0" />
-            ) : (
-              <div className="w-10 h-10 rounded-md bg-neutral-800 shrink-0 flex items-center justify-center text-[10px] text-neutral-400 font-mono uppercase">VID</div>
-            )}
-            <span className="text-[11px] text-neutral-400 font-mono truncate flex-1">{store.fileName}</span>
-            <button onClick={() => store.setImageUrl('', '')} className="text-neutral-600 hover:text-neutral-300 transition-colors shrink-0 p-1">
-              <X size={14} />
-            </button>
-          </div>
-        ) : (
-          <label className="flex items-center gap-3 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">
-            <ImageIcon size={16} />
-            <span className="text-[11px] uppercase tracking-widest">Upload image or video</span>
-            <input type="file" accept="image/*,video/*" className="hidden" aria-label="Upload image or video" onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const isVideo = file.type.startsWith('video/');
-                store.setImageUrl(URL.createObjectURL(file), file.name, isVideo ? 'video' : 'image');
-                toast.success(`Loaded ${file.name}`);
-              }
-              if (e.target) e.target.value = '';
-            }} />
-          </label>
-        )}
-      </ToolPanelHeader>
+      <ImageLabHeader
+        imageUrl={store.imageUrl}
+        fileName={store.fileName}
+        mediaType={store.mediaType}
+        acceptVideo
+        onLoad={(url, name, mediaType) => store.setImageUrl(url, name, mediaType)}
+        onClear={() => store.setImageUrl('', '')}
+        onResetSettings={store.resetSettings}
+      />
+
+      <PresetThumbnailStrip
+        imageUrl={store.imageUrl}
+        presets={FILTER_PRESET_ITEMS}
+        onSelect={(name) => {
+          const preset = FILTER_PRESETS[name];
+          Object.entries(preset).forEach(([k, v]) => {
+            store.updateSetting(k as keyof TextureFilterSettings, v as any);
+          });
+          toast.success(`Applied "${name}"`);
+        }}
+      />
 
       <ToolPanelContent>
         {/* Presets */}
@@ -270,6 +265,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
             onValueChange={store.setShaderValue}
           />
         </ToolPanelDisclosure>
+
       </ToolPanelContent>
 
       <ToolPanelActions>
@@ -280,7 +276,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
             className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
           >
             <Download size={14} />
-            {store.isExporting ? 'Exporting...' : 'Export PNG'}
+            {store.isExporting ? 'Exporting...' : 'Export'}
           </Button>
           {store.imageUrl && <SendToButton source="texture-filter" imageUrl={store.imageUrl} />}
         </div>
