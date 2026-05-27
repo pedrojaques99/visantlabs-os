@@ -4,7 +4,8 @@ import { useSmartAnalyze } from '../../hooks/useSmartAnalyze';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
-import { Zap, Grid3X3, Smartphone } from 'lucide-react';
+import { Zap } from 'lucide-react';
+import { BrandMatrixSection } from './BrandMatrixSection';
 
 export function BrandOperationsSection() {
   useFigmaMessages(); // ensure listener mounted
@@ -82,18 +83,7 @@ export function BrandOperationsSection() {
           Variar Cores Inteligente
         </OpButton>
 
-        <div className="grid grid-cols-2 gap-2">
-          <OpButton
-            opId="brandGrid"
-            runner={runner}
-            message={{ type: 'GENERATE_BRAND_GRID' }}
-            responseTypes={['OPERATIONS_DONE']}
-            busyLabel="Criando grid…"
-            variant="outline"
-            size="sm"
-          >
-            Brand Grid
-          </OpButton>
+        <div className="grid grid-cols-1 gap-2">
           <OpButton
             opId="socialFrames"
             runner={runner}
@@ -108,6 +98,7 @@ export function BrandOperationsSection() {
         </div>
       </div>
 
+      <BrandMatrixSection />
     </div>
   );
 }

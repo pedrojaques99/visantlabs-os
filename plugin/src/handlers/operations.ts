@@ -1918,6 +1918,23 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     }
   }
 
+  // ═══ CREATE_SECTION ═══
+  else if (op.type === 'CREATE_SECTION') {
+    const parent = await getParent(op.parentRef, op.parentNodeId);
+    const section = figma.createSection();
+    section.name = props.name || 'Section/';
+    if (props.width > 0 && props.height > 0) section.resizeWithoutConstraints(props.width, props.height);
+    if (props.x != null) section.x = props.x;
+    if (props.y != null) section.y = props.y;
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      section.fills = await applyVariablesToFills(normalized);
+    }
+    parent.appendChild(section);
+    if (op.ref) createdNodes.set(op.ref, section);
+    pushSummary(`Section criada @"${section.name}"`, section);
+  }
+
   // ═══ SET_EXPORT_SETTINGS ═══
   else if (op.type === 'SET_EXPORT_SETTINGS') {
     const node = (op.ref ? createdNodes.get(op.ref) : null)

@@ -52,10 +52,11 @@ import {
   focusNode,
   fixBrandIssues,
   multiplyResponsive,
-  generateBrandGrid,
   generateSocialFrames,
   importLogoCandidates,
-  exportWithBleed
+  exportWithBleed,
+  scanPaintStyles,
+  generateBrandMatrix
 } from './handlers/index';
 import { dispatch } from './handlers/registry';
 import { isEnvelope } from '@shared/protocol';
@@ -374,67 +375,6 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
-  // ── Import Components from Selection (Library synchronization) ──
-  if (msg.type === 'IMPORT_SELECTION_COMPONENTS') {
-    const selection = figma.currentPage.selection;
-    if (selection.length === 0) {
-      figma.notify('Selecione instâncias no canvas primeiro para importar para a Library.');
-      return;
-    }
-    
-    const components: any[] = [];
-    const seen = new Set<string>();
-    
-    // Preserve existing components
-    const existingComps = await getComponentsInCurrentFile();
-    for (const c of existingComps) {
-      components.push(c);
-      seen.add(c.id);
-    }
-    
-    let addedCount = 0;
-    
-    // Process selection
-    for (const node of selection) {
-      if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
-        if (!seen.has(node.id)) {
-           seen.add(node.id);
-           components.push({
-             id: node.id,
-             name: node.name,
-             key: node.key,
-             folderPath: []
-           });
-           addedCount++;
-        }
-      } else if (node.type === 'INSTANCE') {
-        try {
-           const main = await (node as InstanceNode).getMainComponentAsync();
-           if (main && !seen.has(main.id)) {
-             seen.add(main.id);
-             components.push({
-               id: main.id,
-               name: main.name,
-               key: main.key,
-               folderPath: []
-             });
-             addedCount++;
-           }
-        } catch {}
-      }
-    }
-    
-    if (addedCount > 0) {
-      postToUI({ type: 'COMPONENTS_LOADED', components });
-      figma.notify(`Importou ${addedCount} componente(s) vinculado(s) com sucesso!`);
-      // Start thumbnail generation for newly added components
-      const newComps = components.filter(c => !existingComps.some(ec => ec.id === c.id));
-      exportComponentThumbnails(newComps).catch(() => {});
-    } else {
-      figma.notify('Nenhum componente novo encontrado na seleção.');
-    }
-    return;
-  }
 
   // ── Elements for mentions autocomplete ──
   if (msg.type === 'GET_ELEMENTS_FOR_MENTIONS') {
@@ -931,17 +871,6 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
-  // ── Brand Grid ──
-  if ((msg as any).type === 'GENERATE_BRAND_GRID') {
-    try {
-      const sections = (msg as any).sections;
-      await generateBrandGrid(sections);
-      postToUI({ type: 'OPERATIONS_DONE' });
-    } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
-    }
-    return;
-  }
 
   // ── Import Logo Candidates from library ──
   if ((msg as any).type === 'IMPORT_LOGO_CANDIDATES') {
@@ -1083,6 +1012,28 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   if ((msg as any).type === 'EXPORT_WITH_BLEED') {
     try {
       await exportWithBleed();
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Brand Matrix: Scan Paint Styles ──
+  if ((msg as any).type === 'SCAN_PAINT_STYLES') {
+    try {
+      const tokens = await scanPaintStyles();
+      postToUI({ type: 'PAINT_STYLES_RESULT', tokens });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Brand Matrix: Generate Assets ──
+  if ((msg as any).type === 'GENERATE_ASSETS') {
+    try {
+      const { colors, assets } = msg as any;
+      await generateBrandMatrix({ colors, assets });
     } catch (err) {
       postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
     }
