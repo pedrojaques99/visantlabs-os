@@ -71,6 +71,7 @@ export const usePluginStore = create<PluginStore>()(
     exportedImage: null,
     isGenerating: false,
     generatingStatus: '',
+    matrixColors: [],
 
     brandHydrationTick: 0,
     brandHydrationAtMs: 0,
@@ -217,6 +218,18 @@ export const usePluginStore = create<PluginStore>()(
 
     setGeneratingStatus: (status) =>
       set((state) => { state.generatingStatus = status; }),
+
+    setMatrixColors: (colors) =>
+      set((state) => { state.matrixColors = colors; }),
+
+    toggleMatrixColor: (id) =>
+      set((state) => {
+        const c = state.matrixColors.find(c => c.id === id);
+        if (c) c.selected = !c.selected;
+      }),
+
+    addMatrixColor: (color) =>
+      set((state) => { state.matrixColors.push({ ...color, selected: true }); }),
 
     toggleDevMode: () =>
       set((state) => { state.devMode = !state.devMode; })

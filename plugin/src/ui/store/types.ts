@@ -169,6 +169,7 @@ export interface PluginStore {
   exportedImage: any | null;
   isGenerating: boolean;
   generatingStatus: string;
+  matrixColors: { id: string; name: string; r: number; g: number; b: number; selected: boolean }[];
 
   // Internal: increments each time the brand state is hydrated from server.
   // Used by useBrandAutoSync to suppress echo writes.
@@ -208,5 +209,8 @@ export interface PluginStore {
   setExportedImage: (data: any) => void;
   setIsGenerating: (generating: boolean) => void;
   setGeneratingStatus: (status: string) => void;
+  setMatrixColors: (colors: { id: string; name: string; r: number; g: number; b: number; selected: boolean }[]) => void;
+  toggleMatrixColor: (id: string) => void;
+  addMatrixColor: (color: { id: string; name: string; r: number; g: number; b: number }) => void;
   toggleDevMode: () => void;
 }

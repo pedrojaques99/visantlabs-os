@@ -42,6 +42,14 @@ function parseHex(h: string): { r: number; g: number; b: number } | null {
   return { r, g, b };
 }
 
+function mergeColors(existing: ColorToken[], incoming: ColorToken[]): ColorToken[] {
+  const byId = new Map(existing.map(c => [c.id, c]));
+  for (const c of incoming) {
+    if (!byId.has(c.id)) byId.set(c.id, c);
+  }
+  return Array.from(byId.values());
+}
+
 function useFigmaSubscribe(handler: (msg: any) => void) {
   useEffect(() => {
     const listener = (event: MessageEvent) => {
@@ -56,20 +64,27 @@ function useFigmaSubscribe(handler: (msg: any) => void) {
 export function BrandMatrixSection() {
   const { send } = useFigmaMessages();
   const isGenerating = usePluginStore((s) => s.isGenerating);
+  const colors = usePluginStore((s) => s.matrixColors);
+  const setMatrixColors = usePluginStore((s) => s.setMatrixColors);
+  const toggleMatrixColor = usePluginStore((s) => s.toggleMatrixColor);
+  const addMatrixColor = usePluginStore((s) => s.addMatrixColor);
   const runner = useOpRunner({ globalBusy: isGenerating });
 
-  const [colors, setColors] = useState<ColorToken[]>([]);
   const [customHex, setCustomHex] = useState('');
   const [showCustom, setShowCustom] = useState(false);
   const [assets, setAssets] = useState<ScannedAsset[]>([]);
   const [showFull, setShowFull] = useState(false);
+  const [createSections, setCreateSections] = useState(true);
 
-  // Auto-scan on mount
+  // Auto-scan on mount (merge with existing selections)
   useEffect(() => { send({ type: 'SCAN_PAINT_STYLES' } as any); }, [send]);
 
   const onMessage = useCallback((msg: any) => {
     if (msg.type === 'PAINT_STYLES_RESULT') {
-      setColors((msg.tokens || []).map((t: any) => ({ ...t, selected: true })));
+      const incoming: ColorToken[] = (msg.tokens || []).map((t: any) => ({ ...t, selected: true }));
+      setMatrixColors(usePluginStore.getState().matrixColors.length === 0
+        ? incoming
+        : mergeColors(usePluginStore.getState().matrixColors, incoming));
     }
     if (msg.type === 'SMART_SCAN_RESULT') {
       const items = (msg.items || []).filter((i: any) => i.category === 'logo' || i.category === 'component');
@@ -82,14 +97,14 @@ export function BrandMatrixSection() {
         return { nodeId: i.id, nodeName: i.name, section };
       }));
     }
-  }, []);
+  }, [setMatrixColors]);
   useFigmaSubscribe(onMessage);
 
-  const toggle = (id: string) => setColors(p => p.map(c => c.id === id ? { ...c, selected: !c.selected } : c));
+  const toggle = (id: string) => toggleMatrixColor(id);
   const addCustom = () => {
     const p = parseHex(customHex);
     if (!p) return;
-    setColors(prev => [...prev, { id: `c_${Date.now()}`, name: customHex.toUpperCase(), ...p, selected: true }]);
+    addMatrixColor({ id: `c_${Date.now()}`, name: customHex.toUpperCase(), ...p });
     setCustomHex('');
     setShowCustom(false);
   };
@@ -146,6 +161,17 @@ export function BrandMatrixSection() {
         )}
       </div>
 
+      {/* Options */}
+      <label className="flex items-center gap-1.5 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={createSections}
+          onChange={(e) => setCreateSections(e.target.checked)}
+          className="w-3 h-3 rounded border-border/60 accent-brand-cyan"
+        />
+        <span className="text-[9px] text-muted-foreground">Criar sections</span>
+      </label>
+
       {/* Actions */}
       <div className="space-y-2">
         <OpButton
@@ -154,6 +180,7 @@ export function BrandMatrixSection() {
           message={{
             type: 'LOGO_MATRIX',
             colors: selected.map(({ id, name, r, g, b }) => ({ id, name, r, g, b })),
+            createSections,
           }}
           responseTypes={['OPERATIONS_DONE']}
           busyLabel="Clonando…"
@@ -207,6 +234,7 @@ export function BrandMatrixSection() {
                 type: 'GENERATE_ASSETS',
                 colors: selected.map(({ id, name, r, g, b }) => ({ id, name, r, g, b })),
                 assets: assets.map(({ nodeId, nodeName, section }) => ({ nodeId, nodeName, section })),
+                createSections,
               }}
               responseTypes={['OPERATIONS_DONE']}
               busyLabel="Gerando…"
