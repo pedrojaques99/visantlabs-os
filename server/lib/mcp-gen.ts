@@ -11,7 +11,7 @@ import { SpecGenerationError, ValidationError } from './docs-errors.js';
 import { FIGMA_TOOLS, FigmaTool } from './tools/registry.js';
 
 type ToolCost = 'free' | 'credits';
-type ToolCategory = 'account' | 'mockups' | 'ai' | 'branding' | 'brand-guidelines' | 'canvas' | 'budget' | 'community' | 'auth' | 'moodboard';
+type ToolCategory = 'account' | 'mockups' | 'ai' | 'branding' | 'brand-guidelines' | 'canvas' | 'budget' | 'community' | 'auth' | 'moodboard' | 'references';
 
 interface PlatformToolDef {
   name: string;
@@ -123,6 +123,10 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   { name: 'community-preset-like', description: 'Toggle like/unlike on a community preset. Returns updated count.', required: ['id'], properties: { id: { type: 'string' } }, cost: 'free', category: 'community', auth: true },
   { name: 'community-my-presets', description: 'List your own community presets (approved and pending).', required: [], properties: { limit: { type: 'integer', default: 20 }, skip: { type: 'integer', default: 0 } }, cost: 'free', category: 'community', auth: true },
   { name: 'community-profiles', description: 'Browse public community creator profiles. No auth required.', required: [], properties: { limit: { type: 'integer', default: 20 } }, cost: 'free', category: 'community', auth: false },
+
+  // ---- Reference Library ----
+  { name: 'reference-search', description: 'Search curated mockup reference library by dimensions (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type) or free text. Returns world-class mockup references with AI-extracted dimensions.', required: [], properties: { search: { type: 'string' }, niche: { type: 'string' }, aesthetic: { type: 'string' }, vibe: { type: 'string' }, lighting: { type: 'string' }, texture: { type: 'string' }, mockup_type: { type: 'string' }, limit: { type: 'integer', default: 20 } }, cost: 'free', category: 'references', auth: true },
+  { name: 'reference-ingest', description: 'Ingest a curated mockup reference image into the library. AI auto-extracts dimensions (niche, aesthetic, vibe, lighting, texture, material, angle). Admin only.', required: ['imageUrl'], properties: { imageUrl: { type: 'string' }, name: { type: 'string' }, tags: { type: 'array', items: { type: 'string' } }, prompt: { type: 'string' } }, cost: 'credits', category: 'references', auth: true },
 ];
 
 interface MCPTool {
