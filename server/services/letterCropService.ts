@@ -1,4 +1,3 @@
-import sharp from 'sharp';
 import crypto from 'crypto';
 import { prisma } from '../db/prisma.js';
 import { redisClient } from '../lib/redis.js';
@@ -124,6 +123,7 @@ async function processOneImage(
     const imageBuffer = await downloadImage(result.imageUrl);
     if (!imageBuffer || imageBuffer.length < 1000) return null;
 
+    const { default: sharp } = await import('sharp');
     const metadata = await sharp(imageBuffer).metadata();
     if (!metadata.width || !metadata.height) return null;
 
@@ -195,6 +195,7 @@ async function cropAndNormalize(
   const left = Math.floor((width - size) / 2);
   const top = Math.floor((height - size) / 2);
 
+  const { default: sharp } = await import('sharp');
   const cropped = sharp(buffer)
     .extract({ left, top, width: size, height: size });
 
