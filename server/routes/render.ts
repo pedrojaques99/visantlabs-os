@@ -103,7 +103,7 @@ router.put(
   },
 );
 
-router.post('/:jobId/finish', authenticate, async (req: AuthRequest, res) => {
+router.post('/:jobId/finish', authenticate, renderLimiter, async (req: AuthRequest, res) => {
   const { jobId } = req.params;
   const job = activeJobs.get(jobId);
   if (!job) return res.status(404).json({ error: 'Job not found' });
