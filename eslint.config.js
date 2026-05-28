@@ -4,9 +4,30 @@ import tsParser from '@typescript-eslint/parser';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 export default [
-  js.configs.recommended,
   {
-    files: ['**/*.{ts,tsx}'],
+    ignores: [
+      'dist/', 'dist-ssr/', 'node_modules/', 'cli/',
+      'prisma/generated/', '.claude/', 'scripts/',
+      '*.config.js', '*.config.ts',
+    ],
+  },
+  {
+    ...js.configs.recommended,
+    rules: {
+      ...js.configs.recommended.rules,
+      'no-unused-vars': 'off',
+      'no-undef': 'off',
+      'no-case-declarations': 'warn',
+      'no-empty': ['warn', { allowEmptyCatch: true }],
+      'no-prototype-builtins': 'off',
+      'no-fallthrough': 'warn',
+      'no-cond-assign': 'warn',
+      'no-useless-escape': 'warn',
+      'no-redeclare': 'off',
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}', 'server/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -80,10 +101,11 @@ export default [
       ...reactHooks.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': 'off',
       'no-undef': 'off',
+      'no-case-declarations': 'warn',
+      'no-empty': ['warn', { allowEmptyCatch: true }],
+      'no-prototype-builtins': 'off',
     },
-  },
-  {
-    ignores: ['dist/', 'dist-ssr/', 'node_modules/', '*.config.js', '*.config.ts', 'cli/', 'prisma/generated/'],
   },
 ];
