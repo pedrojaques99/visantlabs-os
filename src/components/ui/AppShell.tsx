@@ -28,7 +28,7 @@ export const AppShellPanel: React.FC<{
   className?: string;
 }> = ({ children, side = 'right', visible = true, width = 300, className }) => (
   <div className={cn(
-    'absolute top-12 bottom-12 z-10 transition-all duration-300',
+    'absolute top-3 bottom-12 z-10 transition-all duration-300',
     side === 'right' ? 'right-3' : 'left-3',
     visible ? 'translate-x-0 opacity-100' : side === 'right' ? 'translate-x-[320px] opacity-0 pointer-events-none' : '-translate-x-[320px] opacity-0 pointer-events-none',
     className,

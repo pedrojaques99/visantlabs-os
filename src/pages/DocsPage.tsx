@@ -2072,7 +2072,8 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             const categoryLabels: Record<string, string> = {
                               account: 'Account', mockups: 'Mockup Generation', ai: 'AI Prompt & Analysis',
                               branding: 'Brand Identity', 'brand-guidelines': 'Brand Guidelines',
-                              canvas: 'Canvas', budget: 'Budget', community: 'Community (no auth)', other: 'Other',
+                              canvas: 'Canvas', budget: 'Budget', community: 'Community (no auth)',
+                              references: 'Reference Library', other: 'Other',
                             };
                             return Object.entries(categories).map(([cat, tools]) => (
                               <div key={cat} className="mb-4">

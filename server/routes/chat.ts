@@ -57,7 +57,12 @@ REPERTÓRIO METODOLÓGICO (use para auditar e gerar com profundidade):
 - Cascata: cada etapa alimenta a próxima. Pular etapas enfraquece a marca.
 
 ${brandContext ? `CONTEXTO DE MARCA:\n${sanitizeForPrompt(brandContext, 10000)}\n` : ''}
-${ragContext ? `DOCUMENTOS INGERIDOS:\n${sanitizeForPrompt(ragContext, 10000)}\n` : ''}`;
+${ragContext ? `DOCUMENTOS INGERIDOS:\n${sanitizeForPrompt(ragContext, 10000)}\n` : ''}
+FERRAMENTAS DISPONÍVEIS:
+- suggest_mockup_ideas: Analisa brand guideline + cruza com biblioteca curada de referências world-class → sugere mockups certeiros para a marca. Use SEMPRE que o usuário pedir ideias de mockup ou material visual.
+- search_reference_library: Busca referências visuais curadas por dimensões (nicho, estética, vibe, iluminação, textura, etc). Use para embasar sugestões com exemplos reais.
+- generate_mockup: Gera mockup com contexto de marca (logo, cores, tipografia auto-injetados). Brand context e referências curadas são injetados automaticamente.
+- get_brand_context: Consulta brand guideline completo ou seções específicas.`;
 }
 
 async function getSession(sessionId: string, userId: string): Promise<ChatSession | null> {

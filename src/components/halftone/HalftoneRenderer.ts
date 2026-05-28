@@ -46,6 +46,7 @@ uniform bool u_showYellow;
 uniform bool u_showBlack;
 
 uniform int u_blendMode;
+uniform float u_effectOpacity;
 
 varying vec2 v_texCoord;
 
@@ -250,6 +251,8 @@ void main() {
   vec3 finalColor = mix(rgbscreen, texcolor, blend);
   float inkCoverage = max(max(c, m), max(y, k));
   float finalAlpha = mix(paperAlpha + (1.0 - paperAlpha) * inkCoverage, 1.0, blend);
+  vec3 original = texture2D(u_texture, v_texCoord).rgb;
+  finalColor = mix(original, finalColor, u_effectOpacity);
   gl_FragColor = vec4(finalColor * finalAlpha, finalAlpha);
 }`;
 
@@ -284,6 +287,7 @@ export interface HalftoneSettings {
   showMagenta: boolean;
   showYellow: boolean;
   showBlack: boolean;
+  effectOpacity?: number;
 }
 
 export const HALFTONE_DEFAULTS: HalftoneSettings = {
@@ -371,7 +375,7 @@ export class HalftoneRenderer {
       'u_lightness', 'u_blur', 'u_threshold', 'u_paperColor',
       'u_cyanAngle', 'u_magentaAngle', 'u_yellowAngle', 'u_blackAngle',
       'u_cyanColor', 'u_magentaColor', 'u_yellowColor', 'u_blackColor',
-      'u_showCyan', 'u_showMagenta', 'u_showYellow', 'u_showBlack', 'u_blendMode',
+      'u_showCyan', 'u_showMagenta', 'u_showYellow', 'u_showBlack', 'u_blendMode', 'u_effectOpacity',
     ];
     for (const name of uniformNames) {
       this.uniforms[name] = this.gl.getUniformLocation(this.program, name);
@@ -406,7 +410,7 @@ export class HalftoneRenderer {
     return shader;
   }
 
-  setupTexture(img: HTMLImageElement): void {
+  setupTexture(source: TexImageSource): void {
     if (!this.gl) return;
     if (this.texture) this.gl.deleteTexture(this.texture);
 
@@ -416,14 +420,28 @@ export class HalftoneRenderer {
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, img);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, source);
 
-    this.imageWidth = img.naturalWidth || img.width;
-    this.imageHeight = img.naturalHeight || img.height;
+    if (source instanceof HTMLVideoElement) {
+      this.imageWidth = source.videoWidth;
+      this.imageHeight = source.videoHeight;
+    } else if (source instanceof HTMLImageElement) {
+      this.imageWidth = source.naturalWidth || source.width;
+      this.imageHeight = source.naturalHeight || source.height;
+    } else {
+      this.imageWidth = (source as HTMLCanvasElement).width;
+      this.imageHeight = (source as HTMLCanvasElement).height;
+    }
     this.canvas.width = this.imageWidth;
     this.canvas.height = this.imageHeight;
     this.gl.viewport(0, 0, this.imageWidth, this.imageHeight);
     this.isImageLoaded = true;
+  }
+
+  updateTexture(source: TexImageSource): void {
+    if (!this.gl || !this.texture) return;
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, source);
   }
 
   render(settings: HalftoneSettings): void {
@@ -476,6 +494,7 @@ export class HalftoneRenderer {
     gl.uniform1i(u.u_showYellow, settings.showYellow ? 1 : 0);
     gl.uniform1i(u.u_showBlack, settings.showBlack ? 1 : 0);
     gl.uniform1i(u.u_blendMode, settings.blendMode);
+    gl.uniform1f(u.u_effectOpacity, settings.effectOpacity ?? 1.0);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }

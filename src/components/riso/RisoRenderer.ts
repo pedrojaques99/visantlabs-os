@@ -8,7 +8,12 @@ export interface InkLayer {
   angle: number;
   offsetX: number;
   offsetY: number;
+  ditherMode?: DitherMode;
+  halftoneShape?: HalftoneShape;
 }
+
+export type DitherMode = 'stochastic' | 'atkinson' | 'floydsteinberg' | 'bayer' | 'halftone';
+export type HalftoneShape = 'circle' | 'line' | 'cross' | 'ellipse';
 
 export interface RisoSettings {
   layers: InkLayer[];
@@ -24,12 +29,100 @@ export interface RisoSettings {
   edgeBleed: number;
   colorCount: number;
   soloLayer?: number;
+  ditherMode: DitherMode;
+  halftoneShape: HalftoneShape;
+  effectOpacity?: number;
 }
+
+export interface RisoInkColor {
+  name: string;
+  hex: string;
+  rgb: [number, number, number];
+}
+
+export const RISO_INK_CATALOG: RisoInkColor[] = [
+  { name: 'Black', hex: '#000000', rgb: [0, 0, 0] },
+  { name: 'Burgundy', hex: '#914e72', rgb: [145, 78, 114] },
+  { name: 'Blue', hex: '#0078bf', rgb: [0, 120, 191] },
+  { name: 'Green', hex: '#00a95c', rgb: [0, 169, 92] },
+  { name: 'Medium Blue', hex: '#3255a4', rgb: [50, 85, 164] },
+  { name: 'Bright Red', hex: '#f15060', rgb: [241, 80, 96] },
+  { name: 'Riso Federal Blue', hex: '#3d5588', rgb: [61, 85, 136] },
+  { name: 'Purple', hex: '#765ba7', rgb: [118, 91, 167] },
+  { name: 'Teal', hex: '#00838a', rgb: [0, 131, 138] },
+  { name: 'Flat Gold', hex: '#bb8b41', rgb: [187, 139, 65] },
+  { name: 'Hunter Green', hex: '#407060', rgb: [64, 112, 96] },
+  { name: 'Red', hex: '#ff665e', rgb: [255, 102, 94] },
+  { name: 'Brown', hex: '#925f52', rgb: [146, 95, 82] },
+  { name: 'Yellow', hex: '#ffe800', rgb: [255, 232, 0] },
+  { name: 'Marine Red', hex: '#d2515e', rgb: [210, 81, 94] },
+  { name: 'Orange', hex: '#ff6c2f', rgb: [255, 108, 47] },
+  { name: 'Fluorescent Pink', hex: '#ff48b0', rgb: [255, 72, 176] },
+  { name: 'Light Gray', hex: '#88898a', rgb: [136, 137, 138] },
+  { name: 'Metallic Gold', hex: '#ac936e', rgb: [172, 147, 110] },
+  { name: 'Crimson', hex: '#e45d50', rgb: [228, 93, 80] },
+  { name: 'Fluorescent Orange', hex: '#ff7477', rgb: [255, 116, 119] },
+  { name: 'Cornflower', hex: '#62a8e5', rgb: [98, 168, 229] },
+  { name: 'Sky Blue', hex: '#4982cf', rgb: [73, 130, 207] },
+  { name: 'Sea Blue', hex: '#0074a2', rgb: [0, 116, 162] },
+  { name: 'Lake', hex: '#235ba8', rgb: [35, 91, 168] },
+  { name: 'Indigo', hex: '#484d7a', rgb: [72, 77, 122] },
+  { name: 'Midnight', hex: '#435060', rgb: [67, 80, 96] },
+  { name: 'Mist', hex: '#d5e4c0', rgb: [213, 228, 192] },
+  { name: 'Granite', hex: '#a5aaa8', rgb: [165, 170, 168] },
+  { name: 'Charcoal', hex: '#70747c', rgb: [112, 116, 124] },
+  { name: 'Smoky Teal', hex: '#5f8289', rgb: [95, 130, 137] },
+  { name: 'Steel', hex: '#375e77', rgb: [55, 94, 119] },
+  { name: 'Slate', hex: '#5e695e', rgb: [94, 105, 94] },
+  { name: 'Turquoise', hex: '#00aa93', rgb: [0, 170, 147] },
+  { name: 'Light Teal', hex: '#009da5', rgb: [0, 157, 165] },
+  { name: 'Aqua', hex: '#5ec8e5', rgb: [94, 200, 229] },
+  { name: 'Mint', hex: '#82d8d5', rgb: [130, 216, 213] },
+  { name: 'Fluorescent Green', hex: '#44d62c', rgb: [68, 214, 44] },
+  { name: 'Kelly Green', hex: '#67b346', rgb: [103, 179, 70] },
+  { name: 'Grass', hex: '#397e58', rgb: [57, 126, 88] },
+  { name: 'Forest', hex: '#516e5a', rgb: [81, 110, 90] },
+  { name: 'Spruce', hex: '#4a635d', rgb: [74, 99, 93] },
+  { name: 'Moss', hex: '#68724d', rgb: [104, 114, 77] },
+  { name: 'Sea Foam', hex: '#62c2b1', rgb: [98, 194, 177] },
+  { name: 'Bright Olive Green', hex: '#b49f29', rgb: [180, 159, 41] },
+  { name: 'Light Lime', hex: '#e3ed55', rgb: [227, 237, 85] },
+  { name: 'Ivy', hex: '#169b62', rgb: [22, 155, 98] },
+  { name: 'Pine', hex: '#237e74', rgb: [35, 126, 116] },
+  { name: 'Lagoon', hex: '#2f6165', rgb: [47, 97, 101] },
+  { name: 'Violet', hex: '#9d7ad2', rgb: [157, 122, 210] },
+  { name: 'Orchid', hex: '#aa60bf', rgb: [170, 96, 191] },
+  { name: 'Plum', hex: '#845991', rgb: [132, 89, 145] },
+  { name: 'Raisin', hex: '#775d7a', rgb: [119, 93, 122] },
+  { name: 'Grape', hex: '#6c5d80', rgb: [108, 93, 128] },
+  { name: 'Scarlet', hex: '#ff4f58', rgb: [255, 79, 88] },
+  { name: 'Tomato', hex: '#d2515e', rgb: [210, 81, 94] },
+  { name: 'Cranberry', hex: '#d1517a', rgb: [209, 81, 122] },
+  { name: 'Maroon', hex: '#9e4c6e', rgb: [158, 76, 110] },
+  { name: 'Raspberry Red', hex: '#d1517a', rgb: [209, 81, 122] },
+  { name: 'Brick', hex: '#a75154', rgb: [167, 81, 84] },
+  { name: 'Light Mauve', hex: '#e0b5c7', rgb: [224, 181, 199] },
+  { name: 'Dark Mauve', hex: '#bd8ca6', rgb: [189, 140, 166] },
+  { name: 'Wine', hex: '#914e72', rgb: [145, 78, 114] },
+  { name: 'Gray', hex: '#928d88', rgb: [146, 141, 136] },
+  { name: 'Coral', hex: '#ff8f6b', rgb: [255, 143, 107] },
+  { name: 'White', hex: '#ffffff', rgb: [255, 255, 255] },
+  { name: 'Sunflower', hex: '#ffb511', rgb: [255, 181, 17] },
+  { name: 'Melon', hex: '#ffae3b', rgb: [255, 174, 59] },
+  { name: 'Apricot', hex: '#f6a04d', rgb: [246, 160, 77] },
+  { name: 'Paprika', hex: '#ee5d32', rgb: [238, 93, 50] },
+  { name: 'Pumpkin', hex: '#ff6f2c', rgb: [255, 111, 44] },
+  { name: 'Bright Gold', hex: '#e5b151', rgb: [229, 177, 81] },
+  { name: 'Copper', hex: '#bd6439', rgb: [189, 100, 57] },
+  { name: 'Mahogany', hex: '#8e595a', rgb: [142, 89, 90] },
+  { name: 'Bubble Gum', hex: '#f984ca', rgb: [249, 132, 202] },
+  { name: 'Fluorescent Yellow', hex: '#ffe916', rgb: [255, 233, 22] },
+];
 
 export const RISO_DEFAULTS: RisoSettings = {
   layers: [],
-  frequency: 55,
-  dotSize: 0.9,
+  frequency: 40,
+  dotSize: 0.85,
   contrast: 1.2,
   lightness: 0.0,
   paperColor: '#f5f0e0',
@@ -40,6 +133,8 @@ export const RISO_DEFAULTS: RisoSettings = {
   edgeBleed: 1,
   colorCount: 4,
   soloLayer: -1,
+  ditherMode: 'stochastic',
+  halftoneShape: 'circle',
 };
 
 export const RISO_INK_PRESETS: Record<string, string[]> = {
@@ -60,6 +155,8 @@ export interface RisoFullPreset {
   misregistration: number;
   edgeBleed: number;
   colors: string[];
+  ditherMode?: DitherMode;
+  halftoneShape?: HalftoneShape;
 }
 
 export const RISO_FULL_PRESETS: Record<string, RisoFullPreset> = {
@@ -67,240 +164,45 @@ export const RISO_FULL_PRESETS: Record<string, RisoFullPreset> = {
   'Clean Modern': { frequency: 80, dotSize: 0.8, paperColor: '#faf8f2', paperNoise: 0.1, inkNoise: 0.2, inkDropout: 0.01, misregistration: 1, edgeBleed: 0.5, colors: ['#005f73', '#ee6c4d', '#e0e0e0', '#2b2b2b'] },
   'Punk Zine': { frequency: 35, dotSize: 1.0, paperColor: '#f0e8d0', paperNoise: 0.6, inkNoise: 0.7, inkDropout: 0.06, misregistration: 5, edgeBleed: 2, colors: ['#ff6eb4', '#00c9a7', '#ffe135', '#333333'] },
   'Minimal Duo': { frequency: 65, dotSize: 0.85, paperColor: '#faf8f2', paperNoise: 0.15, inkNoise: 0.3, inkDropout: 0.02, misregistration: 2, edgeBleed: 1, colors: ['#264653', '#e63946'] },
+  'Atkinson Mono': { frequency: 50, dotSize: 0.9, paperColor: '#f5f0e0', paperNoise: 0.3, inkNoise: 0.3, inkDropout: 0.02, misregistration: 2, edgeBleed: 1, colors: ['#000000', '#ff665e'], ditherMode: 'atkinson' },
+  'Bayer Retro': { frequency: 40, dotSize: 0.85, paperColor: '#f0e8d0', paperNoise: 0.2, inkNoise: 0.2, inkDropout: 0.01, misregistration: 1, edgeBleed: 0.5, colors: ['#3255a4', '#ff6c2f', '#ffe800'], ditherMode: 'bayer' },
+  'Halftone Pop': { frequency: 35, dotSize: 0.95, paperColor: '#faf8f2', paperNoise: 0.1, inkNoise: 0.15, inkDropout: 0.01, misregistration: 2, edgeBleed: 0.5, colors: ['#ff48b0', '#44d62c', '#0078bf', '#000000'], ditherMode: 'halftone', halftoneShape: 'circle' },
+  'Line Screen': { frequency: 45, dotSize: 0.9, paperColor: '#f5f0e0', paperNoise: 0.25, inkNoise: 0.3, inkDropout: 0.02, misregistration: 2, edgeBleed: 1, colors: ['#914e72', '#00838a', '#bb8b41'], ditherMode: 'halftone', halftoneShape: 'line' },
 };
 
-// --- GLSL Shaders (ported from HalftoneRenderer with riso-specific changes) ---
+// GLSL shaders — single source of truth in shared/riso/shaders.ts
+import { RISO_VERTEX_SHADER as VERTEX_SHADER, RISO_FRAGMENT_SHADER as FRAGMENT_SHADER } from '../../../shared/riso/shaders';
 
-const VERTEX_SHADER = `
-attribute vec2 a_position;
-attribute vec2 a_texCoord;
-varying vec2 v_texCoord;
-void main() {
-  gl_Position = vec4(a_position, 0.0, 1.0);
-  v_texCoord = vec2(a_texCoord.x, 1.0 - a_texCoord.y);
-}`;
+// --- Perceptual color distance (CPU-side LAB) ---
 
-const FRAGMENT_SHADER = `
-precision highp float;
+function rgbToLab(r: number, g: number, b: number): [number, number, number] {
+  let lr = r / 255, lg = g / 255, lb = b / 255;
+  lr = lr > 0.04045 ? Math.pow((lr + 0.055) / 1.055, 2.4) : lr / 12.92;
+  lg = lg > 0.04045 ? Math.pow((lg + 0.055) / 1.055, 2.4) : lg / 12.92;
+  lb = lb > 0.04045 ? Math.pow((lb + 0.055) / 1.055, 2.4) : lb / 12.92;
 
-uniform sampler2D u_texture;
-uniform vec2 u_resolution;
+  let x = (lr * 0.4124 + lg * 0.3576 + lb * 0.1805) / 0.95047;
+  let y = (lr * 0.2126 + lg * 0.7152 + lb * 0.0722);
+  let z = (lr * 0.0193 + lg * 0.1192 + lb * 0.9505) / 1.08883;
 
-uniform float u_frequency;
-uniform float u_dotSize;
-uniform float u_contrast;
-uniform float u_lightness;
-uniform float u_paperNoise;
-uniform float u_inkNoise;
-uniform float u_inkDropout;
-uniform float u_misregistration;
-uniform float u_edgeBleed;
-uniform vec4 u_paperColor;
+  x = x > 0.008856 ? Math.cbrt(x) : 7.787 * x + 16 / 116;
+  y = y > 0.008856 ? Math.cbrt(y) : 7.787 * y + 16 / 116;
+  z = z > 0.008856 ? Math.cbrt(z) : 7.787 * z + 16 / 116;
 
-uniform int u_layerCount;
-uniform int u_soloLayer;
-
-uniform vec3 u_inkColor0;
-uniform vec3 u_inkColor1;
-uniform vec3 u_inkColor2;
-uniform vec3 u_inkColor3;
-
-uniform float u_inkAlpha0;
-uniform float u_inkAlpha1;
-uniform float u_inkAlpha2;
-uniform float u_inkAlpha3;
-
-uniform float u_inkAngle0;
-uniform float u_inkAngle1;
-uniform float u_inkAngle2;
-uniform float u_inkAngle3;
-
-uniform vec2 u_inkOffset0;
-uniform vec2 u_inkOffset1;
-uniform vec2 u_inkOffset2;
-uniform vec2 u_inkOffset3;
-
-uniform bool u_inkVisible0;
-uniform bool u_inkVisible1;
-uniform bool u_inkVisible2;
-uniform bool u_inkVisible3;
-
-varying vec2 v_texCoord;
-
-// --- Hash noise ---
-float hash(vec2 p) {
-  p = 50.0 * fract(p * 0.3183099 + vec2(0.71, 0.113));
-  return fract(p.x * p.y * (p.x + p.y));
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
 }
 
-mat2 rotationMatrix(float angle) {
-  float rad = radians(angle);
-  return mat2(cos(rad), -sin(rad), sin(rad), cos(rad));
+function labDistance(a: [number, number, number], b: [number, number, number]): number {
+  const la = rgbToLab(a[0], a[1], a[2]);
+  const lb = rgbToLab(b[0], b[1], b[2]);
+  return Math.sqrt((la[0] - lb[0]) ** 2 + (la[1] - lb[1]) ** 2 + (la[2] - lb[2]) ** 2);
 }
-
-// --- Color separation ---
-float getLayerIntensity(vec3 pixel, vec3 ink, vec3 paperRgb,
-                        float dist0, float dist1, float dist2, float dist3,
-                        int totalLayers) {
-  float paperDist = distance(pixel, paperRgb);
-  if (paperDist < 0.12) return 0.0;
-
-  float lum = dot(pixel, vec3(0.299, 0.587, 0.114));
-  float darkness = 1.0 - lum;
-
-  float myDist = distance(pixel, ink);
-
-  float minDist = dist0;
-  if (totalLayers > 1) minDist = min(minDist, dist1);
-  if (totalLayers > 2) minDist = min(minDist, dist2);
-  if (totalLayers > 3) minDist = min(minDist, dist3);
-
-  float ownership = 0.0;
-  if (myDist <= minDist + 0.02) {
-    ownership = 1.0;
-  } else {
-    float ratio = (minDist + 0.02) / (myDist + 0.02);
-    ownership = ratio * ratio * ratio * 0.12;
-  }
-
-  float intensity = ownership * smoothstep(0.05, 0.45, darkness) * (0.25 + 0.75 * darkness);
-  return clamp(intensity, 0.0, 1.0);
-}
-
-// --- Stochastic riso grain ---
-// Real risograph uses stochastic screening: random noise thresholded by intensity.
-// Sparse speckles at low %, dense grain at mid %, near-solid at high %.
-float risoGrain(vec2 st, float intensity, float angle, float layerSeed) {
-  if (intensity < 0.005) return 0.0;
-  if (intensity > 0.995) return 1.0;
-
-  vec2 aspectSt = st;
-  aspectSt.x *= u_resolution.x / u_resolution.y;
-  vec2 rotSt = rotationMatrix(angle) * aspectSt;
-  vec2 pos = rotSt * u_resolution;
-
-  // Grain cell size: dotSize scales particle size, frequency scales density
-  // Larger dotSize = bigger grain particles, higher frequency = finer texture
-  float cellScale = u_frequency / (120.0 * u_dotSize);
-  vec2 cell = floor(pos * cellScale);
-  vec2 f = fract(pos * cellScale) - 0.5;
-
-  // Primary noise per grain cell
-  float n = hash(cell + layerSeed);
-
-  // Medium-scale variation for uneven ink absorption
-  vec2 medCell = floor(pos * cellScale * 0.2);
-  float medNoise = hash(medCell + layerSeed + 43.0);
-  float localIntensity = intensity * (0.85 + 0.3 * medNoise);
-
-  // Threshold: intensity determines what fraction of cells get ink
-  float threshold = 1.0 - clamp(localIntensity, 0.0, 1.0);
-
-  // Soft transition width — wider at low densities for organic sparse dots
-  float softness = mix(0.1, 0.03, intensity);
-  float grain = smoothstep(threshold - softness, threshold + softness, n);
-
-  // Round grain particles — sharp radial cutoff from cell center
-  float cellDist = length(f) * 2.0;
-  float edgeSoften = smoothstep(0.95, 0.85, cellDist);
-  grain *= edgeSoften;
-
-  // Edge bleed — expand grain particles
-  grain = mix(grain, min(grain * (1.0 + u_edgeBleed * 0.15), 1.0), u_edgeBleed * 0.3);
-
-  // Ink dropout — random cells go blank
-  if (hash(cell + layerSeed + 200.0) < u_inkDropout) grain = 0.0;
-
-  return clamp(grain, 0.0, 1.0);
-}
-
-// --- Image sampling ---
-vec3 sampleAt(vec2 uv) {
-  vec3 color = texture2D(u_texture, clamp(uv, 0.0, 1.0)).rgb;
-  color = (color - 0.5) * u_contrast + 0.5 + u_lightness;
-  return clamp(color, 0.0, 1.0);
-}
-
-void main() {
-  vec2 st = v_texCoord;
-  vec2 paperCoord = st * u_resolution;
-
-  // Paper texture — subtle fiber grain
-  float grain = hash(paperCoord * 0.4) * 0.5
-              + hash(paperCoord * 0.2 + 7.3) * 0.3
-              + hash(paperCoord * 0.08 + 13.7) * 0.2;
-  grain = (grain - 0.5) * u_paperNoise * 0.06;
-
-  vec3 paperRgb = u_paperColor.rgb;
-  vec3 paper = paperRgb + grain;
-
-  // Ink absorption variation across paper surface
-  float inkAbsorb = hash(paperCoord * 0.15 + 31.0);
-  float absorbMod = 1.0 - u_inkNoise * 0.2 * (inkAbsorb - 0.5);
-
-  vec3 result = paper;
-
-  // Misregistration in UV space
-  vec2 misregUnit = u_misregistration / u_resolution;
-
-  // Compute distances for color separation
-  vec3 p0 = sampleAt(st + u_inkOffset0 * misregUnit);
-  vec3 p1 = sampleAt(st + u_inkOffset1 * misregUnit);
-  vec3 p2 = sampleAt(st + u_inkOffset2 * misregUnit);
-  vec3 p3 = sampleAt(st + u_inkOffset3 * misregUnit);
-
-  float d0 = distance(p0, u_inkColor0);
-  float d1 = distance(p1, u_inkColor1);
-  float d2 = distance(p2, u_inkColor2);
-  float d3 = distance(p3, u_inkColor3);
-
-  // Each layer: compute intensity, generate grain, multiply-blend ink
-  // Multiply blend = how real transparent inks work (overlaps darken/mix colors)
-
-  if (u_inkVisible0 && (u_soloLayer < 0 || u_soloLayer == 0) && u_layerCount > 0) {
-    vec2 offsetUV = st + u_inkOffset0 * misregUnit;
-    vec3 pixel = sampleAt(offsetUV);
-    float intensity = getLayerIntensity(pixel, u_inkColor0, paperRgb, d0, d1, d2, d3, u_layerCount);
-    float g = risoGrain(offsetUV, intensity, u_inkAngle0, 0.0);
-    float a = u_inkAlpha0 * g * absorbMod;
-    result = result * mix(vec3(1.0), u_inkColor0, a);
-  }
-
-  if (u_inkVisible1 && (u_soloLayer < 0 || u_soloLayer == 1) && u_layerCount > 1) {
-    vec2 offsetUV = st + u_inkOffset1 * misregUnit;
-    vec3 pixel = sampleAt(offsetUV);
-    float intensity = getLayerIntensity(pixel, u_inkColor1, paperRgb, d0, d1, d2, d3, u_layerCount);
-    float g = risoGrain(offsetUV, intensity, u_inkAngle1, 100.0);
-    float a = u_inkAlpha1 * g * absorbMod;
-    result = result * mix(vec3(1.0), u_inkColor1, a);
-  }
-
-  if (u_inkVisible2 && (u_soloLayer < 0 || u_soloLayer == 2) && u_layerCount > 2) {
-    vec2 offsetUV = st + u_inkOffset2 * misregUnit;
-    vec3 pixel = sampleAt(offsetUV);
-    float intensity = getLayerIntensity(pixel, u_inkColor2, paperRgb, d0, d1, d2, d3, u_layerCount);
-    float g = risoGrain(offsetUV, intensity, u_inkAngle2, 200.0);
-    float a = u_inkAlpha2 * g * absorbMod;
-    result = result * mix(vec3(1.0), u_inkColor2, a);
-  }
-
-  if (u_inkVisible3 && (u_soloLayer < 0 || u_soloLayer == 3) && u_layerCount > 3) {
-    vec2 offsetUV = st + u_inkOffset3 * misregUnit;
-    vec3 pixel = sampleAt(offsetUV);
-    float intensity = getLayerIntensity(pixel, u_inkColor3, paperRgb, d0, d1, d2, d3, u_layerCount);
-    float g = risoGrain(offsetUV, intensity, u_inkAngle3, 300.0);
-    float a = u_inkAlpha3 * g * absorbMod;
-    result = result * mix(vec3(1.0), u_inkColor3, a);
-  }
-
-  gl_FragColor = vec4(result, 1.0);
-}`;
-
-// --- Color extraction (CPU, runs once on image load) ---
 
 function colorDistance(a: [number, number, number], b: [number, number, number]): number {
-  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+  return labDistance(a, b);
 }
+
+// --- Color extraction (CPU, runs once on image load) ---
 
 export function extractDominantColors(imageData: ImageData, count: number): [number, number, number][] {
   const { data, width, height } = imageData;
@@ -316,12 +218,24 @@ export function extractDominantColors(imageData: ImageData, count: number): [num
 
   if (samples.length === 0) return [hexToRgb('#e3503e')];
 
-  let centroids: [number, number, number][] = [];
-  for (let i = 0; i < count; i++) {
-    centroids.push(samples[Math.floor(i * samples.length / count)]);
+  // K-means++ initialization for better centroid spread
+  const centroids: [number, number, number][] = [samples[Math.floor(Math.random() * samples.length)]];
+  for (let k = 1; k < count; k++) {
+    const dists = samples.map(s => {
+      let minD = Infinity;
+      for (const c of centroids) minD = Math.min(minD, colorDistance(s, c));
+      return minD * minD;
+    });
+    const total = dists.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < dists.length; i++) {
+      r -= dists[i];
+      if (r <= 0) { centroids.push(samples[i]); break; }
+    }
+    if (centroids.length <= k) centroids.push(samples[Math.floor(Math.random() * samples.length)]);
   }
 
-  for (let iter = 0; iter < 15; iter++) {
+  for (let iter = 0; iter < 20; iter++) {
     const clusters: [number, number, number][][] = centroids.map(() => []);
     for (const s of samples) {
       let minDist = Infinity, minIdx = 0;
@@ -355,6 +269,25 @@ export function extractDominantColors(imageData: ImageData, count: number): [num
   });
 
   return centroids;
+}
+
+// --- Map to Palette: snap extracted colors to nearest Riso ink ---
+
+export function mapToRisoInks(
+  imageData: ImageData,
+  targetInks: RisoInkColor[],
+  count: number,
+): [number, number, number][] {
+  const colors = extractDominantColors(imageData, count);
+  return colors.map(c => {
+    let bestInk = targetInks[0];
+    let bestDist = Infinity;
+    for (const ink of targetInks) {
+      const d = colorDistance(c, ink.rgb);
+      if (d < bestDist) { bestDist = d; bestInk = ink; }
+    }
+    return bestInk.rgb;
+  });
 }
 
 // --- WebGL Renderer ---
@@ -407,7 +340,9 @@ export class RisoRenderer {
       'u_texture', 'u_resolution', 'u_frequency', 'u_dotSize',
       'u_contrast', 'u_lightness', 'u_paperNoise', 'u_inkNoise',
       'u_inkDropout', 'u_misregistration', 'u_edgeBleed', 'u_paperColor',
-      'u_layerCount', 'u_soloLayer',
+      'u_layerCount', 'u_soloLayer', 'u_ditherMode', 'u_halftoneShape', 'u_effectOpacity',
+      'u_layerDither0', 'u_layerDither1', 'u_layerDither2', 'u_layerDither3',
+      'u_layerHShape0', 'u_layerHShape1', 'u_layerHShape2', 'u_layerHShape3',
       'u_inkColor0', 'u_inkColor1', 'u_inkColor2', 'u_inkColor3',
       'u_inkAlpha0', 'u_inkAlpha1', 'u_inkAlpha2', 'u_inkAlpha3',
       'u_inkAngle0', 'u_inkAngle1', 'u_inkAngle2', 'u_inkAngle3',
@@ -447,7 +382,7 @@ export class RisoRenderer {
     return shader;
   }
 
-  setupTexture(img: HTMLImageElement): void {
+  setupTexture(source: TexImageSource): void {
     if (!this.gl) return;
     if (this.texture) this.gl.deleteTexture(this.texture);
 
@@ -457,14 +392,28 @@ export class RisoRenderer {
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, img);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, source);
 
-    this.imageWidth = img.naturalWidth || img.width;
-    this.imageHeight = img.naturalHeight || img.height;
+    if (source instanceof HTMLVideoElement) {
+      this.imageWidth = source.videoWidth;
+      this.imageHeight = source.videoHeight;
+    } else if (source instanceof HTMLImageElement) {
+      this.imageWidth = source.naturalWidth || source.width;
+      this.imageHeight = source.naturalHeight || source.height;
+    } else {
+      this.imageWidth = (source as HTMLCanvasElement).width;
+      this.imageHeight = (source as HTMLCanvasElement).height;
+    }
     this.canvas.width = this.imageWidth;
     this.canvas.height = this.imageHeight;
     this.gl.viewport(0, 0, this.imageWidth, this.imageHeight);
     this.isImageLoaded = true;
+  }
+
+  updateTexture(source: TexImageSource): void {
+    if (!this.gl || !this.texture) return;
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, source);
   }
 
   render(settings: RisoSettings): void {
@@ -501,11 +450,22 @@ export class RisoRenderer {
     gl.uniform1i(u.u_layerCount, layers.length);
     gl.uniform1i(u.u_soloLayer, settings.soloLayer ?? -1);
 
+    const ditherModeMapGlobal: Record<string, number> = { stochastic: 0, atkinson: 1, floydsteinberg: 2, bayer: 3, halftone: 4 };
+    const shapeMapGlobal: Record<string, number> = { circle: 0, line: 1, cross: 2, ellipse: 3 };
+    gl.uniform1i(u.u_ditherMode, ditherModeMapGlobal[settings.ditherMode] ?? 0);
+    gl.uniform1i(u.u_halftoneShape, shapeMapGlobal[settings.halftoneShape] ?? 0);
+    gl.uniform1f(u.u_effectOpacity, settings.effectOpacity ?? 1.0);
+
     const colorUniforms = [u.u_inkColor0, u.u_inkColor1, u.u_inkColor2, u.u_inkColor3];
     const alphaUniforms = [u.u_inkAlpha0, u.u_inkAlpha1, u.u_inkAlpha2, u.u_inkAlpha3];
     const angleUniforms = [u.u_inkAngle0, u.u_inkAngle1, u.u_inkAngle2, u.u_inkAngle3];
     const offsetUniforms = [u.u_inkOffset0, u.u_inkOffset1, u.u_inkOffset2, u.u_inkOffset3];
     const visibleUniforms = [u.u_inkVisible0, u.u_inkVisible1, u.u_inkVisible2, u.u_inkVisible3];
+
+    const ditherModeMap: Record<string, number> = { stochastic: 0, atkinson: 1, floydsteinberg: 2, bayer: 3, halftone: 4 };
+    const shapeMap: Record<string, number> = { circle: 0, line: 1, cross: 2, ellipse: 3 };
+    const layerDitherUniforms = [u.u_layerDither0, u.u_layerDither1, u.u_layerDither2, u.u_layerDither3];
+    const layerHShapeUniforms = [u.u_layerHShape0, u.u_layerHShape1, u.u_layerHShape2, u.u_layerHShape3];
 
     for (let i = 0; i < 4; i++) {
       if (i < layers.length) {
@@ -516,12 +476,16 @@ export class RisoRenderer {
         gl.uniform1f(angleUniforms[i], layer.angle);
         gl.uniform2f(offsetUniforms[i], layer.offsetX, layer.offsetY);
         gl.uniform1i(visibleUniforms[i], layer.visible ? 1 : 0);
+        gl.uniform1i(layerDitherUniforms[i], layer.ditherMode ? ditherModeMap[layer.ditherMode] ?? -1 : -1);
+        gl.uniform1i(layerHShapeUniforms[i], layer.halftoneShape ? shapeMap[layer.halftoneShape] ?? -1 : -1);
       } else {
         gl.uniform3f(colorUniforms[i], 0, 0, 0);
         gl.uniform1f(alphaUniforms[i], 0);
         gl.uniform1f(angleUniforms[i], 0);
         gl.uniform2f(offsetUniforms[i], 0, 0);
         gl.uniform1i(visibleUniforms[i], 0);
+        gl.uniform1i(layerDitherUniforms[i], -1);
+        gl.uniform1i(layerHShapeUniforms[i], -1);
       }
     }
 

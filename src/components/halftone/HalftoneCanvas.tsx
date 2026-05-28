@@ -3,10 +3,13 @@ import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { HalftoneRenderer } from './HalftoneRenderer';
 import { useHalftoneStore } from '@/stores/halftoneStore';
+import { useImageLabStore } from '@/stores/imageLabStore';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
+import { useVideoSource } from '@/hooks/useVideoSource';
 
 export interface HalftoneCanvasHandle {
   getRenderer: () => HalftoneRenderer | null;
+  getVideoControls: () => { videoRef: React.RefObject<HTMLVideoElement | null>; isPlaying: boolean; duration: number; currentTime: number; play: () => void; pause: () => void; seek: (t: number) => void } | null;
 }
 
 interface HalftoneCanvasProps {
@@ -20,14 +23,12 @@ export const HalftoneCanvas = forwardRef<HalftoneCanvasHandle, HalftoneCanvasPro
   const [webglFailed, setWebglFailed] = React.useState(false);
 
   const store = useHalftoneStore();
+  const effectOpacity = useImageLabStore((s) => s.effectOpacity);
   const settingsJson = useHalftoneStore((s) => JSON.stringify(s.getSettings()));
   const zoom = useHalftoneStore((s) => s.zoom);
   const panX = useHalftoneStore((s) => s.panX);
   const panY = useHalftoneStore((s) => s.panY);
-
-  useImperativeHandle(ref, () => ({
-    getRenderer: () => rendererRef.current,
-  }), []);
+  const mediaType = useHalftoneStore((s) => s.mediaType);
 
   const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
     getState: useHalftoneStore.getState,
@@ -45,18 +46,40 @@ export const HalftoneCanvas = forwardRef<HalftoneCanvasHandle, HalftoneCanvasPro
     return () => renderer.destroy();
   }, [onCanvasReady]);
 
-  useEffect(() => {
-    if (!store.imageUrl || !rendererRef.current) return;
-    loadImage(store.imageUrl).then((img) => {
-      rendererRef.current!.setupTexture(img);
-      rendererRef.current!.render(store.getSettings());
-    });
-  }, [store.imageUrl]);
+  const onVideoFrame = useCallback((source: TexImageSource) => {
+    const renderer = rendererRef.current;
+    if (!renderer) return;
+    if (!renderer.isImageLoaded) {
+      renderer.setupTexture(source);
+    } else {
+      renderer.updateTexture(source);
+    }
+    renderer.render({ ...useHalftoneStore.getState().getSettings(), effectOpacity: useImageLabStore.getState().effectOpacity });
+  }, []);
+
+  const videoSource = useVideoSource({
+    url: store.imageUrl,
+    mediaType,
+    onFrame: onVideoFrame,
+  });
+
+  useImperativeHandle(ref, () => ({
+    getRenderer: () => rendererRef.current,
+    getVideoControls: () => videoSource.isVideo ? videoSource : null,
+  }), [videoSource]);
 
   useEffect(() => {
-    if (!rendererRef.current?.isImageLoaded) return;
-    rendererRef.current.render(store.getSettings());
-  }, [settingsJson]);
+    if (!store.imageUrl || !rendererRef.current || mediaType === 'video') return;
+    loadImage(store.imageUrl).then((img) => {
+      rendererRef.current!.setupTexture(img);
+      rendererRef.current!.render({ ...store.getSettings(), effectOpacity: useImageLabStore.getState().effectOpacity });
+    });
+  }, [store.imageUrl, mediaType]);
+
+  useEffect(() => {
+    if (!rendererRef.current?.isImageLoaded || mediaType === 'video') return;
+    rendererRef.current.render({ ...store.getSettings(), effectOpacity });
+  }, [settingsJson, effectOpacity, mediaType]);
 
   useEffect(() => {
     return bindWheelToRef(containerRef.current);

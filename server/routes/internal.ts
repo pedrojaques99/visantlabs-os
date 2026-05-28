@@ -1,13 +1,13 @@
 import { Router, Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
+import { rateLimit } from 'express-rate-limit';
 import { connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 
 const router = Router();
 
 const partnerCreditsLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per window
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });

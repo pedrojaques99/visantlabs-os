@@ -7,6 +7,7 @@ import { AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { calculateImageCost, calculateVideoCost, getImagePricing } from '../../src/utils/pricing.js';
 import { ensureOptionalBoolean, ensureString, isSafeId, isValidAspectRatio, isValidObjectId, isValidPositiveInt, sanitizeMongoQuery, VALID_ASPECT_RATIOS } from '../utils/validation.js';
+import { vectorService } from '../services/vectorService.js';
 
 const router = express.Router();
 
@@ -2404,6 +2405,242 @@ router.get('/feedback/stats', validateAdmin, async (req: AuthRequest, res: Respo
   } catch (error: any) {
     console.error('[admin] feedback/stats error:', error);
     return res.status(500).json({ error: 'Failed to fetch feedback stats' });
+  }
+});
+
+// ═══════════════════════════════════════════
+// Reference Library — Ingest curated mockup references
+// ═══════════════════════════════════════════
+
+router.post('/references/ingest', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    const { images } = req.body;
+
+    if (!Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: 'images array is required (max 10)' });
+    }
+    if (images.length > 10) {
+      return res.status(400).json({ error: 'Maximum 10 images per batch' });
+    }
+
+    const authReq = req as AuthRequest;
+    const userId = authReq.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'User ID not found' });
+    }
+
+    const { ingestReference } = await import('../lib/mockup/referenceIngestor.js');
+
+    const r2Service = await import('../../src/services/r2Service.js');
+    if (!r2Service.isR2Configured()) {
+      return res.status(500).json({ error: 'R2 storage is not configured' });
+    }
+
+    const results: any[] = [];
+    const errors: any[] = [];
+
+    for (const img of images) {
+      try {
+        const base64 = typeof img === 'string' ? img : img.data;
+        if (!base64) {
+          errors.push({ name: img.name, error: 'Missing image data' });
+          continue;
+        }
+
+        const presetId = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const imageUrl = await r2Service.uploadMockupPresetReference(base64, presetId);
+
+        const result = await ingestReference({
+          imageBase64: base64,
+          imageUrl,
+          name: img.name,
+          studio: img.studio,
+          userId: String(userId),
+          overrideDimensions: img.dimensions,
+          tags: normalizeTags(img.tags),
+          prompt: img.prompt,
+        });
+
+        results.push(result);
+      } catch (err: any) {
+        errors.push({ name: img.name, error: err.message });
+      }
+    }
+
+    return res.json({
+      success: true,
+      ingested: results.length,
+      failed: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error: any) {
+    console.error('[admin] reference ingest error:', error);
+    return res.status(500).json({ error: 'Failed to ingest references', details: error.message });
+  }
+});
+
+router.get('/references', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    const filter: any = { category: 'reference', isAdminCurated: true };
+
+    // Dimension filters
+    const dimensionKeys = ['niche', 'aesthetic', 'vibe', 'lighting', 'texture', 'material', 'angle', 'color_mood', 'mockup_type'];
+    for (const key of dimensionKeys) {
+      const val = req.query[key];
+      if (val && typeof val === 'string') {
+        filter[`dimensions.${key}`] = { $in: val.split(',').map(v => v.trim()) };
+      }
+    }
+
+    if (req.query.search && typeof req.query.search === 'string') {
+      filter.$or = [
+        { name: { $regex: req.query.search, $options: 'i' } },
+        { description: { $regex: req.query.search, $options: 'i' } },
+      ];
+    }
+
+    const [refs, total] = await Promise.all([
+      db.collection('community_presets').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+      db.collection('community_presets').countDocuments(filter),
+    ]);
+
+    return res.json({ references: refs, total, page, limit, pages: Math.ceil(total / limit) });
+  } catch (error: any) {
+    console.error('[admin] references list error:', error);
+    return res.status(500).json({ error: 'Failed to list references' });
+  }
+});
+
+router.delete('/references/:id', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid reference ID format' });
+    }
+    await connectToMongoDB();
+    const db = getDb();
+
+    const result = await db.collection('community_presets').deleteOne({ id: req.params.id, category: 'reference' });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Reference not found' });
+    }
+
+    try { await vectorService.delete(req.params.id); } catch { /* vector may not exist */ }
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('[admin] reference delete error:', error);
+    return res.status(500).json({ error: 'Failed to delete reference' });
+  }
+});
+
+router.put('/references/:id', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid reference ID format' });
+    }
+    await connectToMongoDB();
+    const db = getDb();
+
+    const existing = await db.collection('community_presets').findOne({ id: req.params.id, category: 'reference' });
+    if (!existing) {
+      return res.status(404).json({ error: 'Reference not found' });
+    }
+
+    const updates: any = { updatedAt: new Date() };
+    if (req.body.name != null) updates.name = ensureString(req.body.name, 500);
+    if (req.body.description != null) updates.description = ensureString(req.body.description, 5000);
+    if (req.body.prompt != null) updates.prompt = ensureString(req.body.prompt, 50000);
+    if (req.body.dimensions != null) updates.dimensions = req.body.dimensions;
+    if (req.body.tags != null) updates.tags = normalizeTags(req.body.tags);
+
+    await db.collection('community_presets').updateOne(
+      { id: req.params.id, category: 'reference' },
+      { $set: updates }
+    );
+
+    return res.json({ success: true, updated: { ...existing, ...updates } });
+  } catch (error: any) {
+    console.error('[admin] reference update error:', error);
+    return res.status(500).json({ error: 'Failed to update reference' });
+  }
+});
+
+router.get('/references/stats', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+
+    const [totalRefs, byDimension, recentlyAdded, ingestCostAgg] = await Promise.all([
+      db.collection('community_presets').countDocuments({ category: 'reference', isAdminCurated: true }),
+
+      // Aggregate top values per dimension
+      db.collection('community_presets').aggregate([
+        { $match: { category: 'reference', isAdminCurated: true } },
+        {
+          $facet: {
+            niche: [{ $unwind: { path: '$dimensions.niche', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.niche', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+            aesthetic: [{ $unwind: { path: '$dimensions.aesthetic', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.aesthetic', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+            vibe: [{ $unwind: { path: '$dimensions.vibe', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.vibe', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+            lighting: [{ $unwind: { path: '$dimensions.lighting', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.lighting', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+            mockup_type: [{ $unwind: { path: '$dimensions.mockup_type', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.mockup_type', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+          },
+        },
+      ]).toArray(),
+
+      db.collection('community_presets')
+        .find({ category: 'reference', isAdminCurated: true })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .project({ id: 1, name: 1, createdAt: 1, dimensions: 1 })
+        .toArray(),
+
+      db.collection('usage_records').aggregate([
+        { $match: { feature: 'reference-ingest' } },
+        { $group: {
+          _id: null,
+          totalCost: { $sum: '$cost' },
+          totalInputTokens: { $sum: '$inputTokens' },
+          totalOutputTokens: { $sum: '$outputTokens' },
+          totalR2Bytes: { $sum: '$r2Bytes' },
+          totalApiCalls: { $sum: '$apiCalls' },
+          count: { $sum: 1 },
+        }},
+      ]).toArray(),
+    ]);
+
+    // Count how many times references were retrieved (from generation_feedback with feature=reference)
+    const retrievalStats = await db.collection('generation_feedback').aggregate([
+      { $match: { feature: 'mockup', 'context.extra.curatedRefsUsed': { $gt: 0 } } },
+      { $group: { _id: null, totalGenerationsWithRefs: { $sum: 1 }, totalRefsServed: { $sum: '$context.extra.curatedRefsUsed' } } },
+    ]).toArray();
+
+    const ic = ingestCostAgg[0] || { totalCost: 0, totalInputTokens: 0, totalOutputTokens: 0, totalR2Bytes: 0, totalApiCalls: 0, count: 0 };
+
+    return res.json({
+      totalRefs,
+      byDimension: byDimension[0] || {},
+      recentlyAdded,
+      retrieval: retrievalStats[0] || { totalGenerationsWithRefs: 0, totalRefsServed: 0 },
+      ingestCost: {
+        totalUSD: parseFloat((ic.totalCost || 0).toFixed(4)),
+        inputTokens: ic.totalInputTokens || 0,
+        outputTokens: ic.totalOutputTokens || 0,
+        r2StorageMB: parseFloat(((ic.totalR2Bytes || 0) / (1024 * 1024)).toFixed(2)),
+        apiCalls: ic.totalApiCalls || 0,
+        recordsTracked: ic.count || 0,
+      },
+    });
+  } catch (error: any) {
+    console.error('[admin] reference stats error:', error);
+    return res.status(500).json({ error: 'Failed to fetch reference stats' });
   }
 });
 

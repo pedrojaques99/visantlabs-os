@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Upload, Library, Download, CircleDot, Paintbrush, Undo2, Redo2, RotateCcw, PanelRightOpen, PanelRightClose, Hand, Printer } from 'lucide-react';
+import { Upload, Library, Download, CircleDot, Paintbrush, Undo2, Redo2, RotateCcw, PanelRightOpen, Hand, Printer, Play, Pause } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
@@ -26,6 +26,8 @@ import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
 import { loadImage } from '@/utils/imageUtils';
 import { useMagicHand } from '@/hooks/useMagicHand';
+import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
+import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
 
 const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso']);
 
@@ -187,6 +189,12 @@ export const ImageLabPage: React.FC = () => {
   const setExportModalOpen = labStore((s) => s.setExportModalOpen);
   const magicHandActive = labStore((s) => s.magicHandActive);
   const setMagicHandActive = labStore((s) => s.setMagicHandActive);
+  const effectOpacity = labStore((s) => s.effectOpacity);
+  const setEffectOpacity = labStore((s) => s.setEffectOpacity);
+  const sourceMediaType = labStore((s) => s.sourceMediaType);
+  const videoIsPlaying = labStore((s) => s.videoIsPlaying);
+  const videoDuration = labStore((s) => s.videoDuration);
+  const videoCurrentTime = labStore((s) => s.videoCurrentTime);
 
   const halftoneStore = useHalftoneStore;
   const textureStore = useTextureFilterStore;
@@ -214,9 +222,9 @@ export const ImageLabPage: React.FC = () => {
 
   const broadcastImage = useCallback((url: string, name: string, mediaType: 'image' | 'video' = 'image') => {
     labStore.getState().setSource(url, name, mediaType);
-    halftoneStore.getState().setImageUrl(url, name);
-    risoStore.getState().setImageUrl(url, name);
-    textureStore.getState().setImageUrl(url, name, mediaType === 'video' ? 'video' : 'image');
+    halftoneStore.getState().setImageUrl(url, name, mediaType);
+    risoStore.getState().setImageUrl(url, name, mediaType);
+    textureStore.getState().setImageUrl(url, name, mediaType);
   }, []);
 
   const canvasRefsMap = useRef<Record<ImageLabMode, HTMLCanvasElement | null>>({
@@ -259,15 +267,53 @@ export const ImageLabPage: React.FC = () => {
     return s.shaderEnabled ? s.getShaderSettings() : undefined;
   }, [activeStore]);
 
+  const getActiveVideoControls = useCallback(() => {
+    if (mode === 'halftone') return halftoneRef.current?.getVideoControls();
+    if (mode === 'riso') return risoRef.current?.getVideoControls();
+    if (mode === 'texture') return textureRef.current?.getVideoControls();
+    return null;
+  }, [mode]);
+
+  const handleVideoExport = useCallback(async (fmt: VideoFormat, onProgress: (pct: number) => void) => {
+    const canvas = canvasRef.current;
+    if (!canvas) throw new Error('No canvas');
+
+    const vc = getActiveVideoControls();
+    if (!vc?.videoRef.current) throw new Error('No video source');
+
+    const video = vc.videoRef.current;
+
+    const renderFrame = async (v: HTMLVideoElement) => {
+      if (mode === 'halftone') {
+        const r = halftoneRef.current?.getRenderer();
+        if (r) { r.updateTexture(v); r.render({ ...useHalftoneStore.getState().getSettings(), effectOpacity: useImageLabStore.getState().effectOpacity }); }
+      } else if (mode === 'riso') {
+        const r = risoRef.current?.getRenderer();
+        if (r) { r.updateTexture(v); r.render({ ...useRisoStore.getState().getSettings(), effectOpacity: useImageLabStore.getState().effectOpacity }); }
+      } else if (mode === 'texture') {
+        // TextureFilterCanvas renderFrame is internal, trigger via seeking (rAF will pick it up)
+      }
+    };
+
+    return exportVideoServerSide({
+      video,
+      renderFrame,
+      canvas,
+      format: fmt,
+      fps: 30,
+      onProgress,
+    });
+  }, [canvasRef, mode, getActiveVideoControls]);
+
   const { isDragOver, dragProps, dropMessage } = useToolEditorDragDrop({
-    accept: mode === 'texture' ? 'image+video' : 'image',
+    accept: 'image+video',
     onFile: useCallback((file: File) => {
       const isVideo = file.type.startsWith('video/');
       const url = URL.createObjectURL(file);
       broadcastImage(url, file.name || 'pasted', isVideo ? 'video' : 'image');
       toast.success(`Loaded ${file.name || 'pasted image'}`);
     }, [broadcastImage]),
-    dropMessage: mode === 'texture' ? 'Drop image or video here' : 'Drop image here',
+    dropMessage: 'Drop image or video here',
   });
 
   useToolEditorHotkeys({
@@ -382,15 +428,13 @@ export const ImageLabPage: React.FC = () => {
 
   const statusItems = useStatusItems(mode);
 
-  const closePanel = useCallback(() => setPanelVisible(false), [setPanelVisible]);
-
   const controlsPanel = useMemo(() => {
     switch (mode) {
-      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} onClosePanel={closePanel} />;
-      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} onClosePanel={closePanel} />;
-      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} onClosePanel={closePanel} />;
+      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} />;
+      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} />;
+      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} />;
     }
-  }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, closePanel]);
+  }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen]);
 
   const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(() => [
     { id: 'halftone', icon: <CircleDot size={16} />, label: 'Halftone' },
@@ -421,7 +465,12 @@ export const ImageLabPage: React.FC = () => {
         canvasClassName="absolute inset-0 transition-all duration-300"
       >
         {/* Floating left toolbar */}
-        <div className="absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-900/80 backdrop-blur-md border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl">
+        <div className="absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50">
+          <ImageLabUploadWidget
+            imageUrl={sourceUrl}
+            onLoad={broadcastImage}
+          />
+          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
           {MODE_ITEMS.map((m) => {
             const thumb = thumbs[m.id];
             return (
@@ -451,6 +500,54 @@ export const ImageLabPage: React.FC = () => {
               </button>
             );
           })}
+
+          {/* Effect Opacity */}
+          {hasImage && (
+            <div className="flex flex-col items-center gap-0.5 py-1" title={`Effect ${Math.round(effectOpacity * 100)}%`}>
+              <input
+                type="range"
+                min={0} max={1} step={0.01}
+                value={effectOpacity}
+                onChange={(e) => setEffectOpacity(parseFloat(e.target.value))}
+                className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                style={{ writingMode: 'vertical-lr', direction: 'rtl', height: '48px', width: '9px' }}
+              />
+              <span className="text-[7px] font-mono text-neutral-600">{Math.round(effectOpacity * 100)}</span>
+            </div>
+          )}
+
+          {/* Video Playback Controls */}
+          {hasImage && sourceMediaType === 'video' && (
+            <>
+              <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+              <button
+                onClick={() => {
+                  const vc = getActiveVideoControls();
+                  if (vc) videoIsPlaying ? vc.pause() : vc.play();
+                }}
+                title={videoIsPlaying ? 'Pause' : 'Play'}
+                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all"
+              >
+                {videoIsPlaying ? <Pause size={15} /> : <Play size={15} />}
+              </button>
+              {videoDuration > 0 && (
+                <div className="flex flex-col items-center gap-0.5 py-1" title={`${videoCurrentTime.toFixed(1)}s / ${videoDuration.toFixed(1)}s`}>
+                  <input
+                    type="range"
+                    min={0} max={videoDuration} step={0.01}
+                    value={videoCurrentTime}
+                    onChange={(e) => {
+                      const vc = getActiveVideoControls();
+                      if (vc) vc.seek(parseFloat(e.target.value));
+                    }}
+                    className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                    style={{ writingMode: 'vertical-lr', direction: 'rtl', height: '48px', width: '9px' }}
+                  />
+                  <span className="text-[7px] font-mono text-neutral-600">{videoCurrentTime.toFixed(1)}s</span>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
 
@@ -534,7 +631,7 @@ export const ImageLabPage: React.FC = () => {
                 <Upload size={24} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
               </div>
               <p className="text-[11px] uppercase tracking-widest">
-                Drop or paste an image{mode === 'texture' ? ' or video' : ''} to begin
+                Drop or paste an image or video to begin
               </p>
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[10px] tracking-wide opacity-60">
@@ -547,7 +644,7 @@ export const ImageLabPage: React.FC = () => {
             </div>
             <input
               type="file"
-              accept={mode === 'texture' ? 'image/*,video/*' : 'image/*'}
+              accept="image/*,video/*"
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -570,6 +667,8 @@ export const ImageLabPage: React.FC = () => {
         canvasRef={canvasRef}
         filenamePrefix={`imagelab_${mode}`}
         getShaderSettings={getShaderSettings}
+        isVideo={sourceMediaType === 'video'}
+        onExportVideo={sourceMediaType === 'video' ? handleVideoExport : undefined}
         onExportSvg={mode === 'halftone' ? async () => {
           const imgUrl = halftoneStore.getState().imageUrl;
           if (!imgUrl) return undefined;
@@ -642,9 +741,11 @@ function useStatusItems(mode: ImageLabMode) {
   const rShaderType = riso((s) => s.shaderType);
 
   const compareMode = useImageLabStore((s) => s.compareMode);
+  const sourceMediaType = useImageLabStore((s) => s.sourceMediaType);
 
   return useMemo(() => {
     const extras: { label: string; color?: string }[] = [];
+    if (sourceMediaType === 'video') extras.push({ label: 'video', color: 'text-green-400' });
     if (compareMode !== 'off') extras.push({ label: compareMode === 'toggle' ? 'before/after' : 'split view', color: 'text-amber-400' });
 
     switch (mode) {
@@ -679,7 +780,7 @@ function useStatusItems(mode: ImageLabMode) {
           ...extras,
         ];
     }
-  }, [mode, compareMode, hZoom, hFrequency, hDotSize, hBlendMode, hShaderEnabled, hShaderType,
+  }, [mode, compareMode, sourceMediaType, hZoom, hFrequency, hDotSize, hBlendMode, hShaderEnabled, hShaderType,
     tZoom, tBlendMode, tOpacity, tTextureName, tMaskMode, tShaderEnabled, tShaderType,
     rZoom, rFrequency, rDotSize, rMisregistration, rLayers, rSoloLayer, rShaderEnabled, rShaderType]);
 }

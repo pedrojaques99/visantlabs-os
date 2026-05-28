@@ -189,6 +189,10 @@ FERRAMENTAS DISPONÍVEIS:
 
 - Use "brand_guideline_update" para atualizar qualquer seção do brand guideline ativo da sessão (ou ID explícito). Envie apenas os campos que mudaram — os demais são preservados. Sub-campos de strategy (archetypes, personas, voiceValues, positioning, manifesto) são independentes. Quando usar: usuário define cores (hex obrigatório), tipografia, manifesto, posicionamento, arquétipos, personas, valores de voz, tokens, dos/donts, imagery, tom de voz. Chame em paralelo com generate_or_update_mockup quando o usuário definir marca E pedir geração simultaneamente.
 
+- Use "suggest_mockup_ideas" quando o usuário quiser ideias de mockups para a marca, inspiração visual, ou quando for a primeira interação criativa da sessão. Analisa o brand guideline + cruza com a biblioteca de referências curadas (world-class mockup techniques) → retorna sugestões visuais certeiras com referências reais. Use ANTES de propor plano criativo para embasar as sugestões.
+
+- Use "search_reference_library" para buscar referências visuais curadas por dimensão (nicho, estética, vibe, iluminação, textura, material, ângulo, mood, tipo). Use para: (a) embasar sugestões com exemplos world-class, (b) quando o usuário pedir referências ou inspiração, (c) antes de gerar mockups complexos para absorver técnicas de composição e iluminação.
+
 Quando apropriado, use as ferramentas para entregar resultados práticos além da análise textual.`;
 
 }

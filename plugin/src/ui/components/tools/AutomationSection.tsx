@@ -2,7 +2,7 @@ import React from 'react';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
-import { Grid3X3, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 export function AutomationSection() {
   const store = usePluginStore();
@@ -29,19 +29,6 @@ export function AutomationSection() {
         Variar Cores Inteligente
       </OpButton>
 
-      <OpButton
-        opId="brandGrid"
-        runner={runner}
-        message={{ type: 'GENERATE_BRAND_GRID' }}
-        responseTypes={['OPERATIONS_DONE']}
-        busyLabel="Criando grid…"
-        variant="outline"
-        size="sm"
-        className="w-full h-8 text-[10px]"
-      >
-        <Grid3X3 size={12} className="mr-2 text-neutral-500" />
-        Brand Grid
-      </OpButton>
     </div>
   );
 }

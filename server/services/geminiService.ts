@@ -706,6 +706,23 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
           console.log(`[generateSmartPrompt] RAG injected ${similar.length} learned examples`);
         }
       }
+
+      // Curated references — world-class mockup techniques from admin library
+      const curatedRefs = await exampleRetriever.findSimilar({
+        feature: 'reference',
+        queryText,
+        topK: 2,
+      });
+      if (curatedRefs.length > 0) {
+        const curatedBlock = exampleRetriever.formatAsFewShot(curatedRefs);
+        learnedExamplesBlock = learnedExamplesBlock
+          ? `${learnedExamplesBlock}\n\n--- CURATED REFERENCES (world-class techniques) ---\n${curatedBlock}`
+          : curatedBlock;
+        learnedExamplesCount += curatedRefs.length;
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`[generateSmartPrompt] RAG injected ${curatedRefs.length} curated references`);
+        }
+      }
     }
 
     // 5. Monta o template com brand context + design analysis + few-shot

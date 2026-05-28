@@ -2117,6 +2117,90 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     }
   );
 
+  // ═══════════════════════════════════════════
+  // Reference Library — Curated mockup references
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'reference-search',
+    'Search curated mockup reference library by dimensions (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type) or free text. Returns world-class mockup references with AI-extracted dimensions.',
+    {
+      search: z.string().optional().describe('Free text search across name and description.'),
+      niche: z.string().optional().describe('Filter by niche (e.g. "luxury", "tech", "food").'),
+      aesthetic: z.string().optional().describe('Filter by aesthetic (e.g. "minimalist", "brutalist").'),
+      vibe: z.string().optional().describe('Filter by vibe (e.g. "premium", "playful").'),
+      lighting: z.string().optional().describe('Filter by lighting (e.g. "soft studio", "golden hour").'),
+      texture: z.string().optional().describe('Filter by texture (e.g. "marble", "concrete").'),
+      mockup_type: z.string().optional().describe('Filter by mockup type (e.g. "packaging", "stationery").'),
+      limit: z.number().int().min(1).max(50).default(20).describe('Max results.'),
+    },
+    async ({ search, niche, aesthetic, vibe, lighting, texture, mockup_type, limit }) => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const filter: any = { category: 'reference', isAdminCurated: true };
+        if (search) filter.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+        ];
+        if (niche) filter['dimensions.niche'] = { $in: [niche] };
+        if (aesthetic) filter['dimensions.aesthetic'] = { $in: [aesthetic] };
+        if (vibe) filter['dimensions.vibe'] = { $in: [vibe] };
+        if (lighting) filter['dimensions.lighting'] = { $in: [lighting] };
+        if (texture) filter['dimensions.texture'] = { $in: [texture] };
+        if (mockup_type) filter['dimensions.mockup_type'] = { $in: [mockup_type] };
+
+        const refs = await db.collection('community_presets')
+          .find(filter)
+          .sort({ createdAt: -1 })
+          .limit(limit)
+          .project({ _id: 0, id: 1, name: 1, studio: 1, description: 1, referenceImageUrl: 1, dimensions: 1, tags: 1, prompt: 1 })
+          .toArray();
+        return jsonResponse({ references: refs, total: refs.length });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'reference-ingest',
+    'Ingest a curated mockup reference image into the library. AI auto-extracts dimensions (niche, aesthetic, vibe, lighting, texture, material, angle). Admin only.',
+    {
+      imageUrl: z.string().url().describe('Public URL of the reference image.'),
+      name: z.string().optional().describe('Name for the reference.'),
+      studio: z.string().optional().describe('Studio or creator name (e.g. "Hazard Mockups", "Visant Labs").'),
+      tags: z.array(z.string()).optional().describe('Manual tags to add.'),
+      prompt: z.string().optional().describe('The prompt that generated this mockup (if known).'),
+    },
+    async ({ imageUrl, name, studio, tags, prompt }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const { ingestReference } = await import('../lib/mockup/referenceIngestor.js');
+
+        // Fetch image and convert to base64
+        const imgResp = await fetch(imageUrl);
+        if (!imgResp.ok) return ERR.validation(`Failed to fetch image: ${imgResp.status}`);
+        const buffer = Buffer.from(await imgResp.arrayBuffer());
+        const imageBase64 = buffer.toString('base64');
+
+        const result = await ingestReference({
+          imageBase64,
+          imageUrl,
+          name,
+          studio,
+          userId: currentUserId,
+          tags,
+          prompt,
+        });
+        return jsonResponse(result);
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
   server.tool(
     'community-profiles',
     'Browse public community creator profiles. No auth required.',

@@ -7,6 +7,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateMockup, RateLimitError, ModelResponseTextError } from '../../src/services/geminiService.js';
+import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
@@ -541,6 +542,15 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       } catch (brandError: any) {
         // Non-critical - continue without brand context
         console.error(`${logPrefix} [BRAND] Error fetching brand guideline:`, brandError.message);
+      }
+    }
+
+    // Enrich prompt with curated references (skip if already injected by generateSmartPrompt)
+    if (!finalPromptText.includes('CURATED REFERENCES')) {
+      const enriched = await enrichWithCuratedReferences(finalPromptText);
+      finalPromptText = enriched.prompt;
+      if (enriched.refsInjected > 0) {
+        console.log(`${logPrefix} [RAG] Injected ${enriched.refsInjected} curated references`);
       }
     }
 

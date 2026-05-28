@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { formatDate } from '@/utils/localeUtils';
+import { AdminReferenceLibrary } from '../components/admin/AdminReferenceLibrary';
 
 
 interface AdminUser {
@@ -1061,6 +1062,10 @@ export const AdminPage: React.FC = () => {
                       <TabsTrigger value="feedback-rag" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <BarChart2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         Feedback & RAG
+                      </TabsTrigger>
+                      <TabsTrigger value="references" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                        <Image className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
+                        Reference Library
                       </TabsTrigger>
                     </TabsList>
 
@@ -2547,6 +2552,10 @@ export const AdminPage: React.FC = () => {
                     </Button>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="references" className={`space-y-6 ${activeTab === 'references' ? 'admin-tab-enter' : ''}`}>
+                <AdminReferenceLibrary />
               </TabsContent>
             </Tabs>
           )}
