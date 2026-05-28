@@ -69,6 +69,7 @@ const ImageLabPage = lazyWithRetry(() => import('./pages/ImageLabPage').then(m =
 const DeveloperPortalPage = lazyWithRetry(() => import('./pages/DeveloperPortalPage').then(m => ({ default: m.DeveloperPortalPage })));
 const VerifyEmailPage = lazyWithRetry(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const OnboardingWizardPage = lazyWithRetry(() => import('./pages/OnboardingWizardPage').then(m => ({ default: m.OnboardingWizardPage })));
+const VisualSearchPage = lazyWithRetry(() => import('./pages/VisualSearchPage').then(m => ({ default: m.VisualSearchPage })));
 
 
 const LoadingFallback = () => (
@@ -110,6 +111,7 @@ const App: React.FC = () => {
                 <Route path="/apps" element={<AppsPage />} />
                 <Route path="/extractor" element={<ExtractorPage />} />
                 <Route path="/moodboard" element={<MoodboardStudioPage />} />
+                <Route path="/visual-search" element={<VisualSearchPage />} />
                 <Route path="/instagram-extractor" element={<Navigate to="/extractor" replace />} />
                 <Route path="/qrcode" element={<QRCodePage />} />
                 <Route path="/grid-paint" element={<GridPaintPage />} />

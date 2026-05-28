@@ -65,6 +65,7 @@ import cronRoutes from './routes/cron.js';
 import sessionsRoutes from './routes/sessions.js';
 import totpRoutes from './routes/totp.js';
 import internalRoutes from './routes/internal.js';
+import visualSearchRoutes from './routes/visual-search.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -271,6 +272,7 @@ export function createApp() {
     ['/sessions', sessionsRoutes],
     ['/totp', totpRoutes],
     ['/internal', internalRoutes],
+    ['/visual-search', visualSearchRoutes],
   ];
 
   // OpenAPI spec — public, no auth required
