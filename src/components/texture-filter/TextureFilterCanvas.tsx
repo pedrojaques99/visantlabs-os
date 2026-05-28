@@ -3,9 +3,11 @@ import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { useTextureFilterStore } from '@/stores/textureFilterStore';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
+import { useVideoSource } from '@/hooks/useVideoSource';
 
 export interface TextureFilterCanvasHandle {
   renderAtScale: (scale: number) => HTMLCanvasElement | undefined;
+  getVideoControls: () => { videoRef: React.RefObject<HTMLVideoElement | null>; isPlaying: boolean; duration: number; currentTime: number; play: () => void; pause: () => void; seek: (t: number) => void } | null;
 }
 
 interface TextureFilterCanvasProps {
@@ -14,11 +16,10 @@ interface TextureFilterCanvasProps {
 
 export const TextureFilterCanvas = forwardRef<TextureFilterCanvasHandle, TextureFilterCanvasProps>(({ onCanvasReady }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const textureImgRef = useRef<HTMLImageElement | null>(null);
   const sourceImgRef = useRef<HTMLImageElement | null>(null);
-  const animFrameRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoSourceRef = useRef<ReturnType<typeof useVideoSource> | null>(null);
   const [textureLoaded, setTextureLoaded] = useState(false);
 
   const store = useTextureFilterStore();
@@ -26,6 +27,7 @@ export const TextureFilterCanvas = forwardRef<TextureFilterCanvasHandle, Texture
   const zoom = useTextureFilterStore((s) => s.zoom);
   const panX = useTextureFilterStore((s) => s.panX);
   const panY = useTextureFilterStore((s) => s.panY);
+  const mediaType = useTextureFilterStore((s) => s.mediaType);
 
   const drawTexture = useCallback((ctx: CanvasRenderingContext2D, texture: HTMLImageElement, sw: number, sh: number, settings: ReturnType<typeof store.getSettings>) => {
     const tw = texture.naturalWidth || texture.width;
@@ -115,6 +117,7 @@ export const TextureFilterCanvas = forwardRef<TextureFilterCanvasHandle, Texture
 
       return out;
     },
+    getVideoControls: () => videoSourceRef.current?.isVideo ? videoSourceRef.current : null,
   }), [drawTexture]);
 
   const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
@@ -201,40 +204,32 @@ export const TextureFilterCanvas = forwardRef<TextureFilterCanvasHandle, Texture
     }
   }, [drawTexture]);
 
-  useEffect(() => {
-    if (!store.imageUrl) return;
-    const state = useTextureFilterStore.getState();
+  const onVideoFrame = useCallback((source: TexImageSource) => {
+    renderFrame(source as HTMLVideoElement);
+    if (canvasRef.current) onCanvasReady(canvasRef.current);
+  }, [renderFrame, onCanvasReady]);
 
-    if (state.mediaType === 'video') {
-      const video = videoRef.current;
-      if (!video) return;
-      video.src = store.imageUrl;
-      video.muted = true;
-      video.loop = true;
-      video.play();
-      const loop = () => {
-        if (!video.paused && !video.ended) renderFrame(video);
-        animFrameRef.current = requestAnimationFrame(loop);
-      };
-      video.onloadeddata = () => {
-        if (canvasRef.current) onCanvasReady(canvasRef.current);
-        loop();
-      };
-      return () => cancelAnimationFrame(animFrameRef.current);
-    } else {
-      loadImage(store.imageUrl).then((img) => {
-        sourceImgRef.current = img;
-        renderFrame(img);
-        if (canvasRef.current) onCanvasReady(canvasRef.current);
-      });
-    }
-  }, [store.imageUrl, store.mediaType, onCanvasReady, renderFrame]);
+  const videoSource = useVideoSource({
+    url: store.imageUrl,
+    mediaType,
+    onFrame: onVideoFrame,
+  });
+  videoSourceRef.current = videoSource;
 
   useEffect(() => {
-    if (!sourceImgRef.current || store.mediaType !== 'image') return;
+    if (!store.imageUrl || mediaType === 'video') return;
+    loadImage(store.imageUrl).then((img) => {
+      sourceImgRef.current = img;
+      renderFrame(img);
+      if (canvasRef.current) onCanvasReady(canvasRef.current);
+    });
+  }, [store.imageUrl, mediaType, onCanvasReady, renderFrame]);
+
+  useEffect(() => {
+    if (!sourceImgRef.current || mediaType !== 'image') return;
     if (!textureLoaded) return;
     renderFrame(sourceImgRef.current);
-  }, [settingsJson, textureLoaded, renderFrame, store.mediaType]);
+  }, [settingsJson, textureLoaded, renderFrame, mediaType]);
 
   useEffect(() => {
     return bindWheelToRef(containerRef.current);
@@ -260,7 +255,6 @@ export const TextureFilterCanvas = forwardRef<TextureFilterCanvasHandle, Texture
           transformOrigin: 'center center',
         }}
       />
-      <video ref={videoRef} className="hidden" playsInline />
     </div>
   );
 });

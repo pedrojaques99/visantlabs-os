@@ -55,7 +55,7 @@ export const registry: Registry = {
   'brand.applyLocal':     async (p) => H.applyBrandGuidelinesLocally((p as any).guideline ?? p) as any,
   'brand.lint':           async (p) => H.lintBrandAdherence(p as any) as any,
   'brand.fixIssues':      async (p) => H.fixBrandIssues(p as any) as any,
-  'brand.generateGrid':   async () => H.generateBrandGrid() as any,
+  'brand.generateGrid':   async (p) => H.generateBrandMatrix(p as any) as any,
   'brand.generateSocial': async (p) => H.generateSocialFrames((p as any).brandColors ?? []) as any,
   'brand.importLogos':    async () => H.importLogoCandidates() as any,
 

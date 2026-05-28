@@ -1,14 +1,17 @@
-import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { RisoRenderer, extractDominantColors } from './RisoRenderer';
 import { useRisoStore } from '@/stores/risoStore';
+import { useImageLabStore } from '@/stores/imageLabStore';
 import { rgbToHex } from '@/utils/colorUtils';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
+import { useVideoSource } from '@/hooks/useVideoSource';
 
 export interface RisoCanvasHandle {
   getRenderer: () => RisoRenderer | null;
+  getVideoControls: () => { videoRef: React.RefObject<HTMLVideoElement | null>; isPlaying: boolean; duration: number; currentTime: number; play: () => void; pause: () => void; seek: (t: number) => void } | null;
 }
 
 interface RisoCanvasProps {
@@ -26,15 +29,14 @@ export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(({ onCan
   const [webglFailed, setWebglFailed] = useState(false);
 
   const store = useRisoStore();
+  const effectOpacity = useImageLabStore((s) => s.effectOpacity);
   const settingsJson = useRisoStore((s) => JSON.stringify(s.getSettings()));
   const zoom = useRisoStore((s) => s.zoom);
   const panX = useRisoStore((s) => s.panX);
   const panY = useRisoStore((s) => s.panY);
   const isAnalyzing = useRisoStore((s) => s.isAnalyzing);
-
-  useImperativeHandle(ref, () => ({
-    getRenderer: () => rendererRef.current,
-  }), []);
+  const mediaType = useRisoStore((s) => s.mediaType);
+  const colorAnalyzedRef = useRef(false);
 
   const { isPanning, handleMouseDown, handleMouseMove, handleMouseUp, bindWheelToRef } = useCanvasZoomPan({
     getState: useRisoStore.getState,
@@ -52,42 +54,77 @@ export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(({ onCan
     return () => renderer.destroy();
   }, [onCanvasReady]);
 
+  const analyzeAndSetLayers = useCallback((source: TexImageSource) => {
+    const store = useRisoStore.getState();
+    store.setIsAnalyzing(true);
+    const w = source instanceof HTMLVideoElement ? source.videoWidth : source instanceof HTMLImageElement ? (source.naturalWidth || source.width) : (source as HTMLCanvasElement).width;
+    const h = source instanceof HTMLVideoElement ? source.videoHeight : source instanceof HTMLImageElement ? (source.naturalHeight || source.height) : (source as HTMLCanvasElement).height;
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = w;
+    tmpCanvas.height = h;
+    const tmpCtx = tmpCanvas.getContext('2d')!;
+    tmpCtx.drawImage(source as CanvasImageSource, 0, 0);
+    const imgData = tmpCtx.getImageData(0, 0, w, h);
+    const colors = extractDominantColors(imgData, store.colorCount);
+
+    const layers = colors.map((color, i) => ({
+      color,
+      hex: rgbToHex(color[0], color[1], color[2]),
+      visible: true,
+      alpha: 0.85,
+      angle: i * 22.5,
+      offsetX: REGISTRATION_OFFSETS[i % REGISTRATION_OFFSETS.length][0],
+      offsetY: REGISTRATION_OFFSETS[i % REGISTRATION_OFFSETS.length][1],
+    }));
+
+    store.setLayers(layers);
+    store.setIsAnalyzing(false);
+    return layers;
+  }, []);
+
+  const onVideoFrame = useCallback((source: TexImageSource) => {
+    const renderer = rendererRef.current;
+    if (!renderer) return;
+    if (!renderer.isImageLoaded) {
+      renderer.setupTexture(source);
+      const layers = analyzeAndSetLayers(source);
+      colorAnalyzedRef.current = true;
+      renderer.render({ ...useRisoStore.getState().getSettings(), layers, effectOpacity: useImageLabStore.getState().effectOpacity });
+    } else {
+      renderer.updateTexture(source);
+      const s = useRisoStore.getState();
+      if (s.layers.length > 0) {
+        renderer.render({ ...s.getSettings(), effectOpacity: useImageLabStore.getState().effectOpacity });
+      }
+    }
+  }, [analyzeAndSetLayers]);
+
+  const videoSource = useVideoSource({
+    url: store.imageUrl,
+    mediaType,
+    onFrame: onVideoFrame,
+  });
+
+  useImperativeHandle(ref, () => ({
+    getRenderer: () => rendererRef.current,
+    getVideoControls: () => videoSource.isVideo ? videoSource : null,
+  }), [videoSource]);
+
   useEffect(() => {
-    if (!store.imageUrl || !rendererRef.current) return;
+    if (!store.imageUrl || !rendererRef.current || mediaType === 'video') return;
+    colorAnalyzedRef.current = false;
     loadImage(store.imageUrl).then((img) => {
       const renderer = rendererRef.current!;
       renderer.setupTexture(img);
-
-      store.setIsAnalyzing(true);
-      const tmpCanvas = document.createElement('canvas');
-      tmpCanvas.width = img.naturalWidth || img.width;
-      tmpCanvas.height = img.naturalHeight || img.height;
-      const tmpCtx = tmpCanvas.getContext('2d')!;
-      tmpCtx.drawImage(img, 0, 0);
-      const imgData = tmpCtx.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
-      const colors = extractDominantColors(imgData, store.colorCount);
-
-      const layers = colors.map((color, i) => ({
-        color,
-        hex: rgbToHex(color[0], color[1], color[2]),
-        visible: true,
-        alpha: 0.85,
-        angle: i * 22.5,
-        offsetX: REGISTRATION_OFFSETS[i % REGISTRATION_OFFSETS.length][0],
-        offsetY: REGISTRATION_OFFSETS[i % REGISTRATION_OFFSETS.length][1],
-      }));
-
-      store.setLayers(layers);
-      store.setIsAnalyzing(false);
-
-      renderer.render({ ...store.getSettings(), layers });
+      const layers = analyzeAndSetLayers(img);
+      renderer.render({ ...store.getSettings(), layers, effectOpacity: useImageLabStore.getState().effectOpacity });
     });
-  }, [store.imageUrl, store.colorCount]);
+  }, [store.imageUrl, store.colorCount, mediaType, analyzeAndSetLayers]);
 
   useEffect(() => {
-    if (!rendererRef.current?.isImageLoaded || store.layers.length === 0) return;
-    rendererRef.current.render(store.getSettings());
-  }, [settingsJson]);
+    if (!rendererRef.current?.isImageLoaded || store.layers.length === 0 || mediaType === 'video') return;
+    rendererRef.current.render({ ...store.getSettings(), effectOpacity });
+  }, [settingsJson, effectOpacity, mediaType]);
 
   useEffect(() => {
     return bindWheelToRef(containerRef.current);

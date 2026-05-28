@@ -24,6 +24,7 @@ import imagesRoutes from './routes/images.js';
 import waitlistRoutes from './routes/waitlist.js';
 import usageRoutes from './routes/usage.js';
 import videoRoutes from './routes/video.js';
+import renderRoutes from './routes/render.js';
 import moodboardRoutes from './routes/moodboard.js';
 import communityRoutes from './routes/community.js';
 import storageRoutes from './routes/storage.js';
@@ -231,6 +232,7 @@ export function createApp() {
     ['/waitlist', waitlistRoutes],
     ['/usage', usageRoutes],
     ['/video', videoRoutes],
+    ['/render', renderRoutes],
     ['/moodboard', moodboardRoutes],
     ['/community', communityRoutes],
     ['/storage', storageRoutes],

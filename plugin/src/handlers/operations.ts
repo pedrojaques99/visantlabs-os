@@ -1497,11 +1497,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     try {
       const cloned = (sourceNode as SceneNode).clone();
       if (props.name) cloned.name = props.name;
-      if (props.width && 'resize' in cloned) {
-        (cloned as any).resize(props.width, props.height || (cloned as any).height);
-      }
       if (props.fills && 'fills' in cloned) {
-        // Use normalizeFills to handle different formats
         const normalized = normalizeFills(props.fills);
         if (normalized) (cloned as any).fills = await applyVariablesToFills(normalized);
       }
@@ -1513,7 +1509,15 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       }
 
       parent.appendChild(cloned);
-      
+
+      if (props.rescale && 'rescale' in cloned) {
+        (cloned as any).rescale(props.rescale);
+      } else if (props.width && 'resize' in cloned) {
+        (cloned as any).resize(props.width, props.height || (cloned as any).height);
+      }
+      if (props.x != null) cloned.x = props.x;
+      if (props.y != null) cloned.y = props.y;
+
       const parentIsAutoLayout = 'layoutMode' in parent && parent.layoutMode !== 'NONE';
       if (parentIsAutoLayout) {
         const sizingH = props.layoutSizingHorizontal;
@@ -1916,6 +1920,23 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
         postToUI({ type: 'ERROR', message: `SWAP_INSTANCE: componente não encontrado: ${op.componentKey}` });
       }
     }
+  }
+
+  // ═══ CREATE_SECTION ═══
+  else if (op.type === 'CREATE_SECTION') {
+    const parent = await getParent(op.parentRef, op.parentNodeId);
+    const section = figma.createSection();
+    section.name = props.name || 'Section/';
+    if (props.width > 0 && props.height > 0) section.resizeWithoutConstraints(props.width, props.height);
+    if (props.x != null) section.x = props.x;
+    if (props.y != null) section.y = props.y;
+    if (props.fills) {
+      const normalized = normalizeFills(props.fills) || [];
+      section.fills = await applyVariablesToFills(normalized);
+    }
+    parent.appendChild(section);
+    if (op.ref) createdNodes.set(op.ref, section);
+    pushSummary(`Section criada @"${section.name}"`, section);
   }
 
   // ═══ SET_EXPORT_SETTINGS ═══

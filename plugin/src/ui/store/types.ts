@@ -122,8 +122,6 @@ export interface PluginStore {
   // Library
   allComponents: Component[];
   componentThumbs: Record<string, string>;
-  expandedFolders: Set<string>;
-  showFolders: boolean;
 
   // Chat
   chatHistory: ChatMessage[];
@@ -170,7 +168,6 @@ export interface PluginStore {
   extractSyncData: any | null;
   exportedImage: any | null;
   isGenerating: boolean;
-  isStreaming: boolean;
   generatingStatus: string;
 
   // Internal: increments each time the brand state is hydrated from server.
@@ -180,7 +177,6 @@ export interface PluginStore {
 
   // UI State
   activeView: 'main' | 'settings';
-  activeTab: 'brand' | 'config' | 'dev';
   openPanel: string | null;
   devMode: boolean;
   toastMessage?: string;
@@ -197,14 +193,10 @@ export interface PluginStore {
   setThinkMode: (enabled: boolean) => void;
   setUseBrand: (enabled: boolean) => void;
   setScanPage: (enabled: boolean) => void;
-  setActiveTab: (tab: 'brand' | 'config' | 'dev') => void;
   setActiveView: (view: 'main' | 'settings') => void;
   updateTypography: (slot: 'primary' | 'secondary', data: Partial<TypographySlot>) => void;
   addSelectedColor: (role: string, color: ColorEntry) => void;
-  removeSelectedColor: (role: string) => void;
   setAllComponents: (components: Component[]) => void;
-  toggleFolder: (folderPath: string) => void;
-  setShowFolders: (show: boolean) => void;
   setBrandGuideline: (guideline: BrandGuideline | null) => void;
   setDesignSystem: (ds: DesignSystem | null) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
@@ -212,13 +204,9 @@ export interface PluginStore {
   setMentionElements: (elements: any[]) => void;
   setApiKey: (key: string | null) => void;
   setAnthropicApiKey: (key: string | null) => void;
-  setSmartScanModal: (show: boolean, results?: any) => void;
-  setSelectedFont: (font: { family: string; style?: string } | null) => void;
-  setBrandLintReport: (report: any) => void;
   setExtractSyncData: (data: any) => void;
   setExportedImage: (data: any) => void;
   setIsGenerating: (generating: boolean) => void;
-  setIsStreaming: (streaming: boolean) => void;
   setGeneratingStatus: (status: string) => void;
   toggleDevMode: () => void;
 }

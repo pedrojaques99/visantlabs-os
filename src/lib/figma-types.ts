@@ -1072,7 +1072,8 @@ export type UIMessage =
   | { type: 'BRAND_LINT_FIX'; brand?: any }
   | { type: 'RESPONSIVE_MULTIPLY'; formats?: Array<{ id: string; label: string; width: number; height: number }> }
   // Grid / Others
-  | { type: 'GENERATE_BRAND_GRID'; sections?: any }
+  | { type: 'SCAN_PAINT_STYLES' }
+  | { type: 'GENERATE_ASSETS'; colors: any[]; assets: any[] }
   | { type: 'GENERATE_SOCIAL_FRAMES'; brandColors?: string[] }
   // Export & Illustrator
   | { type: 'ILLUSTRATOR_EXPORT' }

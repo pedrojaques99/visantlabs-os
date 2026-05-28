@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
-import { RISO_DEFAULTS, type RisoSettings, type InkLayer } from '@/components/riso/RisoRenderer';
+import { RISO_DEFAULTS, type RisoSettings, type InkLayer, type DitherMode, type HalftoneShape } from '@/components/riso/RisoRenderer';
 import { hexToRgb } from '@/utils/colorUtils';
 
 interface RisoState extends Omit<RisoSettings, 'layers' | 'soloLayer'> {
@@ -20,7 +20,9 @@ interface RisoState extends Omit<RisoSettings, 'layers' | 'soloLayer'> {
   settingsHistory: RisoSettings[];
   historyIndex: number;
 
-  setImageUrl: (url: string, fileName: string) => void;
+  mediaType: 'image' | 'video';
+
+  setImageUrl: (url: string, fileName: string, mediaType?: 'image' | 'video') => void;
   setPanelVisible: (v: boolean) => void;
   setActiveTab: (t: RisoState['activeTab']) => void;
   setIsExporting: (v: boolean) => void;
@@ -56,6 +58,8 @@ function snapshotSettings(s: RisoState): RisoSettings {
     misregistration: s.misregistration,
     edgeBleed: s.edgeBleed,
     colorCount: s.colorCount,
+    ditherMode: s.ditherMode,
+    halftoneShape: s.halftoneShape,
   };
 }
 
@@ -73,6 +77,8 @@ function applySnapshot(snap: RisoSettings): Partial<RisoState> {
     misregistration: snap.misregistration,
     edgeBleed: snap.edgeBleed,
     colorCount: snap.colorCount,
+    ditherMode: snap.ditherMode,
+    halftoneShape: snap.halftoneShape,
   };
 }
 
@@ -94,7 +100,9 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
   settingsHistory: [],
   historyIndex: -1,
 
-  setImageUrl: (imageUrl, fileName) => set({ imageUrl, fileName }),
+  mediaType: 'image' as const,
+
+  setImageUrl: (imageUrl, fileName, mediaType) => set({ imageUrl, fileName, mediaType: mediaType || 'image' }),
   setPanelVisible: (panelVisible) => set({ panelVisible }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setIsExporting: (isExporting) => set({ isExporting }),
@@ -140,6 +148,8 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
       edgeBleed: s.edgeBleed,
       colorCount: s.colorCount,
       soloLayer: s.soloLayer,
+      ditherMode: s.ditherMode,
+      halftoneShape: s.halftoneShape,
     };
   },
 

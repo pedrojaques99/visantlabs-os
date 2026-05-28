@@ -24,12 +24,10 @@ export const usePluginStore = create<PluginStore>()(
     // Library
     allComponents: [],
     componentThumbs: {},
-    expandedFolders: new Set(),
-    showFolders: false,
 
     // Chat
     chatHistory: [],
-    sessionId: crypto.randomUUID(),
+    sessionId: crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     sessionContext: null,
     pendingAttachments: [],
     thinkMode: false,
@@ -67,7 +65,6 @@ export const usePluginStore = create<PluginStore>()(
     extractSyncData: null,
     exportedImage: null,
     isGenerating: false,
-    isStreaming: false,
     generatingStatus: '',
 
     brandHydrationTick: 0,
@@ -80,7 +77,6 @@ export const usePluginStore = create<PluginStore>()(
 
     // UI State
     activeView: 'main',
-    activeTab: 'brand',
     openPanel: null,
     devMode: false,
     toastMessage: undefined,
@@ -147,11 +143,6 @@ export const usePluginStore = create<PluginStore>()(
         state.scanPage = enabled;
       }),
 
-    setActiveTab: (tab) =>
-      set((state) => {
-        state.activeTab = tab;
-      }),
-
     setActiveView: (view) =>
       set((state) => {
         state.activeView = view;
@@ -172,30 +163,9 @@ export const usePluginStore = create<PluginStore>()(
         state.selectedColors = newMap as any; // Cast as any if TS gets confused with proxies
       }),
 
-    removeSelectedColor: (role) =>
-      set((state) => {
-        const newMap = new Map(state.selectedColors);
-        newMap.delete(role);
-        state.selectedColors = newMap as any;
-      }),
-
     setAllComponents: (components) =>
       set((state) => {
         state.allComponents = components;
-      }),
-
-    toggleFolder: (folderPath) =>
-      set((state) => {
-        if (state.expandedFolders.has(folderPath)) {
-          state.expandedFolders.delete(folderPath);
-        } else {
-          state.expandedFolders.add(folderPath);
-        }
-      }),
-
-    setShowFolders: (show) =>
-      set((state) => {
-        state.showFolders = show;
       }),
 
     setBrandGuideline: (guideline) =>
@@ -231,18 +201,6 @@ export const usePluginStore = create<PluginStore>()(
     setAnthropicApiKey: (key) =>
       set((state) => { state.anthropicApiKey = key; }),
 
-    setSmartScanModal: (show, results) =>
-      set((state) => {
-        state.showSmartScanModal = show;
-        if (results !== undefined) state.smartScanResults = results;
-      }),
-
-    setSelectedFont: (font) =>
-      set((state) => { state.selectedFont = font; }),
-
-    setBrandLintReport: (report) =>
-      set((state) => { state.brandLintReport = report; }),
-
     setExtractSyncData: (data) =>
       set((state) => { state.extractSyncData = data; }),
 
@@ -251,9 +209,6 @@ export const usePluginStore = create<PluginStore>()(
 
     setIsGenerating: (generating) =>
       set((state) => { state.isGenerating = generating; }),
-
-    setIsStreaming: (streaming) =>
-      set((state) => { state.isStreaming = streaming; }),
 
     setGeneratingStatus: (status) =>
       set((state) => { state.generatingStatus = status; }),
