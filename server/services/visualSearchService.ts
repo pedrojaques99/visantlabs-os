@@ -1,5 +1,6 @@
 import { LRUCache } from 'lru-cache';
 import { safeFetch } from '../utils/securityValidation.js';
+import { stripHtml } from '../utils/stripHtml.js';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -530,10 +531,6 @@ function getSourcesForIntent(intent: SearchIntent): SearchSource[] {
   }
 }
 
-function stripHtml(value: string | undefined | null): string {
-  if (!value) return '';
-  return value.replace(/<[^>]*>?/gm, '').replace(/&[a-z]+;/gi, ' ').trim();
-}
 
 function extractLetter(query: string): string | null {
   const match = query.match(/\b(?:letra|letter|character|glyph)\s+([a-zA-Z0-9])\b/i);

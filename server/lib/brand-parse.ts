@@ -88,20 +88,7 @@ export function parseJson(jsonStr: string, filename?: string): ParsedChunk[] {
   }]
 }
 
-function stripHtml(html: string): string {
-  return html
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, ' ')
-    .trim()
-}
+import { stripHtmlFull as stripHtml } from '../utils/stripHtml.js';
 
 function chunkText(text: string, maxLen: number): string[] {
   if (text.length <= maxLen) return [text]

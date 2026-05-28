@@ -11,6 +11,7 @@ import type { FigmaOperation, SerializedContext, EnrichedContext } from '../../s
 import { preprocessPrompt, type LinearIssue } from '../utils/linearParser.js';
 import { safeFetch } from '../utils/securityValidation.js';
 import { sanitizeForPrompt, sanitizePromptArray } from '../utils/promptSanitize.js';
+import { stripHtml } from '../utils/stripHtml.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
 import type { AvailableTags } from './tagService.js';
 import { distillBrandGuideline, type BrandBrief } from '../lib/mockup/brandDistiller.js';
@@ -1742,8 +1743,7 @@ export const chatWithAIContext = async (
     // Use the provided niche instruction or fallback to the generic intelligent one
     const systemInstruction = requestedSystemInstruction || `${GENERIC_SYSTEM_PROMPT}\n\nUTILIZE O CONTEXTO ABAIXO:\n${context}`;
 
-    // Basic input sanitization - strip angle brackets to prevent HTML/script injection
-    const sanitizedQuery = query.substring(0, 4000).replace(/[<>]/g, '');
+    const sanitizedQuery = stripHtml(query.substring(0, 4000));
 
     const config: any = {
       systemInstruction,
