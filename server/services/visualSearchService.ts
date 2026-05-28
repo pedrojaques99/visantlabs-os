@@ -266,16 +266,11 @@ async function searchWikimedia(query: string, limit = 20): Promise<SourceResult>
           imageUrl: info.thumburl || info.url,
           thumbnailUrl: info.thumburl || info.url,
           title: (page.title || '').replace('File:', '').replace(/\.\w+$/, ''),
-          description: meta.ImageDescription?.value?.replace(/<[^>]+>/g, '').slice(0, 200),
+          description: stripHtml(meta.ImageDescription?.value).slice(0, 200),
           tags: [],
           dimensions: { width: info.thumbwidth || info.width || 400, height: info.thumbheight || info.height || 400 },
           attribution: {
-            author: meta.Artist?.value
-              ?.replace(/&/g, '&amp;')
-              ?.replace(/</g, '&lt;')
-              ?.replace(/>/g, '&gt;')
-              ?.replace(/"/g, '&quot;')
-              ?.replace(/'/g, '&#39;') || 'Wikimedia Commons',
+            author: stripHtml(meta.Artist?.value) || 'Wikimedia Commons',
             license: meta.LicenseShortName?.value || 'CC',
           },
           relevanceScore: 0.7 - (i / Object.keys(pages).length) * 0.2,
@@ -533,6 +528,11 @@ function getSourcesForIntent(intent: SearchIntent): SearchSource[] {
     case 'typography': return hasGoogle ? ['google', 'unsplash', 'pixabay', 'wikimedia'] : ['unsplash', 'pexels', 'pixabay', 'wikimedia'];
     case 'mixed':      return hasGoogle ? ['google', 'unsplash', 'pexels', 'svgl'] : ['unsplash', 'pexels', 'pixabay', 'svgl'];
   }
+}
+
+function stripHtml(value: string | undefined | null): string {
+  if (!value) return '';
+  return value.replace(/<[^>]*>?/gm, '').replace(/&[a-z]+;/gi, ' ').trim();
 }
 
 function extractLetter(query: string): string | null {
