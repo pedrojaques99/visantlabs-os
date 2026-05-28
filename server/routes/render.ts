@@ -72,6 +72,7 @@ router.post('/start', renderLimiter, authenticate, async (req: AuthRequest, res)
 router.put(
   '/:jobId/frames',
   authenticate,
+  renderLimiter,
   express.raw({ type: 'application/octet-stream', limit: '100mb' }),
   async (req: AuthRequest, res) => {
     try {
