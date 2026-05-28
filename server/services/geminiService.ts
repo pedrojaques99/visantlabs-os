@@ -709,7 +709,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
 
       // Curated references — world-class mockup techniques from admin library
       const curatedRefs = await exampleRetriever.findSimilar({
-        feature: 'reference' as any,
+        feature: 'reference',
         queryText,
         topK: 2,
       });

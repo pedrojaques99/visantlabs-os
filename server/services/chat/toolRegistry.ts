@@ -206,6 +206,119 @@ REGISTRY['brand_guideline_list'] = {
   },
 };
 
+REGISTRY['search_reference_library'] = {
+  scope: 'public',
+  declaration: {
+    name: 'search_reference_library',
+    description:
+      'Search the curated mockup reference library — world-class mockup examples categorized by 9 dimensions. ' +
+      'Use BEFORE suggesting or generating mockups to find proven visual techniques that match the brand/niche. ' +
+      'Returns reference images with dimension tags (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type).',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Free text search — describe the kind of mockup you are looking for.' },
+        niche: { type: 'string', description: 'Industry niche: luxury, tech, food, fashion, beauty, sports, etc.' },
+        aesthetic: { type: 'string', description: 'Visual style: minimalist, brutalist, organic, retro, editorial, etc.' },
+        vibe: { type: 'string', description: 'Mood: premium, playful, corporate, edgy, warm, etc.' },
+        lighting: { type: 'string', description: 'Lighting: soft studio, golden hour, neon, dramatic, etc.' },
+        mockup_type: { type: 'string', description: 'Type: packaging, stationery, apparel, signage, device, bottle, etc.' },
+        limit: { type: 'number', description: 'Max results (default 5).' },
+      },
+    },
+  },
+  execute: async (args: any) => {
+    const { connectToMongoDB, getDb } = await import('../../db/mongodb.js');
+    await connectToMongoDB();
+    const db = getDb();
+    const filter: any = { category: 'reference', isAdminCurated: true };
+    if (args.query) filter.$or = [
+      { name: { $regex: args.query, $options: 'i' } },
+      { description: { $regex: args.query, $options: 'i' } },
+    ];
+    for (const key of ['niche', 'aesthetic', 'vibe', 'lighting', 'mockup_type']) {
+      if (args[key]) filter[`dimensions.${key}`] = { $in: [args[key]] };
+    }
+    const refs = await db.collection('community_presets')
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .limit(args.limit || 5)
+      .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1 })
+      .toArray();
+    if (!refs.length) return 'No curated references found matching those criteria. Try broader filters.';
+    return JSON.stringify(refs);
+  },
+};
+
+REGISTRY['suggest_mockup_ideas'] = {
+  scope: 'public',
+  declaration: {
+    name: 'suggest_mockup_ideas',
+    description:
+      'Analyze a brand guideline and cross-reference with the curated mockup library to suggest impactful, on-brand mockup concepts. ' +
+      'Returns personalized mockup suggestions with reference images, recommended dimensions, and prompt starters. ' +
+      'Call this when a user wants mockup ideas for their brand or when starting a new mockup project.',
+    parameters: {
+      type: 'object',
+      properties: {
+        brandGuidelineId: { type: 'string', description: 'Brand guideline ID. Omit to use session default.' },
+        count: { type: 'number', description: 'Number of suggestions (default 3, max 6).' },
+        focus: { type: 'string', description: 'Optional focus: "packaging", "stationery", "social", "signage", "apparel", "device", etc.' },
+      },
+    },
+  },
+  execute: async (args: { brandGuidelineId?: string; count?: number; focus?: string }, ctx) => {
+    const bgId = args.brandGuidelineId || ctx.brandGuidelineId;
+    if (!bgId) return 'No brand guideline selected. Provide brandGuidelineId or select one for the session.';
+
+    const bg = await prisma.brandGuideline.findUnique({ where: { id: bgId } });
+    if (!bg) return `Brand guideline ${bgId} not found.`;
+
+    const identity = bg.identity as any;
+    const brandName = identity?.name || 'Brand';
+    const niche = identity?.industry || identity?.niche || '';
+    const archetype = identity?.archetype || '';
+    const colors = ((bg.colors as any[]) || []).slice(0, 4).map((c: any) => c.hex).join(', ');
+
+    // Search references matching brand profile
+    const { connectToMongoDB, getDb } = await import('../../db/mongodb.js');
+    await connectToMongoDB();
+    const db = getDb();
+
+    const refFilter: any = { category: 'reference', isAdminCurated: true };
+    if (niche) refFilter['dimensions.niche'] = { $in: [niche.toLowerCase()] };
+    if (args.focus) refFilter['dimensions.mockup_type'] = { $in: [args.focus.toLowerCase()] };
+
+    let refs = await db.collection('community_presets')
+      .find(refFilter)
+      .sort({ createdAt: -1 })
+      .limit(Math.min(args.count || 3, 6) * 2)
+      .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1 })
+      .toArray();
+
+    // Fallback: if niche filter too narrow, broaden
+    if (refs.length === 0) {
+      delete refFilter['dimensions.niche'];
+      refs = await db.collection('community_presets')
+        .find(refFilter)
+        .sort({ createdAt: -1 })
+        .limit(Math.min(args.count || 3, 6) * 2)
+        .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1 })
+        .toArray();
+    }
+
+    const count = Math.min(args.count || 3, 6, refs.length || 3);
+
+    return JSON.stringify({
+      brand: { name: brandName, niche, archetype, colors },
+      references: refs.slice(0, count),
+      instructions: `Use these curated references as visual inspiration. For "${brandName}" (${niche || 'general'}, ${archetype || 'brand'}), ` +
+        `match the lighting, composition, and texture from the references while honoring the brand palette (${colors || 'as defined'}). ` +
+        `Generate mockups with generate_mockup tool using insights from these references.`,
+    });
+  },
+};
+
 // ── Promote admin tools to plugin scope ──
 // These already exist in adminChatTools with full schemas and Prisma-direct
 // execution. Promote to 'public' so the plugin pre-pass can use them.

@@ -2540,5 +2540,85 @@ router.delete('/references/:id', validateAdmin, async (req: Request, res: Respon
   }
 });
 
+router.put('/references/:id', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid reference ID format' });
+    }
+    await connectToMongoDB();
+    const db = getDb();
+
+    const existing = await db.collection('community_presets').findOne({ id: req.params.id, category: 'reference' });
+    if (!existing) {
+      return res.status(404).json({ error: 'Reference not found' });
+    }
+
+    const updates: any = { updatedAt: new Date() };
+    if (req.body.name != null) updates.name = ensureString(req.body.name, 500);
+    if (req.body.description != null) updates.description = ensureString(req.body.description, 5000);
+    if (req.body.prompt != null) updates.prompt = ensureString(req.body.prompt, 50000);
+    if (req.body.dimensions != null) updates.dimensions = req.body.dimensions;
+    if (req.body.tags != null) updates.tags = normalizeTags(req.body.tags);
+
+    await db.collection('community_presets').updateOne(
+      { id: req.params.id, category: 'reference' },
+      { $set: updates }
+    );
+
+    return res.json({ success: true, updated: { ...existing, ...updates } });
+  } catch (error: any) {
+    console.error('[admin] reference update error:', error);
+    return res.status(500).json({ error: 'Failed to update reference' });
+  }
+});
+
+router.get('/references/stats', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+
+    const [totalRefs, byDimension, recentlyAdded] = await Promise.all([
+      db.collection('community_presets').countDocuments({ category: 'reference', isAdminCurated: true }),
+
+      // Aggregate top values per dimension
+      db.collection('community_presets').aggregate([
+        { $match: { category: 'reference', isAdminCurated: true } },
+        {
+          $facet: {
+            niche: [{ $unwind: { path: '$dimensions.niche', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.niche', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+            aesthetic: [{ $unwind: { path: '$dimensions.aesthetic', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.aesthetic', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+            vibe: [{ $unwind: { path: '$dimensions.vibe', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.vibe', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+            lighting: [{ $unwind: { path: '$dimensions.lighting', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.lighting', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+            mockup_type: [{ $unwind: { path: '$dimensions.mockup_type', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.mockup_type', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+          },
+        },
+      ]).toArray(),
+
+      db.collection('community_presets')
+        .find({ category: 'reference', isAdminCurated: true })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .project({ id: 1, name: 1, createdAt: 1, dimensions: 1 })
+        .toArray(),
+    ]);
+
+    // Count how many times references were retrieved (from generation_feedback with feature=reference)
+    const retrievalStats = await db.collection('generation_feedback').aggregate([
+      { $match: { feature: 'mockup', 'context.extra.curatedRefsUsed': { $gt: 0 } } },
+      { $group: { _id: null, totalGenerationsWithRefs: { $sum: 1 }, totalRefsServed: { $sum: '$context.extra.curatedRefsUsed' } } },
+    ]).toArray();
+
+    return res.json({
+      totalRefs,
+      byDimension: byDimension[0] || {},
+      recentlyAdded,
+      retrieval: retrievalStats[0] || { totalGenerationsWithRefs: 0, totalRefsServed: 0 },
+    });
+  } catch (error: any) {
+    console.error('[admin] reference stats error:', error);
+    return res.status(500).json({ error: 'Failed to fetch reference stats' });
+  }
+});
+
 export default router;
 

@@ -6,6 +6,7 @@ import { redisClient } from '../lib/redis.js';
 import { buildBrandContextJSON, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateMockup as generateGeminiImage } from '../services/geminiService.js';
+import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
 import { validateExternalUrl, safeFetch } from '../utils/securityValidation.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
@@ -181,13 +182,16 @@ async function generateOneImage(params: {
   const imgBase64 = imgBuf.toString('base64');
   const imgMime = (imgResp.headers.get('content-type') || 'image/png').split(';')[0];
 
+  // Enrich prompt with curated references
+  const { prompt: enrichedPrompt } = await enrichWithCuratedReferences(prompt);
+
   let resultBase64: string;
 
   const isOpenAI = model.startsWith('gpt-image') || model.startsWith('dall-e');
 
   if (isOpenAI) {
     const result = await generateOpenAIImage({
-      prompt,
+      prompt: enrichedPrompt,
       baseImage: { base64: imgBase64, mimeType: imgMime },
       model,
       resolution: '1K',
@@ -198,7 +202,7 @@ async function generateOneImage(params: {
     // Gemini — use the codebase's geminiService which handles model variants correctly
     const geminiModel = model === 'gemini' ? GEMINI_MODELS.IMAGE_FLASH : model;
     resultBase64 = await generateGeminiImage(
-      prompt,
+      enrichedPrompt,
       { base64: imgBase64, mimeType: imgMime },
       geminiModel as any,
       undefined,
