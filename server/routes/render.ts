@@ -44,7 +44,7 @@ setInterval(() => {
   }
 }, 10 * 60_000);
 
-router.post('/start', authenticate, renderLimiter, async (req: AuthRequest, res) => {
+router.post('/start', renderLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const width = Number(req.body.width);
     const height = Number(req.body.height);
