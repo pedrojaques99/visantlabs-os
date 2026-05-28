@@ -270,7 +270,12 @@ async function searchWikimedia(query: string, limit = 20): Promise<SourceResult>
           tags: [],
           dimensions: { width: info.thumbwidth || info.width || 400, height: info.thumbheight || info.height || 400 },
           attribution: {
-            author: meta.Artist?.value?.replace(/<[^>]+>/g, '') || 'Wikimedia Commons',
+            author: meta.Artist?.value
+              ?.replace(/&/g, '&amp;')
+              ?.replace(/</g, '&lt;')
+              ?.replace(/>/g, '&gt;')
+              ?.replace(/"/g, '&quot;')
+              ?.replace(/'/g, '&#39;') || 'Wikimedia Commons',
             license: meta.LicenseShortName?.value || 'CC',
           },
           relevanceScore: 0.7 - (i / Object.keys(pages).length) * 0.2,
