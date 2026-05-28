@@ -8,7 +8,7 @@
 import { useCallback } from 'react';
 import type { Studio3DNodeData, FlowNodeData } from '@/types/reactFlow';
 import type { Node } from '@xyflow/react';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 
 interface UseStudio3DNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -27,7 +27,7 @@ export const useStudio3DNodeHandlers = ({
     // This handler exists for API consistency but is a no-op.
   }, []);
 
-  const handleStudio3DNodeDataUpdate = createNodeDataUpdateHandler<Studio3DNodeData>(updateNodeData, 'studio3d');
+  const handleStudio3DNodeDataUpdate = useNodeDataUpdateHandler<Studio3DNodeData>(updateNodeData, 'studio3d');
 
   return { handleStudio3DApply, handleStudio3DNodeDataUpdate };
 };

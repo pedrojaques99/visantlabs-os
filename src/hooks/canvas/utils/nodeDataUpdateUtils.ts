@@ -11,7 +11,7 @@ import type { FlowNodeData } from '@/types/reactFlow';
 /**
  * Cria um handler de atualização de dados para um tipo específico de node
  */
-export const createNodeDataUpdateHandler = <T extends FlowNodeData>(
+export const useNodeDataUpdateHandler = <T extends FlowNodeData>(
   updateNodeData: <U extends FlowNodeData>(nodeId: string, newData: Partial<U>, nodeType?: string) => void,
   nodeType: string
 ) => {

@@ -8,6 +8,7 @@ export default [
     ignores: [
       'dist/', 'dist-ssr/', 'node_modules/', 'cli/',
       'prisma/generated/', '.claude/', 'scripts/',
+      'plugin/dist/', 'public/**/*.mjs', 'public/pdfjs/',
       '*.config.js', '*.config.ts',
     ],
   },

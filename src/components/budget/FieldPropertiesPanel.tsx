@@ -22,15 +22,6 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
   currentPage,
   totalPages,
 }) => {
-  // Guard against undefined/null mapping
-  if (!mapping) {
-    return (
-      <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
-        <p className="text-sm text-neutral-400 font-mono">Nenhum campo selecionado</p>
-      </div>
-    );
-  }
-
   // Local state for temporary changes
   const [localChanges, setLocalChanges] = useState<Partial<PdfFieldMapping>>({});
   const [fontSizeError, setFontSizeError] = useState<string | null>(null);
@@ -38,38 +29,13 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
   const [yError, setYError] = useState<string | null>(null);
   const [showCloseWarning, setShowCloseWarning] = useState(false);
 
+  const mappingKey = mapping?.id || mapping?.fieldId;
+
   // Reset local changes when mapping changes
   useEffect(() => {
     setLocalChanges({});
-  }, [mapping.id || mapping.fieldId]);
+  }, [mappingKey]);
 
-  // Get current value (local change or original mapping value)
-  const getValue = <K extends keyof PdfFieldMapping>(key: K): PdfFieldMapping[K] => {
-    return localChanges[key] !== undefined ? localChanges[key] as PdfFieldMapping[K] : mapping[key];
-  };
-
-  // Update local changes
-  const updateLocal = (updates: Partial<PdfFieldMapping>) => {
-    setLocalChanges(prev => ({ ...prev, ...updates }));
-  };
-
-  // Apply changes
-  const handleApply = () => {
-    if (Object.keys(localChanges).length > 0) {
-      onUpdate(localChanges);
-      setLocalChanges({});
-    }
-  };
-
-  // Dismiss changes
-  const handleDismiss = () => {
-    setLocalChanges({});
-    setFontSizeError(null);
-    setXError(null);
-    setYError(null);
-  };
-
-  const isBold = getValue('bold') || false;
   const hasChanges = Object.keys(localChanges).length > 0;
 
   // Handle ESC key to close panel (only if no pending changes)
@@ -100,6 +66,38 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, hasChanges]);
+
+  if (!mapping) {
+    return (
+      <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
+        <p className="text-sm text-neutral-400 font-mono">Nenhum campo selecionado</p>
+      </div>
+    );
+  }
+
+  const getValue = <K extends keyof PdfFieldMapping>(key: K): PdfFieldMapping[K] => {
+    return localChanges[key] !== undefined ? localChanges[key] as PdfFieldMapping[K] : mapping[key];
+  };
+
+  const updateLocal = (updates: Partial<PdfFieldMapping>) => {
+    setLocalChanges(prev => ({ ...prev, ...updates }));
+  };
+
+  const handleApply = () => {
+    if (Object.keys(localChanges).length > 0) {
+      onUpdate(localChanges);
+      setLocalChanges({});
+    }
+  };
+
+  const handleDismiss = () => {
+    setLocalChanges({});
+    setFontSizeError(null);
+    setXError(null);
+    setYError(null);
+  };
+
+  const isBold = getValue('bold') || false;
 
   // Validation helpers
   const validateFontSize = (value: number): boolean => {

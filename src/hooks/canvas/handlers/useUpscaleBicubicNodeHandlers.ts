@@ -8,7 +8,7 @@ import { useCallback } from 'react';
 import type { UpscaleBicubicNodeData, FlowNodeData } from '@/types/reactFlow';
 import type { Node } from '@xyflow/react';
 import { processImageOrVideoWithShader } from '@/hooks/canvas/utils/shaderProcessingUtils';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 
 interface UseUpscaleBicubicNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -93,7 +93,7 @@ export const useUpscaleBicubicNodeHandlers = ({
     });
   }, [nodesRef, updateNodeLoadingState, updateNodeData, canvasId, setNodes]);
 
-  const handleUpscaleBicubicNodeDataUpdate = createNodeDataUpdateHandler<UpscaleBicubicNodeData>(updateNodeData, 'upscaleBicubic');
+  const handleUpscaleBicubicNodeDataUpdate = useNodeDataUpdateHandler<UpscaleBicubicNodeData>(updateNodeData, 'upscaleBicubic');
 
   return {
     handleUpscaleBicubicApply,

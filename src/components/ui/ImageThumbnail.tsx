@@ -19,17 +19,18 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
   className,
 }) => {
   const [hasError, setHasError] = useState(false);
-  // Check if it's already a URL (http/https) or data URL, otherwise treat as base64
-  if (!base64 || typeof base64 !== 'string') {
-    return null;
-  }
   const imageUrl = useMemo(() => {
+    if (!base64 || typeof base64 !== 'string') return '';
     if (base64.startsWith('http://') || base64.startsWith('https://') || base64.startsWith('data:')) {
       return isSafeUrl(base64) ? base64 : '';
     }
     const dataUrl = `data:image/png;base64,${base64}`;
     return isSafeUrl(dataUrl) ? dataUrl : '';
   }, [base64]);
+
+  if (!base64 || typeof base64 !== 'string') {
+    return null;
+  }
 
   return (
     <div
