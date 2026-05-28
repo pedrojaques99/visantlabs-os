@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 interface Reference {
   id: string;
   name: string;
+  studio?: string;
   description: string;
   referenceImageUrl: string;
   dimensions: Record<string, string[]>;
@@ -32,6 +33,14 @@ interface RefStats {
   byDimension: Record<string, Array<{ _id: string; count: number }>>;
   recentlyAdded: Array<{ id: string; name: string; createdAt: string }>;
   retrieval: { totalGenerationsWithRefs: number; totalRefsServed: number };
+  ingestCost?: {
+    totalUSD: number;
+    inputTokens: number;
+    outputTokens: number;
+    r2StorageMB: number;
+    apiCalls: number;
+    recordsTracked: number;
+  };
 }
 
 const DIMENSION_KEYS = ['niche', 'aesthetic', 'vibe', 'lighting', 'texture', 'material', 'angle', 'color_mood', 'mockup_type'] as const;
@@ -236,6 +245,15 @@ export const AdminReferenceLibrary: React.FC = () => {
             <StatCard label="Refs servidas" value={stats.retrieval.totalRefsServed} />
           </div>
 
+          {stats.ingestCost && stats.ingestCost.recordsTracked > 0 && (
+            <div className="grid grid-cols-4 gap-3">
+              <StatCard label="Custo Ingest" value={`$${stats.ingestCost.totalUSD.toFixed(4)}`} />
+              <StatCard label="R2 Storage" value={`${stats.ingestCost.r2StorageMB} MB`} />
+              <StatCard label="API Calls" value={stats.ingestCost.apiCalls} />
+              <StatCard label="Tokens" value={`${((stats.ingestCost.inputTokens + stats.ingestCost.outputTokens) / 1000).toFixed(0)}K`} />
+            </div>
+          )}
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             {Object.entries(stats.byDimension).map(([key, items]) => (
               <div key={key} className="space-y-1">
@@ -274,6 +292,7 @@ export const AdminReferenceLibrary: React.FC = () => {
             </div>
             <CardContent className="p-2 space-y-1">
               <p className="text-xs font-medium text-neutral-200 truncate">{ref.name}</p>
+              {ref.studio && <p className="text-[9px] font-mono text-neutral-500 truncate">{ref.studio}</p>}
               <div className="flex flex-wrap gap-0.5">
                 {ref.dimensions && Object.entries(ref.dimensions).slice(0, 4).map(([key, vals]) => (
                   Array.isArray(vals) && vals.slice(0, 1).map(v => (
@@ -533,9 +552,9 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({ ref_, onClose, onDel
 
 // ─── Stat Card ───────────────────────────────────────────────
 
-const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) => (
+const StatCard: React.FC<{ label: string; value: number | string }> = ({ label, value }) => (
   <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-center">
-    <p className="text-lg font-bold text-brand-cyan">{value.toLocaleString('pt-BR')}</p>
+    <p className="text-lg font-bold text-brand-cyan">{typeof value === 'number' ? value.toLocaleString('pt-BR') : value}</p>
     <p className="text-[10px] font-mono text-neutral-500 uppercase">{label}</p>
   </div>
 );

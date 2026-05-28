@@ -2154,7 +2154,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           .find(filter)
           .sort({ createdAt: -1 })
           .limit(limit)
-          .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, tags: 1, prompt: 1 })
+          .project({ _id: 0, id: 1, name: 1, studio: 1, description: 1, referenceImageUrl: 1, dimensions: 1, tags: 1, prompt: 1 })
           .toArray();
         return jsonResponse({ references: refs, total: refs.length });
       } catch (err: any) {
@@ -2169,10 +2169,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       imageUrl: z.string().url().describe('Public URL of the reference image.'),
       name: z.string().optional().describe('Name for the reference.'),
+      studio: z.string().optional().describe('Studio or creator name (e.g. "Hazard Mockups", "Visant Labs").'),
       tags: z.array(z.string()).optional().describe('Manual tags to add.'),
       prompt: z.string().optional().describe('The prompt that generated this mockup (if known).'),
     },
-    async ({ imageUrl, name, tags, prompt }) => {
+    async ({ imageUrl, name, studio, tags, prompt }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -2188,6 +2189,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           imageBase64,
           imageUrl,
           name,
+          studio,
           userId: currentUserId,
           tags,
           prompt,

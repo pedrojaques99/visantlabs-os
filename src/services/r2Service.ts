@@ -933,11 +933,22 @@ export async function uploadMockupPresetReference(
   // Remove data URL prefix if present
   const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
 
-  // Convert base64 to buffer
-  const buffer = Buffer.from(base64Data, 'base64');
+  // Convert base64 to buffer and compress with sharp
+  const rawBuffer = Buffer.from(base64Data, 'base64');
+  let buffer: Buffer;
+  try {
+    const sharp = (await import('sharp')).default;
+    buffer = await sharp(rawBuffer)
+      .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toBuffer();
+  } catch {
+    buffer = rawBuffer;
+  }
 
-  // Generate file path: mockup-presets/{presetId}/reference.png
-  const key = `mockup-presets/${presetId}/reference.png`;
+  const ext = buffer.length < rawBuffer.length ? 'webp' : 'png';
+  const contentType = ext === 'webp' ? 'image/webp' : 'image/png';
+  const key = `mockup-presets/${presetId}/reference.${ext}`;
 
   const client = getR2Client();
 
@@ -947,7 +958,7 @@ export async function uploadMockupPresetReference(
         Bucket: bucketName,
         Key: key,
         Body: buffer,
-        ContentType: 'image/png',
+        ContentType: contentType,
       })
     );
 

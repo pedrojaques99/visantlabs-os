@@ -2454,6 +2454,7 @@ router.post('/references/ingest', validateAdmin, async (req: Request, res: Respo
           imageBase64: base64,
           imageUrl,
           name: img.name,
+          studio: img.studio,
           userId: String(userId),
           overrideDimensions: img.dimensions,
           tags: normalizeTags(img.tags),
@@ -2577,7 +2578,7 @@ router.get('/references/stats', validateAdmin, async (req: Request, res: Respons
     await connectToMongoDB();
     const db = getDb();
 
-    const [totalRefs, byDimension, recentlyAdded] = await Promise.all([
+    const [totalRefs, byDimension, recentlyAdded, ingestCostAgg] = await Promise.all([
       db.collection('community_presets').countDocuments({ category: 'reference', isAdminCurated: true }),
 
       // Aggregate top values per dimension
@@ -2600,6 +2601,19 @@ router.get('/references/stats', validateAdmin, async (req: Request, res: Respons
         .limit(5)
         .project({ id: 1, name: 1, createdAt: 1, dimensions: 1 })
         .toArray(),
+
+      db.collection('usage_records').aggregate([
+        { $match: { feature: 'reference-ingest' } },
+        { $group: {
+          _id: null,
+          totalCost: { $sum: '$cost' },
+          totalInputTokens: { $sum: '$inputTokens' },
+          totalOutputTokens: { $sum: '$outputTokens' },
+          totalR2Bytes: { $sum: '$r2Bytes' },
+          totalApiCalls: { $sum: '$apiCalls' },
+          count: { $sum: 1 },
+        }},
+      ]).toArray(),
     ]);
 
     // Count how many times references were retrieved (from generation_feedback with feature=reference)
@@ -2608,11 +2622,21 @@ router.get('/references/stats', validateAdmin, async (req: Request, res: Respons
       { $group: { _id: null, totalGenerationsWithRefs: { $sum: 1 }, totalRefsServed: { $sum: '$context.extra.curatedRefsUsed' } } },
     ]).toArray();
 
+    const ic = ingestCostAgg[0] || { totalCost: 0, totalInputTokens: 0, totalOutputTokens: 0, totalR2Bytes: 0, totalApiCalls: 0, count: 0 };
+
     return res.json({
       totalRefs,
       byDimension: byDimension[0] || {},
       recentlyAdded,
       retrieval: retrievalStats[0] || { totalGenerationsWithRefs: 0, totalRefsServed: 0 },
+      ingestCost: {
+        totalUSD: parseFloat((ic.totalCost || 0).toFixed(4)),
+        inputTokens: ic.totalInputTokens || 0,
+        outputTokens: ic.totalOutputTokens || 0,
+        r2StorageMB: parseFloat(((ic.totalR2Bytes || 0) / (1024 * 1024)).toFixed(2)),
+        apiCalls: ic.totalApiCalls || 0,
+        recordsTracked: ic.count || 0,
+      },
     });
   } catch (error: any) {
     console.error('[admin] reference stats error:', error);
