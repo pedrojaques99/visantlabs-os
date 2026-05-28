@@ -27,7 +27,7 @@ export const usePluginStore = create<PluginStore>()(
 
     // Chat
     chatHistory: [],
-    sessionId: crypto.randomUUID(),
+    sessionId: crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     sessionContext: null,
     pendingAttachments: [],
     thinkMode: false,

@@ -4,7 +4,7 @@ import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
-import { Layers, Plus, X, ScanLine } from 'lucide-react';
+import { Plus, Copy, Layers, X } from 'lucide-react';
 
 interface ColorToken {
   id: string;
@@ -25,197 +25,201 @@ const SECTION_OPTIONS = [
   { key: 'horizontal', label: 'Horizontal' },
   { key: 'vertical', label: 'Vertical' },
   { key: 'icon', label: 'Icon' },
-  { key: 'identity', label: 'Identidade Visual' },
+  { key: 'identity', label: 'ID Visual' },
 ];
 
-function hexFromRGB(r: number, g: number, b: number): string {
+function hex(r: number, g: number, b: number): string {
   return '#' + [r, g, b].map(c => Math.round(c).toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
-function parseHex(hex: string): { r: number; g: number; b: number } | null {
-  const clean = hex.replace('#', '');
-  if (clean.length !== 6) return null;
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
+function parseHex(h: string): { r: number; g: number; b: number } | null {
+  const c = h.replace('#', '');
+  if (c.length !== 6) return null;
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
   if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
   return { r, g, b };
 }
 
+function useFigmaSubscribe(handler: (msg: any) => void) {
+  useEffect(() => {
+    const listener = (event: MessageEvent) => {
+      const msg = event.data?.pluginMessage;
+      if (msg?.type) handler(msg);
+    };
+    window.addEventListener('message', listener);
+    return () => window.removeEventListener('message', listener);
+  }, [handler]);
+}
+
 export function BrandMatrixSection() {
-  const { send, subscribe } = useFigmaMessages();
+  const { send } = useFigmaMessages();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
 
   const [colors, setColors] = useState<ColorToken[]>([]);
   const [customHex, setCustomHex] = useState('');
+  const [showCustom, setShowCustom] = useState(false);
   const [assets, setAssets] = useState<ScannedAsset[]>([]);
-  const [scanned, setScanned] = useState(false);
+  const [showFull, setShowFull] = useState(false);
 
-  useEffect(() => {
-    const unsub = subscribe((msg: any) => {
-      if (msg.type === 'PAINT_STYLES_RESULT') {
-        const tokens = (msg.tokens || []).map((t: any) => ({ ...t, selected: true }));
-        setColors(tokens);
-        setScanned(true);
-      }
-      if (msg.type === 'SMART_SCAN_RESULT') {
-        const items = (msg.items || []) as any[];
-        const mapped: ScannedAsset[] = items
-          .filter((i: any) => i.category === 'logo' || i.category === 'component')
-          .map((i: any) => {
-            const nameLower = i.name.toLowerCase();
-            let section = 'horizontal';
-            if (/\b(icon|icone|ícone)\b/.test(nameLower)) section = 'icon';
-            else if (/\b(vertical|vert)\b/.test(nameLower)) section = 'vertical';
-            else if (/\b(identidade|identity|visual|iv)\b/.test(nameLower)) section = 'identity';
-            return { nodeId: i.id, nodeName: i.name, section };
-          });
-        setAssets(mapped);
-      }
-    });
-    return unsub;
-  }, [subscribe]);
+  // Auto-scan on mount
+  useEffect(() => { send({ type: 'SCAN_PAINT_STYLES' } as any); }, [send]);
 
-  const handleScanColors = useCallback(() => {
-    send({ type: 'SCAN_PAINT_STYLES' });
-  }, [send]);
+  const onMessage = useCallback((msg: any) => {
+    if (msg.type === 'PAINT_STYLES_RESULT') {
+      setColors((msg.tokens || []).map((t: any) => ({ ...t, selected: true })));
+    }
+    if (msg.type === 'SMART_SCAN_RESULT') {
+      const items = (msg.items || []).filter((i: any) => i.category === 'logo' || i.category === 'component');
+      setAssets(items.map((i: any) => {
+        const n = i.name.toLowerCase();
+        let section = 'horizontal';
+        if (/\b(icon|icone|ícone)\b/.test(n)) section = 'icon';
+        else if (/\b(vertical|vert)\b/.test(n)) section = 'vertical';
+        else if (/\b(identidade|identity|visual|iv)\b/.test(n)) section = 'identity';
+        return { nodeId: i.id, nodeName: i.name, section };
+      }));
+    }
+  }, []);
+  useFigmaSubscribe(onMessage);
 
-  const handleScanSelection = useCallback(() => {
-    send({ type: 'SMART_SCAN_SELECTION' });
-  }, [send]);
-
-  const toggleColor = (id: string) => {
-    setColors(prev => prev.map(c => c.id === id ? { ...c, selected: !c.selected } : c));
-  };
-
-  const addCustomColor = () => {
-    const parsed = parseHex(customHex);
-    if (!parsed) return;
-    const id = `custom_${Date.now()}`;
-    setColors(prev => [...prev, { id, name: customHex.toUpperCase(), ...parsed, selected: true }]);
+  const toggle = (id: string) => setColors(p => p.map(c => c.id === id ? { ...c, selected: !c.selected } : c));
+  const addCustom = () => {
+    const p = parseHex(customHex);
+    if (!p) return;
+    setColors(prev => [...prev, { id: `c_${Date.now()}`, name: customHex.toUpperCase(), ...p, selected: true }]);
     setCustomHex('');
+    setShowCustom(false);
   };
 
-  const removeAsset = (nodeId: string) => {
-    setAssets(prev => prev.filter(a => a.nodeId !== nodeId));
-  };
-
-  const updateAssetSection = (nodeId: string, section: string) => {
-    setAssets(prev => prev.map(a => a.nodeId === nodeId ? { ...a, section } : a));
-  };
-
-  const selectedColors = colors.filter(c => c.selected);
-  const canGenerate = selectedColors.length > 0 && assets.length > 0;
+  const selected = colors.filter(c => c.selected);
 
   return (
-    <div className="space-y-4 p-1">
-      <div className="space-y-3 bg-neutral-900/40 p-3 rounded-lg border border-border/60 shadow-sm">
-        <h3 className="text-[11px] uppercase tracking-widest font-semibold flex items-center gap-2 text-muted-foreground pb-2 border-b border-border/40">
-          <Layers size={12} />
-          Brand Matrix
-        </h3>
+    <div className="space-y-3 bg-neutral-900/40 p-3 rounded-lg border border-border/60 shadow-sm">
+      {/* Color palette — compact dots */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-1.5 items-center">
+          {colors.map(c => (
+            <button
+              key={c.id}
+              onClick={() => toggle(c.id)}
+              title={`${c.name} — ${hex(c.r, c.g, c.b)}`}
+              className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${
+                c.selected
+                  ? 'border-white/80 shadow-[0_0_0_1px_rgba(255,255,255,0.3)] scale-105'
+                  : 'border-transparent opacity-30 hover:opacity-60'
+              }`}
+              style={{ backgroundColor: hex(c.r, c.g, c.b) }}
+            />
+          ))}
+          <button
+            onClick={() => setShowCustom(!showCustom)}
+            className="w-6 h-6 rounded-full border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:border-white/40 hover:text-white transition-colors"
+          >
+            <Plus size={10} />
+          </button>
+        </div>
 
-        {/* Step 1: Scan Colors */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">1. Cores</span>
-            <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={handleScanColors}>
-              <ScanLine size={10} className="mr-1" /> Scan Styles
-            </Button>
-          </div>
-
-          {colors.length > 0 && (
-            <div className="space-y-1 max-h-32 overflow-y-auto">
-              {colors.map(c => (
-                <label key={c.id} className="flex items-center gap-2 cursor-pointer hover:bg-neutral-800/40 rounded px-1 py-0.5">
-                  <input
-                    type="checkbox"
-                    checked={c.selected}
-                    onChange={() => toggleColor(c.id)}
-                    className="w-3 h-3 rounded border-border"
-                  />
-                  <span
-                    className="w-4 h-4 rounded-sm border border-border/60 flex-shrink-0"
-                    style={{ backgroundColor: hexFromRGB(c.r, c.g, c.b) }}
-                  />
-                  <span className="text-[10px] truncate">{c.name}</span>
-                  <span className="text-[9px] text-muted-foreground ml-auto">{hexFromRGB(c.r, c.g, c.b)}</span>
-                </label>
-              ))}
-            </div>
-          )}
-
+        {showCustom && (
           <div className="flex gap-1">
             <input
               type="text"
               placeholder="#FF6000"
               value={customHex}
               onChange={(e) => setCustomHex(e.target.value)}
-              className="flex-1 h-6 px-2 text-[10px] bg-neutral-900 border border-border/60 rounded"
-              onKeyDown={(e) => e.key === 'Enter' && addCustomColor()}
+              onKeyDown={(e) => e.key === 'Enter' && addCustom()}
+              className="flex-1 h-6 px-2 text-[10px] bg-neutral-900 border border-border/60 rounded focus:border-white/40 outline-none"
+              autoFocus
             />
-            <Button variant="ghost" size="sm" className="h-6 px-2" onClick={addCustomColor} disabled={!parseHex(customHex)}>
+            <Button variant="ghost" size="sm" className="h-6 px-2" onClick={addCustom} disabled={!parseHex(customHex)}>
               <Plus size={10} />
             </Button>
           </div>
-        </div>
+        )}
 
-        {/* Step 2: Assets */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">2. Assets (selecione no canvas)</span>
-            <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={handleScanSelection}>
-              <ScanLine size={10} className="mr-1" /> Scan Selection
-            </Button>
-          </div>
+        {selected.length > 0 && (
+          <p className="text-[9px] text-muted-foreground">
+            {selected.length} cor{selected.length !== 1 ? 'es' : ''}
+          </p>
+        )}
+      </div>
 
-          {assets.length > 0 && (
-            <div className="space-y-1 max-h-32 overflow-y-auto">
-              {assets.map(a => (
-                <div key={a.nodeId} className="flex items-center gap-2 text-[10px] hover:bg-neutral-800/40 rounded px-1 py-0.5">
-                  <span className="truncate flex-1">{a.nodeName}</span>
-                  <select
-                    value={a.section}
-                    onChange={(e) => updateAssetSection(a.nodeId, e.target.value)}
-                    className="h-5 text-[9px] bg-neutral-900 border border-border/60 rounded px-1"
-                  >
-                    {SECTION_OPTIONS.map(s => (
-                      <option key={s.key} value={s.key}>{s.label}</option>
-                    ))}
-                  </select>
-                  <button onClick={() => removeAsset(a.nodeId)} className="text-muted-foreground hover:text-red-400">
-                    <X size={10} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {assets.length === 0 && scanned && (
-            <p className="text-[9px] text-muted-foreground italic">Selecione logos/elementos no canvas e clique em Scan Selection</p>
-          )}
-        </div>
-
-        {/* Step 3: Generate */}
+      {/* Actions */}
+      <div className="space-y-2">
         <OpButton
-          opId="brandMatrix"
+          opId="logoMatrix"
           runner={runner}
           message={{
-            type: 'GENERATE_ASSETS',
-            colors: selectedColors.map(({ id, name, r, g, b }) => ({ id, name, r, g, b })),
-            assets: assets.map(({ nodeId, nodeName, section }) => ({ nodeId, nodeName, section })),
+            type: 'LOGO_MATRIX',
+            colors: selected.map(({ id, name, r, g, b }) => ({ id, name, r, g, b })),
           }}
           responseTypes={['OPERATIONS_DONE']}
-          busyLabel="Gerando matriz…"
+          busyLabel="Clonando…"
           variant="brand"
           size="sm"
           className="w-full"
-          disabled={!canGenerate}
+          disabled={selected.length === 0}
         >
-          <Layers size={12} className="mr-2" />
-          Gerar Matriz de Assets ({selectedColors.length} cores × {assets.length} assets)
+          <Copy size={12} className="mr-2" />
+          Logo Matrix
         </OpButton>
+
+        {!showFull ? (
+          <button
+            onClick={() => {
+              setShowFull(true);
+              send({ type: 'SMART_SCAN_SELECTION' } as any);
+            }}
+            className="w-full text-[9px] text-muted-foreground hover:text-white py-1 transition-colors"
+          >
+            Full Matrix com seções ›
+          </button>
+        ) : (
+          <div className="space-y-2 pt-1 border-t border-border/30">
+            {assets.length > 0 ? (
+              <div className="space-y-1">
+                {assets.map(a => (
+                  <div key={a.nodeId} className="flex items-center gap-1.5 text-[10px] group">
+                    <span className="truncate flex-1 text-muted-foreground group-hover:text-white">{a.nodeName}</span>
+                    <select
+                      value={a.section}
+                      onChange={(e) => setAssets(p => p.map(x => x.nodeId === a.nodeId ? { ...x, section: e.target.value } : x))}
+                      className="h-5 text-[9px] bg-neutral-900 border border-border/40 rounded px-1"
+                    >
+                      {SECTION_OPTIONS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                    </select>
+                    <button onClick={() => setAssets(p => p.filter(x => x.nodeId !== a.nodeId))} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400">
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[9px] text-muted-foreground italic">Selecione elementos e clique novamente</p>
+            )}
+
+            <OpButton
+              opId="brandMatrix"
+              runner={runner}
+              message={{
+                type: 'GENERATE_ASSETS',
+                colors: selected.map(({ id, name, r, g, b }) => ({ id, name, r, g, b })),
+                assets: assets.map(({ nodeId, nodeName, section }) => ({ nodeId, nodeName, section })),
+              }}
+              responseTypes={['OPERATIONS_DONE']}
+              busyLabel="Gerando…"
+              variant="outline"
+              size="sm"
+              className="w-full"
+              disabled={selected.length === 0 || assets.length === 0}
+            >
+              <Layers size={12} className="mr-2" />
+              Full Matrix
+            </OpButton>
+          </div>
+        )}
       </div>
     </div>
   );

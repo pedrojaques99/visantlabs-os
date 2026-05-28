@@ -56,7 +56,8 @@ import {
   importLogoCandidates,
   exportWithBleed,
   scanPaintStyles,
-  generateBrandMatrix
+  generateBrandMatrix,
+  generateLogoMatrix
 } from './handlers/index';
 import { dispatch } from './handlers/registry';
 import { isEnvelope } from '@shared/protocol';
@@ -1034,6 +1035,17 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     try {
       const { colors, assets } = msg as any;
       await generateBrandMatrix({ colors, assets });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Logo Matrix: Simple clone + recolor ──
+  if ((msg as any).type === 'LOGO_MATRIX') {
+    try {
+      const { colors } = msg as any;
+      await generateLogoMatrix({ colors });
     } catch (err) {
       postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
     }

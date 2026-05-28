@@ -1497,11 +1497,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     try {
       const cloned = (sourceNode as SceneNode).clone();
       if (props.name) cloned.name = props.name;
-      if (props.width && 'resize' in cloned) {
-        (cloned as any).resize(props.width, props.height || (cloned as any).height);
-      }
       if (props.fills && 'fills' in cloned) {
-        // Use normalizeFills to handle different formats
         const normalized = normalizeFills(props.fills);
         if (normalized) (cloned as any).fills = await applyVariablesToFills(normalized);
       }
@@ -1513,7 +1509,15 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       }
 
       parent.appendChild(cloned);
-      
+
+      if (props.rescale && 'rescale' in cloned) {
+        (cloned as any).rescale(props.rescale);
+      } else if (props.width && 'resize' in cloned) {
+        (cloned as any).resize(props.width, props.height || (cloned as any).height);
+      }
+      if (props.x != null) cloned.x = props.x;
+      if (props.y != null) cloned.y = props.y;
+
       const parentIsAutoLayout = 'layoutMode' in parent && parent.layoutMode !== 'NONE';
       if (parentIsAutoLayout) {
         const sizingH = props.layoutSizingHorizontal;

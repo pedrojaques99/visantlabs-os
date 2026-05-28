@@ -22,6 +22,10 @@ export interface GenerateAssetsPayload {
   assets: AssetMapping[];
 }
 
+export interface LogoMatrixPayload {
+  colors: ColorStyleToken[];
+}
+
 function hexFromRGB(r: number, g: number, b: number): string {
   return '#' + [r, g, b].map(c => Math.round(c).toString(16).padStart(2, '0')).join('').toUpperCase();
 }
@@ -285,5 +289,121 @@ export async function generateBrandMatrix(payload: GenerateAssetsPayload) {
   const createdSections = ops.filter(o => o.type === 'CREATE_SECTION').length;
   figma.notify(`Brand Matrix criada: ${createdSections} seções, ${createdFrames} frames`);
 
+  postToUI({ type: 'OPERATIONS_DONE' });
+}
+
+export async function generateLogoMatrix(payload: LogoMatrixPayload) {
+  const { colors } = payload;
+  const selection = figma.currentPage.selection;
+
+  if (selection.length === 0) {
+    figma.notify('Selecione um logo/frame/layer primeiro.', { error: true });
+    return;
+  }
+  if (!colors || colors.length === 0) {
+    figma.notify('Nenhuma cor selecionada.', { error: true });
+    return;
+  }
+
+  const source = selection[0];
+  const srcW = 'width' in source ? source.width : 200;
+  const srcH = 'height' in source ? source.height : 200;
+
+  const FRAME_W = 1920;
+  const FRAME_H = 1080;
+  const GAP = 60;
+  const BREATHE = 0.45; // logo occupies max 45% of frame
+  const maxLogoW = FRAME_W * BREATHE;
+  const maxLogoH = FRAME_H * BREATHE;
+  let scale = Math.min(maxLogoW / srcW, maxLogoH / srcH);
+  if (scale > 1) scale = 1;
+  const cloneW = srcW * scale;
+  const cloneH = srcH * scale;
+
+  const startX = source.x + srcW + GAP * 2;
+  const startY = source.y;
+
+  const ops: any[] = [];
+
+  for (let ci = 0; ci < colors.length; ci++) {
+    const color = colors[ci];
+    const hexColor = hexFromRGB(color.r, color.g, color.b);
+    const isDark = luminance(color.r, color.g, color.b) < 0.5;
+
+    // ── With background: 1920×1080 fixed, logo scaled with breathing room ──
+    const bgRef = `lm_bg_${ci}`;
+    ops.push({
+      type: 'CREATE_FRAME',
+      ref: bgRef,
+      props: {
+        name: `${source.name}_On_${color.name}`,
+        width: FRAME_W,
+        height: FRAME_H,
+        x: startX + ci * (FRAME_W + GAP),
+        y: startY,
+        fills: [{ type: 'SOLID', color: hexColor }],
+        clipsContent: true,
+      },
+    });
+
+    const cloneRef = `lm_clone_${ci}`;
+    ops.push({
+      type: 'CLONE_NODE',
+      ref: cloneRef,
+      sourceNodeId: source.id,
+      parentRef: bgRef,
+      props: {
+        rescale: scale,
+        x: (FRAME_W - cloneW) / 2,
+        y: (FRAME_H - cloneH) / 2,
+      },
+    });
+
+    ops.push({
+      type: 'RECOLOR_NODE',
+      ref: cloneRef,
+      props: { fills: [{ type: 'SOLID', color: isDark ? '#FFFFFF' : '#000000' }] },
+    });
+
+    // ── Without background: hug content with padding ──
+    const PAD = 80;
+    const isoRef = `lm_iso_${ci}`;
+    ops.push({
+      type: 'CREATE_FRAME',
+      ref: isoRef,
+      props: {
+        name: `${source.name}_${color.name}`,
+        x: startX + ci * (FRAME_W + GAP),
+        y: startY + FRAME_H + GAP,
+        fills: [],
+        layoutMode: 'HORIZONTAL',
+        primaryAxisSizingMode: 'AUTO',
+        counterAxisSizingMode: 'AUTO',
+        primaryAxisAlignItems: 'CENTER',
+        counterAxisAlignItems: 'CENTER',
+        paddingTop: PAD,
+        paddingRight: PAD,
+        paddingBottom: PAD,
+        paddingLeft: PAD,
+      },
+    });
+
+    const isoCloneRef = `lm_iso_clone_${ci}`;
+    ops.push({
+      type: 'CLONE_NODE',
+      ref: isoCloneRef,
+      sourceNodeId: source.id,
+      parentRef: isoRef,
+    });
+
+    ops.push({
+      type: 'RECOLOR_NODE',
+      ref: isoCloneRef,
+      props: { fills: [{ type: 'SOLID', color: hexColor }] },
+    });
+  }
+
+  await applyOperations(ops);
+  figma.notify(`Logo Matrix: ${colors.length} variações criadas`);
   postToUI({ type: 'OPERATIONS_DONE' });
 }
