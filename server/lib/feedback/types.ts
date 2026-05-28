@@ -20,7 +20,8 @@ export type FeedbackFeature =
   | 'node-builder'
   | 'chat'
   | 'admin-chat'
-  | 'image-gen';
+  | 'image-gen'
+  | 'reference';
 
 /**
  * Contexto rico de uma geração — tudo que ajuda o RAG/retrieval a

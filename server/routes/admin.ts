@@ -7,6 +7,7 @@ import { AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { calculateImageCost, calculateVideoCost, getImagePricing } from '../../src/utils/pricing.js';
 import { ensureOptionalBoolean, ensureString, isSafeId, isValidAspectRatio, isValidObjectId, isValidPositiveInt, sanitizeMongoQuery, VALID_ASPECT_RATIOS } from '../utils/validation.js';
+import { vectorService } from '../services/vectorService.js';
 
 const router = express.Router();
 
@@ -2404,6 +2405,138 @@ router.get('/feedback/stats', validateAdmin, async (req: AuthRequest, res: Respo
   } catch (error: any) {
     console.error('[admin] feedback/stats error:', error);
     return res.status(500).json({ error: 'Failed to fetch feedback stats' });
+  }
+});
+
+// ═══════════════════════════════════════════
+// Reference Library — Ingest curated mockup references
+// ═══════════════════════════════════════════
+
+router.post('/references/ingest', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    const { images } = req.body;
+
+    if (!Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: 'images array is required (max 10)' });
+    }
+    if (images.length > 10) {
+      return res.status(400).json({ error: 'Maximum 10 images per batch' });
+    }
+
+    const authReq = req as AuthRequest;
+    const userId = authReq.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'User ID not found' });
+    }
+
+    const { ingestReference } = await import('../lib/mockup/referenceIngestor.js');
+
+    const r2Service = await import('../../src/services/r2Service.js');
+    if (!r2Service.isR2Configured()) {
+      return res.status(500).json({ error: 'R2 storage is not configured' });
+    }
+
+    const results: any[] = [];
+    const errors: any[] = [];
+
+    for (const img of images) {
+      try {
+        const base64 = typeof img === 'string' ? img : img.data;
+        if (!base64) {
+          errors.push({ name: img.name, error: 'Missing image data' });
+          continue;
+        }
+
+        const presetId = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const imageUrl = await r2Service.uploadMockupPresetReference(base64, presetId);
+
+        const result = await ingestReference({
+          imageBase64: base64,
+          imageUrl,
+          name: img.name,
+          userId: String(userId),
+          overrideDimensions: img.dimensions,
+          tags: normalizeTags(img.tags),
+          prompt: img.prompt,
+        });
+
+        results.push(result);
+      } catch (err: any) {
+        errors.push({ name: img.name, error: err.message });
+      }
+    }
+
+    return res.json({
+      success: true,
+      ingested: results.length,
+      failed: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error: any) {
+    console.error('[admin] reference ingest error:', error);
+    return res.status(500).json({ error: 'Failed to ingest references', details: error.message });
+  }
+});
+
+router.get('/references', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    const filter: any = { category: 'reference', isAdminCurated: true };
+
+    // Dimension filters
+    const dimensionKeys = ['niche', 'aesthetic', 'vibe', 'lighting', 'texture', 'material', 'angle', 'color_mood', 'mockup_type'];
+    for (const key of dimensionKeys) {
+      const val = req.query[key];
+      if (val && typeof val === 'string') {
+        filter[`dimensions.${key}`] = { $in: val.split(',').map(v => v.trim()) };
+      }
+    }
+
+    if (req.query.search && typeof req.query.search === 'string') {
+      filter.$or = [
+        { name: { $regex: req.query.search, $options: 'i' } },
+        { description: { $regex: req.query.search, $options: 'i' } },
+      ];
+    }
+
+    const [refs, total] = await Promise.all([
+      db.collection('community_presets').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+      db.collection('community_presets').countDocuments(filter),
+    ]);
+
+    return res.json({ references: refs, total, page, limit, pages: Math.ceil(total / limit) });
+  } catch (error: any) {
+    console.error('[admin] references list error:', error);
+    return res.status(500).json({ error: 'Failed to list references' });
+  }
+});
+
+router.delete('/references/:id', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid reference ID format' });
+    }
+    await connectToMongoDB();
+    const db = getDb();
+
+    const result = await db.collection('community_presets').deleteOne({ id: req.params.id, category: 'reference' });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Reference not found' });
+    }
+
+    try { await vectorService.delete(req.params.id); } catch { /* vector may not exist */ }
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('[admin] reference delete error:', error);
+    return res.status(500).json({ error: 'Failed to delete reference' });
   }
 });
 
