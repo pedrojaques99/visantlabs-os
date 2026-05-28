@@ -8,7 +8,7 @@ import { downloadBlob } from '@/utils/clipboard';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 
-export type ExportFormat = 'png' | 'jpeg' | 'webp' | 'svg';
+export type ExportFormat = 'png' | 'jpeg' | 'webp' | 'svg' | 'mp4' | 'gif' | 'webm';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -18,6 +18,9 @@ interface ExportModalProps {
   getShaderSettings?: () => ShaderSettings | undefined;
   onExportSvg?: () => string | Promise<string | undefined> | undefined;
   onExportScaled?: (scale: number) => HTMLCanvasElement | undefined;
+  isVideo?: boolean;
+  videoDuration?: number;
+  onExportVideo?: (format: 'mp4' | 'gif' | 'webm', onProgress: (pct: number) => void) => Promise<Blob>;
 }
 
 const RASTER_FORMATS: { id: ExportFormat; label: string; ext: string; mime: string }[] = [
@@ -35,6 +38,12 @@ const SCALE_OPTIONS = [
   { id: 3, label: '3×' },
 ];
 
+const VIDEO_FORMATS: { id: ExportFormat; label: string; ext: string; mime: string }[] = [
+  { id: 'mp4', label: 'MP4', ext: 'mp4', mime: 'video/mp4' },
+  { id: 'gif', label: 'GIF', ext: 'gif', mime: 'image/gif' },
+  { id: 'webm', label: 'WebM', ext: 'webm', mime: 'video/webm' },
+];
+
 export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   onClose,
@@ -43,21 +52,38 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   getShaderSettings,
   onExportSvg,
   onExportScaled,
+  isVideo,
+  videoDuration,
+  onExportVideo,
 }) => {
-  const FORMAT_OPTIONS = onExportSvg
+  const baseFormats = onExportSvg
     ? [...RASTER_FORMATS, SVG_FORMAT]
     : RASTER_FORMATS;
+  const FORMAT_OPTIONS = isVideo && onExportVideo
+    ? [...baseFormats, ...VIDEO_FORMATS]
+    : baseFormats;
   const [format, setFormat] = useState<ExportFormat>('png');
   const [quality, setQuality] = useState(0.92);
   const [scale, setScale] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
 
   const handleExport = useCallback(async () => {
     const source = canvasRef.current;
     if (!source) return;
     setIsExporting(true);
+    setExportProgress(0);
 
     try {
+      if (format === 'mp4' || format === 'gif' || format === 'webm') {
+        if (!onExportVideo) throw new Error('Video export not available');
+        const blob = await onExportVideo(format, setExportProgress);
+        downloadBlob(blob, `${filenamePrefix}_${Date.now()}.${format}`);
+        toast.success(`Exported ${format.toUpperCase()}`);
+        onClose();
+        return;
+      }
+
       if (format === 'svg') {
         const svgStr = await onExportSvg?.();
         if (!svgStr) throw new Error('SVG export not available');
@@ -111,7 +137,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     } finally {
       setIsExporting(false);
     }
-  }, [canvasRef, format, quality, scale, filenamePrefix, getShaderSettings, onExportSvg, onExportScaled, onClose, FORMAT_OPTIONS]);
+  }, [canvasRef, format, quality, scale, filenamePrefix, getShaderSettings, onExportSvg, onExportScaled, onClose, FORMAT_OPTIONS, onExportVideo]);
 
   if (!isOpen) return null;
 
@@ -206,7 +232,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             className="w-full bg-white hover:bg-neutral-200 text-black font-medium h-10 text-xs gap-2"
           >
             {isExporting ? (
-              <><Loader2 size={14} className="animate-spin" /> Exporting...</>
+              <><Loader2 size={14} className="animate-spin" /> {exportProgress > 0 ? `${Math.round(exportProgress)}%` : 'Exporting...'}</>
             ) : (
               <><Download size={14} /> Export {FORMAT_OPTIONS.find((f) => f.id === format)?.label}</>
             )}

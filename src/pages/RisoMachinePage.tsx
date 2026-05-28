@@ -1,14 +1,16 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { API_BASE } from '@/config/api';
 import { toast } from 'sonner';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
-import { RisoCanvas } from '@/components/riso/RisoCanvas';
+import { RisoCanvas, type RisoCanvasHandle } from '@/components/riso/RisoCanvas';
 import { RisoControls } from '@/components/riso/RisoControls';
 import { useRisoStore } from '@/stores/risoStore';
 import { useExportCanvas } from '@/hooks/useExportCanvas';
 import { loadImage } from '@/utils/imageUtils';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
+import { generateRisoSvgFromCanvas } from '@/components/riso/riso-svg-export';
+import { downloadBlob } from '@/utils/clipboard';
 
 const RISO_AI_PROMPT = `CORE DIRECTIVE: RISOGRAPH PRINT RECREATION
 TASK: Analyze the input image and recreate it as an authentic risograph print — a vintage stencil-based duplication technique where each color is printed as a separate ink layer on uncoated paper.
@@ -22,6 +24,7 @@ NEGATIVE PROMPT: smooth gradients, photorealistic rendering, clean digital illus
 export const RisoMachinePage: React.FC = () => {
   const store = useRisoStore;
   const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const risoCanvasRef = useRef<RisoCanvasHandle>(null);
 
   const panelVisible = store((s) => s.panelVisible);
   const setPanelVisible = store((s) => s.setPanelVisible);
@@ -29,6 +32,7 @@ export const RisoMachinePage: React.FC = () => {
   const frequency = store((s) => s.frequency);
   const dotSize = store((s) => s.dotSize);
   const misregistration = store((s) => s.misregistration);
+  const ditherMode = store((s) => s.ditherMode);
   const layers = store((s) => s.layers);
   const fileName = store((s) => s.fileName);
   const shaderEnabled = store((s) => s.shaderEnabled);
@@ -60,13 +64,68 @@ export const RisoMachinePage: React.FC = () => {
 
   useToolEditorHotkeys({
     onExport: exportPng,
-
     panelVisible,
     setPanelVisible,
     undo,
     redo,
     zoom: { current: zoom, set: (z) => store.getState().setZoom(z), resetPan: () => store.getState().setPan(0, 0) },
   });
+
+  // --- SVG Export ---
+  const handleExportSvg = useCallback(() => {
+    if (!canvasRef.current) return;
+    store.getState().setIsExporting(true);
+    try {
+      const settings = store.getState().getSettings();
+      const svg = generateRisoSvgFromCanvas(canvasRef.current, settings);
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      downloadBlob(blob, `riso_${Date.now()}.svg`);
+      toast.success('SVG exported');
+    } catch {
+      toast.error('SVG export failed');
+    } finally {
+      store.getState().setIsExporting(false);
+    }
+  }, [canvasRef]);
+
+  // --- Hi-Res PNG Export (2x) ---
+  const handleExportHiRes = useCallback(() => {
+    const renderer = risoCanvasRef.current?.getRenderer();
+    if (!renderer) return;
+    store.getState().setIsExporting(true);
+    try {
+      const settings = store.getState().getSettings();
+      const scaled = renderer.renderAtScale(settings, 2);
+      scaled.toBlob((blob) => {
+        if (blob) {
+          downloadBlob(blob, `riso_2x_${Date.now()}.png`);
+          toast.success('Hi-Res PNG exported (2x)');
+        }
+      }, 'image/png');
+    } catch {
+      toast.error('Hi-Res export failed');
+    } finally {
+      store.getState().setIsExporting(false);
+    }
+  }, []);
+
+  // --- Per-layer SVG export ---
+  const handleExportLayer = useCallback((index: number) => {
+    if (!canvasRef.current) return;
+    store.getState().setIsExporting(true);
+    try {
+      const settings = store.getState().getSettings();
+      const svg = generateRisoSvgFromCanvas(canvasRef.current, settings, { layerIndex: index });
+      const layerHex = settings.layers[index]?.hex || 'layer';
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      downloadBlob(blob, `riso_layer${index + 1}_${layerHex.replace('#', '')}_${Date.now()}.svg`);
+      toast.success(`Layer ${index + 1} exported as SVG`);
+    } catch {
+      toast.error('Layer export failed');
+    } finally {
+      store.getState().setIsExporting(false);
+    }
+  }, [canvasRef]);
 
   const handleAiEnhance = useCallback(async () => {
     if (!canvasRef.current) return;
@@ -106,11 +165,12 @@ export const RisoMachinePage: React.FC = () => {
     { label: `${Math.round(zoom * 100)}%` },
     { label: `freq ${frequency}` },
     { label: `dot ${dotSize.toFixed(2)}` },
+    { label: ditherMode !== 'stochastic' ? ditherMode : '', color: 'text-neutral-400' },
     { label: `misreg ${misregistration}px` },
     { label: `${layers.filter(l => l.visible).length} layers` },
     ...(soloLayer >= 0 ? [{ label: `solo L${soloLayer + 1}`, color: 'text-amber-400' }] : []),
     ...(shaderEnabled ? [{ label: shaderType, color: 'text-cyan-400' }] : []),
-  ];
+  ].filter(s => s.label);
 
   return (
     <ToolEditorShell
@@ -122,14 +182,23 @@ export const RisoMachinePage: React.FC = () => {
       resetMessage="All riso settings will return to defaults and extracted layers will be cleared."
       undo={{ handler: undo, disabled: historyIndex < 0 }}
       redo={{ handler: redo, disabled: historyIndex >= historyLength - 1 }}
-      controlsPanel={<RisoControls onExport={exportPng} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} />}
+      controlsPanel={
+        <RisoControls
+          onExport={exportPng}
+          onExportSvg={handleExportSvg}
+          onExportHiRes={handleExportHiRes}
+          onExportLayer={handleExportLayer}
+          onAiEnhance={handleAiEnhance}
+          isAiProcessing={isAiProcessing}
+        />
+      }
       statusItems={statusItems}
       fileName={fileName}
       isDragOver={isDragOver}
       dragProps={dragProps}
       dropMessage={dropMessage}
     >
-      <RisoCanvas onCanvasReady={onCanvasReady} />
+      <RisoCanvas ref={risoCanvasRef} onCanvasReady={onCanvasReady} />
     </ToolEditorShell>
   );
 };

@@ -303,9 +303,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
   const currentStatus = propSubscriptionStatus || subscriptionStatus;
   const tier = currentStatus?.subscriptionTier;
   const tierLabel = tier === 'premium' ? 'Vision' : tier === 'pro' ? 'Pro' : 'Free';
-  const tierColor = tier === 'premium' ? 'text-amber-400 border-amber-500/30'
-    : tier === 'pro' ? 'text-violet-400 border-violet-500/30'
-    : 'text-neutral-500 border-neutral-700/50';
   const isLowCredits = availableCredits > 0 && availableCredits < 5;
 
   if (user) {
@@ -313,9 +310,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
       <div className="flex items-center gap-2" data-auth-dropdown>
         {currentStatus ? (
           <>
-            <span className={`hidden sm:inline-flex items-center h-6 px-2 rounded text-[9px] font-mono font-medium uppercase tracking-wider border ${tierColor}`}>
-              {tierLabel}
-            </span>
             <Button variant="ghost" onClick={onCreditsClick}
               className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-neutral-900/40 border hover:bg-[#252525]/60 hover:border-neutral-700 transition-all cursor-pointer shadow-sm ${isLowCredits ? 'text-amber-400 border-amber-500/30' : 'text-brand-cyan border-brand-cyan/20'}`}
               aria-label={t('auth.availableCredits', { count: availableCredits })}
@@ -358,10 +352,13 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
               />
               <div className="absolute right-0 top-full mt-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[160px] dropdown-menu">
                 <Button variant="ghost" onClick={handleProfileClick}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
+                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2 justify-between"
                 >
-                  <UserIcon size={14} />
-                  {t('common.profile')}
+                  <span className="flex items-center gap-2">
+                    <UserIcon size={14} />
+                    {t('common.profile')}
+                  </span>
+                  <span className="text-[9px] text-neutral-600 uppercase tracking-wider">{tierLabel}</span>
                 </Button>
                 <Button variant="ghost" onClick={() => {
                   setIsDropdownOpen(false);

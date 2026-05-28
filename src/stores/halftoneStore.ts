@@ -37,7 +37,9 @@ interface HalftoneState extends HalftoneSettings {
   settingsHistory: HalftoneSettings[];
   historyIndex: number;
 
-  setImageUrl: (url: string, fileName: string) => void;
+  mediaType: 'image' | 'video';
+
+  setImageUrl: (url: string, fileName: string, mediaType?: 'image' | 'video') => void;
   setPanelVisible: (v: boolean) => void;
   setActiveTab: (t: HalftoneState['activeTab']) => void;
   setIsExporting: (v: boolean) => void;
@@ -70,7 +72,9 @@ export const useHalftoneStore = create<HalftoneState & ShaderSlice>()((set, get,
   settingsHistory: [],
   historyIndex: -1,
 
-  setImageUrl: (imageUrl, fileName) => set({ imageUrl, fileName }),
+  mediaType: 'image' as const,
+
+  setImageUrl: (imageUrl, fileName, mediaType) => set({ imageUrl, fileName, mediaType: mediaType || 'image' }),
   setPanelVisible: (panelVisible) => set({ panelVisible }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setIsExporting: (isExporting) => set({ isExporting }),
