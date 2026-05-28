@@ -155,7 +155,7 @@
     "framer-motion": "^12.35.2",
     "fuse.js": "^7.3.0",
     "gifenc": "^1.0.3",
-    "google-auth-library": "^9.4.1",
+    "google-auth-library": "^10.6.2",
     "helmet": "^8.1.0",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
