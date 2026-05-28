@@ -17,10 +17,12 @@ export const CACHE_TTL = {
   VIDEO_GEN: 30 * 24 * 60 * 60,      // 30d — Veo generations (expensive + stable)
   FIGMA_GEN: 60 * 60,                // 1h — figma canvas context volatile
   IMAGE_SEARCH: 7 * 24 * 60 * 60,    // 7d — image search results
+  VISUAL_SEARCH: 7 * 24 * 60 * 60,   // 7d — visual search aggregated results
   INSTAGRAM: 24 * 60 * 60,           // 24h — instagram extractions
   ADMIN_CHAT_SESSION: 60 * 60,       // 1h — session hot cache (invalidated on save)
   FIGMA_OP_QUEUE: 7 * 24 * 60 * 60, // 7d — pending ops survive server restarts
   ASSET_PIPELINE: 24 * 60 * 60,     // 24h — cross-tool asset queue per user
+  LETTER_CROP: 30 * 24 * 60 * 60,   // 30d — processed letter crops (stable)
 } as const;
 
 export function hashQuery(text: string, extra?: string): string {
@@ -94,6 +96,13 @@ export const CacheKey = {
   // Asset pipeline (cross-tool "Send to →" queue per user)
   assetPipeline: (userId: string) =>
     `pipeline:${userId}`,
+
+  // Visual search
+  visualSearch: (hash: string) =>
+    `vsearch:${hash}`,
+
+  letterCrop: (letter: string, sourceId: string) =>
+    `lcrop:${letter}:${sourceId}`,
 } as const;
 
 export const CacheInvalidation = {

@@ -61,14 +61,22 @@ const GridPaintPage = lazyWithRetry(() => import('./pages/GridPaintPage').then(m
 const LabsPage = lazyWithRetry(() => import('./pages/labs/LabsPage').then(m => ({ default: m.LabsPage })));
 const WindTunnelPage = lazyWithRetry(() => import('./pages/labs/WindTunnelPage').then(m => ({ default: m.WindTunnelPage })));
 const Studio3DPage = lazyWithRetry(() => import('./pages/Studio3DPage').then(m => ({ default: m.Studio3DPage })));
-const HalftonePage = lazyWithRetry(() => import('./pages/HalftonePage').then(m => ({ default: m.HalftonePage })));
-const TextureFilterPage = lazyWithRetry(() => import('./pages/TextureFilterPage').then(m => ({ default: m.TextureFilterPage })));
 const GridMachinePage = lazyWithRetry(() => import('./pages/GridMachinePage').then(m => ({ default: m.GridMachinePage })));
-const RisoMachinePage = lazyWithRetry(() => import('./pages/RisoMachinePage').then(m => ({ default: m.RisoMachinePage })));
 const ImageLabPage = lazyWithRetry(() => import('./pages/ImageLabPage').then(m => ({ default: m.ImageLabPage })));
 const DeveloperPortalPage = lazyWithRetry(() => import('./pages/DeveloperPortalPage').then(m => ({ default: m.DeveloperPortalPage })));
 const VerifyEmailPage = lazyWithRetry(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const OnboardingWizardPage = lazyWithRetry(() => import('./pages/OnboardingWizardPage').then(m => ({ default: m.OnboardingWizardPage })));
+const VisualSearchPage = lazyWithRetry(() => import('./pages/VisualSearchPage').then(m => ({ default: m.VisualSearchPage })));
+const UpscalePage = lazyWithRetry(() => import('./pages/UpscalePage').then(m => ({ default: m.UpscalePage })));
+const FaviconPage = lazyWithRetry(() => import('./pages/FaviconPage').then(m => ({ default: m.FaviconPage })));
+const ColorConverterPage = lazyWithRetry(() => import('./pages/ColorConverterPage').then(m => ({ default: m.ColorConverterPage })));
+const CompressPage = lazyWithRetry(() => import('./pages/CompressPage').then(m => ({ default: m.CompressPage })));
+const ColorPalettePage = lazyWithRetry(() => import('./pages/ColorPalettePage').then(m => ({ default: m.ColorPalettePage })));
+const ConverterPage = lazyWithRetry(() => import('./pages/ConverterPage').then(m => ({ default: m.ConverterPage })));
+const SvgOptimizerPage = lazyWithRetry(() => import('./pages/SvgOptimizerPage').then(m => ({ default: m.SvgOptimizerPage })));
+const WatermarkPage = lazyWithRetry(() => import('./pages/WatermarkPage').then(m => ({ default: m.WatermarkPage })));
+const BgRemovePage = lazyWithRetry(() => import('./pages/BgRemovePage').then(m => ({ default: m.BgRemovePage })));
+const OgImagePage = lazyWithRetry(() => import('./pages/OgImagePage').then(m => ({ default: m.OgImagePage })));
 
 
 const LoadingFallback = () => (
@@ -110,6 +118,17 @@ const App: React.FC = () => {
                 <Route path="/apps" element={<AppsPage />} />
                 <Route path="/extractor" element={<ExtractorPage />} />
                 <Route path="/moodboard" element={<MoodboardStudioPage />} />
+                <Route path="/visual-search" element={<VisualSearchPage />} />
+                <Route path="/upscale" element={<UpscalePage />} />
+                <Route path="/favicon" element={<FaviconPage />} />
+                <Route path="/color-converter" element={<ColorConverterPage />} />
+                <Route path="/compress" element={<CompressPage />} />
+                <Route path="/color-palette" element={<ColorPalettePage />} />
+                <Route path="/converter" element={<ConverterPage />} />
+                <Route path="/svg-optimizer" element={<SvgOptimizerPage />} />
+                <Route path="/og-image" element={<OgImagePage />} />
+                <Route path="/watermark" element={<WatermarkPage />} />
+                <Route path="/remove-bg" element={<BgRemovePage />} />
                 <Route path="/instagram-extractor" element={<Navigate to="/extractor" replace />} />
                 <Route path="/qrcode" element={<QRCodePage />} />
                 <Route path="/grid-paint" element={<GridPaintPage />} />

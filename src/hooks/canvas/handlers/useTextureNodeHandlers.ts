@@ -11,7 +11,7 @@ import type { FlowNodeData, TextureNodeData } from '@/types/reactFlow';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getTexturePreset } from '@/services/texturePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { uploadImageToR2Auto } from '@/hooks/canvas/utils/r2UploadUtils';
 import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -43,7 +43,7 @@ export const useTextureNodeHandlers = ({
   canvasId,
   linkedGuideline,
 }: UseTextureNodeHandlersParams) => {
-  const handleTextureNodeDataUpdate = createNodeDataUpdateHandler<TextureNodeData>(updateNodeData, 'texture');
+  const handleTextureNodeDataUpdate = useNodeDataUpdateHandler<TextureNodeData>(updateNodeData, 'texture');
 
   const handleTextureGenerate = useCallback(async (nodeId: string, imageInput: string, presetId: string) => {
     const preset = getTexturePreset(presetId as any);

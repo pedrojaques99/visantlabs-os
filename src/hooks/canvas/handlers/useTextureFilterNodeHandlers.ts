@@ -8,7 +8,7 @@
 import { useCallback } from 'react';
 import type { TextureFilterNodeData, FlowNodeData } from '@/types/reactFlow';
 import type { Node } from '@xyflow/react';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import {
   renderTextureFilter,
   loadImage,
@@ -93,7 +93,7 @@ export const useTextureFilterNodeHandlers = ({
     }
   }, [nodesRef, updateNodeData, updateNodeLoadingState, canvasId]);
 
-  const handleTextureFilterNodeDataUpdate = createNodeDataUpdateHandler<TextureFilterNodeData>(updateNodeData, 'textureFilter');
+  const handleTextureFilterNodeDataUpdate = useNodeDataUpdateHandler<TextureFilterNodeData>(updateNodeData, 'textureFilter');
 
   return { handleTextureFilterApply, handleTextureFilterNodeDataUpdate };
 };

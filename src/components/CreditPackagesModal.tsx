@@ -210,18 +210,14 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
     }
   };
 
-  if (!currentPackage) return null;
-
-  const price = currencyInfo
+  const price = currencyInfo && currentPackage
     ? getCreditPackagePrice(currentPackage.credits, currencyInfo.currency)
     : 0;
 
-  // Animated counter for credits (30% faster: 280ms instead of 400ms)
-  const animatedCredits = useAnimatedCounter(currentPackage.credits, 280);
-
-  // Animated counter for price (30% faster: 280ms instead of 400ms)
+  const animatedCredits = useAnimatedCounter(currentPackage?.credits ?? 0, 280);
   const animatedPrice = useAnimatedCounter(price, 280);
 
+  if (!currentPackage) return null;
   if (!isOpen) return null;
 
   return (

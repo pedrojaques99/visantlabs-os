@@ -7,7 +7,7 @@
 import { useCallback } from 'react';
 import type { LogoNodeData, FlowNodeData } from '@/types/reactFlow';
 import { canvasApi } from '@/services/canvasApi';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 
 interface UseLogoNodeHandlersParams {
   updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void;
@@ -41,7 +41,7 @@ export const useLogoNodeHandlers = ({
     }
   }, [updateNodeData, canvasId]);
 
-  const handleLogoNodeDataUpdate = createNodeDataUpdateHandler<LogoNodeData>(updateNodeData, 'logo');
+  const handleLogoNodeDataUpdate = useNodeDataUpdateHandler<LogoNodeData>(updateNodeData, 'logo');
 
   return {
     handleLogoNodeUpload,

@@ -8,7 +8,7 @@ import { useCallback } from 'react';
 import type { ShaderNodeData, FlowNodeData } from '@/types/reactFlow';
 import type { Node } from '@xyflow/react';
 import { processImageOrVideoWithShader, isVideoInput } from '@/hooks/canvas/utils/shaderProcessingUtils';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 
 interface UseShaderNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -99,7 +99,7 @@ export const useShaderNodeHandlers = ({
     });
   }, [nodesRef, updateNodeLoadingState, updateNodeData, canvasId, setNodes]);
 
-  const handleShaderNodeDataUpdate = createNodeDataUpdateHandler<ShaderNodeData>(updateNodeData, 'shader');
+  const handleShaderNodeDataUpdate = useNodeDataUpdateHandler<ShaderNodeData>(updateNodeData, 'shader');
 
   return {
     handleShaderApply,

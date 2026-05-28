@@ -4,7 +4,15 @@
  * Orchestrates halftone, texture, riso, and shader rendering server-side.
  * Used by MCP tools and HTTP API routes.
  */
-import { createCanvas, loadImage as loadCanvasImage, type Canvas, type Image as CanvasImage } from '@napi-rs/canvas';
+type NapiCanvasModule = typeof import('@napi-rs/canvas');
+type Canvas = import('@napi-rs/canvas').Canvas;
+type CanvasImage = import('@napi-rs/canvas').Image;
+
+let _napiCanvas: NapiCanvasModule | null = null;
+async function getNapiCanvas() {
+  if (!_napiCanvas) _napiCanvas = await import('@napi-rs/canvas');
+  return _napiCanvas;
+}
 import { uploadImage } from '../r2Service.js';
 import { generateHalftoneSvg } from './halftoneRenderer.js';
 import { renderRiso } from './risoRenderer.js';
@@ -67,8 +75,9 @@ async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
 }
 
 async function loadSourceImage(imageUrl: string): Promise<{ image: CanvasImage; canvas: Canvas; pixels: Uint8Array; width: number; height: number }> {
+  const { createCanvas, loadImage } = await getNapiCanvas();
   const buf = await fetchImageBuffer(imageUrl);
-  const image = await loadCanvasImage(buf);
+  const image = await loadImage(buf);
   const width = image.width;
   const height = image.height;
   if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
@@ -81,7 +90,8 @@ async function loadSourceImage(imageUrl: string): Promise<{ image: CanvasImage; 
   return { image, canvas, pixels: new Uint8Array(imageData.data.buffer), width, height };
 }
 
-function pixelsToBase64Png(pixels: Uint8Array, width: number, height: number): string {
+async function pixelsToBase64Png(pixels: Uint8Array, width: number, height: number): Promise<string> {
+  const { createCanvas } = await getNapiCanvas();
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   const imgData = ctx.createImageData(width, height);
@@ -121,10 +131,11 @@ async function applyHalftone(imageUrl: string, preset?: string, settings?: Recor
   }
 
   // For PNG/JPEG, generate SVG then rasterize with canvas
+  const { createCanvas: mkCanvas, loadImage: ldImage } = await getNapiCanvas();
   const svg = generateHalftoneSvg(new Uint8ClampedArray(pixels.buffer), width, height, merged);
   const svgBuf = Buffer.from(svg);
-  const svgImage = await loadCanvasImage(svgBuf);
-  const out = createCanvas(width, height);
+  const svgImage = await ldImage(svgBuf);
+  const out = mkCanvas(width, height);
   const ctx = out.getContext('2d');
   ctx.drawImage(svgImage, 0, 0, width, height);
   return { base64: canvasToBase64(out, format), width, height };
@@ -149,36 +160,37 @@ async function applyTexture(imageUrl: string, preset?: string, settings?: Record
     const texPath = resolve(process.cwd(), 'public', 'textures', `${merged.textureName}.svg`);
     textureBuf = await readFile(texPath);
   }
-  const textureImg = await loadCanvasImage(textureBuf);
+  const { createCanvas: mkCanvas, loadImage: ldImage } = await getNapiCanvas();
+  const textureImg = await ldImage(textureBuf);
 
-  const out = createCanvas(width, height);
+  const out = mkCanvas(width, height);
   const ctx = out.getContext('2d');
 
   if (merged.maskMode) {
     // Draw source
     ctx.drawImage(image, 0, 0);
     // Create mask canvas
-    const maskCanvas = createCanvas(width, height);
+    const maskCanvas = mkCanvas(width, height);
     const maskCtx = maskCanvas.getContext('2d');
-    drawTextureLayer(maskCtx, textureImg, width, height, merged);
+    drawTextureLayer(maskCtx, textureImg, width, height, merged, mkCanvas);
     ctx.globalCompositeOperation = merged.maskInvert ? 'destination-out' : 'destination-in';
     ctx.drawImage(maskCanvas, 0, 0);
   } else {
     ctx.drawImage(image, 0, 0);
     ctx.globalCompositeOperation = merged.blendMode as any;
     ctx.globalAlpha = merged.opacity;
-    drawTextureLayer(ctx, textureImg, width, height, merged);
+    drawTextureLayer(ctx, textureImg, width, height, merged, mkCanvas);
   }
 
   return { base64: canvasToBase64(out, format), width, height };
 }
 
-function drawTextureLayer(ctx: any, textureImg: CanvasImage, width: number, height: number, settings: TextureSettings): void {
+function drawTextureLayer(ctx: any, textureImg: CanvasImage, width: number, height: number, settings: TextureSettings, mkCanvas: NapiCanvasModule['createCanvas']): void {
   let texSource: CanvasImage | Canvas = textureImg;
 
   // Recolor if not using original color
   if (!settings.useOriginalColor) {
-    const recolorCanvas = createCanvas(textureImg.width, textureImg.height);
+    const recolorCanvas = mkCanvas(textureImg.width, textureImg.height);
     const rctx = recolorCanvas.getContext('2d');
     rctx.drawImage(textureImg, 0, 0);
     rctx.globalCompositeOperation = 'source-in';
@@ -245,7 +257,7 @@ async function applyRiso(imageUrl: string, preset?: string, settings?: Record<st
   const result = await renderRiso(pixels, width, height, merged as RisoSettings);
   if (!result) throw new Error('Riso rendering failed — headless-gl may not be available. Install with: npm install gl');
 
-  return { base64: pixelsToBase64Png(result, width, height), width, height };
+  return { base64: await pixelsToBase64Png(result, width, height), width, height };
 }
 
 // ── Shader ──
@@ -256,7 +268,7 @@ async function applyShaderEffect(imageUrl: string, shaderType: ShaderType, setti
   const result = await renderShader(pixels, width, height, shaderType, settings);
   if (!result) throw new Error(`Shader '${shaderType}' rendering failed — headless-gl may not be available.`);
 
-  return { base64: pixelsToBase64Png(result, width, height), width, height };
+  return { base64: await pixelsToBase64Png(result, width, height), width, height };
 }
 
 // ── Public API ──

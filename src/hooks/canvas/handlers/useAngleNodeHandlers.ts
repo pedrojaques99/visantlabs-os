@@ -11,7 +11,7 @@ import type { FlowNodeData, AngleNodeData } from '@/types/reactFlow';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getAnglePreset } from '@/services/anglePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -42,7 +42,7 @@ export const useAngleNodeHandlers = ({
   canvasId,
   linkedGuideline,
 }: UseAngleNodeHandlersParams) => {
-  const handleAngleNodeDataUpdate = createNodeDataUpdateHandler<AngleNodeData>(updateNodeData, 'angle');
+  const handleAngleNodeDataUpdate = useNodeDataUpdateHandler<AngleNodeData>(updateNodeData, 'angle');
 
   const handleAngleGenerate = useCallback(async (nodeId: string, imageInput: string, angleId: string) => {
     const angle = getAnglePreset(angleId as any);

@@ -11,7 +11,7 @@ import type { FlowNodeData, LuminanceNodeData } from '@/types/reactFlow';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getLuminancePreset } from '@/services/luminancePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -42,7 +42,7 @@ export const useLuminanceNodeHandlers = ({
   canvasId,
   linkedGuideline,
 }: UseLuminanceNodeHandlersParams) => {
-  const handleLuminanceNodeDataUpdate = createNodeDataUpdateHandler<LuminanceNodeData>(updateNodeData, 'luminance');
+  const handleLuminanceNodeDataUpdate = useNodeDataUpdateHandler<LuminanceNodeData>(updateNodeData, 'luminance');
 
   const handleLuminanceGenerate = useCallback(async (nodeId: string, imageInput: string, presetId: string) => {
     const preset = getLuminancePreset(presetId as any);

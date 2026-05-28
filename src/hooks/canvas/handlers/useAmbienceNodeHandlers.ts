@@ -11,7 +11,7 @@ import type { FlowNodeData, AmbienceNodeData } from '@/types/reactFlow';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { getAmbiencePreset } from '@/services/ambiencePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
-import { createNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -42,7 +42,7 @@ export const useAmbienceNodeHandlers = ({
   canvasId,
   linkedGuideline,
 }: UseAmbienceNodeHandlersParams) => {
-  const handleAmbienceNodeDataUpdate = createNodeDataUpdateHandler<AmbienceNodeData>(updateNodeData, 'ambience');
+  const handleAmbienceNodeDataUpdate = useNodeDataUpdateHandler<AmbienceNodeData>(updateNodeData, 'ambience');
 
   const handleAmbienceGenerate = useCallback(async (nodeId: string, imageInput: string, presetId: string) => {
     const preset = getAmbiencePreset(presetId as any);

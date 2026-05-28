@@ -18,6 +18,8 @@ export interface ToolEditorHotkeyConfig {
   }>;
 }
 
+const noop = () => {};
+
 export function useToolEditorHotkeys(config: ToolEditorHotkeyConfig) {
   const opts = { enableOnFormTags: false as const };
 
@@ -31,7 +33,10 @@ export function useToolEditorHotkeys(config: ToolEditorHotkeyConfig) {
   useHotkeys('mod+-', (e) => { if (config.zoom) { e.preventDefault(); config.zoom.set(config.zoom.current / 1.2); } }, opts);
   useHotkeys('mod+0', (e) => { if (config.zoom) { e.preventDefault(); config.zoom.set(1); config.zoom.resetPan(); } }, opts);
 
-  config.extras?.forEach(({ keys, handler, options }) => {
-    useHotkeys(keys, handler, options || opts);
-  });
+  const e0 = config.extras?.[0];
+  const e1 = config.extras?.[1];
+  const e2 = config.extras?.[2];
+  useHotkeys(e0?.keys ?? 'F19', e0?.handler ?? noop, e0?.options ?? opts, { enabled: !!e0 });
+  useHotkeys(e1?.keys ?? 'F19', e1?.handler ?? noop, e1?.options ?? opts, { enabled: !!e1 });
+  useHotkeys(e2?.keys ?? 'F19', e2?.handler ?? noop, e2?.options ?? opts, { enabled: !!e2 });
 }
