@@ -670,6 +670,66 @@ export const TOOLS = [
       required: ['pdf_path', 'output'],
     },
   },
+  // ── ImageLab Tools ──
+  {
+    name: 'imagelab_apply_effect',
+    description:
+      'Apply an ImageLab effect to an image. Modes: halftone (CMYK dot patterns), texture (overlay blending), riso (risograph print). ' +
+      'Use imagelab_list_presets to discover presets. Returns processed image URL.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL or base64 data URI.' },
+        mode: { type: 'string', enum: ['halftone', 'texture', 'riso'], description: 'Effect mode.' },
+        preset: { type: 'string', description: 'Named preset (e.g. "Newsprint", "Vintage Poster").' },
+        settings: { type: 'object', description: 'Custom settings that override preset values.' },
+        format: { type: 'string', enum: ['png', 'svg', 'jpeg'], description: 'Output format. Default png.' },
+      },
+      required: ['imageUrl', 'mode'],
+    },
+  },
+  {
+    name: 'imagelab_apply_shader',
+    description:
+      'Apply a post-processing shader to an image. 14 effects: halftone, vhs, ascii, dither, duotone, ' +
+      'filmGrain, pixelate, posterize, chromaticAberration, crtScanlines, edgeDetect, glitch, matrixDither, upscale.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL or base64.' },
+        shaderType: { type: 'string', description: 'Shader type.' },
+        settings: { type: 'object', description: 'Shader-specific parameters.' },
+        format: { type: 'string', enum: ['png', 'jpeg'], description: 'Output format.' },
+      },
+      required: ['imageUrl', 'shaderType'],
+    },
+  },
+  {
+    name: 'imagelab_list_presets',
+    description: 'List available ImageLab presets for a mode (halftone, texture, riso, shader).',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        mode: { type: 'string', enum: ['halftone', 'texture', 'riso', 'shader'], description: 'Mode.' },
+      },
+      required: ['mode'],
+    },
+  },
+  {
+    name: 'imagelab_chain',
+    description: 'Apply effect + optional shader in one call. Avoids intermediate uploads.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL.' },
+        effect: { type: 'object', description: '{ mode, preset?, settings? }' },
+        shader: { type: 'object', description: '{ shaderType, settings? }' },
+        effectOpacity: { type: 'number', description: '0-1 blend. Default 1.' },
+        format: { type: 'string', enum: ['png', 'jpeg'], description: 'Output format.' },
+      },
+      required: ['imageUrl'],
+    },
+  },
 ];
 
 // ---------- Tool handlers ----------
@@ -1018,6 +1078,49 @@ export async function handleTool(name: string, args: ToolArgs) {
     }
     case 'get_campaign_results': {
       const data = await visantFetch(`/canvas/generate-campaign/${args.jobId}`);
+      return toolResult(data);
+    }
+    // ── ImageLab ──
+    case 'imagelab_apply_effect': {
+      const data = await visantFetch('/imagelab/apply-effect', {
+        method: 'POST',
+        body: JSON.stringify({
+          imageUrl: args.imageUrl,
+          mode: args.mode,
+          preset: args.preset,
+          settings: args.settings,
+          format: args.format,
+        }),
+      });
+      return toolResult(data);
+    }
+    case 'imagelab_apply_shader': {
+      const data = await visantFetch('/imagelab/apply-shader', {
+        method: 'POST',
+        body: JSON.stringify({
+          imageUrl: args.imageUrl,
+          shaderType: args.shaderType,
+          settings: args.settings,
+          format: args.format,
+        }),
+      });
+      return toolResult(data);
+    }
+    case 'imagelab_list_presets': {
+      const data = await visantFetch(`/imagelab/presets?mode=${args.mode}`);
+      return toolResult(data);
+    }
+    case 'imagelab_chain': {
+      const data = await visantFetch('/imagelab/chain', {
+        method: 'POST',
+        body: JSON.stringify({
+          imageUrl: args.imageUrl,
+          effect: args.effect,
+          shader: args.shader,
+          effectOpacity: args.effectOpacity,
+          format: args.format,
+        }),
+      });
       return toolResult(data);
     }
     default:

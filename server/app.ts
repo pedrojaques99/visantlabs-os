@@ -41,6 +41,7 @@ import nodeBuilderRoutes from './routes/node-builder.js';
 import aiRoutes from './routes/ai.js';
 import figmaRoutes from './routes/figma.js';
 import pluginRoutes from './routes/plugin.js';
+import imagelabRoutes from './routes/imagelab.js';
 import brandGuidelinesRoutes from './routes/brand-guidelines.js';
 import pdfExtractRoutes from './routes/pdf-extract.js';
 import creativeRoutes from './routes/creative.js';
@@ -262,6 +263,7 @@ export function createApp() {
     ['/pipeline', pipelineRoutes],
     ['/canvas/generate-campaign', campaignRoutes],
     ['/liveblocks', liveblocksRoutes],
+    ['/imagelab', imagelabRoutes],
     ['/studio3d', studio3dRoutes],
     ['/billing', billingRoutes],
     ['/webhooks', webhookRoutes],

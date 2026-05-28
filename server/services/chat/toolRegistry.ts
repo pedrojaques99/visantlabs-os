@@ -319,6 +319,123 @@ REGISTRY['suggest_mockup_ideas'] = {
   },
 };
 
+// ── ImageLab tools ──
+
+REGISTRY['imagelab_apply_effect'] = {
+  scope: 'public',
+  declaration: {
+    name: 'imagelab_apply_effect',
+    description:
+      'Apply an ImageLab effect to an image. Modes: halftone (CMYK dot patterns), texture (overlay blending), riso (risograph print). ' +
+      'Use imagelab_list_presets to discover presets. Returns processed image URL.',
+    parameters: {
+      type: 'object',
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL or base64 data URI.' },
+        mode: { type: 'string', enum: ['halftone', 'texture', 'riso'], description: 'Effect mode.' },
+        preset: { type: 'string', description: 'Named preset (e.g. "Newsprint", "Vintage Poster"). Omit for defaults.' },
+        settings: { type: 'object', description: 'Custom settings that override preset values. Mode-specific params.' },
+        format: { type: 'string', enum: ['png', 'svg', 'jpeg'], description: 'Output format. SVG only for halftone. Default png.' },
+      },
+      required: ['imageUrl', 'mode'],
+    },
+  },
+  execute: async (args: any, ctx) => {
+    const { imageLabApplyEffect } = await import('../imageLab/index.js');
+    const result = await imageLabApplyEffect(args, ctx.userId);
+    return JSON.stringify(result);
+  },
+};
+
+REGISTRY['imagelab_apply_shader'] = {
+  scope: 'public',
+  declaration: {
+    name: 'imagelab_apply_shader',
+    description:
+      'Apply a post-processing shader to an image. 14 effects: halftone, vhs, ascii, dither, duotone, ' +
+      'filmGrain, pixelate, posterize, chromaticAberration, crtScanlines, edgeDetect, glitch, matrixDither, upscale.',
+    parameters: {
+      type: 'object',
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL or base64.' },
+        shaderType: {
+          type: 'string',
+          enum: ['halftone', 'vhs', 'ascii', 'matrixDither', 'upscale', 'dither', 'duotone', 'filmGrain', 'pixelate', 'posterize', 'chromaticAberration', 'crtScanlines', 'edgeDetect', 'glitch'],
+          description: 'Shader effect type.',
+        },
+        settings: { type: 'object', description: 'Shader-specific parameters. Omit for defaults.' },
+        format: { type: 'string', enum: ['png', 'jpeg'], description: 'Output format. Default png.' },
+      },
+      required: ['imageUrl', 'shaderType'],
+    },
+  },
+  execute: async (args: any, ctx) => {
+    const { imageLabApplyShader } = await import('../imageLab/index.js');
+    const result = await imageLabApplyShader(args, ctx.userId);
+    return JSON.stringify(result);
+  },
+};
+
+REGISTRY['imagelab_list_presets'] = {
+  scope: 'public',
+  declaration: {
+    name: 'imagelab_list_presets',
+    description: 'List available ImageLab presets for a mode. Returns preset names with their parameter values.',
+    parameters: {
+      type: 'object',
+      properties: {
+        mode: { type: 'string', enum: ['halftone', 'texture', 'riso', 'shader'], description: 'Effect mode to list presets for.' },
+      },
+      required: ['mode'],
+    },
+  },
+  execute: async (args: any) => {
+    const { imageLabListPresets } = await import('../imageLab/index.js');
+    return JSON.stringify(imageLabListPresets(args.mode));
+  },
+};
+
+REGISTRY['imagelab_chain'] = {
+  scope: 'public',
+  declaration: {
+    name: 'imagelab_chain',
+    description:
+      'Apply an effect + optional shader in one call. Avoids intermediate uploads. ' +
+      'Example: apply riso effect then add VHS shader in a single request.',
+    parameters: {
+      type: 'object',
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL.' },
+        effect: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', enum: ['halftone', 'texture', 'riso'] },
+            preset: { type: 'string' },
+            settings: { type: 'object' },
+          },
+          description: 'Effect to apply first.',
+        },
+        shader: {
+          type: 'object',
+          properties: {
+            shaderType: { type: 'string' },
+            settings: { type: 'object' },
+          },
+          description: 'Post-fx shader to apply after effect.',
+        },
+        effectOpacity: { type: 'number', description: 'Effect blend with original (0-1). Default 1.' },
+        format: { type: 'string', enum: ['png', 'jpeg'], description: 'Output format.' },
+      },
+      required: ['imageUrl'],
+    },
+  },
+  execute: async (args: any, ctx) => {
+    const { imageLabChain } = await import('../imageLab/index.js');
+    const result = await imageLabChain(args, ctx.userId);
+    return JSON.stringify(result);
+  },
+};
+
 // ── Promote admin tools to plugin scope ──
 // These already exist in adminChatTools with full schemas and Prisma-direct
 // execution. Promote to 'public' so the plugin pre-pass can use them.
