@@ -661,3 +661,24 @@ model Session {
   @@index([userId])
   @@map("sessions")
 }
+
+model LetterCrop {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  sourceImageUrl String
+  sourceId       String
+  letter         String
+  cropUrl        String
+  thumbnailUrl   String
+  boundingBox    Json?
+  confidence     Float    @default(1.0)
+  style          String?
+  source         String
+  tags           String[]
+  dimensions     Json
+  createdAt      DateTime @default(now())
+
+  @@unique([sourceId, letter])
+  @@index([letter])
+  @@index([style])
+  @@map("letter_crops")
+}

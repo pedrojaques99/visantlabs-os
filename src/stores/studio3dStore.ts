@@ -102,6 +102,19 @@ export const SCENE_PRESETS: Record<string, ScenePreset> = {
     ambientIntensity: 0.6,
     environment: 'studio',
   },
+  'Chrome Badge': {
+    label: 'Chrome Badge',
+    material: 'carPaint',
+    color: '#f2a0b8',
+    depth: 2.5,
+    roughness: 0.15,
+    metalness: 0.05,
+    animate: 'none',
+    background: '#f5dde3',
+    lightIntensity: 1.6,
+    ambientIntensity: 0.5,
+    environment: 'studio',
+  },
 };
 
 export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<string, any> }> = {

@@ -859,3 +859,24 @@ export async function calculateUserStorage(userId: string): Promise<number> {
 export function isR2Configured(): boolean {
     return !!(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_BUCKET_NAME);
 }
+
+export async function uploadSharedAsset(
+    buffer: Buffer,
+    key: string,
+    contentType: string = 'image/png'
+): Promise<string> {
+    const bucketName = process.env.R2_BUCKET_NAME;
+    const publicUrl = process.env.R2_PUBLIC_URL;
+    if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
+
+    const client = getR2Client();
+    await client.send(new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+        CacheControl: 'public, max-age=31536000, immutable',
+    }));
+
+    return `${publicUrl}/${key}`;
+}

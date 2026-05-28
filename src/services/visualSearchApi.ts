@@ -1,6 +1,6 @@
 import { API_BASE } from '@/config/api';
 
-export type SearchSource = 'unsplash' | 'pexels' | 'pixabay' | 'wikimedia' | 'clearbit' | 'svgl';
+export type SearchSource = 'unsplash' | 'pexels' | 'pixabay' | 'wikimedia' | 'clearbit' | 'svgl' | 'google';
 export type SearchIntent = 'letter' | 'logo' | 'layout' | 'typography' | 'mixed';
 
 export interface VisualSearchResult {
@@ -25,6 +25,17 @@ export interface VisualSearchResult {
   };
 }
 
+export interface LetterCrop {
+  id: string;
+  letter: string;
+  cropUrl: string;
+  thumbnailUrl: string;
+  style?: string;
+  source: string;
+  sourceImageUrl: string;
+  dimensions: { width: number; height: number };
+}
+
 export interface VisualSearchResponse {
   success: boolean;
   fromCache: boolean;
@@ -35,6 +46,7 @@ export interface VisualSearchResponse {
   hasMore: boolean;
   query: string;
   page: number;
+  letterCrops?: LetterCrop[];
 }
 
 export interface SourceInfo {
@@ -71,6 +83,20 @@ export const visualSearchApi = {
   getSources: async (): Promise<{ sources: SourceInfo[] }> => {
     const response = await fetch(`${API_BASE}/visual-search/sources`);
     if (!response.ok) throw new Error('Failed to fetch sources');
+    return response.json();
+  },
+
+  getLibrary: async (
+    options?: { letter?: string; style?: string; limit?: number; offset?: number },
+  ): Promise<{ crops: LetterCrop[]; total: number }> => {
+    const params = new URLSearchParams();
+    if (options?.letter) params.set('letter', options.letter);
+    if (options?.style) params.set('style', options.style);
+    if (options?.limit) params.set('limit', String(options.limit));
+    if (options?.offset) params.set('offset', String(options.offset));
+
+    const response = await fetch(`${API_BASE}/visual-search/library?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch library');
     return response.json();
   },
 };

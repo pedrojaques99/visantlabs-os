@@ -3,6 +3,7 @@ import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery } from '../lib/cache-utils.js';
 import { aggregateSearch, classifyIntent, type SearchSource } from '../services/visualSearchService.js';
+import { processLetterCrops, getLibraryCrops } from '../services/letterCropService.js';
 
 const router = express.Router();
 
@@ -13,6 +14,8 @@ const searchLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+const LETTER_PATTERN = /\b(?:letra|letter|character|glyph)\s+([a-zA-Z0-9])\b/i;
 
 // POST /api/visual-search/query
 router.post('/query', searchLimiter, async (req, res) => {
@@ -30,7 +33,7 @@ router.post('/query', searchLimiter, async (req, res) => {
 
     const validSources: SearchSource[] | undefined = sources
       ? (sources as string[]).filter((s): s is SearchSource =>
-          ['unsplash', 'pexels', 'pixabay', 'wikimedia', 'clearbit', 'svgl'].includes(s))
+          ['unsplash', 'pexels', 'pixabay', 'wikimedia', 'clearbit', 'svgl', 'google'].includes(s))
       : undefined;
 
     const intent = classifyIntent(sanitized);
@@ -53,6 +56,16 @@ router.post('/query', searchLimiter, async (req, res) => {
       page,
     });
 
+    // Letter crop pipeline: process top results on first page
+    let letterCrops: any[] = [];
+    const letterMatch = sanitized.match(LETTER_PATTERN);
+    if (intent === 'letter' && letterMatch && page === 1) {
+      letterCrops = await processLetterCrops(result.results, letterMatch[1]).catch(err => {
+        console.error('[visual-search] Letter crop pipeline error:', err.message);
+        return [];
+      });
+    }
+
     const payload = {
       results: result.results,
       intent: result.intent,
@@ -61,6 +74,7 @@ router.post('/query', searchLimiter, async (req, res) => {
       hasMore: result.hasMore,
       query: sanitized,
       page,
+      letterCrops,
     };
 
     await redisClient.setex(
@@ -76,7 +90,23 @@ router.post('/query', searchLimiter, async (req, res) => {
   }
 });
 
-// GET /api/visual-search/sources — available sources and their status
+// GET /api/visual-search/library — persistent letter crop library
+router.get('/library', async (req, res) => {
+  try {
+    const letter = typeof req.query.letter === 'string' ? req.query.letter : undefined;
+    const style = typeof req.query.style === 'string' ? req.query.style : undefined;
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
+    const offset = parseInt(req.query.offset as string) || 0;
+
+    const result = await getLibraryCrops(letter, style, limit, offset);
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    console.error('[visual-search] Library error:', error.message);
+    return res.status(500).json({ error: 'Failed to fetch library' });
+  }
+});
+
+// GET /api/visual-search/sources
 router.get('/sources', (_req, res) => {
   const sources = [
     { id: 'unsplash', name: 'Unsplash', available: !!process.env.UNSPLASH_ACCESS_KEY, type: 'photos' },
@@ -85,6 +115,7 @@ router.get('/sources', (_req, res) => {
     { id: 'wikimedia', name: 'Wikimedia Commons', available: true, type: 'manuscripts' },
     { id: 'clearbit', name: 'Clearbit', available: true, type: 'logos' },
     { id: 'svgl', name: 'Svgl', available: true, type: 'vectors' },
+    { id: 'google', name: 'Google', available: !!process.env.SERPER_API_KEY, type: 'images' },
   ];
   return res.json({ success: true, sources });
 });

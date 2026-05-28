@@ -22,6 +22,7 @@ export const CACHE_TTL = {
   ADMIN_CHAT_SESSION: 60 * 60,       // 1h — session hot cache (invalidated on save)
   FIGMA_OP_QUEUE: 7 * 24 * 60 * 60, // 7d — pending ops survive server restarts
   ASSET_PIPELINE: 24 * 60 * 60,     // 24h — cross-tool asset queue per user
+  LETTER_CROP: 30 * 24 * 60 * 60,   // 30d — processed letter crops (stable)
 } as const;
 
 export function hashQuery(text: string, extra?: string): string {
@@ -99,6 +100,9 @@ export const CacheKey = {
   // Visual search
   visualSearch: (hash: string) =>
     `vsearch:${hash}`,
+
+  letterCrop: (letter: string, sourceId: string) =>
+    `lcrop:${letter}:${sourceId}`,
 } as const;
 
 export const CacheInvalidation = {

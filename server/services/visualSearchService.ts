@@ -3,7 +3,7 @@ import { safeFetch } from '../utils/securityValidation.js';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type SearchSource = 'unsplash' | 'pexels' | 'pixabay' | 'wikimedia' | 'clearbit' | 'svgl';
+export type SearchSource = 'unsplash' | 'pexels' | 'pixabay' | 'wikimedia' | 'clearbit' | 'svgl' | 'google';
 export type SearchIntent = 'letter' | 'logo' | 'layout' | 'typography' | 'mixed';
 
 export interface VisualSearchResult {
@@ -37,13 +37,14 @@ interface SourceResult {
 
 // ── Intent Classification ──────────────────────────────────────────────────
 
-const LETTER_PATTERNS = /^(letra|letter|character|glyph)\s+[a-zA-Z0-9]$/i;
+const LETTER_PATTERNS = /\b(letra|letter|character|glyph)\s+[a-zA-Z0-9]\b/i;
 const LOGO_PATTERNS = /\b(logo|marca|brand|logotipo|logomarca|emblem|badge)\b/i;
 const LAYOUT_PATTERNS = /\b(layout|grid|editorial|diagramação|composição|composition)\b/i;
 const TYPO_PATTERNS = /\b(tipografia|typography|font|typeface|lettering|caligrafia|calligraphy|serif|sans-serif)\b/i;
 
 export function classifyIntent(query: string): SearchIntent {
   const q = query.trim().toLowerCase();
+  // "letter" intent takes priority — e.g. "logo letter M" should find the letter, not random logos
   if (LETTER_PATTERNS.test(q)) return 'letter';
   if (LOGO_PATTERNS.test(q)) return 'logo';
   if (LAYOUT_PATTERNS.test(q)) return 'layout';
@@ -369,6 +370,86 @@ function guessDomains(query: string): string[] {
   ];
 }
 
+// ── Source: Google (Serper API) ───────────────────────────────────────────
+
+const googleCache = new LRUCache<string, VisualSearchResult[]>({ max: 200, ttl: 1000 * 60 * 30 });
+
+const PAID_STOCK_SITES = [
+  'adobestock', 'stock.adobe', 'gettyimages', 'istock', 'pond5',
+  'shutterstock', 'alamy', 'dreamstime', 'depositphotos', 'fotolia',
+  '123rf', 'clipart.com', 'canstockphoto', 'stockvault',
+];
+
+async function searchGoogle(query: string, intent: SearchIntent, perPage = 20): Promise<SourceResult> {
+  const key = process.env.SERPER_API_KEY;
+  if (!key) return { source: 'google', results: [], error: 'SERPER_API_KEY not configured' };
+
+  const cacheKey = `google:${query}:${intent}:${perPage}`;
+  const cached = googleCache.get(cacheKey);
+  if (cached) return { source: 'google', results: cached };
+
+  try {
+    const filters: string[] = ['isz:l'];
+
+    if (intent === 'letter' || intent === 'typography') filters.push('itp:clipart');
+    else if (intent === 'logo') filters.push('ic:trans');
+
+    const response = await safeFetch('https://google.serper.dev/images', {
+      method: 'POST',
+      headers: { 'X-API-KEY': key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        q: query,
+        num: perPage,
+        gl: 'br',
+        hl: 'pt-br',
+        tbs: filters.join(',') || undefined,
+      }),
+    });
+
+    if (!response.ok) return { source: 'google', results: [], error: `Serper ${response.status}` };
+
+    const data = await response.json() as any;
+    const rawImages = data.images || [];
+
+    const results: VisualSearchResult[] = rawImages
+      .filter((img: any) => {
+        const url = (img.imageUrl || '').toLowerCase();
+        const domain = (img.domain || '').toLowerCase();
+        if (PAID_STOCK_SITES.some(p => url.includes(p) || domain.includes(p))) return false;
+        if (img.imageUrl?.includes('/reels/') || img.imageUrl?.includes('video')) return false;
+        return true;
+      })
+      .map((img: any, i: number) => ({
+        id: `google-${i}-${(img.imageUrl || '').slice(-20)}`,
+        type: (intent === 'logo' ? 'logo' : 'photo') as VisualSearchResult['type'],
+        source: 'google' as const,
+        imageUrl: img.imageUrl,
+        thumbnailUrl: img.thumbnailUrl || img.imageUrl,
+        title: img.title || query,
+        description: img.title,
+        tags: [],
+        dimensions: { width: img.imageWidth || 400, height: img.imageHeight || 400 },
+        attribution: {
+          author: img.domain || 'Google',
+          authorUrl: img.link,
+          license: 'Web',
+        },
+        relevanceScore: 0.95 - (i / rawImages.length) * 0.3,
+      }));
+
+    results.sort((a, b) => {
+      const resA = a.dimensions.width * a.dimensions.height;
+      const resB = b.dimensions.width * b.dimensions.height;
+      return resB - resA;
+    });
+
+    googleCache.set(cacheKey, results);
+    return { source: 'google', results };
+  } catch (err: any) {
+    return { source: 'google', results: [], error: err.message };
+  }
+}
+
 // ── Aggregator ─────────────────────────────────────────────────────────────
 
 interface SearchOptions {
@@ -401,6 +482,7 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
       case 'wikimedia': return searchWikimedia(enhanceQuery(query, intent, 'wikimedia'), Math.min(perSource, 20));
       case 'svgl':     return searchSvgl(query);
       case 'clearbit': return Promise.resolve(searchClearbit(query));
+      case 'google':   return searchGoogle(enhanceQuery(query, intent, 'google'), intent, perSource);
       default:         return Promise.resolve({ source, results: [] } as SourceResult);
     }
   });
@@ -438,21 +520,44 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function getSourcesForIntent(intent: SearchIntent): SearchSource[] {
+  const hasGoogle = !!process.env.SERPER_API_KEY;
   switch (intent) {
-    case 'letter':     return ['unsplash', 'pexels', 'pixabay', 'wikimedia'];
-    case 'logo':       return ['svgl', 'clearbit', 'pixabay', 'unsplash'];
-    case 'layout':     return ['unsplash', 'pexels', 'pixabay'];
-    case 'typography': return ['unsplash', 'pexels', 'pixabay', 'wikimedia'];
-    case 'mixed':      return ['unsplash', 'pexels', 'pixabay', 'svgl'];
+    case 'letter':     return hasGoogle ? ['google', 'unsplash', 'pixabay'] : ['unsplash', 'pexels', 'pixabay'];
+    case 'logo':       return hasGoogle ? ['google', 'svgl', 'clearbit'] : ['svgl', 'clearbit', 'pixabay', 'unsplash'];
+    case 'layout':     return hasGoogle ? ['google', 'unsplash', 'pexels'] : ['unsplash', 'pexels', 'pixabay'];
+    case 'typography': return hasGoogle ? ['google', 'unsplash', 'pixabay', 'wikimedia'] : ['unsplash', 'pexels', 'pixabay', 'wikimedia'];
+    case 'mixed':      return hasGoogle ? ['google', 'unsplash', 'pexels', 'svgl'] : ['unsplash', 'pexels', 'pixabay', 'svgl'];
   }
+}
+
+function extractLetter(query: string): string | null {
+  const match = query.match(/\b(?:letra|letter|character|glyph)\s+([a-zA-Z0-9])\b/i);
+  return match ? match[1].toUpperCase() : null;
 }
 
 function enhanceQuery(query: string, intent: SearchIntent, source: SearchSource): string {
   const q = query.trim();
 
+  if (intent === 'letter') {
+    const letter = extractLetter(q);
+    if (letter) {
+      if (source === 'google') return `letter "${letter}" typography lettering design -photo -landscape`;
+      if (source === 'wikimedia') return `letter ${letter} illuminated manuscript calligraphy`;
+      return `letter ${letter} typography isolated`;
+    }
+  }
+
+  if (source === 'google') {
+    switch (intent) {
+      case 'logo':       return `${q} logo transparent -background`;
+      case 'layout':     return `${q} editorial design layout`;
+      case 'typography': return `${q} typography lettering design`;
+      default:           return q;
+    }
+  }
+
   if (source === 'wikimedia') {
     switch (intent) {
-      case 'letter':     return `${q} illuminated manuscript lettering`;
       case 'typography': return `${q} vintage typography poster`;
       default:           return `${q} design`;
     }
@@ -460,7 +565,6 @@ function enhanceQuery(query: string, intent: SearchIntent, source: SearchSource)
 
   if (source === 'unsplash' || source === 'pexels' || source === 'pixabay') {
     switch (intent) {
-      case 'letter':     return `${q} typography lettering`;
       case 'layout':     return `${q} editorial design layout`;
       case 'typography': return `${q} typeface design`;
       default:           return q;

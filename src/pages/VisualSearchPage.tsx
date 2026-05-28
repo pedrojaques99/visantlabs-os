@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Search, ExternalLink, X, Minus, Plus, Filter, Image, Type, Layout, Layers, Compass, type LucideIcon } from 'lucide-react';
-import { PageShell } from '../components/ui/PageShell';
-import { GlassPanel } from '../components/ui/GlassPanel';
-import { SearchBar } from '../components/ui/SearchBar';
-import { Button } from '../components/ui/button';
-import { SkeletonLoader } from '../components/ui/SkeletonLoader';
+import { Search, ExternalLink, X, Minus, Plus, Image, Type, Layout, Layers, Compass, type LucideIcon } from 'lucide-react';
+import { PageShell } from '@/components/ui/PageShell';
+import { GlassPanel } from '@/components/ui/GlassPanel';
+import { SearchBar } from '@/components/ui/SearchBar';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { visualSearchApi, type VisualSearchResult, type SearchSource, type SearchIntent } from '@/services/visualSearchApi';
+import { visualSearchApi, type VisualSearchResult, type LetterCrop, type SearchSource, type SearchIntent } from '@/services/visualSearchApi';
+import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -27,28 +27,28 @@ const TABS: Tab[] = [
   { id: 'layouts', label: 'Layouts', icon: Layout, sources: ['unsplash', 'pexels'] },
 ];
 
-const SOURCE_LABELS: Record<SearchSource, string> = {
-  unsplash: 'Unsplash',
-  pexels: 'Pexels',
-  pixabay: 'Pixabay',
-  wikimedia: 'Wikimedia',
-  clearbit: 'Clearbit',
-  svgl: 'Svgl',
-};
+const TAB_KEYWORDS: { tab: TabId; pattern: RegExp }[] = [
+  { tab: 'typography', pattern: /\b(letra|letter|character|glyph|tipografia|typography|font|typeface|lettering|caligrafia|calligraphy|serif|sans.?serif)\b/i },
+  { tab: 'logos', pattern: /\b(logo|marca|brand|logotipo|logomarca|emblem|badge|icon)\b/i },
+  { tab: 'layouts', pattern: /\b(layout|grid|editorial|diagramação|composição|composition)\b/i },
+  { tab: 'photos', pattern: /\b(photo|foto|photograph|imagem|picture|landscape|retrato|portrait)\b/i },
+];
 
-const INTENT_LABELS: Record<SearchIntent, string> = {
-  letter: 'Letter Detection',
-  logo: 'Logo Search',
-  layout: 'Layout Search',
-  typography: 'Typography Search',
-  mixed: 'Visual Search',
-};
+function suggestTab(q: string): TabId | null {
+  const trimmed = q.trim();
+  if (trimmed.length < 2) return null;
+  for (const { tab, pattern } of TAB_KEYWORDS) {
+    if (pattern.test(trimmed)) return tab;
+  }
+  return null;
+}
 
 // ── Component ──────────────────────────────────────────────────────────────
 
 export const VisualSearchPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabId>('all');
+  const [userPickedTab, setUserPickedTab] = useState(false);
   const [results, setResults] = useState<VisualSearchResult[]>([]);
   const [intent, setIntent] = useState<SearchIntent>('mixed');
   const [sourceSummary, setSourceSummary] = useState<{ source: SearchSource; count: number; error?: string }[]>([]);
@@ -58,6 +58,7 @@ export const VisualSearchPage: React.FC = () => {
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedResult, setSelectedResult] = useState<VisualSearchResult | null>(null);
+  const [letterCrops, setLetterCrops] = useState<LetterCrop[]>([]);
   const [columns, setColumns] = useState(() => {
     const saved = localStorage.getItem('visualSearchColumns');
     return saved ? parseInt(saved, 10) : 4;
@@ -106,6 +107,7 @@ export const VisualSearchPage: React.FC = () => {
         });
       } else {
         setResults(response.results);
+        setLetterCrops(response.letterCrops || []);
       }
       setIntent(response.intent);
       setSourceSummary(response.sources);
@@ -123,6 +125,14 @@ export const VisualSearchPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!userPickedTab) {
+      const suggested = suggestTab(query);
+      if (suggested && suggested !== activeTab) setActiveTab(suggested);
+      else if (!suggested && activeTab !== 'all') setActiveTab('all');
+    }
+  }, [query, userPickedTab]);
+
+  useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (query.trim().length < 2) {
@@ -130,6 +140,7 @@ export const VisualSearchPage: React.FC = () => {
       setHasSearched(false);
       setPage(1);
       setHasMore(false);
+      setUserPickedTab(false);
       return;
     }
 
@@ -172,6 +183,46 @@ export const VisualSearchPage: React.FC = () => {
   }, [results, activeTab]);
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const showEmptyState = !hasSearched && !query;
+  const searchBarRef = useRef<HTMLInputElement>(null);
+  const prevEmpty = useRef(showEmptyState);
+
+  useEffect(() => {
+    if (prevEmpty.current !== showEmptyState) {
+      prevEmpty.current = showEmptyState;
+      requestAnimationFrame(() => searchBarRef.current?.focus());
+    }
+  }, [showEmptyState]);
+
+  const tabBar = (
+    <div className="flex items-center gap-1.5 mt-2.5">
+      {TABS.map(tab => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => { setActiveTab(tab.id); setUserPickedTab(true); }}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-wider border transition-all',
+              isActive
+                ? 'bg-white/5 border-white/10 text-neutral-200'
+                : 'border-transparent text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.02]'
+            )}
+          >
+            <Icon size={12} className="shrink-0" />
+            {tab.label}
+          </button>
+        );
+      })}
+
+      {hasSearched && !isLoading && filteredResults.length > 0 && (
+        <span className="ml-auto text-[10px] font-mono text-neutral-700">
+          {filteredResults.length} results
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <PageShell
@@ -179,134 +230,104 @@ export const VisualSearchPage: React.FC = () => {
       seoTitle="Visual Search — Visant Labs"
       seoDescription="Search for design inspiration, typography, logos, and layouts"
       title="Visual Search"
-      microTitle="Discovery // Visual Search"
-      description="Search across Unsplash, Pexels, Wikimedia, and brand logo databases"
-      breadcrumb={[{ label: 'Home', to: '/' }, { label: 'Visual Search' }]}
       width="full"
+      hideHeader
     >
-      {/* Search + Tabs */}
-      <div className="space-y-4 mb-6">
-        <SearchBar
-          value={query}
-          onChange={setQuery}
-          placeholder="Search letters, logos, layouts, typography..."
-          className="!py-2.5 !text-sm !pl-10 !pr-10"
-          iconSize={16}
-          containerClassName="max-w-2xl"
-        />
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-wider border transition-all',
-                  isActive
-                    ? 'bg-white/5 border-white/10 text-neutral-200'
-                    : 'border-transparent text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.02]'
-                )}
-              >
-                <Icon size={12} className="shrink-0" />
-                {tab.label}
-              </button>
-            );
-          })}
-
-          {hasSearched && !isLoading && (
-            <span className="ml-auto text-[10px] font-mono text-neutral-700 uppercase">
-              {INTENT_LABELS[intent]} · {filteredResults.length} results
-            </span>
-          )}
+      {showEmptyState ? (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
+          <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Visual Search</h2>
+          <p className="text-sm text-neutral-600 mb-8">Logos, letters, layouts, typography</p>
+          <SearchBar
+            ref={searchBarRef}
+            value={query}
+            onChange={setQuery}
+            size="lg"
+            placeholder="Search..."
+            containerClassName="max-w-xl w-full"
+            className="bg-white/[0.03] border-white/5 focus:border-white/10"
+            autoFocus
+          />
+          <div className="mt-4">{tabBar}</div>
+        </div>
+      ) : (
+        <>
+        {/* Sticky search bar + tabs — below the fixed h-10/md:h-14 header */}
+        <div className="sticky top-10 md:top-14 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-white/5">
+          <SearchBar
+            ref={searchBarRef}
+            value={query}
+            onChange={setQuery}
+            size="md"
+            placeholder="Search..."
+            containerClassName="max-w-2xl"
+            className="bg-white/[0.03] border-white/5 focus:border-white/10"
+          />
+          {tabBar}
         </div>
 
-        {/* Source badges */}
-        {sourceSummary.length > 0 && !isLoading && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {sourceSummary.map(s => (
-              <span
-                key={s.source}
-                className={cn(
-                  'px-2 py-0.5 rounded text-[10px] font-mono border',
-                  s.count > 0
-                    ? 'text-neutral-400 border-neutral-800 bg-neutral-900/50'
-                    : 'text-neutral-700 border-neutral-900'
-                )}
-              >
-                {SOURCE_LABELS[s.source]}: {s.count}
-                {s.error && ' ⚠'}
-              </span>
+      {/* Letter Crops */}
+      {letterCrops.length > 0 && !isLoading && (
+        <div className="mt-4 mb-6">
+          <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-wider mb-3">
+            Isolated · {letterCrops.length} crops
+          </p>
+          <div
+            className="grid gap-3"
+            style={{ gridTemplateColumns: `repeat(${isMobile ? 3 : Math.min(columns + 2, 8)}, minmax(0, 1fr))` }}
+          >
+            {letterCrops.map(crop => (
+              <CropCard key={crop.id} crop={crop} />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Results Grid */}
-      {isLoading ? (
-        <div
-          className="grid gap-3"
-          style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
-        >
-          {Array.from({ length: 12 }).map((_, i) => (
-            <GlassPanel key={i} className="overflow-hidden">
-              <div className="aspect-square bg-neutral-900/50 animate-pulse" />
-            </GlassPanel>
-          ))}
-        </div>
-      ) : filteredResults.length > 0 ? (
-        <>
+      <div className="mt-4">
+        {isLoading ? (
           <div
             className="grid gap-3"
             style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
           >
-            {filteredResults.map(result => (
-              <ResultCard
-                key={result.id}
-                result={result}
-                onClick={() => setSelectedResult(result)}
-              />
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="aspect-square rounded-lg bg-neutral-900/50 animate-pulse" />
             ))}
           </div>
-
-          <div ref={sentinelRef} className="h-1" />
-
-          {isLoadingMore && (
+        ) : filteredResults.length > 0 ? (
+          <>
             <div
-              className="grid gap-3 mt-3"
+              className="grid gap-3"
               style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
             >
-              {Array.from({ length: columns }).map((_, i) => (
-                <GlassPanel key={`loader-${i}`} className="overflow-hidden">
-                  <div className="aspect-square bg-neutral-900/50 animate-pulse" />
-                </GlassPanel>
+              {filteredResults.map(result => (
+                <ResultCard
+                  key={result.id}
+                  result={result}
+                  onClick={() => setSelectedResult(result)}
+                />
               ))}
             </div>
-          )}
 
-          {!hasMore && results.length > 0 && (
-            <p className="text-center text-[10px] font-mono text-neutral-700 uppercase mt-6 mb-2">
-              End of results
-            </p>
-          )}
-        </>
-      ) : hasSearched ? (
-        <div className="flex flex-col items-center justify-center py-20 text-neutral-600">
-          <Search size={32} className="mb-3 text-neutral-700" />
-          <p className="text-sm">No results found for "{query}"</p>
-          <p className="text-[11px] text-neutral-700 mt-1">Try different keywords or check available sources</p>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-neutral-600">
-          <Search size={32} className="mb-3 text-neutral-700" />
-          <p className="text-sm">Search for design inspiration</p>
-          <p className="text-[11px] text-neutral-700 mt-1">
-            Try: "Logo Minimalista", "Layout Editorial", "Tipografia Vintage"
-          </p>
-        </div>
-      )}
+            <div ref={sentinelRef} className="h-1" />
+
+            {isLoadingMore && (
+              <div
+                className="grid gap-3 mt-3"
+                style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
+              >
+                {Array.from({ length: columns }).map((_, i) => (
+                  <div key={`loader-${i}`} className="aspect-square rounded-lg bg-neutral-900/50 animate-pulse" />
+                ))}
+              </div>
+            )}
+          </>
+        ) : hasSearched ? (
+          <div className="flex flex-col items-center justify-center py-20 text-neutral-600">
+            <Search size={24} className="mb-3 text-neutral-700" />
+            <p className="text-sm">No results for "{query}"</p>
+          </div>
+        ) : null}
+      </div>
 
       {/* Column Controls */}
       {filteredResults.length > 0 && !isMobile && (
@@ -342,7 +363,41 @@ export const VisualSearchPage: React.FC = () => {
           onClose={() => setSelectedResult(null)}
         />
       )}
+      </>
+      )}
     </PageShell>
+  );
+};
+
+// ── Crop Card ─────────────────────────────────────────────────────────────
+
+const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
+  const needsLightBg = useNeedsLightBg(crop.thumbnailUrl);
+
+  return (
+    <a
+      href={crop.cropUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative overflow-hidden rounded-lg border border-white/[0.04] hover:border-white/10 transition-all"
+    >
+      <div className={cn(
+        'aspect-square relative overflow-hidden flex items-center justify-center p-2',
+        needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
+      )}>
+        <img
+          src={crop.thumbnailUrl}
+          alt={`${crop.letter} — ${crop.style || 'letter'}`}
+          className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+        />
+      </div>
+      {crop.style && (
+        <div className="absolute bottom-0 inset-x-0 bg-neutral-950/80 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-[9px] font-mono text-neutral-400 uppercase">{crop.style}</span>
+        </div>
+      )}
+    </a>
   );
 };
 
@@ -351,39 +406,57 @@ export const VisualSearchPage: React.FC = () => {
 const ResultCard: React.FC<{
   result: VisualSearchResult;
   onClick: () => void;
-}> = ({ result, onClick }) => (
-  <GlassPanel className="group relative overflow-hidden hover:border-white/10 cursor-pointer" onClick={onClick}>
-    <div className="aspect-square relative overflow-hidden bg-neutral-900/50">
-      <img
-        src={result.thumbnailUrl}
-        alt={result.title}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        loading="lazy"
-        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
+}> = ({ result, onClick }) => {
+  const isVector = result.type === 'vector' || result.type === 'logo';
+  const needsLightBg = useNeedsLightBg(result.thumbnailUrl);
 
-      {/* Hover overlay */}
-      <div className="absolute inset-0 bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
-        <p className="text-[11px] text-neutral-200 line-clamp-2 leading-relaxed">{result.title}</p>
-        <div className="flex items-center gap-1.5 mt-1.5">
-          <span className="text-[9px] font-mono text-neutral-500 uppercase px-1.5 py-0.5 bg-neutral-900/60 rounded">
-            {result.source}
-          </span>
-          <span className="text-[9px] font-mono text-neutral-600 uppercase">
-            {result.type}
-          </span>
+  return (
+    <div
+      className="group relative overflow-hidden rounded-lg border border-white/[0.04] hover:border-white/10 cursor-pointer transition-all"
+      onClick={onClick}
+    >
+      <div className={cn(
+        'aspect-square relative overflow-hidden',
+        isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
+      )}>
+        <img
+          src={result.thumbnailUrl}
+          alt={result.title}
+          className={cn(
+            'w-full h-full group-hover:scale-105 transition-transform duration-300',
+            isVector ? 'object-contain p-3' : 'object-cover'
+          )}
+          loading="lazy"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
+
+        <div className="absolute inset-0 bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
+          <p className="text-[11px] text-neutral-200 line-clamp-2 leading-relaxed">{result.title}</p>
         </div>
       </div>
     </div>
-  </GlassPanel>
-);
+  );
+};
 
 // ── Detail Modal ───────────────────────────────────────────────────────────
+
+const SOURCE_LABELS: Record<SearchSource, string> = {
+  unsplash: 'Unsplash',
+  pexels: 'Pexels',
+  pixabay: 'Pixabay',
+  wikimedia: 'Wikimedia',
+  clearbit: 'Clearbit',
+  svgl: 'Svgl',
+  google: 'Google',
+};
 
 const ResultModal: React.FC<{
   result: VisualSearchResult;
   onClose: () => void;
 }> = ({ result, onClose }) => {
+  const isVector = result.type === 'vector' || result.type === 'logo';
+  const needsLightBg = useNeedsLightBg(result.imageUrl);
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -402,7 +475,6 @@ const ResultModal: React.FC<{
         onClick={e => e.stopPropagation()}
       >
         <GlassPanel intensity="strong" padding="md" className="space-y-4">
-          {/* Close */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10"
@@ -410,72 +482,42 @@ const ResultModal: React.FC<{
             <X size={18} />
           </button>
 
-          {/* Image */}
-          <div className="rounded-lg overflow-hidden bg-neutral-900/50">
+          <div className={cn(
+            'rounded-lg overflow-hidden',
+            isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
+          )}>
             <img
               src={result.imageUrl}
               alt={result.title}
-              className="w-full max-h-[60vh] object-contain"
+              className={cn(
+                'w-full max-h-[60vh]',
+                isVector ? 'object-contain p-6' : 'object-contain'
+              )}
             />
           </div>
 
-          {/* Metadata */}
           <div className="space-y-3">
             <h3 className="text-sm text-neutral-200 font-medium">{result.title}</h3>
 
-            {result.description && (
-              <p className="text-[11px] text-neutral-500 leading-relaxed">{result.description}</p>
-            )}
-
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase px-2 py-0.5 bg-neutral-900/60 border border-neutral-800 rounded">
-                {SOURCE_LABELS[result.source]}
-              </span>
-              <span className="text-[10px] font-mono text-neutral-600 uppercase px-2 py-0.5 bg-neutral-900/30 border border-neutral-900 rounded">
-                {result.type}
-              </span>
-              <span className="text-[10px] font-mono text-neutral-700">
-                {result.dimensions.width} × {result.dimensions.height}
-              </span>
-            </div>
-
-            {/* Attribution */}
             {result.attribution && (
-              <div className="text-[10px] text-neutral-600 font-mono space-y-0.5">
-                <p>
-                  Photo by{' '}
-                  {result.attribution.authorUrl ? (
-                    <a
-                      href={result.attribution.authorUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-neutral-400 hover:text-neutral-200 underline underline-offset-2"
-                    >
-                      {result.attribution.author}
-                    </a>
-                  ) : (
-                    <span className="text-neutral-400">{result.attribution.author}</span>
-                  )}
-                </p>
-                <p className="text-neutral-700">{result.attribution.license}</p>
-              </div>
-            )}
-
-            {/* Tags */}
-            {result.tags.length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {result.tags.map(tag => (
-                  <span
-                    key={tag}
-                    className="text-[9px] font-mono text-neutral-600 px-1.5 py-0.5 bg-neutral-900/50 border border-neutral-900 rounded"
+              <p className="text-[11px] text-neutral-600">
+                {result.attribution.authorUrl ? (
+                  <a
+                    href={result.attribution.authorUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-neutral-400 hover:text-neutral-200 underline underline-offset-2"
                   >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
+                    {result.attribution.author}
+                  </a>
+                ) : (
+                  <span className="text-neutral-400">{result.attribution.author}</span>
+                )}
+                {' · '}
+                <span className="text-neutral-700">{SOURCE_LABELS[result.source]}</span>
+              </p>
             )}
 
-            {/* Open original */}
             <a
               href={result.imageUrl}
               target="_blank"
