@@ -7,6 +7,7 @@ import { FormLabel as Label } from '@/components/ui/form-label';
 import { AdminImageUploader } from './ui/AdminImageUploader';
 import { Select } from '@/components/ui/select';
 import { appsService, AppConfig } from '@/services/appsService';
+import { authService } from '@/services/authService';
 import { toast } from 'sonner';
 
 interface AppEditDialogProps {
@@ -26,6 +27,9 @@ const BADGE_VARIANTS = [
 const CATEGORIES = [
   { value: 'pro', label: 'PRO SUITE' },
   { value: 'creative', label: 'CREATIVE LAB' },
+  { value: 'image', label: 'IMAGE TOOLS' },
+  { value: 'converters', label: 'CONVERTERS' },
+  { value: 'generators', label: 'GENERATORS' },
   { value: 'audio', label: 'AUDIO' },
   { value: 'community', label: 'COMMUNITY' },
   { value: 'admin', label: 'ADMIN' },
@@ -44,9 +48,37 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
     free: true,
     span: 'lg:col-span-1',
     databaseInfo: '',
+    displayOrder: 0,
     isHidden: false,
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleThumbnailUpload = async (img: { base64?: string; url?: string; mimeType: string }) => {
+    const base64 = img.base64 || img.url;
+    if (!base64) return;
+    setIsUploading(true);
+    try {
+      const token = await authService.getToken();
+      const apiBase = (import.meta as any).env?.VITE_API_URL || '/api';
+      const res = await fetch(`${apiBase}/images/upload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ data: base64, contentType: img.mimeType }),
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      setFormData(prev => ({ ...prev, thumbnail: data.url }));
+      toast.success('Thumbnail uploaded');
+    } catch {
+      toast.error('Failed to upload thumbnail');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (app) {
@@ -63,6 +95,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
         free: app.free,
         span: app.span,
         databaseInfo: app.databaseInfo || '',
+        displayOrder: app.displayOrder ?? 0,
         isHidden: app.isHidden || false,
       });
     } else {
@@ -225,15 +258,28 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="badge">Badge Text (Optional)</Label>
-              <Input
-                id="badge"
-                value={formData.badge || ''}
-                onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
-                placeholder="e.g. NEW, BETA"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="badge">Badge Text</Label>
+                <Input
+                  id="badge"
+                  value={formData.badge || ''}
+                  onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                  className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                  placeholder="e.g. NEW, BETA"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="displayOrder">Order</Label>
+                <Input
+                  id="displayOrder"
+                  type="number"
+                  value={formData.displayOrder ?? 0}
+                  onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                  className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                  placeholder="0"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -250,7 +296,8 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 </div>
               )}
               <AdminImageUploader
-                onImageUpload={(img) => setFormData({ ...formData, thumbnail: img.url })}
+                onImageUpload={handleThumbnailUpload}
+                disabled={isUploading}
                 compact
               />
             </div>
