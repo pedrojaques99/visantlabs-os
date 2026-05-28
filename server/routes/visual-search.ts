@@ -58,6 +58,7 @@ router.post('/query', searchLimiter, async (req, res) => {
       intent: result.intent,
       sources: result.sources,
       total: result.total,
+      hasMore: result.hasMore,
       query: sanitized,
       page,
     };

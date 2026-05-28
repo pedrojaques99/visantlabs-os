@@ -57,16 +57,16 @@ const unsplashCache = new LRUCache<string, VisualSearchResult[]>({ max: 200, ttl
 
 const UNSPLASH_UTM = 'utm_source=visant_labs&utm_medium=referral';
 
-async function searchUnsplash(query: string, perPage = 30): Promise<SourceResult> {
+async function searchUnsplash(query: string, perPage = 30, page = 1): Promise<SourceResult> {
   const key = process.env.UNSPLASH_ACCESS_KEY;
   if (!key) return { source: 'unsplash', results: [], error: 'UNSPLASH_ACCESS_KEY not configured' };
 
-  const cacheKey = `unsplash:${query}:${perPage}`;
+  const cacheKey = `unsplash:${query}:${perPage}:${page}`;
   const cached = unsplashCache.get(cacheKey);
   if (cached) return { source: 'unsplash', results: cached };
 
   try {
-    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${perPage}&orientation=squarish`;
+    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${perPage}&page=${page}&orientation=squarish`;
     const response = await safeFetch(url, {
       headers: { Authorization: `Client-ID ${key}` },
     });
@@ -117,16 +117,16 @@ export async function triggerUnsplashDownload(downloadLocation: string): Promise
 
 const pexelsCache = new LRUCache<string, VisualSearchResult[]>({ max: 200, ttl: 1000 * 60 * 30 });
 
-async function searchPexels(query: string, perPage = 30): Promise<SourceResult> {
+async function searchPexels(query: string, perPage = 30, page = 1): Promise<SourceResult> {
   const key = process.env.PEXELS_API_KEY;
   if (!key) return { source: 'pexels', results: [], error: 'PEXELS_API_KEY not configured' };
 
-  const cacheKey = `pexels:${query}:${perPage}`;
+  const cacheKey = `pexels:${query}:${perPage}:${page}`;
   const cached = pexelsCache.get(cacheKey);
   if (cached) return { source: 'pexels', results: cached };
 
   try {
-    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${perPage}`;
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${perPage}&page=${page}`;
     const response = await safeFetch(url, {
       headers: { Authorization: key },
     });
@@ -165,11 +165,11 @@ async function searchPexels(query: string, perPage = 30): Promise<SourceResult> 
 
 const pixabayCache = new LRUCache<string, VisualSearchResult[]>({ max: 200, ttl: 1000 * 60 * 30 });
 
-async function searchPixabay(query: string, perPage = 30, imageType: 'all' | 'photo' | 'illustration' | 'vector' = 'all'): Promise<SourceResult> {
+async function searchPixabay(query: string, perPage = 30, imageType: 'all' | 'photo' | 'illustration' | 'vector' = 'all', page = 1): Promise<SourceResult> {
   const key = process.env.PIXABAY_API_KEY;
   if (!key) return { source: 'pixabay', results: [], error: 'PIXABAY_API_KEY not configured' };
 
-  const cacheKey = `pixabay:${query}:${perPage}:${imageType}`;
+  const cacheKey = `pixabay:${query}:${perPage}:${imageType}:${page}`;
   const cached = pixabayCache.get(cacheKey);
   if (cached) return { source: 'pixabay', results: cached };
 
@@ -178,6 +178,7 @@ async function searchPixabay(query: string, perPage = 30, imageType: 'all' | 'ph
       key,
       q: query,
       per_page: String(Math.min(perPage, 200)),
+      page: String(page),
       image_type: imageType,
       lang: 'pt',
       min_width: '400',
@@ -383,6 +384,8 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
   intent: SearchIntent;
   sources: { source: SearchSource; count: number; error?: string }[];
   total: number;
+  hasMore: boolean;
+  page: number;
 }> {
   const { query, limit = 60, page = 1 } = opts;
   const intent = opts.intent || classifyIntent(query);
@@ -392,9 +395,9 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
 
   const sourcePromises = activeSources.map((source) => {
     switch (source) {
-      case 'unsplash': return searchUnsplash(enhanceQuery(query, intent, 'unsplash'), perSource);
-      case 'pexels':   return searchPexels(enhanceQuery(query, intent, 'pexels'), perSource);
-      case 'pixabay':  return searchPixabay(enhanceQuery(query, intent, 'pixabay'), perSource, intent === 'logo' ? 'vector' : 'all');
+      case 'unsplash': return searchUnsplash(enhanceQuery(query, intent, 'unsplash'), perSource, page);
+      case 'pexels':   return searchPexels(enhanceQuery(query, intent, 'pexels'), perSource, page);
+      case 'pixabay':  return searchPixabay(enhanceQuery(query, intent, 'pixabay'), perSource, intent === 'logo' ? 'vector' : 'all', page);
       case 'wikimedia': return searchWikimedia(enhanceQuery(query, intent, 'wikimedia'), Math.min(perSource, 20));
       case 'svgl':     return searchSvgl(query);
       case 'clearbit': return Promise.resolve(searchClearbit(query));
@@ -419,14 +422,16 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
 
   allResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
 
-  const start = (page - 1) * limit;
-  const paginated = allResults.slice(start, start + limit);
+  const hasMore = activeSources.some(s => !['svgl', 'clearbit', 'wikimedia'].includes(s)) &&
+    allResults.length >= perSource;
 
   return {
-    results: paginated,
+    results: allResults,
     intent,
     sources: sourceSummary,
     total: allResults.length,
+    hasMore,
+    page,
   };
 }
 

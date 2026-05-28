@@ -53,7 +53,10 @@ export const VisualSearchPage: React.FC = () => {
   const [intent, setIntent] = useState<SearchIntent>('mixed');
   const [sourceSummary, setSourceSummary] = useState<{ source: SearchSource; count: number; error?: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [selectedResult, setSelectedResult] = useState<VisualSearchResult | null>(null);
   const [columns, setColumns] = useState(() => {
     const saved = localStorage.getItem('visualSearchColumns');
@@ -62,6 +65,7 @@ export const VisualSearchPage: React.FC = () => {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
   const abortRef = useRef<AbortController>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const handleColumnsChange = useCallback((delta: number) => {
     setColumns(prev => {
@@ -71,32 +75,50 @@ export const VisualSearchPage: React.FC = () => {
     });
   }, []);
 
-  const performSearch = useCallback(async (searchQuery: string, tab: TabId) => {
+  const performSearch = useCallback(async (searchQuery: string, tab: TabId, pageNum = 1, append = false) => {
     if (searchQuery.trim().length < 2) return;
 
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
+    if (!append) {
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
+    }
 
-    setIsLoading(true);
-    setHasSearched(true);
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+      setHasSearched(true);
+    }
 
     try {
       const activeTabDef = TABS.find(t => t.id === tab);
       const response = await visualSearchApi.search(searchQuery, {
         sources: activeTabDef?.sources,
-        limit: 60,
+        limit: 30,
+        page: pageNum,
       });
 
-      setResults(response.results);
+      if (append) {
+        setResults(prev => {
+          const existingIds = new Set(prev.map(r => r.id));
+          const newResults = response.results.filter(r => !existingIds.has(r.id));
+          return [...prev, ...newResults];
+        });
+      } else {
+        setResults(response.results);
+      }
       setIntent(response.intent);
       setSourceSummary(response.sources);
+      setHasMore(response.hasMore);
+      setPage(pageNum);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('[VisualSearch] Error:', err.message);
-        setResults([]);
+        if (!append) setResults([]);
       }
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   }, []);
 
@@ -106,15 +128,35 @@ export const VisualSearchPage: React.FC = () => {
     if (query.trim().length < 2) {
       setResults([]);
       setHasSearched(false);
+      setPage(1);
+      setHasMore(false);
       return;
     }
 
     debounceRef.current = setTimeout(() => {
-      performSearch(query, activeTab);
+      performSearch(query, activeTab, 1, false);
     }, 400);
 
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [query, activeTab, performSearch]);
+
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore && query.trim().length >= 2) {
+          performSearch(query, activeTab, page + 1, true);
+        }
+      },
+      { rootMargin: '400px' },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading, isLoadingMore, page, query, activeTab, performSearch]);
 
   const filteredResults = useMemo(() => {
     if (activeTab === 'all') return results;
@@ -215,18 +257,41 @@ export const VisualSearchPage: React.FC = () => {
           ))}
         </div>
       ) : filteredResults.length > 0 ? (
-        <div
-          className="grid gap-3"
-          style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
-        >
-          {filteredResults.map(result => (
-            <ResultCard
-              key={result.id}
-              result={result}
-              onClick={() => setSelectedResult(result)}
-            />
-          ))}
-        </div>
+        <>
+          <div
+            className="grid gap-3"
+            style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
+          >
+            {filteredResults.map(result => (
+              <ResultCard
+                key={result.id}
+                result={result}
+                onClick={() => setSelectedResult(result)}
+              />
+            ))}
+          </div>
+
+          <div ref={sentinelRef} className="h-1" />
+
+          {isLoadingMore && (
+            <div
+              className="grid gap-3 mt-3"
+              style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
+            >
+              {Array.from({ length: columns }).map((_, i) => (
+                <GlassPanel key={`loader-${i}`} className="overflow-hidden">
+                  <div className="aspect-square bg-neutral-900/50 animate-pulse" />
+                </GlassPanel>
+              ))}
+            </div>
+          )}
+
+          {!hasMore && results.length > 0 && (
+            <p className="text-center text-[10px] font-mono text-neutral-700 uppercase mt-6 mb-2">
+              End of results
+            </p>
+          )}
+        </>
       ) : hasSearched ? (
         <div className="flex flex-col items-center justify-center py-20 text-neutral-600">
           <Search size={32} className="mb-3 text-neutral-700" />

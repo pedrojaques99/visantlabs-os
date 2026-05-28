@@ -32,6 +32,7 @@ export interface VisualSearchResponse {
   intent: SearchIntent;
   sources: { source: SearchSource; count: number; error?: string }[];
   total: number;
+  hasMore: boolean;
   query: string;
   page: number;
 }
