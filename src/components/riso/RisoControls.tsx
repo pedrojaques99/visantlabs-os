@@ -2,6 +2,7 @@ import React, { useCallback, useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { useRisoStore } from '@/stores/risoStore';
 import { RISO_INK_PRESETS, RISO_FULL_PRESETS, RISO_INK_CATALOG, type DitherMode, type HalftoneShape } from '@/components/riso/RisoRenderer';
@@ -10,10 +11,10 @@ import { SendToButton } from '@/components/shared/SendToButton';
 import {
   ToolPanel, ToolPanelContent, ToolPanelSection, ToolPanelDisclosure,
   ToolPanelActions, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
+  ChannelRow, InlineColorPicker,
 } from '@/components/shared/ToolPanel';
-import { ImageLabHeader } from '@/components/shared/ImageLabHeader';
 import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
-import { Eye, EyeOff, Zap, Loader2, Focus, Download, ChevronDown, Palette, Search, FileImage, FileType, Layers } from 'lucide-react';
+import { Zap, Loader2, Focus, Download, ChevronDown, Palette, Search, FileImage, FileType, Layers } from 'lucide-react';
 
 const RISO_PRESET_ITEMS = Object.entries(RISO_FULL_PRESETS).map(([name, p]) => ({ name, colors: p.colors }));
 
@@ -30,6 +31,26 @@ const INK_CATEGORIES: Record<string, string[]> = {
   'Neutrals': ['Black', 'Charcoal', 'Gray', 'Light Gray', 'Granite', 'Slate', 'Mist', 'Brown', 'White'],
 };
 
+const DITHER_OPTIONS = [
+  { value: 'stochastic', label: 'Stochastic' },
+  { value: 'atkinson', label: 'Atkinson' },
+  { value: 'floydsteinberg', label: 'Floyd-Steinberg' },
+  { value: 'bayer', label: 'Bayer' },
+  { value: 'halftone', label: 'Halftone' },
+];
+
+const HALFTONE_SHAPE_OPTIONS = [
+  { value: 'circle', label: 'Circle' },
+  { value: 'line', label: 'Line' },
+  { value: 'cross', label: 'Cross' },
+  { value: 'ellipse', label: 'Ellipse' },
+];
+
+const LAYER_DITHER_OPTIONS = [
+  { value: '', label: 'Auto (global)' },
+  ...DITHER_OPTIONS,
+];
+
 interface RisoControlsProps {
   onExport: () => void;
   onExportSvg?: () => void;
@@ -37,12 +58,11 @@ interface RisoControlsProps {
   onExportLayer?: (index: number) => void;
   onAiEnhance?: () => void;
   isAiProcessing?: boolean;
-  onClosePanel?: () => void;
 }
 
 export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
   onExport, onExportSvg, onExportHiRes, onExportLayer,
-  onAiEnhance, isAiProcessing, onClosePanel,
+  onAiEnhance, isAiProcessing,
 }) => {
   const store = useRisoStore();
   const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
@@ -91,49 +111,31 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
 
   return (
     <ToolPanel>
-      <ImageLabHeader
+      <PresetThumbnailStrip
         imageUrl={store.imageUrl}
-        fileName={store.fileName}
-        onLoad={(url, name) => store.setImageUrl(url, name)}
-        onClear={() => { store.setImageUrl('', ''); store.setLayers([]); }}
-        onResetSettings={() => { store.resetSettings(); store.setLayers([]); }}
-        onClosePanel={onClosePanel}
+        presets={RISO_PRESET_ITEMS}
+        onSelect={(name) => applyFullPreset(name)}
       />
 
       <ToolPanelContent>
-        <PresetThumbnailStrip
-          imageUrl={store.imageUrl}
-          presets={RISO_PRESET_ITEMS}
-          onSelect={(name) => applyFullPreset(name)}
-        />
-
         {/* Screening — core effect parameters */}
         <ToolPanelSection title="SCREENING">
           <ToolPanelRow label="Mode">
-            <select
+            <Select
+              options={DITHER_OPTIONS}
               value={store.ditherMode}
-              onChange={(e) => store.updateSetting('ditherMode', e.target.value as DitherMode)}
-              className="w-full h-7 rounded-md text-[10px] font-mono bg-neutral-900/50 text-neutral-300 border border-neutral-800/50 px-2 focus:outline-none focus:border-white/20"
-            >
-              <option value="stochastic">Stochastic</option>
-              <option value="atkinson">Atkinson</option>
-              <option value="floydsteinberg">Floyd-Steinberg</option>
-              <option value="bayer">Bayer</option>
-              <option value="halftone">Halftone</option>
-            </select>
+              onChange={(v) => store.updateSetting('ditherMode', v as DitherMode)}
+              variant="node"
+            />
           </ToolPanelRow>
           {store.ditherMode === 'halftone' && (
             <ToolPanelRow label="Shape">
-              <select
+              <Select
+                options={HALFTONE_SHAPE_OPTIONS}
                 value={store.halftoneShape}
-                onChange={(e) => store.updateSetting('halftoneShape', e.target.value as HalftoneShape)}
-                className="w-full h-7 rounded-md text-[10px] font-mono bg-neutral-900/50 text-neutral-300 border border-neutral-800/50 px-2 focus:outline-none focus:border-white/20"
-              >
-                <option value="circle">Circle</option>
-                <option value="line">Line</option>
-                <option value="cross">Cross</option>
-                <option value="ellipse">Ellipse</option>
-              </select>
+                onChange={(v) => store.updateSetting('halftoneShape', v as HalftoneShape)}
+                variant="node"
+              />
             </ToolPanelRow>
           )}
           <div className="grid grid-cols-2 gap-1.5">
@@ -168,143 +170,116 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
           </ToolPanelRow>
           {store.layers.length > 0 && (
             <div className="space-y-1">
-              {store.layers.map((layer, i) => {
-                const isExpanded = expandedLayer === i;
-                return (
-                  <div key={i} className={cn('rounded-lg border transition-colors', isExpanded ? 'border-neutral-700 bg-neutral-900/50' : 'border-transparent')}>
-                    <button
-                      onClick={() => setExpandedLayer(isExpanded ? null : i)}
-                      className="flex items-center gap-3 w-full py-2 px-2 hover:bg-neutral-800/30 rounded-lg transition-colors"
+              {store.layers.map((layer, i) => (
+                <ChannelRow
+                  key={i}
+                  color={layer.hex}
+                  onColorChange={(v) => store.updateLayer(i, { hex: v })}
+                  label={layer.hex}
+                  visible={layer.visible}
+                  onToggleVisible={() => store.updateLayer(i, { visible: !layer.visible })}
+                  expanded={expandedLayer === i}
+                  onToggleExpand={() => setExpandedLayer(expandedLayer === i ? null : i)}
+                  actions={
+                    <span
+                      role="button"
+                      aria-label={`Solo layer ${i + 1}`}
+                      onClick={(e) => { e.stopPropagation(); store.setSoloLayer(i); }}
+                      className={cn('transition-colors p-1 rounded-md', store.soloLayer === i ? 'text-cyan-400 bg-cyan-400/10' : 'text-neutral-600 hover:text-neutral-300')}
                     >
-                      <input
-                        type="color"
-                        value={layer.hex}
-                        aria-label={`Layer ${i + 1} color`}
-                        onChange={(e) => { e.stopPropagation(); store.updateLayer(i, { hex: e.target.value }); }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0"
-                      />
-                      <span className="text-[11px] text-neutral-500 font-mono uppercase flex-1 text-left">{layer.hex}</span>
-                      <div className="flex items-center gap-1">
-                        <span
-                          role="button"
-                          aria-label={`Solo layer ${i + 1}`}
-                          onClick={(e) => { e.stopPropagation(); store.setSoloLayer(i); }}
-                          className={cn('transition-colors p-1 rounded-md', store.soloLayer === i ? 'text-cyan-400 bg-cyan-400/10' : 'text-neutral-600 hover:text-neutral-300')}
-                        >
-                          <Focus size={14} />
-                        </span>
-                        <span
-                          role="button"
-                          aria-label={`Toggle layer ${i + 1} visibility`}
-                          onClick={(e) => { e.stopPropagation(); store.updateLayer(i, { visible: !layer.visible }); }}
-                          className="text-neutral-500 hover:text-white transition-colors p-1"
-                        >
-                          {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
-                        </span>
-                        <ChevronDown size={14} className={cn('text-neutral-600 transition-transform', isExpanded && 'rotate-180')} />
-                      </div>
-                    </button>
-                    {isExpanded && (
-                      <div className="px-2 pb-2 pt-1 space-y-2">
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <ScrubInput label="Opacity" value={layer.alpha} min={0} max={1} step={0.01} onChange={(v) => store.updateLayer(i, { alpha: v })} />
-                          <ScrubInput label="Angle" value={layer.angle} min={0} max={90} step={2.5} suffix="°" onChange={(v) => store.updateLayer(i, { angle: v })} />
-                          <ScrubInput label="X" value={layer.offsetX} min={-5} max={5} step={0.5} suffix="px" onChange={(v) => store.updateLayer(i, { offsetX: v })} />
-                          <ScrubInput label="Y" value={layer.offsetY} min={-5} max={5} step={0.5} suffix="px" onChange={(v) => store.updateLayer(i, { offsetY: v })} />
-                        </div>
-                        <ToolPanelRow label="Dither">
-                          <select
-                            value={layer.ditherMode ?? ''}
-                            onChange={(e) => store.updateLayer(i, { ditherMode: (e.target.value || undefined) as DitherMode | undefined })}
-                            className="w-full h-6 rounded-md text-[9px] font-mono bg-neutral-900/50 text-neutral-300 border border-neutral-800/50 px-1.5 focus:outline-none focus:border-white/20"
-                          >
-                            <option value="">Auto (global)</option>
-                            <option value="stochastic">Stochastic</option>
-                            <option value="atkinson">Atkinson</option>
-                            <option value="floydsteinberg">Floyd-Steinberg</option>
-                            <option value="bayer">Bayer</option>
-                            <option value="halftone">Halftone</option>
-                          </select>
-                        </ToolPanelRow>
-
-                        <button
-                          onClick={() => { setInkCatalogLayer(inkCatalogLayer === i ? null : i); setInkSearch(''); setInkCategory(null); }}
-                          className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 font-mono uppercase transition-colors"
-                        >
-                          <Palette size={12} />
-                          Riso Ink Catalog
-                          <ChevronDown size={10} className={cn('transition-transform', inkCatalogLayer === i && 'rotate-180')} />
-                        </button>
-                        {inkCatalogLayer === i && (
-                          <div className="space-y-1.5">
-                            <div className="relative">
-                              <Search size={10} className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-600" />
-                              <input
-                                type="text"
-                                value={inkSearch}
-                                onChange={(e) => setInkSearch(e.target.value)}
-                                placeholder="Search inks..."
-                                className="w-full h-6 pl-6 pr-2 rounded-md bg-neutral-900/80 border border-neutral-800/50 text-[10px] text-neutral-300 font-mono placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
-                              />
-                            </div>
-                            <div className="flex gap-0.5 flex-wrap">
-                              <button
-                                onClick={() => setInkCategory(null)}
-                                className={cn('px-1.5 h-4 rounded text-[8px] font-mono border transition-colors',
-                                  !inkCategory ? 'bg-white/10 text-white border-white/20' : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
-                                )}
-                              >
-                                All
-                              </button>
-                              {Object.keys(INK_CATEGORIES).map(cat => (
-                                <button
-                                  key={cat}
-                                  onClick={() => setInkCategory(inkCategory === cat ? null : cat)}
-                                  className={cn('px-1.5 h-4 rounded text-[8px] font-mono border transition-colors',
-                                    inkCategory === cat ? 'bg-white/10 text-white border-white/20' : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
-                                  )}
-                                >
-                                  {cat}
-                                </button>
-                              ))}
-                            </div>
-                            <div className="grid grid-cols-8 gap-0.5 max-h-[140px] overflow-y-auto pr-1">
-                              {filteredInks.map((ink) => (
-                                <button
-                                  key={ink.name}
-                                  title={ink.name}
-                                  onClick={() => { store.updateLayer(i, { hex: ink.hex }); setInkCatalogLayer(null); }}
-                                  className={cn(
-                                    'w-6 h-6 rounded-md border transition-all hover:scale-110',
-                                    layer.hex.toLowerCase() === ink.hex.toLowerCase()
-                                      ? 'border-white ring-1 ring-white/30'
-                                      : 'border-neutral-700/50 hover:border-neutral-500'
-                                  )}
-                                  style={{ backgroundColor: ink.hex }}
-                                />
-                              ))}
-                              {filteredInks.length === 0 && (
-                                <span className="col-span-8 text-[9px] text-neutral-600 font-mono py-2 text-center">No inks found</span>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {onExportLayer && (
-                          <button
-                            onClick={() => onExportLayer(i)}
-                            className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 font-mono uppercase transition-colors"
-                          >
-                            <Layers size={12} />
-                            Export Layer Separation
-                          </button>
-                        )}
-                      </div>
-                    )}
+                      <Focus size={14} />
+                    </span>
+                  }
+                >
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <ScrubInput label="Opacity" value={layer.alpha} min={0} max={1} step={0.01} onChange={(v) => store.updateLayer(i, { alpha: v })} />
+                    <ScrubInput label="Angle" value={layer.angle} min={0} max={90} step={2.5} suffix="°" onChange={(v) => store.updateLayer(i, { angle: v })} />
+                    <ScrubInput label="X" value={layer.offsetX} min={-5} max={5} step={0.5} suffix="px" onChange={(v) => store.updateLayer(i, { offsetX: v })} />
+                    <ScrubInput label="Y" value={layer.offsetY} min={-5} max={5} step={0.5} suffix="px" onChange={(v) => store.updateLayer(i, { offsetY: v })} />
                   </div>
-                );
-              })}
+                  <ToolPanelRow label="Dither">
+                    <Select
+                      options={LAYER_DITHER_OPTIONS}
+                      value={layer.ditherMode ?? ''}
+                      onChange={(v) => store.updateLayer(i, { ditherMode: (v || undefined) as DitherMode | undefined })}
+                      variant="node"
+                    />
+                  </ToolPanelRow>
+
+                  <button
+                    onClick={() => { setInkCatalogLayer(inkCatalogLayer === i ? null : i); setInkSearch(''); setInkCategory(null); }}
+                    className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 font-mono uppercase transition-colors"
+                  >
+                    <Palette size={12} />
+                    Riso Ink Catalog
+                    <ChevronDown size={10} className={cn('transition-transform', inkCatalogLayer === i && 'rotate-180')} />
+                  </button>
+                  {inkCatalogLayer === i && (
+                    <div className="space-y-1.5">
+                      <div className="relative">
+                        <Search size={10} className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-600" />
+                        <input
+                          type="text"
+                          value={inkSearch}
+                          onChange={(e) => setInkSearch(e.target.value)}
+                          placeholder="Search inks..."
+                          className="w-full h-6 pl-6 pr-2 rounded-md bg-neutral-900/80 border border-neutral-800/50 text-[10px] text-neutral-300 font-mono placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
+                        />
+                      </div>
+                      <div className="flex gap-0.5 flex-wrap">
+                        <button
+                          onClick={() => setInkCategory(null)}
+                          className={cn('px-1.5 h-4 rounded text-[8px] font-mono border transition-colors',
+                            !inkCategory ? 'bg-white/10 text-white border-white/20' : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
+                          )}
+                        >
+                          All
+                        </button>
+                        {Object.keys(INK_CATEGORIES).map(cat => (
+                          <button
+                            key={cat}
+                            onClick={() => setInkCategory(inkCategory === cat ? null : cat)}
+                            className={cn('px-1.5 h-4 rounded text-[8px] font-mono border transition-colors',
+                              inkCategory === cat ? 'bg-white/10 text-white border-white/20' : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
+                            )}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-8 gap-0.5 max-h-[140px] overflow-y-auto pr-1">
+                        {filteredInks.map((ink) => (
+                          <button
+                            key={ink.name}
+                            title={ink.name}
+                            onClick={() => { store.updateLayer(i, { hex: ink.hex }); setInkCatalogLayer(null); }}
+                            className={cn(
+                              'w-6 h-6 rounded-md border transition-all hover:scale-110',
+                              layer.hex.toLowerCase() === ink.hex.toLowerCase()
+                                ? 'border-white ring-1 ring-white/30'
+                                : 'border-neutral-700/50 hover:border-neutral-500'
+                            )}
+                            style={{ backgroundColor: ink.hex }}
+                          />
+                        ))}
+                        {filteredInks.length === 0 && (
+                          <span className="col-span-8 text-[9px] text-neutral-600 font-mono py-2 text-center">No inks found</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {onExportLayer && (
+                    <button
+                      onClick={() => onExportLayer(i)}
+                      className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 font-mono uppercase transition-colors"
+                    >
+                      <Layers size={12} />
+                      Export Layer Separation
+                    </button>
+                  )}
+                </ChannelRow>
+              ))}
             </div>
           )}
         </ToolPanelSection>
@@ -312,10 +287,11 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
         {/* Paper & Texture */}
         <ToolPanelDisclosure label="Paper & Texture">
           <ToolPanelRow label="Paper">
-            <div className="flex items-center gap-2">
-              <input type="color" value={store.paperColor} aria-label="Paper color" onChange={(e) => store.updateSetting('paperColor', e.target.value)} className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0" />
-              <span className="text-[10px] text-neutral-500 font-mono uppercase">{store.paperColor}</span>
-            </div>
+            <InlineColorPicker
+              value={store.paperColor}
+              onChange={(v) => store.updateSetting('paperColor', v)}
+              label="Paper color"
+            />
           </ToolPanelRow>
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput label="Grain" value={store.paperNoise} min={0} max={1} step={0.01} onChange={(v) => set('paperNoise', v)} />
@@ -359,7 +335,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
               className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
             >
               <Download size={14} />
-              {store.isExporting ? 'Exporting...' : 'Export PNG'}
+              {store.isExporting ? 'Exporting...' : 'Export'}
             </Button>
             <Button
               aria-label="Export options"

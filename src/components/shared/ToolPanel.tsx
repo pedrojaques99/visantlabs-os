@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
-import { ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, Eye, EyeOff, Download } from 'lucide-react';
 
 export const ToolPanel: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
   <GlassPanel className={cn('h-full overflow-hidden flex flex-col', className)}>
@@ -21,10 +22,18 @@ export const ToolPanelContent: React.FC<{ children: React.ReactNode }> = ({ chil
   </div>
 );
 
-export const ToolPanelSection: React.FC<{ title: string; children: React.ReactNode; className?: string; id?: string }> = ({ title, children, className, id }) => (
+export const ToolPanelSection: React.FC<{ title: string; children: React.ReactNode; className?: string; id?: string; onReset?: () => void }> = ({ title, children, className, id, onReset }) => (
   <div id={id} className={cn('space-y-3 scroll-mt-2', className)}>
-    <div className="sticky top-0 z-10 backdrop-blur-xl bg-neutral-950/80 -mx-4 px-4 py-1.5">
+    <div className="group sticky top-0 z-10 backdrop-blur-xl bg-neutral-950/80 -mx-4 px-4 py-1.5 flex items-center justify-between">
       <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{title}</span>
+      {onReset && (
+        <button
+          onClick={onReset}
+          className="text-[10px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
+        >
+          Reset
+        </button>
+      )}
     </div>
     {children}
   </div>
@@ -116,4 +125,91 @@ export const ToolPanelRow: React.FC<{
     <span className="text-[11px] text-neutral-400">{label}</span>
     {children}
   </div>
+);
+
+export const InlineColorPicker: React.FC<{
+  value: string;
+  onChange: (hex: string) => void;
+  label?: string;
+}> = ({ value, onChange, label }) => (
+  <div className="flex items-center gap-2">
+    <input
+      type="color"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label={label || 'Color'}
+      className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0"
+    />
+    <span className="text-[10px] text-neutral-500 font-mono uppercase">{value}</span>
+  </div>
+);
+
+export const ChannelRow: React.FC<{
+  color: string;
+  onColorChange: (hex: string) => void;
+  label: string;
+  visible: boolean;
+  onToggleVisible: () => void;
+  expanded: boolean;
+  onToggleExpand: () => void;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ color, onColorChange, label, visible, onToggleVisible, expanded, onToggleExpand, actions, children }) => (
+  <div className={cn('rounded-lg border transition-colors', expanded ? 'border-neutral-700 bg-neutral-900/50' : 'border-transparent')}>
+    <button
+      onClick={onToggleExpand}
+      className="flex items-center gap-3 w-full py-2 px-2 hover:bg-neutral-800/30 rounded-lg transition-colors"
+    >
+      <input
+        type="color"
+        value={color}
+        aria-label={`${label} color`}
+        onChange={(e) => { e.stopPropagation(); onColorChange(e.target.value); }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0"
+      />
+      <span className="text-[11px] text-neutral-400 font-mono uppercase flex-1 text-left tracking-wider">{label}</span>
+      <div className="flex items-center gap-1">
+        {actions}
+        <span
+          role="button"
+          aria-label={`Toggle ${label} visibility`}
+          onClick={(e) => { e.stopPropagation(); onToggleVisible(); }}
+          className="text-neutral-500 hover:text-white transition-colors p-1"
+        >
+          {visible ? <Eye size={14} /> : <EyeOff size={14} />}
+        </span>
+        <ChevronDown size={14} className={cn('text-neutral-600 transition-transform', expanded && 'rotate-180')} />
+      </div>
+    </button>
+    {expanded && (
+      <div className="px-2 pb-2 pt-1 animate-fade-in space-y-2">
+        {children}
+      </div>
+    )}
+  </div>
+);
+
+export const ToolPanelExportActions: React.FC<{
+  onExport: () => void;
+  isExporting: boolean;
+  disabled: boolean;
+  sendTo?: React.ReactNode;
+  children?: React.ReactNode;
+}> = ({ onExport, isExporting, disabled, sendTo, children }) => (
+  <ToolPanelActions>
+    <div className="flex gap-2 w-full">
+      <Button
+        onClick={onExport}
+        disabled={isExporting || disabled}
+        aria-label="Export"
+        className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
+      >
+        <Download size={14} />
+        {isExporting ? 'Exporting...' : 'Export'}
+      </Button>
+      {sendTo}
+    </div>
+    {children}
+  </ToolPanelActions>
 );

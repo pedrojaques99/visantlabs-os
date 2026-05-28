@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Upload, Library, Download, CircleDot, Paintbrush, Undo2, Redo2, RotateCcw, PanelRightOpen, PanelRightClose, Hand, Printer, Play, Pause } from 'lucide-react';
+import { Upload, Library, Download, CircleDot, Paintbrush, Undo2, Redo2, RotateCcw, PanelRightOpen, Hand, Printer, Play, Pause } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
@@ -27,6 +27,7 @@ import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
 import { loadImage } from '@/utils/imageUtils';
 import { useMagicHand } from '@/hooks/useMagicHand';
 import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
+import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
 
 const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso']);
 
@@ -427,15 +428,13 @@ export const ImageLabPage: React.FC = () => {
 
   const statusItems = useStatusItems(mode);
 
-  const closePanel = useCallback(() => setPanelVisible(false), [setPanelVisible]);
-
   const controlsPanel = useMemo(() => {
     switch (mode) {
-      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} onClosePanel={closePanel} />;
-      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} onClosePanel={closePanel} />;
-      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} onClosePanel={closePanel} />;
+      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} />;
+      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} />;
+      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} />;
     }
-  }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, closePanel]);
+  }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen]);
 
   const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(() => [
     { id: 'halftone', icon: <CircleDot size={16} />, label: 'Halftone' },
@@ -466,7 +465,12 @@ export const ImageLabPage: React.FC = () => {
         canvasClassName="absolute inset-0 transition-all duration-300"
       >
         {/* Floating left toolbar */}
-        <div className="absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-900/80 backdrop-blur-md border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl">
+        <div className="absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50">
+          <ImageLabUploadWidget
+            imageUrl={sourceUrl}
+            onLoad={broadcastImage}
+          />
+          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
           {MODE_ITEMS.map((m) => {
             const thumb = thumbs[m.id];
             return (
