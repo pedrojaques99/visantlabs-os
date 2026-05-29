@@ -10,7 +10,11 @@ import {
   ENVIRONMENT_PRESETS,
   LIGHTING_PRESETS,
 } from '@/stores/studio3dStore';
-import { ToolPanelDisclosure, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
+import {
+  ToolPanelDisclosure,
+  ToolPanelGrid,
+  ToolPanelChip,
+  ToolPanelRow,
 } from '@/components/shared/ToolPanel';
 import { HexColorPicker } from 'react-colorful';
 import { setCameraView, resetCamera } from '../CameraBridge';
@@ -33,17 +37,46 @@ export const CameraTab: React.FC = React.memo(() => {
   }, [store.fogColor]);
 
   const [fov, setFov] = useDebouncedSlider(store.fov, store.setFov);
-  const [toneMappingExposure, setToneMappingExposure] = useDebouncedSlider(store.toneMappingExposure, store.setToneMappingExposure);
-  const [groundReflection, setGroundReflection] = useDebouncedSlider(store.groundReflection, store.setGroundReflection);
-  const [lightIntensity, setLightIntensity] = useDebouncedSlider(store.lightIntensity, store.setLightIntensity);
-  const [ambientIntensity, setAmbientIntensity] = useDebouncedSlider(store.ambientIntensity, store.setAmbientIntensity);
-  const [fillLightIntensity, setFillLightIntensity] = useDebouncedSlider(store.fillLightIntensity, store.setFillLightIntensity);
-  const [bounceLightIntensity, setBounceLightIntensity] = useDebouncedSlider(store.bounceLightIntensity, store.setBounceLightIntensity);
-  const [pointLightIntensity, setPointLightIntensity] = useDebouncedSlider(store.pointLightIntensity, store.setPointLightIntensity);
-  const [bgAngle, setBgAngle] = useDebouncedSlider(store.bgGradient.angle, (v) => store.setBgGradient({ angle: v }));
+  const [toneMappingExposure, setToneMappingExposure] = useDebouncedSlider(
+    store.toneMappingExposure,
+    store.setToneMappingExposure
+  );
+  const [groundReflection, setGroundReflection] = useDebouncedSlider(
+    store.groundReflection,
+    store.setGroundReflection
+  );
+  const [lightIntensity, setLightIntensity] = useDebouncedSlider(
+    store.lightIntensity,
+    store.setLightIntensity
+  );
+  const [ambientIntensity, setAmbientIntensity] = useDebouncedSlider(
+    store.ambientIntensity,
+    store.setAmbientIntensity
+  );
+  const [fillLightIntensity, setFillLightIntensity] = useDebouncedSlider(
+    store.fillLightIntensity,
+    store.setFillLightIntensity
+  );
+  const [bounceLightIntensity, setBounceLightIntensity] = useDebouncedSlider(
+    store.bounceLightIntensity,
+    store.setBounceLightIntensity
+  );
+  const [pointLightIntensity, setPointLightIntensity] = useDebouncedSlider(
+    store.pointLightIntensity,
+    store.setPointLightIntensity
+  );
+  const [bgAngle, setBgAngle] = useDebouncedSlider(store.bgGradient.angle, (v) =>
+    store.setBgGradient({ angle: v })
+  );
   const [hdriBlur, setHdriBlur] = useDebouncedSlider(store.hdriBlur, store.setHdriBlur);
-  const [hdriIntensity, setHdriIntensity] = useDebouncedSlider(store.hdriIntensity, store.setHdriIntensity);
-  const [hdriRotation, setHdriRotation] = useDebouncedSlider(store.hdriRotation, store.setHdriRotation);
+  const [hdriIntensity, setHdriIntensity] = useDebouncedSlider(
+    store.hdriIntensity,
+    store.setHdriIntensity
+  );
+  const [hdriRotation, setHdriRotation] = useDebouncedSlider(
+    store.hdriRotation,
+    store.setHdriRotation
+  );
   const [fogNear, setFogNear] = useDebouncedSlider(store.fogNear, store.setFogNear);
   const [fogFar, setFogFar] = useDebouncedSlider(store.fogFar, store.setFogFar);
 
@@ -53,20 +86,35 @@ export const CameraTab: React.FC = React.memo(() => {
       <ToolPanelDisclosure label={t('studio3d.camera.title')} defaultOpen>
         <ToolPanelGrid cols={3}>
           {(['front', 'top', 'right', 'back', 'iso'] as const).map((view) => (
-            <ToolPanelChip key={view} active={store._cameraInfo?.view === view} onClick={() => setCameraView(view)}>
+            <ToolPanelChip
+              key={view}
+              active={store._cameraInfo?.view === view}
+              onClick={() => setCameraView(view)}
+            >
               {t(`studio3d.camera.${view}`)}
             </ToolPanelChip>
           ))}
-          <ToolPanelChip onClick={() => resetCamera()}>
-            {t('studio3d.camera.reset')}
-          </ToolPanelChip>
+          <ToolPanelChip onClick={() => resetCamera()}>{t('studio3d.camera.reset')}</ToolPanelChip>
         </ToolPanelGrid>
         <div className="grid grid-cols-2 gap-1.5">
-          <ToolPanelChip active={!store.orthographic} onClick={() => store.setOrthographic(false)}>{t('studio3d.panels.perspective')}</ToolPanelChip>
-          <ToolPanelChip active={store.orthographic} onClick={() => store.setOrthographic(true)}>{t('studio3d.panels.orthographic')}</ToolPanelChip>
+          <ToolPanelChip active={!store.orthographic} onClick={() => store.setOrthographic(false)}>
+            {t('studio3d.panels.perspective')}
+          </ToolPanelChip>
+          <ToolPanelChip active={store.orthographic} onClick={() => store.setOrthographic(true)}>
+            {t('studio3d.panels.orthographic')}
+          </ToolPanelChip>
         </div>
         {!store.orthographic && (
-          <ScrubInput label="FOV" value={fov} min={15} max={120} step={1} suffix="°" onChange={setFov} hint="Field of View — lower = telephoto, higher = wide-angle" />
+          <ScrubInput
+            label="FOV"
+            value={fov}
+            min={15}
+            max={120}
+            step={1}
+            suffix="°"
+            onChange={setFov}
+            hint="Field of View — lower = telephoto, higher = wide-angle"
+          />
         )}
       </ToolPanelDisclosure>
 
@@ -80,35 +128,102 @@ export const CameraTab: React.FC = React.memo(() => {
           ))}
         </ToolPanelGrid>
         <div className="grid grid-cols-2 gap-1.5">
-          <ScrubInput label="Key" value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
-          <ScrubInput label="Ambient" value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
-          <ScrubInput label="Fill" value={fillLightIntensity} min={0} max={2} step={0.05} onChange={setFillLightIntensity} />
-          <ScrubInput label="Bounce" value={bounceLightIntensity} min={0} max={2} step={0.05} onChange={setBounceLightIntensity} />
+          <ScrubInput
+            label="Key"
+            value={lightIntensity}
+            min={0}
+            max={3}
+            step={0.05}
+            onChange={setLightIntensity}
+          />
+          <ScrubInput
+            label="Ambient"
+            value={ambientIntensity}
+            min={0}
+            max={2}
+            step={0.05}
+            onChange={setAmbientIntensity}
+          />
+          <ScrubInput
+            label="Fill"
+            value={fillLightIntensity}
+            min={0}
+            max={2}
+            step={0.05}
+            onChange={setFillLightIntensity}
+          />
+          <ScrubInput
+            label="Bounce"
+            value={bounceLightIntensity}
+            min={0}
+            max={2}
+            step={0.05}
+            onChange={setBounceLightIntensity}
+          />
         </div>
-        <ScrubInput label="Top Light" value={pointLightIntensity} min={0} max={2} step={0.05} onChange={setPointLightIntensity} />
+        <ScrubInput
+          label="Top Light"
+          value={pointLightIntensity}
+          min={0}
+          max={2}
+          step={0.05}
+          onChange={setPointLightIntensity}
+        />
       </ToolPanelDisclosure>
 
       {/* Light Positions */}
       <ToolPanelDisclosure label={t('studio3d.panels.lightPositions')}>
-        <LightPositionSliders label="Key Position" position={store.lightPosition} onChange={store.setLightPosition} />
-        <LightPositionSliders label="Fill Position" position={store.fillLightPosition} onChange={store.setFillLightPosition} />
-        <LightPositionSliders label="Bounce Position" position={store.bounceLightPosition} onChange={store.setBounceLightPosition} />
-        <LightPositionSliders label="Top Position" position={store.pointLightPosition} onChange={store.setPointLightPosition} />
+        <LightPositionSliders
+          label="Key Position"
+          position={store.lightPosition}
+          onChange={store.setLightPosition}
+        />
+        <LightPositionSliders
+          label="Fill Position"
+          position={store.fillLightPosition}
+          onChange={store.setFillLightPosition}
+        />
+        <LightPositionSliders
+          label="Bounce Position"
+          position={store.bounceLightPosition}
+          onChange={store.setBounceLightPosition}
+        />
+        <LightPositionSliders
+          label="Top Position"
+          position={store.pointLightPosition}
+          onChange={store.setPointLightPosition}
+        />
       </ToolPanelDisclosure>
 
       {/* Rendering & Tone Mapping */}
       <ToolPanelDisclosure label={t('studio3d.panels.rendering')} defaultOpen>
         <ToolPanelGrid cols={3}>
           {(['performance', 'balanced', 'quality'] as const).map((q) => (
-            <ToolPanelChip key={q} active={store.renderQuality === q} onClick={() => store.setRenderQuality(q)}>
+            <ToolPanelChip
+              key={q}
+              active={store.renderQuality === q}
+              onClick={() => store.setRenderQuality(q)}
+            >
               {t(`studio3d.geometry.quality${q.charAt(0).toUpperCase() + q.slice(1)}`)}
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
-        <ScrubInput label="Exposure" value={toneMappingExposure} min={0.1} max={3} step={0.05} onChange={setToneMappingExposure} hint="Scene brightness — adjust to match your lighting" />
+        <ScrubInput
+          label="Exposure"
+          value={toneMappingExposure}
+          min={0.1}
+          max={3}
+          step={0.05}
+          onChange={setToneMappingExposure}
+          hint="Scene brightness — adjust to match your lighting"
+        />
         <ToolPanelGrid cols={3}>
           {TONE_MAPPING_OPTIONS.map((tm) => (
-            <ToolPanelChip key={tm.id} active={store.toneMapping === tm.id} onClick={() => store.setToneMapping(tm.id)}>
+            <ToolPanelChip
+              key={tm.id}
+              active={store.toneMapping === tm.id}
+              onClick={() => store.setToneMapping(tm.id)}
+            >
               {tm.label}
             </ToolPanelChip>
           ))}
@@ -120,7 +235,11 @@ export const CameraTab: React.FC = React.memo(() => {
         <ToolPanelDisclosure label="HDRI" defaultOpen>
           <ToolPanelGrid cols={3}>
             {ENVIRONMENT_PRESETS.map((env) => (
-              <ToolPanelChip key={env.id} active={store.environment === env.id && !store.customHdriUrl} onClick={() => store.setEnvironment(env.id)}>
+              <ToolPanelChip
+                key={env.id}
+                active={store.environment === env.id && !store.customHdriUrl}
+                onClick={() => store.setEnvironment(env.id)}
+              >
                 {env.label}
               </ToolPanelChip>
             ))}
@@ -129,7 +248,9 @@ export const CameraTab: React.FC = React.memo(() => {
             onClick={() => hdriInputRef.current?.click()}
             className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
           >
-            {store.customHdriUrl ? t('studio3d.environment.customLoaded') : t('studio3d.environment.uploadHdr')}
+            {store.customHdriUrl
+              ? t('studio3d.environment.customLoaded')
+              : t('studio3d.environment.uploadHdr')}
           </button>
           <input
             ref={hdriInputRef}
@@ -141,7 +262,11 @@ export const CameraTab: React.FC = React.memo(() => {
               if (file) {
                 const maxSizeMB = 50;
                 if (file.size > maxSizeMB * 1024 * 1024) {
-                  toast.error(`HDRI too large (${(file.size / 1024 / 1024).toFixed(0)}MB). Max ${maxSizeMB}MB.`);
+                  toast.error(
+                    `HDRI too large (${(file.size / 1024 / 1024).toFixed(
+                      0
+                    )}MB). Max ${maxSizeMB}MB.`
+                  );
                   e.target.value = '';
                   return;
                 }
@@ -155,17 +280,46 @@ export const CameraTab: React.FC = React.memo(() => {
             className="hidden"
           />
           <ToolPanelRow label={t('studio3d.environment.hdriBackground')}>
-            <Switch checked={store.hdriBackground} onCheckedChange={store.setHdriBackground} aria-label="HDRI as background" />
+            <Switch
+              checked={store.hdriBackground}
+              onCheckedChange={store.setHdriBackground}
+              aria-label="HDRI as background"
+            />
           </ToolPanelRow>
-          <ScrubInput label="Rotation" value={hdriRotation} min={0} max={360} step={1} suffix="°" onChange={setHdriRotation} />
+          <ScrubInput
+            label="Rotation"
+            value={hdriRotation}
+            min={0}
+            max={360}
+            step={1}
+            suffix="°"
+            onChange={setHdriRotation}
+          />
           {store.hdriBackground && (
             <div className="grid grid-cols-2 gap-1.5">
-              <ScrubInput label="Blur" value={hdriBlur} min={0} max={1} step={0.01} onChange={setHdriBlur} />
-              <ScrubInput label="Intensity" value={hdriIntensity} min={0} max={3} step={0.05} onChange={setHdriIntensity} />
+              <ScrubInput
+                label="Blur"
+                value={hdriBlur}
+                min={0}
+                max={1}
+                step={0.01}
+                onChange={setHdriBlur}
+              />
+              <ScrubInput
+                label="Intensity"
+                value={hdriIntensity}
+                min={0}
+                max={3}
+                step={0.05}
+                onChange={setHdriIntensity}
+              />
             </div>
           )}
           {store.customHdriUrl && (
-            <button onClick={() => store.setEnvironment('studio')} className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors">
+            <button
+              onClick={() => store.setEnvironment('studio')}
+              className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors"
+            >
               {t('studio3d.environment.removeCustom')}
             </button>
           )}
@@ -174,7 +328,11 @@ export const CameraTab: React.FC = React.memo(() => {
         <ToolPanelDisclosure label={t('studio3d.background.title')} defaultOpen>
           <ToolPanelGrid cols={4}>
             {(['solid', 'linear', 'radial', 'image'] as const).map((type) => (
-              <ToolPanelChip key={type} active={store.bgType === type} onClick={() => store.setBgType(type)}>
+              <ToolPanelChip
+                key={type}
+                active={store.bgType === type}
+                onClick={() => store.setBgType(type)}
+              >
                 {type === 'image' ? 'Image' : t(`studio3d.background.types.${type}`)}
               </ToolPanelChip>
             ))}
@@ -213,7 +371,9 @@ export const CameraTab: React.FC = React.memo(() => {
               </div>
               {bgColorPickerOpen && (
                 <div className="animate-fade-in">
-                  <div className="custom-color-picker"><HexColorPicker color={store.background} onChange={store.setBackground} /></div>
+                  <div className="custom-color-picker">
+                    <HexColorPicker color={store.background} onChange={store.setBackground} />
+                  </div>
                 </div>
               )}
             </div>
@@ -222,21 +382,49 @@ export const CameraTab: React.FC = React.memo(() => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[9px] text-neutral-500 uppercase tracking-widest">{t('studio3d.background.color1')}</span>
-                    <div className="w-3 h-3 rounded-full border border-white/10" style={{ backgroundColor: store.bgGradient.color1 }} />
+                    <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+                      {t('studio3d.background.color1')}
+                    </span>
+                    <div
+                      className="w-3 h-3 rounded-full border border-white/10"
+                      style={{ backgroundColor: store.bgGradient.color1 }}
+                    />
                   </div>
-                  <div className="custom-color-picker-mini"><HexColorPicker color={store.bgGradient.color1} onChange={(c) => store.setBgGradient({ color1: c })} /></div>
+                  <div className="custom-color-picker-mini">
+                    <HexColorPicker
+                      color={store.bgGradient.color1}
+                      onChange={(c) => store.setBgGradient({ color1: c })}
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[9px] text-neutral-500 uppercase tracking-widest">{t('studio3d.background.color2')}</span>
-                    <div className="w-3 h-3 rounded-full border border-white/10" style={{ backgroundColor: store.bgGradient.color2 }} />
+                    <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+                      {t('studio3d.background.color2')}
+                    </span>
+                    <div
+                      className="w-3 h-3 rounded-full border border-white/10"
+                      style={{ backgroundColor: store.bgGradient.color2 }}
+                    />
                   </div>
-                  <div className="custom-color-picker-mini"><HexColorPicker color={store.bgGradient.color2} onChange={(c) => store.setBgGradient({ color2: c })} /></div>
+                  <div className="custom-color-picker-mini">
+                    <HexColorPicker
+                      color={store.bgGradient.color2}
+                      onChange={(c) => store.setBgGradient({ color2: c })}
+                    />
+                  </div>
                 </div>
               </div>
               {store.bgType === 'linear' && (
-                <ScrubInput label={t('studio3d.background.angle')} value={bgAngle} min={0} max={360} step={1} suffix="°" onChange={setBgAngle} />
+                <ScrubInput
+                  label={t('studio3d.background.angle')}
+                  value={bgAngle}
+                  min={0}
+                  max={360}
+                  step={1}
+                  suffix="°"
+                  onChange={setBgAngle}
+                />
               )}
             </div>
           )}
@@ -244,15 +432,23 @@ export const CameraTab: React.FC = React.memo(() => {
             <div className="space-y-2">
               {store.backgroundImageUrl ? (
                 <div className="relative rounded-md overflow-hidden border border-white/10">
-                  <img src={store.backgroundImageUrl} alt="Background" className="w-full h-20 object-cover" />
+                  <img
+                    src={store.backgroundImageUrl}
+                    alt="Background"
+                    className="w-full h-20 object-cover"
+                  />
                   <button
                     onClick={() => store.setBackgroundImageUrl('')}
                     className="absolute top-1 right-1 w-5 h-5 rounded bg-black/60 flex items-center justify-center text-neutral-400 hover:text-white transition-colors text-[10px]"
-                  >✕</button>
+                  >
+                    ✕
+                  </button>
                 </div>
               ) : (
                 <label className="flex flex-col items-center gap-1 p-3 border border-dashed border-white/10 hover:border-white/20 rounded-lg cursor-pointer transition-all">
-                  <span className="text-[10px] uppercase tracking-wider text-neutral-500">Upload image</span>
+                  <span className="text-[10px] uppercase tracking-wider text-neutral-500">
+                    Upload image
+                  </span>
                   <input
                     type="file"
                     accept=".png,.jpg,.jpeg,.webp"
@@ -260,7 +456,10 @@ export const CameraTab: React.FC = React.memo(() => {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      if (file.size > 10 * 1024 * 1024) { toast.error('Max 10MB'); return; }
+                      if (file.size > 10 * 1024 * 1024) {
+                        toast.error('Max 10MB');
+                        return;
+                      }
                       store.setBackgroundImageUrl(URL.createObjectURL(file));
                       e.target.value = '';
                     }}
@@ -270,7 +469,11 @@ export const CameraTab: React.FC = React.memo(() => {
             </div>
           )}
           <ToolPanelRow label={t('studio3d.background.transparent')}>
-            <Switch checked={store.transparentBg} onCheckedChange={store.setTransparentBg} aria-label="Transparent background" />
+            <Switch
+              checked={store.transparentBg}
+              onCheckedChange={store.setTransparentBg}
+              aria-label="Transparent background"
+            />
           </ToolPanelRow>
         </ToolPanelDisclosure>
       </ToolPanelDisclosure>
@@ -278,12 +481,19 @@ export const CameraTab: React.FC = React.memo(() => {
       {/* Atmosphere */}
       <ToolPanelDisclosure label={t('studio3d.panels.atmosphere')}>
         <ToolPanelRow label={t('studio3d.panels.fog')}>
-          <Switch checked={store.fogEnabled} onCheckedChange={store.setFogEnabled} aria-label="Fog" />
+          <Switch
+            checked={store.fogEnabled}
+            onCheckedChange={store.setFogEnabled}
+            aria-label="Fog"
+          />
         </ToolPanelRow>
         {store.fogEnabled && (
           <>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded border border-white/10 shrink-0" style={{ backgroundColor: store.fogColor }} />
+              <div
+                className="w-5 h-5 rounded border border-white/10 shrink-0"
+                style={{ backgroundColor: store.fogColor }}
+              />
               <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
                 <span className="text-[10px] text-neutral-500 mr-1">#</span>
                 <input
@@ -306,8 +516,22 @@ export const CameraTab: React.FC = React.memo(() => {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-1.5">
-              <ScrubInput label="Near" value={fogNear} min={1} max={50} step={0.5} onChange={setFogNear} />
-              <ScrubInput label="Far" value={fogFar} min={5} max={100} step={0.5} onChange={setFogFar} />
+              <ScrubInput
+                label="Near"
+                value={fogNear}
+                min={1}
+                max={50}
+                step={0.5}
+                onChange={setFogNear}
+              />
+              <ScrubInput
+                label="Far"
+                value={fogFar}
+                min={5}
+                max={100}
+                step={0.5}
+                onChange={setFogFar}
+              />
             </div>
           </>
         )}
@@ -321,17 +545,32 @@ export const CameraTab: React.FC = React.memo(() => {
         {store.shadow && (
           <ToolPanelGrid cols={3}>
             {(['low', 'medium', 'high'] as const).map((q) => (
-              <ToolPanelChip key={q} active={store.shadowQuality === q} onClick={() => store.setShadowQuality(q)}>
+              <ToolPanelChip
+                key={q}
+                active={store.shadowQuality === q}
+                onClick={() => store.setShadowQuality(q)}
+              >
                 {q.charAt(0).toUpperCase() + q.slice(1)}
               </ToolPanelChip>
             ))}
           </ToolPanelGrid>
         )}
         <ToolPanelRow label={t('studio3d.panels.groundPlane')}>
-          <Switch checked={store.groundPlane} onCheckedChange={store.setGroundPlane} aria-label="Ground plane" />
+          <Switch
+            checked={store.groundPlane}
+            onCheckedChange={store.setGroundPlane}
+            aria-label="Ground plane"
+          />
         </ToolPanelRow>
         {store.groundPlane && (
-          <ScrubInput label="Reflection" value={groundReflection} min={0} max={1} step={0.05} onChange={setGroundReflection} />
+          <ScrubInput
+            label="Reflection"
+            value={groundReflection}
+            min={0}
+            max={1}
+            step={0.05}
+            onChange={setGroundReflection}
+          />
         )}
         <ToolPanelRow label={t('studio3d.lighting.grid')}>
           <Switch checked={store.showGrid} onCheckedChange={store.setShowGrid} aria-label="Grid" />
