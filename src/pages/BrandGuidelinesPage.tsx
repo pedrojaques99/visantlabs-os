@@ -22,6 +22,8 @@ import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButt
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
 import { BrandAiPopulateDialog } from '@/components/brand/guidelines/BrandAiPopulateDialog';
 import { BrandMockupDialog } from '@/components/brand/guidelines/BrandMockupDialog';
+import { BrandAvatar } from '@/components/brand/BrandAvatar';
+import { getProxiedUrl } from '@/utils/proxyUtils';
 import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check, Image, MoreHorizontal, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,20 +40,32 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
         <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full flex flex-col items-center justify-center text-center py-24 gap-8"
+            className="w-full flex flex-col items-center justify-center text-center py-24 gap-10 max-w-lg mx-auto"
         >
-            <Palette size={36} className="text-neutral-700" strokeWidth={1} />
+            {/* Mock social-media-style card preview */}
+            <div className="w-full max-w-xs pointer-events-none select-none opacity-50">
+                <div className="rounded-xl border border-white/[0.06] bg-neutral-900 overflow-hidden">
+                    <div className="w-full h-20 bg-gradient-to-br from-indigo-500/30 to-pink-500/20" />
+                    <div className="px-4 -mt-5">
+                        <div className="w-10 h-10 rounded-lg bg-neutral-800 ring-2 ring-neutral-900 flex items-center justify-center text-neutral-500 text-xs font-semibold">AB</div>
+                    </div>
+                    <div className="px-4 pt-2 pb-4">
+                        <div className="h-3.5 w-28 rounded bg-neutral-800" />
+                        <div className="h-2.5 w-40 rounded bg-neutral-800/50 mt-1.5" />
+                    </div>
+                </div>
+            </div>
 
-            <div className="space-y-2 max-w-sm mx-auto">
+            <div className="space-y-2">
                 <h2 className="text-lg font-medium text-neutral-300">
                     {t('brandGuidelines.emptyState')}
                 </h2>
-                <p className="text-neutral-600 text-sm leading-relaxed">
+                <p className="text-neutral-600 text-sm leading-relaxed max-w-xs mx-auto">
                     Crie e organize suas diretrizes de marca em um único lugar.
                 </p>
             </div>
 
-            <Button onClick={onCreate} variant="outline" className="h-9 px-5 gap-2 text-sm">
+            <Button onClick={onCreate} size="lg" className="h-11 px-6 gap-2 text-sm">
                 <Plus size={15} />
                 {t('brandGuidelines.createFirst')}
             </Button>
@@ -59,18 +73,89 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
     );
 };
 
-const NoSelectionState = () => {
-    const { t } = useTranslation();
+const getCoverUrl = (g: BrandGuideline): string | null => {
+    const bg = g.media?.find(m => m.type === 'image' && m.category === 'background');
+    if (bg) return bg.url;
+    const firstImg = g.media?.find(m => m.type === 'image');
+    if (firstImg) return firstImg.url;
+    const primaryLogo = g.logos?.find(l => l?.variant === 'primary' || l?.variant === 'dark');
+    if (primaryLogo) return primaryLogo.url;
+    return null;
+};
+
+const CoverFallback = ({ colors }: { colors?: BrandGuideline['colors'] }) => {
+    const c1 = colors?.[0]?.hex || '#262626';
+    const c2 = colors?.[1]?.hex || '#171717';
+    return (
+        <div
+            className="absolute inset-0"
+            style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)` }}
+        />
+    );
+};
+
+const BrandCard = ({ guideline, onSelect }: { guideline: BrandGuideline; onSelect: (g: BrandGuideline) => void }) => {
+    const coverUrl = getCoverUrl(guideline);
+
+    return (
+        <motion.button
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02 }}
+            onClick={() => onSelect(guideline)}
+            className="group relative flex flex-col rounded-xl border border-white/[0.06] bg-neutral-900 hover:border-white/[0.14] transition-all duration-200 overflow-hidden text-left cursor-pointer"
+        >
+            {/* Cover image */}
+            <div className="relative w-full h-24 overflow-hidden bg-neutral-800">
+                {coverUrl ? (
+                    <img
+                        src={getProxiedUrl(coverUrl)}
+                        alt=""
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                    />
+                ) : (
+                    <CoverFallback colors={guideline.colors} />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent" />
+            </div>
+
+            {/* Avatar overlapping cover/content boundary */}
+            <div className="relative px-4 -mt-5">
+                <div className="ring-2 ring-neutral-900 rounded-lg">
+                    <BrandAvatar brand={guideline} size={40} rounded="md" preference="primary" />
+                </div>
+            </div>
+
+            {/* Name + tagline */}
+            <div className="px-4 pt-2 pb-4 min-w-0">
+                <p className="text-sm font-medium text-neutral-200 truncate group-hover:text-white transition-colors">
+                    {guideline.identity?.name || guideline.name || 'Untitled'}
+                </p>
+                {guideline.identity?.tagline && (
+                    <p className="text-[11px] text-neutral-600 truncate mt-0.5">
+                        {guideline.identity.tagline}
+                    </p>
+                )}
+            </div>
+        </motion.button>
+    );
+};
+
+const BrandGrid = ({ guidelines, onSelect }: { guidelines: BrandGuideline[]; onSelect: (g: BrandGuideline) => void }) => {
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="w-full min-h-[360px] flex flex-col items-center justify-center text-center gap-5"
+            className="w-full"
         >
-            <Layers size={28} strokeWidth={1} className="text-neutral-700" />
-            <p className="text-neutral-600 text-sm max-w-xs mx-auto">
-                {t('brand.guidelines.awaiting_selection')}
+            <p className="text-xs text-neutral-600 mb-4">
+                {guidelines.length} design system{guidelines.length !== 1 ? 's' : ''} — select one to view & edit
             </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                {guidelines.map((g) => (
+                    <BrandCard key={g.id} guideline={g} onSelect={onSelect} />
+                ))}
+            </div>
         </motion.div>
     );
 };
@@ -431,7 +516,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                         </motion.div>
                                         </AnimatePresence>
                                     ) : (
-                                        <NoSelectionState />
+                                        <BrandGrid guidelines={guidelines} onSelect={handleSelect} />
                                     )}
                                 </motion.div>
                             )}
