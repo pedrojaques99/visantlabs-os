@@ -16,7 +16,7 @@ import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useTranslation } from '@/hooks/useTranslation';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box, Maximize2, Minimize2 } from 'lucide-react';
+import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box, Maximize2, Minimize2, Sun, Layers, Grid3x3 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-media-query';
 
 export const Studio3DPage: React.FC = () => {
@@ -48,6 +48,9 @@ export const Studio3DPage: React.FC = () => {
   const cameraInfo = store((s) => s._cameraInfo);
   const videoDuration = store((s) => s.videoDuration);
   const videoFps = store((s) => s.videoFps);
+  const shadow = store((s) => s.shadow);
+  const groundPlane = store((s) => s.groundPlane);
+  const showGrid = store((s) => s.showGrid);
 
   useEffect(() => {
     const sceneId = searchParams.get('sceneId');
@@ -295,6 +298,18 @@ export const Studio3DPage: React.FC = () => {
         </button>
         <button onClick={toggleFullscreen} title="Fullscreen" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
           {isFullscreen ? <Minimize2 size={isMobile ? 18 : 15} /> : <Maximize2 size={isMobile ? 18 : 15} />}
+        </button>
+
+        <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+
+        <button onClick={() => store.getState().setShadow(!shadow)} title={`Shadows ${shadow ? 'ON' : 'OFF'}`} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', shadow ? 'bg-white/10 text-white' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+          <Sun size={isMobile ? 18 : 15} />
+        </button>
+        <button onClick={() => store.getState().setGroundPlane(!groundPlane)} title={`Ground ${groundPlane ? 'ON' : 'OFF'}`} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', groundPlane ? 'bg-white/10 text-white' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+          <Layers size={isMobile ? 18 : 15} />
+        </button>
+        <button onClick={() => store.getState().setShowGrid(!showGrid)} title={`Grid ${showGrid ? 'ON' : 'OFF'}`} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', showGrid ? 'bg-white/10 text-white' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+          <Grid3x3 size={isMobile ? 18 : 15} />
         </button>
 
         {!isMobile && (
