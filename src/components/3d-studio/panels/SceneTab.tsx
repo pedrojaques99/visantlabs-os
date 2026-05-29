@@ -25,6 +25,7 @@ import {
   ToolPanelSection, ToolPanelDisclosure, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
+import { HexColorPicker } from 'react-colorful';
 import { FONT_OPTIONS } from './_shared';
 
 export const SceneTab: React.FC = React.memo(() => {
@@ -34,6 +35,7 @@ export const SceneTab: React.FC = React.memo(() => {
   const [isDragging, setIsDragging] = useState(false);
   const [hasRandomizedOnce, setHasRandomizedOnce] = useState(false);
   const [showRandomizeConfirm, setShowRandomizeConfirm] = useState(false);
+  const [chainColorPickerOpen, setChainColorPickerOpen] = useState(false);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
@@ -402,13 +404,35 @@ export const SceneTab: React.FC = React.memo(() => {
                 <ScrubInput label={t('studio3d.geometry.chainOffset')} value={chainOff} min={-3} max={3} step={0.05} onChange={setChainOff} />
               </div>
               <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
-                <div className="flex items-center gap-2">
-                  {!!store.chainColor && (
-                    <input type="color" value={store.chainColor} onChange={(e) => store.setChainColor(e.target.value)} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer" />
-                  )}
-                  <Switch checked={!!store.chainColor} onCheckedChange={(on) => store.setChainColor(on ? store.color : '')} aria-label="Custom chain color" />
-                </div>
+                <Switch checked={!!store.chainColor} onCheckedChange={(on) => store.setChainColor(on ? store.color : '')} aria-label="Custom chain color" />
               </ToolPanelRow>
+              {!!store.chainColor && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+                    style={{ backgroundColor: store.chainColor }}
+                    onClick={() => setChainColorPickerOpen((v) => !v)}
+                    aria-label="Toggle chain color picker"
+                  />
+                  <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
+                    <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                    <input
+                      type="text"
+                      value={store.chainColor.replace('#', '').toUpperCase()}
+                      onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setChainColor(`#${v}`); }}
+                      maxLength={6}
+                      aria-label="Chain color hex"
+                      className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+              {chainColorPickerOpen && !!store.chainColor && (
+                <div className="animate-fade-in">
+                  <div className="custom-color-picker"><HexColorPicker color={store.chainColor} onChange={store.setChainColor} /></div>
+                </div>
+              )}
             </>
           )}
         </div>
