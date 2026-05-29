@@ -277,6 +277,7 @@ interface Studio3DState {
   traceTurdSize: number;
   traceOptTolerance: number;
   traceThreshold: number;
+  shapeColor: string;
 
   // Geometry
   shapeType: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon';
@@ -435,6 +436,7 @@ interface Studio3DState {
   setTraceTurdSize: (v: number) => void;
   setTraceOptTolerance: (v: number) => void;
   setTraceThreshold: (v: number) => void;
+  setShapeColor: (v: string) => void;
   setShapeType: (v: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon') => void;
 
   setDepth: (v: number) => void;
@@ -565,6 +567,7 @@ const INITIAL_STATE = {
   traceTurdSize: 2,
   traceOptTolerance: 0.2,
   traceThreshold: 128,
+  shapeColor: '',
   shapeType: 'standard' as const,
 
   depth: 0.9,
@@ -697,6 +700,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setTraceTurdSize: (traceTurdSize) => set({ traceTurdSize }),
   setTraceOptTolerance: (traceOptTolerance) => set({ traceOptTolerance }),
   setTraceThreshold: (traceThreshold) => set({ traceThreshold }),
+  setShapeColor: (shapeColor) => set({ shapeColor }),
   setShapeType: (shapeType) => set({ shapeType }),
 
   setDepth: (depth) => set({ depth }),

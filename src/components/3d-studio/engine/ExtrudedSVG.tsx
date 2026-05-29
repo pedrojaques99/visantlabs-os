@@ -152,6 +152,7 @@ interface ExtrudedSVGProps {
   bailOffset?: number;
   chainOffset?: number;
   chainColor?: string;
+  shapeColor?: string;
   reliefDepth?: number;
 }
 
@@ -164,7 +165,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
   coinRadius = 2.2, badgeWidth = 3.6, badgeHeight = 2.4, badgeRadius = 0.4,
   stampRadius = 2.4, stampTeeth = 24, stampToothDepth = 0.25,
   shieldWidth = 2.2, shieldHeight = 2.8, hexRadius = 2.4,
-  chainLinks = 6, chainScale = 1, showChain = false, bailSize = 0.35, bailOffset = 0, chainOffset = 0, chainColor = '', reliefDepth: reliefDepthProp = 0.3,
+  chainLinks = 6, chainScale = 1, showChain = false, bailSize = 0.35, bailOffset = 0, chainOffset = 0, chainColor = '', shapeColor = '', reliefDepth: reliefDepthProp = 0.3,
 }) => {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const [normalMap, setNormalMap] = useState<THREE.Texture | null>(null);
@@ -274,13 +275,14 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     const isEmissive = materialSettings.preset === 'emissive';
     const wantsTransparency = materialSettings.transparent || materialSettings.opacity < 1;
     const baseColor = isGold ? '#d4af37' : color;
+    const shapeBaseColor = shapeColor || baseColor;
     const emissiveColor = isEmissive ? color : '#000000';
     const emissiveIntensity = preset.emissiveIntensity ?? 0;
     const transmissionAmount = wantsTransparency ? 1 - materialSettings.opacity : 0;
 
     const shapeMaterial = (
       <meshPhysicalMaterial
-        color={baseColor}
+        color={shapeBaseColor}
         map={texture ?? undefined}
         metalness={isGold ? 1.0 : materialSettings.metalness}
         roughness={isGold ? 0.12 : (wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness)}

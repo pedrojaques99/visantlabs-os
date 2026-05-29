@@ -19,7 +19,7 @@ import {
   type SavedScene,
 } from '@/stores/studio3dStore';
 import {
-  Upload, FileText, Type, Box, Film, Save, FolderOpen, Trash2, Shuffle,
+  Upload, FileText, Type, Box, Film, Save, FolderOpen, Trash2, Shuffle, Link,
 } from 'lucide-react';
 import {
   ToolPanelSection, ToolPanelDisclosure, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
@@ -36,6 +36,7 @@ export const SceneTab: React.FC = React.memo(() => {
   const [hasRandomizedOnce, setHasRandomizedOnce] = useState(false);
   const [showRandomizeConfirm, setShowRandomizeConfirm] = useState(false);
   const [chainColorPickerOpen, setChainColorPickerOpen] = useState(false);
+  const [shapeColorPickerOpen, setShapeColorPickerOpen] = useState(false);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
@@ -325,7 +326,6 @@ export const SceneTab: React.FC = React.memo(() => {
 
       {/* Geometry */}
       <ToolPanelDisclosure label={t('studio3d.geometry.title')} icon={<Box size={13} />} defaultOpen>
-        {/* 1. Depth, scale, bevel */}
         <div className="grid grid-cols-2 gap-1.5">
           <ScrubInput label={t('studio3d.geometry.depth')} value={depth} min={0.1} max={10} step={0.1} onChange={setDepth} />
           <ScrubInput label={t('studio3d.geometry.objectScale')} value={objectScale} min={0.1} max={5} step={0.05} onChange={setObjectScale} />
@@ -340,21 +340,19 @@ export const SceneTab: React.FC = React.memo(() => {
             <ScrubInput label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={1} onChange={setSmoothness} />
           </div>
         )}
+      </ToolPanelDisclosure>
 
-        {/* 2. Shape presets + shape-specific params */}
-        <div className="mt-2 pt-2 border-t border-white/5">
-          <ToolPanelGrid cols={3}>
-            {(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'] as const).map((type) => (
-              <ToolPanelChip key={type} active={store.shapeType === type} onClick={() => store.setShapeType(type)}>
-                {t(`studio3d.geometry.shape_${type}`)}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-        </div>
+      {/* Shape */}
+      <ToolPanelDisclosure label={t('studio3d.geometry.shapeType')} defaultOpen>
+        <ToolPanelGrid cols={3}>
+          {(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'] as const).map((type) => (
+            <ToolPanelChip key={type} active={store.shapeType === type} onClick={() => store.setShapeType(type)}>
+              {t(`studio3d.geometry.shape_${type}`)}
+            </ToolPanelChip>
+          ))}
+        </ToolPanelGrid>
         {store.shapeType === 'coin' && (
-          <div className="grid grid-cols-1 gap-1.5">
-            <ScrubInput label={t('studio3d.geometry.coinRadius')} value={coinRadius} min={0.5} max={5} step={0.1} onChange={setCoinRadius} />
-          </div>
+          <ScrubInput label={t('studio3d.geometry.coinRadius')} value={coinRadius} min={0.5} max={5} step={0.1} onChange={setCoinRadius} />
         )}
         {store.shapeType === 'badge' && (
           <div className="grid grid-cols-3 gap-1.5">
@@ -377,65 +375,98 @@ export const SceneTab: React.FC = React.memo(() => {
           </div>
         )}
         {store.shapeType === 'hexagon' && (
-          <div className="grid grid-cols-1 gap-1.5">
-            <ScrubInput label={t('studio3d.geometry.hexRadius')} value={hexR} min={0.5} max={5} step={0.1} onChange={setHexR} />
-          </div>
+          <ScrubInput label={t('studio3d.geometry.hexRadius')} value={hexR} min={0.5} max={5} step={0.1} onChange={setHexR} />
         )}
         {store.shapeType !== 'standard' && (
-          <div className="grid grid-cols-1 gap-1.5">
+          <>
             <ScrubInput label={t('studio3d.geometry.reliefDepth')} value={reliefDepth} min={0.05} max={1.5} step={0.05} onChange={setReliefDepth} />
-          </div>
-        )}
-
-        {/* 3. Chain */}
-        <div className="mt-2 pt-2 border-t border-white/5">
-          <ToolPanelRow label={t('studio3d.geometry.showChain')}>
-            <Switch checked={store.showChain} onCheckedChange={store.setShowChain} aria-label="Chain" />
-          </ToolPanelRow>
-          {store.showChain && (
-            <>
-              <div className="grid grid-cols-2 gap-1.5">
-                <ScrubInput label={t('studio3d.geometry.chainLinks')} value={chainLinks} min={2} max={16} step={1} onChange={setChainLinks} />
-                <ScrubInput label={t('studio3d.geometry.chainScale')} value={chainScale} min={0.3} max={3} step={0.1} onChange={setChainScale} />
-              </div>
-              <div className="grid grid-cols-3 gap-1.5">
-                <ScrubInput label={t('studio3d.geometry.bailSize')} value={bailSz} min={0.1} max={1.5} step={0.05} onChange={setBailSz} />
-                <ScrubInput label={t('studio3d.geometry.bailOffset')} value={bailOff} min={-3} max={3} step={0.05} onChange={setBailOff} />
-                <ScrubInput label={t('studio3d.geometry.chainOffset')} value={chainOff} min={-3} max={3} step={0.05} onChange={setChainOff} />
-              </div>
-              <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
-                <Switch checked={!!store.chainColor} onCheckedChange={(on) => store.setChainColor(on ? store.color : '')} aria-label="Custom chain color" />
-              </ToolPanelRow>
-              {!!store.chainColor && (
-                <div className="flex items-center gap-2">
+            <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
+              <div className="flex items-center gap-2">
+                {!!store.shapeColor && (
                   <button
                     type="button"
                     className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
-                    style={{ backgroundColor: store.chainColor }}
-                    onClick={() => setChainColorPickerOpen((v) => !v)}
-                    aria-label="Toggle chain color picker"
+                    style={{ backgroundColor: store.shapeColor }}
+                    onClick={() => setShapeColorPickerOpen((v) => !v)}
+                    aria-label="Toggle shape color picker"
                   />
-                  <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
-                    <span className="text-[10px] text-neutral-500 mr-1">#</span>
-                    <input
-                      type="text"
-                      value={store.chainColor.replace('#', '').toUpperCase()}
-                      onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setChainColor(`#${v}`); }}
-                      maxLength={6}
-                      aria-label="Chain color hex"
-                      className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
-                    />
-                  </div>
+                )}
+                <Switch checked={!!store.shapeColor} onCheckedChange={(on) => store.setShapeColor(on ? store.color : '')} aria-label="Custom shape color" />
+              </div>
+            </ToolPanelRow>
+            {!!store.shapeColor && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
+                  <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                  <input
+                    type="text"
+                    value={store.shapeColor.replace('#', '').toUpperCase()}
+                    onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setShapeColor(`#${v}`); }}
+                    maxLength={6}
+                    aria-label="Shape color hex"
+                    className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                  />
                 </div>
-              )}
-              {chainColorPickerOpen && !!store.chainColor && (
-                <div className="animate-fade-in">
-                  <div className="custom-color-picker"><HexColorPicker color={store.chainColor} onChange={store.setChainColor} /></div>
+              </div>
+            )}
+            {shapeColorPickerOpen && !!store.shapeColor && (
+              <div className="animate-fade-in">
+                <div className="custom-color-picker"><HexColorPicker color={store.shapeColor} onChange={store.setShapeColor} /></div>
+              </div>
+            )}
+          </>
+        )}
+
+      </ToolPanelDisclosure>
+
+      {/* Chain / Pendant */}
+      <ToolPanelDisclosure label={t('studio3d.geometry.showChain')} icon={<Link size={13} />}>
+        <ToolPanelRow label={t('studio3d.geometry.showChain')}>
+          <Switch checked={store.showChain} onCheckedChange={store.setShowChain} aria-label="Chain" />
+        </ToolPanelRow>
+        {store.showChain && (
+          <>
+            <div className="grid grid-cols-2 gap-1.5">
+              <ScrubInput label={t('studio3d.geometry.chainLinks')} value={chainLinks} min={2} max={16} step={1} onChange={setChainLinks} />
+              <ScrubInput label={t('studio3d.geometry.chainScale')} value={chainScale} min={0.3} max={3} step={0.1} onChange={setChainScale} />
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              <ScrubInput label={t('studio3d.geometry.bailSize')} value={bailSz} min={0.1} max={1.5} step={0.05} onChange={setBailSz} />
+              <ScrubInput label={t('studio3d.geometry.bailOffset')} value={bailOff} min={-3} max={3} step={0.05} onChange={setBailOff} />
+              <ScrubInput label={t('studio3d.geometry.chainOffset')} value={chainOff} min={-3} max={3} step={0.05} onChange={setChainOff} />
+            </div>
+            <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
+              <Switch checked={!!store.chainColor} onCheckedChange={(on) => store.setChainColor(on ? store.color : '')} aria-label="Custom chain color" />
+            </ToolPanelRow>
+            {!!store.chainColor && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+                  style={{ backgroundColor: store.chainColor }}
+                  onClick={() => setChainColorPickerOpen((v) => !v)}
+                  aria-label="Toggle chain color picker"
+                />
+                <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
+                  <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                  <input
+                    type="text"
+                    value={store.chainColor.replace('#', '').toUpperCase()}
+                    onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setChainColor(`#${v}`); }}
+                    maxLength={6}
+                    aria-label="Chain color hex"
+                    className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                  />
                 </div>
-              )}
-            </>
-          )}
-        </div>
+              </div>
+            )}
+            {chainColorPickerOpen && !!store.chainColor && (
+              <div className="animate-fade-in">
+                <div className="custom-color-picker"><HexColorPicker color={store.chainColor} onChange={store.setChainColor} /></div>
+              </div>
+            )}
+          </>
+        )}
       </ToolPanelDisclosure>
 
       {/* Presets */}

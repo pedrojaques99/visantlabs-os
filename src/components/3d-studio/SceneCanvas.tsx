@@ -49,6 +49,7 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   bailOffset: s.bailOffset,
   chainOffset: s.chainOffset,
   chainColor: s.chainColor,
+  shapeColor: s.shapeColor,
   reliefDepth: s.reliefDepth,
   renderQuality: s.renderQuality,
   fov: s.fov,
@@ -354,6 +355,7 @@ function SceneContent() {
               bailOffset={s.bailOffset}
               chainOffset={s.chainOffset}
               chainColor={s.chainColor}
+              shapeColor={s.shapeColor}
               reliefDepth={s.reliefDepth}
             />
           )
