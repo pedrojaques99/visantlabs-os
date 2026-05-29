@@ -16,7 +16,6 @@ import {
   Image as ImageIcon,
   Edit3,
   Plus,
-  Database,
   ChevronRight,
   Search,
   X,
@@ -29,6 +28,17 @@ import { appsService, AppConfig } from '@/services/appsService';
 import { AppEditDialog } from '@/components/AppEditDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+
+// ─── Last-used tracking (shared with HomePage) ──────────────────────────────
+const LS_KEY = 'vsn_app_last_used';
+const getLastUsed = (): Record<string, number> => {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}'); } catch { return {}; }
+};
+const recordLastUsed = (appId: string) => {
+  const map = getLastUsed();
+  map[appId] = Date.now();
+  localStorage.setItem(LS_KEY, JSON.stringify(map));
+};
 
 // ─── Category Config ────────────────────────────────────────────────────────
 
@@ -49,7 +59,7 @@ const CATEGORY_CONFIG: CategoryDef[] = [
   { key: 'community', label: 'Community', description: 'Open-source experiments & external tools', icon: Globe },
 ];
 
-const COMPACT_CATEGORIES = new Set(['image', 'converters', 'generators', 'audio', 'community']);
+const COMPACT_CATEGORIES = new Set<string>();
 
 const ADMIN_CATEGORY: CategoryDef = { key: 'admin', label: 'Admin', description: 'Internal tools', icon: ShieldCheck };
 
@@ -164,6 +174,7 @@ interface AppCardProps {
 function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
   const isComingSoon = app.badgeVariant === 'comingSoon';
   const isPremium = app.badgeVariant === 'premium';
+  const isAlpha = (app as any).alpha === true;
   const isExternal = app.isExternal;
   const description = app.description || app.desc;
 
@@ -243,21 +254,15 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
         )}
       </div>
 
-      {/* Admin Controls */}
+      {/* Admin Edit */}
       {isAdmin && (
-        <div className="absolute top-3 left-3 z-30 flex gap-1.5">
+        <div className="absolute top-3 left-3 z-30">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(app); }}
-            className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all"
+            className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100"
           >
             <Edit3 size={12} />
           </button>
-          {app.databaseInfo && (
-            <div className="px-2 py-1.5 rounded-xl bg-brand-cyan/5 border border-brand-cyan/20 text-brand-cyan flex items-center gap-1" title={app.databaseInfo}>
-              <Database size={10} />
-              <span className="text-[10px] font-medium truncate max-w-[60px]">{app.databaseInfo}</span>
-            </div>
-          )}
         </div>
       )}
 
@@ -280,6 +285,11 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
               Pro
             </span>
           ) : null}
+          {isAlpha && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400/80 border border-violet-500/20 shrink-0">
+              Alpha
+            </span>
+          )}
         </div>
         <p className="text-[13px] text-neutral-500 leading-relaxed line-clamp-2 flex-1">
           {description}
@@ -302,6 +312,7 @@ interface AppRowProps {
 function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
   const isComingSoon = app.badgeVariant === 'comingSoon';
   const isPremium = app.badgeVariant === 'premium';
+  const isAlpha = (app as any).alpha === true;
   const isExternal = app.isExternal;
   const description = app.description || app.desc;
 
@@ -337,6 +348,9 @@ function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
         ) : isPremium ? (
           <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan/80 shrink-0">Pro</span>
         ) : null}
+        {isAlpha && (
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400/80 border border-violet-500/20 shrink-0">Alpha</span>
+        )}
         <p className="text-[12px] text-neutral-600 truncate hidden sm:block">{description}</p>
       </div>
 
@@ -398,7 +412,7 @@ export const AppsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [accessFilter, setAccessFilter] = useState<AccessFilter>('all');
-  const [sortBy, setSortBy] = useState<'default' | 'name'>('default');
+  const [sortBy, setSortBy] = useState<'default' | 'name' | 'recent'>('default');
   const tabBarRef = useRef<HTMLDivElement>(null);
 
   // ─── Static apps config ─────────────────────────────────────────────────
@@ -414,26 +428,26 @@ export const AppsPage: React.FC = () => {
     { id: 'budget-machine', name: t('apps.budgetMachine.name'), desc: t('apps.budgetMachine.description'), link: '/budget-machine', badge: t('apps.badge.comingSoon'), badgeVariant: 'comingSoon', thumbnail: '/tools/budget-machine.webp', category: 'pro', free: false },
 
     // Creative Lab
-    { id: 'grid-machine', name: t('apps.gridMachine.name'), desc: t('apps.gridMachine.description'), link: '/grid-machine', thumbnail: '/tools/grid-machine.svg', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
-    { id: '3d-studio', name: t('apps.studio3d.name'), desc: t('apps.studio3d.description'), link: '/3d-studio', thumbnail: '/tools/3d-studio.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
-    { id: 'image-lab', name: 'Image Lab', desc: 'Halftone, texture overlay, and risograph effects in one unified editor. Switch modes instantly without reloading.', link: '/image-lab', thumbnail: '/tools/cmyk-halftone.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
+    { id: 'grid-machine', name: t('apps.gridMachine.name'), desc: t('apps.gridMachine.description'), link: '/grid-machine', thumbnail: '/tools/grid-machine.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
+    { id: '3d-studio', name: t('apps.studio3d.name'), desc: t('apps.studio3d.description'), link: '/3d-studio', thumbnail: '/tools/3d-studio.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true, alpha: true },
+    { id: 'image-lab', name: 'Image Lab', desc: 'Halftone, texture overlay, and risograph effects in one unified editor. Switch modes instantly without reloading.', link: '/image-lab', thumbnail: '/tools/cmyk-halftone.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true, alpha: true },
     { id: 'ascii-vortex', name: t('apps.asciiVortex.name'), desc: t('apps.asciiVortex.description'), link: 'https://vsn-labs.vercel.app/ascii-vortex', thumbnail: '/tools/ascii-vortex.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', isExternal: true, free: true },
     { id: 'grid-paint', name: t('apps.gridPaint.name'), desc: t('apps.gridPaint.description'), link: '/grid-paint', thumbnail: '/tools/gridpaint.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', free: true },
 
     // Image Tools
-    { id: 'compress', name: 'Image Compressor', desc: 'Compress images with quality and format control. Batch supported.', link: '/compress', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
-    { id: 'upscale', name: 'Bicubic Upscale', desc: 'Upscale images 2x–4x with sharpening control.', link: '/upscale', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
-    { id: 'remove-bg', name: 'Background Remover', desc: 'Remove backgrounds with AI or simple mode. Batch supported.', link: '/remove-bg', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
-    { id: 'watermark', name: 'Watermark', desc: 'Add text or logo watermarks with position, opacity and tile mode.', link: '/watermark', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
-    { id: 'visual-search', name: 'Visual Search', desc: 'Reverse image search across multiple sources.', link: '/visual-search', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
+    { id: 'compress', name: 'Image Compressor', desc: 'Compress images with quality and format control. Batch supported.', link: '/compress', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/compress.webp', category: 'image', free: true },
+    { id: 'upscale', name: 'Bicubic Upscale', desc: 'Upscale images 2x–4x with sharpening control.', link: '/upscale', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/upscale.webp', category: 'image', free: true, alpha: true },
+    { id: 'remove-bg', name: 'Background Remover', desc: 'Remove backgrounds with AI or simple mode. Batch supported.', link: '/remove-bg', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/remove-bg.webp', category: 'image', free: true },
+    { id: 'watermark', name: 'Watermark', desc: 'Add text or logo watermarks with position, opacity and tile mode.', link: '/watermark', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/watermark.webp', category: 'image', free: true },
+    { id: 'visual-search', name: 'Visual Search', desc: 'Reverse image search across multiple sources.', link: '/visual-search', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/visual-search.webp', category: 'image', free: true, alpha: true },
     // Converters
-    { id: 'converter', name: 'File Converter', desc: 'Convert images between PNG, JPG, WebP, PDF and ICO.', link: '/converter', badge: 'Free', badgeVariant: 'free', category: 'converters', free: true },
-    { id: 'svg-optimizer', name: 'SVG Optimizer', desc: 'Optimize and minify SVG files. Remove metadata, comments and empty groups.', link: '/svg-optimizer', badge: 'Free', badgeVariant: 'free', category: 'converters', free: true },
-    { id: 'color-converter', name: 'Color Converter', desc: 'Convert colors between HEX, RGB, CMYK, HSL with WCAG contrast check.', link: '/color-converter', badge: 'Free', badgeVariant: 'free', category: 'converters', free: true },
+    { id: 'converter', name: 'File Converter', desc: 'Convert images between PNG, JPG, WebP, PDF and ICO.', link: '/converter', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/file-converter.webp', category: 'converters', free: true },
+    { id: 'svg-optimizer', name: 'SVG Optimizer', desc: 'Optimize and minify SVG files. Remove metadata, comments and empty groups.', link: '/svg-optimizer', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/svg-optimizer.webp', category: 'converters', free: true },
+    { id: 'color-converter', name: 'Color Converter', desc: 'Convert colors between HEX, RGB, CMYK, HSL with WCAG contrast check.', link: '/color-converter', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/color-converter.webp', category: 'converters', free: true },
     // Generators
-    { id: 'qrcode', name: 'QR Code Generator', desc: 'Generate QR codes with custom size, colors and error correction.', link: '/qrcode', badge: 'Free', badgeVariant: 'free', category: 'generators', free: true },
-    { id: 'favicon', name: 'Favicon Generator', desc: 'Generate all favicon sizes, apple-touch-icon and web manifest from one image.', link: '/favicon', badge: 'Free', badgeVariant: 'free', category: 'generators', free: true },
-    { id: 'og-image', name: 'OG Image Generator', desc: 'Create Open Graph images with templates, custom text and colors.', link: '/og-image', badge: 'Free', badgeVariant: 'free', category: 'generators', free: true },
+    { id: 'qrcode', name: 'QR Code Generator', desc: 'Generate QR codes with custom size, colors and error correction.', link: '/qrcode', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/qrcode.webp', category: 'generators', free: true },
+    { id: 'favicon', name: 'Favicon Generator', desc: 'Generate all favicon sizes, apple-touch-icon and web manifest from one image.', link: '/favicon', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/favicon.webp', category: 'generators', free: true },
+    { id: 'og-image', name: 'OG Image Generator', desc: 'Create Open Graph images with templates, custom text and colors.', link: '/og-image', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/og-image.webp', category: 'generators', free: true, alpha: true },
 
     // Audio
     { id: 'youtube-mixer', name: t('apps.youtubeMixer.name'), desc: t('apps.youtubeMixer.description'), link: 'https://vsn-labs.vercel.app/youtube-mixer', thumbnail: '/tools/youtube-mixer.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'audio', isExternal: true, free: true },
@@ -529,7 +543,16 @@ export const AppsPage: React.FC = () => {
 
   const sortedApps = useMemo(() => {
     const sorted = [...filteredApps];
-    if (sortBy === 'name') sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    if (sortBy === 'name') {
+      sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    } else if (sortBy === 'recent') {
+      const lu = getLastUsed();
+      sorted.sort((a, b) => {
+        const aId = (a as any).id || a.appId;
+        const bId = (b as any).id || b.appId;
+        return (lu[bId] ?? 0) - (lu[aId] ?? 0);
+      });
+    }
     return sorted;
   }, [filteredApps, sortBy]);
 
@@ -564,6 +587,8 @@ export const AppsPage: React.FC = () => {
   const openApp = (app: any) => {
     if (app.badgeVariant === 'comingSoon') return;
     if (app.badgeVariant === 'premium' && !hasAccess) { onSubscriptionModalOpen(); return; }
+    const appId = app.id || app.appId;
+    if (appId) recordLastUsed(appId);
     if (app.isExternal) window.open(app.link, '_blank');
     else navigate(app.link);
   };
@@ -709,17 +734,17 @@ export const AppsPage: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setSortBy(sortBy === 'default' ? 'name' : 'default')}
-              title={sortBy === 'name' ? 'Sorted A–Z' : 'Sort alphabetically'}
+              onClick={() => setSortBy(sortBy === 'default' ? 'recent' : sortBy === 'recent' ? 'name' : 'default')}
+              title={sortBy === 'recent' ? 'Most used first' : sortBy === 'name' ? 'Sorted A–Z' : 'Sort'}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border transition-all shrink-0',
-                sortBy === 'name'
+                sortBy !== 'default'
                   ? 'border-white/10 text-neutral-200 bg-white/5'
                   : 'border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
               )}
             >
               <ArrowUpDown size={14} />
-              <span className="hidden sm:inline">{sortBy === 'name' ? 'A–Z' : 'Sort'}</span>
+              <span className="hidden sm:inline">{sortBy === 'recent' ? 'Most used' : sortBy === 'name' ? 'A–Z' : 'Sort'}</span>
             </button>
           </div>
         </div>
