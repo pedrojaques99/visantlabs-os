@@ -27,6 +27,9 @@ export const EffectsTab: React.FC = React.memo(() => {
   return (
     <>
       <ToolPanelDisclosure label={t('studio3d.panels.postProcessing')} defaultOpen>
+        <ToolPanelRow label="Before / After">
+          <Switch checked={!store.effectsBypass} onCheckedChange={(v) => store.setEffectsBypass(!v)} aria-label="Toggle all effects" />
+        </ToolPanelRow>
         <ToolPanelRow label={t('studio3d.panels.ambientOcclusion')}>
           <Switch checked={store.ssaoEnabled} onCheckedChange={store.setSsaoEnabled} aria-label="SSAO" />
         </ToolPanelRow>
@@ -88,16 +91,25 @@ export const EffectsTab: React.FC = React.memo(() => {
         )}
       </ToolPanelDisclosure>
 
-      <ToolPanelDisclosure label={t('studio3d.panels.shaderFx')}>
-        <ShaderControls
-          enabled={store.shaderEnabled}
-          shaderType={store.shaderType}
-          values={store.shaderValues}
-          onEnabledChange={store.setShaderEnabled}
-          onTypeChange={store.setShaderType}
-          onValueChange={store.setShaderValue}
-        />
-      </ToolPanelDisclosure>
+      <div className="rounded-md border border-neutral-800/50 transition-all duration-200">
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{t('studio3d.panels.shaderFx')}</span>
+          <Switch checked={store.shaderEnabled} onCheckedChange={store.setShaderEnabled} aria-label="Shader FX" />
+        </div>
+        {store.shaderEnabled && (
+          <div className="px-3 pb-3 pt-1 animate-fade-in space-y-3">
+            <ShaderControls
+              enabled={store.shaderEnabled}
+              shaderType={store.shaderType}
+              values={store.shaderValues}
+              onEnabledChange={store.setShaderEnabled}
+              onTypeChange={store.setShaderType}
+              onValueChange={store.setShaderValue}
+              hideToggle
+            />
+          </div>
+        )}
+      </div>
     </>
   );
 });

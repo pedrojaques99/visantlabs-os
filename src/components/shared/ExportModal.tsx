@@ -57,6 +57,21 @@ const FPS_OPTIONS = [
   { id: 60, label: '60' },
 ];
 
+interface ExportPreset {
+  label: string;
+  format: ExportFormat;
+  scale: number;
+  duration?: number;
+  fps?: number;
+}
+
+const EXPORT_PRESETS: ExportPreset[] = [
+  { label: 'Product Shot', format: 'png', scale: 2 },
+  { label: 'Social Post', format: 'png', scale: 1.5 },
+  { label: 'Instagram Reel', format: 'mp4', scale: 1, duration: 3, fps: 30 },
+  { label: 'Web Preview', format: 'webp', scale: 1 },
+];
+
 function estimateVideoSize(w: number, h: number, duration: number, fps: number, format: ExportFormat): string {
   const bitsPerPixel = format === 'gif' ? 4 : 0.15;
   const bytes = (w * h * bitsPerPixel * fps * duration) / 8;
@@ -425,6 +440,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               ))}
             </div>
           </div>
+
+          {/* Presets */}
+          {isVideo && onExportVideo && (
+            <div className="flex flex-wrap gap-1.5">
+              {EXPORT_PRESETS.filter(p => isVideoFormat ? IS_VIDEO_FORMAT(p.format) : !IS_VIDEO_FORMAT(p.format)).map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => {
+                    setFormat(p.format);
+                    setScale(p.scale);
+                    if (p.duration) onVideoDurationChange?.(p.duration);
+                    if (p.fps) onVideoFpsChange?.(p.fps);
+                  }}
+                  className="px-2.5 py-1 rounded-full text-[9px] font-mono text-neutral-500 bg-neutral-900/50 border border-neutral-800/50 hover:bg-white/5 hover:text-neutral-300 transition-colors"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Quality (lossy image only) */}
           {IS_LOSSY_IMAGE(format) && (

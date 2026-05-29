@@ -363,6 +363,7 @@ interface Studio3DState {
   toneMappingExposure: number;
 
   // Post-processing effects
+  effectsBypass: boolean;
   bloomEnabled: boolean;
   bloomIntensity: number;
   bloomThreshold: number;
@@ -511,6 +512,7 @@ interface Studio3DState {
   setTransparentBg: (v: boolean) => void;
   setToneMapping: (v: ToneMappingType) => void;
   setToneMappingExposure: (v: number) => void;
+  setEffectsBypass: (v: boolean) => void;
   setBloomEnabled: (v: boolean) => void;
   setBloomIntensity: (v: number) => void;
   setBloomThreshold: (v: number) => void;
@@ -643,6 +645,7 @@ const INITIAL_STATE = {
   transparentBg: false,
   toneMapping: 'ACES' as ToneMappingType,
   toneMappingExposure: 1.2,
+  effectsBypass: false,
   bloomEnabled: false,
   bloomIntensity: 1,
   bloomThreshold: 0.9,
@@ -796,6 +799,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setTransparentBg: (transparentBg) => set({ transparentBg }),
   setToneMapping: (toneMapping) => set({ toneMapping }),
   setToneMappingExposure: (toneMappingExposure) => set({ toneMappingExposure }),
+  setEffectsBypass: (effectsBypass) => set({ effectsBypass }),
   setBloomEnabled: (bloomEnabled) => set({ bloomEnabled }),
   setBloomIntensity: (bloomIntensity) => set({ bloomIntensity }),
   setBloomThreshold: (bloomThreshold) => set({ bloomThreshold }),
@@ -966,6 +970,7 @@ export interface SavedScene {
   name: string;
   savedAt: number;
   config: Record<string, any>;
+  thumbnail?: string;
 }
 
 function getCachedScenes(): SavedScene[] {
@@ -997,7 +1002,7 @@ export async function getSavedScenes(): Promise<SavedScene[]> {
   }
 }
 
-export async function saveScene(name: string): Promise<SavedScene | null> {
+export async function saveScene(name: string, thumbnail?: string): Promise<SavedScene | null> {
   const state = useStudio3DStore.getState();
   const exclude = new Set(['_cameraControlsRef', '_cameraInfo', 'panelVisible', 'activeTab', 'isLoading', 'isExporting', 'exportProgress', 'resetKey']);
   const config: Record<string, any> = {};
@@ -1028,6 +1033,7 @@ export async function saveScene(name: string): Promise<SavedScene | null> {
       name: data.scene.name,
       savedAt: new Date(data.scene.createdAt).getTime(),
       config,
+      thumbnail,
     };
     const scenes = getCachedScenes();
     scenes.unshift(scene);
@@ -1037,7 +1043,7 @@ export async function saveScene(name: string): Promise<SavedScene | null> {
     return scene;
   } catch {
     // Fallback to localStorage only
-    const scene: SavedScene = { id: crypto.randomUUID(), name, savedAt: Date.now(), config };
+    const scene: SavedScene = { id: crypto.randomUUID(), name, savedAt: Date.now(), config, thumbnail };
     const scenes = getCachedScenes();
     scenes.unshift(scene);
     if (scenes.length > 50) scenes.length = 50;

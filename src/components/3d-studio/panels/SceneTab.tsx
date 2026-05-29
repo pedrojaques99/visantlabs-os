@@ -306,7 +306,17 @@ export const SceneTab: React.FC = React.memo(() => {
               disabled={!sceneName.trim()}
               aria-label="Save scene"
               onClick={async () => {
-                const scene = await saveScene(sceneName.trim());
+                let thumb: string | undefined;
+                const c = document.querySelector('canvas') as HTMLCanvasElement | null;
+                if (c) {
+                  const t = document.createElement('canvas');
+                  const r = Math.min(80 / c.width, 80 / c.height, 1);
+                  t.width = Math.round(c.width * r);
+                  t.height = Math.round(c.height * r);
+                  t.getContext('2d')?.drawImage(c, 0, 0, t.width, t.height);
+                  thumb = t.toDataURL('image/jpeg', 0.6);
+                }
+                const scene = await saveScene(sceneName.trim(), thumb);
                 if (scene) {
                   setSavedScenes(await getSavedScenes());
                   toast.success('Scene saved');
@@ -332,10 +342,14 @@ export const SceneTab: React.FC = React.memo(() => {
                       else toast.error('Failed to load scene');
                     }}
                     aria-label="Load scene"
-                    className="flex-1 text-left px-2 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors truncate"
+                    className="flex-1 flex items-center gap-2 text-left px-2 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors"
                   >
-                    <FolderOpen size={10} className="inline mr-1.5 opacity-50" />
-                    {scene.name}
+                    {scene.thumbnail ? (
+                      <img src={scene.thumbnail} alt="" className="w-6 h-6 rounded border border-white/10 object-cover shrink-0" draggable={false} />
+                    ) : (
+                      <FolderOpen size={10} className="shrink-0 opacity-50" />
+                    )}
+                    <span className="truncate">{scene.name}</span>
                   </button>
                   <button
                     onClick={async () => {
@@ -471,12 +485,16 @@ export const SceneTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Chain / Pendant */}
-      <ToolPanelDisclosure label={t('studio3d.geometry.showChain')} icon={<Link size={13} />}>
-        <ToolPanelRow label={t('studio3d.geometry.showChain')}>
+      <div className="rounded-md border border-neutral-800/50 transition-all duration-200">
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-500"><Link size={13} /></span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{t('studio3d.geometry.showChain')}</span>
+          </div>
           <Switch checked={store.showChain} onCheckedChange={store.setShowChain} aria-label="Chain" />
-        </ToolPanelRow>
+        </div>
         {store.showChain && (
-          <>
+          <div className="px-3 pb-3 pt-1 animate-fade-in space-y-3">
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput label={t('studio3d.geometry.chainLinks')} value={chainLinks} min={2} max={16} step={1} onChange={setChainLinks} />
               <ScrubInput label={t('studio3d.geometry.chainScale')} value={chainScale} min={0.3} max={3} step={0.1} onChange={setChainScale} />
@@ -516,9 +534,9 @@ export const SceneTab: React.FC = React.memo(() => {
                 <div className="custom-color-picker"><HexColorPicker color={store.chainColor} onChange={store.setChainColor} /></div>
               </div>
             )}
-          </>
+          </div>
         )}
-      </ToolPanelDisclosure>
+      </div>
 
       {/* Presets */}
       <ToolPanelDisclosure label={t('studio3d.scenePresets.title')} icon={<Shuffle size={13} />} defaultOpen>

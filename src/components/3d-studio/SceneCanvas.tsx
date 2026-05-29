@@ -133,6 +133,7 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   shaderType: s.shaderType,
   shaderValues: s.shaderValues,
   getShaderSettings: s.getShaderSettings,
+  effectsBypass: s.effectsBypass,
 });
 
 function GradientBackground({ type, gradient }: { type: 'linear' | 'radial'; gradient: any }) {
@@ -204,6 +205,12 @@ function SyncCamera({ fov }: { fov: number }) {
 const prefersReducedMotion = typeof window !== 'undefined'
   ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
   : false;
+
+function HdriLoadingFallback() {
+  return <Environment background={false} environmentIntensity={1} frames={1}>
+    <mesh position={[0, 25, 0]}><sphereGeometry args={[20, 32, 32]} /><meshBasicMaterial color="#ffffff" /></mesh>
+  </Environment>;
+}
 
 function SceneContent() {
   const s = useStudio3DStore(useShallow(sceneSelector));
@@ -405,7 +412,7 @@ function SceneContent() {
         )
       )}
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<HdriLoadingFallback />}>
         {(() => {
           const hdriUrl = s.customHdriUrl || ENVIRONMENT_PRESETS.find(p => p.id === s.environment)?.file;
           return hdriUrl ? (
@@ -441,7 +448,7 @@ function SceneContent() {
           settings={shaderSettings}
           halftoneVariant={halftoneVariant}
         />
-      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled || s.ssaoEnabled || s.chromaticAberrationEnabled || s.noiseEnabled || s.colorGradingEnabled) ? (
+      ) : (!s.effectsBypass && (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled || s.ssaoEnabled || s.chromaticAberrationEnabled || s.noiseEnabled || s.colorGradingEnabled)) ? (
         <EffectComposer multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
           {s.ssaoEnabled && s.renderQuality !== 'performance' && <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />}
           {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}

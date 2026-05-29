@@ -140,13 +140,15 @@ export const Studio3DPage: React.FC = () => {
     () => store.temporal.getState().futureStates.length > 0,
   );
 
-  useToolEditorHotkeys({
-    onExport: handleExport,
+  const undoWithFeedback = useCallback(() => { undo(); toast('Undo', { duration: 1000 }); }, [undo]);
+  const redoWithFeedback = useCallback(() => { redo(); toast('Redo', { duration: 1000 }); }, [redo]);
 
+  useToolEditorHotkeys({
+    onExport: () => setExportModalOpen(true),
     panelVisible,
     setPanelVisible,
-    undo,
-    redo,
+    undo: undoWithFeedback,
+    redo: redoWithFeedback,
   });
 
   // Camera shortcuts (3D-specific)
@@ -166,11 +168,23 @@ export const Studio3DPage: React.FC = () => {
   useHotkeys('f', () => store.getState().setShowStats(!store.getState().showStats), camOpts);
   useHotkeys('shift+/', () => setShowShortcuts(v => !v), camOpts);
 
+  const captureThumb = useCallback(() => {
+    const c = canvasRef.current;
+    if (!c) return undefined;
+    const t = document.createElement('canvas');
+    const size = 80;
+    const ratio = Math.min(size / c.width, size / c.height, 1);
+    t.width = Math.round(c.width * ratio);
+    t.height = Math.round(c.height * ratio);
+    t.getContext('2d')?.drawImage(c, 0, 0, t.width, t.height);
+    return t.toDataURL('image/jpeg', 0.6);
+  }, []);
+
   useHotkeys('mod+s', async (e) => {
     e.preventDefault();
     const s = store.getState();
     const name = s._sceneName || s.fileName || 'Untitled';
-    const scene = await saveScene(name);
+    const scene = await saveScene(name, captureThumb());
     if (scene) toast.success('Scene saved');
     else toast.error('Failed to save scene');
   }, { enableOnFormTags: true, preventDefault: true });
@@ -262,10 +276,10 @@ export const Studio3DPage: React.FC = () => {
 
         <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
 
-        <button onClick={() => undo()} disabled={!canUndo} title="Undo (Ctrl+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+        <button onClick={undoWithFeedback} disabled={!canUndo} title="Undo (Ctrl+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
           <Undo2 size={isMobile ? 18 : 15} />
         </button>
-        <button onClick={() => redo()} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+        <button onClick={redoWithFeedback} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
           <Redo2 size={isMobile ? 18 : 15} />
         </button>
 
