@@ -83,10 +83,26 @@ const easings = {
 export function LoopAnimation({ type, speed, reverse, easing, meshRef }: LoopAnimationProps) {
   const elapsed = useRef(0);
   const initialY = useRef<number | null>(null);
+  const prevType = useRef(type);
   const dir = reverse ? -1 : 1;
 
   useFrame((_, delta) => {
-    if (type === 'none' || !meshRef.current) return;
+    if (!meshRef.current) return;
+
+    // Reset transforms when animation stops or changes
+    if (type === 'none' || type !== prevType.current) {
+      if (prevType.current !== 'none' && prevType.current !== type) {
+        meshRef.current.rotation.set(0, 0, 0);
+        meshRef.current.scale.set(1, 1, 1);
+        if (initialY.current !== null) {
+          meshRef.current.position.y = initialY.current;
+        }
+        elapsed.current = 0;
+        initialY.current = null;
+      }
+      prevType.current = type;
+      if (type === 'none') return;
+    }
     elapsed.current += delta * speed;
     
     // Period is usually 2*PI for sin-based, or we can just use 1.0 as a cycle for ease
@@ -295,7 +311,7 @@ export function SmoothControls({
       lastPos.current = { x: e.clientX, y: e.clientY };
       if (isPanning.current || e.shiftKey) {
         if (!isPanning.current) { isPanning.current = true; setCursor('move'); }
-        const panSensitivity = 0.01 * (camera.position.z / 8);
+        const panSensitivity = Math.min(0.02, Math.max(0.004, 0.01 * (camera.position.z / 8)));
         targetPan.current.x -= dx * panSensitivity;
         targetPan.current.y += dy * panSensitivity;
       } else {

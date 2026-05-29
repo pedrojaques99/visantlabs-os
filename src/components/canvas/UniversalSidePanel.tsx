@@ -3,13 +3,12 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
-import { MessageSquare, Settings, X, Share, Brush, Image as ImageIcon } from 'lucide-react';
+import { MessageSquare, Settings, X, Brush, Image as ImageIcon } from 'lucide-react';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
 
 // Import child components
 import { ShaderControlsSidebar } from './ShaderControlsSidebar';
 import { ChatSidebar } from './ChatSidebar';
-import { ExportPanel } from '@/components/ui/ExportPanel';
 import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
 import { BrandMediaLibraryPanel } from './BrandMediaLibraryPanel';
 import { Button } from '@/components/ui/button'
@@ -28,12 +27,6 @@ interface UniversalSidePanelProps {
     activeSidePanel?: string | null;
     onImportCommunityPreset?: (preset: any, type: string) => void;
 
-    // Override view (e.g. for manual export trigger)
-    overridePanel?: {
-        type: 'export';
-        data: any;
-        onClose: () => void;
-    } | null;
     backgroundColor?: string;
 }
 
@@ -77,7 +70,6 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
     width = DEFAULT_WIDTH,
     onResize,
     onUpdateNode,
-    overridePanel,
     activeSidePanel,
     onImportCommunityPreset,
     backgroundColor = '#0C0C0C',
@@ -152,45 +144,6 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
 
     // Determine what to render
     const renderContent = () => {
-        if (overridePanel) {
-            // Export Panel or other overrides
-            if (overridePanel.type === 'export') {
-                const { nodeId, nodeName, imageUrl, nodeType } = overridePanel.data;
-                return (
-                    <div className="h-full flex flex-col">
-                        <div
-                            className={cn(
-                                "flex items-center justify-between p-4 border-b",
-                                isLight ? "border-neutral-300/30" : "border-neutral-700/30"
-                            )}
-                        >
-                            <div className="flex items-center gap-2">
-                                <Share size={16} style={{ color: 'var(--brand-cyan)' }} />
-                                <h3 className="text-sm font-semibold" style={{ color: textColors.primary }}>Export</h3>
-                            </div>
-                            <Button variant="ghost"
-                                onClick={overridePanel.onClose}
-                                style={{ color: textColors.muted }}
-                                onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
-                                onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
-                            >
-                                <X size={16} />
-                            </Button>
-                        </div>
-                        <ExportPanel
-                            isOpen={true}
-                            onClose={overridePanel.onClose}
-                            nodeId={nodeId}
-                            nodeName={nodeName}
-                            imageUrl={imageUrl}
-                            nodeType={nodeType}
-                            embedded={true} // New prop we will add
-                        />
-                    </div>
-                );
-            }
-        }
-
         if (activeSidePanel === 'community-presets') {
             return (
                 <div className="h-full">
@@ -281,7 +234,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             />
 
             {/* Tabs / Header */}
-            {!overridePanel && activeSidePanel !== 'community-presets' && activeSidePanel !== 'brand-media' && (
+            {activeSidePanel !== 'community-presets' && activeSidePanel !== 'brand-media' && (
                 <div
                     className={cn(
                         "flex items-center justify-between border-b bg-transparent rounded-t-2xl overflow-hidden",

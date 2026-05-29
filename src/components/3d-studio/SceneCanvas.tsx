@@ -1,10 +1,33 @@
-import React, { useMemo, useRef, useState, useCallback } from 'react';
+import React, { Suspense, useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { ContactShadows, Environment, Stats, MeshReflectorMaterial, AdaptiveDpr, AdaptiveEvents, PerformanceMonitor } from '@react-three/drei';
+import {
+  ContactShadows,
+  Environment,
+  Stats,
+  MeshReflectorMaterial,
+  AdaptiveDpr,
+  AdaptiveEvents,
+  PerformanceMonitor,
+} from '@react-three/drei';
 import * as THREE from 'three';
-import { useStudio3DStore, ENVIRONMENT_PRESETS, RENDER_QUALITY_CONFIG, type ToneMappingType } from '@/stores/studio3dStore';
+import {
+  useStudio3DStore,
+  ENVIRONMENT_PRESETS,
+  RENDER_QUALITY_CONFIG,
+  type ToneMappingType,
+} from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
-import { EffectComposer, Bloom, DepthOfField, Vignette, ChromaticAberration, Noise, N8AO, HueSaturation, BrightnessContrast } from '@react-three/postprocessing';
+import {
+  EffectComposer,
+  Bloom,
+  DepthOfField,
+  Vignette,
+  ChromaticAberration,
+  Noise,
+  N8AO,
+  HueSaturation,
+  BrightnessContrast,
+} from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import { ShaderPostProcess } from '@/effects/ShaderPostProcess';
 import { CameraBridge } from './CameraBridge';
@@ -32,9 +55,35 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   bevelThickness: s.bevelThickness,
   bevelSize: s.bevelSize,
   objectScale: s.objectScale,
+  coinRadius: s.coinRadius,
+  badgeWidth: s.badgeWidth,
+  badgeHeight: s.badgeHeight,
+  badgeRadius: s.badgeRadius,
+  stampRadius: s.stampRadius,
+  stampTeeth: s.stampTeeth,
+  stampToothDepth: s.stampToothDepth,
+  shieldWidth: s.shieldWidth,
+  shieldHeight: s.shieldHeight,
+  hexRadius: s.hexRadius,
+  chainLinks: s.chainLinks,
+  chainScale: s.chainScale,
+  showChain: s.showChain,
+  bailSize: s.bailSize,
+  bailOffset: s.bailOffset,
+  chainOffset: s.chainOffset,
+  chainColor: s.chainColor,
+  shapeColor: s.shapeColor,
+  reliefDepth: s.reliefDepth,
   renderQuality: s.renderQuality,
   fov: s.fov,
   hdriBackground: s.hdriBackground,
+  hdriBlur: s.hdriBlur,
+  hdriIntensity: s.hdriIntensity,
+  hdriRotation: s.hdriRotation,
+  fogEnabled: s.fogEnabled,
+  fogColor: s.fogColor,
+  fogNear: s.fogNear,
+  fogFar: s.fogFar,
   color: s.color,
   material: s.material,
   metalness: s.metalness,
@@ -107,16 +156,20 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   shaderType: s.shaderType,
   shaderValues: s.shaderValues,
   getShaderSettings: s.getShaderSettings,
+  effectsBypass: s.effectsBypass,
 });
 
 function GradientBackground({ type, gradient }: { type: 'linear' | 'radial'; gradient: any }) {
   const { viewport } = useThree();
-  const uniforms = useMemo(() => ({
-    uColor1: { value: new THREE.Color(gradient.color1) },
-    uColor2: { value: new THREE.Color(gradient.color2) },
-    uAngle: { value: (gradient.angle * Math.PI) / 180 },
-    uType: { value: type === 'linear' ? 0 : 1 },
-  }), [gradient.color1, gradient.color2, gradient.angle, type]);
+  const uniforms = useMemo(
+    () => ({
+      uColor1: { value: new THREE.Color(gradient.color1) },
+      uColor2: { value: new THREE.Color(gradient.color2) },
+      uAngle: { value: (gradient.angle * Math.PI) / 180 },
+      uType: { value: type === 'linear' ? 0 : 1 },
+    }),
+    [gradient.color1, gradient.color2, gradient.angle, type]
+  );
 
   return (
     <mesh scale={[viewport.width * 2, viewport.height * 2, 1]} position={[0, 0, -10]}>
@@ -155,9 +208,43 @@ function GradientBackground({ type, gradient }: { type: 'linear' | 'radial'; gra
   );
 }
 
-const prefersReducedMotion = typeof window !== 'undefined'
-  ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  : false;
+function SceneFog({ color, near, far }: { color: string; near: number; far: number }) {
+  const { scene } = useThree();
+  useEffect(() => {
+    scene.fog = new THREE.Fog(color, near, far);
+    return () => {
+      scene.fog = null;
+    };
+  }, [scene, color, near, far]);
+  return null;
+}
+
+function SyncCamera({ fov }: { fov: number }) {
+  const camera = useThree((s) => s.camera);
+  useEffect(() => {
+    if ('fov' in camera) {
+      (camera as THREE.PerspectiveCamera).fov = fov;
+      (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+    }
+  }, [camera, fov]);
+  return null;
+}
+
+const prefersReducedMotion =
+  typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+
+function HdriLoadingFallback() {
+  return (
+    <Environment background={false} environmentIntensity={1} frames={1}>
+      <mesh position={[0, 25, 0]}>
+        <sphereGeometry args={[20, 32, 32]} />
+        <meshBasicMaterial color="#ffffff" />
+      </mesh>
+    </Environment>
+  );
+}
 
 function SceneContent() {
   const s = useStudio3DStore(useShallow(sceneSelector));
@@ -172,13 +259,14 @@ function SceneContent() {
   const halftoneVariant = s.shaderValues.halftoneVariant ?? 'ellipse';
 
   const materialSettings = useMemo(
-    () => resolveMaterial(s.material, {
-      metalness: s.metalness,
-      roughness: s.roughness,
-      opacity: s.opacity,
-      wireframe: s.wireframe,
-    }),
-    [s.material, s.metalness, s.roughness, s.opacity, s.wireframe],
+    () =>
+      resolveMaterial(s.material, {
+        metalness: s.metalness,
+        roughness: s.roughness,
+        opacity: s.opacity,
+        wireframe: s.wireframe,
+      }),
+    [s.material, s.metalness, s.roughness, s.opacity, s.wireframe]
   );
 
   const loadedFont = useFont(s.font);
@@ -189,8 +277,15 @@ function SceneContent() {
     return textToSvg(text, loadedFont);
   }, [s.svgData, s.text, loadedFont]);
 
+  const hdriRotationEuler = useMemo(
+    () => [0, (s.hdriRotation * Math.PI) / 180, 0] as [number, number, number],
+    [s.hdriRotation]
+  );
+
   return (
     <>
+      {s.fogEnabled && <SceneFog color={s.fogColor} near={s.fogNear} far={s.fogFar} />}
+      <SyncCamera fov={s.fov} />
       <IntroAnimation
         type="zoom"
         duration={0.6}
@@ -232,10 +327,16 @@ function SceneContent() {
             rotationX={s.rotationX}
             rotationY={s.rotationY}
             objectScale={1}
+            overrideColor={s.color}
+            overrideMetalness={s.metalness}
+            overrideRoughness={s.roughness}
+            overrideWireframe={s.wireframe}
+            overrideOpacity={s.opacity}
           />
-        ) : svgString && (
-          s.animate === 'physicsFall' ? (
-             <PhysicsFallSimulation
+        ) : (
+          svgString &&
+          (s.animate === 'physicsFall' ? (
+            <PhysicsFallSimulation
               key="physics-fall-sim"
               svgString={svgString}
               depth={s.depth}
@@ -256,6 +357,7 @@ function SceneContent() {
               physicsSize={s.physicsSize}
               resetKey={s.resetKey}
               shapeType={s.shapeType}
+              coinRadius={s.coinRadius}
             />
           ) : (
             <ExtrudedSVG
@@ -279,8 +381,27 @@ function SceneContent() {
               roughnessMapUrl={s.roughnessMapUrl || undefined}
               metalnessMapUrl={s.metalnessMapUrl || undefined}
               shapeType={s.shapeType}
+              coinRadius={s.coinRadius}
+              badgeWidth={s.badgeWidth}
+              badgeHeight={s.badgeHeight}
+              badgeRadius={s.badgeRadius}
+              stampRadius={s.stampRadius}
+              stampTeeth={s.stampTeeth}
+              stampToothDepth={s.stampToothDepth}
+              shieldWidth={s.shieldWidth}
+              shieldHeight={s.shieldHeight}
+              hexRadius={s.hexRadius}
+              chainLinks={s.chainLinks}
+              chainScale={s.chainScale}
+              showChain={s.showChain}
+              bailSize={s.bailSize}
+              bailOffset={s.bailOffset}
+              chainOffset={s.chainOffset}
+              chainColor={s.chainColor}
+              shapeColor={s.shapeColor}
+              reliefDepth={s.reliefDepth}
             />
-          )
+          ))
         )}
       </group>
 
@@ -316,36 +437,46 @@ function SceneContent() {
 
       <hemisphereLight args={['#b1e1ff', '#b97a20', 0.5]} />
 
-      {!s.transparentBg && (
-        s.bgType === 'solid' ? (
+      {!s.transparentBg &&
+        !s.hdriBackground &&
+        s.bgType !== 'image' &&
+        (s.bgType === 'solid' ? (
           <mesh scale={100}>
             <sphereGeometry args={[1, 64, 64]} />
             <meshBasicMaterial color={s.background} side={THREE.BackSide} toneMapped={false} />
           </mesh>
         ) : (
           <GradientBackground type={s.bgType as any} gradient={s.bgGradient} />
-        )
-      )}
+        ))}
 
-      {(() => {
-        const hdriUrl = s.customHdriUrl || ENVIRONMENT_PRESETS.find(p => p.id === s.environment)?.file;
-        return hdriUrl ? (
-          <Environment background={s.hdriBackground} files={hdriUrl} />
-        ) : (
-          <Environment background={false} environmentIntensity={1.5} frames={1}>
-            <mesh position={[0, 25, 0]}>
-              <sphereGeometry args={[20, 32, 32]} />
-              <meshBasicMaterial color="#ffffff" />
-            </mesh>
-          </Environment>
-        );
-      })()}
+      <Suspense fallback={<HdriLoadingFallback />}>
+        {(() => {
+          const hdriUrl =
+            s.customHdriUrl || ENVIRONMENT_PRESETS.find((p) => p.id === s.environment)?.file;
+          return hdriUrl ? (
+            <Environment
+              background={s.hdriBackground}
+              files={hdriUrl}
+              backgroundBlurriness={s.hdriBlur}
+              backgroundIntensity={s.hdriIntensity}
+              environmentIntensity={s.hdriIntensity}
+              environmentRotation={hdriRotationEuler}
+              backgroundRotation={hdriRotationEuler}
+            />
+          ) : (
+            <Environment background={false} environmentIntensity={1.5} frames={1}>
+              <mesh position={[0, 25, 0]}>
+                <sphereGeometry args={[20, 32, 32]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+            </Environment>
+          );
+        })()}
+      </Suspense>
 
       <CameraBridge />
 
-      {s.showGrid && (
-        <gridHelper args={[10, 10, '#333333', '#1a1a1a']} position={[0, -1.5, 0]} />
-      )}
+      {s.showGrid && <gridHelper args={[10, 10, '#333333', '#1a1a1a']} position={[0, -1.5, 0]} />}
 
       {shaderSettings ? (
         <ShaderPostProcess
@@ -353,14 +484,44 @@ function SceneContent() {
           settings={shaderSettings}
           halftoneVariant={halftoneVariant}
         />
-      ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled || s.ssaoEnabled || s.chromaticAberrationEnabled || s.noiseEnabled || s.colorGradingEnabled) ? (
+      ) : !s.effectsBypass &&
+        (s.bloomEnabled ||
+          s.dofEnabled ||
+          s.vignetteEnabled ||
+          s.ssaoEnabled ||
+          s.chromaticAberrationEnabled ||
+          s.noiseEnabled ||
+          s.colorGradingEnabled) ? (
         <EffectComposer multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
-          {s.ssaoEnabled && <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />}
-          {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}
-          {s.dofEnabled && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
-          {s.chromaticAberrationEnabled && <ChromaticAberration offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any} />}
-          {s.noiseEnabled && <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />}
-          {s.colorGradingEnabled && <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />}
+          {s.ssaoEnabled && s.renderQuality !== 'performance' && (
+            <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />
+          )}
+          {s.bloomEnabled && (
+            <Bloom
+              intensity={s.bloomIntensity}
+              luminanceThreshold={s.bloomThreshold}
+              luminanceSmoothing={0.9}
+            />
+          )}
+          {s.dofEnabled && s.renderQuality !== 'performance' && (
+            <DepthOfField
+              focusDistance={s.dofFocusDistance}
+              focalLength={0.02}
+              bokehScale={s.dofBokehScale}
+              height={RENDER_QUALITY_CONFIG[s.renderQuality].msaa > 0 ? 480 : 240}
+            />
+          )}
+          {s.chromaticAberrationEnabled && s.renderQuality !== 'performance' && (
+            <ChromaticAberration
+              offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any}
+            />
+          )}
+          {s.noiseEnabled && (
+            <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />
+          )}
+          {s.colorGradingEnabled && (
+            <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />
+          )}
           {s.colorGradingEnabled && <HueSaturation hue={s.cgHue} saturation={s.cgSaturation} />}
           {s.vignetteEnabled && <Vignette darkness={s.vignetteIntensity} offset={0.3} />}
         </EffectComposer>
@@ -378,66 +539,85 @@ const TONE_MAP: Record<ToneMappingType, THREE.ToneMapping> = {
   Linear: THREE.LinearToneMapping,
 };
 
-export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasReady, onSceneReady }) => {
-  const s = useStudio3DStore(useShallow((st) => ({
-    background: st.background,
-    transparentBg: st.transparentBg,
-    zoom: st.zoom,
-    resetKey: st.resetKey,
-    toneMapping: st.toneMapping,
-    toneMappingExposure: st.toneMappingExposure,
-    showStats: st.showStats,
-    renderQuality: st.renderQuality,
-    fov: st.fov,
-    orthographic: st.orthographic,
-  })));
+export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
+  ({ onCanvasReady, onSceneReady }) => {
+    const s = useStudio3DStore(
+      useShallow((st) => ({
+        background: st.background,
+        transparentBg: st.transparentBg,
+        bgType: st.bgType,
+        backgroundImageUrl: st.backgroundImageUrl,
+        zoom: st.zoom,
+        resetKey: st.resetKey,
+        toneMapping: st.toneMapping,
+        toneMappingExposure: st.toneMappingExposure,
+        showStats: st.showStats,
+        renderQuality: st.renderQuality,
+        fov: st.fov,
+        orthographic: st.orthographic,
+      }))
+    );
 
-  const [sceneHandle, setSceneHandle] = useState<SceneHandle | null>(null);
+    const [sceneHandle, setSceneHandle] = useState<SceneHandle | null>(null);
 
-  const bg = s.transparentBg ? 'transparent' : s.background;
+    const bg = s.transparentBg ? 'transparent' : s.background;
+    const bgStyle: React.CSSProperties =
+      s.bgType === 'image' && s.backgroundImageUrl
+        ? {
+            backgroundImage: `url(${s.backgroundImageUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }
+        : { background: bg };
 
-  return (
-    <SceneRefContext.Provider value={sceneHandle}>
-      <Canvas
-        key={`${s.resetKey}-${s.orthographic}`}
-        orthographic={s.orthographic}
-        camera={s.orthographic
-          ? { position: [0, 0, s.zoom], zoom: 80 }
-          : { position: [0, 0, s.zoom], fov: s.fov }
-        }
-        dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
-        style={{ background: bg, width: '100%', height: '100%' }}
-        gl={{
-          antialias: s.renderQuality !== 'performance',
-          alpha: true,
-          preserveDrawingBuffer: true,
-          powerPreference: 'default',
-          failIfMajorPerformanceCaveat: false,
-          toneMapping: TONE_MAP[s.toneMapping],
-          toneMappingExposure: s.toneMappingExposure,
-        }}
-        onCreated={({ gl, scene, camera }) => {
-          onCanvasReady(gl.domElement);
-          const handle: SceneHandle = { scene, gl, camera };
-          setSceneHandle(handle);
-          onSceneReady?.(handle);
+    return (
+      <SceneRefContext.Provider value={sceneHandle}>
+        <Canvas
+          key={`${s.resetKey}-${s.orthographic}`}
+          orthographic={s.orthographic}
+          camera={
+            s.orthographic
+              ? { position: [0, 0, s.zoom], zoom: 80 }
+              : { position: [0, 0, s.zoom], fov: s.fov }
+          }
+          dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
+          style={{ ...bgStyle, width: '100%', height: '100%' }}
+          gl={{
+            antialias: s.renderQuality !== 'performance',
+            alpha: true,
+            preserveDrawingBuffer: true,
+            powerPreference: 'default',
+            failIfMajorPerformanceCaveat: false,
+            toneMapping: TONE_MAP[s.toneMapping],
+            toneMappingExposure: s.toneMappingExposure,
+          }}
+          onCreated={({ gl, scene, camera }) => {
+            onCanvasReady(gl.domElement);
+            const handle: SceneHandle = { scene, gl, camera };
+            setSceneHandle(handle);
+            onSceneReady?.(handle);
 
-          gl.domElement.addEventListener('webglcontextlost', (e) => {
-            e.preventDefault();
-            import('sonner').then(({ toast }) => toast.error('WebGL context lost — attempting recovery...', { id: 'webgl-context' }));
-          });
-          gl.domElement.addEventListener('webglcontextrestored', () => {
-            import('sonner').then(({ toast }) => toast.success('WebGL context restored', { id: 'webgl-context' }));
-            useStudio3DStore.setState({ resetKey: Date.now() });
-          });
-        }}
-      >
-        <AdaptiveDpr pixelated />
-        <AdaptiveEvents />
-        <PerformanceMonitor />
-        <SceneContent />
-        {s.showStats && <Stats className="!absolute !left-2 !top-2" />}
-      </Canvas>
-    </SceneRefContext.Provider>
-  );
-});
+            gl.domElement.addEventListener('webglcontextlost', (e) => {
+              e.preventDefault();
+              import('sonner').then(({ toast }) =>
+                toast.error('WebGL context lost — attempting recovery...', { id: 'webgl-context' })
+              );
+            });
+            gl.domElement.addEventListener('webglcontextrestored', () => {
+              import('sonner').then(({ toast }) =>
+                toast.success('WebGL context restored', { id: 'webgl-context' })
+              );
+              useStudio3DStore.setState({ resetKey: Date.now() });
+            });
+          }}
+        >
+          <AdaptiveDpr pixelated />
+          <AdaptiveEvents />
+          <PerformanceMonitor />
+          <SceneContent />
+          {s.showStats && <Stats className="!absolute !left-2 !top-2" />}
+        </Canvas>
+      </SceneRefContext.Provider>
+    );
+  }
+);

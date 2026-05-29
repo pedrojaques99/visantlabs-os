@@ -1,213 +1,262 @@
-# Visant Labs® | Tools for Designers
+# Visant Labs® | AI Design Platform
 
 <div align="center">
-  <h3>AI-powered design platform for brand creation and creative production</h3>
-  <p>Canvas workflows, brand guidelines as AI input, mockup generation, and a Figma plugin — all in one OSS stack</p>
+  <p><strong>Open-source AI-powered platform for brand creation, mockup generation, 3D visualization, and creative production.</strong></p>
+  <p>Brand guidelines as AI input, 30+ design tools, Figma plugin, MCP server, and CLI — all in one stack.</p>
+
+  ![License](https://img.shields.io/badge/license-MIT-blue)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6)
+  ![React](https://img.shields.io/badge/React-19-61dafb)
+  ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
 </div>
 
-## Features
+---
 
-- **Canvas Editor**: Node-based canvas with batch runner, data/variable nodes, and pipeline system
-- **Figma Plugin**: In-editor AI chat with context-aware design assistance
-- **Brand Guidelines**: Guidelines feed AI generation — not just static docs
-- **Mockup Machine**: Generate instant mockups from brand assets and prompts
-- **Creative Studio**: Layer-based creative editor with AI-driven composition
-- **Platform MCP**: Model Context Protocol server exposing platform tools to AI agents
-- **Admin Chat**: Rich AI assistant with media kit, brand context, and tool use
-- **AI Image Generation**: Gemini-powered image and mockup generation
-- **Real-time Collaboration**: Optional Liveblocks integration for canvas co-editing
+## What is Visant Labs?
+
+Visant Labs is a full-stack AI design platform where **brand guidelines are input for AI generation, not just static documentation**. Upload your brand, and every tool in the platform — mockups, 3D, creative studio, canvas — uses your identity to produce on-brand results.
+
+## Platform Features
+
+### Brand Guidelines
+Comprehensive design system management with identity, colors, typography, logos, voice/tone, strategy, archetypes, and personas. Features include:
+- AI-powered auto-populate from URLs, PDFs, or text
+- Design system validation with WCAG contrast checks
+- Version history with rollback
+- Figma sync for design tokens extraction
+- Public sharing with read-only links
+- Completeness health check with AI analysis
+- Brand grid dashboard with search, folder filters, and sort
+
+### 3D Studio
+WebGL-based 3D model viewer and editor built on Three.js and React Three Fiber:
+- SVG/PNG to 3D extrusion with auto-fit sizing
+- Brand logo import directly from guidelines
+- 15+ material presets (plastic, metal, glass, wood, ceramic, neon, holographic)
+- Chain/pendant system with GLB import
+- Shape frames (ring, star, shield, hex, heart, diamond)
+- Scene controls: HDRI environments, shadows, ground, grid, fog
+- Post-processing: SSAO, chromatic aberration, film grain, color grading
+- Animations: spin, float, pulse, wobble, physics
+- Export: PNG, JPG, GIF, MP4 turntable, GLB, OBJ
+- Cloud scene persistence with undo/redo
+
+### Image Lab
+Unified multi-mode image editor with 4 engines:
+- **Halftone**: CMYK halftone with dot size, angle, and color control
+- **Texture**: Film grain, noise, paper, canvas texture overlays
+- **Riso**: Risograph printing simulation with ink layers
+- **Shader**: Custom visual effects and color grading
+- Magic Hand interactive parameter control
+- Server-side video/GIF export with FFmpeg
+- MCP tools for headless processing
+
+### Mockup Machine
+AI-powered mockup generator with 500+ community presets:
+- Upload design + describe scene = photorealistic mockup
+- Categories: devices, print, apparel, signage, packaging, stationery
+- Brand-aware generation (injects logos, colors from guidelines)
+- Multi-model: GPT Image, Gemini, Seedream
+- Community preset library with likes, search, and filtering
+- Multi-format output: 1:1, 9:16, 16:9, 4:5
+
+### Canvas / Pipeline Editor
+React Flow-based node graph for batch design automation:
+- 50+ node types: Image, Video, Text, Merge, Upscale, Mockup, Branding, Logo, Strategy
+- Variables & data nodes for CSV/JSON batch processing
+- Real-time collaboration via Liveblocks
+- Pipeline asset inbox for organizing inputs
+- Export/import as JSON workflows
+
+### Creative Studio
+AI-driven layout composition engine:
+- Structured planning: background, text layers, logo placement, overlays
+- Brand-aware generation from guidelines context
+- Server-side rendering to PNG
+- Project management with save/load
+
+### Branding Machine
+Guided AI brand identity generator:
+- Multi-step pipeline: market research, personas, archetypes, manifesto, colors, typography
+- Moodboard collection and sentiment analysis
+- SWOT analysis generation
+- AI expert chat for brand strategy
+
+### 30+ Design Tools
+All available at `/apps`:
+
+| Tool | Description |
+|------|-------------|
+| Visual Search | Multi-source search (Unsplash, Pexels, Pixabay, Wikimedia, Clearbit, Svgl) |
+| Upscale | AI image upscaling |
+| Compress | Image compression and optimization |
+| Color Converter | HEX, RGB, HSL, CMYK conversion |
+| Color Palette | Extract and generate color palettes |
+| Format Converter | Multi-format image conversion |
+| SVG Optimizer | SVG cleanup and minification |
+| QR Code | QR code generator with branding |
+| Favicon | Multi-size favicon generator |
+| OG Image | Open Graph image generator |
+| Watermark | Batch watermark tool |
+| Background Remover | AI-powered background removal |
+| Grid Paint | Pixel grid drawing tool |
+| Grid Machine | Layout grid generator |
+| Moodboard Studio | Visual moodboard builder |
+| Extractor | PDF/document text extraction |
+| Budget Machine | Project budget templates and sharing |
+| Wind Tunnel | Experimental design lab |
+
+### Figma Plugin
+In-editor AI assistant with brand context:
+- Brand apply (inject colors, fonts, logos to Figma)
+- Brand import/sync from Figma variables
+- Brand matrix comparison automation
+- Component registry and context tools
+- Export with bleed and metadata
+
+### MCP Server
+Model Context Protocol server for AI agent integration:
+- Brand guidelines CRUD and insights
+- Creative plan generation
+- Mockup and image generation
+- Analytics and metrics
+- HTTP and stdio transport with bearer auth
+
+### CLI Tool
+```bash
+npx visantlabs login     # Authenticate
+npx visantlabs mcp setup # Configure MCP for Claude Code
+npx visantlabs skills    # Manage skills
+```
+
+### Developer Portal
+- API key management with usage tracking
+- Interactive API documentation
+- Usage dashboard with cost analytics
+- Getting started guide
+
+## Tech Stack
+
+| Layer | Technologies |
+|-------|-------------|
+| Frontend | React 19, TypeScript 5, Vite 6, Tailwind CSS |
+| UI | Shadcn/ui, Framer Motion, React Flow, Konva.js |
+| 3D | Three.js, React Three Fiber, React Three Drei |
+| State | Zustand, TanStack React Query |
+| Backend | Node.js, Express, Prisma ORM |
+| Database | MongoDB (Prisma ORM) |
+| AI/ML | Google Gemini, OpenAI GPT Image, Google Veo 3 (video), Seedream |
+| Storage | Cloudflare R2 |
+| Auth | Google OAuth, email/password, TOTP 2FA, session tokens |
+| Collaboration | Liveblocks (real-time canvas) |
+| Payments | Stripe, AbacatePay (PIX/Brazil) |
+| i18n | English (en-US), Portuguese Brazil (pt-BR) |
+| Testing | Vitest, Supertest, MSW |
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ 
-- MongoDB (local or [MongoDB Atlas](https://www.mongodb.com/cloud/atlas))
+- Node.js 20+
+- MongoDB (local, [Atlas](https://www.mongodb.com/cloud/atlas), or Docker: `docker run -d -p 27017:27017 mongo`)
 - Google Gemini API Key
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/pedrojaques99/visantlabs-os.git
-   cd visantlabs-os
-   ```
+```bash
+# Clone
+git clone https://github.com/pedrojaques99/visantlabs-os.git
+cd visantlabs-os
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+# Install
+npm install
 
-3. **Configure environment variables**
-   ```bash
-   cp env.example .env.local
-   ```
-   
-   Edit `.env.local` with your configuration. At minimum, you need:
-   - `MONGODB_URI` - MongoDB connection string
-   - `JWT_SECRET` - Secret for JWT tokens (generate with `npm run generate-jwt-secret`)
-   - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` - For authentication
-   - `GOOGLE_GEMINI_API_KEY` - For AI image generation
+# Configure
+cp env.example .env.local
+# Edit .env.local with your keys (see env.example for all options)
 
-4. **Run the application**
-   ```bash
-   # Run both frontend and backend
-   npm run dev:all
-   
-   # Or run separately:
-   npm run dev        # Frontend only (port 3000)
-   npm run dev:server # Backend only (port 3001)
-   ```
+# Run
+npm run dev:all    # Frontend (3000) + Backend (3001)
+# Or separately:
+npm run dev        # Frontend only
+npm run dev:server # Backend only
+```
 
-The app will be available at `http://localhost:3000`
+### Minimum Environment Variables
+
+```env
+MONGODB_URI=mongodb://localhost:27017/visantlabs
+JWT_SECRET=your-secret-here
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_GEMINI_API_KEY=your-gemini-key
+```
 
 ## Optional Services
 
-The core canvas functionality works without any paid services. However, you can enable additional features:
+| Service | Required For | Setup Guide | Without It |
+|---------|-------------|-------------|------------|
+| Google Gemini | AI generation, mockups, branding | [docs/SETUP_LLM.md](docs/SETUP_LLM.md) | AI features disabled |
+| Stripe | Subscriptions, credit purchases | [docs/SETUP_STRIPE.md](docs/SETUP_STRIPE.md) | Payments disabled |
+| AbacatePay | PIX payments (Brazil) | [docs/SETUP_ABACATEPAY.md](docs/SETUP_ABACATEPAY.md) | PIX unavailable |
+| Cloudflare R2 | Permanent image storage | [docs/SETUP_R2.md](docs/SETUP_R2.md) | Base64 temp storage |
+| Liveblocks | Real-time canvas collaboration | [docs/SETUP_LIVEBLOCKS.md](docs/SETUP_LIVEBLOCKS.md) | Individual mode |
 
-### AI Features (Google Gemini)
-- **Required for**: AI image generation, mockup creation, branding analysis
-- **Setup**: See [docs/SETUP_LLM.md](docs/SETUP_LLM.md)
-- **Without it**: AI features disabled, canvas still works
+### Additional Docs
 
-### Payments (Stripe)
-- **Required for**: Credit purchases, subscriptions
-- **Setup**: See [docs/SETUP_STRIPE.md](docs/SETUP_STRIPE.md)
-- **Without it**: Payment features disabled
-
-### PIX Payments (AbacatePay)
-- **Required for**: PIX payment option (Brazil)
-- **Setup**: See [docs/SETUP_ABACATEPAY.md](docs/SETUP_ABACATEPAY.md)
-- **Without it**: PIX option unavailable, Stripe payments still work
-
-### Storage (Cloudflare R2)
-- **Required for**: Permanent image storage
-- **Setup**: See [docs/SETUP_R2.md](docs/SETUP_R2.md)
-- **Without it**: Images stored temporarily in base64
-
-### Collaboration (Liveblocks)
-- **Required for**: Real-time canvas collaboration
-- **Setup**: See [docs/SETUP_LIVEBLOCKS.md](docs/SETUP_LIVEBLOCKS.md)
-- **Without it**: Canvas works in individual mode
-
-
-
-## Forking & Customization
-
-If you're forking this project for your own deployment, you'll want to customize these files:
-
-### Branding (`config/branding.ts`)
-
-This file centralizes all branding-related content:
-
-```typescript
-// config/branding.ts
-export const branding = {
-  companyName: 'Your Company',
-  productName: 'Your Product Name',
-  github: { ... },
-  support: {
-    email: 'your-email@example.com',
-    supportEmail: 'support@example.com',
-  },
-  links: { ... },
-  tutorialVideo: { ... },
-};
-```
-
-### SEO Files
-
-Update these files with your domain before deploying:
-
-- `public/sitemap.xml` - Replace `YOUR_DOMAIN.COM` with your actual domain
-- `public/robots.txt` - Replace `YOUR_DOMAIN.COM` with your actual domain
-
-### Environment Variables
-
-Set `VITE_SITE_URL` to your production domain for proper SEO and referral links:
-
-```env
-VITE_SITE_URL=https://your-domain.com
-```
-
-### Legal Pages
-
-The legal pages (Terms of Service, Privacy Policy, etc.) use translations from:
-
-- `locales/en-US.json`
-- `locales/pt-BR.json`
-
-Update the email addresses and company information in these files.
+- [MCP Server Setup](docs/SETUP_MCP.md) — Connect AI agents to Visant via MCP
+- [API Key Policy](docs/API_KEY_POLICY.md) — Key management and security guidelines
 
 ## Development
 
-### Code Formatting
-
 ```bash
-npm run format      # Format all files
-npm run format:check # Check formatting
-npm run lint        # Run ESLint
-npm run lint:fix    # Fix ESLint errors
+npm run dev:all        # Full-stack dev
+npm run type-check     # TypeScript check
+npm run lint           # ESLint
+npm run format         # Prettier
+npm run db:studio      # Prisma Studio
+npm run check-env      # Validate env vars
+npm run check-mongodb  # Test DB connection
 ```
 
-### Environment Variables
+### Project Structure
 
-See `env.example` for all available configuration options.
-
-### Database
-
-The project uses MongoDB for data storage. You can use:
-- Local MongoDB installation
-- MongoDB Atlas (cloud)
-- Docker: `docker run -d -p 27017:27017 mongo`
-
-### Scripts
-
-```bash
-npm run check-env        # Check environment variables
-npm run check-stripe     # Check Stripe configuration
-npm run check-r2         # Check R2 configuration
-npm run check-mongodb    # Check MongoDB connection
-npm run db:studio        # Open Prisma Studio
+```
+src/
+  components/     # React components (UI, brand, canvas, 3D, etc.)
+  pages/          # Route pages
+  hooks/          # Custom React hooks
+  services/       # API service clients
+  lib/            # Core utilities and types
+  locales/        # i18n translation files
+server/           # Express backend + Prisma
+mcp-server/       # MCP server for AI agents
+plugin/           # Figma plugin source
+cli/              # CLI tool source
+scripts/          # Build and utility scripts
+tests/            # Vitest test suites
+docs/             # Setup and policy docs
 ```
 
-## Documentation
+## Forking & Customization
 
-### Setup Guides
-
-- [Setup LLM/AI (Gemini)](docs/SETUP_LLM.md)
-- [Setup Stripe Payments](docs/SETUP_STRIPE.md)
-- [Setup AbacatePay (PIX)](docs/SETUP_ABACATEPAY.md)
-- [Setup Cloudflare R2 Storage](docs/SETUP_R2.md)
-- [Setup Liveblocks Collaboration](docs/SETUP_LIVEBLOCKS.md)
-
-### Policies
-
-- [API Key Policy](docs/API_KEY_POLICY.md)
+1. **Branding** — Edit `src/config/branding.ts` (company name, links, support email)
+2. **SEO** — Update `public/sitemap.xml` and `public/robots.txt` with your domain
+3. **Legal** — Update legal pages in `src/locales/en-US.json` and `pt-BR.json`
+4. **Environment** — Set `VITE_SITE_URL` to your production domain
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-- [React Flow](https://reactflow.dev/) - Canvas library
-- [Google Gemini](https://ai.google.dev/) - AI image generation
-- [Liveblocks](https://liveblocks.io/) - Real-time collaboration
-- [Stripe](https://stripe.com/) - Payment processing
-
-## Support
-
-For issues and questions, please open an issue on GitHub.
-
-## Authors
-
-Created by Pedro Jaques & Visant Company [https://www.visant.co]
+[React Flow](https://reactflow.dev/) | [Three.js](https://threejs.org/) | [Konva.js](https://konvajs.org/) | [Google Gemini](https://ai.google.dev/) | [Liveblocks](https://liveblocks.io/) | [Stripe](https://stripe.com/) | [Shadcn/ui](https://ui.shadcn.com/)
 
 ---
 
-**Note**: The main feature of this project is the **canvas editor** and **mockup-machine**. All other services are optional and can be configured as needed.
+Created by **Pedro Jaques & [Visant Company](https://www.visant.co)**

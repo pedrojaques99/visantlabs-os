@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useIsMobile } from '@/hooks/use-media-query';
 import {
   useStudio3DStore,
   SCENE_PRESETS,
@@ -18,33 +19,63 @@ import {
   type SavedScene,
 } from '@/stores/studio3dStore';
 import {
-  Upload, FileText, Type, Box, Film, Save, FolderOpen, Trash2, Shuffle,
+  Upload, FileText, Type, Box, Film, Save, FolderOpen, Trash2, Shuffle, Link, Palette,
 } from 'lucide-react';
 import {
   ToolPanelSection, ToolPanelDisclosure, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
+import { HexColorPicker } from 'react-colorful';
 import { FONT_OPTIONS } from './_shared';
+import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { BrandLogoPickerModal } from '../BrandLogoPickerModal';
+import { usePresetPreviews } from '../usePresetPreviews';
 
 export const SceneTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const store = useStudio3DStore();
   const [isDragging, setIsDragging] = useState(false);
   const [hasRandomizedOnce, setHasRandomizedOnce] = useState(false);
   const [showRandomizeConfirm, setShowRandomizeConfirm] = useState(false);
+  const [chainColorPickerOpen, setChainColorPickerOpen] = useState(false);
+  const [shapeColorPickerOpen, setShapeColorPickerOpen] = useState(false);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
+  const lastPngFile = useRef<File | null>(null);
+  const [isRetracing, setIsRetracing] = useState(false);
 
   const [depth, setDepth] = useDebouncedSlider(store.depth, store.setDepth);
   const [objectScale, setObjectScale] = useDebouncedSlider(store.objectScale, store.setObjectScale);
   const [smoothness, setSmoothness] = useDebouncedSlider(store.smoothness, store.setSmoothness);
   const [bevelThickness, setBevelThickness] = useDebouncedSlider(store.bevelThickness, store.setBevelThickness);
   const [bevelSize, setBevelSize] = useDebouncedSlider(store.bevelSize, store.setBevelSize);
+  const [coinRadius, setCoinRadius] = useDebouncedSlider(store.coinRadius, store.setCoinRadius);
+  const [badgeW, setBadgeW] = useDebouncedSlider(store.badgeWidth, store.setBadgeWidth);
+  const [badgeH, setBadgeH] = useDebouncedSlider(store.badgeHeight, store.setBadgeHeight);
+  const [badgeR, setBadgeR] = useDebouncedSlider(store.badgeRadius, store.setBadgeRadius);
+  const [sRadius, setSRadius] = useDebouncedSlider(store.stampRadius, store.setStampRadius);
+  const [sTeeth, setSTeeth] = useDebouncedSlider(store.stampTeeth, store.setStampTeeth);
+  const [sTooth, setSTooth] = useDebouncedSlider(store.stampToothDepth, store.setStampToothDepth);
+  const [shieldW, setShieldW] = useDebouncedSlider(store.shieldWidth, store.setShieldWidth);
+  const [shieldH, setShieldH] = useDebouncedSlider(store.shieldHeight, store.setShieldHeight);
+  const [hexR, setHexR] = useDebouncedSlider(store.hexRadius, store.setHexRadius);
+  const [chainLinks, setChainLinks] = useDebouncedSlider(store.chainLinks, store.setChainLinks);
+  const [chainScale, setChainScale] = useDebouncedSlider(store.chainScale, store.setChainScale);
+  const [bailSz, setBailSz] = useDebouncedSlider(store.bailSize, store.setBailSize);
+  const [bailOff, setBailOff] = useDebouncedSlider(store.bailOffset, store.setBailOffset);
+  const [chainOff, setChainOff] = useDebouncedSlider(store.chainOffset, store.setChainOffset);
+  const [reliefDepth, setReliefDepth] = useDebouncedSlider(store.reliefDepth, store.setReliefDepth);
+
+  const presetThumbs = usePresetPreviews();
+  const [brandPickerOpen, setBrandPickerOpen] = useState(false);
+  const { data: brandGuidelines = [], isLoading: brandLoading } = useBrandGuidelines(true);
+  const hasBrandLogos = brandGuidelines.some(g => g.logos && g.logos.length > 0);
 
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>([]);
   const [scenesLoading, setScenesLoading] = useState(false);
-  const [sceneName, setSceneName] = useState('');
+  const [sceneName, setSceneName] = useState(store._sceneName || '');
 
   useEffect(() => {
     setScenesLoading(true);
@@ -65,14 +96,21 @@ export const SceneTab: React.FC = React.memo(() => {
 
   const processFile = useCallback(async (file: File) => {
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
+      lastPngFile.current = null;
       const text = await file.text();
       store.setSvgData(text, file.name);
       toast.success(t('studio3d.input.loaded', { fileName: file.name }));
     } else if (file.type.startsWith('image/')) {
+      lastPngFile.current = file;
       store.setIsLoading(true);
       try {
         const { pngToSvg } = await import('../PngToSvgConverter');
-        const svg = await pngToSvg(file);
+        const s = useStudio3DStore.getState();
+        const svg = await pngToSvg(file, {
+          turdSize: s.traceTurdSize,
+          optTolerance: s.traceOptTolerance,
+          threshold: s.traceThreshold,
+        });
         store.setSvgData(svg, file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch (err) {
@@ -81,6 +119,63 @@ export const SceneTab: React.FC = React.memo(() => {
       } finally {
         store.setIsLoading(false);
       }
+    }
+  }, [store, t]);
+
+  const handleRetrace = useCallback(async () => {
+    const file = lastPngFile.current;
+    if (!file) return;
+    setIsRetracing(true);
+    try {
+      const { pngToSvg } = await import('../PngToSvgConverter');
+      const s = useStudio3DStore.getState();
+      const svg = await pngToSvg(file, {
+        turdSize: s.traceTurdSize,
+        optTolerance: s.traceOptTolerance,
+        threshold: s.traceThreshold,
+      });
+      store.setSvgData(svg, file.name);
+      toast.success(t('studio3d.input.converted', { fileName: file.name }));
+    } catch {
+      toast.error(t('studio3d.input.processFailed'));
+    } finally {
+      setIsRetracing(false);
+    }
+  }, [store, t]);
+
+  const handleBrandLogoSelect = useCallback(async (logoUrl: string, fileName: string) => {
+    store.setIsLoading(true);
+    try {
+      const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(logoUrl)}`;
+      const res = await fetch(proxyUrl);
+      const { base64, mimeType } = await res.json() as { base64: string; mimeType: string };
+
+      if (mimeType === 'image/svg+xml' || fileName.endsWith('.svg')) {
+        const svgText = atob(base64);
+        store.setSvgData(svgText, fileName);
+        store.setInputMode('svg');
+      } else {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const file = new File([bytes], fileName, { type: mimeType });
+        lastPngFile.current = file;
+        const { pngToSvg } = await import('../PngToSvgConverter');
+        const s = useStudio3DStore.getState();
+        const svg = await pngToSvg(file, {
+          turdSize: s.traceTurdSize,
+          optTolerance: s.traceOptTolerance,
+          threshold: s.traceThreshold,
+        });
+        store.setSvgData(svg, fileName);
+        store.setInputMode('svg');
+      }
+      toast.success(t('studio3d.input.loaded', { fileName }));
+    } catch (err) {
+      console.error('Failed to load brand logo:', err);
+      toast.error(t('studio3d.input.processFailed'));
+    } finally {
+      store.setIsLoading(false);
     }
   }, [store, t]);
 
@@ -116,8 +211,53 @@ export const SceneTab: React.FC = React.memo(() => {
 
   return (
     <>
+      {/* Scene Presets — collapsible horizontal strip with 3D previews */}
+      <ToolPanelDisclosure label={t('studio3d.scenePresets.title')} icon={<Shuffle size={13} />} defaultOpen>
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
+          {Object.entries(SCENE_PRESETS).map(([name, preset]) => (
+            <button
+              key={name}
+              onClick={() => store.applyScenePreset(name)}
+              className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
+            >
+              <div
+                className="w-14 h-14 rounded-md overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors"
+                style={{ background: preset.background }}
+              >
+                {presetThumbs[name] ? (
+                  <img src={presetThumbs[name]} alt={preset.label} className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <div className="w-full h-full animate-pulse bg-white/5" />
+                )}
+              </div>
+              <span className="text-[8px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+                {preset.label}
+              </span>
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              if (!hasRandomizedOnce) {
+                setShowRandomizeConfirm(true);
+              } else {
+                store.randomize();
+                toast.success('Surprise!');
+              }
+            }}
+            className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
+          >
+            <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-cyan-500/30 group-hover:border-cyan-500/50 flex items-center justify-center transition-colors">
+              <Shuffle size={16} className="text-cyan-400" />
+            </div>
+            <span className="text-[8px] font-mono uppercase tracking-wider text-cyan-500 group-hover:text-cyan-300 transition-colors max-w-14 truncate">
+              Random
+            </span>
+          </button>
+        </div>
+      </ToolPanelDisclosure>
+
       {/* Input */}
-      <ToolPanelSection title={t('studio3d.input.title')}>
+      <ToolPanelDisclosure label={t('studio3d.input.title')} icon={<Upload size={13} />} defaultOpen>
         <ToolPanelGrid>
           <ToolPanelChip active={store.inputMode === 'svg'} onClick={() => store.setInputMode('svg')}>
             <span className="flex items-center justify-center gap-1"><FileText size={12} /> {t('studio3d.input.svgPng')}</span>
@@ -128,6 +268,11 @@ export const SceneTab: React.FC = React.memo(() => {
           <ToolPanelChip active={store.inputMode === 'model'} onClick={() => store.setInputMode('model')}>
             <span className="flex items-center justify-center gap-1"><Box size={12} /> 3D Model</span>
           </ToolPanelChip>
+          {hasBrandLogos && (
+            <ToolPanelChip onClick={() => setBrandPickerOpen(true)}>
+              <span className="flex items-center justify-center gap-1"><Palette size={12} /> Brand</span>
+            </ToolPanelChip>
+          )}
         </ToolPanelGrid>
 
         {store.inputMode === 'model' ? (
@@ -140,7 +285,7 @@ export const SceneTab: React.FC = React.memo(() => {
           >
             <Upload size={20} className="text-neutral-500" />
             <span className="text-[10px] uppercase tracking-wider text-neutral-500 text-center">
-              {store.fileName || 'Drop GLB / GLTF'}
+              {store.fileName || (isMobile ? t('mobile.tapToUpload') : 'Drop GLB / GLTF')}
             </span>
             <input ref={modelInputRef} type="file" accept=".glb,.gltf" onChange={handleModelUpload} className="hidden" aria-label="Upload GLB or GLTF model" />
           </div>
@@ -158,7 +303,7 @@ export const SceneTab: React.FC = React.memo(() => {
           >
             <Upload size={20} className={cn('transition-colors', isDragging ? 'text-white' : 'text-neutral-500')} />
             <span className={cn('text-[10px] uppercase tracking-wider transition-colors text-center', isDragging ? 'text-white' : 'text-neutral-500')}>
-              {store.isLoading ? <GlitchLoader size={12} /> : store.fileName || t('studio3d.input.dropZone')}
+              {store.isLoading ? <GlitchLoader size={12} /> : store.fileName || (isMobile ? t('mobile.tapToUpload') : t('studio3d.input.dropZone'))}
             </span>
             <input ref={fileInputRef} type="file" accept=".svg,.png,.jpg,.jpeg,.webp" onChange={handleFileUpload} className="hidden" aria-label="Upload SVG or image" />
           </div>
@@ -182,7 +327,7 @@ export const SceneTab: React.FC = React.memo(() => {
             </select>
           </div>
         )}
-      </ToolPanelSection>
+      </ToolPanelDisclosure>
 
       {/* Scenes */}
       <ToolPanelDisclosure label="Scenes" icon={<Film size={13} />} id="sec-scenes">
@@ -199,14 +344,23 @@ export const SceneTab: React.FC = React.memo(() => {
             <Button
               variant="outline"
               size="sm"
-              className="h-7 px-2 text-[10px]"
+              className="h-7 px-2 text-[10px] relative"
               disabled={!sceneName.trim()}
               aria-label="Save scene"
               onClick={async () => {
-                const scene = await saveScene(sceneName.trim());
+                let thumb: string | undefined;
+                const c = document.querySelector('canvas') as HTMLCanvasElement | null;
+                if (c) {
+                  const t = document.createElement('canvas');
+                  const r = Math.min(80 / c.width, 80 / c.height, 1);
+                  t.width = Math.round(c.width * r);
+                  t.height = Math.round(c.height * r);
+                  t.getContext('2d')?.drawImage(c, 0, 0, t.width, t.height);
+                  thumb = t.toDataURL('image/jpeg', 0.6);
+                }
+                const scene = await saveScene(sceneName.trim(), thumb);
                 if (scene) {
                   setSavedScenes(await getSavedScenes());
-                  setSceneName('');
                   toast.success('Scene saved');
                 } else {
                   toast.error('Failed to save scene');
@@ -230,10 +384,14 @@ export const SceneTab: React.FC = React.memo(() => {
                       else toast.error('Failed to load scene');
                     }}
                     aria-label="Load scene"
-                    className="flex-1 text-left px-2 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors truncate"
+                    className="flex-1 flex items-center gap-2 text-left px-2 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors"
                   >
-                    <FolderOpen size={10} className="inline mr-1.5 opacity-50" />
-                    {scene.name}
+                    {scene.thumbnail ? (
+                      <img src={scene.thumbnail} alt="" className="w-6 h-6 rounded border border-white/10 object-cover shrink-0" draggable={false} />
+                    ) : (
+                      <FolderOpen size={10} className="shrink-0 opacity-50" />
+                    )}
+                    <span className="truncate">{scene.name}</span>
                   </button>
                   <button
                     onClick={async () => {
@@ -253,17 +411,30 @@ export const SceneTab: React.FC = React.memo(() => {
         </div>
       </ToolPanelDisclosure>
 
+      {/* SVG Trace Refine — only for PNG uploads */}
+      {lastPngFile.current && store.inputMode === 'svg' && store.svgData && (
+        <ToolPanelDisclosure label="SVG REFINE">
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label="Noise" value={store.traceTurdSize} min={0} max={20} step={1} onChange={store.setTraceTurdSize} />
+            <ScrubInput label="Simplify" value={store.traceOptTolerance} min={0} max={2} step={0.05} onChange={store.setTraceOptTolerance} />
+          </div>
+          <ScrubInput label="Threshold" value={store.traceThreshold} min={0} max={255} step={1} onChange={store.setTraceThreshold} />
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-[10px] uppercase tracking-wider h-8"
+            disabled={isRetracing}
+            onClick={handleRetrace}
+          >
+            {isRetracing ? <GlitchLoader size={12} /> : 'Re-trace'}
+          </Button>
+        </ToolPanelDisclosure>
+      )}
+
       {/* Geometry */}
-      <ToolPanelSection title={t('studio3d.geometry.title')}>
-        <ToolPanelGrid>
-          {(['standard', 'coin'] as const).map((type) => (
-            <ToolPanelChip key={type} active={store.shapeType === type} onClick={() => store.setShapeType(type)}>
-              {t(type === 'standard' ? 'studio3d.geometry.shapeStandard' : 'studio3d.geometry.shapeCoin')}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
+      <ToolPanelDisclosure label={t('studio3d.geometry.title')} icon={<Box size={13} />} defaultOpen>
         <div className="grid grid-cols-2 gap-1.5">
-          <ScrubInput label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
+          <ScrubInput label={t('studio3d.geometry.depth')} value={depth} min={0.1} max={10} step={0.1} onChange={setDepth} />
           <ScrubInput label={t('studio3d.geometry.objectScale')} value={objectScale} min={0.1} max={5} step={0.05} onChange={setObjectScale} />
         </div>
         <ToolPanelRow label={t('studio3d.geometry.bevel')}>
@@ -271,37 +442,144 @@ export const SceneTab: React.FC = React.memo(() => {
         </ToolPanelRow>
         {store.bevelEnabled && (
           <div className="grid grid-cols-3 gap-1.5">
-            <ScrubInput label={t('studio3d.geometry.thickness')} value={bevelThickness} min={0} max={2} step={0.01} onChange={setBevelThickness} />
-            <ScrubInput label={t('studio3d.geometry.size')} value={bevelSize} min={0} max={2} step={0.01} onChange={setBevelSize} />
+            <ScrubInput label={t('studio3d.geometry.thickness')} value={bevelThickness} min={0} max={20} step={0.1} onChange={setBevelThickness} />
+            <ScrubInput label={t('studio3d.geometry.size')} value={bevelSize} min={0} max={20} step={0.1} onChange={setBevelSize} />
             <ScrubInput label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={1} onChange={setSmoothness} />
           </div>
         )}
-      </ToolPanelSection>
+      </ToolPanelDisclosure>
 
-      {/* Presets */}
-      <ToolPanelSection title={t('studio3d.scenePresets.title')}>
-        <ToolPanelGrid>
-          {Object.keys(SCENE_PRESETS).map((name) => (
-            <ToolPanelChip key={name} onClick={() => store.applyScenePreset(name)}>
-              {name}
+      {/* Shape */}
+      <ToolPanelDisclosure label={t('studio3d.geometry.shapeType')} defaultOpen>
+        <ToolPanelGrid cols={3}>
+          {(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'] as const).map((type) => (
+            <ToolPanelChip key={type} active={store.shapeType === type} onClick={() => store.setShapeType(type)}>
+              {t(`studio3d.geometry.shape_${type}`)}
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
-        <button
-          onClick={() => {
-            if (!hasRandomizedOnce) {
-              setShowRandomizeConfirm(true);
-            } else {
-              store.randomize();
-              toast.success('Surprise!');
-            }
-          }}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-dashed border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all text-[10px] uppercase tracking-widest font-mono"
-        >
-          <Shuffle size={13} />
-          Surprise me
-        </button>
-      </ToolPanelSection>
+        {store.shapeType === 'coin' && (
+          <ScrubInput label={t('studio3d.geometry.coinRadius')} value={coinRadius} min={0.5} max={5} step={0.1} onChange={setCoinRadius} />
+        )}
+        {store.shapeType === 'badge' && (
+          <div className="grid grid-cols-3 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.badgeWidth')} value={badgeW} min={1} max={8} step={0.1} onChange={setBadgeW} />
+            <ScrubInput label={t('studio3d.geometry.badgeHeight')} value={badgeH} min={1} max={8} step={0.1} onChange={setBadgeH} />
+            <ScrubInput label={t('studio3d.geometry.badgeRadius')} value={badgeR} min={0} max={2} step={0.05} onChange={setBadgeR} />
+          </div>
+        )}
+        {store.shapeType === 'stamp' && (
+          <div className="grid grid-cols-3 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.stampRadius')} value={sRadius} min={0.5} max={5} step={0.1} onChange={setSRadius} />
+            <ScrubInput label={t('studio3d.geometry.stampTeeth')} value={sTeeth} min={8} max={48} step={1} onChange={setSTeeth} />
+            <ScrubInput label={t('studio3d.geometry.stampToothDepth')} value={sTooth} min={0.05} max={1} step={0.05} onChange={setSTooth} />
+          </div>
+        )}
+        {store.shapeType === 'shield' && (
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.shieldWidth')} value={shieldW} min={0.5} max={5} step={0.1} onChange={setShieldW} />
+            <ScrubInput label={t('studio3d.geometry.shieldHeight')} value={shieldH} min={0.5} max={5} step={0.1} onChange={setShieldH} />
+          </div>
+        )}
+        {store.shapeType === 'hexagon' && (
+          <ScrubInput label={t('studio3d.geometry.hexRadius')} value={hexR} min={0.5} max={5} step={0.1} onChange={setHexR} />
+        )}
+        {store.shapeType !== 'standard' && (
+          <>
+            <ScrubInput label={t('studio3d.geometry.reliefDepth')} value={reliefDepth} min={0.05} max={1.5} step={0.05} onChange={setReliefDepth} />
+            <ToolPanelRow label={t('studio3d.geometry.shapeColor')}>
+              <div className="flex items-center gap-2">
+                {!!store.shapeColor && (
+                  <button
+                    type="button"
+                    className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+                    style={{ backgroundColor: store.shapeColor }}
+                    onClick={() => setShapeColorPickerOpen((v) => !v)}
+                    aria-label="Toggle shape color picker"
+                  />
+                )}
+                <Switch checked={!!store.shapeColor} onCheckedChange={(on) => store.setShapeColor(on ? '#888888' : '')} aria-label="Custom shape color" />
+              </div>
+            </ToolPanelRow>
+            {!!store.shapeColor && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
+                  <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                  <input
+                    type="text"
+                    value={store.shapeColor.replace('#', '').toUpperCase()}
+                    onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setShapeColor(`#${v}`); }}
+                    maxLength={6}
+                    aria-label="Shape color hex"
+                    className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+            {shapeColorPickerOpen && !!store.shapeColor && (
+              <div className="animate-fade-in">
+                <div className="custom-color-picker"><HexColorPicker color={store.shapeColor} onChange={store.setShapeColor} /></div>
+              </div>
+            )}
+          </>
+        )}
+
+      </ToolPanelDisclosure>
+
+      {/* Chain / Pendant */}
+      <div className="rounded-md border border-neutral-800/50 transition-all duration-200">
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-500"><Link size={13} /></span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{t('studio3d.geometry.showChain')}</span>
+          </div>
+          <Switch checked={store.showChain} onCheckedChange={store.setShowChain} aria-label="Chain" />
+        </div>
+        {store.showChain && (
+          <div className="px-3 pb-3 pt-1 animate-fade-in space-y-3">
+            <div className="grid grid-cols-2 gap-1.5">
+              <ScrubInput label={t('studio3d.geometry.chainLinks')} value={chainLinks} min={2} max={16} step={1} onChange={setChainLinks} />
+              <ScrubInput label={t('studio3d.geometry.chainScale')} value={chainScale} min={0.3} max={3} step={0.1} onChange={setChainScale} />
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              <ScrubInput label={t('studio3d.geometry.bailSize')} value={bailSz} min={0.1} max={1.5} step={0.05} onChange={setBailSz} />
+              <ScrubInput label={t('studio3d.geometry.bailOffset')} value={bailOff} min={-3} max={3} step={0.05} onChange={setBailOff} />
+              <ScrubInput label={t('studio3d.geometry.chainOffset')} value={chainOff} min={-3} max={3} step={0.05} onChange={setChainOff} />
+            </div>
+            <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
+              <Switch checked={!!store.chainColor} onCheckedChange={(on) => store.setChainColor(on ? store.color : '')} aria-label="Custom chain color" />
+            </ToolPanelRow>
+            {!!store.chainColor && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+                  style={{ backgroundColor: store.chainColor }}
+                  onClick={() => setChainColorPickerOpen((v) => !v)}
+                  aria-label="Toggle chain color picker"
+                />
+                <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
+                  <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                  <input
+                    type="text"
+                    value={store.chainColor.replace('#', '').toUpperCase()}
+                    onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setChainColor(`#${v}`); }}
+                    maxLength={6}
+                    aria-label="Chain color hex"
+                    className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+            {chainColorPickerOpen && !!store.chainColor && (
+              <div className="animate-fade-in">
+                <div className="custom-color-picker"><HexColorPicker color={store.chainColor} onChange={store.setChainColor} /></div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
 
       <ConfirmationModal
         isOpen={showRandomizeConfirm}
@@ -312,10 +590,18 @@ export const SceneTab: React.FC = React.memo(() => {
           store.randomize();
           toast.success('Surprise!');
         }}
-        title="Surprise Me"
-        message="This will randomize all scene parameters (material, color, lighting, animation, etc). Your current settings will be lost."
-        confirmText="Let's go!"
+        title={t('studio3d.randomizeTitle')}
+        message={t('studio3d.randomizeMessage')}
+        confirmText={t('studio3d.randomizeConfirm')}
         variant="warning"
+      />
+
+      <BrandLogoPickerModal
+        isOpen={brandPickerOpen}
+        onClose={() => setBrandPickerOpen(false)}
+        guidelines={brandGuidelines}
+        isLoading={brandLoading}
+        onSelectLogo={handleBrandLogoSelect}
       />
     </>
   );

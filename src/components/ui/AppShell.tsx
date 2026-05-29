@@ -7,7 +7,7 @@ export interface AppShellProps {
 }
 
 export const AppShell: React.FC<AppShellProps> = ({ children, className }) => (
-  <div className={cn('fixed inset-0 top-10 md:top-14 bg-neutral-950 overflow-hidden select-none', className)} style={{ zIndex: 40 }}>
+  <div className={cn('fixed inset-0 top-10 md:top-14 bg-neutral-950 overflow-hidden select-none pb-[env(safe-area-inset-bottom)]', className)} style={{ zIndex: 40 }}>
     {children}
   </div>
 );

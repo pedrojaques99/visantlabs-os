@@ -30,6 +30,7 @@ interface ShaderControlsProps {
   onTypeChange: (t: ShaderType) => void;
   onValueChange: (key: string, value: any) => void;
   className?: string;
+  hideToggle?: boolean;
 }
 
 export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(({
@@ -40,16 +41,18 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(({
   onTypeChange,
   onValueChange,
   className,
+  hideToggle,
 }) => {
   const def = SHADER_DEFINITIONS_MAP[shaderType];
 
   return (
     <div className={cn('space-y-4', className)}>
-      {/* Enable toggle */}
-      <div className="flex items-center justify-between">
-        <MicroTitle>SHADER EFFECT</MicroTitle>
-        <Switch checked={enabled} onCheckedChange={onEnabledChange} />
-      </div>
+      {!hideToggle && (
+        <div className="flex items-center justify-between">
+          <MicroTitle>SHADER EFFECT</MicroTitle>
+          <Switch checked={enabled} onCheckedChange={onEnabledChange} />
+        </div>
+      )}
 
       {!enabled ? null : (
         <>

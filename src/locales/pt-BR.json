@@ -4369,6 +4369,32 @@
       "shapeType": "Formato do Logo",
       "shapeStandard": "Padrão Extrudado",
       "shapeCoin": "Moeda Cunhada",
+      "shape_standard": "Padrão Extrudado",
+      "shape_coin": "Moeda Cunhada",
+      "shape_badge": "Emblema",
+      "shape_stamp": "Selo de Cera",
+      "shape_shield": "Escudo",
+      "shape_hexagon": "Hexágono",
+      "shape_pendant": "Pingente",
+      "coinRadius": "Raio",
+      "badgeWidth": "Largura",
+      "badgeHeight": "Altura",
+      "badgeRadius": "Borda",
+      "stampRadius": "Raio",
+      "stampTeeth": "Dentes",
+      "stampToothDepth": "Prof. Dente",
+      "shieldWidth": "Largura",
+      "shieldHeight": "Altura",
+      "hexRadius": "Raio",
+      "showChain": "Corrente",
+      "chainLinks": "Elos",
+      "chainScale": "Tamanho da Corrente",
+      "bailSize": "Tamanho da Argola",
+      "bailOffset": "Offset da Argola",
+      "chainOffset": "Offset da Corrente",
+      "chainColor": "Cor da Corrente",
+      "shapeColor": "Cor do Shape",
+      "reliefDepth": "Espessura do Relevo",
       "depth": "Profundidade",
       "bevel": "Bevel",
       "smoothness": "Suavidade",
@@ -4481,8 +4507,45 @@
       "loadTimeout": "Tempo esgotado ao carregar fonte"
     },
     "environment": {
-      "hdriBackground": "HDRI como Fundo"
+      "hdriBackground": "HDRI como Fundo",
+      "customLoaded": "HDRI customizado carregado",
+      "uploadHdr": "Upload .HDR",
+      "removeCustom": "Remover HDRI customizado"
     },
+    "panels": {
+      "surface": "SUPERFÍCIE",
+      "texturePbr": "Textura & PBR",
+      "rendering": "RENDERIZAÇÃO",
+      "environment": "Ambiente",
+      "hdri": "HDRI",
+      "atmosphere": "Atmosfera",
+      "fog": "Neblina",
+      "sceneOptions": "Opções da Cena",
+      "groundPlane": "Plano de Chão",
+      "perspective": "Perspectiva",
+      "orthographic": "Ortográfica",
+      "postProcessing": "PÓS-PROCESSAMENTO",
+      "ambientOcclusion": "Oclusão Ambiental",
+      "bloom": "Bloom",
+      "chromaticAberration": "Aberração Cromática",
+      "depthOfField": "Profundidade de Campo",
+      "filmGrain": "Grão de Filme",
+      "vignette": "Vinheta",
+      "colorGrading": "Graduação de Cor",
+      "shaderFx": "Shader FX",
+      "physics": "FÍSICA",
+      "controls": "CONTROLES",
+      "lightPositions": "Posições de Luz",
+      "toneMapping": "Mapeamento Tonal"
+    },
+    "shortcuts": {
+      "title": "Atalhos de Teclado"
+    },
+    "surpriseMe": "Surpreenda-me",
+    "randomizeTitle": "Surpreenda-me",
+    "randomizeMessage": "Isso vai randomizar todos os parâmetros da cena (material, cor, iluminação, animação, etc). Suas configurações atuais serão perdidas.",
+    "randomizeConfirm": "Vamos lá!",
+    "dropGlb": "Solte GLB / GLTF",
     "dropHere": "Solte o arquivo aqui"
   },
   "wind": {
@@ -4702,5 +4765,12 @@
   },
   "labs": {
     "labs": "Labs"
+  },
+  "mobile": {
+    "desktopOnly": {
+      "message": "Esta ferramenta foi feita para telas maiores. Abra no desktop para a experiência completa.",
+      "backToApps": "Voltar para Apps"
+    },
+    "tapToUpload": "Toque para enviar"
   }
 }

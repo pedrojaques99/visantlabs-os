@@ -35,7 +35,7 @@ export const AppShellMobileSheet: React.FC<AppShellMobileSheetProps> = ({
       <span className="text-[11px] uppercase tracking-widest">{label}</span>
     </button>
     {open && (
-      <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none">
+      <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none pb-[env(safe-area-inset-bottom)]">
         {children}
       </div>
     )}

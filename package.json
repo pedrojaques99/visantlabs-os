@@ -1,17 +1,25 @@
 {
   "name": "vsn-mockup-machine",
   "version": "0.0.0",
-  "description": "AI-powered canvas-based design tool with mockup generation, branding, and budget management",
+  "description": "AI-powered design platform — brand guidelines, mockups, 3D studio, image lab, canvas pipelines, Figma plugin, and MCP server",
   "type": "module",
   "keywords": [
-    "canvas",
     "ai",
-    "mockup",
     "design",
     "branding",
+    "mockup",
+    "3d",
+    "image-processing",
+    "canvas",
+    "figma",
+    "mcp",
     "react",
-    "typescript"
+    "typescript",
+    "threejs"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "author": "Visant Labs",
   "license": "MIT",
   "repository": {

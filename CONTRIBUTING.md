@@ -1,59 +1,72 @@
-# Contribuindo para o Projeto
+# Contributing to Visant Labs
 
-Obrigado por considerar contribuir! Este documento fornece diretrizes para contribuir com o projeto.
+Thanks for considering contributing! This document provides guidelines for contributing to the project.
 
-## Como Contribuir
+## Getting Started
 
-### 1. Configurar Ambiente de Desenvolvimento
+1. Fork the repository
+2. Clone your fork: `git clone https://github.com/[YOUR-USER]/visantlabs-os.git`
+3. Install dependencies: `npm install`
+4. Copy `env.example` to `.env.local` and configure the required variables
+5. Run `npm run dev:all` to start the dev server
 
-1. Faça um fork do repositório
-2. Clone o fork: `git clone https://github.com/[SEU-USUARIO]/visantlabs-os.git`
-3. Instale as dependências: `npm install`
-4. Copie `env.example` para `.env.local` e configure as variáveis necessárias
-5. Execute `npm run dev:all` para iniciar o servidor de desenvolvimento
+## Code Standards
 
-### 2. Padrões de Código
+- **TypeScript**: Strong typing, avoid `any` when possible
+- **Formatting**: Run `npm run format` (Prettier)
+- **Linting**: Run `npm run lint` (ESLint)
+- **Commits**: Use conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`)
+- **Components**: Use the existing design system in `src/components/ui/` — do not create new UI primitives without discussion
+- **i18n**: All user-facing strings must use the translation system (`useTranslation` hook)
 
-- **Formatação**: Use Prettier (`npm run format`)
-- **Linting**: Use ESLint (`npm run lint`)
-- **TypeScript**: Mantenha tipagem forte, evite `any` quando possível
-- **Commits**: Use mensagens descritivas em português ou inglês
+## Project Structure
 
-### 3. Estrutura do Projeto
+```
+src/
+  components/     # React components (ui/, brand/, canvas/, 3d/, etc.)
+  pages/          # Route page components
+  hooks/          # Custom React hooks + queries
+  services/       # API service clients
+  lib/            # Core utilities, types, schemas
+  locales/        # en-US.json, pt-BR.json
+server/           # Express backend, Prisma schema, API routes
+mcp-server/       # MCP server tools and transport
+plugin/           # Figma plugin (separate build)
+cli/              # CLI tool (separate build)
+tests/            # Vitest unit + integration tests
+```
 
-- `components/` - Componentes React
-- `pages/` - Páginas da aplicação
-- `server/` - Backend (Express)
-- `services/` - Serviços (AI, storage, payments)
-- `hooks/` - React hooks customizados
-- `types/` - Definições TypeScript
-- `utils/` - Funções utilitárias
+## Before Submitting a PR
 
-### 4. Testando Mudanças
+1. Run `npm run format` to format code
+2. Run `npm run lint` to check for errors
+3. Run `npm run type-check` to verify TypeScript
+4. Test the affected features manually in the browser
+5. Make sure the app starts without errors
 
-Antes de fazer um pull request:
+## Pull Requests
 
-1. Execute `npm run format` para formatar o código
-2. Execute `npm run lint` para verificar erros
-3. Teste manualmente as funcionalidades afetadas
-4. Certifique-se de que o app inicia sem erros
+1. Create a descriptive branch: `git checkout -b feat/my-feature`
+2. Keep commits small and focused
+3. Clearly describe what changed and why in the PR body
+4. Reference related issues if applicable
+5. Add screenshots for UI changes
 
-### 5. Pull Requests
+## Working with Optional Services
 
-1. Crie uma branch descritiva: `git checkout -b feature/minha-feature`
-2. Faça commits pequenos e focados
-3. Descreva claramente o que foi alterado no PR
-4. Referencie issues relacionadas, se houver
+When adding features that depend on external services (Stripe, Liveblocks, R2, AI APIs):
 
-### 6. Serviços Opcionais
+- Always check if the service is configured before calling it
+- Provide graceful fallbacks when possible
+- Document the dependency in the relevant setup guide under `docs/`
 
-Ao adicionar funcionalidades que dependem de serviços pagos (Stripe, Liveblocks, R2, etc.):
+## Architecture Notes
 
-- Sempre verifique se o serviço está configurado antes de usar
-- Forneça fallbacks quando possível
-- Documente a dependência no README e na documentação do serviço
+- **Brand Guidelines** are the core data model — they feed into mockups, creative studio, canvas, and 3D. Changes here have wide impact.
+- **Image Lab** consolidates halftone, texture, riso, and shader into one unified editor. New effects should follow the existing mode pattern.
+- **3D Studio** uses React Three Fiber — all Three.js objects must be declarative React components, not imperative.
+- **Canvas** uses React Flow — custom nodes go in `src/components/canvas/nodes/`.
 
-## Dúvidas?
+## Questions?
 
-Abra uma issue para discutir mudanças maiores ou entre em contato com os mantenedores.
-
+Open an issue to discuss larger changes or reach out to the maintainers.

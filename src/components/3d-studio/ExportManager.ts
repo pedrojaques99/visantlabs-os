@@ -1,9 +1,15 @@
 import { ASPECT_RATIOS, EXPORT_RESOLUTIONS } from '@/stores/studio3dStore';
 import { API_BASE } from '@/config/api';
+import { authService } from '@/services/authService';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import type { VideoFormat } from '@/utils/videoExport';
 import type { Scene } from 'three';
+
+function getAuthHeaders(): Record<string, string> {
+  const token = authService.getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 type ExportResolution = 'hd' | '2k' | '4k';
@@ -103,7 +109,12 @@ export async function exportVideo(
   const stream = captureSource.captureStream(60);
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
     ? 'video/webm;codecs=vp9'
-    : 'video/webm';
+    : MediaRecorder.isTypeSupported('video/webm')
+      ? 'video/webm'
+      : null;
+  if (!mimeType) {
+    throw new Error('Video recording is not supported in this browser. Try Chrome or Edge for best compatibility.');
+  }
   const recorder = new MediaRecorder(stream, {
     mimeType,
     videoBitsPerSecond: 8_000_000,
@@ -151,9 +162,17 @@ export async function exportGLB(
   fileName: string,
 ): Promise<void> {
   if (!scene.children.length) throw new Error('Scene is empty — nothing to export');
+  const THREE = await import('three');
   const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
+  const exportScene = new THREE.Scene();
+  scene.traverse((child) => {
+    if ((child as any).isMesh) {
+      exportScene.add(child.clone());
+    }
+  });
+  if (!exportScene.children.length) throw new Error('No meshes found to export');
   const exporter = new GLTFExporter();
-  const result = await exporter.parseAsync(scene, { binary: true });
+  const result = await exporter.parseAsync(exportScene, { binary: true });
   const blob = new Blob([result as ArrayBuffer], { type: 'model/gltf-binary' });
   downloadBlob(blob, `${fileName || '3d-export'}.glb`);
 }
@@ -304,10 +323,10 @@ async function sendFrameBatch(
 
   const res = await fetch(`${API_BASE}/render/${jobId}/frames`, {
     method: 'PUT',
-    credentials: 'include',
     headers: {
       'Content-Type': 'application/octet-stream',
       'X-Frame-Start': String(startIndex),
+      ...getAuthHeaders(),
     },
     body: buf,
   });
@@ -324,15 +343,14 @@ export async function exportVideoServerSide(
   format: VideoFormat,
   onProgress?: (pct: number) => void,
   shader?: ShaderSettings,
+  fps: number = 30,
 ): Promise<Blob> {
-  const fps = 30;
   const totalFrames = Math.ceil(duration * fps);
   const frameInterval = 1000 / fps;
 
   const startRes = await fetch(`${API_BASE}/render/start`, {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify({ width: canvas.width, height: canvas.height }),
   });
   if (!startRes.ok) throw new Error(`Server error: ${startRes.status}`);
@@ -379,8 +397,7 @@ export async function exportVideoServerSide(
 
   const finishRes = await fetch(`${API_BASE}/render/${jobId}/finish`, {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify({ format, fps }),
   });
   if (!finishRes.ok) {

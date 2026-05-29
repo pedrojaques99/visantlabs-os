@@ -101,7 +101,7 @@ import type { CanvasWorkflow } from '../services/workflowApi';
 import { exportCanvasToJson, downloadJsonFile, validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
 
 import { isLocalDevelopment } from '@/utils/env';
-import { ExportPanel } from '../components/ui/ExportPanel';
+import { ExportModal } from '@/components/shared/ExportModal';
 import type { CommunityPrompt } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { Input } from '@/components/ui/input'
@@ -243,6 +243,8 @@ export const CanvasPage: React.FC = () => {
   const [selectedMockup, setSelectedMockup] = useState<Mockup | null>(null);
   const [userMockups, setUserMockups] = useState<Mockup[]>([]);
   const [exportPanel, setExportPanel] = useState<{ nodeId: string; nodeName: string; imageUrl: string | null; nodeType: string } | null>(null);
+  const [exportCanvas, setExportCanvas] = useState<HTMLCanvasElement | null>(null);
+  const exportCanvasRef = React.useMemo(() => ({ current: exportCanvas }), [exportCanvas]);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 
   // Workflow state
@@ -616,8 +618,17 @@ export const CanvasPage: React.FC = () => {
       imageUrl,
       nodeType: node.type || 'unknown',
     });
-    // Open the universal panel when export is triggered
-    setIsUniversalPanelOpen(true);
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      c.getContext('2d')!.drawImage(img, 0, 0);
+      setExportCanvas(c);
+    };
+    img.src = imageUrl;
   }, [contextMenu, nodes]);
 
   const {
@@ -4308,17 +4319,13 @@ export const CanvasPage: React.FC = () => {
           variant="danger"
         />
 
-        {/* Export Panel */}
-        {exportPanel && (
-          <ExportPanel
-            isOpen={!!exportPanel}
-            onClose={() => setExportPanel(null)}
-            nodeId={exportPanel.nodeId}
-            nodeName={exportPanel.nodeName}
-            imageUrl={exportPanel.imageUrl}
-            nodeType={exportPanel.nodeType}
-          />
-        )}
+        {/* Export Modal */}
+        <ExportModal
+          isOpen={!!exportPanel}
+          onClose={() => { setExportPanel(null); setExportCanvas(null); }}
+          canvasRef={exportCanvasRef}
+          filenamePrefix={exportPanel?.nodeName || 'canvas-node'}
+        />
 
         {/* JSON Import — hidden file input */}
         <Input
@@ -4504,13 +4511,6 @@ export const CanvasPage: React.FC = () => {
         }}
         onUpdateNode={updateNodeData}
         backgroundColor={backgroundColor}
-        overridePanel={exportPanel ? {
-          type: 'export',
-          data: exportPanel,
-          onClose: () => {
-            setExportPanel(null);
-          }
-        } : null}
       />
 
       {/* Director Side Panel */}

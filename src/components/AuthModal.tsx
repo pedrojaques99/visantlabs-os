@@ -173,7 +173,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-md mx-4">
+      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-4 sm:p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {isSignUp ? t('auth.signUp') : t('auth.signIn')}

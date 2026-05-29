@@ -8,8 +8,7 @@ import {
   useStudio3DStore,
   ANIMATION_PRESETS,
 } from '@/stores/studio3dStore';
-import {
-  ToolPanelSection, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
+import { ToolPanelDisclosure, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
 
 export const AnimationTab: React.FC = React.memo(() => {
@@ -30,7 +29,7 @@ export const AnimationTab: React.FC = React.memo(() => {
   return (
     <>
       {/* Animation Type — always visible */}
-      <ToolPanelSection title={t('studio3d.animation.type')}>
+      <ToolPanelDisclosure label={t('studio3d.animation.type')} defaultOpen>
         <ToolPanelGrid>
           {ANIMATION_PRESETS.map((a) => (
             <ToolPanelChip key={a.id} active={store.animate === a.id} onClick={() => store.setAnimate(a.id)}>
@@ -38,11 +37,11 @@ export const AnimationTab: React.FC = React.memo(() => {
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
-      </ToolPanelSection>
+      </ToolPanelDisclosure>
 
       {/* Physics params */}
       {store.animate === 'physicsFall' && (
-        <ToolPanelSection title="PHYSICS">
+        <ToolPanelDisclosure label={t('studio3d.panels.physics')} defaultOpen>
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput label="Count" value={physicsCount} min={1} max={Math.max(1, Math.round(100 - (store.physicsSize - 0.2) * (92 / 1.5)))} step={1} onChange={setPhysicsCount} />
             <ScrubInput label="Gravity" value={physicsGravity} min={0} max={30} step={0.5} onChange={setPhysicsGravity} />
@@ -53,12 +52,12 @@ export const AnimationTab: React.FC = React.memo(() => {
           <Button variant="outline" size="sm" className="w-full text-[10px] uppercase tracking-wider h-8" onClick={() => useStudio3DStore.setState({ resetKey: Date.now() })}>
             {t('studio3d.animation.physics.reset')}
           </Button>
-        </ToolPanelSection>
+        </ToolPanelDisclosure>
       )}
 
       {/* Standard animation params */}
       {store.animate !== 'none' && store.animate !== 'physicsFall' && (
-        <ToolPanelSection title="CONTROLS">
+        <ToolPanelDisclosure label={t('studio3d.panels.controls')} defaultOpen>
           <ScrubInput label="Speed" value={animateSpeed} min={0.1} max={5} step={0.1} onChange={setAnimateSpeed} />
           <ToolPanelGrid>
             {(['linear', 'easeIn', 'easeOut', 'easeInOut'] as const).map((e) => (
@@ -70,7 +69,7 @@ export const AnimationTab: React.FC = React.memo(() => {
           <ToolPanelRow label={t('studio3d.animation.reverse')}>
             <Switch checked={store.animateReverse} onCheckedChange={store.setAnimateReverse} aria-label="Reverse animation" />
           </ToolPanelRow>
-        </ToolPanelSection>
+        </ToolPanelDisclosure>
       )}
     </>
   );

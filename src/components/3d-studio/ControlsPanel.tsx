@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SendToButton } from '@/components/shared/SendToButton';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useIsMobile } from '@/hooks/use-media-query';
 import { Download } from 'lucide-react';
 import {
   ToolPanel, ToolPanelContent,
@@ -14,9 +15,9 @@ import { AnimationTab } from './panels/AnimationTab';
 import { EffectsTab } from './panels/EffectsTab';
 
 const TABS = [
-  { id: 'scene', label: 'Scene' },
-  { id: 'look', label: 'Look' },
-  { id: 'camera', label: 'Camera' },
+  { id: 'scene', label: 'Model' },
+  { id: 'look', label: 'Object' },
+  { id: 'camera', label: 'Scene' },
   { id: 'animate', label: 'Animate' },
   { id: 'effects', label: 'FX' },
 ] as const;
@@ -29,6 +30,7 @@ interface ControlsPanelProps {
 
 export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExport }) => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<TabId>('scene');
 
   return (
@@ -40,7 +42,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              'flex-1 py-2 text-[10px] font-mono uppercase tracking-widest transition-colors',
+              'flex-1 font-mono uppercase tracking-widest transition-colors',
+              isMobile ? 'py-3 text-[11px]' : 'py-2 text-[10px]',
               activeTab === tab.id
                 ? 'text-white border-b border-white'
                 : 'text-neutral-600 hover:text-neutral-400'

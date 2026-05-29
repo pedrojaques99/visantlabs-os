@@ -3,6 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import { setCameraView } from './CameraBridge';
+import { useIsMobile } from '@/hooks/use-media-query';
 
 const AXIS_CONFIG = [
   { label: 'X', color: '#ff3366', dir: [1, 0, 0] as const, view: 'right' },
@@ -38,7 +39,7 @@ function AxisHead({ color, dir, view, label }: { color: string; dir: readonly [n
         onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { document.body.style.cursor = ''; }}
       >
-        <sphereGeometry args={[0.18, 16, 16]} />
+        <sphereGeometry args={[0.25, 16, 16]} />
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} />
       </mesh>
       {/* Negative head — smaller, dimmer */}
@@ -48,7 +49,7 @@ function AxisHead({ color, dir, view, label }: { color: string; dir: readonly [n
         onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { document.body.style.cursor = ''; }}
       >
-        <sphereGeometry args={[0.08, 12, 12]} />
+        <sphereGeometry args={[0.14, 12, 12]} />
         <meshStandardMaterial color={color} transparent opacity={0.4} />
       </mesh>
     </>
@@ -87,10 +88,12 @@ function GizmoScene() {
 }
 
 export const ViewGizmo: React.FC = React.memo(() => {
+  const isMobile = useIsMobile();
+  const size = isMobile ? 70 : 90;
   return (
     <div
       className="absolute bottom-14 left-3 z-20 pointer-events-auto"
-      style={{ width: 90, height: 90 }}
+      style={{ width: size, height: size }}
     >
       <Canvas
         camera={{ position: [0, 0, 3.2], fov: 40 }}
