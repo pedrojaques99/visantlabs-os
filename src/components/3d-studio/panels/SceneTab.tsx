@@ -403,10 +403,10 @@ export const SceneTab: React.FC = React.memo(() => {
               </div>
               <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
                 <div className="flex items-center gap-2">
-                  {store.chainColor && (
-                    <button onClick={() => store.setChainColor('')} className="text-[9px] text-neutral-500 hover:text-white">✕</button>
+                  {!!store.chainColor && (
+                    <input type="color" value={store.chainColor} onChange={(e) => store.setChainColor(e.target.value)} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer" />
                   )}
-                  <input type="color" value={store.chainColor || store.color} onChange={(e) => store.setChainColor(e.target.value)} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer" />
+                  <Switch checked={!!store.chainColor} onCheckedChange={(on) => store.setChainColor(on ? store.color : '')} aria-label="Custom chain color" />
                 </div>
               </ToolPanelRow>
             </>
