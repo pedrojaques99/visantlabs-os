@@ -16,7 +16,7 @@ import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useTranslation } from '@/hooks/useTranslation';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box, Maximize2, Minimize2, Sun, Layers, Grid3x3 } from 'lucide-react';
+import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box, Maximize2, Minimize2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-media-query';
 
 export const Studio3DPage: React.FC = () => {
@@ -51,6 +51,7 @@ export const Studio3DPage: React.FC = () => {
   const shadow = store((s) => s.shadow);
   const groundPlane = store((s) => s.groundPlane);
   const showGrid = store((s) => s.showGrid);
+  const [scenePopover, setScenePopover] = useState(false);
 
   useEffect(() => {
     const sceneId = searchParams.get('sceneId');
@@ -302,15 +303,35 @@ export const Studio3DPage: React.FC = () => {
 
         <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
 
-        <button onClick={() => store.getState().setShadow(!shadow)} title={`Shadows ${shadow ? 'ON' : 'OFF'}`} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', shadow ? 'bg-white/10 text-white' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-          <Sun size={isMobile ? 18 : 15} />
-        </button>
-        <button onClick={() => store.getState().setGroundPlane(!groundPlane)} title={`Ground ${groundPlane ? 'ON' : 'OFF'}`} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', groundPlane ? 'bg-white/10 text-white' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-          <Layers size={isMobile ? 18 : 15} />
-        </button>
-        <button onClick={() => store.getState().setShowGrid(!showGrid)} title={`Grid ${showGrid ? 'ON' : 'OFF'}`} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', showGrid ? 'bg-white/10 text-white' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-          <Grid3x3 size={isMobile ? 18 : 15} />
-        </button>
+        <div className="relative">
+          <button onClick={() => setScenePopover(v => !v)} title="Scene options" className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', scenePopover ? 'bg-white/10 text-white' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+            <Eye size={isMobile ? 18 : 15} />
+          </button>
+          {scenePopover && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setScenePopover(false)} />
+              <div className="absolute left-full top-0 ml-2 z-40 bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/60 rounded-lg p-2 shadow-2xl shadow-black/50 min-w-[140px] space-y-0.5">
+                {([
+                  { label: 'Shadows', active: shadow, toggle: () => store.getState().setShadow(!shadow) },
+                  { label: 'Ground', active: groundPlane, toggle: () => store.getState().setGroundPlane(!groundPlane) },
+                  { label: 'Grid', active: showGrid, toggle: () => store.getState().setShowGrid(!showGrid) },
+                ] as const).map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={item.toggle}
+                    className={cn(
+                      'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors',
+                      item.active ? 'text-white bg-white/10' : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                    )}
+                  >
+                    {item.label}
+                    <div className={cn('w-1.5 h-1.5 rounded-full', item.active ? 'bg-emerald-400' : 'bg-neutral-700')} />
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
 
         {!isMobile && (
           <>

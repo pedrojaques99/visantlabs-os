@@ -29,6 +29,7 @@ import { HexColorPicker } from 'react-colorful';
 import { FONT_OPTIONS } from './_shared';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { BrandLogoPickerModal } from '../BrandLogoPickerModal';
+import { usePresetPreviews } from '../usePresetPreviews';
 
 export const SceneTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
@@ -67,6 +68,7 @@ export const SceneTab: React.FC = React.memo(() => {
   const [chainOff, setChainOff] = useDebouncedSlider(store.chainOffset, store.setChainOffset);
   const [reliefDepth, setReliefDepth] = useDebouncedSlider(store.reliefDepth, store.setReliefDepth);
 
+  const presetThumbs = usePresetPreviews();
   const [brandPickerOpen, setBrandPickerOpen] = useState(false);
   const { data: brandGuidelines = [], isLoading: brandLoading } = useBrandGuidelines(true);
   const hasBrandLogos = brandGuidelines.some(g => g.logos && g.logos.length > 0);
@@ -209,6 +211,51 @@ export const SceneTab: React.FC = React.memo(() => {
 
   return (
     <>
+      {/* Scene Presets — collapsible horizontal strip with 3D previews */}
+      <ToolPanelDisclosure label={t('studio3d.scenePresets.title')} icon={<Shuffle size={13} />} defaultOpen>
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
+          {Object.entries(SCENE_PRESETS).map(([name, preset]) => (
+            <button
+              key={name}
+              onClick={() => store.applyScenePreset(name)}
+              className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
+            >
+              <div
+                className="w-14 h-14 rounded-md overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors"
+                style={{ background: preset.background }}
+              >
+                {presetThumbs[name] ? (
+                  <img src={presetThumbs[name]} alt={preset.label} className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <div className="w-full h-full animate-pulse bg-white/5" />
+                )}
+              </div>
+              <span className="text-[8px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+                {preset.label}
+              </span>
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              if (!hasRandomizedOnce) {
+                setShowRandomizeConfirm(true);
+              } else {
+                store.randomize();
+                toast.success('Surprise!');
+              }
+            }}
+            className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
+          >
+            <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-cyan-500/30 group-hover:border-cyan-500/50 flex items-center justify-center transition-colors">
+              <Shuffle size={16} className="text-cyan-400" />
+            </div>
+            <span className="text-[8px] font-mono uppercase tracking-wider text-cyan-500 group-hover:text-cyan-300 transition-colors max-w-14 truncate">
+              Random
+            </span>
+          </button>
+        </div>
+      </ToolPanelDisclosure>
+
       {/* Input */}
       <ToolPanelDisclosure label={t('studio3d.input.title')} icon={<Upload size={13} />} defaultOpen>
         <ToolPanelGrid>
@@ -221,17 +268,12 @@ export const SceneTab: React.FC = React.memo(() => {
           <ToolPanelChip active={store.inputMode === 'model'} onClick={() => store.setInputMode('model')}>
             <span className="flex items-center justify-center gap-1"><Box size={12} /> 3D Model</span>
           </ToolPanelChip>
+          {hasBrandLogos && (
+            <ToolPanelChip onClick={() => setBrandPickerOpen(true)}>
+              <span className="flex items-center justify-center gap-1"><Palette size={12} /> Brand</span>
+            </ToolPanelChip>
+          )}
         </ToolPanelGrid>
-
-        {hasBrandLogos && (
-          <button
-            onClick={() => setBrandPickerOpen(true)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-dashed border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all text-[10px] uppercase tracking-widest font-mono"
-          >
-            <Palette size={13} />
-            Import from Brand
-          </button>
-        )}
 
         {store.inputMode === 'model' ? (
           <div
@@ -538,30 +580,6 @@ export const SceneTab: React.FC = React.memo(() => {
         )}
       </div>
 
-      {/* Presets */}
-      <ToolPanelDisclosure label={t('studio3d.scenePresets.title')} icon={<Shuffle size={13} />} defaultOpen>
-        <ToolPanelGrid>
-          {Object.keys(SCENE_PRESETS).map((name) => (
-            <ToolPanelChip key={name} onClick={() => store.applyScenePreset(name)}>
-              {name}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
-        <button
-          onClick={() => {
-            if (!hasRandomizedOnce) {
-              setShowRandomizeConfirm(true);
-            } else {
-              store.randomize();
-              toast.success('Surprise!');
-            }
-          }}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-dashed border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all text-[10px] uppercase tracking-widest font-mono"
-        >
-          <Shuffle size={13} />
-          {t('studio3d.surpriseMe')}
-        </button>
-      </ToolPanelDisclosure>
 
       <ConfirmationModal
         isOpen={showRandomizeConfirm}

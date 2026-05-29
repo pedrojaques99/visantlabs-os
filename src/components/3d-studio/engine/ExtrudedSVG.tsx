@@ -502,7 +502,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     const bailTopY = bailCenterY + bailRadius + bailTube + chainOffset;
 
     return (
-      <group ref={groupRef} rotation={[rotationX, rotationY, 0]}>
+      <group ref={groupRef}>
         {/* ExtrudeGeometry goes from z=0 to z=depth; shift back by half to center */}
         <group position={[0, 0, isExtrudedBase ? -halfDepth : 0]}>
           {renderBaseShape()}
@@ -547,7 +547,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       />
     );
     return (
-      <group rotation={[rotationX, rotationY, 0]}>
+      <group>
         <mesh position={[0, stdBailCenterY, 0]}>
           <torusGeometry args={[stdBailR, stdBailTube, 16, 32]} />
           {stdMat}
@@ -564,7 +564,6 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
   return (
     <group ref={groupRef}>
       <group
-        rotation={[rotationX, rotationY, 0]}
         scale={[baseScale, -baseScale, baseScale]}
       >
         {geometries.map((geometry, i) => {
