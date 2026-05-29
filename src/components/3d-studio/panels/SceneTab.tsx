@@ -19,7 +19,7 @@ import {
   type SavedScene,
 } from '@/stores/studio3dStore';
 import {
-  Upload, FileText, Type, Box, Film, Save, FolderOpen, Trash2, Shuffle, Link,
+  Upload, FileText, Type, Box, Film, Save, FolderOpen, Trash2, Shuffle, Link, Palette,
 } from 'lucide-react';
 import {
   ToolPanelSection, ToolPanelDisclosure, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
@@ -27,6 +27,8 @@ import {
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { HexColorPicker } from 'react-colorful';
 import { FONT_OPTIONS } from './_shared';
+import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { BrandLogoPickerModal } from '../BrandLogoPickerModal';
 
 export const SceneTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
@@ -64,6 +66,10 @@ export const SceneTab: React.FC = React.memo(() => {
   const [bailOff, setBailOff] = useDebouncedSlider(store.bailOffset, store.setBailOffset);
   const [chainOff, setChainOff] = useDebouncedSlider(store.chainOffset, store.setChainOffset);
   const [reliefDepth, setReliefDepth] = useDebouncedSlider(store.reliefDepth, store.setReliefDepth);
+
+  const [brandPickerOpen, setBrandPickerOpen] = useState(false);
+  const { data: brandGuidelines = [], isLoading: brandLoading } = useBrandGuidelines(true);
+  const hasBrandLogos = brandGuidelines.some(g => g.logos && g.logos.length > 0);
 
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>([]);
   const [scenesLoading, setScenesLoading] = useState(false);
@@ -135,6 +141,42 @@ export const SceneTab: React.FC = React.memo(() => {
     }
   }, [store, t]);
 
+  const handleBrandLogoSelect = useCallback(async (logoUrl: string, fileName: string) => {
+    store.setIsLoading(true);
+    try {
+      const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(logoUrl)}`;
+      const res = await fetch(proxyUrl);
+      const { base64, mimeType } = await res.json() as { base64: string; mimeType: string };
+
+      if (mimeType === 'image/svg+xml' || fileName.endsWith('.svg')) {
+        const svgText = atob(base64);
+        store.setSvgData(svgText, fileName);
+        store.setInputMode('svg');
+      } else {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const file = new File([bytes], fileName, { type: mimeType });
+        lastPngFile.current = file;
+        const { pngToSvg } = await import('../PngToSvgConverter');
+        const s = useStudio3DStore.getState();
+        const svg = await pngToSvg(file, {
+          turdSize: s.traceTurdSize,
+          optTolerance: s.traceOptTolerance,
+          threshold: s.traceThreshold,
+        });
+        store.setSvgData(svg, fileName);
+        store.setInputMode('svg');
+      }
+      toast.success(t('studio3d.input.loaded', { fileName }));
+    } catch (err) {
+      console.error('Failed to load brand logo:', err);
+      toast.error(t('studio3d.input.processFailed'));
+    } finally {
+      store.setIsLoading(false);
+    }
+  }, [store, t]);
+
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) await processFile(file);
@@ -180,6 +222,16 @@ export const SceneTab: React.FC = React.memo(() => {
             <span className="flex items-center justify-center gap-1"><Box size={12} /> 3D Model</span>
           </ToolPanelChip>
         </ToolPanelGrid>
+
+        {hasBrandLogos && (
+          <button
+            onClick={() => setBrandPickerOpen(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-dashed border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all text-[10px] uppercase tracking-widest font-mono"
+          >
+            <Palette size={13} />
+            Import from Brand
+          </button>
+        )}
 
         {store.inputMode === 'model' ? (
           <div
@@ -506,6 +558,14 @@ export const SceneTab: React.FC = React.memo(() => {
         message={t('studio3d.randomizeMessage')}
         confirmText={t('studio3d.randomizeConfirm')}
         variant="warning"
+      />
+
+      <BrandLogoPickerModal
+        isOpen={brandPickerOpen}
+        onClose={() => setBrandPickerOpen(false)}
+        guidelines={brandGuidelines}
+        isLoading={brandLoading}
+        onSelectLogo={handleBrandLogoSelect}
       />
     </>
   );

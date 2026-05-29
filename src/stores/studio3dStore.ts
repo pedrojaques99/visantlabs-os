@@ -417,6 +417,7 @@ interface Studio3DState {
   aspectRatio: AspectRatio;
   exportResolution: 'hd' | '2k' | '4k';
   videoDuration: number;
+  videoFps: number;
   isExporting: boolean;
   exportProgress: number;
 
@@ -549,6 +550,7 @@ interface Studio3DState {
   setAspectRatio: (r: AspectRatio) => void;
   setExportResolution: (r: 'hd' | '2k' | '4k') => void;
   setVideoDuration: (d: number) => void;
+  setVideoFps: (fps: number) => void;
   setIsExporting: (v: boolean) => void;
   setExportProgress: (v: number) => void;
   setPanelVisible: (v: boolean) => void;
@@ -683,6 +685,7 @@ const INITIAL_STATE = {
   aspectRatio: '1:1' as AspectRatio,
   exportResolution: '2k' as const,
   videoDuration: 3,
+  videoFps: 30,
   isExporting: false,
   exportProgress: 0,
   panelVisible: true,
@@ -842,6 +845,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setAspectRatio: (aspectRatio) => set({ aspectRatio }),
   setExportResolution: (exportResolution) => set({ exportResolution }),
   setVideoDuration: (videoDuration) => set({ videoDuration }),
+  setVideoFps: (videoFps) => set({ videoFps }),
   setIsExporting: (isExporting) => set({ isExporting, exportProgress: isExporting ? 0 : 0 }),
   setExportProgress: (exportProgress) => set({ exportProgress }),
   setPanelVisible: (panelVisible) => set({ panelVisible }),

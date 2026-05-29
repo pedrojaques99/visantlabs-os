@@ -127,7 +127,7 @@ export const Studio3DPage: React.FC = () => {
     if (!canvasRef.current) throw new Error('No canvas');
     const s = store.getState();
     const shader = s.shaderEnabled ? s.getShaderSettings() : undefined;
-    return exportVideoServerSide(canvasRef.current, s.videoDuration, fmt, onProgress, shader);
+    return exportVideoServerSide(canvasRef.current, s.videoDuration, fmt, onProgress, shader, s.videoFps);
   }, []);
 
   const { undo, redo } = store.temporal.getState();
@@ -337,6 +337,9 @@ export const Studio3DPage: React.FC = () => {
       getShaderSettings={getShaderSettings}
       isVideo={animate !== 'none'}
       videoDuration={store.getState().videoDuration}
+      videoFps={store.getState().videoFps}
+      onVideoDurationChange={(d) => store.getState().setVideoDuration(d)}
+      onVideoFpsChange={(fps) => store.getState().setVideoFps(fps)}
       onExportVideo={animate !== 'none' ? handleVideoExport : undefined}
       onExportScaled={(scale) => {
         const source = canvasRef.current;

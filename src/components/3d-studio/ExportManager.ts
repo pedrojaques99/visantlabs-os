@@ -337,8 +337,8 @@ export async function exportVideoServerSide(
   format: VideoFormat,
   onProgress?: (pct: number) => void,
   shader?: ShaderSettings,
+  fps: number = 30,
 ): Promise<Blob> {
-  const fps = 30;
   const totalFrames = Math.ceil(duration * fps);
   const frameInterval = 1000 / fps;
 

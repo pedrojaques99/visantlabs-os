@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Download, X, Loader2, Copy, Check } from 'lucide-react';
+import { Download, X, Loader2, Copy, Check, Play, Pause } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
+import { ScrubInput } from '@/components/ui/ScrubInput';
 import { downloadBlob } from '@/utils/clipboard';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
@@ -20,6 +21,9 @@ interface ExportModalProps {
   onExportScaled?: (scale: number) => HTMLCanvasElement | undefined;
   isVideo?: boolean;
   videoDuration?: number;
+  videoFps?: number;
+  onVideoDurationChange?: (duration: number) => void;
+  onVideoFpsChange?: (fps: number) => void;
   onExportVideo?: (format: 'mp4' | 'gif' | 'webm', onProgress: (pct: number) => void) => Promise<Blob>;
 }
 
@@ -47,6 +51,25 @@ const VIDEO_FORMATS: { id: ExportFormat; label: string; ext: string; mime: strin
 const IS_VIDEO_FORMAT = (f: ExportFormat) => f === 'mp4' || f === 'gif' || f === 'webm';
 const IS_LOSSY_IMAGE = (f: ExportFormat) => f === 'jpeg' || f === 'webp';
 
+const FPS_OPTIONS = [
+  { id: 24, label: '24' },
+  { id: 30, label: '30' },
+  { id: 60, label: '60' },
+];
+
+function formatTimecode(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}`;
+}
+
+function estimateVideoSize(w: number, h: number, duration: number, fps: number, format: ExportFormat): string {
+  const bitsPerPixel = format === 'gif' ? 4 : 0.15;
+  const bytes = (w * h * bitsPerPixel * fps * duration) / 8;
+  if (bytes > 1024 * 1024) return `~${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `~${Math.round(bytes / 1024)} KB`;
+}
+
 function estimateFileSize(w: number, h: number, format: ExportFormat, quality: number): string {
   const pixels = w * h;
   let bytes: number;
@@ -70,7 +93,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   onExportSvg,
   onExportScaled,
   isVideo,
-  videoDuration,
+  videoDuration = 3,
+  videoFps = 30,
+  onVideoDurationChange,
+  onVideoFpsChange,
   onExportVideo,
 }) => {
   const baseFormats = onExportSvg
@@ -89,9 +115,74 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Generate preview thumbnail
+  // Video preview state
+  const videoPreviewRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const [videoTime, setVideoTime] = useState(0);
+  const videoTimeRAF = useRef<number>(0);
+
+  const isVideoFormat = IS_VIDEO_FORMAT(format);
+  const totalFrames = Math.ceil(videoDuration * videoFps);
+
+  // Live canvas stream for video preview
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isVideoFormat) {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+      }
+      cancelAnimationFrame(videoTimeRAF.current);
+      return;
+    }
+
+    const source = canvasRef.current;
+    const video = videoPreviewRef.current;
+    if (!source || !video) return;
+
+    try {
+      const stream = source.captureStream(30);
+      streamRef.current = stream;
+      video.srcObject = stream;
+      video.play().catch(() => {});
+      setVideoPlaying(true);
+
+      const tick = () => {
+        setVideoTime(prev => {
+          const next = prev + 1 / 60;
+          return next >= videoDuration ? 0 : next;
+        });
+        videoTimeRAF.current = requestAnimationFrame(tick);
+      };
+      videoTimeRAF.current = requestAnimationFrame(tick);
+    } catch {
+      // captureStream not supported — fall back to thumbnail
+    }
+
+    return () => {
+      cancelAnimationFrame(videoTimeRAF.current);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+      }
+    };
+  }, [isOpen, isVideoFormat, canvasRef, videoDuration]);
+
+  const toggleVideoPlayback = useCallback(() => {
+    const video = videoPreviewRef.current;
+    if (!video) return;
+    if (video.paused) {
+      video.play().catch(() => {});
+      setVideoPlaying(true);
+    } else {
+      video.pause();
+      setVideoPlaying(false);
+    }
+  }, []);
+
+  // Generate preview thumbnail (image formats only)
+  useEffect(() => {
+    if (!isOpen || isVideoFormat) return;
     const source = canvasRef.current;
     if (!source) return;
 
@@ -108,7 +199,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     setPreviewUrl(preview.toDataURL('image/png'));
 
     return () => setPreviewUrl(null);
-  }, [isOpen, canvasRef]);
+  }, [isOpen, isVideoFormat, canvasRef]);
 
   // Entrance animation
   useEffect(() => {
@@ -247,8 +338,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const sourceH = source?.height || 0;
   const outputW = Math.round(sourceW * scale);
   const outputH = Math.round(sourceH * scale);
-  const isVideoFormat = IS_VIDEO_FORMAT(format);
   const sizeEstimate = !isVideoFormat ? estimateFileSize(outputW, outputH, format, quality) : null;
+  const videoSizeEstimate = isVideoFormat ? estimateVideoSize(sourceW, sourceH, videoDuration, videoFps, format) : null;
 
   return (
     <div
@@ -275,8 +366,46 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </div>
 
         <div className="px-5 py-5 space-y-5">
-          {/* Preview */}
-          {previewUrl && (
+          {/* Preview — Video (live stream) or Image (thumbnail) */}
+          {isVideoFormat ? (
+            <div className="space-y-2">
+              <div className="relative flex justify-center rounded-lg overflow-hidden border border-neutral-800/50 bg-black">
+                <video
+                  ref={videoPreviewRef}
+                  muted
+                  playsInline
+                  className="block max-h-[160px] max-w-full object-contain"
+                />
+                <button
+                  onClick={toggleVideoPlayback}
+                  className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 transition-colors group"
+                >
+                  <div className={cn(
+                    "w-8 h-8 rounded-full bg-black/60 flex items-center justify-center transition-opacity",
+                    videoPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+                  )}>
+                    {videoPlaying ? <Pause size={14} className="text-white" /> : <Play size={14} className="text-white ml-0.5" />}
+                  </div>
+                </button>
+              </div>
+              {/* Timeline scrubber */}
+              <div className="space-y-1">
+                <input
+                  type="range"
+                  min={0}
+                  max={videoDuration}
+                  step={0.01}
+                  value={videoTime % videoDuration}
+                  onChange={(e) => setVideoTime(parseFloat(e.target.value))}
+                  className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-sm"
+                />
+                <div className="flex items-center justify-between text-[9px] font-mono text-neutral-500">
+                  <span>{formatTimecode(videoTime % videoDuration)}</span>
+                  <span>{formatTimecode(videoDuration)}</span>
+                </div>
+              </div>
+            </div>
+          ) : previewUrl ? (
             <div className="flex justify-center">
               <div className="relative rounded-lg overflow-hidden border border-neutral-800/50 bg-[repeating-conic-gradient(#1a1a1a_0%_25%,#111_0%_50%)] bg-[length:12px_12px]">
                 <img
@@ -287,7 +416,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 />
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Format */}
           <div className="space-y-2">
@@ -348,21 +477,64 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           )}
 
+          {/* Video controls: Duration + FPS */}
+          {isVideoFormat && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <ScrubInput
+                  label="Duration"
+                  value={videoDuration}
+                  min={0.5}
+                  max={30}
+                  step={0.5}
+                  suffix="s"
+                  onChange={(v) => onVideoDurationChange?.(v)}
+                  hint="Video duration in seconds"
+                />
+                <div className="space-y-1">
+                  <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest">FPS</span>
+                  <div className="flex gap-1">
+                    {FPS_OPTIONS.map((f) => (
+                      <button
+                        key={f.id}
+                        onClick={() => onVideoFpsChange?.(f.id)}
+                        className={cn(
+                          'flex-1 py-1.5 rounded text-[10px] font-mono transition-all border',
+                          videoFps === f.id
+                            ? 'bg-white/10 text-white border-white/20'
+                            : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
+                        )}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Output info */}
           <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 bg-neutral-900/40 rounded-md px-3 py-2">
             <span>Output</span>
             <div className="flex items-center gap-3">
-              {isVideoFormat && videoDuration ? (
-                <span>{videoDuration.toFixed(1)}s</span>
-              ) : null}
-              <span>
-                {format === 'svg'
-                  ? `${sourceW} × ${sourceH} vector`
-                  : isVideoFormat
-                    ? `${sourceW} × ${sourceH}px`
-                    : `${outputW} × ${outputH}px`}
-              </span>
-              {sizeEstimate && <span className="text-neutral-600">{sizeEstimate}</span>}
+              {isVideoFormat ? (
+                <>
+                  <span>{videoDuration.toFixed(1)}s</span>
+                  <span>{totalFrames} frames</span>
+                  <span>{sourceW} × {sourceH}px</span>
+                  {videoSizeEstimate && <span className="text-neutral-600">{videoSizeEstimate}</span>}
+                </>
+              ) : (
+                <>
+                  <span>
+                    {format === 'svg'
+                      ? `${sourceW} × ${sourceH} vector`
+                      : `${outputW} × ${outputH}px`}
+                  </span>
+                  {sizeEstimate && <span className="text-neutral-600">{sizeEstimate}</span>}
+                </>
+              )}
             </div>
           </div>
         </div>
