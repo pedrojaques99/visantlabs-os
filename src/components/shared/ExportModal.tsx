@@ -57,12 +57,6 @@ const FPS_OPTIONS = [
   { id: 60, label: '60' },
 ];
 
-function formatTimecode(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}`;
-}
-
 function estimateVideoSize(w: number, h: number, duration: number, fps: number, format: ExportFormat): string {
   const bitsPerPixel = format === 'gif' ? 4 : 0.15;
   const bytes = (w * h * bitsPerPixel * fps * duration) / 8;
@@ -119,11 +113,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [videoPlaying, setVideoPlaying] = useState(true);
-  const [videoTime, setVideoTime] = useState(0);
-  const [loopFlash, setLoopFlash] = useState(false);
+  const [loopCount, setLoopCount] = useState(1);
   const videoTimeRAF = useRef<number>(0);
   const videoStartRef = useRef<number>(0);
-  const videoPausedAtRef = useRef<number>(0);
   const prevLoopIndex = useRef(0);
 
   const isVideoFormat = IS_VIDEO_FORMAT(format);
@@ -151,23 +143,21 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       video.play().catch(() => {});
       setVideoPlaying(true);
       videoStartRef.current = performance.now();
-      videoPausedAtRef.current = 0;
       prevLoopIndex.current = 0;
+      setLoopCount(1);
 
       const tick = () => {
         const elapsed = (performance.now() - videoStartRef.current) / 1000;
         const loopIdx = Math.floor(elapsed / videoDuration);
         if (loopIdx > prevLoopIndex.current) {
           prevLoopIndex.current = loopIdx;
-          setLoopFlash(true);
-          setTimeout(() => setLoopFlash(false), 200);
+          setLoopCount(loopIdx + 1);
         }
-        setVideoTime(elapsed % videoDuration);
         videoTimeRAF.current = requestAnimationFrame(tick);
       };
       videoTimeRAF.current = requestAnimationFrame(tick);
     } catch {
-      // captureStream not supported — fall back to thumbnail
+      // captureStream not supported
     }
 
     return () => {
@@ -184,28 +174,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     if (!video) return;
     if (video.paused) {
       video.play().catch(() => {});
-      const pausedDuration = performance.now() - videoPausedAtRef.current;
-      videoStartRef.current += pausedDuration;
       setVideoPlaying(true);
-      const tick = () => {
-        const elapsed = (performance.now() - videoStartRef.current) / 1000;
-        const loopIdx = Math.floor(elapsed / videoDuration);
-        if (loopIdx > prevLoopIndex.current) {
-          prevLoopIndex.current = loopIdx;
-          setLoopFlash(true);
-          setTimeout(() => setLoopFlash(false), 200);
-        }
-        setVideoTime(elapsed % videoDuration);
-        videoTimeRAF.current = requestAnimationFrame(tick);
-      };
-      videoTimeRAF.current = requestAnimationFrame(tick);
     } else {
       video.pause();
-      videoPausedAtRef.current = performance.now();
-      cancelAnimationFrame(videoTimeRAF.current);
       setVideoPlaying(false);
     }
-  }, [videoDuration]);
+  }, []);
 
   // Generate preview thumbnail (image formats only)
   useEffect(() => {
@@ -395,67 +369,28 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <div className="px-5 py-5 space-y-5">
           {/* Preview — Video (live stream) or Image (thumbnail) */}
           {isVideoFormat ? (
-            <div className="space-y-2">
-              <div className={cn(
-                "relative flex justify-center rounded-lg overflow-hidden bg-black transition-all duration-200 border",
-                loopFlash ? "border-white/40" : "border-neutral-800/50"
-              )}>
-                <video
-                  ref={videoPreviewRef}
-                  muted
-                  playsInline
-                  className="block max-h-[160px] max-w-full object-contain"
-                />
-                {/* Loop restart indicator */}
+            <div className="relative flex justify-center rounded-lg overflow-hidden border border-neutral-800/50 bg-black">
+              <video
+                ref={videoPreviewRef}
+                muted
+                playsInline
+                className="block max-h-[160px] max-w-full object-contain"
+              />
+              {/* Loop counter badge */}
+              <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-mono text-neutral-400">
+                {loopCount}x loop
+              </div>
+              <button
+                onClick={toggleVideoPlayback}
+                className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 transition-colors group"
+              >
                 <div className={cn(
-                  "absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/70 text-[8px] font-mono uppercase tracking-widest transition-opacity duration-200",
-                  loopFlash ? "opacity-100 text-white" : "opacity-0"
+                  "w-8 h-8 rounded-full bg-black/60 flex items-center justify-center transition-opacity",
+                  videoPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"
                 )}>
-                  ↻ loop
+                  {videoPlaying ? <Pause size={14} className="text-white" /> : <Play size={14} className="text-white ml-0.5" />}
                 </div>
-                <button
-                  onClick={toggleVideoPlayback}
-                  className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 transition-colors group"
-                >
-                  <div className={cn(
-                    "w-8 h-8 rounded-full bg-black/60 flex items-center justify-center transition-opacity",
-                    videoPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-                  )}>
-                    {videoPlaying ? <Pause size={14} className="text-white" /> : <Play size={14} className="text-white ml-0.5" />}
-                  </div>
-                </button>
-              </div>
-              {/* Timeline scrubber */}
-              <div className="space-y-1">
-                <div className="relative h-1.5">
-                  <div className="absolute inset-0 bg-neutral-800 rounded-full" />
-                  <div
-                    className="absolute top-0 left-0 h-full bg-white/20 rounded-full transition-none"
-                    style={{ width: `${(videoTime / videoDuration) * 100}%` }}
-                  />
-                  <input
-                    type="range"
-                    min={0}
-                    max={videoDuration}
-                    step={0.01}
-                    value={videoTime}
-                    onChange={(e) => {
-                      const t = parseFloat(e.target.value);
-                      setVideoTime(t);
-                      videoStartRef.current = performance.now() - t * 1000;
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <div
-                    className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-sm pointer-events-none"
-                    style={{ left: `calc(${(videoTime / videoDuration) * 100}% - 5px)` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-[9px] font-mono text-neutral-500">
-                  <span>{formatTimecode(videoTime)}</span>
-                  <span>{formatTimecode(videoDuration)}</span>
-                </div>
-              </div>
+              </button>
             </div>
           ) : previewUrl ? (
             <div className="flex justify-center">
