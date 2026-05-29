@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState, useEffect, Suspense } from 'react';
+import React, { useRef, useCallback, useState, useEffect, Suspense, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
@@ -130,7 +130,15 @@ export const Studio3DPage: React.FC = () => {
     return exportVideoServerSide(canvasRef.current, s.videoDuration, fmt, onProgress, shader);
   }, []);
 
-  const { undo, redo, pastStates, futureStates } = store.temporal.getState();
+  const { undo, redo } = store.temporal.getState();
+  const canUndo = useSyncExternalStore(
+    store.temporal.subscribe,
+    () => store.temporal.getState().pastStates.length > 0,
+  );
+  const canRedo = useSyncExternalStore(
+    store.temporal.subscribe,
+    () => store.temporal.getState().futureStates.length > 0,
+  );
 
   useToolEditorHotkeys({
     onExport: handleExport,
@@ -220,8 +228,8 @@ export const Studio3DPage: React.FC = () => {
       resetTitle={t('studio3d.resetScene')}
       resetMessage={t('studio3d.resetConfirmMessage')}
       resetConfirmText={t('studio3d.resetConfirmButton')}
-      undo={{ handler: () => undo(), disabled: pastStates.length === 0 }}
-      redo={{ handler: () => redo(), disabled: futureStates.length === 0 }}
+      undo={{ handler: () => undo(), disabled: !canUndo }}
+      redo={{ handler: () => redo(), disabled: !canRedo }}
       controlsPanel={<ControlsPanel onExport={() => setExportModalOpen(true)} />}
       controlsPanelWidth={300}
       mobileSheetLabel={t('studio3d.controls')}
@@ -239,16 +247,16 @@ export const Studio3DPage: React.FC = () => {
     >
       {/* Floating left toolbar */}
       <div className={cn('absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50', isMobile && 'left-2 top-2 p-1')}>
-        <button onClick={() => store.getState().setPanelVisible(true)} title={t('studio3d.controls')} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', panelVisible ? 'bg-white/10 text-white ring-1 ring-white/30' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+        <button onClick={() => setPanelVisible(!panelVisible)} title={t('studio3d.controls')} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', panelVisible ? 'bg-white/10 text-white ring-1 ring-white/30' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
           <PanelRightOpen size={isMobile ? 18 : 15} />
         </button>
 
         <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
 
-        <button onClick={() => undo()} disabled={pastStates.length === 0} title="Undo (Ctrl+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+        <button onClick={() => undo()} disabled={!canUndo} title="Undo (Ctrl+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
           <Undo2 size={isMobile ? 18 : 15} />
         </button>
-        <button onClick={() => redo()} disabled={futureStates.length === 0} title="Redo (Ctrl+Shift+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+        <button onClick={() => redo()} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
           <Redo2 size={isMobile ? 18 : 15} />
         </button>
 
