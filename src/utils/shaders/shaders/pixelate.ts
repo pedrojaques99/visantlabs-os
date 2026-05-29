@@ -9,6 +9,7 @@ varying vec2 v_texCoord;
 
 void main() {
   vec2 uv = v_texCoord;
+  uv.y = 1.0 - uv.y;
   vec2 d = u_pixel_size / iResolution;
   uv = d * floor(uv / d) + d * 0.5;
   gl_FragColor = texture2D(iChannel0, uv);

@@ -12,6 +12,7 @@ varying vec2 v_texCoord;
 
 void main() {
   vec2 uv = v_texCoord;
+  uv.y = 1.0 - uv.y;
 
   // CRT barrel curvature
   if (u_curvature > 0.0) {

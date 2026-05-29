@@ -8,7 +8,9 @@ uniform float u_levels;
 varying vec2 v_texCoord;
 
 void main() {
-  vec4 c = texture2D(iChannel0, v_texCoord);
+  vec2 uv = v_texCoord;
+  uv.y = 1.0 - uv.y;
+  vec4 c = texture2D(iChannel0, uv);
   c.rgb = floor(c.rgb * u_levels + 0.5) / u_levels;
   gl_FragColor = c;
 }

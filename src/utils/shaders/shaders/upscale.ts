@@ -104,7 +104,7 @@ void main() {
     vec2 fragCoord = v_texCoord * iResolution;
     vec2 uv = fragCoord / iResolution;
     uv.y = 1.0 - uv.y;
-    
+
     // For upscaling, we want to map the full output quad (0..1) to the full source texture (0..1)
     vec2 sourceUV = uv;
     

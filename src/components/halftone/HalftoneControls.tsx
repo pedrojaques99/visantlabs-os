@@ -21,9 +21,10 @@ const CHANNELS = [
 
 interface HalftoneControlsProps {
   onExport: () => void;
+  onCopyAsPng?: () => void;
 }
 
-export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ onExport }) => {
+export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ onExport, onCopyAsPng }) => {
   const store = useHalftoneStore();
   const [expandedChannel, setExpandedChannel] = useState<number | null>(null);
 
@@ -112,6 +113,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(({ o
         isExporting={store.isExporting}
         disabled={!store.imageUrl}
         sendTo={store.imageUrl ? <SendToButton source="halftone" imageUrl={store.imageUrl} /> : undefined}
+        onCopyAsPng={onCopyAsPng}
       />
     </ToolPanel>
   );

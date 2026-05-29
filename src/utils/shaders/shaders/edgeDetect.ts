@@ -15,22 +15,24 @@ float luma(vec2 uv) {
 }
 
 void main() {
+  vec2 uv = v_texCoord;
+  uv.y = 1.0 - uv.y;
   vec2 p = 1.0 / iResolution;
-  float tl = luma(v_texCoord + vec2(-p.x, p.y));
-  float t  = luma(v_texCoord + vec2(0.0, p.y));
-  float tr = luma(v_texCoord + vec2(p.x, p.y));
-  float l  = luma(v_texCoord + vec2(-p.x, 0.0));
-  float r  = luma(v_texCoord + vec2(p.x, 0.0));
-  float bl = luma(v_texCoord + vec2(-p.x,-p.y));
-  float b  = luma(v_texCoord + vec2(0.0,-p.y));
-  float br = luma(v_texCoord + vec2(p.x,-p.y));
+  float tl = luma(uv + vec2(-p.x, p.y));
+  float t  = luma(uv + vec2(0.0, p.y));
+  float tr = luma(uv + vec2(p.x, p.y));
+  float l  = luma(uv + vec2(-p.x, 0.0));
+  float r  = luma(uv + vec2(p.x, 0.0));
+  float bl = luma(uv + vec2(-p.x,-p.y));
+  float b  = luma(uv + vec2(0.0,-p.y));
+  float br = luma(uv + vec2(p.x,-p.y));
 
   float gx = -tl - 2.0*l - bl + tr + 2.0*r + br;
   float gy = -tl - 2.0*t - tr + bl + 2.0*b + br;
   float edge = length(vec2(gx, gy)) * u_strength;
   edge = smoothstep(u_threshold * 0.5, u_threshold, edge);
 
-  vec4 original = texture2D(iChannel0, v_texCoord);
+  vec4 original = texture2D(iChannel0, uv);
   vec3 edgeColor = vec3(edge);
 
   // Overlay mode: edges over original image

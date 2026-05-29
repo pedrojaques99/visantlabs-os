@@ -7,7 +7,7 @@ import { downloadBlob } from '@/utils/clipboard';
 import { FormInput } from '../components/ui/form-input';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { useTranslation } from '@/hooks/useTranslation';
 
 type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
@@ -61,23 +61,11 @@ export const QRCodePage: React.FC = () => {
   const hasText = text.trim().length > 0;
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-zinc-300 pt-12 md:pt-14 relative overflow-hidden">
-      <div className="fixed inset-0 z-0">
-
-      </div>
-
-      <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <QrCode className="w-8 h-8 text-brand-cyan" />
-            <h1 className="text-3xl md:text-4xl font-bold text-white">{t('q.r.code.qr_code_generator')}</h1>
-          </div>
-          <p className="text-zinc-400 font-mono text-sm">
-            Generate QR codes from text, URLs, or any data
-          </p>
-        </div>
-
+    <MiniToolShell
+      icon={QrCode}
+      title="QR Code Generator"
+      maxWidth="6xl"
+    >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Section */}
           <div className="space-y-6">
@@ -215,8 +203,7 @@ export const QRCodePage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </MiniToolShell>
   );
 };
 

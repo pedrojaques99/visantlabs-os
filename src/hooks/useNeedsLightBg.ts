@@ -27,7 +27,7 @@ export function useNeedsLightBg(url: string) {
         }
         setNeedsLight(darkOrTransparent / total > 0.7);
       } catch { /* CORS or canvas error — keep dark bg */ }
-    });
+    }).catch(() => { /* image failed to load — keep dark bg */ });
   }, [url]);
 
   return needsLight;

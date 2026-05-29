@@ -130,7 +130,7 @@ void main() {
   vec2 fragCoord = v_texCoord * iResolution;
   vec2 uv = fragCoord / iResolution;
   uv.y = 1.0 - uv.y;
-  
+
   // Sample source pixel
   vec3 sourcePixel = texture2D(iChannel0, uv).rgb;
   

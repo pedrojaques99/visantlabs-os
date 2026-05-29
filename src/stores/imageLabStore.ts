@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type ImageLabMode = 'halftone' | 'texture' | 'riso';
+export type ImageLabMode = 'halftone' | 'texture' | 'riso' | 'shaders';
 
 export type CompareMode = 'off' | 'toggle' | 'split';
 

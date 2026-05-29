@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Eye, EyeOff, Download } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, Download, Clipboard, Copy } from 'lucide-react';
 
 export const ToolPanel: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
   <GlassPanel className={cn('h-full overflow-hidden flex flex-col', className)}>
@@ -195,21 +195,58 @@ export const ToolPanelExportActions: React.FC<{
   isExporting: boolean;
   disabled: boolean;
   sendTo?: React.ReactNode;
+  onCopyAsPng?: () => void;
   children?: React.ReactNode;
-}> = ({ onExport, isExporting, disabled, sendTo, children }) => (
-  <ToolPanelActions>
-    <div className="flex gap-2 w-full">
-      <Button
-        onClick={onExport}
-        disabled={isExporting || disabled}
-        aria-label="Export"
-        className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
-      >
-        <Download size={14} />
-        {isExporting ? 'Exporting...' : 'Export'}
-      </Button>
-      {sendTo}
-    </div>
-    {children}
-  </ToolPanelActions>
-);
+}> = ({ onExport, isExporting, disabled, sendTo, onCopyAsPng, children }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <ToolPanelActions>
+      <div className="relative w-full">
+        <div className="flex gap-2 w-full">
+          <Button
+            onClick={onExport}
+            disabled={isExporting || disabled}
+            aria-label="Export"
+            className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
+          >
+            <Download size={14} />
+            {isExporting ? 'Exporting...' : 'Export'}
+          </Button>
+          <Button
+            aria-label="More options"
+            onClick={() => setMenuOpen(!menuOpen)}
+            disabled={disabled}
+            variant="outline"
+            className="h-9 w-9 p-0 border-neutral-700 text-neutral-400 hover:text-white"
+          >
+            <ChevronDown size={14} className={cn('transition-transform', menuOpen && 'rotate-180')} />
+          </Button>
+          {onCopyAsPng && (
+            <Button
+              onClick={onCopyAsPng}
+              disabled={disabled}
+              variant="outline"
+              aria-label="Copy as PNG"
+              title="Copy as PNG"
+              className="h-9 w-9 p-0 border-neutral-700 text-neutral-400 hover:text-white"
+            >
+              <Copy size={14} />
+            </Button>
+          )}
+        </div>
+
+        {menuOpen && (
+          <div className="absolute bottom-full left-0 right-0 mb-1 bg-neutral-900 border border-neutral-700 rounded-lg p-1 shadow-xl z-20 animate-fade-in">
+            {sendTo && (
+              <div className="px-1 py-0.5">
+                {sendTo}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      {children}
+    </ToolPanelActions>
+  );
+};

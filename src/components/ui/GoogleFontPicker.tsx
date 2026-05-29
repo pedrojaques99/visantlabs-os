@@ -97,7 +97,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "w-full flex items-center justify-between px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-xs font-mono transition-all",
-                    isOpen ? "border-brand-cyan/30 bg-neutral-900/80 shadow-[0_0_15px_-5px_oklch(0.81_0.156_198.6_/_0.1)]" : "hover:border-white/10"
+                    isOpen ? "border-neutral-600/50 bg-neutral-900/80" : "hover:border-white/10"
                 )}
                 style={{ fontFamily: value }}
             >
@@ -125,14 +125,14 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                     <div className="max-h-60 overflow-y-auto p-1 py-1 scrollbar-thin scrollbar-thumb-white/10">
                         {filteredBrandFonts.length > 0 && (
                             <>
-                                <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-widest text-brand-cyan/60 font-mono">Brand Fonts</div>
+                                <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-widest text-neutral-500 font-mono">Brand Fonts</div>
                                 {filteredBrandFonts.map(font => (
                                     <button
                                         key={`brand-${font}`}
                                         onClick={() => handleSelect(font)}
                                         className={cn(
                                             "w-full text-left px-3 py-2.5 rounded-md text-xs flex items-center justify-between transition-colors",
-                                            font === value ? "bg-brand-cyan/10 text-brand-cyan" : "text-brand-cyan/80 hover:bg-brand-cyan/5 hover:text-brand-cyan"
+                                            font === value ? "bg-neutral-800/50 text-neutral-200" : "text-neutral-300 hover:bg-white/5 hover:text-neutral-200"
                                         )}
                                         style={{ fontFamily: font }}
                                     >
@@ -150,7 +150,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({ value, onCha
                                     onClick={() => handleSelect(font)}
                                     className={cn(
                                         "w-full text-left px-3 py-2.5 rounded-md text-xs flex items-center justify-between transition-colors",
-                                        font === value ? "bg-brand-cyan/10 text-brand-cyan" : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                                        font === value ? "bg-neutral-800/50 text-neutral-200" : "text-neutral-400 hover:bg-white/5 hover:text-white"
                                     )}
                                     style={{ fontFamily: font }}
                                 >

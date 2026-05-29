@@ -166,7 +166,7 @@ void main() {
   vec2 fragCoord = v_texCoord * iResolution;
   vec2 uv = fragCoord / iResolution;
   uv.y = 1.0 - uv.y;
-  
+
   vec4 color = texture2D(iChannel0, uv);
   float lum = dot(vec3(0.2126, 0.7152, 0.0722), color.rgb);
   

@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
+      headers: {
+        'Cross-Origin-Opener-Policy': 'same-origin',
+        'Cross-Origin-Embedder-Policy': 'credentialless',
+      },
       watch: {
         ignored: ['**/.data/**'],
       },
@@ -36,6 +40,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': aliasPath,
+        'onnxruntime-web/webgpu': path.resolve(__dirname, 'node_modules/onnxruntime-web/dist/ort.webgpu.bundle.min.mjs'),
       }
     },
     optimizeDeps: {
@@ -95,6 +100,12 @@ export default defineConfig(({ mode }) => {
               id.includes('node_modules/ai/') ||
               id.includes('node_modules/@ai-sdk/')) {
               return 'ai-vendor';
+            }
+
+            // Background removal WASM/ONNX
+            if (id.includes('node_modules/@imgly/') ||
+              id.includes('node_modules/onnxruntime-web/')) {
+              return 'bg-removal-vendor';
             }
 
             // Markdown and syntax highlighting

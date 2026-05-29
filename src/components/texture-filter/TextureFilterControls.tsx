@@ -7,7 +7,7 @@ import {
   useTextureFilterStore, BLEND_MODES, TEXTURE_PRESETS, FILTER_PRESETS,
   TEXTURE_FILTER_DEFAULTS, type TextureFilterSettings,
 } from '@/stores/textureFilterStore';
-import { UploadIcon, Layers, Blend, Move, RotateCw, Grid, Palette, SlidersHorizontal } from 'lucide-react';
+import { UploadIcon, Layers, Blend, Move, RotateCw, Grid, Palette } from 'lucide-react';
 import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 
 const SECTION_NAV: SectionNavItem[] = [
@@ -17,9 +17,8 @@ const SECTION_NAV: SectionNavItem[] = [
   { id: 'sec-position', icon: <Move size={14} />, label: 'Position' },
   { id: 'sec-tile', icon: <Grid size={14} />, label: 'Tile' },
   { id: 'sec-color', icon: <Palette size={14} />, label: 'Color' },
-  { id: 'sec-post', icon: <SlidersHorizontal size={14} />, label: 'Post-Processing' },
 ];
-import { ShaderControls } from '@/components/shared/ShaderControls';
+
 import { SendToButton } from '@/components/shared/SendToButton';
 import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
@@ -32,9 +31,10 @@ const FILTER_PRESET_ITEMS = Object.keys(FILTER_PRESETS).map((name) => ({ name })
 
 interface TextureFilterControlsProps {
   onExport: () => void;
+  onCopyAsPng?: () => void;
 }
 
-export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React.memo(({ onExport }) => {
+export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React.memo(({ onExport, onCopyAsPng }) => {
   const store = useTextureFilterStore();
 
   const update = useCallback(<K extends string>(key: K, value: any) => {
@@ -169,17 +169,6 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
           )}
         </ToolPanelDisclosure>
 
-        {/* Post-Processing */}
-        <ToolPanelDisclosure label="Post-Processing" id="sec-post">
-          <ShaderControls
-            enabled={store.shaderEnabled}
-            shaderType={store.shaderType}
-            values={store.shaderValues}
-            onEnabledChange={store.setShaderEnabled}
-            onTypeChange={store.setShaderType}
-            onValueChange={store.setShaderValue}
-          />
-        </ToolPanelDisclosure>
 
       </ToolPanelContent>
 
@@ -188,6 +177,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         isExporting={store.isExporting}
         disabled={!store.imageUrl}
         sendTo={store.imageUrl ? <SendToButton source="texture-filter" imageUrl={store.imageUrl} /> : undefined}
+        onCopyAsPng={onCopyAsPng}
       />
       </div>
     </ToolPanel>

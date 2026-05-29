@@ -31,8 +31,8 @@ float getLuminosity(vec3 color) {
 
 void main() {
   vec2 uv = v_texCoord;
-  uv.y = 1.0 - uv.y; // Flip Y coordinate
-  
+  uv.y = 1.0 - uv.y;
+
   // Sample the source texture
   vec4 texColor = texture2D(iChannel0, uv);
   vec3 originalColor = texColor.rgb;

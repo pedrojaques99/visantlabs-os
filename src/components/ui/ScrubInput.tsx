@@ -25,7 +25,13 @@ const ScrubInput = React.memo<ScrubInputProps>(({ label, value, min, max, step =
     return parseFloat((Math.round(clamped / step) * step).toFixed(10));
   }, [min, max, step]);
 
-  const display = suffix ? `${value}${suffix}` : String(value);
+  const decimals = React.useMemo(() => {
+    const s = String(step);
+    const dot = s.indexOf('.');
+    return dot === -1 ? 0 : s.length - dot - 1;
+  }, [step]);
+
+  const display = suffix ? `${value.toFixed(decimals)}${suffix}` : value.toFixed(decimals);
 
   const startEdit = React.useCallback(() => {
     setDraft(String(value));
@@ -99,19 +105,24 @@ const ScrubInput = React.memo<ScrubInputProps>(({ label, value, min, max, step =
 
   return (
     <div
-      className={cn('group flex items-center h-7 rounded-md border border-neutral-800 bg-neutral-900/60 hover:border-neutral-700 focus-within:border-neutral-600 transition-colors overflow-hidden', className)}
+      className={cn(
+        'group flex flex-col gap-1 rounded-md border border-neutral-800 bg-neutral-900/60',
+        'hover:border-neutral-700 focus-within:border-neutral-600 transition-colors',
+        'px-2 py-1.5',
+        className,
+      )}
       onWheel={onWheel}
       onKeyDown={onKeyDown}
       tabIndex={editing ? -1 : 0}
     >
-      {icon && <span className="pl-1.5 text-neutral-600 shrink-0 flex items-center">{icon}</span>}
       <span
-        className="px-1.5 text-[10px] font-mono text-neutral-500 uppercase tracking-wider shrink-0 cursor-ew-resize select-none"
+        className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none"
         onMouseDown={onScrubDown}
       >
+        {icon && <span className="inline-flex mr-1 align-middle text-neutral-600">{icon}</span>}
         {label}
       </span>
-      <div className="flex-1 min-w-0 flex items-center justify-end pr-1.5">
+      <div className="flex items-center min-w-0">
         {editing ? (
           <input
             ref={inputRef}
@@ -120,12 +131,12 @@ const ScrubInput = React.memo<ScrubInputProps>(({ label, value, min, max, step =
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commitEdit}
             onKeyDown={onKeyDown}
-            className="w-full bg-transparent text-right text-[11px] font-mono text-white outline-none"
+            className="w-full bg-transparent text-[12px] font-mono text-white outline-none tabular-nums"
             autoFocus
           />
         ) : (
           <span
-            className="text-[11px] font-mono text-neutral-300 cursor-ew-resize select-none tabular-nums"
+            className="text-[12px] font-mono text-neutral-200 cursor-ew-resize select-none tabular-nums leading-none"
             onMouseDown={onScrubDown}
             onDoubleClick={startEdit}
           >

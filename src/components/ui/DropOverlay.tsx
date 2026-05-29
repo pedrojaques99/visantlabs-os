@@ -16,11 +16,11 @@ export const DropOverlay: React.FC<DropOverlayProps> = ({
   return (
     <div
       className={cn(
-        'absolute inset-0 z-50 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm border-2 border-dashed border-cyan-500/50 pointer-events-none',
+        'absolute inset-0 z-50 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm border-2 border-dashed border-neutral-600/50 pointer-events-none',
         className,
       )}
     >
-      <span className="text-sm text-cyan-400 font-mono uppercase tracking-widest">
+      <span className="text-sm text-neutral-400 font-mono uppercase tracking-widest">
         {message}
       </span>
     </div>

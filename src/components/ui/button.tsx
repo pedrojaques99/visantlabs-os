@@ -17,14 +17,14 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // ── Brand ────────────────────────────────────────────────────────────
         brand: "bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black border border-neutral-800 hover:border-neutral-700 shadow-lg",
-        sidebarAction: "bg-neutral-800/50 hover:bg-brand-cyan/10 disabled:bg-neutral-700 disabled:text-neutral-500 text-neutral-400 hover:text-brand-cyan border border-neutral-700/50 hover:border-neutral-700 shadow-lg transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100",
+        sidebarAction: "bg-neutral-800/50 hover:bg-neutral-700/50 disabled:bg-neutral-700 disabled:text-neutral-500 text-neutral-400 hover:text-neutral-200 border border-neutral-700/50 hover:border-neutral-700 shadow-lg transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100",
         // ── Surface actions ──────────────────────────────────────────────────
         // Bordered muted button — toolbars, page headers, inline forms
         // Usage: px-4 py-2, border, muted text, subtle bg hover
         surface: "bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 text-neutral-300 font-mono rounded-md",
-        // Toolbar compact — uppercase tracking, brand-cyan accent on hover
+        // Toolbar compact — uppercase tracking, neutral accent on hover
         // Usage: canvas headers, guideline export bars
-        toolbar: "h-9 px-4 text-[10px] font-bold uppercase tracking-widest rounded-md text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5",
+        toolbar: "h-9 px-4 text-[10px] font-bold uppercase tracking-widest rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50",
         // ── Icon actions ─────────────────────────────────────────────────────
         // Inline icon — hover-reveal action icons inside cards/rows
         // Usage: edit, copy, delete icons that appear on group-hover

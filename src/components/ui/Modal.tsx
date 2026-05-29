@@ -140,7 +140,7 @@ export const Modal: React.FC<ModalProps> = ({
           )}>
             <div className="flex-1 min-w-0">
               {title && (
-                <h2 id={`${id}-title`} className="text-[11px] font-bold font-mono text-brand-cyan uppercase tracking-[0.2em]">
+                <h2 id={`${id}-title`} className="text-sm font-semibold text-neutral-200">
                   {title}
                 </h2>
               )}

@@ -1,10 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { FileCode, Upload, Download, Copy, Eye, Code, X, Settings2, RotateCcw } from 'lucide-react';
+import { FileCode, Upload, Download, Copy, Eye, Code, X, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useSvgOptimizerStore } from '@/stores/svgOptimizerStore';
 import { sanitizeSvgForRender } from '@/utils/svgOptimizer';
 import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { Button } from '@/components/ui/button';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
@@ -118,31 +119,14 @@ export const SvgOptimizerPage: React.FC = () => {
   }, [selectedItem]);
 
   return (
-    <div
-      className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-8"
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+    <MiniToolShell
+      icon={FileCode}
+      title="SVG Optimizer"
+      countLabel={items.length > 0 ? `${items.length} file${items.length > 1 ? 's' : ''}` : undefined}
+      onReset={reset}
+      showReset={items.length > 0}
+      dragDrop={{ onDrop: handleDrop, onDragOver: handleDragOver, onDragLeave: handleDragLeave, isDragOver }}
     >
-      <div className="w-full max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <FileCode size={16} className="text-brand-cyan" />
-          <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">
-            SVG Optimizer
-          </h1>
-          {items.length > 0 && (
-            <span className="text-[10px] font-mono text-neutral-500 ml-2">
-              {items.length} file{items.length > 1 ? 's' : ''}
-            </span>
-          )}
-          {items.length > 0 && (
-            <button onClick={reset} className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors" title="Clear all">
-              <RotateCcw size={14} />
-            </button>
-          )}
-        </div>
-
         {/* Upload zone */}
         {items.length === 0 ? (
           <div className="space-y-3">
@@ -348,7 +332,6 @@ export const SvgOptimizerPage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </MiniToolShell>
   );
 };

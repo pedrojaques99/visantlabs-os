@@ -20,6 +20,7 @@ varying vec2 v_texCoord;
 
 void main() {
   vec2 uv = v_texCoord;
+  uv.y = 1.0 - uv.y;
   vec4 color = texture2D(iChannel0, uv);
 
   vec2 grainUv = uv * (iResolution.xy / u_grain_size);

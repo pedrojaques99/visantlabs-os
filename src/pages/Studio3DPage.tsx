@@ -2,18 +2,21 @@ import React, { useRef, useCallback, useState, useEffect, Suspense } from 'react
 import { useSearchParams } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
 const SceneCanvas = React.lazy(() => import('@/components/3d-studio/SceneCanvas').then(m => ({ default: m.SceneCanvas })));
 import { useStudio3DStore } from '@/stores/studio3dStore';
-import { exportPNG, exportVideo, exportGLB, exportOBJ, exportBatchViews, exportTurntable } from '@/components/3d-studio/ExportManager';
+import { exportPNG, exportVideo, exportGLB, exportOBJ, exportBatchViews, exportTurntable, exportVideoServerSide } from '@/components/3d-studio/ExportManager';
+import { ExportModal } from '@/components/shared/ExportModal';
+import type { VideoFormat } from '@/utils/videoExport';
 import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useTranslation } from '@/hooks/useTranslation';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import { Upload, Type, Keyboard, X } from 'lucide-react';
+import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box } from 'lucide-react';
 
 export const Studio3DPage: React.FC = () => {
   const { t } = useTranslation();
@@ -22,6 +25,7 @@ export const Studio3DPage: React.FC = () => {
   const sceneHandleRef = useRef<SceneHandle | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const svgData = store((s) => s.svgData);
   const text = store((s) => s.text);
@@ -110,6 +114,18 @@ export const Studio3DPage: React.FC = () => {
     finally { s.setIsExporting(false); }
   }, []);
 
+  const getShaderSettings = useCallback(() => {
+    const s = store.getState();
+    return s.shaderEnabled ? s.getShaderSettings() : undefined;
+  }, []);
+
+  const handleVideoExport = useCallback(async (fmt: VideoFormat, onProgress: (pct: number) => void) => {
+    if (!canvasRef.current) throw new Error('No canvas');
+    const s = store.getState();
+    const shader = s.shaderEnabled ? s.getShaderSettings() : undefined;
+    return exportVideoServerSide(canvasRef.current, s.videoDuration, fmt, onProgress, shader);
+  }, []);
+
   const { undo, redo, pastStates, futureStates } = store.temporal.getState();
 
   useToolEditorHotkeys({
@@ -190,6 +206,7 @@ export const Studio3DPage: React.FC = () => {
   ];
 
   return (
+    <>
     <ToolEditorShell
       title={t('studio3d.title')}
       documentTitle="3D Studio — Visant"
@@ -207,31 +224,49 @@ export const Studio3DPage: React.FC = () => {
       statusItems={statusItems}
       fileName={fileName}
       isDragOver={isDragOver}
+      hideTopBar
+      canvasClassName="absolute inset-0 transition-all duration-300"
       dragProps={{
         onDragOver: (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(true); },
         onDragLeave: () => setIsDragOver(false),
         onDrop: handleViewportDrop,
       }}
       dropMessage={t('studio3d.dropHere')}
-
     >
+      {/* Floating left toolbar */}
+      <div className="absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50">
+        <button onClick={() => store.getState().setPanelVisible(true)} title={t('studio3d.controls')} className={cn('flex items-center justify-center w-9 h-9 rounded-lg transition-all', panelVisible ? 'bg-white/10 text-white ring-1 ring-white/30' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+          <PanelRightOpen size={15} />
+        </button>
+
+        <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+
+        <button onClick={() => undo()} disabled={pastStates.length === 0} title="Undo (Ctrl+Z)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all">
+          <Undo2 size={15} />
+        </button>
+        <button onClick={() => redo()} disabled={futureStates.length === 0} title="Redo (Ctrl+Shift+Z)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all">
+          <Redo2 size={15} />
+        </button>
+
+        <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+
+        <button onClick={resetScene} title={t('studio3d.resetScene')} className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
+          <RotateCcw size={15} />
+        </button>
+        <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
+          <Download size={15} />
+        </button>
+
+        <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+
+        <button onClick={() => setShowShortcuts(v => !v)} title="Keyboard shortcuts (?)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
+          <Keyboard size={15} />
+        </button>
+      </div>
+
       <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">{t('studio3d.loadingEngine')}</span></div>}>
         <SceneCanvas onCanvasReady={handleCanvasReady} onSceneReady={handleSceneReady} />
       </Suspense>
-      {isEmpty && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div className="flex flex-col items-center gap-4 text-neutral-500">
-            <Upload size={28} strokeWidth={1.2} />
-            <p className="text-[11px] uppercase tracking-widest">{t('studio3d.dropHere')}</p>
-            <div className="flex gap-4 mt-2 text-[10px] text-neutral-600 font-mono uppercase tracking-wider">
-              <span>{t('studio3d.input.views')}</span>
-              <span>{t('studio3d.input.orbit')}</span>
-              <span>{t('studio3d.input.zoom')}</span>
-              <span>{t('studio3d.input.reset')}</span>
-            </div>
-          </div>
-        </div>
-      )}
       {showShortcuts && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowShortcuts(false)} role="presentation">
           <div className="bg-neutral-900 border border-white/10 rounded-lg p-6 max-w-sm w-full mx-4 shadow-2xl" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" onClick={(e) => e.stopPropagation()}>
@@ -265,5 +300,16 @@ export const Studio3DPage: React.FC = () => {
         </div>
       )}
     </ToolEditorShell>
+
+    <ExportModal
+      isOpen={exportModalOpen}
+      onClose={() => setExportModalOpen(false)}
+      canvasRef={canvasRef}
+      filenamePrefix={`3d-studio_${fileName?.replace(/\.[^.]+$/, '') || 'export'}`}
+      getShaderSettings={getShaderSettings}
+      isVideo={animate !== 'none'}
+      onExportVideo={animate !== 'none' ? handleVideoExport : undefined}
+    />
+  </>
   );
 };

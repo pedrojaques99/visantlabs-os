@@ -17,6 +17,7 @@ import {
 import { SceneTab } from './panels/SceneTab';
 import { LookTab } from './panels/LookTab';
 import { CameraTab } from './panels/CameraTab';
+import { AnimationTab } from './panels/AnimationTab';
 import { EffectsTab } from './panels/EffectsTab';
 
 type StoreState = ReturnType<typeof useStudio3DStore.getState>;
@@ -25,6 +26,7 @@ const TABS = [
   { id: 'scene', label: 'Scene' },
   { id: 'look', label: 'Look' },
   { id: 'camera', label: 'Camera' },
+  { id: 'animate', label: 'Animate' },
   { id: 'effects', label: 'FX' },
 ] as const;
 
@@ -65,6 +67,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
         {activeTab === 'scene' && <SceneTab />}
         {activeTab === 'look' && <LookTab />}
         {activeTab === 'camera' && <CameraTab />}
+        {activeTab === 'animate' && <AnimationTab />}
         {activeTab === 'effects' && <EffectsTab />}
       </ToolPanelContent>
 

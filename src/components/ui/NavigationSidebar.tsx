@@ -190,10 +190,10 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         {/* Resize Handle */}
         <div
           ref={resizerRef}
-          className="hidden lg:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-brand-cyan/50 transition-colors group z-50"
+          className="hidden lg:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-neutral-600/50 transition-colors group z-50"
           style={{ touchAction: 'none' }}
         >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-1 h-8 bg-neutral-700/50 rounded-full group-hover:bg-brand-cyan/70 transition-colors" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-1 h-8 bg-neutral-700/50 rounded-full group-hover:bg-neutral-500/70 transition-colors" />
         </div>
         <div className="p-4 pt-24 md:pt-28 space-y-2">
           {title && (
@@ -218,7 +218,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                     className={cn(
                       'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-mono transition-colors',
                       isActive
-                        ? 'bg-brand-cyan/20 text-brand-cyan border border-neutral-800'
+                        ? 'bg-neutral-800/50 text-neutral-200 border border-neutral-700'
                         : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50'
                     )}
                   >
@@ -233,7 +233,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                       }}
                       className={cn(
                         'p-1.5 rounded-md text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 transition-colors',
-                        isExpanded && 'text-brand-cyan'
+                        isExpanded && 'text-neutral-200'
                       )}
                       aria-label={isExpanded ? 'Collapse' : 'Expand'}
                       title={isExpanded ? 'Collapse' : 'Expand'}
@@ -267,7 +267,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                           className={cn(
                             "w-full text-left px-3 py-1.5 text-xs font-mono rounded transition-colors relative",
                             isSectionActive
-                              ? 'text-brand-cyan bg-brand-cyan/10 border-l-2 border-neutral-800'
+                              ? 'text-neutral-200 bg-neutral-800/30 border-l-2 border-neutral-500'
                               : activeItemId === item.id
                                 ? 'text-neutral-300 hover:text-neutral-200'
                                 : 'text-neutral-500 hover:text-neutral-300',

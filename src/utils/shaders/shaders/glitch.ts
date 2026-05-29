@@ -16,6 +16,7 @@ float rand(float s) {
 
 void main() {
   vec2 uv = v_texCoord;
+  uv.y = 1.0 - uv.y;
   float t = floor(u_time * u_speed);
   float block = floor(uv.y * u_block_size + t);
   float noise = rand(block);
