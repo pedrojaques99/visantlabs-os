@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useIsMobile } from '@/hooks/use-media-query';
 import {
   useStudio3DStore,
   SCENE_PRESETS,
@@ -28,6 +29,7 @@ import { FONT_OPTIONS } from './_shared';
 
 export const SceneTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const store = useStudio3DStore();
   const [isDragging, setIsDragging] = useState(false);
   const [hasRandomizedOnce, setHasRandomizedOnce] = useState(false);
@@ -41,6 +43,18 @@ export const SceneTab: React.FC = React.memo(() => {
   const [smoothness, setSmoothness] = useDebouncedSlider(store.smoothness, store.setSmoothness);
   const [bevelThickness, setBevelThickness] = useDebouncedSlider(store.bevelThickness, store.setBevelThickness);
   const [bevelSize, setBevelSize] = useDebouncedSlider(store.bevelSize, store.setBevelSize);
+  const [coinRadius, setCoinRadius] = useDebouncedSlider(store.coinRadius, store.setCoinRadius);
+  const [badgeW, setBadgeW] = useDebouncedSlider(store.badgeWidth, store.setBadgeWidth);
+  const [badgeH, setBadgeH] = useDebouncedSlider(store.badgeHeight, store.setBadgeHeight);
+  const [badgeR, setBadgeR] = useDebouncedSlider(store.badgeRadius, store.setBadgeRadius);
+  const [sRadius, setSRadius] = useDebouncedSlider(store.stampRadius, store.setStampRadius);
+  const [sTeeth, setSTeeth] = useDebouncedSlider(store.stampTeeth, store.setStampTeeth);
+  const [sTooth, setSTooth] = useDebouncedSlider(store.stampToothDepth, store.setStampToothDepth);
+  const [shieldW, setShieldW] = useDebouncedSlider(store.shieldWidth, store.setShieldWidth);
+  const [shieldH, setShieldH] = useDebouncedSlider(store.shieldHeight, store.setShieldHeight);
+  const [hexR, setHexR] = useDebouncedSlider(store.hexRadius, store.setHexRadius);
+  const [chainLinks, setChainLinks] = useDebouncedSlider(store.chainLinks, store.setChainLinks);
+  const [chainScale, setChainScale] = useDebouncedSlider(store.chainScale, store.setChainScale);
 
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>([]);
   const [scenesLoading, setScenesLoading] = useState(false);
@@ -140,7 +154,7 @@ export const SceneTab: React.FC = React.memo(() => {
           >
             <Upload size={20} className="text-neutral-500" />
             <span className="text-[10px] uppercase tracking-wider text-neutral-500 text-center">
-              {store.fileName || 'Drop GLB / GLTF'}
+              {store.fileName || (isMobile ? t('mobile.tapToUpload') : 'Drop GLB / GLTF')}
             </span>
             <input ref={modelInputRef} type="file" accept=".glb,.gltf" onChange={handleModelUpload} className="hidden" aria-label="Upload GLB or GLTF model" />
           </div>
@@ -158,7 +172,7 @@ export const SceneTab: React.FC = React.memo(() => {
           >
             <Upload size={20} className={cn('transition-colors', isDragging ? 'text-white' : 'text-neutral-500')} />
             <span className={cn('text-[10px] uppercase tracking-wider transition-colors text-center', isDragging ? 'text-white' : 'text-neutral-500')}>
-              {store.isLoading ? <GlitchLoader size={12} /> : store.fileName || t('studio3d.input.dropZone')}
+              {store.isLoading ? <GlitchLoader size={12} /> : store.fileName || (isMobile ? t('mobile.tapToUpload') : t('studio3d.input.dropZone'))}
             </span>
             <input ref={fileInputRef} type="file" accept=".svg,.png,.jpg,.jpeg,.webp" onChange={handleFileUpload} className="hidden" aria-label="Upload SVG or image" />
           </div>
@@ -253,16 +267,61 @@ export const SceneTab: React.FC = React.memo(() => {
         </div>
       </ToolPanelDisclosure>
 
-      {/* Geometry */}
+      {/* Geometry — shape selector + shape-specific controls */}
       <ToolPanelSection title={t('studio3d.geometry.title')}>
-        <ToolPanelGrid>
-          {(['standard', 'coin'] as const).map((type) => (
+        <ToolPanelGrid cols={3}>
+          {(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon', 'pendant'] as const).map((type) => (
             <ToolPanelChip key={type} active={store.shapeType === type} onClick={() => store.setShapeType(type)}>
-              {t(type === 'standard' ? 'studio3d.geometry.shapeStandard' : 'studio3d.geometry.shapeCoin')}
+              {t(`studio3d.geometry.shape_${type}`)}
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
-        <div className="grid grid-cols-2 gap-1.5">
+        {(store.shapeType === 'coin' || store.shapeType === 'pendant') && (
+          <div className="grid grid-cols-1 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.coinRadius')} value={coinRadius} min={0.5} max={5} step={0.1} onChange={setCoinRadius} />
+          </div>
+        )}
+        {store.shapeType === 'badge' && (
+          <div className="grid grid-cols-3 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.badgeWidth')} value={badgeW} min={1} max={8} step={0.1} onChange={setBadgeW} />
+            <ScrubInput label={t('studio3d.geometry.badgeHeight')} value={badgeH} min={1} max={8} step={0.1} onChange={setBadgeH} />
+            <ScrubInput label={t('studio3d.geometry.badgeRadius')} value={badgeR} min={0} max={2} step={0.05} onChange={setBadgeR} />
+          </div>
+        )}
+        {store.shapeType === 'stamp' && (
+          <div className="grid grid-cols-3 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.stampRadius')} value={sRadius} min={0.5} max={5} step={0.1} onChange={setSRadius} />
+            <ScrubInput label={t('studio3d.geometry.stampTeeth')} value={sTeeth} min={8} max={48} step={1} onChange={setSTeeth} />
+            <ScrubInput label={t('studio3d.geometry.stampToothDepth')} value={sTooth} min={0.05} max={1} step={0.05} onChange={setSTooth} />
+          </div>
+        )}
+        {store.shapeType === 'shield' && (
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.shieldWidth')} value={shieldW} min={0.5} max={5} step={0.1} onChange={setShieldW} />
+            <ScrubInput label={t('studio3d.geometry.shieldHeight')} value={shieldH} min={0.5} max={5} step={0.1} onChange={setShieldH} />
+          </div>
+        )}
+        {store.shapeType === 'hexagon' && (
+          <div className="grid grid-cols-1 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.hexRadius')} value={hexR} min={0.5} max={5} step={0.1} onChange={setHexR} />
+          </div>
+        )}
+        {store.shapeType === 'pendant' && (
+          <>
+            <ToolPanelRow label={t('studio3d.geometry.showChain')}>
+              <Switch checked={store.showChain} onCheckedChange={store.setShowChain} aria-label="Chain" />
+            </ToolPanelRow>
+            {store.showChain && (
+              <div className="grid grid-cols-2 gap-1.5">
+                <ScrubInput label={t('studio3d.geometry.chainLinks')} value={chainLinks} min={2} max={16} step={1} onChange={setChainLinks} />
+                <ScrubInput label={t('studio3d.geometry.chainScale')} value={chainScale} min={0.3} max={3} step={0.1} onChange={setChainScale} />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Depth, scale, bevel */}
+        <div className="grid grid-cols-2 gap-1.5 mt-2 pt-2 border-t border-white/5">
           <ScrubInput label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
           <ScrubInput label={t('studio3d.geometry.objectScale')} value={objectScale} min={0.1} max={5} step={0.05} onChange={setObjectScale} />
         </div>

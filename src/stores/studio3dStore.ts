@@ -275,13 +275,28 @@ interface Studio3DState {
   modelUrl: string;
 
   // Geometry
-  shapeType: 'standard' | 'coin';
+  shapeType: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon' | 'pendant';
   depth: number;
   smoothness: number;
   bevelEnabled: boolean;
   bevelThickness: number;
   bevelSize: number;
   objectScale: number;
+
+  // Shape-specific params
+  coinRadius: number;
+  badgeWidth: number;
+  badgeHeight: number;
+  badgeRadius: number;
+  stampRadius: number;
+  stampTeeth: number;
+  stampToothDepth: number;
+  shieldWidth: number;
+  shieldHeight: number;
+  hexRadius: number;
+  chainLinks: number;
+  chainScale: number;
+  showChain: boolean;
 
   // Performance
   renderQuality: 'performance' | 'balanced' | 'quality';
@@ -400,7 +415,7 @@ interface Studio3DState {
   setFont: (font: string) => void;
   setInputMode: (mode: 'svg' | 'text' | 'model') => void;
   setModelUrl: (url: string, fileName?: string) => void;
-  setShapeType: (v: 'standard' | 'coin') => void;
+  setShapeType: (v: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon' | 'pendant') => void;
   setDepth: (v: number) => void;
   setObjectScale: (v: number) => void;
   setRenderQuality: (v: 'performance' | 'balanced' | 'quality') => void;
@@ -410,6 +425,19 @@ interface Studio3DState {
   setBevelEnabled: (v: boolean) => void;
   setBevelThickness: (v: number) => void;
   setBevelSize: (v: number) => void;
+  setCoinRadius: (v: number) => void;
+  setBadgeWidth: (v: number) => void;
+  setBadgeHeight: (v: number) => void;
+  setBadgeRadius: (v: number) => void;
+  setStampRadius: (v: number) => void;
+  setStampTeeth: (v: number) => void;
+  setStampToothDepth: (v: number) => void;
+  setShieldWidth: (v: number) => void;
+  setShieldHeight: (v: number) => void;
+  setHexRadius: (v: number) => void;
+  setChainLinks: (v: number) => void;
+  setChainScale: (v: number) => void;
+  setShowChain: (v: boolean) => void;
   setMaterial: (m: MaterialPreset) => void;
   setColor: (c: string) => void;
   setMetalness: (v: number) => void;
@@ -508,7 +536,20 @@ const INITIAL_STATE = {
   bevelThickness: 0.5,
   bevelSize: 0.5,
   objectScale: 1,
-  renderQuality: 'balanced' as const,
+  coinRadius: 2.2,
+  badgeWidth: 3.6,
+  badgeHeight: 2.4,
+  badgeRadius: 0.4,
+  stampRadius: 2.4,
+  stampTeeth: 24,
+  stampToothDepth: 0.25,
+  shieldWidth: 2.2,
+  shieldHeight: 2.8,
+  hexRadius: 2.4,
+  chainLinks: 6,
+  chainScale: 1,
+  showChain: true,
+  renderQuality: (typeof window !== 'undefined' && window.innerWidth < 768 ? 'performance' : 'balanced') as 'performance' | 'balanced' | 'quality',
   material: 'default' as MaterialPreset,
   color: '#00e5ff',
   metalness: 0.5,
@@ -614,6 +655,19 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
   setBevelThickness: (bevelThickness) => set({ bevelThickness }),
   setBevelSize: (bevelSize) => set({ bevelSize }),
+  setCoinRadius: (coinRadius) => set({ coinRadius }),
+  setBadgeWidth: (badgeWidth) => set({ badgeWidth }),
+  setBadgeHeight: (badgeHeight) => set({ badgeHeight }),
+  setBadgeRadius: (badgeRadius) => set({ badgeRadius }),
+  setStampRadius: (stampRadius) => set({ stampRadius }),
+  setStampTeeth: (stampTeeth) => set({ stampTeeth }),
+  setStampToothDepth: (stampToothDepth) => set({ stampToothDepth }),
+  setShieldWidth: (shieldWidth) => set({ shieldWidth }),
+  setShieldHeight: (shieldHeight) => set({ shieldHeight }),
+  setHexRadius: (hexRadius) => set({ hexRadius }),
+  setChainLinks: (chainLinks) => set({ chainLinks }),
+  setChainScale: (chainScale) => set({ chainScale }),
+  setShowChain: (showChain) => set({ showChain }),
   setMaterial: (material) => {
     const preset = materialPresets[material];
     const presetDef = MATERIAL_PRESETS.find((m) => m.id === material);

@@ -41,7 +41,7 @@ interface PhysicsFallSimulationProps {
   physicsFriction: number;
   physicsSize: number;
   resetKey: number;
-  shapeType?: 'standard' | 'coin';
+  shapeType?: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon' | 'pendant';
 }
 
 interface PhysicsBody {

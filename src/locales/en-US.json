@@ -4365,6 +4365,26 @@
       "shapeType": "Logo Shape Mode",
       "shapeStandard": "Standard Extruded",
       "shapeCoin": "Minted Coin",
+      "shape_standard": "Standard Extruded",
+      "shape_coin": "Minted Coin",
+      "shape_badge": "Badge",
+      "shape_stamp": "Wax Seal",
+      "shape_shield": "Shield",
+      "shape_hexagon": "Hexagon",
+      "shape_pendant": "Pendant",
+      "coinRadius": "Radius",
+      "badgeWidth": "Width",
+      "badgeHeight": "Height",
+      "badgeRadius": "Corner",
+      "stampRadius": "Radius",
+      "stampTeeth": "Teeth",
+      "stampToothDepth": "Tooth Depth",
+      "shieldWidth": "Width",
+      "shieldHeight": "Height",
+      "hexRadius": "Radius",
+      "showChain": "Chain",
+      "chainLinks": "Links",
+      "chainScale": "Chain Size",
       "depth": "Depth",
       "bevel": "Bevel",
       "smoothness": "Smoothness",
@@ -4698,5 +4718,12 @@
   },
   "labs": {
     "labs": "Labs"
+  },
+  "mobile": {
+    "desktopOnly": {
+      "message": "This tool was designed for larger screens. Open it on desktop for the full experience.",
+      "backToApps": "Back to Apps"
+    },
+    "tapToUpload": "Tap to upload"
   }
 }

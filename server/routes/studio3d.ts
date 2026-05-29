@@ -30,7 +30,7 @@ const VALID_MATERIALS = [
 const VALID_ANIMATIONS = ['none', 'spin', 'float', 'pulse', 'wobble', 'spinFloat', 'swing', 'physicsFall'];
 const VALID_ENVIRONMENTS = ['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby'];
 const VALID_BG_TYPES = ['solid', 'linear', 'radial'];
-const VALID_SHAPE_TYPES = ['standard', 'coin'];
+const VALID_SHAPE_TYPES = ['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon', 'pendant'];
 const VALID_EASINGS = ['linear', 'easeIn', 'easeOut', 'easeInOut'];
 
 const HEX_RE = /^#[0-9A-Fa-f]{3,8}$/;

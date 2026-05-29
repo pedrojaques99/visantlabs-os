@@ -4369,6 +4369,26 @@
       "shapeType": "Formato do Logo",
       "shapeStandard": "Padrão Extrudado",
       "shapeCoin": "Moeda Cunhada",
+      "shape_standard": "Padrão Extrudado",
+      "shape_coin": "Moeda Cunhada",
+      "shape_badge": "Emblema",
+      "shape_stamp": "Selo de Cera",
+      "shape_shield": "Escudo",
+      "shape_hexagon": "Hexágono",
+      "shape_pendant": "Pingente",
+      "coinRadius": "Raio",
+      "badgeWidth": "Largura",
+      "badgeHeight": "Altura",
+      "badgeRadius": "Borda",
+      "stampRadius": "Raio",
+      "stampTeeth": "Dentes",
+      "stampToothDepth": "Prof. Dente",
+      "shieldWidth": "Largura",
+      "shieldHeight": "Altura",
+      "hexRadius": "Raio",
+      "showChain": "Corrente",
+      "chainLinks": "Elos",
+      "chainScale": "Tamanho da Corrente",
       "depth": "Profundidade",
       "bevel": "Bevel",
       "smoothness": "Suavidade",
@@ -4702,5 +4722,12 @@
   },
   "labs": {
     "labs": "Labs"
+  },
+  "mobile": {
+    "desktopOnly": {
+      "message": "Esta ferramenta foi feita para telas maiores. Abra no desktop para a experiência completa.",
+      "backToApps": "Voltar para Apps"
+    },
+    "tapToUpload": "Toque para enviar"
   }
 }

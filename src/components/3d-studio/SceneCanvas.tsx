@@ -32,6 +32,19 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   bevelThickness: s.bevelThickness,
   bevelSize: s.bevelSize,
   objectScale: s.objectScale,
+  coinRadius: s.coinRadius,
+  badgeWidth: s.badgeWidth,
+  badgeHeight: s.badgeHeight,
+  badgeRadius: s.badgeRadius,
+  stampRadius: s.stampRadius,
+  stampTeeth: s.stampTeeth,
+  stampToothDepth: s.stampToothDepth,
+  shieldWidth: s.shieldWidth,
+  shieldHeight: s.shieldHeight,
+  hexRadius: s.hexRadius,
+  chainLinks: s.chainLinks,
+  chainScale: s.chainScale,
+  showChain: s.showChain,
   renderQuality: s.renderQuality,
   fov: s.fov,
   hdriBackground: s.hdriBackground,
@@ -279,6 +292,19 @@ function SceneContent() {
               roughnessMapUrl={s.roughnessMapUrl || undefined}
               metalnessMapUrl={s.metalnessMapUrl || undefined}
               shapeType={s.shapeType}
+              coinRadius={s.coinRadius}
+              badgeWidth={s.badgeWidth}
+              badgeHeight={s.badgeHeight}
+              badgeRadius={s.badgeRadius}
+              stampRadius={s.stampRadius}
+              stampTeeth={s.stampTeeth}
+              stampToothDepth={s.stampToothDepth}
+              shieldWidth={s.shieldWidth}
+              shieldHeight={s.shieldHeight}
+              hexRadius={s.hexRadius}
+              chainLinks={s.chainLinks}
+              chainScale={s.chainScale}
+              showChain={s.showChain}
             />
           )
         )}
@@ -355,10 +381,10 @@ function SceneContent() {
         />
       ) : (s.bloomEnabled || s.dofEnabled || s.vignetteEnabled || s.ssaoEnabled || s.chromaticAberrationEnabled || s.noiseEnabled || s.colorGradingEnabled) ? (
         <EffectComposer multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
-          {s.ssaoEnabled && <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />}
+          {s.ssaoEnabled && s.renderQuality !== 'performance' && <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />}
           {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}
-          {s.dofEnabled && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
-          {s.chromaticAberrationEnabled && <ChromaticAberration offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any} />}
+          {s.dofEnabled && s.renderQuality !== 'performance' && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
+          {s.chromaticAberrationEnabled && s.renderQuality !== 'performance' && <ChromaticAberration offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any} />}
           {s.noiseEnabled && <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />}
           {s.colorGradingEnabled && <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />}
           {s.colorGradingEnabled && <HueSaturation hue={s.cgHue} saturation={s.cgSaturation} />}
