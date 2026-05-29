@@ -9,11 +9,12 @@ export interface ScrubInputProps {
   step?: number;
   suffix?: string;
   icon?: React.ReactNode;
+  hint?: string;
   onChange: (value: number) => void;
   className?: string;
 }
 
-const ScrubInput = React.memo<ScrubInputProps>(({ label, value, min, max, step = 1, suffix = '', icon, onChange, className }) => {
+const ScrubInput = React.memo<ScrubInputProps>(({ label, value, min, max, step = 1, suffix = '', icon, hint, onChange, className }) => {
   const [editing, setEditing] = React.useState(false);
   const [draft, setDraft] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -114,6 +115,7 @@ const ScrubInput = React.memo<ScrubInputProps>(({ label, value, min, max, step =
       onWheel={onWheel}
       onKeyDown={onKeyDown}
       tabIndex={editing ? -1 : 0}
+      title={hint}
     >
       <span
         className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none"

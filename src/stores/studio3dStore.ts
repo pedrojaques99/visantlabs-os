@@ -427,6 +427,10 @@ interface Studio3DState {
   isLoading: boolean;
   resetKey: number;
 
+  // Scene persistence metadata (excluded from undo history)
+  _sceneName: string;
+  _lastSavedAt: number;
+
   // Actions
   setSvgData: (svg: string, fileName?: string) => void;
   setText: (text: string) => void;
@@ -551,6 +555,8 @@ interface Studio3DState {
   setActiveTab: (t: Studio3DState['activeTab']) => void;
   setShowStats: (v: boolean) => void;
   setIsLoading: (v: boolean) => void;
+  setSceneName: (v: string) => void;
+  setLastSavedAt: (v: number) => void;
   applyScenePreset: (name: string) => void;
   applyConfig: (config: Partial<typeof INITIAL_STATE>) => void;
   resetScene: () => void;
@@ -684,6 +690,8 @@ const INITIAL_STATE = {
   showStats: false,
   isLoading: false,
   resetKey: 0,
+  _sceneName: '',
+  _lastSavedAt: 0,
 };
 
 export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
@@ -840,6 +848,8 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setActiveTab: (activeTab) => set({ activeTab }),
   setShowStats: (showStats) => set({ showStats }),
   setIsLoading: (isLoading) => set({ isLoading }),
+  setSceneName: (_sceneName) => set({ _sceneName }),
+  setLastSavedAt: (_lastSavedAt) => set({ _lastSavedAt }),
 
   applyScenePreset: (name) => {
     const preset = SCENE_PRESETS[name];
@@ -926,7 +936,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
 }),
   {
     partialize: (state) => {
-      const { _cameraControlsRef, _cameraInfo, panelVisible, activeTab, isLoading, isExporting, exportProgress, resetKey, showStats, ...tracked } = state;
+      const { _cameraControlsRef, _cameraInfo, _sceneName, _lastSavedAt, panelVisible, activeTab, isLoading, isExporting, exportProgress, resetKey, showStats, ...tracked } = state;
       return tracked;
     },
     limit: 50,
@@ -1019,6 +1029,7 @@ export async function saveScene(name: string): Promise<SavedScene | null> {
     scenes.unshift(scene);
     if (scenes.length > 50) scenes.length = 50;
     localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+    useStudio3DStore.setState({ _sceneName: name, _lastSavedAt: Date.now() });
     return scene;
   } catch {
     // Fallback to localStorage only
@@ -1027,6 +1038,7 @@ export async function saveScene(name: string): Promise<SavedScene | null> {
     scenes.unshift(scene);
     if (scenes.length > 50) scenes.length = 50;
     localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+    useStudio3DStore.setState({ _sceneName: name, _lastSavedAt: Date.now() });
     return scene;
   }
 }
@@ -1048,6 +1060,7 @@ export async function loadScene(id: string): Promise<boolean> {
         if (data.scene.svgData) {
           useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
         }
+        useStudio3DStore.setState({ _sceneName: data.scene.name || '', _lastSavedAt: Date.now() });
         return true;
       }
     }

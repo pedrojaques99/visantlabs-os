@@ -66,7 +66,7 @@ export const CameraTab: React.FC = React.memo(() => {
           <ToolPanelChip active={store.orthographic} onClick={() => store.setOrthographic(true)}>{t('studio3d.panels.orthographic')}</ToolPanelChip>
         </div>
         {!store.orthographic && (
-          <ScrubInput label="FOV" value={fov} min={15} max={120} step={1} suffix="°" onChange={setFov} />
+          <ScrubInput label="FOV" value={fov} min={15} max={120} step={1} suffix="°" onChange={setFov} hint="Field of View — lower = telephoto, higher = wide-angle" />
         )}
       </ToolPanelDisclosure>
 
@@ -105,7 +105,7 @@ export const CameraTab: React.FC = React.memo(() => {
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
-        <ScrubInput label="Exposure" value={toneMappingExposure} min={0.1} max={3} step={0.05} onChange={setToneMappingExposure} />
+        <ScrubInput label="Exposure" value={toneMappingExposure} min={0.1} max={3} step={0.05} onChange={setToneMappingExposure} hint="Scene brightness — adjust to match your lighting" />
         <ToolPanelGrid cols={3}>
           {TONE_MAPPING_OPTIONS.map((tm) => (
             <ToolPanelChip key={tm.id} active={store.toneMapping === tm.id} onClick={() => store.setToneMapping(tm.id)}>
@@ -139,9 +139,16 @@ export const CameraTab: React.FC = React.memo(() => {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
+                const maxSizeMB = 50;
+                if (file.size > maxSizeMB * 1024 * 1024) {
+                  toast.error(`HDRI too large (${(file.size / 1024 / 1024).toFixed(0)}MB). Max ${maxSizeMB}MB.`);
+                  e.target.value = '';
+                  return;
+                }
+                toast.loading('Loading HDRI...', { id: 'hdri-load', duration: 5000 });
                 const url = URL.createObjectURL(file);
                 store.setCustomHdriUrl(url);
-                toast.success('HDRI loaded');
+                toast.success('HDRI loaded', { id: 'hdri-load' });
               }
               e.target.value = '';
             }}

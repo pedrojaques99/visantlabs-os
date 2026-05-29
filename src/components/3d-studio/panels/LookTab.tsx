@@ -60,9 +60,9 @@ export const LookTab: React.FC = React.memo(() => {
 
       <ToolPanelDisclosure label={t('studio3d.panels.surface')} defaultOpen>
         <div className="grid grid-cols-3 gap-1.5">
-          <ScrubInput label="Metal" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
-          <ScrubInput label="Rough" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
-          <ScrubInput label="Alpha" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
+          <ScrubInput label="Metal" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} hint="Metallic reflectivity — 0 = dielectric, 1 = full metal" />
+          <ScrubInput label="Rough" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} hint="Surface roughness — 0 = mirror, 1 = matte" />
+          <ScrubInput label="Alpha" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} hint="Material opacity — 0 = transparent, 1 = solid" />
         </div>
         <ToolPanelRow label={t('studio3d.properties.wireframe')}>
           <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} aria-label="Wireframe" />

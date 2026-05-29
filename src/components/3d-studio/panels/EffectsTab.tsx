@@ -31,7 +31,7 @@ export const EffectsTab: React.FC = React.memo(() => {
           <Switch checked={store.ssaoEnabled} onCheckedChange={store.setSsaoEnabled} aria-label="SSAO" />
         </ToolPanelRow>
         {store.ssaoEnabled && (
-          <ScrubInput label="AO Intensity" value={ssaoIntensity} min={0} max={2} step={0.05} onChange={setSsaoIntensity} />
+          <ScrubInput label="AO Intensity" value={ssaoIntensity} min={0} max={2} step={0.05} onChange={setSsaoIntensity} hint="Screen-space ambient occlusion — darkens crevices and contact areas" />
         )}
 
         <ToolPanelRow label={t('studio3d.panels.bloom')}>
@@ -39,8 +39,8 @@ export const EffectsTab: React.FC = React.memo(() => {
         </ToolPanelRow>
         {store.bloomEnabled && (
           <div className="grid grid-cols-2 gap-1.5">
-            <ScrubInput label="Intensity" value={bloomIntensity} min={0} max={5} step={0.1} onChange={setBloomIntensity} />
-            <ScrubInput label="Threshold" value={bloomThreshold} min={0} max={1} step={0.01} onChange={setBloomThreshold} />
+            <ScrubInput label="Intensity" value={bloomIntensity} min={0} max={5} step={0.1} onChange={setBloomIntensity} hint="Bloom glow strength" />
+            <ScrubInput label="Threshold" value={bloomThreshold} min={0} max={1} step={0.01} onChange={setBloomThreshold} hint="Brightness cutoff — only pixels above this value glow" />
           </div>
         )}
 
@@ -48,7 +48,7 @@ export const EffectsTab: React.FC = React.memo(() => {
           <Switch checked={store.chromaticAberrationEnabled} onCheckedChange={store.setChromaticAberrationEnabled} aria-label="Chromatic aberration" />
         </ToolPanelRow>
         {store.chromaticAberrationEnabled && (
-          <ScrubInput label="Offset" value={chromaticAberrationOffset} min={0} max={0.02} step={0.0005} onChange={setChromaticAberrationOffset} />
+          <ScrubInput label="Offset" value={chromaticAberrationOffset} min={0} max={0.02} step={0.0005} onChange={setChromaticAberrationOffset} hint="RGB color fringe at edges — simulates lens imperfection" />
         )}
 
         <ToolPanelRow label={t('studio3d.panels.depthOfField')}>
@@ -56,8 +56,8 @@ export const EffectsTab: React.FC = React.memo(() => {
         </ToolPanelRow>
         {store.dofEnabled && (
           <div className="grid grid-cols-2 gap-1.5">
-            <ScrubInput label="Focus" value={dofFocusDistance} min={0} max={0.1} step={0.001} onChange={setDofFocusDistance} />
-            <ScrubInput label="Bokeh" value={dofBokehScale} min={0} max={10} step={0.1} onChange={setDofBokehScale} />
+            <ScrubInput label="Focus" value={dofFocusDistance} min={0} max={0.1} step={0.001} onChange={setDofFocusDistance} hint="Focus distance — objects at this depth stay sharp" />
+            <ScrubInput label="Bokeh" value={dofBokehScale} min={0} max={10} step={0.1} onChange={setDofBokehScale} hint="Blur intensity for out-of-focus areas" />
           </div>
         )}
 

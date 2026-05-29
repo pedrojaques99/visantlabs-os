@@ -67,7 +67,7 @@ export const SceneTab: React.FC = React.memo(() => {
 
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>([]);
   const [scenesLoading, setScenesLoading] = useState(false);
-  const [sceneName, setSceneName] = useState('');
+  const [sceneName, setSceneName] = useState(store._sceneName || '');
 
   useEffect(() => {
     setScenesLoading(true);
@@ -250,14 +250,13 @@ export const SceneTab: React.FC = React.memo(() => {
             <Button
               variant="outline"
               size="sm"
-              className="h-7 px-2 text-[10px]"
+              className="h-7 px-2 text-[10px] relative"
               disabled={!sceneName.trim()}
               aria-label="Save scene"
               onClick={async () => {
                 const scene = await saveScene(sceneName.trim());
                 if (scene) {
                   setSavedScenes(await getSavedScenes());
-                  setSceneName('');
                   toast.success('Scene saved');
                 } else {
                   toast.error('Failed to save scene');

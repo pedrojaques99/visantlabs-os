@@ -7,7 +7,7 @@ import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
 const SceneCanvas = React.lazy(() => import('@/components/3d-studio/SceneCanvas').then(m => ({ default: m.SceneCanvas })));
-import { useStudio3DStore } from '@/stores/studio3dStore';
+import { useStudio3DStore, saveScene } from '@/stores/studio3dStore';
 import { exportPNG, exportVideo, exportGLB, exportOBJ, exportTurntable, exportVideoServerSide } from '@/components/3d-studio/ExportManager';
 import { ExportModal } from '@/components/shared/ExportModal';
 import type { VideoFormat } from '@/utils/videoExport';
@@ -166,6 +166,15 @@ export const Studio3DPage: React.FC = () => {
   useHotkeys('f', () => store.getState().setShowStats(!store.getState().showStats), camOpts);
   useHotkeys('shift+/', () => setShowShortcuts(v => !v), camOpts);
 
+  useHotkeys('mod+s', async (e) => {
+    e.preventDefault();
+    const s = store.getState();
+    const name = s._sceneName || s.fileName || 'Untitled';
+    const scene = await saveScene(name);
+    if (scene) toast.success('Scene saved');
+    else toast.error('Failed to save scene');
+  }, { enableOnFormTags: true, preventDefault: true });
+
   usePasteImage(useCallback(async ({ file }) => {
     if (!file) return;
     const s = store.getState();
@@ -304,6 +313,7 @@ export const Studio3DPage: React.FC = () => {
                 ['F', 'Toggle FPS stats'],
                 ['Ctrl+Z', 'Undo'],
                 ['Ctrl+Shift+Z', 'Redo'],
+                ['Ctrl+S', 'Save scene'],
                 ['Ctrl+E', 'Export'],
                 ['Ctrl+\\', 'Toggle panel'],
                 ['?', 'This dialog'],
