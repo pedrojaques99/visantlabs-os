@@ -172,10 +172,10 @@ export const CameraTab: React.FC = React.memo(() => {
         </ToolPanelDisclosure>
 
         <ToolPanelDisclosure label={t('studio3d.background.title')} defaultOpen>
-          <ToolPanelGrid cols={3}>
-            {(['solid', 'linear', 'radial'] as const).map((type) => (
+          <ToolPanelGrid cols={4}>
+            {(['solid', 'linear', 'radial', 'image'] as const).map((type) => (
               <ToolPanelChip key={type} active={store.bgType === type} onClick={() => store.setBgType(type)}>
-                {t(`studio3d.background.types.${type}`)}
+                {type === 'image' ? 'Image' : t(`studio3d.background.types.${type}`)}
               </ToolPanelChip>
             ))}
           </ToolPanelGrid>
@@ -237,6 +237,35 @@ export const CameraTab: React.FC = React.memo(() => {
               </div>
               {store.bgType === 'linear' && (
                 <ScrubInput label={t('studio3d.background.angle')} value={bgAngle} min={0} max={360} step={1} suffix="°" onChange={setBgAngle} />
+              )}
+            </div>
+          )}
+          {store.bgType === 'image' && (
+            <div className="space-y-2">
+              {store.backgroundImageUrl ? (
+                <div className="relative rounded-md overflow-hidden border border-white/10">
+                  <img src={store.backgroundImageUrl} alt="Background" className="w-full h-20 object-cover" />
+                  <button
+                    onClick={() => store.setBackgroundImageUrl('')}
+                    className="absolute top-1 right-1 w-5 h-5 rounded bg-black/60 flex items-center justify-center text-neutral-400 hover:text-white transition-colors text-[10px]"
+                  >✕</button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center gap-1 p-3 border border-dashed border-white/10 hover:border-white/20 rounded-lg cursor-pointer transition-all">
+                  <span className="text-[10px] uppercase tracking-wider text-neutral-500">Upload image</span>
+                  <input
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 10 * 1024 * 1024) { toast.error('Max 10MB'); return; }
+                      store.setBackgroundImageUrl(URL.createObjectURL(file));
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
               )}
             </div>
           )}

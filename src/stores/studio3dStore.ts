@@ -354,8 +354,9 @@ interface Studio3DState {
   fogNear: number;
   fogFar: number;
   background: string;
-  bgType: 'solid' | 'linear' | 'radial';
+  bgType: 'solid' | 'linear' | 'radial' | 'image';
   bgGradient: { color1: string; color2: string; angle: number };
+  backgroundImageUrl: string;
   transparentBg: boolean;
 
   // Tone mapping
@@ -507,8 +508,9 @@ interface Studio3DState {
   setEnvironment: (e: string) => void;
   setCustomHdriUrl: (url: string) => void;
   setBackground: (c: string) => void;
-  setBgType: (type: 'solid' | 'linear' | 'radial') => void;
+  setBgType: (type: 'solid' | 'linear' | 'radial' | 'image') => void;
   setBgGradient: (g: Partial<{ color1: string; color2: string; angle: number }>) => void;
+  setBackgroundImageUrl: (url: string) => void;
   setTransparentBg: (v: boolean) => void;
   setToneMapping: (v: ToneMappingType) => void;
   setToneMappingExposure: (v: number) => void;
@@ -642,6 +644,7 @@ const INITIAL_STATE = {
   background: '#0a0a0a',
   bgType: 'solid' as const,
   bgGradient: { color1: '#0a0a0a', color2: '#1a1a2e', angle: 45 },
+  backgroundImageUrl: '',
   transparentBg: false,
   toneMapping: 'ACES' as ToneMappingType,
   toneMappingExposure: 1.2,
@@ -796,6 +799,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setBackground: (background) => set({ background }),
   setBgType: (bgType) => set({ bgType }),
   setBgGradient: (g) => set((s) => ({ bgGradient: { ...s.bgGradient, ...g } })),
+  setBackgroundImageUrl: (backgroundImageUrl: string) => set({ backgroundImageUrl }),
   setTransparentBg: (transparentBg) => set({ transparentBg }),
   setToneMapping: (toneMapping) => set({ toneMapping }),
   setToneMappingExposure: (toneMappingExposure) => set({ toneMappingExposure }),
@@ -1051,6 +1055,19 @@ export async function saveScene(name: string, thumbnail?: string): Promise<Saved
     useStudio3DStore.setState({ _sceneName: name, _lastSavedAt: Date.now() });
     return scene;
   }
+}
+
+export async function shareScene(name: string, thumbnail?: string): Promise<string | null> {
+  const scene = await saveScene(name, thumbnail);
+  if (!scene) return null;
+  try {
+    await fetch(`${API_BASE}/studio3d/${scene.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ isPublic: true }),
+    });
+    return `${window.location.origin}/3d-studio?sceneId=${scene.id}`;
+  } catch { return null; }
 }
 
 export async function loadScene(id: string): Promise<boolean> {

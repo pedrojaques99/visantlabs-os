@@ -401,7 +401,7 @@ function SceneContent() {
 
       <hemisphereLight args={['#b1e1ff', '#b97a20', 0.5]} />
 
-      {!s.transparentBg && !s.hdriBackground && (
+      {!s.transparentBg && !s.hdriBackground && s.bgType !== 'image' && (
         s.bgType === 'solid' ? (
           <mesh scale={100}>
             <sphereGeometry args={[1, 64, 64]} />
@@ -477,6 +477,8 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
   const s = useStudio3DStore(useShallow((st) => ({
     background: st.background,
     transparentBg: st.transparentBg,
+    bgType: st.bgType,
+    backgroundImageUrl: st.backgroundImageUrl,
     zoom: st.zoom,
     resetKey: st.resetKey,
     toneMapping: st.toneMapping,
@@ -490,6 +492,9 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
   const [sceneHandle, setSceneHandle] = useState<SceneHandle | null>(null);
 
   const bg = s.transparentBg ? 'transparent' : s.background;
+  const bgStyle: React.CSSProperties = s.bgType === 'image' && s.backgroundImageUrl
+    ? { backgroundImage: `url(${s.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { background: bg };
 
   return (
     <SceneRefContext.Provider value={sceneHandle}>
@@ -501,7 +506,7 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(({ onCanvasRea
           : { position: [0, 0, s.zoom], fov: s.fov }
         }
         dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
-        style={{ background: bg, width: '100%', height: '100%' }}
+        style={{ ...bgStyle, width: '100%', height: '100%' }}
         gl={{
           antialias: s.renderQuality !== 'performance',
           alpha: true,

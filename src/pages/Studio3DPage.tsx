@@ -7,7 +7,7 @@ import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
 const SceneCanvas = React.lazy(() => import('@/components/3d-studio/SceneCanvas').then(m => ({ default: m.SceneCanvas })));
-import { useStudio3DStore, saveScene } from '@/stores/studio3dStore';
+import { useStudio3DStore, saveScene, shareScene } from '@/stores/studio3dStore';
 import { exportPNG, exportVideo, exportGLB, exportOBJ, exportTurntable, exportVideoServerSide } from '@/components/3d-studio/ExportManager';
 import { ExportModal } from '@/components/shared/ExportModal';
 import type { VideoFormat } from '@/utils/videoExport';
@@ -16,7 +16,8 @@ import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useTranslation } from '@/hooks/useTranslation';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box, Maximize2, Minimize2 } from 'lucide-react';
+import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box, Maximize2, Minimize2, Share2 } from 'lucide-react';
+import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
 
 export const Studio3DPage: React.FC = () => {
@@ -174,6 +175,20 @@ export const Studio3DPage: React.FC = () => {
   useHotkeys('f', () => store.getState().setShowStats(!store.getState().showStats), camOpts);
   useHotkeys('shift+/', () => setShowShortcuts(v => !v), camOpts);
 
+  const prevAnimRef = useRef(animate !== 'none' ? animate : 'spin');
+  useHotkeys('space', (e) => {
+    e.preventDefault();
+    const s = store.getState();
+    if (s.animate !== 'none') {
+      prevAnimRef.current = s.animate;
+      s.setAnimate('none');
+      toast('Paused', { duration: 800 });
+    } else {
+      s.setAnimate(prevAnimRef.current || 'spin');
+      toast('Playing', { duration: 800 });
+    }
+  }, camOpts);
+
   const captureThumb = useCallback(() => {
     const c = canvasRef.current;
     if (!c) return undefined;
@@ -297,6 +312,19 @@ export const Studio3DPage: React.FC = () => {
         <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
           <Download size={isMobile ? 18 : 15} />
         </button>
+        <button onClick={async () => {
+          const s = store.getState();
+          const name = s._sceneName || s.fileName || 'Untitled';
+          const url = await shareScene(name, captureThumb());
+          if (url) {
+            await navigator.clipboard.writeText(url);
+            toast.success('Share link copied!');
+          } else {
+            toast.error('Failed to create share link');
+          }
+        }} title="Share link" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+          <Share2 size={isMobile ? 18 : 15} />
+        </button>
         <button onClick={toggleFullscreen} title="Fullscreen" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
           {isFullscreen ? <Minimize2 size={isMobile ? 18 : 15} /> : <Maximize2 size={isMobile ? 18 : 15} />}
         </button>
@@ -344,7 +372,9 @@ export const Studio3DPage: React.FC = () => {
       </div>
 
       <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">{t('studio3d.loadingEngine')}</span></div>}>
-        <SceneCanvas onCanvasReady={handleCanvasReady} onSceneReady={handleSceneReady} />
+        <CanvasErrorBoundary>
+          <SceneCanvas onCanvasReady={handleCanvasReady} onSceneReady={handleSceneReady} />
+        </CanvasErrorBoundary>
       </Suspense>
       {showShortcuts && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowShortcuts(false)} role="presentation">
@@ -367,6 +397,7 @@ export const Studio3DPage: React.FC = () => {
                 ['Ctrl+Shift+Z', 'Redo'],
                 ['Ctrl+S', 'Save scene'],
                 ['Ctrl+E', 'Export'],
+                ['Space', 'Play / Pause animation'],
                 ['Ctrl+\\', 'Toggle panel'],
                 ['?', 'This dialog'],
               ].map(([key, desc]) => (
