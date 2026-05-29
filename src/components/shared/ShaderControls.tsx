@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Switch } from '@/components/ui/switch';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { ToolPanelDisclosure } from '@/components/shared/ToolPanel';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import {
   SHADER_DEFINITIONS,
@@ -72,9 +73,8 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(({
 
           {/* Variant selector (e.g. halftone style) */}
           {def?.variants && (
-            <div>
-              <MicroTitle>{def.variants.label.toUpperCase()}</MicroTitle>
-              <div className="grid grid-cols-3 gap-1.5 mt-2">
+            <ToolPanelDisclosure label={def.variants.label.toUpperCase()} defaultOpen>
+              <div className="grid grid-cols-3 gap-1.5">
                 {def.variants.options.map((o) => (
                   <button
                     key={o.value}
@@ -90,12 +90,11 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(({
                   </button>
                 ))}
               </div>
-            </div>
+            </ToolPanelDisclosure>
           )}
 
           {/* Parameters */}
-          <div className="space-y-3">
-            <MicroTitle>PARAMETERS</MicroTitle>
+          <ToolPanelDisclosure label="Parameters" defaultOpen>
             {def?.params.map((p) => (
               <ParamControl
                 key={p.key}
@@ -104,7 +103,7 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(({
                 onChange={(v) => onValueChange(p.key, v)}
               />
             ))}
-          </div>
+          </ToolPanelDisclosure>
         </>
       )}
     </div>

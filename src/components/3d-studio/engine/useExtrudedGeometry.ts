@@ -9,12 +9,20 @@ function yieldToMain() {
   return new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
+const SMOOTH_VERTEX_LIMIT = 300_000;
+
 function smoothCreaseNormals(geometry: THREE.BufferGeometry, creaseAngleRad: number): THREE.BufferGeometry {
   const tempGeo = geometry.index ? geometry.toNonIndexed() : geometry.clone();
   const posAttr = tempGeo.attributes.position;
   if (!posAttr) return geometry;
 
   const count = posAttr.count;
+
+  if (count > SMOOTH_VERTEX_LIMIT) {
+    tempGeo.computeVertexNormals();
+    return tempGeo;
+  }
+
   const flatNormals: THREE.Vector3[] = [];
 
   for (let i = 0; i < count; i += 3) {
@@ -260,7 +268,7 @@ export function useExtrudedGeometry(
 
       const { bevelEnabled = true, bevelThickness: userThickness = 0.5, bevelSize: userSize = 0.5 } = bevelOpts;
       const complexity = allShapes.length;
-      const budget = 1_200_000; // Increased budget for smoother shapes
+      const budget = 600_000;
       const vertsBudgetPerShape = Math.max(Math.floor(budget / Math.max(complexity, 1)), 500);
       const scaledDepth = (depth / 10) * maxFlatDim;
       const bevelScale = Math.min(maxFlatDim * 0.05, 1); // Increased bevel scale for more pronounced rounding

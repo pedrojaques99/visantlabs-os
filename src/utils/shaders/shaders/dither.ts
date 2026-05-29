@@ -151,7 +151,7 @@ void main() {
   vec2 fragCoord = v_texCoord * iResolution;
   vec2 uv = fragCoord / iResolution;
   uv.y = 1.0 - uv.y;
-  
+
   // Pixelation effect - sample the screen texture at reduced resolution
   float ditherSize = max(1.0, u_dither_size);
   vec2 screen_size = iResolution / ditherSize;

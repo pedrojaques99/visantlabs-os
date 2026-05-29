@@ -1,80 +1,40 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import {
-  Upload,
   Copy,
   Check,
-  Save,
   ImageIcon,
   Tag,
-  Percent,
-  Figma,
   Palette,
   X,
   Plus,
   Globe,
   Cpu,
-  Search,
-  ArrowRight,
-  Maximize2,
   RefreshCw,
-  Type,
   Diamond
 } from 'lucide-react';
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Switch } from '../components/ui/switch';
 import { Input } from '../components/ui/input';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogFooter,
 } from '../components/ui/dialog';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '@/services/authService';
 import { GlassPanel } from '../components/ui/GlassPanel';
-import { Select } from '../components/ui/select';
-import { AnalyzingImageOverlay } from '../components/ui/AnalyzingImageOverlay';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockupApi } from '@/services/mockupApi';
 
 import { GEMINI_MODELS } from '../constants/geminiModels';
-import type { AspectRatio } from '../types/types';
 import { MockupCard } from '@/components/mockupmachine/MockupCard';
 import { API_BASE } from '@/config/api';
 import { copyToClipboard } from '@/utils/clipboard';
-
-const GOOGLE_FONTS = [
-  { value: '', label: 'Auto Detect' },
-  { value: 'Inter', label: 'Inter' },
-  { value: 'Geist', label: 'Geist' },
-  { value: 'Plus Jakarta Sans', label: 'Plus Jakarta Sans' },
-  { value: 'DM Sans', label: 'DM Sans' },
-  { value: 'Outfit', label: 'Outfit' },
-  { value: 'Poppins', label: 'Poppins' },
-  { value: 'Space Grotesk', label: 'Space Grotesk' },
-  { value: 'Syne', label: 'Syne' },
-  { value: 'Manrope', label: 'Manrope' },
-  { value: 'Nunito', label: 'Nunito' },
-  { value: 'Raleway', label: 'Raleway' },
-  { value: 'Montserrat', label: 'Montserrat' },
-  { value: 'Lato', label: 'Lato' },
-  { value: 'Open Sans', label: 'Open Sans' },
-  { value: 'Playfair Display', label: 'Playfair Display' },
-  { value: 'Cormorant Garamond', label: 'Cormorant Garamond' },
-  { value: 'Libre Baskerville', label: 'Libre Baskerville' },
-  { value: 'Merriweather', label: 'Merriweather' },
-  { value: 'IBM Plex Mono', label: 'IBM Plex Mono' },
-  { value: 'Fira Code', label: 'Fira Code' },
-  { value: 'JetBrains Mono', label: 'JetBrains Mono' },
-];
 
 function injectFont(content: string, font: string, mode: 'figma-plugin' | 'image-gen'): string {
   if (!font) return content;
@@ -147,7 +107,6 @@ export const SmartAnalyzerPage: React.FC = () => {
   const [generatedVariations, setGeneratedVariations] = useState<string[]>([]);
   const [mockupId, setMockupId] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [activeSuggestions, setActiveSuggestions] = useState<string[]>([]);
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string>('');
@@ -163,12 +122,11 @@ export const SmartAnalyzerPage: React.FC = () => {
   const [useSemanticNaming, setUseSemanticNaming] = useState(true);
   const [useTokens, setUseTokens] = useState(false);
 
-  // Stepped Journey Logic
   const step = useMemo(() => {
     if (!image) return 'idle';
     if (isAnalyzing) return 'analyzing';
     if (result) return 'result';
-    return 'config';
+    return 'analyzing';
   }, [image, isAnalyzing, result]);
 
   const refinedPrompt = useMemo(() => {
@@ -295,17 +253,17 @@ export const SmartAnalyzerPage: React.FC = () => {
     }
   }, [image, result, mode, intensity, visualStyle, aspectRatio, selectedFont, useAutoLayout, useSemanticNaming, useTokens, generatedImage, generatedVariations, mockupId, isLiked, activeSuggestions, editedPrompt]);
 
+  const pendingAnalyze = useRef(false);
+
   const handleFileSelect = useCallback((file: File) => {
     if (!file) return;
 
-    // Validate file type
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       toast.error('Invalid file type. Use PNG, JPG, or WebP.');
       return;
     }
 
-    // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('File too large. Max 5MB.');
       return;
@@ -320,6 +278,11 @@ export const SmartAnalyzerPage: React.FC = () => {
         preview: URL.createObjectURL(file),
       });
       setResult(null);
+      setGeneratedImage(null);
+      setGeneratedVariations([]);
+      setEditedPrompt('');
+      setActiveSuggestions([]);
+      pendingAnalyze.current = true;
     };
     reader.readAsDataURL(file);
   }, []);
@@ -531,6 +494,13 @@ export const SmartAnalyzerPage: React.FC = () => {
     document.addEventListener('paste', handlePaste);
     return () => document.removeEventListener('paste', handlePaste);
   }, [handlePaste]);
+
+  React.useEffect(() => {
+    if (image && pendingAnalyze.current) {
+      pendingAnalyze.current = false;
+      analyzeImage();
+    }
+  }, [image]);
 
   const analyzeImage = async (refinements: string[] = []) => {
     if (!image) return;
@@ -755,240 +725,34 @@ export const SmartAnalyzerPage: React.FC = () => {
             </motion.div>
           )}
 
-          {step === 'config' && (
+          {step === 'analyzing' && (
             <motion.div
-              key="config"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+              key="analyzing"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.4 }}
-              className="grid lg:grid-cols-7 gap-12"
+              className="max-w-md mx-auto flex flex-col items-center gap-6 py-20"
             >
-              <div className="lg:col-span-4 space-y-4">
-                <div className="relative rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900 group">
-                  <img
-                    src={image?.preview}
-                    alt="Preview"
-                    className="w-full aspect-[16/10] object-contain p-4"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[10px] font-mono text-white/50 uppercase">{image?.mimeType.split('/')[1]} Image</span>
-                    <Button variant="ghost" size="sm" onClick={() => window.open(image?.preview, '_blank')} className="h-7 text-[10px] text-white/80">
-                      <Maximize2 size={12} className="mr-1.5" /> Full Image
-                    </Button>
-                  </div>
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full bg-neutral-950 flex items-center justify-center border border-neutral-800">
+                  <GlitchLoader size={28} />
                 </div>
+                <div className="absolute inset-0 rounded-full border border-brand-cyan/20 animate-ping" />
               </div>
 
-              <div className="lg:col-span-3">
-                <GlassPanel padding="lg" className="h-full border-neutral-800/60 flex flex-col">
-                  <div className="flex-1 space-y-8">
-                    <div className="space-y-4">
-                      <label className="text-xs font-semibold text-neutral-400 block pl-1">Target Dimension</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { id: 'image-gen', label: 'AI Prompt', sub: 'For image generators', icon: Diamond },
-                          { id: 'figma-plugin', label: 'Plugin Data', sub: 'For Figma Code Connect', icon: Figma },
-                        ].map((opt) => (
-                          <button
-                            key={opt.id}
-                            onClick={() => setMode(opt.id as any)}
-                            className={cn(
-                              "flex flex-col items-start p-4 rounded-2xl border transition-all text-left relative overflow-hidden",
-                              mode === opt.id
-                                ? "bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan"
-                                : "bg-neutral-900/40 border-white/[0.03] text-neutral-500 hover:border-white/10"
-                            )}
-                          >
-                            <opt.icon size={16} className={cn("mb-3", mode === opt.id ? "text-brand-cyan" : "opacity-30")} />
-                            <span className="text-xs font-bold leading-none mb-1.5">{opt.label}</span>
-                            <span className="text-[10px] font-mono uppercase tracking-tighter opacity-50">{opt.sub}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-6">
-                      <div className="grid gap-2">
-                        {[
-                          { label: 'White Label', sub: 'Omit brand identifiers', value: whiteLabel, set: setWhiteLabel },
-                          { label: 'Save Archive', sub: 'Store in library', value: saveToLib, set: setSaveToLib },
-                          { label: 'Community Sync', sub: 'Automatic public sync', value: publish, set: setPublish, disabled: !saveToLib },
-                        ].map((opt) => (
-                          <div
-                            key={opt.label}
-                            className={cn(
-                              "flex items-center justify-between p-4 rounded-xl transition-all border border-transparent",
-                              "bg-neutral-900/40 hover:bg-neutral-900/60 hover:border-neutral-800",
-                              opt.disabled && "opacity-30 pointer-events-none"
-                            )}
-                          >
-                            <div>
-                              <span className="text-sm text-neutral-300 block leading-none mb-1.5">{opt.label}</span>
-                              <span className="text-[10px] text-neutral-600 font-mono block tracking-tight uppercase leading-none">{opt.sub}</span>
-                            </div>
-                            <Switch
-                              checked={opt.value}
-                              onCheckedChange={opt.set}
-                              className="data-[state=unchecked]:bg-neutral-800 border border-neutral-800 shadow-inner"
-                            />
-                          </div>
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={() => setShowAdvanced(!showAdvanced)}
-                        className="flex items-center justify-between w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-neutral-900 group-hover:bg-neutral-800 transition-colors">
-                            <Cpu size={14} className={cn("text-neutral-500", showAdvanced && "text-brand-cyan")} />
-                          </div>
-                          <div className="text-left">
-                            <span className="text-xs font-semibold text-neutral-300 block">Advanced Config</span>
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">Model & Style tweaks</span>
-                          </div>
-                        </div>
-                        <div className={cn("transition-transform duration-300", showAdvanced && "rotate-180")}>
-                          <ArrowRight size={14} className="text-neutral-700 rotate-90" />
-                        </div>
-                      </button>
-
-                      <AnimatePresence>
-                        {showAdvanced && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.4, ease: "circOut" }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pt-8 space-y-8">
-
-                              <AnimatePresence mode="wait">
-                                {mode === 'image-gen' ? (
-                                  <motion.div
-                                    key="image-gen-params"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="space-y-8"
-                                  >
-                                    <div className="space-y-3">
-                                      <label className="text-xs font-semibold text-neutral-500 block pl-1">Creative Intensity</label>
-                                      <div className="grid grid-cols-3 gap-2">
-                                        {['literal', 'balanced', 'creative'].map((v) => (
-                                          <button
-                                            key={v}
-                                            onClick={() => setIntensity(v as any)}
-                                            className={cn(
-                                              "py-2 rounded-lg text-[10px] font-mono border transition-all uppercase tracking-tighter",
-                                              intensity === v ? "bg-white/10 border-white/20 text-white" : "border-transparent text-neutral-600 hover:text-neutral-400"
-                                            )}
-                                          >
-                                            {v}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                      <label className="text-xs font-semibold text-neutral-500 block pl-1">Visual Style</label>
-                                      <Select
-                                        options={[
-                                          { value: 'auto', label: 'Detect Automatically (Auto)' },
-                                          { value: 'photorealistic', label: 'Photorealistic' },
-                                          { value: 'cinematic', label: 'Cinematic' },
-                                          { value: 'digital-art', label: 'Digital Art' },
-                                          { value: 'minimalist', label: 'Minimalist' },
-                                          { value: '3d-render', label: '3D Render' },
-                                        ]}
-                                        value={visualStyle}
-                                        onChange={setVisualStyle as any}
-                                        variant="node"
-                                      />
-                                    </div>
-
-                                    <div className="space-y-3">
-                                      <label className="text-xs font-semibold text-neutral-500 block pl-1">Aspect Ratio</label>
-                                      <div className="grid grid-cols-4 gap-2">
-                                        {['1:1', '16:9', '4:3', '9:16'].map((r) => (
-                                          <button
-                                            key={r}
-                                            onClick={() => setAspectRatio(r as any)}
-                                            className={cn(
-                                              "py-2 rounded-lg text-[10px] font-mono border transition-all",
-                                              aspectRatio === r ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan" : "border-transparent text-neutral-600 hover:text-neutral-400"
-                                            )}
-                                          >
-                                            {r}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </motion.div>
-                                ) : (
-                                  <motion.div
-                                    key="figma-params"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="space-y-8"
-                                  >
-                                    <div className="space-y-3">
-                                      <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 font-bold flex items-center gap-2">
-                                        <Type size={12} /> Choose Font
-                                      </label>
-                                      <Select
-                                        options={GOOGLE_FONTS}
-                                        value={selectedFont}
-                                        onChange={setSelectedFont}
-                                        placeholder="Detect Font Automatically"
-                                        variant="node"
-                                      />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                      {[
-                                        { label: 'Auto Layout', sub: 'Responsive structure', value: useAutoLayout, set: setUseAutoLayout },
-                                        { label: 'Semantic Naming', sub: 'Meaningful layer names', value: useSemanticNaming, set: setUseSemanticNaming },
-                                        { label: 'Variable Tokens', sub: 'Bind colors & typography', value: useTokens, set: setUseTokens },
-                                      ].map((opt) => (
-                                        <div
-                                          key={opt.label}
-                                          className="flex items-center justify-between p-4 rounded-xl bg-neutral-900/40 border border-transparent hover:border-neutral-800 transition-all"
-                                        >
-                                          <div>
-                                            <span className="text-sm text-neutral-300 block leading-none mb-1.5">{opt.label}</span>
-                                            <span className="text-[10px] text-neutral-600 font-mono block tracking-tight uppercase leading-none">{opt.sub}</span>
-                                          </div>
-                                          <Switch
-                                            checked={opt.value}
-                                            onCheckedChange={opt.set}
-                                            className="data-[state=unchecked]:bg-neutral-800 border border-neutral-800 shadow-inner"
-                                          />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={() => analyzeImage()}
-                    className="w-full mt-12 bg-white hover:bg-neutral-200 text-black h-14 rounded-xl font-semibold tracking-tight transition-all active:scale-[0.98]"
-                  >
-                    Start Analysis
-                    <ArrowRight size={18} className="ml-3 opacity-50" />
-                  </Button>
-                </GlassPanel>
+              <div className="text-center space-y-2">
+                <h3 className="text-sm font-semibold text-white">Extracting prompt</h3>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 animate-pulse">
+                  Analyzing visual patterns...
+                </p>
               </div>
+
+              {image && (
+                <div className="w-32 h-20 rounded-xl overflow-hidden border border-neutral-800 opacity-40">
+                  <img src={image.preview} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -1080,101 +844,45 @@ export const SmartAnalyzerPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* #1: CREATIVE PROMPT BLOCK */}
+                  {/* PROMPT OUTPUT */}
                   <div className="flex flex-col">
                     <GlassPanel padding="lg" className="rounded-3xl border-neutral-800/60 bg-neutral-950/40 relative group">
-                      <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-6">
-                          <h3 className="text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-500 flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-brand-cyan" />
-                            Creative Prompt Blueprint
-                          </h3>
-                          {result.mode === 'figma-plugin' && (
-                            <div className="w-[180px]">
-                              <Select
-                                value={selectedFont}
-                                onChange={(val) => setSelectedFont(val)}
-                                options={[
-                                  { value: '', label: 'Auto Detect', icon: <Type size={12} /> },
-                                  { value: 'Inter', label: 'Inter' },
-                                  { value: 'Outfit', label: 'Outfit' },
-                                  { value: 'Roboto Mono', label: 'Roboto Mono' },
-                                  { value: 'Playfair Display', label: 'Playfair Display' },
-                                ]}
-                                className="h-[310px] bg-white/5 border-white/10 text-[10px] uppercase tracking-widest font-mono"
-                              />
-                            </div>
+                      {/* Header: category chip + secondary actions */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <span className={cn("text-[10px] font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg border", getCategoryColor(result.category))}>
+                            {result.category}
+                          </span>
+                          {result.confidence != null && (
+                            <span className="text-[10px] font-mono text-neutral-600">{Math.round(result.confidence * 100)}%</span>
+                          )}
+                          {result.name && (
+                            <span className="text-[10px] font-mono text-neutral-600 truncate max-w-[200px]">{result.name}</span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-4">
-                          {result.mode === 'image-gen' && (
-                            <div className="flex items-center gap-2">
-                              <Button
-                                onClick={() => handleGenerateVariations()}
-                                disabled={isGenerating || isGeneratingVariations}
-                                variant="outline"
-                                className={cn(
-                                  "h-10 px-4 border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest group",
-                                  isGeneratingVariations && "opacity-80"
-                                )}
-                              >
-                                {isGeneratingVariations ? (
-                                  <GlitchLoader size={12} className="mr-2" />
-                                ) : (
-                                  <Diamond size={12} className="mr-2 group-hover:scale-110 transition-transform opacity-50" />
-                                )}
-                                {isGeneratingVariations ? 'Thinking...' : 'Variações'}
-                              </Button>
-
-                              <Button
-                                onClick={() => handleGenerateWithGemini()}
-                                disabled={isGenerating || isGeneratingVariations}
-                                className={cn(
-                                  "h-10 px-5 bg-brand-cyan hover:bg-brand-cyan-dark text-black rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest group shadow-[0_0_20px_rgba(34,211,238,0.2)]",
-                                  isGenerating && "opacity-80"
-                                )}
-                              >
-                                {isGenerating ? (
-                                  <GlitchLoader size={12} className="mr-2" />
-                                ) : (
-                                  <Diamond size={12} className="mr-2 group-hover:rotate-12 transition-transform text-black/40" />
-                                )}
-                                {isGenerating ? 'Envisioning...' : 'Gerar com Gemini'}
-                              </Button>
-                            </div>
-                          )}
-
-                          <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl">
-                            <Button
-                              onClick={openPublishModal}
-                              variant="ghost"
-                              className="h-8 w-8 p-0 rounded-lg text-neutral-500 hover:text-white hover:bg-white/5"
-                            >
-                              <Globe size={14} />
-                            </Button>
-                            <div className="w-px h-4 bg-white/10" />
-                            <Button
-                              onClick={() => setIsEditingPrompt(!isEditingPrompt)}
-                              variant="ghost"
-                              className={cn(
-                                "h-8 px-3 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all",
-                                isEditingPrompt ? "bg-brand-cyan text-black" : "text-neutral-500 hover:text-white"
-                              )}
-                            >
-                              {isEditingPrompt ? 'Salvar' : 'Editar'}
-                            </Button>
-                            <Button
-                              onClick={copyPrompt}
-                              variant="ghost"
-                              className="h-8 px-3 rounded-lg text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-white"
-                            >
-                              {copied ? <Check size={12} /> : <Copy size={12} />}
-                            </Button>
-                          </div>
+                        <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl">
+                          <Button
+                            onClick={() => setIsEditingPrompt(!isEditingPrompt)}
+                            variant="ghost"
+                            className={cn(
+                              "h-8 px-3 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all",
+                              isEditingPrompt ? "bg-brand-cyan text-black" : "text-neutral-500 hover:text-white"
+                            )}
+                          >
+                            {isEditingPrompt ? 'Save' : 'Edit'}
+                          </Button>
+                          <Button
+                            onClick={openPublishModal}
+                            variant="ghost"
+                            className="h-8 w-8 p-0 rounded-lg text-neutral-500 hover:text-white hover:bg-white/5"
+                          >
+                            <Globe size={14} />
+                          </Button>
                         </div>
                       </div>
 
+                      {/* Prompt content */}
                       <div className="relative flex flex-col">
                         {isEditingPrompt ? (
                           <textarea
@@ -1185,7 +893,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               e.target.style.height = e.target.scrollHeight + 'px';
                             }}
                             className="w-full bg-transparent border-0 text-lg leading-relaxed text-neutral-200 focus:ring-0 resize-none font-sans scrollbar-hide selection:bg-brand-cyan/30 p-0 min-h-[120px]"
-                            placeholder="Sculpt your vision here..."
+                            placeholder="Edit your prompt..."
                             autoFocus
                             onFocus={(e) => {
                               e.target.style.height = 'auto';
@@ -1199,10 +907,52 @@ export const SmartAnalyzerPage: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Prompt Suggestions/Refinements */}
-                      <div className="mt-12 space-y-6 pt-8 border-t border-neutral-800">
+                      {/* Primary CTA: Copy */}
+                      <div className="mt-8 pt-6 border-t border-neutral-800 flex items-center gap-3">
+                        <Button
+                          onClick={copyPrompt}
+                          className={cn(
+                            "h-12 px-6 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]",
+                            copied
+                              ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                              : "bg-white hover:bg-neutral-200 text-black"
+                          )}
+                        >
+                          {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />}
+                          {copied ? 'Copied!' : 'Copy Prompt'}
+                        </Button>
+
+                        {result.mode === 'image-gen' && (
+                          <>
+                            <Button
+                              onClick={() => handleGenerateWithGemini()}
+                              disabled={isGenerating || isGeneratingVariations}
+                              variant="outline"
+                              className={cn(
+                                "h-12 px-5 border-white/10 hover:border-brand-cyan/30 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-all text-xs font-semibold",
+                                isGenerating && "opacity-80"
+                              )}
+                            >
+                              {isGenerating ? <GlitchLoader size={14} className="mr-2" /> : <Diamond size={14} className="mr-2 opacity-50" />}
+                              {isGenerating ? 'Generating...' : 'Generate'}
+                            </Button>
+                            <Button
+                              onClick={() => handleGenerateVariations()}
+                              disabled={isGenerating || isGeneratingVariations}
+                              variant="ghost"
+                              className="h-12 px-4 text-neutral-500 hover:text-neutral-300 text-xs font-semibold"
+                            >
+                              {isGeneratingVariations ? <GlitchLoader size={14} className="mr-2" /> : <Diamond size={14} className="mr-2 opacity-30" />}
+                              4x Variations
+                            </Button>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Refinements */}
+                      <div className="mt-8 space-y-4 pt-6 border-t border-neutral-800">
                         <h4 className="text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-600 font-bold pl-1 flex items-center gap-2">
-                          <Plus size={10} /> Dynamic Refinements
+                          <Plus size={10} /> Refinements
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {getPromptSuggestions(result.category).map((s) => (
@@ -1221,10 +971,10 @@ export const SmartAnalyzerPage: React.FC = () => {
                             </button>
                           ))}
 
-                          <div className="relative group/input flex items-center min-w-[240px]">
+                          <div className="relative group/input flex items-center min-w-[200px]">
                             <Input
-                              placeholder="Refinar prompt..."
-                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-[10px] font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 focus:shadow-[0_0_20px_-10px_rgba(34,211,238,0.3)] transition-all"
+                              placeholder="Custom..."
+                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-[10px] font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 transition-all"
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   const val = e.currentTarget.value.trim();
@@ -1241,7 +991,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                           {activeSuggestions.length > 0 && (
                             <Button
                               variant="ghost"
-                              onClick={() => setActiveSuggestions([])}
+                              onClick={() => { setActiveSuggestions([]); setEditedPrompt(''); }}
                               className="h-10 px-4 text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-600 hover:text-white"
                             >
                               <RefreshCw size={10} className="mr-2" />
@@ -1254,20 +1004,28 @@ export const SmartAnalyzerPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* SIDEBAR: CONTEXT & METADATA */}
+                {/* SIDEBAR */}
                 <div className="lg:col-span-4 space-y-12">
-                  {/* #3: SOURCE IMAGE */}
+                  {/* SOURCE IMAGE + REPLACE */}
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2 pl-1">
-                      <ImageIcon size={12} /> Source Context
+                      <ImageIcon size={12} /> Source
                     </h4>
-                    <GlassPanel padding="none" className="rounded-2xl overflow-hidden border-white/10 opacity-80 hover:opacity-100 transition-opacity">
+                    <GlassPanel padding="none" className="rounded-2xl overflow-hidden border-white/10 opacity-80 hover:opacity-100 transition-opacity relative group/source">
                       <img
                         src={image?.preview}
                         alt="Source"
                         className="w-full aspect-square object-cover cursor-zoom-in"
                         onClick={() => image?.preview && setShowFullImage(image.preview)}
                       />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/source:opacity-100 transition-opacity"
+                      >
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-white/80 bg-black/40 px-4 py-2 rounded-lg border border-white/10">
+                          Analyze Another
+                        </span>
+                      </button>
                     </GlassPanel>
                   </div>
 

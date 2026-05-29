@@ -1,6 +1,8 @@
 import { ASPECT_RATIOS, EXPORT_RESOLUTIONS } from '@/stores/studio3dStore';
+import { API_BASE } from '@/config/api';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
+import type { VideoFormat } from '@/utils/videoExport';
 import type { Scene } from 'three';
 
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
@@ -264,4 +266,128 @@ function downloadBlob(blob: Blob, filename: string) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+const BATCH_SIZE = 30;
+const FRAME_QUALITY = 0.92;
+const MAX_CONCURRENT_UPLOADS = 2;
+
+async function canvasToArrayBuffer(canvas: HTMLCanvasElement): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? b.arrayBuffer().then(resolve, reject) : reject(new Error('Canvas capture failed'))),
+      'image/jpeg',
+      FRAME_QUALITY,
+    );
+  });
+}
+
+async function sendFrameBatch(
+  jobId: string,
+  frames: ArrayBuffer[],
+  startIndex: number,
+): Promise<void> {
+  let totalSize = 0;
+  for (const f of frames) totalSize += 4 + f.byteLength;
+
+  const buf = new ArrayBuffer(totalSize);
+  const view = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+  let offset = 0;
+
+  for (const frame of frames) {
+    view.setUint32(offset, frame.byteLength, true);
+    offset += 4;
+    bytes.set(new Uint8Array(frame), offset);
+    offset += frame.byteLength;
+  }
+
+  const res = await fetch(`${API_BASE}/render/${jobId}/frames`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/octet-stream',
+      'X-Frame-Start': String(startIndex),
+    },
+    body: buf,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Frame upload failed: ${res.status}`);
+  }
+}
+
+export async function exportVideoServerSide(
+  canvas: HTMLCanvasElement,
+  duration: number,
+  format: VideoFormat,
+  onProgress?: (pct: number) => void,
+  shader?: ShaderSettings,
+): Promise<Blob> {
+  const fps = 30;
+  const totalFrames = Math.ceil(duration * fps);
+  const frameInterval = 1000 / fps;
+
+  const startRes = await fetch(`${API_BASE}/render/start`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ width: canvas.width, height: canvas.height }),
+  });
+  if (!startRes.ok) throw new Error(`Server error: ${startRes.status}`);
+  const { jobId } = await startRes.json();
+
+  let batch: ArrayBuffer[] = [];
+  let batchStart = 0;
+  const uploadQueue: Promise<void>[] = [];
+
+  for (let i = 0; i < totalFrames; i++) {
+    await new Promise(r => setTimeout(r, frameInterval));
+    await new Promise(r => requestAnimationFrame(r));
+
+    let captureCanvas = canvas;
+    if (shader) {
+      captureCanvas = await applyShaderToCanvas(canvas, shader);
+    }
+
+    const buf = await canvasToArrayBuffer(captureCanvas);
+    batch.push(buf);
+
+    if (batch.length >= BATCH_SIZE || i === totalFrames - 1) {
+      while (uploadQueue.length >= MAX_CONCURRENT_UPLOADS) {
+        await Promise.race(uploadQueue);
+        for (let j = uploadQueue.length - 1; j >= 0; j--) {
+          const settled = await Promise.race([uploadQueue[j].then(() => true), Promise.resolve(false)]);
+          if (settled) uploadQueue.splice(j, 1);
+        }
+      }
+
+      const batchToSend = batch;
+      const startIdx = batchStart;
+      uploadQueue.push(sendFrameBatch(jobId, batchToSend, startIdx));
+
+      batchStart += batch.length;
+      batch = [];
+    }
+
+    onProgress?.(((i + 1) / totalFrames) * 75);
+  }
+
+  await Promise.all(uploadQueue);
+  onProgress?.(80);
+
+  const finishRes = await fetch(`${API_BASE}/render/${jobId}/finish`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ format, fps }),
+  });
+  if (!finishRes.ok) {
+    const err = await finishRes.json().catch(() => ({}));
+    throw new Error(err.error || `Encoding failed: ${finishRes.status}`);
+  }
+
+  onProgress?.(100);
+  return await finishRes.blob();
 }

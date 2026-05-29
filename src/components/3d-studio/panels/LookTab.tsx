@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { NodeSlider } from '@/components/ui/NodeSlider';
+import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -10,7 +10,6 @@ import {
   ENVIRONMENT_PRESETS,
   LIGHTING_PRESETS,
 } from '@/stores/studio3dStore';
-import { Diamond, Layers, Sun, Globe } from 'lucide-react';
 import {
   ToolPanelSection, ToolPanelDisclosure, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
 } from '@/components/shared/ToolPanel';
@@ -21,6 +20,8 @@ export const LookTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const store = useStudio3DStore();
   const hdriInputRef = useRef<HTMLInputElement>(null);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const [bgColorPickerOpen, setBgColorPickerOpen] = useState(false);
 
   const [metalness, setMetalness] = useDebouncedSlider(store.metalness, store.setMetalness);
   const [roughness, setRoughness] = useDebouncedSlider(store.roughness, store.setRoughness);
@@ -36,12 +37,18 @@ export const LookTab: React.FC = React.memo(() => {
 
   return (
     <>
-      {/* Material */}
-      <ToolPanelDisclosure label={t('studio3d.material.title')} icon={<Diamond size={13} />} id="sec-material" defaultOpen>
+      {/* Material — always visible */}
+      <ToolPanelSection title={t('studio3d.material.title')}>
         <MaterialCategoryTabs activeCat={MATERIAL_PRESETS.find((m) => m.id === store.material)?.category ?? 'basic'} store={store} />
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded border border-white/10 shrink-0" style={{ backgroundColor: store.color }} />
+            <button
+              type="button"
+              onClick={() => setColorPickerOpen(!colorPickerOpen)}
+              className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+              style={{ backgroundColor: store.color }}
+              aria-label="Toggle color picker"
+            />
             <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1">
               <span className="text-[10px] text-neutral-500 mr-1">#</span>
               <input
@@ -56,28 +63,36 @@ export const LookTab: React.FC = React.memo(() => {
               />
             </div>
           </div>
-          <div className="custom-color-picker"><HexColorPicker color={store.color} onChange={store.setColor} /></div>
+          {colorPickerOpen && (
+            <div className="animate-fade-in">
+              <div className="custom-color-picker"><HexColorPicker color={store.color} onChange={store.setColor} /></div>
+            </div>
+          )}
         </div>
-      </ToolPanelDisclosure>
+      </ToolPanelSection>
 
-      {/* Surface */}
-      <ToolPanelDisclosure label="Surface" icon={<Layers size={13} />} id="sec-surface">
-        <div className="space-y-3">
-          <NodeSlider label={t('studio3d.properties.metalness')} value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
-          <NodeSlider label={t('studio3d.properties.roughness')} value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
-          <NodeSlider label={t('studio3d.properties.opacity')} value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
-          <ToolPanelRow label={t('studio3d.properties.wireframe')}>
-            <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} aria-label="Wireframe" />
-          </ToolPanelRow>
+      {/* Surface — always visible */}
+      <ToolPanelSection title="SURFACE">
+        <div className="grid grid-cols-3 gap-1.5">
+          <ScrubInput label="Metal" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
+          <ScrubInput label="Rough" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
+          <ScrubInput label="Alpha" value={opacity} min={0} max={1} step={0.01} onChange={setOpacity} />
         </div>
+        <ToolPanelRow label={t('studio3d.properties.wireframe')}>
+          <Switch checked={store.wireframe} onCheckedChange={store.setWireframe} aria-label="Wireframe" />
+        </ToolPanelRow>
+      </ToolPanelSection>
+
+      {/* Texture & PBR — collapsible */}
+      <ToolPanelDisclosure label="Texture & PBR">
         <TextureControls store={store} textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity} textureRotation={textureRotation} setTextureRotation={setTextureRotation} />
         <PbrMapUpload label="Normal Map" value={store.normalMapUrl} onChange={store.setNormalMapUrl} />
         <PbrMapUpload label="Roughness Map" value={store.roughnessMapUrl} onChange={store.setRoughnessMapUrl} />
         <PbrMapUpload label="Metalness Map" value={store.metalnessMapUrl} onChange={store.setMetalnessMapUrl} />
       </ToolPanelDisclosure>
 
-      {/* Lighting */}
-      <ToolPanelDisclosure label={t('studio3d.lighting.title')} icon={<Sun size={13} />} id="sec-lighting">
+      {/* Lighting — always visible */}
+      <ToolPanelSection title={t('studio3d.lighting.title')}>
         <ToolPanelGrid cols={3}>
           {Object.keys(LIGHTING_PRESETS).map((name) => (
             <ToolPanelChip key={name} onClick={() => store.applyLightingPreset(name)}>
@@ -85,19 +100,25 @@ export const LookTab: React.FC = React.memo(() => {
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
-        <NodeSlider label={t('studio3d.lighting.keyLight')} value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
+        <div className="grid grid-cols-2 gap-1.5">
+          <ScrubInput label="Key" value={lightIntensity} min={0} max={3} step={0.05} onChange={setLightIntensity} />
+          <ScrubInput label="Ambient" value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
+          <ScrubInput label="Fill" value={fillLightIntensity} min={0} max={2} step={0.05} onChange={setFillLightIntensity} />
+          <ScrubInput label="Bounce" value={bounceLightIntensity} min={0} max={2} step={0.05} onChange={setBounceLightIntensity} />
+        </div>
+        <ScrubInput label="Top Light" value={pointLightIntensity} min={0} max={2} step={0.05} onChange={setPointLightIntensity} />
+      </ToolPanelSection>
+
+      {/* Light Positions — collapsible */}
+      <ToolPanelDisclosure label="Light Positions">
         <LightPositionSliders label="Key Position" position={store.lightPosition} onChange={store.setLightPosition} />
-        <NodeSlider label={t('studio3d.lighting.ambient')} value={ambientIntensity} min={0} max={2} step={0.05} onChange={setAmbientIntensity} />
-        <NodeSlider label="Fill Light" value={fillLightIntensity} min={0} max={2} step={0.05} onChange={setFillLightIntensity} />
         <LightPositionSliders label="Fill Position" position={store.fillLightPosition} onChange={store.setFillLightPosition} />
-        <NodeSlider label="Bounce Light" value={bounceLightIntensity} min={0} max={2} step={0.05} onChange={setBounceLightIntensity} />
         <LightPositionSliders label="Bounce Position" position={store.bounceLightPosition} onChange={store.setBounceLightPosition} />
-        <NodeSlider label="Top Light" value={pointLightIntensity} min={0} max={2} step={0.05} onChange={setPointLightIntensity} />
         <LightPositionSliders label="Top Position" position={store.pointLightPosition} onChange={store.setPointLightPosition} />
       </ToolPanelDisclosure>
 
-      {/* Environment */}
-      <ToolPanelDisclosure label="Environment" icon={<Globe size={13} />} id="sec-environment">
+      {/* Environment — collapsible */}
+      <ToolPanelDisclosure label="Environment">
         <ToolPanelSection title="HDRI">
           <ToolPanelGrid cols={3}>
             {ENVIRONMENT_PRESETS.map((env) => (
@@ -149,7 +170,13 @@ export const LookTab: React.FC = React.memo(() => {
           {store.bgType === 'solid' ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded border border-white/10 shrink-0" style={{ backgroundColor: store.background }} />
+                <button
+                  type="button"
+                  onClick={() => setBgColorPickerOpen(!bgColorPickerOpen)}
+                  className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+                  style={{ backgroundColor: store.background }}
+                  aria-label="Toggle background color picker"
+                />
                 <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1">
                   <span className="text-[10px] text-neutral-500 mr-1">#</span>
                   <input
@@ -164,7 +191,11 @@ export const LookTab: React.FC = React.memo(() => {
                   />
                 </div>
               </div>
-              <div className="custom-color-picker"><HexColorPicker color={store.background} onChange={store.setBackground} /></div>
+              {bgColorPickerOpen && (
+                <div className="animate-fade-in">
+                  <div className="custom-color-picker"><HexColorPicker color={store.background} onChange={store.setBackground} /></div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -185,7 +216,7 @@ export const LookTab: React.FC = React.memo(() => {
                 </div>
               </div>
               {store.bgType === 'linear' && (
-                <NodeSlider label={t('studio3d.background.angle')} value={bgAngle} min={0} max={360} step={1} onChange={setBgAngle} />
+                <ScrubInput label={t('studio3d.background.angle')} value={bgAngle} min={0} max={360} step={1} suffix="°" onChange={setBgAngle} />
               )}
             </div>
           )}

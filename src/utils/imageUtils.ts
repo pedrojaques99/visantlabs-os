@@ -206,7 +206,7 @@ export function loadImage(src: string, crossOrigin: string | null = 'anonymous')
     const img = new Image();
     if (crossOrigin) img.crossOrigin = crossOrigin;
     img.onload = () => resolve(img);
-    img.onerror = (_e, _s, _l, _c, err) => reject(err ?? new Error(`Failed to load image: ${src}`));
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
     img.src = src;
   });
 }

@@ -1,11 +1,12 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Upload, Download, ArrowLeftRight, RotateCcw, X, ArrowRight } from 'lucide-react';
+import { Upload, Download, ArrowLeftRight, X, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useConverterStore, type ConvertItem, type OutputFormat } from '@/stores/converterStore';
 import { loadImage } from '@/utils/imageUtils';
 import { downloadBlob } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Button } from '@/components/ui/button';
@@ -202,29 +203,14 @@ export const ConverterPage: React.FC = () => {
   }, [items, outputFormat]);
 
   return (
-    <div
-      className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-8"
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+    <MiniToolShell
+      icon={ArrowLeftRight}
+      title="File Converter"
+      countLabel={items.length > 0 ? `${doneCount}/${items.length}` : undefined}
+      onReset={reset}
+      showReset={items.length > 0}
+      dragDrop={{ onDrop: handleDrop, onDragOver: handleDragOver, onDragLeave: handleDragLeave, isDragOver }}
     >
-      <div className="w-full max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <ArrowLeftRight size={16} className="text-brand-cyan" />
-          <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">File Converter</h1>
-          {items.length > 0 && (
-            <span className="text-[10px] font-mono text-neutral-500 ml-2">
-              {doneCount}/{items.length}
-            </span>
-          )}
-          {items.length > 0 && (
-            <button onClick={reset} className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors" title="Clear all">
-              <RotateCcw size={14} />
-            </button>
-          )}
-        </div>
-
         {/* Upload zone */}
         {items.length === 0 ? (
           <label
@@ -415,8 +401,7 @@ export const ConverterPage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </MiniToolShell>
   );
 };
 

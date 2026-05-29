@@ -1,8 +1,9 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Upload, Download, Copy, Maximize2, Diamond, RotateCcw, X } from 'lucide-react';
+import { Upload, Download, Copy, Maximize2, Diamond, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useUpscaleStore, type UpscaleItem } from '@/stores/upscaleStore';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { applyShaderEffect } from '@/utils/shaders/shaderRenderer';
 import { downloadImage } from '@/utils/imageUtils';
 import { copyImageAsPng, downloadBlob } from '@/utils/clipboard';
@@ -126,31 +127,14 @@ export const UpscalePage: React.FC = () => {
   }, [previewItem]);
 
   return (
-    <div
-      className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-8"
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+    <MiniToolShell
+      icon={Maximize2}
+      title="Bicubic Upscale"
+      countLabel={items.length > 0 ? `${doneCount}/${items.length}` : undefined}
+      onReset={reset}
+      showReset={items.length > 0}
+      dragDrop={{ onDrop: handleDrop, onDragOver: handleDragOver, onDragLeave: handleDragLeave, isDragOver }}
     >
-      <div className="w-full max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <Maximize2 size={16} className="text-brand-cyan" />
-          <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">
-            Bicubic Upscale
-          </h1>
-          {items.length > 0 && (
-            <span className="text-[10px] font-mono text-neutral-500 ml-2">
-              {doneCount}/{items.length}
-            </span>
-          )}
-          {items.length > 0 && (
-            <button onClick={reset} className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors" title="Clear all">
-              <RotateCcw size={14} />
-            </button>
-          )}
-        </div>
-
         {/* Upload zone */}
         {items.length === 0 ? (
           <label
@@ -319,7 +303,6 @@ export const UpscalePage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </MiniToolShell>
   );
 };

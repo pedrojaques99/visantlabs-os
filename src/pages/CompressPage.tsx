@@ -1,8 +1,9 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Upload, Download, Copy, Minimize2, RotateCcw, X } from 'lucide-react';
+import { Upload, Download, Copy, Minimize2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useCompressStore, type CompressItem } from '@/stores/compressStore';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { loadImage, downloadImage } from '@/utils/imageUtils';
 import { copyImageAsPng, downloadBlob } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
@@ -160,31 +161,14 @@ export const CompressPage: React.FC = () => {
   }, [previewItem]);
 
   return (
-    <div
-      className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-8"
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+    <MiniToolShell
+      icon={Minimize2}
+      title="Image Compressor"
+      countLabel={items.length > 0 ? `${doneCount}/${items.length}` : undefined}
+      onReset={reset}
+      showReset={items.length > 0}
+      dragDrop={{ onDrop: handleDrop, onDragOver: handleDragOver, onDragLeave: handleDragLeave, isDragOver }}
     >
-      <div className="w-full max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <Minimize2 size={16} className="text-brand-cyan" />
-          <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">
-            Image Compressor
-          </h1>
-          {items.length > 0 && (
-            <span className="text-[10px] font-mono text-neutral-500 ml-2">
-              {doneCount}/{items.length}
-            </span>
-          )}
-          {items.length > 0 && (
-            <button onClick={reset} className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors" title="Clear all">
-              <RotateCcw size={14} />
-            </button>
-          )}
-        </div>
-
         {/* Upload zone */}
         {items.length === 0 ? (
           <label
@@ -408,7 +392,6 @@ export const CompressPage: React.FC = () => {
             )}
           </div>
         )}
-      </div>
-    </div>
+    </MiniToolShell>
   );
 };

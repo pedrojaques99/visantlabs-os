@@ -14,7 +14,7 @@ import {
   ChannelRow, InlineColorPicker,
 } from '@/components/shared/ToolPanel';
 import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
-import { Zap, Loader2, Focus, Download, ChevronDown, Palette, Search, FileImage, FileType, Layers } from 'lucide-react';
+import { Zap, Loader2, Focus, Download, ChevronDown, Palette, Search, FileImage, FileType, Layers, Copy } from 'lucide-react';
 
 const RISO_PRESET_ITEMS = Object.entries(RISO_FULL_PRESETS).map(([name, p]) => ({ name, colors: p.colors }));
 
@@ -58,11 +58,12 @@ interface RisoControlsProps {
   onExportLayer?: (index: number) => void;
   onAiEnhance?: () => void;
   isAiProcessing?: boolean;
+  onCopyAsPng?: () => void;
 }
 
 export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
   onExport, onExportSvg, onExportHiRes, onExportLayer,
-  onAiEnhance, isAiProcessing,
+  onAiEnhance, isAiProcessing, onCopyAsPng,
 }) => {
   const store = useRisoStore();
   const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
@@ -338,7 +339,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
               {store.isExporting ? 'Exporting...' : 'Export'}
             </Button>
             <Button
-              aria-label="Export options"
+              aria-label="More options"
               onClick={() => setExportOpen(!exportOpen)}
               disabled={!store.imageUrl}
               variant="outline"
@@ -346,7 +347,18 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
             >
               <ChevronDown size={14} className={cn('transition-transform', exportOpen && 'rotate-180')} />
             </Button>
-            {store.imageUrl && <SendToButton source="riso" imageUrl={store.imageUrl} />}
+            {onCopyAsPng && (
+              <Button
+                onClick={onCopyAsPng}
+                disabled={!store.imageUrl}
+                variant="outline"
+                aria-label="Copy as PNG"
+                title="Copy as PNG"
+                className="h-9 w-9 p-0 border-neutral-700 text-neutral-400 hover:text-white"
+              >
+                <Copy size={14} />
+              </Button>
+            )}
           </div>
 
           {exportOpen && (
@@ -362,6 +374,11 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(({
                   <FileImage size={14} className="text-neutral-500" />
                   Export Hi-Res PNG (2x)
                 </button>
+              )}
+              {store.imageUrl && (
+                <div className="px-1 py-0.5">
+                  <SendToButton source="riso" imageUrl={store.imageUrl} />
+                </div>
               )}
             </div>
           )}

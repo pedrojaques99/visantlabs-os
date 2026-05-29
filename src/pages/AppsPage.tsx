@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Search,
   X,
+  Wrench,
 } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
@@ -41,9 +42,14 @@ type CategoryDef = {
 const CATEGORY_CONFIG: CategoryDef[] = [
   { key: 'pro', label: 'Pro Tools', description: 'Professional design & branding suite', icon: Crown },
   { key: 'creative', label: 'Creative Lab', description: 'Free creative tools to experiment with', icon: Palette },
+  { key: 'image', label: 'Image Tools', description: 'Process, enhance & transform images', icon: ImageIcon },
+  { key: 'converters', label: 'Converters', description: 'Convert formats, colors & optimize files', icon: ArrowUpDown },
+  { key: 'generators', label: 'Generators', description: 'Create QR codes, favicons & OG images', icon: PackageOpen },
   { key: 'audio', label: 'Audio', description: 'Sound & music tools', icon: Music },
   { key: 'community', label: 'Community', description: 'Open-source experiments & external tools', icon: Globe },
 ];
+
+const COMPACT_CATEGORIES = new Set(['image', 'converters', 'generators', 'audio', 'community']);
 
 const ADMIN_CATEGORY: CategoryDef = { key: 'admin', label: 'Admin', description: 'Internal tools', icon: ShieldCheck };
 
@@ -283,6 +289,77 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
   );
 }
 
+// ─── Compact Row (no thumbnail) ────────────────────────────────────────────
+
+interface AppRowProps {
+  app: any;
+  isAdmin: boolean;
+  hasAccess: boolean;
+  onOpen: (app: any) => void;
+  onEdit: (app: any) => void;
+}
+
+function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
+  const isComingSoon = app.badgeVariant === 'comingSoon';
+  const isPremium = app.badgeVariant === 'premium';
+  const isExternal = app.isExternal;
+  const description = app.description || app.desc;
+
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 6 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
+      }}
+      role="button"
+      tabIndex={isComingSoon ? -1 : 0}
+      aria-label={app.name}
+      onClick={() => onOpen(app)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(app); } }}
+      className={cn(
+        'group flex items-center gap-3 px-4 py-3 rounded-xl',
+        'bg-white/[0.02] border border-neutral-800/60',
+        'transition-all duration-200 outline-none cursor-pointer',
+        'hover:border-white/10 hover:bg-white/[0.04]',
+        'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
+        isComingSoon && 'opacity-30 grayscale pointer-events-none',
+        app.isHidden && 'border-amber-500/20 opacity-60',
+      )}
+    >
+      <div className="flex-1 min-w-0 flex items-center gap-3">
+        <h4 className="text-[13px] font-medium text-neutral-300 group-hover:text-white transition-colors truncate shrink-0">
+          {app.name}
+        </h4>
+        {isComingSoon ? (
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-neutral-600 shrink-0">Soon</span>
+        ) : app.badgeVariant === 'free' || (app as any).free ? (
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400/80 shrink-0">Free</span>
+        ) : isPremium ? (
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan/80 shrink-0">Pro</span>
+        ) : null}
+        <p className="text-[12px] text-neutral-600 truncate hidden sm:block">{description}</p>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        {isAdmin && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(app); }}
+            className="p-1.5 rounded-lg text-neutral-600 hover:text-brand-cyan hover:bg-white/5 transition-all"
+          >
+            <Edit3 size={12} />
+          </button>
+        )}
+        {isPremium && !hasAccess && <Lock size={12} className="text-neutral-600" />}
+        {isExternal ? (
+          <ExternalLink size={12} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+        ) : (
+          <ChevronRight size={12} className="text-neutral-600 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all" />
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── Category Section Header ────────────────────────────────────────────────
 
 function CategoryHeader({ category, count }: { category: CategoryDef; count: number }) {
@@ -340,12 +417,27 @@ export const AppsPage: React.FC = () => {
     { id: 'grid-machine', name: t('apps.gridMachine.name'), desc: t('apps.gridMachine.description'), link: '/grid-machine', thumbnail: '/tools/grid-machine.svg', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
     { id: '3d-studio', name: t('apps.studio3d.name'), desc: t('apps.studio3d.description'), link: '/3d-studio', thumbnail: '/tools/3d-studio.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
     { id: 'image-lab', name: 'Image Lab', desc: 'Halftone, texture overlay, and risograph effects in one unified editor. Switch modes instantly without reloading.', link: '/image-lab', thumbnail: '/tools/cmyk-halftone.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
-    { id: 'ascii-vortex', name: t('apps.asciiVortex.name'), desc: t('apps.asciiVortex.description'), link: '/ascii-vortex', thumbnail: '/tools/ascii-vortex.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', free: true },
+    { id: 'ascii-vortex', name: t('apps.asciiVortex.name'), desc: t('apps.asciiVortex.description'), link: 'https://vsn-labs.vercel.app/ascii-vortex', thumbnail: '/tools/ascii-vortex.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', isExternal: true, free: true },
     { id: 'grid-paint', name: t('apps.gridPaint.name'), desc: t('apps.gridPaint.description'), link: '/grid-paint', thumbnail: '/tools/gridpaint.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', free: true },
 
+    // Image Tools
+    { id: 'compress', name: 'Image Compressor', desc: 'Compress images with quality and format control. Batch supported.', link: '/compress', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
+    { id: 'upscale', name: 'Bicubic Upscale', desc: 'Upscale images 2x–4x with sharpening control.', link: '/upscale', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
+    { id: 'remove-bg', name: 'Background Remover', desc: 'Remove backgrounds with AI or simple mode. Batch supported.', link: '/remove-bg', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
+    { id: 'watermark', name: 'Watermark', desc: 'Add text or logo watermarks with position, opacity and tile mode.', link: '/watermark', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
+    { id: 'visual-search', name: 'Visual Search', desc: 'Reverse image search across multiple sources.', link: '/visual-search', badge: 'Free', badgeVariant: 'free', category: 'image', free: true },
+    // Converters
+    { id: 'converter', name: 'File Converter', desc: 'Convert images between PNG, JPG, WebP, PDF and ICO.', link: '/converter', badge: 'Free', badgeVariant: 'free', category: 'converters', free: true },
+    { id: 'svg-optimizer', name: 'SVG Optimizer', desc: 'Optimize and minify SVG files. Remove metadata, comments and empty groups.', link: '/svg-optimizer', badge: 'Free', badgeVariant: 'free', category: 'converters', free: true },
+    { id: 'color-converter', name: 'Color Converter', desc: 'Convert colors between HEX, RGB, CMYK, HSL with WCAG contrast check.', link: '/color-converter', badge: 'Free', badgeVariant: 'free', category: 'converters', free: true },
+    // Generators
+    { id: 'qrcode', name: 'QR Code Generator', desc: 'Generate QR codes with custom size, colors and error correction.', link: '/qrcode', badge: 'Free', badgeVariant: 'free', category: 'generators', free: true },
+    { id: 'favicon', name: 'Favicon Generator', desc: 'Generate all favicon sizes, apple-touch-icon and web manifest from one image.', link: '/favicon', badge: 'Free', badgeVariant: 'free', category: 'generators', free: true },
+    { id: 'og-image', name: 'OG Image Generator', desc: 'Create Open Graph images with templates, custom text and colors.', link: '/og-image', badge: 'Free', badgeVariant: 'free', category: 'generators', free: true },
+
     // Audio
-    { id: 'youtube-mixer', name: t('apps.youtubeMixer.name'), desc: t('apps.youtubeMixer.description'), link: '/youtube-mixer', thumbnail: '/tools/youtube-mixer.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'audio', free: true },
-    { id: 'ellipse-audio', name: t('apps.ellipseAudio.name'), desc: t('apps.ellipseAudio.description'), link: '/elipse-audio-freq', thumbnail: '/tools/elipse-audio.webp', badge: t('apps.badge.free'), badgeVariant: 'free', free: true, category: 'audio' },
+    { id: 'youtube-mixer', name: t('apps.youtubeMixer.name'), desc: t('apps.youtubeMixer.description'), link: 'https://vsn-labs.vercel.app/youtube-mixer', thumbnail: '/tools/youtube-mixer.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'audio', isExternal: true, free: true },
+    { id: 'ellipse-audio', name: t('apps.ellipseAudio.name'), desc: t('apps.ellipseAudio.description'), link: 'https://vsn-labs.vercel.app/elipse-audio-freq', thumbnail: '/tools/elipse-audio.webp', badge: t('apps.badge.free'), badgeVariant: 'free', isExternal: true, free: true, category: 'audio' },
 
     // Community
     { id: 'colorfy', name: t('apps.colorfy.name'), desc: t('apps.colorfy.description'), link: 'https://gradient-machine.vercel.app/', badge: t('apps.badge.free'), badgeVariant: 'free', thumbnail: '/tools/color-extractor.webp', category: 'community', isExternal: true, free: true },
@@ -686,24 +778,79 @@ export const AppsPage: React.FC = () => {
             exit={{ opacity: 0, transition: { duration: 0.15 } }}
             className="space-y-14"
           >
-            {appsByCategory.map((category) => (
-              <section key={category.key}>
-                <CategoryHeader category={category} count={category.apps.length} />
+            {(() => {
+              const cardCategories = appsByCategory.filter(c => !COMPACT_CATEGORIES.has(c.key));
+              const compactCategories = appsByCategory.filter(c => COMPACT_CATEGORIES.has(c.key));
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-5">
-                  {category.apps.map((app) => (
-                    <AppCard
-                      key={app.id || app.appId}
-                      app={app}
-                      isAdmin={isAdmin}
-                      hasAccess={hasAccess}
-                      onOpen={openApp}
-                      onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))}
+              return (
+                <>
+                  {/* Card categories (Pro, Creative) — full-width with thumbnails */}
+                  {cardCategories.map((category) => {
+                    const withThumb = category.apps.filter(a => a.thumbnail);
+                    const withoutThumb = category.apps.filter(a => !a.thumbnail);
+
+                    return (
+                      <section key={category.key}>
+                        <CategoryHeader category={category} count={category.apps.length} />
+
+                        {withThumb.length > 0 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-5">
+                            {withThumb.map((app) => (
+                              <AppCard
+                                key={app.id || app.appId}
+                                app={app}
+                                isAdmin={isAdmin}
+                                hasAccess={hasAccess}
+                                onOpen={openApp}
+                                onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {withoutThumb.length > 0 && (
+                          <div className={cn('space-y-1.5', withThumb.length > 0 && 'mt-5')}>
+                            {withoutThumb.map((app) => (
+                              <AppRow
+                                key={app.id || app.appId}
+                                app={app}
+                                isAdmin={isAdmin}
+                                hasAccess={hasAccess}
+                                onOpen={openApp}
+                                onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </section>
+                    );
+                  })}
+
+                  {/* Compact categories (Utilities, Audio, Community) — 2-column grid */}
+                  {compactCategories.length > 0 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-10">
+                      {compactCategories.map((category) => (
+                        <section key={category.key}>
+                          <CategoryHeader category={category} count={category.apps.length} />
+                          <div className="space-y-1.5 mt-5">
+                            {category.apps.map((app) => (
+                              <AppRow
+                                key={app.id || app.appId}
+                                app={app}
+                                isAdmin={isAdmin}
+                                hasAccess={hasAccess}
+                                onOpen={openApp}
+                                onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
+                              />
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </motion.div>
         </AnimatePresence>
       )}

@@ -164,3 +164,6 @@ scripts/test-pdf-result*.json
 scripts/test-page-*.png
 package-lock.json
 app-thumbnail-report.txt
+server/scripts/cleanupApps.ts
+server/scripts/seedMissingApps.ts
+server/scripts/seedUpscaleApp.ts

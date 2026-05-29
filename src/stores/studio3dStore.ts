@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { temporal } from 'zundo';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
+import { materialPresets } from '@/components/3d-studio/engine/materials';
 
 type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'chrome' | 'gold' | 'clay' | 'emissive' | 'holographic' | 'brushedSteel' | 'aluminum' | 'copper' | 'roseGold' | 'platinum' | 'ceramic' | 'marble' | 'concrete' | 'wood' | 'velvet' | 'leather' | 'frostedGlass' | 'diamond' | 'pearl' | 'carbonFiber' | 'carPaint' | 'ice' | 'obsidian' | 'wax' | 'mattePaint';
 
@@ -613,7 +614,18 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
   setBevelThickness: (bevelThickness) => set({ bevelThickness }),
   setBevelSize: (bevelSize) => set({ bevelSize }),
-  setMaterial: (material) => set({ material }),
+  setMaterial: (material) => {
+    const preset = materialPresets[material];
+    const presetDef = MATERIAL_PRESETS.find((m) => m.id === material);
+    const updates: Partial<Studio3DState> = { material };
+    if (presetDef?.color) updates.color = presetDef.color;
+    if (preset) {
+      updates.metalness = preset.metalness;
+      updates.roughness = preset.roughness;
+      updates.opacity = preset.opacity;
+    }
+    set(updates);
+  },
   setColor: (color) => set({ color }),
   setMetalness: (metalness) => set({ metalness }),
   setRoughness: (roughness) => set({ roughness }),

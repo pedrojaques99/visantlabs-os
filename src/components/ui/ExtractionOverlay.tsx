@@ -39,7 +39,7 @@ export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              className="bg-neutral-900/50 border border-white/10 rounded-3xl p-8 shadow-2xl shadow-brand-cyan/5"
+              className="bg-neutral-900/50 border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/20"
             >
               <div className="space-y-8">
                 <div className="text-center space-y-2">
@@ -69,7 +69,7 @@ export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
                           repeat: Infinity,
                           delay: i * 0.2
                         }}
-                        className="w-1.5 h-1.5 rounded-full bg-brand-cyan"
+                        className="w-1.5 h-1.5 rounded-full bg-neutral-400"
                       />
                     ))}
                   </div>

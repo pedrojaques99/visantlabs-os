@@ -338,9 +338,31 @@ async function searchSvgl(query: string): Promise<SourceResult> {
 
 // ── Source: Clearbit (company logos) ───────────────────────────────────────
 
-function searchClearbit(query: string): SourceResult {
+const clearbitCache = new LRUCache<string, boolean>({ max: 500, ttl: 1000 * 60 * 60 });
+
+async function checkClearbitDomain(domain: string): Promise<boolean> {
+  if (!/^[a-z0-9]+\.(com|io|co)$/.test(domain)) return false;
+  const cached = clearbitCache.get(domain);
+  if (cached !== undefined) return cached;
+  try {
+    const res = await fetch(`https://logo.clearbit.com/${domain}?size=128`, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
+    const ok = res.ok;
+    clearbitCache.set(domain, ok);
+    return ok;
+  } catch {
+    clearbitCache.set(domain, false);
+    return false;
+  }
+}
+
+async function searchClearbit(query: string): Promise<SourceResult> {
   const domains = guessDomains(query);
-  const results: VisualSearchResult[] = domains.map((domain, i) => ({
+  if (!domains.length) return { source: 'clearbit', results: [] };
+
+  const checks = await Promise.all(domains.map(async (d) => ({ domain: d, ok: await checkClearbitDomain(d) })));
+  const valid = checks.filter(c => c.ok);
+
+  const results: VisualSearchResult[] = valid.map(({ domain }, i) => ({
     id: `clearbit-${domain}`,
     type: 'logo' as const,
     source: 'clearbit' as const,
@@ -482,7 +504,7 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
       case 'pixabay':  return searchPixabay(enhanceQuery(query, intent, 'pixabay'), perSource, intent === 'logo' ? 'vector' : 'all', page);
       case 'wikimedia': return searchWikimedia(enhanceQuery(query, intent, 'wikimedia'), Math.min(perSource, 20));
       case 'svgl':     return searchSvgl(query);
-      case 'clearbit': return Promise.resolve(searchClearbit(query));
+      case 'clearbit': return searchClearbit(query);
       case 'google':   return searchGoogle(enhanceQuery(query, intent, 'google'), intent, perSource);
       default:         return Promise.resolve({ source, results: [] } as SourceResult);
     }

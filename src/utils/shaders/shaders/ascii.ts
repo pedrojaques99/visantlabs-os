@@ -193,7 +193,7 @@ void main() {
   vec2 fragCoord = v_texCoord * iResolution;
   vec2 uv = fragCoord / iResolution;
   uv.y = 1.0 - uv.y;
-  
+
   // Character cell size
   float charSize = max(2.0, u_char_size);
   

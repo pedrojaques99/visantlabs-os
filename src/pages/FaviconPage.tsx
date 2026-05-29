@@ -1,8 +1,9 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Upload, Download, Copy, Image as ImageIcon, RotateCcw, Check } from 'lucide-react';
+import { Upload, Download, Copy, Image as ImageIcon, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useFaviconStore, FAVICON_SIZES, type GeneratedIcon } from '@/stores/faviconStore';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { loadImage } from '@/utils/imageUtils';
 import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
@@ -238,30 +239,13 @@ export const FaviconPage: React.FC = () => {
   const isTransparentBg = backgroundColor === 'transparent';
 
   return (
-    <div
-      className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-8"
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+    <MiniToolShell
+      icon={ImageIcon}
+      title="Favicon Generator"
+      onReset={handleReset}
+      showReset={!!sourceUrl}
+      dragDrop={{ onDrop: handleDrop, onDragOver: handleDragOver, onDragLeave: handleDragLeave, isDragOver }}
     >
-      <div className="w-full max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <ImageIcon size={16} className="text-brand-cyan" />
-          <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">
-            Favicon Generator
-          </h1>
-          {sourceUrl && (
-            <button
-              onClick={handleReset}
-              className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors"
-              title="Reset"
-            >
-              <RotateCcw size={14} />
-            </button>
-          )}
-        </div>
-
         {/* Upload zone */}
         {!sourceUrl ? (
           <label
@@ -478,7 +462,6 @@ export const FaviconPage: React.FC = () => {
             )}
           </div>
         )}
-      </div>
-    </div>
+    </MiniToolShell>
   );
 };

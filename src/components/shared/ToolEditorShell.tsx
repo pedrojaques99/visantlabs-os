@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { AppShell, AppShellPanel } from '@/components/ui/AppShell';
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
@@ -87,6 +87,15 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
     toast.success('Settings reset');
   }, [onReset]);
 
+  const canvasPadding = useMemo(() => ({
+    paddingRight: !isMobile && panelVisible ? controlsPanelWidth + 16 : 0,
+    paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
+  }), [isMobile, panelVisible, controlsPanelWidth, mobileSheetOpen]);
+
+  const defaultCanvasClassName = hideTopBar
+    ? 'absolute inset-0 transition-all duration-300'
+    : 'absolute inset-0 pt-10 transition-all duration-300';
+
   return (
     <AppShell>
       {!hideTopBar && (
@@ -106,11 +115,8 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
       )}
 
       <div
-        className={canvasClassName || 'absolute inset-0 pt-10 transition-all duration-300'}
-        style={{
-          paddingRight: !isMobile && panelVisible ? controlsPanelWidth + 16 : 0,
-          paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
-        }}
+        className={canvasClassName || defaultCanvasClassName}
+        style={canvasPadding}
         {...dragProps}
       >
         <CanvasErrorBoundary>
@@ -126,7 +132,7 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
       )}
 
       {isMobile && (
-        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)} label={mobileSheetLabel}>
+        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)} label={mobileSheetLabel || title}>
           {controlsPanel}
         </AppShellMobileSheet>
       )}

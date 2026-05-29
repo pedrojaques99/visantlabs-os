@@ -10,6 +10,7 @@ varying vec2 v_texCoord;
 
 void main() {
   vec2 uv = v_texCoord;
+  uv.y = 1.0 - uv.y;
   float a = u_angle * 3.14159265 / 180.0;
   vec2 dir = vec2(cos(a), sin(a)) * u_offset;
   float r = texture2D(iChannel0, uv + dir).r;

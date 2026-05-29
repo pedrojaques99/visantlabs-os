@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Upload, Library, Download, CircleDot, Paintbrush, Undo2, Redo2, RotateCcw, PanelRightOpen, Hand, Printer, Play, Pause } from 'lucide-react';
+import { Upload, Library, Download, CircleDot, Paintbrush, Undo2, Redo2, RotateCcw, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
@@ -12,12 +12,15 @@ import { TextureFilterCanvas, type TextureFilterCanvasHandle } from '@/component
 import { TextureFilterControls } from '@/components/texture-filter/TextureFilterControls';
 import { RisoCanvas, type RisoCanvasHandle } from '@/components/riso/RisoCanvas';
 import { RisoControls } from '@/components/riso/RisoControls';
+import { ShaderLabCanvas, type ShaderLabCanvasHandle } from '@/components/shader-lab/ShaderLabCanvas';
+import { ShaderLabControls } from '@/components/shader-lab/ShaderLabControls';
 import { BeforeAfterOverlay } from '@/components/shared/BeforeAfterOverlay';
 import { ExportModal } from '@/components/shared/ExportModal';
 import { ImageLabPresetLibrary } from '@/components/shared/ImageLabPresetLibrary';
 import { useHalftoneStore, HALFTONE_PRESETS } from '@/stores/halftoneStore';
 import { useTextureFilterStore, FILTER_PRESETS } from '@/stores/textureFilterStore';
 import { useRisoStore } from '@/stores/risoStore';
+import { useShaderLabStore } from '@/stores/shaderLabStore';
 import { RISO_FULL_PRESETS } from '@/components/riso/RisoRenderer';
 import { hexToRgb } from '@/utils/colorUtils';
 import { useImageLabStore, type ImageLabMode } from '@/stores/imageLabStore';
@@ -29,12 +32,13 @@ import { useMagicHand } from '@/hooks/useMagicHand';
 import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
 import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
 
-const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso']);
+const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso', 'shaders']);
 
 const PRESET_KEYS: Record<ImageLabMode, string[]> = {
   halftone: Object.keys(HALFTONE_PRESETS),
   texture: Object.keys(FILTER_PRESETS),
   riso: Object.keys(RISO_FULL_PRESETS),
+  shaders: [],
 };
 
 const RISO_AI_PROMPT = `CORE DIRECTIVE: RISOGRAPH PRINT RECREATION
@@ -52,6 +56,7 @@ function usePerModeState(mode: ImageLabMode) {
   const h = useHalftoneStore;
   const t = useTextureFilterStore;
   const r = useRisoStore;
+  const s = useShaderLabStore;
 
   const hPanel = h((s) => s.panelVisible); const hSetPanel = h((s) => s.setPanelVisible);
   const hReset = h((s) => s.resetSettings); const hFile = h((s) => s.fileName);
@@ -71,13 +76,22 @@ function usePerModeState(mode: ImageLabMode) {
   const rHi = r((s) => s.historyIndex); const rHl = r((s) => s.settingsHistory.length);
   const rImg = r((s) => s.imageUrl);
 
+  const sZoom = s((st) => st.zoom); const sUndo = s((st) => st.undo); const sRedo = s((st) => st.redo);
+  const sHi = s((st) => st.historyIndex); const sHl = s((st) => st.historyLength);
+  const sImg = s((st) => st.imageUrl); const sFile = s((st) => st.fileName);
+  const sReset = s((st) => st.reset);
+
+  const [sPanelVisible, setSPanelVisible] = useState(true);
+
   return useMemo(() => {
     if (mode === 'halftone') return { panelVisible: hPanel, setPanelVisible: hSetPanel, resetSettings: hReset, fileName: hFile, zoom: hZoom, undo: hUndo, redo: hRedo, historyIndex: hHi, historyLength: hHl, hasImage: !!hImg, store: h };
     if (mode === 'texture') return { panelVisible: tPanel, setPanelVisible: tSetPanel, resetSettings: tReset, fileName: tFile, zoom: tZoom, undo: tUndo, redo: tRedo, historyIndex: tHi, historyLength: tHl, hasImage: !!tImg, store: t };
+    if (mode === 'shaders') return { panelVisible: sPanelVisible, setPanelVisible: setSPanelVisible, resetSettings: sReset, fileName: sFile, zoom: sZoom, undo: sUndo, redo: sRedo, historyIndex: sHi, historyLength: sHl, hasImage: !!sImg, store: s };
     return { panelVisible: rPanel, setPanelVisible: rSetPanel, resetSettings: rReset, fileName: rFile, zoom: rZoom, undo: rUndo, redo: rRedo, historyIndex: rHi, historyLength: rHl, hasImage: !!rImg, store: r };
   }, [mode, hPanel, hSetPanel, hReset, hFile, hZoom, hUndo, hRedo, hHi, hHl, hImg,
     tPanel, tSetPanel, tReset, tFile, tZoom, tUndo, tRedo, tHi, tHl, tImg,
-    rPanel, rSetPanel, rReset, rFile, rZoom, rUndo, rRedo, rHi, rHl, rImg]);
+    rPanel, rSetPanel, rReset, rFile, rZoom, rUndo, rRedo, rHi, rHl, rImg,
+    sPanelVisible, sReset, sFile, sZoom, sUndo, sRedo, sHi, sHl, sImg]);
 }
 
 /* ─── Canvas thumbnail hook ─── */
@@ -92,8 +106,11 @@ function useCanvasThumbnails(
   const rHi = useRisoStore((s) => s.historyIndex);
   const rImg = useRisoStore((s) => s.imageUrl);
 
+  const sHi = useShaderLabStore((s) => s.historyIndex);
+  const sImg = useShaderLabStore((s) => s.imageUrl);
+
   const [thumbs, setThumbs] = useState<Record<ImageLabMode, string | null>>({
-    halftone: null, texture: null, riso: null,
+    halftone: null, texture: null, riso: null, shaders: null,
   });
 
   const frameId = useRef<number>(0);
@@ -123,6 +140,7 @@ function useCanvasThumbnails(
   useEffect(() => { if (hImg) capture('halftone'); }, [hHi, hImg, capture]);
   useEffect(() => { if (tImg) capture('texture'); }, [tHi, tImg, capture]);
   useEffect(() => { if (rImg) capture('riso'); }, [rHi, rImg, capture]);
+  useEffect(() => { if (sImg) capture('shaders'); }, [sHi, sImg, capture]);
 
   return thumbs;
 }
@@ -220,19 +238,23 @@ export const ImageLabPage: React.FC = () => {
     setSearchParams({ mode: m }, { replace: true });
   }, [setMode, setSearchParams]);
 
+  const shaderLabStore = useShaderLabStore;
+
   const broadcastImage = useCallback((url: string, name: string, mediaType: 'image' | 'video' = 'image') => {
     labStore.getState().setSource(url, name, mediaType);
     halftoneStore.getState().setImageUrl(url, name, mediaType);
     risoStore.getState().setImageUrl(url, name, mediaType);
     textureStore.getState().setImageUrl(url, name, mediaType);
+    shaderLabStore.getState().setImageUrl(url, name, mediaType);
   }, []);
 
   const canvasRefsMap = useRef<Record<ImageLabMode, HTMLCanvasElement | null>>({
-    halftone: null, texture: null, riso: null,
+    halftone: null, texture: null, riso: null, shaders: null,
   });
   const halftoneRef = useRef<HalftoneCanvasHandle>(null);
   const risoRef = useRef<RisoCanvasHandle>(null);
   const textureRef = useRef<TextureFilterCanvasHandle>(null);
+  const shaderRef = useRef<ShaderLabCanvasHandle>(null);
   const magicHandAreaRef = useRef<HTMLDivElement>(null);
   const thumbs = useCanvasThumbnails(canvasRefsMap);
 
@@ -246,6 +268,9 @@ export const ImageLabPage: React.FC = () => {
   }, []);
   const onRisoCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRefsMap.current.riso = canvas;
+  }, []);
+  const onShaderCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
+    canvasRefsMap.current.shaders = canvas;
   }, []);
 
   const { canvasRef, onCanvasReady, exportPng } = useExportCanvas({
@@ -336,6 +361,7 @@ export const ImageLabPage: React.FC = () => {
       if (e.key === '1' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('halftone');
       if (e.key === '2' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('texture');
       if (e.key === '3' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('riso');
+      if (e.key === '4' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('shaders');
 
       if (e.altKey && e.key === 'z') {
         e.preventDefault();
@@ -419,6 +445,20 @@ export const ImageLabPage: React.FC = () => {
     }
   }, [canvasRef, broadcastImage]);
 
+  const handleCopyAsPng = useCallback(async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    try {
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Failed'))), 'image/png');
+      });
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      toast.success('Copied as PNG');
+    } catch {
+      toast.error('Failed to copy — try again');
+    }
+  }, [canvasRef]);
+
   const handleReset = useCallback(() => {
     resetSettings();
     if (mode === 'riso') {
@@ -430,16 +470,18 @@ export const ImageLabPage: React.FC = () => {
 
   const controlsPanel = useMemo(() => {
     switch (mode) {
-      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} />;
-      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} />;
-      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} />;
+      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
+      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
+      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} onCopyAsPng={handleCopyAsPng} />;
+      case 'shaders': return <ShaderLabControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
     }
-  }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen]);
+  }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, handleCopyAsPng]);
 
   const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(() => [
     { id: 'halftone', icon: <CircleDot size={16} />, label: 'Halftone' },
     { id: 'texture', icon: <Paintbrush size={16} />, label: 'Texture' },
     { id: 'riso', icon: <Printer size={16} />, label: 'Riso' },
+    { id: 'shaders', icon: <Zap size={16} />, label: 'Shaders' },
   ], []);
 
   return (
@@ -470,50 +512,9 @@ export const ImageLabPage: React.FC = () => {
             imageUrl={sourceUrl}
             onLoad={broadcastImage}
           />
-          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
-          {MODE_ITEMS.map((m) => {
-            const thumb = thumbs[m.id];
-            return (
-              <button
-                key={m.id}
-                onClick={() => handleModeChange(m.id)}
-                title={`${m.label} (${m.id === 'halftone' ? '1' : m.id === 'texture' ? '2' : '3'})`}
-                className={cn(
-                  'relative flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-150 overflow-hidden',
-                  mode === m.id
-                    ? 'ring-1 ring-white/30 shadow-sm'
-                    : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
-                  !thumb && mode === m.id && 'bg-white/10 text-white',
-                )}
-              >
-                {thumb ? (
-                  <>
-                    <img src={thumb} alt={m.label} className={cn(
-                      'absolute inset-0 w-full h-full object-cover transition-opacity',
-                      mode === m.id ? 'opacity-100' : 'opacity-50 hover:opacity-80'
-                    )} />
-                    <span className="relative z-10 text-[7px] font-mono uppercase tracking-wider text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                      {m.label.slice(0, 3)}
-                    </span>
-                  </>
-                ) : m.icon}
-              </button>
-            );
-          })}
-
-          {/* Effect Opacity */}
+          {/* Effect Opacity — collapsible */}
           {hasImage && (
-            <div className="flex flex-col items-center gap-0.5 py-1" title={`Effect ${Math.round(effectOpacity * 100)}%`}>
-              <input
-                type="range"
-                min={0} max={1} step={0.01}
-                value={effectOpacity}
-                onChange={(e) => setEffectOpacity(parseFloat(e.target.value))}
-                className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                style={{ writingMode: 'vertical-lr', direction: 'rtl', height: '48px', width: '9px' }}
-              />
-              <span className="text-[7px] font-mono text-neutral-600">{Math.round(effectOpacity * 100)}</span>
-            </div>
+            <OpacityToggle value={effectOpacity} onChange={setEffectOpacity} />
           )}
 
           {/* Video Playback Controls */}
@@ -586,6 +587,40 @@ export const ImageLabPage: React.FC = () => {
           <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
             <Download size={15} />
           </button>
+
+          {/* FX Modes */}
+          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+          <span className="text-[6px] font-mono uppercase tracking-widest text-neutral-600 text-center px-1 select-none">FX</span>
+          {MODE_ITEMS.map((m) => {
+            const thumb = thumbs[m.id];
+            return (
+              <button
+                key={m.id}
+                onClick={() => handleModeChange(m.id)}
+                title={`${m.label} (${m.id === 'halftone' ? '1' : m.id === 'texture' ? '2' : '3'})`}
+                className={cn(
+                  'group/fx relative flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-150 overflow-hidden',
+                  mode === m.id
+                    ? 'ring-1 ring-white/30 shadow-sm'
+                    : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
+                  !thumb && mode === m.id && 'bg-white/10 text-white',
+                )}
+              >
+                {thumb ? (
+                  <>
+                    <img src={thumb} alt={m.label} className={cn(
+                      'absolute inset-0 w-full h-full object-cover transition-opacity',
+                      mode === m.id ? 'opacity-100' : 'opacity-50 hover:opacity-80'
+                    )} />
+                    <span className="relative z-10 text-[7px] font-mono uppercase tracking-wider text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] opacity-0 group-hover/fx:opacity-100 transition-opacity">
+                      {m.label.slice(0, 3)}
+                    </span>
+                  </>
+                ) : m.icon}
+              </button>
+            );
+          })}
+
           {!panelVisible && (
             <button onClick={() => setPanelVisible(true)} title="Show panel (Tab)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
               <PanelRightOpen size={15} />
@@ -601,6 +636,9 @@ export const ImageLabPage: React.FC = () => {
         </div>
         <div className={mode !== 'riso' ? 'hidden' : 'contents'}>
           <RisoCanvas ref={risoRef} onCanvasReady={onRisoCanvasReady} />
+        </div>
+        <div className={mode !== 'shaders' ? 'hidden' : 'contents'}>
+          <ShaderLabCanvas ref={shaderRef} onCanvasReady={onShaderCanvasReady} />
         </div>
 
         <div
@@ -635,7 +673,7 @@ export const ImageLabPage: React.FC = () => {
               </p>
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[10px] tracking-wide opacity-60">
-                  Ctrl+V — paste · Tab — toggle panel · 1/2/3 — switch mode
+                  Ctrl+V — paste · Tab — toggle panel · 1/2/3/4 — switch mode
                 </p>
                 <p className="text-[10px] tracking-wide opacity-40">
                   Alt+Z — before/after · Alt+X — split · [ ] — cycle presets
@@ -715,6 +753,7 @@ function useStatusItems(mode: ImageLabMode) {
   const halftone = useHalftoneStore;
   const texture = useTextureFilterStore;
   const riso = useRisoStore;
+  const shader = useShaderLabStore;
 
   const hZoom = halftone((s) => s.zoom);
   const hFrequency = halftone((s) => s.frequency);
@@ -739,6 +778,10 @@ function useStatusItems(mode: ImageLabMode) {
   const rSoloLayer = riso((s) => s.soloLayer);
   const rShaderEnabled = riso((s) => s.shaderEnabled);
   const rShaderType = riso((s) => s.shaderType);
+
+  const sShaderType = shader((s) => s.shaderType);
+  const sShaderEnabled = shader((s) => s.shaderEnabled);
+  const sZoom = shader((s) => s.zoom);
 
   const compareMode = useImageLabStore((s) => s.compareMode);
   const sourceMediaType = useImageLabStore((s) => s.sourceMediaType);
@@ -779,8 +822,50 @@ function useStatusItems(mode: ImageLabMode) {
           ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-cyan-400' }] : []),
           ...extras,
         ];
+      case 'shaders':
+        return [
+          { label: `${Math.round(sZoom * 100)}%` },
+          ...(sShaderEnabled ? [{ label: sShaderType, color: 'text-cyan-400' }] : [{ label: 'off' }]),
+          ...extras,
+        ];
     }
   }, [mode, compareMode, sourceMediaType, hZoom, hFrequency, hDotSize, hBlendMode, hShaderEnabled, hShaderType,
     tZoom, tBlendMode, tOpacity, tTextureName, tMaskMode, tShaderEnabled, tShaderType,
-    rZoom, rFrequency, rDotSize, rMisregistration, rLayers, rSoloLayer, rShaderEnabled, rShaderType]);
+    rZoom, rFrequency, rDotSize, rMisregistration, rLayers, rSoloLayer, rShaderEnabled, rShaderType,
+    sShaderType, sShaderEnabled, sZoom]);
 }
+
+/* ─── Opacity Toggle (collapsible) ─── */
+
+const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex flex-col items-center">
+      <button
+        onClick={() => setOpen(!open)}
+        title={`Effect Opacity ${Math.round(value * 100)}%`}
+        className={cn(
+          'flex items-center justify-center w-9 h-9 rounded-lg transition-all',
+          open
+            ? 'bg-white/10 text-white ring-1 ring-white/30'
+            : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
+        )}
+      >
+        <Blend size={15} />
+      </button>
+      {open && (
+        <div className="flex flex-col items-center gap-0.5 py-1 animate-fade-in">
+          <input
+            type="range"
+            min={0} max={1} step={0.01}
+            value={value}
+            onChange={(e) => onChange(parseFloat(e.target.value))}
+            className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+            style={{ writingMode: 'vertical-lr' as any, direction: 'rtl', height: '48px', width: '9px' }}
+          />
+          <span className="text-[7px] font-mono text-neutral-600">{Math.round(value * 100)}</span>
+        </div>
+      )}
+    </div>
+  );
+};

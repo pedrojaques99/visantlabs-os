@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Image, Download, Copy, Code, RotateCcw, Upload, X } from 'lucide-react';
+import { Image, Download, Copy, Code, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useOgImageStore, type OgTemplate } from '@/stores/ogImageStore';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { loadImage } from '@/utils/imageUtils';
 import { copyImageAsPng, downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
@@ -262,23 +263,12 @@ export const OgImagePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-8">
-      <div className="w-full max-w-5xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <Image size={16} className="text-brand-cyan" />
-          <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">
-            OG Image Generator
-          </h1>
-          <button
-            onClick={reset}
-            className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors"
-            title="Reset"
-          >
-            <RotateCcw size={14} />
-          </button>
-        </div>
-
+    <MiniToolShell
+      icon={Image}
+      title="OG Image Generator"
+      maxWidth="5xl"
+      onReset={reset}
+    >
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           {/* Preview */}
@@ -448,8 +438,7 @@ export const OgImagePage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </MiniToolShell>
   );
 };
 

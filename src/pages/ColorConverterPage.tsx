@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pipette, Copy, Trash2, RotateCcw, Check, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { Pipette, Copy, Trash2, Check, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useColorConverterStore, type ConvertedColor } from '@/stores/colorConverterStore';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { hexToRgb, getContrastRatioPublic, checkWCAGCompliance } from '@/utils/colorUtils';
 import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
@@ -213,26 +214,13 @@ export const ColorConverterPage: React.FC = () => {
   }, [inputColor]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-4 sm:p-8">
-      <div className="w-full max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <Pipette size={16} className="text-brand-cyan" />
-          <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">
-            Color Converter
-          </h1>
-          {colors.length > 0 && (
-            <span className="text-[10px] font-mono text-neutral-500 ml-2">
-              {colors.length} color{colors.length > 1 ? 's' : ''}
-            </span>
-          )}
-          {colors.length > 0 && (
-            <button onClick={reset} className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors" title="Clear all">
-              <RotateCcw size={14} />
-            </button>
-          )}
-        </div>
-
+    <MiniToolShell
+      icon={Pipette}
+      title="Color Converter"
+      countLabel={colors.length > 0 ? `${colors.length} color${colors.length > 1 ? 's' : ''}` : undefined}
+      onReset={reset}
+      showReset={colors.length > 0}
+    >
         {/* Input */}
         <div className="flex gap-2 items-center">
           {livePreview && (
@@ -291,8 +279,7 @@ export const ColorConverterPage: React.FC = () => {
 
         {/* WCAG contrast check */}
         <ContrastPanel colors={colors} />
-      </div>
-    </div>
+    </MiniToolShell>
   );
 };
 

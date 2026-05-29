@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { NodeSlider } from '@/components/ui/NodeSlider';
+import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
@@ -261,17 +262,19 @@ export const SceneTab: React.FC = React.memo(() => {
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
-        <NodeSlider label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
-        <NodeSlider label={t('studio3d.geometry.objectScale')} value={objectScale} min={0.1} max={5} step={0.05} onChange={setObjectScale} />
+        <div className="grid grid-cols-2 gap-1.5">
+          <ScrubInput label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
+          <ScrubInput label={t('studio3d.geometry.objectScale')} value={objectScale} min={0.1} max={5} step={0.05} onChange={setObjectScale} />
+        </div>
         <ToolPanelRow label={t('studio3d.geometry.bevel')}>
           <Switch checked={store.bevelEnabled} onCheckedChange={store.setBevelEnabled} aria-label="Bevel" />
         </ToolPanelRow>
         {store.bevelEnabled && (
-          <>
-            <NodeSlider label={t('studio3d.geometry.thickness')} value={bevelThickness} min={0} max={2} step={0.01} onChange={setBevelThickness} />
-            <NodeSlider label={t('studio3d.geometry.size')} value={bevelSize} min={0} max={2} step={0.01} onChange={setBevelSize} />
-            <NodeSlider label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={1} onChange={setSmoothness} />
-          </>
+          <div className="grid grid-cols-3 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.thickness')} value={bevelThickness} min={0} max={2} step={0.01} onChange={setBevelThickness} />
+            <ScrubInput label={t('studio3d.geometry.size')} value={bevelSize} min={0} max={2} step={0.01} onChange={setBevelSize} />
+            <ScrubInput label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={1} onChange={setSmoothness} />
+          </div>
         )}
       </ToolPanelSection>
 
