@@ -1,9 +1,15 @@
 import { ASPECT_RATIOS, EXPORT_RESOLUTIONS } from '@/stores/studio3dStore';
 import { API_BASE } from '@/config/api';
+import { authService } from '@/services/authService';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import type { VideoFormat } from '@/utils/videoExport';
 import type { Scene } from 'three';
+
+function getAuthHeaders(): Record<string, string> {
+  const token = authService.getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
 type ExportResolution = 'hd' | '2k' | '4k';
@@ -317,10 +323,10 @@ async function sendFrameBatch(
 
   const res = await fetch(`${API_BASE}/render/${jobId}/frames`, {
     method: 'PUT',
-    credentials: 'include',
     headers: {
       'Content-Type': 'application/octet-stream',
       'X-Frame-Start': String(startIndex),
+      ...getAuthHeaders(),
     },
     body: buf,
   });
@@ -344,8 +350,7 @@ export async function exportVideoServerSide(
 
   const startRes = await fetch(`${API_BASE}/render/start`, {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify({ width: canvas.width, height: canvas.height }),
   });
   if (!startRes.ok) throw new Error(`Server error: ${startRes.status}`);
@@ -392,8 +397,7 @@ export async function exportVideoServerSide(
 
   const finishRes = await fetch(`${API_BASE}/render/${jobId}/finish`, {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify({ format, fps }),
   });
   if (!finishRes.ok) {

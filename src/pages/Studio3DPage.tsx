@@ -46,6 +46,8 @@ export const Studio3DPage: React.FC = () => {
   const shaderEnabled = store((s) => s.shaderEnabled);
   const shaderType = store((s) => s.shaderType);
   const cameraInfo = store((s) => s._cameraInfo);
+  const videoDuration = store((s) => s.videoDuration);
+  const videoFps = store((s) => s.videoFps);
 
   useEffect(() => {
     const sceneId = searchParams.get('sceneId');
@@ -350,8 +352,8 @@ export const Studio3DPage: React.FC = () => {
       filenamePrefix={`3d-studio_${fileName?.replace(/\.[^.]+$/, '') || 'export'}`}
       getShaderSettings={getShaderSettings}
       isVideo={animate !== 'none'}
-      videoDuration={store.getState().videoDuration}
-      videoFps={store.getState().videoFps}
+      videoDuration={videoDuration}
+      videoFps={videoFps}
       onVideoDurationChange={(d) => store.getState().setVideoDuration(d)}
       onVideoFpsChange={(fps) => store.getState().setVideoFps(fps)}
       onExportVideo={animate !== 'none' ? handleVideoExport : undefined}
