@@ -120,7 +120,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const streamRef = useRef<MediaStream | null>(null);
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [videoTime, setVideoTime] = useState(0);
+  const [loopFlash, setLoopFlash] = useState(false);
   const videoTimeRAF = useRef<number>(0);
+  const videoStartRef = useRef<number>(0);
+  const videoPausedAtRef = useRef<number>(0);
+  const prevLoopIndex = useRef(0);
 
   const isVideoFormat = IS_VIDEO_FORMAT(format);
   const totalFrames = Math.ceil(videoDuration * videoFps);
@@ -146,12 +150,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       video.srcObject = stream;
       video.play().catch(() => {});
       setVideoPlaying(true);
+      videoStartRef.current = performance.now();
+      videoPausedAtRef.current = 0;
+      prevLoopIndex.current = 0;
 
       const tick = () => {
-        setVideoTime(prev => {
-          const next = prev + 1 / 60;
-          return next >= videoDuration ? 0 : next;
-        });
+        const elapsed = (performance.now() - videoStartRef.current) / 1000;
+        const loopIdx = Math.floor(elapsed / videoDuration);
+        if (loopIdx > prevLoopIndex.current) {
+          prevLoopIndex.current = loopIdx;
+          setLoopFlash(true);
+          setTimeout(() => setLoopFlash(false), 200);
+        }
+        setVideoTime(elapsed % videoDuration);
         videoTimeRAF.current = requestAnimationFrame(tick);
       };
       videoTimeRAF.current = requestAnimationFrame(tick);
@@ -173,12 +184,28 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     if (!video) return;
     if (video.paused) {
       video.play().catch(() => {});
+      const pausedDuration = performance.now() - videoPausedAtRef.current;
+      videoStartRef.current += pausedDuration;
       setVideoPlaying(true);
+      const tick = () => {
+        const elapsed = (performance.now() - videoStartRef.current) / 1000;
+        const loopIdx = Math.floor(elapsed / videoDuration);
+        if (loopIdx > prevLoopIndex.current) {
+          prevLoopIndex.current = loopIdx;
+          setLoopFlash(true);
+          setTimeout(() => setLoopFlash(false), 200);
+        }
+        setVideoTime(elapsed % videoDuration);
+        videoTimeRAF.current = requestAnimationFrame(tick);
+      };
+      videoTimeRAF.current = requestAnimationFrame(tick);
     } else {
       video.pause();
+      videoPausedAtRef.current = performance.now();
+      cancelAnimationFrame(videoTimeRAF.current);
       setVideoPlaying(false);
     }
-  }, []);
+  }, [videoDuration]);
 
   // Generate preview thumbnail (image formats only)
   useEffect(() => {
@@ -338,8 +365,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const sourceH = source?.height || 0;
   const outputW = Math.round(sourceW * scale);
   const outputH = Math.round(sourceH * scale);
-  const sizeEstimate = !isVideoFormat ? estimateFileSize(outputW, outputH, format, quality) : null;
-  const videoSizeEstimate = isVideoFormat ? estimateVideoSize(sourceW, sourceH, videoDuration, videoFps, format) : null;
+  const sizeEstimate = !IS_VIDEO_FORMAT(format) ? estimateFileSize(outputW, outputH, format, quality) : null;
+  const videoSizeEstimate = IS_VIDEO_FORMAT(format) ? estimateVideoSize(sourceW, sourceH, videoDuration, videoFps, format) : null;
 
   return (
     <div
@@ -369,13 +396,23 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Preview — Video (live stream) or Image (thumbnail) */}
           {isVideoFormat ? (
             <div className="space-y-2">
-              <div className="relative flex justify-center rounded-lg overflow-hidden border border-neutral-800/50 bg-black">
+              <div className={cn(
+                "relative flex justify-center rounded-lg overflow-hidden bg-black transition-all duration-200 border",
+                loopFlash ? "border-white/40" : "border-neutral-800/50"
+              )}>
                 <video
                   ref={videoPreviewRef}
                   muted
                   playsInline
                   className="block max-h-[160px] max-w-full object-contain"
                 />
+                {/* Loop restart indicator */}
+                <div className={cn(
+                  "absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/70 text-[8px] font-mono uppercase tracking-widest transition-opacity duration-200",
+                  loopFlash ? "opacity-100 text-white" : "opacity-0"
+                )}>
+                  ↻ loop
+                </div>
                 <button
                   onClick={toggleVideoPlayback}
                   className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 transition-colors group"
@@ -390,17 +427,32 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               </div>
               {/* Timeline scrubber */}
               <div className="space-y-1">
-                <input
-                  type="range"
-                  min={0}
-                  max={videoDuration}
-                  step={0.01}
-                  value={videoTime % videoDuration}
-                  onChange={(e) => setVideoTime(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-sm"
-                />
+                <div className="relative h-1.5">
+                  <div className="absolute inset-0 bg-neutral-800 rounded-full" />
+                  <div
+                    className="absolute top-0 left-0 h-full bg-white/20 rounded-full transition-none"
+                    style={{ width: `${(videoTime / videoDuration) * 100}%` }}
+                  />
+                  <input
+                    type="range"
+                    min={0}
+                    max={videoDuration}
+                    step={0.01}
+                    value={videoTime}
+                    onChange={(e) => {
+                      const t = parseFloat(e.target.value);
+                      setVideoTime(t);
+                      videoStartRef.current = performance.now() - t * 1000;
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-sm pointer-events-none"
+                    style={{ left: `calc(${(videoTime / videoDuration) * 100}% - 5px)` }}
+                  />
+                </div>
                 <div className="flex items-center justify-between text-[9px] font-mono text-neutral-500">
-                  <span>{formatTimecode(videoTime % videoDuration)}</span>
+                  <span>{formatTimecode(videoTime)}</span>
                   <span>{formatTimecode(videoDuration)}</span>
                 </div>
               </div>
