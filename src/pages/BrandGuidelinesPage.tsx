@@ -23,8 +23,12 @@ import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandComple
 import { BrandAiPopulateDialog } from '@/components/brand/guidelines/BrandAiPopulateDialog';
 import { BrandMockupDialog } from '@/components/brand/guidelines/BrandMockupDialog';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { Input } from '@/components/ui/input';
 import { getProxiedUrl } from '@/utils/proxyUtils';
-import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check, Image, MoreHorizontal, SlidersHorizontal } from 'lucide-react';
+import { computeBrandCompleteness, completenessStatus } from '@/lib/brandCompleteness';
+import { Palette, Layers, AlignLeft, Share2, Eye, Plus, ClipboardCheck, Zap, Figma, Copy, Check, Image, MoreHorizontal, SlidersHorizontal, Search, Globe, Folder, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -86,76 +90,244 @@ const getCoverUrl = (g: BrandGuideline): string | null => {
 const CoverFallback = ({ colors }: { colors?: BrandGuideline['colors'] }) => {
     const c1 = colors?.[0]?.hex || '#262626';
     const c2 = colors?.[1]?.hex || '#171717';
+    const c3 = colors?.[2]?.hex || c1;
     return (
         <div
             className="absolute inset-0"
-            style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)` }}
-        />
+            style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)` }}
+        >
+            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23fff\' fill-opacity=\'1\'%3E%3Cpath d=\'M0 0h20v20H0zM20 20h20v20H20z\'/%3E%3C/g%3E%3C/svg%3E")' }} />
+        </div>
     );
 };
 
-const BrandCard = ({ guideline, onSelect }: { guideline: BrandGuideline; onSelect: (g: BrandGuideline) => void }) => {
+const SCORE_COLORS = {
+    low: 'bg-red-500',
+    medium: 'bg-amber-400',
+    high: 'bg-green-500',
+} as const;
+
+const BrandCard = ({ guideline, onSelect, index }: { guideline: BrandGuideline; onSelect: (g: BrandGuideline) => void; index: number }) => {
+    const [coverLoaded, setCoverLoaded] = useState(false);
     const coverUrl = getCoverUrl(guideline);
+    const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
+    const status = completenessStatus(report.score);
+    const primaryFont = guideline.typography?.find(t => t.role === 'heading' || t.role === 'headline')?.family;
+    const bodyFont = guideline.typography?.find(t => t.role === 'body' || t.role === 'paragraph')?.family;
+    const fontHint = [primaryFont, bodyFont].filter(Boolean).join(' / ');
 
     return (
         <motion.button
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.02 }}
+            transition={{ delay: index * 0.04, duration: 0.25 }}
+            whileHover={{ y: -3 }}
             onClick={() => onSelect(guideline)}
-            className="group relative flex flex-col rounded-xl border border-white/[0.06] bg-neutral-900 hover:border-white/[0.14] transition-all duration-200 overflow-hidden text-left cursor-pointer"
+            className="group relative flex flex-col sm:flex-col rounded-xl border border-white/[0.06] bg-neutral-900 hover:border-white/[0.14] hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left cursor-pointer"
         >
-            {/* Cover image */}
-            <div className="relative w-full h-24 overflow-hidden bg-neutral-800">
+            {/* Cover */}
+            <div className="relative w-full sm:w-full h-20 sm:h-24 shrink-0 overflow-hidden bg-neutral-800">
+                {coverUrl && !coverLoaded && (
+                    <div className="absolute inset-0 animate-pulse bg-neutral-800" />
+                )}
                 {coverUrl ? (
                     <img
                         src={getProxiedUrl(coverUrl)}
                         alt=""
-                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                        loading="lazy"
+                        onLoad={() => setCoverLoaded(true)}
+                        className={cn(
+                            'w-full h-full object-cover group-hover:scale-105 transition-all duration-500',
+                            coverLoaded ? 'opacity-80 group-hover:opacity-100' : 'opacity-0'
+                        )}
                     />
                 ) : (
                     <CoverFallback colors={guideline.colors} />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/20 to-transparent" />
+
+                {/* Badges overlay */}
+                <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                    {guideline.isPublic && (
+                        <Badge variant="secondary" className="bg-white/10 backdrop-blur-sm border-white/10 text-white/80 text-[10px] px-1.5 py-0 h-5 gap-1">
+                            <Globe size={9} />
+                            Public
+                        </Badge>
+                    )}
+                    {guideline.folder && (
+                        <Badge variant="secondary" className="bg-white/10 backdrop-blur-sm border-white/10 text-white/70 text-[10px] px-1.5 py-0 h-5 gap-1">
+                            <Folder size={9} />
+                            {guideline.folder}
+                        </Badge>
+                    )}
+                </div>
             </div>
 
-            {/* Avatar overlapping cover/content boundary */}
-            <div className="relative px-4 -mt-5">
+            {/* Avatar */}
+            <div className="relative px-3 sm:px-4 -mt-5">
                 <div className="ring-2 ring-neutral-900 rounded-lg">
                     <BrandAvatar brand={guideline} size={40} rounded="md" preference="primary" />
                 </div>
             </div>
 
-            {/* Name + tagline */}
-            <div className="px-4 pt-2 pb-4 min-w-0">
-                <p className="text-sm font-medium text-neutral-200 truncate group-hover:text-white transition-colors">
-                    {guideline.identity?.name || guideline.name || 'Untitled'}
-                </p>
-                {guideline.identity?.tagline && (
-                    <p className="text-[11px] text-neutral-600 truncate mt-0.5">
-                        {guideline.identity.tagline}
+            {/* Info */}
+            <div className="flex-1 px-3 sm:px-4 pt-2 pb-3 min-w-0 flex flex-col gap-1.5">
+                <div className="min-w-0">
+                    <p className="text-sm font-medium text-neutral-200 truncate group-hover:text-white transition-colors">
+                        {guideline.identity?.name || guideline.name || 'Untitled'}
                     </p>
-                )}
+                    {guideline.identity?.tagline && (
+                        <p className="text-[11px] text-neutral-600 truncate mt-0.5 leading-tight">
+                            {guideline.identity.tagline}
+                        </p>
+                    )}
+                </div>
+
+                {/* Footer: completeness + font hint */}
+                <div className="flex items-center justify-between gap-2 mt-auto pt-1 border-t border-white/[0.04]">
+                    <Tooltip content={`${report.score}% complete — ${report.missing.length} items missing`} position="bottom">
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-16 h-1 rounded-full bg-neutral-800 overflow-hidden">
+                                <div
+                                    className={cn('h-full rounded-full transition-all', SCORE_COLORS[status])}
+                                    style={{ width: `${report.score}%` }}
+                                />
+                            </div>
+                            <span className="text-[10px] text-neutral-600 tabular-nums">{report.score}%</span>
+                        </div>
+                    </Tooltip>
+                    {fontHint && (
+                        <p className="text-[10px] text-neutral-700 truncate max-w-[50%]">
+                            {fontHint}
+                        </p>
+                    )}
+                </div>
             </div>
         </motion.button>
     );
 };
 
+type SortMode = 'recent' | 'name' | 'completeness';
+
 const BrandGrid = ({ guidelines, onSelect }: { guidelines: BrandGuideline[]; onSelect: (g: BrandGuideline) => void }) => {
+    const [search, setSearch] = useState('');
+    const [folderFilter, setFolderFilter] = useState<string | null>(null);
+    const [sort, setSort] = useState<SortMode>('recent');
+
+    const folders = useMemo(() => {
+        const s = new Set<string>();
+        guidelines.forEach(g => { if (g.folder) s.add(g.folder); });
+        return Array.from(s).sort();
+    }, [guidelines]);
+
+    const filtered = useMemo(() => {
+        let list = guidelines;
+        if (folderFilter) list = list.filter(g => g.folder === folderFilter);
+        if (search.trim()) {
+            const term = search.toLowerCase();
+            list = list.filter(g => {
+                const name = (g.identity?.name || g.name || '').toLowerCase();
+                const folder = (g.folder || '').toLowerCase();
+                const tagline = (g.identity?.tagline || '').toLowerCase();
+                return name.includes(term) || folder.includes(term) || tagline.includes(term);
+            });
+        }
+        if (sort === 'name') {
+            list = [...list].sort((a, b) =>
+                (a.identity?.name || a.name || '').localeCompare(b.identity?.name || b.name || '')
+            );
+        } else if (sort === 'completeness') {
+            list = [...list].sort((a, b) =>
+                computeBrandCompleteness(b).score - computeBrandCompleteness(a).score
+            );
+        }
+        return list;
+    }, [guidelines, search, folderFilter, sort]);
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="w-full"
+            className="w-full space-y-4"
         >
-            <p className="text-xs text-neutral-600 mb-4">
-                {guidelines.length} design system{guidelines.length !== 1 ? 's' : ''} — select one to view & edit
+            {/* Toolbar: search + folder pills + sort */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="relative w-full sm:w-56">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
+                    <Input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search brands..."
+                        className="h-8 pl-8 text-xs bg-white/[0.03] border-white/[0.06]"
+                    />
+                </div>
+
+                {folders.length > 0 && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                        <button
+                            onClick={() => setFolderFilter(null)}
+                            className={cn(
+                                'shrink-0 px-2.5 py-1 rounded-md text-[11px] border transition-colors',
+                                !folderFilter
+                                    ? 'bg-white/[0.08] border-white/[0.12] text-neutral-300'
+                                    : 'border-transparent text-neutral-600 hover:text-neutral-400'
+                            )}
+                        >
+                            All
+                        </button>
+                        {folders.map(f => (
+                            <button
+                                key={f}
+                                onClick={() => setFolderFilter(folderFilter === f ? null : f)}
+                                className={cn(
+                                    'shrink-0 px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1',
+                                    folderFilter === f
+                                        ? 'bg-white/[0.08] border-white/[0.12] text-neutral-300'
+                                        : 'border-transparent text-neutral-600 hover:text-neutral-400'
+                                )}
+                            >
+                                <Folder size={10} />
+                                {f}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                <div className="sm:ml-auto shrink-0">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-400 border border-transparent hover:border-white/[0.06] transition-colors">
+                                <ArrowUpDown size={11} />
+                                {sort === 'recent' ? 'Recent' : sort === 'name' ? 'Name' : 'Completeness'}
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[130px]">
+                            <DropdownMenuCheckboxItem className="text-xs" checked={sort === 'recent'} onCheckedChange={() => setSort('recent')}>Recent</DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem className="text-xs" checked={sort === 'name'} onCheckedChange={() => setSort('name')}>Name</DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem className="text-xs" checked={sort === 'completeness'} onCheckedChange={() => setSort('completeness')}>Completeness</DropdownMenuCheckboxItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            {/* Count */}
+            <p className="text-[11px] text-neutral-700">
+                {filtered.length} of {guidelines.length} design system{guidelines.length !== 1 ? 's' : ''}
             </p>
+
+            {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                {guidelines.map((g) => (
-                    <BrandCard key={g.id} guideline={g} onSelect={onSelect} />
+                {filtered.map((g, i) => (
+                    <BrandCard key={g.id} guideline={g} onSelect={onSelect} index={i} />
                 ))}
             </div>
+
+            {filtered.length === 0 && search.trim() && (
+                <div className="flex flex-col items-center py-12 gap-3">
+                    <Search size={20} className="text-neutral-700" />
+                    <p className="text-xs text-neutral-600">No brands match "{search}"</p>
+                </div>
+            )}
         </motion.div>
     );
 };
