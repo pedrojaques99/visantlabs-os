@@ -24,7 +24,7 @@ export const ToolPanelContent: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const ToolPanelSection: React.FC<{ title: string; children: React.ReactNode; className?: string; id?: string; onReset?: () => void }> = ({ title, children, className, id, onReset }) => (
   <div id={id} className={cn('space-y-3 scroll-mt-2', className)}>
-    <div className="group sticky top-0 z-10 backdrop-blur-xl bg-neutral-950/80 -mx-4 px-4 py-1.5 flex items-center justify-between">
+    <div className="group -mx-4 px-4 py-1.5 flex items-center justify-between">
       <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{title}</span>
       {onReset && (
         <button
@@ -54,7 +54,7 @@ export const ToolPanelDisclosure: React.FC<{
         onClick={() => setOpen(!open)}
         className={cn(
           'w-full flex items-center justify-between text-left px-3 py-2.5 transition-all duration-200 rounded-md',
-          'hover:bg-neutral-800/10 sticky top-0 z-10 backdrop-blur-xl bg-neutral-950/80',
+          'hover:bg-neutral-800/10',
           open && 'bg-neutral-800/20'
         )}
       >

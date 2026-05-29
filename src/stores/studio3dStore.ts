@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { temporal } from 'zundo';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 import { materialPresets } from '@/components/3d-studio/engine/materials';
+import { authService } from '@/services/authService';
 
 type MaterialPreset = 'default' | 'plastic' | 'metal' | 'glass' | 'rubber' | 'chrome' | 'gold' | 'clay' | 'emissive' | 'holographic' | 'brushedSteel' | 'aluminum' | 'copper' | 'roseGold' | 'platinum' | 'ceramic' | 'marble' | 'concrete' | 'wood' | 'velvet' | 'leather' | 'frostedGlass' | 'diamond' | 'pearl' | 'carbonFiber' | 'carPaint' | 'ice' | 'obsidian' | 'wax' | 'mattePaint';
 
@@ -275,7 +276,8 @@ interface Studio3DState {
   modelUrl: string;
 
   // Geometry
-  shapeType: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon' | 'pendant';
+  shapeType: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon';
+
   depth: number;
   smoothness: number;
   bevelEnabled: boolean;
@@ -297,6 +299,11 @@ interface Studio3DState {
   chainLinks: number;
   chainScale: number;
   showChain: boolean;
+  bailSize: number;
+  bailOffset: number;
+  chainOffset: number;
+  chainColor: string;
+  reliefDepth: number;
 
   // Performance
   renderQuality: 'performance' | 'balanced' | 'quality';
@@ -335,6 +342,8 @@ interface Studio3DState {
   environment: string;
   customHdriUrl: string;
   hdriBackground: boolean;
+  hdriBlur: number;
+  hdriIntensity: number;
   background: string;
   bgType: 'solid' | 'linear' | 'radial';
   bgGradient: { color1: string; color2: string; angle: number };
@@ -415,12 +424,15 @@ interface Studio3DState {
   setFont: (font: string) => void;
   setInputMode: (mode: 'svg' | 'text' | 'model') => void;
   setModelUrl: (url: string, fileName?: string) => void;
-  setShapeType: (v: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon' | 'pendant') => void;
+  setShapeType: (v: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon') => void;
+
   setDepth: (v: number) => void;
   setObjectScale: (v: number) => void;
   setRenderQuality: (v: 'performance' | 'balanced' | 'quality') => void;
   setFov: (v: number) => void;
   setHdriBackground: (v: boolean) => void;
+  setHdriBlur: (v: number) => void;
+  setHdriIntensity: (v: number) => void;
   setSmoothness: (v: number) => void;
   setBevelEnabled: (v: boolean) => void;
   setBevelThickness: (v: number) => void;
@@ -437,7 +449,12 @@ interface Studio3DState {
   setHexRadius: (v: number) => void;
   setChainLinks: (v: number) => void;
   setChainScale: (v: number) => void;
+  setBailSize: (v: number) => void;
+  setBailOffset: (v: number) => void;
+  setChainOffset: (v: number) => void;
+  setChainColor: (v: string) => void;
   setShowChain: (v: boolean) => void;
+  setReliefDepth: (v: number) => void;
   setMaterial: (m: MaterialPreset) => void;
   setColor: (c: string) => void;
   setMetalness: (v: number) => void;
@@ -530,6 +547,7 @@ const INITIAL_STATE = {
   fileName: '',
   modelUrl: '',
   shapeType: 'standard' as const,
+
   depth: 0.9,
   smoothness: 0.2,
   bevelEnabled: true,
@@ -546,9 +564,14 @@ const INITIAL_STATE = {
   shieldWidth: 2.2,
   shieldHeight: 2.8,
   hexRadius: 2.4,
-  chainLinks: 6,
+  chainLinks: 10,
   chainScale: 1,
-  showChain: true,
+  showChain: false,
+  bailSize: 0.25,
+  bailOffset: 0.10,
+  chainOffset: -0.30,
+  chainColor: '',
+  reliefDepth: 0.3,
   renderQuality: (typeof window !== 'undefined' && window.innerWidth < 768 ? 'performance' : 'balanced') as 'performance' | 'balanced' | 'quality',
   material: 'default' as MaterialPreset,
   color: '#00e5ff',
@@ -577,6 +600,8 @@ const INITIAL_STATE = {
   environment: 'studio',
   customHdriUrl: '',
   hdriBackground: false,
+  hdriBlur: 0,
+  hdriIntensity: 1,
   background: '#0a0a0a',
   bgType: 'solid' as const,
   bgGradient: { color1: '#0a0a0a', color2: '#1a1a2e', angle: 45 },
@@ -646,11 +671,14 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
   setModelUrl: (url, fileName) => set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
   setShapeType: (shapeType) => set({ shapeType }),
+
   setDepth: (depth) => set({ depth }),
   setObjectScale: (objectScale) => set({ objectScale }),
   setRenderQuality: (renderQuality) => set({ renderQuality }),
   setFov: (fov) => set({ fov }),
   setHdriBackground: (hdriBackground) => set({ hdriBackground }),
+  setHdriBlur: (hdriBlur) => set({ hdriBlur }),
+  setHdriIntensity: (hdriIntensity) => set({ hdriIntensity }),
   setSmoothness: (smoothness) => set({ smoothness }),
   setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
   setBevelThickness: (bevelThickness) => set({ bevelThickness }),
@@ -667,7 +695,12 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setHexRadius: (hexRadius) => set({ hexRadius }),
   setChainLinks: (chainLinks) => set({ chainLinks }),
   setChainScale: (chainScale) => set({ chainScale }),
+  setBailSize: (bailSize) => set({ bailSize }),
+  setBailOffset: (bailOffset) => set({ bailOffset }),
+  setChainOffset: (chainOffset) => set({ chainOffset }),
+  setChainColor: (chainColor) => set({ chainColor }),
   setShowChain: (showChain) => set({ showChain }),
+  setReliefDepth: (reliefDepth) => set({ reliefDepth }),
   setMaterial: (material) => {
     const preset = materialPresets[material];
     const presetDef = MATERIAL_PRESETS.find((m) => m.id === material);
@@ -785,7 +818,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       lightIntensity: preset.lightIntensity,
       ambientIntensity: preset.ambientIntensity,
       environment: preset.environment,
-      resetKey: Date.now(),
+      customHdriUrl: '',
     });
   },
 
@@ -889,9 +922,16 @@ function getCachedScenes(): SavedScene[] {
   try { return JSON.parse(localStorage.getItem(SCENES_KEY) || '[]'); } catch { return []; }
 }
 
+function authHeaders(): Record<string, string> {
+  const token = authService.getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function getSavedScenes(): Promise<SavedScene[]> {
   try {
-    const res = await fetch(`${API_BASE}/studio3d`, { credentials: 'include' });
+    const token = authService.getToken();
+    if (!token) return getCachedScenes();
+    const res = await fetch(`${API_BASE}/studio3d`, { headers: authHeaders() });
     if (!res.ok) return getCachedScenes();
     const data = await res.json();
     const scenes: SavedScene[] = (data.scenes || []).map((s: any) => ({
@@ -921,8 +961,7 @@ export async function saveScene(name: string): Promise<SavedScene | null> {
   try {
     const res = await fetch(`${API_BASE}/studio3d`, {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
         name,
         config,
@@ -958,7 +997,7 @@ export async function saveScene(name: string): Promise<SavedScene | null> {
 
 export async function loadScene(id: string): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/studio3d/${id}`, { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/studio3d/${id}`, { headers: authHeaders() });
     if (res.ok) {
       const data = await res.json();
       if (data.scene?.config) {
@@ -993,7 +1032,7 @@ export async function loadScene(id: string): Promise<boolean> {
 
 export async function deleteScene(id: string): Promise<void> {
   try {
-    await fetch(`${API_BASE}/studio3d/${id}`, { method: 'DELETE', credentials: 'include' });
+    await fetch(`${API_BASE}/studio3d/${id}`, { method: 'DELETE', headers: authHeaders() });
   } catch {}
   // Always clean local cache too
   const scenes = getCachedScenes().filter(s => s.id !== id);

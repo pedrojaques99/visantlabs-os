@@ -41,7 +41,8 @@ interface PhysicsFallSimulationProps {
   physicsFriction: number;
   physicsSize: number;
   resetKey: number;
-  shapeType?: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon' | 'pendant';
+  shapeType?: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon';
+  coinRadius?: number;
 }
 
 interface PhysicsBody {
@@ -81,6 +82,7 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
   physicsSize,
   resetKey,
   shapeType = 'standard',
+  coinRadius: coinRadiusProp = 2.2,
 }) => {
   const { viewport } = useThree();
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
@@ -167,13 +169,13 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
   // Initialize/reset bodies
   useEffect(() => {
     const bodies: PhysicsBody[] = [];
-    
+
     // Calculate visual shape dimensions to prevent initial spawn overlap
     let scaledWidth = 4.0;
     let scaledHeight = 4.0;
     if (shapeType === 'coin') {
-      scaledWidth = 4.4;
-      scaledHeight = 4.4;
+      scaledWidth = coinRadiusProp * 2;
+      scaledHeight = coinRadiusProp * 2;
     } else if (geometries.length > 0 && geometries[0].boundingBox) {
       const bb = geometries[0].boundingBox;
       const size = new THREE.Vector3();
@@ -211,7 +213,7 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
       });
     }
     bodiesRef.current = bodies;
-  }, [physicsCount, physicsSize, baseScale, geometries, viewport.width, viewport.height, resetKey, shapeType]);
+  }, [physicsCount, physicsSize, baseScale, geometries, viewport.width, viewport.height, resetKey, shapeType, coinRadiusProp]);
 
   // Keep references to group meshes to update their positions imperatively for 60fps performance!
   const groupsRef = useRef<(THREE.Group | null)[]>([]);
@@ -227,8 +229,8 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
     let scaledWidth = 4.0;
     let scaledHeight = 4.0;
     if (shapeType === 'coin') {
-      scaledWidth = 4.4;
-      scaledHeight = 4.4;
+      scaledWidth = coinRadiusProp * 2;
+      scaledHeight = coinRadiusProp * 2;
     } else if (geometries.length > 0 && geometries[0].boundingBox) {
       const bb = geometries[0].boundingBox;
       const size = new THREE.Vector3();
@@ -239,9 +241,8 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
 
     const aspect = scaledWidth / (scaledHeight || 1.0);
     const isCoin = shapeType === 'coin';
-    // Determine how many overlapping spheres to use to represent visual shape boundary
     const numSpheres = isCoin ? 1 : Math.max(1, Math.min(5, Math.round(aspect * 1.5)));
-    const baseSphereRadius = isCoin ? (2.2 * physicsSize) : ((scaledHeight * physicsSize) / 2.0);
+    const baseSphereRadius = isCoin ? (coinRadiusProp * physicsSize) : ((scaledHeight * physicsSize) / 2.0);
     const baseHalfLen = isCoin ? 0 : Math.max(0, (scaledWidth * physicsSize) / 2.0 - baseSphereRadius);
 
     // Compute normalized local offsets for sub-spheres (scaled by individual body sizeScale in loop)
@@ -436,7 +437,8 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
 
         if (shapeType === 'coin') {
           const cylinderHeight = Math.max(0.45, depth * 0.12);
-          const coinRadius = 2.2;
+          const coinRadius = coinRadiusProp;
+          const rimR = coinRadius * 0.91;
           const reliefDepth = 0.18;
 
           const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
@@ -492,11 +494,11 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
 
               {/* Thick Beveled Elevated Torus Rim Borders */}
               <mesh position={[0, 0, cylinderHeight / 2]}>
-                <torusGeometry args={[2.0, 0.2, 16, 32]} />
+                <torusGeometry args={[rimR, 0.2, 16, 32]} />
                 {coinMaterial}
               </mesh>
               <mesh position={[0, 0, -cylinderHeight / 2]}>
-                <torusGeometry args={[2.0, 0.2, 16, 32]} />
+                <torusGeometry args={[rimR, 0.2, 16, 32]} />
                 {coinMaterial}
               </mesh>
 

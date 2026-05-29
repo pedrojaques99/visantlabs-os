@@ -15,9 +15,9 @@ import { AnimationTab } from './panels/AnimationTab';
 import { EffectsTab } from './panels/EffectsTab';
 
 const TABS = [
-  { id: 'scene', label: 'Scene' },
-  { id: 'look', label: 'Look' },
-  { id: 'camera', label: 'Camera' },
+  { id: 'scene', label: 'Model' },
+  { id: 'look', label: 'Object' },
+  { id: 'camera', label: 'Scene' },
   { id: 'animate', label: 'Animate' },
   { id: 'effects', label: 'FX' },
 ] as const;

@@ -55,6 +55,10 @@ export const SceneTab: React.FC = React.memo(() => {
   const [hexR, setHexR] = useDebouncedSlider(store.hexRadius, store.setHexRadius);
   const [chainLinks, setChainLinks] = useDebouncedSlider(store.chainLinks, store.setChainLinks);
   const [chainScale, setChainScale] = useDebouncedSlider(store.chainScale, store.setChainScale);
+  const [bailSz, setBailSz] = useDebouncedSlider(store.bailSize, store.setBailSize);
+  const [bailOff, setBailOff] = useDebouncedSlider(store.bailOffset, store.setBailOffset);
+  const [chainOff, setChainOff] = useDebouncedSlider(store.chainOffset, store.setChainOffset);
+  const [reliefDepth, setReliefDepth] = useDebouncedSlider(store.reliefDepth, store.setReliefDepth);
 
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>([]);
   const [scenesLoading, setScenesLoading] = useState(false);
@@ -131,7 +135,7 @@ export const SceneTab: React.FC = React.memo(() => {
   return (
     <>
       {/* Input */}
-      <ToolPanelSection title={t('studio3d.input.title')}>
+      <ToolPanelDisclosure label={t('studio3d.input.title')} icon={<Upload size={13} />} defaultOpen>
         <ToolPanelGrid>
           <ToolPanelChip active={store.inputMode === 'svg'} onClick={() => store.setInputMode('svg')}>
             <span className="flex items-center justify-center gap-1"><FileText size={12} /> {t('studio3d.input.svgPng')}</span>
@@ -196,7 +200,7 @@ export const SceneTab: React.FC = React.memo(() => {
             </select>
           </div>
         )}
-      </ToolPanelSection>
+      </ToolPanelDisclosure>
 
       {/* Scenes */}
       <ToolPanelDisclosure label="Scenes" icon={<Film size={13} />} id="sec-scenes">
@@ -267,16 +271,35 @@ export const SceneTab: React.FC = React.memo(() => {
         </div>
       </ToolPanelDisclosure>
 
-      {/* Geometry — shape selector + shape-specific controls */}
-      <ToolPanelSection title={t('studio3d.geometry.title')}>
-        <ToolPanelGrid cols={3}>
-          {(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon', 'pendant'] as const).map((type) => (
-            <ToolPanelChip key={type} active={store.shapeType === type} onClick={() => store.setShapeType(type)}>
-              {t(`studio3d.geometry.shape_${type}`)}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
-        {(store.shapeType === 'coin' || store.shapeType === 'pendant') && (
+      {/* Geometry */}
+      <ToolPanelDisclosure label={t('studio3d.geometry.title')} icon={<Box size={13} />} defaultOpen>
+        {/* 1. Depth, scale, bevel */}
+        <div className="grid grid-cols-2 gap-1.5">
+          <ScrubInput label={t('studio3d.geometry.depth')} value={depth} min={0.1} max={10} step={0.1} onChange={setDepth} />
+          <ScrubInput label={t('studio3d.geometry.objectScale')} value={objectScale} min={0.1} max={5} step={0.05} onChange={setObjectScale} />
+        </div>
+        <ToolPanelRow label={t('studio3d.geometry.bevel')}>
+          <Switch checked={store.bevelEnabled} onCheckedChange={store.setBevelEnabled} aria-label="Bevel" />
+        </ToolPanelRow>
+        {store.bevelEnabled && (
+          <div className="grid grid-cols-3 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.thickness')} value={bevelThickness} min={0} max={20} step={0.1} onChange={setBevelThickness} />
+            <ScrubInput label={t('studio3d.geometry.size')} value={bevelSize} min={0} max={20} step={0.1} onChange={setBevelSize} />
+            <ScrubInput label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={1} onChange={setSmoothness} />
+          </div>
+        )}
+
+        {/* 2. Shape presets + shape-specific params */}
+        <div className="mt-2 pt-2 border-t border-white/5">
+          <ToolPanelGrid cols={3}>
+            {(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'] as const).map((type) => (
+              <ToolPanelChip key={type} active={store.shapeType === type} onClick={() => store.setShapeType(type)}>
+                {t(`studio3d.geometry.shape_${type}`)}
+              </ToolPanelChip>
+            ))}
+          </ToolPanelGrid>
+        </div>
+        {store.shapeType === 'coin' && (
           <div className="grid grid-cols-1 gap-1.5">
             <ScrubInput label={t('studio3d.geometry.coinRadius')} value={coinRadius} min={0.5} max={5} step={0.1} onChange={setCoinRadius} />
           </div>
@@ -306,39 +329,43 @@ export const SceneTab: React.FC = React.memo(() => {
             <ScrubInput label={t('studio3d.geometry.hexRadius')} value={hexR} min={0.5} max={5} step={0.1} onChange={setHexR} />
           </div>
         )}
-        {store.shapeType === 'pendant' && (
-          <>
-            <ToolPanelRow label={t('studio3d.geometry.showChain')}>
-              <Switch checked={store.showChain} onCheckedChange={store.setShowChain} aria-label="Chain" />
-            </ToolPanelRow>
-            {store.showChain && (
+        {store.shapeType !== 'standard' && (
+          <div className="grid grid-cols-1 gap-1.5">
+            <ScrubInput label={t('studio3d.geometry.reliefDepth')} value={reliefDepth} min={0.05} max={1.5} step={0.05} onChange={setReliefDepth} />
+          </div>
+        )}
+
+        {/* 3. Chain */}
+        <div className="mt-2 pt-2 border-t border-white/5">
+          <ToolPanelRow label={t('studio3d.geometry.showChain')}>
+            <Switch checked={store.showChain} onCheckedChange={store.setShowChain} aria-label="Chain" />
+          </ToolPanelRow>
+          {store.showChain && (
+            <>
               <div className="grid grid-cols-2 gap-1.5">
                 <ScrubInput label={t('studio3d.geometry.chainLinks')} value={chainLinks} min={2} max={16} step={1} onChange={setChainLinks} />
                 <ScrubInput label={t('studio3d.geometry.chainScale')} value={chainScale} min={0.3} max={3} step={0.1} onChange={setChainScale} />
               </div>
-            )}
-          </>
-        )}
-
-        {/* Depth, scale, bevel */}
-        <div className="grid grid-cols-2 gap-1.5 mt-2 pt-2 border-t border-white/5">
-          <ScrubInput label={t('studio3d.geometry.depth')} value={depth} min={0.5} max={10} step={0.1} onChange={setDepth} />
-          <ScrubInput label={t('studio3d.geometry.objectScale')} value={objectScale} min={0.1} max={5} step={0.05} onChange={setObjectScale} />
+              <div className="grid grid-cols-3 gap-1.5">
+                <ScrubInput label={t('studio3d.geometry.bailSize')} value={bailSz} min={0.1} max={1.5} step={0.05} onChange={setBailSz} />
+                <ScrubInput label={t('studio3d.geometry.bailOffset')} value={bailOff} min={-3} max={3} step={0.05} onChange={setBailOff} />
+                <ScrubInput label={t('studio3d.geometry.chainOffset')} value={chainOff} min={-3} max={3} step={0.05} onChange={setChainOff} />
+              </div>
+              <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
+                <div className="flex items-center gap-2">
+                  {store.chainColor && (
+                    <button onClick={() => store.setChainColor('')} className="text-[9px] text-neutral-500 hover:text-white">✕</button>
+                  )}
+                  <input type="color" value={store.chainColor || store.color} onChange={(e) => store.setChainColor(e.target.value)} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer" />
+                </div>
+              </ToolPanelRow>
+            </>
+          )}
         </div>
-        <ToolPanelRow label={t('studio3d.geometry.bevel')}>
-          <Switch checked={store.bevelEnabled} onCheckedChange={store.setBevelEnabled} aria-label="Bevel" />
-        </ToolPanelRow>
-        {store.bevelEnabled && (
-          <div className="grid grid-cols-3 gap-1.5">
-            <ScrubInput label={t('studio3d.geometry.thickness')} value={bevelThickness} min={0} max={2} step={0.01} onChange={setBevelThickness} />
-            <ScrubInput label={t('studio3d.geometry.size')} value={bevelSize} min={0} max={2} step={0.01} onChange={setBevelSize} />
-            <ScrubInput label={t('studio3d.geometry.smoothness')} value={smoothness} min={0} max={8} step={1} onChange={setSmoothness} />
-          </div>
-        )}
-      </ToolPanelSection>
+      </ToolPanelDisclosure>
 
       {/* Presets */}
-      <ToolPanelSection title={t('studio3d.scenePresets.title')}>
+      <ToolPanelDisclosure label={t('studio3d.scenePresets.title')} icon={<Shuffle size={13} />} defaultOpen>
         <ToolPanelGrid>
           {Object.keys(SCENE_PRESETS).map((name) => (
             <ToolPanelChip key={name} onClick={() => store.applyScenePreset(name)}>
@@ -360,7 +387,7 @@ export const SceneTab: React.FC = React.memo(() => {
           <Shuffle size={13} />
           Surprise me
         </button>
-      </ToolPanelSection>
+      </ToolPanelDisclosure>
 
       <ConfirmationModal
         isOpen={showRandomizeConfirm}

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useCallback } from 'react';
+import React, { Suspense, useMemo, useRef, useState, useCallback } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { ContactShadows, Environment, Stats, MeshReflectorMaterial, AdaptiveDpr, AdaptiveEvents, PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
@@ -45,9 +45,16 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   chainLinks: s.chainLinks,
   chainScale: s.chainScale,
   showChain: s.showChain,
+  bailSize: s.bailSize,
+  bailOffset: s.bailOffset,
+  chainOffset: s.chainOffset,
+  chainColor: s.chainColor,
+  reliefDepth: s.reliefDepth,
   renderQuality: s.renderQuality,
   fov: s.fov,
   hdriBackground: s.hdriBackground,
+  hdriBlur: s.hdriBlur,
+  hdriIntensity: s.hdriIntensity,
   color: s.color,
   material: s.material,
   metalness: s.metalness,
@@ -269,6 +276,7 @@ function SceneContent() {
               physicsSize={s.physicsSize}
               resetKey={s.resetKey}
               shapeType={s.shapeType}
+              coinRadius={s.coinRadius}
             />
           ) : (
             <ExtrudedSVG
@@ -305,6 +313,11 @@ function SceneContent() {
               chainLinks={s.chainLinks}
               chainScale={s.chainScale}
               showChain={s.showChain}
+              bailSize={s.bailSize}
+              bailOffset={s.bailOffset}
+              chainOffset={s.chainOffset}
+              chainColor={s.chainColor}
+              reliefDepth={s.reliefDepth}
             />
           )
         )}
@@ -342,7 +355,7 @@ function SceneContent() {
 
       <hemisphereLight args={['#b1e1ff', '#b97a20', 0.5]} />
 
-      {!s.transparentBg && (
+      {!s.transparentBg && !s.hdriBackground && (
         s.bgType === 'solid' ? (
           <mesh scale={100}>
             <sphereGeometry args={[1, 64, 64]} />
@@ -353,19 +366,27 @@ function SceneContent() {
         )
       )}
 
-      {(() => {
-        const hdriUrl = s.customHdriUrl || ENVIRONMENT_PRESETS.find(p => p.id === s.environment)?.file;
-        return hdriUrl ? (
-          <Environment background={s.hdriBackground} files={hdriUrl} />
-        ) : (
-          <Environment background={false} environmentIntensity={1.5} frames={1}>
-            <mesh position={[0, 25, 0]}>
-              <sphereGeometry args={[20, 32, 32]} />
-              <meshBasicMaterial color="#ffffff" />
-            </mesh>
-          </Environment>
-        );
-      })()}
+      <Suspense fallback={null}>
+        {(() => {
+          const hdriUrl = s.customHdriUrl || ENVIRONMENT_PRESETS.find(p => p.id === s.environment)?.file;
+          return hdriUrl ? (
+            <Environment
+              background={s.hdriBackground}
+              files={hdriUrl}
+              backgroundBlurriness={s.hdriBlur}
+              backgroundIntensity={s.hdriIntensity}
+              environmentIntensity={s.hdriIntensity}
+            />
+          ) : (
+            <Environment background={false} environmentIntensity={1.5} frames={1}>
+              <mesh position={[0, 25, 0]}>
+                <sphereGeometry args={[20, 32, 32]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+            </Environment>
+          );
+        })()}
+      </Suspense>
 
       <CameraBridge />
 

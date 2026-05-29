@@ -3,7 +3,7 @@ import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useStudio3DStore } from '@/stores/studio3dStore';
-import { ToolPanelSection, ToolPanelDisclosure, ToolPanelRow } from '@/components/shared/ToolPanel';
+import { ToolPanelDisclosure, ToolPanelRow } from '@/components/shared/ToolPanel';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 
 export const EffectsTab: React.FC = React.memo(() => {
@@ -25,7 +25,7 @@ export const EffectsTab: React.FC = React.memo(() => {
   return (
     <>
       {/* Post-processing — always visible */}
-      <ToolPanelSection title="POST-PROCESSING">
+      <ToolPanelDisclosure label="POST-PROCESSING" defaultOpen>
         <ToolPanelRow label="Ambient Occlusion">
           <Switch checked={store.ssaoEnabled} onCheckedChange={store.setSsaoEnabled} aria-label="SSAO" />
         </ToolPanelRow>
@@ -91,7 +91,7 @@ export const EffectsTab: React.FC = React.memo(() => {
             <ScrubInput label="Sat" value={cgSaturation} min={-1} max={1} step={0.01} onChange={setCgSaturation} />
           </div>
         )}
-      </ToolPanelSection>
+      </ToolPanelDisclosure>
 
       {/* Shader FX — collapsible */}
       <ToolPanelDisclosure label="Shader FX">
