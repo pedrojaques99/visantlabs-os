@@ -2,11 +2,13 @@ import React from 'react';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import { ToolPanelDisclosure, ToolPanelRow } from '@/components/shared/ToolPanel';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 
 export const EffectsTab: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const store = useStudio3DStore();
 
   const [ssaoIntensity, setSsaoIntensity] = useDebouncedSlider(store.ssaoIntensity, store.setSsaoIntensity);
@@ -24,17 +26,15 @@ export const EffectsTab: React.FC = React.memo(() => {
 
   return (
     <>
-      {/* Post-processing — always visible */}
-      <ToolPanelDisclosure label="POST-PROCESSING" defaultOpen>
-        <ToolPanelRow label="Ambient Occlusion">
+      <ToolPanelDisclosure label={t('studio3d.panels.postProcessing')} defaultOpen>
+        <ToolPanelRow label={t('studio3d.panels.ambientOcclusion')}>
           <Switch checked={store.ssaoEnabled} onCheckedChange={store.setSsaoEnabled} aria-label="SSAO" />
         </ToolPanelRow>
         {store.ssaoEnabled && (
           <ScrubInput label="AO Intensity" value={ssaoIntensity} min={0} max={2} step={0.05} onChange={setSsaoIntensity} />
         )}
 
-        {/* Bloom */}
-        <ToolPanelRow label="Bloom">
+        <ToolPanelRow label={t('studio3d.panels.bloom')}>
           <Switch checked={store.bloomEnabled} onCheckedChange={store.setBloomEnabled} aria-label="Bloom" />
         </ToolPanelRow>
         {store.bloomEnabled && (
@@ -44,16 +44,14 @@ export const EffectsTab: React.FC = React.memo(() => {
           </div>
         )}
 
-        {/* Chromatic Aberration */}
-        <ToolPanelRow label="Chromatic Aberration">
+        <ToolPanelRow label={t('studio3d.panels.chromaticAberration')}>
           <Switch checked={store.chromaticAberrationEnabled} onCheckedChange={store.setChromaticAberrationEnabled} aria-label="Chromatic aberration" />
         </ToolPanelRow>
         {store.chromaticAberrationEnabled && (
           <ScrubInput label="Offset" value={chromaticAberrationOffset} min={0} max={0.02} step={0.0005} onChange={setChromaticAberrationOffset} />
         )}
 
-        {/* DOF */}
-        <ToolPanelRow label="Depth of Field">
+        <ToolPanelRow label={t('studio3d.panels.depthOfField')}>
           <Switch checked={store.dofEnabled} onCheckedChange={store.setDofEnabled} aria-label="Depth of field" />
         </ToolPanelRow>
         {store.dofEnabled && (
@@ -63,24 +61,21 @@ export const EffectsTab: React.FC = React.memo(() => {
           </div>
         )}
 
-        {/* Film Grain */}
-        <ToolPanelRow label="Film Grain">
+        <ToolPanelRow label={t('studio3d.panels.filmGrain')}>
           <Switch checked={store.noiseEnabled} onCheckedChange={store.setNoiseEnabled} aria-label="Film grain" />
         </ToolPanelRow>
         {store.noiseEnabled && (
           <ScrubInput label="Amount" value={noiseOpacity} min={0} max={0.5} step={0.01} onChange={setNoiseOpacity} />
         )}
 
-        {/* Vignette */}
-        <ToolPanelRow label="Vignette">
+        <ToolPanelRow label={t('studio3d.panels.vignette')}>
           <Switch checked={store.vignetteEnabled} onCheckedChange={store.setVignetteEnabled} aria-label="Vignette" />
         </ToolPanelRow>
         {store.vignetteEnabled && (
           <ScrubInput label="Darkness" value={vignetteIntensity} min={0} max={1} step={0.01} onChange={setVignetteIntensity} />
         )}
 
-        {/* Color Grading */}
-        <ToolPanelRow label="Color Grading">
+        <ToolPanelRow label={t('studio3d.panels.colorGrading')}>
           <Switch checked={store.colorGradingEnabled} onCheckedChange={store.setColorGradingEnabled} aria-label="Color grading" />
         </ToolPanelRow>
         {store.colorGradingEnabled && (
@@ -93,8 +88,7 @@ export const EffectsTab: React.FC = React.memo(() => {
         )}
       </ToolPanelDisclosure>
 
-      {/* Shader FX — collapsible */}
-      <ToolPanelDisclosure label="Shader FX">
+      <ToolPanelDisclosure label={t('studio3d.panels.shaderFx')}>
         <ShaderControls
           enabled={store.shaderEnabled}
           shaderType={store.shaderType}

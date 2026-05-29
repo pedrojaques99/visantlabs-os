@@ -103,7 +103,12 @@ export async function exportVideo(
   const stream = captureSource.captureStream(60);
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
     ? 'video/webm;codecs=vp9'
-    : 'video/webm';
+    : MediaRecorder.isTypeSupported('video/webm')
+      ? 'video/webm'
+      : null;
+  if (!mimeType) {
+    throw new Error('Video recording is not supported in this browser. Try Chrome or Edge for best compatibility.');
+  }
   const recorder = new MediaRecorder(stream, {
     mimeType,
     videoBitsPerSecond: 8_000_000,
@@ -151,9 +156,17 @@ export async function exportGLB(
   fileName: string,
 ): Promise<void> {
   if (!scene.children.length) throw new Error('Scene is empty — nothing to export');
+  const THREE = await import('three');
   const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
+  const exportScene = new THREE.Scene();
+  scene.traverse((child) => {
+    if ((child as any).isMesh) {
+      exportScene.add(child.clone());
+    }
+  });
+  if (!exportScene.children.length) throw new Error('No meshes found to export');
   const exporter = new GLTFExporter();
-  const result = await exporter.parseAsync(scene, { binary: true });
+  const result = await exporter.parseAsync(exportScene, { binary: true });
   const blob = new Blob([result as ArrayBuffer], { type: 'model/gltf-binary' });
   downloadBlob(blob, `${fileName || '3d-export'}.glb`);
 }

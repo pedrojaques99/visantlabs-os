@@ -295,7 +295,7 @@ export function SmoothControls({
       lastPos.current = { x: e.clientX, y: e.clientY };
       if (isPanning.current || e.shiftKey) {
         if (!isPanning.current) { isPanning.current = true; setCursor('move'); }
-        const panSensitivity = 0.01 * (camera.position.z / 8);
+        const panSensitivity = Math.min(0.02, Math.max(0.004, 0.01 * (camera.position.z / 8)));
         targetPan.current.x -= dx * panSensitivity;
         targetPan.current.y += dy * panSensitivity;
       } else {

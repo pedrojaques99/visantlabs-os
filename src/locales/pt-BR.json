@@ -4506,8 +4506,45 @@
       "loadTimeout": "Tempo esgotado ao carregar fonte"
     },
     "environment": {
-      "hdriBackground": "HDRI como Fundo"
+      "hdriBackground": "HDRI como Fundo",
+      "customLoaded": "HDRI customizado carregado",
+      "uploadHdr": "Upload .HDR",
+      "removeCustom": "Remover HDRI customizado"
     },
+    "panels": {
+      "surface": "SUPERFÍCIE",
+      "texturePbr": "Textura & PBR",
+      "rendering": "RENDERIZAÇÃO",
+      "environment": "Ambiente",
+      "hdri": "HDRI",
+      "atmosphere": "Atmosfera",
+      "fog": "Neblina",
+      "sceneOptions": "Opções da Cena",
+      "groundPlane": "Plano de Chão",
+      "perspective": "Perspectiva",
+      "orthographic": "Ortográfica",
+      "postProcessing": "PÓS-PROCESSAMENTO",
+      "ambientOcclusion": "Oclusão Ambiental",
+      "bloom": "Bloom",
+      "chromaticAberration": "Aberração Cromática",
+      "depthOfField": "Profundidade de Campo",
+      "filmGrain": "Grão de Filme",
+      "vignette": "Vinheta",
+      "colorGrading": "Graduação de Cor",
+      "shaderFx": "Shader FX",
+      "physics": "FÍSICA",
+      "controls": "CONTROLES",
+      "lightPositions": "Posições de Luz",
+      "toneMapping": "Mapeamento Tonal"
+    },
+    "shortcuts": {
+      "title": "Atalhos de Teclado"
+    },
+    "surpriseMe": "Surpreenda-me",
+    "randomizeTitle": "Surpreenda-me",
+    "randomizeMessage": "Isso vai randomizar todos os parâmetros da cena (material, cor, iluminação, animação, etc). Suas configurações atuais serão perdidas.",
+    "randomizeConfirm": "Vamos lá!",
+    "dropGlb": "Solte GLB / GLTF",
     "dropHere": "Solte o arquivo aqui"
   },
   "wind": {

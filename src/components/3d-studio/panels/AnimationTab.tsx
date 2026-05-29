@@ -41,7 +41,7 @@ export const AnimationTab: React.FC = React.memo(() => {
 
       {/* Physics params */}
       {store.animate === 'physicsFall' && (
-        <ToolPanelDisclosure label="PHYSICS" defaultOpen>
+        <ToolPanelDisclosure label={t('studio3d.panels.physics')} defaultOpen>
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput label="Count" value={physicsCount} min={1} max={Math.max(1, Math.round(100 - (store.physicsSize - 0.2) * (92 / 1.5)))} step={1} onChange={setPhysicsCount} />
             <ScrubInput label="Gravity" value={physicsGravity} min={0} max={30} step={0.5} onChange={setPhysicsGravity} />
@@ -57,7 +57,7 @@ export const AnimationTab: React.FC = React.memo(() => {
 
       {/* Standard animation params */}
       {store.animate !== 'none' && store.animate !== 'physicsFall' && (
-        <ToolPanelDisclosure label="CONTROLS" defaultOpen>
+        <ToolPanelDisclosure label={t('studio3d.panels.controls')} defaultOpen>
           <ScrubInput label="Speed" value={animateSpeed} min={0.1} max={5} step={0.1} onChange={setAnimateSpeed} />
           <ToolPanelGrid>
             {(['linear', 'easeIn', 'easeOut', 'easeInOut'] as const).map((e) => (

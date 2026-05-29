@@ -385,7 +385,7 @@ export const SceneTab: React.FC = React.memo(() => {
           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-dashed border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all text-[10px] uppercase tracking-widest font-mono"
         >
           <Shuffle size={13} />
-          Surprise me
+          {t('studio3d.surpriseMe')}
         </button>
       </ToolPanelDisclosure>
 
@@ -398,9 +398,9 @@ export const SceneTab: React.FC = React.memo(() => {
           store.randomize();
           toast.success('Surprise!');
         }}
-        title="Surprise Me"
-        message="This will randomize all scene parameters (material, color, lighting, animation, etc). Your current settings will be lost."
-        confirmText="Let's go!"
+        title={t('studio3d.randomizeTitle')}
+        message={t('studio3d.randomizeMessage')}
+        confirmText={t('studio3d.randomizeConfirm')}
         variant="warning"
       />
     </>

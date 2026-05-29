@@ -52,8 +52,8 @@ export const CameraTab: React.FC = React.memo(() => {
           </ToolPanelChip>
         </ToolPanelGrid>
         <div className="grid grid-cols-2 gap-1.5">
-          <ToolPanelChip active={!store.orthographic} onClick={() => store.setOrthographic(false)}>Perspective</ToolPanelChip>
-          <ToolPanelChip active={store.orthographic} onClick={() => store.setOrthographic(true)}>Orthographic</ToolPanelChip>
+          <ToolPanelChip active={!store.orthographic} onClick={() => store.setOrthographic(false)}>{t('studio3d.panels.perspective')}</ToolPanelChip>
+          <ToolPanelChip active={store.orthographic} onClick={() => store.setOrthographic(true)}>{t('studio3d.panels.orthographic')}</ToolPanelChip>
         </div>
         {!store.orthographic && (
           <ScrubInput label="FOV" value={fov} min={15} max={120} step={1} suffix="°" onChange={setFov} />
@@ -79,7 +79,7 @@ export const CameraTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Light Positions */}
-      <ToolPanelDisclosure label="Light Positions">
+      <ToolPanelDisclosure label={t('studio3d.panels.lightPositions')}>
         <LightPositionSliders label="Key Position" position={store.lightPosition} onChange={store.setLightPosition} />
         <LightPositionSliders label="Fill Position" position={store.fillLightPosition} onChange={store.setFillLightPosition} />
         <LightPositionSliders label="Bounce Position" position={store.bounceLightPosition} onChange={store.setBounceLightPosition} />
@@ -87,7 +87,7 @@ export const CameraTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Rendering & Tone Mapping */}
-      <ToolPanelDisclosure label="RENDERING" defaultOpen>
+      <ToolPanelDisclosure label={t('studio3d.panels.rendering')} defaultOpen>
         <ToolPanelGrid cols={3}>
           {(['performance', 'balanced', 'quality'] as const).map((q) => (
             <ToolPanelChip key={q} active={store.renderQuality === q} onClick={() => store.setRenderQuality(q)}>
@@ -106,7 +106,7 @@ export const CameraTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Environment (HDRI + Background) */}
-      <ToolPanelDisclosure label="Environment">
+      <ToolPanelDisclosure label={t('studio3d.panels.environment')}>
         <ToolPanelDisclosure label="HDRI" defaultOpen>
           <ToolPanelGrid cols={3}>
             {ENVIRONMENT_PRESETS.map((env) => (
@@ -119,7 +119,7 @@ export const CameraTab: React.FC = React.memo(() => {
             onClick={() => hdriInputRef.current?.click()}
             className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
           >
-            {store.customHdriUrl ? 'Custom HDRI loaded' : 'Upload .HDR'}
+            {store.customHdriUrl ? t('studio3d.environment.customLoaded') : t('studio3d.environment.uploadHdr')}
           </button>
           <input
             ref={hdriInputRef}
@@ -149,7 +149,7 @@ export const CameraTab: React.FC = React.memo(() => {
           )}
           {store.customHdriUrl && (
             <button onClick={() => store.setEnvironment('studio')} className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors">
-              Remove custom HDRI
+              {t('studio3d.environment.removeCustom')}
             </button>
           )}
         </ToolPanelDisclosure>
@@ -222,8 +222,8 @@ export const CameraTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Atmosphere */}
-      <ToolPanelDisclosure label="Atmosphere">
-        <ToolPanelRow label="Fog">
+      <ToolPanelDisclosure label={t('studio3d.panels.atmosphere')}>
+        <ToolPanelRow label={t('studio3d.panels.fog')}>
           <Switch checked={store.fogEnabled} onCheckedChange={store.setFogEnabled} aria-label="Fog" />
         </ToolPanelRow>
         {store.fogEnabled && (
@@ -251,7 +251,7 @@ export const CameraTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Scene Options */}
-      <ToolPanelDisclosure label="Scene Options">
+      <ToolPanelDisclosure label={t('studio3d.panels.sceneOptions')}>
         <ToolPanelRow label={t('studio3d.lighting.shadows')}>
           <Switch checked={store.shadow} onCheckedChange={store.setShadow} aria-label="Shadow" />
         </ToolPanelRow>
@@ -264,7 +264,7 @@ export const CameraTab: React.FC = React.memo(() => {
             ))}
           </ToolPanelGrid>
         )}
-        <ToolPanelRow label="Ground Plane">
+        <ToolPanelRow label={t('studio3d.panels.groundPlane')}>
           <Switch checked={store.groundPlane} onCheckedChange={store.setGroundPlane} aria-label="Ground plane" />
         </ToolPanelRow>
         {store.groundPlane && (

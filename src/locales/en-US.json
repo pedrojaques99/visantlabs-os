@@ -4502,8 +4502,45 @@
       "loadTimeout": "Font load timed out"
     },
     "environment": {
-      "hdriBackground": "HDRI as Background"
+      "hdriBackground": "HDRI as Background",
+      "customLoaded": "Custom HDRI loaded",
+      "uploadHdr": "Upload .HDR",
+      "removeCustom": "Remove custom HDRI"
     },
+    "panels": {
+      "surface": "SURFACE",
+      "texturePbr": "Texture & PBR",
+      "rendering": "RENDERING",
+      "environment": "Environment",
+      "hdri": "HDRI",
+      "atmosphere": "Atmosphere",
+      "fog": "Fog",
+      "sceneOptions": "Scene Options",
+      "groundPlane": "Ground Plane",
+      "perspective": "Perspective",
+      "orthographic": "Orthographic",
+      "postProcessing": "POST-PROCESSING",
+      "ambientOcclusion": "Ambient Occlusion",
+      "bloom": "Bloom",
+      "chromaticAberration": "Chromatic Aberration",
+      "depthOfField": "Depth of Field",
+      "filmGrain": "Film Grain",
+      "vignette": "Vignette",
+      "colorGrading": "Color Grading",
+      "shaderFx": "Shader FX",
+      "physics": "PHYSICS",
+      "controls": "CONTROLS",
+      "lightPositions": "Light Positions",
+      "toneMapping": "Tone Mapping"
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts"
+    },
+    "surpriseMe": "Surprise me",
+    "randomizeTitle": "Surprise Me",
+    "randomizeMessage": "This will randomize all scene parameters (material, color, lighting, animation, etc). Your current settings will be lost.",
+    "randomizeConfirm": "Let's go!",
+    "dropGlb": "Drop GLB / GLTF",
     "dropHere": "Drop file here"
   },
   "wind": {

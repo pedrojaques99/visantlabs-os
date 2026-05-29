@@ -289,7 +289,7 @@ export const Studio3DPage: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowShortcuts(false)} role="presentation">
           <div className="bg-neutral-900 border border-white/10 rounded-lg p-6 max-w-sm w-full mx-4 shadow-2xl" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-white uppercase tracking-wider">Keyboard Shortcuts</h3>
+              <h3 className="text-sm font-medium text-white uppercase tracking-wider">{t('studio3d.shortcuts.title')}</h3>
               <button onClick={() => setShowShortcuts(false)} className="text-neutral-500 hover:text-white transition-colors" aria-label="Close shortcuts"><X size={14} /></button>
             </div>
             <div className="space-y-1 text-[11px]">

@@ -58,7 +58,7 @@ export const LookTab: React.FC = React.memo(() => {
         </div>
       </ToolPanelDisclosure>
 
-      <ToolPanelDisclosure label="SURFACE" defaultOpen>
+      <ToolPanelDisclosure label={t('studio3d.panels.surface')} defaultOpen>
         <div className="grid grid-cols-3 gap-1.5">
           <ScrubInput label="Metal" value={metalness} min={0} max={1} step={0.01} onChange={setMetalness} />
           <ScrubInput label="Rough" value={roughness} min={0} max={1} step={0.01} onChange={setRoughness} />
@@ -69,7 +69,7 @@ export const LookTab: React.FC = React.memo(() => {
         </ToolPanelRow>
       </ToolPanelDisclosure>
 
-      <ToolPanelDisclosure label="Texture & PBR">
+      <ToolPanelDisclosure label={t('studio3d.panels.texturePbr')}>
         <TextureControls store={store} textureOpacity={textureOpacity} setTextureOpacity={setTextureOpacity} textureRotation={textureRotation} setTextureRotation={setTextureRotation} />
         <PbrMapUpload label="Normal Map" value={store.normalMapUrl} onChange={store.setNormalMapUrl} />
         <PbrMapUpload label="Roughness Map" value={store.roughnessMapUrl} onChange={store.setRoughnessMapUrl} />

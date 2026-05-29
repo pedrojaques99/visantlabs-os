@@ -284,6 +284,11 @@ function SceneContent() {
             rotationX={s.rotationX}
             rotationY={s.rotationY}
             objectScale={1}
+            overrideColor={s.color}
+            overrideMetalness={s.metalness}
+            overrideRoughness={s.roughness}
+            overrideWireframe={s.wireframe}
+            overrideOpacity={s.opacity}
           />
         ) : svgString && (
           s.animate === 'physicsFall' ? (

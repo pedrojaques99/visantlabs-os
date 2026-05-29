@@ -969,10 +969,10 @@ export async function getSavedScenes(): Promise<SavedScene[]> {
 
 export async function saveScene(name: string): Promise<SavedScene | null> {
   const state = useStudio3DStore.getState();
-  const exclude = new Set(['_cameraControlsRef', '_cameraInfo', 'panelVisible', 'activeTab', 'isLoading', 'isExporting', 'resetKey']);
+  const exclude = new Set(['_cameraControlsRef', '_cameraInfo', 'panelVisible', 'activeTab', 'isLoading', 'isExporting', 'exportProgress', 'resetKey']);
   const config: Record<string, any> = {};
   for (const [k, v] of Object.entries(INITIAL_STATE)) {
-    if (!exclude.has(k)) config[k] = (state as any)[k] ?? v;
+    if (!exclude.has(k) && typeof v !== 'function') config[k] = (state as any)[k] ?? v;
   }
   config.shaderEnabled = state.shaderEnabled;
   config.shaderType = state.shaderType;
