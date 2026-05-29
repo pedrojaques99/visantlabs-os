@@ -267,7 +267,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
 
   // Render embossed shape geometries (coin, badge, stamp, shield, hexagon, pendant)
   if (isEmbossedShape) {
-    const cylinderHeight = depth;
+    const cylinderHeight = depth * 0.4;
     const reliefDepth = Math.max(0.05, reliefDepthProp);
 
     const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
