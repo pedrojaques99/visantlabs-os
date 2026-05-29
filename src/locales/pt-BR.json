@@ -4393,6 +4393,7 @@
       "bailOffset": "Offset da Argola",
       "chainOffset": "Offset da Corrente",
       "chainColor": "Cor da Corrente",
+      "shapeColor": "Cor do Shape",
       "reliefDepth": "Espessura do Relevo",
       "depth": "Profundidade",
       "bevel": "Bevel",

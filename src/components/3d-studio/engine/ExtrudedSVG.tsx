@@ -280,31 +280,35 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     const emissiveIntensity = preset.emissiveIntensity ?? 0;
     const transmissionAmount = wantsTransparency ? 1 - materialSettings.opacity : 0;
 
+    const commonMatProps = {
+      metalness: isGold ? 1.0 : materialSettings.metalness,
+      roughness: isGold ? 0.12 : (wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness),
+      transmission: materialSettings.transmission !== undefined ? materialSettings.transmission : transmissionAmount,
+      thickness: materialSettings.thickness !== undefined ? materialSettings.thickness : (wantsTransparency ? 2.5 : 0),
+      ior: isGold ? 2.5 : (materialSettings.ior !== undefined ? materialSettings.ior : (wantsTransparency ? 1.5 : 1.45)),
+      opacity: 1 as number,
+      transparent: false as boolean,
+      wireframe: materialSettings.wireframe,
+      emissive: emissiveColor,
+      emissiveIntensity,
+      clearcoat: isGold ? 1.0 : (materialSettings.clearcoat !== undefined ? materialSettings.clearcoat : (wantsTransparency ? 1 : preset.clearcoat ?? 0)),
+      clearcoatRoughness: isGold ? 0.03 : (materialSettings.clearcoatRoughness !== undefined ? materialSettings.clearcoatRoughness : 0.05),
+      sheen: materialSettings.sheen !== undefined ? materialSettings.sheen : 0,
+      sheenRoughness: materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0,
+      sheenColor: materialSettings.sheenColor !== undefined ? materialSettings.sheenColor : '#000000',
+      iridescence: isGold ? 0.35 : (materialSettings.iridescence !== undefined ? materialSettings.iridescence : 0),
+      iridescenceIOR: isGold ? 1.6 : (materialSettings.iridescenceIOR !== undefined ? materialSettings.iridescenceIOR : 1.3),
+      reflectivity: isGold ? 0.95 : (materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5),
+      side: THREE.DoubleSide,
+      envMapIntensity: isGold ? 2.2 : 1.2,
+    };
+
     const shapeMaterial = (
-      <meshPhysicalMaterial
-        color={shapeBaseColor}
-        map={texture ?? undefined}
-        metalness={isGold ? 1.0 : materialSettings.metalness}
-        roughness={isGold ? 0.12 : (wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness)}
-        transmission={materialSettings.transmission !== undefined ? materialSettings.transmission : transmissionAmount}
-        thickness={materialSettings.thickness !== undefined ? materialSettings.thickness : (wantsTransparency ? 2.5 : 0)}
-        ior={isGold ? 2.5 : (materialSettings.ior !== undefined ? materialSettings.ior : (wantsTransparency ? 1.5 : 1.45))}
-        opacity={1}
-        transparent={false}
-        wireframe={materialSettings.wireframe}
-        emissive={emissiveColor}
-        emissiveIntensity={emissiveIntensity}
-        clearcoat={isGold ? 1.0 : (materialSettings.clearcoat !== undefined ? materialSettings.clearcoat : (wantsTransparency ? 1 : preset.clearcoat ?? 0))}
-        clearcoatRoughness={isGold ? 0.03 : (materialSettings.clearcoatRoughness !== undefined ? materialSettings.clearcoatRoughness : 0.05)}
-        sheen={materialSettings.sheen !== undefined ? materialSettings.sheen : 0}
-        sheenRoughness={materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0}
-        sheenColor={materialSettings.sheenColor !== undefined ? materialSettings.sheenColor : '#000000'}
-        iridescence={isGold ? 0.35 : (materialSettings.iridescence !== undefined ? materialSettings.iridescence : 0)}
-        iridescenceIOR={isGold ? 1.6 : (materialSettings.iridescenceIOR !== undefined ? materialSettings.iridescenceIOR : 1.3)}
-        reflectivity={isGold ? 0.95 : (materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5)}
-        side={THREE.DoubleSide}
-        envMapIntensity={isGold ? 2.2 : 1.2}
-      />
+      <meshPhysicalMaterial color={shapeBaseColor} map={texture ?? undefined} {...commonMatProps} />
+    );
+
+    const logoMaterial = (
+      <meshPhysicalMaterial color={baseColor} map={texture ?? undefined} {...commonMatProps} />
     );
 
     const renderEmbossedLogo = (zOffset: number, flipBack = false) => (
@@ -323,7 +327,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
             geometry={geometry}
             position={[-center.x, -center.y, -center.z]}
           >
-            {shapeMaterial}
+            {logoMaterial}
           </mesh>
         ))}
       </group>

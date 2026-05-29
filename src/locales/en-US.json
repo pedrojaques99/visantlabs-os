@@ -4389,6 +4389,7 @@
       "bailOffset": "Ring Offset",
       "chainOffset": "Chain Offset",
       "chainColor": "Chain Color",
+      "shapeColor": "Shape Color",
       "reliefDepth": "Relief Depth",
       "depth": "Depth",
       "bevel": "Bevel",

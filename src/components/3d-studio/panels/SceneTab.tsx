@@ -380,7 +380,7 @@ export const SceneTab: React.FC = React.memo(() => {
         {store.shapeType !== 'standard' && (
           <>
             <ScrubInput label={t('studio3d.geometry.reliefDepth')} value={reliefDepth} min={0.05} max={1.5} step={0.05} onChange={setReliefDepth} />
-            <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
+            <ToolPanelRow label={t('studio3d.geometry.shapeColor')}>
               <div className="flex items-center gap-2">
                 {!!store.shapeColor && (
                   <button
@@ -391,7 +391,7 @@ export const SceneTab: React.FC = React.memo(() => {
                     aria-label="Toggle shape color picker"
                   />
                 )}
-                <Switch checked={!!store.shapeColor} onCheckedChange={(on) => store.setShapeColor(on ? store.color : '')} aria-label="Custom shape color" />
+                <Switch checked={!!store.shapeColor} onCheckedChange={(on) => store.setShapeColor(on ? '#888888' : '')} aria-label="Custom shape color" />
               </div>
             </ToolPanelRow>
             {!!store.shapeColor && (
