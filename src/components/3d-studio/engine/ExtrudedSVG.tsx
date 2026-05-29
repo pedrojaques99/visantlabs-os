@@ -60,11 +60,14 @@ const PendantChain: React.FC<{
     const meshes: THREE.Mesh[] = [];
     c.traverse((child) => { if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh); });
     // Sort by world Y position ascending (bottom first)
-    meshes.sort((a, b) => {
-      a.updateWorldMatrix(true, false);
-      b.updateWorldMatrix(true, false);
-      return a.getWorldPosition(new THREE.Vector3()).y - b.getWorldPosition(new THREE.Vector3()).y;
+    const meshYPositions = new Map<THREE.Mesh, number>();
+    const tempV = new THREE.Vector3();
+    meshes.forEach((m) => {
+      m.updateWorldMatrix(true, false);
+      m.getWorldPosition(tempV);
+      meshYPositions.set(m, tempV.y);
     });
+    meshes.sort((a, b) => (meshYPositions.get(a) ?? 0) - (meshYPositions.get(b) ?? 0));
     meshes.forEach((m, i) => { m.visible = i < chainLinks; });
 
     const ns = (4 * chainScale) / Math.max(s.x, s.y, s.z);

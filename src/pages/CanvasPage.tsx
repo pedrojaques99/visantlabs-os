@@ -243,7 +243,8 @@ export const CanvasPage: React.FC = () => {
   const [selectedMockup, setSelectedMockup] = useState<Mockup | null>(null);
   const [userMockups, setUserMockups] = useState<Mockup[]>([]);
   const [exportPanel, setExportPanel] = useState<{ nodeId: string; nodeName: string; imageUrl: string | null; nodeType: string } | null>(null);
-  const exportCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [exportCanvas, setExportCanvas] = useState<HTMLCanvasElement | null>(null);
+  const exportCanvasRef = React.useMemo(() => ({ current: exportCanvas }), [exportCanvas]);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 
   // Workflow state
@@ -625,7 +626,7 @@ export const CanvasPage: React.FC = () => {
       c.width = img.naturalWidth;
       c.height = img.naturalHeight;
       c.getContext('2d')!.drawImage(img, 0, 0);
-      exportCanvasRef.current = c;
+      setExportCanvas(c);
     };
     img.src = imageUrl;
   }, [contextMenu, nodes]);
@@ -4321,7 +4322,7 @@ export const CanvasPage: React.FC = () => {
         {/* Export Modal */}
         <ExportModal
           isOpen={!!exportPanel}
-          onClose={() => { setExportPanel(null); exportCanvasRef.current = null; }}
+          onClose={() => { setExportPanel(null); setExportCanvas(null); }}
           canvasRef={exportCanvasRef}
           filenamePrefix={exportPanel?.nodeName || 'canvas-node'}
         />

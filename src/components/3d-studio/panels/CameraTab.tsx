@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
@@ -21,6 +21,16 @@ export const CameraTab: React.FC = React.memo(() => {
   const store = useStudio3DStore();
   const hdriInputRef = useRef<HTMLInputElement>(null);
   const [bgColorPickerOpen, setBgColorPickerOpen] = useState(false);
+  const [bgInput, setBgInput] = useState(store.background.replace('#', '').toUpperCase());
+  const [fogInput, setFogInput] = useState(store.fogColor.replace('#', '').toUpperCase());
+
+  useEffect(() => {
+    setBgInput(store.background.replace('#', '').toUpperCase());
+  }, [store.background]);
+
+  useEffect(() => {
+    setFogInput(store.fogColor.replace('#', '').toUpperCase());
+  }, [store.fogColor]);
 
   const [fov, setFov] = useDebouncedSlider(store.fov, store.setFov);
   const [toneMappingExposure, setToneMappingExposure] = useDebouncedSlider(store.toneMappingExposure, store.setToneMappingExposure);
@@ -176,9 +186,17 @@ export const CameraTab: React.FC = React.memo(() => {
                   <span className="text-[10px] text-neutral-500 mr-1">#</span>
                   <input
                     type="text"
-                    value={store.background.replace('#', '').toUpperCase()}
-                    onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setBackground(`#${v}`); }}
-                    onBlur={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setBackground(`#${v}`); }}
+                    value={bgInput}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                      setBgInput(v);
+                      if (v.length === 6) store.setBackground(`#${v}`);
+                    }}
+                    onBlur={() => {
+                      if (bgInput.length !== 6) {
+                        setBgInput(store.background.replace('#', '').toUpperCase());
+                      }
+                    }}
                     maxLength={6}
                     aria-label="Background color"
                     className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
@@ -234,8 +252,17 @@ export const CameraTab: React.FC = React.memo(() => {
                 <span className="text-[10px] text-neutral-500 mr-1">#</span>
                 <input
                   type="text"
-                  value={store.fogColor.replace('#', '').toUpperCase()}
-                  onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setFogColor(`#${v}`); }}
+                  value={fogInput}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                    setFogInput(v);
+                    if (v.length === 6) store.setFogColor(`#${v}`);
+                  }}
+                  onBlur={() => {
+                    if (fogInput.length !== 6) {
+                      setFogInput(store.fogColor.replace('#', '').toUpperCase());
+                    }
+                  }}
                   maxLength={6}
                   aria-label="Fog color"
                   className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"

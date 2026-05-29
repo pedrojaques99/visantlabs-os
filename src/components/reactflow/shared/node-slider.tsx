@@ -33,7 +33,7 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
     }
 
     const handleScrubDown = (e: React.MouseEvent | React.TouchEvent) => {
-      e.preventDefault()
+      if (e.cancelable) e.preventDefault()
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
       scrubRef.current = { startX: clientX, startValue: value }
       const sensitivity = (max - min) / 400
