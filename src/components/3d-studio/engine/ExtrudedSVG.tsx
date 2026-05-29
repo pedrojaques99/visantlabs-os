@@ -267,7 +267,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
 
   // Render embossed shape geometries (coin, badge, stamp, shield, hexagon, pendant)
   if (isEmbossedShape) {
-    const cylinderHeight = depth * 0.4;
+    const cylinderHeight = depth * 0.35;
+    const shapeBevelScale = Math.min(1, cylinderHeight / 0.8);
     const reliefDepth = Math.max(0.05, reliefDepthProp);
 
     const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
@@ -344,11 +345,11 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
                 {shapeMaterial}
               </mesh>
               <mesh position={[0, 0, cylinderHeight / 2]}>
-                <torusGeometry args={[rimR, 0.2, 16, 64]} />
+                <torusGeometry args={[rimR, 0.1 * shapeBevelScale, 16, 64]} />
                 {shapeMaterial}
               </mesh>
               <mesh position={[0, 0, -cylinderHeight / 2]}>
-                <torusGeometry args={[rimR, 0.2, 16, 64]} />
+                <torusGeometry args={[rimR, 0.1 * shapeBevelScale, 16, 64]} />
                 {shapeMaterial}
               </mesh>
             </>
@@ -372,8 +373,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
               <extrudeGeometry args={[badgeShape, {
                 depth: cylinderHeight,
                 bevelEnabled: true,
-                bevelThickness: 0.12,
-                bevelSize: 0.1,
+                bevelThickness: 0.06 * shapeBevelScale,
+                bevelSize: 0.05 * shapeBevelScale,
                 bevelSegments: 4,
               }]} />
               {shapeMaterial}
@@ -397,8 +398,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
               <extrudeGeometry args={[stampShape, {
                 depth: cylinderHeight,
                 bevelEnabled: true,
-                bevelThickness: 0.1,
-                bevelSize: 0.08,
+                bevelThickness: 0.05 * shapeBevelScale,
+                bevelSize: 0.04 * shapeBevelScale,
                 bevelSegments: 3,
               }]} />
               {shapeMaterial}
@@ -421,8 +422,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
               <extrudeGeometry args={[shieldShape, {
                 depth: cylinderHeight,
                 bevelEnabled: true,
-                bevelThickness: 0.15,
-                bevelSize: 0.12,
+                bevelThickness: 0.07 * shapeBevelScale,
+                bevelSize: 0.05 * shapeBevelScale,
                 bevelSegments: 4,
               }]} />
               {shapeMaterial}
@@ -445,8 +446,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
               <extrudeGeometry args={[hexShape, {
                 depth: cylinderHeight,
                 bevelEnabled: true,
-                bevelThickness: 0.12,
-                bevelSize: 0.1,
+                bevelThickness: 0.06 * shapeBevelScale,
+                bevelSize: 0.05 * shapeBevelScale,
                 bevelSegments: 3,
               }]} />
               {shapeMaterial}
