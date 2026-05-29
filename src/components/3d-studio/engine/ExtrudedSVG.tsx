@@ -271,6 +271,13 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     const shapeBevelScale = Math.min(1, cylinderHeight / 0.8);
     const reliefDepth = Math.max(0.05, reliefDepthProp);
 
+    const logoScale = baseScale * 0.75;
+    const bb = geometries[0]?.boundingBox;
+    const logoW = bb ? (bb.max.x - bb.min.x) * logoScale : 3;
+    const logoH = bb ? (bb.max.y - bb.min.y) * logoScale : 3;
+    const logoSpan = Math.max(logoW, logoH);
+    const padding = 1.25;
+
     const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
     const isGold = materialSettings.preset === 'gold';
     const isEmissive = materialSettings.preset === 'emissive';
@@ -334,14 +341,30 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       </group>
     );
 
+    const minCoinR = (logoSpan / 2) * padding;
+    const minBadgeW = logoW * padding;
+    const minBadgeH = logoH * padding;
+    const minStampR = (logoSpan / 2) * padding;
+    const minShieldW = (logoW / 2) * padding;
+    const minShieldH = (logoH / 2) * padding;
+    const minHexR = (logoSpan / 2) * padding;
+
+    const effCoinR = Math.max(coinRadius, minCoinR);
+    const effBadgeW = Math.max(badgeWidth, minBadgeW);
+    const effBadgeH = Math.max(badgeHeight, minBadgeH);
+    const effStampR = Math.max(stampRadius, minStampR);
+    const effShieldW = Math.max(shieldWidth, minShieldW);
+    const effShieldH = Math.max(shieldHeight, minShieldH);
+    const effHexR = Math.max(hexRadius, minHexR);
+
     const renderBaseShape = () => {
       switch (shapeType) {
         case 'coin': {
-          const rimR = coinRadius * 0.91;
+          const rimR = effCoinR * 0.91;
           return (
             <>
               <mesh rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[coinRadius, coinRadius, cylinderHeight, 64, 1]} />
+                <cylinderGeometry args={[effCoinR, effCoinR, cylinderHeight, 64, 1]} />
                 {shapeMaterial}
               </mesh>
               <mesh position={[0, 0, cylinderHeight / 2]}>
@@ -358,7 +381,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
 
         case 'badge': {
           const badgeShape = new THREE.Shape();
-          const w = badgeWidth, h = badgeHeight, r = Math.min(badgeRadius, badgeWidth / 2, badgeHeight / 2);
+          const w = effBadgeW, h = effBadgeH, r = Math.min(badgeRadius, effBadgeW / 2, effBadgeH / 2);
           badgeShape.moveTo(-w / 2 + r, -h / 2);
           badgeShape.lineTo(w / 2 - r, -h / 2);
           badgeShape.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r);
@@ -387,7 +410,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
           const tCount = Math.round(stampTeeth);
           for (let i = 0; i <= tCount; i++) {
             const angle = (i / tCount) * Math.PI * 2;
-            const r = i % 2 === 0 ? stampRadius : stampRadius - stampToothDepth;
+            const r = i % 2 === 0 ? effStampR : effStampR - stampToothDepth;
             const x = Math.cos(angle) * r;
             const y = Math.sin(angle) * r;
             if (i === 0) stampShape.moveTo(x, y);
@@ -408,7 +431,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
         }
 
         case 'shield': {
-          const sw = shieldWidth, sh = shieldHeight;
+          const sw = effShieldW, sh = effShieldH;
           const shieldShape = new THREE.Shape();
           shieldShape.moveTo(0, sh);
           shieldShape.bezierCurveTo(sw * 0.55, sh * 0.93, sw, sh * 0.71, sw, sh * 0.43);
@@ -435,8 +458,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
           const hexShape = new THREE.Shape();
           for (let i = 0; i < 6; i++) {
             const angle = (i / 6) * Math.PI * 2 - Math.PI / 6;
-            const x = Math.cos(angle) * hexRadius;
-            const y = Math.sin(angle) * hexRadius;
+            const x = Math.cos(angle) * effHexR;
+            const y = Math.sin(angle) * effHexR;
             if (i === 0) hexShape.moveTo(x, y);
             else hexShape.lineTo(x, y);
           }
@@ -464,11 +487,11 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     const isExtrudedBase = shapeType === 'badge' || shapeType === 'stamp' || shapeType === 'shield' || shapeType === 'hexagon';
 
     // Compute shape top Y for bail placement
-    const shapeTopY = shapeType === 'coin' ? coinRadius
-      : shapeType === 'shield' ? shieldHeight
-      : shapeType === 'badge' ? badgeHeight / 2
-      : shapeType === 'stamp' ? stampRadius
-      : shapeType === 'hexagon' ? hexRadius
+    const shapeTopY = shapeType === 'coin' ? effCoinR
+      : shapeType === 'shield' ? effShieldH
+      : shapeType === 'badge' ? effBadgeH / 2
+      : shapeType === 'stamp' ? effStampR
+      : shapeType === 'hexagon' ? effHexR
       : 2.0;
 
     const bailRadius = bailSize;
