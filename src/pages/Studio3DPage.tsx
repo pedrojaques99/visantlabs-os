@@ -17,6 +17,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-media-query';
 
 export const Studio3DPage: React.FC = () => {
   const { t } = useTranslation();
@@ -33,6 +34,7 @@ export const Studio3DPage: React.FC = () => {
   const modelUrl = store((s) => s.modelUrl);
   const isEmpty = inputMode === 'svg' ? !svgData : inputMode === 'text' ? !text : !modelUrl;
 
+  const isMobile = useIsMobile();
   const panelVisible = store((s) => s.panelVisible);
   const setPanelVisible = store((s) => s.setPanelVisible);
   const resetScene = store((s) => s.resetScene);
@@ -221,34 +223,37 @@ export const Studio3DPage: React.FC = () => {
       dropMessage={t('studio3d.dropHere')}
     >
       {/* Floating left toolbar */}
-      <div className="absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50">
-        <button onClick={() => store.getState().setPanelVisible(true)} title={t('studio3d.controls')} className={cn('flex items-center justify-center w-9 h-9 rounded-lg transition-all', panelVisible ? 'bg-white/10 text-white ring-1 ring-white/30' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-          <PanelRightOpen size={15} />
+      <div className={cn('absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50', isMobile && 'left-2 top-2 p-1')}>
+        <button onClick={() => store.getState().setPanelVisible(true)} title={t('studio3d.controls')} className={cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9', panelVisible ? 'bg-white/10 text-white ring-1 ring-white/30' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+          <PanelRightOpen size={isMobile ? 18 : 15} />
         </button>
 
         <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
 
-        <button onClick={() => undo()} disabled={pastStates.length === 0} title="Undo (Ctrl+Z)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all">
-          <Undo2 size={15} />
+        <button onClick={() => undo()} disabled={pastStates.length === 0} title="Undo (Ctrl+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+          <Undo2 size={isMobile ? 18 : 15} />
         </button>
-        <button onClick={() => redo()} disabled={futureStates.length === 0} title="Redo (Ctrl+Shift+Z)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all">
-          <Redo2 size={15} />
-        </button>
-
-        <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
-
-        <button onClick={resetScene} title={t('studio3d.resetScene')} className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
-          <RotateCcw size={15} />
-        </button>
-        <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
-          <Download size={15} />
+        <button onClick={() => redo()} disabled={futureStates.length === 0} title="Redo (Ctrl+Shift+Z)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+          <Redo2 size={isMobile ? 18 : 15} />
         </button>
 
         <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
 
-        <button onClick={() => setShowShortcuts(v => !v)} title="Keyboard shortcuts (?)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
-          <Keyboard size={15} />
+        <button onClick={resetScene} title={t('studio3d.resetScene')} className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+          <RotateCcw size={isMobile ? 18 : 15} />
         </button>
+        <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+          <Download size={isMobile ? 18 : 15} />
+        </button>
+
+        {!isMobile && (
+          <>
+            <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+            <button onClick={() => setShowShortcuts(v => !v)} title="Keyboard shortcuts (?)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
+              <Keyboard size={15} />
+            </button>
+          </>
+        )}
       </div>
 
       <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-neutral-950"><span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">{t('studio3d.loadingEngine')}</span></div>}>
@@ -295,7 +300,26 @@ export const Studio3DPage: React.FC = () => {
       filenamePrefix={`3d-studio_${fileName?.replace(/\.[^.]+$/, '') || 'export'}`}
       getShaderSettings={getShaderSettings}
       isVideo={animate !== 'none'}
+      videoDuration={store.getState().videoDuration}
       onExportVideo={animate !== 'none' ? handleVideoExport : undefined}
+      onExportScaled={(scale) => {
+        const source = canvasRef.current;
+        if (!source) return undefined;
+        const s = store.getState();
+        const scaled = document.createElement('canvas');
+        scaled.width = Math.round(source.width * scale);
+        scaled.height = Math.round(source.height * scale);
+        const ctx = scaled.getContext('2d');
+        if (!ctx) return undefined;
+        if (!s.transparentBg) {
+          ctx.fillStyle = s.background;
+          ctx.fillRect(0, 0, scaled.width, scaled.height);
+        }
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(source, 0, 0, scaled.width, scaled.height);
+        return scaled;
+      }}
     />
   </>
   );

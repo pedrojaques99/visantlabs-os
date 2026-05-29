@@ -207,7 +207,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-[480px] max-h-[80vh] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl flex flex-col"
+        className="w-full max-w-[480px] mx-4 max-h-[80vh] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

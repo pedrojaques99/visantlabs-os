@@ -45,7 +45,7 @@ export const LookTab: React.FC = React.memo(() => {
             <button
               type="button"
               onClick={() => setColorPickerOpen(!colorPickerOpen)}
-              className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+              className="w-8 h-8 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
               style={{ backgroundColor: store.color }}
               aria-label="Toggle color picker"
             />

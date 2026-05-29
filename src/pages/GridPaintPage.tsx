@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
-  Download, Trash2, RotateCcw, Copy,
+  Download, Trash2, RotateCcw, Copy, Eraser,
   ChevronLeft, Maximize2, ZoomIn, ZoomOut, Shuffle, Dices,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -431,6 +431,7 @@ export const GridPaintPage: React.FC = () => {
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMousePos = useRef<{ x: number; y: number } | null>(null);
   const [eraseHover, setEraseHover] = useState<EraseTarget>(null);
+  const [eraseMode, setEraseMode] = useState(false);
   const [history, setHistory] = useState<{ cells: number[][]; ligaments: Set<string>; blocked: Set<string> }[]>([]);
   const [zoom, setZoom] = useState(1);
   const [showPanel, setShowPanel] = useState(true);
@@ -619,7 +620,7 @@ export const GridPaintPage: React.FC = () => {
     const coords = getCanvasCoords(e.clientX, e.clientY);
     if (!coords) return;
 
-    if (e.button === 2) {
+    if (e.button === 2 || eraseMode) {
       applyErase(coords.x, coords.y);
       return;
     }
@@ -628,7 +629,7 @@ export const GridPaintPage: React.FC = () => {
     isDrawing.current = true;
     pencilLastCell.current = null;
     applyPaint(coords.x, coords.y);
-  }, [pushHistory, getCanvasCoords, applyPaint, applyErase]);
+  }, [pushHistory, getCanvasCoords, applyPaint, applyErase, eraseMode]);
 
   const onPointerMove = useCallback((e: React.MouseEvent) => {
     const coords = getCanvasCoords(e.clientX, e.clientY);
@@ -650,21 +651,45 @@ export const GridPaintPage: React.FC = () => {
 
   const onPointerUp = useCallback(() => {
     isDrawing.current = false;
+    pinchRef.current = null;
   }, []);
+
+  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.target !== canvasRef.current) return;
     e.preventDefault();
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchRef.current = { dist: Math.hypot(dx, dy), zoom };
+      isDrawing.current = false;
+      return;
+    }
+    if (eraseMode) {
+      const t = e.touches[0];
+      const coords = getCanvasCoords(t.clientX, t.clientY);
+      if (coords) applyErase(coords.x, coords.y);
+      return;
+    }
     pushHistory();
     isDrawing.current = true;
     pencilLastCell.current = null;
     const t = e.touches[0];
     const coords = getCanvasCoords(t.clientX, t.clientY);
     if (coords) applyPaint(coords.x, coords.y);
-  }, [pushHistory, getCanvasCoords, applyPaint]);
+  }, [pushHistory, getCanvasCoords, applyPaint, applyErase, eraseMode, zoom]);
 
   const onTouchMove = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
+    if (e.touches.length === 2 && pinchRef.current) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const scale = dist / pinchRef.current.dist;
+      setZoom(Math.min(3, Math.max(0.3, pinchRef.current.zoom * scale)));
+      return;
+    }
     if (!isDrawing.current) return;
     const t = e.touches[0];
     const coords = getCanvasCoords(t.clientX, t.clientY);
@@ -732,7 +757,7 @@ export const GridPaintPage: React.FC = () => {
       <CanvasErrorBoundary>
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 cursor-crosshair"
+        className={cn('absolute inset-0', isMobile ? 'touch-none' : eraseMode ? 'cursor-pointer' : 'cursor-crosshair')}
         onMouseDown={onPointerDown}
         onMouseMove={onPointerMove}
         onMouseUp={onPointerUp}
@@ -756,6 +781,7 @@ export const GridPaintPage: React.FC = () => {
             <div className="w-px h-4 bg-white/5 mx-1" />
             <MicroTitle className="text-neutral-400 tracking-tight">Grid Paint</MicroTitle>
             <MicroTitle className="text-neutral-600 ml-2">{activeCount} dots</MicroTitle>
+            {isMobile && <MicroTitle className="text-neutral-700 ml-1.5">{config.frameW}x{config.frameH}</MicroTitle>}
           </>
         }
         right={
@@ -786,31 +812,40 @@ export const GridPaintPage: React.FC = () => {
         <div className="flex items-center gap-0.5 backdrop-blur-xl border border-white/10 rounded-xl px-1.5 py-1 shadow-lg" style={{ backgroundColor: '#0a0a0add' }}>
 
           <Tooltip content="Zoom Out" position="top">
-            <Button variant="ghost" className="w-9 h-9 flex items-center justify-center rounded-md" onClick={() => setZoom(z => Math.max(0.3, z - 0.15))}>
+            <Button variant="ghost" className={cn('flex items-center justify-center rounded-md', isMobile ? 'w-10 h-10' : 'w-9 h-9')} onClick={() => setZoom(z => Math.max(0.3, z - 0.15))}>
               <ZoomOut size={16} strokeWidth={2} />
             </Button>
           </Tooltip>
           <span className="text-[10px] font-mono text-neutral-400 w-[34px] text-center tabular-nums select-none">{(zoom * 100).toFixed(0)}%</span>
           <Tooltip content="Zoom In" position="top">
-            <Button variant="ghost" className="w-9 h-9 flex items-center justify-center rounded-md" onClick={() => setZoom(z => Math.min(3, z + 0.15))}>
+            <Button variant="ghost" className={cn('flex items-center justify-center rounded-md', isMobile ? 'w-10 h-10' : 'w-9 h-9')} onClick={() => setZoom(z => Math.min(3, z + 0.15))}>
               <ZoomIn size={16} strokeWidth={2} />
             </Button>
           </Tooltip>
           <Tooltip content="Reset zoom" position="top">
-            <Button variant="ghost" className="w-9 h-9 flex items-center justify-center rounded-md" onClick={() => setZoom(1)}>
+            <Button variant="ghost" className={cn('flex items-center justify-center rounded-md', isMobile ? 'w-10 h-10' : 'w-9 h-9')} onClick={() => setZoom(1)}>
               <Maximize2 size={16} strokeWidth={2} />
             </Button>
           </Tooltip>
 
           <div className="w-px h-5 bg-neutral-800/50 mx-0.5" />
 
+          <Tooltip content="Eraser" position="top">
+            <Button
+              variant="ghost"
+              className={cn('flex items-center justify-center rounded-md', isMobile ? 'w-10 h-10' : 'w-9 h-9', eraseMode && 'bg-white/10 text-white ring-1 ring-white/30')}
+              onClick={() => setEraseMode(m => !m)}
+            >
+              <Eraser size={16} strokeWidth={2} />
+            </Button>
+          </Tooltip>
           <Tooltip content="Undo (Ctrl+Z)" position="top">
-            <Button variant="ghost" className="w-9 h-9 flex items-center justify-center rounded-md" onClick={undo}>
+            <Button variant="ghost" className={cn('flex items-center justify-center rounded-md', isMobile ? 'w-10 h-10' : 'w-9 h-9')} onClick={undo}>
               <RotateCcw size={16} strokeWidth={2} />
             </Button>
           </Tooltip>
           <Tooltip content="Clear canvas" position="top">
-            <Button variant="ghost" className="w-9 h-9 flex items-center justify-center rounded-md" onClick={() => { pushHistory(); setGrid(prev => ({ ...prev, cells: createGrid(prev.cols, prev.rows), ligaments: new Set<string>(), blocked: new Set<string>() })); }}>
+            <Button variant="ghost" className={cn('flex items-center justify-center rounded-md', isMobile ? 'w-10 h-10' : 'w-9 h-9')} onClick={() => { pushHistory(); setGrid(prev => ({ ...prev, cells: createGrid(prev.cols, prev.rows), ligaments: new Set<string>(), blocked: new Set<string>() })); }}>
               <Trash2 size={16} strokeWidth={2} />
             </Button>
           </Tooltip>
@@ -862,7 +897,7 @@ export const GridPaintPage: React.FC = () => {
             <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Color</MicroTitle>
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer group">
-                <div className="relative w-7 h-7 rounded-lg border border-white/10 overflow-hidden shadow-inner">
+                <div className="relative w-9 h-9 rounded-lg border border-white/10 overflow-hidden shadow-inner">
                   <input type="color" value={config.dotColor} onChange={e => updateConfig({ dotColor: e.target.value })}
                     className="absolute inset-0 w-full h-full cursor-pointer opacity-0" />
                   <div className="w-full h-full rounded-lg" style={{ background: config.dotColor }} />
@@ -870,7 +905,7 @@ export const GridPaintPage: React.FC = () => {
                 <MicroTitle className="text-neutral-500 group-hover:text-neutral-300 text-[10px]">{t('grid.paint.dot')}</MicroTitle>
               </label>
               <label className="flex items-center gap-2 cursor-pointer group">
-                <div className="relative w-7 h-7 rounded-lg border border-white/10 overflow-hidden shadow-inner">
+                <div className="relative w-9 h-9 rounded-lg border border-white/10 overflow-hidden shadow-inner">
                   <input type="color" value={config.bgColor} onChange={e => updateConfig({ bgColor: e.target.value })}
                     className="absolute inset-0 w-full h-full cursor-pointer opacity-0" />
                   <div className="w-full h-full rounded-lg" style={{ background: config.bgColor }} />
@@ -965,6 +1000,48 @@ export const GridPaintPage: React.FC = () => {
                   </Button>
                 ))}
               </div>
+            </div>
+            {/* Colors */}
+            <div className="p-3 space-y-2.5 border-b border-neutral-800">
+              <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">Color</MicroTitle>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className="relative w-9 h-9 rounded-lg border border-white/10 overflow-hidden shadow-inner">
+                    <input type="color" value={config.dotColor} onChange={e => updateConfig({ dotColor: e.target.value })}
+                      className="absolute inset-0 w-full h-full cursor-pointer opacity-0" />
+                    <div className="w-full h-full rounded-lg" style={{ background: config.dotColor }} />
+                  </div>
+                  <MicroTitle className="text-neutral-500 group-hover:text-neutral-300 text-[10px]">{t('grid.paint.dot')}</MicroTitle>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className="relative w-9 h-9 rounded-lg border border-white/10 overflow-hidden shadow-inner">
+                    <input type="color" value={config.bgColor} onChange={e => updateConfig({ bgColor: e.target.value })}
+                      className="absolute inset-0 w-full h-full cursor-pointer opacity-0" />
+                    <div className="w-full h-full rounded-lg" style={{ background: config.bgColor }} />
+                  </div>
+                  <MicroTitle className="text-neutral-500 group-hover:text-neutral-300 text-[10px]">BG</MicroTitle>
+                </label>
+              </div>
+            </div>
+            {/* Frame */}
+            <div className="p-3 space-y-2 border-b border-neutral-800">
+              <div className="flex items-center justify-between">
+                <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('grid.paint.frame')}</MicroTitle>
+                <MicroTitle className="text-neutral-700 text-[10px]">{grid.cols}x{grid.rows} dots</MicroTitle>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {Object.entries(FRAME_PRESETS).map(([label, [w, h]]) => (
+                  <Button key={label} variant="ghost" size="xs"
+                    onClick={() => updateConfig({ frameW: w, frameH: h })}
+                    className={cn('text-[10px] font-medium', config.frameW === w && config.frameH === h ? 'text-white bg-white/10' : 'text-neutral-600')}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+              <NodeSlider label={t('grid.paint.width')} value={config.frameW} min={200} max={4000} step={10} onChange={v => updateConfig({ frameW: v })} formatValue={v => `${v}px`} />
+              <NodeSlider label={t('grid.paint.height')} value={config.frameH} min={200} max={4000} step={10} onChange={v => updateConfig({ frameH: v })} formatValue={v => `${v}px`} />
+              <NodeSlider label="Spacing" value={config.spacing} min={20} max={200} step={1} onChange={v => updateConfig({ spacing: v })} formatValue={v => `${v}px`} />
             </div>
             {/* Shape */}
             <div className="p-3 space-y-1 border-b border-neutral-800">

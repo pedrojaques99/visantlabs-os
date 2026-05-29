@@ -49,10 +49,8 @@ const buttonVariants = cva(
         xs: "h-7 rounded-md px-2 text-[10px]",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
-        // Small icon — 6×6, used in tight inline contexts
-        "icon-sm": "h-6 w-6",
-        // Medium icon — 8×8, used in section headers
-        "icon-md": "h-8 w-8",
+        "icon-sm": "h-8 w-8",
+        "icon-md": "h-9 w-9",
         sidebar: "h-[410px] px-4",
       },
     },

@@ -6,6 +6,7 @@ import { GlitchLoader } from './components/ui/GlitchLoader';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
+import { DesktopOnlyGate } from './components/shared/DesktopOnlyGate';
 
 // Lazy load all pages for code-splitting with automatic retry
 const HomePage = lazyWithRetry(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -108,7 +109,7 @@ const App: React.FC = () => {
                 <Route path="/my-outputs" element={<MyOutputsPage />} />
                 <Route path="/canvas" element={<CanvasProjectsPage />} />
                 <Route path="/canvas/shared/:shareId" element={<CanvasSharedPage />} />
-                <Route path="/canvas/:id" element={<CanvasPage />} />
+                <Route path="/canvas/:id" element={<DesktopOnlyGate toolName="Canvas"><CanvasPage /></DesktopOnlyGate>} />
                 <Route path="/branding-machine" element={<BrandingMachinePage />} />
                 <Route path="/my-brandings" element={<MyBrandingsPage />} />
                 <Route path="/branding-expert" element={<BrandingExpertPage />} />
@@ -117,7 +118,7 @@ const App: React.FC = () => {
                 <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />
                 <Route path="/apps" element={<AppsPage />} />
                 <Route path="/extractor" element={<ExtractorPage />} />
-                <Route path="/moodboard" element={<MoodboardStudioPage />} />
+                <Route path="/moodboard" element={<DesktopOnlyGate toolName="Moodboard Studio"><MoodboardStudioPage /></DesktopOnlyGate>} />
                 <Route path="/visual-search" element={<VisualSearchPage />} />
                 <Route path="/upscale" element={<UpscalePage />} />
                 <Route path="/favicon" element={<FaviconPage />} />
@@ -136,10 +137,10 @@ const App: React.FC = () => {
                 <Route path="/image-lab" element={<ImageLabPage />} />
                 <Route path="/cmyk-halftone" element={<Navigate to="/image-lab" replace />} />
                 <Route path="/texture-filter" element={<Navigate to="/image-lab" replace />} />
-                <Route path="/grid-machine" element={<GridMachinePage />} />
+                <Route path="/grid-machine" element={<DesktopOnlyGate toolName="Grid Machine"><GridMachinePage /></DesktopOnlyGate>} />
                 <Route path="/riso-machine" element={<Navigate to="/image-lab" replace />} />
                 <Route path="/labs" element={<LabsPage />} />
-                <Route path="/labs/wind-tunnel" element={<WindTunnelPage />} />
+                <Route path="/labs/wind-tunnel" element={<DesktopOnlyGate toolName="Wind Tunnel"><WindTunnelPage /></DesktopOnlyGate>} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/onboard" element={<OnboardPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />

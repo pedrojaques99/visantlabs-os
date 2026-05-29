@@ -31,6 +31,7 @@ import { loadImage } from '@/utils/imageUtils';
 import { useMagicHand } from '@/hooks/useMagicHand';
 import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
 import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
+import { useIsMobile } from '@/hooks/use-media-query';
 
 const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso', 'shaders']);
 
@@ -195,6 +196,7 @@ function usePresetCycling(mode: ImageLabMode) {
 /* ─── Main Page ─── */
 
 export const ImageLabPage: React.FC = () => {
+  const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const labStore = useImageLabStore;
   const mode = labStore((s) => s.mode);
@@ -484,6 +486,9 @@ export const ImageLabPage: React.FC = () => {
     { id: 'shaders', icon: <Zap size={16} />, label: 'Shaders' },
   ], []);
 
+  const tbBtn = cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9');
+  const tbIcon = isMobile ? 18 : 15;
+
   return (
     <>
       <ToolEditorShell
@@ -507,7 +512,7 @@ export const ImageLabPage: React.FC = () => {
         canvasClassName="absolute inset-0 transition-all duration-300"
       >
         {/* Floating left toolbar */}
-        <div className="absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50">
+        <div className={cn('absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50', isMobile && 'left-2 top-2 p-1')}>
           <ImageLabUploadWidget
             imageUrl={sourceUrl}
             onLoad={broadcastImage}
@@ -527,9 +532,9 @@ export const ImageLabPage: React.FC = () => {
                   if (vc) videoIsPlaying ? vc.pause() : vc.play();
                 }}
                 title={videoIsPlaying ? 'Pause' : 'Play'}
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all"
+                className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}
               >
-                {videoIsPlaying ? <Pause size={15} /> : <Play size={15} />}
+                {videoIsPlaying ? <Pause size={tbIcon} /> : <Play size={tbIcon} />}
               </button>
               {videoDuration > 0 && (
                 <div className="flex flex-col items-center gap-0.5 py-1" title={`${videoCurrentTime.toFixed(1)}s / ${videoDuration.toFixed(1)}s`}>
@@ -541,8 +546,8 @@ export const ImageLabPage: React.FC = () => {
                       const vc = getActiveVideoControls();
                       if (vc) vc.seek(parseFloat(e.target.value));
                     }}
-                    className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                    style={{ writingMode: 'vertical-lr', direction: 'rtl', height: '48px', width: '9px' }}
+                    className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                    style={{ writingMode: 'vertical-lr', direction: 'rtl', height: '56px', width: '12px' }}
                   />
                   <span className="text-[7px] font-mono text-neutral-600">{videoCurrentTime.toFixed(1)}s</span>
                 </div>
@@ -553,11 +558,11 @@ export const ImageLabPage: React.FC = () => {
           <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
 
           {/* Undo / Redo */}
-          <button onClick={undo} disabled={historyIndex < 0} title="Undo (Ctrl+Z)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all">
-            <Undo2 size={15} />
+          <button onClick={undo} disabled={historyIndex < 0} title="Undo (Ctrl+Z)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none')}>
+            <Undo2 size={tbIcon} />
           </button>
-          <button onClick={redo} disabled={historyIndex >= historyLength - 1} title="Redo (Ctrl+Shift+Z)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all">
-            <Redo2 size={15} />
+          <button onClick={redo} disabled={historyIndex >= historyLength - 1} title="Redo (Ctrl+Shift+Z)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none')}>
+            <Redo2 size={tbIcon} />
           </button>
 
           {hasImage && (
@@ -565,27 +570,27 @@ export const ImageLabPage: React.FC = () => {
               onClick={() => setMagicHandActive(!magicHandActive)}
               title="Magic Hand (M) — drag to shape the effect"
               className={cn(
-                'flex items-center justify-center w-9 h-9 rounded-lg transition-all',
+                tbBtn,
                 magicHandActive
                   ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
                   : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
               )}
             >
-              <Hand size={15} />
+              <Hand size={tbIcon} />
             </button>
           )}
 
           <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
 
           {/* Utilities */}
-          <button onClick={handleReset} title="Reset (R)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
-            <RotateCcw size={15} />
+          <button onClick={handleReset} title="Reset (R)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+            <RotateCcw size={tbIcon} />
           </button>
-          <button onClick={() => setPresetLibraryOpen(true)} title="Community Presets (Shift+P)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
-            <Library size={15} />
+          <button onClick={() => setPresetLibraryOpen(true)} title="Community Presets (Shift+P)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+            <Library size={tbIcon} />
           </button>
-          <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
-            <Download size={15} />
+          <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+            <Download size={tbIcon} />
           </button>
 
           {/* FX Modes */}
@@ -599,7 +604,8 @@ export const ImageLabPage: React.FC = () => {
                 onClick={() => handleModeChange(m.id)}
                 title={`${m.label} (${m.id === 'halftone' ? '1' : m.id === 'texture' ? '2' : '3'})`}
                 className={cn(
-                  'group/fx relative flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-150 overflow-hidden',
+                  'group/fx relative flex items-center justify-center rounded-lg transition-all duration-150 overflow-hidden',
+                  isMobile ? 'w-11 h-11' : 'w-9 h-9',
                   mode === m.id
                     ? 'ring-1 ring-white/30 shadow-sm'
                     : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
@@ -621,9 +627,9 @@ export const ImageLabPage: React.FC = () => {
             );
           })}
 
-          {!panelVisible && (
-            <button onClick={() => setPanelVisible(true)} title="Show panel (Tab)" className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all">
-              <PanelRightOpen size={15} />
+          {!isMobile && !panelVisible && (
+            <button onClick={() => setPanelVisible(true)} title="Show panel (Tab)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+              <PanelRightOpen size={tbIcon} />
             </button>
           )}
         </div>
@@ -655,7 +661,7 @@ export const ImageLabPage: React.FC = () => {
           }}
           style={{
             cursor: magicHandActive && hasImage ? 'grab' : undefined,
-            touchAction: 'none',
+            touchAction: magicHandActive && hasImage ? 'none' : 'auto',
             pointerEvents: magicHandActive && hasImage ? 'auto' : 'none',
           }}
         />
@@ -860,10 +866,10 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
             min={0} max={1} step={0.01}
             value={value}
             onChange={(e) => onChange(parseFloat(e.target.value))}
-            className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-            style={{ writingMode: 'vertical-lr' as any, direction: 'rtl', height: '48px', width: '9px' }}
+            className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+            style={{ writingMode: 'vertical-lr' as any, direction: 'rtl', height: '56px', width: '12px' }}
           />
-          <span className="text-[7px] font-mono text-neutral-600">{Math.round(value * 100)}</span>
+          <span className="text-[8px] font-mono text-neutral-600">{Math.round(value * 100)}</span>
         </div>
       )}
     </div>

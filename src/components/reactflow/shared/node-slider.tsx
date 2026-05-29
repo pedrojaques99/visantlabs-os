@@ -32,15 +32,17 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
       return parseFloat((Math.round(clamped / step) * step).toFixed(10))
     }
 
-    const handleScrubDown = (e: React.MouseEvent) => {
+    const handleScrubDown = (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault()
-      scrubRef.current = { startX: e.clientX, startValue: value }
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+      scrubRef.current = { startX: clientX, startValue: value }
       const sensitivity = (max - min) / 400
 
-      const onMove = (me: MouseEvent) => {
+      const onMove = (me: MouseEvent | TouchEvent) => {
         if (!scrubRef.current) return
-        const dx = me.clientX - scrubRef.current.startX
-        const mult = me.shiftKey ? 0.1 : 1
+        const x = 'touches' in me ? me.touches[0].clientX : (me as MouseEvent).clientX
+        const dx = x - scrubRef.current.startX
+        const mult = 'shiftKey' in me && me.shiftKey ? 0.1 : 1
         onChange(clamp(scrubRef.current.startValue + dx * sensitivity * mult))
       }
 
@@ -48,12 +50,16 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
         scrubRef.current = null
         document.removeEventListener('mousemove', onMove)
         document.removeEventListener('mouseup', onUp)
+        document.removeEventListener('touchmove', onMove)
+        document.removeEventListener('touchend', onUp)
         document.body.style.cursor = ''
         document.body.style.userSelect = ''
       }
 
       document.addEventListener('mousemove', onMove)
       document.addEventListener('mouseup', onUp)
+      document.addEventListener('touchmove', onMove, { passive: false })
+      document.addEventListener('touchend', onUp)
       document.body.style.cursor = 'ew-resize'
       document.body.style.userSelect = 'none'
     }
@@ -67,6 +73,7 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
           <span
             className="text-xs font-mono text-neutral-500 cursor-ew-resize select-none hover:text-neutral-300 transition-colors"
             onMouseDown={handleScrubDown}
+            onTouchStart={handleScrubDown}
             title="Drag to adjust"
           >
             {displayValue}
