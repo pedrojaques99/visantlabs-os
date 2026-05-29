@@ -1053,7 +1053,7 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
 // --- PNG → SVG vectorization (server-side potrace) ---
 router.post('/png-to-svg', apiRateLimiter, async (req: Request, res: ExpressResponse) => {
   try {
-    const { image } = req.body;
+    const { image, turdSize, optTolerance, threshold } = req.body;
     if (!image || typeof image !== 'string') {
       return res.status(400).json({ error: 'Missing image (base64 data URL)' });
     }
@@ -1068,12 +1068,12 @@ router.post('/png-to-svg', apiRateLimiter, async (req: Request, res: ExpressResp
     const potrace = await import('potrace');
     const svg: string = await new Promise((resolve, reject) => {
       potrace.trace(buffer, {
-        turdSize: 2,
+        turdSize: Math.max(0, Math.min(20, Number(turdSize) || 2)),
         alphaMax: 1,
         optCurve: true,
-        optTolerance: 0.2,
+        optTolerance: Math.max(0, Math.min(2, Number(optTolerance) || 0.2)),
         color: '#000000',
-        threshold: 128,
+        threshold: Math.max(0, Math.min(255, Math.round(Number(threshold) || 128))),
       }, (err: Error | null, svg: string) => {
         if (err) reject(err);
         else resolve(svg);

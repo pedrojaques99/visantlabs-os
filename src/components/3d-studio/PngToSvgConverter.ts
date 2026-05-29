@@ -1,3 +1,5 @@
+import { optimizeSvg } from '@/utils/svgOptimizer';
+
 const getApiBaseUrl = () => (import.meta as any).env?.VITE_API_URL || '/api';
 
 function fileToDataURL(file: File): Promise<string> {
@@ -9,7 +11,13 @@ function fileToDataURL(file: File): Promise<string> {
   });
 }
 
-export async function pngToSvg(file: File): Promise<string> {
+export interface TraceOptions {
+  turdSize?: number;
+  optTolerance?: number;
+  threshold?: number;
+}
+
+export async function pngToSvg(file: File, options?: TraceOptions): Promise<string> {
   const dataUrl = await fileToDataURL(file);
 
   const token = localStorage.getItem('token');
@@ -19,7 +27,12 @@ export async function pngToSvg(file: File): Promise<string> {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ image: dataUrl }),
+    body: JSON.stringify({
+      image: dataUrl,
+      turdSize: options?.turdSize,
+      optTolerance: options?.optTolerance,
+      threshold: options?.threshold,
+    }),
   });
 
   if (!res.ok) {
@@ -28,5 +41,5 @@ export async function pngToSvg(file: File): Promise<string> {
   }
 
   const { svg } = await res.json();
-  return svg;
+  return optimizeSvg(svg).optimized;
 }

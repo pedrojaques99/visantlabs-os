@@ -274,6 +274,9 @@ interface Studio3DState {
   font: string;
   fileName: string;
   modelUrl: string;
+  traceTurdSize: number;
+  traceOptTolerance: number;
+  traceThreshold: number;
 
   // Geometry
   shapeType: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon';
@@ -429,6 +432,9 @@ interface Studio3DState {
   setFont: (font: string) => void;
   setInputMode: (mode: 'svg' | 'text' | 'model') => void;
   setModelUrl: (url: string, fileName?: string) => void;
+  setTraceTurdSize: (v: number) => void;
+  setTraceOptTolerance: (v: number) => void;
+  setTraceThreshold: (v: number) => void;
   setShapeType: (v: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon') => void;
 
   setDepth: (v: number) => void;
@@ -556,6 +562,9 @@ const INITIAL_STATE = {
   font: 'DM Sans',
   fileName: '',
   modelUrl: '',
+  traceTurdSize: 2,
+  traceOptTolerance: 0.2,
+  traceThreshold: 128,
   shapeType: 'standard' as const,
 
   depth: 0.9,
@@ -685,6 +694,9 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setFont: (font) => set({ font }),
   setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
   setModelUrl: (url, fileName) => set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
+  setTraceTurdSize: (traceTurdSize) => set({ traceTurdSize }),
+  setTraceOptTolerance: (traceOptTolerance) => set({ traceOptTolerance }),
+  setTraceThreshold: (traceThreshold) => set({ traceThreshold }),
   setShapeType: (shapeType) => set({ shapeType }),
 
   setDepth: (depth) => set({ depth }),

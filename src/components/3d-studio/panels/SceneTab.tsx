@@ -37,6 +37,8 @@ export const SceneTab: React.FC = React.memo(() => {
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
+  const lastPngFile = useRef<File | null>(null);
+  const [isRetracing, setIsRetracing] = useState(false);
 
   const [depth, setDepth] = useDebouncedSlider(store.depth, store.setDepth);
   const [objectScale, setObjectScale] = useDebouncedSlider(store.objectScale, store.setObjectScale);
@@ -83,14 +85,21 @@ export const SceneTab: React.FC = React.memo(() => {
 
   const processFile = useCallback(async (file: File) => {
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
+      lastPngFile.current = null;
       const text = await file.text();
       store.setSvgData(text, file.name);
       toast.success(t('studio3d.input.loaded', { fileName: file.name }));
     } else if (file.type.startsWith('image/')) {
+      lastPngFile.current = file;
       store.setIsLoading(true);
       try {
         const { pngToSvg } = await import('../PngToSvgConverter');
-        const svg = await pngToSvg(file);
+        const s = useStudio3DStore.getState();
+        const svg = await pngToSvg(file, {
+          turdSize: s.traceTurdSize,
+          optTolerance: s.traceOptTolerance,
+          threshold: s.traceThreshold,
+        });
         store.setSvgData(svg, file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch (err) {
@@ -99,6 +108,27 @@ export const SceneTab: React.FC = React.memo(() => {
       } finally {
         store.setIsLoading(false);
       }
+    }
+  }, [store, t]);
+
+  const handleRetrace = useCallback(async () => {
+    const file = lastPngFile.current;
+    if (!file) return;
+    setIsRetracing(true);
+    try {
+      const { pngToSvg } = await import('../PngToSvgConverter');
+      const s = useStudio3DStore.getState();
+      const svg = await pngToSvg(file, {
+        turdSize: s.traceTurdSize,
+        optTolerance: s.traceOptTolerance,
+        threshold: s.traceThreshold,
+      });
+      store.setSvgData(svg, file.name);
+      toast.success(t('studio3d.input.converted', { fileName: file.name }));
+    } catch {
+      toast.error(t('studio3d.input.processFailed'));
+    } finally {
+      setIsRetracing(false);
     }
   }, [store, t]);
 
@@ -270,6 +300,26 @@ export const SceneTab: React.FC = React.memo(() => {
           )}
         </div>
       </ToolPanelDisclosure>
+
+      {/* SVG Trace Refine — only for PNG uploads */}
+      {lastPngFile.current && store.inputMode === 'svg' && store.svgData && (
+        <ToolPanelDisclosure label="SVG REFINE">
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput label="Noise" value={store.traceTurdSize} min={0} max={20} step={1} onChange={store.setTraceTurdSize} />
+            <ScrubInput label="Simplify" value={store.traceOptTolerance} min={0} max={2} step={0.05} onChange={store.setTraceOptTolerance} />
+          </div>
+          <ScrubInput label="Threshold" value={store.traceThreshold} min={0} max={255} step={1} onChange={store.setTraceThreshold} />
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-[10px] uppercase tracking-wider h-8"
+            disabled={isRetracing}
+            onClick={handleRetrace}
+          >
+            {isRetracing ? <GlitchLoader size={12} /> : 'Re-trace'}
+          </Button>
+        </ToolPanelDisclosure>
+      )}
 
       {/* Geometry */}
       <ToolPanelDisclosure label={t('studio3d.geometry.title')} icon={<Box size={13} />} defaultOpen>
