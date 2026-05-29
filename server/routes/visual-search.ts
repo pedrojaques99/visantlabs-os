@@ -20,7 +20,9 @@ const LETTER_PATTERN = /\b(?:letra|letter|character|glyph)\s+([a-zA-Z0-9])\b/i;
 // POST /api/visual-search/query
 router.post('/query', searchLimiter, async (req, res) => {
   try {
-    const { query, sources, limit = 60, page = 1 } = req.body;
+    const { query, sources } = req.body;
+    const limit = Math.min(Math.max(Number(req.body.limit) || 60, 1), 100);
+    const page = Math.min(Math.max(Number(req.body.page) || 1, 1), 100);
 
     if (!query || typeof query !== 'string') {
       return res.status(400).json({ error: 'Query is required' });

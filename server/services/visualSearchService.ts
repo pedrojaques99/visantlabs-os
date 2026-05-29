@@ -341,6 +341,7 @@ async function searchSvgl(query: string): Promise<SourceResult> {
 const clearbitCache = new LRUCache<string, boolean>({ max: 500, ttl: 1000 * 60 * 60 });
 
 async function checkClearbitDomain(domain: string): Promise<boolean> {
+  if (!/^[a-z0-9]+\.(com|io|co)$/.test(domain)) return false;
   const cached = clearbitCache.get(domain);
   if (cached !== undefined) return cached;
   try {
