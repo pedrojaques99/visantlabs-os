@@ -202,6 +202,11 @@ GOOGLE_GEMINI_API_KEY=your-gemini-key
 | Cloudflare R2 | Permanent image storage | [docs/SETUP_R2.md](docs/SETUP_R2.md) | Base64 temp storage |
 | Liveblocks | Real-time canvas collaboration | [docs/SETUP_LIVEBLOCKS.md](docs/SETUP_LIVEBLOCKS.md) | Individual mode |
 
+### Additional Docs
+
+- [MCP Server Setup](docs/SETUP_MCP.md) — Connect AI agents to Visant via MCP
+- [API Key Policy](docs/API_KEY_POLICY.md) — Key management and security guidelines
+
 ## Development
 
 ```bash
