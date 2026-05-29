@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useRef, useState, useCallback } from 'react';
+import React, { Suspense, useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { ContactShadows, Environment, Stats, MeshReflectorMaterial, AdaptiveDpr, AdaptiveEvents, PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
@@ -55,6 +55,11 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   hdriBackground: s.hdriBackground,
   hdriBlur: s.hdriBlur,
   hdriIntensity: s.hdriIntensity,
+  hdriRotation: s.hdriRotation,
+  fogEnabled: s.fogEnabled,
+  fogColor: s.fogColor,
+  fogNear: s.fogNear,
+  fogFar: s.fogFar,
   color: s.color,
   material: s.material,
   metalness: s.metalness,
@@ -175,6 +180,26 @@ function GradientBackground({ type, gradient }: { type: 'linear' | 'radial'; gra
   );
 }
 
+function SceneFog({ color, near, far }: { color: string; near: number; far: number }) {
+  const { scene } = useThree();
+  useEffect(() => {
+    scene.fog = new THREE.Fog(color, near, far);
+    return () => { scene.fog = null; };
+  }, [scene, color, near, far]);
+  return null;
+}
+
+function SyncCamera({ fov }: { fov: number }) {
+  const camera = useThree((s) => s.camera);
+  useEffect(() => {
+    if ('fov' in camera) {
+      (camera as THREE.PerspectiveCamera).fov = fov;
+      (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+    }
+  }, [camera, fov]);
+  return null;
+}
+
 const prefersReducedMotion = typeof window !== 'undefined'
   ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
   : false;
@@ -209,8 +234,15 @@ function SceneContent() {
     return textToSvg(text, loadedFont);
   }, [s.svgData, s.text, loadedFont]);
 
+  const hdriRotationEuler = useMemo(
+    () => [0, (s.hdriRotation * Math.PI) / 180, 0] as [number, number, number],
+    [s.hdriRotation],
+  );
+
   return (
     <>
+      {s.fogEnabled && <SceneFog color={s.fogColor} near={s.fogNear} far={s.fogFar} />}
+      <SyncCamera fov={s.fov} />
       <IntroAnimation
         type="zoom"
         duration={0.6}
@@ -376,6 +408,8 @@ function SceneContent() {
               backgroundBlurriness={s.hdriBlur}
               backgroundIntensity={s.hdriIntensity}
               environmentIntensity={s.hdriIntensity}
+              environmentRotation={hdriRotationEuler}
+              backgroundRotation={hdriRotationEuler}
             />
           ) : (
             <Environment background={false} environmentIntensity={1.5} frames={1}>
@@ -404,7 +438,7 @@ function SceneContent() {
         <EffectComposer multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
           {s.ssaoEnabled && s.renderQuality !== 'performance' && <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />}
           {s.bloomEnabled && <Bloom intensity={s.bloomIntensity} luminanceThreshold={s.bloomThreshold} luminanceSmoothing={0.9} />}
-          {s.dofEnabled && s.renderQuality !== 'performance' && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.05} bokehScale={s.dofBokehScale} />}
+          {s.dofEnabled && s.renderQuality !== 'performance' && <DepthOfField focusDistance={s.dofFocusDistance} focalLength={0.02} bokehScale={s.dofBokehScale} height={RENDER_QUALITY_CONFIG[s.renderQuality].msaa > 0 ? 480 : 240} />}
           {s.chromaticAberrationEnabled && s.renderQuality !== 'performance' && <ChromaticAberration offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any} />}
           {s.noiseEnabled && <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />}
           {s.colorGradingEnabled && <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />}

@@ -33,6 +33,9 @@ export const CameraTab: React.FC = React.memo(() => {
   const [bgAngle, setBgAngle] = useDebouncedSlider(store.bgGradient.angle, (v) => store.setBgGradient({ angle: v }));
   const [hdriBlur, setHdriBlur] = useDebouncedSlider(store.hdriBlur, store.setHdriBlur);
   const [hdriIntensity, setHdriIntensity] = useDebouncedSlider(store.hdriIntensity, store.setHdriIntensity);
+  const [hdriRotation, setHdriRotation] = useDebouncedSlider(store.hdriRotation, store.setHdriRotation);
+  const [fogNear, setFogNear] = useDebouncedSlider(store.fogNear, store.setFogNear);
+  const [fogFar, setFogFar] = useDebouncedSlider(store.fogFar, store.setFogFar);
 
   return (
     <>
@@ -137,6 +140,7 @@ export const CameraTab: React.FC = React.memo(() => {
           <ToolPanelRow label={t('studio3d.environment.hdriBackground')}>
             <Switch checked={store.hdriBackground} onCheckedChange={store.setHdriBackground} aria-label="HDRI as background" />
           </ToolPanelRow>
+          <ScrubInput label="Rotation" value={hdriRotation} min={0} max={360} step={1} suffix="°" onChange={setHdriRotation} />
           {store.hdriBackground && (
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput label="Blur" value={hdriBlur} min={0} max={1} step={0.01} onChange={setHdriBlur} />
@@ -215,6 +219,35 @@ export const CameraTab: React.FC = React.memo(() => {
             <Switch checked={store.transparentBg} onCheckedChange={store.setTransparentBg} aria-label="Transparent background" />
           </ToolPanelRow>
         </ToolPanelDisclosure>
+      </ToolPanelDisclosure>
+
+      {/* Atmosphere */}
+      <ToolPanelDisclosure label="Atmosphere">
+        <ToolPanelRow label="Fog">
+          <Switch checked={store.fogEnabled} onCheckedChange={store.setFogEnabled} aria-label="Fog" />
+        </ToolPanelRow>
+        {store.fogEnabled && (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded border border-white/10 shrink-0" style={{ backgroundColor: store.fogColor }} />
+              <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
+                <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                <input
+                  type="text"
+                  value={store.fogColor.replace('#', '').toUpperCase()}
+                  onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setFogColor(`#${v}`); }}
+                  maxLength={6}
+                  aria-label="Fog color"
+                  className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <ScrubInput label="Near" value={fogNear} min={1} max={50} step={0.5} onChange={setFogNear} />
+              <ScrubInput label="Far" value={fogFar} min={5} max={100} step={0.5} onChange={setFogFar} />
+            </div>
+          </>
+        )}
       </ToolPanelDisclosure>
 
       {/* Scene Options */}

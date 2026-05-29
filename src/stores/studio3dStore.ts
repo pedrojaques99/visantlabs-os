@@ -344,6 +344,11 @@ interface Studio3DState {
   hdriBackground: boolean;
   hdriBlur: number;
   hdriIntensity: number;
+  hdriRotation: number;
+  fogEnabled: boolean;
+  fogColor: string;
+  fogNear: number;
+  fogFar: number;
   background: string;
   bgType: 'solid' | 'linear' | 'radial';
   bgGradient: { color1: string; color2: string; angle: number };
@@ -433,6 +438,11 @@ interface Studio3DState {
   setHdriBackground: (v: boolean) => void;
   setHdriBlur: (v: number) => void;
   setHdriIntensity: (v: number) => void;
+  setHdriRotation: (v: number) => void;
+  setFogEnabled: (v: boolean) => void;
+  setFogColor: (v: string) => void;
+  setFogNear: (v: number) => void;
+  setFogFar: (v: number) => void;
   setSmoothness: (v: number) => void;
   setBevelEnabled: (v: boolean) => void;
   setBevelThickness: (v: number) => void;
@@ -602,6 +612,11 @@ const INITIAL_STATE = {
   hdriBackground: false,
   hdriBlur: 0,
   hdriIntensity: 1,
+  hdriRotation: 0,
+  fogEnabled: false,
+  fogColor: '#000000',
+  fogNear: 1,
+  fogFar: 15,
   background: '#0a0a0a',
   bgType: 'solid' as const,
   bgGradient: { color1: '#0a0a0a', color2: '#1a1a2e', angle: 45 },
@@ -612,8 +627,8 @@ const INITIAL_STATE = {
   bloomIntensity: 1,
   bloomThreshold: 0.9,
   dofEnabled: false,
-  dofFocusDistance: 0.02,
-  dofBokehScale: 3,
+  dofFocusDistance: 0.1,
+  dofBokehScale: 2,
   vignetteEnabled: false,
   vignetteIntensity: 0.5,
   ssaoEnabled: false,
@@ -679,6 +694,11 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   setHdriBackground: (hdriBackground) => set({ hdriBackground }),
   setHdriBlur: (hdriBlur) => set({ hdriBlur }),
   setHdriIntensity: (hdriIntensity) => set({ hdriIntensity }),
+  setHdriRotation: (hdriRotation) => set({ hdriRotation }),
+  setFogEnabled: (fogEnabled) => set({ fogEnabled }),
+  setFogColor: (fogColor) => set({ fogColor }),
+  setFogNear: (fogNear) => set({ fogNear }),
+  setFogFar: (fogFar) => set({ fogFar }),
   setSmoothness: (smoothness) => set({ smoothness }),
   setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
   setBevelThickness: (bevelThickness) => set({ bevelThickness }),

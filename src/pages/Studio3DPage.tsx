@@ -16,7 +16,7 @@ import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useTranslation } from '@/hooks/useTranslation';
 import { setCameraView, resetCamera, dollyCamera, rotateCamera, DEG15 } from '@/components/3d-studio/CameraBridge';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box } from 'lucide-react';
+import { Upload, Type, Keyboard, X, Undo2, Redo2, RotateCcw, Download, PanelRightOpen, Eye, Box, Maximize2, Minimize2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-media-query';
 
 export const Studio3DPage: React.FC = () => {
@@ -35,6 +35,7 @@ export const Studio3DPage: React.FC = () => {
   const isEmpty = inputMode === 'svg' ? !svgData : inputMode === 'text' ? !text : !modelUrl;
 
   const isMobile = useIsMobile();
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const panelVisible = store((s) => s.panelVisible);
   const setPanelVisible = store((s) => s.setPanelVisible);
   const resetScene = store((s) => s.resetScene);
@@ -64,6 +65,20 @@ export const Studio3DPage: React.FC = () => {
       })
       .catch(() => toast.error('Failed to load scene'));
     setSearchParams({}, { replace: true });
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
   }, []);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => { canvasRef.current = canvas; }, []);
@@ -244,6 +259,9 @@ export const Studio3DPage: React.FC = () => {
         </button>
         <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
           <Download size={isMobile ? 18 : 15} />
+        </button>
+        <button onClick={toggleFullscreen} title="Fullscreen" className={cn('flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9')}>
+          {isFullscreen ? <Minimize2 size={isMobile ? 18 : 15} /> : <Maximize2 size={isMobile ? 18 : 15} />}
         </button>
 
         {!isMobile && (
