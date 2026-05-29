@@ -8,7 +8,7 @@ import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
 const SceneCanvas = React.lazy(() => import('@/components/3d-studio/SceneCanvas').then(m => ({ default: m.SceneCanvas })));
 import { useStudio3DStore } from '@/stores/studio3dStore';
-import { exportPNG, exportVideo, exportGLB, exportOBJ, exportBatchViews, exportTurntable, exportVideoServerSide } from '@/components/3d-studio/ExportManager';
+import { exportPNG, exportVideo, exportGLB, exportOBJ, exportTurntable, exportVideoServerSide } from '@/components/3d-studio/ExportManager';
 import { ExportModal } from '@/components/shared/ExportModal';
 import type { VideoFormat } from '@/utils/videoExport';
 import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
@@ -98,19 +98,6 @@ export const Studio3DPage: React.FC = () => {
       }
       toast.success(t('studio3d.export.exported', { format: s.exportFormat.toUpperCase() }));
     } catch { toast.error(t('studio3d.export.exportFailed')); }
-    finally { s.setIsExporting(false); }
-  }, []);
-
-  const handleBatchExport = useCallback(async () => {
-    if (!canvasRef.current) return;
-    const s = store.getState();
-    s.setIsExporting(true);
-    const shader = s.shaderEnabled ? s.getShaderSettings() : undefined;
-    try {
-      const name = s.fileName?.replace(/\.[^.]+$/, '') || '3d-export';
-      await exportBatchViews(canvasRef.current, s.aspectRatio, s.exportResolution, s.transparentBg, s.background, name, setCameraView, shader);
-      toast.success('All views exported');
-    } catch { toast.error('Batch export failed'); }
     finally { s.setIsExporting(false); }
   }, []);
 
@@ -218,7 +205,7 @@ export const Studio3DPage: React.FC = () => {
       resetConfirmText={t('studio3d.resetConfirmButton')}
       undo={{ handler: () => undo(), disabled: pastStates.length === 0 }}
       redo={{ handler: () => redo(), disabled: futureStates.length === 0 }}
-      controlsPanel={<ControlsPanel onExport={handleExport} onBatchExport={handleBatchExport} />}
+      controlsPanel={<ControlsPanel onExport={() => setExportModalOpen(true)} />}
       controlsPanelWidth={300}
       mobileSheetLabel={t('studio3d.controls')}
       statusItems={statusItems}
