@@ -144,7 +144,7 @@ npx visantlabs skills    # Manage skills
 | 3D | Three.js, React Three Fiber, React Three Drei |
 | State | Zustand, TanStack React Query |
 | Backend | Node.js, Express, Prisma ORM |
-| Database | PostgreSQL (Prisma), MongoDB (legacy) |
+| Database | MongoDB (Prisma ORM) |
 | AI/ML | Google Gemini, OpenAI GPT Image, Google Veo 3 (video), Seedream |
 | Storage | Cloudflare R2 |
 | Auth | Google OAuth, email/password, TOTP 2FA, session tokens |
@@ -157,9 +157,8 @@ npx visantlabs skills    # Manage skills
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL (or [Supabase](https://supabase.com) / [Neon](https://neon.tech))
-- MongoDB (local or [Atlas](https://www.mongodb.com/cloud/atlas))
+- Node.js 20+
+- MongoDB (local, [Atlas](https://www.mongodb.com/cloud/atlas), or Docker: `docker run -d -p 27017:27017 mongo`)
 - Google Gemini API Key
 
 ### Installation
@@ -236,7 +235,7 @@ docs/             # Setup and policy docs
 
 ## Forking & Customization
 
-1. **Branding** — Edit `config/branding.ts` (company name, links, support email)
+1. **Branding** — Edit `src/config/branding.ts` (company name, links, support email)
 2. **SEO** — Update `public/sitemap.xml` and `public/robots.txt` with your domain
 3. **Legal** — Update legal pages in `src/locales/en-US.json` and `pt-BR.json`
 4. **Environment** — Set `VITE_SITE_URL` to your production domain
