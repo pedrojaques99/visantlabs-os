@@ -78,6 +78,7 @@ model User {
   customPdfPresets CustomPdfPreset[]
   surpriseMePresets SurpriseMePreset[]
   brandGuidelines BrandGuideline[]
+  studio3DScenes  Studio3DScene[]
 
   // Indexes for better query performance
   // Note: @unique on email and username already creates indexes
@@ -660,6 +661,29 @@ model Session {
 
   @@index([userId])
   @@map("sessions")
+}
+
+model Studio3DScene {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  name          String
+  description   String?
+  config        Json
+  svgData       String?
+  inputMode     String   @default("svg")
+  text          String?
+  font          String?
+  tags          String[]
+  isPublic      Boolean  @default(false)
+  thumbnailUrl  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isPublic, createdAt])
+  @@map("studio3d_scenes")
 }
 
 model LetterCrop {

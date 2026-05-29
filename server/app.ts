@@ -58,6 +58,7 @@ import campaignRoutes from './routes/campaign.js';
 import oauthRoutes from './routes/oauth.js';
 import liveblocksRoutes from './routes/liveblocks.js';
 import studio3dRoutes from './routes/studio3d.js';
+import traceRoutes from './routes/trace.js';
 import openapiRoutes from './routes/openapi.js';
 import billingRoutes from './routes/billing.js';
 import webhookRoutes from './routes/webhooks.js';
@@ -266,6 +267,7 @@ export function createApp() {
     ['/liveblocks', liveblocksRoutes],
     ['/imagelab', imagelabRoutes],
     ['/studio3d', studio3dRoutes],
+    ['/trace', traceRoutes],
     ['/billing', billingRoutes],
     ['/webhooks', webhookRoutes],
     ['/cron', cronRoutes],

@@ -1,5 +1,3 @@
-import { optimizeSvg } from '@/utils/svgOptimizer';
-
 const getApiBaseUrl = () => (import.meta as any).env?.VITE_API_URL || '/api';
 
 function fileToDataURL(file: File): Promise<string> {
@@ -17,22 +15,15 @@ export interface TraceOptions {
   threshold?: number;
 }
 
-export async function pngToSvg(file: File, options?: TraceOptions): Promise<string> {
-  const dataUrl = await fileToDataURL(file);
-
+async function traceApiFetch(endpoint: string, body: Record<string, unknown>): Promise<string> {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${getApiBaseUrl()}/images/png-to-svg`, {
+  const res = await fetch(`${getApiBaseUrl()}/trace/${endpoint}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({
-      image: dataUrl,
-      turdSize: options?.turdSize,
-      optTolerance: options?.optTolerance,
-      threshold: options?.threshold,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
@@ -41,5 +32,19 @@ export async function pngToSvg(file: File, options?: TraceOptions): Promise<stri
   }
 
   const { svg } = await res.json();
-  return optimizeSvg(svg).optimized;
+  return svg;
+}
+
+export async function pngToSvg(file: File, options?: TraceOptions): Promise<string> {
+  const dataUrl = await fileToDataURL(file);
+  return traceApiFetch('png-to-svg', {
+    image: dataUrl,
+    turdSize: options?.turdSize,
+    optTolerance: options?.optTolerance,
+    threshold: options?.threshold,
+  });
+}
+
+export async function optimizeSvgRemote(rawSvg: string): Promise<string> {
+  return traceApiFetch('optimize', { svg: rawSvg });
 }

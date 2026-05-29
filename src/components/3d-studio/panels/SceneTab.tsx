@@ -16,10 +16,13 @@ import {
   saveScene,
   loadScene,
   deleteScene,
+  getPublicScenes,
+  forkScene,
   type SavedScene,
+  type PublicScene,
 } from '@/stores/studio3dStore';
 import {
-  Upload, FileText, Type, Box, Film, Save, FolderOpen, Trash2, Shuffle, Link, Palette,
+  Upload, FileText, Type, Box, Film, Save, FolderOpen, Trash2, Shuffle, Link, Palette, Globe, GitFork,
 } from 'lucide-react';
 import {
   ToolPanelSection, ToolPanelDisclosure, ToolPanelGrid, ToolPanelChip, ToolPanelRow,
@@ -330,7 +333,7 @@ export const SceneTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Scenes */}
-      <ToolPanelDisclosure label="Scenes" icon={<Film size={13} />} id="sec-scenes">
+      <ToolPanelDisclosure label="Scenes" icon={<Film size={13} />} id="sec-scenes" defaultOpen>
         <div className="space-y-2">
           <div className="flex gap-1.5">
             <input
@@ -411,9 +414,16 @@ export const SceneTab: React.FC = React.memo(() => {
         </div>
       </ToolPanelDisclosure>
 
+      {/* Community Gallery */}
+      <CommunityGallery />
+
       {/* SVG Trace Refine — only for PNG uploads */}
       {lastPngFile.current && store.inputMode === 'svg' && store.svgData && (
-        <ToolPanelDisclosure label="SVG REFINE">
+        <ToolPanelDisclosure
+          label="SVG Refine"
+          defaultOpen
+          badge={<span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">trace</span>}
+        >
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput label="Noise" value={store.traceTurdSize} min={0} max={20} step={1} onChange={store.setTraceTurdSize} />
             <ScrubInput label="Simplify" value={store.traceOptTolerance} min={0} max={2} step={0.05} onChange={store.setTraceOptTolerance} />
@@ -527,16 +537,16 @@ export const SceneTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Chain / Pendant */}
-      <div className="rounded-md border border-neutral-800/50 transition-all duration-200">
-        <div className="flex items-center justify-between px-3 py-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-neutral-500"><Link size={13} /></span>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{t('studio3d.geometry.showChain')}</span>
-          </div>
+      <ToolPanelDisclosure
+        label={t('studio3d.geometry.showChain')}
+        icon={<Link size={13} />}
+        badge={store.showChain ? <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">on</span> : undefined}
+      >
+        <ToolPanelRow label="Enable">
           <Switch checked={store.showChain} onCheckedChange={store.setShowChain} aria-label="Chain" />
-        </div>
+        </ToolPanelRow>
         {store.showChain && (
-          <div className="px-3 pb-3 pt-1 animate-fade-in space-y-3">
+          <>
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput label={t('studio3d.geometry.chainLinks')} value={chainLinks} min={2} max={16} step={1} onChange={setChainLinks} />
               <ScrubInput label={t('studio3d.geometry.chainScale')} value={chainScale} min={0.3} max={3} step={0.1} onChange={setChainScale} />
@@ -576,9 +586,9 @@ export const SceneTab: React.FC = React.memo(() => {
                 <div className="custom-color-picker"><HexColorPicker color={store.chainColor} onChange={store.setChainColor} /></div>
               </div>
             )}
-          </div>
+          </>
         )}
-      </div>
+      </ToolPanelDisclosure>
 
 
       <ConfirmationModal
@@ -604,5 +614,76 @@ export const SceneTab: React.FC = React.memo(() => {
         onSelectLogo={handleBrandLogoSelect}
       />
     </>
+  );
+});
+
+const CommunityGallery: React.FC = React.memo(() => {
+  const [scenes, setScenes] = useState<PublicScene[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [forking, setForking] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (loaded) return;
+    setLoading(true);
+    const { scenes: s } = await getPublicScenes({ limit: 12 });
+    setScenes(s);
+    setLoaded(true);
+    setLoading(false);
+  }, [loaded]);
+
+  const handleFork = useCallback(async (id: string) => {
+    setForking(id);
+    const ok = await forkScene(id);
+    setForking(null);
+    if (ok) toast.success('Scene forked!');
+    else toast.error('Failed to fork');
+  }, []);
+
+  return (
+    <ToolPanelDisclosure
+      label="Community"
+      icon={<Globe size={13} />}
+      badge={scenes.length > 0 ? <span className="text-[9px] font-mono text-neutral-600">{scenes.length}</span> : undefined}
+    >
+      {!loaded ? (
+        <button
+          onClick={load}
+          className="w-full px-2 py-2 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+        >
+          {loading ? <GlitchLoader size={12} /> : 'Browse public scenes'}
+        </button>
+      ) : scenes.length === 0 ? (
+        <p className="text-center text-neutral-600 text-[10px] py-3">No public scenes yet</p>
+      ) : (
+        <div className="space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
+          {scenes.map((scene) => (
+            <div key={scene.id} className="flex items-center gap-1.5 group">
+              <button
+                onClick={() => handleFork(scene.id)}
+                disabled={forking === scene.id}
+                className="flex-1 flex items-center gap-2 text-left px-2 py-1.5 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50"
+              >
+                {scene.thumbnailUrl ? (
+                  <img src={scene.thumbnailUrl} alt="" className="w-7 h-7 rounded border border-white/10 object-cover shrink-0" draggable={false} />
+                ) : (
+                  <div
+                    className="w-7 h-7 rounded border border-white/10 shrink-0"
+                    style={{ backgroundColor: scene.config?.background || '#0a0a0a' }}
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <span className="block truncate text-[10px]">{scene.name}</span>
+                  {scene.user?.name && (
+                    <span className="block truncate text-[8px] text-neutral-600">{scene.user.name}</span>
+                  )}
+                </div>
+                <GitFork size={10} className="shrink-0 opacity-0 group-hover:opacity-60 transition-opacity" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </ToolPanelDisclosure>
   );
 });

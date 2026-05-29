@@ -172,7 +172,7 @@ export const CameraTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Light Positions */}
-      <ToolPanelDisclosure label={t('studio3d.panels.lightPositions')}>
+      <ToolPanelDisclosure label={t('studio3d.panels.lightPositions')} badge={<span className="text-[9px] font-mono text-neutral-600">4 lights</span>}>
         <LightPositionSliders
           label="Key Position"
           position={store.lightPosition}
@@ -230,252 +230,254 @@ export const CameraTab: React.FC = React.memo(() => {
         </ToolPanelGrid>
       </ToolPanelDisclosure>
 
-      {/* Environment (HDRI + Background) */}
-      <ToolPanelDisclosure label={t('studio3d.panels.environment')}>
-        <ToolPanelDisclosure label="HDRI" defaultOpen>
-          <ToolPanelGrid cols={3}>
-            {ENVIRONMENT_PRESETS.map((env) => (
-              <ToolPanelChip
-                key={env.id}
-                active={store.environment === env.id && !store.customHdriUrl}
-                onClick={() => store.setEnvironment(env.id)}
-              >
-                {env.label}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-          <button
-            onClick={() => hdriInputRef.current?.click()}
-            className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
-          >
-            {store.customHdriUrl
-              ? t('studio3d.environment.customLoaded')
-              : t('studio3d.environment.uploadHdr')}
-          </button>
-          <input
-            ref={hdriInputRef}
-            type="file"
-            accept=".hdr,.exr"
-            aria-label="Upload custom HDRI"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const maxSizeMB = 50;
-                if (file.size > maxSizeMB * 1024 * 1024) {
-                  toast.error(
-                    `HDRI too large (${(file.size / 1024 / 1024).toFixed(
-                      0
-                    )}MB). Max ${maxSizeMB}MB.`
-                  );
-                  e.target.value = '';
-                  return;
-                }
-                toast.loading('Loading HDRI...', { id: 'hdri-load', duration: 5000 });
-                const url = URL.createObjectURL(file);
-                store.setCustomHdriUrl(url);
-                toast.success('HDRI loaded', { id: 'hdri-load' });
-              }
-              e.target.value = '';
-            }}
-            className="hidden"
-          />
-          <ToolPanelRow label={t('studio3d.environment.hdriBackground')}>
-            <Switch
-              checked={store.hdriBackground}
-              onCheckedChange={store.setHdriBackground}
-              aria-label="HDRI as background"
-            />
-          </ToolPanelRow>
-          <ScrubInput
-            label="Rotation"
-            value={hdriRotation}
-            min={0}
-            max={360}
-            step={1}
-            suffix="°"
-            onChange={setHdriRotation}
-          />
-          {store.hdriBackground && (
-            <div className="grid grid-cols-2 gap-1.5">
-              <ScrubInput
-                label="Blur"
-                value={hdriBlur}
-                min={0}
-                max={1}
-                step={0.01}
-                onChange={setHdriBlur}
-              />
-              <ScrubInput
-                label="Intensity"
-                value={hdriIntensity}
-                min={0}
-                max={3}
-                step={0.05}
-                onChange={setHdriIntensity}
-              />
-            </div>
-          )}
-          {store.customHdriUrl && (
-            <button
-              onClick={() => store.setEnvironment('studio')}
-              className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors"
+      {/* Environment / HDRI — flattened to single disclosure */}
+      <ToolPanelDisclosure
+        label="HDRI"
+        badge={<span className="text-[9px] font-mono text-neutral-500">{store.customHdriUrl ? 'custom' : store.environment}</span>}
+      >
+        <ToolPanelGrid cols={3}>
+          {ENVIRONMENT_PRESETS.map((env) => (
+            <ToolPanelChip
+              key={env.id}
+              active={store.environment === env.id && !store.customHdriUrl}
+              onClick={() => store.setEnvironment(env.id)}
             >
-              {t('studio3d.environment.removeCustom')}
-            </button>
-          )}
-        </ToolPanelDisclosure>
-
-        <ToolPanelDisclosure label={t('studio3d.background.title')} defaultOpen>
-          <ToolPanelGrid cols={4}>
-            {(['solid', 'linear', 'radial', 'image'] as const).map((type) => (
-              <ToolPanelChip
-                key={type}
-                active={store.bgType === type}
-                onClick={() => store.setBgType(type)}
-              >
-                {type === 'image' ? 'Image' : t(`studio3d.background.types.${type}`)}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-          {store.bgType === 'solid' ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setBgColorPickerOpen(!bgColorPickerOpen)}
-                  className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
-                  style={{ backgroundColor: store.background }}
-                  aria-label="Toggle background color picker"
-                />
-                <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1">
-                  <span className="text-[10px] text-neutral-500 mr-1">#</span>
-                  <input
-                    type="text"
-                    value={bgInput}
-                    onChange={(e) => {
-                      const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
-                      setBgInput(v);
-                      if (v.length === 6) store.setBackground(`#${v}`);
-                    }}
-                    onBlur={() => {
-                      if (bgInput.length !== 6) {
-                        setBgInput(store.background.replace('#', '').toUpperCase());
-                      }
-                    }}
-                    maxLength={6}
-                    aria-label="Background color"
-                    className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
-                    placeholder="0A0A0A"
-                  />
-                </div>
-              </div>
-              {bgColorPickerOpen && (
-                <div className="animate-fade-in">
-                  <div className="custom-color-picker">
-                    <HexColorPicker color={store.background} onChange={store.setBackground} />
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
-                      {t('studio3d.background.color1')}
-                    </span>
-                    <div
-                      className="w-3 h-3 rounded-full border border-white/10"
-                      style={{ backgroundColor: store.bgGradient.color1 }}
-                    />
-                  </div>
-                  <div className="custom-color-picker-mini">
-                    <HexColorPicker
-                      color={store.bgGradient.color1}
-                      onChange={(c) => store.setBgGradient({ color1: c })}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
-                      {t('studio3d.background.color2')}
-                    </span>
-                    <div
-                      className="w-3 h-3 rounded-full border border-white/10"
-                      style={{ backgroundColor: store.bgGradient.color2 }}
-                    />
-                  </div>
-                  <div className="custom-color-picker-mini">
-                    <HexColorPicker
-                      color={store.bgGradient.color2}
-                      onChange={(c) => store.setBgGradient({ color2: c })}
-                    />
-                  </div>
-                </div>
-              </div>
-              {store.bgType === 'linear' && (
-                <ScrubInput
-                  label={t('studio3d.background.angle')}
-                  value={bgAngle}
-                  min={0}
-                  max={360}
-                  step={1}
-                  suffix="°"
-                  onChange={setBgAngle}
-                />
-              )}
-            </div>
-          )}
-          {store.bgType === 'image' && (
-            <div className="space-y-2">
-              {store.backgroundImageUrl ? (
-                <div className="relative rounded-md overflow-hidden border border-white/10">
-                  <img
-                    src={store.backgroundImageUrl}
-                    alt="Background"
-                    className="w-full h-20 object-cover"
-                  />
-                  <button
-                    onClick={() => store.setBackgroundImageUrl('')}
-                    className="absolute top-1 right-1 w-5 h-5 rounded bg-black/60 flex items-center justify-center text-neutral-400 hover:text-white transition-colors text-[10px]"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center gap-1 p-3 border border-dashed border-white/10 hover:border-white/20 rounded-lg cursor-pointer transition-all">
-                  <span className="text-[10px] uppercase tracking-wider text-neutral-500">
-                    Upload image
-                  </span>
-                  <input
-                    type="file"
-                    accept=".png,.jpg,.jpeg,.webp"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      if (file.size > 10 * 1024 * 1024) {
-                        toast.error('Max 10MB');
-                        return;
-                      }
-                      store.setBackgroundImageUrl(URL.createObjectURL(file));
-                      e.target.value = '';
-                    }}
-                  />
-                </label>
-              )}
-            </div>
-          )}
-          <ToolPanelRow label={t('studio3d.background.transparent')}>
-            <Switch
-              checked={store.transparentBg}
-              onCheckedChange={store.setTransparentBg}
-              aria-label="Transparent background"
+              {env.label}
+            </ToolPanelChip>
+          ))}
+        </ToolPanelGrid>
+        <button
+          onClick={() => hdriInputRef.current?.click()}
+          className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+        >
+          {store.customHdriUrl
+            ? t('studio3d.environment.customLoaded')
+            : t('studio3d.environment.uploadHdr')}
+        </button>
+        <input
+          ref={hdriInputRef}
+          type="file"
+          accept=".hdr,.exr"
+          aria-label="Upload custom HDRI"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const maxSizeMB = 50;
+              if (file.size > maxSizeMB * 1024 * 1024) {
+                toast.error(
+                  `HDRI too large (${(file.size / 1024 / 1024).toFixed(
+                    0
+                  )}MB). Max ${maxSizeMB}MB.`
+                );
+                e.target.value = '';
+                return;
+              }
+              toast.loading('Loading HDRI...', { id: 'hdri-load', duration: 5000 });
+              const url = URL.createObjectURL(file);
+              store.setCustomHdriUrl(url);
+              toast.success('HDRI loaded', { id: 'hdri-load' });
+            }
+            e.target.value = '';
+          }}
+          className="hidden"
+        />
+        <ToolPanelRow label={t('studio3d.environment.hdriBackground')}>
+          <Switch
+            checked={store.hdriBackground}
+            onCheckedChange={store.setHdriBackground}
+            aria-label="HDRI as background"
+          />
+        </ToolPanelRow>
+        <ScrubInput
+          label="Rotation"
+          value={hdriRotation}
+          min={0}
+          max={360}
+          step={1}
+          suffix="°"
+          onChange={setHdriRotation}
+        />
+        {store.hdriBackground && (
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput
+              label="Blur"
+              value={hdriBlur}
+              min={0}
+              max={1}
+              step={0.01}
+              onChange={setHdriBlur}
             />
-          </ToolPanelRow>
-        </ToolPanelDisclosure>
+            <ScrubInput
+              label="Intensity"
+              value={hdriIntensity}
+              min={0}
+              max={3}
+              step={0.05}
+              onChange={setHdriIntensity}
+            />
+          </div>
+        )}
+        {store.customHdriUrl && (
+          <button
+            onClick={() => store.setEnvironment('studio')}
+            className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors"
+          >
+            {t('studio3d.environment.removeCustom')}
+          </button>
+        )}
+      </ToolPanelDisclosure>
+
+      {/* Background — promoted to top-level for quick access */}
+      <ToolPanelDisclosure label={t('studio3d.background.title')} defaultOpen>
+        <ToolPanelGrid cols={4}>
+          {(['solid', 'linear', 'radial', 'image'] as const).map((type) => (
+            <ToolPanelChip
+              key={type}
+              active={store.bgType === type}
+              onClick={() => store.setBgType(type)}
+            >
+              {type === 'image' ? 'Image' : t(`studio3d.background.types.${type}`)}
+            </ToolPanelChip>
+          ))}
+        </ToolPanelGrid>
+        {store.bgType === 'solid' ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setBgColorPickerOpen(!bgColorPickerOpen)}
+                className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+                style={{ backgroundColor: store.background }}
+                aria-label="Toggle background color picker"
+              />
+              <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1">
+                <span className="text-[10px] text-neutral-500 mr-1">#</span>
+                <input
+                  type="text"
+                  value={bgInput}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                    setBgInput(v);
+                    if (v.length === 6) store.setBackground(`#${v}`);
+                  }}
+                  onBlur={() => {
+                    if (bgInput.length !== 6) {
+                      setBgInput(store.background.replace('#', '').toUpperCase());
+                    }
+                  }}
+                  maxLength={6}
+                  aria-label="Background color"
+                  className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+                  placeholder="0A0A0A"
+                />
+              </div>
+            </div>
+            {bgColorPickerOpen && (
+              <div className="animate-fade-in">
+                <div className="custom-color-picker">
+                  <HexColorPicker color={store.background} onChange={store.setBackground} />
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+                    {t('studio3d.background.color1')}
+                  </span>
+                  <div
+                    className="w-3 h-3 rounded-full border border-white/10"
+                    style={{ backgroundColor: store.bgGradient.color1 }}
+                  />
+                </div>
+                <div className="custom-color-picker-mini">
+                  <HexColorPicker
+                    color={store.bgGradient.color1}
+                    onChange={(c) => store.setBgGradient({ color1: c })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+                    {t('studio3d.background.color2')}
+                  </span>
+                  <div
+                    className="w-3 h-3 rounded-full border border-white/10"
+                    style={{ backgroundColor: store.bgGradient.color2 }}
+                  />
+                </div>
+                <div className="custom-color-picker-mini">
+                  <HexColorPicker
+                    color={store.bgGradient.color2}
+                    onChange={(c) => store.setBgGradient({ color2: c })}
+                  />
+                </div>
+              </div>
+            </div>
+            {store.bgType === 'linear' && (
+              <ScrubInput
+                label={t('studio3d.background.angle')}
+                value={bgAngle}
+                min={0}
+                max={360}
+                step={1}
+                suffix="°"
+                onChange={setBgAngle}
+              />
+            )}
+          </div>
+        )}
+        {store.bgType === 'image' && (
+          <div className="space-y-2">
+            {store.backgroundImageUrl ? (
+              <div className="relative rounded-md overflow-hidden border border-white/10">
+                <img
+                  src={store.backgroundImageUrl}
+                  alt="Background"
+                  className="w-full h-20 object-cover"
+                />
+                <button
+                  onClick={() => store.setBackgroundImageUrl('')}
+                  className="absolute top-1 right-1 w-5 h-5 rounded bg-black/60 flex items-center justify-center text-neutral-400 hover:text-white transition-colors text-[10px]"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center gap-1 p-3 border border-dashed border-white/10 hover:border-white/20 rounded-lg cursor-pointer transition-all">
+                <span className="text-[10px] uppercase tracking-wider text-neutral-500">
+                  Upload image
+                </span>
+                <input
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 10 * 1024 * 1024) {
+                      toast.error('Max 10MB');
+                      return;
+                    }
+                    store.setBackgroundImageUrl(URL.createObjectURL(file));
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            )}
+          </div>
+        )}
+        <ToolPanelRow label={t('studio3d.background.transparent')}>
+          <Switch
+            checked={store.transparentBg}
+            onCheckedChange={store.setTransparentBg}
+            aria-label="Transparent background"
+          />
+        </ToolPanelRow>
       </ToolPanelDisclosure>
 
       {/* Atmosphere */}
@@ -538,7 +540,7 @@ export const CameraTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Scene Options */}
-      <ToolPanelDisclosure label={t('studio3d.panels.sceneOptions')}>
+      <ToolPanelDisclosure label={t('studio3d.panels.sceneOptions')} defaultOpen>
         <ToolPanelRow label={t('studio3d.lighting.shadows')}>
           <Switch checked={store.shadow} onCheckedChange={store.setShadow} aria-label="Shadow" />
         </ToolPanelRow>

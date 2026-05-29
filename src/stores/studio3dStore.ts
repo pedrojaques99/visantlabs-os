@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 import { materialPresets } from '@/components/3d-studio/engine/materials';
@@ -767,6 +768,7 @@ const INITIAL_STATE = {
 };
 
 export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
+  persist(
   temporal(
     (set, get, api) => ({
       ...createShaderSlice(set as any, get as any, api as any),
@@ -1090,6 +1092,28 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
         };
       },
     }
+  ),
+  {
+    name: 'vsn-studio3d-session',
+    version: 1,
+    storage: createJSONStorage(() => sessionStorage),
+    partialize: (state) => {
+      const {
+        _cameraControlsRef,
+        _cameraInfo,
+        isLoading,
+        isExporting,
+        exportProgress,
+        resetKey,
+        showStats,
+        modelUrl,
+        customHdriUrl,
+        backgroundImageUrl,
+        ...rest
+      } = state as any;
+      return rest;
+    },
+  }
   )
 );
 
@@ -1176,6 +1200,7 @@ export async function saveScene(name: string, thumbnail?: string): Promise<Saved
         inputMode: state.inputMode,
         text: state.text || undefined,
         font: state.font || undefined,
+        thumbnailUrl: thumbnail || undefined,
       }),
     });
     if (!res.ok) throw new Error('save failed');
@@ -1223,6 +1248,54 @@ export async function shareScene(name: string, thumbnail?: string): Promise<stri
     return `${window.location.origin}/3d-studio?sceneId=${scene.id}`;
   } catch {
     return null;
+  }
+}
+
+export interface PublicScene {
+  id: string;
+  _id: string;
+  name: string;
+  description: string | null;
+  thumbnailUrl: string | null;
+  tags: string[];
+  inputMode: string;
+  config: { material?: string; background?: string; shapeType?: string };
+  createdAt: string;
+  user?: { name: string | null; avatar: string | null };
+}
+
+export async function getPublicScenes(opts?: { limit?: number; cursor?: string; tag?: string }): Promise<{ scenes: PublicScene[]; nextCursor: string | null }> {
+  try {
+    const params = new URLSearchParams();
+    if (opts?.limit) params.set('limit', String(opts.limit));
+    if (opts?.cursor) params.set('cursor', opts.cursor);
+    if (opts?.tag) params.set('tag', opts.tag);
+    const res = await fetch(`${API_BASE}/studio3d/public?${params}`);
+    if (!res.ok) return { scenes: [], nextCursor: null };
+    return res.json();
+  } catch {
+    return { scenes: [], nextCursor: null };
+  }
+}
+
+export async function forkScene(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/studio3d/${id}/fork`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (data.scene?.config) {
+      useStudio3DStore.getState().applyConfig(data.scene.config);
+      if (data.scene.svgData) {
+        useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
+      }
+      useStudio3DStore.setState({ _sceneName: data.scene.name || '', _lastSavedAt: Date.now() });
+    }
+    return true;
+  } catch {
+    return false;
   }
 }
 
