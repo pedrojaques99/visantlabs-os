@@ -23,16 +23,17 @@ export interface SvgItem {
 export interface SvgOptimizerState {
   items: SvgItem[];
   options: SvgOptimizeOptions;
-  showCode: boolean;
+  viewMode: 'preview' | 'edit' | 'code';
   selectedId: string | null;
 
   addSvgFiles: (files: { name: string; content: string }[]) => void;
   addPngFiles: (files: File[]) => void;
   retraceItem: (id: string, newOpts?: Partial<TraceOptions>) => void;
+  updateItemSvg: (id: string, newSvg: string) => void;
   removeItem: (id: string) => void;
   setOption: <K extends keyof SvgOptimizeOptions>(key: K, value: SvgOptimizeOptions[K]) => void;
   reoptimizeAll: () => void;
-  setShowCode: (v: boolean) => void;
+  setViewMode: (v: 'preview' | 'edit' | 'code') => void;
   setSelectedId: (id: string | null) => void;
   reset: () => void;
 }
@@ -84,7 +85,7 @@ const DEFAULT_OPTIONS: SvgOptimizeOptions = {
 export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
   items: [],
   options: { ...DEFAULT_OPTIONS },
-  showCode: false,
+  viewMode: 'preview',
   selectedId: null,
 
   addSvgFiles: (files) =>
@@ -206,9 +207,28 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
       }),
     })),
 
-  setShowCode: (v) => set({ showCode: v }),
+  updateItemSvg: (id, newSvg) =>
+    set((s) => {
+      const result = optimizeSvg(newSvg, s.options);
+      return {
+        items: s.items.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                originalSvg: newSvg,
+                optimizedSvg: result.optimized,
+                originalSize: new Blob([newSvg]).size,
+                optimizedSize: result.optimizedSize,
+                savings: result.savings,
+              }
+            : item,
+        ),
+      };
+    }),
+
+  setViewMode: (v) => set({ viewMode: v }),
   setSelectedId: (id) => set({ selectedId: id }),
-  reset: () => set({ items: [], options: { ...DEFAULT_OPTIONS }, showCode: false, selectedId: null }),
+  reset: () => set({ items: [], options: { ...DEFAULT_OPTIONS }, viewMode: 'preview', selectedId: null }),
 }));
 
 // Backward compat alias

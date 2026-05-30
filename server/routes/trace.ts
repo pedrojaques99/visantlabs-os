@@ -1,6 +1,8 @@
-import { Router, type Response as ExpressResponse } from 'express';
+import { Router, type Request, type Response as ExpressResponse, type NextFunction } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../utils/jwtSecret.js';
+import type { AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -11,6 +13,17 @@ const traceLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+function optionalAuth(req: AuthRequest, _res: ExpressResponse, next: NextFunction) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string };
+      if (decoded.userId) req.userId = decoded.userId;
+    } catch { /* ignore invalid tokens */ }
+  }
+  next();
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -199,7 +212,7 @@ function cleanSvgPipeline(raw: string): string {
  * POST /api/trace/png-to-svg
  * Full pipeline: PNG → potrace → sanitize → optimize → clean SVG.
  */
-router.post('/png-to-svg', traceLimiter, authenticate, async (req: AuthRequest, res: ExpressResponse) => {
+router.post('/png-to-svg', traceLimiter, optionalAuth, async (req: AuthRequest, res: ExpressResponse) => {
   try {
     const { image, turdSize, optTolerance, threshold, color } = req.body;
 
@@ -226,7 +239,7 @@ router.post('/png-to-svg', traceLimiter, authenticate, async (req: AuthRequest, 
  * POST /api/trace/optimize
  * Sanitize + optimize raw SVG (e.g. pasted from Figma, Illustrator, etc.)
  */
-router.post('/optimize', traceLimiter, authenticate, async (req: AuthRequest, res: ExpressResponse) => {
+router.post('/optimize', traceLimiter, optionalAuth, async (req: AuthRequest, res: ExpressResponse) => {
   try {
     const { svg: rawSvg } = req.body;
 
