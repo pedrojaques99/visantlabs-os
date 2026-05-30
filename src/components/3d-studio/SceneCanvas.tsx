@@ -132,6 +132,9 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   cgContrast: s.cgContrast,
   cgHue: s.cgHue,
   cgSaturation: s.cgSaturation,
+  envMapIntensity: s.envMapIntensity,
+  fresnelColor: s.fresnelColor,
+  fresnelStrength: s.fresnelStrength,
   normalMapUrl: s.normalMapUrl,
   roughnessMapUrl: s.roughnessMapUrl,
   metalnessMapUrl: s.metalnessMapUrl,
@@ -377,6 +380,9 @@ function SceneContent() {
               textureRepeat={s.textureRepeat}
               textureRotation={s.textureRotation}
               textureOpacity={s.textureOpacity}
+              envMapIntensity={s.envMapIntensity}
+              fresnelColor={s.fresnelColor || undefined}
+              fresnelStrength={s.fresnelStrength}
               normalMapUrl={s.normalMapUrl || undefined}
               roughnessMapUrl={s.roughnessMapUrl || undefined}
               metalnessMapUrl={s.metalnessMapUrl || undefined}
@@ -400,6 +406,7 @@ function SceneContent() {
               chainColor={s.chainColor}
               shapeColor={s.shapeColor}
               reliefDepth={s.reliefDepth}
+              blendMode={s.blendMode}
             />
           ))
         )}

@@ -35,7 +35,15 @@ type MaterialPreset =
   | 'ice'
   | 'obsidian'
   | 'wax'
-  | 'mattePaint';
+  | 'mattePaint'
+  | 'y2kGloss'
+  | 'liquidChrome'
+  | 'candyInflate'
+  | 'soapBubble'
+  | 'opal'
+  | 'neonTube'
+  | 'resin'
+  | 'titanium';
 
 type AnimationType =
   | 'none'
@@ -46,6 +54,7 @@ type AnimationType =
   | 'spinFloat'
   | 'swing'
   | 'physicsFall';
+type BlendMode = 'normal' | 'additive' | 'subtractive' | 'multiply';
 type ToneMappingType = 'ACES' | 'AgX' | 'Neutral' | 'Reinhard' | 'Cineon' | 'Linear';
 type ExportFormat = 'png' | 'webm' | 'glb' | 'obj' | 'turntable';
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
@@ -62,6 +71,12 @@ interface ScenePreset {
   lightIntensity: number;
   ambientIntensity: number;
   environment: string;
+  envMapIntensity?: number;
+  fresnelColor?: string;
+  fresnelStrength?: number;
+  bloomEnabled?: boolean;
+  bloomIntensity?: number;
+  bloomThreshold?: number;
 }
 
 export const SCENE_PRESETS: Record<string, ScenePreset> = {
@@ -156,6 +171,25 @@ export const SCENE_PRESETS: Record<string, ScenePreset> = {
     ambientIntensity: 0.5,
     environment: 'studio',
   },
+  'Y2K': {
+    label: 'Y2K',
+    material: 'y2kGloss',
+    color: '#ff3399',
+    depth: 3,
+    roughness: 0.08,
+    metalness: 0.35,
+    animate: 'float',
+    background: '#0a0012',
+    lightIntensity: 1.8,
+    ambientIntensity: 0.3,
+    environment: 'lobby',
+    envMapIntensity: 2.8,
+    fresnelColor: '#1a0033',
+    fresnelStrength: 0.7,
+    bloomEnabled: true,
+    bloomIntensity: 0.6,
+    bloomThreshold: 0.7,
+  },
 };
 
 export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<string, any> }> = {
@@ -233,7 +267,15 @@ export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<st
 
 const R2_HDRI_BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/hdri';
 
-export type { ToneMappingType };
+export type { ToneMappingType, BlendMode };
+
+export const BLEND_MODE_OPTIONS: { id: BlendMode; label: string }[] = [
+  { id: 'normal', label: 'Normal' },
+  { id: 'additive', label: 'Additive' },
+  { id: 'subtractive', label: 'Subtractive' },
+  { id: 'multiply', label: 'Multiply' },
+];
+
 export const TONE_MAPPING_OPTIONS: { id: ToneMappingType; label: string }[] = [
   { id: 'ACES', label: 'ACES Filmic' },
   { id: 'AgX', label: 'AgX' },
@@ -289,6 +331,14 @@ export const MATERIAL_PRESETS: MaterialPresetDef[] = [
   { id: 'pearl', label: 'Pearl', category: 'special', color: '#fef0e0' },
   { id: 'obsidian', label: 'Obsidian', category: 'special', color: '#1a1a1a' },
   { id: 'holographic', label: 'Holo', category: 'special' },
+  { id: 'y2kGloss', label: 'Y2K Gloss', category: 'special' },
+  { id: 'liquidChrome', label: 'Liquid Chrome', category: 'metals', color: '#e0e0e0' },
+  { id: 'titanium', label: 'Titanium', category: 'metals', color: '#8a8a8a' },
+  { id: 'candyInflate', label: 'Candy', category: 'special' },
+  { id: 'soapBubble', label: 'Soap Bubble', category: 'glass' },
+  { id: 'opal', label: 'Opal', category: 'special', color: '#e8dff5' },
+  { id: 'neonTube', label: 'Neon Tube', category: 'special' },
+  { id: 'resin', label: 'Resin', category: 'glass' },
 ];
 
 export const ANIMATION_PRESETS: { id: AnimationType; label: string }[] = [
@@ -375,6 +425,7 @@ interface Studio3DState {
   metalness: number;
   roughness: number;
   opacity: number;
+  blendMode: BlendMode;
   wireframe: boolean;
 
   // Texture
@@ -441,6 +492,11 @@ interface Studio3DState {
   cgContrast: number;
   cgHue: number;
   cgSaturation: number;
+
+  // Advanced material
+  envMapIntensity: number;
+  fresnelColor: string;
+  fresnelStrength: number;
 
   // PBR texture maps
   normalMapUrl: string;
@@ -542,6 +598,7 @@ interface Studio3DState {
   setMetalness: (v: number) => void;
   setRoughness: (v: number) => void;
   setOpacity: (v: number) => void;
+  setBlendMode: (v: BlendMode) => void;
   setWireframe: (v: boolean) => void;
   setTexture: (url: string) => void;
   setTextureRepeat: (v: number) => void;
@@ -591,6 +648,9 @@ interface Studio3DState {
   setCgContrast: (v: number) => void;
   setCgHue: (v: number) => void;
   setCgSaturation: (v: number) => void;
+  setEnvMapIntensity: (v: number) => void;
+  setFresnelColor: (v: string) => void;
+  setFresnelStrength: (v: number) => void;
   setNormalMapUrl: (v: string) => void;
   setRoughnessMapUrl: (v: string) => void;
   setMetalnessMapUrl: (v: string) => void;
@@ -671,6 +731,7 @@ const INITIAL_STATE = {
   metalness: 0.5,
   roughness: 0.5,
   opacity: 1,
+  blendMode: 'normal' as BlendMode,
   wireframe: false,
   texture: '',
   textureRepeat: 1,
@@ -727,6 +788,9 @@ const INITIAL_STATE = {
   cgContrast: 0,
   cgHue: 0,
   cgSaturation: 0,
+  envMapIntensity: 1,
+  fresnelColor: '',
+  fresnelStrength: 0,
   normalMapUrl: '',
   roughnessMapUrl: '',
   metalnessMapUrl: '',
@@ -837,6 +901,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       setMetalness: (metalness) => set({ metalness }),
       setRoughness: (roughness) => set({ roughness }),
       setOpacity: (opacity) => set({ opacity }),
+      setBlendMode: (blendMode) => set({ blendMode }),
       setWireframe: (wireframe) => set({ wireframe }),
       setTexture: (texture) => set({ texture }),
       setTextureRepeat: (textureRepeat) => set({ textureRepeat }),
@@ -892,6 +957,9 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       setCgContrast: (cgContrast) => set({ cgContrast }),
       setCgHue: (cgHue) => set({ cgHue }),
       setCgSaturation: (cgSaturation) => set({ cgSaturation }),
+      setEnvMapIntensity: (envMapIntensity) => set({ envMapIntensity }),
+      setFresnelColor: (fresnelColor) => set({ fresnelColor }),
+      setFresnelStrength: (fresnelStrength) => set({ fresnelStrength }),
       setNormalMapUrl: (normalMapUrl) => set({ normalMapUrl }),
       setRoughnessMapUrl: (roughnessMapUrl) => set({ roughnessMapUrl }),
       setMetalnessMapUrl: (metalnessMapUrl) => set({ metalnessMapUrl }),
@@ -946,6 +1014,12 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           ambientIntensity: preset.ambientIntensity,
           environment: preset.environment,
           customHdriUrl: '',
+          envMapIntensity: preset.envMapIntensity ?? 1,
+          fresnelColor: preset.fresnelColor ?? '',
+          fresnelStrength: preset.fresnelStrength ?? 0,
+          bloomEnabled: preset.bloomEnabled ?? false,
+          bloomIntensity: preset.bloomIntensity ?? 1,
+          bloomThreshold: preset.bloomThreshold ?? 0.9,
         });
       },
 

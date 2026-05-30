@@ -49,6 +49,14 @@ export const materialPresets: Record<string, MaterialPresetDef> = {
   obsidian: { label: 'Obsidian', metalness: 0, roughness: 0.05, opacity: 1, transparent: false, reflectivity: 0.5 },
   wax: { label: 'Wax', metalness: 0, roughness: 0.5, opacity: 0.95, transparent: false, transmission: 0.3, thickness: 2, ior: 1.445, reflectivity: 0.4 },
   mattePaint: { label: 'Matte Paint', metalness: 0, roughness: 0.9, opacity: 1, transparent: false, reflectivity: 0.5 },
+  y2kGloss: { label: 'Y2K Gloss', metalness: 0.35, roughness: 0.08, opacity: 1, transparent: false, clearcoat: 1, clearcoatRoughness: 0.03, iridescence: 0.4, iridescenceIOR: 1.6, reflectivity: 0.85 },
+  liquidChrome: { label: 'Liquid Chrome', metalness: 1, roughness: 0.02, opacity: 1, transparent: false, clearcoat: 0.6, clearcoatRoughness: 0.01, reflectivity: 1, iridescence: 0.15, iridescenceIOR: 1.8 },
+  candyInflate: { label: 'Candy Inflate', metalness: 0, roughness: 0.15, opacity: 1, transparent: false, clearcoat: 1, clearcoatRoughness: 0.05, sheen: 0.3, sheenRoughness: 0.2, sheenColor: '#ffffff', reflectivity: 0.7, ior: 1.45 },
+  soapBubble: { label: 'Soap Bubble', metalness: 0, roughness: 0.02, opacity: 0.15, transparent: true, transmission: 0.98, thickness: 0.1, ior: 1.33, iridescence: 1, iridescenceIOR: 1.3, clearcoat: 1, clearcoatRoughness: 0, reflectivity: 0.8 },
+  opal: { label: 'Opal', metalness: 0, roughness: 0.12, opacity: 1, transparent: false, clearcoat: 0.8, clearcoatRoughness: 0.03, sheen: 0.6, sheenRoughness: 0.25, sheenColor: '#c4b5fd', iridescence: 1, iridescenceIOR: 1.45, ior: 1.45, reflectivity: 0.65 },
+  neonTube: { label: 'Neon Tube', metalness: 0, roughness: 0.08, opacity: 0.85, transparent: true, emissiveIntensity: 1.5, clearcoat: 1, clearcoatRoughness: 0.02, ior: 1.5, reflectivity: 0.6 },
+  resin: { label: 'Resin', metalness: 0, roughness: 0.05, opacity: 1, transparent: false, transmission: 0.4, thickness: 3, ior: 1.52, clearcoat: 0.6, clearcoatRoughness: 0.04, reflectivity: 0.55 },
+  titanium: { label: 'Titanium', metalness: 0.75, roughness: 0.22, opacity: 1, transparent: false, clearcoat: 0.2, clearcoatRoughness: 0.1, reflectivity: 0.7 },
 };
 
 export interface ResolvedMaterial {
