@@ -1,14 +1,23 @@
 import { create } from 'zustand';
 import { optimizeSvg, type SvgOptimizeOptions } from '@/utils/svgOptimizer';
+import { tracePng, type TraceOptions, DEFAULT_TRACE_OPTIONS } from '@/services/svgPipeline';
+
+export type ItemSource = 'svg' | 'png';
+export type ItemStatus = 'idle' | 'tracing' | 'optimizing' | 'done' | 'error';
 
 export interface SvgItem {
   id: string;
   fileName: string;
+  source: ItemSource;
+  originalFile?: File;
   originalSvg: string;
   optimizedSvg: string;
   originalSize: number;
   optimizedSize: number;
   savings: number;
+  status: ItemStatus;
+  error?: string;
+  traceOptions: TraceOptions;
 }
 
 export interface SvgOptimizerState {
@@ -17,7 +26,9 @@ export interface SvgOptimizerState {
   showCode: boolean;
   selectedId: string | null;
 
-  addFiles: (files: { name: string; content: string }[]) => void;
+  addSvgFiles: (files: { name: string; content: string }[]) => void;
+  addPngFiles: (files: File[]) => void;
+  retraceItem: (id: string, newOpts?: Partial<TraceOptions>) => void;
   removeItem: (id: string) => void;
   setOption: <K extends keyof SvgOptimizeOptions>(key: K, value: SvgOptimizeOptions[K]) => void;
   reoptimizeAll: () => void;
@@ -28,16 +39,35 @@ export interface SvgOptimizerState {
 
 let counter = 0;
 
-function buildItem(name: string, content: string, options: SvgOptimizeOptions): SvgItem {
+function buildSvgItem(name: string, content: string, options: SvgOptimizeOptions): SvgItem {
   const result = optimizeSvg(content, options);
   return {
     id: `svg-${++counter}`,
     fileName: name,
+    source: 'svg',
     originalSvg: content,
     optimizedSvg: result.optimized,
     originalSize: result.originalSize,
     optimizedSize: result.optimizedSize,
     savings: result.savings,
+    status: 'done',
+    traceOptions: { ...DEFAULT_TRACE_OPTIONS },
+  };
+}
+
+function buildPngPlaceholder(file: File): SvgItem {
+  return {
+    id: `svg-${++counter}`,
+    fileName: file.name,
+    source: 'png',
+    originalFile: file,
+    originalSvg: '',
+    optimizedSvg: '',
+    originalSize: file.size,
+    optimizedSize: 0,
+    savings: 0,
+    status: 'tracing',
+    traceOptions: { ...DEFAULT_TRACE_OPTIONS },
   };
 }
 
@@ -57,9 +87,9 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
   showCode: false,
   selectedId: null,
 
-  addFiles: (files) =>
+  addSvgFiles: (files) =>
     set((s) => {
-      const newItems = files.map((f) => buildItem(f.name, f.content, s.options));
+      const newItems = files.map((f) => buildSvgItem(f.name, f.content, s.options));
       const allItems = [...s.items, ...newItems];
       return {
         items: allItems,
@@ -67,12 +97,93 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
       };
     }),
 
+  addPngFiles: (files) => {
+    const placeholders = files.map((f) => buildPngPlaceholder(f));
+
+    set((s) => ({
+      items: [...s.items, ...placeholders],
+      selectedId: s.selectedId || placeholders[0]?.id || null,
+    }));
+
+    for (const placeholder of placeholders) {
+      const file = placeholder.originalFile!;
+      tracePng(file, placeholder.traceOptions)
+        .then((rawSvg) => {
+          const opts = get().options;
+          const result = optimizeSvg(rawSvg, opts);
+          set((s) => ({
+            items: s.items.map((item) =>
+              item.id === placeholder.id
+                ? {
+                    ...item,
+                    originalSvg: rawSvg,
+                    optimizedSvg: result.optimized,
+                    optimizedSize: result.optimizedSize,
+                    savings: result.savings,
+                    status: 'done' as const,
+                  }
+                : item,
+            ),
+          }));
+        })
+        .catch((err) => {
+          set((s) => ({
+            items: s.items.map((item) =>
+              item.id === placeholder.id
+                ? { ...item, status: 'error' as const, error: err.message }
+                : item,
+            ),
+          }));
+        });
+    }
+  },
+
+  retraceItem: (id, newOpts) => {
+    const item = get().items.find((i) => i.id === id);
+    if (!item || item.source !== 'png' || !item.originalFile) return;
+
+    const mergedOpts = { ...item.traceOptions, ...newOpts };
+
+    set((s) => ({
+      items: s.items.map((i) =>
+        i.id === id ? { ...i, status: 'tracing' as const, traceOptions: mergedOpts, error: undefined } : i,
+      ),
+    }));
+
+    tracePng(item.originalFile, mergedOpts)
+      .then((rawSvg) => {
+        const opts = get().options;
+        const result = optimizeSvg(rawSvg, opts);
+        set((s) => ({
+          items: s.items.map((i) =>
+            i.id === id
+              ? {
+                  ...i,
+                  originalSvg: rawSvg,
+                  optimizedSvg: result.optimized,
+                  optimizedSize: result.optimizedSize,
+                  savings: result.savings,
+                  status: 'done' as const,
+                }
+              : i,
+          ),
+        }));
+      })
+      .catch((err) => {
+        set((s) => ({
+          items: s.items.map((i) =>
+            i.id === id ? { ...i, status: 'error' as const, error: err.message } : i,
+          ),
+        }));
+      });
+  },
+
   removeItem: (id) =>
     set((s) => {
       const items = s.items.filter((i) => i.id !== id);
       return {
         items,
-        selectedId: s.selectedId === id ? (items[0]?.id || null) : s.selectedId,
+        selectedId: s.selectedId === id ? items[0]?.id || null : s.selectedId,
       };
     }),
 
@@ -84,6 +195,7 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
   reoptimizeAll: () =>
     set((s) => ({
       items: s.items.map((item) => {
+        if (item.status !== 'done' || !item.originalSvg) return item;
         const result = optimizeSvg(item.originalSvg, s.options);
         return {
           ...item,
@@ -98,3 +210,7 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
   setSelectedId: (id) => set({ selectedId: id }),
   reset: () => set({ items: [], options: { ...DEFAULT_OPTIONS }, showCode: false, selectedId: null }),
 }));
+
+// Backward compat alias
+export const addFiles = (files: { name: string; content: string }[]) =>
+  useSvgOptimizerStore.getState().addSvgFiles(files);

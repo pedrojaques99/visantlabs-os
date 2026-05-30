@@ -167,3 +167,5 @@ app-thumbnail-report.txt
 server/scripts/cleanupApps.ts
 server/scripts/seedMissingApps.ts
 server/scripts/seedUpscaleApp.ts
+/test-screenshots
+test-export-modal.mjs

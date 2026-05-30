@@ -220,6 +220,14 @@ export const Studio3DPage: React.FC = () => {
     store.temporal.subscribe,
     () => store.temporal.getState().futureStates.length > 0
   );
+  const undoCount = useSyncExternalStore(
+    store.temporal.subscribe,
+    () => store.temporal.getState().pastStates.length
+  );
+  const redoCount = useSyncExternalStore(
+    store.temporal.subscribe,
+    () => store.temporal.getState().futureStates.length
+  );
 
   const undoWithFeedback = useCallback(() => {
     undo();
@@ -298,6 +306,38 @@ export const Studio3DPage: React.FC = () => {
     { enableOnFormTags: true, preventDefault: true }
   );
 
+  useEffect(() => {
+    const handlePasteSvgText = async (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData('text/plain') || '';
+      if (!text.includes('<svg')) return;
+
+      const items = e.clipboardData?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.startsWith('image/')) return;
+        }
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+      const s = store.getState();
+      s.setIsLoading(true);
+      try {
+        const { optimizeSvgRemote } = await import('@/services/svgPipeline');
+        const svg = await optimizeSvgRemote(text);
+        s.setSvgData(svg, 'clipboard.svg');
+        toast.success('SVG pasted from clipboard', { description: 'Optimized and loaded' });
+      } catch {
+        s.setSvgData(text, 'clipboard.svg');
+        toast.success('SVG pasted from clipboard', { description: 'Loaded without optimization' });
+      } finally {
+        s.setIsLoading(false);
+      }
+    };
+    window.addEventListener('paste', handlePasteSvgText);
+    return () => window.removeEventListener('paste', handlePasteSvgText);
+  }, [t]);
+
   usePasteImage(
     useCallback(
       async ({ file }) => {
@@ -309,8 +349,8 @@ export const Studio3DPage: React.FC = () => {
         } else if (file.type.startsWith('image/')) {
           s.setIsLoading(true);
           try {
-            const { pngToSvg } = await import('@/components/3d-studio/PngToSvgConverter');
-            const svg = await pngToSvg(file);
+            const { tracePng } = await import('@/services/svgPipeline');
+            const svg = await tracePng(file);
             s.setSvgData(svg, file.name || 'pasted.png');
             toast.success(t('studio3d.input.converted', { fileName: file.name || 'pasted.png' }));
           } catch {
@@ -340,8 +380,8 @@ export const Studio3DPage: React.FC = () => {
     } else if (file.type.startsWith('image/')) {
       s.setIsLoading(true);
       try {
-        const { pngToSvg } = await import('@/components/3d-studio/PngToSvgConverter');
-        s.setSvgData(await pngToSvg(file), file.name);
+        const { tracePng } = await import('@/services/svgPipeline');
+        s.setSvgData(await tracePng(file), file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch {
         toast.error(t('studio3d.input.processFailed'));
@@ -422,24 +462,30 @@ export const Studio3DPage: React.FC = () => {
           <button
             onClick={undoWithFeedback}
             disabled={!canUndo}
-            title="Undo (Ctrl+Z)"
+            title={`Undo (Ctrl+Z)${undoCount ? ` · ${undoCount}` : ''}`}
             className={cn(
-              'flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all',
+              'relative flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
             )}
           >
             <Undo2 size={isMobile ? 18 : 15} />
+            {undoCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[8px] font-mono text-neutral-400 px-0.5">{undoCount}</span>
+            )}
           </button>
           <button
             onClick={redoWithFeedback}
             disabled={!canRedo}
-            title="Redo (Ctrl+Shift+Z)"
+            title={`Redo (Ctrl+Shift+Z)${redoCount ? ` · ${redoCount}` : ''}`}
             className={cn(
-              'flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all',
+              'relative flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
             )}
           >
             <Redo2 size={isMobile ? 18 : 15} />
+            {redoCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[8px] font-mono text-neutral-400 px-0.5">{redoCount}</span>
+            )}
           </button>
 
           <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />

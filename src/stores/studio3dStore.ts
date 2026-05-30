@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 import { materialPresets } from '@/components/3d-studio/engine/materials';
@@ -34,7 +35,15 @@ type MaterialPreset =
   | 'ice'
   | 'obsidian'
   | 'wax'
-  | 'mattePaint';
+  | 'mattePaint'
+  | 'y2kGloss'
+  | 'liquidChrome'
+  | 'candyInflate'
+  | 'soapBubble'
+  | 'opal'
+  | 'neonTube'
+  | 'resin'
+  | 'titanium';
 
 type AnimationType =
   | 'none'
@@ -45,6 +54,7 @@ type AnimationType =
   | 'spinFloat'
   | 'swing'
   | 'physicsFall';
+type BlendMode = 'normal' | 'additive' | 'subtractive' | 'multiply';
 type ToneMappingType = 'ACES' | 'AgX' | 'Neutral' | 'Reinhard' | 'Cineon' | 'Linear';
 type ExportFormat = 'png' | 'webm' | 'glb' | 'obj' | 'turntable';
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:5';
@@ -61,6 +71,12 @@ interface ScenePreset {
   lightIntensity: number;
   ambientIntensity: number;
   environment: string;
+  envMapIntensity?: number;
+  fresnelColor?: string;
+  fresnelStrength?: number;
+  bloomEnabled?: boolean;
+  bloomIntensity?: number;
+  bloomThreshold?: number;
 }
 
 export const SCENE_PRESETS: Record<string, ScenePreset> = {
@@ -155,6 +171,55 @@ export const SCENE_PRESETS: Record<string, ScenePreset> = {
     ambientIntensity: 0.5,
     environment: 'studio',
   },
+  'Liquid Metal': {
+    label: 'Liquid Metal',
+    material: 'liquidChrome',
+    color: '#c0c0c0',
+    depth: 3.5,
+    roughness: 0.02,
+    metalness: 1,
+    animate: 'float',
+    background: '#050508',
+    lightIntensity: 1.6,
+    ambientIntensity: 0.2,
+    environment: 'city',
+    envMapIntensity: 3.5,
+    fresnelColor: '#000000',
+    fresnelStrength: 0.3,
+  },
+  Candy: {
+    label: 'Candy',
+    material: 'candyInflate',
+    color: '#ff6bb5',
+    depth: 2.5,
+    roughness: 0.15,
+    metalness: 0,
+    animate: 'wobble',
+    background: '#fff0f5',
+    lightIntensity: 1.4,
+    ambientIntensity: 0.6,
+    environment: 'studio',
+    envMapIntensity: 1.8,
+  },
+  'Y2K': {
+    label: 'Y2K',
+    material: 'y2kGloss',
+    color: '#ff3399',
+    depth: 3,
+    roughness: 0.08,
+    metalness: 0.35,
+    animate: 'float',
+    background: '#0a0012',
+    lightIntensity: 1.8,
+    ambientIntensity: 0.3,
+    environment: 'lobby',
+    envMapIntensity: 2.8,
+    fresnelColor: '#1a0033',
+    fresnelStrength: 0.7,
+    bloomEnabled: true,
+    bloomIntensity: 0.6,
+    bloomThreshold: 0.7,
+  },
 };
 
 export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<string, any> }> = {
@@ -232,7 +297,15 @@ export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<st
 
 const R2_HDRI_BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/hdri';
 
-export type { ToneMappingType };
+export type { ToneMappingType, BlendMode };
+
+export const BLEND_MODE_OPTIONS: { id: BlendMode; label: string }[] = [
+  { id: 'normal', label: 'Normal' },
+  { id: 'additive', label: 'Additive' },
+  { id: 'subtractive', label: 'Subtractive' },
+  { id: 'multiply', label: 'Multiply' },
+];
+
 export const TONE_MAPPING_OPTIONS: { id: ToneMappingType; label: string }[] = [
   { id: 'ACES', label: 'ACES Filmic' },
   { id: 'AgX', label: 'AgX' },
@@ -288,6 +361,14 @@ export const MATERIAL_PRESETS: MaterialPresetDef[] = [
   { id: 'pearl', label: 'Pearl', category: 'special', color: '#fef0e0' },
   { id: 'obsidian', label: 'Obsidian', category: 'special', color: '#1a1a1a' },
   { id: 'holographic', label: 'Holo', category: 'special' },
+  { id: 'y2kGloss', label: 'Y2K Gloss', category: 'special' },
+  { id: 'liquidChrome', label: 'Liquid Chrome', category: 'metals', color: '#e0e0e0' },
+  { id: 'titanium', label: 'Titanium', category: 'metals', color: '#8a8a8a' },
+  { id: 'candyInflate', label: 'Candy', category: 'special' },
+  { id: 'soapBubble', label: 'Soap Bubble', category: 'glass' },
+  { id: 'opal', label: 'Opal', category: 'special', color: '#e8dff5' },
+  { id: 'neonTube', label: 'Neon Tube', category: 'special' },
+  { id: 'resin', label: 'Resin', category: 'glass' },
 ];
 
 export const ANIMATION_PRESETS: { id: AnimationType; label: string }[] = [
@@ -374,6 +455,7 @@ interface Studio3DState {
   metalness: number;
   roughness: number;
   opacity: number;
+  blendMode: BlendMode;
   wireframe: boolean;
 
   // Texture
@@ -440,6 +522,11 @@ interface Studio3DState {
   cgContrast: number;
   cgHue: number;
   cgSaturation: number;
+
+  // Advanced material
+  envMapIntensity: number;
+  fresnelColor: string;
+  fresnelStrength: number;
 
   // PBR texture maps
   normalMapUrl: string;
@@ -541,6 +628,7 @@ interface Studio3DState {
   setMetalness: (v: number) => void;
   setRoughness: (v: number) => void;
   setOpacity: (v: number) => void;
+  setBlendMode: (v: BlendMode) => void;
   setWireframe: (v: boolean) => void;
   setTexture: (url: string) => void;
   setTextureRepeat: (v: number) => void;
@@ -590,6 +678,9 @@ interface Studio3DState {
   setCgContrast: (v: number) => void;
   setCgHue: (v: number) => void;
   setCgSaturation: (v: number) => void;
+  setEnvMapIntensity: (v: number) => void;
+  setFresnelColor: (v: string) => void;
+  setFresnelStrength: (v: number) => void;
   setNormalMapUrl: (v: string) => void;
   setRoughnessMapUrl: (v: string) => void;
   setMetalnessMapUrl: (v: string) => void;
@@ -670,6 +761,7 @@ const INITIAL_STATE = {
   metalness: 0.5,
   roughness: 0.5,
   opacity: 1,
+  blendMode: 'normal' as BlendMode,
   wireframe: false,
   texture: '',
   textureRepeat: 1,
@@ -726,6 +818,9 @@ const INITIAL_STATE = {
   cgContrast: 0,
   cgHue: 0,
   cgSaturation: 0,
+  envMapIntensity: 1,
+  fresnelColor: '',
+  fresnelStrength: 0,
   normalMapUrl: '',
   roughnessMapUrl: '',
   metalnessMapUrl: '',
@@ -767,6 +862,7 @@ const INITIAL_STATE = {
 };
 
 export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
+  persist(
   temporal(
     (set, get, api) => ({
       ...createShaderSlice(set as any, get as any, api as any),
@@ -835,6 +931,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       setMetalness: (metalness) => set({ metalness }),
       setRoughness: (roughness) => set({ roughness }),
       setOpacity: (opacity) => set({ opacity }),
+      setBlendMode: (blendMode) => set({ blendMode }),
       setWireframe: (wireframe) => set({ wireframe }),
       setTexture: (texture) => set({ texture }),
       setTextureRepeat: (textureRepeat) => set({ textureRepeat }),
@@ -890,6 +987,9 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       setCgContrast: (cgContrast) => set({ cgContrast }),
       setCgHue: (cgHue) => set({ cgHue }),
       setCgSaturation: (cgSaturation) => set({ cgSaturation }),
+      setEnvMapIntensity: (envMapIntensity) => set({ envMapIntensity }),
+      setFresnelColor: (fresnelColor) => set({ fresnelColor }),
+      setFresnelStrength: (fresnelStrength) => set({ fresnelStrength }),
       setNormalMapUrl: (normalMapUrl) => set({ normalMapUrl }),
       setRoughnessMapUrl: (roughnessMapUrl) => set({ roughnessMapUrl }),
       setMetalnessMapUrl: (metalnessMapUrl) => set({ metalnessMapUrl }),
@@ -944,6 +1044,12 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           ambientIntensity: preset.ambientIntensity,
           environment: preset.environment,
           customHdriUrl: '',
+          envMapIntensity: preset.envMapIntensity ?? 1,
+          fresnelColor: preset.fresnelColor ?? '',
+          fresnelStrength: preset.fresnelStrength ?? 0,
+          bloomEnabled: preset.bloomEnabled ?? false,
+          bloomIntensity: preset.bloomIntensity ?? 1,
+          bloomThreshold: preset.bloomThreshold ?? 0.9,
         });
       },
 
@@ -979,38 +1085,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           Math.floor(Math.random() * 0xffffff)
             .toString(16)
             .padStart(6, '0');
-        const materials: MaterialPreset[] = [
-          'default',
-          'plastic',
-          'metal',
-          'glass',
-          'rubber',
-          'chrome',
-          'gold',
-          'clay',
-          'emissive',
-          'holographic',
-          'brushedSteel',
-          'aluminum',
-          'copper',
-          'roseGold',
-          'platinum',
-          'ceramic',
-          'marble',
-          'concrete',
-          'wood',
-          'velvet',
-          'leather',
-          'frostedGlass',
-          'diamond',
-          'pearl',
-          'carbonFiber',
-          'carPaint',
-          'ice',
-          'obsidian',
-          'wax',
-          'mattePaint',
-        ];
+        const materials: MaterialPreset[] = MATERIAL_PRESETS.map((m) => m.id);
         const animations: AnimationType[] = [
           'none',
           'spin',
@@ -1060,6 +1135,9 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           noiseOpacity: r(0.05, 0.25, 0.01),
           shadow: Math.random() > 0.4,
           groundPlane: Math.random() > 0.5,
+          envMapIntensity: r(0.5, 3.5, 0.1),
+          fresnelStrength: Math.random() > 0.6 ? r(0.2, 0.8, 0.05) : 0,
+          fresnelColor: randHex(),
         });
       },
     }),
@@ -1090,6 +1168,28 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
         };
       },
     }
+  ),
+  {
+    name: 'vsn-studio3d-session',
+    version: 1,
+    storage: createJSONStorage(() => sessionStorage),
+    partialize: (state) => {
+      const {
+        _cameraControlsRef,
+        _cameraInfo,
+        isLoading,
+        isExporting,
+        exportProgress,
+        resetKey,
+        showStats,
+        modelUrl,
+        customHdriUrl,
+        backgroundImageUrl,
+        ...rest
+      } = state as any;
+      return rest;
+    },
+  }
   )
 );
 
@@ -1176,6 +1276,7 @@ export async function saveScene(name: string, thumbnail?: string): Promise<Saved
         inputMode: state.inputMode,
         text: state.text || undefined,
         font: state.font || undefined,
+        thumbnailUrl: thumbnail || undefined,
       }),
     });
     if (!res.ok) throw new Error('save failed');
@@ -1223,6 +1324,54 @@ export async function shareScene(name: string, thumbnail?: string): Promise<stri
     return `${window.location.origin}/3d-studio?sceneId=${scene.id}`;
   } catch {
     return null;
+  }
+}
+
+export interface PublicScene {
+  id: string;
+  _id: string;
+  name: string;
+  description: string | null;
+  thumbnailUrl: string | null;
+  tags: string[];
+  inputMode: string;
+  config: { material?: string; background?: string; shapeType?: string };
+  createdAt: string;
+  user?: { name: string | null; avatar: string | null };
+}
+
+export async function getPublicScenes(opts?: { limit?: number; cursor?: string; tag?: string }): Promise<{ scenes: PublicScene[]; nextCursor: string | null }> {
+  try {
+    const params = new URLSearchParams();
+    if (opts?.limit) params.set('limit', String(opts.limit));
+    if (opts?.cursor) params.set('cursor', opts.cursor);
+    if (opts?.tag) params.set('tag', opts.tag);
+    const res = await fetch(`${API_BASE}/studio3d/public?${params}`);
+    if (!res.ok) return { scenes: [], nextCursor: null };
+    return res.json();
+  } catch {
+    return { scenes: [], nextCursor: null };
+  }
+}
+
+export async function forkScene(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/studio3d/${id}/fork`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (data.scene?.config) {
+      useStudio3DStore.getState().applyConfig(data.scene.config);
+      if (data.scene.svgData) {
+        useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
+      }
+      useStudio3DStore.setState({ _sceneName: data.scene.name || '', _lastSavedAt: Date.now() });
+    }
+    return true;
+  } catch {
+    return false;
   }
 }
 

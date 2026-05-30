@@ -6,6 +6,11 @@ import { cn } from '@/lib/utils';
 import { ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
+function isSvgUrl(url: string): boolean {
+  const path = url.split('?')[0].toLowerCase();
+  return path.endsWith('.svg');
+}
+
 interface BrandLogoPickerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -74,27 +79,48 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
             <p className="text-center text-neutral-500 text-sm py-8">No logos in this guideline</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {selectedGuideline.logos.map((logo) => (
-                <button
-                  key={logo.id}
-                  onClick={() => handlePickLogo(logo)}
-                  className={cn(
-                    'group relative flex flex-col items-center gap-2 p-3 rounded-lg border border-white/10',
-                    'hover:border-white/30 hover:bg-white/5 transition-all cursor-pointer'
-                  )}
-                >
-                  <div className="w-full aspect-square flex items-center justify-center bg-white/5 rounded overflow-hidden">
-                    <img
-                      src={logo.url}
-                      alt={logo.label || logo.variant}
-                      className="max-w-full max-h-full object-contain p-2"
-                    />
-                  </div>
-                  <span className="text-[10px] uppercase tracking-wider text-neutral-400 group-hover:text-white transition-colors">
-                    {logo.label || logo.variant}
-                  </span>
-                </button>
-              ))}
+              {[...selectedGuideline.logos]
+                .sort((a, b) => {
+                  const aIsSvg = isSvgUrl(a.url);
+                  const bIsSvg = isSvgUrl(b.url);
+                  if (aIsSvg && !bIsSvg) return -1;
+                  if (!aIsSvg && bIsSvg) return 1;
+                  return 0;
+                })
+                .map((logo) => {
+                  const svg = isSvgUrl(logo.url);
+                  return (
+                    <button
+                      key={logo.id}
+                      onClick={() => handlePickLogo(logo)}
+                      className={cn(
+                        'group relative flex flex-col items-center gap-2 p-3 rounded-lg border transition-all cursor-pointer',
+                        svg
+                          ? 'border-emerald-500/30 hover:border-emerald-400/60 hover:bg-emerald-500/5'
+                          : 'border-white/10 hover:border-white/30 hover:bg-white/5'
+                      )}
+                    >
+                      <div className="w-full aspect-square flex items-center justify-center bg-white/5 rounded overflow-hidden relative">
+                        <img
+                          src={logo.url}
+                          alt={logo.label || logo.variant}
+                          className="max-w-full max-h-full object-contain p-2"
+                        />
+                        <span className={cn(
+                          'absolute top-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-mono uppercase tracking-wider',
+                          svg
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-white/10 text-neutral-500'
+                        )}>
+                          {svg ? 'SVG' : 'IMG'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 group-hover:text-white transition-colors">
+                        {logo.label || logo.variant}
+                      </span>
+                    </button>
+                  );
+                })}
             </div>
           )}
         </div>

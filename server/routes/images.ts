@@ -1050,36 +1050,19 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
   }
 });
 
-// --- PNG → SVG vectorization (server-side potrace) ---
+// --- PNG → SVG vectorization — DEPRECATED: use /api/trace/png-to-svg ---
 router.post('/png-to-svg', apiRateLimiter, async (req: Request, res: ExpressResponse) => {
   try {
     const { image, turdSize, optTolerance, threshold } = req.body;
     if (!image || typeof image !== 'string') {
       return res.status(400).json({ error: 'Missing image (base64 data URL)' });
     }
-
-    const base64Match = image.match(/^data:image\/\w+;base64,(.+)$/);
-    if (!base64Match) {
+    const { parseBase64Image, tracePipeline } = await import('./trace.js');
+    const buffer = parseBase64Image(image);
+    if (!buffer) {
       return res.status(400).json({ error: 'Invalid base64 image format' });
     }
-
-    const buffer = Buffer.from(base64Match[1], 'base64');
-
-    const potrace = await import('potrace');
-    const svg: string = await new Promise((resolve, reject) => {
-      potrace.trace(buffer, {
-        turdSize: Math.max(0, Math.min(20, Number(turdSize) || 2)),
-        alphaMax: 1,
-        optCurve: true,
-        optTolerance: Math.max(0, Math.min(2, Number(optTolerance) || 0.2)),
-        color: '#000000',
-        threshold: Math.max(0, Math.min(255, Math.round(Number(threshold) || 128))),
-      }, (err: Error | null, svg: string) => {
-        if (err) reject(err);
-        else resolve(svg);
-      });
-    });
-
+    const svg = await tracePipeline(buffer, { turdSize, optTolerance, threshold });
     res.json({ svg });
   } catch (error: unknown) {
     console.error('PNG→SVG conversion error:', error);

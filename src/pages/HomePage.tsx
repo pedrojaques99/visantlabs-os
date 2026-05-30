@@ -27,7 +27,7 @@ const detectRealMobile = (): boolean => {
 const MOBILE_BLOCKED = new Set(['mockup-machine', 'canvas', 'moodboard-studio']);
 
 // Apps visible to all authenticated users (not just admin/tester)
-const PUBLIC_APP_IDS = new Set(['mockup-machine', 'brand-guidelines', 'canvas', 'community', 'labs']);
+const PUBLIC_APP_IDS = new Set(['mockup-machine', 'brand-guidelines', 'canvas', 'community', 'labs', 'image-lab', '3d-studio']);
 
 // Fixed preset per appId — index into PRESETS (0=neutral 1=cyan 2=violet 3=amber 4=rose 5=green 6=blue 7=warm)
 const APP_PRESET: Record<string, number> = {
@@ -45,6 +45,8 @@ const PINNED_APP_IDS = [
   'canvas',
   'mockup-machine',
   'brand-guidelines',
+  'image-lab',
+  '3d-studio',
 ] as const;
 
 // Synthetic entry for Visant Exporter (not a backend app — download action)
@@ -257,10 +259,10 @@ const AppList: React.FC<AppListProps> = ({ apps, listRef, focusedIndex, onSelect
       >
         <button
           onClick={() => navigate('/apps')}
-          className="font-mono text-[10px] uppercase tracking-widest text-neutral-600 hover:text-neutral-300 transition-colors"
+          className="px-4 py-1.5 rounded-lg bg-white/5 border border-neutral-800 font-mono text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-all"
           aria-label={t('home.ver_todos_os_apps')}
         >
-          more apps →
+          More Apps
         </button>
 
         <div className="flex items-center gap-6">

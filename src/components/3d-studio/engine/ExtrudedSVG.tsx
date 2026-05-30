@@ -7,6 +7,13 @@ import { useStudio3DStore } from '@/stores/studio3dStore';
 
 const CHAIN_MODEL_URL = '/models/iron_chain.glb';
 
+const BLEND_MAP: Record<string, THREE.Blending> = {
+  normal: THREE.NormalBlending,
+  additive: THREE.AdditiveBlending,
+  subtractive: THREE.SubtractiveBlending,
+  multiply: THREE.MultiplyBlending,
+};
+
 const FallbackChain: React.FC<{
   count: number;
   scale: number;
@@ -131,6 +138,9 @@ interface ExtrudedSVGProps {
   textureRotation?: number;
   textureOpacity?: number;
   textureOffset?: [number, number];
+  envMapIntensity?: number;
+  fresnelColor?: string;
+  fresnelStrength?: number;
   normalMapUrl?: string;
   roughnessMapUrl?: string;
   metalnessMapUrl?: string;
@@ -155,18 +165,21 @@ interface ExtrudedSVGProps {
   chainColor?: string;
   shapeColor?: string;
   reliefDepth?: number;
+  blendMode?: 'normal' | 'additive' | 'subtractive' | 'multiply';
 }
 
 export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
   svgString, depth, smoothness, bevelEnabled = true, bevelThickness = 0.5, bevelSize = 0.5,
   color, materialSettings, rotationX, rotationY, groupRef,
   texture: textureUrl, textureRepeat = 1, textureRotation = 0, textureOpacity = 1, textureOffset = [0, 0],
+  envMapIntensity: envMapIntensityProp = 1, fresnelColor, fresnelStrength = 0,
   normalMapUrl, roughnessMapUrl, metalnessMapUrl,
   onLoadingChange, shapeType = 'standard',
   coinRadius = 2.2, badgeWidth = 3.6, badgeHeight = 2.4, badgeRadius = 0.4,
   stampRadius = 2.4, stampTeeth = 24, stampToothDepth = 0.25,
   shieldWidth = 2.2, shieldHeight = 2.8, hexRadius = 2.4,
   chainLinks = 6, chainScale = 1, showChain = false, bailSize = 0.35, bailOffset = 0, chainOffset = 0, chainColor = '', shapeColor = '', reliefDepth: reliefDepthProp = 0.3,
+  blendMode = 'normal',
 }) => {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const [normalMap, setNormalMap] = useState<THREE.Texture | null>(null);
@@ -258,13 +271,20 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     onLoadingChangeRef.current?.(loading, progress);
   }, [loading, progress]);
 
-  const uniformsRef = useRef<{ uTextureOpacity: { value: number } }>({
-    uTextureOpacity: { value: textureOpacity }
+  const uniformsRef = useRef({
+    uTextureOpacity: { value: textureOpacity },
+    uFresnelColor: { value: new THREE.Color(fresnelColor || '#000000') },
+    uFresnelStrength: { value: fresnelStrength },
   });
 
   useEffect(() => {
     uniformsRef.current.uTextureOpacity.value = textureOpacity;
   }, [textureOpacity]);
+
+  useEffect(() => {
+    uniformsRef.current.uFresnelColor.value.set(fresnelColor || '#000000');
+    uniformsRef.current.uFresnelStrength.value = fresnelStrength;
+  }, [fresnelColor, fresnelStrength]);
 
   const prevShapeType = useRef(shapeType);
   useEffect(() => {
@@ -297,14 +317,15 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
 
     const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
     const isGold = materialSettings.preset === 'gold';
-    const isEmissive = materialSettings.preset === 'emissive';
+    const hasEmissive = (preset.emissiveIntensity ?? 0) > 0;
     const wantsTransparency = materialSettings.transparent || materialSettings.opacity < 1;
     const baseColor = isGold ? '#d4af37' : color;
     const shapeBaseColor = shapeColor || baseColor;
-    const emissiveColor = isEmissive ? color : '#000000';
+    const emissiveColor = hasEmissive ? color : '#000000';
     const emissiveIntensity = preset.emissiveIntensity ?? 0;
     const transmissionAmount = wantsTransparency ? 1 - materialSettings.opacity : 0;
 
+    const threeBlending = BLEND_MAP[blendMode] ?? THREE.NormalBlending;
     const commonMatProps = {
       metalness: isGold ? 1.0 : materialSettings.metalness,
       roughness: isGold ? 0.12 : (wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness),
@@ -312,7 +333,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       thickness: materialSettings.thickness !== undefined ? materialSettings.thickness : (wantsTransparency ? 2.5 : 0),
       ior: isGold ? 2.5 : (materialSettings.ior !== undefined ? materialSettings.ior : (wantsTransparency ? 1.5 : 1.45)),
       opacity: 1 as number,
-      transparent: false as boolean,
+      transparent: (blendMode !== 'normal') as boolean,
+      blending: threeBlending,
       wireframe: materialSettings.wireframe,
       emissive: emissiveColor,
       emissiveIntensity,
@@ -325,15 +347,35 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       iridescenceIOR: isGold ? 1.6 : (materialSettings.iridescenceIOR !== undefined ? materialSettings.iridescenceIOR : 1.3),
       reflectivity: isGold ? 0.95 : (materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5),
       side: THREE.DoubleSide,
-      envMapIntensity: isGold ? 2.2 : 1.2,
+      envMapIntensity: isGold ? 2.2 : envMapIntensityProp,
     };
 
+    const fresnelBeforeCompile = fresnelStrength > 0 ? (shader: any) => {
+      shader.uniforms.uFresnelColor = uniformsRef.current.uFresnelColor;
+      shader.uniforms.uFresnelStrength = uniformsRef.current.uFresnelStrength;
+      shader.fragmentShader = `
+        uniform vec3 uFresnelColor;
+        uniform float uFresnelStrength;
+        ${shader.fragmentShader}
+      `.replace(
+        '#include <normal_fragment_maps>',
+        `
+        #include <normal_fragment_maps>
+        if (uFresnelStrength > 0.0) {
+          vec3 fresnelViewDir = normalize(vViewPosition);
+          float fresnel = pow(1.0 - abs(dot(normal, fresnelViewDir)), 3.0);
+          diffuseColor.rgb = mix(diffuseColor.rgb, uFresnelColor, fresnel * uFresnelStrength);
+        }
+        `
+      );
+    } : undefined;
+
     const shapeMaterial = (
-      <meshPhysicalMaterial color={shapeBaseColor} map={texture ?? undefined} {...commonMatProps} />
+      <meshPhysicalMaterial color={shapeBaseColor} map={texture ?? undefined} {...commonMatProps} onBeforeCompile={fresnelBeforeCompile} />
     );
 
     const logoMaterial = (
-      <meshPhysicalMaterial color={baseColor} map={texture ?? undefined} {...commonMatProps} />
+      <meshPhysicalMaterial color={baseColor} map={texture ?? undefined} {...commonMatProps} onBeforeCompile={fresnelBeforeCompile} />
     );
 
     const renderEmbossedLogo = (zOffset: number, flipBack = false) => (
@@ -569,16 +611,17 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
         {geometries.map((geometry, i) => {
           const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
           const isGold = materialSettings.preset === 'gold';
-          const isEmissive = materialSettings.preset === 'emissive';
+          const hasStdEmissive = (preset.emissiveIntensity ?? 0) > 0;
           const wantsTransparency = materialSettings.transparent || materialSettings.opacity < 1;
           const baseColor = texture ? (isGold ? '#d4a017' : color) : (isGold ? '#d4a017' : color);
-          const emissiveColor = isEmissive ? color : '#000000';
+          const emissiveColor = hasStdEmissive ? color : '#000000';
           const emissiveIntensity = preset.emissiveIntensity ?? 0;
           const transmissionAmount = wantsTransparency ? 1 - materialSettings.opacity : 0;
+          const stdBlending = BLEND_MAP[blendMode] ?? THREE.NormalBlending;
 
           return (
             <mesh
-              key={`${i}-${texture ? 'tex' : 'notex'}-${materialSettings.preset}-${wantsTransparency}`}
+              key={`${i}-${texture ? 'tex' : 'notex'}-${materialSettings.preset}-${wantsTransparency}-${blendMode}`}
               geometry={geometry}
               position={[-center.x, -center.y, -center.z]}
             >
@@ -594,7 +637,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
               thickness={materialSettings.thickness !== undefined ? materialSettings.thickness : (wantsTransparency ? 2.5 : 0)}
               ior={materialSettings.ior !== undefined ? materialSettings.ior : (wantsTransparency ? 1.5 : 1.45)}
               opacity={1}
-              transparent={false}
+              transparent={blendMode !== 'normal'}
+              blending={stdBlending}
               wireframe={materialSettings.wireframe}
               emissive={emissiveColor}
               emissiveIntensity={emissiveIntensity}
@@ -607,20 +651,33 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
               iridescenceIOR={materialSettings.iridescenceIOR !== undefined ? materialSettings.iridescenceIOR : 1.3}
               reflectivity={materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5}
               side={THREE.FrontSide}
-              envMapIntensity={1}
+              envMapIntensity={envMapIntensityProp}
               onBeforeCompile={(shader) => {
                 shader.uniforms.uTextureOpacity = uniformsRef.current.uTextureOpacity;
+                shader.uniforms.uFresnelColor = uniformsRef.current.uFresnelColor;
+                shader.uniforms.uFresnelStrength = uniformsRef.current.uFresnelStrength;
                 shader.fragmentShader = `
                   uniform float uTextureOpacity;
+                  uniform vec3 uFresnelColor;
+                  uniform float uFresnelStrength;
                   ${shader.fragmentShader}
                 `.replace(
                   '#include <map_fragment>',
                   `
                   #ifdef USE_MAP
                     vec4 texelColor = texture2D( map, vMapUv );
-                    // Mix between 1.0 (no texture effect) and the texel color based on opacity
                     diffuseColor.rgb *= mix(vec3(1.0), texelColor.rgb, uTextureOpacity);
                   #endif
+                  `
+                ).replace(
+                  '#include <normal_fragment_maps>',
+                  `
+                  #include <normal_fragment_maps>
+                  if (uFresnelStrength > 0.0) {
+                    vec3 fresnelViewDir = normalize(vViewPosition);
+                    float fresnel = pow(1.0 - abs(dot(normal, fresnelViewDir)), 3.0);
+                    diffuseColor.rgb = mix(diffuseColor.rgb, uFresnelColor, fresnel * uFresnelStrength);
+                  }
                   `
                 );
               }}

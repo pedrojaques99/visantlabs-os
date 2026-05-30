@@ -36,7 +36,7 @@ const VALID_MATERIALS = [
 
 const VALID_ANIMATIONS = ['none', 'spin', 'float', 'pulse', 'wobble', 'spinFloat', 'swing', 'physicsFall'];
 const VALID_ENVIRONMENTS = ['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby'];
-const VALID_BG_TYPES = ['solid', 'linear', 'radial'];
+const VALID_BG_TYPES = ['solid', 'linear', 'radial', 'image'];
 const VALID_SHAPE_TYPES = ['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'];
 const VALID_EASINGS = ['linear', 'easeIn', 'easeOut', 'easeInOut'];
 
@@ -80,6 +80,65 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   }
 });
 
+// ─── Public gallery — browse community scenes ──────────────────────────────
+
+router.get('/public', apiRateLimiter, async (_req, res) => {
+  try {
+    const limit = Math.min(Number(_req.query.limit) || 40, 100);
+    const cursor = (_req.query.cursor as string) || undefined;
+    const tag = (_req.query.tag as string) || undefined;
+
+    const where: any = { isPublic: true };
+    if (tag) where.tags = { has: tag };
+    if (cursor) where.id = { lt: cursor };
+
+    let scenes: any[];
+    try {
+      scenes = await prisma.studio3DScene.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        select: {
+          id: true, name: true, description: true,
+          thumbnailUrl: true, tags: true, inputMode: true,
+          config: true,
+          createdAt: true, updatedAt: true,
+          user: { select: { name: true, avatar: true } },
+        },
+      });
+    } catch {
+      scenes = await prisma.studio3DScene.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        select: {
+          id: true, name: true, description: true,
+          thumbnailUrl: true, tags: true, inputMode: true,
+          config: true,
+          createdAt: true, updatedAt: true,
+        },
+      });
+    }
+
+    const nextCursor = scenes.length === limit ? scenes[scenes.length - 1].id : null;
+
+    return res.json({
+      scenes: scenes.map((s) => ({
+        ...mapId(s),
+        config: {
+          material: (s.config as any)?.material,
+          background: (s.config as any)?.background,
+          shapeType: (s.config as any)?.shapeType,
+        },
+      })),
+      nextCursor,
+    });
+  } catch (err: any) {
+    console.error('[studio3d] public gallery error:', err.message);
+    return res.status(500).json({ error: 'Failed to list public scenes' });
+  }
+});
+
 // ─── Get scene ───────────────────────────────────────────────────────────────
 
 router.get('/:id', apiRateLimiter, async (req: AuthRequest, res) => {
@@ -107,12 +166,15 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
 
-    const { name, description, config, svgData, inputMode, text, font, tags, isPublic } = req.body;
+    const { name, description, config, svgData, inputMode, text, font, tags, isPublic, thumbnailUrl } = req.body;
     if (!name || typeof name !== 'string') return res.status(400).json({ error: 'name is required' });
     if (!config || typeof config !== 'object') return res.status(400).json({ error: 'config is required' });
 
     const configErr = validateConfig(config);
     if (configErr) return res.status(400).json({ error: configErr });
+
+    const thumb = typeof thumbnailUrl === 'string' && thumbnailUrl.startsWith('data:image/') && thumbnailUrl.length < 20_000
+      ? thumbnailUrl : null;
 
     const scene = await prisma.studio3DScene.create({
       data: {
@@ -126,6 +188,7 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
         font: font || null,
         tags: Array.isArray(tags) ? tags.slice(0, 20) : [],
         isPublic: isPublic === true,
+        thumbnailUrl: thumb,
       },
     });
 
@@ -147,12 +210,15 @@ router.patch('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res)
       return res.status(404).json({ error: 'Scene not found' });
     }
 
-    const { name, description, config, svgData, inputMode, text, font, tags, isPublic } = req.body;
+    const { name, description, config, svgData, inputMode, text, font, tags, isPublic, thumbnailUrl } = req.body;
 
     if (config) {
       const configErr = validateConfig(config);
       if (configErr) return res.status(400).json({ error: configErr });
     }
+
+    const thumb = typeof thumbnailUrl === 'string' && thumbnailUrl.startsWith('data:image/') && thumbnailUrl.length < 20_000
+      ? thumbnailUrl : undefined;
 
     const scene = await prisma.studio3DScene.update({
       where: { id: req.params.id },
@@ -166,6 +232,7 @@ router.patch('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res)
         ...(font !== undefined ? { font } : {}),
         ...(tags !== undefined ? { tags: Array.isArray(tags) ? tags.slice(0, 20) : [] } : {}),
         ...(isPublic !== undefined ? { isPublic: isPublic === true } : {}),
+        ...(thumb !== undefined ? { thumbnailUrl: thumb } : {}),
       },
     });
 
@@ -192,6 +259,39 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
   } catch (err: any) {
     console.error('[studio3d] delete error:', err.message);
     return res.status(500).json({ error: 'Failed to delete scene' });
+  }
+});
+
+// ─── Fork scene — clone a public scene into your account ────────────────────
+
+router.post('/:id/fork', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
+
+    const source = await prisma.studio3DScene.findUnique({ where: { id: req.params.id } });
+    if (!source || (!source.isPublic && source.userId !== req.userId)) {
+      return res.status(404).json({ error: 'Scene not found' });
+    }
+
+    const scene = await prisma.studio3DScene.create({
+      data: {
+        userId: req.userId,
+        name: `${source.name} (fork)`.slice(0, 200),
+        description: source.description,
+        config: source.config as any,
+        svgData: source.svgData,
+        inputMode: source.inputMode,
+        text: source.text,
+        font: source.font,
+        tags: source.tags,
+        isPublic: false,
+      },
+    });
+
+    return res.status(201).json({ scene: mapId(scene) });
+  } catch (err: any) {
+    console.error('[studio3d] fork error:', err.message);
+    return res.status(500).json({ error: 'Failed to fork scene' });
   }
 });
 
