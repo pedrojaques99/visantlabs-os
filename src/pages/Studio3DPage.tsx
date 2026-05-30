@@ -323,7 +323,7 @@ export const Studio3DPage: React.FC = () => {
       const s = store.getState();
       s.setIsLoading(true);
       try {
-        const { optimizeSvgRemote } = await import('@/components/3d-studio/PngToSvgConverter');
+        const { optimizeSvgRemote } = await import('@/services/svgPipeline');
         const svg = await optimizeSvgRemote(text);
         s.setSvgData(svg, 'clipboard.svg');
         toast.success('SVG pasted from clipboard', { description: 'Optimized and loaded' });
@@ -349,8 +349,8 @@ export const Studio3DPage: React.FC = () => {
         } else if (file.type.startsWith('image/')) {
           s.setIsLoading(true);
           try {
-            const { pngToSvg } = await import('@/components/3d-studio/PngToSvgConverter');
-            const svg = await pngToSvg(file);
+            const { tracePng } = await import('@/services/svgPipeline');
+            const svg = await tracePng(file);
             s.setSvgData(svg, file.name || 'pasted.png');
             toast.success(t('studio3d.input.converted', { fileName: file.name || 'pasted.png' }));
           } catch {
@@ -380,8 +380,8 @@ export const Studio3DPage: React.FC = () => {
     } else if (file.type.startsWith('image/')) {
       s.setIsLoading(true);
       try {
-        const { pngToSvg } = await import('@/components/3d-studio/PngToSvgConverter');
-        s.setSvgData(await pngToSvg(file), file.name);
+        const { tracePng } = await import('@/services/svgPipeline');
+        s.setSvgData(await tracePng(file), file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch {
         toast.error(t('studio3d.input.processFailed'));

@@ -55,9 +55,13 @@ export function optimizeSvg(
   // 2. Remove DOCTYPE declarations
   svg = svg.replace(/<!DOCTYPE[^>]*>\s*/gi, '');
 
-  // 3. Remove XML comments <!-- ... -->
+  // 3. Remove XML comments <!-- ... --> (loop to handle nested fragments)
   if (opts.removeComments) {
-    svg = svg.replace(/<!--[\s\S]*?-->/g, '');
+    let prev = '';
+    while (prev !== svg) {
+      prev = svg;
+      svg = svg.replace(/<!--[\s\S]*?-->/g, '');
+    }
   }
 
   // 4. Remove <metadata>...</metadata>
@@ -67,13 +71,13 @@ export function optimizeSvg(
 
   // 5. Remove editor-specific namespace declarations and attributes
   if (opts.removeEditorData) {
-    // Remove editor xmlns declarations
     for (const ns of EDITOR_XMLNS) {
-      svg = svg.replace(new RegExp(`\\s+${ns.replace(':', ':')}="[^"]*"`, 'gi'), '');
+      const escaped = ns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      svg = svg.replace(new RegExp(`\\s+${escaped}="[^"]*"`, 'gi'), '');
     }
-    // Remove editor-prefixed attributes (inkscape:label, sodipodi:docname, etc.)
     for (const prefix of EDITOR_ATTR_PREFIXES) {
-      svg = svg.replace(new RegExp(`\\s+${prefix.replace(':', ':')}[a-z-]*="[^"]*"`, 'gi'), '');
+      const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      svg = svg.replace(new RegExp(`\\s+${escaped}[a-z-]*="[^"]*"`, 'gi'), '');
     }
     // Remove xmlns:xlink if xlink: is not used in the rest of the content
     const withoutXlinkDecl = svg.replace(/\s+xmlns:xlink="[^"]*"/gi, '');
@@ -158,13 +162,20 @@ function prettifySvg(svg: string): string {
 /**
  * Sanitize SVG for safe inline rendering:
  * removes <script> tags and on* event attributes.
+ * Loops until stable to prevent nested bypass (e.g. <scr<script>ipt>).
  */
 export function sanitizeSvgForRender(svg: string): string {
   let s = svg;
-  s = s.replace(/<script[\s\S]*?<\/script>/gi, '');
-  s = s.replace(/<script[^>]*\/>/gi, '');
-  s = s.replace(/\s+on\w+="[^"]*"/gi, '');
-  s = s.replace(/\s+on\w+='[^']*'/gi, '');
-  s = s.replace(/\s+on\w+=[^\s>]*/gi, '');
+  let prev = '';
+
+  while (prev !== s) {
+    prev = s;
+    s = s.replace(/<script\b[^<]*(?:(?!<\/script\s*>)<[^<]*)*<\/script\s*>/gi, '');
+    s = s.replace(/<script[^>]*\/\s*>/gi, '');
+    s = s.replace(/\s+on[a-z]+\s*=\s*"[^"]*"/gi, '');
+    s = s.replace(/\s+on[a-z]+\s*=\s*'[^']*'/gi, '');
+    s = s.replace(/\s+on[a-z]+\s*=\s*[^\s>"']*/gi, '');
+  }
+
   return s;
 }

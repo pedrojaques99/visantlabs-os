@@ -48,6 +48,30 @@ function parseBase64Image(image: string): Buffer | null {
   return Buffer.from(match[1], 'base64');
 }
 
+function escapeRegexSpecial(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ---------------------------------------------------------------------------
+// SVG Sanitization (loop-until-stable to prevent nested bypass)
+// ---------------------------------------------------------------------------
+
+function sanitizeSvg(svg: string): string {
+  let s = svg;
+  let prev = '';
+
+  while (prev !== s) {
+    prev = s;
+    s = s.replace(/<script\b[^<]*(?:(?!<\/script\s*>)<[^<]*)*<\/script\s*>/gi, '');
+    s = s.replace(/<script[^>]*\/\s*>/gi, '');
+    s = s.replace(/\s+on[a-z]+\s*=\s*"[^"]*"/gi, '');
+    s = s.replace(/\s+on[a-z]+\s*=\s*'[^']*'/gi, '');
+    s = s.replace(/\s+on[a-z]+\s*=\s*[^\s>"']*/gi, '');
+  }
+
+  return s;
+}
+
 // ---------------------------------------------------------------------------
 // SVG Optimization (server-side single source of truth)
 // ---------------------------------------------------------------------------
@@ -76,7 +100,11 @@ function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptions>): 
   svg = svg.replace(/<!DOCTYPE[^>]*>\s*/gi, '');
 
   if (opts.removeComments) {
-    svg = svg.replace(/<!--[\s\S]*?-->/g, '');
+    let prev = '';
+    while (prev !== svg) {
+      prev = svg;
+      svg = svg.replace(/<!--[\s\S]*?-->/g, '');
+    }
   }
 
   if (opts.removeMetadata) {
@@ -85,10 +113,12 @@ function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptions>): 
 
   if (opts.removeEditorData) {
     for (const ns of EDITOR_XMLNS) {
-      svg = svg.replace(new RegExp(`\\s+${ns.replace(':', ':')}="[^"]*"`, 'gi'), '');
+      const escaped = escapeRegexSpecial(ns);
+      svg = svg.replace(new RegExp(`\\s+${escaped}="[^"]*"`, 'gi'), '');
     }
     for (const prefix of EDITOR_ATTR_PREFIXES) {
-      svg = svg.replace(new RegExp(`\\s+${prefix.replace(':', ':')}[a-z-]*="[^"]*"`, 'gi'), '');
+      const escaped = escapeRegexSpecial(prefix);
+      svg = svg.replace(new RegExp(`\\s+${escaped}[a-z-]*="[^"]*"`, 'gi'), '');
     }
     const withoutXlinkDecl = svg.replace(/\s+xmlns:xlink="[^"]*"/gi, '');
     if (!/xlink:/i.test(withoutXlinkDecl)) {
@@ -125,16 +155,6 @@ function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptions>): 
   svg = svg.trim();
 
   return svg;
-}
-
-function sanitizeSvg(svg: string): string {
-  let s = svg;
-  s = s.replace(/<script[\s\S]*?<\/script>/gi, '');
-  s = s.replace(/<script[^>]*\/>/gi, '');
-  s = s.replace(/\s+on\w+="[^"]*"/gi, '');
-  s = s.replace(/\s+on\w+='[^']*'/gi, '');
-  s = s.replace(/\s+on\w+=[^\s>]*/gi, '');
-  return s;
 }
 
 // ---------------------------------------------------------------------------
@@ -179,7 +199,7 @@ function cleanSvgPipeline(raw: string): string {
  * POST /api/trace/png-to-svg
  * Full pipeline: PNG → potrace → sanitize → optimize → clean SVG.
  */
-router.post('/png-to-svg', authenticate, traceLimiter, async (req: AuthRequest, res: ExpressResponse) => {
+router.post('/png-to-svg', traceLimiter, authenticate, async (req: AuthRequest, res: ExpressResponse) => {
   try {
     const { image, turdSize, optTolerance, threshold, color } = req.body;
 
@@ -206,7 +226,7 @@ router.post('/png-to-svg', authenticate, traceLimiter, async (req: AuthRequest, 
  * POST /api/trace/optimize
  * Sanitize + optimize raw SVG (e.g. pasted from Figma, Illustrator, etc.)
  */
-router.post('/optimize', authenticate, traceLimiter, async (req: AuthRequest, res: ExpressResponse) => {
+router.post('/optimize', traceLimiter, authenticate, async (req: AuthRequest, res: ExpressResponse) => {
   try {
     const { svg: rawSvg } = req.body;
 

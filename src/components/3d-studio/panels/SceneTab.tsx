@@ -107,9 +107,9 @@ export const SceneTab: React.FC = React.memo(() => {
       lastPngFile.current = file;
       store.setIsLoading(true);
       try {
-        const { pngToSvg } = await import('../PngToSvgConverter');
+        const { tracePng } = await import('@/services/svgPipeline');
         const s = useStudio3DStore.getState();
-        const svg = await pngToSvg(file, {
+        const svg = await tracePng(file, {
           turdSize: s.traceTurdSize,
           optTolerance: s.traceOptTolerance,
           threshold: s.traceThreshold,
@@ -130,9 +130,9 @@ export const SceneTab: React.FC = React.memo(() => {
     if (!file) return;
     setIsRetracing(true);
     try {
-      const { pngToSvg } = await import('../PngToSvgConverter');
+      const { tracePng } = await import('@/services/svgPipeline');
       const s = useStudio3DStore.getState();
-      const svg = await pngToSvg(file, {
+      const svg = await tracePng(file, {
         turdSize: s.traceTurdSize,
         optTolerance: s.traceOptTolerance,
         threshold: s.traceThreshold,
@@ -163,9 +163,9 @@ export const SceneTab: React.FC = React.memo(() => {
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         const file = new File([bytes], fileName, { type: mimeType });
         lastPngFile.current = file;
-        const { pngToSvg } = await import('../PngToSvgConverter');
+        const { tracePng } = await import('@/services/svgPipeline');
         const s = useStudio3DStore.getState();
-        const svg = await pngToSvg(file, {
+        const svg = await tracePng(file, {
           turdSize: s.traceTurdSize,
           optTolerance: s.traceOptTolerance,
           threshold: s.traceThreshold,
