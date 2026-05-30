@@ -317,11 +317,11 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
 
     const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
     const isGold = materialSettings.preset === 'gold';
-    const isEmissive = materialSettings.preset === 'emissive';
+    const hasEmissive = (preset.emissiveIntensity ?? 0) > 0;
     const wantsTransparency = materialSettings.transparent || materialSettings.opacity < 1;
     const baseColor = isGold ? '#d4af37' : color;
     const shapeBaseColor = shapeColor || baseColor;
-    const emissiveColor = isEmissive ? color : '#000000';
+    const emissiveColor = hasEmissive ? color : '#000000';
     const emissiveIntensity = preset.emissiveIntensity ?? 0;
     const transmissionAmount = wantsTransparency ? 1 - materialSettings.opacity : 0;
 
@@ -350,12 +350,32 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       envMapIntensity: isGold ? 2.2 : envMapIntensityProp,
     };
 
+    const fresnelBeforeCompile = fresnelStrength > 0 ? (shader: any) => {
+      shader.uniforms.uFresnelColor = uniformsRef.current.uFresnelColor;
+      shader.uniforms.uFresnelStrength = uniformsRef.current.uFresnelStrength;
+      shader.fragmentShader = `
+        uniform vec3 uFresnelColor;
+        uniform float uFresnelStrength;
+        ${shader.fragmentShader}
+      `.replace(
+        '#include <normal_fragment_maps>',
+        `
+        #include <normal_fragment_maps>
+        if (uFresnelStrength > 0.0) {
+          vec3 fresnelViewDir = normalize(vViewPosition);
+          float fresnel = pow(1.0 - abs(dot(normal, fresnelViewDir)), 3.0);
+          diffuseColor.rgb = mix(diffuseColor.rgb, uFresnelColor, fresnel * uFresnelStrength);
+        }
+        `
+      );
+    } : undefined;
+
     const shapeMaterial = (
-      <meshPhysicalMaterial color={shapeBaseColor} map={texture ?? undefined} {...commonMatProps} />
+      <meshPhysicalMaterial color={shapeBaseColor} map={texture ?? undefined} {...commonMatProps} onBeforeCompile={fresnelBeforeCompile} />
     );
 
     const logoMaterial = (
-      <meshPhysicalMaterial color={baseColor} map={texture ?? undefined} {...commonMatProps} />
+      <meshPhysicalMaterial color={baseColor} map={texture ?? undefined} {...commonMatProps} onBeforeCompile={fresnelBeforeCompile} />
     );
 
     const renderEmbossedLogo = (zOffset: number, flipBack = false) => (
@@ -591,10 +611,10 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
         {geometries.map((geometry, i) => {
           const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
           const isGold = materialSettings.preset === 'gold';
-          const isEmissive = materialSettings.preset === 'emissive';
+          const hasStdEmissive = (preset.emissiveIntensity ?? 0) > 0;
           const wantsTransparency = materialSettings.transparent || materialSettings.opacity < 1;
           const baseColor = texture ? (isGold ? '#d4a017' : color) : (isGold ? '#d4a017' : color);
-          const emissiveColor = isEmissive ? color : '#000000';
+          const emissiveColor = hasStdEmissive ? color : '#000000';
           const emissiveIntensity = preset.emissiveIntensity ?? 0;
           const transmissionAmount = wantsTransparency ? 1 - materialSettings.opacity : 0;
           const stdBlending = BLEND_MAP[blendMode] ?? THREE.NormalBlending;
