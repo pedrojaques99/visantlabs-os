@@ -730,6 +730,19 @@ export const TOOLS = [
       required: ['imageUrl'],
     },
   },
+  {
+    name: 'imagelab_remove_background',
+    description:
+      'Remove the background from an image using AI. Accepts an image URL or base64 data URL. Returns a transparent PNG (or WebP) URL.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL or base64 data URL.' },
+        outputFormat: { type: 'string', enum: ['png', 'webp'], description: 'Output format. Default: png.' },
+      },
+      required: ['imageUrl'],
+    },
+  },
 ];
 
 // ---------- Tool handlers ----------
@@ -1119,6 +1132,16 @@ export async function handleTool(name: string, args: ToolArgs) {
           shader: args.shader,
           effectOpacity: args.effectOpacity,
           format: args.format,
+        }),
+      });
+      return toolResult(data);
+    }
+    case 'imagelab_remove_background': {
+      const data = await visantFetch('/imagelab/remove-background', {
+        method: 'POST',
+        body: JSON.stringify({
+          imageUrl: args.imageUrl,
+          outputFormat: args.outputFormat,
         }),
       });
       return toolResult(data);
