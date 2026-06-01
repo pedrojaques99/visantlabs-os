@@ -54,40 +54,6 @@ async function resolveInputSvg(body: any): Promise<string> {
   throw new Error('Provide svgData (SVG string) or image (base64 PNG)');
 }
 
-router.post('/render-png', exportLimiter, async (req, res) => {
-  try {
-    const svg = await resolveInputSvg(req.body);
-    const { color, width, height, background, padding } = req.body;
-
-    const { renderSvgToPng } = await import('../services/studio3dRenderService.js');
-    const png = await renderSvgToPng(svg, { color, width, height, background, padding });
-
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Disposition', 'inline; filename="scene.png"');
-    res.send(png);
-  } catch (error: any) {
-    console.error('3D render PNG error:', error);
-    res.status(500).json({ error: error.message || 'Render failed' });
-  }
-});
-
-router.post('/render-gif', exportLimiter, async (req, res) => {
-  try {
-    const svg = await resolveInputSvg(req.body);
-    const { color, width, height, background, frames, fps } = req.body;
-
-    const { renderSvgToGif } = await import('../services/studio3dRenderService.js');
-    const gif = await renderSvgToGif(svg, { color, width, height, background, frames, fps });
-
-    res.setHeader('Content-Type', 'image/gif');
-    res.setHeader('Content-Disposition', 'inline; filename="scene.gif"');
-    res.send(gif);
-  } catch (error: any) {
-    console.error('3D render GIF error:', error);
-    res.status(500).json({ error: error.message || 'GIF render failed' });
-  }
-});
-
 // ─── Prisma-dependent routes ────────────────────────────────────────────────
 
 const hasModel = !!(prisma as any).studio3DScene;
