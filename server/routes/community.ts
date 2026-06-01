@@ -705,6 +705,97 @@ router.post('/presets/:id/upload-image', uploadImageRateLimiter, authenticate, a
   }
 });
 
+router.get('/references/smart', apiRateLimiter, async (req, res) => {
+  try {
+    const { brandGuidelineId, query, limit } = req.query;
+    const maxLimit = Math.min(Number(limit) || 20, 40);
+
+    await connectToMongoDB();
+    const db = getDb();
+
+    // Smart path: brand → distill → embed → Pinecone similarity ranking
+    if (brandGuidelineId && typeof brandGuidelineId === 'string') {
+      try {
+        const { prisma } = await import('../db/prisma.js');
+        const guideline = await prisma.brandGuideline.findUnique({ where: { id: brandGuidelineId } });
+
+        if (guideline) {
+          const { distillBrandGuideline } = await import('../lib/mockup/brandDistiller.js');
+          const brief = distillBrandGuideline(guideline as any);
+
+          if (brief?.promptText) {
+            const queryText = query && typeof query === 'string'
+              ? `${brief.promptText} ${ensureString(query)}`
+              : brief.promptText;
+
+            const { getMultimodalEmbedding } = await import('../services/geminiService.js');
+            const { embedding } = await getMultimodalEmbedding([{ text: queryText }]);
+
+            const { vectorService } = await import('../services/vectorService.js');
+            const matches = await vectorService.query(embedding, maxLimit, {
+              namespace: 'reference-examples',
+              feature: 'reference',
+            });
+
+            if (matches?.length) {
+              const pineconeIds = matches.map((m: any) => m.metadata?.title || m.id).filter(Boolean);
+              const mongoRefs = await db.collection('community_presets')
+                .find({ category: 'reference', isAdminCurated: true })
+                .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1, tags: 1 })
+                .toArray();
+
+              const refMap = new Map(mongoRefs.map((r: any) => [r.id, r]));
+              const scored = matches
+                .map((m: any) => {
+                  const ref = refMap.get(m.id) || refMap.get(m.metadata?.title);
+                  if (!ref) return null;
+                  return { ...ref, relevanceScore: Math.round((m.score ?? 0) * 100) / 100 };
+                })
+                .filter(Boolean);
+
+              // Fill remaining slots with unscored refs (for variety)
+              if (scored.length < maxLimit) {
+                const scoredIds = new Set(scored.map((s: any) => s.id));
+                const filler = mongoRefs
+                  .filter((r: any) => !scoredIds.has(r.id))
+                  .slice(0, maxLimit - scored.length)
+                  .map((r: any) => ({ ...r, relevanceScore: 0 }));
+                scored.push(...filler);
+              }
+
+              return res.json(scored);
+            }
+          }
+        }
+      } catch (embeddingErr) {
+        console.warn('[references/smart] Embedding path failed, falling back to MongoDB:', embeddingErr);
+      }
+    }
+
+    // Fallback: MongoDB text search + dimension match + recency
+    const filter: any = { category: 'reference', isAdminCurated: true };
+    if (query && typeof query === 'string') {
+      const escaped = ensureString(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [
+        { name: { $regex: escaped, $options: 'i' } },
+        { description: { $regex: escaped, $options: 'i' } },
+      ];
+    }
+
+    const refs = await db.collection('community_presets')
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .limit(maxLimit)
+      .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1, tags: 1 })
+      .toArray();
+
+    return res.json(refs.map((r: any) => ({ ...r, relevanceScore: 0 })));
+  } catch (error: any) {
+    console.error('Failed to search references:', error);
+    return res.status(500).json({ error: 'Failed to search references' });
+  }
+});
+
 export default router;
 
 

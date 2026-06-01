@@ -770,6 +770,74 @@ export const useCanvasNodeHandlers = (
     handleBrandBatchNodeDataUpdate,
   } = useBrandBatchHandlers({ nodesRef, edgesRef, updateNodeData, linkedGuideline });
 
+  // ========== BRAND BATCH ADD REFERENCES HANDLER ==========
+  const handleBrandBatchAddReferences = useCallback(
+    (batchNodeId: string, refs: Array<{ id: string; name: string; referenceImageUrl: string }>) => {
+      const batchNode = nodesRef.current.find(n => n.id === batchNodeId);
+      if (!batchNode) return;
+
+      const existingInputEdges = edges.filter(e => e.target === batchNodeId && e.targetHandle?.startsWith('input-'));
+      const usedHandles = new Set(existingInputEdges.map(e => e.targetHandle));
+      const availableHandles: string[] = [];
+      for (let i = 1; i <= 8; i++) {
+        const handle = `input-${i}`;
+        if (!usedHandles.has(handle)) availableHandles.push(handle);
+      }
+
+      const refsToAdd = refs.slice(0, availableHandles.length);
+      if (refsToAdd.length === 0) return;
+
+      addToHistory(nodes, edges);
+
+      const newNodes: Node<FlowNodeData>[] = [];
+      const newEdges: Edge[] = [];
+
+      refsToAdd.forEach((ref, i) => {
+        const nodeId = generateNodeId('image');
+        const newNode: Node<FlowNodeData> = {
+          id: nodeId,
+          type: 'image',
+          position: {
+            x: batchNode.position.x - 320,
+            y: batchNode.position.y + i * 120 - (refsToAdd.length * 60),
+          },
+          data: {
+            type: 'image',
+            mockup: {
+              _id: `ref-${ref.id}`,
+              imageUrl: ref.referenceImageUrl,
+              imageBase64: '',
+              prompt: ref.name,
+              designType: 'reference',
+              tags: [],
+              brandingTags: [],
+              aspectRatio: '1:1',
+            },
+            onView: handleView,
+            onEdit: handleEdit,
+            onDelete: handleDelete,
+            onDuplicate: () => {},
+            onUpload: handlersRef.current?.handleUploadImage || (() => {}),
+            onResize: handlersRef.current?.handleImageNodeResize || (() => {}),
+          } as ImageNodeData,
+        };
+        newNodes.push(newNode);
+
+        newEdges.push({
+          id: `e-${nodeId}-${batchNodeId}`,
+          source: nodeId,
+          sourceHandle: 'output',
+          target: batchNodeId,
+          targetHandle: availableHandles[i],
+        });
+      });
+
+      setNodes((nds: Node<FlowNodeData>[]) => [...nds, ...newNodes]);
+      setEdges((eds: Edge[]) => [...eds, ...newEdges]);
+    },
+    [nodes, edges, nodesRef, setNodes, setEdges, addToHistory, handleView, handleEdit, handleDelete, handlersRef]
+  );
+
   // ========== DATA NODE HANDLER ==========
   const handleDataNodeDataUpdate = useCallback(
     (nodeId: string, newData: Partial<DataNodeData>) => {
@@ -815,6 +883,7 @@ export const useCanvasNodeHandlers = (
       handleBrandBatchRun,
       handleBrandBatchCancel,
       handleBrandBatchNodeDataUpdate,
+      handleBrandBatchAddReferences,
     };
   }, [
     handleLogoNodeUpload,
@@ -837,6 +906,7 @@ export const useCanvasNodeHandlers = (
     handleBrandBatchRun,
     handleBrandBatchCancel,
     handleBrandBatchNodeDataUpdate,
+    handleBrandBatchAddReferences,
   ]);
 
   // ========== NODE BUILDER + CUSTOM NODE HANDLERS ==========
@@ -1087,6 +1157,7 @@ export const useCanvasNodeHandlers = (
     handleBrandBatchRun,
     handleBrandBatchCancel,
     handleBrandBatchNodeDataUpdate,
+    handleBrandBatchAddReferences,
     handlersRef,
     nodesRef,
     updateNodeData,
