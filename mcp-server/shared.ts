@@ -731,6 +731,23 @@ export const TOOLS = [
     },
   },
   {
+    name: 'imagelab_generative_expand',
+    description:
+      'Expand an image beyond its borders using AI (outpainting). The AI seamlessly generates new content that continues the scene — matching lighting, perspective, and style. Specify a direction (up/down/left/right/all) or a custom anchor point.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL or base64 data URL.' },
+        direction: { type: 'string', enum: ['up', 'down', 'left', 'right', 'all'], description: 'Expansion direction. Default: all.' },
+        expandFactor: { type: 'number', description: 'How much to expand (1.5 = 50% larger). Range 1.1-3. Default: 1.5.' },
+        prompt: { type: 'string', description: 'Optional prompt to guide what appears in the expanded area.' },
+        targetAspectRatio: { type: 'string', description: 'Target aspect ratio for the result (e.g. 16:9, 1:1, 9:16).' },
+        resolution: { type: 'string', enum: ['1K', '2K', '4K'], description: 'Output resolution tier. Default: 1K.' },
+      },
+      required: ['imageUrl'],
+    },
+  },
+  {
     name: 'imagelab_remove_background',
     description:
       'Remove the background from an image using AI. Accepts an image URL or base64 data URL. Returns a transparent PNG (or WebP) URL.',
@@ -1132,6 +1149,20 @@ export async function handleTool(name: string, args: ToolArgs) {
           shader: args.shader,
           effectOpacity: args.effectOpacity,
           format: args.format,
+        }),
+      });
+      return toolResult(data);
+    }
+    case 'imagelab_generative_expand': {
+      const data = await visantFetch('/imagelab/generative-expand', {
+        method: 'POST',
+        body: JSON.stringify({
+          imageUrl: args.imageUrl,
+          direction: args.direction,
+          expandFactor: args.expandFactor,
+          prompt: args.prompt,
+          targetAspectRatio: args.targetAspectRatio,
+          resolution: args.resolution,
         }),
       });
       return toolResult(data);

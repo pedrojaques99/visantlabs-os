@@ -9,6 +9,7 @@ import { rateLimit } from 'express-rate-limit';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { imageLabApplyEffect, imageLabApplyShader, imageLabChain, imageLabListPresets } from '../services/imageLab/index.js';
 import { removeBackgroundFromImage } from '../services/backgroundRemovalService.js';
+import { generativeExpand } from '../services/generativeExpandService.js';
 
 const imagelabBodyParser = json({ limit: '10mb' });
 
@@ -84,6 +85,22 @@ router.get('/presets', async (req, res, next) => {
     }
     const presets = imageLabListPresets(mode);
     res.json(presets);
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+router.post('/generative-expand', imagelabBodyParser, apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const { imageUrl, direction, anchor, targetAspectRatio, expandFactor, prompt, resolution, apiKey } = req.body;
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'imageUrl is required.' });
+    }
+    const result = await generativeExpand(
+      { imageUrl, direction, anchor, targetAspectRatio, expandFactor, prompt, resolution, apiKey },
+      req.userId!,
+    );
+    res.json(result);
   } catch (err: any) {
     next(err);
   }
