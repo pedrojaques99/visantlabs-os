@@ -3,8 +3,92 @@ import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { tracePipeline, parseBase64Image } from './trace.js';
 
 const router = Router();
+
+// ─── Export GLB (no Prisma dependency) ──────────────────────────────────────
+
+const exportLimiter = rateLimit({ windowMs: 60_000, max: 10, standardHeaders: true, legacyHeaders: false });
+
+router.post('/export-glb', exportLimiter, async (req, res) => {
+  try {
+    const { svgData, image, preset, threshold, turdSize, optTolerance, alphaMax,
+            depth, smoothness, bevelEnabled, bevelThickness, bevelSize, color, metalness, roughness } = req.body;
+
+    let svg: string;
+
+    if (svgData && typeof svgData === 'string' && svgData.includes('<svg')) {
+      svg = svgData;
+    } else if (image && typeof image === 'string') {
+      const buffer = parseBase64Image(image);
+      if (!buffer) return res.status(400).json({ error: 'Invalid base64 image format' });
+      if (buffer.length > 10 * 1024 * 1024) return res.status(413).json({ error: 'Image too large (max 10MB)' });
+      svg = await tracePipeline(buffer, { preset: preset || 'logo', threshold, turdSize, optTolerance, alphaMax });
+    } else {
+      return res.status(400).json({ error: 'Provide svgData (SVG string) or image (base64 PNG)' });
+    }
+
+    const { svgToGlb } = await import('../services/studio3dExportService.js');
+    const glbBuffer = await svgToGlb(svg, { depth, smoothness, bevelEnabled, bevelThickness, bevelSize, color, metalness, roughness });
+
+    res.setHeader('Content-Type', 'model/gltf-binary');
+    res.setHeader('Content-Disposition', 'attachment; filename="scene.glb"');
+    res.send(glbBuffer);
+  } catch (error: any) {
+    console.error('GLB export error:', error);
+    res.status(500).json({ error: error.message || 'GLB export failed' });
+  }
+});
+
+// Helper to resolve SVG from request body (shared by export/render routes)
+async function resolveInputSvg(body: any): Promise<string> {
+  const { svgData, image, preset, threshold, turdSize, optTolerance, alphaMax } = body;
+  if (svgData && typeof svgData === 'string' && svgData.includes('<svg')) return svgData;
+  if (image && typeof image === 'string') {
+    const buffer = parseBase64Image(image);
+    if (!buffer) throw new Error('Invalid base64 image format');
+    if (buffer.length > 10 * 1024 * 1024) throw new Error('Image too large (max 10MB)');
+    return tracePipeline(buffer, { preset: preset || 'logo', threshold, turdSize, optTolerance, alphaMax });
+  }
+  throw new Error('Provide svgData (SVG string) or image (base64 PNG)');
+}
+
+router.post('/render-png', exportLimiter, async (req, res) => {
+  try {
+    const svg = await resolveInputSvg(req.body);
+    const { color, width, height, background, padding } = req.body;
+
+    const { renderSvgToPng } = await import('../services/studio3dRenderService.js');
+    const png = await renderSvgToPng(svg, { color, width, height, background, padding });
+
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', 'inline; filename="scene.png"');
+    res.send(png);
+  } catch (error: any) {
+    console.error('3D render PNG error:', error);
+    res.status(500).json({ error: error.message || 'Render failed' });
+  }
+});
+
+router.post('/render-gif', exportLimiter, async (req, res) => {
+  try {
+    const svg = await resolveInputSvg(req.body);
+    const { color, width, height, background, frames, fps } = req.body;
+
+    const { renderSvgToGif } = await import('../services/studio3dRenderService.js');
+    const gif = await renderSvgToGif(svg, { color, width, height, background, frames, fps });
+
+    res.setHeader('Content-Type', 'image/gif');
+    res.setHeader('Content-Disposition', 'inline; filename="scene.gif"');
+    res.send(gif);
+  } catch (error: any) {
+    console.error('3D render GIF error:', error);
+    res.status(500).json({ error: error.message || 'GIF render failed' });
+  }
+});
+
+// ─── Prisma-dependent routes ────────────────────────────────────────────────
 
 const hasModel = !!(prisma as any).studio3DScene;
 

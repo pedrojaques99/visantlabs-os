@@ -1,16 +1,45 @@
 import { API_BASE } from '@/config/api';
 
+export type TracePreset = 'logo' | 'lettering' | 'lineArt' | 'stamp' | 'custom';
+
 export interface TraceOptions {
   turdSize?: number;
   optTolerance?: number;
-  threshold?: number;
+  threshold?: number | 'auto';
+  alphaMax?: number;
   color?: string;
+  preset?: TracePreset;
 }
+
+export const TRACE_PRESETS: Record<Exclude<TracePreset, 'custom'>, { label: string; description: string; defaults: Required<Omit<TraceOptions, 'color' | 'preset'>> }> = {
+  logo: {
+    label: 'Logo',
+    description: 'Sharp corners, clean shapes',
+    defaults: { turdSize: 3, optTolerance: 0.3, threshold: 'auto', alphaMax: 0.8 },
+  },
+  lettering: {
+    label: 'Lettering',
+    description: 'High fidelity curves',
+    defaults: { turdSize: 1, optTolerance: 0.15, threshold: 'auto', alphaMax: 0.5 },
+  },
+  lineArt: {
+    label: 'Line Art',
+    description: 'Maximum detail, thin strokes',
+    defaults: { turdSize: 0, optTolerance: 0.1, threshold: 128, alphaMax: 1.0 },
+  },
+  stamp: {
+    label: 'Stamp',
+    description: 'Simplified, noise-resistant',
+    defaults: { turdSize: 5, optTolerance: 0.5, threshold: 'auto', alphaMax: 0.8 },
+  },
+};
 
 export const DEFAULT_TRACE_OPTIONS: Required<Omit<TraceOptions, 'color'>> & { color?: string } = {
   turdSize: 2,
   optTolerance: 0.2,
   threshold: 128,
+  alphaMax: 1,
+  preset: 'logo',
 };
 
 async function traceApiFetch(endpoint: string, body: Record<string, unknown>): Promise<string> {
@@ -49,7 +78,9 @@ export async function tracePng(file: File, options?: TraceOptions): Promise<stri
     turdSize: options?.turdSize,
     optTolerance: options?.optTolerance,
     threshold: options?.threshold,
+    alphaMax: options?.alphaMax,
     color: options?.color,
+    preset: options?.preset,
   });
 }
 

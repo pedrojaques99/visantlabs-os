@@ -3,6 +3,7 @@ import { FileCode, Upload, Download, Copy, Eye, Code, X, Settings2, Image, Refre
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useSvgOptimizerStore } from '@/stores/svgOptimizerStore';
+import { TRACE_PRESETS, type TracePreset } from '@/services/svgPipeline';
 import { sanitizeSvgForRender } from '@/utils/svgOptimizer';
 import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
@@ -150,15 +151,19 @@ export const SvgOptimizerPage: React.FC = () => {
   }, [selectedItem]);
 
   // Local trace slider state for selected PNG item
-  const [localTurd, setLocalTurd] = useState(2);
-  const [localOpt, setLocalOpt] = useState(0.2);
-  const [localThresh, setLocalThresh] = useState(128);
+  const [localTurd, setLocalTurd] = useState(3);
+  const [localOpt, setLocalOpt] = useState(0.3);
+  const [localThresh, setLocalThresh] = useState<number | 'auto'>('auto');
+  const [localAlphaMax, setLocalAlphaMax] = useState(0.8);
+  const [localPreset, setLocalPreset] = useState<TracePreset>('logo');
 
   const syncLocalTrace = useCallback((item: typeof selectedItem) => {
     if (item?.source === 'png') {
-      setLocalTurd(item.traceOptions.turdSize ?? 2);
-      setLocalOpt(item.traceOptions.optTolerance ?? 0.2);
-      setLocalThresh(item.traceOptions.threshold ?? 128);
+      setLocalTurd(item.traceOptions.turdSize ?? 3);
+      setLocalOpt(item.traceOptions.optTolerance ?? 0.3);
+      setLocalThresh(item.traceOptions.threshold ?? 'auto');
+      setLocalAlphaMax(item.traceOptions.alphaMax ?? 0.8);
+      setLocalPreset(item.traceOptions.preset ?? 'logo');
     }
   }, []);
 
@@ -170,14 +175,29 @@ export const SvgOptimizerPage: React.FC = () => {
     }
   }
 
+  const handlePresetChange = useCallback((preset: TracePreset) => {
+    setLocalPreset(preset);
+    if (preset !== 'custom') {
+      const p = TRACE_PRESETS[preset as keyof typeof TRACE_PRESETS];
+      if (p) {
+        setLocalTurd(p.defaults.turdSize);
+        setLocalOpt(p.defaults.optTolerance);
+        setLocalThresh(p.defaults.threshold);
+        setLocalAlphaMax(p.defaults.alphaMax);
+      }
+    }
+  }, []);
+
   const handleRetrace = useCallback(() => {
     if (!selectedItem || selectedItem.source !== 'png') return;
     retraceItem(selectedItem.id, {
       turdSize: localTurd,
       optTolerance: localOpt,
       threshold: localThresh,
+      alphaMax: localAlphaMax,
+      preset: localPreset,
     });
-  }, [selectedItem, retraceItem, localTurd, localOpt, localThresh]);
+  }, [selectedItem, retraceItem, localTurd, localOpt, localThresh, localAlphaMax, localPreset]);
 
   return (
     <MiniToolShell
@@ -420,13 +440,36 @@ export const SvgOptimizerPage: React.FC = () => {
             {selectedItem && selectedItem.source === 'png' && selectedItem.status !== 'tracing' && (
               <div className="space-y-2 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">Trace refine</span>
+                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">Trace preset</span>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <ScrubInput label="Noise" value={localTurd} min={0} max={20} step={1} onChange={setLocalTurd} />
-                  <ScrubInput label="Simplify" value={localOpt} min={0} max={2} step={0.05} onChange={setLocalOpt} />
+                <div className="flex flex-wrap gap-1">
+                  {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => handlePresetChange(p)}
+                      className={cn(
+                        'px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider transition-all',
+                        localPreset === p
+                          ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
+                          : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300',
+                      )}
+                    >
+                      {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
+                    </button>
+                  ))}
                 </div>
-                <ScrubInput label="Threshold" value={localThresh} min={0} max={255} step={1} onChange={setLocalThresh} />
+                {localPreset === 'custom' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <ScrubInput label="Noise" value={localTurd} min={0} max={20} step={1} onChange={setLocalTurd} />
+                      <ScrubInput label="Simplify" value={localOpt} min={0} max={2} step={0.05} onChange={setLocalOpt} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <ScrubInput label="Threshold" value={typeof localThresh === 'number' ? localThresh : 128} min={0} max={255} step={1} onChange={setLocalThresh} />
+                      <ScrubInput label="Corners" value={localAlphaMax} min={0} max={1.334} step={0.05} onChange={setLocalAlphaMax} />
+                    </div>
+                  </>
+                )}
                 <Button
                   variant="outline"
                   className="w-full text-[10px] font-mono uppercase tracking-widest h-8 border-neutral-700"

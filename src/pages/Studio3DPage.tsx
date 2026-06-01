@@ -350,7 +350,13 @@ export const Studio3DPage: React.FC = () => {
           s.setIsLoading(true);
           try {
             const { tracePng } = await import('@/services/svgPipeline');
-            const svg = await tracePng(file);
+            const svg = await tracePng(file, {
+              turdSize: s.traceTurdSize,
+              optTolerance: s.traceOptTolerance,
+              threshold: s.traceThreshold,
+              alphaMax: s.traceAlphaMax,
+              preset: s.tracePreset,
+            });
             s.setSvgData(svg, file.name || 'pasted.png');
             toast.success(t('studio3d.input.converted', { fileName: file.name || 'pasted.png' }));
           } catch {
@@ -381,7 +387,13 @@ export const Studio3DPage: React.FC = () => {
       s.setIsLoading(true);
       try {
         const { tracePng } = await import('@/services/svgPipeline');
-        s.setSvgData(await tracePng(file), file.name);
+        s.setSvgData(await tracePng(file, {
+          turdSize: s.traceTurdSize,
+          optTolerance: s.traceOptTolerance,
+          threshold: s.traceThreshold,
+          alphaMax: s.traceAlphaMax,
+          preset: s.tracePreset,
+        }), file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch {
         toast.error(t('studio3d.input.processFailed'));
