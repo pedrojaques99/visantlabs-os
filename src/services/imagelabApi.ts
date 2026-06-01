@@ -71,6 +71,33 @@ export interface RemoveBackgroundResult {
   engine: 'rembg' | 'imgly';
 }
 
+export type InpaintMode = 'replace' | 'remove' | 'retouch';
+
+export interface MaskRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface InpaintParams {
+  imageUrl: string;
+  mode: InpaintMode;
+  prompt?: string;
+  maskBase64?: string;
+  maskRegion?: MaskRegion;
+  resolution?: Resolution;
+  aspectRatio?: AspectRatio;
+  apiKey?: string;
+}
+
+export interface InpaintResult {
+  imageUrl: string;
+  base64: string;
+  revisedPrompt?: string;
+  mode: InpaintMode;
+}
+
 export interface ApplyEffectParams {
   imageUrl: string;
   mode: string;
@@ -92,6 +119,10 @@ export interface ApplyShaderParams {
 export const imagelabApi = {
   generativeExpand(params: GenerativeExpandParams): Promise<GenerativeExpandResult> {
     return post('/generative-expand', params as unknown as Record<string, unknown>);
+  },
+
+  inpaint(params: InpaintParams): Promise<InpaintResult> {
+    return post('/inpaint', params as unknown as Record<string, unknown>);
   },
 
   removeBackground(params: RemoveBackgroundParams): Promise<RemoveBackgroundResult> {

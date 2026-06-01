@@ -748,6 +748,33 @@ export const TOOLS = [
     },
   },
   {
+    name: 'imagelab_inpaint',
+    description:
+      'Edit a specific region of an image using AI. Three modes: "replace" fills the masked area with new content from your prompt, "remove" erases the masked content and fills with background, "retouch" subtly improves the masked area. Provide either a mask image (PNG with transparent areas to edit) or a simple rectangular region.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        imageUrl: { type: 'string', description: 'Source image URL or base64 data URL.' },
+        mode: { type: 'string', enum: ['replace', 'remove', 'retouch'], description: 'What to do with the masked area.' },
+        prompt: { type: 'string', description: 'What to generate in the masked area. Required for "replace" mode.' },
+        maskBase64: { type: 'string', description: 'Mask as base64 PNG — transparent pixels = area to edit, opaque = keep. Takes priority over maskRegion.' },
+        maskRegion: {
+          type: 'object',
+          description: 'Simple rectangular mask as normalized 0-1 coordinates. Alternative to maskBase64.',
+          properties: {
+            x: { type: 'number', description: 'Left edge (0-1).' },
+            y: { type: 'number', description: 'Top edge (0-1).' },
+            width: { type: 'number', description: 'Width (0-1).' },
+            height: { type: 'number', description: 'Height (0-1).' },
+          },
+          required: ['x', 'y', 'width', 'height'],
+        },
+        resolution: { type: 'string', enum: ['1K', '2K', '4K'], description: 'Output resolution tier. Default: 1K.' },
+      },
+      required: ['imageUrl', 'mode'],
+    },
+  },
+  {
     name: 'imagelab_remove_background',
     description:
       'Remove the background from an image using AI. Accepts an image URL or base64 data URL. Returns a transparent PNG (or WebP) URL.',
@@ -1162,6 +1189,20 @@ export async function handleTool(name: string, args: ToolArgs) {
           expandFactor: args.expandFactor,
           prompt: args.prompt,
           targetAspectRatio: args.targetAspectRatio,
+          resolution: args.resolution,
+        }),
+      });
+      return toolResult(data);
+    }
+    case 'imagelab_inpaint': {
+      const data = await visantFetch('/imagelab/inpaint', {
+        method: 'POST',
+        body: JSON.stringify({
+          imageUrl: args.imageUrl,
+          mode: args.mode,
+          prompt: args.prompt,
+          maskBase64: args.maskBase64,
+          maskRegion: args.maskRegion,
           resolution: args.resolution,
         }),
       });

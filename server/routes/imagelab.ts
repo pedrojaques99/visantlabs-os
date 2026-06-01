@@ -10,6 +10,7 @@ import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { imageLabApplyEffect, imageLabApplyShader, imageLabChain, imageLabListPresets } from '../services/imageLab/index.js';
 import { removeBackgroundFromImage } from '../services/backgroundRemovalService.js';
 import { generativeExpand } from '../services/generativeExpandService.js';
+import { inpaint } from '../services/inpaintingService.js';
 
 const imagelabBodyParser = json({ limit: '10mb' });
 
@@ -98,6 +99,28 @@ router.post('/generative-expand', imagelabBodyParser, apiRateLimiter, authentica
     }
     const result = await generativeExpand(
       { imageUrl, direction, anchor, targetAspectRatio, expandFactor, prompt, resolution, apiKey },
+      req.userId!,
+    );
+    res.json(result);
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+router.post('/inpaint', imagelabBodyParser, apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey } = req.body;
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'imageUrl is required.' });
+    }
+    if (!mode || !['replace', 'remove', 'retouch'].includes(mode)) {
+      return res.status(400).json({ error: 'mode is required (replace, remove, or retouch).' });
+    }
+    if (!maskBase64 && !maskRegion) {
+      return res.status(400).json({ error: 'Either maskBase64 or maskRegion is required.' });
+    }
+    const result = await inpaint(
+      { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey },
       req.userId!,
     );
     res.json(result);
