@@ -2028,6 +2028,7 @@ export const useCanvasNodeCreation = (
         onRun: handlers?.handleBrandBatchRun || (() => {}),
         onCancel: handlers?.handleBrandBatchCancel || (() => {}),
         onUpdateData: handlers?.handleBrandBatchNodeDataUpdate || (() => {}),
+        onAddReferences: handlers?.handleBrandBatchAddReferences || (() => {}),
         onDelete: handleDelete,
         onDuplicate: handleDuplicate,
       } as any,

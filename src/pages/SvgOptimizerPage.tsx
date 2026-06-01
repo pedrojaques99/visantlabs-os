@@ -1,8 +1,9 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { FileCode, Upload, Download, Copy, Eye, Code, X, Settings2, Image, RefreshCw, AlertCircle } from 'lucide-react';
+import React, { useCallback, useRef, useState, lazy, Suspense } from 'react';
+import { FileCode, Upload, Download, Copy, Eye, Code, X, Settings2, Image, RefreshCw, AlertCircle, PenTool } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useSvgOptimizerStore } from '@/stores/svgOptimizerStore';
+import { TRACE_PRESETS, type TracePreset } from '@/services/svgPipeline';
 import { sanitizeSvgForRender } from '@/utils/svgOptimizer';
 import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
@@ -11,6 +12,10 @@ import { ScrubInput } from '@/components/ui/ScrubInput';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
+
+const SvgVectorEditor = lazy(() =>
+  import('@/components/svg-optimizer/SvgVectorEditor').then(m => ({ default: m.SvgVectorEditor })),
+);
 
 const OPTION_LABELS: Record<string, string> = {
   removeComments: 'Comments',
@@ -40,14 +45,15 @@ export const SvgOptimizerPage: React.FC = () => {
 
   const items = useSvgOptimizerStore((s) => s.items);
   const options = useSvgOptimizerStore((s) => s.options);
-  const showCode = useSvgOptimizerStore((s) => s.showCode);
+  const viewMode = useSvgOptimizerStore((s) => s.viewMode);
   const selectedId = useSvgOptimizerStore((s) => s.selectedId);
   const addSvgFiles = useSvgOptimizerStore((s) => s.addSvgFiles);
   const addPngFiles = useSvgOptimizerStore((s) => s.addPngFiles);
   const retraceItem = useSvgOptimizerStore((s) => s.retraceItem);
+  const updateItemSvg = useSvgOptimizerStore((s) => s.updateItemSvg);
   const removeItem = useSvgOptimizerStore((s) => s.removeItem);
   const setOption = useSvgOptimizerStore((s) => s.setOption);
-  const setShowCode = useSvgOptimizerStore((s) => s.setShowCode);
+  const setViewMode = useSvgOptimizerStore((s) => s.setViewMode);
   const setSelectedId = useSvgOptimizerStore((s) => s.setSelectedId);
   const reset = useSvgOptimizerStore((s) => s.reset);
 
@@ -145,15 +151,19 @@ export const SvgOptimizerPage: React.FC = () => {
   }, [selectedItem]);
 
   // Local trace slider state for selected PNG item
-  const [localTurd, setLocalTurd] = useState(2);
-  const [localOpt, setLocalOpt] = useState(0.2);
-  const [localThresh, setLocalThresh] = useState(128);
+  const [localTurd, setLocalTurd] = useState(3);
+  const [localOpt, setLocalOpt] = useState(0.3);
+  const [localThresh, setLocalThresh] = useState<number | 'auto'>('auto');
+  const [localAlphaMax, setLocalAlphaMax] = useState(0.8);
+  const [localPreset, setLocalPreset] = useState<TracePreset>('logo');
 
   const syncLocalTrace = useCallback((item: typeof selectedItem) => {
     if (item?.source === 'png') {
-      setLocalTurd(item.traceOptions.turdSize ?? 2);
-      setLocalOpt(item.traceOptions.optTolerance ?? 0.2);
-      setLocalThresh(item.traceOptions.threshold ?? 128);
+      setLocalTurd(item.traceOptions.turdSize ?? 3);
+      setLocalOpt(item.traceOptions.optTolerance ?? 0.3);
+      setLocalThresh(item.traceOptions.threshold ?? 'auto');
+      setLocalAlphaMax(item.traceOptions.alphaMax ?? 0.8);
+      setLocalPreset(item.traceOptions.preset ?? 'logo');
     }
   }, []);
 
@@ -165,14 +175,29 @@ export const SvgOptimizerPage: React.FC = () => {
     }
   }
 
+  const handlePresetChange = useCallback((preset: TracePreset) => {
+    setLocalPreset(preset);
+    if (preset !== 'custom') {
+      const p = TRACE_PRESETS[preset as keyof typeof TRACE_PRESETS];
+      if (p) {
+        setLocalTurd(p.defaults.turdSize);
+        setLocalOpt(p.defaults.optTolerance);
+        setLocalThresh(p.defaults.threshold);
+        setLocalAlphaMax(p.defaults.alphaMax);
+      }
+    }
+  }, []);
+
   const handleRetrace = useCallback(() => {
     if (!selectedItem || selectedItem.source !== 'png') return;
     retraceItem(selectedItem.id, {
       turdSize: localTurd,
       optTolerance: localOpt,
       threshold: localThresh,
+      alphaMax: localAlphaMax,
+      preset: localPreset,
     });
-  }, [selectedItem, retraceItem, localTurd, localOpt, localThresh]);
+  }, [selectedItem, retraceItem, localTurd, localOpt, localThresh, localAlphaMax, localPreset]);
 
   return (
     <MiniToolShell
@@ -248,19 +273,28 @@ export const SvgOptimizerPage: React.FC = () => {
             {/* View toggle */}
             <div className="flex items-center gap-1 p-2 border-b border-neutral-800">
               <button
-                onClick={() => setShowCode(false)}
+                onClick={() => setViewMode('preview')}
                 className={cn(
                   'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all',
-                  !showCode ? 'bg-brand-cyan/20 text-brand-cyan' : 'text-neutral-500 hover:text-neutral-300',
+                  viewMode === 'preview' ? 'bg-brand-cyan/20 text-brand-cyan' : 'text-neutral-500 hover:text-neutral-300',
                 )}
               >
                 <Eye size={10} /> Preview
               </button>
               <button
-                onClick={() => setShowCode(true)}
+                onClick={() => setViewMode('edit')}
                 className={cn(
                   'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all',
-                  showCode ? 'bg-brand-cyan/20 text-brand-cyan' : 'text-neutral-500 hover:text-neutral-300',
+                  viewMode === 'edit' ? 'bg-amber-500/20 text-amber-400' : 'text-neutral-500 hover:text-neutral-300',
+                )}
+              >
+                <PenTool size={10} /> Edit
+              </button>
+              <button
+                onClick={() => setViewMode('code')}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all',
+                  viewMode === 'code' ? 'bg-brand-cyan/20 text-brand-cyan' : 'text-neutral-500 hover:text-neutral-300',
                 )}
               >
                 <Code size={10} /> Code
@@ -295,7 +329,7 @@ export const SvgOptimizerPage: React.FC = () => {
               </div>
             )}
 
-            {selectedItem && selectedItem.status === 'done' && !showCode && (
+            {selectedItem && selectedItem.status === 'done' && viewMode === 'preview' && (
               <div
                 className="flex-1 flex items-center justify-center p-4 overflow-hidden pointer-events-none"
                 style={{ maxHeight: '60vh' }}
@@ -303,7 +337,20 @@ export const SvgOptimizerPage: React.FC = () => {
               />
             )}
 
-            {selectedItem && selectedItem.status === 'done' && showCode && (
+            {selectedItem && selectedItem.status === 'done' && viewMode === 'edit' && (
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><GlitchLoader size={20} /></div>}>
+                <SvgVectorEditor
+                  svgString={selectedItem.optimizedSvg}
+                  onSvgChange={(newSvg) => {
+                    updateItemSvg(selectedItem.id, newSvg);
+                    toast.success('SVG updated');
+                  }}
+                  className="flex-1"
+                />
+              </Suspense>
+            )}
+
+            {selectedItem && selectedItem.status === 'done' && viewMode === 'code' && (
               <pre className="flex-1 p-4 text-xs font-mono text-neutral-400 overflow-auto whitespace-pre-wrap break-all" style={{ maxHeight: '60vh' }}>
                 {selectedItem.optimizedSvg}
               </pre>
@@ -393,13 +440,36 @@ export const SvgOptimizerPage: React.FC = () => {
             {selectedItem && selectedItem.source === 'png' && selectedItem.status !== 'tracing' && (
               <div className="space-y-2 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">Trace refine</span>
+                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">Trace preset</span>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <ScrubInput label="Noise" value={localTurd} min={0} max={20} step={1} onChange={setLocalTurd} />
-                  <ScrubInput label="Simplify" value={localOpt} min={0} max={2} step={0.05} onChange={setLocalOpt} />
+                <div className="flex flex-wrap gap-1">
+                  {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => handlePresetChange(p)}
+                      className={cn(
+                        'px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider transition-all',
+                        localPreset === p
+                          ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
+                          : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300',
+                      )}
+                    >
+                      {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
+                    </button>
+                  ))}
                 </div>
-                <ScrubInput label="Threshold" value={localThresh} min={0} max={255} step={1} onChange={setLocalThresh} />
+                {localPreset === 'custom' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <ScrubInput label="Noise" value={localTurd} min={0} max={20} step={1} onChange={setLocalTurd} />
+                      <ScrubInput label="Simplify" value={localOpt} min={0} max={2} step={0.05} onChange={setLocalOpt} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <ScrubInput label="Threshold" value={typeof localThresh === 'number' ? localThresh : 128} min={0} max={255} step={1} onChange={setLocalThresh} />
+                      <ScrubInput label="Corners" value={localAlphaMax} min={0} max={1.334} step={0.05} onChange={setLocalAlphaMax} />
+                    </div>
+                  </>
+                )}
                 <Button
                   variant="outline"
                   className="w-full text-[10px] font-mono uppercase tracking-widest h-8 border-neutral-700"

@@ -411,9 +411,11 @@ interface Studio3DState {
   font: string;
   fileName: string;
   modelUrl: string;
+  tracePreset: import('@/services/svgPipeline').TracePreset;
   traceTurdSize: number;
   traceOptTolerance: number;
-  traceThreshold: number;
+  traceThreshold: number | 'auto';
+  traceAlphaMax: number;
   shapeColor: string;
 
   // Geometry
@@ -583,9 +585,11 @@ interface Studio3DState {
   setFont: (font: string) => void;
   setInputMode: (mode: 'svg' | 'text' | 'model') => void;
   setModelUrl: (url: string, fileName?: string) => void;
+  setTracePreset: (preset: import('@/services/svgPipeline').TracePreset) => void;
   setTraceTurdSize: (v: number) => void;
   setTraceOptTolerance: (v: number) => void;
-  setTraceThreshold: (v: number) => void;
+  setTraceThreshold: (v: number | 'auto') => void;
+  setTraceAlphaMax: (v: number) => void;
   setShapeColor: (v: string) => void;
   setShapeType: (v: 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon') => void;
 
@@ -723,9 +727,11 @@ const INITIAL_STATE = {
   font: 'DM Sans',
   fileName: '',
   modelUrl: '',
-  traceTurdSize: 2,
-  traceOptTolerance: 0.2,
-  traceThreshold: 128,
+  tracePreset: 'logo' as import('@/services/svgPipeline').TracePreset,
+  traceTurdSize: 3,
+  traceOptTolerance: 0.3,
+  traceThreshold: 'auto' as number | 'auto',
+  traceAlphaMax: 0.8,
   shapeColor: '',
   shapeType: 'standard' as const,
 
@@ -875,9 +881,28 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
       setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
       setModelUrl: (url, fileName) =>
         set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
-      setTraceTurdSize: (traceTurdSize) => set({ traceTurdSize }),
-      setTraceOptTolerance: (traceOptTolerance) => set({ traceOptTolerance }),
-      setTraceThreshold: (traceThreshold) => set({ traceThreshold }),
+      setTracePreset: (preset: import('@/services/svgPipeline').TracePreset) => {
+        if (preset !== 'custom') {
+          import('@/services/svgPipeline').then(({ TRACE_PRESETS }) => {
+            const p = TRACE_PRESETS[preset as keyof typeof TRACE_PRESETS];
+            if (p) {
+              set({
+                tracePreset: preset,
+                traceTurdSize: p.defaults.turdSize,
+                traceOptTolerance: p.defaults.optTolerance,
+                traceThreshold: p.defaults.threshold,
+                traceAlphaMax: p.defaults.alphaMax,
+              });
+            }
+          });
+        } else {
+          set({ tracePreset: preset });
+        }
+      },
+      setTraceTurdSize: (traceTurdSize) => set({ traceTurdSize, tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset }),
+      setTraceOptTolerance: (traceOptTolerance) => set({ traceOptTolerance, tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset }),
+      setTraceThreshold: (traceThreshold) => set({ traceThreshold, tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset }),
+      setTraceAlphaMax: (traceAlphaMax) => set({ traceAlphaMax, tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset }),
       setShapeColor: (shapeColor) => set({ shapeColor }),
       setShapeType: (shapeType) => set({ shapeType }),
 

@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Upload, Library, Download, CircleDot, Paintbrush, Undo2, Redo2, RotateCcw, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend } from 'lucide-react';
+import { Upload, CircleDot, Paintbrush, Undo2, Redo2, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
@@ -511,18 +511,29 @@ export const ImageLabPage: React.FC = () => {
         hideTopBar
         canvasClassName="absolute inset-0 transition-all duration-300"
       >
-        {/* Floating left toolbar */}
+        {/* Floating tools — canvas-only actions */}
         <div className={cn('absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50', isMobile && 'left-2 top-2 p-1')}>
           <ImageLabUploadWidget
             imageUrl={sourceUrl}
             onLoad={broadcastImage}
           />
-          {/* Effect Opacity — collapsible */}
           {hasImage && (
             <OpacityToggle value={effectOpacity} onChange={setEffectOpacity} />
           )}
-
-          {/* Video Playback Controls */}
+          {hasImage && (
+            <button
+              onClick={() => setMagicHandActive(!magicHandActive)}
+              title="Magic Hand (M)"
+              className={cn(
+                tbBtn,
+                magicHandActive
+                  ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
+              )}
+            >
+              <Hand size={tbIcon} />
+            </button>
+          )}
           {hasImage && sourceMediaType === 'video' && (
             <>
               <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
@@ -554,84 +565,67 @@ export const ImageLabPage: React.FC = () => {
               )}
             </>
           )}
+        </div>
 
-          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
-
-          {/* Undo / Redo */}
-          <button onClick={undo} disabled={historyIndex < 0} title="Undo (Ctrl+Z)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none')}>
-            <Undo2 size={tbIcon} />
-          </button>
-          <button onClick={redo} disabled={historyIndex >= historyLength - 1} title="Redo (Ctrl+Shift+Z)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none')}>
-            <Redo2 size={tbIcon} />
-          </button>
-
-          {hasImage && (
-            <button
-              onClick={() => setMagicHandActive(!magicHandActive)}
-              title="Magic Hand (M) — drag to shape the effect"
-              className={cn(
-                tbBtn,
-                magicHandActive
-                  ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
-                  : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
-              )}
-            >
-              <Hand size={tbIcon} />
-            </button>
-          )}
-
-          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
-
-          {/* Utilities */}
-          <button onClick={handleReset} title="Reset (R)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-            <RotateCcw size={tbIcon} />
-          </button>
-          <button onClick={() => setPresetLibraryOpen(true)} title="Community Presets (Shift+P)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-            <Library size={tbIcon} />
-          </button>
-          <button onClick={() => setExportModalOpen(true)} title="Export (Shift+E)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-            <Download size={tbIcon} />
-          </button>
-
-          {/* FX Modes */}
-          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
-          <span className="text-[6px] font-mono uppercase tracking-widest text-neutral-600 text-center px-1 select-none">FX</span>
-          {MODE_ITEMS.map((m) => {
-            const thumb = thumbs[m.id];
-            return (
-              <button
-                key={m.id}
-                onClick={() => handleModeChange(m.id)}
-                title={`${m.label} (${m.id === 'halftone' ? '1' : m.id === 'texture' ? '2' : '3'})`}
-                className={cn(
-                  'group/fx relative flex items-center justify-center rounded-lg transition-all duration-150 overflow-hidden',
-                  isMobile ? 'w-11 h-11' : 'w-9 h-9',
-                  mode === m.id
-                    ? 'ring-1 ring-white/30 shadow-sm'
-                    : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
-                  !thumb && mode === m.id && 'bg-white/10 text-white',
-                )}
-              >
-                {thumb ? (
-                  <>
-                    <img src={thumb} alt={m.label} className={cn(
-                      'absolute inset-0 w-full h-full object-cover transition-opacity',
-                      mode === m.id ? 'opacity-100' : 'opacity-50 hover:opacity-80'
-                    )} />
-                    <span className="relative z-10 text-[7px] font-mono uppercase tracking-wider text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] opacity-0 group-hover/fx:opacity-100 transition-opacity">
-                      {m.label.slice(0, 3)}
-                    </span>
-                  </>
-                ) : m.icon}
+        {/* Floating top bar — FX modes + undo/redo + panel toggle */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20">
+          <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 shadow-2xl shadow-black/40">
+            {/* Undo / Redo */}
+            <div className="flex items-center gap-0.5 pr-1 border-r border-neutral-800/60">
+              <button onClick={undo} disabled={historyIndex < 0} title="Undo (Ctrl+Z)" className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none">
+                <Undo2 size={14} />
               </button>
-            );
-          })}
+              <button onClick={redo} disabled={historyIndex >= historyLength - 1} title="Redo (Ctrl+Shift+Z)" className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none">
+                <Redo2 size={14} />
+              </button>
+            </div>
 
-          {!isMobile && !panelVisible && (
-            <button onClick={() => setPanelVisible(true)} title="Show panel (Tab)" className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-              <PanelRightOpen size={tbIcon} />
-            </button>
-          )}
+            {/* FX Mode tabs */}
+            {MODE_ITEMS.map((m, i) => {
+              const thumb = thumbs[m.id];
+              const isActive = mode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => handleModeChange(m.id)}
+                  className={cn(
+                    'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 text-[11px] font-medium whitespace-nowrap',
+                    isActive
+                      ? 'bg-white/12 text-white shadow-sm'
+                      : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5',
+                  )}
+                >
+                  <span className={cn('transition-colors', isActive ? 'text-white' : 'text-neutral-600 group-hover/fx:text-neutral-400')}>
+                    {m.icon}
+                  </span>
+                  <span>{m.label}</span>
+                  <span className={cn(
+                    'text-[9px] font-mono tabular-nums transition-colors',
+                    isActive ? 'text-neutral-500' : 'text-neutral-700',
+                  )}>{i + 1}</span>
+                  {thumb && !isActive && (
+                    <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
+                      <div className="rounded-lg overflow-hidden border border-neutral-700/60 shadow-xl shadow-black/60 bg-neutral-900">
+                        <img src={thumb} alt={m.label} className="w-28 h-28 object-cover" />
+                        <div className="px-2 py-1 text-[9px] font-mono uppercase tracking-wider text-neutral-500 text-center bg-neutral-900/90">
+                          {m.label} preview
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+
+            {/* Panel toggle */}
+            {!isMobile && (
+              <div className="pl-1 border-l border-neutral-800/60">
+                <button onClick={() => setPanelVisible(!panelVisible)} title="Toggle panel (Tab)" className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', panelVisible ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+                  <PanelRightOpen size={14} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={mode !== 'halftone' ? 'hidden' : 'contents'}>

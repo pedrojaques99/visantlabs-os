@@ -23,16 +23,17 @@ export interface SvgItem {
 export interface SvgOptimizerState {
   items: SvgItem[];
   options: SvgOptimizeOptions;
-  showCode: boolean;
+  viewMode: 'preview' | 'edit' | 'code';
   selectedId: string | null;
 
   addSvgFiles: (files: { name: string; content: string }[]) => void;
   addPngFiles: (files: File[]) => void;
   retraceItem: (id: string, newOpts?: Partial<TraceOptions>) => void;
+  updateItemSvg: (id: string, newSvg: string) => void;
   removeItem: (id: string) => void;
   setOption: <K extends keyof SvgOptimizeOptions>(key: K, value: SvgOptimizeOptions[K]) => void;
   reoptimizeAll: () => void;
-  setShowCode: (v: boolean) => void;
+  setViewMode: (v: 'preview' | 'edit' | 'code') => void;
   setSelectedId: (id: string | null) => void;
   reset: () => void;
 }
@@ -84,7 +85,7 @@ const DEFAULT_OPTIONS: SvgOptimizeOptions = {
 export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
   items: [],
   options: { ...DEFAULT_OPTIONS },
-  showCode: false,
+  viewMode: 'preview',
   selectedId: null,
 
   addSvgFiles: (files) =>
@@ -107,13 +108,15 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
 
     for (const placeholder of placeholders) {
       const file = placeholder.originalFile!;
+      const itemId = placeholder.id;
       tracePng(file, placeholder.traceOptions)
         .then((rawSvg) => {
-          const opts = get().options;
-          const result = optimizeSvg(rawSvg, opts);
+          const current = get();
+          if (!current.items.some(i => i.id === itemId)) return;
+          const result = optimizeSvg(rawSvg, current.options);
           set((s) => ({
             items: s.items.map((item) =>
-              item.id === placeholder.id
+              item.id === itemId
                 ? {
                     ...item,
                     originalSvg: rawSvg,
@@ -129,7 +132,7 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
         .catch((err) => {
           set((s) => ({
             items: s.items.map((item) =>
-              item.id === placeholder.id
+              item.id === itemId
                 ? { ...item, status: 'error' as const, error: err.message }
                 : item,
             ),
@@ -152,8 +155,9 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
 
     tracePng(item.originalFile, mergedOpts)
       .then((rawSvg) => {
-        const opts = get().options;
-        const result = optimizeSvg(rawSvg, opts);
+        const current = get();
+        if (!current.items.some(i => i.id === id)) return;
+        const result = optimizeSvg(rawSvg, current.options);
         set((s) => ({
           items: s.items.map((i) =>
             i.id === id
@@ -170,6 +174,7 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
         }));
       })
       .catch((err) => {
+        if (!get().items.some(i => i.id === id)) return;
         set((s) => ({
           items: s.items.map((i) =>
             i.id === id ? { ...i, status: 'error' as const, error: err.message } : i,
@@ -206,9 +211,30 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
       }),
     })),
 
-  setShowCode: (v) => set({ showCode: v }),
+  updateItemSvg: (id, newSvg) =>
+    set((s) => {
+      const result = optimizeSvg(newSvg, s.options);
+      return {
+        items: s.items.map((item) => {
+          if (item.id !== id) return item;
+          const svgSize = new Blob([newSvg]).size;
+          return {
+            ...item,
+            originalSvg: newSvg,
+            optimizedSvg: result.optimized,
+            originalSize: item.source === 'png' ? item.originalSize : svgSize,
+            optimizedSize: result.optimizedSize,
+            savings: item.source === 'png'
+              ? (item.originalSize > 0 ? Math.round((1 - result.optimizedSize / item.originalSize) * 100) : 0)
+              : result.savings,
+          };
+        }),
+      };
+    }),
+
+  setViewMode: (v) => set({ viewMode: v }),
   setSelectedId: (id) => set({ selectedId: id }),
-  reset: () => set({ items: [], options: { ...DEFAULT_OPTIONS }, showCode: false, selectedId: null }),
+  reset: () => set({ items: [], options: { ...DEFAULT_OPTIONS }, viewMode: 'preview', selectedId: null }),
 }));
 
 // Backward compat alias

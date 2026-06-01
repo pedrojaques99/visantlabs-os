@@ -1,6 +1,9 @@
 import React, { memo, useCallback, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Layers, Play, Square, RotateCcw, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Layers, Play, Square, RotateCcw, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, Plus, Flame } from 'lucide-react';
+import { useReferenceSearch } from '@/hooks/useReferenceSearch';
+import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
+import type { ReferenceResult } from '@/services/referenceApi';
 import type { BrandBatchNodeData, BrandBatchItem } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { cn } from '@/lib/utils';
@@ -22,6 +25,15 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
   const nodeData = data as BrandBatchNodeData;
   const { status = 'idle', items = [], connectedImages = [], prompt = '' } = nodeData;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const canvasHeader = useCanvasHeader();
+  const refSearch = useReferenceSearch({ brandGuidelineId: canvasHeader.linkedGuidelineId || undefined, enabled: showSuggestions, limit: 6 });
+  const suggestions = refSearch.results.slice(0, 3);
+
+  const handleAddRef = useCallback((ref: ReferenceResult) => {
+    nodeData.onAddReferences?.(id, [ref]);
+  }, [id, nodeData]);
 
   const isRunning = status === 'running';
   const isDone = status === 'done' || status === 'cancelled';
@@ -131,6 +143,43 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
             : 'Connect images (up to 8)'}
         </p>
       </div>
+
+      {/* Smart Reference Suggestions */}
+      {!isRunning && !isDone && imageCount < 8 && (
+        <div className="px-3 py-1">
+          {!showSuggestions ? (
+            <button
+              onClick={() => setShowSuggestions(true)}
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded text-[10px] font-medium bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors border border-violet-500/20"
+            >
+              <Flame size={10} />
+              Suggest References
+            </button>
+          ) : refSearch.isLoading ? (
+            <div className="flex items-center justify-center py-2"><GlitchLoader size={10} /></div>
+          ) : suggestions.length > 0 ? (
+            <div className="flex gap-1">
+              {suggestions.map(ref => (
+                <button key={ref.id} onClick={() => handleAddRef(ref)}
+                  className="group relative flex-1 aspect-square rounded overflow-hidden bg-neutral-900 border border-violet-500/20 hover:border-violet-400/50 transition-all"
+                  title={ref.name}
+                >
+                  <img src={ref.referenceImageUrl} alt={ref.name} loading="lazy"
+                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                    <Plus size={12} className="text-white" />
+                  </div>
+                  {ref.relevanceScore >= 0.7 && (
+                    <div className="absolute top-0.5 left-0.5"><Flame size={6} className="text-brand-cyan" /></div>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[9px] text-white/20 text-center py-1">No references available</p>
+          )}
+        </div>
+      )}
 
       {/* Prompt */}
       <div className="px-3 py-1.5">
@@ -266,6 +315,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           </>
         )}
       </div>
+
     </NodeContainer>
   );
 });

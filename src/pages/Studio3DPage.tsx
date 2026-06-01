@@ -57,6 +57,8 @@ import {
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
 
+type AutoRenderFormat = 'gif' | 'mp4' | 'webm' | 'png' | null;
+
 export const Studio3DPage: React.FC = () => {
   const { t } = useTranslation();
   const store = useStudio3DStore;
@@ -66,6 +68,13 @@ export const Studio3DPage: React.FC = () => {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Auto-render state
+  const [autoRender, setAutoRender] = useState<AutoRenderFormat>(null);
+  const [autoRenderState, setAutoRenderState] = useState<'loading' | 'rendering' | 'encoding' | 'done' | 'error' | null>(null);
+  const [autoRenderProgress, setAutoRenderProgress] = useState(0);
+  const [autoRenderStartTime, setAutoRenderStartTime] = useState(0);
+  const autoRenderTriggered = useRef(false);
   const svgData = store((s) => s.svgData);
   const text = store((s) => s.text);
   const inputMode = store((s) => s.inputMode);
@@ -93,6 +102,11 @@ export const Studio3DPage: React.FC = () => {
 
   useEffect(() => {
     const sceneId = searchParams.get('sceneId');
+    const renderFormat = searchParams.get('autoRender') as AutoRenderFormat;
+    if (renderFormat && ['gif', 'mp4', 'webm', 'png'].includes(renderFormat)) {
+      setAutoRender(renderFormat);
+      setAutoRenderState('loading');
+    }
     if (!sceneId) return;
     const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
     fetch(`${API_BASE}/studio3d/${sceneId}`)
@@ -110,6 +124,70 @@ export const Studio3DPage: React.FC = () => {
       .catch(() => toast.error('Failed to load scene'));
     setSearchParams({}, { replace: true });
   }, []);
+
+  // Auto-render: trigger export when scene is loaded and canvas ready
+  useEffect(() => {
+    if (!autoRender || autoRenderTriggered.current || !canvasRef.current) return;
+    if (isEmpty) return;
+
+    autoRenderTriggered.current = true;
+    setAutoRenderStartTime(Date.now());
+
+    const runExport = async () => {
+      const canvas = canvasRef.current!;
+      const s = store.getState();
+      const name = s.fileName?.replace(/\.[^.]+$/, '') || 'scene';
+
+      try {
+        if (autoRender === 'png') {
+          setAutoRenderState('rendering');
+          setAutoRenderProgress(50);
+          await exportPNG(canvas, s.aspectRatio, s.exportResolution, s.transparentBg, s.background, name);
+          setAutoRenderProgress(100);
+          setAutoRenderState('done');
+        } else {
+          // GIF/MP4/WebM — turntable
+          const prevAnim = s.animate;
+          const prevSpeed = s.animateSpeed;
+          const duration = s.videoDuration || 4;
+          const turntableSpeed = (2 * Math.PI) / duration;
+          store.setState({ animate: 'spin', animateSpeed: turntableSpeed, animateReverse: false });
+          await new Promise((r) => setTimeout(r, 500));
+
+          setAutoRenderState('rendering');
+          const blob = await exportVideoServerSide(
+            canvas,
+            duration,
+            autoRender === 'gif' ? 'gif' : autoRender === 'mp4' ? 'mp4' : 'webm',
+            (pct) => {
+              setAutoRenderProgress(pct);
+              if (pct >= 75) setAutoRenderState('encoding');
+            },
+            s.shaderEnabled ? s.getShaderSettings() : undefined,
+            s.videoFps || 30,
+          );
+
+          store.setState({ animate: prevAnim, animateSpeed: prevSpeed });
+
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${name}.${autoRender}`;
+          a.click();
+          URL.revokeObjectURL(url);
+
+          setAutoRenderProgress(100);
+          setAutoRenderState('done');
+        }
+      } catch (err) {
+        console.error('Auto-render failed:', err);
+        setAutoRenderState('error');
+      }
+    };
+
+    // Wait for scene to stabilize (geometry build + first render)
+    setTimeout(runExport, 2000);
+  }, [autoRender, isEmpty]);
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -350,7 +428,13 @@ export const Studio3DPage: React.FC = () => {
           s.setIsLoading(true);
           try {
             const { tracePng } = await import('@/services/svgPipeline');
-            const svg = await tracePng(file);
+            const svg = await tracePng(file, {
+              turdSize: s.traceTurdSize,
+              optTolerance: s.traceOptTolerance,
+              threshold: s.traceThreshold,
+              alphaMax: s.traceAlphaMax,
+              preset: s.tracePreset,
+            });
             s.setSvgData(svg, file.name || 'pasted.png');
             toast.success(t('studio3d.input.converted', { fileName: file.name || 'pasted.png' }));
           } catch {
@@ -381,7 +465,13 @@ export const Studio3DPage: React.FC = () => {
       s.setIsLoading(true);
       try {
         const { tracePng } = await import('@/services/svgPipeline');
-        s.setSvgData(await tracePng(file), file.name);
+        s.setSvgData(await tracePng(file, {
+          turdSize: s.traceTurdSize,
+          optTolerance: s.traceOptTolerance,
+          threshold: s.traceThreshold,
+          alphaMax: s.traceAlphaMax,
+          preset: s.tracePreset,
+        }), file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch {
         toast.error(t('studio3d.input.processFailed'));
@@ -734,6 +824,64 @@ export const Studio3DPage: React.FC = () => {
           return scaled;
         }}
       />
+
+      {/* Auto-render overlay */}
+      {autoRenderState && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex flex-col items-center gap-6 p-8 rounded-2xl bg-neutral-900/90 border border-neutral-800 max-w-sm w-full mx-4">
+            <div className="relative w-20 h-20">
+              {autoRenderState === 'done' ? (
+                <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+              ) : autoRenderState === 'error' ? (
+                <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <span className="text-red-400 text-2xl font-bold">!</span>
+                </div>
+              ) : (
+                <>
+                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="36" fill="none" stroke="currentColor" strokeWidth="3" className="text-neutral-800" />
+                    <circle cx="40" cy="40" r="36" fill="none" stroke="currentColor" strokeWidth="3" className="text-brand-cyan"
+                      strokeDasharray={`${2 * Math.PI * 36}`}
+                      strokeDashoffset={`${2 * Math.PI * 36 * (1 - autoRenderProgress / 100)}`}
+                      strokeLinecap="round"
+                      style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-sm font-mono text-neutral-300">
+                    {Math.round(autoRenderProgress)}%
+                  </span>
+                </>
+              )}
+            </div>
+
+            <div className="text-center space-y-1">
+              <p className="text-sm font-mono text-neutral-200 uppercase tracking-wider">
+                {autoRenderState === 'loading' && 'Loading scene...'}
+                {autoRenderState === 'rendering' && 'Rendering frames...'}
+                {autoRenderState === 'encoding' && 'Encoding video...'}
+                {autoRenderState === 'done' && 'Export complete'}
+                {autoRenderState === 'error' && 'Export failed'}
+              </p>
+              {autoRenderState !== 'done' && autoRenderState !== 'error' && autoRenderStartTime > 0 && (
+                <p className="text-[10px] font-mono text-neutral-500">
+                  {autoRender?.toUpperCase()} · {Math.round((Date.now() - autoRenderStartTime) / 1000)}s elapsed
+                </p>
+              )}
+            </div>
+
+            {(autoRenderState === 'done' || autoRenderState === 'error') && (
+              <button
+                onClick={() => { setAutoRenderState(null); setAutoRender(null); }}
+                className="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-mono text-neutral-300 uppercase tracking-wider transition-colors"
+              >
+                {autoRenderState === 'done' ? 'Close' : 'Dismiss'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -1,6 +1,8 @@
-import { Router, type Response as ExpressResponse } from 'express';
+import { Router, type Request, type Response as ExpressResponse, type NextFunction } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../utils/jwtSecret.js';
+import type { AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -12,16 +14,38 @@ const traceLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+function optionalAuth(req: AuthRequest, _res: ExpressResponse, next: NextFunction) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string };
+      if (decoded.userId) req.userId = decoded.userId;
+    } catch { /* ignore invalid tokens */ }
+  }
+  next();
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+export type TracePreset = 'logo' | 'lettering' | 'lineArt' | 'stamp' | 'custom';
+
 export interface TraceOptions {
   turdSize?: number;
   optTolerance?: number;
-  threshold?: number;
+  threshold?: number | 'auto';
+  alphaMax?: number;
   color?: string;
+  preset?: TracePreset;
 }
+
+const TRACE_PRESETS: Record<Exclude<TracePreset, 'custom'>, Required<Omit<TraceOptions, 'color' | 'preset'>>> = {
+  logo:      { turdSize: 3,  optTolerance: 0.3,  threshold: 'auto', alphaMax: 0.8 },
+  lettering: { turdSize: 1,  optTolerance: 0.15, threshold: 'auto', alphaMax: 0.5 },
+  lineArt:   { turdSize: 0,  optTolerance: 0.1,  threshold: 128,    alphaMax: 1.0 },
+  stamp:     { turdSize: 5,  optTolerance: 0.5,  threshold: 'auto', alphaMax: 0.8 },
+};
 
 export interface SvgOptimizeOptions {
   removeComments?: boolean;
@@ -158,24 +182,148 @@ function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptions>): 
 }
 
 // ---------------------------------------------------------------------------
+// Otsu auto-threshold
+// ---------------------------------------------------------------------------
+
+function computeOtsuFromGrayscale(pixels: Buffer): number {
+  const histogram = new Array<number>(256).fill(0);
+  let totalPixels = 0;
+
+  for (let i = 0; i < pixels.length; i++) {
+    histogram[pixels[i]]++;
+    totalPixels++;
+  }
+
+  if (totalPixels === 0) return 128;
+
+  let sum = 0;
+  for (let i = 0; i < 256; i++) sum += i * histogram[i];
+
+  let sumB = 0;
+  let wB = 0;
+  let maxVariance = 0;
+  let bestThreshold = 128;
+
+  for (let t = 0; t < 256; t++) {
+    wB += histogram[t];
+    if (wB === 0) continue;
+    const wF = totalPixels - wB;
+    if (wF === 0) break;
+
+    sumB += t * histogram[t];
+    const meanB = sumB / wB;
+    const meanF = (sum - sumB) / wF;
+    const variance = wB * wF * (meanB - meanF) * (meanB - meanF);
+
+    if (variance > maxVariance) {
+      maxVariance = variance;
+      bestThreshold = t;
+    }
+  }
+
+  return bestThreshold;
+}
+
+async function computeOtsuFromImage(buffer: Buffer): Promise<{ threshold: number; needsInvert: boolean }> {
+  try {
+    const sharp = (await import('sharp')).default;
+    const grayscale = await sharp(buffer).grayscale().raw().toBuffer();
+    const threshold = computeOtsuFromGrayscale(grayscale);
+
+    // If threshold > 230, the image is light-on-light (e.g. gray logo on white).
+    // A designer would invert it first — we do the same automatically.
+    return { threshold, needsInvert: threshold > 230 };
+  } catch {
+    return { threshold: 128, needsInvert: false };
+  }
+}
+
+async function invertImage(buffer: Buffer): Promise<Buffer> {
+  const sharp = (await import('sharp')).default;
+  return sharp(buffer).negate({ alpha: false }).toBuffer();
+}
+
+function svgHasContent(svg: string): boolean {
+  const match = svg.match(/\bd="([^"]*)"/);
+  return !!match && match[1].trim().length > 5;
+}
+
+// ---------------------------------------------------------------------------
+// Resolve preset + merge options
+// ---------------------------------------------------------------------------
+
+function resolveTraceOptions(opts: TraceOptions): TraceOptions {
+  if (opts.preset && opts.preset !== 'custom' && TRACE_PRESETS[opts.preset]) {
+    const base = TRACE_PRESETS[opts.preset];
+    return {
+      turdSize: opts.turdSize ?? base.turdSize,
+      optTolerance: opts.optTolerance ?? base.optTolerance,
+      threshold: opts.threshold ?? base.threshold,
+      alphaMax: opts.alphaMax ?? base.alphaMax,
+      color: opts.color,
+      preset: opts.preset,
+    };
+  }
+  return opts;
+}
+
+// ---------------------------------------------------------------------------
 // Potrace vectorization
 // ---------------------------------------------------------------------------
 
-async function traceImage(buffer: Buffer, opts: TraceOptions = {}): Promise<string> {
-  const potrace = await import('potrace');
-  return new Promise((resolve, reject) => {
-    potrace.trace(buffer, {
-      turdSize: clamp(opts.turdSize!, 0, 20, 2),
-      alphaMax: 1,
-      optCurve: true,
-      optTolerance: clamp(opts.optTolerance!, 0, 2, 0.2),
-      color: opts.color || '#000000',
-      threshold: clamp(opts.threshold!, 0, 255, 128),
-    }, (err: Error | null, svg: string) => {
+function potraceTrace(buffer: Buffer, potraceOpts: Record<string, any>): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    const potrace = await import('potrace');
+    potrace.trace(buffer, potraceOpts, (err: Error | null, svg: string) => {
       if (err) reject(err);
       else resolve(svg);
     });
   });
+}
+
+async function traceImage(buffer: Buffer, opts: TraceOptions = {}): Promise<string> {
+  const resolved = resolveTraceOptions(opts);
+
+  let threshold: number;
+  let imageBuffer = buffer;
+
+  if (resolved.threshold === 'auto') {
+    const otsu = await computeOtsuFromImage(buffer);
+    if (otsu.needsInvert) {
+      // Light-on-light image (like gray logo on white bg) — invert first
+      imageBuffer = await invertImage(buffer);
+      // After inversion, re-compute Otsu on the inverted image
+      const otsu2 = await computeOtsuFromImage(imageBuffer);
+      threshold = otsu2.threshold;
+    } else {
+      threshold = otsu.threshold;
+    }
+  } else {
+    threshold = clamp(Number(resolved.threshold) || 128, 0, 255, 128);
+  }
+
+  const potraceOpts = {
+    turdSize: clamp(resolved.turdSize!, 0, 20, 2),
+    alphaMax: clamp(resolved.alphaMax!, 0, 1.334, 1),
+    optCurve: true,
+    optTolerance: clamp(resolved.optTolerance!, 0, 2, 0.2),
+    color: resolved.color || '#000000',
+    threshold,
+  };
+
+  const svg = await potraceTrace(imageBuffer, potraceOpts);
+
+  // Fallback: if trace produced empty paths and we didn't already invert, try inverting
+  if (!svgHasContent(svg) && imageBuffer === buffer) {
+    try {
+      const inverted = await invertImage(buffer);
+      const otsu = await computeOtsuFromImage(inverted);
+      const retrySvg = await potraceTrace(inverted, { ...potraceOpts, threshold: otsu.threshold });
+      if (svgHasContent(retrySvg)) return retrySvg;
+    } catch { /* fall through to original empty result */ }
+  }
+
+  return svg;
 }
 
 // ---------------------------------------------------------------------------
@@ -199,9 +347,9 @@ function cleanSvgPipeline(raw: string): string {
  * POST /api/trace/png-to-svg
  * Full pipeline: PNG → potrace → sanitize → optimize → clean SVG.
  */
-router.post('/png-to-svg', traceLimiter, authenticate, async (req: AuthRequest, res: ExpressResponse) => {
+router.post('/png-to-svg', traceLimiter, optionalAuth, async (req: AuthRequest, res: ExpressResponse) => {
   try {
-    const { image, turdSize, optTolerance, threshold, color } = req.body;
+    const { image, turdSize, optTolerance, threshold, alphaMax, color, preset } = req.body;
 
     if (!image || typeof image !== 'string') {
       return res.status(400).json({ error: 'Missing image (base64 data URL)' });
@@ -212,7 +360,12 @@ router.post('/png-to-svg', traceLimiter, authenticate, async (req: AuthRequest, 
       return res.status(400).json({ error: 'Invalid base64 image format' });
     }
 
-    const svg = await tracePipeline(buffer, { turdSize, optTolerance, threshold, color });
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (buffer.length > MAX_IMAGE_SIZE) {
+      return res.status(413).json({ error: 'Image too large (max 10MB)' });
+    }
+
+    const svg = await tracePipeline(buffer, { turdSize, optTolerance, threshold, alphaMax, color, preset });
 
     res.json({ svg });
   } catch (error: unknown) {
@@ -226,7 +379,7 @@ router.post('/png-to-svg', traceLimiter, authenticate, async (req: AuthRequest, 
  * POST /api/trace/optimize
  * Sanitize + optimize raw SVG (e.g. pasted from Figma, Illustrator, etc.)
  */
-router.post('/optimize', traceLimiter, authenticate, async (req: AuthRequest, res: ExpressResponse) => {
+router.post('/optimize', traceLimiter, optionalAuth, async (req: AuthRequest, res: ExpressResponse) => {
   try {
     const { svg: rawSvg } = req.body;
 
@@ -248,5 +401,9 @@ router.post('/optimize', traceLimiter, authenticate, async (req: AuthRequest, re
   }
 });
 
-export { traceImage, tracePipeline, cleanSvgPipeline, optimizeSvg, sanitizeSvg, parseBase64Image };
+router.get('/presets', (_req, res: ExpressResponse) => {
+  res.json({ presets: TRACE_PRESETS });
+});
+
+export { traceImage, tracePipeline, cleanSvgPipeline, optimizeSvg, sanitizeSvg, parseBase64Image, TRACE_PRESETS };
 export default router;

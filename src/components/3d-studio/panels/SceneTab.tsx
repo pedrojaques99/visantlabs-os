@@ -113,6 +113,8 @@ export const SceneTab: React.FC = React.memo(() => {
           turdSize: s.traceTurdSize,
           optTolerance: s.traceOptTolerance,
           threshold: s.traceThreshold,
+          alphaMax: s.traceAlphaMax,
+          preset: s.tracePreset,
         });
         store.setSvgData(svg, file.name);
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
@@ -136,6 +138,8 @@ export const SceneTab: React.FC = React.memo(() => {
         turdSize: s.traceTurdSize,
         optTolerance: s.traceOptTolerance,
         threshold: s.traceThreshold,
+        alphaMax: s.traceAlphaMax,
+        preset: s.tracePreset,
       });
       store.setSvgData(svg, file.name);
       toast.success(t('studio3d.input.converted', { fileName: file.name }));
@@ -169,6 +173,8 @@ export const SceneTab: React.FC = React.memo(() => {
           turdSize: s.traceTurdSize,
           optTolerance: s.traceOptTolerance,
           threshold: s.traceThreshold,
+          alphaMax: s.traceAlphaMax,
+          preset: s.tracePreset,
         });
         store.setSvgData(svg, fileName);
         store.setInputMode('svg');
@@ -424,11 +430,29 @@ export const SceneTab: React.FC = React.memo(() => {
           defaultOpen
           badge={<span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">trace</span>}
         >
-          <div className="grid grid-cols-2 gap-1.5">
-            <ScrubInput label="Noise" value={store.traceTurdSize} min={0} max={20} step={1} onChange={store.setTraceTurdSize} />
-            <ScrubInput label="Simplify" value={store.traceOptTolerance} min={0} max={2} step={0.05} onChange={store.setTraceOptTolerance} />
+          <div className="flex flex-wrap gap-1">
+            {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
+              <ToolPanelChip
+                key={p}
+                active={store.tracePreset === p}
+                onClick={() => { store.setTracePreset(p); }}
+              >
+                {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
+              </ToolPanelChip>
+            ))}
           </div>
-          <ScrubInput label="Threshold" value={store.traceThreshold} min={0} max={255} step={1} onChange={store.setTraceThreshold} />
+          {store.tracePreset === 'custom' && (
+            <>
+              <div className="grid grid-cols-2 gap-1.5">
+                <ScrubInput label="Noise" value={store.traceTurdSize} min={0} max={20} step={1} onChange={store.setTraceTurdSize} />
+                <ScrubInput label="Simplify" value={store.traceOptTolerance} min={0} max={2} step={0.05} onChange={store.setTraceOptTolerance} />
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <ScrubInput label="Threshold" value={typeof store.traceThreshold === 'number' ? store.traceThreshold : 128} min={0} max={255} step={1} onChange={store.setTraceThreshold} />
+                <ScrubInput label="Corners" value={store.traceAlphaMax} min={0} max={1.334} step={0.05} onChange={store.setTraceAlphaMax} />
+              </div>
+            </>
+          )}
           <Button
             variant="outline"
             size="sm"

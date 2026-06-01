@@ -74,6 +74,7 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   chainColor: s.chainColor,
   shapeColor: s.shapeColor,
   reliefDepth: s.reliefDepth,
+  blendMode: s.blendMode,
   renderQuality: s.renderQuality,
   fov: s.fov,
   hdriBackground: s.hdriBackground,

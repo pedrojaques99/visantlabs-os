@@ -911,6 +911,7 @@ export interface BrandBatchNodeData extends BaseNodeData {
   onRun?: (nodeId: string) => void;
   onCancel?: (nodeId: string) => void;
   onUpdateData?: (nodeId: string, newData: Partial<BrandBatchNodeData>) => void;
+  onAddReferences?: (nodeId: string, references: Array<{ id: string; name: string; referenceImageUrl: string }>) => void;
 }
 
 // Union type for all node data
