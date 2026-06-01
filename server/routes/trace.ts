@@ -234,8 +234,7 @@ async function computeOtsuFromImage(buffer: Buffer): Promise<{ threshold: number
     // A designer would invert it first — we do the same automatically.
     return { threshold, needsInvert: threshold > 230 };
   } catch {
-    const threshold = computeOtsuFromGrayscale(buffer);
-    return { threshold, needsInvert: threshold > 230 };
+    return { threshold: 128, needsInvert: false };
   }
 }
 

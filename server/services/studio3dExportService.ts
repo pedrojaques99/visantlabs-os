@@ -23,7 +23,7 @@ function parseShapesFromSVG(svgString: string): THREE.Shape[] {
   const loader = new SVGLoader();
   const svgData = loader.parse(svgString);
   const allShapes: THREE.Shape[] = [];
-  const vbMatch = svgString.match(/viewBox\s*=\s*["']\s*([\d.\-]+)\s+([\d.\-]+)\s+([\d.\-]+)\s+([\d.\-]+)/);
+  const vbMatch = svgString.match(/viewBox\s*=\s*["']\s*([\d.\-]+)[\s,]+([\d.\-]+)[\s,]+([\d.\-]+)[\s,]+([\d.\-]+)/);
   const vbW = vbMatch ? parseFloat(vbMatch[3]) : null;
   const vbH = vbMatch ? parseFloat(vbMatch[4]) : null;
 
@@ -101,9 +101,9 @@ const DEFAULTS: Required<ExportOptions> = {
 // ── GLB Builder (no browser APIs needed) ────────────────────────────────────
 
 function buildGlb(positions: Float32Array, normals: Float32Array, indices: Uint32Array, color: number[], metalness: number, roughness: number): Buffer {
-  const posBytes = Buffer.from(positions.buffer);
-  const normBytes = Buffer.from(normals.buffer);
-  const idxBytes = Buffer.from(indices.buffer);
+  const posBytes = Buffer.from(positions.buffer, positions.byteOffset, positions.byteLength);
+  const normBytes = Buffer.from(normals.buffer, normals.byteOffset, normals.byteLength);
+  const idxBytes = Buffer.from(indices.buffer, indices.byteOffset, indices.byteLength);
   const binLength = posBytes.length + normBytes.length + idxBytes.length;
 
   let min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];

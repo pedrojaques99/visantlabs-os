@@ -2,7 +2,7 @@ import React, { useState, useMemo, useContext, useDeferredValue } from 'react';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useTranslation } from '@/hooks/useTranslation';
 import { MockupContext } from '@/components/mockupmachine/MockupContext';
-import { ImageIcon, Plus, Search, LayoutGrid, List, Paintbrush, Zap, X, Sparkles } from 'lucide-react';
+import { ImageIcon, Plus, Search, LayoutGrid, List, Paintbrush, Zap, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
 import { toast } from 'sonner';
@@ -270,7 +270,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300" />
                           {isRecommended && (
                             <div className="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-brand-cyan/90 text-black">
-                              <Sparkles size={7} />
+                              <Zap size={7} />
                               <span className="text-[7px] font-bold uppercase tracking-wider">Match</span>
                             </div>
                           )}

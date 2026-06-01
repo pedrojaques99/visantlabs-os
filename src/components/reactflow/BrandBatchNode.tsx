@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Layers, Play, Square, RotateCcw, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, Plus, Sparkles } from 'lucide-react';
+import { Layers, Play, Square, RotateCcw, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, Plus, Flame } from 'lucide-react';
 import { useReferenceSearch } from '@/hooks/useReferenceSearch';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import type { ReferenceResult } from '@/services/referenceApi';
@@ -152,7 +152,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               onClick={() => setShowSuggestions(true)}
               className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded text-[10px] font-medium bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors border border-violet-500/20"
             >
-              <Sparkles size={10} />
+              <Flame size={10} />
               Suggest References
             </button>
           ) : refSearch.isLoading ? (
@@ -170,7 +170,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
                     <Plus size={12} className="text-white" />
                   </div>
                   {ref.relevanceScore >= 0.7 && (
-                    <div className="absolute top-0.5 left-0.5"><Sparkles size={6} className="text-brand-cyan" /></div>
+                    <div className="absolute top-0.5 left-0.5"><Flame size={6} className="text-brand-cyan" /></div>
                   )}
                 </button>
               ))}

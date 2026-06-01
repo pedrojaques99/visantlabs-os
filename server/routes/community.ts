@@ -725,7 +725,7 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
 
           if (brief?.promptText) {
             const queryText = query && typeof query === 'string'
-              ? `${brief.promptText} ${ensureString(query)}`
+              ? `${brief.promptText} ${query}`
               : brief.promptText;
 
             const { getMultimodalEmbedding } = await import('../services/geminiService.js');
@@ -775,7 +775,7 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
     // Fallback: MongoDB text search + dimension match + recency
     const filter: any = { category: 'reference', isAdminCurated: true };
     if (query && typeof query === 'string') {
-      const escaped = ensureString(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
         { name: { $regex: escaped, $options: 'i' } },
         { description: { $regex: escaped, $options: 'i' } },
