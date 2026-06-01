@@ -108,13 +108,15 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
 
     for (const placeholder of placeholders) {
       const file = placeholder.originalFile!;
+      const itemId = placeholder.id;
       tracePng(file, placeholder.traceOptions)
         .then((rawSvg) => {
-          const opts = get().options;
-          const result = optimizeSvg(rawSvg, opts);
+          const current = get();
+          if (!current.items.some(i => i.id === itemId)) return;
+          const result = optimizeSvg(rawSvg, current.options);
           set((s) => ({
             items: s.items.map((item) =>
-              item.id === placeholder.id
+              item.id === itemId
                 ? {
                     ...item,
                     originalSvg: rawSvg,
@@ -130,7 +132,7 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
         .catch((err) => {
           set((s) => ({
             items: s.items.map((item) =>
-              item.id === placeholder.id
+              item.id === itemId
                 ? { ...item, status: 'error' as const, error: err.message }
                 : item,
             ),
@@ -153,8 +155,9 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
 
     tracePng(item.originalFile, mergedOpts)
       .then((rawSvg) => {
-        const opts = get().options;
-        const result = optimizeSvg(rawSvg, opts);
+        const current = get();
+        if (!current.items.some(i => i.id === id)) return;
+        const result = optimizeSvg(rawSvg, current.options);
         set((s) => ({
           items: s.items.map((i) =>
             i.id === id
@@ -171,6 +174,7 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
         }));
       })
       .catch((err) => {
+        if (!get().items.some(i => i.id === id)) return;
         set((s) => ({
           items: s.items.map((i) =>
             i.id === id ? { ...i, status: 'error' as const, error: err.message } : i,
@@ -211,18 +215,20 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
     set((s) => {
       const result = optimizeSvg(newSvg, s.options);
       return {
-        items: s.items.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                originalSvg: newSvg,
-                optimizedSvg: result.optimized,
-                originalSize: new Blob([newSvg]).size,
-                optimizedSize: result.optimizedSize,
-                savings: result.savings,
-              }
-            : item,
-        ),
+        items: s.items.map((item) => {
+          if (item.id !== id) return item;
+          const svgSize = new Blob([newSvg]).size;
+          return {
+            ...item,
+            originalSvg: newSvg,
+            optimizedSvg: result.optimized,
+            originalSize: item.source === 'png' ? item.originalSize : svgSize,
+            optimizedSize: result.optimizedSize,
+            savings: item.source === 'png'
+              ? (item.originalSize > 0 ? Math.round((1 - result.optimizedSize / item.originalSize) * 100) : 0)
+              : result.savings,
+          };
+        }),
       };
     }),
 

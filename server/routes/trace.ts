@@ -225,6 +225,11 @@ router.post('/png-to-svg', traceLimiter, optionalAuth, async (req: AuthRequest, 
       return res.status(400).json({ error: 'Invalid base64 image format' });
     }
 
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (buffer.length > MAX_IMAGE_SIZE) {
+      return res.status(413).json({ error: 'Image too large (max 10MB)' });
+    }
+
     const svg = await tracePipeline(buffer, { turdSize, optTolerance, threshold, color });
 
     res.json({ svg });

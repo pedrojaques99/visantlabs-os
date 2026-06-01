@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { cn } from '@/lib/utils';
 import { analyzeSvg, type Point, type Segment } from '@/components/grid-machine/SvgAnalyzer';
 import {
-  MousePointer2, Eraser, Lasso, Eye, EyeOff, Undo2, Trash2,
+  MousePointer2, Eraser, Lasso, Undo2, Trash2,
   ZoomIn, ZoomOut, RotateCcw, Spline, Circle,
 } from 'lucide-react';
 
@@ -11,7 +11,7 @@ type Tool = 'select' | 'eraser' | 'lasso';
 interface SvgElementInfo {
   index: number;
   tagName: string;
-  outerHTML: string;
+  element: Element;
   anchors: Point[];
   handles: Point[];
   segments: Segment[];
@@ -24,15 +24,17 @@ interface Props {
   className?: string;
 }
 
+const SHAPE_SELECTOR = 'path, rect, circle, ellipse, line, polygon, polyline';
+
 function parseSvgElements(svgString: string): {
   elements: SvgElementInfo[];
   viewBox: { x: number; y: number; width: number; height: number };
-  svgOpenTag: string;
+  doc: Document;
 } {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgString, 'image/svg+xml');
   const svgEl = doc.querySelector('svg');
-  if (!svgEl) return { elements: [], viewBox: { x: 0, y: 0, width: 100, height: 100 }, svgOpenTag: '<svg>' };
+  if (!svgEl) return { elements: [], viewBox: { x: 0, y: 0, width: 100, height: 100 }, doc };
 
   const vbAttr = svgEl.getAttribute('viewBox');
   let viewBox = { x: 0, y: 0, width: 100, height: 100 };
@@ -47,10 +49,7 @@ function parseSvgElements(svgString: string): {
     };
   }
 
-  const svgOpenMatch = svgString.match(/<svg[^>]*>/i);
-  const svgOpenTag = svgOpenMatch ? svgOpenMatch[0] : '<svg>';
-
-  const shapeEls = svgEl.querySelectorAll('path, rect, circle, ellipse, line, polygon, polyline');
+  const shapeEls = svgEl.querySelectorAll(SHAPE_SELECTOR);
   const elements: SvgElementInfo[] = [];
 
   shapeEls.forEach((el, index) => {
@@ -58,57 +57,67 @@ function parseSvgElements(svgString: string): {
     if (info) elements.push(info);
   });
 
-  return { elements, viewBox, svgOpenTag };
+  return { elements, viewBox, doc };
 }
 
 function extractElementInfo(el: SVGElement, index: number): SvgElementInfo | null {
   const tagName = el.tagName.toLowerCase();
-  const outerHTML = el.outerHTML;
+  const wrapper = `<svg xmlns="http://www.w3.org/2000/svg">${el.outerHTML}</svg>`;
+  const result = analyzeSvg(wrapper);
+  if (result.points.length === 0 && result.segments.length === 0) return null;
 
-  const analysis = analyzeSvgElement(el);
-  if (!analysis) return null;
+  const anchors = result.points.filter(p => p.type === 'anchor');
+  const handles = result.points.filter(p => p.type === 'handle');
 
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const p of analysis.anchors) {
+  for (const p of anchors) {
     minX = Math.min(minX, p.x);
     minY = Math.min(minY, p.y);
     maxX = Math.max(maxX, p.x);
     maxY = Math.max(maxY, p.y);
   }
-
   if (!isFinite(minX)) return null;
 
   return {
     index,
     tagName,
-    outerHTML,
-    anchors: analysis.anchors,
-    handles: analysis.handles,
-    segments: analysis.segments,
+    element: el,
+    anchors,
+    handles,
+    segments: result.segments,
     bbox: { x: minX, y: minY, w: maxX - minX, h: maxY - minY },
   };
 }
 
-function analyzeSvgElement(el: SVGElement): { anchors: Point[]; handles: Point[]; segments: Segment[] } | null {
-  const wrapper = `<svg xmlns="http://www.w3.org/2000/svg">${el.outerHTML}</svg>`;
-  const result = analyzeSvg(wrapper);
-  if (result.points.length === 0 && result.segments.length === 0) return null;
-  return {
-    anchors: result.points.filter(p => p.type === 'anchor'),
-    handles: result.points.filter(p => p.type === 'handle'),
-    segments: result.segments,
-  };
-}
+function reconstructSvg(doc: Document, allElements: SvgElementInfo[], deletedIndices: Set<number>): string {
+  const clone = doc.cloneNode(true) as Document;
+  const svgEl = clone.querySelector('svg');
+  if (!svgEl) return '';
 
-function reconstructSvg(
-  svgOpenTag: string,
-  allElements: SvgElementInfo[],
-  deletedIndices: Set<number>,
-): string {
-  const kept = allElements
-    .filter(el => !deletedIndices.has(el.index))
-    .map(el => el.outerHTML);
-  return `${svgOpenTag}${kept.join('')}</svg>`;
+  const shapes = svgEl.querySelectorAll(SHAPE_SELECTOR);
+  const toRemove: Element[] = [];
+  shapes.forEach((el, i) => {
+    if (deletedIndices.has(i)) toRemove.push(el);
+  });
+  for (const el of toRemove) {
+    el.parentNode?.removeChild(el);
+  }
+
+  // Clean empty groups left behind
+  let changed = true;
+  while (changed) {
+    changed = false;
+    const groups = svgEl.querySelectorAll('g');
+    groups.forEach(g => {
+      if (g.children.length === 0 && g.textContent?.trim() === '') {
+        g.parentNode?.removeChild(g);
+        changed = true;
+      }
+    });
+  }
+
+  const serializer = new XMLSerializer();
+  return serializer.serializeToString(svgEl);
 }
 
 function pointInPolygon(x: number, y: number, polygon: { x: number; y: number }[]): boolean {
@@ -123,9 +132,19 @@ function pointInPolygon(x: number, y: number, polygon: { x: number; y: number }[
   return inside;
 }
 
+function pointToSegDist(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
 export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, className }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   const [tool, setTool] = useState<Tool>('select');
   const [showAnchors, setShowAnchors] = useState(true);
@@ -143,7 +162,19 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
   const isPanning = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
 
-  const { elements, viewBox, svgOpenTag } = useMemo(() => parseSvgElements(svgString), [svgString]);
+  // Reset editor state when svgString changes (user switches item or re-traces)
+  const prevSvgRef = useRef(svgString);
+  if (svgString !== prevSvgRef.current) {
+    prevSvgRef.current = svgString;
+    setDeletedIndices(new Set());
+    setUndoStack([]);
+    setSelectedIndices(new Set());
+    setZoom(1);
+    setPanX(0);
+    setPanY(0);
+  }
+
+  const { elements, viewBox, doc } = useMemo(() => parseSvgElements(svgString), [svgString]);
 
   const visibleElements = useMemo(
     () => elements.filter(el => !deletedIndices.has(el.index)),
@@ -197,36 +228,28 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     const ctx = canvas.getContext('2d')!;
     ctx.scale(dpr, dpr);
 
-    // Background
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, rect.width, rect.height);
 
-    // Checkerboard for transparency
     const { offsetX, offsetY, totalScale } = getTransform();
     ctx.save();
     ctx.translate(offsetX, offsetY);
     ctx.scale(totalScale, totalScale);
 
+    // Checkerboard
     const checkSize = 8 / totalScale;
     const cols = Math.ceil(viewBox.width / checkSize);
     const rows = Math.ceil(viewBox.height / checkSize);
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         ctx.fillStyle = (r + c) % 2 === 0 ? '#1a1a1a' : '#141414';
-        ctx.fillRect(
-          viewBox.x + c * checkSize,
-          viewBox.y + r * checkSize,
-          checkSize,
-          checkSize,
-        );
+        ctx.fillRect(viewBox.x + c * checkSize, viewBox.y + r * checkSize, checkSize, checkSize);
       }
     }
 
-    // Draw elements
     for (const el of visibleElements) {
       const isSelected = selectedIndices.has(el.index);
 
-      // Outline
       if (showOutline) {
         ctx.strokeStyle = isSelected ? '#00d4ff' : 'rgba(255,255,255,0.35)';
         ctx.lineWidth = (isSelected ? 1.5 : 0.8) / totalScale;
@@ -248,7 +271,6 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
         }
       }
 
-      // Handles
       if (showHandles) {
         ctx.strokeStyle = isSelected ? '#ff6b00' : 'rgba(255,255,255,0.25)';
         ctx.lineWidth = 0.5 / totalScale;
@@ -274,19 +296,16 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
         }
       }
 
-      // Anchors
       if (showAnchors) {
         const half = 2.5 / totalScale;
-        ctx.fillStyle = isSelected ? '#00d4ff' : '#00d4ff';
+        ctx.fillStyle = '#00d4ff';
         ctx.globalAlpha = isSelected ? 1 : 0.7;
-
         for (const p of el.anchors) {
           ctx.fillRect(p.x - half, p.y - half, half * 2, half * 2);
         }
         ctx.globalAlpha = 1;
       }
 
-      // Bbox highlight for selected
       if (isSelected) {
         ctx.strokeStyle = 'rgba(0,212,255,0.3)';
         ctx.lineWidth = 1 / totalScale;
@@ -313,11 +332,11 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
       ctx.setLineDash([]);
     }
 
-    // Eraser cursor visual
-    if (tool === 'eraser' && isErasing) {
+    // Eraser cursor
+    if (tool === 'eraser') {
       const mp = screenToSvg(lastMouse.current.x, lastMouse.current.y);
       const er = 12 / totalScale;
-      ctx.strokeStyle = 'rgba(255,100,100,0.6)';
+      ctx.strokeStyle = isErasing ? 'rgba(255,100,100,0.6)' : 'rgba(255,100,100,0.25)';
       ctx.lineWidth = 1 / totalScale;
       ctx.beginPath();
       ctx.arc(mp.x, mp.y, er, 0, Math.PI * 2);
@@ -383,12 +402,9 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
 
   const applyChanges = useCallback(() => {
     if (deletedIndices.size === 0) return;
-    const newSvg = reconstructSvg(svgOpenTag, elements, deletedIndices);
+    const newSvg = reconstructSvg(doc, elements, deletedIndices);
     onSvgChange(newSvg);
-    setDeletedIndices(new Set());
-    setUndoStack([]);
-    setSelectedIndices(new Set());
-  }, [deletedIndices, elements, svgOpenTag, onSvgChange]);
+  }, [deletedIndices, elements, doc, onSvgChange]);
 
   // --- Mouse handlers ---
   const getMousePos = useCallback((e: React.MouseEvent) => {
@@ -402,7 +418,6 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     const pos = getMousePos(e);
     lastMouse.current = pos;
 
-    // Middle click or Alt+click = pan
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       isPanning.current = true;
       e.preventDefault();
@@ -486,12 +501,9 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
       if (inside.size > 0) {
         setSelectedIndices(inside);
       }
-      setIsDrawingLasso(false);
-      setLassoPoints([]);
-    } else {
-      setIsDrawingLasso(false);
-      setLassoPoints([]);
     }
+    setIsDrawingLasso(false);
+    setLassoPoints([]);
   }, [tool, isDrawingLasso, lassoPoints, visibleElements]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -500,8 +512,11 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     setZoom(prev => Math.max(0.1, Math.min(20, prev * factor)));
   }, []);
 
-  // Keyboard
+  // Keyboard — only when editor container is focused
   useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedIndices.size > 0) {
@@ -522,21 +537,22 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
         setLassoPoints([]);
         setIsDrawingLasso(false);
       }
-      if (e.key === 'v' || e.key === 'V') setTool('select');
-      if (e.key === 'e' || e.key === 'E') setTool('eraser');
-      if (e.key === 'l' || e.key === 'L') setTool('lasso');
+      if (!e.ctrlKey && !e.metaKey) {
+        if (e.key === 'v' || e.key === 'V') setTool('select');
+        if (e.key === 'e' || e.key === 'E') setTool('eraser');
+        if (e.key === 'l' || e.key === 'L') setTool('lasso');
+      }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    el.addEventListener('keydown', handler);
+    return () => el.removeEventListener('keydown', handler);
   }, [selectedIndices, visibleElements, deleteElements, undo]);
 
   const cursorClass = tool === 'eraser' ? 'cursor-crosshair' : tool === 'lasso' ? 'cursor-crosshair' : 'cursor-default';
 
   return (
-    <div className={cn('flex flex-col h-full', className)}>
+    <div ref={editorRef} tabIndex={0} className={cn('flex flex-col h-full outline-none', className)} onFocus={() => {}}>
       {/* Toolbar */}
       <div className="flex items-center gap-1 p-2 border-b border-neutral-800 flex-wrap">
-        {/* Tools */}
         <ToolBtn active={tool === 'select'} onClick={() => setTool('select')} title="Select (V)">
           <MousePointer2 size={12} />
         </ToolBtn>
@@ -549,7 +565,6 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
 
         <div className="w-px h-4 bg-neutral-800 mx-1" />
 
-        {/* Visibility toggles */}
         <ToolBtn active={showOutline} onClick={() => setShowOutline(!showOutline)} title="Outlines">
           <Spline size={12} />
         </ToolBtn>
@@ -562,7 +577,6 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
 
         <div className="w-px h-4 bg-neutral-800 mx-1" />
 
-        {/* Actions */}
         <ToolBtn onClick={undo} disabled={undoStack.length === 0} title="Undo (Ctrl+Z)">
           <Undo2 size={12} />
         </ToolBtn>
@@ -577,7 +591,6 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
 
         <div className="w-px h-4 bg-neutral-800 mx-1" />
 
-        {/* Zoom */}
         <ToolBtn onClick={() => setZoom(z => Math.max(0.1, z * 0.8))} title="Zoom out">
           <ZoomOut size={12} />
         </ToolBtn>
@@ -589,7 +602,6 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
           <RotateCcw size={10} />
         </ToolBtn>
 
-        {/* Spacer + stats */}
         <div className="flex-1" />
         {selectedIndices.size > 0 && (
           <span className="text-[9px] font-mono text-brand-cyan">
@@ -642,7 +654,6 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
   );
 };
 
-// --- Toolbar button ---
 const ToolBtn: React.FC<{
   active?: boolean;
   onClick: () => void;
@@ -666,12 +677,3 @@ const ToolBtn: React.FC<{
     {children}
   </button>
 );
-
-function pointToSegDist(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const lenSq = dx * dx + dy * dy;
-  if (lenSq === 0) return Math.hypot(px - x1, py - y1);
-  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq));
-  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
-}
