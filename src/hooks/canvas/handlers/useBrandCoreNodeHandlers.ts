@@ -6,6 +6,7 @@ import { extractBrandIdentity } from '@/services/brandIdentityService';
 import { canvasApi } from '@/services/canvasApi';
 import { detectMimeType } from '@/services/reactFlowService';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { consolidateStrategies, consolidateStrategiesToText, generateVisualPrompt, extractVisualStrategyText } from '@/services/brandPromptService';
 import { toast } from 'sonner';
 
 interface UseBrandCoreNodeHandlersParams {
@@ -43,7 +44,6 @@ export const useBrandCoreNodeHandlers = ({
 
       let strategyText: string | undefined;
       if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
-        const { consolidateStrategies, consolidateStrategiesToText } = await import('@/services/brandPromptService');
         const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
         strategyText = consolidateStrategiesToText(consolidated);
       }
@@ -80,8 +80,6 @@ export const useBrandCoreNodeHandlers = ({
     updateNodeData<BrandCoreData>(nodeId, { isGeneratingPrompts: true }, 'brandCore');
 
     try {
-      const { generateVisualPrompt, consolidateStrategies, extractVisualStrategyText } = await import('@/services/brandPromptService');
-
       let visualStrategyText: string | undefined;
       if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
         const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
@@ -107,7 +105,6 @@ export const useBrandCoreNodeHandlers = ({
     if (!brandCoreData.connectedStrategies?.length) return;
 
     try {
-      const { consolidateStrategies } = await import('@/services/brandPromptService');
       const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
 
       updateNodeData<BrandCoreData>(nodeId, { strategicPrompts: { consolidated } }, 'brandCore');
