@@ -132,6 +132,11 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
         </Button>
       </div>
 
+      {/* Empty state hint */}
+      {presets.length === 0 && !loading && (
+        <p className="text-[9px] text-neutral-600 text-center py-0.5">Name your settings and save for quick recall</p>
+      )}
+
       {/* Saved presets toggle + list */}
       {(presets.length > 0 || loading) && (
         <>

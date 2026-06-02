@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo, useEffect, useRef, type PointerEvent as RPointerEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Upload, CircleDot, Paintbrush, Undo2, Redo2, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend } from 'lucide-react';
+import { Upload, CircleDot, Paintbrush, Undo2, Redo2, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend, Pin, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
@@ -226,20 +226,26 @@ export const ImageLabPage: React.FC = () => {
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [presetLibraryOpen, setPresetLibraryOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const [fxBarVisible, setFxBarVisible] = useState(true);
+  const [fxBarPinned, setFxBarPinned] = useState(false);
   const fxBarRef = useRef<HTMLDivElement>(null);
   const fxHideTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const FX_PROXIMITY_PX = 80;
   const FX_HIDE_DELAY = 1200;
   const FX_INITIAL_DELAY = 2000;
 
+  const canAutoHide = !isMobile && !fxBarPinned;
+
   useEffect(() => {
+    if (!canAutoHide) return;
     const t = setTimeout(() => setFxBarVisible(false), FX_INITIAL_DELAY);
     return () => clearTimeout(t);
-  }, []);
+  }, [canAutoHide]);
 
   const handleCanvasPointerMove = useCallback((e: RPointerEvent<HTMLDivElement>) => {
+    if (!canAutoHide) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const relY = e.clientY - rect.top;
     const nearTop = relY < FX_PROXIMITY_PX;
@@ -251,16 +257,18 @@ export const ImageLabPage: React.FC = () => {
       clearTimeout(fxHideTimer.current);
       fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
     }
-  }, []);
+  }, [canAutoHide]);
 
   const handleFxBarEnter = useCallback(() => {
+    if (!canAutoHide) return;
     clearTimeout(fxHideTimer.current);
     setFxBarVisible(true);
-  }, []);
+  }, [canAutoHide]);
 
   const handleFxBarLeave = useCallback(() => {
+    if (!canAutoHide) return;
     fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
-  }, []);
+  }, [canAutoHide]);
 
   const cyclePreset = usePresetCycling(mode);
 
@@ -434,6 +442,11 @@ export const ImageLabPage: React.FC = () => {
       if (e.shiftKey && e.key === 'P') {
         e.preventDefault();
         setPresetLibraryOpen(true);
+      }
+
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        setShortcutsOpen((v) => !v);
       }
     };
     window.addEventListener('keydown', handler);
@@ -675,14 +688,26 @@ export const ImageLabPage: React.FC = () => {
               );
             })}
 
-            {/* Panel toggle */}
-            {!isMobile && (
-              <div className="pl-1 border-l border-neutral-800/60">
-                <button onClick={() => setPanelVisible(!panelVisible)} title="Toggle panel (Tab)" className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', panelVisible ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-                  <PanelRightOpen size={14} />
-                </button>
-              </div>
-            )}
+            {/* Help + Pin + Panel toggle */}
+            <div className="pl-1 border-l border-neutral-800/60 flex items-center gap-0.5">
+              <button onClick={() => setShortcutsOpen(true)} title="Shortcuts (?)" className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors">
+                <HelpCircle size={12} />
+              </button>
+              {!isMobile && (
+                <>
+                  <button
+                    onClick={() => { setFxBarPinned(!fxBarPinned); setFxBarVisible(true); }}
+                    title={fxBarPinned ? 'Unpin toolbar' : 'Pin toolbar'}
+                    className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', fxBarPinned ? 'text-neutral-300 bg-white/10' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}
+                  >
+                    <Pin size={12} className={cn(fxBarPinned && 'rotate-45')} />
+                  </button>
+                  <button onClick={() => setPanelVisible(!panelVisible)} title="Toggle panel (Tab)" className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', panelVisible ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+                    <PanelRightOpen size={14} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -754,6 +779,51 @@ export const ImageLabPage: React.FC = () => {
               }}
             />
           </label>
+        )}
+        {/* Shortcuts help overlay */}
+        {shortcutsOpen && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShortcutsOpen(false)}>
+            <div className="bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">Keyboard Shortcuts</span>
+                <button onClick={() => setShortcutsOpen(false)} className="text-neutral-600 hover:text-neutral-300 p-1"><span className="text-xs">ESC</span></button>
+              </div>
+              <div className="space-y-3 text-[11px]">
+                {([
+                  ['Modes', [['1 / 2 / 3 / 4', 'Switch FX mode']]],
+                  ['Canvas', [
+                    ['Ctrl+V', 'Paste image'],
+                    ['Ctrl+Z', 'Undo'],
+                    ['Ctrl+Shift+Z', 'Redo'],
+                    ['[ / ]', 'Cycle presets'],
+                    ['M', 'Magic hand tool'],
+                    ['Scroll', 'Zoom'],
+                  ]],
+                  ['Compare', [
+                    ['Alt+Z', 'Before / After toggle'],
+                    ['Alt+X', 'Split view'],
+                    ['Esc', 'Exit compare'],
+                  ]],
+                  ['Panels', [
+                    ['Tab', 'Toggle controls panel'],
+                    ['Shift+E', 'Export'],
+                    ['Shift+P', 'Community presets'],
+                    ['?', 'This help'],
+                  ]],
+                ] as [string, [string, string][]][]).map(([section, items]) => (
+                  <div key={section}>
+                    <div className="text-[9px] font-mono uppercase tracking-widest text-neutral-600 mb-1.5">{section}</div>
+                    {items.map(([key, desc]) => (
+                      <div key={key} className="flex items-center justify-between py-0.5">
+                        <span className="text-neutral-400">{desc}</span>
+                        <kbd className="px-1.5 py-0.5 rounded bg-neutral-800/60 text-neutral-500 font-mono text-[10px]">{key}</kbd>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </ToolEditorShell>
 

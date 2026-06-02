@@ -376,8 +376,13 @@ router.get('/presets/my', apiRateLimiter, authenticate, async (req: AuthRequest,
     await connectToMongoDB();
     const db = getDb();
 
+    const filter: Record<string, any> = { userId: new ObjectId(req.userId!) };
+    if (req.query.type && typeof req.query.type === 'string') {
+      filter.type = req.query.type;
+    }
+
     const presets = await db.collection('community_presets')
-      .find({ userId: new ObjectId(req.userId!) })
+      .find(filter)
       .sort({ createdAt: -1 })
       .toArray();
 
