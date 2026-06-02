@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { GoogleGenAI } from '@google/genai';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
+import type { Prisma } from '@prisma/client';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { chargeCredits } from '../lib/credits.js';
@@ -271,10 +272,10 @@ router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRe
       });
       if (brand) {
         const parts: string[] = [];
-        if (brand.name) parts.push(`Brand: ${brand.name}`);
-        const data = brand.data as any;
-        if (data?.colors) parts.push(`Colors: ${JSON.stringify(data.colors)}`);
-        if (data?.fonts) parts.push(`Fonts: ${JSON.stringify(data.fonts)}`);
+        const b = brand as any;
+        if (b.name) parts.push(`Brand: ${b.name}`);
+        if (b.data?.colors) parts.push(`Colors: ${JSON.stringify(b.data.colors)}`);
+        if (b.data?.fonts) parts.push(`Fonts: ${JSON.stringify(b.data.fonts)}`);
         brandContext = parts.join('\n');
       }
     }
@@ -316,7 +317,7 @@ router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRe
         description: description || (meta as any).description || '',
         tags: tags || (meta as any).tags || [],
         category: category || 'utility',
-        spec,
+        spec: spec as Prisma.InputJsonValue,
         actionsUsed: (meta as any).actionsUsed || [],
         shareId,
       },

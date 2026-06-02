@@ -3684,7 +3684,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Refine an existing mini-app spec with a follow-up instruction. Returns updated spec. Costs 1 credit.',
     {
       prompt: z.string().min(3).describe('What to change (e.g. "add a pie chart showing color distribution").'),
-      currentSpec: z.record(z.unknown()).describe('The current spec JSON to iterate on.'),
+      currentSpec: z.record(z.string(), z.unknown()).describe('The current spec JSON to iterate on.'),
     },
     async ({ prompt, currentSpec }) => {
       const currentUserId = getMcpUserId();
@@ -3714,7 +3714,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       description: z.string().optional().describe('Short description.'),
       tags: z.array(z.string()).optional().describe('Tags for discovery.'),
       category: z.enum(['utility', 'brand', 'design', 'marketing', 'data', 'fun']).optional().describe('Category (default: utility).'),
-      spec: z.record(z.unknown()).describe('The mini-app spec JSON (root + elements).'),
+      spec: z.record(z.string(), z.unknown()).describe('The mini-app spec JSON (root + elements).'),
       actionsUsed: z.array(z.string()).optional().describe('List of action names used.'),
     },
     async ({ title, description, tags, category, spec, actionsUsed }) => {
@@ -3881,7 +3881,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'playground-describe',
     'Describe a mini-app spec as structured text so the agent can "see" the layout without a browser. Returns a visual tree + component summary.',
     {
-      spec: z.record(z.unknown()).describe('The mini-app spec JSON (root + elements).'),
+      spec: z.record(z.string(), z.unknown()).describe('The mini-app spec JSON (root + elements).'),
     },
     async ({ spec }) => {
       try {
