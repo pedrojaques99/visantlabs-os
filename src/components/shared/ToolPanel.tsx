@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, Eye, EyeOff, Download, Clipboard, Copy } from 'lucide-react';
+import { HexColorPicker } from 'react-colorful';
 
 export const ToolPanel: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
   <GlassPanel className={cn('h-full overflow-hidden flex flex-col', className)}>
@@ -19,6 +20,45 @@ export const ToolPanelHeader: React.FC<{ children: React.ReactNode }> = ({ child
 export const ToolPanelContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
     {children}
+  </div>
+);
+
+export const SectionLabel: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <span className={cn('text-[10px] font-mono uppercase tracking-widest text-neutral-500', className)}>{children}</span>
+);
+
+export const SegmentedControl: React.FC<{
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+  variant?: 'glass' | 'brand';
+  size?: 'sm' | 'md';
+  className?: string;
+}> = ({ options, value, onChange, variant = 'glass', size = 'md', className }) => (
+  <div className={cn(
+    'flex rounded-lg p-0.5 border',
+    variant === 'brand'
+      ? 'bg-neutral-900/50 border-white/5'
+      : 'bg-white/[0.03] border-white/[0.06]',
+    className
+  )}>
+    {options.map((opt) => (
+      <button
+        key={opt.value}
+        onClick={() => onChange(opt.value)}
+        className={cn(
+          'font-medium rounded-md transition-all flex-1 text-center',
+          size === 'sm' ? 'px-2 py-1 text-[9px] tracking-wider' : 'px-3 py-1 text-[11px]',
+          value === opt.value
+            ? variant === 'brand'
+              ? 'bg-brand-cyan text-black font-bold'
+              : 'bg-white/[0.08] text-neutral-100 shadow-sm'
+            : 'text-neutral-500 hover:text-neutral-300'
+        )}
+      >
+        {opt.label}
+      </button>
+    ))}
   </div>
 );
 
@@ -189,6 +229,96 @@ export const ChannelRow: React.FC<{
     )}
   </div>
 );
+
+/**
+ * Expandable color picker with swatch, hex input, and optional presets.
+ * Single source of truth for all color picker UIs across the app.
+ */
+export const ExpandableColorPicker: React.FC<{
+  color: string;
+  onChange: (hex: string) => void;
+  label?: string;
+  presets?: string[];
+  onReset?: () => void;
+  defaultExpanded?: boolean;
+}> = ({ color, onChange, label, presets, onReset, defaultExpanded = false }) => {
+  const [open, setOpen] = useState(defaultExpanded);
+  const [hexInput, setHexInput] = useState(color.replace('#', '').toUpperCase());
+
+  // Sync external changes
+  React.useEffect(() => {
+    setHexInput(color.replace('#', '').toUpperCase());
+  }, [color]);
+
+  const handleHexInput = useCallback((raw: string) => {
+    const v = raw.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+    setHexInput(v);
+    if (v.length === 6) onChange(`#${v}`);
+  }, [onChange]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="w-7 h-7 rounded-md border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+          style={{ backgroundColor: color }}
+          aria-label={label ? `Toggle ${label} color picker` : 'Toggle color picker'}
+        />
+        <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5 min-w-0">
+          <span className="text-[10px] text-neutral-500 mr-1">#</span>
+          <input
+            type="text"
+            value={hexInput}
+            onChange={(e) => handleHexInput(e.target.value)}
+            onBlur={() => { if (hexInput.length !== 6) setHexInput(color.replace('#', '').toUpperCase()); }}
+            maxLength={6}
+            aria-label={label || 'Color hex'}
+            className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+          />
+        </div>
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="text-neutral-600 hover:text-neutral-400 transition-colors p-1 shrink-0"
+            aria-label="Reset color"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
+            </svg>
+          </button>
+        )}
+        <ChevronDown size={14} className={cn('text-neutral-600 transition-transform shrink-0', open && 'rotate-180')} />
+      </div>
+      {open && (
+        <div className="animate-fade-in space-y-2">
+          {presets && presets.length > 0 && (
+            <div className="flex gap-1.5 flex-wrap">
+              {presets.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => onChange(p)}
+                  className={cn(
+                    'w-5 h-5 rounded-full border transition-all hover:scale-110',
+                    color.toLowerCase() === p.toLowerCase()
+                      ? 'border-white/40 ring-1 ring-white/20 ring-offset-1 ring-offset-neutral-950'
+                      : 'border-white/[0.08] hover:border-white/20'
+                  )}
+                  style={{ backgroundColor: p }}
+                  aria-label={`Preset ${p}`}
+                />
+              ))}
+            </div>
+          )}
+          <div className="custom-color-picker">
+            <HexColorPicker color={color} onChange={onChange} style={{ width: '100%', height: '120px' }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const ToolPanelExportActions: React.FC<{
   onExport: () => void;

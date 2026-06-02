@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useNavigate } from 'react-router-dom';
 import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { SegmentedControl } from '@/components/shared/ToolPanel';
 import { getUserLocale, formatPrice, formatDateShort, type CurrencyInfo } from '@/utils/localeUtils';
 import { CREDIT_PACKAGES, getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
 import { getCreditYieldRows } from '@/utils/creditCalculator';
@@ -244,20 +245,15 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
               </div>
 
               {/* 3-tab bar */}
-              <div className="grid grid-cols-3 bg-neutral-900/50 p-1 rounded-md border border-neutral-800/50">
-                {(['carteira', 'creditos', 'assinatura'] as const).map((tab) => {
-                  const labels: Record<string, string> = { carteira: 'Carteira', creditos: 'Créditos', assinatura: 'Assinatura' };
-                  return (
-                    <button
-                      key={tab}
-                      onClick={() => { playClickSound(); setActiveTab(tab); }}
-                      className={`px-2 py-1.5 text-[11px] font-mono uppercase tracking-wide rounded transition-all ${activeTab === tab ? 'bg-neutral-800 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-300'}`}
-                    >
-                      {labels[tab]}
-                    </button>
-                  );
-                })}
-              </div>
+              <SegmentedControl
+                value={activeTab}
+                onChange={(v) => { playClickSound(); setActiveTab(v as typeof activeTab); }}
+                options={[
+                  { value: 'carteira', label: 'Carteira' },
+                  { value: 'creditos', label: 'Créditos' },
+                  { value: 'assinatura', label: 'Assinatura' },
+                ]}
+              />
 
               {/* Tab Content */}
               <div className="relative overflow-hidden">

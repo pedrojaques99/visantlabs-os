@@ -12,6 +12,7 @@ import { AppShell, AppShellTopBar, AppShellPanel, AppShellStatusBar } from '@/co
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { DropOverlay } from '@/components/ui/DropOverlay';
+import { InlineColorPicker } from '@/components/shared/ToolPanel';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { Input } from '@/components/ui/input';
@@ -299,9 +300,12 @@ function ControlsContent({
           ))}
         </div>
         {config.colorMode === 'uniform' && (
-          <div className="flex items-center gap-2 pt-1">
-            <input type="color" value={rgbaToHex(config.baseColor)} onChange={e => update('baseColor', hexToRgba(e.target.value))} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded" />
-            <span className="text-[10px] text-neutral-500">{t('wind.tunnel.particle_color')}</span>
+          <div className="pt-1">
+            <InlineColorPicker
+              value={rgbaToHex(config.baseColor)}
+              onChange={(hex) => update('baseColor', hexToRgba(hex))}
+              label={t('wind.tunnel.particle_color')}
+            />
           </div>
         )}
       </div>
@@ -345,10 +349,11 @@ function ControlsContent({
       {/* Appearance */}
       <div className="p-3 space-y-2 border-b border-neutral-800">
         <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">{t('wind.tunnel.appearance')}</MicroTitle>
-        <div className="flex items-center gap-2">
-          <input type="color" value={config.bgColor} onChange={e => update('bgColor', e.target.value)} className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded" />
-          <span className="text-[10px] text-neutral-500">{t('wind.tunnel.background')}</span>
-        </div>
+        <InlineColorPicker
+          value={config.bgColor}
+          onChange={(hex) => update('bgColor', hex)}
+          label={t('wind.tunnel.background')}
+        />
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-neutral-500">{t('wind.tunnel.show_obstacles')}</span>
           <Button variant="ghost" size="xs" onClick={() => update('showObstacles', !config.showObstacles)} className={`text-[10px] ${config.showObstacles ? 'text-white' : 'text-neutral-600'}`} aria-label={t('wind.tunnel.toggle_obstacle_visibility')}>{config.showObstacles ? 'ON' : 'OFF'}</Button>

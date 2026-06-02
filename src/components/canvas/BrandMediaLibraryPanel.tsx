@@ -4,6 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { MockupContext } from '@/components/mockupmachine/MockupContext';
 import { ImageIcon, Plus, Search, LayoutGrid, List, Paintbrush, Zap, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SegmentedControl } from '@/components/shared/ToolPanel';
 import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
@@ -86,17 +87,16 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
       <div className="flex flex-col h-full">
         {/* Show tabs even without brand — so refs tab is accessible */}
         <div className="flex flex-col gap-2 p-2 border-b border-white/[0.06]">
-          <div className="flex items-center gap-1 p-0.5 bg-neutral-900/50 border border-white/5 rounded-md">
-            {(['all', 'logos', 'media', 'colors', 'refs'] as TabType[]).map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                className={cn('flex-1 py-1 rounded text-[9px] font-mono uppercase tracking-wider font-bold transition-all',
-                  activeTab === tab ? 'bg-brand-cyan text-black' : 'text-neutral-500 hover:text-neutral-300'
-                )}
-              >
-                {tab === 'refs' ? 'Refs' : (t(`common.tabs.${tab}`) || tab)}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            variant="brand"
+            size="sm"
+            value={activeTab}
+            onChange={(v) => setActiveTab(v as TabType)}
+            options={(['all', 'logos', 'media', 'colors', 'refs'] as TabType[]).map(tab => ({
+              value: tab,
+              label: tab === 'refs' ? 'Refs' : (t(`common.tabs.${tab}`) || tab),
+            }))}
+          />
         </div>
         <div className="flex flex-col items-center justify-center flex-1 py-16 text-center px-4">
           <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center mb-3 border border-dashed border-neutral-800">
@@ -113,17 +113,16 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
     <div className="flex flex-col h-full">
       {/* Tab + search bar */}
       <div className="flex flex-col gap-2 p-2 border-b border-white/[0.06]">
-        <div className="flex items-center gap-1 p-0.5 bg-neutral-900/50 border border-white/5 rounded-md">
-          {(['all', 'logos', 'media', 'colors', 'refs'] as TabType[]).map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              className={cn('flex-1 py-1 rounded text-[9px] font-mono uppercase tracking-wider font-bold transition-all',
-                activeTab === tab ? 'bg-brand-cyan text-black' : 'text-neutral-500 hover:text-neutral-300'
-              )}
-            >
-              {tab === 'refs' ? 'Refs' : (t(`common.tabs.${tab}`) || tab)}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          variant="brand"
+          size="sm"
+          value={activeTab}
+          onChange={(v) => setActiveTab(v as TabType)}
+          options={(['all', 'logos', 'media', 'colors', 'refs'] as TabType[]).map(tab => ({
+            value: tab,
+            label: tab === 'refs' ? 'Refs' : (t(`common.tabs.${tab}`) || tab),
+          }))}
+        />
         <div className="flex items-center gap-1.5">
           <div className="relative flex-1">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-600" size={11} />

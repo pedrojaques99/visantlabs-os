@@ -1,10 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker, Diamond, Link } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2,
+  Beaker, Diamond, Link2, LayoutGrid, Paintbrush, Settings2,
+} from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { HexColorPicker } from 'react-colorful';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ExpandableColorPicker, SectionLabel, SegmentedControl } from '@/components/shared/ToolPanel';
+import { cn } from '@/lib/utils';
 
 interface CanvasSettingsModalProps {
   isOpen: boolean;
@@ -31,12 +37,88 @@ interface CanvasSettingsModalProps {
   onEdgeStrokeWidthChange?: (width: 'normal' | 'thin') => void;
 }
 
+// --- Constants ---
+
+const COLOR_DEFAULTS = {
+  background: '#0C0C0C',
+  grid: '#ffffff',
+  cursor: '#FFFFFF',
+  accent: '#00d9ff',
+} as const;
+
+const BG_PRESETS = ['#0C0C0C', '#0a0a0a', '#111111', '#1a1a1a', '#0d1117', '#1e1e2e'];
+const ACCENT_PRESETS = ['#00d9ff', '#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
+
+// --- Helpers ---
+
+function rgbaToHex(rgba: string): string {
+  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (!match) return '#ffffff';
+  const [, r, g, b] = match;
+  return `#${[r, g, b].map(c => Number(c).toString(16).padStart(2, '0')).join('')}`;
+}
+
+// --- Local sub-components ---
+
+function SettingRow({
+  icon: Icon,
+  label,
+  description,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2.5 group/row rounded-lg transition-colors">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.04] shrink-0 transition-colors group-hover/row:bg-white/[0.06]">
+          <Icon size={15} className="text-neutral-500 transition-colors group-hover/row:text-neutral-400" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[13px] text-neutral-200 leading-tight">{label}</p>
+          {description && (
+            <p className="text-[11px] text-neutral-500 leading-snug mt-0.5">{description}</p>
+          )}
+        </div>
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
+}
+
+function ColorSettingRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2 py-2.5">
+      <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/[0.03] border border-white/[0.04] shrink-0">
+          <Icon size={14} className="text-neutral-500" />
+        </div>
+        <span className="text-[13px] text-neutral-200">{label}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// --- Main Component ---
+
 export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   isOpen,
   onClose,
-  backgroundColor = 'neutral-900',
+  backgroundColor = COLOR_DEFAULTS.background,
   onBackgroundColorChange,
-  gridColor = 'neutral-800/50',
+  gridColor = 'rgba(255, 255, 255, 0.1)',
   onGridColorChange,
   showGrid = true,
   onShowGridChange,
@@ -44,9 +126,9 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   onShowMinimapChange,
   showControls = true,
   onShowControlsChange,
-  cursorColor = 'neutral-200',
+  cursorColor = COLOR_DEFAULTS.cursor,
   onCursorColorChange,
-  brandCyan = 'brand-cyan',
+  brandCyan = COLOR_DEFAULTS.accent,
   onBrandCyanChange,
   experimentalMode = false,
   onExperimentalModeChange,
@@ -57,351 +139,192 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
 }) => {
   useScrollLock(isOpen);
   const { t } = useTranslation();
-  const [bgColor, setBgColor] = useState(backgroundColor);
-  const [gridCol, setGridCol] = useState(gridColor);
-  const [curColor, setCurColor] = useState(cursorColor);
-  const [brandCyanColor, setBrandCyanColor] = useState(brandCyan);
 
   useEffect(() => {
-    setBgColor(backgroundColor);
-  }, [backgroundColor]);
-
-  useEffect(() => {
-    setGridCol(gridColor);
-  }, [gridColor]);
-
-  useEffect(() => {
-    setCurColor(cursorColor);
-  }, [cursorColor]);
-
-  useEffect(() => {
-    setBrandCyanColor(brandCyan);
-  }, [brandCyan]);
-
-  useEffect(() => {
+    if (!isOpen) return;
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => {
-        document.removeEventListener('keydown', handleEscape);
-      };
-    }
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  // Extracted handler for cursor color changes
-  const handleCursorColorChange = (newColor: string) => {
-    setCurColor(newColor);
-    onCursorColorChange?.(newColor);
-  };
-
-  // Handler for brand cyan color changes
-  const handleBrandCyanChange = (newColor: string) => {
-    setBrandCyanColor(newColor);
-    onBrandCyanChange?.(newColor);
-  };
+  const handleGridColorChange = useCallback((hex: string) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    onGridColorChange?.(`rgba(${r}, ${g}, ${b}, 0.2)`);
+  }, [onGridColorChange]);
 
   if (!isOpen) return null;
 
+  const gridHexColor = gridColor.startsWith('rgba') ? rgbaToHex(gridColor)
+    : gridColor.startsWith('#') ? gridColor : '#ffffff';
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
-        className="bg-neutral-950 border border-neutral-800/50 rounded-md p-4 w-full max-w-2xl mx-4 sm:mx-6 shadow-xl max-h-[90vh] overflow-y-auto"
+        className={cn(
+          'bg-neutral-950 border border-white/[0.06] rounded-2xl w-full max-w-[460px] max-h-[85vh] flex flex-col shadow-2xl',
+          'animate-in fade-in-0 zoom-in-[0.97] duration-200',
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold font-mono text-neutral-200 uppercase">
-            {t('canvas.settings') || 'Canvas Settings'}
-          </h2>
-          <Button variant="ghost"
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <Settings2 size={16} className="text-neutral-500" />
+            <h2 className="text-[13px] font-medium text-neutral-200">
+              {t('canvas.settings') || 'Canvas Settings'}
+            </h2>
+          </div>
+          <button
             onClick={onClose}
-            className="text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer"
+            className="p-1 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/[0.05] transition-colors"
           >
-            <X size={18} />
-          </Button>
+            <X size={15} />
+          </button>
         </div>
 
-        {/* Toggle Settings */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4">
-          {/* Minimap Settings */}
-          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2">
-              <Maximize2 size={16} className="text-neutral-400 flex-shrink-0" />
-              <label className="text-xs font-mono text-neutral-300 cursor-pointer">
-                {t('canvas.showMinimap') || 'Show Minimap'}
-              </label>
-            </div>
-            <Button variant="ghost"
-              onClick={() => onShowMinimapChange?.(!showMinimap)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showMinimap ? 'bg-brand-cyan' : 'bg-neutral-700'
-                }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${showMinimap ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-              />
-            </Button>
+        <Separator className="bg-white/[0.04]" />
+
+        {/* Tabs */}
+        <Tabs defaultValue="canvas" className="flex-1 flex flex-col min-h-0 gap-0">
+          <div className="px-4 pt-2.5 pb-0">
+            <TabsList className="w-full bg-white/[0.03] border border-white/[0.05] h-8 p-0.5 rounded-lg">
+              <TabsTrigger value="canvas" className="flex-1 gap-1.5 text-[11px] h-full rounded-md">
+                <LayoutGrid size={12} />
+                {t('canvas.settingsTabCanvas') || 'Canvas'}
+              </TabsTrigger>
+              <TabsTrigger value="edges" className="flex-1 gap-1.5 text-[11px] h-full rounded-md">
+                <Link2 size={12} />
+                {t('canvas.settingsTabEdges') || 'Edges'}
+              </TabsTrigger>
+              <TabsTrigger value="colors" className="flex-1 gap-1.5 text-[11px] h-full rounded-md">
+                <Paintbrush size={12} />
+                {t('canvas.settingsTabColors') || 'Colors'}
+              </TabsTrigger>
+            </TabsList>
           </div>
 
-          {/* Controls Settings */}
-          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2">
-              <ZoomIn size={16} className="text-neutral-400 flex-shrink-0" />
-              <label className="text-xs font-mono text-neutral-300 cursor-pointer">
-                {t('canvas.showControls') || 'Show Controls'}
-              </label>
+          {/* --- Canvas Tab --- */}
+          <TabsContent value="canvas" className="flex-1 overflow-y-auto px-4 pb-4 pt-1 mt-0">
+            <SectionLabel>{t('canvas.settingsDisplay') || 'Display'}</SectionLabel>
+            <div className="divide-y divide-white/[0.04]">
+              <SettingRow icon={Grid3x3} label={t('canvas.showGrid') || 'Show Grid'} description={t('canvas.showGridDesc') || 'Dot grid on the canvas background'}>
+                <Switch checked={showGrid} onCheckedChange={(v) => onShowGridChange?.(v)} />
+              </SettingRow>
+              <SettingRow icon={Maximize2} label={t('canvas.showMinimap') || 'Minimap'} description={t('canvas.showMinimapDesc') || 'Overview of the full canvas'}>
+                <Switch checked={showMinimap} onCheckedChange={(v) => onShowMinimapChange?.(v)} />
+              </SettingRow>
+              <SettingRow icon={ZoomIn} label={t('canvas.showControls') || 'Zoom Controls'} description={t('canvas.showControlsDesc') || 'Zoom and fit controls overlay'}>
+                <Switch checked={showControls} onCheckedChange={(v) => onShowControlsChange?.(v)} />
+              </SettingRow>
             </div>
-            <Button variant="ghost"
-              onClick={() => onShowControlsChange?.(!showControls)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showControls ? 'bg-brand-cyan' : 'bg-neutral-700'
-                }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${showControls ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-              />
-            </Button>
-          </div>
-        </div>
+            <div className="mt-2">
+              <SectionLabel>{t('canvas.settingsAdvanced') || 'Advanced'}</SectionLabel>
+              <SettingRow icon={Beaker} label={t('canvas.experimentalMode') || 'Experimental Mode'} description={t('canvas.experimentalModeDesc') || 'Show preview nodes like Shader, Strategy, etc.'}>
+                <Switch checked={experimentalMode} onCheckedChange={(v) => onExperimentalModeChange?.(v)} />
+              </SettingRow>
+            </div>
+          </TabsContent>
 
-        {/* Edge Settings */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4">
-          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2">
-              <Link size={16} className="text-neutral-400 flex-shrink-0" />
-              <div className="flex flex-col">
-                <label className="text-xs font-mono text-neutral-300 cursor-pointer">
-                  {t('canvas.edgeStyle') || 'Edge Style'}
-                </label>
-              </div>
-            </div>
-            <div className="flex gap-1">
-              <Button variant="ghost"
-                onClick={() => onEdgeStyleChange?.('solid')}
-                className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStyle === 'solid'
-                  ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
-                  : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-300'}`}
-              >
-                {t('canvas.edgeStyleSolid') || 'Solid'}
-              </Button>
-              <Button variant="ghost"
-                onClick={() => onEdgeStyleChange?.('dashed')}
-                className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStyle === 'dashed'
-                  ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
-                  : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-300'}`}
-              >
-                {t('canvas.edgeStyleDash') || 'Dash'}
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2">
-              <Link size={16} className="text-neutral-400 flex-shrink-0" />
-              <div className="flex flex-col">
-                <label className="text-xs font-mono text-neutral-300 cursor-pointer">
-                  {t('canvas.edgeWidth') || 'Edge Width'}
-                </label>
-              </div>
-            </div>
-            <div className="flex gap-1">
-              <Button variant="ghost"
-                onClick={() => onEdgeStrokeWidthChange?.('normal')}
-                className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStrokeWidth === 'normal'
-                  ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
-                  : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-300'}`}
-              >
-                {t('canvas.edgeWidthBold') || 'Bold'}
-              </Button>
-              <Button variant="ghost"
-                onClick={() => onEdgeStrokeWidthChange?.('thin')}
-                className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStrokeWidth === 'thin'
-                  ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
-                  : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-300'}`}
-              >
-                {t('canvas.edgeWidthThin') || 'Thin'}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Experimental Mode Toggle */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2">
-              <Beaker size={16} className="text-neutral-400 flex-shrink-0" />
-              <div className="flex flex-col">
-                <label className="text-xs font-mono text-neutral-300 cursor-pointer">
-                  {t('canvas.experimentalMode') || 'Experimental Mode'}
-                </label>
-                <span className="text-[10px] text-neutral-500 font-mono">
-                  {t('canvas.experimentalModeDesc') || 'Show preview nodes like Shader, Strategy, etc.'}
-                </span>
-              </div>
-            </div>
-            <Button variant="ghost"
-              onClick={() => onExperimentalModeChange?.(!experimentalMode)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${experimentalMode ? 'bg-brand-cyan' : 'bg-neutral-700'
-                }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${experimentalMode ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-              />
-            </Button>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-neutral-800/50 my-4"></div>
-
-        {/* Color Settings */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-          {/* Background Color Settings */}
-          <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2 mb-2">
-              <Palette size={16} className="text-neutral-400 flex-shrink-0" />
-              <label className="text-xs font-mono text-neutral-300">
-                {t('canvas.backgroundColor') || 'Background Color'}
-              </label>
-            </div>
-            <div className="space-y-2">
-              <HexColorPicker
-                color={bgColor}
-                onChange={(newColor) => {
-                  setBgColor(newColor);
-                  onBackgroundColorChange?.(newColor);
-                }}
-                style={{ width: '100%', height: '120px' }}
-              />
-              <Input
-                type="text"
-                value={bgColor}
-                onChange={(e) => {
-                  const newColor = e.target.value;
-                  setBgColor(newColor);
-                  onBackgroundColorChange?.(newColor);
-                }}
-                className="flex-1 px-2 py-1.5 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline focus:border-neutral-800/50"
-                placeholder="#0C0C0C"
-              />
-            </div>
-          </div>
-
-          {/* Grid Color Settings */}
-          <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Grid3x3 size={16} className="text-neutral-400 flex-shrink-0" />
-                <label className="text-xs font-mono text-neutral-300">
-                  {t('canvas.gridColor') || 'Grid Color'}
-                </label>
-              </div>
-              <Button variant="ghost"
-                onClick={() => onShowGridChange?.(!showGrid)}
-                className={`relative w-8 h-4 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showGrid ? 'bg-brand-cyan' : 'bg-neutral-700'
-                  }`}
-                title={showGrid ? t('canvas.hideGrid') || 'Hide Grid' : t('canvas.showGrid') || 'Show Grid'}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-md transition-transform ${showGrid ? 'translate-x-3.5' : 'translate-x-0'
-                    }`}
+          {/* --- Edges Tab --- */}
+          <TabsContent value="edges" className="flex-1 overflow-y-auto px-4 pb-4 pt-1 mt-0">
+            <SectionLabel>{t('canvas.settingsConnections') || 'Connections'}</SectionLabel>
+            <div className="divide-y divide-white/[0.04]">
+              <SettingRow icon={Link2} label={t('canvas.edgeStyle') || 'Line Style'} description={t('canvas.edgeStyleDesc') || 'Style for connections between nodes'}>
+                <SegmentedControl
+                  value={edgeStyle}
+                  onChange={(v) => onEdgeStyleChange?.(v as 'solid' | 'dashed')}
+                  options={[
+                    { value: 'solid', label: t('canvas.edgeStyleSolid') || 'Solid' },
+                    { value: 'dashed', label: t('canvas.edgeStyleDash') || 'Dash' },
+                  ]}
                 />
-              </Button>
+              </SettingRow>
+              <SettingRow icon={Link2} label={t('canvas.edgeWidth') || 'Line Weight'} description={t('canvas.edgeWidthDesc') || 'Thickness of connection lines'}>
+                <SegmentedControl
+                  value={edgeStrokeWidth}
+                  onChange={(v) => onEdgeStrokeWidthChange?.(v as 'normal' | 'thin')}
+                  options={[
+                    { value: 'normal', label: t('canvas.edgeWidthBold') || 'Bold' },
+                    { value: 'thin', label: t('canvas.edgeWidthThin') || 'Thin' },
+                  ]}
+                />
+              </SettingRow>
             </div>
-            <div className="space-y-2">
-              <HexColorPicker
-                color={gridCol.startsWith('rgba') ? '#FFFFFF' : (gridCol.startsWith('#') ? gridCol : '#FFFFFF')}
-                onChange={(hex) => {
-                  const r = parseInt(hex.slice(1, 3), 16);
-                  const g = parseInt(hex.slice(3, 5), 16);
-                  const b = parseInt(hex.slice(5, 7), 16);
-                  const newColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
-                  setGridCol(newColor);
-                  onGridColorChange?.(newColor);
-                }}
-                style={{ width: '100%', height: '120px' }}
-              />
-              <Input
-                type="text"
-                value={gridCol}
-                onChange={(e) => {
-                  const newColor = e.target.value;
-                  setGridCol(newColor);
-                  onGridColorChange?.(newColor);
-                }}
-                className="flex-1 px-2 py-1.5 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline focus:border-neutral-800/50"
-                placeholder="rgba(255, 255, 255, 0.1)"
-              />
+            {/* Edge preview */}
+            <div className="mt-3 p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.04]">
+              <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest mb-2.5">
+                {t('canvas.preview') || 'Preview'}
+              </p>
+              <svg viewBox="0 0 300 40" className="w-full" preserveAspectRatio="xMidYMid meet">
+                <line x1="24" y1="20" x2="276" y2="20" stroke="currentColor" className="text-neutral-600"
+                  strokeWidth={edgeStrokeWidth === 'thin' ? 1 : 2.5}
+                  strokeDasharray={edgeStyle === 'dashed' ? '8 5' : 'none'}
+                  strokeLinecap="round"
+                />
+                <circle cx="24" cy="20" r="5" className="fill-brand-cyan" />
+                <circle cx="276" cy="20" r="5" className="fill-neutral-600" />
+              </svg>
             </div>
-          </div>
+          </TabsContent>
 
-          {/* Cursor Color Settings */}
-          <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2 mb-2">
-              <MousePointer2 size={16} className="text-neutral-400 flex-shrink-0" />
-              <label className="text-xs font-mono text-neutral-300">
-                {t('canvas.cursorColor') || 'Cursor Color'}
-              </label>
-            </div>
-            <div className="space-y-2">
-              <HexColorPicker
-                color={curColor}
-                onChange={handleCursorColorChange}
-                style={{ width: '100%', height: '120px' }}
-              />
-              <Input
-                type="text"
-                value={curColor}
-                onChange={(e) => handleCursorColorChange(e.target.value)}
-                className="flex-1 px-2 py-1.5 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline focus:border-neutral-800/50"
-                placeholder="#FFFFFF"
-              />
-            </div>
-          </div>
+          {/* --- Colors Tab --- */}
+          <TabsContent value="colors" className="flex-1 overflow-y-auto px-4 pb-4 pt-1 mt-0">
+            <SectionLabel>{t('canvas.settingsTheme') || 'Theme'}</SectionLabel>
+            <div className="divide-y divide-white/[0.04]">
+              <ColorSettingRow icon={Palette} label={t('canvas.backgroundColor') || 'Background'}>
+                <ExpandableColorPicker
+                  color={backgroundColor}
+                  onChange={(c) => onBackgroundColorChange?.(c)}
+                  label="Background"
+                  presets={BG_PRESETS}
+                  onReset={() => onBackgroundColorChange?.(COLOR_DEFAULTS.background)}
+                />
+              </ColorSettingRow>
 
-          {/* Brand Cyan Color Settings */}
-          <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2 mb-2">
-              <Diamond size={16} className="text-neutral-400 flex-shrink-0" />
-              <label className="text-xs font-mono text-neutral-300">
-                {t('canvas.brandCyanColor') || 'Brand Cyan Color'}
-              </label>
-            </div>
-            <div className="space-y-2">
-              <HexColorPicker
-                color={brandCyanColor.startsWith('#') ? brandCyanColor : '#00d9ff'}
-                onChange={handleBrandCyanChange}
-                style={{ width: '100%', height: '120px' }}
-              />
-              <Input
-                type="text"
-                value={brandCyanColor}
-                onChange={(e) => handleBrandCyanChange(e.target.value)}
-                className="flex-1 px-2 py-1.5 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline focus:border-neutral-800/50"
-                placeholder="brand-cyan"
-              />
-            </div>
-          </div>
-        </div>
+              <ColorSettingRow icon={Diamond} label={t('canvas.brandCyanColor') || 'Accent Color'}>
+                <ExpandableColorPicker
+                  color={brandCyan.startsWith('#') ? brandCyan : '#00d9ff'}
+                  onChange={(c) => onBrandCyanChange?.(c)}
+                  label="Accent"
+                  presets={ACCENT_PRESETS}
+                  onReset={() => onBrandCyanChange?.(COLOR_DEFAULTS.accent)}
+                />
+              </ColorSettingRow>
 
-        <div className="mt-4 pt-3 border-t border-neutral-800/50">
-          <Button variant="brand"
-            onClick={onClose}
-            className="w-full px-3 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 hover:border-brand-cyan/50 rounded-md transition-all text-xs font-mono cursor-pointer"
-          >
-            {t('common.close') || 'Close'}
-          </Button>
-        </div>
+              <ColorSettingRow icon={Grid3x3} label={t('canvas.gridColor') || 'Grid'}>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-neutral-500">{t('canvas.showGrid') || 'Visible'}</span>
+                    <Switch checked={showGrid} onCheckedChange={(v) => onShowGridChange?.(v)} />
+                  </div>
+                  <ExpandableColorPicker
+                    color={gridHexColor}
+                    onChange={handleGridColorChange}
+                    label="Grid"
+                    onReset={() => onGridColorChange?.(COLOR_DEFAULTS.grid)}
+                  />
+                </div>
+              </ColorSettingRow>
+
+              <ColorSettingRow icon={MousePointer2} label={t('canvas.cursorColor') || 'Cursor'}>
+                <ExpandableColorPicker
+                  color={cursorColor.startsWith('#') ? cursorColor : '#ffffff'}
+                  onChange={(c) => onCursorColorChange?.(c)}
+                  label="Cursor"
+                  onReset={() => onCursorColorChange?.(COLOR_DEFAULTS.cursor)}
+                />
+              </ColorSettingRow>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
 };
-
