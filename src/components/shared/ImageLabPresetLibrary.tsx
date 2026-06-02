@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { API_BASE } from '@/config/api';
+import { authService } from '@/services/authService';
 import { useImageLabStore, type ImageLabMode } from '@/stores/imageLabStore';
 import { useHalftoneStore } from '@/stores/halftoneStore';
 import { useTextureFilterStore } from '@/stores/textureFilterStore';
@@ -102,7 +103,10 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
   const fetchPresets = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/community/presets/public`, { credentials: 'include' });
+      const token = authService.getToken();
+      const res = await fetch(`${API_BASE}/community/presets/public`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (res.ok) {
         const data = await res.json();
         const imageLabPresets = (data['imagelab'] || []) as ImageLabPreset[];
@@ -140,9 +144,10 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
 
   const handleLike = useCallback(async (id: string) => {
     try {
+      const token = authService.getToken();
       await fetch(`${API_BASE}/community/presets/${id}/like`, {
         method: 'POST',
-        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       setPresets((prev) =>
         prev.map((p) =>
@@ -169,10 +174,13 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
         layers = s.layers;
       }
 
+      const token = authService.getToken();
       const res = await fetch(`${API_BASE}/community/presets`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           name: saveName.trim(),
           type: 'imagelab',

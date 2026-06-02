@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useMemo, useEffect, useRef, type PointerEvent as RPointerEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Upload, CircleDot, Paintbrush, Undo2, Redo2, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend } from 'lucide-react';
 import { toast } from 'sonner';
@@ -32,6 +32,7 @@ import { useMagicHand } from '@/hooks/useMagicHand';
 import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
 import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { ImageLabSavePreset } from '@/components/shared/ImageLabSavePreset';
 
 const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso', 'shaders']);
 
@@ -225,6 +226,41 @@ export const ImageLabPage: React.FC = () => {
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [presetLibraryOpen, setPresetLibraryOpen] = useState(false);
+
+  const [fxBarVisible, setFxBarVisible] = useState(true);
+  const fxBarRef = useRef<HTMLDivElement>(null);
+  const fxHideTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const FX_PROXIMITY_PX = 80;
+  const FX_HIDE_DELAY = 1200;
+  const FX_INITIAL_DELAY = 2000;
+
+  useEffect(() => {
+    const t = setTimeout(() => setFxBarVisible(false), FX_INITIAL_DELAY);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleCanvasPointerMove = useCallback((e: RPointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relY = e.clientY - rect.top;
+    const nearTop = relY < FX_PROXIMITY_PX;
+
+    if (nearTop) {
+      clearTimeout(fxHideTimer.current);
+      setFxBarVisible(true);
+    } else if (!fxBarRef.current?.matches(':hover')) {
+      clearTimeout(fxHideTimer.current);
+      fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
+    }
+  }, []);
+
+  const handleFxBarEnter = useCallback(() => {
+    clearTimeout(fxHideTimer.current);
+    setFxBarVisible(true);
+  }, []);
+
+  const handleFxBarLeave = useCallback(() => {
+    fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
+  }, []);
 
   const cyclePreset = usePresetCycling(mode);
 
@@ -470,7 +506,7 @@ export const ImageLabPage: React.FC = () => {
 
   const statusItems = useStatusItems(mode);
 
-  const controlsPanel = useMemo(() => {
+  const modeControls = useMemo(() => {
     switch (mode) {
       case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
       case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
@@ -478,6 +514,15 @@ export const ImageLabPage: React.FC = () => {
       case 'shaders': return <ShaderLabControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
     }
   }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, handleCopyAsPng]);
+
+  const controlsPanel = useMemo(() => (
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-hidden">{modeControls}</div>
+      <div className="shrink-0 border-t border-neutral-800/50 px-4 py-3">
+        <ImageLabSavePreset />
+      </div>
+    </div>
+  ), [modeControls]);
 
   const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(() => [
     { id: 'halftone', icon: <CircleDot size={16} />, label: 'Halftone' },
@@ -511,6 +556,9 @@ export const ImageLabPage: React.FC = () => {
         hideTopBar
         canvasClassName="absolute inset-0 transition-all duration-300"
       >
+        {/* Proximity sensor for FX bar auto-hide */}
+        <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
+
         {/* Floating tools — canvas-only actions */}
         <div className={cn('absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50', isMobile && 'left-2 top-2 p-1')}>
           <ImageLabUploadWidget
@@ -568,7 +616,17 @@ export const ImageLabPage: React.FC = () => {
         </div>
 
         {/* Floating top bar — FX modes + undo/redo + panel toggle */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20">
+        <div
+          ref={fxBarRef}
+          onPointerEnter={handleFxBarEnter}
+          onPointerLeave={handleFxBarLeave}
+          className={cn(
+            'absolute top-3 left-1/2 -translate-x-1/2 z-20 transition-all duration-300',
+            fxBarVisible
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 -translate-y-2 pointer-events-none',
+          )}
+        >
           <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 shadow-2xl shadow-black/40">
             {/* Undo / Redo */}
             <div className="flex items-center gap-0.5 pr-1 border-r border-neutral-800/60">

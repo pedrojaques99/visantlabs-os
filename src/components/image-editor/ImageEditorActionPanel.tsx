@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { useImageEditorStore, type InpaintMode } from '@/stores/imageEditorStore';
 import { useImageEditorActions } from '@/hooks/image-editor/useImageEditorActions';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
@@ -116,7 +116,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
           isGenerating && 'animate-pulse',
         )}
       >
-        <Sparkles size={14} />
+        <Zap size={14} />
         {isGenerating ? 'Generating...' : 'Generate'}
       </button>
     </div>
