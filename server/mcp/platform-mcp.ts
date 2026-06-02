@@ -163,6 +163,18 @@ async function getCommunityLikesMap(db: any, presetIds: string[], userId?: strin
 /** Base URL for internal API calls (reuses existing route logic for credits, validation, etc.) */
 const INTERNAL_API_BASE = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
+/** Extract the `data:` payload from a specific SSE event in raw text. */
+function extractSseEventData(sseText: string, eventName: string): string | null {
+  const lines = sseText.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === `event: ${eventName}` && i + 1 < lines.length) {
+      const dataLine = lines[i + 1];
+      if (dataLine.startsWith('data: ')) return dataLine.slice(6);
+    }
+  }
+  return null;
+}
+
 // ─── Dynamic tool registry ────────────────────────────────────────────────────
 // Populated by createPlatformMcpServer() on first call; stable after that.
 let _registeredToolNames: string[] = [];
@@ -3669,11 +3681,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
 
-        // Consume SSE stream and extract final spec
         const text = await res.text();
-        const specMatch = text.match(/event:\s*spec\ndata:\s*(\{[\s\S]*?\})\n\n/);
-        if (!specMatch) return ERR.internal('Generation failed — no spec event received');
-        const parsed = JSON.parse(specMatch[1]);
+        const specData = extractSseEventData(text, 'spec');
+        if (!specData) return ERR.internal('Generation failed — no spec event received');
+        const parsed = JSON.parse(specData);
         return jsonResponse({ spec: parsed.spec, meta: parsed.meta });
       } catch (err: any) { return ERR.internal(err.message); }
     }
@@ -3698,9 +3709,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         if (!res.ok) return ERR.internal(await res.text());
 
         const text = await res.text();
-        const specMatch = text.match(/event:\s*spec\ndata:\s*(\{[\s\S]*?\})\n\n/);
-        if (!specMatch) return ERR.internal('Iteration failed — no spec event received');
-        const parsed = JSON.parse(specMatch[1]);
+        const specData = extractSseEventData(text, 'spec');
+        if (!specData) return ERR.internal('Iteration failed — no spec event received');
+        const parsed = JSON.parse(specData);
         return jsonResponse({ spec: parsed.spec, meta: parsed.meta });
       } catch (err: any) { return ERR.internal(err.message); }
     }

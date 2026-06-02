@@ -175,7 +175,9 @@ export const PlaygroundPage: React.FC = () => {
       setSpec(miniApp.spec as unknown as Spec);
       setMeta({ title: miniApp.title, description: miniApp.description, tags: miniApp.tags, category: miniApp.category });
       setMiniAppId(miniApp.id);
-    }).catch(() => {});
+    }).catch(() => {
+      toast.error('Could not load this miniapp. It may have been deleted or the URL is incorrect.');
+    });
   }, [slug]);
 
   // Auto-scroll chat

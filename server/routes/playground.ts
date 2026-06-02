@@ -5,7 +5,7 @@ import { prisma } from '../db/prisma.js';
 import type { Prisma } from '@prisma/client';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
-import { chargeCredits } from '../lib/credits.js';
+import { chargeCredits, refundCredits } from '../lib/credits.js';
 import { PLAYGROUND_SYSTEM_PROMPT, PLAYGROUND_ITERATE_PROMPT } from '../lib/playground-prompts.js';
 import { rateLimit } from 'express-rate-limit';
 import { isValidObjectId } from '../utils/validation.js';
@@ -123,10 +123,12 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
+  let credited = false;
   try {
     send('status', { message: 'Composing your app...' });
 
     await chargeCredits(req.userId!, 1);
+    credited = true;
 
     const systemInstruction = PLAYGROUND_SYSTEM_PROMPT + CATALOG_PROMPT +
       (brandContext ? `\n\n## User Brand Context\n${sanitizeForPrompt(brandContext)}` : '');
@@ -160,10 +162,12 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
         meta = parsed.meta || {};
         spec = { root: parsed.root, elements: parsed.elements };
       } else {
+        await refundCredits(req.userId!, 1).catch(() => {});
         send('error', { message: 'Invalid spec generated. Try rephrasing your prompt.' });
         return res.end();
       }
     } catch {
+      await refundCredits(req.userId!, 1).catch(() => {});
       send('error', { message: 'Failed to parse response. Try a simpler prompt.' });
       return res.end();
     }
@@ -172,6 +176,9 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
     send('complete', { message: 'Done!' });
   } catch (err: any) {
     console.error('[playground/generate]', err);
+    if (credited && !err?.message?.includes('Insufficient credits')) {
+      await refundCredits(req.userId!, 1).catch(() => {});
+    }
     send('error', { message: err?.message?.includes('Insufficient credits')
       ? 'Insufficient credits'
       : 'Generation failed. Please try again.' });
@@ -194,6 +201,10 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
     return res.status(400).json({ error: 'prompt and currentSpec required' });
   }
 
+  if (JSON.stringify(currentSpec).length > 50_000) {
+    return res.status(413).json({ error: 'Spec too large (max 50KB)' });
+  }
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -203,10 +214,12 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
+  let credited = false;
   try {
     send('status', { message: 'Updating your app...' });
 
     await chargeCredits(req.userId!, 1);
+    credited = true;
 
     const systemInstruction = PLAYGROUND_ITERATE_PROMPT +
       JSON.stringify(currentSpec, null, 2) +
@@ -232,13 +245,16 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
         send('spec', { spec: { root: parsed.root, elements: parsed.elements }, meta });
         send('complete', { message: 'Updated!' });
       } else {
+        await refundCredits(req.userId!, 1).catch(() => {});
         send('error', { message: 'Invalid spec. Try again.' });
       }
     } catch {
+      await refundCredits(req.userId!, 1).catch(() => {});
       send('error', { message: 'Failed to parse. Try a simpler request.' });
     }
   } catch (err: any) {
     console.error('[playground/iterate]', err);
+    if (credited) await refundCredits(req.userId!, 1).catch(() => {});
     send('error', { message: 'Update failed.' });
   } finally {
     res.end();
@@ -262,8 +278,10 @@ router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRe
     return res.status(400).json({ error: 'prompt required' });
   }
 
+  let credited = false;
   try {
     await chargeCredits(req.userId!, 1);
+    credited = true;
 
     let brandContext = '';
     if (brandGuidelineId) {
@@ -298,11 +316,13 @@ router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRe
     try {
       const parsed = JSON.parse(cleaned);
       if (!parsed.root || !parsed.elements) {
+        await refundCredits(req.userId!, 1).catch(() => {});
         return res.status(422).json({ error: 'Invalid spec generated. Try rephrasing.' });
       }
       meta = parsed.meta || {};
       spec = { root: parsed.root, elements: parsed.elements };
     } catch {
+      await refundCredits(req.userId!, 1).catch(() => {});
       return res.status(422).json({ error: 'Failed to parse generated spec.' });
     }
 
@@ -333,6 +353,9 @@ router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRe
     });
   } catch (err: any) {
     console.error('[playground/quickstart]', err);
+    if (credited && !err?.message?.includes('Insufficient credits')) {
+      await refundCredits(req.userId!, 1).catch(() => {});
+    }
     res.status(500).json({
       error: err?.message?.includes('Insufficient credits')
         ? 'Insufficient credits'
@@ -349,6 +372,14 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 
   if (!title || !spec) {
     return res.status(400).json({ error: 'title and spec required' });
+  }
+
+  if (!spec.root || !spec.elements) {
+    return res.status(400).json({ error: 'spec must have root and elements fields' });
+  }
+
+  if (JSON.stringify(spec).length > 500_000) {
+    return res.status(413).json({ error: 'Spec too large (max 500KB)' });
   }
 
   try {
@@ -489,6 +520,21 @@ router.get('/feed', async (req, res) => {
   }
 });
 
+// ─── GET /shared/:shareId — Public access (MUST be before /:slug) ──────
+router.get('/shared/:shareId', async (req, res) => {
+  try {
+    const miniApp = await prisma.miniApp.findFirst({
+      where: { shareId: req.params.shareId },
+    });
+    if (!miniApp) return res.status(404).json({ error: 'Not found' });
+
+    res.json({ miniApp });
+  } catch (err) {
+    console.error('[playground/shared]', err);
+    res.status(500).json({ error: 'Failed to fetch' });
+  }
+});
+
 // ─── GET /:slug — Get miniapp by slug ───────────────────────────────────
 router.get('/:slug', async (req, res) => {
   const { slug } = req.params;
@@ -622,21 +668,6 @@ router.post('/:id/share', authenticate, async (req: AuthRequest, res) => {
   } catch (err) {
     console.error('[playground/share]', err);
     res.status(500).json({ error: 'Failed to generate share link' });
-  }
-});
-
-// ─── GET /shared/:shareId — Public access ───────────────────────────────
-router.get('/shared/:shareId', async (req, res) => {
-  try {
-    const miniApp = await prisma.miniApp.findFirst({
-      where: { shareId: req.params.shareId },
-    });
-    if (!miniApp) return res.status(404).json({ error: 'Not found' });
-
-    res.json({ miniApp });
-  } catch (err) {
-    console.error('[playground/shared]', err);
-    res.status(500).json({ error: 'Failed to fetch' });
   }
 });
 

@@ -41,9 +41,14 @@ export const GeneratingOverlay: React.FC = () => {
   const seconds = elapsed % 60;
   const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
+  const handleCancel = () => {
+    useImageEditorStore.getState().setGenerating(false);
+  };
+
   return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-      <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-neutral-900/80 backdrop-blur-xl border border-white/10">
+    <div className="absolute inset-0 flex items-center justify-center z-10">
+      <div className="absolute inset-0 bg-neutral-900/40 pointer-events-none" />
+      <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-neutral-900/80 backdrop-blur-xl border border-white/10">
         <GlitchPickaxe size={28} />
         <GlitchLoader size="sm" />
         <p className="text-xs text-neutral-400 font-mono animate-fade-in">
@@ -54,6 +59,12 @@ export const GeneratingOverlay: React.FC = () => {
             {timeStr}
           </span>
         )}
+        <button
+          onClick={handleCancel}
+          className="mt-1 px-3 py-1 text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-neutral-700 hover:border-neutral-500 rounded-lg transition-colors"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
