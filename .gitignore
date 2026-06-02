@@ -21,8 +21,8 @@ dist-ssr
 
 # Environment
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 *.local
 
 # Editor / IDE

@@ -10,7 +10,7 @@ export const GeneratingOverlay: React.FC = () => {
 
   const [elapsed, setElapsed] = useState(0);
   const [statusIndex, setStatusIndex] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   useEffect(() => {
     if (!isGenerating) {

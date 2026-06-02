@@ -241,7 +241,16 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                       </div>
                     );
                   })}
-                  {expandedDim && <div className="fixed inset-0 z-40" onClick={() => setExpandedDim(null)} />}
+                  {expandedDim && (
+                    <div
+                      className="fixed inset-0 z-40"
+                      role="button"
+                      tabIndex={-1}
+                      aria-label="Close filter dropdown"
+                      onClick={() => setExpandedDim(null)}
+                      onKeyDown={e => { if (e.key === 'Escape') setExpandedDim(null); }}
+                    />
+                  )}
                 </div>
                 {/* Smart grid */}
                 {refSearch.isLoading ? (

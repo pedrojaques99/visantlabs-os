@@ -2,19 +2,20 @@ import React from 'react';
 import {
   Square, Circle, Paintbrush, Eraser,
   Maximize, Scissors, ImageOff,
+  type LucideIcon,
 } from 'lucide-react';
 import { useImageEditorStore, type EditorTool, type EditorAction } from '@/stores/imageEditorStore';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
 import { cn } from '@/lib/utils';
 
-const TOOLS: { id: EditorTool; icon: React.ElementType; label: string }[] = [
+const TOOLS: { id: EditorTool; icon: LucideIcon; label: string }[] = [
   { id: 'rect', icon: Square, label: 'Rectangle' },
   { id: 'circle', icon: Circle, label: 'Circle' },
   { id: 'brush', icon: Paintbrush, label: 'Brush' },
   { id: 'eraser', icon: Eraser, label: 'Eraser' },
 ];
 
-const ACTIONS: { id: EditorAction; icon: React.ElementType; label: string }[] = [
+const ACTIONS: { id: EditorAction; icon: LucideIcon; label: string }[] = [
   { id: 'inpaint', icon: Scissors, label: 'Inpaint' },
   { id: 'expand', icon: Maximize, label: 'Expand' },
   { id: 'remove-bg', icon: ImageOff, label: 'Remove BG' },
