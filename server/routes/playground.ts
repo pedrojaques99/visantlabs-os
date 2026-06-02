@@ -244,6 +244,102 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
   }
 });
 
+// ─── POST /quickstart — Generate + Save + Share in one call ────────────
+router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRequest, res) => {
+  if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { prompt, title, description, tags, category, brandGuidelineId } = req.body as {
+    prompt: string;
+    title?: string;
+    description?: string;
+    tags?: string[];
+    category?: string;
+    brandGuidelineId?: string;
+  };
+
+  if (!prompt || typeof prompt !== 'string') {
+    return res.status(400).json({ error: 'prompt required' });
+  }
+
+  try {
+    await chargeCredits(req.userId!, 1);
+
+    let brandContext = '';
+    if (brandGuidelineId) {
+      const brand = await prisma.brandGuideline.findFirst({
+        where: { id: brandGuidelineId, userId: req.userId },
+      });
+      if (brand) {
+        const parts: string[] = [];
+        if (brand.name) parts.push(`Brand: ${brand.name}`);
+        const data = brand.data as any;
+        if (data?.colors) parts.push(`Colors: ${JSON.stringify(data.colors)}`);
+        if (data?.fonts) parts.push(`Fonts: ${JSON.stringify(data.fonts)}`);
+        brandContext = parts.join('\n');
+      }
+    }
+
+    const systemInstruction = PLAYGROUND_SYSTEM_PROMPT + CATALOG_PROMPT +
+      (brandContext ? `\n\n## User Brand Context\n${brandContext}` : '');
+
+    const result = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      config: { systemInstruction, temperature: 0.3 },
+      contents: [{ role: 'user', parts: [{ text: sanitizeForPrompt(prompt) }] }],
+    });
+
+    const raw = (result.text ?? '').trim();
+    const cleaned = raw.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/\s*```$/m, '').trim();
+
+    let spec: Record<string, unknown>;
+    let meta: Record<string, unknown> = {};
+
+    try {
+      const parsed = JSON.parse(cleaned);
+      if (!parsed.root || !parsed.elements) {
+        return res.status(422).json({ error: 'Invalid spec generated. Try rephrasing.' });
+      }
+      meta = parsed.meta || {};
+      spec = { root: parsed.root, elements: parsed.elements };
+    } catch {
+      return res.status(422).json({ error: 'Failed to parse generated spec.' });
+    }
+
+    const appTitle = title || (meta as any).title || 'Untitled MiniApp';
+    const shareId = crypto.randomBytes(16).toString('hex');
+
+    const miniApp = await prisma.miniApp.create({
+      data: {
+        userId: req.userId,
+        slug: generateSlug(appTitle),
+        title: appTitle,
+        description: description || (meta as any).description || '',
+        tags: tags || (meta as any).tags || [],
+        category: category || 'utility',
+        spec,
+        actionsUsed: (meta as any).actionsUsed || [],
+        shareId,
+      },
+    });
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+    res.json({
+      miniApp,
+      spec,
+      meta,
+      shareUrl: `${baseUrl}/playground/shared/${shareId}`,
+      editUrl: `${baseUrl}/playground/${miniApp.slug}`,
+    });
+  } catch (err: any) {
+    console.error('[playground/quickstart]', err);
+    res.status(500).json({
+      error: err?.message?.includes('Insufficient credits')
+        ? 'Insufficient credits'
+        : 'Quickstart failed',
+    });
+  }
+});
+
 // ─── POST / — Save miniapp (draft) ─────────────────────────────────────
 router.post('/', authenticate, async (req: AuthRequest, res) => {
   if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });

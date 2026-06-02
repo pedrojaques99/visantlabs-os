@@ -218,6 +218,17 @@ Use listPrompts() to discover available prompt templates pulled from real user d
 - **prompt-library** — full searchable library across community, feedback, and auto-promoted patterns
 When unsure what prompt to write, query these first — they contain battle-tested prompts with real results.
 
+### Playground mini-app workflow
+**Quickstart (1 call):** playground-quickstart — prompt → generate + save + share URL. Done.
+**Step-by-step:**
+1. playground-generate — prompt → JSON spec
+2. playground-describe — spec → visual tree (see the layout without a browser)
+3. playground-iterate — refine with follow-up prompts (repeat 2→3 until happy)
+4. playground-save — persist to library
+5. playground-share — get public share URL
+6. playground-publish — publish to community gallery
+**Browse:** playground-feed (gallery), playground-get (by slug), playground-fork (copy).
+
 ### Brand design system workflow
 1. brand-guidelines-create (or brand-guidelines-ingest from URL/text)
 2. brand-guidelines-health-check — see what's missing
@@ -3622,6 +3633,342 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Playground — MiniApps
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'playground-generate',
+    'Generate a mini-app from a natural-language prompt. Returns a JSON spec that renders inside the Playground. Costs 1 credit.',
+    {
+      prompt: z.string().min(3).describe('What the mini-app should do (e.g. "brand color palette extractor with drag-drop upload").'),
+      brandGuidelineId: z.string().optional().describe('Optional brand guideline ID to inject colors/fonts/logos into the generation.'),
+    },
+    async ({ prompt, brandGuidelineId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const body: Record<string, string> = { prompt };
+        if (brandGuidelineId) {
+          const ctxRes = await fetch(`${INTERNAL_API_BASE}/api/playground/brand-context/${brandGuidelineId}`, {
+            headers: { 'x-mcp-user-id': currentUserId },
+          });
+          if (ctxRes.ok) {
+            const { context } = await ctxRes.json();
+            body.brandContext = context;
+          }
+        }
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId, 'Accept': 'text/event-stream' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+
+        // Consume SSE stream and extract final spec
+        const text = await res.text();
+        const specMatch = text.match(/event:\s*spec\ndata:\s*(\{[\s\S]*?\})\n\n/);
+        if (!specMatch) return ERR.internal('Generation failed — no spec event received');
+        const parsed = JSON.parse(specMatch[1]);
+        return jsonResponse({ spec: parsed.spec, meta: parsed.meta });
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-iterate',
+    'Refine an existing mini-app spec with a follow-up instruction. Returns updated spec. Costs 1 credit.',
+    {
+      prompt: z.string().min(3).describe('What to change (e.g. "add a pie chart showing color distribution").'),
+      currentSpec: z.record(z.unknown()).describe('The current spec JSON to iterate on.'),
+    },
+    async ({ prompt, currentSpec }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/iterate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId, 'Accept': 'text/event-stream' },
+          body: JSON.stringify({ prompt, currentSpec }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+
+        const text = await res.text();
+        const specMatch = text.match(/event:\s*spec\ndata:\s*(\{[\s\S]*?\})\n\n/);
+        if (!specMatch) return ERR.internal('Iteration failed — no spec event received');
+        const parsed = JSON.parse(specMatch[1]);
+        return jsonResponse({ spec: parsed.spec, meta: parsed.meta });
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-save',
+    'Save a mini-app spec to the user\'s library. Returns the saved mini-app with slug.',
+    {
+      title: z.string().min(1).describe('Mini-app title.'),
+      description: z.string().optional().describe('Short description.'),
+      tags: z.array(z.string()).optional().describe('Tags for discovery.'),
+      category: z.enum(['utility', 'brand', 'design', 'marketing', 'data', 'fun']).optional().describe('Category (default: utility).'),
+      spec: z.record(z.unknown()).describe('The mini-app spec JSON (root + elements).'),
+      actionsUsed: z.array(z.string()).optional().describe('List of action names used.'),
+    },
+    async ({ title, description, tags, category, spec, actionsUsed }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ title, description, tags, category, spec, actionsUsed }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-list',
+    'List the authenticated user\'s saved mini-apps.',
+    {},
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/my`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-get',
+    'Get a mini-app by its slug (public).',
+    {
+      slug: z.string().describe('The mini-app slug (from URL or list).'),
+    },
+    async ({ slug }) => {
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/${slug}`);
+        if (!res.ok) return ERR.notFound('MiniApp');
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-publish',
+    'Publish a mini-app to the community gallery.',
+    {
+      id: z.string().describe('Mini-app ID to publish.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/${id}/publish`, {
+          method: 'POST',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-feed',
+    'Browse the community mini-app gallery with filters.',
+    {
+      category: z.string().optional().describe('Filter by category.'),
+      search: z.string().optional().describe('Search by title.'),
+      sort: z.enum(['newest', 'likes', 'popular']).optional().describe('Sort order (default: newest).'),
+      take: z.number().max(50).optional().describe('Results per page (default: 20, max: 50).'),
+      skip: z.number().optional().describe('Pagination offset.'),
+    },
+    async ({ category, search, sort, take, skip }) => {
+      try {
+        const params = new URLSearchParams();
+        if (category) params.set('category', category);
+        if (search) params.set('search', search);
+        if (sort) params.set('sort', sort);
+        if (take) params.set('take', String(take));
+        if (skip) params.set('skip', String(skip));
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/feed?${params}`);
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-fork',
+    'Fork a community mini-app into your library.',
+    {
+      id: z.string().describe('Mini-app ID to fork.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/${id}/fork`, {
+          method: 'POST',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-share',
+    'Generate a public share URL for a mini-app you own.',
+    {
+      id: z.string().describe('Mini-app ID to share.'),
+    },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/${id}/share`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        const data = await res.json();
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+        return jsonResponse({ ...data, fullUrl: `${baseUrl}${data.shareUrl}` });
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-quickstart',
+    'One-shot: generate a mini-app from prompt → save → share. Returns spec + URLs. Costs 1 credit.',
+    {
+      prompt: z.string().min(3).describe('What the mini-app should do.'),
+      title: z.string().optional().describe('App title (auto-derived from prompt if omitted).'),
+      description: z.string().optional().describe('Short description.'),
+      tags: z.array(z.string()).optional().describe('Tags for discovery.'),
+      category: z.enum(['utility', 'brand', 'design', 'marketing', 'data', 'fun']).optional(),
+      brandGuidelineId: z.string().optional().describe('Brand guideline ID for brand-aware generation.'),
+    },
+    async ({ prompt, title, description, tags, category, brandGuidelineId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/quickstart`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ prompt, title, description, tags, category, brandGuidelineId }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) { return ERR.internal(err.message); }
+    }
+  );
+
+  server.tool(
+    'playground-describe',
+    'Describe a mini-app spec as structured text so the agent can "see" the layout without a browser. Returns a visual tree + component summary.',
+    {
+      spec: z.record(z.unknown()).describe('The mini-app spec JSON (root + elements).'),
+    },
+    async ({ spec }) => {
+      try {
+        const elements = (spec.elements || {}) as Record<string, any>;
+        const root = spec.root as string;
+
+        const componentCounts: Record<string, number> = {};
+        const actionsList: string[] = [];
+        let totalElements = 0;
+
+        function describeTree(id: string, depth: number): string {
+          const el = elements[id];
+          if (!el) return '';
+          totalElements++;
+
+          const type = el.type || 'Unknown';
+          componentCounts[type] = (componentCounts[type] || 0) + 1;
+
+          const props = el.props || {};
+          const indent = '  '.repeat(depth);
+          const children: string[] = el.children || [];
+
+          // Build a readable line for this element
+          const details: string[] = [];
+          if (props.title) details.push(`title="${props.title}"`);
+          if (props.text) details.push(`"${props.text}"`);
+          if (props.label) details.push(`label="${props.label}"`);
+          if (props.variant) details.push(`variant=${props.variant}`);
+          if (props.direction) details.push(props.direction);
+          if (props.cols) details.push(`${props.cols}col`);
+          if (props.gap) details.push(`gap=${props.gap}`);
+          if (props.value && typeof props.value === 'string') details.push(`value="${props.value}"`);
+          if (props.placeholder) details.push(`placeholder="${props.placeholder}"`);
+          if (props.active) details.push('ACTIVE');
+          if (props.level) details.push(`h${props.level}`);
+          if (props.checked) details.push('checked');
+          if (props.data) details.push(`${(props.data as any[]).length} data points`);
+
+          const detailStr = details.length ? ` (${details.join(', ')})` : '';
+          let line = `${indent}├─ ${type}${detailStr}`;
+
+          if (children.length > 0) {
+            const childLines = children.map(c => describeTree(c, depth + 1)).filter(Boolean);
+            return line + '\n' + childLines.join('\n');
+          }
+          return line;
+        }
+
+        const tree = describeTree(root, 0);
+
+        const summary = [
+          `## MiniApp Layout Description`,
+          ``,
+          `**Elements:** ${totalElements}`,
+          `**Components used:** ${Object.entries(componentCounts).map(([k, v]) => `${k}(${v})`).join(', ')}`,
+          ``,
+          `### Visual Tree`,
+          '```',
+          tree,
+          '```',
+          ``,
+          `### Layout Analysis`,
+        ];
+
+        // Detect layout pattern
+        const hasToolPanel = !!componentCounts['ToolPanel'];
+        const hasGlassPanel = !!componentCounts['GlassPanel'];
+        const hasCharts = !!(componentCounts['BarChart'] || componentCounts['LineChart'] || componentCounts['PieChart']);
+        const hasMetrics = !!componentCounts['Metric'];
+        const hasImageUploader = !!componentCounts['ImageUploader'];
+
+        if (hasToolPanel) summary.push('- **Pattern:** Tool-panel sidebar + content area');
+        if (hasGlassPanel) summary.push('- **Style:** Glassmorphism panels');
+        if (hasCharts) summary.push('- **Data viz:** Charts present (' + ['BarChart', 'LineChart', 'PieChart'].filter(c => componentCounts[c]).join(', ') + ')');
+        if (hasMetrics) summary.push(`- **KPIs:** ${componentCounts['Metric']} metric cards`);
+        if (hasImageUploader) summary.push('- **Upload:** Image uploader present');
+
+        const chipCount = componentCounts['ToolPanelChip'] || 0;
+        if (chipCount > 0) summary.push(`- **Toggles:** ${chipCount} chip selectors`);
+
+        const sliderCount = (componentCounts['NodeSlider'] || 0) + (componentCounts['ScrubInput'] || 0);
+        if (sliderCount > 0) summary.push(`- **Sliders:** ${sliderCount} numeric controls`);
+
+        const colorCount = componentCounts['InlineColorPicker'] || 0;
+        if (colorCount > 0) summary.push(`- **Colors:** ${colorCount} color pickers`);
+
+        return { content: [{ type: 'text' as const, text: summary.join('\n') }] };
       } catch (err: any) { return ERR.internal(err.message); }
     }
   );
