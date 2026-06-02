@@ -102,7 +102,7 @@ export const ExpandHandles: React.FC<Props> = ({
       {/* Drag handles */}
       {/* Top */}
       <div
-        className="absolute z-20"
+        className="absolute z-20 opacity-60 hover:opacity-100 hover:scale-y-150 active:opacity-100 transition-all duration-150"
         style={{
           left: imgLeft + imgW * 0.25,
           top: imgTop - t - thickness / 2,
@@ -116,7 +116,7 @@ export const ExpandHandles: React.FC<Props> = ({
       />
       {/* Bottom */}
       <div
-        className="absolute z-20"
+        className="absolute z-20 opacity-60 hover:opacity-100 hover:scale-y-150 active:opacity-100 transition-all duration-150"
         style={{
           left: imgLeft + imgW * 0.25,
           top: imgTop + imgH + b - thickness / 2,
@@ -130,7 +130,7 @@ export const ExpandHandles: React.FC<Props> = ({
       />
       {/* Left */}
       <div
-        className="absolute z-20"
+        className="absolute z-20 opacity-60 hover:opacity-100 hover:scale-x-150 active:opacity-100 transition-all duration-150"
         style={{
           left: imgLeft - l - thickness / 2,
           top: imgTop + imgH * 0.25,
@@ -144,7 +144,7 @@ export const ExpandHandles: React.FC<Props> = ({
       />
       {/* Right */}
       <div
-        className="absolute z-20"
+        className="absolute z-20 opacity-60 hover:opacity-100 hover:scale-x-150 active:opacity-100 transition-all duration-150"
         style={{
           left: imgLeft + imgW + r - thickness / 2,
           top: imgTop + imgH * 0.25,

@@ -4,9 +4,16 @@ import { GlitchPickaxe } from '@/components/ui/GlitchPickaxe';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { EDITOR_STATUS_MESSAGES } from '@/constants/imageEditorTokens';
 
+const TIME_HINTS: Record<string, string> = {
+  inpaint: 'Usually 10–20s',
+  expand: 'Usually 20–40s',
+  'remove-bg': 'Usually 5–15s',
+};
+
 export const GeneratingOverlay: React.FC = () => {
   const isGenerating = useImageEditorStore((s) => s.isGenerating);
   const generatingStartTime = useImageEditorStore((s) => s.generatingStartTime);
+  const activeAction = useImageEditorStore((s) => s.activeAction);
 
   const [elapsed, setElapsed] = useState(0);
   const [statusIndex, setStatusIndex] = useState(0);
@@ -56,7 +63,7 @@ export const GeneratingOverlay: React.FC = () => {
         </p>
         {elapsed > 0 && (
           <span className="text-[10px] text-neutral-500/50 font-mono">
-            {timeStr}
+            {timeStr} · {TIME_HINTS[activeAction] || 'Processing...'}
           </span>
         )}
         <button

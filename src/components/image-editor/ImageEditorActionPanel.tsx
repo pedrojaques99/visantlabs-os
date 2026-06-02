@@ -51,23 +51,28 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
     )}>
       {/* Inpaint mode selector */}
       {activeAction === 'inpaint' && (
-        <div className="flex items-center gap-1">
-          {MODES.map((mode) => (
-            <button
-              key={mode.id}
-              onClick={() => setActiveMode(mode.id)}
-              disabled={isGenerating}
-              className={cn(
-                'px-2.5 py-1 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
-                activeMode === mode.id
-                  ? IMAGE_EDITOR.toolbar.activeTool
-                  : IMAGE_EDITOR.toolbar.inactiveTool,
-              )}
-              title={mode.desc}
-            >
-              {mode.label}
-            </button>
-          ))}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1">
+            {MODES.map((mode) => (
+              <button
+                key={mode.id}
+                onClick={() => setActiveMode(mode.id)}
+                disabled={isGenerating}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
+                  activeMode === mode.id
+                    ? IMAGE_EDITOR.toolbar.activeTool
+                    : IMAGE_EDITOR.toolbar.inactiveTool,
+                )}
+                title={mode.desc}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+          <span className="text-[10px] text-neutral-500 pl-0.5">
+            {MODES.find(m => m.id === activeMode)?.desc}
+          </span>
         </div>
       )}
 

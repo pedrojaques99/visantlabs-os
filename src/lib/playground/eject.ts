@@ -122,7 +122,9 @@ ${inner ? inner + '\n' : ''}${pad}</${tag}>`;
 export function ejectSpec(spec: Spec, title: string): EjectedFiles {
   const jsx = elementToJsx(spec, spec.root, 1);
 
-  const appCode = `import React from 'react';
+  const appCode = `// Visual scaffold exported from Visant Playground.
+// Buttons, inputs, and actions need state + handlers to be interactive.
+import React from 'react';
 import './styles.css';
 
 export default function App() {
