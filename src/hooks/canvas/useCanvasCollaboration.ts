@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 export interface PresenceEnhancedHandlers {
   handleNodesChangeWithPresence: (changes: any[]) => void;
-  handleNodeDragStart: () => void;
+  handleNodeDragStart: (...args: any[]) => void;
   handleNodeDragStop: () => void;
 }
 
@@ -236,7 +236,7 @@ export const useCanvasCollaboration = ({
   const createPresenceEnhancedHandlers = useCallback((
     currentNodes: Node<FlowNodeData>[],
     originalOnNodesChange: (changes: any[]) => void,
-    originalOnNodeDragStart: () => void,
+    originalOnNodeDragStart: (...args: any[]) => void,
     originalOnNodeDragStop: () => void,
     t: (key: string, params?: any) => string,
   ): PresenceEnhancedHandlers => ({
@@ -295,7 +295,7 @@ export const useCanvasCollaboration = ({
       createPresenceEnhancedHandlers: (
         _n: Node<FlowNodeData>[],
         onNodesChange: (c: any[]) => void,
-        onDragStart: () => void,
+        onDragStart: (...args: any[]) => void,
         onDragStop: () => void,
       ) => ({ handleNodesChangeWithPresence: onNodesChange, handleNodeDragStart: onDragStart, handleNodeDragStop: onDragStop }),
     };
