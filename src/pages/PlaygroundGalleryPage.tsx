@@ -11,7 +11,7 @@ import { MiniAppCard, MINIAPP_CATEGORY_CONFIG } from '@/components/playground/Mi
 import { getFeed, type MiniAppSummary } from '@/services/playgroundApi';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Sparkles } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 type SortKey = 'newest' | 'likes' | 'popular';
 
@@ -151,7 +151,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
           </div>
         ) : filteredApps.length === 0 ? (
           <EmptyState
-            icon={Sparkles}
+            icon={Zap}
             title="No miniapps yet"
             description={search ? 'Try a different search term' : 'Be the first to create and publish a miniapp!'}
             actionLabel="Create MiniApp"

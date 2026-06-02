@@ -1,13 +1,13 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Heart, GitFork, Eye, Sparkles, Palette, Image, Wrench, BarChart3, Layers } from 'lucide-react';
+import { Heart, GitFork, Eye, Zap, Palette, Image, Wrench, BarChart3, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { MiniAppSummary } from '@/services/playgroundApi';
 
 export const MINIAPP_CATEGORY_CONFIG: Record<string, { icon: LucideIcon; color: string; label: string }> = {
   brand:    { icon: Palette,    color: 'text-purple-400',  label: 'Brand' },
   mockup:   { icon: Image,      color: 'text-blue-400',    label: 'Mockup' },
-  creative: { icon: Sparkles,   color: 'text-pink-400',    label: 'Creative' },
+  creative: { icon: Zap,   color: 'text-pink-400',    label: 'Creative' },
   utility:  { icon: Wrench,     color: 'text-amber-400',   label: 'Utility' },
   data:     { icon: BarChart3,  color: 'text-green-400',   label: 'Data' },
 };

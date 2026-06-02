@@ -1,7 +1,7 @@
 import { defineRegistry } from '@json-render/react';
 import { visantCatalog } from './catalog';
 import { toast } from 'sonner';
-import { Sparkles } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 // Layout
 import { PageShell } from '@/components/ui/PageShell';
@@ -241,7 +241,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       <SkeletonLoader variant={props.variant} width={props.width} height={props.height} />
     ),
     EmptyState: ({ props }) => (
-      <EmptyState icon={Sparkles} title={props.title} description={props.description} />
+      <EmptyState icon={Zap} title={props.title} description={props.description} />
     ),
 
     // ─── Layout Primitives ────────────────────────────

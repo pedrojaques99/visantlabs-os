@@ -7,7 +7,7 @@ import { PageShell } from '@/components/ui/PageShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Send, Sparkles, RotateCcw, Code2, Eye, Save, Settings, GripVertical, Download, AlertTriangle, FileCode } from 'lucide-react';
+import { Send, Zap, RotateCcw, Code2, Eye, Save, Settings, GripVertical, Download, AlertTriangle, FileCode } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { generateMiniApp, iterateMiniApp, saveMiniApp, getMiniApp, type GenerateEvent } from '@/services/playgroundApi';
@@ -270,7 +270,7 @@ export const PlaygroundPage: React.FC = () => {
       <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-2.5 scrollbar-thin scrollbar-thumb-neutral-700">
         {chatHistory.length === 0 && !isGenerating && (
           <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-            <Sparkles className="w-6 h-6 text-brand-cyan opacity-40" />
+            <Zap className="w-6 h-6 text-brand-cyan opacity-40" />
             <p className="text-[11px] text-neutral-500 max-w-[260px]">
               Describe your mini-app and the AI will compose it using the Visant design system.
             </p>
@@ -372,7 +372,7 @@ export const PlaygroundPage: React.FC = () => {
           !expertMode && (
             <div className="h-full flex flex-col items-center justify-center gap-8 animate-fade-in">
               <div className="text-center space-y-3">
-                <Sparkles className="w-8 h-8 text-brand-cyan mx-auto opacity-60" />
+                <Zap className="w-8 h-8 text-brand-cyan mx-auto opacity-60" />
                 <h2 className="text-lg font-semibold text-neutral-200">What would you like to build?</h2>
                 <p className="text-[11px] text-neutral-500 max-w-md">
                   Describe your mini-app and the AI will compose it using the Visant design system and API.
