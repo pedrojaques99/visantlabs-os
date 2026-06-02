@@ -24,6 +24,7 @@ export interface MiniAppSummary {
   isPublished: boolean;
   createdAt: string;
   updatedAt?: string;
+  author?: { name: string | null; picture: string | null; username: string | null } | null;
 }
 
 export interface MiniAppFull extends MiniAppSummary {

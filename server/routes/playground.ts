@@ -515,7 +515,21 @@ router.get('/feed', async (req, res) => {
       prisma.miniApp.count({ where }),
     ]);
 
-    res.json({ miniApps, total });
+    const userIds = [...new Set(miniApps.map(a => a.userId))];
+    const users = userIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, name: true, picture: true, username: true },
+        })
+      : [];
+    const userMap = new Map(users.map(u => [u.id, u]));
+
+    const enriched = miniApps.map(a => {
+      const author = userMap.get(a.userId);
+      return { ...a, author: author ? { name: author.name, picture: author.picture, username: author.username } : null };
+    });
+
+    res.json({ miniApps: enriched, total });
   } catch (err) {
     console.error('[playground/feed]', err);
     res.status(500).json({ error: 'Failed to fetch feed' });

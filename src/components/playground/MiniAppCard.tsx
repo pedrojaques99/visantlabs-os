@@ -54,7 +54,14 @@ export const MiniAppCard: React.FC<MiniAppCardProps> = ({ miniApp, onClick }) =>
 
       {/* Body */}
       <div className="p-3 space-y-2">
-        <h3 className="text-xs font-semibold text-neutral-200 truncate">{miniApp.title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs font-semibold text-neutral-200 truncate flex-1">{miniApp.title}</h3>
+          {miniApp.author?.name && (
+            <span className="text-[10px] text-neutral-500 truncate max-w-[80px]" title={miniApp.author.name}>
+              {miniApp.author.name}
+            </span>
+          )}
+        </div>
         {miniApp.description && (
           <p className="text-[11px] text-neutral-500 line-clamp-2">{miniApp.description}</p>
         )}
