@@ -108,6 +108,7 @@
     "@anthropic-ai/sdk": "^0.78.0",
     "@aws-sdk/client-s3": "^3.937.0",
     "@aws-sdk/s3-request-presigner": "^3.948.0",
+    "@codesandbox/sandpack-react": "^2.20.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -117,6 +118,8 @@
     "@hookform/resolvers": "^5.2.2",
     "@icons-pack/react-simple-icons": "^13.8.0",
     "@imgly/background-removal": "^1.7.0",
+    "@json-render/core": "^0.19.0",
+    "@json-render/react": "^0.19.0",
     "@liveblocks/client": "^3.11.0",
     "@liveblocks/node": "^3.11.0",
     "@liveblocks/react": "^3.11.0",
@@ -204,6 +207,7 @@
     "react-is": "^19.2.4",
     "react-konva": "^19.2.3",
     "react-pdf": "^10.2.0",
+    "react-resizable-panels": "^4.11.2",
     "react-rnd": "^10.5.3",
     "react-router-dom": "^7.9.6",
     "recharts": "^3.6.0",
@@ -271,6 +275,11 @@
     "vitest": "^4.1.0"
   },
   "overrides": {
-    "ip-address": ">=10.2.0"
+    "ip-address": ">=10.2.0",
+    "lodash": ">=4.17.24",
+    "phin": ">=3.7.1",
+    "@imgly/background-removal-node": {
+      "zod": ">=3.22.3"
+    }
   }
 }
