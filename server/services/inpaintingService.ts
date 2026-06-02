@@ -63,27 +63,7 @@ export interface InpaintResult {
   mode: InpaintMode;
 }
 
-// ── Validation ──
-
-function validateImageUrl(url: string): void {
-  if (url.startsWith('data:')) return;
-  let parsed: URL;
-  try { parsed = new URL(url); } catch { throw new Error('Invalid image URL.'); }
-  if (!['http:', 'https:'].includes(parsed.protocol)) {
-    throw new Error('Only http/https URLs are allowed.');
-  }
-  const hostname = parsed.hostname.toLowerCase();
-  const blocked = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]', 'metadata.google.internal'];
-  if (blocked.includes(hostname)) throw new Error('URL hostname is not allowed.');
-  const parts = hostname.split('.');
-  if (parts.length === 4 && parts.every(p => /^\d+$/.test(p))) {
-    const first = parseInt(parts[0]);
-    if (first === 10 || first === 127) throw new Error('Private IP addresses are not allowed.');
-    if (first === 172 && parseInt(parts[1]) >= 16 && parseInt(parts[1]) <= 31) throw new Error('Private IP addresses are not allowed.');
-    if (first === 192 && parseInt(parts[1]) === 168) throw new Error('Private IP addresses are not allowed.');
-    if (first === 169 && parseInt(parts[1]) === 254) throw new Error('Link-local addresses are not allowed.');
-  }
-}
+import { validateImageUrl } from '../utils/validateImageUrl.js';
 
 // ── Image helpers ──
 
@@ -259,22 +239,4 @@ export async function inpaint(
   };
 }
 
-// ── Lightweight image dimension probe ──
-
-function probeImageDimensions(buf: Buffer): { width: number; height: number } {
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) {
-    return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
-  }
-  if (buf[0] === 0xFF && buf[1] === 0xD8) {
-    let offset = 2;
-    while (offset < buf.length - 8) {
-      if (buf[offset] !== 0xFF) { offset++; continue; }
-      const marker = buf[offset + 1];
-      if (marker === 0xC0 || marker === 0xC2) {
-        return { height: buf.readUInt16BE(offset + 5), width: buf.readUInt16BE(offset + 7) };
-      }
-      offset += 2 + buf.readUInt16BE(offset + 2);
-    }
-  }
-  return { width: 1024, height: 1024 };
-}
+import { probeImageDimensions } from '../utils/probeImageDimensions.js';

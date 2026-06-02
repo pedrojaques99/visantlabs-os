@@ -58,7 +58,7 @@ const PIE_COLORS = ['#00e5ff', '#ff6b35', '#a855f7', '#22c55e', '#eab308', '#ef4
 const playgroundApiBase = '/api/playground/proxy';
 
 async function playgroundFetch(endpoint: string, body?: Record<string, unknown>) {
-  const token = localStorage.getItem('playground_token');
+  const token = localStorage.getItem('auth_token');
   const res = await fetch(`${playgroundApiBase}${endpoint}`, {
     method: body ? 'POST' : 'GET',
     headers: {
@@ -342,8 +342,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     },
     downloadFile: async (params) => {
       if (params?.url) {
+        const url = String(params.url);
+        if (!url.startsWith('https://') && !url.startsWith('http://') && !url.startsWith('/')) return;
         const a = document.createElement('a');
-        a.href = params.url;
+        a.href = url;
         a.download = params.filename || 'download';
         a.click();
       }

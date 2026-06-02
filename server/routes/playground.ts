@@ -117,6 +117,7 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
 
   const send = (event: string, data: unknown) => {
@@ -208,6 +209,7 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
 
   const send = (event: string, data: unknown) => {
@@ -623,23 +625,23 @@ router.post('/:id/like', authenticate, async (req: AuthRequest, res) => {
   const miniAppId = req.params.id;
 
   try {
-    const existing = await prisma.miniAppLike.findUnique({
-      where: { miniAppId_userId: { miniAppId, userId: req.userId } },
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.miniAppLike.findUnique({
+        where: { miniAppId_userId: { miniAppId, userId: req.userId! } },
+      });
+
+      if (existing) {
+        await tx.miniAppLike.delete({ where: { id: existing.id } });
+        await tx.miniApp.update({ where: { id: miniAppId }, data: { likesCount: { decrement: 1 } } });
+        return { liked: false };
+      } else {
+        await tx.miniAppLike.create({ data: { miniAppId, userId: req.userId! } });
+        await tx.miniApp.update({ where: { id: miniAppId }, data: { likesCount: { increment: 1 } } });
+        return { liked: true };
+      }
     });
 
-    if (existing) {
-      await Promise.all([
-        prisma.miniAppLike.delete({ where: { id: existing.id } }),
-        prisma.miniApp.update({ where: { id: miniAppId }, data: { likesCount: { decrement: 1 } } }),
-      ]);
-      res.json({ liked: false });
-    } else {
-      await Promise.all([
-        prisma.miniAppLike.create({ data: { miniAppId, userId: req.userId } }),
-        prisma.miniApp.update({ where: { id: miniAppId }, data: { likesCount: { increment: 1 } } }),
-      ]);
-      res.json({ liked: true });
-    }
+    res.json(result);
   } catch (err) {
     console.error('[playground/like]', err);
     res.status(500).json({ error: 'Failed to toggle like' });

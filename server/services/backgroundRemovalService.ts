@@ -17,25 +17,7 @@ const MAX_IMAGE_BYTES = 50 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 60_000;
 const REMBG_TIMEOUT_MS = 120_000;
 
-function validateImageUrl(url: string): void {
-  if (url.startsWith('data:')) return;
-  let parsed: URL;
-  try { parsed = new URL(url); } catch { throw new Error('Invalid image URL.'); }
-  if (!['http:', 'https:'].includes(parsed.protocol)) {
-    throw new Error('Only http/https URLs are allowed.');
-  }
-  const hostname = parsed.hostname.toLowerCase();
-  const blocked = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]', 'metadata.google.internal'];
-  if (blocked.includes(hostname)) throw new Error('URL hostname is not allowed.');
-  const parts = hostname.split('.');
-  if (parts.length === 4 && parts.every(p => /^\d+$/.test(p))) {
-    const first = parseInt(parts[0]);
-    if (first === 10 || first === 127) throw new Error('Private IP addresses are not allowed.');
-    if (first === 172 && parseInt(parts[1]) >= 16 && parseInt(parts[1]) <= 31) throw new Error('Private IP addresses are not allowed.');
-    if (first === 192 && parseInt(parts[1]) === 168) throw new Error('Private IP addresses are not allowed.');
-    if (first === 169 && parseInt(parts[1]) === 254) throw new Error('Link-local addresses are not allowed.');
-  }
-}
+import { validateImageUrl } from '../utils/validateImageUrl.js';
 
 async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
   validateImageUrl(imageUrl);

@@ -5,6 +5,7 @@ import { MaskPreview } from './MaskPreview';
 import { ExpandHandles } from './ExpandHandles';
 import { getStroke } from 'perfect-freehand';
 import { getSvgPathFromStroke } from '@/utils/drawingUtils';
+import { toast } from 'sonner';
 
 interface Props {
   imageUrl: string;
@@ -266,8 +267,9 @@ export const ImageEditorCanvas: React.FC<Props> = ({
     const start = drawStartRef.current;
     if (!start) return;
 
+    const MIN_SIZE_RATIO = 0.01;
     if (activeTool === 'rect' && drawPreview) {
-      if (drawPreview.w > imageWidth * 0.02 && drawPreview.h > imageHeight * 0.02) {
+      if (drawPreview.w > imageWidth * MIN_SIZE_RATIO && drawPreview.h > imageHeight * MIN_SIZE_RATIO) {
         addMaskOperation({
           type: 'rect',
           x: drawPreview.x / imageWidth,
@@ -275,9 +277,11 @@ export const ImageEditorCanvas: React.FC<Props> = ({
           w: drawPreview.w / imageWidth,
           h: drawPreview.h / imageHeight,
         });
+      } else {
+        toast.info('Selection too small — try a larger area', { duration: 2000 });
       }
     } else if (activeTool === 'circle' && drawPreview) {
-      if (drawPreview.w > imageWidth * 0.02 && drawPreview.h > imageHeight * 0.02) {
+      if (drawPreview.w > imageWidth * MIN_SIZE_RATIO && drawPreview.h > imageHeight * MIN_SIZE_RATIO) {
         addMaskOperation({
           type: 'circle',
           cx: (drawPreview.x + drawPreview.w / 2) / imageWidth,
@@ -285,6 +289,8 @@ export const ImageEditorCanvas: React.FC<Props> = ({
           rx: (drawPreview.w / 2) / imageWidth,
           ry: (drawPreview.h / 2) / imageHeight,
         });
+      } else {
+        toast.info('Selection too small — try a larger area', { duration: 2000 });
       }
     } else if (activeTool === 'brush' || activeTool === 'eraser') {
       const pts = brushPointsRef.current;

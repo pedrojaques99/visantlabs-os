@@ -60,27 +60,7 @@ export interface GenerativeExpandResult {
   originalHeight: number;
 }
 
-// ── Validation ──
-
-function validateImageUrl(url: string): void {
-  if (url.startsWith('data:')) return;
-  let parsed: URL;
-  try { parsed = new URL(url); } catch { throw new Error('Invalid image URL.'); }
-  if (!['http:', 'https:'].includes(parsed.protocol)) {
-    throw new Error('Only http/https URLs are allowed.');
-  }
-  const hostname = parsed.hostname.toLowerCase();
-  const blocked = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]', 'metadata.google.internal'];
-  if (blocked.includes(hostname)) throw new Error('URL hostname is not allowed.');
-  const parts = hostname.split('.');
-  if (parts.length === 4 && parts.every(p => /^\d+$/.test(p))) {
-    const first = parseInt(parts[0]);
-    if (first === 10 || first === 127) throw new Error('Private IP addresses are not allowed.');
-    if (first === 172 && parseInt(parts[1]) >= 16 && parseInt(parts[1]) <= 31) throw new Error('Private IP addresses are not allowed.');
-    if (first === 192 && parseInt(parts[1]) === 168) throw new Error('Private IP addresses are not allowed.');
-    if (first === 169 && parseInt(parts[1]) === 254) throw new Error('Link-local addresses are not allowed.');
-  }
-}
+import { validateImageUrl } from '../utils/validateImageUrl.js';
 
 // ── Image loading ──
 
@@ -248,49 +228,4 @@ export async function generativeExpand(
 
 // ── Lightweight image dimension probe (PNG/JPEG header) ──
 
-function probeImageDimensions(buf: Buffer): { width: number; height: number } {
-  // PNG: width at bytes 16-19, height at bytes 20-23 (IHDR chunk)
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) {
-    return {
-      width: buf.readUInt32BE(16),
-      height: buf.readUInt32BE(20),
-    };
-  }
-
-  // JPEG: scan for SOF0/SOF2 marker (0xFF 0xC0 or 0xFF 0xC2)
-  if (buf[0] === 0xFF && buf[1] === 0xD8) {
-    let offset = 2;
-    while (offset < buf.length - 8) {
-      if (buf[offset] !== 0xFF) { offset++; continue; }
-      const marker = buf[offset + 1];
-      if (marker === 0xC0 || marker === 0xC2) {
-        return {
-          height: buf.readUInt16BE(offset + 5),
-          width: buf.readUInt16BE(offset + 7),
-        };
-      }
-      const segLen = buf.readUInt16BE(offset + 2);
-      offset += 2 + segLen;
-    }
-  }
-
-  // WebP: RIFF header, VP8 chunk
-  if (buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') {
-    const chunkType = buf.toString('ascii', 12, 16);
-    if (chunkType === 'VP8 ') {
-      return {
-        width: buf.readUInt16LE(26) & 0x3FFF,
-        height: buf.readUInt16LE(28) & 0x3FFF,
-      };
-    }
-    if (chunkType === 'VP8L') {
-      const bits = buf.readUInt32LE(21);
-      return {
-        width: (bits & 0x3FFF) + 1,
-        height: ((bits >> 14) & 0x3FFF) + 1,
-      };
-    }
-  }
-
-  return { width: 1024, height: 1024 };
-}
+import { probeImageDimensions } from '../utils/probeImageDimensions.js';

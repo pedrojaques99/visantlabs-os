@@ -127,7 +127,7 @@ export const useImageEditorStore = create<ImageEditorState>((set, get) => ({
   setPanOffset: (offset) => set({ panOffset: offset }),
 
   pushHistory: (imageUrl, action) => set((s) => ({
-    editHistory: [...s.editHistory, { imageUrl, action }],
+    editHistory: [...s.editHistory, { imageUrl, action }].slice(-20),
     currentImageUrl: imageUrl,
     maskOperations: [],
     maskUndoStack: [],

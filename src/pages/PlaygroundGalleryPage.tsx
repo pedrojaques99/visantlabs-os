@@ -100,7 +100,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
           </div>
 
           {/* Category chips */}
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
             {CATEGORIES.map(cat => {
               const config: { icon: LucideIcon; color: string; label: string } = cat === 'all'
                 ? { icon: SlidersHorizontal, color: 'text-neutral-400', label: 'All' }
