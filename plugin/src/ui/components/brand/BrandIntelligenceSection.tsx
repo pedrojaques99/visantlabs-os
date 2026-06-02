@@ -3,15 +3,17 @@ import { usePluginStore } from '../../store';
 import { useBrandIntelligence } from '../../hooks/useBrandIntelligence';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { useBrandImport } from '../../hooks/useBrandImport';
+import { useBrandStrategyIngest } from '../../hooks/useBrandStrategyIngest';
 import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { RefreshCw, Layers } from 'lucide-react';
+import { RefreshCw, Layers, FileText } from 'lucide-react';
 
 export function BrandIntelligenceSection() {
   const { brandGuideline, isGenerating } = usePluginStore();
   const runner = useOpRunner({ globalBusy: isGenerating });
   const { run: runImport, isImporting } = useBrandImport();
+  const { run: runStrategyIngest, isIngesting } = useBrandStrategyIngest();
 
   if (!brandGuideline) {
     return (
@@ -36,6 +38,17 @@ export function BrandIntelligenceSection() {
           >
             {isImporting ? <GlitchLoader size={12} className="mr-2" /> : <RefreshCw size={12} className="mr-2" />}
             {isImporting ? 'Sincronizando...' : 'Smart Import from Figma'}
+          </Button>
+
+          <Button
+            onClick={() => runStrategyIngest()}
+            disabled={isIngesting || isImporting || isGenerating}
+            variant="outline"
+            size="sm"
+            className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
+          >
+            {isIngesting ? <GlitchLoader size={12} className="mr-2" /> : <FileText size={12} className="mr-2" />}
+            {isIngesting ? 'Extracting strategy…' : 'Populate Strategy from Page'}
           </Button>
 
           <OpButton

@@ -578,6 +578,21 @@ export type FigmaOperation =
   | { type: 'GET_CODE_CONNECT_MAP' }
   | { type: 'ADD_CODE_CONNECT_MAP'; nodeId: string; componentName: string; filePath: string }
   | { type: 'GET_AGENT_COMPONENTS' }
+  // ═══ CREATE_SECTION ═══
+  | {
+    type: 'CREATE_SECTION';
+    ref?: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    props: {
+      name?: string;
+      x?: number;
+      y?: number;
+      width?: number;
+      height?: number;
+      fills?: FigmaPaint[];
+    };
+  }
   // ═══ AGENT LIBRARY SCAFFOLD ═══
   | {
     type: 'SCAFFOLD_AGENT_LIBRARY';

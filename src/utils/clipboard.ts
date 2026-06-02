@@ -25,7 +25,8 @@ export async function fetchImageAsBlob(url: string): Promise<Blob> {
   if (url.startsWith('data:')) {
     const base64Data = url.split(',')[1];
     const mimeMatch = url.match(/data:(.*?);/);
-    return new Blob([base64ToUint8Array(base64Data)], { type: mimeMatch?.[1] || 'image/png' });
+    const arr = base64ToUint8Array(base64Data);
+    return new Blob([arr.buffer as ArrayBuffer], { type: mimeMatch?.[1] || 'image/png' });
   }
 
   if (url.startsWith('blob:')) {
@@ -49,7 +50,8 @@ export async function fetchImageAsBlob(url: string): Promise<Blob> {
     if (contentType.includes('application/json')) {
       const data = await proxyResponse.json();
       if (data.error) throw new Error(data.error);
-      return new Blob([base64ToUint8Array(data.base64)], { type: data.mimeType || 'image/png' });
+      const arr = base64ToUint8Array(data.base64);
+      return new Blob([arr.buffer as ArrayBuffer], { type: data.mimeType || 'image/png' });
     }
 
     const blob = await proxyResponse.blob();
