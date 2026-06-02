@@ -37,6 +37,9 @@ export interface ImageEditorState {
   zoom: number;
   panOffset: { x: number; y: number };
 
+  editHistory: Array<{ imageUrl: string; action: EditorAction }>;
+  currentImageUrl: string;
+
   setActiveTool: (tool: EditorTool) => void;
   setActiveAction: (action: EditorAction) => void;
   setActiveMode: (mode: InpaintMode) => void;
@@ -56,6 +59,9 @@ export interface ImageEditorState {
   setZoom: (z: number) => void;
   setPanOffset: (offset: { x: number; y: number }) => void;
 
+  pushHistory: (imageUrl: string, action: EditorAction) => void;
+  setCurrentImageUrl: (url: string) => void;
+
   reset: () => void;
 }
 
@@ -74,6 +80,8 @@ const INITIAL_STATE = {
   resultBase64: null as string | null,
   zoom: 1,
   panOffset: { x: 0, y: 0 },
+  editHistory: [] as Array<{ imageUrl: string; action: EditorAction }>,
+  currentImageUrl: '',
 };
 
 export const useImageEditorStore = create<ImageEditorState>((set, get) => ({
@@ -117,6 +125,19 @@ export const useImageEditorStore = create<ImageEditorState>((set, get) => ({
 
   setZoom: (z) => set({ zoom: Math.max(0.1, Math.min(5, z)) }),
   setPanOffset: (offset) => set({ panOffset: offset }),
+
+  pushHistory: (imageUrl, action) => set((s) => ({
+    editHistory: [...s.editHistory, { imageUrl, action }],
+    currentImageUrl: imageUrl,
+    maskOperations: [],
+    maskUndoStack: [],
+    expandEdges: { top: 0, right: 0, bottom: 0, left: 0 },
+    prompt: '',
+    resultUrl: null,
+    resultBase64: null,
+  })),
+
+  setCurrentImageUrl: (url) => set({ currentImageUrl: url }),
 
   reset: () => set(INITIAL_STATE),
 }));

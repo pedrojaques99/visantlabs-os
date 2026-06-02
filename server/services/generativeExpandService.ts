@@ -9,7 +9,6 @@
  *
  * Engine: OpenAI GPT Image 2 (images.edit) — best quality for photographic outpainting.
  */
-import { generateOpenAIImage } from './openaiImageService.js';
 import { uploadImage } from './r2Service.js';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
 
@@ -177,25 +176,69 @@ export async function generativeExpand(
     canvasHeight = Math.round(originalHeight * factor);
   }
 
-  // Use OpenAI images.edit with the original as base image
-  const result = await generateOpenAIImage({
-    prompt,
-    baseImage: { base64, mimeType },
+  // Composite: place original image on expanded canvas, transparent areas = mask
+  const { createCanvas, loadImage: loadCanvasImage } = await import('@napi-rs/canvas');
+
+  const canvas = createCanvas(canvasWidth, canvasHeight);
+  const ctx = canvas.getContext('2d');
+
+  // Canvas starts fully transparent — the transparent areas become the mask
+  const sourceImg = await loadCanvasImage(imgBuf);
+
+  // Place original at anchor position
+  const offsetX = Math.round(anchor.x * (canvasWidth - originalWidth));
+  const offsetY = Math.round(anchor.y * (canvasHeight - originalHeight));
+  ctx.drawImage(sourceImg, offsetX, offsetY, originalWidth, originalHeight);
+
+  // Export composited image as PNG
+  const compositedBase64 = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+
+  // Create mask: black where original is, transparent where to generate
+  const maskCanvas = createCanvas(canvasWidth, canvasHeight);
+  const maskCtx = maskCanvas.getContext('2d');
+  // Fill everything transparent (= area to generate)
+  // Then fill the original image area with black (= area to keep)
+  maskCtx.fillStyle = '#000000';
+  maskCtx.fillRect(offsetX, offsetY, originalWidth, originalHeight);
+  const maskBase64 = maskCanvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+
+  // Call OpenAI images.edit with image + mask
+  const OpenAI = (await import('openai')).default;
+  const apiKey = req.apiKey || process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
+  if (!apiKey) throw new Error('OpenAI API key is not configured');
+  const client = new OpenAI({ apiKey });
+
+  function base64ToFile(b64: string, mime: string, name: string): File {
+    const buf = Buffer.from(b64, 'base64');
+    return new File([buf], name, { type: mime });
+  }
+
+  const imageFile = base64ToFile(compositedBase64, 'image/png', 'image.png');
+  const maskFile = base64ToFile(maskBase64, 'image/png', 'mask.png');
+
+  const size = (await import('../../src/constants/openaiModels.js')).resolveOpenAISize(req.resolution || '1K', req.targetAspectRatio);
+  const quality = (await import('../../src/constants/openaiModels.js')).OPENAI_QUALITY_MAP[req.resolution || '1K'] ?? 'medium';
+
+  const response = await client.images.edit({
     model: 'gpt-image-2',
-    resolution: req.resolution || '1K',
-    aspectRatio: req.targetAspectRatio,
-    apiKey: req.apiKey,
+    image: imageFile,
+    mask: maskFile,
+    prompt,
+    size: size as any,
+    quality,
+    n: 1,
   });
 
-  if (!result.base64) throw new Error('Generative expand returned no image data.');
+  const resultData = response.data?.[0];
+  if (!resultData?.b64_json) throw new Error('Generative expand returned no image data.');
 
-  const dataUrl = `data:image/png;base64,${result.base64}`;
-  const publicUrl = await uploadImage(dataUrl, userId);
+  const resultDataUrl = `data:image/png;base64,${resultData.b64_json}`;
+  const publicUrl = await uploadImage(resultDataUrl, userId);
 
   return {
     imageUrl: publicUrl,
-    base64: result.base64,
-    revisedPrompt: result.revisedPrompt,
+    base64: resultData.b64_json,
+    revisedPrompt: resultData.revised_prompt,
     width: canvasWidth,
     height: canvasHeight,
     originalWidth,

@@ -191,12 +191,46 @@ export async function inpaint(
     maskBase64 = await generateMaskFromRegion(imageBase64, req.maskRegion!);
   }
 
+  // Convert frontend mask format (white-on-transparent) to OpenAI format (transparent-on-opaque)
+  // Frontend: white pixels = edit area, transparent = keep
+  // OpenAI: transparent pixels = edit area, opaque = keep
+  const { createCanvas: mkCanvas, loadImage: ldImage } = await import('@napi-rs/canvas');
+  const maskBuf = Buffer.from(maskBase64, 'base64');
+  const maskImg = await ldImage(maskBuf);
+  const maskCanvas = mkCanvas(maskImg.width, maskImg.height);
+  const maskCtx = maskCanvas.getContext('2d');
+
+  // Fill with black (opaque = keep)
+  maskCtx.fillStyle = '#000000';
+  maskCtx.fillRect(0, 0, maskImg.width, maskImg.height);
+
+  // Draw the mask image — where it's white, we need transparent
+  maskCtx.globalCompositeOperation = 'destination-out';
+  maskCtx.drawImage(maskImg, 0, 0);
+  maskCtx.globalCompositeOperation = 'source-over';
+
+  // Export corrected mask
+  const correctedMaskBase64 = maskCanvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+
+  // Apply feather (gaussian blur) to mask edges for seamless blending
+  // Use canvas filter if available, otherwise skip
+  const featherCanvas = mkCanvas(maskImg.width, maskImg.height);
+  const featherCtx = featherCanvas.getContext('2d');
+  const correctedMaskImg = await ldImage(Buffer.from(correctedMaskBase64, 'base64'));
+
+  // @napi-rs/canvas supports CSS filter
+  (featherCtx as any).filter = 'blur(3px)';
+  featherCtx.drawImage(correctedMaskImg, 0, 0);
+  (featherCtx as any).filter = 'none';
+
+  const featheredMaskBase64 = featherCanvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+
   const key = req.apiKey || process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
   if (!key) throw new Error('OpenAI API key is not configured');
   const client = new OpenAI({ apiKey: key });
 
   const imageFile = base64ToFile(imageBase64, mimeType, 'image.png');
-  const maskFile = base64ToFile(maskBase64, 'image/png', 'mask.png');
+  const maskFile = base64ToFile(featheredMaskBase64, 'image/png', 'mask.png');
 
   const size = resolveOpenAISize(req.resolution || '1K', req.aspectRatio);
   const quality = OPENAI_QUALITY_MAP[req.resolution || '1K'] ?? 'medium';

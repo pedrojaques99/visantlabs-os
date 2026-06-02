@@ -4,8 +4,6 @@ import { useImageEditorStore, type InpaintMode } from '@/stores/imageEditorStore
 import { useImageEditorActions } from '@/hooks/image-editor/useImageEditorActions';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
 import { cn } from '@/lib/utils';
-import type { ImageEditorResult } from './ImageEditor';
-
 const MODES: { id: InpaintMode; label: string; desc: string }[] = [
   { id: 'replace', label: 'Replace', desc: 'Fill with new content' },
   { id: 'remove', label: 'Remove', desc: 'Erase and fill background' },
@@ -16,14 +14,12 @@ interface Props {
   imageUrl: string;
   imageWidth: number;
   imageHeight: number;
-  onResult: (result: ImageEditorResult) => void;
 }
 
 export const ImageEditorActionPanel: React.FC<Props> = ({
   imageUrl,
   imageWidth,
   imageHeight,
-  onResult,
 }) => {
   const activeAction = useImageEditorStore((s) => s.activeAction);
   const activeMode = useImageEditorStore((s) => s.activeMode);
@@ -38,7 +34,6 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
     imageUrl,
     imageWidth,
     imageHeight,
-    onResult,
   });
 
   const hasExpansion = expandEdges.top > 0 || expandEdges.right > 0
