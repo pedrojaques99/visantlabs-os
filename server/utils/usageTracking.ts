@@ -5,6 +5,7 @@ import type { GeminiModel, Resolution } from '../../src/types/types.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { OPENAI_IMAGE_MODELS, isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
+import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { lookupCredits } from '../lib/pricing-data.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
@@ -30,6 +31,10 @@ const TEXT_GENERATION_PRICING: Record<
   string,
   { inputPricePer1M: number; outputPricePer1M: number }
 > = {
+  [GEMINI_MODELS.FLASH_3_5]: {
+    inputPricePer1M: 1.5,
+    outputPricePer1M: 9.0,
+  },
   [GEMINI_MODELS.FLASH_3]: {
     inputPricePer1M: 0.1,
     outputPricePer1M: 0.4,

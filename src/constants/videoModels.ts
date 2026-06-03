@@ -48,6 +48,8 @@ export interface VideoModelCapabilities {
 
   // Resolution per mode for display
   resolutionByMode: Partial<Record<VideoMode, string>>;
+  /** Hidden by default in selectors, shown when user expands "older models" */
+  deprecated?: boolean;
 }
 
 // ── Model IDs ──────────────────────────────────────────────────────────────────
@@ -55,6 +57,7 @@ export const VIDEO_MODEL_IDS = {
   // Google Veo
   VEO_3_1: 'veo-3.1-generate-preview',
   VEO_3_1_FAST: 'veo-3.1-fast-generate-preview',
+  VEO_3_1_LITE: 'veo-3.1-lite-generate-preview',
   // Seedance (BytePlus)
   SEEDANCE_2_0: SEEDANCE_VIDEO_MODELS.V2_0,
   SEEDANCE_2_0_FAST: SEEDANCE_VIDEO_MODELS.V2_0_FAST,
@@ -73,6 +76,7 @@ export const VIDEO_MODEL_IDS = {
   KLING_V1_6: 'kling-v1-6',
   KLING_V1_5: 'kling-v1-5',
   KLING_V1: 'kling-v1',
+  KLING_VIDEO_O1: 'kling-video-o1',
 } as const;
 
 export type VideoModelId = (typeof VIDEO_MODEL_IDS)[keyof typeof VIDEO_MODEL_IDS];
@@ -81,6 +85,7 @@ export type VideoModelId = (typeof VIDEO_MODEL_IDS)[keyof typeof VIDEO_MODEL_IDS
 export const VIDEO_MODEL_LIST: VideoModelId[] = [
   VIDEO_MODEL_IDS.VEO_3_1,
   VIDEO_MODEL_IDS.VEO_3_1_FAST,
+  VIDEO_MODEL_IDS.VEO_3_1_LITE,
   VIDEO_MODEL_IDS.SEEDANCE_2_0,
   VIDEO_MODEL_IDS.SEEDANCE_2_0_FAST,
   VIDEO_MODEL_IDS.SEEDANCE_1_5_PRO,
@@ -97,6 +102,7 @@ export const VIDEO_MODEL_LIST: VideoModelId[] = [
   VIDEO_MODEL_IDS.KLING_V1_6,
   VIDEO_MODEL_IDS.KLING_V1_5,
   VIDEO_MODEL_IDS.KLING_V1,
+  VIDEO_MODEL_IDS.KLING_VIDEO_O1,
 ];
 
 const VEO_ASPECT_RATIOS = ['16:9', '9:16', '1:1'];
@@ -131,13 +137,14 @@ function buildSeedanceEntries(): Record<string, VideoModelCapabilities> {
       supportsLoop: false,
       supportsSeed: true,
       resolutionByMode: { standard: '1080p' },
+      deprecated: cfg.deprecated,
     };
   }
   return entries;
 }
 
 // ── Unified capabilities registry ─────────────────────────────────────────────
-export const VIDEO_MODEL_CONFIG = {
+export const VIDEO_MODEL_CONFIG: Record<string, VideoModelCapabilities> = {
   // ── Google Veo ───────────────────────────────────────────────────────────────
   [VIDEO_MODEL_IDS.VEO_3_1]: {
     label: 'Veo 3.1',
@@ -188,6 +195,30 @@ export const VIDEO_MODEL_CONFIG = {
     supportsLoop: true,
     supportsSeed: true,
     resolutionByMode: { standard: '720p', fast: '720p' },
+  },
+  [VIDEO_MODEL_IDS.VEO_3_1_LITE]: {
+    label: 'Veo 3.1 Lite',
+    provider: 'veo',
+    providerDomain: 'google.com',
+    description: 'Google Veo 3.1 Lite — most cost-efficient video',
+    modes: ['standard'],
+    defaultMode: 'standard',
+    durations: ['5s', '10s'],
+    defaultDuration: '5s',
+    aspectRatios: VEO_ASPECT_RATIOS,
+    supportsTextToVideo: true,
+    supportsImageToVideo: true,
+    supportsStartEndFrame: false,
+    supportsMultiShot: false,
+    supportsCameraControl: false,
+    supportsMotionBrush: false,
+    supportsSound: false,
+    supportsVideoExtension: false,
+    supportsCfgScale: false,
+    supportsNegativePrompt: false,
+    supportsLoop: false,
+    supportsSeed: true,
+    resolutionByMode: { standard: '720p' },
   },
 
   // ── Seedance (BytePlus) ──────────────────────────────────────────────────────
@@ -323,6 +354,7 @@ export const VIDEO_MODEL_CONFIG = {
     provider: 'kling',
     providerDomain: 'klingai.com',
     description: 'Image-to-video, std/pro, 5s/10s',
+    deprecated: true,
     modes: ['std', 'pro'],
     defaultMode: 'pro',
     durations: ['5', '10'],
@@ -347,6 +379,7 @@ export const VIDEO_MODEL_CONFIG = {
     provider: 'kling',
     providerDomain: 'klingai.com',
     description: 'Balanced quality, 5s/10s, 720p',
+    deprecated: true,
     modes: ['pro'],
     defaultMode: 'pro',
     durations: ['5', '10'],
@@ -371,6 +404,7 @@ export const VIDEO_MODEL_CONFIG = {
     provider: 'kling',
     providerDomain: 'klingai.com',
     description: 'Multi-image, multi-elements, video effects',
+    deprecated: true,
     modes: ['std', 'pro'],
     defaultMode: 'std',
     durations: ['5', '10'],
@@ -395,6 +429,7 @@ export const VIDEO_MODEL_CONFIG = {
     provider: 'kling',
     providerDomain: 'klingai.com',
     description: 'Motion brush, camera control (pro), start/end frame',
+    deprecated: true,
     modes: ['std', 'pro'],
     defaultMode: 'pro',
     durations: ['5', '10'],
@@ -419,6 +454,7 @@ export const VIDEO_MODEL_CONFIG = {
     provider: 'kling',
     providerDomain: 'klingai.com',
     description: 'Camera control (std), motion brush, effects',
+    deprecated: true,
     modes: ['std', 'pro'],
     defaultMode: 'std',
     durations: ['5', '10'],
@@ -437,6 +473,31 @@ export const VIDEO_MODEL_CONFIG = {
     supportsLoop: false,
     supportsSeed: false,
     resolutionByMode: { std: '720p', pro: '720p' },
+  },
+  [VIDEO_MODEL_IDS.KLING_VIDEO_O1]: {
+    label: 'Kling Video O1',
+    badge: 'reasoning',
+    provider: 'kling',
+    providerDomain: 'klingai.com',
+    description: 'Reasoning-based generation, 5s/10s only',
+    modes: ['std', 'pro'],
+    defaultMode: 'pro',
+    durations: ['5', '10'],
+    defaultDuration: '5',
+    aspectRatios: KLING_ASPECT_RATIOS,
+    supportsTextToVideo: true,
+    supportsImageToVideo: true,
+    supportsStartEndFrame: true,
+    supportsMultiShot: false,
+    supportsCameraControl: false,
+    supportsMotionBrush: false,
+    supportsSound: false,
+    supportsVideoExtension: false,
+    supportsCfgScale: false,
+    supportsNegativePrompt: true,
+    supportsLoop: false,
+    supportsSeed: false,
+    resolutionByMode: { std: '720p', pro: '1080p' },
   },
 };
 

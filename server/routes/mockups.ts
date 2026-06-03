@@ -14,8 +14,10 @@ import {
 import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
+import { generateImagenImage } from '../services/imagenService.js';
 import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
 import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
+import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -426,10 +428,17 @@ router.post(
 
       // Auto-infer provider from model when caller omits it
       let provider = rawProvider;
-      if (provider === 'gemini' && isOpenAIImageModel(model)) {
+      if (provider === 'gemini' && isImagenModel(model)) {
+        provider = 'imagen';
+      } else if (provider === 'gemini' && isOpenAIImageModel(model)) {
         provider = 'openai';
       } else if (provider === 'gemini' && isSeedreamModel(model)) {
         provider = 'seedream';
+      }
+
+      // Validate model ID
+      if (!model || typeof model !== 'string' || model.length > 100) {
+        return res.status(400).json({ error: 'Invalid model ID' });
       }
 
       // Validate seed: must be a non-negative integer within Int32 range
@@ -923,7 +932,20 @@ router.post(
       let imageBase64: string;
       let usedSeed: number | undefined;
 
-      if (provider === 'seedream') {
+      if (provider === 'imagen') {
+        console.log(`${logPrefix} [GENERATION] Using Imagen provider`, {
+          model,
+          aspectRatio,
+        });
+
+        const imagenResult = await generateImagenImage({
+          prompt: finalPromptText,
+          model: model as any,
+          aspectRatio: aspectRatio as any,
+          apiKey: userApiKey,
+        });
+        imageBase64 = imagenResult.base64;
+      } else if (provider === 'seedream') {
         // Use Seedream via BytePlus API
         let seedreamModel = model;
         if (!isSeedreamModel(seedreamModel)) {
@@ -1283,34 +1305,92 @@ router.post(
         }
       }
 
-      // Return appropriate error status code
+      // Classify error and return user-friendly response
+      const msg = error.message || '';
       let statusCode = 500;
-      let errorResponse: any = {
-        error: 'Failed to generate mockup',
-        message: error.message || 'An error occurred while generating the image',
-      };
+      let errorResponse: any;
 
-      if (error.message?.includes('Insufficient credits')) {
+      if (msg.includes('Insufficient credits')) {
         statusCode = 403;
+        errorResponse = {
+          error: 'insufficient_credits',
+          message: 'Not enough credits for this generation.',
+          hint: 'Purchase more credits or switch to a cheaper model.',
+        };
       } else if (
         error instanceof RateLimitError ||
         error.name === 'RateLimitError' ||
-        error.message?.includes('Rate limit exceeded')
+        msg.includes('Rate limit') ||
+        msg.includes('429') ||
+        msg.includes('RESOURCE_EXHAUSTED')
       ) {
         statusCode = 429;
+        errorResponse = {
+          error: 'rate_limit',
+          message: 'Too many requests. Please wait a moment and try again.',
+          hint: 'Try a different model or wait 30 seconds.',
+        };
       } else if (
         error.name === 'ModelResponseTextError' ||
-        error.message?.startsWith('MODEL_RESPONSE_TEXT:')
+        msg.startsWith('MODEL_RESPONSE_TEXT:')
       ) {
-        // Model responded with text instead of generating an image
-        // Extract the model's response to show user-friendly feedback
         const modelResponse =
-          error.modelResponse || error.message?.replace('MODEL_RESPONSE_TEXT:', '') || '';
-        statusCode = 422; // Unprocessable Entity - request was valid but model couldn't generate image
+          error.modelResponse || msg.replace('MODEL_RESPONSE_TEXT:', '') || '';
+        statusCode = 422;
         errorResponse = {
           error: 'model_response_text',
           message: modelResponse,
-          isModelQuestion: true, // Flag for frontend to show friendly UI
+          isModelQuestion: true,
+        };
+      } else if (
+        msg.includes('API key') ||
+        msg.includes('apiKey') ||
+        msg.includes('PERMISSION_DENIED') ||
+        msg.includes('401') ||
+        msg.includes('Unauthorized')
+      ) {
+        statusCode = 502;
+        errorResponse = {
+          error: 'provider_auth',
+          message: 'The AI provider rejected the request. The API key may be invalid or expired.',
+          hint: 'Try a different model provider, or check your BYOK key.',
+        };
+      } else if (
+        msg.includes('timeout') ||
+        msg.includes('DEADLINE_EXCEEDED') ||
+        msg.includes('ETIMEDOUT') ||
+        msg.includes('ECONNREFUSED')
+      ) {
+        statusCode = 504;
+        errorResponse = {
+          error: 'provider_timeout',
+          message: 'The AI provider took too long to respond.',
+          hint: 'Try again or use a faster model.',
+          suggestModel: 'gemini-2.5-flash-image',
+        };
+      } else if (
+        msg.includes('quota') ||
+        msg.includes('billing') ||
+        msg.includes('QUOTA_EXCEEDED')
+      ) {
+        statusCode = 502;
+        errorResponse = {
+          error: 'provider_quota',
+          message: 'The AI provider quota has been exceeded.',
+          hint: 'Try a different model or contact support.',
+        };
+      } else if (msg.includes('safety') || msg.includes('blocked') || msg.includes('SAFETY')) {
+        statusCode = 422;
+        errorResponse = {
+          error: 'content_blocked',
+          message: 'The content was blocked by the AI safety filter.',
+          hint: 'Adjust your prompt and try again.',
+        };
+      } else {
+        errorResponse = {
+          error: 'generation_failed',
+          message: 'Image generation failed. Please try again.',
+          hint: 'If the issue persists, try a different model.',
         };
       }
 

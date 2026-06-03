@@ -31,6 +31,7 @@ export interface SeedanceVideoModelConfig {
   badge?: 'latest' | 'popular' | 'fast' | 'pro' | 'lite';
   description: string;
   providerDomain: string;
+  deprecated?: boolean;
 
   durations: string[];
   defaultDuration: string;
@@ -108,6 +109,7 @@ export const SEEDANCE_VIDEO_MODEL_CONFIG: Record<SeedanceVideoModelId, SeedanceV
     badge: 'pro',
     description: 'Text-to-video + image-to-video, 5s/10s',
     providerDomain: 'bytedance.com',
+    deprecated: true,
     durations: ['5s', '10s'],
     defaultDuration: '5s',
     aspectRatios: SEEDANCE_V1_ASPECT_RATIOS,
@@ -125,6 +127,7 @@ export const SEEDANCE_VIDEO_MODEL_CONFIG: Record<SeedanceVideoModelId, SeedanceV
     badge: 'fast',
     description: 'Faster variant of 1.0 Pro',
     providerDomain: 'bytedance.com',
+    deprecated: true,
     durations: ['5s', '10s'],
     defaultDuration: '5s',
     aspectRatios: SEEDANCE_V1_ASPECT_RATIOS,
@@ -142,6 +145,7 @@ export const SEEDANCE_VIDEO_MODEL_CONFIG: Record<SeedanceVideoModelId, SeedanceV
     badge: 'lite',
     description: 'Lightweight, text-to-video + image-to-video, 5s only',
     providerDomain: 'bytedance.com',
+    deprecated: true,
     durations: ['5s'],
     defaultDuration: '5s',
     aspectRatios: SEEDANCE_V1_ASPECT_RATIOS,

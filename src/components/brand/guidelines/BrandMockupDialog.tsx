@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { ModelSelector } from '@/components/shared/ModelSelector';
+import { ModelSelector, getPreferredImageModel } from '@/components/shared/ModelSelector';
 import { ResolutionSelector } from '@/components/reactflow/shared/ResolutionSelector';
 import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSelector';
 import { mockupApi } from '@/services/mockupApi';
@@ -53,7 +53,7 @@ type View = 'form' | 'suggestions' | 'loading' | 'generating' | 'result';
 
 export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideline }) => {
   const [prompt, setPrompt] = useState('');
-  const [model, setModel] = useState<string>(GEMINI_MODELS.IMAGE_NB2);
+  const [model, setModel] = useState<string>(() => getPreferredImageModel());
   const [resolution, setResolution] = useState<Resolution>('1K');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
   const [view, setView] = useState<View>('form');

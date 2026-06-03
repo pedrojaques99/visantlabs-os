@@ -2,6 +2,7 @@ import type { GeminiModel, Resolution, SeedreamModel, ImageProvider } from '../t
 import { GEMINI_MODELS, MODEL_CONFIG, AVAILABLE_IMAGE_MODELS } from '../constants/geminiModels';
 import { isSeedreamModel } from '../constants/seedreamModels';
 import { isOpenAIImageModel } from '../constants/openaiModels';
+import { isImagenModel } from '../constants/imagenModels';
 
 /**
  * Get credits required for image generation based on model, resolution, and provider
@@ -15,6 +16,14 @@ export function getCreditsRequired(
   // Guard against undefined model
   if (!model) {
     return 2; // Default fallback
+  }
+
+  // Imagen 4 (Google, fixed price per image)
+  if (provider === 'imagen' || isImagenModel(model)) {
+    const m = String(model);
+    if (m.includes('fast')) return 1;
+    if (m.includes('ultra')) return 2;
+    return resolution === '2K' ? 2 : 1;
   }
 
   // OpenAI GPT Image 2 (~$0.05-$0.21/image, token-based)
@@ -82,12 +91,12 @@ export function getCreditsRequired(
     }
   }
 
-  // Veo video models - pricing based on official docs ($0.15-$0.40/sec)
-  // Intermediate values balancing real cost vs user experience
+  // Veo video models - pricing based on official docs ($0.05-$0.40/sec)
   if (String(model).startsWith('veo-')) {
-    const isFast = String(model).includes('fast');
-    // Fast: 15 credits, Standard: 40 credits
-    return isFast ? 15 : 40;
+    const m = String(model);
+    if (m.includes('lite')) return 8;
+    if (m.includes('fast')) return 15;
+    return 40;
   }
 
   // Fallback
@@ -149,17 +158,35 @@ export function getTotalBrandingCredits(): number {
  * @param model - Veo model identifier
  * @returns Credits required (15 for fast, 40 for standard)
  */
-export function getVideoCreditsRequired(model?: string): number {
-  if (model?.startsWith('seedance-')) {
-    const isFast = model.includes('fast') || model.includes('lite');
-    return isFast ? 20 : 35;
+export function getVideoCreditsRequired(model?: string, mode?: string): number {
+  if (!model) return 20;
+
+  // Seedance — v2 costs more than v1
+  if (model.startsWith('seedance-')) {
+    if (model.includes('lite')) return 10;
+    if (model.includes('fast')) return 20;
+    if (model.startsWith('seedance-2')) return 35;
+    return 25;
   }
-  if (model?.startsWith('kling-')) {
-    const isPro = model.includes('master') || model.includes('pro') || model.includes('4k');
-    return isPro ? 30 : 20;
+
+  // Kling — mode-aware pricing
+  if (model.startsWith('kling-')) {
+    if (model === 'kling-video-o1') return mode === 'pro' ? 35 : 25;
+    if (model.includes('v3-omni') || model.includes('v3')) {
+      if (mode === '4k') return 40;
+      if (mode === 'pro') return 30;
+      return 20;
+    }
+    if (model.includes('master')) return 30;
+    if (model.includes('turbo')) return 15;
+    const isPro = mode === 'pro';
+    return isPro ? 25 : 20;
   }
-  const isFast = model?.includes('fast') ?? false;
-  return isFast ? 15 : 40;
+
+  // Veo
+  if (model.includes('lite')) return 8;
+  if (model.includes('fast')) return 15;
+  return 40;
 }
 
 /**

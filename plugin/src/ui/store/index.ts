@@ -90,7 +90,7 @@ export const usePluginStore = create<PluginStore>()(
     // Image Generation
     selectedFrameSize: 'fullscreen',
     selectedResolution: '1x',
-    selectedModel: GEMINI_MODELS.FLASH_2_5,
+    selectedModel: GEMINI_MODELS.FLASH_3_5,
 
     // UI State
     activeView: 'main',

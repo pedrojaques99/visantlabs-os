@@ -206,6 +206,7 @@ export const generateImageWithPreset = async ({
     });
     cleanupFailedNode(newOutputNodeId, setNodes, setEdges);
     updateNodeLoadingState(nodeId, false, nodeType);
-    toast.error(error?.message || `Failed to generate ${nodeType}`, { duration: 5000 });
+    const hint = error?.hint ? `\n${error.hint}` : '';
+    toast.error(`${error?.message || `Failed to generate ${nodeType}`}${hint}`, { duration: 6000 });
   }
 };
