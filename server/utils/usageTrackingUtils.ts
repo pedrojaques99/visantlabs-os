@@ -32,13 +32,14 @@ export async function incrementUserGenerations(
 
     await db.collection('users').updateOne({ _id: new ObjectId(userId) }, update);
 
-    const safeUserId = String(userId).replace(/%/g, '');
     console.log(
-      `[Stats Tracking] Incremented stats for user ${safeUserId}: +${imageCount} images, +${tokenCount} tokens`
+      '[Stats Tracking] Incremented stats for user %s: +%d images, +%d tokens',
+      userId,
+      imageCount,
+      tokenCount
     );
   } catch (error) {
-    const safeUserId = String(userId).replace(/%/g, '');
-    console.error(`[Stats Tracking] Failed to increment stats for user ${safeUserId}:`, error);
+    console.error('[Stats Tracking] Failed to increment stats for user %s:', userId, error);
     // We don't throw here to avoid failing the main request if tracking fails
   }
 }

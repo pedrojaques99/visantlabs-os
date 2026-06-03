@@ -1396,10 +1396,8 @@ export const createBrandingUsageRecord = async (
 
     if (isAdmin) {
       console.log(
-        `[BrandingService] Recorded branding usage for admin user ${String(userId).replace(
-          /%/g,
-          ''
-        )} (no credits deducted):`,
+        '[BrandingService] Recorded branding usage for admin user %s (no credits deducted):',
+        userId,
         {
           stepNumber,
           inputTokens: inputTokens ?? 'estimated',
@@ -1408,16 +1406,13 @@ export const createBrandingUsageRecord = async (
         }
       );
     } else {
-      console.log(
-        `[BrandingService] Recorded branding usage for user ${String(userId).replace(/%/g, '')}:`,
-        {
-          stepNumber,
-          creditsDeducted: creditsDeducted,
-          inputTokens: inputTokens ?? 'estimated',
-          outputTokens: outputTokens ?? 'estimated',
-          timestamp: usageRecord.timestamp,
-        }
-      );
+      console.log('[BrandingService] Recorded branding usage for user %s:', userId, {
+        stepNumber,
+        creditsDeducted: creditsDeducted,
+        inputTokens: inputTokens ?? 'estimated',
+        outputTokens: outputTokens ?? 'estimated',
+        timestamp: usageRecord.timestamp,
+      });
     }
   } catch (error: any) {
     // Log error but don't throw - usage tracking failure shouldn't break generation
