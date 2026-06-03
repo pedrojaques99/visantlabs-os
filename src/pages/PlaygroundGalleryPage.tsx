@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { Search, X, Plus, SlidersHorizontal, Sparkles, Zap } from 'lucide-react';
+import { Search, X, Plus, SlidersHorizontal, Zap } from 'lucide-react';
 import { PageShell } from '@/components/ui/PageShell';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -151,7 +151,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
         {featured.length > 0 && !search && category === 'all' && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+              <Zap className="w-4 h-4 text-amber-400" />
               <h2 className="text-sm font-semibold text-neutral-300">Top MiniApps</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
