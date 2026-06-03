@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Renderer, StateProvider, ActionProvider, VisibilityProvider, useStateStore } from '@json-render/react';
+import {
+  Renderer,
+  StateProvider,
+  ActionProvider,
+  VisibilityProvider,
+  useStateStore,
+} from '@json-render/react';
 import type { Spec } from '@json-render/react';
 import { registry, handlers as createHandlers } from '@/lib/playground/registry';
 import { Button } from '@/components/ui/button';

@@ -246,7 +246,9 @@ export async function shareMiniApp(id: string) {
   return res.json() as Promise<{ shareId: string; shareUrl: string }>;
 }
 
-export async function getBrandContext(guidelineId: string): Promise<{ context: string; brandName: string }> {
+export async function getBrandContext(
+  guidelineId: string
+): Promise<{ context: string; brandName: string }> {
   const res = await fetch(`${API_BASE}/brand-context/${guidelineId}`, { headers: getHeaders() });
   if (!res.ok) throw new Error('Failed to fetch brand context');
   return res.json();

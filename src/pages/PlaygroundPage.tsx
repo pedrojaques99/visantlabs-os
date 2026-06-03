@@ -1,5 +1,11 @@
 import React, { useState, useCallback, useEffect, useRef, Suspense, useMemo } from 'react';
-import { Renderer, StateProvider, ActionProvider, VisibilityProvider, useStateStore } from '@json-render/react';
+import {
+  Renderer,
+  StateProvider,
+  ActionProvider,
+  VisibilityProvider,
+  useStateStore,
+} from '@json-render/react';
 import type { Spec } from '@json-render/react';
 import { registry, handlers as createHandlers } from '@/lib/playground/registry';
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels';
@@ -280,9 +286,10 @@ const SuggestionPills: React.FC<{
   onSelect: (prompt: string) => void;
 }> = ({ suggestions, count, size = 'md', onSelect }) => {
   const items = count ? suggestions.slice(0, count) : suggestions;
-  const cls = size === 'sm'
-    ? 'px-2 py-1 text-[10px] border-neutral-800/60 text-neutral-600 hover:border-neutral-700 hover:text-neutral-300'
-    : 'px-3 py-1.5 text-[12px] border-neutral-800/60 text-neutral-500 hover:border-neutral-600 hover:text-neutral-200 hover:bg-white/[0.02]';
+  const cls =
+    size === 'sm'
+      ? 'px-2 py-1 text-[10px] border-neutral-800/60 text-neutral-600 hover:border-neutral-700 hover:text-neutral-300'
+      : 'px-3 py-1.5 text-[12px] border-neutral-800/60 text-neutral-500 hover:border-neutral-600 hover:text-neutral-200 hover:bg-white/[0.02]';
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {items.map((s) => (
@@ -330,21 +337,23 @@ const ChatMessages: React.FC<{
         )}
       </div>
     ))}
-    {!isGenerating && messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content?.includes('failed') && onRetry && (
-      <button
-        onClick={() => {
-          const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
-          if (lastUserMsg) onRetry(lastUserMsg.content);
-        }}
-        className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors mt-1"
-      >
-        <RefreshCw size={10} />
-        Retry
-      </button>
-    )}
-    {isGenerating && (
-      <PremiumGlitchLoader steps={statusMessage ? [statusMessage] : undefined} />
-    )}
+    {!isGenerating &&
+      messages.length > 0 &&
+      messages[messages.length - 1]?.role === 'assistant' &&
+      messages[messages.length - 1]?.content?.includes('failed') &&
+      onRetry && (
+        <button
+          onClick={() => {
+            const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
+            if (lastUserMsg) onRetry(lastUserMsg.content);
+          }}
+          className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors mt-1"
+        >
+          <RefreshCw size={10} />
+          Retry
+        </button>
+      )}
+    {isGenerating && <PremiumGlitchLoader steps={statusMessage ? [statusMessage] : undefined} />}
     <div ref={chatEndRef} />
   </div>
 );
@@ -354,9 +363,7 @@ const GeneratingState: React.FC<{ message: string; elapsed?: number }> = ({ mess
     <div className="text-center space-y-6">
       <PremiumGlitchLoader />
       <div className="space-y-1">
-        {message && (
-          <p className="text-[11px] text-neutral-600 font-mono">{message}</p>
-        )}
+        {message && <p className="text-[11px] text-neutral-600 font-mono">{message}</p>}
         {elapsed != null && elapsed > 0 && (
           <p className="text-[10px] text-neutral-700 font-mono">{elapsed}s</p>
         )}
@@ -442,52 +449,58 @@ export const PlaygroundPage: React.FC = () => {
   }, []);
 
   // Sidebar resize drag handler
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isDraggingRef.current = true;
-    const startX = e.clientX;
-    const startWidth = sidebarWidth;
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      isDraggingRef.current = true;
+      const startX = e.clientX;
+      const startWidth = sidebarWidth;
 
-    const onMove = (ev: MouseEvent) => {
-      if (!isDraggingRef.current) return;
-      const newWidth = Math.min(480, Math.max(220, startWidth + (ev.clientX - startX)));
-      setSidebarWidth(newWidth);
-    };
-    const onUp = () => {
-      isDraggingRef.current = false;
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }, [sidebarWidth]);
+      const onMove = (ev: MouseEvent) => {
+        if (!isDraggingRef.current) return;
+        const newWidth = Math.min(480, Math.max(220, startWidth + (ev.clientX - startX)));
+        setSidebarWidth(newWidth);
+      };
+      const onUp = () => {
+        isDraggingRef.current = false;
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    },
+    [sidebarWidth]
+  );
 
-  const handleTouchResizeStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    if (!touch) return;
-    isDraggingRef.current = true;
-    const startX = touch.clientX;
-    const startWidth = sidebarWidth;
+  const handleTouchResizeStart = useCallback(
+    (e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      isDraggingRef.current = true;
+      const startX = touch.clientX;
+      const startWidth = sidebarWidth;
 
-    const onMove = (ev: TouchEvent) => {
-      if (!isDraggingRef.current) return;
-      const t = ev.touches[0];
-      if (!t) return;
-      const newWidth = Math.min(480, Math.max(220, startWidth + (t.clientX - startX)));
-      setSidebarWidth(newWidth);
-    };
-    const onEnd = () => {
-      isDraggingRef.current = false;
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onEnd);
-    };
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend', onEnd);
-  }, [sidebarWidth]);
+      const onMove = (ev: TouchEvent) => {
+        if (!isDraggingRef.current) return;
+        const t = ev.touches[0];
+        if (!t) return;
+        const newWidth = Math.min(480, Math.max(220, startWidth + (t.clientX - startX)));
+        setSidebarWidth(newWidth);
+      };
+      const onEnd = () => {
+        isDraggingRef.current = false;
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
+      };
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onEnd);
+    },
+    [sidebarWidth]
+  );
 
   // Persist model choice
   useEffect(() => {
@@ -496,8 +509,14 @@ export const PlaygroundPage: React.FC = () => {
 
   // Generation timer
   useEffect(() => {
-    if (!genStartTime) { setGenElapsed(0); return; }
-    const id = setInterval(() => setGenElapsed(Math.floor((Date.now() - genStartTime) / 1000)), 1000);
+    if (!genStartTime) {
+      setGenElapsed(0);
+      return;
+    }
+    const id = setInterval(
+      () => setGenElapsed(Math.floor((Date.now() - genStartTime) / 1000)),
+      1000
+    );
     return () => clearInterval(id);
   }, [genStartTime]);
 
@@ -529,7 +548,10 @@ export const PlaygroundPage: React.FC = () => {
   // Auto-focus input on empty state
   useEffect(() => {
     if (!spec && !isGenerating) {
-      const timer = setTimeout(() => (document.querySelector('[data-playground-input] textarea') as HTMLElement)?.focus(), 100);
+      const timer = setTimeout(
+        () => (document.querySelector('[data-playground-input] textarea') as HTMLElement)?.focus(),
+        100
+      );
       return () => clearTimeout(timer);
     }
   }, [spec, isGenerating]);
@@ -562,10 +584,9 @@ export const PlaygroundPage: React.FC = () => {
     if (event.event === 'status') setStatusMessage(event.data.message);
     if (event.event === 'clarification') {
       const { questions, suggestion } = event.data as { questions: string[]; suggestion: string };
-      const msg = [
-        suggestion,
-        ...questions.map((q: string) => `• ${q}`),
-      ].filter(Boolean).join('\n');
+      const msg = [suggestion, ...questions.map((q: string) => `• ${q}`)]
+        .filter(Boolean)
+        .join('\n');
       setChatHistory((prev) => [...prev, { role: 'assistant', content: msg }]);
     }
   }, []);
@@ -585,7 +606,9 @@ export const PlaygroundPage: React.FC = () => {
         {
           role: 'user',
           content: currentFiles.length
-            ? `${finalPrompt} [${currentFiles.length} file${currentFiles.length > 1 ? 's' : ''} attached]`
+            ? `${finalPrompt} [${currentFiles.length} file${
+                currentFiles.length > 1 ? 's' : ''
+              } attached]`
             : finalPrompt,
         },
       ]);
@@ -684,7 +707,17 @@ export const PlaygroundPage: React.FC = () => {
         setGenStartTime(null);
       }
     },
-    [prompt, spec, miniAppId, handleEvent, selectedModel, selectedBrandId, isMobile, navigate, refetchMiniApps]
+    [
+      prompt,
+      spec,
+      miniAppId,
+      handleEvent,
+      selectedModel,
+      selectedBrandId,
+      isMobile,
+      navigate,
+      refetchMiniApps,
+    ]
   );
 
   const handleReset = useCallback(() => {
@@ -779,12 +812,39 @@ export const PlaygroundPage: React.FC = () => {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key === 'n') { e.preventDefault(); handleNewSession(); return; }
-      if (mod && e.key === 'k') { e.preventDefault(); (document.querySelector('[data-playground-input] textarea') as HTMLElement)?.focus(); return; }
-      if (mod && e.key === 's') { e.preventDefault(); if (spec) handleSave(); return; }
-      if (e.key === 'Escape' && isFullscreen) { setIsFullscreen(false); return; }
-      if (e.key === 'f' && !mod && spec && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') { setIsFullscreen((v) => !v); return; }
-      if (e.key === 'Escape' && isMobile && sidebarOpen) { setSidebarOpen(false); return; }
+      if (mod && e.key === 'n') {
+        e.preventDefault();
+        handleNewSession();
+        return;
+      }
+      if (mod && e.key === 'k') {
+        e.preventDefault();
+        (document.querySelector('[data-playground-input] textarea') as HTMLElement)?.focus();
+        return;
+      }
+      if (mod && e.key === 's') {
+        e.preventDefault();
+        if (spec) handleSave();
+        return;
+      }
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        return;
+      }
+      if (
+        e.key === 'f' &&
+        !mod &&
+        spec &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
+        setIsFullscreen((v) => !v);
+        return;
+      }
+      if (e.key === 'Escape' && isMobile && sidebarOpen) {
+        setSidebarOpen(false);
+        return;
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -863,7 +923,14 @@ export const PlaygroundPage: React.FC = () => {
     <div className="h-full flex flex-col bg-neutral-950/80">
       {/* New + Brand selector row */}
       <div className="shrink-0 p-3 space-y-2">
-        <Tooltip content={<span>New miniapp <kbd className="ml-1 text-[9px] opacity-60">⌘N</kbd></span>} position="right">
+        <Tooltip
+          content={
+            <span>
+              New miniapp <kbd className="ml-1 text-[9px] opacity-60">⌘N</kbd>
+            </span>
+          }
+          position="right"
+        >
           <button
             onClick={handleNewSession}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-neutral-300 hover:bg-white/5 hover:text-neutral-100 transition-colors"
@@ -900,10 +967,12 @@ export const PlaygroundPage: React.FC = () => {
       </div>
 
       {/* Recent list — always visible */}
-      <div className={cn(
-        'overflow-y-auto px-2 scrollbar-thin scrollbar-thumb-neutral-800',
-        spec ? 'max-h-[35%] shrink-0 border-b border-neutral-800/30 pb-2' : 'flex-1 pb-3'
-      )}>
+      <div
+        className={cn(
+          'overflow-y-auto px-2 scrollbar-thin scrollbar-thumb-neutral-800',
+          spec ? 'max-h-[35%] shrink-0 border-b border-neutral-800/30 pb-2' : 'flex-1 pb-3'
+        )}
+      >
         <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
           Recent
         </div>
@@ -962,15 +1031,19 @@ export const PlaygroundPage: React.FC = () => {
               className="space-y-1"
             />
           </div>
-          <div className="shrink-0 border-t border-neutral-800/30 p-3 pb-4">
-            {inputBar}
-          </div>
+          <div className="shrink-0 border-t border-neutral-800/30 p-3 pb-4">{inputBar}</div>
         </>
       ) : (
         <div className="shrink-0 p-3 pb-4 border-t border-neutral-800/30">
           <div className="space-y-1 text-[10px] text-neutral-700">
-            <div className="flex justify-between"><span>Focus input</span><kbd className="font-mono">⌘K</kbd></div>
-            <div className="flex justify-between"><span>Save</span><kbd className="font-mono">⌘S</kbd></div>
+            <div className="flex justify-between">
+              <span>Focus input</span>
+              <kbd className="font-mono">⌘K</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Save</span>
+              <kbd className="font-mono">⌘S</kbd>
+            </div>
           </div>
         </div>
       )}
@@ -1012,7 +1085,14 @@ export const PlaygroundPage: React.FC = () => {
     return (
       <div className="fixed inset-0 z-50 bg-neutral-950">
         <div className="absolute top-3 right-3 z-10">
-          <Tooltip content={<span>Exit fullscreen <kbd className="ml-1 text-[9px] opacity-60">Esc</kbd></span>} position="bottom">
+          <Tooltip
+            content={
+              <span>
+                Exit fullscreen <kbd className="ml-1 text-[9px] opacity-60">Esc</kbd>
+              </span>
+            }
+            position="bottom"
+          >
             <Button
               variant="surface"
               size="xs"
@@ -1024,9 +1104,7 @@ export const PlaygroundPage: React.FC = () => {
             </Button>
           </Tooltip>
         </div>
-        <div className="h-full w-full overflow-auto">
-          {renderPreview}
-        </div>
+        <div className="h-full w-full overflow-auto">{renderPreview}</div>
       </div>
     );
   }
@@ -1041,16 +1119,23 @@ export const PlaygroundPage: React.FC = () => {
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-1.5 -ml-1.5 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
         >
-          {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
+          {sidebarOpen ? (
+            <PanelLeftClose className="w-4 h-4" />
+          ) : (
+            <PanelLeftOpen className="w-4 h-4" />
+          )}
         </button>
-        {appTitle && (
-          <span className="ml-3 text-[13px] text-neutral-300 truncate">{appTitle}</span>
-        )}
+        {appTitle && <span className="ml-3 text-[13px] text-neutral-300 truncate">{appTitle}</span>}
         <div className="flex-1" />
         {spec && (
           <div className="flex items-center gap-1">
             <Tooltip content="Reset" position="bottom">
-              <Button variant="ghost" size="xs" onClick={handleReset} className="text-neutral-500 hover:text-neutral-300">
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={handleReset}
+                className="text-neutral-500 hover:text-neutral-300"
+              >
                 <RotateCcw className="w-3 h-3" />
               </Button>
             </Tooltip>
@@ -1064,21 +1149,47 @@ export const PlaygroundPage: React.FC = () => {
                 <Download className="w-3 h-3" />
               </Button>
             </Tooltip>
-            <Tooltip content={<span>Save <kbd className="ml-1 text-[9px] opacity-60">⌘S</kbd></span>} position="bottom">
-              <Button variant="ghost" size="xs" onClick={handleSave} className="text-neutral-500 hover:text-neutral-300">
+            <Tooltip
+              content={
+                <span>
+                  Save <kbd className="ml-1 text-[9px] opacity-60">⌘S</kbd>
+                </span>
+              }
+              position="bottom"
+            >
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={handleSave}
+                className="text-neutral-500 hover:text-neutral-300"
+              >
                 <Save className="w-3 h-3" />
               </Button>
             </Tooltip>
             {miniAppId && (
               <>
                 <Tooltip content={copiedShare ? 'Copied!' : 'Copy share link'} position="bottom">
-                  <Button variant="ghost" size="xs" onClick={handleShare} className="text-neutral-500 hover:text-neutral-300">
-                    {copiedShare ? <Check className="w-3 h-3 text-green-400" /> : <Link2 className="w-3 h-3" />}
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={handleShare}
+                    className="text-neutral-500 hover:text-neutral-300"
+                  >
+                    {copiedShare ? (
+                      <Check className="w-3 h-3 text-green-400" />
+                    ) : (
+                      <Link2 className="w-3 h-3" />
+                    )}
                   </Button>
                 </Tooltip>
                 {!isPublished && (
                   <Tooltip content="Publish to community" position="bottom">
-                    <Button variant="ghost" size="xs" onClick={handlePublish} className="text-neutral-500 hover:text-brand-cyan">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={handlePublish}
+                      className="text-neutral-500 hover:text-brand-cyan"
+                    >
                       <Globe className="w-3 h-3" />
                     </Button>
                   </Tooltip>
@@ -1088,7 +1199,14 @@ export const PlaygroundPage: React.FC = () => {
                 )}
               </>
             )}
-            <Tooltip content={<span>Fullscreen <kbd className="ml-1 text-[9px] opacity-60">F</kbd></span>} position="bottom">
+            <Tooltip
+              content={
+                <span>
+                  Fullscreen <kbd className="ml-1 text-[9px] opacity-60">F</kbd>
+                </span>
+              }
+              position="bottom"
+            >
               <Button
                 variant="ghost"
                 size="xs"
@@ -1103,7 +1221,10 @@ export const PlaygroundPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="xs"
-                onClick={() => { setExpertMode(true); setActiveTab('preview'); }}
+                onClick={() => {
+                  setExpertMode(true);
+                  setActiveTab('preview');
+                }}
                 className="text-neutral-500 hover:text-neutral-300"
               >
                 <Settings className="w-3 h-3" />
@@ -1120,7 +1241,10 @@ export const PlaygroundPage: React.FC = () => {
           {isEmpty ? (
             <motion.div
               key="empty"
-              initial={FADE_INITIAL} animate={FADE_ANIMATE} exit={FADE_EXIT} transition={FADE_TRANSITION}
+              initial={FADE_INITIAL}
+              animate={FADE_ANIMATE}
+              exit={FADE_EXIT}
+              transition={FADE_TRANSITION}
               className="h-full flex flex-col items-center justify-center px-6"
             >
               <div className="max-w-lg w-full space-y-8">
@@ -1128,13 +1252,9 @@ export const PlaygroundPage: React.FC = () => {
                   <h1 className="text-2xl font-semibold text-neutral-100 tracking-tight">
                     {greeting}
                   </h1>
-                  <p className="text-[13px] text-neutral-500">
-                    What would you like to build?
-                  </p>
+                  <p className="text-[13px] text-neutral-500">What would you like to build?</p>
                 </div>
-                <GlassPanel className="p-3">
-                  {inputBar}
-                </GlassPanel>
+                <GlassPanel className="p-3">{inputBar}</GlassPanel>
                 <SuggestionPills suggestions={SUGGESTIONS} onSelect={handleGenerate} />
                 <div className="text-center">
                   <button
@@ -1149,7 +1269,10 @@ export const PlaygroundPage: React.FC = () => {
           ) : isGenerating && !spec ? (
             <motion.div
               key="generating"
-              initial={FADE_INITIAL} animate={FADE_ANIMATE} exit={FADE_EXIT} transition={FADE_TRANSITION}
+              initial={FADE_INITIAL}
+              animate={FADE_ANIMATE}
+              exit={FADE_EXIT}
+              transition={FADE_TRANSITION}
               className="h-full"
             >
               <GeneratingState message={statusMessage} elapsed={genElapsed} />
@@ -1157,7 +1280,10 @@ export const PlaygroundPage: React.FC = () => {
           ) : spec ? (
             <motion.div
               key="preview"
-              initial={FADE_INITIAL} animate={FADE_ANIMATE} exit={FADE_EXIT} transition={FADE_TRANSITION}
+              initial={FADE_INITIAL}
+              animate={FADE_ANIMATE}
+              exit={FADE_EXIT}
+              transition={FADE_TRANSITION}
               className="h-full overflow-auto"
             >
               {renderPreview}
@@ -1192,7 +1318,10 @@ export const PlaygroundPage: React.FC = () => {
       >
         {resizableSidebar}
         {isMobile && sidebarOpen && (
-          <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <div
+            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
         )}
         <div className="flex-1 min-w-0 flex flex-col relative">
           {topBar}
@@ -1222,11 +1351,13 @@ export const PlaygroundPage: React.FC = () => {
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="p-1 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
       >
-        {sidebarOpen ? <PanelLeftClose className="w-3.5 h-3.5" /> : <PanelLeftOpen className="w-3.5 h-3.5" />}
+        {sidebarOpen ? (
+          <PanelLeftClose className="w-3.5 h-3.5" />
+        ) : (
+          <PanelLeftOpen className="w-3.5 h-3.5" />
+        )}
       </button>
-      {appTitle && (
-        <span className="text-[12px] text-neutral-400 truncate">{appTitle}</span>
-      )}
+      {appTitle && <span className="text-[12px] text-neutral-400 truncate">{appTitle}</span>}
       <div className="flex-1" />
       <div className="flex items-center gap-1">
         {spec && (
@@ -1247,12 +1378,26 @@ export const PlaygroundPage: React.FC = () => {
             </Button>
             {miniAppId && (
               <>
-                <Button variant="ghost" size="xs" onClick={handleShare} className="text-neutral-500">
-                  {copiedShare ? <Check className="w-3 h-3 mr-1 text-green-400" /> : <Link2 className="w-3 h-3 mr-1" />}
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={handleShare}
+                  className="text-neutral-500"
+                >
+                  {copiedShare ? (
+                    <Check className="w-3 h-3 mr-1 text-green-400" />
+                  ) : (
+                    <Link2 className="w-3 h-3 mr-1" />
+                  )}
                   Share
                 </Button>
                 {!isPublished && (
-                  <Button variant="ghost" size="xs" onClick={handlePublish} className="text-neutral-500 hover:text-brand-cyan">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={handlePublish}
+                    className="text-neutral-500 hover:text-brand-cyan"
+                  >
                     <Globe className="w-3 h-3 mr-1" /> Publish
                   </Button>
                 )}
@@ -1286,7 +1431,12 @@ export const PlaygroundPage: React.FC = () => {
                   <p className="text-[11px] text-neutral-600 max-w-[220px]">
                     Describe what you want to build, then iterate with follow-up prompts.
                   </p>
-                  <SuggestionPills suggestions={SUGGESTIONS} count={3} size="sm" onSelect={handleGenerate} />
+                  <SuggestionPills
+                    suggestions={SUGGESTIONS}
+                    count={3}
+                    size="sm"
+                    onSelect={handleGenerate}
+                  />
                 </div>
               )}
               <ChatMessages
@@ -1297,9 +1447,7 @@ export const PlaygroundPage: React.FC = () => {
                 onRetry={handleGenerate}
               />
             </div>
-            <div className="shrink-0 border-t border-neutral-800/30 p-2.5 pb-4">
-              {inputBar}
-            </div>
+            <div className="shrink-0 border-t border-neutral-800/30 p-2.5 pb-4">{inputBar}</div>
           </div>
         </Panel>
 
@@ -1338,17 +1486,38 @@ export const PlaygroundPage: React.FC = () => {
             <div className="flex-1 min-h-0 overflow-auto">
               <AnimatePresence mode="wait">
                 {!spec && !isGenerating ? (
-                  <motion.div key="empty-expert" initial={FADE_INITIAL} animate={FADE_ANIMATE} exit={FADE_EXIT} transition={FADE_TRANSITION} className="h-full flex items-center justify-center">
+                  <motion.div
+                    key="empty-expert"
+                    initial={FADE_INITIAL}
+                    animate={FADE_ANIMATE}
+                    exit={FADE_EXIT}
+                    transition={FADE_TRANSITION}
+                    className="h-full flex items-center justify-center"
+                  >
                     <p className="text-[12px] text-neutral-600">
                       Your miniapp preview will appear here
                     </p>
                   </motion.div>
                 ) : isGenerating && !spec ? (
-                  <motion.div key="generating-expert" initial={FADE_INITIAL} animate={FADE_ANIMATE} exit={FADE_EXIT} transition={FADE_TRANSITION} className="h-full">
+                  <motion.div
+                    key="generating-expert"
+                    initial={FADE_INITIAL}
+                    animate={FADE_ANIMATE}
+                    exit={FADE_EXIT}
+                    transition={FADE_TRANSITION}
+                    className="h-full"
+                  >
                     <GeneratingState message={statusMessage} elapsed={genElapsed} />
                   </motion.div>
                 ) : spec ? (
-                  <motion.div key={`tab-${activeTab}`} initial={FADE_INITIAL} animate={FADE_ANIMATE} exit={FADE_EXIT} transition={FADE_TRANSITION} className="h-full">
+                  <motion.div
+                    key={`tab-${activeTab}`}
+                    initial={FADE_INITIAL}
+                    animate={FADE_ANIMATE}
+                    exit={FADE_EXIT}
+                    transition={FADE_TRANSITION}
+                    className="h-full"
+                  >
                     {activeTab === 'spec' ? (
                       <SpecEditor spec={spec} onUpdate={setSpec} />
                     ) : activeTab === 'code' ? (
@@ -1383,7 +1552,10 @@ export const PlaygroundPage: React.FC = () => {
     >
       {resizableSidebar}
       {isMobile && sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
       <div className="flex-1 min-w-0 flex flex-col">
         {expertTopBar}
