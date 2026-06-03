@@ -1887,6 +1887,7 @@ export const CanvasPage: React.FC = () => {
       const tempMockup: Mockup = {
         _id: `temp-${Date.now()}`,
         imageBase64: image.base64,
+        imageUrl: image.url,
         prompt: t('canvas.droppedImagePrompt'),
         designType: 'blank',
         tags: [],
