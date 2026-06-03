@@ -1735,7 +1735,8 @@ export const CanvasPage: React.FC = () => {
     addUpscaleNode,
     drawing.deleteSelectedDrawings,
     drawing.selectedDrawingIds,
-    drawing.setSelectedDrawingIds
+    drawing.setSelectedDrawingIds,
+    saveImmediately
   );
 
   usePasteImage(handlePasteImage, isAuthenticated === true);

@@ -1161,6 +1161,18 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             )}
           />
         )}
+        {nodes.length === 0 && !isDraggingOver && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div className="text-center space-y-2 opacity-40">
+              <p className="text-sm text-neutral-400 font-medium">
+                Right-click or press <kbd className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 text-xs font-mono">Ctrl+K</kbd> to add nodes
+              </p>
+              <p className="text-xs text-neutral-500">
+                Drag images here or use the toolbar
+              </p>
+            </div>
+          </div>
+        )}
       </ReactFlow>
 
       {/* Drawing layer - persistent SVG drawings */}
