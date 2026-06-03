@@ -22,9 +22,7 @@ const getAI = (): GoogleGenAI => {
     // Client-side: check import.meta.env if not found in process.env
     if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
       try {
-        // @ts-ignore - import.meta.env is Vite specific
         if (typeof import.meta !== 'undefined' && import.meta.env) {
-          // @ts-ignore
           apiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim();
         }
       } catch (e) {

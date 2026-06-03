@@ -154,32 +154,28 @@ export const InputSection: React.FC<InputSectionProps> = ({
       const { mockupApi } = await import('@/services/mockupApi');
 
       const processPromises = files.slice(0, totalToLoad).map(async (file) => {
-        return new Promise<UploadedImage>(async (resolve, reject) => {
-          try {
-            const reader = new FileReader();
-            reader.onload = async () => {
-              try {
-                const base64 = (reader.result as string).split(',')[1];
-                // First format to 16:9 as before to ensure consistency
-                const formatted = await formatImageTo16_9(base64, file.type);
+        return new Promise<UploadedImage>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = async () => {
+            try {
+              const base64 = (reader.result as string).split(',')[1];
+              // First format to 16:9 as before to ensure consistency
+              const formatted = await formatImageTo16_9(base64, file.type);
 
-                // Upload to R2 immediately; keep only url to avoid holding base64
-                const r2Url = await mockupApi.uploadTempImage(formatted.base64 || base64, formatted.mimeType);
-                resolve({ url: r2Url, mimeType: formatted.mimeType });
-              } catch (error) {
-                console.error("Error processing/uploading image:", error);
+              // Upload to R2 immediately; keep only url to avoid holding base64
+              const r2Url = await mockupApi.uploadTempImage(formatted.base64 || base64, formatted.mimeType);
+              resolve({ url: r2Url, mimeType: formatted.mimeType });
+            } catch (error) {
+              console.error("Error processing/uploading image:", error);
 
-                // Fallback: if upload fails, use base64 but warn
-                const base64 = (reader.result as string).split(',')[1];
-                toast.error(t('errors.imageUploadFailed'));
-                resolve({ base64, mimeType: file.type });
-              }
-            };
-            reader.onerror = () => reject(new Error('Failed to read file'));
-            reader.readAsDataURL(file);
-          } catch (e) {
-            reject(e);
-          }
+              // Fallback: if upload fails, use base64 but warn
+              const base64 = (reader.result as string).split(',')[1];
+              toast.error(t('errors.imageUploadFailed'));
+              resolve({ base64, mimeType: file.type });
+            }
+          };
+          reader.onerror = () => reject(new Error('Failed to read file'));
+          reader.readAsDataURL(file);
         });
       });
 

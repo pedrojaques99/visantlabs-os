@@ -43,7 +43,7 @@ export const redisClient = new Proxy(redis, {
       if (target.status !== 'ready') {
         return prop in NOOP_DEFAULTS ? NOOP_DEFAULTS[prop] : null;
       }
-      return (value as Function).apply(target, args);
+      return (value as (...a: unknown[]) => unknown).apply(target, args);
     };
   },
 });

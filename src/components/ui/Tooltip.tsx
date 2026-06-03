@@ -185,7 +185,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         onBlur={() => hideTooltip(false)}
         onClick={(e) => {
           e.stopPropagation();
-          isVisible ? hideTooltip(true) : showTooltip(true);
+          if (isVisible) { hideTooltip(true); } else { showTooltip(true); }
         }}
         className="inline-block"
       >

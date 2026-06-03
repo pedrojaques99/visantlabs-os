@@ -405,18 +405,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
     <>
       <div className="flex items-center gap-1 md:gap-2">
         {/* Google OAuth button hidden */}
-        {false && (
-          <Button variant="ghost" onClick={handleGoogleAuth}
-            disabled={isGoogleLoading}
-            className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-neutral-800/50 text-neutral-400 rounded-md border border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed text-[10px] md:text-xs font-mono transition-colors"
-          >
-            {isGoogleLoading ? (
-              <GlitchLoader size={12} color="currentColor" />
-            ) : (
-              <span>{t('auth.signInWithGoogle')}</span>
-            )}
-          </Button>
-        )}
         <Button variant="ghost" onClick={() => setShowEmailModal(true)}
           className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-neutral-800/50 text-neutral-400 rounded-md border border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300 text-[10px] md:text-xs font-mono transition-colors"
         >
@@ -451,30 +439,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
             </div>
 
             {/* Google OAuth button - temporarily hidden during verification */}
-            {false && (
-              <>
-                <Button variant="ghost" type="button"
-                  onClick={handleGoogleAuth}
-                  disabled={isGoogleLoading}
-                  className="w-full flex items-center justify-center gap-2 bg-neutral-800/50 hover:bg-neutral-800/70 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 font-semibold py-2.5 px-4 rounded-md border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-200 text-sm font-mono mb-4"
-                >
-                  {isGoogleLoading ? (
-                    <>
-                      <GlitchLoader size={16} color="currentColor" />
-                      {t('auth.signingInWithGoogle')}
-                    </>
-                  ) : (
-                    t('auth.signInWithGoogle')
-                  )}
-                </Button>
-
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex-1 h-px bg-neutral-800/50"></div>
-                  <span className="text-xs text-neutral-500 font-mono">ou</span>
-                  <div className="flex-1 h-px bg-neutral-800/50"></div>
-                </div>
-              </>
-            )}
 
             <form onSubmit={handleEmailAuth} className="space-y-4">
               {isSignUp && (

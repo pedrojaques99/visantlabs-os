@@ -36,6 +36,7 @@ export function isSafeUrl(url: string): boolean {
   if (!url || typeof url !== 'string') return false;
 
   // Normalize: trim whitespace and remove invisible characters
+  // eslint-disable-next-line no-control-regex
   const trimmedUrl = url.trim().replace(/[\x00-\x1f\x7f]/g, '');
   if (trimmedUrl.length === 0) return false;
 

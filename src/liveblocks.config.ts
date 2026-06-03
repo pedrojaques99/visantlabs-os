@@ -6,7 +6,7 @@ import type { LiveList, LiveObject } from '@liveblocks/client';
 
 // Create a serializable version of FlowNodeData by omitting function properties
 type SerializableFlowNodeData = {
-  [K in keyof FlowNodeData]: FlowNodeData[K] extends Function ? never : FlowNodeData[K];
+  [K in keyof FlowNodeData]: FlowNodeData[K] extends (...args: unknown[]) => unknown ? never : FlowNodeData[K];
 };
 
 declare global {
@@ -39,13 +39,13 @@ declare global {
     };
 
     // Custom events, for useBroadcastEvent, useEventListener
-    RoomEvent: {};
+    RoomEvent: Record<string, never>;
 
     // Custom metadata set on threads, for useThreads, useCreateThread, etc.
-    ThreadMetadata: {};
+    ThreadMetadata: Record<string, never>;
 
     // Custom room info set with resolveRoomsInfo, for useRoomInfo
-    RoomInfo: {};
+    RoomInfo: Record<string, never>;
   }
 }
 

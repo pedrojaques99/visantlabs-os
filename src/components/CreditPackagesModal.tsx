@@ -260,8 +260,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 {/* ── Créditos tab ── */}
                 {activeTab === 'creditos' && (
                   <div>
-                    {true && (
-                      <div className="animate-fade-in py-4 space-y-3">
+                    <div className="animate-fade-in py-4 space-y-3">
                         {/* Package card */}
                         <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-5 sm:p-6 space-y-5">
                           {/* Selector row */}
@@ -397,7 +396,6 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           {t('creditsPackages.note') || 'Créditos não expiram e podem ser usados a qualquer momento'}
                         </p>
                       </div>
-                    )}
                   </div>
                 )}
 

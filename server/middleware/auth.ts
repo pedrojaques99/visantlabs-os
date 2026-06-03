@@ -46,13 +46,7 @@ export const authenticate = async (
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-      if (false) {
-        console.log('[authenticate] ❌ No token provided', {
-          path: req.path,
-          method: req.method,
-        });
-      }
-      return res.status(401).json({ error: 'Authentication required' });
+        return res.status(401).json({ error: 'Authentication required' });
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as {

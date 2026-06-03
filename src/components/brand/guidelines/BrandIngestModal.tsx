@@ -254,7 +254,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
     setItemSel(prev => {
       const next = new Map(prev);
       const s = new Set(next.get(key) || []);
-      s.has(i) ? s.delete(i) : s.add(i);
+      if (s.has(i)) { s.delete(i); } else { s.add(i); }
       next.set(key, s);
       return next;
     });

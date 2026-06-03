@@ -1,4 +1,3 @@
-// @ts-nocheck — Studio3DScene model pending schema migration
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
@@ -153,7 +152,7 @@ router.get('/public', apiRateLimiter, async (_req, res) => {
           thumbnailUrl: true, tags: true, inputMode: true,
           config: true,
           createdAt: true, updatedAt: true,
-          user: { select: { name: true, avatar: true } },
+          user: { select: { name: true } },
         },
       });
     } catch {

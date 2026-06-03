@@ -23,9 +23,7 @@ const getAI = (apiKey?: string): GoogleGenAI => {
     }
     // Try import.meta.env (Vite/Client)
     try {
-      // @ts-ignore - import.meta.env is Vite specific
       if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
-        // @ts-ignore
         return import.meta.env[key];
       }
     } catch (e) {

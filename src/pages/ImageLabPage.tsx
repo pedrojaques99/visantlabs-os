@@ -601,7 +601,7 @@ export const ImageLabPage: React.FC = () => {
               <button
                 onClick={() => {
                   const vc = getActiveVideoControls();
-                  if (vc) videoIsPlaying ? vc.pause() : vc.play();
+                  if (vc) { if (videoIsPlaying) { vc.pause(); } else { vc.play(); } }
                 }}
                 title={videoIsPlaying ? 'Pause' : 'Play'}
                 className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}

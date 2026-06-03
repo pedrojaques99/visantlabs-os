@@ -275,9 +275,9 @@ function resolveTraceOptions(opts: TraceOptions): TraceOptions {
 // Potrace vectorization
 // ---------------------------------------------------------------------------
 
-function potraceTrace(buffer: Buffer, potraceOpts: Record<string, any>): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    const potrace = await import('potrace');
+async function potraceTrace(buffer: Buffer, potraceOpts: Record<string, any>): Promise<string> {
+  const potrace = await import('potrace');
+  return new Promise((resolve, reject) => {
     potrace.trace(buffer, potraceOpts, (err: Error | null, svg: string) => {
       if (err) reject(err);
       else resolve(svg);

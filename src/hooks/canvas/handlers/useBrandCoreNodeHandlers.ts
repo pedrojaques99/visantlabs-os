@@ -51,7 +51,7 @@ export const useBrandCoreNodeHandlers = ({
       const brandIdentity = await extractBrandIdentity(logoImage, identityBase64, identityType, strategyText);
 
       updateNodeData<BrandCoreData>(nodeId, { brandIdentity, isAnalyzing: false }, 'brandCore');
-      saveImmediately && setTimeout(() => saveImmediately(), 100);
+      if (saveImmediately) setTimeout(() => saveImmediately(), 100);
       trackCanvasEvent('generation_completed', 'brandCore');
       toast.success('Brand identity analyzed successfully', { duration: 2000 });
     } catch (error: any) {
@@ -89,7 +89,7 @@ export const useBrandCoreNodeHandlers = ({
       const visualPrompts = await generateVisualPrompt(brandCoreData.brandIdentity, { visualStrategyText });
 
       updateNodeData<BrandCoreData>(nodeId, { visualPrompts, isGeneratingPrompts: false }, 'brandCore');
-      saveImmediately && setTimeout(() => saveImmediately(), 100);
+      if (saveImmediately) setTimeout(() => saveImmediately(), 100);
     } catch (error: any) {
       console.error('Error generating visual prompts:', error);
       toast.error(error?.message || 'Failed to generate visual prompts', { duration: 5000 });
@@ -108,7 +108,7 @@ export const useBrandCoreNodeHandlers = ({
       const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
 
       updateNodeData<BrandCoreData>(nodeId, { strategicPrompts: { consolidated } }, 'brandCore');
-      saveImmediately && setTimeout(() => saveImmediately(), 100);
+      if (saveImmediately) setTimeout(() => saveImmediately(), 100);
     } catch (error: any) {
       console.error('Error consolidating strategies:', error);
       toast.error(error?.message || 'Failed to consolidate strategies', { duration: 5000 });

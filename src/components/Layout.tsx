@@ -434,8 +434,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           setCurrentUser(null);
         }
       } finally {
-        if (!isMounted) return;
-        setIsCheckingAuth(prev => prev === false ? prev : false);
+        if (isMounted) {
+          setIsCheckingAuth(prev => prev === false ? prev : false);
+        }
       }
     };
 

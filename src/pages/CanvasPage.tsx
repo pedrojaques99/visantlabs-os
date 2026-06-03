@@ -817,8 +817,7 @@ export const CanvasPage: React.FC = () => {
     // Try using File System Access API for folder selection
     if ('showDirectoryPicker' in window) {
       try {
-        // @ts-ignore - showDirectoryPicker is not yet in standard types
-        const dirHandle = await window.showDirectoryPicker();
+        const dirHandle = await (window as any).showDirectoryPicker();
 
         toast.info((t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`);
 

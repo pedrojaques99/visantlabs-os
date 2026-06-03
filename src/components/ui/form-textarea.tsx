@@ -1,8 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-export interface FormTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
+export type FormTextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>
 
 const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
   ({ className, ...props }, ref) => {
