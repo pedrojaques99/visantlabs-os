@@ -61,12 +61,16 @@ export const PromptNode = memo(
     const { defaults: outputDefaults, persist: persistDefaults } = useOutputDefaults('prompt');
     const [prompt, setPrompt] = useState(nodeData.prompt || '');
     const [model, setModel] = useState<GeminiModel | SeedreamModel>(
-      nodeData.model || (outputDefaults.model as GeminiModel | SeedreamModel) || GEMINI_MODELS.IMAGE_NB2
+      nodeData.model ||
+        (outputDefaults.model as GeminiModel | SeedreamModel) ||
+        GEMINI_MODELS.IMAGE_NB2
     );
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
       nodeData.aspectRatio || outputDefaults.aspectRatio || DEFAULT_ASPECT_RATIO
     );
-    const [resolution, setResolution] = useState<Resolution>(nodeData.resolution || outputDefaults.resolution || '2K');
+    const [resolution, setResolution] = useState<Resolution>(
+      nodeData.resolution || outputDefaults.resolution || '2K'
+    );
     const [connectedImage1, setConnectedImage1] = useState<string | undefined>(
       nodeData.connectedImage1
     );

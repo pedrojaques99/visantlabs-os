@@ -83,7 +83,9 @@ export const VideoNode = memo(
     const { defaults: outputDefaults, persist: persistDefaults } = useOutputDefaults('video');
     const [prompt, setPrompt] = useState(nodeData.prompt || '');
     const [negativePrompt, setNegativePrompt] = useState(nodeData.negativePrompt || '');
-    const [model, setModel] = useState<string>(nodeData.model || outputDefaults.model || DEFAULT_MODEL);
+    const [model, setModel] = useState<string>(
+      nodeData.model || outputDefaults.model || DEFAULT_MODEL
+    );
     const [mode, setMode] = useState<GenerationMode>(nodeData.mode || GenerationMode.TEXT_TO_VIDEO);
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
       nodeData.aspectRatio || outputDefaults.aspectRatio || DEFAULT_ASPECT_RATIO
