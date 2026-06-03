@@ -806,7 +806,7 @@ router.put('/users/:id', adminUsersLimiter, validateAdmin, async (req: Request, 
     }
 
     if (updateData.name !== undefined) {
-      updateData.name = ensureString(updateData.name, 'name');
+      updateData.name = ensureString(updateData.name, 500);
     }
 
     const user = await prisma.user.update({
