@@ -695,6 +695,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
               selectedModel={model}
               onModelChange={(newModel, provider) => {
                 setModel(newModel as GeminiModel | SeedreamModel);
+                persistDefaults({ model: newModel });
                 if (data.onUpdateData) {
                   data.onUpdateData(id, {
                     model: newModel as GeminiModel | SeedreamModel,
@@ -706,6 +707,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
               disabled={isLoading}
               onSyncResolution={(res) => {
                 setResolution(res);
+                persistDefaults({ resolution: res });
                 if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
               }}
               onClearAdvancedConfig={() => {
@@ -725,14 +727,17 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
                 resolution={resolution}
                 onAspectRatioChange={(ratio) => {
                   setAspectRatio(ratio);
+                  persistDefaults({ aspectRatio: ratio });
                   if (data.onUpdateData) data.onUpdateData(id, { aspectRatio: ratio });
                 }}
                 onResolutionChange={(res) => {
                   setResolution(res);
+                  persistDefaults({ resolution: res });
                   if (data.onUpdateData) data.onUpdateData(id, { resolution: res });
                 }}
                 onModelChange={(newModel) => {
                   setModel(newModel);
+                  persistDefaults({ model: newModel });
                   if (data.onUpdateData) data.onUpdateData(id, { model: newModel });
                 }}
                 isLoading={isLoading}
