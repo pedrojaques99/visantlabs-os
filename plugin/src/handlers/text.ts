@@ -12,13 +12,19 @@ function collectTextNodes(nodes: readonly SceneNode[]): TextNode[] {
   return result;
 }
 
+export async function scanFontsInPage(): Promise<{ groups: FontGroup[] }> {
+  return groupFonts(collectTextNodes(figma.currentPage.children));
+}
+
 export async function scanFontsInSelection(): Promise<{ groups: FontGroup[] }> {
   const selection = figma.currentPage.selection;
   if (selection.length === 0) {
     return { groups: [] };
   }
+  return groupFonts(collectTextNodes(selection));
+}
 
-  const textNodes = collectTextNodes(selection);
+function groupFonts(textNodes: TextNode[]): { groups: FontGroup[] } {
   const map = new Map<string, FontGroup>();
 
   for (const node of textNodes) {

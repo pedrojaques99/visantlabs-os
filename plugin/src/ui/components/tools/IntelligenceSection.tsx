@@ -5,7 +5,6 @@ import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
 import { FileJson, Layers, StickyNote, BookOpen } from 'lucide-react';
 import { NamingGuideModal, SmartScanModal } from '../brand/BrandModals';
-import { useFigmaMessages } from '../../hooks/useFigmaMessages';
 
 export function IntelligenceSection() {
   const { analyze } = useSmartAnalyze();
@@ -28,37 +27,49 @@ export function IntelligenceSection() {
   }, []);
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <OpButton
-          opId="smartScan"
-          runner={runner}
-          message={{ type: 'SMART_SCAN_SELECTION' }}
-          responseTypes={['SMART_SCAN_RESULT']}
-          busyLabel="Scanning selection…"
-          variant="brand"
-          size="sm"
-          className="w-full h-9 font-bold uppercase tracking-wider text-[10px]"
-        >
-          <Layers size={14} className="mr-2" />
-          Smart Scan Selection
-        </OpButton>
-      </div>
-
+    <div className="space-y-2">
       <OpButton
-        opId="analyzeJson"
+        opId="smartScan"
         runner={runner}
-        task={() => analyze('figma-plugin')}
-        busyLabel="Analyzing…"
-        variant="outline"
+        message={{ type: 'SMART_SCAN_SELECTION' }}
+        responseTypes={['SMART_SCAN_RESULT']}
+        busyLabel="Scanning…"
+        variant="brand"
         size="sm"
-        className="w-full h-8 text-[10px]"
+        title="Detect tokens, colors, typography, and components in the selection"
+        className="w-full h-8 font-bold uppercase tracking-wider text-[10px]"
       >
-        <FileJson size={12} className="mr-2 text-neutral-500" />
-        Analyze to JSON
+        <Layers size={12} className="mr-2" />
+        Smart Scan
       </OpButton>
 
-      <div className="pt-2 border-t border-white/5 space-y-3">
+      <div className="grid grid-cols-3 gap-2">
+        <OpButton
+          opId="analyzeJson"
+          runner={runner}
+          task={() => analyze('figma-plugin')}
+          busyLabel="…"
+          variant="outline"
+          size="sm"
+          title="Export selection structure as JSON for AI consumption"
+          className="h-8 text-[10px]"
+        >
+          <FileJson size={11} className="mr-1.5 text-neutral-500" />
+          JSON
+        </OpButton>
+        <OpButton
+          opId="analyzePrompt"
+          runner={runner}
+          task={() => analyze('image-gen')}
+          busyLabel="…"
+          variant="outline"
+          size="sm"
+          title="Generate an image-gen prompt describing the selection"
+          className="h-8 text-[10px]"
+        >
+          <FileJson size={11} className="mr-1.5 text-neutral-500" />
+          Prompt
+        </OpButton>
         <OpButton
           opId="sticky"
           runner={runner}
@@ -69,33 +80,31 @@ export function IntelligenceSection() {
               'Escreva aqui suas considerações sobre o design para que a IA possa usar como contexto.',
           }}
           responseTypes={['OPERATIONS_DONE']}
-          busyLabel="Criando sticky…"
+          busyLabel="…"
           variant="outline"
           size="sm"
-          className="w-full h-8 text-[10px] border-dashed"
+          title="Add a sticky note for AI to read as design context"
+          className="h-8 text-[10px] border-dashed"
         >
-          <StickyNote size={12} className="mr-2 text-neutral-500" />
-          Add Context Sticky Note
+          <StickyNote size={11} className="mr-1.5 text-neutral-500" />
+          Sticky
         </OpButton>
-
-        <button
-          onClick={() => setGuideOpen(true)}
-          className="w-full flex items-center justify-center gap-2 py-2 text-[9px] font-bold text-neutral-500 uppercase tracking-[0.2em] hover:text-brand-cyan transition-colors"
-        >
-          <BookOpen size={10} />
-          Naming Guide
-        </button>
       </div>
+
+      <button
+        onClick={() => setGuideOpen(true)}
+        className="w-full flex items-center justify-center gap-1.5 py-1 text-[8px] text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-widest"
+      >
+        <BookOpen size={9} />
+        Naming Guide
+      </button>
 
       <NamingGuideModal isOpen={guideOpen} onClose={() => setGuideOpen(false)} />
       <SmartScanModal
         isOpen={scanModalOpen}
         items={scanItems}
         onClose={() => setScanModalOpen(false)}
-        onApply={(items) => {
-          // Logic to apply categorized items (syncing to store etc)
-          setScanModalOpen(false);
-        }}
+        onApply={() => setScanModalOpen(false)}
       />
     </div>
   );

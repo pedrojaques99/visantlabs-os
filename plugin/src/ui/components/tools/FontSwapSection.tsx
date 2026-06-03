@@ -184,27 +184,30 @@ export function FontSwapSection() {
   const [families, setFamilies] = useState<string[]>([]);
   const [stylesCache, setStylesCache] = useState<Record<string, string[]>>({});
   const [targets, setTargets] = useState<Record<string, SwapTarget>>({});
+  const [scope, setScope] = useState<'selection' | 'page'>('selection');
   const [scanning, setScanning] = useState(false);
   const [swapping, setSwapping] = useState(false);
   const [result, setResult] = useState<{ swapped: number; failed: string[] } | null>(null);
 
-  const scan = useCallback(async () => {
+  const scan = useCallback(async (scanScope?: 'selection' | 'page') => {
+    const s = scanScope ?? scope;
     setScanning(true);
     setResult(null);
     try {
+      const endpoint = s === 'page' ? 'text.scanFontsPage' : 'text.scanFonts';
       const [fontResult, familyResult] = await Promise.all([
-        client.request('text.scanFonts', {}),
+        client.request(endpoint, {}),
         client.request('variables.getFontFamilies', {}),
       ]);
       setGroups((fontResult as any).groups ?? []);
       setFamilies((familyResult as any) ?? []);
       setTargets({});
     } catch {
-      showToast('Selecione camadas com texto', 'error');
+      showToast(s === 'page' ? 'No text found on page' : 'Select layers with text', 'error');
     } finally {
       setScanning(false);
     }
-  }, [client, showToast]);
+  }, [client, showToast, scope]);
 
   useEffect(() => {
     scan();
@@ -280,11 +283,16 @@ export function FontSwapSection() {
     return (
       <div className="space-y-3">
         <p className="text-[10px] text-muted-foreground text-center py-4">
-          Selecione frames com texto e escaneie.
+          Select frames with text, or scan the whole page.
         </p>
-        <Button variant="outline" size="sm" className="w-full h-7 text-[10px]" onClick={scan}>
-          <RefreshCw size={10} className="mr-1.5" /> Escanear Seleção
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => { setScope('selection'); scan('selection'); }}>
+            <RefreshCw size={10} className="mr-1.5" /> Scan Selection
+          </Button>
+          <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => { setScope('page'); scan('page'); }}>
+            <RefreshCw size={10} className="mr-1.5" /> Scan Page
+          </Button>
+        </div>
       </div>
     );
   }
@@ -355,11 +363,22 @@ export function FontSwapSection() {
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 h-7 text-[10px]"
-          onClick={scan}
+          className="h-7 text-[10px]"
+          title="Re-scan current selection"
+          onClick={() => { setScope('selection'); scan('selection'); }}
           disabled={swapping}
         >
-          <RefreshCw size={10} className="mr-1.5" /> Re-scan
+          <RefreshCw size={10} className="mr-1.5" /> Selection
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 text-[10px]"
+          title="Scan entire current page"
+          onClick={() => { setScope('page'); scan('page'); }}
+          disabled={swapping}
+        >
+          <RefreshCw size={10} className="mr-1.5" /> Page
         </Button>
         <Button
           variant="default"

@@ -140,7 +140,7 @@ for (const root of ROOTS) {
 
 if (violations.length === 0) {
   console.log('\x1b[32m✔ Icon check passed\x1b[0m');
-  process.exit(0);
+  return;
 }
 
 if (!FIX) {

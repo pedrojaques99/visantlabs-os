@@ -63,6 +63,7 @@ export function LintingSection() {
           busyLabel="Linting…"
           variant="outline"
           size="sm"
+          title="Check selection for brand guideline violations"
           className="h-8 text-[10px]"
         >
           <ShieldAlert size={12} className="mr-2 text-neutral-500" />
@@ -76,6 +77,7 @@ export function LintingSection() {
           busyLabel="Fixing…"
           variant="outline"
           size="sm"
+          title="Auto-fix brand violations (colors, fonts, spacing)"
           className="h-8 text-[10px]"
         >
           <ShieldCheck size={12} className="mr-2 text-neutral-500" />
