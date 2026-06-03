@@ -6,7 +6,7 @@
 export interface ParsedChunk {
   text: string;
   source: string;
-  type: 'url' | 'pdf' | 'image' | 'json';
+  type: 'url' | 'pdf' | 'image' | 'json' | 'text';
 }
 
 const PRIVATE_IP_RE =
@@ -82,6 +82,14 @@ export function parseImage(filename: string): ParsedChunk[] {
       type: 'image' as const,
     },
   ];
+}
+
+export function parseText(text: string, filename?: string): ParsedChunk[] {
+  return chunkText(text || '', 2000).map((chunk) => ({
+    text: chunk,
+    source: filename || 'pasted-text',
+    type: 'text' as const,
+  }));
 }
 
 export function parseJson(jsonStr: string, filename?: string): ParsedChunk[] {
