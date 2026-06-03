@@ -1,17 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { Search, X, Plus, SlidersHorizontal } from 'lucide-react';
+import { Search, X, Plus, SlidersHorizontal, Sparkles, Zap } from 'lucide-react';
 import { PageShell } from '@/components/ui/PageShell';
-import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { MiniAppCard, MINIAPP_CATEGORY_CONFIG } from '@/components/playground/MiniAppCard';
 import { getFeed, type MiniAppSummary } from '@/services/playgroundApi';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Zap } from 'lucide-react';
 
 type SortKey = 'newest' | 'likes' | 'popular';
 
@@ -24,7 +21,6 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
 const CATEGORIES = ['all', ...Object.keys(MINIAPP_CATEGORY_CONFIG)] as const;
 
 export const PlaygroundGalleryPage: React.FC = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const [miniApps, setMiniApps] = useState<MiniAppSummary[]>([]);
   const [total, setTotal] = useState(0);
@@ -32,6 +28,8 @@ export const PlaygroundGalleryPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string>('all');
   const [sort, setSort] = useState<SortKey>('newest');
+
+  const [featured, setFeatured] = useState<MiniAppSummary[]>([]);
 
   const loadFeed = useCallback(async () => {
     setIsLoading(true);
@@ -54,6 +52,12 @@ export const PlaygroundGalleryPage: React.FC = () => {
   useEffect(() => {
     loadFeed();
   }, [loadFeed]);
+
+  useEffect(() => {
+    getFeed({ sort: 'likes', take: 4 })
+      .then((r) => setFeatured(r.miniApps))
+      .catch(() => {});
+  }, []);
 
   const filteredApps = useMemo(() => {
     if (!search.trim()) return miniApps;
@@ -143,6 +147,26 @@ export const PlaygroundGalleryPage: React.FC = () => {
           </select>
         </div>
 
+        {/* Featured */}
+        {featured.length > 0 && !search && category === 'all' && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <h2 className="text-sm font-semibold text-neutral-300">Top MiniApps</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {featured.map((app) => (
+                <MiniAppCard
+                  key={app.id}
+                  miniApp={app}
+                  onClick={() => navigate(`/playground/${app.slug}`)}
+                  onFork={(slug) => navigate(`/playground/${slug}`)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -178,6 +202,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
                 key={app.id}
                 miniApp={app}
                 onClick={() => navigate(`/playground/${app.slug}`)}
+                onFork={(slug) => navigate(`/playground/${slug}`)}
               />
             ))}
           </div>

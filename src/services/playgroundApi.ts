@@ -42,12 +42,13 @@ export interface MiniAppFull extends MiniAppSummary {
 export type GenerateEvent =
   | { event: 'status'; data: { message: string } }
   | { event: 'spec'; data: { spec: Record<string, unknown>; meta: Record<string, unknown> } }
+  | { event: 'clarification'; data: { questions: string[]; suggestion: string } }
   | { event: 'complete'; data: { message: string } }
   | { event: 'error'; data: { message: string } };
 
 export async function generateMiniApp(
   prompt: string,
-  opts?: { brandContext?: string; model?: string },
+  opts?: { brandContext?: string; model?: string; images?: string[] },
   onEvent?: (event: GenerateEvent) => void
 ): Promise<{ spec: Record<string, unknown>; meta: Record<string, unknown> } | null> {
   const res = await fetch(`${API_BASE}/generate`, {
@@ -107,7 +108,7 @@ export async function generateMiniApp(
 export async function iterateMiniApp(
   prompt: string,
   currentSpec: Record<string, unknown>,
-  opts?: { model?: string },
+  opts?: { brandContext?: string; model?: string; images?: string[] },
   onEvent?: (event: GenerateEvent) => void
 ) {
   const res = await fetch(`${API_BASE}/iterate`, {
@@ -243,4 +244,10 @@ export async function shareMiniApp(id: string) {
   const res = await fetch(`${API_BASE}/${id}/share`, { method: 'POST', headers: getHeaders() });
   if (!res.ok) throw new Error('Failed to share');
   return res.json() as Promise<{ shareId: string; shareUrl: string }>;
+}
+
+export async function getBrandContext(guidelineId: string): Promise<{ context: string; brandName: string }> {
+  const res = await fetch(`${API_BASE}/brand-context/${guidelineId}`, { headers: getHeaders() });
+  if (!res.ok) throw new Error('Failed to fetch brand context');
+  return res.json();
 }
