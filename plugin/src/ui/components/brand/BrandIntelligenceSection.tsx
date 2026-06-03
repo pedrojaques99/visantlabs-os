@@ -12,7 +12,8 @@ export function BrandIntelligenceSection() {
   const { brandGuideline, isGenerating } = usePluginStore();
   const runner = useOpRunner({ globalBusy: isGenerating });
   const { run: runImport, isImporting } = useBrandImport();
-  const { run: runStrategyIngest, isIngesting } = useBrandStrategyIngest();
+  const { run: runStrategyIngest, isIngesting, hasSelection } = useBrandStrategyIngest();
+  const selectionCount = usePluginStore((s) => s.selectionDetails.length);
 
   if (!brandGuideline) {
     return (
@@ -49,7 +50,10 @@ export function BrandIntelligenceSection() {
             disabled={isIngesting || isImporting || isGenerating}
             variant="outline"
             size="sm"
-            title="Extract text from the current page and populate brand strategy fields"
+            title={hasSelection
+              ? `Extract text from ${selectionCount} selected frame${selectionCount > 1 ? 's' : ''} and populate brand strategy`
+              : 'Extract text from the current page and populate brand strategy fields'
+            }
             className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
           >
             {isIngesting ? (
@@ -57,7 +61,11 @@ export function BrandIntelligenceSection() {
             ) : (
               <FileText size={12} className="mr-2" />
             )}
-            {isIngesting ? 'Extracting strategy…' : 'Populate Strategy from Page'}
+            {isIngesting
+              ? 'Extracting strategy…'
+              : hasSelection
+                ? `Populate Strategy from ${selectionCount} Frame${selectionCount > 1 ? 's' : ''}`
+                : 'Populate Strategy from Page'}
           </Button>
 
           <OpButton

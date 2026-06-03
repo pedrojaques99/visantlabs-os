@@ -16,20 +16,38 @@ export function useBrandStrategyIngest() {
   const client = useClient();
   const { call } = useApi();
   const showToast = usePluginStore((s) => s.showToast);
+  const selectionDetails = usePluginStore((s) => s.selectionDetails);
+
+  const hasSelection = selectionDetails.length > 0;
 
   const run = useCallback(async () => {
-    const { linkedGuideline } = usePluginStore.getState();
+    const { linkedGuideline, selectionDetails: sel } = usePluginStore.getState();
     if (!linkedGuideline) {
       showToast('Load a brand guideline first', 'warning');
       return null;
     }
 
+    const nodeIds = sel.length > 0 ? sel.map((s) => s.id) : undefined;
+    const scopeLabel = nodeIds
+      ? `${sel.length} frame${sel.length > 1 ? 's' : ''}`
+      : 'page';
+
     setIsIngesting(true);
     try {
-      const { markdown } = await client.request('export.textToMarkdown', { includeHidden: false });
+      showToast(`Extracting from ${scopeLabel}…`, 'info');
+
+      const { markdown, scope } = await client.request('export.textToMarkdown', {
+        includeHidden: false,
+        ...(nodeIds ? { nodeIds } : {}),
+      });
 
       if (!markdown || markdown.includes('_No text layers found')) {
-        showToast('No text found on this page', 'warning');
+        showToast(
+          scope === 'selection'
+            ? 'No text found in selected frames'
+            : 'No text found on this page',
+          'warning'
+        );
         return null;
       }
 
@@ -55,7 +73,12 @@ export function useBrandStrategyIngest() {
         brandHydrationAtMs: Date.now(),
       });
 
-      showToast('Strategy populated from page texts', 'success');
+      showToast(
+        scope === 'selection'
+          ? `Strategy populated from ${scopeLabel}`
+          : 'Strategy populated from page texts',
+        'success'
+      );
       return result;
     } catch (err: any) {
       showToast(err.message || 'Failed to populate strategy', 'error');
@@ -65,5 +88,5 @@ export function useBrandStrategyIngest() {
     }
   }, [client, call, showToast]);
 
-  return { run, isIngesting };
+  return { run, isIngesting, hasSelection };
 }

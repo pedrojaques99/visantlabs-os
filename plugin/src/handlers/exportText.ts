@@ -77,22 +77,34 @@ function formatEntry(entry: TextEntry, maxFontSize: number): string {
 
 export async function exportTextToMarkdown(opts: {
   includeHidden?: boolean;
-}): Promise<{ markdown: string; filename: string }> {
+  nodeIds?: string[];
+}): Promise<{ markdown: string; filename: string; scope: 'selection' | 'page' }> {
   const includeHidden = opts.includeHidden ?? false;
   const entries: TextEntry[] = [];
   const page = figma.currentPage;
   const pageName = page.name || 'Untitled';
   const docName = figma.root.name || 'Untitled';
 
-  for (const topLevel of page.children) {
+  const useSelection = opts.nodeIds && opts.nodeIds.length > 0;
+  const roots: readonly SceneNode[] = useSelection
+    ? opts.nodeIds!.map((id) => figma.getNodeById(id)).filter((n): n is SceneNode => n !== null && 'visible' in n)
+    : page.children;
+
+  for (const topLevel of roots) {
     collectTexts(topLevel, entries, topLevel.name, topLevel.name, includeHidden);
   }
 
+  const scope: 'selection' | 'page' = useSelection ? 'selection' : 'page';
+
   if (entries.length === 0) {
     const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const noTextMsg = useSelection
+      ? '_No text layers found in the selected frames._'
+      : '_No text layers found on this page._';
     return {
-      markdown: `# ${docName} — ${pageName}\n\n_No text layers found on this page._\n`,
+      markdown: `# ${docName} — ${pageName}\n\n${noTextMsg}\n`,
       filename: `${sanitize(docName)}_${sanitize(pageName)}_texts.md`,
+      scope,
     };
   }
 
@@ -117,5 +129,5 @@ export async function exportTextToMarkdown(opts: {
 
   const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9_-]/g, '_');
   const filename = `${sanitize(docName)}_${sanitize(pageName)}_texts.md`;
-  return { markdown: md, filename };
+  return { markdown: md, filename, scope };
 }

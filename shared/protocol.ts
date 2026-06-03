@@ -95,8 +95,8 @@ export interface OpMap {
 
   // ── Export ──
   'export.textToMarkdown': {
-    payload: { includeHidden?: boolean };
-    result: { markdown: string; filename: string };
+    payload: { includeHidden?: boolean; nodeIds?: string[] };
+    result: { markdown: string; filename: string; scope: 'selection' | 'page' };
   };
 
   // ── Dev / Misc ──

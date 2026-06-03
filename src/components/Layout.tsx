@@ -722,7 +722,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           className={cn(
             'flex-1 relative',
             location.pathname.startsWith('/canvas/') ||
-              location.pathname.startsWith('/mockupmachine')
+              location.pathname.startsWith('/mockupmachine') ||
+              location.pathname.startsWith('/playground')
               ? 'overflow-hidden'
               : ''
           )}
@@ -739,6 +740,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           !location.pathname.startsWith('/grid-paint') &&
           !location.pathname.startsWith('/grid-machine') &&
           !location.pathname.startsWith('/labs/wind-tunnel') &&
+          !location.pathname.startsWith('/playground') &&
           location.pathname !== '/' && (
             <ASCIIFooter
               className={location.pathname === '/' ? 'hidden lg:block' : ''}
