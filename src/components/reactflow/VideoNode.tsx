@@ -30,6 +30,7 @@ import { NodeButton } from './shared/node-button';
 import { Input } from '@/components/ui/input';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { toast } from 'sonner';
+import { useOutputDefaults } from '@/hooks/canvas/useOutputDefaults';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 import {
@@ -79,15 +80,16 @@ export const VideoNode = memo(
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Local state synced from nodeData
+    const { defaults: outputDefaults, persist: persistDefaults } = useOutputDefaults('video');
     const [prompt, setPrompt] = useState(nodeData.prompt || '');
     const [negativePrompt, setNegativePrompt] = useState(nodeData.negativePrompt || '');
-    const [model, setModel] = useState<string>(nodeData.model || DEFAULT_MODEL);
+    const [model, setModel] = useState<string>(nodeData.model || outputDefaults.model || DEFAULT_MODEL);
     const [mode, setMode] = useState<GenerationMode>(nodeData.mode || GenerationMode.TEXT_TO_VIDEO);
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
-      nodeData.aspectRatio || DEFAULT_ASPECT_RATIO
+      nodeData.aspectRatio || outputDefaults.aspectRatio || DEFAULT_ASPECT_RATIO
     );
     const [resolution, setResolution] = useState<Resolution>(
-      nodeData.resolution || DEFAULT_RESOLUTION
+      nodeData.resolution || outputDefaults.resolution || DEFAULT_RESOLUTION
     );
     const [duration, setDuration] = useState<string>(nodeData.duration || DEFAULT_DURATION);
     const [isLooping, setIsLooping] = useState<boolean>(nodeData.isLooping || false);
@@ -562,6 +564,7 @@ export const VideoNode = memo(
                 onChange={(v) => {
                   const caps = getVideoModelConfig(v);
                   setModel(v);
+                  persistDefaults({ model: v });
                   // Reset duration to model default if current is invalid
                   if (caps && !caps.durations.includes(duration)) {
                     setDuration(caps.defaultDuration);
@@ -613,6 +616,7 @@ export const VideoNode = memo(
                   value={aspectRatio}
                   onChange={(r) => {
                     setAspectRatio(r);
+                    persistDefaults({ aspectRatio: r });
                     updateData({ aspectRatio: r });
                   }}
                   disabled={isLoading}
@@ -642,6 +646,7 @@ export const VideoNode = memo(
                   value={resolution}
                   onChange={(r) => {
                     setResolution(r);
+                    persistDefaults({ resolution: r });
                     updateData({ resolution: r });
                   }}
                   model={model as any}
