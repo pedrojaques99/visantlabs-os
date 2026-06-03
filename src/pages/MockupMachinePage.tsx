@@ -3453,7 +3453,7 @@ Generate the new mockup image with the requested changes applied.`;
                   </div>
                 )}
 
-                <div className="flex-1 min-h-0 w-full relative p-2 md:p-6 lg:p-8">
+                <div className="flex-1 min-h-0 w-full relative p-2 md:p-6 lg:p-8 pb-20 md:pb-24">
                   {/* Content Rendering */}
                   <div className="h-full w-full min-w-0 animate-fade-in-up overflow-hidden">
                     <MockupDisplay
@@ -3484,6 +3484,25 @@ Generate the new mockup image with the requested changes applied.`;
                       feedbackContext={getFeedbackContext}
                       feedbackRatings={feedbackRatings}
                       onFeedbackRatingChange={handleFeedbackRatingChange}
+                    />
+                  </div>
+                </div>
+
+                {/* Bottom Action Bar — fixed generation controls */}
+                <div className="absolute bottom-0 left-0 right-0 z-30 px-4 pb-4 pt-2 pointer-events-none">
+                  <div className="pointer-events-auto">
+                    <SurpriseMeControl
+                      onSurpriseMe={handleSurpriseMeWithDice}
+                      isGeneratingPrompt={isGeneratingPrompt}
+                      isDiceAnimating={false}
+                      isSurpriseMeMode={isSurpriseMeMode}
+                      setIsSurpriseMeMode={() => handleSurpriseMeWithDice(!isSurpriseMeMode)}
+                      onGeneratePrompt={() => handleGenerateSmartPrompt(autoGenerate)}
+                      onGenerateOutputs={handleGenerateClick}
+                      isGenerateDisabled={isGenerateDisabled}
+                      isGeneratingOutputs={isLoading.some(Boolean)}
+                      isPromptReady={isPromptReady}
+                      uploadedImage={uploadedImage}
                     />
                   </div>
                 </div>

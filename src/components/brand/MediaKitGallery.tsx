@@ -65,7 +65,8 @@ const classifyFile = (file: File): 'logo' | 'media' => {
   return 'media';
 };
 
-const detectFormat = (url: string): string => {
+const detectFormat = (url?: string): string => {
+  if (!url) return '';
   const clean = url.split('?')[0].toLowerCase();
   if (clean.endsWith('.svg')) return 'SVG';
   if (clean.endsWith('.png')) return 'PNG';
@@ -330,7 +331,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
   }, [readOnly, isPanelHovered, handleUpload]);
 
   const displayedMedia = compact ? media.slice(0, 12) : media;
-  const displayedLogos = compact ? logos.slice(0, 12) : logos;
+  const safeLogs = logos.filter((l) => l.url);
+  const displayedLogos = compact ? safeLogs.slice(0, 12) : safeLogs;
 
   return (
     <div

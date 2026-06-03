@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Download,
   RefreshCw,
@@ -14,6 +14,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GlitchPickaxe } from '@/components/ui/GlitchPickaxe';
+import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { ReImaginePanel } from '../ReImaginePanel';
 import { useMockupLike } from '@/hooks/useMockupLike';
 import { isSafeUrl, downloadImage } from '@/utils/imageUtils';
@@ -96,30 +97,9 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
     const { t } = useTranslation();
     const [showReImaginePanel, setShowReImaginePanel] = useState(false);
     const [localIsLiked, setLocalIsLiked] = useState(isLiked);
-    const loadingStartTimeRef = useRef<number | null>(null);
-    const [elapsedTime, setElapsedTime] = useState(0);
-
     useEffect(() => {
       setLocalIsLiked(isLiked);
     }, [isLiked]);
-
-    useEffect(() => {
-      if (isLoading && !base64Image) {
-        if (loadingStartTimeRef.current === null) {
-          loadingStartTimeRef.current = Date.now();
-          setElapsedTime(0);
-        }
-        const interval = setInterval(() => {
-          if (loadingStartTimeRef.current !== null) {
-            setElapsedTime(Math.floor((Date.now() - loadingStartTimeRef.current) / 1000));
-          }
-        }, 1000);
-        return () => clearInterval(interval);
-      } else {
-        loadingStartTimeRef.current = null;
-        setElapsedTime(0);
-      }
-    }, [isLoading, base64Image]);
 
     const { toggleLike: handleToggleLikeHook } = useMockupLike({
       mockupId: mockupId || undefined,
@@ -182,13 +162,16 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:scale-110 transition-transform duration-700">
               <GlitchPickaxe />
             </div>
-            {isGeneratingPrompt && (
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center animate-pulse">
-                <span className="text-[10px] font-mono font-bold text-brand-cyan tracking-[0.2em] uppercase">
-                  Preparing Prompt
-                </span>
-              </div>
-            )}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[80%] max-w-[240px]">
+              <PremiumGlitchLoader
+                color="#00d2ff"
+                steps={
+                  isGeneratingPrompt
+                    ? ['Preparando', 'Analisando', 'Compondo', 'Conceituando', 'Sintetizando']
+                    : ['Criando', 'Desenhando', 'Esculpindo', 'Refinando', 'Moldando', 'Lapidando']
+                }
+              />
+            </div>
           </div>
         )}
 
@@ -229,13 +212,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
           </div>
         )}
 
-        {isLoading && elapsedTime > 0 && !base64Image && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-            <span className="px-3 py-1 rounded-full bg-neutral-950/60 backdrop-blur-md border border-neutral-800 text-neutral-400 text-[10px] font-mono shadow-xl">
-              {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
-            </span>
-          </div>
-        )}
+        {/* Timer removed — PremiumGlitchLoader handles timer + status in one unified display */}
 
         {/* Action Overlay - pointer-events-none so image stays clickable; only buttons get pointer-events-auto */}
         {canInteract && (

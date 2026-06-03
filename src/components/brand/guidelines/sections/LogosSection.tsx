@@ -106,7 +106,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
             className="grid gap-2"
             style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}
           >
-            {logos.map((logo, i) => (
+            {logos.filter((l) => l.url).map((logo, i) => (
               <div
                 key={i}
                 className="relative group/logo flex flex-col items-center gap-1.5 p-3 rounded-md border border-neutral-800 bg-white/[0.03] hover:border-white/10 transition-colors"

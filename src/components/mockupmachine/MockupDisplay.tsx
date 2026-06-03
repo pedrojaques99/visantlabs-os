@@ -212,12 +212,13 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
                 onFeedbackRatingChange={
                   onFeedbackRatingChange ? (r) => onFeedbackRatingChange(index, r) : undefined
                 }
+                isGeneratingPrompt={isGeneratingPrompt && isItemLoading && !mockups[index]}
               />
             );
           })}
 
-          {/* Placeholder card during prompt generation */}
-          {isGeneratingPrompt && (
+          {/* Placeholder card during prompt generation — only if no normal loading cards exist */}
+          {isGeneratingPrompt && !isLoading.some(Boolean) && (
             <MockupCard
               key="prompt-generating"
               className="min-w-0 w-full"

@@ -272,6 +272,13 @@ export const usePluginStore = create<PluginStore>()(
       set((state) => {
         state.devMode = !state.devMode;
       }),
+
+    addLogoSlot: (name: string) =>
+      set((state) => {
+        if (!state.logos.some((l) => l.name === name)) {
+          state.logos.push({ name, src: undefined, loaded: false });
+        }
+      }),
   }))
 );
 

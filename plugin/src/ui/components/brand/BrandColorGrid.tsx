@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { usePluginStore } from '../../store';
 import { useBrandSync } from '../../hooks/useBrandSync';
-import { MousePointer2 } from 'lucide-react';
+import { MousePointer2, Pipette } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { cn } from '@/lib/utils';
 
 const COLOR_ROLES = [
   { role: 'primary', label: 'Pri' },
@@ -17,6 +18,7 @@ export function BrandColorGrid() {
   const { selectedColors, addSelectedColor, designTokens, linkedGuideline } = usePluginStore();
   const { updateBrandGuideline } = useBrandSync();
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const [pendingHex, setPendingHex] = useState<{ hex: string; name?: string } | null>(null);
   const [activeRole, setActiveRole] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
@@ -66,10 +68,15 @@ export function BrandColorGrid() {
     }
   };
 
-  const pickFromSelection = (role: string) => {
-    setActiveRole(role);
-    setIsCapturing(true);
-    parent.postMessage({ pluginMessage: { type: 'GET_SELECTION_FILL' } }, 'https://www.figma.com');
+  const handleSlotClick = (role: string) => {
+    if (pendingHex) {
+      setColor(role, pendingHex.hex, pendingHex.name);
+      setPendingHex(null);
+    } else {
+      setActiveRole(role);
+      setIsCapturing(true);
+      parent.postMessage({ pluginMessage: { type: 'GET_SELECTION_FILL' } }, 'https://www.figma.com');
+    }
   };
 
   const openNativePicker = (role: string) => {
@@ -79,27 +86,75 @@ export function BrandColorGrid() {
 
   return (
     <div className="space-y-3">
+      {/* File Variables — pick a color first */}
+      {figmaColors.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[8px] font-mono uppercase tracking-widest text-neutral-600 px-0.5">
+            File variables
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {figmaColors.slice(0, 16).map((c, i) => {
+              const hex = c.hex || (c as any).value;
+              const isSelected = pendingHex?.hex === hex;
+              return (
+                <button
+                  key={`${hex}-${i}`}
+                  type="button"
+                  onClick={() => setPendingHex(isSelected ? null : { hex, name: c.name })}
+                  title={c.name || hex}
+                  className={cn(
+                    'w-5 h-5 rounded border transition-all hover:scale-110',
+                    isSelected
+                      ? 'border-brand-cyan ring-1 ring-brand-cyan/50 scale-110'
+                      : 'border-white/10 hover:border-brand-cyan/40'
+                  )}
+                  style={{ backgroundColor: hex }}
+                />
+              );
+            })}
+          </div>
+          <p className="text-[8px] text-neutral-500 italic px-0.5">
+            {pendingHex
+              ? `${pendingHex.name || pendingHex.hex} selected — tap a slot below`
+              : 'Tap a color, then tap a slot to assign'}
+          </p>
+        </div>
+      )}
+
+      {/* Color Slots */}
       <div className="grid grid-cols-6 gap-1.5">
         {COLOR_ROLES.map((item) => {
           const color = selectedColors.get(item.role);
           const isActive = activeRole === item.role && isCapturing;
+          const awaitingSlot = !!pendingHex;
           return (
             <div key={item.role} className="flex flex-col items-center gap-1">
               <button
                 type="button"
-                onClick={() => pickFromSelection(item.role)}
+                onClick={() => handleSlotClick(item.role)}
                 onDoubleClick={() => openNativePicker(item.role)}
-                title="Click: pick from selection · Double-click: custom color"
-                className="w-full aspect-square rounded-lg border transition-all relative overflow-hidden group"
+                title={pendingHex ? `Assign ${pendingHex.hex} to ${item.label}` : 'Click: pick from selection · Double-click: custom color'}
+                className={cn(
+                  'w-full aspect-square rounded-lg border transition-all relative overflow-hidden group',
+                  awaitingSlot && 'border-brand-cyan/40 animate-pulse'
+                )}
                 style={{
                   backgroundColor: color?.hex || 'transparent',
-                  borderColor: color ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)',
+                  borderColor: awaitingSlot
+                    ? undefined
+                    : color
+                      ? 'rgba(255,255,255,0.08)'
+                      : 'rgba(255,255,255,0.15)',
                   borderStyle: color ? 'solid' : 'dashed',
                 }}
               >
                 {isActive ? (
                   <span className="absolute inset-0 flex items-center justify-center">
                     <GlitchLoader size={10} />
+                  </span>
+                ) : awaitingSlot && !color ? (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <Pipette size={10} className="text-brand-cyan" />
                   </span>
                 ) : !color ? (
                   <span className="absolute inset-0 flex items-center justify-center">
@@ -122,40 +177,6 @@ export function BrandColorGrid() {
           );
         })}
       </div>
-
-      {figmaColors.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-[8px] font-mono uppercase tracking-widest text-neutral-600 px-0.5">
-            File variables
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {figmaColors.slice(0, 16).map((c, i) => {
-              const hex = c.hex || (c as any).value;
-              return (
-                <button
-                  key={`${hex}-${i}`}
-                  type="button"
-                  onClick={() => {
-                    if (activeRole) {
-                      setColor(activeRole, hex, c.name);
-                      setActiveRole(null);
-                    }
-                  }}
-                  title={c.name || hex}
-                  disabled={!activeRole}
-                  className="w-5 h-5 rounded border border-white/10 transition-all hover:scale-110 hover:border-brand-cyan/40 disabled:opacity-30 disabled:hover:scale-100"
-                  style={{ backgroundColor: hex }}
-                />
-              );
-            })}
-          </div>
-          {!activeRole && figmaColors.length > 0 && (
-            <p className="text-[8px] text-neutral-600 italic px-0.5">
-              Click a color slot first, then pick from variables
-            </p>
-          )}
-        </div>
-      )}
 
       <input ref={colorInputRef} type="color" onChange={handleNativeColor} className="hidden" />
     </div>

@@ -90,7 +90,23 @@ export async function exportComponentThumbnails(components: ComponentInfo[]): Pr
 }
 
 /**
- * Get component from current selection
+ * Export thumbnail for any exportable node (frames, groups, etc.)
+ */
+async function exportNodeThumbnail(node: SceneNode): Promise<string | undefined> {
+  try {
+    const bytes = await node.exportAsync({
+      format: 'PNG',
+      constraint: { type: 'HEIGHT', value: 64 },
+    });
+    const b64 = figma.base64Encode(bytes);
+    return `data:image/png;base64,${b64}`;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Get component from current selection — supports Component, Instance, Frame, and Group
  */
 export async function getComponentFromSelection(): Promise<ComponentInfo | null> {
   const sel = figma.currentPage.selection;
@@ -122,6 +138,16 @@ export async function getComponentFromSelection(): Promise<ComponentInfo | null>
     } catch {
       // Component may not be accessible
     }
+  }
+  if (node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'RECTANGLE' || node.type === 'VECTOR') {
+    const thumbnail = await exportNodeThumbnail(node);
+    return {
+      id: node.id,
+      name: node.name,
+      key: node.id,
+      folderPath: getFolderPath(node),
+      thumbnail,
+    };
   }
   return null;
 }

@@ -4,7 +4,7 @@ import { useFigmaMessages } from './useFigmaMessages';
 import { usePluginStore } from '../store';
 import type { LogoSlot } from '../store/types';
 
-type Variant = 'light' | 'dark' | 'accent';
+type Variant = string;
 
 interface UploadedLogo {
   id?: string;
@@ -30,7 +30,7 @@ interface UploadedLogo {
 export function useLogoUpload() {
   const { call } = useApi();
   const { send } = useFigmaMessages();
-  const [busySlot, setBusySlot] = useState<Variant | null>(null);
+  const [busySlot, setBusySlot] = useState<string | null>(null);
 
   const patchSlot = useCallback((slot: Variant, patch: Partial<LogoSlot>) => {
     const store = usePluginStore.getState();
