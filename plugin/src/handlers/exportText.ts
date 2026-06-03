@@ -87,7 +87,9 @@ export async function exportTextToMarkdown(opts: {
 
   const useSelection = opts.nodeIds && opts.nodeIds.length > 0;
   const roots: readonly SceneNode[] = useSelection
-    ? opts.nodeIds!.map((id) => figma.getNodeById(id)).filter((n): n is SceneNode => n !== null && 'visible' in n)
+    ? opts
+        .nodeIds!.map((id) => figma.getNodeById(id))
+        .filter((n): n is SceneNode => n !== null && 'visible' in n)
     : page.children;
 
   for (const topLevel of roots) {

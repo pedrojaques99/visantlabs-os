@@ -175,7 +175,15 @@ function validateSpec(parsed: Record<string, unknown>): { valid: boolean; issues
     return { valid: false, issues: ['Missing root or elements'] };
   }
 
-  const POWER_COMPONENTS = ['ShaderPreview', 'Scene3D', 'VideoPlayer', 'ImageCanvas', 'HalftonePreview', 'RisoPreview', 'MoodboardGrid'];
+  const POWER_COMPONENTS = [
+    'ShaderPreview',
+    'Scene3D',
+    'VideoPlayer',
+    'ImageCanvas',
+    'HalftonePreview',
+    'RisoPreview',
+    'MoodboardGrid',
+  ];
   const allKeys = new Set(Object.keys(elements));
   const bindPaths = new Set<string>();
   const statePaths = new Set<string>();
@@ -240,7 +248,9 @@ function validateSpec(parsed: Record<string, unknown>): { valid: boolean; issues
   const types = new Set(Object.values(elements).map((el: any) => el.type));
   const hasPowerComponent = POWER_COMPONENTS.some((c) => types.has(c));
   if (!types.has('ToolPanel') && !types.has('Tabs') && !types.has('Metric') && !hasPowerComponent) {
-    issues.push('Missing ToolPanel sidebar — use the standard Tool-style layout with ToolPanel + ToolPanelHeader + ToolPanelContent');
+    issues.push(
+      'Missing ToolPanel sidebar — use the standard Tool-style layout with ToolPanel + ToolPanelHeader + ToolPanelContent'
+    );
   }
 
   // Check for export section
@@ -248,7 +258,9 @@ function validateSpec(parsed: Record<string, unknown>): { valid: boolean; issues
     (el: any) => el.type === 'ToolPanelSection' && el.props?.title?.toUpperCase() === 'EXPORT'
   );
   if (!hasExportSection && types.has('ToolPanel')) {
-    issues.push('Missing EXPORT section at bottom of ToolPanelContent — add a ToolPanelSection with title "EXPORT" containing a Button with an action');
+    issues.push(
+      'Missing EXPORT section at bottom of ToolPanelContent — add a ToolPanelSection with title "EXPORT" containing a Button with an action'
+    );
   }
 
   return { valid: issues.length === 0, issues };
@@ -300,9 +312,8 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
     let stateDefaults: Record<string, unknown> | undefined;
 
     // Build user message parts (text + optional images)
-    const userParts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
-      { text: sanitizeForPrompt(prompt) },
-    ];
+    const userParts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> =
+      [{ text: sanitizeForPrompt(prompt) }];
     if (images?.length) {
       for (const b64 of images.slice(0, 4)) {
         const mimeType = b64.startsWith('/9j/') ? 'image/jpeg' : 'image/png';
@@ -336,7 +347,8 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
           raw += text;
           chunkCount++;
           if (chunkCount === 1) send('status', { message: 'Building spec...' });
-          if (chunkCount % 5 === 0) send('status', { message: `Generating... (${raw.length} chars)` });
+          if (chunkCount % 5 === 0)
+            send('status', { message: `Generating... (${raw.length} chars)` });
         }
       } catch (streamErr: any) {
         console.error('[playground/generate] stream error:', streamErr?.message);
@@ -362,7 +374,10 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
         }
         messages.push(
           { role: 'model', parts: [{ text: raw }] },
-          { role: 'user', parts: [{ text: 'Your output was not valid JSON. Return ONLY a valid JSON object.' }] }
+          {
+            role: 'user',
+            parts: [{ text: 'Your output was not valid JSON. Return ONLY a valid JSON object.' }],
+          }
         );
         continue;
       }
@@ -385,7 +400,14 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
         }
         messages.push(
           { role: 'model', parts: [{ text: cleaned }] },
-          { role: 'user', parts: [{ text: 'Missing "root" or "elements" in spec. Return the full spec with root, elements, stateDefaults, and meta.' }] }
+          {
+            role: 'user',
+            parts: [
+              {
+                text: 'Missing "root" or "elements" in spec. Return the full spec with root, elements, stateDefaults, and meta.',
+              },
+            ],
+          }
         );
         continue;
       }
@@ -395,7 +417,16 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
         send('status', { message: `Found ${validation.issues.length} issue(s), auto-fixing...` });
         messages.push(
           { role: 'model', parts: [{ text: cleaned }] },
-          { role: 'user', parts: [{ text: `Your spec has these issues — fix ALL of them and return the corrected FULL spec:\n${validation.issues.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}` }] }
+          {
+            role: 'user',
+            parts: [
+              {
+                text: `Your spec has these issues — fix ALL of them and return the corrected FULL spec:\n${validation.issues
+                  .map((i, idx) => `${idx + 1}. ${i}`)
+                  .join('\n')}`,
+              },
+            ],
+          }
         );
         continue;
       }
@@ -468,16 +499,18 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
     credited = true;
 
     const systemInstruction =
-      PLAYGROUND_ITERATE_PROMPT + JSON.stringify(currentSpec, null, 2) + '\n\n' + CATALOG_PROMPT +
+      PLAYGROUND_ITERATE_PROMPT +
+      JSON.stringify(currentSpec, null, 2) +
+      '\n\n' +
+      CATALOG_PROMPT +
       (brandContext ? `\n\n## User Brand Context\n${sanitizeForPrompt(brandContext)}` : '');
 
     const selectedModel =
       model && Object.values(GEMINI_MODELS).includes(model as any) ? model : GEMINI_MODELS.PRO_3_1;
 
     // Build user message parts (text + optional images)
-    const iterParts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
-      { text: sanitizeForPrompt(prompt) },
-    ];
+    const iterParts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> =
+      [{ text: sanitizeForPrompt(prompt) }];
     if (images?.length) {
       for (const b64 of images.slice(0, 4)) {
         const mimeType = b64.startsWith('/9j/') ? 'image/jpeg' : 'image/png';
@@ -505,7 +538,8 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
         raw += text;
         iterChunkCount++;
         if (iterChunkCount === 1) send('status', { message: 'Updating spec...' });
-        if (iterChunkCount % 5 === 0) send('status', { message: `Generating... (${raw.length} chars)` });
+        if (iterChunkCount % 5 === 0)
+          send('status', { message: `Generating... (${raw.length} chars)` });
       }
     } catch (streamErr: any) {
       console.error('[playground/iterate] stream error:', streamErr?.message);
@@ -531,7 +565,11 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
         const spec: Record<string, unknown> = { root: parsed.root, elements: parsed.elements };
         if (parsed.stateDefaults) spec.stateDefaults = parsed.stateDefaults;
         send('spec', { spec, meta, stateDefaults: parsed.stateDefaults });
-        send('complete', { message: validation.valid ? 'Updated!' : `Updated with ${validation.issues.length} warning(s)` });
+        send('complete', {
+          message: validation.valid
+            ? 'Updated!'
+            : `Updated with ${validation.issues.length} warning(s)`,
+        });
       } else {
         await refundCredits(req.userId!, 1).catch(() => {});
         send('error', { message: 'Invalid spec. Try again.' });
@@ -1105,16 +1143,24 @@ router.get('/brand-context/:guidelineId', authenticate, async (req: AuthRequest,
     const parts: string[] = [];
 
     if (brandName) parts.push(`Brand: ${brandName}`);
-    if (b.identity?.tagline || b.tagline) parts.push(`Tagline: ${b.identity?.tagline || b.tagline}`);
+    if (b.identity?.tagline || b.tagline)
+      parts.push(`Tagline: ${b.identity?.tagline || b.tagline}`);
     if (b.identity?.description) parts.push(`Description: ${b.identity.description}`);
 
     if (b.colors?.length) {
-      parts.push(`Colors: ${b.colors.map((c: any) => `${c.hex} (${c.name || c.role || ''})`).join(', ')}`);
+      parts.push(
+        `Colors: ${b.colors.map((c: any) => `${c.hex} (${c.name || c.role || ''})`).join(', ')}`
+      );
     }
 
     if (b.typography?.length) {
       const fonts = b.typography.filter((t: any) => t.fontFamily || t.family);
-      if (fonts.length) parts.push(`Typography: ${fonts.map((t: any) => `${t.fontFamily || t.family} ${t.fontStyle || t.style || ''}`).join(', ')}`);
+      if (fonts.length)
+        parts.push(
+          `Typography: ${fonts
+            .map((t: any) => `${t.fontFamily || t.family} ${t.fontStyle || t.style || ''}`)
+            .join(', ')}`
+        );
     }
 
     const logo = b.logos?.find((l: any) => l.url);
@@ -1127,7 +1173,8 @@ router.get('/brand-context/:guidelineId', authenticate, async (req: AuthRequest,
     if (b.tags?.aesthetic?.length) parts.push(`Aesthetic: ${b.tags.aesthetic.join(', ')}`);
     if (b.tags?.tone?.length) parts.push(`Tone: ${b.tags.tone.join(', ')}`);
 
-    if (b.strategy?.positioning?.length) parts.push(`Positioning: ${b.strategy.positioning.join(' | ')}`);
+    if (b.strategy?.positioning?.length)
+      parts.push(`Positioning: ${b.strategy.positioning.join(' | ')}`);
 
     const context = parts.join('\n');
     res.json({ context, brandName });

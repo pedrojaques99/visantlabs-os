@@ -28,9 +28,7 @@ export function useBrandStrategyIngest() {
     }
 
     const nodeIds = sel.length > 0 ? sel.map((s) => s.id) : undefined;
-    const scopeLabel = nodeIds
-      ? `${sel.length} frame${sel.length > 1 ? 's' : ''}`
-      : 'page';
+    const scopeLabel = nodeIds ? `${sel.length} frame${sel.length > 1 ? 's' : ''}` : 'page';
 
     setIsIngesting(true);
     try {
@@ -43,9 +41,7 @@ export function useBrandStrategyIngest() {
 
       if (!markdown || markdown.includes('_No text layers found')) {
         showToast(
-          scope === 'selection'
-            ? 'No text found in selected frames'
-            : 'No text found on this page',
+          scope === 'selection' ? 'No text found in selected frames' : 'No text found on this page',
           'warning'
         );
         return null;

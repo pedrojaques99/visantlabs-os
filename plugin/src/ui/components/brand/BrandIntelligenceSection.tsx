@@ -50,9 +50,12 @@ export function BrandIntelligenceSection() {
             disabled={isIngesting || isImporting || isGenerating}
             variant="outline"
             size="sm"
-            title={hasSelection
-              ? `Extract text from ${selectionCount} selected frame${selectionCount > 1 ? 's' : ''} and populate brand strategy`
-              : 'Extract text from the current page and populate brand strategy fields'
+            title={
+              hasSelection
+                ? `Extract text from ${selectionCount} selected frame${
+                    selectionCount > 1 ? 's' : ''
+                  } and populate brand strategy`
+                : 'Extract text from the current page and populate brand strategy fields'
             }
             className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
           >
@@ -64,8 +67,8 @@ export function BrandIntelligenceSection() {
             {isIngesting
               ? 'Extracting strategy…'
               : hasSelection
-                ? `Populate Strategy from ${selectionCount} Frame${selectionCount > 1 ? 's' : ''}`
-                : 'Populate Strategy from Page'}
+              ? `Populate Strategy from ${selectionCount} Frame${selectionCount > 1 ? 's' : ''}`
+              : 'Populate Strategy from Page'}
           </Button>
 
           <OpButton

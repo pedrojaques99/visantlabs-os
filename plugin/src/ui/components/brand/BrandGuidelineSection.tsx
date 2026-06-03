@@ -129,7 +129,13 @@ export function BrandGuidelineSection() {
                   onClick={() => {
                     clear();
                     parent.postMessage(
-                      { pluginMessage: { type: 'SAVE_BRAND_GUIDELINE', selectedId: null, guideline: null } },
+                      {
+                        pluginMessage: {
+                          type: 'SAVE_BRAND_GUIDELINE',
+                          selectedId: null,
+                          guideline: null,
+                        },
+                      },
                       'https://www.figma.com'
                     );
                   }}
