@@ -79,23 +79,53 @@ export function BrandTab() {
 
         <BrandGuidelineSection />
 
-        <BrandSection title="Logos" icon={ImageIcon} description="Logo variants and assets" collapsible defaultOpen={false}>
+        <BrandSection
+          title="Logos"
+          icon={ImageIcon}
+          description="Logo variants and assets"
+          collapsible
+          defaultOpen={false}
+        >
           <BrandLogoSection />
         </BrandSection>
 
-        <BrandSection title="Colors" icon={Palette} description="Brand color palette" collapsible defaultOpen={false}>
+        <BrandSection
+          title="Colors"
+          icon={Palette}
+          description="Brand color palette"
+          collapsible
+          defaultOpen={false}
+        >
           <BrandColorGrid />
         </BrandSection>
 
-        <BrandSection title="Typography" icon={Type} description="Font families and styles" collapsible defaultOpen={false}>
+        <BrandSection
+          title="Typography"
+          icon={Type}
+          description="Font families and styles"
+          collapsible
+          defaultOpen={false}
+        >
           <BrandTypographySection />
         </BrandSection>
 
-        <BrandSection title="Design System" icon={Settings2} description="Tokens and variables" collapsible defaultOpen={false}>
+        <BrandSection
+          title="Design System"
+          icon={Settings2}
+          description="Tokens and variables"
+          collapsible
+          defaultOpen={false}
+        >
           <DesignSystemSection />
         </BrandSection>
 
-        <BrandSection title="Components" icon={Library} description="Reusable component library" collapsible defaultOpen={false}>
+        <BrandSection
+          title="Components"
+          icon={Library}
+          description="Reusable component library"
+          collapsible
+          defaultOpen={false}
+        >
           <ComponentLibrarySection />
         </BrandSection>
       </div>

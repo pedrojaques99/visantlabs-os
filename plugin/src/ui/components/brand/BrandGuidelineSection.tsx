@@ -200,7 +200,6 @@ export function BrandGuidelineSection() {
             No guidelines yet. Create one to get started.
           </p>
         )}
-
       </div>
 
       <button
