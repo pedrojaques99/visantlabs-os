@@ -17,6 +17,7 @@ import { CacheKey, CACHE_TTL } from '../lib/cache-utils.js';
 import WebSocket, { WebSocketServer } from 'ws';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
+import { rateLimit } from 'express-rate-limit';
 import { env } from '../config/env.js';
 import { formatGeminiHistory } from '../lib/chat/history.js';
 import { resolveRagScope } from '../lib/chat/ragScope.js';
@@ -26,6 +27,15 @@ import type {
   ChatMessage as SharedChatMessage,
   ToolCallRecord as SharedToolCallRecord,
 } from '../../shared/types/chat.js';
+
+// Rate limiter for admin chat mutation endpoints
+const adminChatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
@@ -866,6 +876,7 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
 router.post(
   '/sessions/:id/message/stream',
   validateAdmin,
+  adminChatLimiter,
   async (req: AuthRequest, res: Response) => {
     const session = await getSession(req.params.id, req.userId!).catch(() => null);
     if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
@@ -1007,6 +1018,7 @@ router.post(
 router.post(
   '/sessions/:id/pendings/:pendingId/approve',
   validateAdmin,
+  adminChatLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const session = await getSession(req.params.id, req.userId!);
@@ -1083,6 +1095,7 @@ router.post(
 router.post(
   '/sessions/:id/pendings/:pendingId/reject',
   validateAdmin,
+  adminChatLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const session = await getSession(req.params.id, req.userId!);

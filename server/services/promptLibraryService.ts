@@ -213,7 +213,7 @@ export async function getUserPrompts(userId: string, category?: string): Promise
     sourceType: 'generated',
   };
 
-  if (category) {
+  if (category && typeof category === 'string') {
     query.category = category;
   }
 

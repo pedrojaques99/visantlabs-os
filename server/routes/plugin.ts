@@ -2034,6 +2034,7 @@ router.post(
   '/image-to-prompt/feedback',
   authenticate,
   requireAdmin,
+  agentCommandLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const { feedbackId, success, componentType, improvement, generatedPrompt } = req.body;
@@ -2068,6 +2069,7 @@ router.get(
   '/image-to-prompt/stats',
   authenticate,
   requireAdmin,
+  agentCommandLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const stats = await getFeedbackStats();
@@ -2145,6 +2147,7 @@ router.get(
   '/prompt-library',
   authenticate,
   requireAdmin,
+  agentCommandLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const { category } = req.query;
@@ -2166,6 +2169,7 @@ router.get(
   '/prompt-library/similar',
   authenticate,
   requireAdmin,
+  agentCommandLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const { componentType, tags } = req.query;
@@ -2188,6 +2192,7 @@ router.post(
   '/prompt-library/:id/use',
   authenticate,
   requireAdmin,
+  agentCommandLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const promptId = req.params.id;
@@ -2212,6 +2217,7 @@ router.post(
   '/prompt-library/:id/rate',
   authenticate,
   requireAdmin,
+  agentCommandLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const promptId = req.params.id;
@@ -2451,6 +2457,7 @@ router.post(
   '/smart-analyze/publish',
   authenticate,
   requireAdmin,
+  agentCommandLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
       const { name, prompt, category, tags } = req.body;

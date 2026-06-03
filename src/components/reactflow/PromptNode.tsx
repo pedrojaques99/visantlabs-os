@@ -42,6 +42,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { NODE_LAYOUT } from '@/constants/nodeLayout';
 import { useBaseNode } from '@/hooks/canvas/useBaseNode';
+import { useOutputDefaults } from '@/hooks/canvas/useOutputDefaults';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Connection } from '@xyflow/react';
 
@@ -57,14 +58,15 @@ export const PromptNode = memo(
       id,
       nodeData
     );
+    const { defaults: outputDefaults, persist: persistDefaults } = useOutputDefaults('prompt');
     const [prompt, setPrompt] = useState(nodeData.prompt || '');
     const [model, setModel] = useState<GeminiModel | SeedreamModel>(
-      nodeData.model || GEMINI_MODELS.IMAGE_NB2
+      nodeData.model || (outputDefaults.model as GeminiModel | SeedreamModel) || GEMINI_MODELS.IMAGE_NB2
     );
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
-      nodeData.aspectRatio || DEFAULT_ASPECT_RATIO
+      nodeData.aspectRatio || outputDefaults.aspectRatio || DEFAULT_ASPECT_RATIO
     );
-    const [resolution, setResolution] = useState<Resolution>(nodeData.resolution || '2K');
+    const [resolution, setResolution] = useState<Resolution>(nodeData.resolution || outputDefaults.resolution || '2K');
     const [connectedImage1, setConnectedImage1] = useState<string | undefined>(
       nodeData.connectedImage1
     );
@@ -785,6 +787,7 @@ export const PromptNode = memo(
             selectedModel={model}
             onModelChange={(newModel, provider) => {
               setModel(newModel as GeminiModel | SeedreamModel);
+              persistDefaults({ model: newModel });
               if (nodeData.onUpdateData) {
                 nodeData.onUpdateData(id, {
                   model: newModel as GeminiModel | SeedreamModel,
@@ -796,6 +799,7 @@ export const PromptNode = memo(
             disabled={isLoading}
             onSyncResolution={(res) => {
               setResolution(res);
+              persistDefaults({ resolution: res });
               if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
             }}
             onClearAdvancedConfig={() => {
@@ -836,14 +840,17 @@ export const PromptNode = memo(
                     onAspectRatioChange={(ratio) => {
                       userOverrodeAspectRatio.current = true;
                       setAspectRatio(ratio);
+                      persistDefaults({ aspectRatio: ratio });
                       if (nodeData.onUpdateData) nodeData.onUpdateData(id, { aspectRatio: ratio });
                     }}
                     onResolutionChange={(res) => {
                       setResolution(res);
+                      persistDefaults({ resolution: res });
                       if (nodeData.onUpdateData) nodeData.onUpdateData(id, { resolution: res });
                     }}
                     onModelChange={(newModel) => {
                       setModel(newModel);
+                      persistDefaults({ model: newModel });
                       if (nodeData.onUpdateData) nodeData.onUpdateData(id, { model: newModel });
                     }}
                     isLoading={isLoading}

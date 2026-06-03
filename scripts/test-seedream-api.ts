@@ -18,7 +18,7 @@ async function testSeedreamAPI() {
     process.exit(1);
   }
 
-  console.log(`✅ API Key found: ${API_KEY.substring(0, 10)}...`);
+  console.log(`✅ API Key found: ${API_KEY.substring(0, 4)}${'*'.repeat(Math.max(0, API_KEY.length - 4))}`);
 
   // Step 1: Submit request
   console.log('\n📤 Step 1: Submitting image generation request...');

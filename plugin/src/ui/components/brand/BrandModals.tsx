@@ -46,7 +46,7 @@ export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanMod
           {categorized.map((item) => (
             <div key={item.id} className="border border-border rounded p-2 space-y-2">
               <div className="flex items-center gap-2">
-                {item.thumbnail && (
+                {item.thumbnail && /^https?:\/\//i.test(item.thumbnail) && (
                   <img src={item.thumbnail} alt={item.name} className="w-8 h-8 rounded" />
                 )}
                 <div className="flex-1">
