@@ -748,6 +748,83 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
   }
 });
 
+// Update user fields (inline editing)
+const ALLOWED_USER_FIELDS = new Set([
+  'name',
+  'subscriptionTier',
+  'subscriptionStatus',
+  'monthlyCredits',
+  'creditsUsed',
+  'totalCreditsEarned',
+]);
+
+const VALID_TIERS = new Set(['free', 'starter', 'pro', 'enterprise']);
+const VALID_STATUSES = new Set(['free', 'active', 'inactive', 'canceled', 'past_due']);
+
+router.put('/users/:id', adminUsersLimiter, validateAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const body = req.body;
+    const updateData: Record<string, any> = {};
+
+    for (const field of ALLOWED_USER_FIELDS) {
+      if (field in body) {
+        updateData[field] = body[field];
+      }
+    }
+
+    // Map frontend field name
+    if ('manualCredits' in body && !('totalCreditsEarned' in body)) {
+      updateData.totalCreditsEarned = body.manualCredits;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+
+    // Validate enum fields
+    if (updateData.subscriptionTier && !VALID_TIERS.has(updateData.subscriptionTier)) {
+      return res.status(400).json({ error: 'Invalid subscription tier' });
+    }
+    if (updateData.subscriptionStatus && !VALID_STATUSES.has(updateData.subscriptionStatus)) {
+      return res.status(400).json({ error: 'Invalid subscription status' });
+    }
+
+    // Validate numeric fields
+    for (const numField of ['monthlyCredits', 'creditsUsed', 'totalCreditsEarned']) {
+      if (numField in updateData) {
+        const val = Number(updateData[numField]);
+        if (!Number.isFinite(val) || val < 0) {
+          return res.status(400).json({ error: `Invalid value for ${numField}` });
+        }
+        updateData[numField] = val;
+      }
+    }
+
+    if (updateData.name !== undefined) {
+      updateData.name = ensureString(updateData.name, 'name');
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: updateData,
+      select: { id: true, email: true, name: true },
+    });
+
+    return res.json({ success: true, user });
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.error('Failed to update user:', error);
+    return res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
 // Public endpoint to get presets (for frontend services)
 router.get('/presets/public', async (_req: Request, res: Response) => {
   try {
