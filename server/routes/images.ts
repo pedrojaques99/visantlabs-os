@@ -705,7 +705,11 @@ DO NOT include any text, markdown, or explanation. ONLY JSON.`;
         outputFile,
       ];
 
-      console.log(`🚀 Executing: firecrawl ${args.map((a) => a.length > 50 ? a.slice(0, 50) + '...' : a).join(' ')}`);
+      console.log(
+        `🚀 Executing: firecrawl ${args
+          .map((a) => (a.length > 50 ? a.slice(0, 50) + '...' : a))
+          .join(' ')}`
+      );
 
       try {
         await execFilePromise('firecrawl', args);

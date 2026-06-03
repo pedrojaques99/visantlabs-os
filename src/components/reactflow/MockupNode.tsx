@@ -79,11 +79,15 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
   const [withHuman, setWithHuman] = useState(data.withHuman || false);
   const [customPrompt, setCustomPrompt] = useState(data.customPrompt || '');
   const { defaults: outputDefaults, persist: persistDefaults } = useOutputDefaults('mockup');
-  const [model, setModel] = useState<GeminiModel | SeedreamModel>(data.model || (outputDefaults.model as GeminiModel | SeedreamModel) || DEFAULT_MODEL);
+  const [model, setModel] = useState<GeminiModel | SeedreamModel>(
+    data.model || (outputDefaults.model as GeminiModel | SeedreamModel) || DEFAULT_MODEL
+  );
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
     data.aspectRatio || outputDefaults.aspectRatio || DEFAULT_ASPECT_RATIO
   );
-  const [resolution, setResolution] = useState<Resolution>(data.resolution || outputDefaults.resolution || '1K');
+  const [resolution, setResolution] = useState<Resolution>(
+    data.resolution || outputDefaults.resolution || '1K'
+  );
   const [isBrandActive, setIsBrandActive] = useState<boolean>(
     data.isBrandActive !== undefined
       ? data.isBrandActive
