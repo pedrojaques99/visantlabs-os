@@ -7,4 +7,5 @@ dist-ssr
 package-lock.json
 prisma/generated
 *.log
+scripts
 
