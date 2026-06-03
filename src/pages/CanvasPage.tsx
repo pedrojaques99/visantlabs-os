@@ -817,8 +817,7 @@ export const CanvasPage: React.FC = () => {
     // Try using File System Access API for folder selection
     if ('showDirectoryPicker' in window) {
       try {
-        // @ts-ignore - showDirectoryPicker is not yet in standard types
-        const dirHandle = await window.showDirectoryPicker();
+        const dirHandle = await (window as any).showDirectoryPicker();
 
         toast.info((t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`);
 
@@ -1458,10 +1457,31 @@ export const CanvasPage: React.FC = () => {
   });
 
   // Callback for when drag starts - set ref to prevent useEffect execution
-  // Note: This will be overridden in CollaborativeCanvas for collaborative mode
-  const onNodeDragStart = useCallback(() => {
+  // Alt+drag duplicates the node in place before moving
+  const onNodeDragStart = useCallback((event: React.MouseEvent, node: Node<FlowNodeData>) => {
     isDraggingRef.current = true;
-  }, []);
+    if (event.altKey && node) {
+      addToHistory(nodes, edges, drawing.drawings);
+      const cloneId = generateNodeId(node.type || 'node');
+      const clone: Node<FlowNodeData> = {
+        ...node,
+        id: cloneId,
+        selected: false,
+        data: {
+          ...node.data,
+          isLoading: false,
+          isGenerating: false,
+          isDescribing: false,
+          isAnalyzing: false,
+          isGeneratingPrompt: false,
+          isSuggestingPrompts: false,
+          resultImageBase64: undefined,
+          resultImageUrl: undefined,
+        } as FlowNodeData,
+      };
+      setNodes((nds) => [...nds, clone]);
+    }
+  }, [setNodes, nodes, edges, drawing.drawings, addToHistory]);
 
   // Wrapper for onNodeDragStop - reset ref and call original handler
   const onNodeDragStop = useCallback(() => {

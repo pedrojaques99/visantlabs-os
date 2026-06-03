@@ -23,7 +23,7 @@ export interface CollaborativeCanvasProps {
   onConnect: (connection: any) => void;
   onConnectStart: (event: any, params: any) => void;
   onConnectEnd: (event: any) => void;
-  onNodeDragStart: () => void;
+  onNodeDragStart: (event: React.MouseEvent, node: any) => void;
   onNodeDragStop: () => void;
   onPaneContextMenu: (event: any) => void;
   onNodeContextMenu: (event: any, node: any) => void;

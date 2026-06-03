@@ -27,7 +27,7 @@ const detectRealMobile = (): boolean => {
 const MOBILE_BLOCKED = new Set(['mockup-machine', 'canvas', 'moodboard-studio']);
 
 // Apps visible to all authenticated users (not just admin/tester)
-const PUBLIC_APP_IDS = new Set(['mockup-machine', 'brand-guidelines', 'canvas', 'community', 'labs', 'image-lab', '3d-studio']);
+const PUBLIC_APP_IDS = new Set(['mockup-machine', 'brand-guidelines', 'canvas', 'community', 'labs', 'image-lab', '3d-studio', 'playground']);
 
 // Fixed preset per appId — index into PRESETS (0=neutral 1=cyan 2=violet 3=amber 4=rose 5=green 6=blue 7=warm)
 const APP_PRESET: Record<string, number> = {
@@ -47,6 +47,7 @@ const PINNED_APP_IDS = [
   'brand-guidelines',
   'image-lab',
   '3d-studio',
+  'playground',
 ] as const;
 
 // Synthetic entry for Visant Exporter (not a backend app — download action)

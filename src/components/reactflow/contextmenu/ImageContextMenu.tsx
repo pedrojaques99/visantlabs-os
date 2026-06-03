@@ -1,6 +1,6 @@
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Heart, Download, Maximize2, Copy, Diamond, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink } from 'lucide-react';
+import { Heart, Download, Maximize2, Copy, Diamond, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink, Scissors } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { downloadImage } from '@/utils/imageUtils';
@@ -20,6 +20,7 @@ interface ImageContextMenuProps {
   onDuplicate: () => void;
   onDescribe?: () => void;
   onExport?: () => void;
+  onOpenImageEditor?: () => void;
   imageUrl?: string;
   isLiked: boolean;
 }
@@ -38,6 +39,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
   onDuplicate,
   onDescribe,
   onExport,
+  onOpenImageEditor,
   imageUrl,
   isLiked,
 }) => {
@@ -186,6 +188,16 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               <Diamond size={16} className="text-brand-cyan flex-shrink-0" />
               <span className="text-[11px] tracking-wide flex-1 text-left">Edit with Prompt</span>
             </DropdownMenu.Item>
+
+            {onOpenImageEditor && (
+              <DropdownMenu.Item
+                onSelect={() => { onOpenImageEditor(); onClose(); }}
+                className="w-full px-2 py-1.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold outline-none"
+              >
+                <Scissors size={16} className="text-brand-cyan flex-shrink-0" />
+                <span className="text-[11px] tracking-wide flex-1 text-left">Edit Image (Inpaint / Expand / Remove BG)</span>
+              </DropdownMenu.Item>
+            )}
 
             <DropdownMenu.Separator className="h-px bg-neutral-800/30 my-1.5" />
 

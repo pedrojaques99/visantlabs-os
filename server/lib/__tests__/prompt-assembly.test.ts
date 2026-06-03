@@ -249,8 +249,7 @@ describe('classifyIntent — confidence', () => {
 
 describe('isChatOnly', () => {
   // Greetings
-  it.each(['oi', 'olá', 'hello', 'hey', 'bom dia', 'boa tarde', 'boa noite', 'e ai'])
-    ('detects greeting "%s" as chat', (msg) => {
+  it.each(['oi', 'olá', 'hello', 'hey', 'bom dia', 'boa tarde', 'boa noite', 'e ai'])('detects greeting "%s" as chat', (msg) => {
       expect(isChatOnly(msg)).toBe(true);
     });
 
@@ -264,8 +263,7 @@ describe('isChatOnly', () => {
   });
 
   // Short messages
-  it.each(['ok', 'sim', 'não', 'hmm', 'ah'])
-    ('detects short "%s" as chat', (msg) => {
+  it.each(['ok', 'sim', 'não', 'hmm', 'ah'])('detects short "%s" as chat', (msg) => {
       expect(isChatOnly(msg)).toBe(true);
     });
 
@@ -280,8 +278,7 @@ describe('isChatOnly', () => {
   });
 
   // Short action patterns override short-message rule
-  it.each(['bold', 'red', 'center', 'dark mode', 'escurece', 'maior'])
-    ('short action "%s" is NOT chat', (msg) => {
+  it.each(['bold', 'red', 'center', 'dark mode', 'escurece', 'maior'])('short action "%s" is NOT chat', (msg) => {
       expect(isChatOnly(msg)).toBe(false);
     });
 

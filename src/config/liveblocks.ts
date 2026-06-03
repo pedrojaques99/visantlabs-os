@@ -15,40 +15,36 @@ const client = createClient({
     return [];
   },
   async authEndpoint(room) {
-    try {
-      const token = authService.getToken();
-      if (!token) throw new Error('Authentication token not found. Please log in.');
+    const token = authService.getToken();
+    if (!token) throw new Error('Authentication token not found. Please log in.');
 
-      // Route to the correct backend auth endpoint based on room prefix
-      let authPath: string;
-      if (room.startsWith('brand-')) {
-        const guidelineId = room.replace('brand-', '');
-        authPath = `${API_BASE}/brand-guidelines/${guidelineId}/liveblocks-auth`;
-      } else if (room.startsWith('canvas-')) {
-        const projectId = room.replace('canvas-', '');
-        authPath = `${API_BASE}/canvas/${projectId}/liveblocks-auth`;
-      } else {
-        throw new Error(`Unknown room prefix for room "${room}". Expected "brand-" or "canvas-".`);
-      }
-
-      const response = await fetch(authPath, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        throw new Error(`Liveblocks auth failed ${response.status}: ${errorText}`);
-      }
-
-      const parsed = await response.json();
-      return { token: parsed.token };
-    } catch (error) {
-      throw error;
+    // Route to the correct backend auth endpoint based on room prefix
+    let authPath: string;
+    if (room.startsWith('brand-')) {
+      const guidelineId = room.replace('brand-', '');
+      authPath = `${API_BASE}/brand-guidelines/${guidelineId}/liveblocks-auth`;
+    } else if (room.startsWith('canvas-')) {
+      const projectId = room.replace('canvas-', '');
+      authPath = `${API_BASE}/canvas/${projectId}/liveblocks-auth`;
+    } else {
+      throw new Error(`Unknown room prefix for room "${room}". Expected "brand-" or "canvas-".`);
     }
+
+    const response = await fetch(authPath, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Liveblocks auth failed ${response.status}: ${errorText}`);
+    }
+
+    const parsed = await response.json();
+    return { token: parsed.token };
   },
 });
 

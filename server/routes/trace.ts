@@ -4,6 +4,15 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
 import type { AuthRequest } from '../middleware/auth.js';
 
+let _purify: any = null;
+async function getPurify() {
+  if (_purify) return _purify;
+  const { JSDOM } = await import('jsdom');
+  const createDOMPurify = (await import('dompurify')).default;
+  _purify = createDOMPurify(new JSDOM('').window as any);
+  return _purify;
+}
+
 const router = Router();
 
 const traceLimiter = rateLimit({
@@ -77,23 +86,15 @@ function escapeRegexSpecial(s: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// SVG Sanitization (loop-until-stable to prevent nested bypass)
+// SVG Sanitization via DOMPurify (safe against nested bypass / edge cases)
 // ---------------------------------------------------------------------------
 
-function sanitizeSvg(svg: string): string {
-  let s = svg;
-  let prev = '';
-
-  while (prev !== s) {
-    prev = s;
-    s = s.replace(/<script\b[^<]*(?:(?!<\/script\s*>)<[^<]*)*<\/script\s*>/gi, '');
-    s = s.replace(/<script[^>]*\/\s*>/gi, '');
-    s = s.replace(/\s+on[a-z]+\s*=\s*"[^"]*"/gi, '');
-    s = s.replace(/\s+on[a-z]+\s*=\s*'[^']*'/gi, '');
-    s = s.replace(/\s+on[a-z]+\s*=\s*[^\s>"']*/gi, '');
-  }
-
-  return s;
+async function sanitizeSvg(svg: string): Promise<string> {
+  const purify = await getPurify();
+  return purify.sanitize(svg, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    ADD_TAGS: ['use'],
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -107,7 +108,7 @@ const EDITOR_XMLNS = [
 
 const EDITOR_ATTR_PREFIXES = ['inkscape:', 'sodipodi:', 'sketch:', 'data-name'];
 
-function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptions>): string {
+async function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptions>): Promise<string> {
   const opts: Required<SvgOptimizeOptions> = {
     removeComments: true,
     removeMetadata: true,
@@ -163,8 +164,11 @@ function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptions>): 
   }
 
   if (opts.removeHiddenElements) {
-    svg = svg.replace(/<[^>]+\s+display\s*=\s*"none"[^>]*(?:\/>|>[\s\S]*?<\/[^>]+>)\s*/gi, '');
-    svg = svg.replace(/<[^>]+\s+visibility\s*=\s*"hidden"[^>]*(?:\/>|>[\s\S]*?<\/[^>]+>)\s*/gi, '');
+    const { JSDOM } = await import('jsdom');
+    const dom = new JSDOM(svg, { contentType: 'image/svg+xml' });
+    const doc = dom.window.document;
+    doc.querySelectorAll('[display="none"], [visibility="hidden"]').forEach(el => el.remove());
+    svg = doc.documentElement.outerHTML;
   }
 
   if (opts.minifyPaths) {
@@ -271,9 +275,9 @@ function resolveTraceOptions(opts: TraceOptions): TraceOptions {
 // Potrace vectorization
 // ---------------------------------------------------------------------------
 
-function potraceTrace(buffer: Buffer, potraceOpts: Record<string, any>): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    const potrace = await import('potrace');
+async function potraceTrace(buffer: Buffer, potraceOpts: Record<string, any>): Promise<string> {
+  const potrace = await import('potrace');
+  return new Promise((resolve, reject) => {
     potrace.trace(buffer, potraceOpts, (err: Error | null, svg: string) => {
       if (err) reject(err);
       else resolve(svg);
@@ -332,11 +336,13 @@ async function traceImage(buffer: Buffer, opts: TraceOptions = {}): Promise<stri
 
 async function tracePipeline(buffer: Buffer, opts: TraceOptions = {}): Promise<string> {
   const raw = await traceImage(buffer, opts);
-  return optimizeSvg(sanitizeSvg(raw));
+  const sanitized = await sanitizeSvg(raw);
+  return optimizeSvg(sanitized);
 }
 
-function cleanSvgPipeline(raw: string): string {
-  return optimizeSvg(sanitizeSvg(raw));
+async function cleanSvgPipeline(raw: string): Promise<string> {
+  const sanitized = await sanitizeSvg(raw);
+  return optimizeSvg(sanitized);
 }
 
 // ---------------------------------------------------------------------------
@@ -391,7 +397,7 @@ router.post('/optimize', traceLimiter, optionalAuth, async (req: AuthRequest, re
       return res.status(400).json({ error: 'Invalid SVG: missing <svg> element' });
     }
 
-    const svg = cleanSvgPipeline(rawSvg);
+    const svg = await cleanSvgPipeline(rawSvg);
 
     res.json({ svg });
   } catch (error: unknown) {

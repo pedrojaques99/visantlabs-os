@@ -169,7 +169,6 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
           )}
         </ToolPanelDisclosure>
 
-
       </ToolPanelContent>
 
       <ToolPanelExportActions

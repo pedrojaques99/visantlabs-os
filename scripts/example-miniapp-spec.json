@@ -1,0 +1,114 @@
+{
+  "$schema": "Visant Playground MiniApp Spec",
+  "_docs": "This is a valid spec you can pass to playground-save or render in /playground",
+  "root": "page",
+  "elements": {
+    "page": {
+      "type": "PageShell",
+      "props": { "title": "Logo Tester" },
+      "children": ["layout"]
+    },
+    "layout": {
+      "type": "Stack",
+      "props": { "direction": "horizontal", "gap": 24 },
+      "children": ["sidebar", "previewArea"]
+    },
+    "sidebar": {
+      "type": "ToolPanel",
+      "props": {},
+      "children": ["sidebarHeader", "sidebarContent"]
+    },
+    "sidebarHeader": {
+      "type": "ToolPanelHeader",
+      "props": {},
+      "children": ["sidebarTitle"]
+    },
+    "sidebarTitle": {
+      "type": "Heading",
+      "props": { "level": 4, "text": "Logo Settings" }
+    },
+    "sidebarContent": {
+      "type": "ToolPanelContent",
+      "props": {},
+      "children": ["uploadSection", "sceneSection", "actionsSection"]
+    },
+    "uploadSection": {
+      "type": "ToolPanelSection",
+      "props": { "title": "Logo" },
+      "children": ["logoUploader"]
+    },
+    "logoUploader": {
+      "type": "ImageUploader",
+      "props": {}
+    },
+    "sceneSection": {
+      "type": "ToolPanelSection",
+      "props": { "title": "Scene Presets" },
+      "children": ["sceneGrid"]
+    },
+    "sceneGrid": {
+      "type": "ToolPanelGrid",
+      "props": { "cols": 2 },
+      "children": ["chipCard", "chipShirt", "chipSign", "chipScreen"]
+    },
+    "chipCard": {
+      "type": "ToolPanelChip",
+      "props": { "label": "Business Card", "active": true }
+    },
+    "chipShirt": {
+      "type": "ToolPanelChip",
+      "props": { "label": "T-Shirt" }
+    },
+    "chipSign": {
+      "type": "ToolPanelChip",
+      "props": { "label": "Signage" }
+    },
+    "chipScreen": {
+      "type": "ToolPanelChip",
+      "props": { "label": "Screen" }
+    },
+    "actionsSection": {
+      "type": "ToolPanelSection",
+      "props": { "title": "Options" },
+      "children": ["bgColorPicker", "sizeSlider", "generateBtn"]
+    },
+    "bgColorPicker": {
+      "type": "InlineColorPicker",
+      "props": { "label": "Background", "value": "#1a1a1a" }
+    },
+    "sizeSlider": {
+      "type": "NodeSlider",
+      "props": { "label": "Logo Scale", "value": 80, "min": 20, "max": 100, "hint": "%" }
+    },
+    "generateBtn": {
+      "type": "Button",
+      "props": { "variant": "brand", "children": "Generate Mockups" }
+    },
+    "previewArea": {
+      "type": "GlassPanel",
+      "props": {},
+      "children": ["previewStack"]
+    },
+    "previewStack": {
+      "type": "Stack",
+      "props": { "direction": "vertical", "gap": 16 },
+      "children": ["previewTitle", "previewGrid"]
+    },
+    "previewTitle": {
+      "type": "MicroTitle",
+      "props": { "text": "Preview" }
+    },
+    "previewGrid": {
+      "type": "Grid",
+      "props": { "cols": 2, "gap": 16 },
+      "children": ["emptyState"]
+    },
+    "emptyState": {
+      "type": "EmptyState",
+      "props": {
+        "title": "No mockups yet",
+        "description": "Upload a logo and select scenes to generate"
+      }
+    }
+  }
+}

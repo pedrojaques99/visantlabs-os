@@ -169,46 +169,41 @@ router.get('/public', apiRateLimiter, async (req, res, next) => {
     });
 
     const dbOperation = async () => {
+      await connectToMongoDB();
+      const db = getDb();
+
+      // Ensure index exists for createdAt to optimize sort (with timeout)
       try {
-        await connectToMongoDB();
-        const db = getDb();
-
-        // Ensure index exists for createdAt to optimize sort (with timeout)
-        try {
-          await Promise.race([
-            db.collection('mockups').createIndex({ createdAt: -1 }, { background: true }),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Index creation timeout')), 5000))
-          ]);
-        } catch (indexError: any) {
-          // Index may already exist or timeout - ignore error
-          if (!indexError.message?.includes('timeout')) {
-            console.warn('Index creation warning:', indexError.message);
-          }
+        await Promise.race([
+          db.collection('mockups').createIndex({ createdAt: -1 }, { background: true }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Index creation timeout')), 5000))
+        ]);
+      } catch (indexError: any) {
+        // Index may already exist or timeout - ignore error
+        if (!indexError.message?.includes('timeout')) {
+          console.warn('Index creation warning:', indexError.message);
         }
-
-        // Use find() with sort instead of aggregation for better performance with index
-        // Add timeout to the query itself
-        // Only return blank mockups for public page
-        const queryPromise = db.collection('mockups')
-          .find({ designType: 'blank' })
-          .sort({ createdAt: -1 })
-          .limit(1000) // Limit results to prevent memory issues
-          .maxTimeMS(10000) // 10 second timeout for the query
-          .toArray();
-
-        const mockups = await Promise.race([
-          queryPromise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 10000))
-        ]) as any[];
-
-        // Convert MongoDB _id to string for JSON serialization
-        const formattedMockups = mockups.map(formatMockup);
-
-        return formattedMockups;
-      } catch (dbError: any) {
-        // Re-throw to be caught by outer catch
-        throw dbError;
       }
+
+      // Use find() with sort instead of aggregation for better performance with index
+      // Add timeout to the query itself
+      // Only return blank mockups for public page
+      const queryPromise = db.collection('mockups')
+        .find({ designType: 'blank' })
+        .sort({ createdAt: -1 })
+        .limit(1000) // Limit results to prevent memory issues
+        .maxTimeMS(10000) // 10 second timeout for the query
+        .toArray();
+
+      const mockups = await Promise.race([
+        queryPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 10000))
+      ]) as any[];
+
+      // Convert MongoDB _id to string for JSON serialization
+      const formattedMockups = mockups.map(formatMockup);
+
+      return formattedMockups;
     };
 
     // Race between operation and timeout

@@ -1,6 +1,6 @@
-import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useMemo, useEffect, useRef, type PointerEvent as RPointerEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Upload, CircleDot, Paintbrush, Undo2, Redo2, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend } from 'lucide-react';
+import { Upload, CircleDot, Paintbrush, Undo2, Redo2, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend, Pin, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
@@ -32,6 +32,7 @@ import { useMagicHand } from '@/hooks/useMagicHand';
 import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
 import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { ImageLabSavePreset } from '@/components/shared/ImageLabSavePreset';
 
 const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso', 'shaders']);
 
@@ -225,6 +226,49 @@ export const ImageLabPage: React.FC = () => {
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [presetLibraryOpen, setPresetLibraryOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  const [fxBarVisible, setFxBarVisible] = useState(true);
+  const [fxBarPinned, setFxBarPinned] = useState(false);
+  const fxBarRef = useRef<HTMLDivElement>(null);
+  const fxHideTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const FX_PROXIMITY_PX = 80;
+  const FX_HIDE_DELAY = 1200;
+  const FX_INITIAL_DELAY = 2000;
+
+  const canAutoHide = !isMobile && !fxBarPinned;
+
+  useEffect(() => {
+    if (!canAutoHide) return;
+    const t = setTimeout(() => setFxBarVisible(false), FX_INITIAL_DELAY);
+    return () => clearTimeout(t);
+  }, [canAutoHide]);
+
+  const handleCanvasPointerMove = useCallback((e: RPointerEvent<HTMLDivElement>) => {
+    if (!canAutoHide) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relY = e.clientY - rect.top;
+    const nearTop = relY < FX_PROXIMITY_PX;
+
+    if (nearTop) {
+      clearTimeout(fxHideTimer.current);
+      setFxBarVisible(true);
+    } else if (!fxBarRef.current?.matches(':hover')) {
+      clearTimeout(fxHideTimer.current);
+      fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
+    }
+  }, [canAutoHide]);
+
+  const handleFxBarEnter = useCallback(() => {
+    if (!canAutoHide) return;
+    clearTimeout(fxHideTimer.current);
+    setFxBarVisible(true);
+  }, [canAutoHide]);
+
+  const handleFxBarLeave = useCallback(() => {
+    if (!canAutoHide) return;
+    fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
+  }, [canAutoHide]);
 
   const cyclePreset = usePresetCycling(mode);
 
@@ -399,6 +443,11 @@ export const ImageLabPage: React.FC = () => {
         e.preventDefault();
         setPresetLibraryOpen(true);
       }
+
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        setShortcutsOpen((v) => !v);
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -470,7 +519,7 @@ export const ImageLabPage: React.FC = () => {
 
   const statusItems = useStatusItems(mode);
 
-  const controlsPanel = useMemo(() => {
+  const modeControls = useMemo(() => {
     switch (mode) {
       case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
       case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
@@ -478,6 +527,15 @@ export const ImageLabPage: React.FC = () => {
       case 'shaders': return <ShaderLabControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
     }
   }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, handleCopyAsPng]);
+
+  const controlsPanel = useMemo(() => (
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-hidden">{modeControls}</div>
+      <div className="shrink-0 border-t border-neutral-800/50 px-4 py-3">
+        <ImageLabSavePreset />
+      </div>
+    </div>
+  ), [modeControls]);
 
   const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(() => [
     { id: 'halftone', icon: <CircleDot size={16} />, label: 'Halftone' },
@@ -511,6 +569,9 @@ export const ImageLabPage: React.FC = () => {
         hideTopBar
         canvasClassName="absolute inset-0 transition-all duration-300"
       >
+        {/* Proximity sensor for FX bar auto-hide */}
+        <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
+
         {/* Floating tools — canvas-only actions */}
         <div className={cn('absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50', isMobile && 'left-2 top-2 p-1')}>
           <ImageLabUploadWidget
@@ -540,7 +601,7 @@ export const ImageLabPage: React.FC = () => {
               <button
                 onClick={() => {
                   const vc = getActiveVideoControls();
-                  if (vc) videoIsPlaying ? vc.pause() : vc.play();
+                  if (vc) { if (videoIsPlaying) { vc.pause(); } else { vc.play(); } }
                 }}
                 title={videoIsPlaying ? 'Pause' : 'Play'}
                 className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}
@@ -568,7 +629,17 @@ export const ImageLabPage: React.FC = () => {
         </div>
 
         {/* Floating top bar — FX modes + undo/redo + panel toggle */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20">
+        <div
+          ref={fxBarRef}
+          onPointerEnter={handleFxBarEnter}
+          onPointerLeave={handleFxBarLeave}
+          className={cn(
+            'absolute top-3 left-1/2 -translate-x-1/2 z-20 transition-all duration-300',
+            fxBarVisible
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 -translate-y-2 pointer-events-none',
+          )}
+        >
           <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 shadow-2xl shadow-black/40">
             {/* Undo / Redo */}
             <div className="flex items-center gap-0.5 pr-1 border-r border-neutral-800/60">
@@ -617,14 +688,26 @@ export const ImageLabPage: React.FC = () => {
               );
             })}
 
-            {/* Panel toggle */}
-            {!isMobile && (
-              <div className="pl-1 border-l border-neutral-800/60">
-                <button onClick={() => setPanelVisible(!panelVisible)} title="Toggle panel (Tab)" className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', panelVisible ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
-                  <PanelRightOpen size={14} />
-                </button>
-              </div>
-            )}
+            {/* Help + Pin + Panel toggle */}
+            <div className="pl-1 border-l border-neutral-800/60 flex items-center gap-0.5">
+              <button onClick={() => setShortcutsOpen(true)} title="Shortcuts (?)" className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors">
+                <HelpCircle size={12} />
+              </button>
+              {!isMobile && (
+                <>
+                  <button
+                    onClick={() => { setFxBarPinned(!fxBarPinned); setFxBarVisible(true); }}
+                    title={fxBarPinned ? 'Unpin toolbar' : 'Pin toolbar'}
+                    className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', fxBarPinned ? 'text-neutral-300 bg-white/10' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}
+                  >
+                    <Pin size={12} className={cn(fxBarPinned && 'rotate-45')} />
+                  </button>
+                  <button onClick={() => setPanelVisible(!panelVisible)} title="Toggle panel (Tab)" className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', panelVisible ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+                    <PanelRightOpen size={14} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -696,6 +779,51 @@ export const ImageLabPage: React.FC = () => {
               }}
             />
           </label>
+        )}
+        {/* Shortcuts help overlay */}
+        {shortcutsOpen && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShortcutsOpen(false)}>
+            <div className="bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">Keyboard Shortcuts</span>
+                <button onClick={() => setShortcutsOpen(false)} className="text-neutral-600 hover:text-neutral-300 p-1"><span className="text-xs">ESC</span></button>
+              </div>
+              <div className="space-y-3 text-[11px]">
+                {([
+                  ['Modes', [['1 / 2 / 3 / 4', 'Switch FX mode']]],
+                  ['Canvas', [
+                    ['Ctrl+V', 'Paste image'],
+                    ['Ctrl+Z', 'Undo'],
+                    ['Ctrl+Shift+Z', 'Redo'],
+                    ['[ / ]', 'Cycle presets'],
+                    ['M', 'Magic hand tool'],
+                    ['Scroll', 'Zoom'],
+                  ]],
+                  ['Compare', [
+                    ['Alt+Z', 'Before / After toggle'],
+                    ['Alt+X', 'Split view'],
+                    ['Esc', 'Exit compare'],
+                  ]],
+                  ['Panels', [
+                    ['Tab', 'Toggle controls panel'],
+                    ['Shift+E', 'Export'],
+                    ['Shift+P', 'Community presets'],
+                    ['?', 'This help'],
+                  ]],
+                ] as [string, [string, string][]][]).map(([section, items]) => (
+                  <div key={section}>
+                    <div className="text-[9px] font-mono uppercase tracking-widest text-neutral-600 mb-1.5">{section}</div>
+                    {items.map(([key, desc]) => (
+                      <div key={key} className="flex items-center justify-between py-0.5">
+                        <span className="text-neutral-400">{desc}</span>
+                        <kbd className="px-1.5 py-0.5 rounded bg-neutral-800/60 text-neutral-500 font-mono text-[10px]">{key}</kbd>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </ToolEditorShell>
 

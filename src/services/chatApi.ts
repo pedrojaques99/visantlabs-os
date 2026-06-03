@@ -17,7 +17,7 @@ export interface ChatSession {
   updatedAt: string;
 }
 
-export interface ChatSessionListItem extends Omit<ChatSession, 'messages'> {}
+export type ChatSessionListItem = Omit<ChatSession, 'messages'>
 
 export interface SendMessageResult {
   reply: string;

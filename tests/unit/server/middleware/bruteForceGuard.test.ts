@@ -4,7 +4,7 @@ import { bruteForceGuard, _resetBruteForceStore } from '../../../../server/middl
 
 function run(mw: any, { ip, email, status }: { ip: string; email: string; status: number }) {
   return new Promise<{ blocked: boolean; retryAfter?: number }>((resolve) => {
-    const listeners: Record<string, Function[]> = {};
+    const listeners: Record<string, ((...args: unknown[]) => void)[]> = {};
     const res: any = {
       statusCode: status,
       headers: {} as Record<string, string>,
@@ -19,11 +19,11 @@ function run(mw: any, { ip, email, status }: { ip: string; email: string; status
         resolve({ blocked: true, retryAfter: Number(this.headers['Retry-After']) });
         return res;
       },
-      once(event: string, cb: Function) {
+      once(event: string, cb: (...args: unknown[]) => void) {
         listeners[event] = listeners[event] ?? [];
         listeners[event].push(cb);
       },
-      on(event: string, cb: Function) {
+      on(event: string, cb: (...args: unknown[]) => void) {
         this.once(event, cb);
       },
       _fire() {

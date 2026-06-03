@@ -38,11 +38,13 @@ interface RisoState extends Omit<RisoSettings, 'layers' | 'soloLayer'> {
   setSoloLayer: (i: number) => void;
 
   pushHistory: () => void;
+  debouncedPushHistory: () => void;
   undo: () => void;
   redo: () => void;
 }
 
 const MAX_HISTORY = 30;
+const HISTORY_DEBOUNCE_MS = 400;
 
 function snapshotSettings(s: RisoState): RisoSettings {
   return {
@@ -82,6 +84,9 @@ function applySnapshot(snap: RisoSettings): Partial<RisoState> {
   };
 }
 
+let _risoPendingSnap: RisoSettings | null = null;
+let _risoDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+
 export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) => ({
   ...createShaderSlice(set as any, get as any, api as any),
   ...RISO_DEFAULTS,
@@ -114,7 +119,7 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
   },
 
   updateLayer: (index, partial) => {
-    get().pushHistory();
+    get().debouncedPushHistory();
     set((s) => {
       const layers = [...s.layers];
       if (partial.hex !== undefined) {
@@ -126,7 +131,7 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
   },
 
   updateSetting: (key, value) => {
-    get().pushHistory();
+    get().debouncedPushHistory();
     set({ [key]: value } as any);
   },
 
@@ -163,6 +168,23 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
     const history = [...trimmed, snap].slice(-MAX_HISTORY);
     return { settingsHistory: history, historyIndex: history.length - 1 };
   }),
+
+  debouncedPushHistory: () => {
+    if (!_risoPendingSnap) {
+      _risoPendingSnap = snapshotSettings(get() as any);
+    }
+    clearTimeout(_risoDebounceTimer);
+    _risoDebounceTimer = setTimeout(() => {
+      if (_risoPendingSnap) {
+        set((s) => {
+          const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
+          const history = [...trimmed, _risoPendingSnap!].slice(-MAX_HISTORY);
+          _risoPendingSnap = null;
+          return { settingsHistory: history, historyIndex: history.length - 1 };
+        });
+      }
+    }, HISTORY_DEBOUNCE_MS);
+  },
 
   undo: () => set((s) => {
     if (s.historyIndex < 0) return {};

@@ -77,6 +77,7 @@ export const TEXTURE_FILTER_DEFAULTS: TextureFilterSettings = {
 };
 
 const MAX_HISTORY = 30;
+const HISTORY_DEBOUNCE_MS = 400;
 
 function snapshotSettings(s: TextureFilterSettings): TextureFilterSettings {
   return { ...s };
@@ -111,9 +112,13 @@ interface TextureFilterState extends TextureFilterSettings {
   setPan: (x: number, y: number) => void;
 
   pushHistory: () => void;
+  debouncedPushHistory: () => void;
   undo: () => void;
   redo: () => void;
 }
+
+let _tfPendingSnap: TextureFilterSettings | null = null;
+let _tfDebounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 export const useTextureFilterStore = create<TextureFilterState & ShaderSlice>()((set, get, api) => ({
   ...createShaderSlice(set as any, get as any, api as any),
@@ -139,7 +144,7 @@ export const useTextureFilterStore = create<TextureFilterState & ShaderSlice>()(
   setIsExporting: (isExporting) => set({ isExporting }),
 
   updateSetting: (key, value) => {
-    get().pushHistory();
+    get().debouncedPushHistory();
     set({ [key]: value });
   },
 
@@ -170,6 +175,23 @@ export const useTextureFilterStore = create<TextureFilterState & ShaderSlice>()(
     const history = [...trimmed, snap].slice(-MAX_HISTORY);
     return { settingsHistory: history, historyIndex: history.length - 1 };
   }),
+
+  debouncedPushHistory: () => {
+    if (!_tfPendingSnap) {
+      _tfPendingSnap = snapshotSettings(get().getSettings());
+    }
+    clearTimeout(_tfDebounceTimer);
+    _tfDebounceTimer = setTimeout(() => {
+      if (_tfPendingSnap) {
+        set((s) => {
+          const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
+          const history = [...trimmed, _tfPendingSnap!].slice(-MAX_HISTORY);
+          _tfPendingSnap = null;
+          return { settingsHistory: history, historyIndex: history.length - 1 };
+        });
+      }
+    }, HISTORY_DEBOUNCE_MS);
+  },
 
   undo: () => set((s) => {
     if (s.historyIndex < 0) return {};

@@ -8,7 +8,7 @@
  *  4. MongoDB community_presets → persistência com category "reference"
  */
 
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 import { GoogleGenAI, Type } from '@google/genai';
 import { describeImage, getMultimodalEmbedding } from '../../services/geminiService.js';
 import { vectorService } from '../../services/vectorService.js';
@@ -80,7 +80,7 @@ Each dimension array should have 1-3 values. Be precise and specific.`;
 
 export async function ingestReference(params: IngestReferenceParams): Promise<IngestReferenceResult> {
   const { imageBase64, imageUrl, name, studio, userId, overrideDimensions, tags, prompt } = params;
-  const id = uuid();
+  const id = randomUUID();
   const cost: IngestCostMetrics = { r2Bytes: 0, inputTokens: 0, outputTokens: 0, embeddingTokens: 0, apiCalls: 0 };
 
   // 1. AI analysis — reuses describeImage() but with dimension-aware prompt

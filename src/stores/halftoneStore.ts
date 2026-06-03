@@ -18,6 +18,7 @@ export const HALFTONE_PRESETS: Record<string, Partial<HalftoneSettings>> = {
 };
 
 const MAX_HISTORY = 30;
+const HISTORY_DEBOUNCE_MS = 400;
 
 function snapshotSettings(s: HalftoneSettings): HalftoneSettings {
   return { ...s };
@@ -52,9 +53,13 @@ interface HalftoneState extends HalftoneSettings {
   setPan: (x: number, y: number) => void;
 
   pushHistory: () => void;
+  debouncedPushHistory: () => void;
   undo: () => void;
   redo: () => void;
 }
+
+let _htPendingSnap: HalftoneSettings | null = null;
+let _htDebounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 export const useHalftoneStore = create<HalftoneState & ShaderSlice>()((set, get, api) => ({
   ...createShaderSlice(set as any, get as any, api as any),
@@ -80,7 +85,7 @@ export const useHalftoneStore = create<HalftoneState & ShaderSlice>()((set, get,
   setIsExporting: (isExporting) => set({ isExporting }),
 
   updateSetting: (key, value) => {
-    get().pushHistory();
+    get().debouncedPushHistory();
     set({ [key]: value });
   },
 
@@ -112,6 +117,23 @@ export const useHalftoneStore = create<HalftoneState & ShaderSlice>()((set, get,
     const history = [...trimmed, snap].slice(-MAX_HISTORY);
     return { settingsHistory: history, historyIndex: history.length - 1 };
   }),
+
+  debouncedPushHistory: () => {
+    if (!_htPendingSnap) {
+      _htPendingSnap = snapshotSettings(get().getSettings());
+    }
+    clearTimeout(_htDebounceTimer);
+    _htDebounceTimer = setTimeout(() => {
+      if (_htPendingSnap) {
+        set((s) => {
+          const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
+          const history = [...trimmed, _htPendingSnap!].slice(-MAX_HISTORY);
+          _htPendingSnap = null;
+          return { settingsHistory: history, historyIndex: history.length - 1 };
+        });
+      }
+    }, HISTORY_DEBOUNCE_MS);
+  },
 
   undo: () => set((s) => {
     if (s.historyIndex < 0) return {};

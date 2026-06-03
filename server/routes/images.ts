@@ -915,7 +915,6 @@ router.get('/download', apiRateLimiter, async (req: Request, res: ExpressRespons
 
     // Stream the body
     if (response.body) {
-      // @ts-ignore - ReadableStream/Node stream mismatch
       const reader = response.body.getReader();
 
       while (true) {
@@ -1117,7 +1116,6 @@ router.get('/stream', apiRateLimiter, async (req: Request, res: ExpressResponse)
 
     // Stream the body
     if (response.body) {
-      // @ts-ignore - ReadableStream/Node stream mismatch
       const reader = response.body.getReader();
 
       while (true) {

@@ -15,11 +15,8 @@ import { describe, it, expect, vi, beforeAll } from 'vitest'
 
 // Simulate Lambda: remove browser globals that pdfjs-dist / canvas libs need.
 beforeAll(() => {
-  // @ts-ignore
   delete (globalThis as any).DOMMatrix
-  // @ts-ignore
   delete (globalThis as any).ImageData
-  // @ts-ignore
   delete (globalThis as any).Path2D
 })
 

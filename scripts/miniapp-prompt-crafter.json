@@ -1,0 +1,248 @@
+{
+  "title": "Prompt Crafter",
+  "description": "Visual prompt builder for AI image generation. Pick style, mood, lighting, composition — get a structured prompt ready to generate.",
+  "tags": ["prompt", "image", "generator", "ai", "creative"],
+  "category": "design",
+  "actionsUsed": ["generateImage"],
+  "spec": {
+    "root": "page",
+    "elements": {
+      "page": {
+        "type": "PageShell",
+        "props": { "title": "Prompt Crafter" },
+        "children": ["mainLayout"]
+      },
+      "mainLayout": {
+        "type": "Stack",
+        "props": { "direction": "horizontal", "gap": 24 },
+        "children": ["controls", "previewPanel"]
+      },
+
+      "controls": {
+        "type": "ToolPanel",
+        "props": {},
+        "children": ["ctrlHeader", "ctrlContent"]
+      },
+      "ctrlHeader": {
+        "type": "ToolPanelHeader",
+        "props": {},
+        "children": ["ctrlTitle", "ctrlSubtitle"]
+      },
+      "ctrlTitle": {
+        "type": "Heading",
+        "props": { "level": 4, "text": "Build Your Prompt" }
+      },
+      "ctrlSubtitle": {
+        "type": "Text",
+        "props": { "variant": "caption", "color": "muted", "text": "Compose a structured prompt visually" }
+      },
+      "ctrlContent": {
+        "type": "ToolPanelContent",
+        "props": {},
+        "children": ["subjectSection", "styleSection", "moodSection", "lightSection", "compositionSection", "colorSection", "detailSection", "generateBtn"]
+      },
+
+      "subjectSection": {
+        "type": "ToolPanelSection",
+        "props": { "title": "Subject" },
+        "children": ["subjectInput"]
+      },
+      "subjectInput": {
+        "type": "Textarea",
+        "props": { "placeholder": "What's in the image? e.g. A ceramic coffee mug on a wooden table...", "rows": 2 }
+      },
+
+      "styleSection": {
+        "type": "ToolPanelSection",
+        "props": { "title": "Style" },
+        "children": ["styleGrid"]
+      },
+      "styleGrid": {
+        "type": "ToolPanelGrid",
+        "props": { "cols": 3 },
+        "children": ["stylePhoto", "style3d", "styleFlat", "styleMinimal", "styleVintage", "styleAbstract"]
+      },
+      "stylePhoto": { "type": "ToolPanelChip", "props": { "label": "Photo", "active": true } },
+      "style3d": { "type": "ToolPanelChip", "props": { "label": "3D Render" } },
+      "styleFlat": { "type": "ToolPanelChip", "props": { "label": "Flat" } },
+      "styleMinimal": { "type": "ToolPanelChip", "props": { "label": "Minimal" } },
+      "styleVintage": { "type": "ToolPanelChip", "props": { "label": "Vintage" } },
+      "styleAbstract": { "type": "ToolPanelChip", "props": { "label": "Abstract" } },
+
+      "moodSection": {
+        "type": "ToolPanelSection",
+        "props": { "title": "Mood" },
+        "children": ["moodGrid"]
+      },
+      "moodGrid": {
+        "type": "ToolPanelGrid",
+        "props": { "cols": 3 },
+        "children": ["moodCalm", "moodEnergetic", "moodDark", "moodPlayful", "moodElegant", "moodRaw"]
+      },
+      "moodCalm": { "type": "ToolPanelChip", "props": { "label": "Calm" } },
+      "moodEnergetic": { "type": "ToolPanelChip", "props": { "label": "Energetic" } },
+      "moodDark": { "type": "ToolPanelChip", "props": { "label": "Dark" } },
+      "moodPlayful": { "type": "ToolPanelChip", "props": { "label": "Playful" } },
+      "moodElegant": { "type": "ToolPanelChip", "props": { "label": "Elegant", "active": true } },
+      "moodRaw": { "type": "ToolPanelChip", "props": { "label": "Raw" } },
+
+      "lightSection": {
+        "type": "ToolPanelSection",
+        "props": { "title": "Lighting" },
+        "children": ["lightGrid"]
+      },
+      "lightGrid": {
+        "type": "ToolPanelGrid",
+        "props": { "cols": 3 },
+        "children": ["lightStudio", "lightNatural", "lightDramatic", "lightNeon", "lightGolden", "lightSoft"]
+      },
+      "lightStudio": { "type": "ToolPanelChip", "props": { "label": "Studio", "active": true } },
+      "lightNatural": { "type": "ToolPanelChip", "props": { "label": "Natural" } },
+      "lightDramatic": { "type": "ToolPanelChip", "props": { "label": "Dramatic" } },
+      "lightNeon": { "type": "ToolPanelChip", "props": { "label": "Neon" } },
+      "lightGolden": { "type": "ToolPanelChip", "props": { "label": "Golden Hour" } },
+      "lightSoft": { "type": "ToolPanelChip", "props": { "label": "Soft Diffused" } },
+
+      "compositionSection": {
+        "type": "ToolPanelSection",
+        "props": { "title": "Composition" },
+        "children": ["compControls"]
+      },
+      "compControls": {
+        "type": "Stack",
+        "props": { "direction": "vertical", "gap": 8 },
+        "children": ["depthSlider", "blurSlider", "angleRow"]
+      },
+      "depthSlider": {
+        "type": "NodeSlider",
+        "props": { "label": "Depth of Field", "value": 50, "min": 0, "max": 100, "hint": "shallow → deep" }
+      },
+      "blurSlider": {
+        "type": "NodeSlider",
+        "props": { "label": "Background Blur", "value": 30, "min": 0, "max": 100, "hint": "%" }
+      },
+      "angleRow": {
+        "type": "ToolPanelGrid",
+        "props": { "cols": 4 },
+        "children": ["angleFront", "angleTop", "angle45", "angleLow"]
+      },
+      "angleFront": { "type": "ToolPanelChip", "props": { "label": "Front" } },
+      "angleTop": { "type": "ToolPanelChip", "props": { "label": "Top-down" } },
+      "angle45": { "type": "ToolPanelChip", "props": { "label": "45°", "active": true } },
+      "angleLow": { "type": "ToolPanelChip", "props": { "label": "Low angle" } },
+
+      "colorSection": {
+        "type": "ToolPanelSection",
+        "props": { "title": "Color Palette" },
+        "children": ["colorRow"]
+      },
+      "colorRow": {
+        "type": "Stack",
+        "props": { "direction": "horizontal", "gap": 8 },
+        "children": ["colorPrimary", "colorSecondary", "colorAccent"]
+      },
+      "colorPrimary": {
+        "type": "InlineColorPicker",
+        "props": { "label": "Primary", "value": "#1a1a2e" }
+      },
+      "colorSecondary": {
+        "type": "InlineColorPicker",
+        "props": { "label": "Secondary", "value": "#e2e2e2" }
+      },
+      "colorAccent": {
+        "type": "InlineColorPicker",
+        "props": { "label": "Accent", "value": "#00d4aa" }
+      },
+
+      "detailSection": {
+        "type": "ToolPanelDisclosure",
+        "props": { "label": "Advanced Details", "defaultOpen": false },
+        "children": ["detailStack"]
+      },
+      "detailStack": {
+        "type": "Stack",
+        "props": { "direction": "vertical", "gap": 8 },
+        "children": ["negativeInput", "qualitySlider"]
+      },
+      "negativeInput": {
+        "type": "Input",
+        "props": { "placeholder": "Negative prompt (what to avoid)...", "type": "text" }
+      },
+      "qualitySlider": {
+        "type": "NodeSlider",
+        "props": { "label": "Detail Level", "value": 80, "min": 10, "max": 100, "hint": "quality" }
+      },
+
+      "generateBtn": {
+        "type": "Button",
+        "props": { "variant": "brand", "size": "lg", "children": "✦ Generate Image" }
+      },
+
+      "previewPanel": {
+        "type": "GlassPanel",
+        "props": {},
+        "children": ["previewStack"]
+      },
+      "previewStack": {
+        "type": "Stack",
+        "props": { "direction": "vertical", "gap": 16 },
+        "children": ["previewHeader", "previewSep", "promptPreview", "previewSep2", "outputArea"]
+      },
+      "previewHeader": {
+        "type": "Stack",
+        "props": { "direction": "horizontal", "gap": 12, "align": "center" },
+        "children": ["previewTitle", "aspectBadge"]
+      },
+      "previewTitle": {
+        "type": "MicroTitle",
+        "props": { "text": "Live Preview" }
+      },
+      "aspectBadge": {
+        "type": "Badge",
+        "props": { "label": "1:1", "variant": "outline" }
+      },
+      "previewSep": {
+        "type": "Separator",
+        "props": {}
+      },
+      "promptPreview": {
+        "type": "Card",
+        "props": { "title": "Assembled Prompt" },
+        "children": ["promptText"]
+      },
+      "promptText": {
+        "type": "Text",
+        "props": {
+          "variant": "mono",
+          "color": "muted",
+          "text": "A ceramic coffee mug on a wooden table, photographic style, elegant mood, studio lighting, 45° angle, shallow depth of field, 30% background blur, color palette: deep navy #1a1a2e with light gray #e2e2e2 and teal accent #00d4aa, highly detailed"
+        }
+      },
+      "previewSep2": {
+        "type": "Separator",
+        "props": {}
+      },
+      "outputArea": {
+        "type": "Stack",
+        "props": { "direction": "vertical", "gap": 12 },
+        "children": ["outputTitle", "outputGrid"]
+      },
+      "outputTitle": {
+        "type": "MicroTitle",
+        "props": { "text": "Generated Output" }
+      },
+      "outputGrid": {
+        "type": "Grid",
+        "props": { "cols": 2, "gap": 12 },
+        "children": ["outputEmpty"]
+      },
+      "outputEmpty": {
+        "type": "EmptyState",
+        "props": {
+          "title": "Ready to generate",
+          "description": "Configure your prompt and hit Generate"
+        }
+      }
+    }
+  }
+}

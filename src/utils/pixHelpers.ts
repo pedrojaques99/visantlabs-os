@@ -53,14 +53,9 @@ export const formatExpirationTime = (expiresAt: string | null): string => {
  * Generates QR Code data URL from PIX code (if needed)
  * Note: This is a fallback. Stripe should provide the QR code directly.
  */
-export const generatePixQrCode = async (pixCode: string): Promise<string | null> => {
-  try {
-    // If we need to generate QR code client-side, we can use a library like qrcode
-    // For now, we'll rely on Stripe providing the QR code
-    return null;
-  } catch (error) {
-    console.error('Failed to generate QR code:', error);
-    return null;
-  }
+export const generatePixQrCode = async (_pixCode: string): Promise<string | null> => {
+  // If we need to generate QR code client-side, we can use a library like qrcode
+  // For now, we'll rely on Stripe providing the QR code
+  return null;
 };
 

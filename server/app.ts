@@ -38,6 +38,7 @@ import budgetRoutes from './routes/budget.js';
 import visantTemplatesRoutes from './routes/visant-templates.js';
 import workflowRoutes from './routes/workflows.js';
 import nodeBuilderRoutes from './routes/node-builder.js';
+import playgroundRoutes from './routes/playground.js';
 import aiRoutes from './routes/ai.js';
 import figmaRoutes from './routes/figma.js';
 import pluginRoutes from './routes/plugin.js';
@@ -246,6 +247,7 @@ export function createApp() {
     ['/visant-templates', visantTemplatesRoutes],
     ['/workflows', workflowRoutes],
     ['/node-builder', nodeBuilderRoutes],
+    ['/playground', playgroundRoutes],
     ['/ai', aiRoutes],
     ['/figma', figmaRoutes],
     ['/plugin', pluginRoutes],

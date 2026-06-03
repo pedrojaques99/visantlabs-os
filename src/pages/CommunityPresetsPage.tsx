@@ -439,10 +439,10 @@ export const CommunityPresetsPage: React.FC = () => {
         body: JSON.stringify(body) });
       if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
       clearCommunityPresetsCache();
-      viewMode === 'my' ? await fetchMy() : await fetchAll();
+      if (viewMode === 'my') { await fetchMy(); } else { await fetchAll(); }
       handleCancel();
       toast.success(isCreating ? t('communityPresets.messages.presetCreated') : t('communityPresets.messages.presetUpdated'));
-    } catch (e: any) { throw e; } finally { setIsLoading(false); }
+    } finally { setIsLoading(false); }
   }, [isCreating, editingPreset, viewMode, t, fetchMy, fetchAll, handleCancel]);
 
   const handleDelete = useCallback((id: string) => {
@@ -459,7 +459,7 @@ export const CommunityPresetsPage: React.FC = () => {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error((await res.json()).error);
       clearCommunityPresetsCache();
-      viewMode === 'my' ? await fetchMy() : await fetchAll();
+      if (viewMode === 'my') { await fetchMy(); } else { await fetchAll(); }
       toast.success(t('communityPresets.messages.presetDeleted'));
     } catch (e: any) { setError(e.message); } finally { setIsLoading(false); }
   }, [presetToDelete, viewMode, t, fetchMy, fetchAll]);
@@ -489,7 +489,7 @@ export const CommunityPresetsPage: React.FC = () => {
 
   const updatePreset = useCallback((id: string, patch: Partial<CommunityPreset>) => {
     const mapper = (prev: CommunityPreset[]) => prev.map(p => p.id === id ? { ...p, ...patch } : p);
-    viewMode === 'my' ? setMyPresets(mapper) : setAllPresets(mapper);
+    if (viewMode === 'my') { setMyPresets(mapper); } else { setAllPresets(mapper); }
   }, [viewMode]);
 
   const handleToggleLike = useCallback(async (id: string) => {

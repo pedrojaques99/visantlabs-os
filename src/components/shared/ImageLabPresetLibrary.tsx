@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { X, Heart, Loader2, Upload, Search } from 'lucide-react';
+import { X, Heart, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { API_BASE } from '@/config/api';
+import { authService } from '@/services/authService';
 import { useImageLabStore, type ImageLabMode } from '@/stores/imageLabStore';
 import { useHalftoneStore } from '@/stores/halftoneStore';
 import { useTextureFilterStore } from '@/stores/textureFilterStore';
@@ -93,16 +93,14 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<ImageLabMode | 'all'>('all');
   const [search, setSearch] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [saveName, setSaveName] = useState('');
-  const [showSaveForm, setShowSaveForm] = useState(false);
-
-  const mode = useImageLabStore((s) => s.mode);
 
   const fetchPresets = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/community/presets/public`, { credentials: 'include' });
+      const token = authService.getToken();
+      const res = await fetch(`${API_BASE}/community/presets/public`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (res.ok) {
         const data = await res.json();
         const imageLabPresets = (data['imagelab'] || []) as ImageLabPreset[];
@@ -140,9 +138,10 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
 
   const handleLike = useCallback(async (id: string) => {
     try {
+      const token = authService.getToken();
       await fetch(`${API_BASE}/community/presets/${id}/like`, {
         method: 'POST',
-        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       setPresets((prev) =>
         prev.map((p) =>
@@ -153,48 +152,6 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
       // ignore
     }
   }, []);
-
-  const handleSave = useCallback(async () => {
-    if (!saveName.trim()) return;
-    setSaving(true);
-    try {
-      let settings: Record<string, any> = {};
-      let layers: any[] | undefined;
-
-      if (mode === 'halftone') settings = useHalftoneStore.getState().getSettings();
-      else if (mode === 'texture') settings = useTextureFilterStore.getState().getSettings();
-      else if (mode === 'riso') {
-        const s = useRisoStore.getState();
-        settings = s.getSettings();
-        layers = s.layers;
-      }
-
-      const res = await fetch(`${API_BASE}/community/presets`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: saveName.trim(),
-          type: 'imagelab',
-          data: { mode, settings, layers },
-        }),
-      });
-
-      if (res.ok) {
-        toast.success('Preset shared with community');
-        setSaveName('');
-        setShowSaveForm(false);
-        fetchPresets();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        toast.error(err.error || 'Failed to save preset');
-      }
-    } catch {
-      toast.error('Failed to save preset');
-    } finally {
-      setSaving(false);
-    }
-  }, [saveName, mode, fetchPresets]);
 
   const filtered = presets.filter((p) => {
     if (filter !== 'all' && p.data.mode !== filter) return false;
@@ -302,35 +259,9 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
           )}
         </div>
 
-        {/* Save */}
-        <div className="px-5 py-3 border-t border-neutral-800/50 shrink-0">
-          {showSaveForm ? (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                placeholder="Preset name..."
-                className="flex-1 bg-neutral-900/50 border border-neutral-800/50 rounded-md px-3 py-1.5 text-[11px] text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-neutral-700"
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
-                autoFocus
-              />
-              <Button onClick={handleSave} disabled={saving || !saveName.trim()} className="bg-white hover:bg-neutral-200 text-black text-xs h-8 px-3">
-                {saving ? <Loader2 size={12} className="animate-spin" /> : 'Save'}
-              </Button>
-              <Button onClick={() => setShowSaveForm(false)} variant="ghost" className="text-neutral-500 h-8 px-2 text-xs">
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <Button
-              onClick={() => setShowSaveForm(true)}
-              variant="ghost"
-              className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2"
-            >
-              <Upload size={14} /> Share Current Settings
-            </Button>
-          )}
+        {/* Hint: save via panel */}
+        <div className="px-5 py-2.5 border-t border-neutral-800/50 shrink-0">
+          <p className="text-[10px] text-neutral-600 text-center">Save presets from the right panel</p>
         </div>
       </div>
     </div>

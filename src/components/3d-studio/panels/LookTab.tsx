@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
@@ -8,16 +8,13 @@ import {
   MATERIAL_PRESETS,
   BLEND_MODE_OPTIONS,
 } from '@/stores/studio3dStore';
-import { ToolPanelDisclosure, ToolPanelRow,
+import { ToolPanelDisclosure, ToolPanelRow, ExpandableColorPicker,
 } from '@/components/shared/ToolPanel';
-import { HexColorPicker } from 'react-colorful';
 import { MaterialCategoryTabs, TextureControls, PbrMapUpload } from './_shared';
 
 export const LookTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const store = useStudio3DStore();
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
-  const [fresnelPickerOpen, setFresnelPickerOpen] = useState(false);
 
   const [metalness, setMetalness] = useDebouncedSlider(store.metalness, store.setMetalness);
   const [roughness, setRoughness] = useDebouncedSlider(store.roughness, store.setRoughness);
@@ -31,35 +28,7 @@ export const LookTab: React.FC = React.memo(() => {
     <>
       <ToolPanelDisclosure label={t('studio3d.material.title')} defaultOpen>
         <MaterialCategoryTabs activeCat={MATERIAL_PRESETS.find((m) => m.id === store.material)?.category ?? 'basic'} store={store} />
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setColorPickerOpen(!colorPickerOpen)}
-              className="w-8 h-8 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
-              style={{ backgroundColor: store.color }}
-              aria-label="Toggle color picker"
-            />
-            <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1">
-              <span className="text-[10px] text-neutral-500 mr-1">#</span>
-              <input
-                type="text"
-                value={store.color.replace('#', '').toUpperCase()}
-                onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setColor(`#${v}`); }}
-                onBlur={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setColor(`#${v}`); }}
-                maxLength={6}
-                aria-label="Material color"
-                className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
-                placeholder="00E5FF"
-              />
-            </div>
-          </div>
-          {colorPickerOpen && (
-            <div className="animate-fade-in">
-              <div className="custom-color-picker"><HexColorPicker color={store.color} onChange={store.setColor} /></div>
-            </div>
-          )}
-        </div>
+        <ExpandableColorPicker color={store.color} onChange={store.setColor} label="Material color" />
       </ToolPanelDisclosure>
 
       <ToolPanelDisclosure label={t('studio3d.panels.surface')} defaultOpen>
@@ -88,33 +57,7 @@ export const LookTab: React.FC = React.memo(() => {
       <ToolPanelDisclosure label="Fresnel Gradient">
         <ScrubInput label="Strength" value={fresnelStrength} min={0} max={1} step={0.01} onChange={setFresnelStrength} hint="Fresnel edge color intensity — 0 = off, 1 = full" />
         {fresnelStrength > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setFresnelPickerOpen(!fresnelPickerOpen)}
-                className="w-8 h-8 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
-                style={{ backgroundColor: store.fresnelColor || '#000000' }}
-                aria-label="Toggle fresnel color picker"
-              />
-              <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1">
-                <span className="text-[10px] text-neutral-500 mr-1">#</span>
-                <input
-                  type="text"
-                  value={(store.fresnelColor || '#000000').replace('#', '').toUpperCase()}
-                  onChange={(e) => { const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6); if (v.length === 6) store.setFresnelColor(`#${v}`); }}
-                  maxLength={6}
-                  aria-label="Fresnel color"
-                  className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
-                />
-              </div>
-            </div>
-            {fresnelPickerOpen && (
-              <div className="animate-fade-in">
-                <div className="custom-color-picker"><HexColorPicker color={store.fresnelColor || '#000000'} onChange={store.setFresnelColor} /></div>
-              </div>
-            )}
-          </div>
+          <ExpandableColorPicker color={store.fresnelColor || '#000000'} onChange={store.setFresnelColor} label="Fresnel color" />
         )}
       </ToolPanelDisclosure>
 

@@ -61,7 +61,9 @@ import { GEMINI_MODELS } from '@/constants/geminiModels';
 import {
   getBackgroundsForBranding,
   filterPresetsByBranding,
-  selectRandomBackground
+  selectRandomBackground,
+  determineArchetypeFromBranding,
+  getRandomArchetype
 } from '@/utils/promptHelpers';
 import { API_BASE } from '@/config/api';
 
@@ -1497,7 +1499,6 @@ const MockupMachinePageContent: React.FC = () => {
 
       // 3. Archetype-based tag selection
       try {
-        const { determineArchetypeFromBranding, getRandomArchetype } = await import('@/utils/promptHelpers');
         let currentArchetype = determineArchetypeFromBranding(brandingTagsToUse);
         if (!currentArchetype || Math.random() < 0.2) {
           currentArchetype = getRandomArchetype();

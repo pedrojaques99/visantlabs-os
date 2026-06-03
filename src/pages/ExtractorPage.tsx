@@ -459,7 +459,6 @@ export default function ExtractorPage() {
     setImages([]);
     // Dynamic import for PDF.js to save bundle size
     try {
-      // @ts-ignore
       const pdfjs = await import('pdfjs-dist');
       pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
       

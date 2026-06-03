@@ -595,11 +595,6 @@ export const useCanvasNodeSync = ({
                 newConnectedImage = videoData.resultVideoUrl;
               }
             }
-            // Check for video from OutputNode
-            else if (sourceNode.type === 'output') {
-              const outputData = sourceNode.data as OutputNodeData;
-              newConnectedImage = outputData.resultVideoUrl || outputData.resultVideoBase64;
-            }
           }
 
           if (shaderData.connectedImage !== newConnectedImage) {
@@ -665,11 +660,6 @@ export const useCanvasNodeSync = ({
             else if (sourceNode.type === 'video') {
               const videoData = sourceNode.data as VideoNodeData;
               newConnectedImage = videoData.resultVideoUrl || videoData.resultVideoBase64;
-            }
-            // Check for video from OutputNode
-            else if (sourceNode.type === 'output') {
-              const outputData = sourceNode.data as OutputNodeData;
-              newConnectedImage = outputData.resultVideoUrl || outputData.resultVideoBase64;
             }
           }
 

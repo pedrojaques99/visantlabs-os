@@ -64,6 +64,8 @@ const WindTunnelPage = lazyWithRetry(() => import('./pages/labs/WindTunnelPage')
 const Studio3DPage = lazyWithRetry(() => import('./pages/Studio3DPage').then(m => ({ default: m.Studio3DPage })));
 const GridMachinePage = lazyWithRetry(() => import('./pages/GridMachinePage').then(m => ({ default: m.GridMachinePage })));
 const ImageLabPage = lazyWithRetry(() => import('./pages/ImageLabPage').then(m => ({ default: m.ImageLabPage })));
+const PlaygroundPage = lazyWithRetry(() => import('./pages/PlaygroundPage').then(m => ({ default: m.PlaygroundPage })));
+const PlaygroundGalleryPage = lazyWithRetry(() => import('./pages/PlaygroundGalleryPage').then(m => ({ default: m.PlaygroundGalleryPage })));
 const DeveloperPortalPage = lazyWithRetry(() => import('./pages/DeveloperPortalPage').then(m => ({ default: m.DeveloperPortalPage })));
 const VerifyEmailPage = lazyWithRetry(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const OnboardingWizardPage = lazyWithRetry(() => import('./pages/OnboardingWizardPage').then(m => ({ default: m.OnboardingWizardPage })));
@@ -165,6 +167,9 @@ const App: React.FC = () => {
 
                 <Route path="/create" element={<CreatePage />} />
                 <Route path="/create/projects" element={<CreativeProjectsPage />} />
+                <Route path="/playground" element={<PlaygroundPage />} />
+                <Route path="/playground/explore" element={<PlaygroundGalleryPage />} />
+                <Route path="/playground/:slug" element={<PlaygroundPage />} />
                 <Route path="/community" element={<CommunityPage />} />
                 <Route path="/community/presets" element={<CommunityPresetsPage />} />
                 <Route path="/profile/:identifier" element={<CommunityProfilePage />} />

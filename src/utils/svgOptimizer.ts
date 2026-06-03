@@ -101,10 +101,12 @@ export function optimizeSvg(
     }
   }
 
-  // 7. Remove hidden elements
+  // 7. Remove hidden elements via DOM parsing
   if (opts.removeHiddenElements) {
-    svg = svg.replace(/<[^>]+\s+display\s*=\s*"none"[^>]*(?:\/>|>[\s\S]*?<\/[^>]+>)\s*/gi, '');
-    svg = svg.replace(/<[^>]+\s+visibility\s*=\s*"hidden"[^>]*(?:\/>|>[\s\S]*?<\/[^>]+>)\s*/gi, '');
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svg, 'image/svg+xml');
+    doc.querySelectorAll('[display="none"], [visibility="hidden"]').forEach(el => el.remove());
+    svg = new XMLSerializer().serializeToString(doc.documentElement);
   }
 
   // 8. Minify numeric values in paths and attributes
@@ -159,23 +161,15 @@ function prettifySvg(svg: string): string {
   return lines.join('\n');
 }
 
+import DOMPurify from 'dompurify';
+
 /**
- * Sanitize SVG for safe inline rendering:
- * removes <script> tags and on* event attributes.
- * Loops until stable to prevent nested bypass (e.g. <scr<script>ipt>).
+ * Sanitize SVG for safe inline rendering via DOMPurify.
+ * Removes scripts, event handlers, and other dangerous content.
  */
 export function sanitizeSvgForRender(svg: string): string {
-  let s = svg;
-  let prev = '';
-
-  while (prev !== s) {
-    prev = s;
-    s = s.replace(/<script\b[^<]*(?:(?!<\/script\s*>)<[^<]*)*<\/script\s*>/gi, '');
-    s = s.replace(/<script[^>]*\/\s*>/gi, '');
-    s = s.replace(/\s+on[a-z]+\s*=\s*"[^"]*"/gi, '');
-    s = s.replace(/\s+on[a-z]+\s*=\s*'[^']*'/gi, '');
-    s = s.replace(/\s+on[a-z]+\s*=\s*[^\s>"']*/gi, '');
-  }
-
-  return s;
+  return DOMPurify.sanitize(svg, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    ADD_TAGS: ['use'],
+  });
 }

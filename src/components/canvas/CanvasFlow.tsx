@@ -35,7 +35,7 @@ interface CanvasFlowProps {
   onConnect: (params: any) => void;
   onConnectStart?: (event: MouseEvent | TouchEvent, params: { nodeId: string | null; handleId?: string | null }) => void;
   onConnectEnd?: (event: MouseEvent | TouchEvent) => void;
-  onNodeDragStart?: () => void;
+  onNodeDragStart?: (event: React.MouseEvent, node: Node<FlowNodeData>) => void;
   onNodeDragStop: () => void;
   onPaneContextMenu: (event: React.MouseEvent) => void;
   onNodeContextMenu?: (event: React.MouseEvent, node: Node<FlowNodeData>) => void;
@@ -254,9 +254,9 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   // This usually refers to DRAG panning. Scroll wheel panning is often acceptable/separate, but standard behavior usually leaves it enabled.
   // We will stick to drag behaviors as requested.
 
-  const handleNodeDragStart = () => {
+  const handleNodeDragStart = (_event: React.MouseEvent, node: Node<FlowNodeData>) => {
     setIsDragging(true);
-    onNodeDragStart?.();
+    onNodeDragStart?.(_event, node);
   };
 
   const handleNodeDragStop = () => {

@@ -39,7 +39,7 @@ export async function parseUrl(url: string): Promise<ParsedChunk[]> {
   if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${targetUrl}`)
 
   const html = await response.text()
-  const text = stripHtml(html)
+  const text = await stripHtml(html)
   return chunkText(text, 2000).map(chunk => ({ text: chunk, source: targetUrl, type: 'url' as const }))
 }
 

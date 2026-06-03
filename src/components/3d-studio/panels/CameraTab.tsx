@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { toast } from 'sonner';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
@@ -15,8 +15,8 @@ import {
   ToolPanelGrid,
   ToolPanelChip,
   ToolPanelRow,
+  ExpandableColorPicker,
 } from '@/components/shared/ToolPanel';
-import { HexColorPicker } from 'react-colorful';
 import { setCameraView, resetCamera } from '../CameraBridge';
 import { LightPositionSliders } from './_shared';
 
@@ -24,17 +24,6 @@ export const CameraTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const store = useStudio3DStore();
   const hdriInputRef = useRef<HTMLInputElement>(null);
-  const [bgColorPickerOpen, setBgColorPickerOpen] = useState(false);
-  const [bgInput, setBgInput] = useState(store.background.replace('#', '').toUpperCase());
-  const [fogInput, setFogInput] = useState(store.fogColor.replace('#', '').toUpperCase());
-
-  useEffect(() => {
-    setBgInput(store.background.replace('#', '').toUpperCase());
-  }, [store.background]);
-
-  useEffect(() => {
-    setFogInput(store.fogColor.replace('#', '').toUpperCase());
-  }, [store.fogColor]);
 
   const [fov, setFov] = useDebouncedSlider(store.fov, store.setFov);
   const [toneMappingExposure, setToneMappingExposure] = useDebouncedSlider(
@@ -341,81 +330,29 @@ export const CameraTab: React.FC = React.memo(() => {
           ))}
         </ToolPanelGrid>
         {store.bgType === 'solid' ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setBgColorPickerOpen(!bgColorPickerOpen)}
-                className="w-6 h-6 rounded border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
-                style={{ backgroundColor: store.background }}
-                aria-label="Toggle background color picker"
-              />
-              <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-1">
-                <span className="text-[10px] text-neutral-500 mr-1">#</span>
-                <input
-                  type="text"
-                  value={bgInput}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
-                    setBgInput(v);
-                    if (v.length === 6) store.setBackground(`#${v}`);
-                  }}
-                  onBlur={() => {
-                    if (bgInput.length !== 6) {
-                      setBgInput(store.background.replace('#', '').toUpperCase());
-                    }
-                  }}
-                  maxLength={6}
-                  aria-label="Background color"
-                  className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
-                  placeholder="0A0A0A"
-                />
-              </div>
-            </div>
-            {bgColorPickerOpen && (
-              <div className="animate-fade-in">
-                <div className="custom-color-picker">
-                  <HexColorPicker color={store.background} onChange={store.setBackground} />
-                </div>
-              </div>
-            )}
-          </div>
+          <ExpandableColorPicker color={store.background} onChange={store.setBackground} label="Background color" />
         ) : (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
-                    {t('studio3d.background.color1')}
-                  </span>
-                  <div
-                    className="w-3 h-3 rounded-full border border-white/10"
-                    style={{ backgroundColor: store.bgGradient.color1 }}
-                  />
-                </div>
-                <div className="custom-color-picker-mini">
-                  <HexColorPicker
-                    color={store.bgGradient.color1}
-                    onChange={(c) => store.setBgGradient({ color1: c })}
-                  />
-                </div>
+                <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+                  {t('studio3d.background.color1')}
+                </span>
+                <ExpandableColorPicker
+                  color={store.bgGradient.color1}
+                  onChange={(c) => store.setBgGradient({ color1: c })}
+                  label="Gradient color 1"
+                />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
-                    {t('studio3d.background.color2')}
-                  </span>
-                  <div
-                    className="w-3 h-3 rounded-full border border-white/10"
-                    style={{ backgroundColor: store.bgGradient.color2 }}
-                  />
-                </div>
-                <div className="custom-color-picker-mini">
-                  <HexColorPicker
-                    color={store.bgGradient.color2}
-                    onChange={(c) => store.setBgGradient({ color2: c })}
-                  />
-                </div>
+                <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+                  {t('studio3d.background.color2')}
+                </span>
+                <ExpandableColorPicker
+                  color={store.bgGradient.color2}
+                  onChange={(c) => store.setBgGradient({ color2: c })}
+                  label="Gradient color 2"
+                />
               </div>
             </div>
             {store.bgType === 'linear' && (
@@ -491,32 +428,7 @@ export const CameraTab: React.FC = React.memo(() => {
         </ToolPanelRow>
         {store.fogEnabled && (
           <>
-            <div className="flex items-center gap-2">
-              <div
-                className="w-5 h-5 rounded border border-white/10 shrink-0"
-                style={{ backgroundColor: store.fogColor }}
-              />
-              <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5">
-                <span className="text-[10px] text-neutral-500 mr-1">#</span>
-                <input
-                  type="text"
-                  value={fogInput}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
-                    setFogInput(v);
-                    if (v.length === 6) store.setFogColor(`#${v}`);
-                  }}
-                  onBlur={() => {
-                    if (fogInput.length !== 6) {
-                      setFogInput(store.fogColor.replace('#', '').toUpperCase());
-                    }
-                  }}
-                  maxLength={6}
-                  aria-label="Fog color"
-                  className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
-                />
-              </div>
-            </div>
+            <ExpandableColorPicker color={store.fogColor} onChange={store.setFogColor} label="Fog color" />
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput
                 label="Near"

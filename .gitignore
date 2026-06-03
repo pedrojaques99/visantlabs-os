@@ -21,8 +21,8 @@ dist-ssr
 
 # Environment
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 *.local
 
 # Editor / IDE
@@ -169,3 +169,8 @@ server/scripts/seedMissingApps.ts
 server/scripts/seedUpscaleApp.ts
 /test-screenshots
 test-export-modal.mjs
+eslint-final.json
+eslint-out.json
+eslint-out2.json
+eslint-out3.json
+eslint.config.js

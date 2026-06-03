@@ -353,14 +353,12 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
         </div>
 
         <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2">
-          {true && (
-            <ToggleItem
-              value={generateText}
-              onChange={onGenerateTextChange}
-              label={t('mockup.generateContextualText')}
-              className="flex-1"
-            />
-          )}
+          <ToggleItem
+            value={generateText}
+            onChange={onGenerateTextChange}
+            label={t('mockup.generateContextualText')}
+            className="flex-1"
+          />
           <ToggleItem
             value={withHuman}
             onChange={onWithHumanChange}

@@ -57,10 +57,13 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const { openLibrary } = useBrandKit();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const userOverrodeAspectRatio = useRef(false);
+  const onUpdateDataRef = useRef(nodeData.onUpdateData);
+  onUpdateDataRef.current = nodeData.onUpdateData;
 
   // Context Menu state
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(true);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
 
   const { debouncedUpdate: debouncedUpdateData } = useNodeDataUpdater<PromptNodeData>(nodeData.onUpdateData, id);
@@ -150,6 +153,38 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // BrandCore data is read directly from nodeData in handleGenerate
     // No local state needed, but we can trigger re-render if needed
   }, [nodeData.connectedLogo, nodeData.connectedIdentity, nodeData.connectedTextDirection]);
+
+  // Auto-detect aspect ratio from first connected image (only when image changes, not on manual override)
+  useEffect(() => {
+    const imageUrl = nodeData.connectedImage1 || nodeData.connectedLogo;
+    if (!imageUrl || !hasOutputConfig) return;
+    userOverrodeAspectRatio.current = false;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const candidates: { ar: AspectRatio; value: number }[] = [
+        { ar: '1:1', value: 1 },
+        { ar: '16:9', value: 16 / 9 },
+        { ar: '9:16', value: 9 / 16 },
+        { ar: '4:3', value: 4 / 3 },
+        { ar: '3:4', value: 3 / 4 },
+        { ar: '3:2', value: 3 / 2 },
+        { ar: '2:3', value: 2 / 3 },
+        { ar: '4:5', value: 4 / 5 },
+        { ar: '5:4', value: 5 / 4 },
+        { ar: '21:9', value: 21 / 9 },
+      ];
+      let best = candidates[0];
+      for (const c of candidates) {
+        if (Math.abs(ratio - c.value) < Math.abs(ratio - best.value)) best = c;
+      }
+      setAspectRatio(best.ar);
+      onUpdateDataRef.current?.(id, { aspectRatio: best.ar });
+    };
+    img.src = imageUrl;
+  }, [nodeData.connectedImage1, nodeData.connectedLogo, hasOutputConfig, id]);
 
   const handleAddToBoard = (url: string, type: 'image' | 'logo') => {
     const newNodeId = `image-${Date.now()}`;
@@ -701,6 +736,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                   aspectRatio={aspectRatio}
                   resolution={resolution}
                   onAspectRatioChange={(ratio) => {
+                    userOverrodeAspectRatio.current = true;
                     setAspectRatio(ratio);
                     if (nodeData.onUpdateData) nodeData.onUpdateData(id, { aspectRatio: ratio });
                   }}
