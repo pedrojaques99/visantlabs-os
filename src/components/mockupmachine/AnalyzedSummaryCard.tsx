@@ -98,6 +98,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
             {uploadedImage ? (
               <>
                 <img
+                  alt="Analyzed Design"
                   src={
                     uploadedImage.url ||
                     (uploadedImage.base64 &&
@@ -111,7 +112,6 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                       ? 'brightness-50 grayscale-[0.5] scale-95'
                       : 'brightness-100 grayscale-0 scale-100'
                   )}
-                  alt="Analyzed Design"
                 />
 
                 {/* Scanning Beam Effect */}

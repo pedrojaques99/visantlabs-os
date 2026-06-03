@@ -357,13 +357,11 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
   };
 
   await saveJob(job);
-  res
-    .status(202)
-    .json({
-      jobId: job.jobId,
-      totalCount: safeCount,
-      creditsCharged: chargeResult.creditsDeducted,
-    });
+  res.status(202).json({
+    jobId: job.jobId,
+    totalCount: safeCount,
+    creditsCharged: chargeResult.creditsDeducted,
+  });
 
   // Run async — do not await (fire-and-forget with full error capture inside runCampaign)
   runCampaign({

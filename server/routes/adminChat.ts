@@ -583,11 +583,9 @@ router.patch('/sessions/:id/brand', validateAdmin, async (req: AuthRequest, res:
     const nextBrandId: string | undefined = req.body?.brandGuidelineId || undefined;
     const current = session.brandGuidelineId || undefined;
     if (current && nextBrandId && current !== nextBrandId) {
-      return res
-        .status(409)
-        .json({
-          error: 'Marca desta sessão já está travada. Crie uma nova sessão para outra marca.',
-        });
+      return res.status(409).json({
+        error: 'Marca desta sessão já está travada. Crie uma nova sessão para outra marca.',
+      });
     }
     if (current === nextBrandId) {
       return res.json({ session });
