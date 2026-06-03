@@ -10,13 +10,7 @@ interface ToggleRowProps {
   tooltip?: string;
 }
 
-export const ToggleRow: React.FC<ToggleRowProps> = ({
-  checked,
-  onClick,
-  label,
-  dark,
-  tooltip,
-}) => {
+export const ToggleRow: React.FC<ToggleRowProps> = ({ checked, onClick, label, dark, tooltip }) => {
   const toggle = (
     <div
       className={cn(
@@ -47,7 +41,14 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({
   );
 
   const content = label ? (
-    <div className="flex items-center gap-3 cursor-pointer group" onClick={onClick} role="switch" tabIndex={0} aria-checked={checked} onKeyDown={(e) => e.key === 'Enter' && onClick?.()}>
+    <div
+      className="flex items-center gap-3 cursor-pointer group"
+      onClick={onClick}
+      role="switch"
+      tabIndex={0}
+      aria-checked={checked}
+      onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
+    >
       {toggle}
       <span
         className={cn(

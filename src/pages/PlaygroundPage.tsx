@@ -8,7 +8,6 @@ import {
 } from '@json-render/react';
 import type { Spec } from '@json-render/react';
 import { registry, handlers as createHandlers } from '@/lib/playground/registry';
-import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -65,7 +64,7 @@ import { ChatInput } from '@/components/shared/chat/ChatInput';
 import { CHAT_MODELS } from '@/constants/geminiModels';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { fileToBase64 } from '@/utils/fileUtils';
-import { ImageIcon, FileText, RefreshCw, Globe, Link2, Check } from 'lucide-react';
+import { ImageIcon, FileText, RefreshCw, Globe, Link2, Check, ChevronDown } from 'lucide-react';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 
 const SandpackPreview = React.lazy(() =>
@@ -371,6 +370,44 @@ const GeneratingState: React.FC<{ message: string; elapsed?: number }> = ({ mess
     </div>
   </div>
 );
+
+// ─── Sidebar Disclosure ─────────────────────────────────────────────────
+const SidebarDisclosure: React.FC<{
+  label: string;
+  badge?: string;
+  defaultOpen?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}> = ({ label, badge, defaultOpen = false, className, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className={cn('border-b border-neutral-800/30', className)}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/[0.02] transition-colors"
+      >
+        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+          {label}
+        </span>
+        <div className="flex items-center gap-1.5">
+          {badge && (
+            <span className="text-[9px] font-mono text-neutral-700 bg-neutral-800/50 px-1.5 py-0.5 rounded-full">
+              {badge}
+            </span>
+          )}
+          <ChevronDown
+            size={12}
+            className={cn(
+              'text-neutral-600 transition-transform duration-200',
+              open && 'rotate-180'
+            )}
+          />
+        </div>
+      </button>
+      {open && children}
+    </div>
+  );
+};
 
 // ─── View Tabs ──────────────────────────────────────────────────────────
 type ViewTab = 'preview' | 'spec' | 'code';
@@ -903,6 +940,7 @@ export const PlaygroundPage: React.FC = () => {
         onAttachClick={() => fileInputRef.current?.click()}
         minHeight={36}
         maxHeight={120}
+        compact
       />
     </div>
   );
@@ -966,87 +1004,85 @@ export const PlaygroundPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent list — always visible */}
-      <div
-        className={cn(
-          'overflow-y-auto px-2 scrollbar-thin scrollbar-thumb-neutral-800',
-          spec ? 'max-h-[35%] shrink-0 border-b border-neutral-800/30 pb-2' : 'flex-1 pb-3'
-        )}
-      >
-        <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
-          Recent
-        </div>
-        {loadingMiniApps ? (
-          <SidebarSkeleton />
-        ) : myMiniApps.length === 0 ? (
-          <div className="px-3 py-4 text-center">
-            <p className="text-[11px] text-neutral-600">No miniapps yet</p>
-          </div>
-        ) : (
-          <div className="space-y-px">
-            {myMiniApps.map((app) => (
-              <div
-                key={app.id}
-                onClick={() => handleLoadMiniApp(app)}
-                className={cn(
-                  'w-full text-left px-3 py-2 rounded-lg text-[13px] transition-colors group cursor-pointer',
-                  miniAppId === app.id
-                    ? 'bg-white/8 text-neutral-100'
-                    : 'text-neutral-400 hover:bg-white/[0.03] hover:text-neutral-200'
-                )}
-              >
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <span className="truncate flex-1" title={app.title}>
-                    {app.title}
-                  </span>
-                  <button
-                    onClick={(e) => handleDeleteMiniApp(app.id, e)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded shrink-0"
-                    aria-label="Delete"
-                  >
-                    <Trash2 size={11} className="text-neutral-600 hover:text-red-400" />
-                  </button>
-                </div>
-                {app.updatedAt && (
-                  <span className="text-[10px] text-neutral-600 mt-0.5 block">
-                    {relativeTime(app.updatedAt)}
-                  </span>
-                )}
+      {/* Collapsible sections */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        {/* ─ RECENT ─ collapsible */}
+        <SidebarDisclosure
+          label="Recent"
+          badge={myMiniApps.length > 0 ? String(myMiniApps.length) : undefined}
+          defaultOpen
+        >
+          <div className="overflow-y-auto max-h-[200px] scrollbar-thin scrollbar-thumb-neutral-800">
+            {loadingMiniApps ? (
+              <SidebarSkeleton />
+            ) : myMiniApps.length === 0 ? (
+              <div className="px-3 py-3 text-center">
+                <p className="text-[11px] text-neutral-600">No miniapps yet</p>
               </div>
-            ))}
+            ) : (
+              <div className="space-y-px">
+                {myMiniApps.map((app) => (
+                  <div
+                    key={app.id}
+                    onClick={() => handleLoadMiniApp(app)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && handleLoadMiniApp(app)}
+                    className={cn(
+                      'w-full text-left px-3 py-2 rounded-lg text-[13px] transition-colors group cursor-pointer',
+                      miniAppId === app.id
+                        ? 'bg-white/8 text-neutral-100'
+                        : 'text-neutral-400 hover:bg-white/[0.03] hover:text-neutral-200'
+                    )}
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <span className="truncate flex-1" title={app.title}>
+                        {app.title}
+                      </span>
+                      <button
+                        onClick={(e) => handleDeleteMiniApp(app.id, e)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded shrink-0"
+                        aria-label="Delete"
+                      >
+                        <Trash2 size={11} className="text-neutral-600 hover:text-red-400" />
+                      </button>
+                    </div>
+                    {app.updatedAt && (
+                      <span className="text-[10px] text-neutral-600 mt-0.5 block">
+                        {relativeTime(app.updatedAt)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        </SidebarDisclosure>
+
+        {/* ─ CHAT ─ collapsible, takes remaining space */}
+        {spec && (
+          <SidebarDisclosure
+            label="Chat"
+            badge={chatHistory.length > 0 ? String(chatHistory.length) : undefined}
+            defaultOpen
+            className="flex-1 min-h-0 flex flex-col"
+          >
+            <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-2 scrollbar-thin scrollbar-thumb-neutral-800">
+              <ChatMessages
+                messages={chatHistory}
+                isGenerating={isGenerating}
+                statusMessage={statusMessage}
+                chatEndRef={chatEndRef}
+                onRetry={handleGenerate}
+                className="space-y-1"
+              />
+            </div>
+          </SidebarDisclosure>
         )}
       </div>
 
-      {spec ? (
-        <>
-          {/* Chat panel below recent when editing */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-2 scrollbar-thin scrollbar-thumb-neutral-800">
-            <ChatMessages
-              messages={chatHistory}
-              isGenerating={isGenerating}
-              statusMessage={statusMessage}
-              chatEndRef={chatEndRef}
-              onRetry={handleGenerate}
-              className="space-y-1"
-            />
-          </div>
-          <div className="shrink-0 border-t border-neutral-800/30 p-3 pb-4">{inputBar}</div>
-        </>
-      ) : (
-        <div className="shrink-0 p-3 pb-4 border-t border-neutral-800/30">
-          <div className="space-y-1 text-[10px] text-neutral-700">
-            <div className="flex justify-between">
-              <span>Focus input</span>
-              <kbd className="font-mono">⌘K</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>Save</span>
-              <kbd className="font-mono">⌘S</kbd>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Input always at bottom */}
+      <div className="shrink-0 border-t border-neutral-800/30 p-2 pb-3">{inputBar}</div>
     </div>
   );
 
@@ -1418,128 +1454,86 @@ export const PlaygroundPage: React.FC = () => {
     </div>
   );
 
-  const expertSplitPanels = (
-    <div className="flex-1 min-h-0">
-      <PanelGroup orientation={isMobile ? 'vertical' : 'horizontal'}>
-        {/* Chat panel */}
-        <Panel defaultSize={28} minSize={20} maxSize={45}>
-          <div className="h-full flex flex-col border-r border-neutral-800/30">
-            <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-2 scrollbar-thin scrollbar-thumb-neutral-800">
-              {chatHistory.length === 0 && !isGenerating && (
-                <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-                  <MessageSquare className="w-5 h-5 text-neutral-700" />
-                  <p className="text-[11px] text-neutral-600 max-w-[220px]">
-                    Describe what you want to build, then iterate with follow-up prompts.
-                  </p>
-                  <SuggestionPills
-                    suggestions={SUGGESTIONS}
-                    count={3}
-                    size="sm"
-                    onSelect={handleGenerate}
-                  />
-                </div>
+  // Expert mode preview content (with tab bar)
+  const expertPreview = (
+    <div className="flex-1 min-h-0 flex flex-col">
+      {spec && (
+        <div className="shrink-0 flex items-center border-b border-neutral-800/30 px-2 h-9">
+          {(['preview', 'spec', 'code'] as ViewTab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={cn(
+                'px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors border-b -mb-px',
+                activeTab === tab
+                  ? 'text-neutral-200 border-brand-cyan'
+                  : 'text-neutral-600 border-transparent hover:text-neutral-400'
               )}
-              <ChatMessages
-                messages={chatHistory}
-                isGenerating={isGenerating}
-                statusMessage={statusMessage}
-                chatEndRef={chatEndRef}
-                onRetry={handleGenerate}
-              />
-            </div>
-            <div className="shrink-0 border-t border-neutral-800/30 p-2.5 pb-4">{inputBar}</div>
-          </div>
-        </Panel>
-
-        <PanelResizeHandle className="group flex items-center justify-center w-1.5 hover:bg-neutral-800/30 transition-colors">
-          <GripVertical className="w-3 h-3 text-neutral-800 group-hover:text-neutral-600 transition-colors" />
-        </PanelResizeHandle>
-
-        {/* Preview panel */}
-        <Panel defaultSize={72} minSize={40}>
-          <div className="h-full flex flex-col">
-            {spec && (
-              <div className="shrink-0 flex items-center border-b border-neutral-800/30 px-2 h-9">
-                {(['preview', 'spec', 'code'] as ViewTab[]).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={cn(
-                      'px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors border-b -mb-px',
-                      activeTab === tab
-                        ? 'text-neutral-200 border-brand-cyan'
-                        : 'text-neutral-600 border-transparent hover:text-neutral-400'
-                    )}
-                  >
-                    {tab === 'preview' && <Eye className="w-3 h-3 inline mr-1" />}
-                    {tab === 'spec' && <Code2 className="w-3 h-3 inline mr-1" />}
-                    {tab === 'code' && <FileCode className="w-3 h-3 inline mr-1" />}
-                    {tab}
-                  </button>
-                ))}
-                <div className="flex-1" />
-                <span className="text-[9px] font-mono text-neutral-700">
-                  {Object.keys(spec.elements || {}).length} elements
-                </span>
-              </div>
-            )}
-            <div className="flex-1 min-h-0 overflow-auto">
-              <AnimatePresence mode="wait">
-                {!spec && !isGenerating ? (
-                  <motion.div
-                    key="empty-expert"
-                    initial={FADE_INITIAL}
-                    animate={FADE_ANIMATE}
-                    exit={FADE_EXIT}
-                    transition={FADE_TRANSITION}
-                    className="h-full flex items-center justify-center"
-                  >
-                    <p className="text-[12px] text-neutral-600">
-                      Your miniapp preview will appear here
-                    </p>
-                  </motion.div>
-                ) : isGenerating && !spec ? (
-                  <motion.div
-                    key="generating-expert"
-                    initial={FADE_INITIAL}
-                    animate={FADE_ANIMATE}
-                    exit={FADE_EXIT}
-                    transition={FADE_TRANSITION}
-                    className="h-full"
-                  >
-                    <GeneratingState message={statusMessage} elapsed={genElapsed} />
-                  </motion.div>
-                ) : spec ? (
-                  <motion.div
-                    key={`tab-${activeTab}`}
-                    initial={FADE_INITIAL}
-                    animate={FADE_ANIMATE}
-                    exit={FADE_EXIT}
-                    transition={FADE_TRANSITION}
-                    className="h-full"
-                  >
-                    {activeTab === 'spec' ? (
-                      <SpecEditor spec={spec} onUpdate={setSpec} />
-                    ) : activeTab === 'code' ? (
-                      <Suspense
-                        fallback={
-                          <div className="h-full flex items-center justify-center">
-                            <GlitchLoader size="md" />
-                          </div>
-                        }
-                      >
-                        <SandpackPreview files={ejectSpec(spec, appTitle || 'miniapp')} />
-                      </Suspense>
-                    ) : (
-                      renderPreview
-                    )}
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </div>
-          </div>
-        </Panel>
-      </PanelGroup>
+            >
+              {tab === 'preview' && <Eye className="w-3 h-3 inline mr-1" />}
+              {tab === 'spec' && <Code2 className="w-3 h-3 inline mr-1" />}
+              {tab === 'code' && <FileCode className="w-3 h-3 inline mr-1" />}
+              {tab}
+            </button>
+          ))}
+          <div className="flex-1" />
+          <span className="text-[9px] font-mono text-neutral-700">
+            {Object.keys(spec.elements || {}).length} elements
+          </span>
+        </div>
+      )}
+      <div className="flex-1 min-h-0 overflow-auto">
+        <AnimatePresence mode="wait">
+          {!spec && !isGenerating ? (
+            <motion.div
+              key="empty-expert"
+              initial={FADE_INITIAL}
+              animate={FADE_ANIMATE}
+              exit={FADE_EXIT}
+              transition={FADE_TRANSITION}
+              className="h-full flex items-center justify-center"
+            >
+              <p className="text-[12px] text-neutral-600">Your miniapp preview will appear here</p>
+            </motion.div>
+          ) : isGenerating && !spec ? (
+            <motion.div
+              key="generating-expert"
+              initial={FADE_INITIAL}
+              animate={FADE_ANIMATE}
+              exit={FADE_EXIT}
+              transition={FADE_TRANSITION}
+              className="h-full"
+            >
+              <GeneratingState message={statusMessage} elapsed={genElapsed} />
+            </motion.div>
+          ) : spec ? (
+            <motion.div
+              key={`tab-${activeTab}`}
+              initial={FADE_INITIAL}
+              animate={FADE_ANIMATE}
+              exit={FADE_EXIT}
+              transition={FADE_TRANSITION}
+              className="h-full"
+            >
+              {activeTab === 'spec' ? (
+                <SpecEditor spec={spec} onUpdate={setSpec} />
+              ) : activeTab === 'code' ? (
+                <Suspense
+                  fallback={
+                    <div className="h-full flex items-center justify-center">
+                      <GlitchLoader size="md" />
+                    </div>
+                  }
+                >
+                  <SandpackPreview files={ejectSpec(spec, appTitle || 'miniapp')} />
+                </Suspense>
+              ) : (
+                renderPreview
+              )}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
     </div>
   );
 
@@ -1559,7 +1553,7 @@ export const PlaygroundPage: React.FC = () => {
       )}
       <div className="flex-1 min-w-0 flex flex-col">
         {expertTopBar}
-        {expertSplitPanels}
+        {expertPreview}
       </div>
 
       {isDraggingOver && (
