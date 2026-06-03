@@ -45,12 +45,14 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
   const { t } = useTranslation();
 
   const noCredits = !isUnlimited && creditsRemaining !== undefined && creditsRemaining <= 0;
-  const lowCredits = !isUnlimited && creditsRemaining !== undefined && creditsRemaining > 0 && creditsRemaining < 3;
+  const lowCredits =
+    !isUnlimited && creditsRemaining !== undefined && creditsRemaining > 0 && creditsRemaining < 3;
 
   // Determine disabled reason if not provided
-  const computedDisabledReason = disabledReason
-    || (noCredits ? 'Sem creditos disponíveis' : undefined)
-    || (disabled && !isGenerating && !isGeneratingPrompt
+  const computedDisabledReason =
+    disabledReason ||
+    (noCredits ? 'Sem creditos disponíveis' : undefined) ||
+    (disabled && !isGenerating && !isGeneratingPrompt
       ? t('mockup.selectModelToGenerate') || 'Select a model to generate'
       : undefined);
 
@@ -68,16 +70,26 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
       <Button
         onClick={handleClick}
         disabled={disabled}
-        variant={embed ? "default" : "brand"}
+        variant={embed ? 'default' : 'brand'}
         className={cn(
-          !embed && "fixed bottom-4 md:bottom-8 right-4 md:right-8 mb-10 z-30",
+          !embed && 'fixed bottom-4 md:bottom-8 right-4 md:right-8 mb-10 z-30',
           embed
-            ? "h-12 px-4 py-2 gap-2 text-sm font-semibold bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg hover:shadow-xl transform active:scale-95"
-            : "flex-col gap-0.5 md:gap-1 font-semibold py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm shadow-2xl transform active:scale-95 animate-fade-in-up",
-          "focus:ring-offset-[#0C0C0C]"
+            ? 'h-12 px-4 py-2 gap-2 text-sm font-semibold bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg hover:shadow-xl transform active:scale-95'
+            : 'flex-col gap-0.5 md:gap-1 font-semibold py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm shadow-2xl transform active:scale-95 animate-fade-in-up',
+          'focus:ring-offset-[#0C0C0C]'
         )}
-        aria-label={isGeneratingPrompt ? t('mockup.generatingPrompt') : isGenerating ? t('mockup.generatingOutputs') : isPromptReady ? t('mockup.generateOutputs') : t('mockup.generatePrompt')}
-        title={isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')}
+        aria-label={
+          isGeneratingPrompt
+            ? t('mockup.generatingPrompt')
+            : isGenerating
+            ? t('mockup.generatingOutputs')
+            : isPromptReady
+            ? t('mockup.generateOutputs')
+            : t('mockup.generatePrompt')
+        }
+        title={
+          isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')
+        }
       >
         {isGeneratingPrompt ? (
           <div className="flex items-center gap-2">
@@ -107,18 +119,19 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
               <span className="sm:hidden">{t('mockup.outputsShort')}</span>
             </div>
             {isUnlimited ? (
-              <span className="text-[10px] md:text-xs font-bold text-black/80">
-                ∞ UNLIMITED
-              </span>
+              <span className="text-[10px] md:text-xs font-bold text-black/80">∞ UNLIMITED</span>
             ) : creditsRequired !== undefined && creditsRequired > 0 ? (
               <span className="text-[10px] md:text-xs font-mono text-black/70">
-                {creditsRequired} {creditsRequired === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
+                {creditsRequired}{' '}
+                {creditsRequired === 1
+                  ? t('mockup.creditUnitSingular')
+                  : t('mockup.creditUnitPlural')}
               </span>
             ) : null}
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <RefreshCcw size={embed ? 16 : 12} className={!embed ? "md:w-4 md:h-4" : undefined} />
+            <RefreshCcw size={embed ? 16 : 12} className={!embed ? 'md:w-4 md:h-4' : undefined} />
             <span className="hidden sm:inline">{t('mockup.generatePrompt')}</span>
             <span className="sm:hidden">{t('mockup.promptShort')}</span>
           </div>
@@ -143,11 +156,21 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
       disabled={disabled}
       variant="brand"
       className={cn(
-        "w-full flex-col gap-1 font-semibold py-3 px-6 text-md shadow-lg mt-4 transform active:scale-95",
-        "focus:ring-offset-[#1A1A1A]"
+        'w-full flex-col gap-1 font-semibold py-3 px-6 text-md shadow-lg mt-4 transform active:scale-95',
+        'focus:ring-offset-[#1A1A1A]'
       )}
-      aria-label={isGeneratingPrompt ? t('mockup.generatingPrompt') : isGenerating ? t('mockup.generatingOutputs') : isPromptReady ? t('mockup.generateOutputs') : t('mockup.generatePrompt')}
-      title={isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')}
+      aria-label={
+        isGeneratingPrompt
+          ? t('mockup.generatingPrompt')
+          : isGenerating
+          ? t('mockup.generatingOutputs')
+          : isPromptReady
+          ? t('mockup.generateOutputs')
+          : t('mockup.generatePrompt')
+      }
+      title={
+        isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')
+      }
     >
       {isGeneratingPrompt ? (
         <div className="flex items-center gap-2">
@@ -164,12 +187,13 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
           <span className="text-base">⛏️</span>
           <span>{t('mockup.generateOutputs')}</span>
           {isUnlimited ? (
-            <span className="text-xs font-bold text-black/80">
-              ∞ UNLIMITED
-            </span>
+            <span className="text-xs font-bold text-black/80">∞ UNLIMITED</span>
           ) : creditsRequired !== undefined && creditsRequired > 0 ? (
             <span className="text-xs font-mono text-black/70">
-              {creditsRequired} {creditsRequired === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
+              {creditsRequired}{' '}
+              {creditsRequired === 1
+                ? t('mockup.creditUnitSingular')
+                : t('mockup.creditUnitPlural')}
             </span>
           ) : null}
         </div>
@@ -193,5 +217,3 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
 
   return buttonElement;
 };
-
-

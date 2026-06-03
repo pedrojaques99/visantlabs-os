@@ -25,7 +25,7 @@ export const trackPurchase = (data: PurchaseEvent) => {
         product_id: data.product_id,
         price: data.price,
         currency: data.currency || 'USD',
-        credits: data.credits
+        credits: data.credits,
       });
       console.debug('📊 Analytics: purchase_completed tracked', data);
     } catch (error) {
@@ -48,7 +48,7 @@ export const identifyUser = (identity: UserIdentity) => {
       (window as any).himetrica.identify({
         name: identity.name,
         email: identity.email,
-        metadata: identity.metadata
+        metadata: identity.metadata,
       });
       _lastIdentifiedEmail = identity.email;
       console.debug('📊 Analytics: identifyUser called', identity.email);

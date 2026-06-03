@@ -46,7 +46,39 @@ import { EdgeContextMenu } from '../components/reactflow/contextmenu/EdgeContext
 import { ImageContextMenu } from '../components/reactflow/contextmenu/ImageContextMenu';
 import { NodeContextMenu } from '../components/reactflow/contextmenu/NodeContextMenu';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, DirectorNodeData, NodeBuilderData, CustomNodeData, VariablesNodeData, DataNodeData, BatchRunnerNodeData, BrandBatchNodeData } from '../types/reactFlow';
+import type {
+  FlowNodeData,
+  ImageNodeData,
+  MergeNodeData,
+  EditNodeData,
+  UpscaleNodeData,
+  UpscaleBicubicNodeData,
+  PromptNodeData,
+  OutputNodeData,
+  BrandNodeData,
+  MockupNodeData,
+  LogoNodeData,
+  PDFNodeData,
+  StrategyNodeData,
+  BrandCoreData,
+  VideoNodeData,
+  VideoInputNodeData,
+  AngleNodeData,
+  TextureNodeData,
+  AmbienceNodeData,
+  LuminanceNodeData,
+  ShaderNodeData,
+  ColorExtractorNodeData,
+  TextNodeData,
+  ChatNodeData,
+  DirectorNodeData,
+  NodeBuilderData,
+  CustomNodeData,
+  VariablesNodeData,
+  DataNodeData,
+  BatchRunnerNodeData,
+  BrandBatchNodeData,
+} from '../types/reactFlow';
 import type { CustomNodeDefinition, MultiOutputConfig } from '../types/customNode';
 import type { Mockup } from '../services/mockupApi';
 import { mockupApi } from '../services/mockupApi';
@@ -71,7 +103,16 @@ import { CollaborativeCanvas } from '../components/canvas/CollaborativeCanvas';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { UniversalSidePanel } from '../components/canvas/UniversalSidePanel';
 import { DirectorSidePanel } from '../components/canvas/DirectorSidePanel';
-import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage, getMediaFromNodeForCopy } from '@/utils/canvas/canvasNodeUtils';
+import {
+  cleanEdgeHandles,
+  mockupArraysEqual,
+  arraysEqual,
+  getConnectedBrandIdentity,
+  generateNodeId,
+  getImageFromSourceNode,
+  syncConnectedImage,
+  getMediaFromNodeForCopy,
+} from '@/utils/canvas/canvasNodeUtils';
 import { toast } from 'sonner';
 import type { ReactFlowInstance } from '../types/reactflow-instance';
 import { canvasApi } from '../services/canvasApi';
@@ -98,15 +139,19 @@ import type { UploadedImage, TimerRef } from '../types/types';
 import { SaveWorkflowDialog } from '../components/SaveWorkflowDialog';
 import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
-import { exportCanvasToJson, downloadJsonFile, validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
+import {
+  exportCanvasToJson,
+  downloadJsonFile,
+  validateVisantJson,
+  readJsonFile,
+} from '@/utils/canvas/canvasJsonExport';
 
 import { isLocalDevelopment } from '@/utils/env';
 import { ExportModal } from '@/components/shared/ExportModal';
 import type { CommunityPrompt } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 import { PageShell } from '@/components/ui/PageShell';
-
 
 // Node types
 const nodeTypes = {
@@ -164,7 +209,7 @@ export const CanvasPage: React.FC = () => {
         timestamp: new Date().toISOString(),
         isAuthenticated,
         hasAccess,
-        isLoadingAccess
+        isLoadingAccess,
       });
     }
   }, []);
@@ -185,12 +230,12 @@ export const CanvasPage: React.FC = () => {
           type: type,
           position: {
             x: window.innerWidth / 2 - 160,
-            y: window.innerHeight / 2 - 100
+            y: window.innerHeight / 2 - 100,
           },
           data: {
             selectedPreset: presetId,
             isLoading: false,
-          } as any
+          } as any,
         };
 
         setNodes((nds) => nds.concat(newNode));
@@ -236,13 +281,34 @@ export const CanvasPage: React.FC = () => {
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; sourceNodeId?: string } | null>(null);
-  const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
-  const [imageContextMenu, setImageContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
-  const [nodeContextMenu, setNodeContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    sourceNodeId?: string;
+  } | null>(null);
+  const [edgeContextMenu, setEdgeContextMenu] = useState<{
+    x: number;
+    y: number;
+    edgeId: string;
+  } | null>(null);
+  const [imageContextMenu, setImageContextMenu] = useState<{
+    x: number;
+    y: number;
+    nodeId: string;
+  } | null>(null);
+  const [nodeContextMenu, setNodeContextMenu] = useState<{
+    x: number;
+    y: number;
+    nodeId: string;
+  } | null>(null);
   const [selectedMockup, setSelectedMockup] = useState<Mockup | null>(null);
   const [userMockups, setUserMockups] = useState<Mockup[]>([]);
-  const [exportPanel, setExportPanel] = useState<{ nodeId: string; nodeName: string; imageUrl: string | null; nodeType: string } | null>(null);
+  const [exportPanel, setExportPanel] = useState<{
+    nodeId: string;
+    nodeName: string;
+    imageUrl: string | null;
+    nodeType: string;
+  } | null>(null);
   const [exportCanvas, setExportCanvas] = useState<HTMLCanvasElement | null>(null);
   const exportCanvasRef = React.useMemo(() => ({ current: exportCanvas }), [exportCanvas]);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
@@ -283,11 +349,14 @@ export const CanvasPage: React.FC = () => {
             if (settings.backgroundColor) canvasHeader.setBackgroundColor(settings.backgroundColor);
             if (settings.gridColor) canvasHeader.setGridColor(settings.gridColor);
             if (settings.showGrid !== undefined) canvasHeader.setShowGrid(settings.showGrid);
-            if (settings.showMinimap !== undefined) canvasHeader.setShowMinimap(settings.showMinimap);
-            if (settings.showControls !== undefined) canvasHeader.setShowControls(settings.showControls);
+            if (settings.showMinimap !== undefined)
+              canvasHeader.setShowMinimap(settings.showMinimap);
+            if (settings.showControls !== undefined)
+              canvasHeader.setShowControls(settings.showControls);
             if (settings.cursorColor) canvasHeader.setCursorColor(settings.cursorColor);
             if (settings.brandCyan) canvasHeader.setBrandCyan(settings.brandCyan);
-            if (settings.experimentalMode !== undefined) canvasHeader.setExperimentalMode(settings.experimentalMode);
+            if (settings.experimentalMode !== undefined)
+              canvasHeader.setExperimentalMode(settings.experimentalMode);
             setIsSettingsLoaded(true);
           }
         } catch (error) {
@@ -345,8 +414,11 @@ export const CanvasPage: React.FC = () => {
   const prevSelectedNodeIdsRef = useRef<string>('');
 
   useEffect(() => {
-    const selected = nodes.filter(n => n.selected);
-    const selectedIds = selected.map(n => n.id).sort().join(',');
+    const selected = nodes.filter((n) => n.selected);
+    const selectedIds = selected
+      .map((n) => n.id)
+      .sort()
+      .join(',');
 
     // Always update count
     setSelectedNodesCountInContext(selected.length);
@@ -356,14 +428,14 @@ export const CanvasPage: React.FC = () => {
       prevSelectedNodeIdsRef.current = selectedIds;
 
       // Auto-open panel if a mockup node is selected (prioritize global prompts)
-      const hasMockup = selected.some(n => n.type === 'mockup');
-      const hasShader = selected.some(n => n.type === 'shader');
-      const hasChat = selected.some(n => n.type === 'chat');
-      const hasDirector = selected.some(n => n.type === 'director');
+      const hasMockup = selected.some((n) => n.type === 'mockup');
+      const hasShader = selected.some((n) => n.type === 'shader');
+      const hasChat = selected.some((n) => n.type === 'chat');
+      const hasDirector = selected.some((n) => n.type === 'director');
 
       // Handle Director Node auto-open/close
       if (hasDirector) {
-        const directorNode = selected.find(n => n.type === 'director');
+        const directorNode = selected.find((n) => n.type === 'director');
         if (directorNode && openDirectorNodeId !== directorNode.id) {
           setOpenDirectorNodeId(directorNode.id);
         }
@@ -393,14 +465,20 @@ export const CanvasPage: React.FC = () => {
 
       // Logic: If there is a chat node or active global panel, keep panel open.
       // If NO chat node, no active global panel and nothing selected, close it.
-      const hasChatNode = nodes.some(n => n.type === 'chat');
+      const hasChatNode = nodes.some((n) => n.type === 'chat');
       const hasActiveGlobalPanel = !!canvasHeader.activeSidePanel;
 
       if (selected.length === 0 && !hasChatNode && !hasActiveGlobalPanel) {
         setIsUniversalPanelOpen(false);
       }
     }
-  }, [nodes, setSelectedNodesCountInContext, canvasHeader.activeSidePanel, openDirectorNodeId, setOpenDirectorNodeId]);
+  }, [
+    nodes,
+    setSelectedNodesCountInContext,
+    canvasHeader.activeSidePanel,
+    openDirectorNodeId,
+    setOpenDirectorNodeId,
+  ]);
 
   // Effect to auto-open the panel when activeSidePanel is set externally (e.g. from header button)
   useEffect(() => {
@@ -426,8 +504,20 @@ export const CanvasPage: React.FC = () => {
         edgeStrokeWidth,
       });
     }
-  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, brandCyan, experimentalMode, edgeStyle, edgeStrokeWidth, isAuthenticated, debouncedUpdateSettings]);
-
+  }, [
+    backgroundColor,
+    gridColor,
+    showGrid,
+    showMinimap,
+    showControls,
+    cursorColor,
+    brandCyan,
+    experimentalMode,
+    edgeStyle,
+    edgeStrokeWidth,
+    isAuthenticated,
+    debouncedUpdateSettings,
+  ]);
 
   // Drawing hook - initialize before history so we can pass drawings to it
   const drawing = useCanvasDrawing(reactFlowInstance, setNodes);
@@ -447,132 +537,156 @@ export const CanvasPage: React.FC = () => {
     setSelectedMockup(mockup);
   }, []);
 
-  const handleViewOutput = useCallback((imageUrl: string) => {
-    // Create a temporary mockup from imageUrl for OutputNode
-    const tempMockup: Mockup = {
-      _id: `temp-output-${Date.now()}`,
-      imageUrl: imageUrl.startsWith('data:') ? undefined : imageUrl,
-      imageBase64: imageUrl.startsWith('data:') ? imageUrl : undefined,
-      prompt: t('canvas.outputImagePrompt'),
-      designType: 'blank',
-      tags: [],
-      brandingTags: [],
-      aspectRatio: '16:9',
-    };
-    setSelectedMockup(tempMockup);
-  }, [t]);
+  const handleViewOutput = useCallback(
+    (imageUrl: string) => {
+      // Create a temporary mockup from imageUrl for OutputNode
+      const tempMockup: Mockup = {
+        _id: `temp-output-${Date.now()}`,
+        imageUrl: imageUrl.startsWith('data:') ? undefined : imageUrl,
+        imageBase64: imageUrl.startsWith('data:') ? imageUrl : undefined,
+        prompt: t('canvas.outputImagePrompt'),
+        designType: 'blank',
+        tags: [],
+        brandingTags: [],
+        aspectRatio: '16:9',
+      };
+      setSelectedMockup(tempMockup);
+    },
+    [t]
+  );
 
-  const handleSavePrompt = useCallback((prompt: string) => {
-    setSavePromptModalState({
-      isOpen: true,
-      prompt,
-      initialData: { name: t('canvasNodes.promptNode.savedPromptName') || 'New Prompt' }
-    });
-  }, [t]);
+  const handleSavePrompt = useCallback(
+    (prompt: string) => {
+      setSavePromptModalState({
+        isOpen: true,
+        prompt,
+        initialData: { name: t('canvasNodes.promptNode.savedPromptName') || 'New Prompt' },
+      });
+    },
+    [t]
+  );
 
-  const handleEdit = useCallback((mockup: Mockup) => {
-    const imageUrl = getImageUrl(mockup);
-    if (imageUrl && mockup.imageBase64) {
-      navigate(`/editor?image=${encodeURIComponent(mockup.imageBase64)}`);
-    }
-  }, [navigate]);
+  const handleEdit = useCallback(
+    (mockup: Mockup) => {
+      const imageUrl = getImageUrl(mockup);
+      if (imageUrl && mockup.imageBase64) {
+        navigate(`/editor?image=${encodeURIComponent(mockup.imageBase64)}`);
+      }
+    },
+    [navigate]
+  );
 
-  const handleEditOutput = useCallback((imageUrl: string) => {
-    // If it's already a data URL, use it; otherwise navigate with URL
-    if (imageUrl.startsWith('data:')) {
-      navigate(`/editor?image=${encodeURIComponent(imageUrl)}`);
-    } else {
-      // For R2 URLs, we'll need to fetch and convert, but for now just navigate with URL
-      navigate(`/editor?imageUrl=${encodeURIComponent(imageUrl)}`);
-    }
-  }, [navigate]);
+  const handleEditOutput = useCallback(
+    (imageUrl: string) => {
+      // If it's already a data URL, use it; otherwise navigate with URL
+      if (imageUrl.startsWith('data:')) {
+        navigate(`/editor?image=${encodeURIComponent(imageUrl)}`);
+      } else {
+        // For R2 URLs, we'll need to fetch and convert, but for now just navigate with URL
+        navigate(`/editor?imageUrl=${encodeURIComponent(imageUrl)}`);
+      }
+    },
+    [navigate]
+  );
 
-  const handleDelete = useCallback(async (id: string) => {
-    if (!id || !isAuthenticated) {
-      return;
-    }
+  const handleDelete = useCallback(
+    async (id: string) => {
+      if (!id || !isAuthenticated) {
+        return;
+      }
 
-    // Add to history before deletion
-    addToHistory(nodes, edges, drawing.drawings);
+      // Add to history before deletion
+      addToHistory(nodes, edges, drawing.drawings);
 
-    try {
-      await mockupApi.delete(id);
+      try {
+        await mockupApi.delete(id);
 
-      setNodes((prev: Node<FlowNodeData>[]) => {
-        const newNodes = prev.filter(n => {
-          if (n.type === 'image') {
-            return (n.data as ImageNodeData).mockup._id !== id;
-          }
-          return true;
+        setNodes((prev: Node<FlowNodeData>[]) => {
+          const newNodes = prev.filter((n) => {
+            if (n.type === 'image') {
+              return (n.data as ImageNodeData).mockup._id !== id;
+            }
+            return true;
+          });
+
+          // Add to history after deletion
+          setTimeout(() => {
+            addToHistory(newNodes, edges, drawing.drawings);
+          }, 0);
+
+          return newNodes;
         });
+      } catch (err: any) {
+        // Error handling is done by toast in the service, but ensure user sees feedback
+        const errorMessage = err?.message || t('canvas.failedToDeleteMockup');
+        toast.error(errorMessage, { duration: 5000 });
+        if (isLocalDevelopment()) {
+          console.error('Failed to delete mockup:', err);
+        }
+      }
+    },
+    [isAuthenticated, setNodes, nodes, edges, addToHistory, t]
+  );
 
-        // Add to history after deletion
+  const handleDuplicateNodes = useCallback(
+    (nodeIds: string[]) => {
+      if (!reactFlowInstance || nodeIds.length === 0) return;
+
+      const nodesToDuplicate = nodes.filter((n) => nodeIds.includes(n.id));
+      if (nodesToDuplicate.length === 0) return;
+
+      addToHistory(nodes, edges, drawing.drawings);
+
+      const duplicatedNodes: Node<FlowNodeData>[] = nodesToDuplicate.map((node, index) => {
+        const newPosition = {
+          x: node.position.x + 50 + index * 10,
+          y: node.position.y + 50 + index * 10,
+        };
+
+        return {
+          ...node,
+          id: generateNodeId(node.type || 'node'),
+          position: newPosition,
+          selected: false,
+          data: {
+            ...node.data,
+            isLoading: false,
+            isGenerating: false,
+            isDescribing: false,
+            isAnalyzing: false,
+            isGeneratingPrompt: false,
+            isSuggestingPrompts: false,
+            resultImageBase64: undefined,
+            resultImageUrl: undefined,
+          } as FlowNodeData,
+        };
+      });
+
+      setNodes((nds: Node<FlowNodeData>[]) => {
+        const newNodes = [...nds, ...duplicatedNodes];
         setTimeout(() => {
           addToHistory(newNodes, edges, drawing.drawings);
         }, 0);
-
         return newNodes;
       });
-    } catch (err: any) {
-      // Error handling is done by toast in the service, but ensure user sees feedback
-      const errorMessage = err?.message || t('canvas.failedToDeleteMockup');
-      toast.error(errorMessage, { duration: 5000 });
-      if (isLocalDevelopment()) {
-        console.error('Failed to delete mockup:', err);
-      }
-    }
-  }, [isAuthenticated, setNodes, nodes, edges, addToHistory, t]);
 
-  const handleDuplicateNodes = useCallback((nodeIds: string[]) => {
-    if (!reactFlowInstance || nodeIds.length === 0) return;
+      toast.success(
+        t('canvas.nodeDuplicated', {
+          count: duplicatedNodes.length,
+          plural: duplicatedNodes.length > 1 ? 's' : '',
+        }),
+        { duration: 2000 }
+      );
+    },
+    [nodes, edges, reactFlowInstance, setNodes, addToHistory, t]
+  );
 
-    const nodesToDuplicate = nodes.filter(n => nodeIds.includes(n.id));
-    if (nodesToDuplicate.length === 0) return;
-
-    addToHistory(nodes, edges, drawing.drawings);
-
-    const duplicatedNodes: Node<FlowNodeData>[] = nodesToDuplicate.map((node, index) => {
-      const newPosition = {
-        x: node.position.x + 50 + (index * 10),
-        y: node.position.y + 50 + (index * 10),
-      };
-
-      return {
-        ...node,
-        id: generateNodeId(node.type || 'node'),
-        position: newPosition,
-        selected: false,
-        data: {
-          ...node.data,
-          isLoading: false,
-          isGenerating: false,
-          isDescribing: false,
-          isAnalyzing: false,
-          isGeneratingPrompt: false,
-          isSuggestingPrompts: false,
-          resultImageBase64: undefined,
-          resultImageUrl: undefined,
-        } as FlowNodeData,
-      };
-    });
-
-    setNodes((nds: Node<FlowNodeData>[]) => {
-      const newNodes = [...nds, ...duplicatedNodes];
-      setTimeout(() => {
-        addToHistory(newNodes, edges, drawing.drawings);
-      }, 0);
-      return newNodes;
-    });
-
-    toast.success(t('canvas.nodeDuplicated', {
-      count: duplicatedNodes.length,
-      plural: duplicatedNodes.length > 1 ? 's' : ''
-    }), { duration: 2000 });
-  }, [nodes, edges, reactFlowInstance, setNodes, addToHistory, t]);
-
-  const handleDuplicate = useCallback((id: string) => {
-    handleDuplicateNodes([id]);
-  }, [handleDuplicateNodes]);
+  const handleDuplicate = useCallback(
+    (id: string) => {
+      handleDuplicateNodes([id]);
+    },
+    [handleDuplicateNodes]
+  );
 
   const handleCloseViewer = () => {
     setSelectedMockup(null);
@@ -581,7 +695,7 @@ export const CanvasPage: React.FC = () => {
   const handleExport = useCallback(() => {
     if (!contextMenu?.sourceNodeId) return;
 
-    const node = nodes.find(n => n.id === contextMenu.sourceNodeId);
+    const node = nodes.find((n) => n.id === contextMenu.sourceNodeId);
     if (!node) return;
 
     let imageUrl: string | null = null;
@@ -592,16 +706,31 @@ export const CanvasPage: React.FC = () => {
       const imageData = node.data as ImageNodeData;
       imageUrl = getImageUrl(imageData.mockup) || null;
       nodeName = imageData.mockup.prompt || nodeName;
-    } else if (node.type === 'merge' || node.type === 'edit' || node.type === 'upscale' || node.type === 'mockup' || node.type === 'angle' || node.type === 'prompt') {
+    } else if (
+      node.type === 'merge' ||
+      node.type === 'edit' ||
+      node.type === 'upscale' ||
+      node.type === 'mockup' ||
+      node.type === 'angle' ||
+      node.type === 'prompt'
+    ) {
       const nodeData = node.data as any;
-      imageUrl = nodeData.resultImageUrl || (nodeData.resultImageBase64 ? `data:image/png;base64,${nodeData.resultImageBase64}` : null);
+      imageUrl =
+        nodeData.resultImageUrl ||
+        (nodeData.resultImageBase64 ? `data:image/png;base64,${nodeData.resultImageBase64}` : null);
     } else if (node.type === 'output') {
       const outputData = node.data as OutputNodeData;
-      imageUrl = outputData.resultImageUrl || (outputData.resultImageBase64 ? `data:image/png;base64,${outputData.resultImageBase64}` : null);
+      imageUrl =
+        outputData.resultImageUrl ||
+        (outputData.resultImageBase64
+          ? `data:image/png;base64,${outputData.resultImageBase64}`
+          : null);
     } else if (node.type === 'brand') {
       const brandData = node.data as BrandNodeData;
       if (brandData.logoBase64) {
-        imageUrl = brandData.logoBase64.startsWith('data:') ? brandData.logoBase64 : `data:image/png;base64,${brandData.logoBase64}`;
+        imageUrl = brandData.logoBase64.startsWith('data:')
+          ? brandData.logoBase64
+          : `data:image/png;base64,${brandData.logoBase64}`;
       } else {
         imageUrl = brandData.logoImage || null;
       }
@@ -668,7 +797,7 @@ export const CanvasPage: React.FC = () => {
         projectName,
         isCollaborative,
         isLoadingProject,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }, [projectId, projectName, isCollaborative, isLoadingProject]);
@@ -683,10 +812,18 @@ export const CanvasPage: React.FC = () => {
         edgeCount: edges.length,
         drawingCount: drawing.drawings.length,
         isCollaborative,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
-  }, [isLoadingProject, projectId, projectName, nodes.length, edges.length, drawing.drawings.length, isCollaborative]);
+  }, [
+    isLoadingProject,
+    projectId,
+    projectName,
+    nodes.length,
+    edges.length,
+    drawing.drawings.length,
+    isCollaborative,
+  ]);
 
   // Poll for project name updates in collaborative mode
   useEffect(() => {
@@ -738,41 +875,46 @@ export const CanvasPage: React.FC = () => {
     projectNameRef.current = projectName || '';
   }, [projectName]);
 
-  const handleProjectNameChange = useCallback(async (newName: string) => {
-    // Only update if name actually changed and is not empty
-    if (!newName || typeof newName !== 'string') {
-      return; // Safety check: ignore undefined/null/non-string values
-    }
-    const trimmedName = newName.trim();
-
-    // Save any valid name that's different from current (including generic names with timestamps)
-    if (trimmedName && trimmedName !== projectNameRef.current) {
-      // Update ref immediately so saveImmediately uses the new name
-      const previousName = projectNameRef.current;
-      projectNameRef.current = trimmedName;
-
-      // Update local state
-      setProjectName(trimmedName);
-
-      // Save to database immediately (don't wait for debounce)
-      if (projectId && saveImmediately) {
-        try {
-          // Small delay to ensure state is updated
-          await new Promise(resolve => setTimeout(resolve, 50));
-          await saveImmediately();
-          toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
-        } catch (error) {
-          console.error('Failed to save project name:', error);
-          toast.error(t('canvas.failedToUpdateProjectName') || 'Failed to update project name', { duration: 3000 });
-          // Revert to previous name on error
-          projectNameRef.current = previousName;
-          setProjectName(previousName);
-        }
-      } else {
-        toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
+  const handleProjectNameChange = useCallback(
+    async (newName: string) => {
+      // Only update if name actually changed and is not empty
+      if (!newName || typeof newName !== 'string') {
+        return; // Safety check: ignore undefined/null/non-string values
       }
-    }
-  }, [setProjectName, t, projectId, saveImmediately]);
+      const trimmedName = newName.trim();
+
+      // Save any valid name that's different from current (including generic names with timestamps)
+      if (trimmedName && trimmedName !== projectNameRef.current) {
+        // Update ref immediately so saveImmediately uses the new name
+        const previousName = projectNameRef.current;
+        projectNameRef.current = trimmedName;
+
+        // Update local state
+        setProjectName(trimmedName);
+
+        // Save to database immediately (don't wait for debounce)
+        if (projectId && saveImmediately) {
+          try {
+            // Small delay to ensure state is updated
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            await saveImmediately();
+            toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
+          } catch (error) {
+            console.error('Failed to save project name:', error);
+            toast.error(t('canvas.failedToUpdateProjectName') || 'Failed to update project name', {
+              duration: 3000,
+            });
+            // Revert to previous name on error
+            projectNameRef.current = previousName;
+            setProjectName(previousName);
+          }
+        } else {
+          toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
+        }
+      }
+    },
+    [setProjectName, t, projectId, saveImmediately]
+  );
 
   const setOnProjectNameChangeInContext = canvasHeader.setOnProjectNameChange;
   const setOnExportImagesRequestInContext = canvasHeader.setOnExportImagesRequest;
@@ -787,20 +929,43 @@ export const CanvasPage: React.FC = () => {
     // Collect output images from the canvas
     const imagesToExport: Array<{ url: string; name: string }> = [];
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       let url: string | null = null;
       let name = node.data.label || `${node.type}-${node.id.substring(0, 4)}`;
 
       // Filter: Only select 'output' nodes or nodes with explicit result data
       if (node.type === 'output') {
         const data = node.data as any;
-        url = data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null);
+        url =
+          data.resultImageUrl ||
+          (data.resultImageBase64
+            ? data.resultImageBase64.startsWith('data:')
+              ? data.resultImageBase64
+              : `data:image/png;base64,${data.resultImageBase64}`
+            : null);
         name = data.label || name;
-      } else if (['merge', 'edit', 'upscale', 'upscaleBicubic', 'mockup', 'angle', 'prompt', 'shader'].includes(node.type)) {
+      } else if (
+        [
+          'merge',
+          'edit',
+          'upscale',
+          'upscaleBicubic',
+          'mockup',
+          'angle',
+          'prompt',
+          'shader',
+        ].includes(node.type)
+      ) {
         // Only include if it has explicit result data
         const data = node.data as any;
         if (data.resultImageUrl || data.resultImageBase64) {
-          url = data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null);
+          url =
+            data.resultImageUrl ||
+            (data.resultImageBase64
+              ? data.resultImageBase64.startsWith('data:')
+                ? data.resultImageBase64
+                : `data:image/png;base64,${data.resultImageBase64}`
+              : null);
         }
       }
 
@@ -819,7 +984,9 @@ export const CanvasPage: React.FC = () => {
       try {
         const dirHandle = await (window as any).showDirectoryPicker();
 
-        toast.info((t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`);
+        toast.info(
+          (t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`
+        );
 
         let savedCount = 0;
         let errorCount = 0;
@@ -859,12 +1026,13 @@ export const CanvasPage: React.FC = () => {
         }
 
         if (savedCount > 0) {
-          toast.success((t('canvas.exportComplete') || 'Export complete!') + ` ${savedCount} saved.`);
+          toast.success(
+            (t('canvas.exportComplete') || 'Export complete!') + ` ${savedCount} saved.`
+          );
         }
         if (errorCount > 0) {
           toast.warning(`${errorCount} images failed to save.`);
         }
-
       } catch (err: any) {
         // User cancelled or API error
         if (err.name !== 'AbortError') {
@@ -874,7 +1042,9 @@ export const CanvasPage: React.FC = () => {
       }
     } else {
       // Fallback to serial download for unsupported browsers
-      toast.info((t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`);
+      toast.info(
+        (t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`
+      );
 
       for (let i = 0; i < imagesToExport.length; i++) {
         const img = imagesToExport[i];
@@ -943,17 +1113,20 @@ export const CanvasPage: React.FC = () => {
   }, [linkedGuidelineId, setLinkedGuidelineIdInContext]);
 
   // Handle linked guideline change from header
-  const handleLinkedGuidelineChange = useCallback(async (id: string | null) => {
-    setLinkedGuidelineId(id);
-    // Save immediately when guideline changes
-    if (projectId && saveImmediately) {
-      try {
-        await saveImmediately();
-      } catch (error) {
-        console.error('Failed to save linked guideline:', error);
+  const handleLinkedGuidelineChange = useCallback(
+    async (id: string | null) => {
+      setLinkedGuidelineId(id);
+      // Save immediately when guideline changes
+      if (projectId && saveImmediately) {
+        try {
+          await saveImmediately();
+        } catch (error) {
+          console.error('Failed to save linked guideline:', error);
+        }
       }
-    }
-  }, [setLinkedGuidelineId, projectId, saveImmediately]);
+    },
+    [setLinkedGuidelineId, projectId, saveImmediately]
+  );
 
   // Set up handler in context
   const setOnLinkedGuidelineChangeInContext = canvasHeader.setOnLinkedGuidelineChange;
@@ -994,15 +1167,18 @@ export const CanvasPage: React.FC = () => {
   }, [isAuthenticated]);
 
   // Collaboration hook (only used inside RoomProvider)
-  const collaboration = isCollaborative && projectId ? {
-    projectId,
-    isCollaborative,
-    nodes,
-    edges,
-    setNodes,
-    setEdges,
-    onSave: saveImmediately,
-  } : null;
+  const collaboration =
+    isCollaborative && projectId
+      ? {
+          projectId,
+          isCollaborative,
+          nodes,
+          edges,
+          setNodes,
+          setEdges,
+          onSave: saveImmediately,
+        }
+      : null;
 
   const {
     handleEditApply,
@@ -1073,79 +1249,88 @@ export const CanvasPage: React.FC = () => {
   }, [edges]);
 
   // Director Node handlers
-  const {
-    handleDirectorAnalyze,
-    handleDirectorGeneratePrompt,
-    handleDirectorNodeDataUpdate,
-  } = useDirectorNodeHandler({
-    nodesRef,
-    edgesRef,
-    updateNodeData,
-    setNodes,
-    setEdges,
-    addToHistory,
-    handlersRef,
-    linkedGuideline: canvasHeader.linkedGuideline,
-  });
+  const { handleDirectorAnalyze, handleDirectorGeneratePrompt, handleDirectorNodeDataUpdate } =
+    useDirectorNodeHandler({
+      nodesRef,
+      edgesRef,
+      updateNodeData,
+      setNodes,
+      setEdges,
+      addToHistory,
+      handlersRef,
+      linkedGuideline: canvasHeader.linkedGuideline,
+    });
 
   // Canvas tool state
   const [activeTool, setActiveTool] = useState<CanvasTool>('select');
   const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
 
   // Handle tool changes
-  const handleToolChange = useCallback((tool: CanvasTool) => {
-    setActiveTool(tool);
+  const handleToolChange = useCallback(
+    (tool: CanvasTool) => {
+      setActiveTool(tool);
 
-    if (tool === 'hand') {
-      // Enable pan mode (space key behavior)
-      // This is handled by the space key logic in CanvasFlow
-    } else if (tool === 'select') {
-      // Disable drawing mode
-      if (drawing.drawingState.isDrawingMode) {
-        drawing.setIsDrawingMode(false);
+      if (tool === 'hand') {
+        // Enable pan mode (space key behavior)
+        // This is handled by the space key logic in CanvasFlow
+      } else if (tool === 'select') {
+        // Disable drawing mode
+        if (drawing.drawingState.isDrawingMode) {
+          drawing.setIsDrawingMode(false);
+        }
+      } else if (tool === 'draw') {
+        // Drawing mode is toggled by onToggleDrawing
+      } else if (tool === 'type') {
+        // Type tool is independent - does not activate drawing mode
+        if (drawing.drawingState.isDrawingMode) {
+          drawing.setIsDrawingMode(false);
+        }
+      } else if (tool === 'shapes') {
+        // Set drawing type to shape
+        drawing.setDrawingType('shape');
+        if (!drawing.drawingState.isDrawingMode) {
+          drawing.setIsDrawingMode(true);
+        }
       }
-    } else if (tool === 'draw') {
-      // Drawing mode is toggled by onToggleDrawing
-    } else if (tool === 'type') {
-      // Type tool is independent - does not activate drawing mode
-      if (drawing.drawingState.isDrawingMode) {
-        drawing.setIsDrawingMode(false);
-      }
-    } else if (tool === 'shapes') {
-      // Set drawing type to shape
-      drawing.setDrawingType('shape');
-      if (!drawing.drawingState.isDrawingMode) {
-        drawing.setIsDrawingMode(true);
-      }
-    }
-  }, [drawing]);
+    },
+    [drawing]
+  );
 
   // Handle drawing type change
-  const handleDrawingTypeChange = useCallback((type: 'freehand' | 'text' | 'shape') => {
-    drawing.setDrawingType(type);
-    if (type === 'text') {
-      setActiveTool('type');
-    } else if (type === 'shape') {
-      setActiveTool('shapes');
-    } else {
-      setActiveTool('draw');
-    }
-  }, [drawing]);
+  const handleDrawingTypeChange = useCallback(
+    (type: 'freehand' | 'text' | 'shape') => {
+      drawing.setDrawingType(type);
+      if (type === 'text') {
+        setActiveTool('type');
+      } else if (type === 'shape') {
+        setActiveTool('shapes');
+      } else {
+        setActiveTool('draw');
+      }
+    },
+    [drawing]
+  );
 
   // Handle shape type change
-  const handleShapeTypeChange = useCallback((type: 'rectangle' | 'circle' | 'line' | 'arrow') => {
-    drawing.setShapeType(type);
-  }, [drawing]);
+  const handleShapeTypeChange = useCallback(
+    (type: 'rectangle' | 'circle' | 'line' | 'arrow') => {
+      drawing.setShapeType(type);
+    },
+    [drawing]
+  );
 
   // Handle color change
-  const handleColorChange = useCallback((color: string) => {
-    drawing.setStrokeColor(color);
-    drawing.setTextColor(color);
-    drawing.setShapeColor(color);
-    if (drawing.setShapeStrokeColor) {
-      drawing.setShapeStrokeColor(color);
-    }
-  }, [drawing]);
+  const handleColorChange = useCallback(
+    (color: string) => {
+      drawing.setStrokeColor(color);
+      drawing.setTextColor(color);
+      drawing.setShapeColor(color);
+      if (drawing.setShapeStrokeColor) {
+        drawing.setShapeStrokeColor(color);
+      }
+    },
+    [drawing]
+  );
 
   // Wrappers for drawing functions that update history
   const handleStopDrawing = useCallback(() => {
@@ -1161,14 +1346,17 @@ export const CanvasPage: React.FC = () => {
     }
   }, [drawing, nodes, edges, addToHistory]);
 
-  const handleUpdateDrawingText = useCallback((id: string, newText: string) => {
-    // Only add to history if text actually changed
-    const drawingToUpdate = drawing.drawings.find(d => d.id === id);
-    if (drawingToUpdate && drawingToUpdate.text !== newText) {
-      addToHistory(nodes, edges, drawing.drawings);
-    }
-    drawing.updateDrawingText(id, newText);
-  }, [drawing, nodes, edges, addToHistory]);
+  const handleUpdateDrawingText = useCallback(
+    (id: string, newText: string) => {
+      // Only add to history if text actually changed
+      const drawingToUpdate = drawing.drawings.find((d) => d.id === id);
+      if (drawingToUpdate && drawingToUpdate.text !== newText) {
+        addToHistory(nodes, edges, drawing.drawings);
+      }
+      drawing.updateDrawingText(id, newText);
+    },
+    [drawing, nodes, edges, addToHistory]
+  );
 
   // Handle Delete key for drawings
   useEffect(() => {
@@ -1262,78 +1450,94 @@ export const CanvasPage: React.FC = () => {
     addNodeBuilderNode,
   } = nodeCreators;
 
-  const handleImportCommunityPreset = useCallback((preset: CommunityPrompt, type: string) => {
-    if (!reactFlowInstance) return;
+  const handleImportCommunityPreset = useCallback(
+    (preset: CommunityPrompt, type: string) => {
+      if (!reactFlowInstance) return;
 
-    // Brand assets → create ImageNode with the URL already set
-    if (type === 'brand-asset' && (preset as any).url) {
+      // Brand assets → create ImageNode with the URL already set
+      if (type === 'brand-asset' && (preset as any).url) {
+        const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        const nodeId = addImageNode(center);
+        if (nodeId) {
+          const assetUrl = (preset as any).url as string;
+          const assetType = (preset as any).type as string;
+          updateNodeData(nodeId, {
+            mockup: {
+              _id: `brand-${Date.now()}`,
+              imageUrl: assetUrl,
+              imageBase64: '',
+              prompt: assetType === 'logo' ? 'Brand Logo' : 'Brand Asset',
+              designType: assetType === 'logo' ? 'logo' : 'brand-asset',
+              tags: [],
+              brandingTags: [],
+              aspectRatio: '1:1',
+            },
+          });
+          setNodes((nds) => nds.map((n) => ({ ...n, selected: n.id === nodeId })));
+          toast.success(t('canvas.brand_asset_added_to_canvas'));
+        }
+        return;
+      }
+
+      // Determine target category/type
+      const targetCategory = type === 'all' ? preset.category || 'presets' : type;
+      const presetType =
+        preset.presetType || (targetCategory !== 'presets' ? targetCategory : null);
+
+      // Use shared utility for smart selection/update
+      const updated = applyPresetDataToNodes(nodesRef.current as any, preset, updateNodeData);
+
+      if (updated) {
+        toast.success(
+          t('communityPresets.messages.presetApplied') || `Preset applied to selected node(s)`
+        );
+        return;
+      }
+
+      // Default Fallback: Create new node at center of viewport if no compatible node is selected
       const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-      const nodeId = addImageNode(center);
-      if (nodeId) {
-        const assetUrl = (preset as any).url as string;
-        const assetType = (preset as any).type as string;
-        updateNodeData(nodeId, {
-          mockup: {
-            _id: `brand-${Date.now()}`,
-            imageUrl: assetUrl,
-            imageBase64: '',
-            prompt: assetType === 'logo' ? 'Brand Logo' : 'Brand Asset',
-            designType: assetType === 'logo' ? 'logo' : 'brand-asset',
-            tags: [],
-            brandingTags: [],
-            aspectRatio: '1:1',
-          },
-        });
-        setNodes(nds => nds.map(n => ({ ...n, selected: n.id === nodeId })));
-        toast.success(t('canvas.brand_asset_added_to_canvas'));
-      }
-      return;
-    }
+      let nodeId: string | undefined;
+      const nodeType =
+        PRESET_TYPE_TO_NODE_TYPE[presetType || ''] ||
+        PRESET_TYPE_TO_NODE_TYPE[targetCategory || ''] ||
+        'prompt';
 
-    // Determine target category/type
-    const targetCategory = type === 'all' ? (preset.category || 'presets') : type;
-    const presetType = preset.presetType || (targetCategory !== 'presets' ? targetCategory : null);
-
-    // Use shared utility for smart selection/update
-    const updated = applyPresetDataToNodes(
-      nodesRef.current as any,
-      preset,
-      updateNodeData
-    );
-
-    if (updated) {
-      toast.success(t('communityPresets.messages.presetApplied') || `Preset applied to selected node(s)`);
-      return;
-    }
-
-    // Default Fallback: Create new node at center of viewport if no compatible node is selected
-    const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    let nodeId: string | undefined;
-    const nodeType = PRESET_TYPE_TO_NODE_TYPE[presetType || ''] || PRESET_TYPE_TO_NODE_TYPE[targetCategory || ''] || 'prompt';
-
-    if (nodeType === 'mockup') {
-      nodeId = addMockupNode(center);
-      if (nodeId) {
-        updateNodeData(nodeId, {
-          selectedPreset: preset.id,
-          customPrompt: '' // Keep consistent with MockupNode behavior
+      if (nodeType === 'mockup') {
+        nodeId = addMockupNode(center);
+        if (nodeId) {
+          updateNodeData(nodeId, {
+            selectedPreset: preset.id,
+            customPrompt: '', // Keep consistent with MockupNode behavior
+          });
+        }
+      } else {
+        // Default to PromptNode for other categories (3d, aesthetics, themes, prompts, etc.)
+        nodeId = addPromptNode(center, {
+          prompt: preset.prompt,
+          model: preset.model || GEMINI_MODELS.FLASH,
         });
       }
-    } else {
-      // Default to PromptNode for other categories (3d, aesthetics, themes, prompts, etc.)
-      nodeId = addPromptNode(center, {
-        prompt: preset.prompt,
-        model: preset.model || GEMINI_MODELS.FLASH
-      });
-    }
 
-    if (nodeId) {
-      toast.success(t('communityPresets.messages.presetImported') || `Imported: ${preset.name}`);
-      // Select the new node
-      setNodes(nds => nds.map(n => ({ ...n, selected: n.id === nodeId })));
-    }
-  }, [reactFlowInstance, addMockupNode, addAngleNode, addTextureNode, addAmbienceNode, addLuminanceNode, addPromptNode, addImageNode, updateNodeData, setNodes, t]);
-
+      if (nodeId) {
+        toast.success(t('communityPresets.messages.presetImported') || `Imported: ${preset.name}`);
+        // Select the new node
+        setNodes((nds) => nds.map((n) => ({ ...n, selected: n.id === nodeId })));
+      }
+    },
+    [
+      reactFlowInstance,
+      addMockupNode,
+      addAngleNode,
+      addTextureNode,
+      addAmbienceNode,
+      addLuminanceNode,
+      addPromptNode,
+      addImageNode,
+      updateNodeData,
+      setNodes,
+      t,
+    ]
+  );
 
   // Register handleSavePrompt in handlersRef for new nodes
   useEffect(() => {
@@ -1344,11 +1548,11 @@ export const CanvasPage: React.FC = () => {
 
   // Inject handleSavePrompt into existing nodes (e.g. on load)
   useEffect(() => {
-    const hasPromptNodes = nodes.some(n => n.type === 'prompt');
+    const hasPromptNodes = nodes.some((n) => n.type === 'prompt');
     if (!hasPromptNodes) return;
 
     let needsUpdate = false;
-    const updatedNodes = nodes.map(node => {
+    const updatedNodes = nodes.map((node) => {
       if (node.type === 'prompt') {
         const promptData = node.data as PromptNodeData;
         if (promptData.onSavePrompt !== handleSavePrompt) {
@@ -1357,8 +1561,8 @@ export const CanvasPage: React.FC = () => {
             ...node,
             data: {
               ...promptData,
-              onSavePrompt: handleSavePrompt
-            }
+              onSavePrompt: handleSavePrompt,
+            },
           };
         }
       }
@@ -1400,25 +1604,30 @@ export const CanvasPage: React.FC = () => {
     }
   );
 
-  const handlePipelineAsset = useCallback((asset: PipelineAsset) => {
-    const nodeId = addImageNode();
-    if (!nodeId) return;
-    // Update the freshly created node with the pipeline asset's image
-    setNodes((nds) => nds.map((n) => {
-      if (n.id !== nodeId) return n;
-      return {
-        ...n,
-        data: {
-          ...n.data,
-          mockup: {
-            ...(n.data as any).mockup,
-            imageUrl: asset.imageUrl,
-            imageBase64: asset.imageBase64,
-          },
-        },
-      };
-    }));
-  }, [addImageNode, setNodes]);
+  const handlePipelineAsset = useCallback(
+    (asset: PipelineAsset) => {
+      const nodeId = addImageNode();
+      if (!nodeId) return;
+      // Update the freshly created node with the pipeline asset's image
+      setNodes((nds) =>
+        nds.map((n) => {
+          if (n.id !== nodeId) return n;
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              mockup: {
+                ...(n.data as any).mockup,
+                imageUrl: asset.imageUrl,
+                imageBase64: asset.imageBase64,
+              },
+            },
+          };
+        })
+      );
+    },
+    [addImageNode, setNodes]
+  );
 
   const toolbarActions = useCanvasToolbarActions({
     nodes,
@@ -1445,7 +1654,7 @@ export const CanvasPage: React.FC = () => {
       addDirectorNode,
       addTextureFilterNode,
       addStudio3DNode,
-    }
+    },
   });
 
   const { handleAddNode } = useCanvasContextMenu({
@@ -1458,30 +1667,33 @@ export const CanvasPage: React.FC = () => {
 
   // Callback for when drag starts - set ref to prevent useEffect execution
   // Alt+drag duplicates the node in place before moving
-  const onNodeDragStart = useCallback((event: React.MouseEvent, node: Node<FlowNodeData>) => {
-    isDraggingRef.current = true;
-    if (event.altKey && node) {
-      addToHistory(nodes, edges, drawing.drawings);
-      const cloneId = generateNodeId(node.type || 'node');
-      const clone: Node<FlowNodeData> = {
-        ...node,
-        id: cloneId,
-        selected: false,
-        data: {
-          ...node.data,
-          isLoading: false,
-          isGenerating: false,
-          isDescribing: false,
-          isAnalyzing: false,
-          isGeneratingPrompt: false,
-          isSuggestingPrompts: false,
-          resultImageBase64: undefined,
-          resultImageUrl: undefined,
-        } as FlowNodeData,
-      };
-      setNodes((nds) => [...nds, clone]);
-    }
-  }, [setNodes, nodes, edges, drawing.drawings, addToHistory]);
+  const onNodeDragStart = useCallback(
+    (event: React.MouseEvent, node: Node<FlowNodeData>) => {
+      isDraggingRef.current = true;
+      if (event.altKey && node) {
+        addToHistory(nodes, edges, drawing.drawings);
+        const cloneId = generateNodeId(node.type || 'node');
+        const clone: Node<FlowNodeData> = {
+          ...node,
+          id: cloneId,
+          selected: false,
+          data: {
+            ...node.data,
+            isLoading: false,
+            isGenerating: false,
+            isDescribing: false,
+            isAnalyzing: false,
+            isGeneratingPrompt: false,
+            isSuggestingPrompts: false,
+            resultImageBase64: undefined,
+            resultImageUrl: undefined,
+          } as FlowNodeData,
+        };
+        setNodes((nds) => [...nds, clone]);
+      }
+    },
+    [setNodes, nodes, edges, drawing.drawings, addToHistory]
+  );
 
   // Wrapper for onNodeDragStop - reset ref and call original handler
   const onNodeDragStop = useCallback(() => {
@@ -1516,56 +1728,68 @@ export const CanvasPage: React.FC = () => {
   usePasteImage(handlePasteImage, isAuthenticated === true);
 
   // Workflow handlers
-  const handleSaveWorkflow = useCallback(async (metadata: {
-    name: string;
-    description: string;
-    category: string;
-    tags: string[];
-    isPublic: boolean;
-  }) => {
-    try {
-      await workflowApi.create({
-        ...metadata,
-        nodes,
-        edges,
-        drawings: drawing.drawings,
-      });
+  const handleSaveWorkflow = useCallback(
+    async (metadata: {
+      name: string;
+      description: string;
+      category: string;
+      tags: string[];
+      isPublic: boolean;
+    }) => {
+      try {
+        await workflowApi.create({
+          ...metadata,
+          nodes,
+          edges,
+          drawings: drawing.drawings,
+        });
 
-      toast.success(t('workflows.messages.saved') || 'Workflow saved successfully!');
-    } catch (error: any) {
-      console.error('Error saving workflow:', error);
-      toast.error(error.message || t('workflows.errors.failedToSave') || 'Failed to save workflow');
-      throw error;
-    }
-  }, [nodes, edges, drawing.drawings, t]);
+        toast.success(t('workflows.messages.saved') || 'Workflow saved successfully!');
+      } catch (error: any) {
+        console.error('Error saving workflow:', error);
+        toast.error(
+          error.message || t('workflows.errors.failedToSave') || 'Failed to save workflow'
+        );
+        throw error;
+      }
+    },
+    [nodes, edges, drawing.drawings, t]
+  );
 
-  const handleLoadWorkflow = useCallback((workflow: CanvasWorkflow) => {
-    // Add to history before clearing
-    addToHistory(nodes, edges, drawing.drawings);
+  const handleLoadWorkflow = useCallback(
+    (workflow: CanvasWorkflow) => {
+      // Add to history before clearing
+      addToHistory(nodes, edges, drawing.drawings);
 
-    // Clear current canvas
-    setNodes([]);
-    setEdges([]);
-    drawing.setDrawings([]);
+      // Clear current canvas
+      setNodes([]);
+      setEdges([]);
+      drawing.setDrawings([]);
 
-    // Load workflow nodes, edges, and drawings
-    const workflowDrawings = Array.isArray(workflow.drawings) ? workflow.drawings : [];
-    setTimeout(() => {
-      setNodes(workflow.nodes as Node<FlowNodeData>[]);
-      setEdges(workflow.edges as Edge[]);
-      drawing.setDrawings(workflowDrawings);
-
-      // Add to history after loading
+      // Load workflow nodes, edges, and drawings
+      const workflowDrawings = Array.isArray(workflow.drawings) ? workflow.drawings : [];
       setTimeout(() => {
-        addToHistory(workflow.nodes as Node<FlowNodeData>[], workflow.edges as Edge[], workflowDrawings);
-      }, 100);
-    }, 50);
+        setNodes(workflow.nodes as Node<FlowNodeData>[]);
+        setEdges(workflow.edges as Edge[]);
+        drawing.setDrawings(workflowDrawings);
 
-    // Increment usage count
-    workflowApi.incrementUsage(workflow._id);
+        // Add to history after loading
+        setTimeout(() => {
+          addToHistory(
+            workflow.nodes as Node<FlowNodeData>[],
+            workflow.edges as Edge[],
+            workflowDrawings
+          );
+        }, 100);
+      }, 50);
 
-    toast.success(t('workflows.messages.loaded') || `Loaded workflow: ${workflow.name}`);
-  }, [nodes, edges, drawing, setNodes, setEdges, addToHistory, t]);
+      // Increment usage count
+      workflowApi.incrementUsage(workflow._id);
+
+      toast.success(t('workflows.messages.loaded') || `Loaded workflow: ${workflow.name}`);
+    },
+    [nodes, edges, drawing, setNodes, setEdges, addToHistory, t]
+  );
 
   // Expose workflow functions to header context
   const setOnSaveWorkflow = canvasHeader.setOnSaveWorkflow;
@@ -1587,17 +1811,11 @@ export const CanvasPage: React.FC = () => {
   const importJsonInputRef = useRef<HTMLInputElement>(null);
 
   const handleExportJson = useCallback(() => {
-    const data = exportCanvasToJson(
-      projectName || 'canvas',
-      nodes,
-      edges,
-      drawing.drawings ?? []
-    );
+    const data = exportCanvasToJson(projectName || 'canvas', nodes, edges, drawing.drawings ?? []);
     downloadJsonFile(data, projectName || 'canvas');
-    toast.success(
-      `Exportado: ${data.meta.nodeCount} nodes, ${data.meta.edgeCount} edges`,
-      { duration: 3000 }
-    );
+    toast.success(`Exportado: ${data.meta.nodeCount} nodes, ${data.meta.edgeCount} edges`, {
+      duration: 3000,
+    });
   }, [projectName, nodes, edges, drawing.drawings]);
 
   const handleImportJson = useCallback(() => {
@@ -1613,10 +1831,9 @@ export const CanvasPage: React.FC = () => {
       try {
         const raw = await readJsonFile(file);
         if (!validateVisantJson(raw)) {
-          toast.error(
-            'Arquivo inválido. Use um export .json gerado pelo Visant Canvas.',
-            { duration: 5000 }
-          );
+          toast.error('Arquivo inválido. Use um export .json gerado pelo Visant Canvas.', {
+            duration: 5000,
+          });
           return;
         }
 
@@ -1635,9 +1852,12 @@ export const CanvasPage: React.FC = () => {
         navigate(`/canvas/${newProject._id}`);
       } catch (err: any) {
         console.error('[CanvasPage] JSON import failed:', err);
-        toast.error(t('canvas.import_failed', { error: err?.message ?? t('canvas.unknown_error') }), {
-          duration: 5000,
-        });
+        toast.error(
+          t('canvas.import_failed', { error: err?.message ?? t('canvas.unknown_error') }),
+          {
+            duration: 5000,
+          }
+        );
       }
     },
     [navigate]
@@ -1651,53 +1871,74 @@ export const CanvasPage: React.FC = () => {
       canvasHeader.setOnExportJson(undefined);
       canvasHeader.setOnImportJson(undefined);
     };
-  }, [handleExportJson, handleImportJson, canvasHeader.setOnExportJson, canvasHeader.setOnImportJson]);
+  }, [
+    handleExportJson,
+    handleImportJson,
+    canvasHeader.setOnExportJson,
+    canvasHeader.setOnImportJson,
+  ]);
   // ── end JSON Export ────────────────────────────────────────────────────────
 
   // Handle drop of images onto canvas
-  const handleDropImage = useCallback((image: UploadedImage, position: { x: number; y: number }) => {
-    if (!reactFlowInstance) return;
+  const handleDropImage = useCallback(
+    (image: UploadedImage, position: { x: number; y: number }) => {
+      if (!reactFlowInstance) return;
 
-    const tempMockup: Mockup = {
-      _id: `temp-${Date.now()}`,
-      imageBase64: image.base64,
-      prompt: t('canvas.droppedImagePrompt'),
-      designType: 'blank',
-      tags: [],
-      brandingTags: [],
-      aspectRatio: '16:9',
-    };
+      const tempMockup: Mockup = {
+        _id: `temp-${Date.now()}`,
+        imageBase64: image.base64,
+        prompt: t('canvas.droppedImagePrompt'),
+        designType: 'blank',
+        tags: [],
+        brandingTags: [],
+        aspectRatio: '16:9',
+      };
 
-    const newNode: Node<FlowNodeData> = {
-      id: generateNodeId('image'),
-      type: 'image',
-      position,
-      data: {
+      const newNode: Node<FlowNodeData> = {
+        id: generateNodeId('image'),
         type: 'image',
-        mockup: tempMockup,
-        onView: handleView,
-        onEdit: handleEdit,
-        onDelete: handleDelete,
-        onDuplicate: handleDuplicate,
-        onUpload: handlersRef.current?.handleUploadImage || (() => { }),
-        onResize: handlersRef.current?.handleImageNodeResize || (() => { }),
-        addTextNode: addTextNode,
-      } as ImageNodeData,
-    };
+        position,
+        data: {
+          type: 'image',
+          mockup: tempMockup,
+          onView: handleView,
+          onEdit: handleEdit,
+          onDelete: handleDelete,
+          onDuplicate: handleDuplicate,
+          onUpload: handlersRef.current?.handleUploadImage || (() => {}),
+          onResize: handlersRef.current?.handleImageNodeResize || (() => {}),
+          addTextNode: addTextNode,
+        } as ImageNodeData,
+      };
 
-    addToHistory(nodes, edges, drawing.drawings);
+      addToHistory(nodes, edges, drawing.drawings);
 
-    setNodes((nds: Node<FlowNodeData>[]) => {
-      const newNodes = [...nds, newNode];
-      setTimeout(() => {
-        addToHistory(newNodes, edges, drawing.drawings);
-      }, 0);
-      return newNodes;
-    });
+      setNodes((nds: Node<FlowNodeData>[]) => {
+        const newNodes = [...nds, newNode];
+        setTimeout(() => {
+          addToHistory(newNodes, edges, drawing.drawings);
+        }, 0);
+        return newNodes;
+      });
 
-    // Upload para R2 será feito automaticamente pelo hook useImmediateR2Upload
-    toast.success(t('canvas.imageDropped'), { duration: 2000 });
-  }, [reactFlowInstance, handleView, handleEdit, handleDelete, handleDuplicate, nodes, edges, addToHistory, setNodes, handlersRef, addTextNode, t]);
+      // Upload para R2 será feito automaticamente pelo hook useImmediateR2Upload
+      toast.success(t('canvas.imageDropped'), { duration: 2000 });
+    },
+    [
+      reactFlowInstance,
+      handleView,
+      handleEdit,
+      handleDelete,
+      handleDuplicate,
+      nodes,
+      edges,
+      addToHistory,
+      setNodes,
+      handlersRef,
+      addTextNode,
+      t,
+    ]
+  );
 
   // Handle Paste from Context Menu
   const handlePaste = useCallback(async () => {
@@ -1708,8 +1949,8 @@ export const CanvasPage: React.FC = () => {
       try {
         const items = await navigator.clipboard.read();
         for (const item of items) {
-          if (item.types.some(type => type.startsWith('image/'))) {
-            const blob = await item.getType(item.types.find(type => type.startsWith('image/'))!);
+          if (item.types.some((type) => type.startsWith('image/'))) {
+            const blob = await item.getType(item.types.find((type) => type.startsWith('image/'))!);
             const reader = new FileReader();
             reader.onload = (e) => {
               const base64 = e.target?.result as string;
@@ -1743,7 +1984,6 @@ export const CanvasPage: React.FC = () => {
           toast.success(t('canvas.textPasted') || 'Text pasted');
         }
       }
-
     } catch (err) {
       console.error('Paste failed:', err);
       toast.error(t('canvas.pasteFailed') || 'Failed to paste');
@@ -1751,82 +1991,100 @@ export const CanvasPage: React.FC = () => {
   }, [handleDropImage, addTextNode, reactFlowInstance, t]);
 
   // Handle drop of toolbar nodes onto canvas
-  const handleDropNode = useCallback((nodeType: string, position: { x: number; y: number }) => {
-    if (!reactFlowInstance) return;
+  const handleDropNode = useCallback(
+    (nodeType: string, position: { x: number; y: number }) => {
+      if (!reactFlowInstance) return;
 
-    // Position is already in flow coordinates from CanvasFlow
-    const flowPosition = position;
+      // Position is already in flow coordinates from CanvasFlow
+      const flowPosition = position;
 
-    // Helper to convert flow coordinates to screen coordinates
-    // Most node creation functions expect screen coordinates and convert internally
-    const flowToScreen = (flowPos: { x: number; y: number }): { x: number; y: number } => {
-      if (reactFlowInstance.getViewport) {
-        const viewport = reactFlowInstance.getViewport();
-        if (viewport) {
-          // Convert flow coordinates to screen coordinates using viewport
-          // Formula: screen = (flow * zoom) + viewport offset
-          return {
-            x: flowPos.x * viewport.zoom + viewport.x,
-            y: flowPos.y * viewport.zoom + viewport.y,
-          };
+      // Helper to convert flow coordinates to screen coordinates
+      // Most node creation functions expect screen coordinates and convert internally
+      const flowToScreen = (flowPos: { x: number; y: number }): { x: number; y: number } => {
+        if (reactFlowInstance.getViewport) {
+          const viewport = reactFlowInstance.getViewport();
+          if (viewport) {
+            // Convert flow coordinates to screen coordinates using viewport
+            // Formula: screen = (flow * zoom) + viewport offset
+            return {
+              x: flowPos.x * viewport.zoom + viewport.x,
+              y: flowPos.y * viewport.zoom + viewport.y,
+            };
+          }
         }
-      }
-      // Fallback: return center of screen
-      return {
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
+        // Fallback: return center of screen
+        return {
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2,
+        };
       };
-    };
 
-    switch (nodeType) {
-      case 'prompt':
-        addPromptNode(flowToScreen(flowPosition));
-        break;
-      case 'mockup':
-        // addMockupNode supports flow coordinates directly via isFlowPosition parameter
-        addMockupNode(flowPosition, true);
-        break;
-      case 'shader':
-        addShaderNode(flowToScreen(flowPosition));
-        break;
-      case 'edit':
-        addPromptNode(flowToScreen(flowPosition));
-        break;
-      case 'angle':
-        addAngleNode(flowToScreen(flowPosition));
-        break;
-      case 'brandkit':
-        addBrandKitNodes(flowToScreen(flowPosition));
-        break;
-      case 'logo':
-        addLogoNode(flowToScreen(flowPosition));
-        break;
-      case 'pdf':
-        addPDFNode(flowToScreen(flowPosition));
-        break;
-      case 'strategy':
-        addStrategyNode(flowToScreen(flowPosition));
-        break;
-      case 'brandcore':
-        addBrandCoreNode(flowToScreen(flowPosition));
-        break;
-      case 'text':
-        // addTextNode supports flow coordinates directly via isFlowPosition parameter
-        addTextNode(flowPosition, undefined, true);
-        break;
-      case 'chat':
-        addChatNode(flowToScreen(flowPosition));
-        break;
-      case 'nodeBuilder':
-        addNodeBuilderNode(flowToScreen(flowPosition));
-        break;
-      case 'brandBatch':
-        addBrandBatchNode(flowToScreen(flowPosition));
-        break;
-      default:
-        console.warn(`Unknown node type: ${nodeType}`);
-    }
-  }, [reactFlowInstance, addPromptNode, addMockupNode, addShaderNode, addAngleNode, addBrandKitNodes, addLogoNode, addPDFNode, addStrategyNode, addBrandCoreNode, addTextNode, addChatNode, addNodeBuilderNode, addBrandBatchNode]);
+      switch (nodeType) {
+        case 'prompt':
+          addPromptNode(flowToScreen(flowPosition));
+          break;
+        case 'mockup':
+          // addMockupNode supports flow coordinates directly via isFlowPosition parameter
+          addMockupNode(flowPosition, true);
+          break;
+        case 'shader':
+          addShaderNode(flowToScreen(flowPosition));
+          break;
+        case 'edit':
+          addPromptNode(flowToScreen(flowPosition));
+          break;
+        case 'angle':
+          addAngleNode(flowToScreen(flowPosition));
+          break;
+        case 'brandkit':
+          addBrandKitNodes(flowToScreen(flowPosition));
+          break;
+        case 'logo':
+          addLogoNode(flowToScreen(flowPosition));
+          break;
+        case 'pdf':
+          addPDFNode(flowToScreen(flowPosition));
+          break;
+        case 'strategy':
+          addStrategyNode(flowToScreen(flowPosition));
+          break;
+        case 'brandcore':
+          addBrandCoreNode(flowToScreen(flowPosition));
+          break;
+        case 'text':
+          // addTextNode supports flow coordinates directly via isFlowPosition parameter
+          addTextNode(flowPosition, undefined, true);
+          break;
+        case 'chat':
+          addChatNode(flowToScreen(flowPosition));
+          break;
+        case 'nodeBuilder':
+          addNodeBuilderNode(flowToScreen(flowPosition));
+          break;
+        case 'brandBatch':
+          addBrandBatchNode(flowToScreen(flowPosition));
+          break;
+        default:
+          console.warn(`Unknown node type: ${nodeType}`);
+      }
+    },
+    [
+      reactFlowInstance,
+      addPromptNode,
+      addMockupNode,
+      addShaderNode,
+      addAngleNode,
+      addBrandKitNodes,
+      addLogoNode,
+      addPDFNode,
+      addStrategyNode,
+      addBrandCoreNode,
+      addTextNode,
+      addChatNode,
+      addNodeBuilderNode,
+      addBrandBatchNode,
+    ]
+  );
 
   /**
    * Resets all context menu states to null.
@@ -1869,44 +2127,53 @@ export const CanvasPage: React.FC = () => {
 
   // Wrapper for onNodesChange - onNodeDragStop handles history for drag operations
   // This wrapper is kept simple to avoid duplicate history entries
-  const handleNodesChange = useCallback((changes: any[]) => {
-    // Apply changes immediately - history is handled by onNodeDragStop for drag operations
-    onNodesChange(changes);
-  }, [onNodesChange]);
+  const handleNodesChange = useCallback(
+    (changes: any[]) => {
+      // Apply changes immediately - history is handled by onNodeDragStop for drag operations
+      onNodesChange(changes);
+    },
+    [onNodesChange]
+  );
 
   // Handler to update MergeNode data
-  const handleMergeNodeDataUpdate = useCallback((nodeId: string, newData: Partial<MergeNodeData>) => {
-    setNodes((nds: Node<FlowNodeData>[]) =>
-      nds.map((n: Node<FlowNodeData>) =>
-        n.id === nodeId && n.type === 'merge'
-          ? {
-            ...n,
-            data: {
-              ...(n.data as MergeNodeData),
-              ...newData,
-            } as MergeNodeData,
-          } as Node<FlowNodeData>
-          : n
-      )
-    );
-  }, [setNodes]);
+  const handleMergeNodeDataUpdate = useCallback(
+    (nodeId: string, newData: Partial<MergeNodeData>) => {
+      setNodes((nds: Node<FlowNodeData>[]) =>
+        nds.map((n: Node<FlowNodeData>) =>
+          n.id === nodeId && n.type === 'merge'
+            ? ({
+                ...n,
+                data: {
+                  ...(n.data as MergeNodeData),
+                  ...newData,
+                } as MergeNodeData,
+              } as Node<FlowNodeData>)
+            : n
+        )
+      );
+    },
+    [setNodes]
+  );
 
   // Handler to update ImageNode data
-  const handleImageNodeDataUpdate = useCallback((nodeId: string, newData: Partial<ImageNodeData>) => {
-    setNodes((nds: Node<FlowNodeData>[]) =>
-      nds.map((n: Node<FlowNodeData>) =>
-        n.id === nodeId && n.type === 'image'
-          ? {
-            ...n,
-            data: {
-              ...(n.data as ImageNodeData),
-              ...newData,
-            } as ImageNodeData,
-          } as Node<FlowNodeData>
-          : n
-      )
-    );
-  }, [setNodes]);
+  const handleImageNodeDataUpdate = useCallback(
+    (nodeId: string, newData: Partial<ImageNodeData>) => {
+      setNodes((nds: Node<FlowNodeData>[]) =>
+        nds.map((n: Node<FlowNodeData>) =>
+          n.id === nodeId && n.type === 'image'
+            ? ({
+                ...n,
+                data: {
+                  ...(n.data as ImageNodeData),
+                  ...newData,
+                } as ImageNodeData,
+              } as Node<FlowNodeData>)
+            : n
+        )
+      );
+    },
+    [setNodes]
+  );
 
   // Unified handlers for ImageNode and OutputNode
   const {
@@ -1944,48 +2211,79 @@ export const CanvasPage: React.FC = () => {
   });
 
   // Handler for Brand Kit feature - creates MockupNodes and generates images
-  const handleBrandKit = useCallback(async (nodeId: string, presetIds: string[]) => {
-    if (isLocalDevelopment()) {
-      console.log('[handleBrandKit] Called with:', { nodeId, presetIds });
-    }
-
-    if (!reactFlowInstance || presetIds.length === 0) {
+  const handleBrandKit = useCallback(
+    async (nodeId: string, presetIds: string[]) => {
       if (isLocalDevelopment()) {
-        console.warn('[handleBrandKit] Missing reactFlowInstance or no presetIds');
+        console.log('[handleBrandKit] Called with:', { nodeId, presetIds });
       }
-      return;
-    }
 
-    const sourceNode = nodes.find(n => n.id === nodeId);
-    if (!sourceNode || (sourceNode.type !== 'image' && sourceNode.type !== 'output')) {
+      if (!reactFlowInstance || presetIds.length === 0) {
+        if (isLocalDevelopment()) {
+          console.warn('[handleBrandKit] Missing reactFlowInstance or no presetIds');
+        }
+        return;
+      }
+
+      const sourceNode = nodes.find((n) => n.id === nodeId);
+      if (!sourceNode || (sourceNode.type !== 'image' && sourceNode.type !== 'output')) {
+        if (isLocalDevelopment()) {
+          console.error('[handleBrandKit] Source node not found or invalid type:', {
+            nodeId,
+            sourceNode,
+          });
+        }
+        toast.error(t('canvas.sourceNodeNotFound'), { duration: 3000 });
+        return;
+      }
+
       if (isLocalDevelopment()) {
-        console.error('[handleBrandKit] Source node not found or invalid type:', { nodeId, sourceNode });
+        console.log('[handleBrandKit] Source node found:', {
+          nodeId,
+          position: sourceNode.position,
+          type: sourceNode.type,
+        });
       }
-      toast.error(t('canvas.sourceNodeNotFound'), { duration: 3000 });
-      return;
-    }
 
-    if (isLocalDevelopment()) {
-      console.log('[handleBrandKit] Source node found:', { nodeId, position: sourceNode.position, type: sourceNode.type });
-    }
+      // Get image base64 from ImageNode or OutputNode
+      let imageBase64: string | undefined;
 
-    // Get image base64 from ImageNode or OutputNode
-    let imageBase64: string | undefined;
-
-    if (sourceNode.type === 'image') {
-      const imageData = sourceNode.data as ImageNodeData;
-      if (imageData.mockup?.imageBase64) {
-        const base64 = imageData.mockup.imageBase64.trim();
-        imageBase64 = base64.startsWith('data:') ? base64.split(',')[1] || base64 : base64;
-      } else {
-        // Try to get from URL
-        const imageUrl = getImageUrl(imageData.mockup);
-        if (imageUrl) {
+      if (sourceNode.type === 'image') {
+        const imageData = sourceNode.data as ImageNodeData;
+        if (imageData.mockup?.imageBase64) {
+          const base64 = imageData.mockup.imageBase64.trim();
+          imageBase64 = base64.startsWith('data:') ? base64.split(',')[1] || base64 : base64;
+        } else {
+          // Try to get from URL
+          const imageUrl = getImageUrl(imageData.mockup);
+          if (imageUrl) {
+            try {
+              const { normalizeImageToBase64 } = await import('../services/reactFlowService');
+              // Use base64 fallback if available (from mockup.imageBase64)
+              const base64Fallback = imageData.mockup.imageBase64;
+              imageBase64 = await normalizeImageToBase64(imageUrl, base64Fallback);
+            } catch (error: any) {
+              if (isLocalDevelopment()) {
+                console.error('[handleBrandKit] Failed to load image from URL:', error);
+              }
+              toast.error(error?.message || t('canvas.failedToLoadImage'), { duration: 3000 });
+              return;
+            }
+          }
+        }
+      } else if (sourceNode.type === 'output') {
+        const outputData = sourceNode.data as OutputNodeData;
+        // Get base64 from OutputNode
+        if (outputData.resultImageBase64) {
+          const base64 = outputData.resultImageBase64.trim();
+          imageBase64 = base64.startsWith('data:') ? base64.split(',')[1] || base64 : base64;
+        } else if (outputData.resultImageUrl) {
+          // Try to get from URL
           try {
             const { normalizeImageToBase64 } = await import('../services/reactFlowService');
-            // Use base64 fallback if available (from mockup.imageBase64)
-            const base64Fallback = imageData.mockup.imageBase64;
-            imageBase64 = await normalizeImageToBase64(imageUrl, base64Fallback);
+            imageBase64 = await normalizeImageToBase64(
+              outputData.resultImageUrl,
+              outputData.resultImageBase64
+            );
           } catch (error: any) {
             if (isLocalDevelopment()) {
               console.error('[handleBrandKit] Failed to load image from URL:', error);
@@ -1995,202 +2293,211 @@ export const CanvasPage: React.FC = () => {
           }
         }
       }
-    } else if (sourceNode.type === 'output') {
-      const outputData = sourceNode.data as OutputNodeData;
-      // Get base64 from OutputNode
-      if (outputData.resultImageBase64) {
-        const base64 = outputData.resultImageBase64.trim();
-        imageBase64 = base64.startsWith('data:') ? base64.split(',')[1] || base64 : base64;
-      } else if (outputData.resultImageUrl) {
-        // Try to get from URL
-        try {
-          const { normalizeImageToBase64 } = await import('../services/reactFlowService');
-          imageBase64 = await normalizeImageToBase64(outputData.resultImageUrl, outputData.resultImageBase64);
-        } catch (error: any) {
-          if (isLocalDevelopment()) {
-            console.error('[handleBrandKit] Failed to load image from URL:', error);
-          }
-          toast.error(error?.message || t('canvas.failedToLoadImage'), { duration: 3000 });
-          return;
-        }
-      }
-    }
 
-    if (!imageBase64) {
-      if (isLocalDevelopment()) {
-        console.error('[handleBrandKit] No image data available');
-      }
-      toast.error(t('canvas.noImageDataAvailable'), { duration: 3000 });
-      return;
-    }
-
-    if (isLocalDevelopment()) {
-      console.log('[handleBrandKit] Image data loaded, length:', imageBase64.length);
-    }
-
-    // Prepare image as base64 string for generation
-    const imageInput = imageBase64.startsWith('data:')
-      ? imageBase64
-      : `data:image/png;base64,${imageBase64}`;
-
-    // Create MockupNodes in a horizontal grid
-    const mockupNodeIds: { id: string; presetId: string }[] = [];
-    const gridOffsetX = 320; // Horizontal spacing between nodes
-    const startX = sourceNode.position.x + gridOffsetX;
-    const startY = sourceNode.position.y;
-
-    if (isLocalDevelopment()) {
-      console.log('[handleBrandKit] Starting node creation at:', { startX, startY, count: presetIds.length });
-    }
-
-    // Add to history before making changes
-    addToHistory(nodes, edges, drawing.drawings);
-
-    // Create nodes directly with flow coordinates - build all nodes first
-    const newNodes: Node<FlowNodeData>[] = [];
-
-    for (let i = 0; i < presetIds.length; i++) {
-      const presetId = presetIds[i];
-      const nodePosition = {
-        x: startX + (i * gridOffsetX),
-        y: startY,
-      };
-
-      if (isLocalDevelopment()) {
-        console.log(`[handleBrandKit] Preparing node ${i + 1}/${presetIds.length} for preset:`, presetId, 'at position:', nodePosition);
-      }
-
-      // Create MockupNode directly with flow coordinates
-      const newNodeId = generateNodeId('mockup');
-      const newNode: Node<FlowNodeData> = {
-        id: newNodeId,
-        type: 'mockup',
-        position: nodePosition,
-        draggable: true,
-        connectable: true,
-        selectable: true,
-        data: {
-          type: 'mockup',
-          selectedPreset: presetId,
-          userMockups: userMockups,
-          onGenerate: handlersRef.current?.handleMockupGenerate || (() => Promise.resolve()),
-          onUpdateData: handlersRef.current?.handleMockupNodeDataUpdate || (() => { }),
-          onAddMockupNode: () => {
-            // This will be set by CanvasPage when node is updated
-          },
-        } as MockupNodeData,
-      };
-
-      mockupNodeIds.push({ id: newNodeId, presetId });
-      newNodes.push(newNode);
-    }
-
-    // Add all nodes at once
-    setNodes((nds: Node<FlowNodeData>[]) => {
-      if (isLocalDevelopment()) {
-        console.log(`[handleBrandKit] Adding ${newNodes.length} nodes to canvas`);
-      }
-      return [...nds, ...newNodes];
-    });
-
-    // Create edges after nodes are added
-    setTimeout(() => {
-      for (const { id: mockupNodeId } of mockupNodeIds) {
+      if (!imageBase64) {
         if (isLocalDevelopment()) {
-          console.log(`[handleBrandKit] Creating edge from ${nodeId} to ${mockupNodeId}`);
+          console.error('[handleBrandKit] No image data available');
         }
-        onConnect({
-          source: nodeId,
-          target: mockupNodeId,
-          sourceHandle: "output-1",
-          targetHandle: 'input-1',
-        } as any);
+        toast.error(t('canvas.noImageDataAvailable'), { duration: 3000 });
+        return;
       }
-    }, 200);
 
-    if (isLocalDevelopment()) {
-      console.log('[handleBrandKit] Created nodes:', mockupNodeIds.map(m => m.id));
-    }
-
-    // Wait for edges to be created and nodes to be updated, then trigger generation
-    setTimeout(async () => {
       if (isLocalDevelopment()) {
-        console.log('[handleBrandKit] Starting generation for', mockupNodeIds.length, 'nodes');
+        console.log('[handleBrandKit] Image data loaded, length:', imageBase64.length);
       }
 
-      // Use functional update to get latest nodes state
-      setNodes((currentNodes: Node<FlowNodeData>[]) => {
-        for (const { id: mockupNodeId, presetId } of mockupNodeIds) {
-          const mockupNode = currentNodes.find(n => n.id === mockupNodeId);
+      // Prepare image as base64 string for generation
+      const imageInput = imageBase64.startsWith('data:')
+        ? imageBase64
+        : `data:image/png;base64,${imageBase64}`;
 
-          if (mockupNode && mockupNode.type === 'mockup' && handlersRef.current?.handleMockupGenerate) {
-            if (isLocalDevelopment()) {
-              console.log(`[handleBrandKit] Triggering generation for node ${mockupNodeId} with preset ${presetId}`);
-            }
+      // Create MockupNodes in a horizontal grid
+      const mockupNodeIds: { id: string; presetId: string }[] = [];
+      const gridOffsetX = 320; // Horizontal spacing between nodes
+      const startX = sourceNode.position.x + gridOffsetX;
+      const startY = sourceNode.position.y;
 
-            // Trigger generation asynchronously
-            Promise.resolve().then(async () => {
-              try {
-                await handlersRef.current.handleMockupGenerate(
-                  mockupNodeId,
-                  imageInput,
-                  presetId,
-                  undefined, // selectedColors
-                  false, // withHuman
-                  undefined // customPrompt
+      if (isLocalDevelopment()) {
+        console.log('[handleBrandKit] Starting node creation at:', {
+          startX,
+          startY,
+          count: presetIds.length,
+        });
+      }
+
+      // Add to history before making changes
+      addToHistory(nodes, edges, drawing.drawings);
+
+      // Create nodes directly with flow coordinates - build all nodes first
+      const newNodes: Node<FlowNodeData>[] = [];
+
+      for (let i = 0; i < presetIds.length; i++) {
+        const presetId = presetIds[i];
+        const nodePosition = {
+          x: startX + i * gridOffsetX,
+          y: startY,
+        };
+
+        if (isLocalDevelopment()) {
+          console.log(
+            `[handleBrandKit] Preparing node ${i + 1}/${presetIds.length} for preset:`,
+            presetId,
+            'at position:',
+            nodePosition
+          );
+        }
+
+        // Create MockupNode directly with flow coordinates
+        const newNodeId = generateNodeId('mockup');
+        const newNode: Node<FlowNodeData> = {
+          id: newNodeId,
+          type: 'mockup',
+          position: nodePosition,
+          draggable: true,
+          connectable: true,
+          selectable: true,
+          data: {
+            type: 'mockup',
+            selectedPreset: presetId,
+            userMockups: userMockups,
+            onGenerate: handlersRef.current?.handleMockupGenerate || (() => Promise.resolve()),
+            onUpdateData: handlersRef.current?.handleMockupNodeDataUpdate || (() => {}),
+            onAddMockupNode: () => {
+              // This will be set by CanvasPage when node is updated
+            },
+          } as MockupNodeData,
+        };
+
+        mockupNodeIds.push({ id: newNodeId, presetId });
+        newNodes.push(newNode);
+      }
+
+      // Add all nodes at once
+      setNodes((nds: Node<FlowNodeData>[]) => {
+        if (isLocalDevelopment()) {
+          console.log(`[handleBrandKit] Adding ${newNodes.length} nodes to canvas`);
+        }
+        return [...nds, ...newNodes];
+      });
+
+      // Create edges after nodes are added
+      setTimeout(() => {
+        for (const { id: mockupNodeId } of mockupNodeIds) {
+          if (isLocalDevelopment()) {
+            console.log(`[handleBrandKit] Creating edge from ${nodeId} to ${mockupNodeId}`);
+          }
+          onConnect({
+            source: nodeId,
+            target: mockupNodeId,
+            sourceHandle: 'output-1',
+            targetHandle: 'input-1',
+          } as any);
+        }
+      }, 200);
+
+      if (isLocalDevelopment()) {
+        console.log(
+          '[handleBrandKit] Created nodes:',
+          mockupNodeIds.map((m) => m.id)
+        );
+      }
+
+      // Wait for edges to be created and nodes to be updated, then trigger generation
+      setTimeout(async () => {
+        if (isLocalDevelopment()) {
+          console.log('[handleBrandKit] Starting generation for', mockupNodeIds.length, 'nodes');
+        }
+
+        // Use functional update to get latest nodes state
+        setNodes((currentNodes: Node<FlowNodeData>[]) => {
+          for (const { id: mockupNodeId, presetId } of mockupNodeIds) {
+            const mockupNode = currentNodes.find((n) => n.id === mockupNodeId);
+
+            if (
+              mockupNode &&
+              mockupNode.type === 'mockup' &&
+              handlersRef.current?.handleMockupGenerate
+            ) {
+              if (isLocalDevelopment()) {
+                console.log(
+                  `[handleBrandKit] Triggering generation for node ${mockupNodeId} with preset ${presetId}`
                 );
-                if (isLocalDevelopment()) {
-                  console.log(`[handleBrandKit] Generation completed for node ${mockupNodeId}`);
-                }
-              } catch (error: any) {
-                if (isLocalDevelopment()) {
-                  console.error(`[handleBrandKit] Failed to generate mockup for node ${mockupNodeId}:`, error);
-                }
-                toast.error(t('canvas.failedToGenerateMockup', { presetId }), { duration: 3000 });
               }
-            });
-          } else {
-            if (isLocalDevelopment()) {
-              console.warn(`[handleBrandKit] Cannot generate for node ${mockupNodeId}:`, {
-                nodeExists: !!mockupNode,
-                nodeType: mockupNode?.type,
-                hasHandler: !!handlersRef.current?.handleMockupGenerate
+
+              // Trigger generation asynchronously
+              Promise.resolve().then(async () => {
+                try {
+                  await handlersRef.current.handleMockupGenerate(
+                    mockupNodeId,
+                    imageInput,
+                    presetId,
+                    undefined, // selectedColors
+                    false, // withHuman
+                    undefined // customPrompt
+                  );
+                  if (isLocalDevelopment()) {
+                    console.log(`[handleBrandKit] Generation completed for node ${mockupNodeId}`);
+                  }
+                } catch (error: any) {
+                  if (isLocalDevelopment()) {
+                    console.error(
+                      `[handleBrandKit] Failed to generate mockup for node ${mockupNodeId}:`,
+                      error
+                    );
+                  }
+                  toast.error(t('canvas.failedToGenerateMockup', { presetId }), { duration: 3000 });
+                }
               });
+            } else {
+              if (isLocalDevelopment()) {
+                console.warn(`[handleBrandKit] Cannot generate for node ${mockupNodeId}:`, {
+                  nodeExists: !!mockupNode,
+                  nodeType: mockupNode?.type,
+                  hasHandler: !!handlersRef.current?.handleMockupGenerate,
+                });
+              }
             }
           }
-        }
-        return currentNodes; // Return unchanged nodes (we're just using this to access latest state)
-      });
-    }, 600 + (presetIds.length * 100)); // Wait longer for all nodes and edges to be created
+          return currentNodes; // Return unchanged nodes (we're just using this to access latest state)
+        });
+      }, 600 + presetIds.length * 100); // Wait longer for all nodes and edges to be created
 
-    toast.success(t('canvas.creatingMockups', {
-      count: presetIds.length,
-      plural: presetIds.length > 1 ? 's' : ''
-    }), { duration: 2000 });
-  }, [reactFlowInstance, nodes, edges, addMockupNode, onConnect, handlersRef, addToHistory, setNodes]);
+      toast.success(
+        t('canvas.creatingMockups', {
+          count: presetIds.length,
+          plural: presetIds.length > 1 ? 's' : '',
+        }),
+        { duration: 2000 }
+      );
+    },
+    [reactFlowInstance, nodes, edges, addMockupNode, onConnect, handlersRef, addToHistory, setNodes]
+  );
 
   // Handler to remove edge from PromptNode
-  const handlePromptRemoveEdge = useCallback((nodeId: string, targetHandle: 'input-1' | 'input-2' | 'input-3' | 'input-4') => {
-    addToHistory(nodes, edges, drawing.drawings);
+  const handlePromptRemoveEdge = useCallback(
+    (nodeId: string, targetHandle: 'input-1' | 'input-2' | 'input-3' | 'input-4') => {
+      addToHistory(nodes, edges, drawing.drawings);
 
-    setEdges((eds: Edge[]) => {
-      const edgeToRemove = eds.find(
-        e => e.target === nodeId && e.targetHandle === targetHandle
-      );
+      setEdges((eds: Edge[]) => {
+        const edgeToRemove = eds.find(
+          (e) => e.target === nodeId && e.targetHandle === targetHandle
+        );
 
-      if (!edgeToRemove) {
-        return eds;
-      }
+        if (!edgeToRemove) {
+          return eds;
+        }
 
-      const newEdges = eds.filter(e => e.id !== edgeToRemove.id);
+        const newEdges = eds.filter((e) => e.id !== edgeToRemove.id);
 
-      setTimeout(() => {
-        addToHistory(nodes, newEdges, drawing.drawings);
-      }, 0);
+        setTimeout(() => {
+          addToHistory(nodes, newEdges, drawing.drawings);
+        }, 0);
 
-      return newEdges;
-    });
-  }, [nodes, edges, setEdges, addToHistory]);
+        return newEdges;
+      });
+    },
+    [nodes, edges, setEdges, addToHistory]
+  );
 
   // Handler to open ChatNode sidebar
   const handleChatOpenSidebar = useCallback((nodeId: string) => {
@@ -2203,80 +2510,86 @@ export const CanvasPage: React.FC = () => {
   }, []);
 
   // Perform actual node deletion
-  const performNodeDeletion = useCallback(async (nodeId: string) => {
-    const node = nodes.find(n => n.id === nodeId);
-    if (!node) return;
+  const performNodeDeletion = useCallback(
+    async (nodeId: string) => {
+      const node = nodes.find((n) => n.id === nodeId);
+      if (!node) return;
 
-    trackCanvasEvent('node_deleted', node.type, projectId);
-    addToHistory(nodes, edges);
+      trackCanvasEvent('node_deleted', node.type, projectId);
+      addToHistory(nodes, edges);
 
-    // If it's a ChatNode, clear history before deleting
-    if (node.type === 'chat') {
-      const chatData = node.data as ChatNodeData;
-      if (chatData.onClearHistory && chatData.messages && chatData.messages.length > 0) {
-        chatData.onClearHistory(nodeId);
-      }
-    }
-
-    // Check if the image is liked (should be preserved in R2 for MyOutputsPage)
-    const nodeData = node.data as any;
-    const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
-
-    // Coletar todas as URLs do R2 que precisam ser deletadas
-    const urlsToDelete = collectR2UrlsForDeletion(node, isLiked);
-
-    // Deletar todas as URLs do R2
-    if (urlsToDelete.length > 0) {
-      await Promise.allSettled(
-        urlsToDelete.map(url => canvasApi.deleteImageFromR2(url))
-      ).catch((error) => {
-        if (isLocalDevelopment()) {
-          console.error('Failed to delete some files from R2:', error);
+      // If it's a ChatNode, clear history before deleting
+      if (node.type === 'chat') {
+        const chatData = node.data as ChatNodeData;
+        if (chatData.onClearHistory && chatData.messages && chatData.messages.length > 0) {
+          chatData.onClearHistory(nodeId);
         }
-      });
-    }
+      }
 
-    const nodeIdsToRemove = new Set([nodeId]);
-    const newNodes = nodes.filter(n => !nodeIdsToRemove.has(n.id));
-    const newEdges = edges.filter(e =>
-      !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
-    );
+      // Check if the image is liked (should be preserved in R2 for MyOutputsPage)
+      const nodeData = node.data as any;
+      const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
 
-    // Clear openChatNodeId if the deleted node was the open one
-    if (openChatNodeId === nodeId) {
-      setOpenChatNodeId(null);
-    }
+      // Coletar todas as URLs do R2 que precisam ser deletadas
+      const urlsToDelete = collectR2UrlsForDeletion(node, isLiked);
 
-    // Clear openDirectorNodeId if the deleted node was the open one
-    if (openDirectorNodeId === nodeId) {
-      setOpenDirectorNodeId(null);
-    }
+      // Deletar todas as URLs do R2
+      if (urlsToDelete.length > 0) {
+        await Promise.allSettled(urlsToDelete.map((url) => canvasApi.deleteImageFromR2(url))).catch(
+          (error) => {
+            if (isLocalDevelopment()) {
+              console.error('Failed to delete some files from R2:', error);
+            }
+          }
+        );
+      }
 
-    setNodes(newNodes);
-    setEdges(newEdges);
+      const nodeIdsToRemove = new Set([nodeId]);
+      const newNodes = nodes.filter((n) => !nodeIdsToRemove.has(n.id));
+      const newEdges = edges.filter(
+        (e) => !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
+      );
 
-    setTimeout(() => {
-      addToHistory(newNodes, newEdges, drawing.drawings);
-    }, 0);
+      // Clear openChatNodeId if the deleted node was the open one
+      if (openChatNodeId === nodeId) {
+        setOpenChatNodeId(null);
+      }
 
-    toast.success(t('canvas.nodeDeleted'), { duration: 2000 });
-  }, [nodes, edges, setNodes, setEdges, addToHistory, openChatNodeId, setOpenChatNodeId, t]);
+      // Clear openDirectorNodeId if the deleted node was the open one
+      if (openDirectorNodeId === nodeId) {
+        setOpenDirectorNodeId(null);
+      }
+
+      setNodes(newNodes);
+      setEdges(newEdges);
+
+      setTimeout(() => {
+        addToHistory(newNodes, newEdges, drawing.drawings);
+      }, 0);
+
+      toast.success(t('canvas.nodeDeleted'), { duration: 2000 });
+    },
+    [nodes, edges, setNodes, setEdges, addToHistory, openChatNodeId, setOpenChatNodeId, t]
+  );
 
   // Handler to delete node by ID (used by NodeContainer delete button)
-  const handleDeleteNodeById = useCallback(async (nodeId: string) => {
-    const node = nodes.find(n => n.id === nodeId);
-    if (!node) return;
+  const handleDeleteNodeById = useCallback(
+    async (nodeId: string) => {
+      const node = nodes.find((n) => n.id === nodeId);
+      if (!node) return;
 
-    // If it's a ChatNode, show confirmation modal first
-    if (node.type === 'chat') {
-      setChatNodeToDelete(nodeId);
-      setShowDeleteChatNodeModal(true);
-      return;
-    }
+      // If it's a ChatNode, show confirmation modal first
+      if (node.type === 'chat') {
+        setChatNodeToDelete(nodeId);
+        setShowDeleteChatNodeModal(true);
+        return;
+      }
 
-    // For other node types, delete directly
-    await performNodeDeletion(nodeId);
-  }, [nodes, performNodeDeletion]);
+      // For other node types, delete directly
+      await performNodeDeletion(nodeId);
+    },
+    [nodes, performNodeDeletion]
+  );
 
   // Update node data with handlers - always ensure handlers are attached
   const lastSubscriptionStatusRef = useRef(subscriptionStatus);
@@ -2304,12 +2617,27 @@ export const CanvasPage: React.FC = () => {
     const edgesChanged = previousEdgesRef.current !== edges;
 
     // Ignore changes that are only slider property updates (to prevent loops during shader editing)
-    if (nodesChanged && previousNodesRef.current && nodes.length === previousNodesRef.current.length) {
+    if (
+      nodesChanged &&
+      previousNodesRef.current &&
+      nodes.length === previousNodesRef.current.length
+    ) {
       const sliderProperties = [
-        'ditherIntensity', 'threshold', 'ditherPixelSize',
-        'dotSize', 'angle', 'contrast', 'spacing', 'halftoneThreshold',
-        'tapeWaveIntensity', 'tapeCreaseIntensity', 'switchingNoiseIntensity',
-        'bloomIntensity', 'acBeatIntensity', 'matrixSize', 'bias',
+        'ditherIntensity',
+        'threshold',
+        'ditherPixelSize',
+        'dotSize',
+        'angle',
+        'contrast',
+        'spacing',
+        'halftoneThreshold',
+        'tapeWaveIntensity',
+        'tapeCreaseIntensity',
+        'switchingNoiseIntensity',
+        'bloomIntensity',
+        'acBeatIntensity',
+        'matrixSize',
+        'bias',
       ];
 
       let onlySliderChanges = true;
@@ -2359,11 +2687,15 @@ export const CanvasPage: React.FC = () => {
     }
 
     // Check if any node is currently loading/generating
-    const hasNodesLoading = nodes.some(n => (n.data as any)?.isLoading === true);
+    const hasNodesLoading = nodes.some((n) => (n.data as any)?.isLoading === true);
 
     // Check if loading just finished (transition from loading to not loading)
     let loadingJustFinished = false;
-    if (nodesChanged && previousNodesRef.current && nodes.length === previousNodesRef.current.length) {
+    if (
+      nodesChanged &&
+      previousNodesRef.current &&
+      nodes.length === previousNodesRef.current.length
+    ) {
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
         const prevNode = previousNodesRef.current[i];
@@ -2380,7 +2712,6 @@ export const CanvasPage: React.FC = () => {
         }
       }
     }
-
 
     // Skip updates during active loading/generation
     // Only allow updates when:
@@ -2424,27 +2755,102 @@ export const CanvasPage: React.FC = () => {
     // Always check and update handlers for all nodes
     setNodes((nds: Node<FlowNodeData>[]) => {
       // Check if any nodes need handlers to be attached
-      const hasNodesNeedingHandlers = nds.some(n =>
-        (n.type === 'merge' && (!(n.data as MergeNodeData).onGenerate || !(n.data as MergeNodeData).onGeneratePrompt || !(n.data as MergeNodeData).onUpdateData || !handlersRef.current?.handleMergeGenerate || !handlersRef.current?.handleMergeGeneratePrompt)) ||
-        (n.type === 'prompt' && (!(n.data as PromptNodeData).onGenerate || !(n.data as PromptNodeData).onUpdateData || !handlersRef.current?.handlePromptGenerate)) ||
-        (n.type === 'edit' && (!(n.data as EditNodeData).onApply || !(n.data as EditNodeData).onUpdateData || !handlersRef.current?.handleEditApply || (n.data as EditNodeData).subscriptionStatus !== subscriptionStatus)) ||
-        (n.type === 'upscale' && (!(n.data as UpscaleNodeData).onUpscale || !(n.data as UpscaleNodeData).onUpdateData || !handlersRef.current?.handleUpscale)) ||
-        (n.type === 'mockup' && (!(n.data as any).onGenerate || !(n.data as any).onUpdateData || !handlersRef.current?.handleMockupGenerate || !mockupArraysEqual((n.data as any).userMockups, userMockups))) ||
-        (n.type === 'image' && (!(n.data as ImageNodeData).onUpload || !(n.data as ImageNodeData).onView || !(n.data as ImageNodeData).addTextNode || !handlersRef.current?.handleUploadImage)) ||
-        (n.type === 'brand' && (!(n.data as BrandNodeData).onAnalyze || !(n.data as BrandNodeData).onUploadLogo || !(n.data as BrandNodeData).onUpdateData || !handlersRef.current?.handleBrandAnalyze)) ||
-        (n.type === 'strategy' && (!(n.data as StrategyNodeData).onOpenProjectModal || !(n.data as StrategyNodeData).onGenerate || !(n.data as StrategyNodeData).onGenerateSection || !(n.data as StrategyNodeData).onGenerateAll || !(n.data as StrategyNodeData).onInitialAnalysis || !(n.data as StrategyNodeData).onCancelGeneration || !(n.data as StrategyNodeData).onGeneratePDF || !(n.data as StrategyNodeData).onSave || !(n.data as StrategyNodeData).onUpdateData || !handlersRef.current?.handleStrategyNodeGenerate || !handlersRef.current?.handleStrategyNodeDataUpdate)) ||
-        (n.type === 'brandCore' && (!(n.data as BrandCoreData).onAnalyze || !(n.data as BrandCoreData).onUpdateData || !(n.data as BrandCoreData).onUploadPdfToR2 || !(n.data as BrandCoreData).onCancelAnalyze || !handlersRef.current?.handleBrandCoreAnalyze || !handlersRef.current?.handleBrandCoreDataUpdate || !handlersRef.current?.handleBrandCoreUploadPdfToR2 || !handlersRef.current?.handleBrandCoreCancelAnalyze)) ||
-        (n.type === 'chat' && (!(n.data as ChatNodeData).onSendMessage || !(n.data as ChatNodeData).onUpdateData || !(n.data as ChatNodeData).onClearHistory || !(n.data as ChatNodeData).onAddPromptNode || !(n.data as ChatNodeData).onCreateNode || !(n.data as ChatNodeData).onOpenSidebar || !handlersRef.current?.handleChatSendMessage || !handlersRef.current?.handleChatUpdateData)) ||
-        (n.type === 'director' && (!(n.data as DirectorNodeData).onAnalyze || !(n.data as DirectorNodeData).onGeneratePrompt || !(n.data as DirectorNodeData).onUpdateData || !(n.data as DirectorNodeData).onOpenSidePanel)) ||
-        (n.type === 'nodeBuilder' && (!(n.data as NodeBuilderData).onSendMessage || !(n.data as NodeBuilderData).onSpawnCustomNode || !(n.data as NodeBuilderData).onUpdateData))
+      const hasNodesNeedingHandlers = nds.some(
+        (n) =>
+          (n.type === 'merge' &&
+            (!(n.data as MergeNodeData).onGenerate ||
+              !(n.data as MergeNodeData).onGeneratePrompt ||
+              !(n.data as MergeNodeData).onUpdateData ||
+              !handlersRef.current?.handleMergeGenerate ||
+              !handlersRef.current?.handleMergeGeneratePrompt)) ||
+          (n.type === 'prompt' &&
+            (!(n.data as PromptNodeData).onGenerate ||
+              !(n.data as PromptNodeData).onUpdateData ||
+              !handlersRef.current?.handlePromptGenerate)) ||
+          (n.type === 'edit' &&
+            (!(n.data as EditNodeData).onApply ||
+              !(n.data as EditNodeData).onUpdateData ||
+              !handlersRef.current?.handleEditApply ||
+              (n.data as EditNodeData).subscriptionStatus !== subscriptionStatus)) ||
+          (n.type === 'upscale' &&
+            (!(n.data as UpscaleNodeData).onUpscale ||
+              !(n.data as UpscaleNodeData).onUpdateData ||
+              !handlersRef.current?.handleUpscale)) ||
+          (n.type === 'mockup' &&
+            (!(n.data as any).onGenerate ||
+              !(n.data as any).onUpdateData ||
+              !handlersRef.current?.handleMockupGenerate ||
+              !mockupArraysEqual((n.data as any).userMockups, userMockups))) ||
+          (n.type === 'image' &&
+            (!(n.data as ImageNodeData).onUpload ||
+              !(n.data as ImageNodeData).onView ||
+              !(n.data as ImageNodeData).addTextNode ||
+              !handlersRef.current?.handleUploadImage)) ||
+          (n.type === 'brand' &&
+            (!(n.data as BrandNodeData).onAnalyze ||
+              !(n.data as BrandNodeData).onUploadLogo ||
+              !(n.data as BrandNodeData).onUpdateData ||
+              !handlersRef.current?.handleBrandAnalyze)) ||
+          (n.type === 'strategy' &&
+            (!(n.data as StrategyNodeData).onOpenProjectModal ||
+              !(n.data as StrategyNodeData).onGenerate ||
+              !(n.data as StrategyNodeData).onGenerateSection ||
+              !(n.data as StrategyNodeData).onGenerateAll ||
+              !(n.data as StrategyNodeData).onInitialAnalysis ||
+              !(n.data as StrategyNodeData).onCancelGeneration ||
+              !(n.data as StrategyNodeData).onGeneratePDF ||
+              !(n.data as StrategyNodeData).onSave ||
+              !(n.data as StrategyNodeData).onUpdateData ||
+              !handlersRef.current?.handleStrategyNodeGenerate ||
+              !handlersRef.current?.handleStrategyNodeDataUpdate)) ||
+          (n.type === 'brandCore' &&
+            (!(n.data as BrandCoreData).onAnalyze ||
+              !(n.data as BrandCoreData).onUpdateData ||
+              !(n.data as BrandCoreData).onUploadPdfToR2 ||
+              !(n.data as BrandCoreData).onCancelAnalyze ||
+              !handlersRef.current?.handleBrandCoreAnalyze ||
+              !handlersRef.current?.handleBrandCoreDataUpdate ||
+              !handlersRef.current?.handleBrandCoreUploadPdfToR2 ||
+              !handlersRef.current?.handleBrandCoreCancelAnalyze)) ||
+          (n.type === 'chat' &&
+            (!(n.data as ChatNodeData).onSendMessage ||
+              !(n.data as ChatNodeData).onUpdateData ||
+              !(n.data as ChatNodeData).onClearHistory ||
+              !(n.data as ChatNodeData).onAddPromptNode ||
+              !(n.data as ChatNodeData).onCreateNode ||
+              !(n.data as ChatNodeData).onOpenSidebar ||
+              !handlersRef.current?.handleChatSendMessage ||
+              !handlersRef.current?.handleChatUpdateData)) ||
+          (n.type === 'director' &&
+            (!(n.data as DirectorNodeData).onAnalyze ||
+              !(n.data as DirectorNodeData).onGeneratePrompt ||
+              !(n.data as DirectorNodeData).onUpdateData ||
+              !(n.data as DirectorNodeData).onOpenSidePanel)) ||
+          (n.type === 'nodeBuilder' &&
+            (!(n.data as NodeBuilderData).onSendMessage ||
+              !(n.data as NodeBuilderData).onSpawnCustomNode ||
+              !(n.data as NodeBuilderData).onUpdateData))
       );
 
       // Check if there are edges connected to nodes that need image synchronization
       // This ensures we always sync images when edges change, even if handlers are already present
-      const nodeTypesNeedingImageSync = ['edit', 'mockup', 'prompt', 'upscale', 'upscaleBicubic', 'merge', 'director'] as const;
-      const hasEdgesNeedingImageSync = edges.some(edge => {
-        const targetNode = nds.find(n => n.id === edge.target);
-        return targetNode && nodeTypesNeedingImageSync.includes(targetNode.type as typeof nodeTypesNeedingImageSync[number]);
+      const nodeTypesNeedingImageSync = [
+        'edit',
+        'mockup',
+        'prompt',
+        'upscale',
+        'upscaleBicubic',
+        'merge',
+        'director',
+      ] as const;
+      const hasEdgesNeedingImageSync = edges.some((edge) => {
+        const targetNode = nds.find((n) => n.id === edge.target);
+        return (
+          targetNode &&
+          nodeTypesNeedingImageSync.includes(
+            targetNode.type as (typeof nodeTypesNeedingImageSync)[number]
+          )
+        );
       });
 
       // Only return early if:
@@ -2467,14 +2873,17 @@ export const CanvasPage: React.FC = () => {
           const mergeData = n.data as MergeNodeData;
           // Calculate connected images - prioritize base64 for better thumbnail display
           const connectedImages = edges
-            .filter(e => e.target === n.id)
-            .map(e => {
-              const sourceNode = nds.find(node => node.id === e.source);
+            .filter((e) => e.target === n.id)
+            .map((e) => {
+              const sourceNode = nds.find((node) => node.id === e.source);
               return sourceNode ? getImageFromSourceNode(sourceNode) : null;
             })
-            .filter((img): img is string => img !== null && typeof img === 'string' && img.length > 0);
+            .filter(
+              (img): img is string => img !== null && typeof img === 'string' && img.length > 0
+            );
 
-          const needsUpdate = !mergeData.onGenerate ||
+          const needsUpdate =
+            !mergeData.onGenerate ||
             !mergeData.onGeneratePrompt ||
             !mergeData.onUpdateData ||
             !arraysEqual(mergeData.connectedImages, connectedImages) ||
@@ -2501,10 +2910,10 @@ export const CanvasPage: React.FC = () => {
           const promptData = n.data as PromptNodeData;
 
           // Get images by handle (input-1, input-2, input-3, input-4)
-          const image1Edge = edges.find(e => e.target === n.id && e.targetHandle === 'input-1');
-          const image2Edge = edges.find(e => e.target === n.id && e.targetHandle === 'input-2');
-          const image3Edge = edges.find(e => e.target === n.id && e.targetHandle === 'input-3');
-          const image4Edge = edges.find(e => e.target === n.id && e.targetHandle === 'input-4');
+          const image1Edge = edges.find((e) => e.target === n.id && e.targetHandle === 'input-1');
+          const image2Edge = edges.find((e) => e.target === n.id && e.targetHandle === 'input-2');
+          const image3Edge = edges.find((e) => e.target === n.id && e.targetHandle === 'input-3');
+          const image4Edge = edges.find((e) => e.target === n.id && e.targetHandle === 'input-4');
 
           // Determine max handles based on model
           const model = promptData.model || GEMINI_MODELS.FLASH;
@@ -2513,7 +2922,7 @@ export const CanvasPage: React.FC = () => {
           // Helper function to get image from edge
           const getImageFromEdge = (edge: Edge | undefined) => {
             if (!edge) return null;
-            const sourceNode = nds.find(node => node.id === edge.source);
+            const sourceNode = nds.find((node) => node.id === edge.source);
             return sourceNode ? getImageFromSourceNode(sourceNode) : null;
           };
 
@@ -2542,12 +2951,12 @@ export const CanvasPage: React.FC = () => {
             currentImage4 !== newImage4;
 
           const hasConnectedEdges = !!image1Edge || !!image2Edge || !!image3Edge || !!image4Edge;
-          const hasImagesToClear = !hasConnectedEdges && (
-            currentImage1 !== undefined ||
-            currentImage2 !== undefined ||
-            currentImage3 !== undefined ||
-            currentImage4 !== undefined
-          );
+          const hasImagesToClear =
+            !hasConnectedEdges &&
+            (currentImage1 !== undefined ||
+              currentImage2 !== undefined ||
+              currentImage3 !== undefined ||
+              currentImage4 !== undefined);
 
           // Always update if:
           // 1. Images changed (connected or disconnected)
@@ -2560,9 +2969,11 @@ export const CanvasPage: React.FC = () => {
           let connectedBrandIdentity = getConnectedBrandIdentity(n.id, nds, edges);
 
           // Also check for BrandCore connections (smart handle)
-          const brandCoreEdge = edges.find(e => e.target === n.id && e.sourceHandle === 'prompt-output');
+          const brandCoreEdge = edges.find(
+            (e) => e.target === n.id && e.sourceHandle === 'prompt-output'
+          );
           if (brandCoreEdge && !connectedBrandIdentity) {
-            const brandCoreNode = nds.find(node => node.id === brandCoreEdge.source);
+            const brandCoreNode = nds.find((node) => node.id === brandCoreEdge.source);
             if (brandCoreNode?.type === 'brandCore') {
               const brandCoreData = brandCoreNode.data as any;
               if (brandCoreData.brandIdentity) {
@@ -2571,16 +2982,21 @@ export const CanvasPage: React.FC = () => {
             }
           }
 
-          const brandIdentityChanged = JSON.stringify(promptData.connectedBrandIdentity) !== JSON.stringify(connectedBrandIdentity);
+          const brandIdentityChanged =
+            JSON.stringify(promptData.connectedBrandIdentity) !==
+            JSON.stringify(connectedBrandIdentity);
 
           // Check if connected BrandNode or BrandCore has PDF
           let hasPdfIdentity = false;
-          const brandEdges = edges.filter(e => e.target === n.id);
+          const brandEdges = edges.filter((e) => e.target === n.id);
           for (const edge of brandEdges) {
-            const sourceNode = nds.find(node => node.id === edge.source);
+            const sourceNode = nds.find((node) => node.id === edge.source);
             if (sourceNode?.type === 'brand') {
               const brandData = sourceNode.data as BrandNodeData;
-              if (brandData.identityFileType === 'pdf' && (brandData.identityPdfBase64 || brandData.identityPdfUrl)) {
+              if (
+                brandData.identityFileType === 'pdf' &&
+                (brandData.identityPdfBase64 || brandData.identityPdfUrl)
+              ) {
                 hasPdfIdentity = true;
                 break;
               }
@@ -2594,7 +3010,8 @@ export const CanvasPage: React.FC = () => {
             }
           }
 
-          const needsUpdate = !promptData.onGenerate ||
+          const needsUpdate =
+            !promptData.onGenerate ||
             !promptData.onUpdateData ||
             imagesChanged ||
             hasImagesToClear ||
@@ -2664,9 +3081,15 @@ export const CanvasPage: React.FC = () => {
           const editData = n.data as EditNodeData;
 
           // Check for connected ImageNode, LogoNode, BrandNode, or OutputNode and sync uploadedImage
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output';
+          const connectedEdge = edges.find((e) => e.target === n.id);
+          const sourceNode = connectedEdge
+            ? nds.find((node) => node.id === connectedEdge.source)
+            : null;
+          const hasConnectedImage =
+            sourceNode?.type === 'image' ||
+            sourceNode?.type === 'logo' ||
+            sourceNode?.type === 'brand' ||
+            sourceNode?.type === 'output';
 
           // Determine new uploadedImage based on edge connection state
           let newUploadedImage: { base64: string; mimeType: string } | null = null;
@@ -2691,11 +3114,16 @@ export const CanvasPage: React.FC = () => {
           // Detect change: compare current vs new, handling null cases
           const currentUploadedImage = editData.uploadedImage || null;
           const uploadedImageChanged =
-            (currentUploadedImage?.base64 !== newUploadedImage?.base64) ||
+            currentUploadedImage?.base64 !== newUploadedImage?.base64 ||
             (currentUploadedImage === null && newUploadedImage !== null) ||
             (currentUploadedImage !== null && newUploadedImage === null);
 
-          const needsUpdate = !editData.onApply || !editData.onUpdateData || !handlersRef.current?.handleEditApply || editData.subscriptionStatus !== subscriptionStatus || uploadedImageChanged;
+          const needsUpdate =
+            !editData.onApply ||
+            !editData.onUpdateData ||
+            !handlersRef.current?.handleEditApply ||
+            editData.subscriptionStatus !== subscriptionStatus ||
+            uploadedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2720,7 +3148,11 @@ export const CanvasPage: React.FC = () => {
           const currentConnectedImage = (upscaleData as any).connectedImage ?? undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
 
-          const needsUpdate = !upscaleData.onUpscale || !upscaleData.onUpdateData || !handlersRef.current?.handleUpscale || connectedImageChanged;
+          const needsUpdate =
+            !upscaleData.onUpscale ||
+            !upscaleData.onUpdateData ||
+            !handlersRef.current?.handleUpscale ||
+            connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2743,7 +3175,13 @@ export const CanvasPage: React.FC = () => {
           const currentConnectedImage = mockupData.connectedImage || undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
 
-          const needsUpdate = !mockupData.onGenerate || !mockupData.onUpdateData || !mockupData.onAddMockupNode || !handlersRef.current?.handleMockupGenerate || !mockupArraysEqual(mockupData.userMockups, userMockups) || connectedImageChanged;
+          const needsUpdate =
+            !mockupData.onGenerate ||
+            !mockupData.onUpdateData ||
+            !mockupData.onAddMockupNode ||
+            !handlersRef.current?.handleMockupGenerate ||
+            !mockupArraysEqual(mockupData.userMockups, userMockups) ||
+            connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2785,7 +3223,11 @@ export const CanvasPage: React.FC = () => {
           const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const currentConnectedImage = angleData.connectedImage || undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
-          const needsUpdate = !angleData.onGenerate || !angleData.onUpdateData || !handlersRef.current?.handleAngleGenerate || connectedImageChanged;
+          const needsUpdate =
+            !angleData.onGenerate ||
+            !angleData.onUpdateData ||
+            !handlersRef.current?.handleAngleGenerate ||
+            connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2805,7 +3247,11 @@ export const CanvasPage: React.FC = () => {
           const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const currentConnectedImage = textureData.connectedImage || undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
-          const needsUpdate = !textureData.onGenerate || !textureData.onUpdateData || !handlersRef.current?.handleTextureGenerate || connectedImageChanged;
+          const needsUpdate =
+            !textureData.onGenerate ||
+            !textureData.onUpdateData ||
+            !handlersRef.current?.handleTextureGenerate ||
+            connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2825,7 +3271,11 @@ export const CanvasPage: React.FC = () => {
           const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const currentConnectedImage = ambienceData.connectedImage || undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
-          const needsUpdate = !ambienceData.onGenerate || !ambienceData.onUpdateData || !handlersRef.current?.handleAmbienceGenerate || connectedImageChanged;
+          const needsUpdate =
+            !ambienceData.onGenerate ||
+            !ambienceData.onUpdateData ||
+            !handlersRef.current?.handleAmbienceGenerate ||
+            connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2845,7 +3295,11 @@ export const CanvasPage: React.FC = () => {
           const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const currentConnectedImage = luminanceData.connectedImage || undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
-          const needsUpdate = !luminanceData.onGenerate || !luminanceData.onUpdateData || !handlersRef.current?.handleLuminanceGenerate || connectedImageChanged;
+          const needsUpdate =
+            !luminanceData.onGenerate ||
+            !luminanceData.onUpdateData ||
+            !handlersRef.current?.handleLuminanceGenerate ||
+            connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2865,7 +3319,12 @@ export const CanvasPage: React.FC = () => {
           // Sync connected image using helper (supports all source types including video)
           const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const connectedImageChanged = shaderData.connectedImage !== newConnectedImage;
-          const needsUpdate = !shaderData.onApply || !shaderData.onUpdateData || !shaderData.onViewFullscreen || !handlersRef.current?.handleShaderApply || connectedImageChanged;
+          const needsUpdate =
+            !shaderData.onApply ||
+            !shaderData.onUpdateData ||
+            !shaderData.onViewFullscreen ||
+            !handlersRef.current?.handleShaderApply ||
+            connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2876,15 +3335,19 @@ export const CanvasPage: React.FC = () => {
                 onUpdateData: handlersRef.current.handleShaderNodeDataUpdate,
                 onDeleteNode: handleDeleteNodeById,
                 connectedImage: newConnectedImage,
-                onViewFullscreen: (imageUrl: string | null, imageBase64?: string | null, sliders?: Array<{
-                  label: string;
-                  value: number;
-                  min: number;
-                  max: number;
-                  step?: number;
-                  onChange: (value: number) => void;
-                  formatValue?: (value: number) => string;
-                }>) => {
+                onViewFullscreen: (
+                  imageUrl: string | null,
+                  imageBase64?: string | null,
+                  sliders?: Array<{
+                    label: string;
+                    value: number;
+                    min: number;
+                    max: number;
+                    step?: number;
+                    onChange: (value: number) => void;
+                    formatValue?: (value: number) => string;
+                  }>
+                ) => {
                   setImageFullscreenModal({
                     imageUrl,
                     imageBase64,
@@ -2901,7 +3364,11 @@ export const CanvasPage: React.FC = () => {
           // Sync connected image using helper
           const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const connectedImageChanged = upscaleBicubicData.connectedImage !== newConnectedImage;
-          const needsUpdate = !upscaleBicubicData.onApply || !upscaleBicubicData.onUpdateData || !handlersRef.current?.handleUpscaleBicubicApply || connectedImageChanged;
+          const needsUpdate =
+            !upscaleBicubicData.onApply ||
+            !upscaleBicubicData.onUpdateData ||
+            !handlersRef.current?.handleUpscaleBicubicApply ||
+            connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2919,7 +3386,14 @@ export const CanvasPage: React.FC = () => {
         if (n.type === 'image') {
           const data = n.data as ImageNodeData;
           const userMockupsChanged = !mockupArraysEqual(data.userMockups, userMockups);
-          const needsUpdate = !data.onUpload || !data.onView || !data.onUpdateData || !data.onBrandKit || !data.addTextNode || !handlersRef.current?.handleUploadImage || userMockupsChanged;
+          const needsUpdate =
+            !data.onUpload ||
+            !data.onView ||
+            !data.onUpdateData ||
+            !data.onBrandKit ||
+            !data.addTextNode ||
+            !handlersRef.current?.handleUploadImage ||
+            userMockupsChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2943,7 +3417,12 @@ export const CanvasPage: React.FC = () => {
           const outputData = n.data as OutputNodeData;
           const userMockupsChanged = !arraysEqual(outputData.userMockups || [], userMockups);
           // Update if handlers are missing or userMockups changed
-          const needsUpdate = !outputData.onView || !outputData.onEdit || !outputData.onDelete || !outputData.onBrandKit || userMockupsChanged;
+          const needsUpdate =
+            !outputData.onView ||
+            !outputData.onEdit ||
+            !outputData.onDelete ||
+            !outputData.onBrandKit ||
+            userMockupsChanged;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2962,7 +3441,8 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'text') {
           const textData = n.data as TextNodeData;
-          const needsUpdate = !textData.onUpdateData || !handlersRef.current?.handleTextNodeDataUpdate;
+          const needsUpdate =
+            !textData.onUpdateData || !handlersRef.current?.handleTextNodeDataUpdate;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -3026,7 +3506,8 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'variables') {
           const varData = n.data as VariablesNodeData;
-          const needsUpdate = !varData.onUpdateData || !handlersRef.current?.handleVariablesNodeDataUpdate;
+          const needsUpdate =
+            !varData.onUpdateData || !handlersRef.current?.handleVariablesNodeDataUpdate;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -3041,7 +3522,8 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'chat') {
           const chatData = n.data as ChatNodeData;
-          const needsUpdate = !chatData.onSendMessage ||
+          const needsUpdate =
+            !chatData.onSendMessage ||
             !chatData.onUpdateData ||
             !chatData.onClearHistory ||
             !chatData.onAddPromptNode ||
@@ -3061,12 +3543,13 @@ export const CanvasPage: React.FC = () => {
                 model: chatData.model || GEMINI_MODELS.TEXT,
                 isLoading: chatData.isLoading || false,
                 // Inject callbacks
-                onSendMessage: handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),
-                onUpdateData: handlersRef.current?.handleChatUpdateData || (() => { }),
-                onClearHistory: handlersRef.current?.handleChatClearHistory || (() => { }),
-                onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => { }),
+                onSendMessage:
+                  handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),
+                onUpdateData: handlersRef.current?.handleChatUpdateData || (() => {}),
+                onClearHistory: handlersRef.current?.handleChatClearHistory || (() => {}),
+                onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => {}),
                 onCreateNode: handlersRef.current?.handleChatCreateNode || (() => undefined),
-                onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => { }),
+                onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => {}),
                 onAttachMedia: handlersRef.current?.handleChatAttachMedia || (() => undefined),
                 onOpenSidebar: handleChatOpenSidebar,
                 connectedNodeIds: [],
@@ -3084,7 +3567,8 @@ export const CanvasPage: React.FC = () => {
               data: {
                 ...d,
                 onSendMessage: (nid: string, msg: string) =>
-                  handlersRef.current?.handleNodeBuilderSendMessage?.(nid, msg) ?? Promise.resolve(),
+                  handlersRef.current?.handleNodeBuilderSendMessage?.(nid, msg) ??
+                  Promise.resolve(),
                 onSpawnCustomNode: (nid: string, def: CustomNodeDefinition) =>
                   handlersRef.current?.handleNodeBuilderSpawn?.(nid, def),
                 onUpdateData: handleNodeBuilderUpdateData,
@@ -3100,19 +3584,25 @@ export const CanvasPage: React.FC = () => {
             if (!cfg) return 0;
             if (cfg.renderCategory === 'multi-input') return (cfg as any).inputCount ?? 1;
             if (cfg.renderCategory === 'transform') return 1;
-            if (cfg.renderCategory === 'multi-output' && (cfg as MultiOutputConfig).acceptsImage) return 1;
+            if (cfg.renderCategory === 'multi-output' && (cfg as MultiOutputConfig).acceptsImage)
+              return 1;
             return 0;
           })();
           const syncedImages: string[] = [];
           for (let i = 0; i < imageHandleCount; i++) {
-            const edge = edges.find(e => e.target === n.id && e.targetHandle === `input-${i}`);
+            const edge = edges.find((e) => e.target === n.id && e.targetHandle === `input-${i}`);
             if (edge) {
-              const srcNode = nds.find(nd => nd.id === edge.source);
-              const img = srcNode ? (srcNode.data as any)?.resultImageBase64 || (srcNode.data as any)?.resultImageUrl || (srcNode.data as any)?.mockup?.imageUrl : undefined;
+              const srcNode = nds.find((nd) => nd.id === edge.source);
+              const img = srcNode
+                ? (srcNode.data as any)?.resultImageBase64 ||
+                  (srcNode.data as any)?.resultImageUrl ||
+                  (srcNode.data as any)?.mockup?.imageUrl
+                : undefined;
               if (img) syncedImages.push(img);
             }
           }
-          const imagesChanged = JSON.stringify(syncedImages) !== JSON.stringify(d.connectedImages ?? []);
+          const imagesChanged =
+            JSON.stringify(syncedImages) !== JSON.stringify(d.connectedImages ?? []);
           if (!d.onExecute || !d.onUpdateData || imagesChanged) {
             hasChanges = true;
             return {
@@ -3136,11 +3626,14 @@ export const CanvasPage: React.FC = () => {
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
 
           // Find source image node ID for auto-connect
-          const sourceEdge = edges.find(e => e.target === n.id && e.targetHandle === 'image-input');
+          const sourceEdge = edges.find(
+            (e) => e.target === n.id && e.targetHandle === 'image-input'
+          );
           const sourceImageNodeId = sourceEdge?.source;
           const sourceNodeChanged = directorData.sourceImageNodeId !== sourceImageNodeId;
 
-          const needsUpdate = !directorData.onAnalyze ||
+          const needsUpdate =
+            !directorData.onAnalyze ||
             !directorData.onGeneratePrompt ||
             !directorData.onUpdateData ||
             !directorData.onOpenSidePanel ||
@@ -3165,20 +3658,29 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'brand') {
           const brandData = n.data as BrandNodeData;
-          const needsHandlerUpdate = !brandData.onAnalyze || !brandData.onUploadLogo || !brandData.onUpdateData || !handlersRef.current?.handleBrandAnalyze;
+          const needsHandlerUpdate =
+            !brandData.onAnalyze ||
+            !brandData.onUploadLogo ||
+            !brandData.onUpdateData ||
+            !handlersRef.current?.handleBrandAnalyze;
 
           // Sync connected data from edges
           const updates: Partial<BrandNodeData> = {};
           let brandHasChanges = false;
 
           // Helper para extrair imagem de um Node (prioriza URL do R2, fallback para base64)
-          const getImageFromNode = (sourceNode: Node<FlowNodeData>): { url?: string; base64?: string } => {
+          const getImageFromNode = (
+            sourceNode: Node<FlowNodeData>
+          ): { url?: string; base64?: string } => {
             if (sourceNode.type === 'image') {
               const imageData = sourceNode.data as ImageNodeData;
               // Priorizar URL do R2 se disponível
               if (imageData.mockup) {
                 const imageUrl = getImageUrl(imageData.mockup);
-                if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+                if (
+                  imageUrl &&
+                  (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))
+                ) {
                   return { url: imageUrl };
                 }
                 // Fallback para base64
@@ -3193,7 +3695,11 @@ export const CanvasPage: React.FC = () => {
             } else if (sourceNode.type === 'logo') {
               const logoData = sourceNode.data as LogoNodeData;
               // LogoNode pode ter logoImageUrl ou logoBase64
-              if (logoData.logoImageUrl && (logoData.logoImageUrl.startsWith('http://') || logoData.logoImageUrl.startsWith('https://'))) {
+              if (
+                logoData.logoImageUrl &&
+                (logoData.logoImageUrl.startsWith('http://') ||
+                  logoData.logoImageUrl.startsWith('https://'))
+              ) {
                 return { url: logoData.logoImageUrl };
               }
               const base64 = logoData.logoBase64;
@@ -3206,7 +3712,11 @@ export const CanvasPage: React.FC = () => {
             } else if (sourceNode.type === 'output') {
               const outputData = sourceNode.data as OutputNodeData;
               // Priorizar URL do R2 se disponível
-              if (outputData.resultImageUrl && (outputData.resultImageUrl.startsWith('http://') || outputData.resultImageUrl.startsWith('https://'))) {
+              if (
+                outputData.resultImageUrl &&
+                (outputData.resultImageUrl.startsWith('http://') ||
+                  outputData.resultImageUrl.startsWith('https://'))
+              ) {
                 return { url: outputData.resultImageUrl };
               }
               // Fallback para base64
@@ -3221,10 +3731,13 @@ export const CanvasPage: React.FC = () => {
           };
 
           // Logo connection (logo-input handle)
-          const logoEdge = edges.find(e => e.target === n.id && e.targetHandle === 'logo-input');
+          const logoEdge = edges.find((e) => e.target === n.id && e.targetHandle === 'logo-input');
           if (logoEdge) {
-            const logoNode = nds.find(node => node.id === logoEdge.source);
-            if (logoNode && (logoNode.type === 'image' || logoNode.type === 'logo' || logoNode.type === 'output')) {
+            const logoNode = nds.find((node) => node.id === logoEdge.source);
+            if (
+              logoNode &&
+              (logoNode.type === 'image' || logoNode.type === 'logo' || logoNode.type === 'output')
+            ) {
               const imageData = getImageFromNode(logoNode);
               // Armazenar URL ou base64 (prioriza URL para preview, mas mantém base64 para análise)
               const logoValue = imageData.url || imageData.base64;
@@ -3241,21 +3754,34 @@ export const CanvasPage: React.FC = () => {
           }
 
           // Identity connection (identity-input handle)
-          const identityEdge = edges.find(e => e.target === n.id && e.targetHandle === 'identity-input');
+          const identityEdge = edges.find(
+            (e) => e.target === n.id && e.targetHandle === 'identity-input'
+          );
           if (identityEdge) {
-            const identityNode = nds.find(node => node.id === identityEdge.source);
+            const identityNode = nds.find((node) => node.id === identityEdge.source);
             if (identityNode?.type === 'pdf') {
               const pdfData = identityNode.data as PDFNodeData;
-              if (pdfData.pdfBase64 && (brandData.connectedIdentity !== pdfData.pdfBase64 || brandData.connectedIdentityType !== 'pdf')) {
+              if (
+                pdfData.pdfBase64 &&
+                (brandData.connectedIdentity !== pdfData.pdfBase64 ||
+                  brandData.connectedIdentityType !== 'pdf')
+              ) {
                 updates.connectedIdentity = pdfData.pdfBase64;
                 updates.connectedIdentityType = 'pdf';
                 brandHasChanges = true;
               }
-            } else if (identityNode && (identityNode.type === 'image' || identityNode.type === 'output')) {
+            } else if (
+              identityNode &&
+              (identityNode.type === 'image' || identityNode.type === 'output')
+            ) {
               // Identity guide PNG pode ser conectado via identity-input
               const imageData = getImageFromNode(identityNode);
               const imageValue = imageData.url || imageData.base64;
-              if (imageValue && (brandData.connectedIdentity !== imageValue || brandData.connectedIdentityType !== 'png')) {
+              if (
+                imageValue &&
+                (brandData.connectedIdentity !== imageValue ||
+                  brandData.connectedIdentityType !== 'png')
+              ) {
                 updates.connectedIdentity = imageValue;
                 updates.connectedIdentityType = 'png';
                 brandHasChanges = true;
@@ -3280,9 +3806,9 @@ export const CanvasPage: React.FC = () => {
                 ...brandData,
                 ...updates,
                 onAnalyze: handlersRef.current?.handleBrandAnalyze || (() => Promise.resolve()),
-                onUploadLogo: handlersRef.current?.handleBrandLogoUpload || (() => { }),
-                onUploadPdf: handlersRef.current?.handleBrandPdfUpload || (() => { }),
-                onUpdateData: handlersRef.current?.handleBrandNodeDataUpdate || (() => { }),
+                onUploadLogo: handlersRef.current?.handleBrandLogoUpload || (() => {}),
+                onUploadPdf: handlersRef.current?.handleBrandPdfUpload || (() => {}),
+                onUpdateData: handlersRef.current?.handleBrandNodeDataUpdate || (() => {}),
                 onDeleteNode: handleDeleteNodeById,
               } as BrandNodeData,
             } as Node<FlowNodeData>;
@@ -3290,7 +3816,8 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'strategy') {
           const strategyData = n.data as StrategyNodeData;
-          const needsUpdate = !strategyData.onOpenProjectModal ||
+          const needsUpdate =
+            !strategyData.onOpenProjectModal ||
             !strategyData.onGenerate ||
             !strategyData.onGenerateSection ||
             !strategyData.onGenerateAll ||
@@ -3311,14 +3838,22 @@ export const CanvasPage: React.FC = () => {
                   setProjectModalNodeId(nodeId);
                   setShowProjectModal(true);
                 },
-                onGenerate: handlersRef.current?.handleStrategyNodeGenerate || (() => Promise.resolve()),
-                onGenerateSection: handlersRef.current?.handleStrategyNodeGenerateSection || (() => Promise.resolve()),
-                onGenerateAll: handlersRef.current?.handleStrategyNodeGenerateAll || (() => Promise.resolve()),
-                onInitialAnalysis: handlersRef.current?.handleStrategyNodeInitialAnalysis || (() => Promise.resolve()),
-                onCancelGeneration: handlersRef.current?.handleStrategyNodeCancelGeneration || (() => { }),
-                onGeneratePDF: handlersRef.current?.handleStrategyNodeGeneratePDF || (() => { }),
-                onSave: handlersRef.current?.handleStrategyNodeSave || (() => Promise.resolve(undefined)),
-                onUpdateData: handlersRef.current?.handleStrategyNodeDataUpdate || (() => { }),
+                onGenerate:
+                  handlersRef.current?.handleStrategyNodeGenerate || (() => Promise.resolve()),
+                onGenerateSection:
+                  handlersRef.current?.handleStrategyNodeGenerateSection ||
+                  (() => Promise.resolve()),
+                onGenerateAll:
+                  handlersRef.current?.handleStrategyNodeGenerateAll || (() => Promise.resolve()),
+                onInitialAnalysis:
+                  handlersRef.current?.handleStrategyNodeInitialAnalysis ||
+                  (() => Promise.resolve()),
+                onCancelGeneration:
+                  handlersRef.current?.handleStrategyNodeCancelGeneration || (() => {}),
+                onGeneratePDF: handlersRef.current?.handleStrategyNodeGeneratePDF || (() => {}),
+                onSave:
+                  handlersRef.current?.handleStrategyNodeSave || (() => Promise.resolve(undefined)),
+                onUpdateData: handlersRef.current?.handleStrategyNodeDataUpdate || (() => {}),
                 onDeleteNode: handleDeleteNodeById,
               } as StrategyNodeData,
             } as Node<FlowNodeData>;
@@ -3331,13 +3866,18 @@ export const CanvasPage: React.FC = () => {
 
           // Helper para extrair imagem de um Node (prioriza URL do R2, fallback para base64)
           // Retorna URL quando disponível (para preview), ou base64 para análise
-          const getImageFromNode = (sourceNode: Node<FlowNodeData>): { url?: string; base64?: string } => {
+          const getImageFromNode = (
+            sourceNode: Node<FlowNodeData>
+          ): { url?: string; base64?: string } => {
             if (sourceNode.type === 'image') {
               const imageData = sourceNode.data as ImageNodeData;
               // Priorizar URL do R2 se disponível
               if (imageData.mockup) {
                 const imageUrl = getImageUrl(imageData.mockup);
-                if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+                if (
+                  imageUrl &&
+                  (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))
+                ) {
                   return { url: imageUrl };
                 }
                 // Fallback para base64
@@ -3352,7 +3892,11 @@ export const CanvasPage: React.FC = () => {
             } else if (sourceNode.type === 'logo') {
               const logoData = sourceNode.data as LogoNodeData;
               // LogoNode pode ter logoImageUrl ou logoBase64
-              if (logoData.logoImageUrl && (logoData.logoImageUrl.startsWith('http://') || logoData.logoImageUrl.startsWith('https://'))) {
+              if (
+                logoData.logoImageUrl &&
+                (logoData.logoImageUrl.startsWith('http://') ||
+                  logoData.logoImageUrl.startsWith('https://'))
+              ) {
                 return { url: logoData.logoImageUrl };
               }
               const base64 = logoData.logoBase64;
@@ -3365,7 +3909,11 @@ export const CanvasPage: React.FC = () => {
             } else if (sourceNode.type === 'output') {
               const outputData = sourceNode.data as OutputNodeData;
               // Priorizar URL do R2 se disponível
-              if (outputData.resultImageUrl && (outputData.resultImageUrl.startsWith('http://') || outputData.resultImageUrl.startsWith('https://'))) {
+              if (
+                outputData.resultImageUrl &&
+                (outputData.resultImageUrl.startsWith('http://') ||
+                  outputData.resultImageUrl.startsWith('https://'))
+              ) {
                 return { url: outputData.resultImageUrl };
               }
               // Fallback para base64
@@ -3380,10 +3928,13 @@ export const CanvasPage: React.FC = () => {
           };
 
           // Logo connection (image-input handle) - prioriza logo, logoNode, output
-          const logoEdge = edges.find(e => e.target === n.id && e.targetHandle === 'image-input');
+          const logoEdge = edges.find((e) => e.target === n.id && e.targetHandle === 'image-input');
           if (logoEdge) {
-            const logoNode = nds.find(node => node.id === logoEdge.source);
-            if (logoNode && (logoNode.type === 'logo' || logoNode.type === 'image' || logoNode.type === 'output')) {
+            const logoNode = nds.find((node) => node.id === logoEdge.source);
+            if (
+              logoNode &&
+              (logoNode.type === 'logo' || logoNode.type === 'image' || logoNode.type === 'output')
+            ) {
               const imageData = getImageFromNode(logoNode);
               // Armazenar URL ou base64 (prioriza URL para preview, mas mantém base64 para análise)
               // Para compatibilidade, armazenamos URL se disponível, senão base64
@@ -3399,9 +3950,9 @@ export const CanvasPage: React.FC = () => {
           }
 
           // PDF connection (pdf-input handle)
-          const pdfEdge = edges.find(e => e.target === n.id && e.targetHandle === 'pdf-input');
+          const pdfEdge = edges.find((e) => e.target === n.id && e.targetHandle === 'pdf-input');
           if (pdfEdge) {
-            const pdfNode = nds.find(node => node.id === pdfEdge.source);
+            const pdfNode = nds.find((node) => node.id === pdfEdge.source);
             if (pdfNode?.type === 'pdf') {
               const pdfData = pdfNode.data as PDFNodeData;
               if (pdfData.pdfBase64 && brandCoreData.connectedPdf !== pdfData.pdfBase64) {
@@ -3423,7 +3974,9 @@ export const CanvasPage: React.FC = () => {
               brandCoreHasChanges = true;
             }
             // Verificar se connectedImage deve ser limpo também
-            const imageEdgeForIdentity = edges.find(e => e.target === n.id && e.targetHandle === 'pdf-input');
+            const imageEdgeForIdentity = edges.find(
+              (e) => e.target === n.id && e.targetHandle === 'pdf-input'
+            );
             if (!imageEdgeForIdentity && brandCoreData.connectedImage) {
               updates.connectedImage = undefined;
               brandCoreHasChanges = true;
@@ -3431,10 +3984,12 @@ export const CanvasPage: React.FC = () => {
           }
 
           // Strategy connections
-          const strategyEdges = edges.filter(e => e.target === n.id && e.targetHandle === 'strategy-input');
+          const strategyEdges = edges.filter(
+            (e) => e.target === n.id && e.targetHandle === 'strategy-input'
+          );
           const connectedStrategies: any[] = [];
-          strategyEdges.forEach(edge => {
-            const strategyNode = nds.find(node => node.id === edge.source);
+          strategyEdges.forEach((edge) => {
+            const strategyNode = nds.find((node) => node.id === edge.source);
             if (strategyNode?.type === 'strategy') {
               const strategyData = strategyNode.data as StrategyNodeData;
               if (strategyData.strategyData) {
@@ -3447,14 +4002,17 @@ export const CanvasPage: React.FC = () => {
             }
           });
 
-          const strategiesChanged = JSON.stringify(connectedStrategies) !== JSON.stringify(brandCoreData.connectedStrategies || []);
+          const strategiesChanged =
+            JSON.stringify(connectedStrategies) !==
+            JSON.stringify(brandCoreData.connectedStrategies || []);
           if (strategiesChanged) {
             updates.connectedStrategies = connectedStrategies;
             brandCoreHasChanges = true;
           }
 
           // Verificar se precisa atualizar handlers ou dados
-          const needsUpdate = brandCoreHasChanges ||
+          const needsUpdate =
+            brandCoreHasChanges ||
             !brandCoreData.onAnalyze ||
             !brandCoreData.onUpdateData ||
             !brandCoreData.onUploadPdfToR2 ||
@@ -3478,11 +4036,16 @@ export const CanvasPage: React.FC = () => {
                 ...brandCoreData,
                 ...updates,
                 onAnalyze: handlersRef.current?.handleBrandCoreAnalyze || (() => Promise.resolve()),
-                onCancelAnalyze: handlersRef.current?.handleBrandCoreCancelAnalyze || (() => { }),
-                onGenerateVisualPrompts: handlersRef.current?.handleBrandCoreGenerateVisualPrompts || (() => Promise.resolve()),
-                onGenerateStrategicPrompts: handlersRef.current?.handleBrandCoreGenerateStrategicPrompts || (() => Promise.resolve()),
-                onUpdateData: handlersRef.current?.handleBrandCoreDataUpdate || (() => { }),
-                onUploadPdfToR2: handlersRef.current?.handleBrandCoreUploadPdfToR2 || (() => Promise.resolve('')),
+                onCancelAnalyze: handlersRef.current?.handleBrandCoreCancelAnalyze || (() => {}),
+                onGenerateVisualPrompts:
+                  handlersRef.current?.handleBrandCoreGenerateVisualPrompts ||
+                  (() => Promise.resolve()),
+                onGenerateStrategicPrompts:
+                  handlersRef.current?.handleBrandCoreGenerateStrategicPrompts ||
+                  (() => Promise.resolve()),
+                onUpdateData: handlersRef.current?.handleBrandCoreDataUpdate || (() => {}),
+                onUploadPdfToR2:
+                  handlersRef.current?.handleBrandCoreUploadPdfToR2 || (() => Promise.resolve('')),
                 onDeleteNode: handleDeleteNodeById,
               } as BrandCoreData,
             } as Node<FlowNodeData>;
@@ -3509,7 +4072,28 @@ export const CanvasPage: React.FC = () => {
       previousEdgesRef.current = edges;
       return nds;
     });
-  }, [nodes, edges, setNodes, handleView, handleEdit, handleEditOutput, handleDelete, subscriptionStatus, handlersRef, handleMergeNodeDataUpdate, handlePromptNodeDataUpdate, handlePromptRemoveEdge, userMockups, handleBrandKit, handleDeleteNodeById, handleChatOpenSidebar, handleDirectorOpenSidebar, handleDirectorAnalyze, handleDirectorGeneratePrompt, handleDirectorNodeDataUpdate]);
+  }, [
+    nodes,
+    edges,
+    setNodes,
+    handleView,
+    handleEdit,
+    handleEditOutput,
+    handleDelete,
+    subscriptionStatus,
+    handlersRef,
+    handleMergeNodeDataUpdate,
+    handlePromptNodeDataUpdate,
+    handlePromptRemoveEdge,
+    userMockups,
+    handleBrandKit,
+    handleDeleteNodeById,
+    handleChatOpenSidebar,
+    handleDirectorOpenSidebar,
+    handleDirectorAnalyze,
+    handleDirectorGeneratePrompt,
+    handleDirectorNodeDataUpdate,
+  ]);
 
   // Validate and fix node positions to prevent NaN errors
   useEffect(() => {
@@ -3534,7 +4118,7 @@ export const CanvasPage: React.FC = () => {
 
   // Validate and fix edges to prevent React Flow errors
   useEffect(() => {
-    const nodeIds = new Set(nodes.map(n => n.id));
+    const nodeIds = new Set(nodes.map((n) => n.id));
 
     // Check for invalid edges or edges with null/"null" handles
     const hasInvalidEdges = edges.some((edge) => {
@@ -3646,7 +4230,7 @@ export const CanvasPage: React.FC = () => {
               onView: handleView,
               onEdit: handleEdit,
               onDelete: handleDelete,
-              onUpload: handlersRef.current?.handleUploadImage || (() => { }),
+              onUpload: handlersRef.current?.handleUploadImage || (() => {}),
               addTextNode: addTextNode,
             } as ImageNodeData,
           };
@@ -3685,7 +4269,18 @@ export const CanvasPage: React.FC = () => {
         // Ignore errors when trying to clean up
       }
     }
-  }, [reactFlowInstance, isAuthenticated, nodes, edges, setNodes, addToHistory, handleView, handleEdit, handleDelete, handlersRef]);
+  }, [
+    reactFlowInstance,
+    isAuthenticated,
+    nodes,
+    edges,
+    setNodes,
+    addToHistory,
+    handleView,
+    handleEdit,
+    handleDelete,
+    handlersRef,
+  ]);
 
   // Load user mockups when authenticated
   useEffect(() => {
@@ -3694,7 +4289,9 @@ export const CanvasPage: React.FC = () => {
         try {
           const mockups = await mockupApi.getAll();
           // Filter only blank mockups
-          const blankMockups = mockups.filter(m => m.designType === 'blank' && (m.imageUrl || m.imageBase64));
+          const blankMockups = mockups.filter(
+            (m) => m.designType === 'blank' && (m.imageUrl || m.imageBase64)
+          );
           setUserMockups(blankMockups);
         } catch (error) {
           if (isLocalDevelopment()) {
@@ -3713,7 +4310,7 @@ export const CanvasPage: React.FC = () => {
   // Manage openChatNodeId - clear when deleted
   useEffect(() => {
     // Clear openChatNodeId if the node was deleted
-    if (openChatNodeId && !nodes.find(n => n.id === openChatNodeId)) {
+    if (openChatNodeId && !nodes.find((n) => n.id === openChatNodeId)) {
       setOpenChatNodeId(null);
     }
   }, [nodes, openChatNodeId]);
@@ -3721,14 +4318,14 @@ export const CanvasPage: React.FC = () => {
   // Manage openDirectorNodeId - clear when deleted or deselected
   useEffect(() => {
     // Clear openDirectorNodeId if the node was deleted
-    if (openDirectorNodeId && !nodes.find(n => n.id === openDirectorNodeId)) {
+    if (openDirectorNodeId && !nodes.find((n) => n.id === openDirectorNodeId)) {
       setOpenDirectorNodeId(null);
       return;
     }
 
     // Clear openDirectorNodeId if the node is not selected
     if (openDirectorNodeId) {
-      const directorNode = nodes.find(n => n.id === openDirectorNodeId);
+      const directorNode = nodes.find((n) => n.id === openDirectorNodeId);
       if (directorNode && !directorNode.selected) {
         setOpenDirectorNodeId(null);
       }
@@ -3739,10 +4336,10 @@ export const CanvasPage: React.FC = () => {
   const autoAnalyzeRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    const directorNodes = nodes.filter(n => n.type === 'director');
+    const directorNodes = nodes.filter((n) => n.type === 'director');
     const timeoutIds: TimerRef[] = [];
 
-    directorNodes.forEach(node => {
+    directorNodes.forEach((node) => {
       const directorData = node.data as DirectorNodeData;
       const hasImage = !!directorData.connectedImage;
       const notAnalyzing = !directorData.isAnalyzing;
@@ -3769,7 +4366,7 @@ export const CanvasPage: React.FC = () => {
     });
 
     return () => {
-      timeoutIds.forEach(id => clearTimeout(id));
+      timeoutIds.forEach((id) => clearTimeout(id));
     };
   }, [nodes, handleDirectorAnalyze]);
 
@@ -3786,7 +4383,7 @@ export const CanvasPage: React.FC = () => {
   const handleNodeDuplicate = useCallback(() => {
     if (!nodeContextMenu?.nodeId || !reactFlowInstance) return;
 
-    const node = nodes.find(n => n.id === nodeContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === nodeContextMenu.nodeId);
     if (!node) return;
 
     addToHistory(nodes, edges, drawing.drawings);
@@ -3829,61 +4426,70 @@ export const CanvasPage: React.FC = () => {
   }, [nodeContextMenu, nodes, edges, reactFlowInstance, setNodes, addToHistory, t]);
 
   // Global mouse handlers for drawing outside the canvas
-  const handleGlobalMouseMove = useCallback((e: React.MouseEvent) => {
-    if (drawing.isDrawing) {
-      drawing.draw(e);
-    }
-  }, [drawing]);
+  const handleGlobalMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (drawing.isDrawing) {
+        drawing.draw(e);
+      }
+    },
+    [drawing]
+  );
 
-  const handleGlobalMouseUp = useCallback((e: React.MouseEvent) => {
-    // Only stop drawing if the mouseUp happened OUTSIDE the canvas wrapper.
-    // Events inside CanvasFlow already call stopDrawing via onMouseUp — letting
-    // this fire too would call stopDrawing twice and duplicate the stroke.
-    if (drawing.isDrawing && !reactFlowWrapper.current?.contains(e.target as Element)) {
-      drawing.stopDrawing();
-    }
-  }, [drawing, reactFlowWrapper]);
+  const handleGlobalMouseUp = useCallback(
+    (e: React.MouseEvent) => {
+      // Only stop drawing if the mouseUp happened OUTSIDE the canvas wrapper.
+      // Events inside CanvasFlow already call stopDrawing via onMouseUp — letting
+      // this fire too would call stopDrawing twice and duplicate the stroke.
+      if (drawing.isDrawing && !reactFlowWrapper.current?.contains(e.target as Element)) {
+        drawing.stopDrawing();
+      }
+    },
+    [drawing, reactFlowWrapper]
+  );
 
   // Handle drag and drop onto canvas
-  const handleCanvasDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
+  const handleCanvasDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
 
-    if (!reactFlowInstance) return;
+      if (!reactFlowInstance) return;
 
-    const type = event.dataTransfer.getData('application/reactflow');
-    const dataString = event.dataTransfer.getData('application/nodeData');
+      const type = event.dataTransfer.getData('application/reactflow');
+      const dataString = event.dataTransfer.getData('application/nodeData');
 
-    // check if the dropped element is valid
-    if (typeof type === 'undefined' || !type) {
-      return;
-    }
-
-    const position = reactFlowInstance.screenToFlowPosition({
-      x: event.clientX,
-      y: event.clientY,
-    });
-
-    const nodeId = generateNodeId(type);
-    let nodeData: any = { label: `${type} node` };
-
-    if (dataString) {
-      try {
-        nodeData = JSON.parse(dataString);
-      } catch (e) {
-        console.error('Failed to parse node data', e);
+      // check if the dropped element is valid
+      if (typeof type === 'undefined' || !type) {
+        return;
       }
-    }
 
-    const newNode = {
-      id: nodeId,
-      type,
-      position,
-      data: nodeData,
-    };
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
 
-    setNodes((nds) => nds.concat(newNode as any));
-    addToHistory([...nodes, newNode as any], edges, drawing.drawings);
-  }, [reactFlowInstance, setNodes, addToHistory, nodes, edges, drawing.drawings]);
+      const nodeId = generateNodeId(type);
+      let nodeData: any = { label: `${type} node` };
+
+      if (dataString) {
+        try {
+          nodeData = JSON.parse(dataString);
+        } catch (e) {
+          console.error('Failed to parse node data', e);
+        }
+      }
+
+      const newNode = {
+        id: nodeId,
+        type,
+        position,
+        data: nodeData,
+      };
+
+      setNodes((nds) => nds.concat(newNode as any));
+      addToHistory([...nodes, newNode as any], edges, drawing.drawings);
+    },
+    [reactFlowInstance, setNodes, addToHistory, nodes, edges, drawing.drawings]
+  );
 
   // Show loading state while loading project
   // Show loading state while checking access
@@ -3934,7 +4540,7 @@ export const CanvasPage: React.FC = () => {
         {/* Save Prompt Modal (Moved outside ReactFlow) */}
         <SavePromptModal
           isOpen={savePromptModalState.isOpen}
-          onClose={() => setSavePromptModalState(prev => ({ ...prev, isOpen: false }))}
+          onClose={() => setSavePromptModalState((prev) => ({ ...prev, isOpen: false }))}
           prompt={savePromptModalState.prompt}
           initialData={savePromptModalState.initialData}
         />
@@ -3945,7 +4551,7 @@ export const CanvasPage: React.FC = () => {
   return (
     <PageShell
       pageId="canvas-editor"
-      title={canvasHeader.projectName || "Canvas Editor"}
+      title={canvasHeader.projectName || 'Canvas Editor'}
       width="full"
       noBackground
       seoTitle={`${canvasHeader.projectName || 'Canvas'} | Visant Canvas`}
@@ -3954,8 +4560,8 @@ export const CanvasPage: React.FC = () => {
       contentClassName="p-0 sm:p-0 lg:p-0"
     >
       <div
-        className="flex flex-col h-screen relative overflow-hidden select-none bg-neutral-950" 
-        onMouseMove={handleGlobalMouseMove} 
+        className="flex flex-col h-screen relative overflow-hidden select-none bg-neutral-950"
+        onMouseMove={handleGlobalMouseMove}
         onMouseUp={handleGlobalMouseUp}
         onDragOver={(e) => {
           e.preventDefault();
@@ -3967,16 +4573,110 @@ export const CanvasPage: React.FC = () => {
           {/* Main Canvas Area */}
           <div className="flex-1 relative order-2 overflow-hidden flex flex-col">
             <ErrorBoundary>
-            {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
-              <RoomProvider
-                id={`canvas-${projectId}`}
-                initialPresence={{ cursor: null, selectedNodeId: null, nodePosition: null, isMoving: false, activeSection: '' } as any}
-                initialStorage={{ nodes: new LiveList([]) as any, edges: new LiveList([]) as any, guideline: null as any }}
-              >
-                <CollaborativeCanvas
+              {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
+                <RoomProvider
+                  id={`canvas-${projectId}`}
+                  initialPresence={
+                    {
+                      cursor: null,
+                      selectedNodeId: null,
+                      nodePosition: null,
+                      isMoving: false,
+                      activeSection: '',
+                    } as any
+                  }
+                  initialStorage={{
+                    nodes: new LiveList([]) as any,
+                    edges: new LiveList([]) as any,
+                    guideline: null as any,
+                  }}
+                >
+                  <CollaborativeCanvas
+                    nodes={nodes}
+                    edges={edges}
+                    handleNodesChange={handleNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onConnect={onConnect}
+                    onConnectStart={onConnectStart}
+                    onConnectEnd={onConnectEnd}
+                    onNodeDragStart={onNodeDragStart}
+                    onNodeDragStop={onNodeDragStop}
+                    onPaneContextMenu={onPaneContextMenu}
+                    onNodeContextMenu={onNodeContextMenu}
+                    onEdgeClick={onEdgeClick}
+                    onEdgeContextMenu={onEdgeContextMenu}
+                    nodeTypes={nodeTypes}
+                    setReactFlowInstance={setReactFlowInstance}
+                    reactFlowWrapper={reactFlowWrapper}
+                    projectId={projectId}
+                    isCollaborative={isCollaborative}
+                    setNodes={setNodes}
+                    setEdges={setEdges}
+                    saveImmediately={saveImmediately}
+                    onOthersCountChange={setOthersCount}
+                    onDropImage={handleDropImage}
+                    onDropNode={handleDropNode}
+                    onAddColorExtractor={addColorExtractorNode}
+                    strokeColor={drawing.drawingState.strokeColor}
+                    strokeSize={drawing.drawingState.strokeSize}
+                    isDrawingMode={drawing.drawingState.isDrawingMode}
+                    drawingType={drawing.drawingState.drawingType}
+                    onDrawingStart={drawing.startDrawing}
+                    onDrawingMove={drawing.draw}
+                    onDrawingEnd={handleStopDrawing}
+                    currentPathData={drawing.currentPathData}
+                    isDrawing={drawing.isDrawing}
+                    drawings={drawing.drawings}
+                    selectedDrawingIds={drawing.selectedDrawingIds}
+                    selectionBox={drawing.selectionBox}
+                    activeTool={activeTool}
+                    onSelectionBoxStart={drawing.startSelectionBox}
+                    onSelectionBoxUpdate={drawing.updateSelectionBox}
+                    onSelectionBoxEnd={drawing.endSelectionBox}
+                    onDrawingClick={(id: string) => {
+                      drawing.setSelectedDrawingId(id);
+                    }}
+                    editingDrawingId={drawing.editingDrawingId}
+                    onStartEditingText={drawing.startEditingText}
+                    onUpdateDrawingText={handleUpdateDrawingText}
+                    onStopEditingText={drawing.stopEditingText}
+                    onCreateTextDrawing={(position) => {
+                      addToHistory(nodes, edges, drawing.drawings);
+                      drawing.createTextDrawing?.(position);
+                    }}
+                    onUpdateDrawingBounds={(id, bounds) => {
+                      addToHistory(nodes, edges, drawing.drawings);
+                      drawing.updateDrawingBounds?.(id, bounds);
+                    }}
+                    onMoveDrawings={(ids, delta) => {
+                      drawing.moveDrawings?.(ids, delta);
+                    }}
+                    onInteractionEnd={() => {
+                      addToHistory(nodes, edges, drawing.drawings);
+                    }}
+                    shapePreview={
+                      drawing.drawingState.drawingType === 'shape' &&
+                      drawing.isDrawing &&
+                      drawing.startPosition &&
+                      drawing.currentPosition
+                        ? {
+                            startPosition: drawing.startPosition,
+                            currentPosition: drawing.currentPosition,
+                            shapeType: drawing.drawingState.shapeType,
+                            shapeColor: drawing.drawingState.shapeColor,
+                            shapeStrokeColor: drawing.drawingState.shapeStrokeColor,
+                            shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
+                            shapeFill: drawing.drawingState.shapeFill,
+                          }
+                        : null
+                    }
+                  />
+                </RoomProvider>
+              ) : (
+                <CanvasFlow
                   nodes={nodes}
                   edges={edges}
-                  handleNodesChange={handleNodesChange}
+                  onNodesChange={handleNodesChange}
                   onEdgesChange={onEdgesChange}
                   onConnect={onConnect}
                   onConnectStart={onConnectStart}
@@ -3988,16 +4688,20 @@ export const CanvasPage: React.FC = () => {
                   onEdgeClick={onEdgeClick}
                   onEdgeContextMenu={onEdgeContextMenu}
                   nodeTypes={nodeTypes}
-                  setReactFlowInstance={setReactFlowInstance}
+                  onInit={setReactFlowInstance}
                   reactFlowWrapper={reactFlowWrapper}
-                  projectId={projectId}
-                  isCollaborative={isCollaborative}
-                  setNodes={setNodes}
-                  setEdges={setEdges}
-                  saveImmediately={saveImmediately}
-                  onOthersCountChange={setOthersCount}
+                  backgroundColor={backgroundColor}
+                  gridColor={gridColor}
+                  showGrid={showGrid}
+                  showMinimap={showMinimap}
+                  showControls={showControls}
+                  cursorColor={cursorColor}
                   onDropImage={handleDropImage}
                   onDropNode={handleDropNode}
+                  reactFlowInstance={reactFlowInstance}
+                  experimentalMode={experimentalMode}
+                  edgeStyle={edgeStyle}
+                  edgeStrokeWidth={edgeStrokeWidth}
                   onAddColorExtractor={addColorExtractorNode}
                   strokeColor={drawing.drawingState.strokeColor}
                   strokeSize={drawing.drawingState.strokeSize}
@@ -4010,14 +4714,14 @@ export const CanvasPage: React.FC = () => {
                   isDrawing={drawing.isDrawing}
                   drawings={drawing.drawings}
                   selectedDrawingIds={drawing.selectedDrawingIds}
+                  onDrawingClick={(id: string) => {
+                    drawing.setSelectedDrawingId(id);
+                  }}
                   selectionBox={drawing.selectionBox}
                   activeTool={activeTool}
                   onSelectionBoxStart={drawing.startSelectionBox}
                   onSelectionBoxUpdate={drawing.updateSelectionBox}
                   onSelectionBoxEnd={drawing.endSelectionBox}
-                  onDrawingClick={(id: string) => {
-                    drawing.setSelectedDrawingId(id);
-                  }}
                   editingDrawingId={drawing.editingDrawingId}
                   onStartEditingText={drawing.startEditingText}
                   onUpdateDrawingText={handleUpdateDrawingText}
@@ -4027,7 +4731,6 @@ export const CanvasPage: React.FC = () => {
                     drawing.createTextDrawing?.(position);
                   }}
                   onUpdateDrawingBounds={(id, bounds) => {
-                    addToHistory(nodes, edges, drawing.drawings);
                     drawing.updateDrawingBounds?.(id, bounds);
                   }}
                   onMoveDrawings={(ids, delta) => {
@@ -4038,108 +4741,23 @@ export const CanvasPage: React.FC = () => {
                   }}
                   shapePreview={
                     drawing.drawingState.drawingType === 'shape' &&
-                      drawing.isDrawing &&
-                      drawing.startPosition &&
-                      drawing.currentPosition
-                      ? {
-                        startPosition: drawing.startPosition,
-                        currentPosition: drawing.currentPosition,
-                        shapeType: drawing.drawingState.shapeType,
-                        shapeColor: drawing.drawingState.shapeColor,
-                        shapeStrokeColor: drawing.drawingState.shapeStrokeColor,
-                        shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
-                        shapeFill: drawing.drawingState.shapeFill,
-                      }
-                      : null
-                  }
-                />
-              </RoomProvider>
-            ) : (
-              <CanvasFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={handleNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onConnectStart={onConnectStart}
-                onConnectEnd={onConnectEnd}
-                onNodeDragStart={onNodeDragStart}
-                onNodeDragStop={onNodeDragStop}
-                onPaneContextMenu={onPaneContextMenu}
-                onNodeContextMenu={onNodeContextMenu}
-                onEdgeClick={onEdgeClick}
-                onEdgeContextMenu={onEdgeContextMenu}
-                nodeTypes={nodeTypes}
-                onInit={setReactFlowInstance}
-                reactFlowWrapper={reactFlowWrapper}
-                backgroundColor={backgroundColor}
-                gridColor={gridColor}
-                showGrid={showGrid}
-                showMinimap={showMinimap}
-                showControls={showControls}
-                cursorColor={cursorColor}
-                onDropImage={handleDropImage}
-                onDropNode={handleDropNode}
-                reactFlowInstance={reactFlowInstance}
-                experimentalMode={experimentalMode}
-                edgeStyle={edgeStyle}
-                edgeStrokeWidth={edgeStrokeWidth}
-                onAddColorExtractor={addColorExtractorNode}
-                strokeColor={drawing.drawingState.strokeColor}
-                strokeSize={drawing.drawingState.strokeSize}
-                isDrawingMode={drawing.drawingState.isDrawingMode}
-                drawingType={drawing.drawingState.drawingType}
-                onDrawingStart={drawing.startDrawing}
-                onDrawingMove={drawing.draw}
-                onDrawingEnd={handleStopDrawing}
-                currentPathData={drawing.currentPathData}
-                isDrawing={drawing.isDrawing}
-                drawings={drawing.drawings}
-                selectedDrawingIds={drawing.selectedDrawingIds}
-                onDrawingClick={(id: string) => {
-                  drawing.setSelectedDrawingId(id);
-                }}
-                selectionBox={drawing.selectionBox}
-                activeTool={activeTool}
-                onSelectionBoxStart={drawing.startSelectionBox}
-                onSelectionBoxUpdate={drawing.updateSelectionBox}
-                onSelectionBoxEnd={drawing.endSelectionBox}
-                editingDrawingId={drawing.editingDrawingId}
-                onStartEditingText={drawing.startEditingText}
-                onUpdateDrawingText={handleUpdateDrawingText}
-                onStopEditingText={drawing.stopEditingText}
-                onCreateTextDrawing={(position) => {
-                  addToHistory(nodes, edges, drawing.drawings);
-                  drawing.createTextDrawing?.(position);
-                }}
-                onUpdateDrawingBounds={(id, bounds) => {
-                  drawing.updateDrawingBounds?.(id, bounds);
-                }}
-                onMoveDrawings={(ids, delta) => {
-                  drawing.moveDrawings?.(ids, delta);
-                }}
-                onInteractionEnd={() => {
-                  addToHistory(nodes, edges, drawing.drawings);
-                }}
-                shapePreview={
-                  drawing.drawingState.drawingType === 'shape' &&
                     drawing.isDrawing &&
                     drawing.startPosition &&
                     drawing.currentPosition
-                    ? {
-                      startPosition: drawing.startPosition,
-                      currentPosition: drawing.currentPosition,
-                      shapeType: drawing.drawingState.shapeType,
-                      shapeColor: drawing.drawingState.shapeColor,
-                      shapeStrokeColor: drawing.drawingState.shapeStrokeColor,
-                      shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
-                      shapeFill: drawing.drawingState.shapeFill,
-                    }
-                    : null
-                }
-              />
-            )}
-          </ErrorBoundary>
+                      ? {
+                          startPosition: drawing.startPosition,
+                          currentPosition: drawing.currentPosition,
+                          shapeType: drawing.drawingState.shapeType,
+                          shapeColor: drawing.drawingState.shapeColor,
+                          shapeStrokeColor: drawing.drawingState.shapeStrokeColor,
+                          shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
+                          shapeFill: drawing.drawingState.shapeFill,
+                        }
+                      : null
+                  }
+                />
+              )}
+            </ErrorBoundary>
           </div>
         </div>
 
@@ -4182,7 +4800,11 @@ export const CanvasPage: React.FC = () => {
               navigate(`/editor?image=${encodeURIComponent(imageBase64)}`);
             }}
             mockup={selectedMockup}
-            onDelete={isAuthenticated && selectedMockup._id ? () => handleDelete(selectedMockup._id) : undefined}
+            onDelete={
+              isAuthenticated && selectedMockup._id
+                ? () => handleDelete(selectedMockup._id)
+                : undefined
+            }
             isDeleting={false}
             isAuthenticated={isAuthenticated === true}
           />
@@ -4225,7 +4847,9 @@ export const CanvasPage: React.FC = () => {
             onAddShader={() => handleAddNode(addShaderNode)}
             onAddTextureFilter={() => handleAddNode(addTextureFilterNode)}
             onAddStudio3D={() => handleAddNode(addStudio3DNode)}
-            onAddColorExtractor={() => handleAddNode(addColorExtractorNode, { targetHandle: 'image-input' })}
+            onAddColorExtractor={() =>
+              handleAddNode(addColorExtractorNode, { targetHandle: 'image-input' })
+            }
             onAddBrandKit={() => handleAddNode((pos) => addBrandKitNodes(pos)[0])}
             onAddLogo={() => handleAddNode(addLogoNode)}
             onAddPDF={() => handleAddNode(addPDFNode)}
@@ -4239,7 +4863,7 @@ export const CanvasPage: React.FC = () => {
             onToggleUI={() => canvasHeader.setShowControls(!canvasHeader.showControls)}
           />
         )}
-        
+
         {/* Edge Context Menu */}
         {edgeContextMenu && (
           <EdgeContextMenu
@@ -4251,49 +4875,51 @@ export const CanvasPage: React.FC = () => {
         )}
 
         {/* Image Context Menu */}
-        {imageContextMenu && (() => {
-          const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-          if (!node) return null;
+        {imageContextMenu &&
+          (() => {
+            const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
+            if (!node) return null;
 
-          const media = getMediaFromNodeForCopy(node);
-          if (!media) return null;
+            const media = getMediaFromNodeForCopy(node);
+            if (!media) return null;
 
-          const imageUrl = media.mediaUrl;
-          const isLiked = (node.data as any).isLiked || (node.data as any).mockup?.isLiked || false;
+            const imageUrl = media.mediaUrl;
+            const isLiked =
+              (node.data as any).isLiked || (node.data as any).mockup?.isLiked || false;
 
-          const isOutputNode = node.type === 'output';
+            const isOutputNode = node.type === 'output';
 
-          const onLike = isOutputNode ? handleOutputLike : handleImageLike;
-          const onDownload = handleDownload;
-          const onExport = handleImageExport;
-          const onFullscreen = handleFullscreen;
-          const onCopy = handleCopy;
-          const onCopyPNG = handleCopyPNG;
-          const onEditWithPrompt = handleEditWithPrompt;
-          const onDelete = handleImageNodeDelete;
-          const onDuplicate = () => handleDuplicate(imageContextMenu.nodeId);
-          const onDescribe = isOutputNode ? undefined : handleImageDescribe;
+            const onLike = isOutputNode ? handleOutputLike : handleImageLike;
+            const onDownload = handleDownload;
+            const onExport = handleImageExport;
+            const onFullscreen = handleFullscreen;
+            const onCopy = handleCopy;
+            const onCopyPNG = handleCopyPNG;
+            const onEditWithPrompt = handleEditWithPrompt;
+            const onDelete = handleImageNodeDelete;
+            const onDuplicate = () => handleDuplicate(imageContextMenu.nodeId);
+            const onDescribe = isOutputNode ? undefined : handleImageDescribe;
 
-          return (
-            <ImageContextMenu
-              x={imageContextMenu.x}
-              y={imageContextMenu.y}
-              onClose={() => setImageContextMenu(null)}
-              onLike={onLike}
-              onDownload={onDownload}
-              onExport={onExport}
-              onFullscreen={onFullscreen}
-              onCopy={onCopy}
-              onCopyPNG={onCopyPNG}
-              onDescribe={onDescribe}
-              onEditWithPrompt={onEditWithPrompt}
-              onDelete={onDelete}
-              onDuplicate={onDuplicate}
-              imageUrl={imageUrl}
-              isLiked={isLiked}
-            />
-          );
-        })()}
+            return (
+              <ImageContextMenu
+                x={imageContextMenu.x}
+                y={imageContextMenu.y}
+                onClose={() => setImageContextMenu(null)}
+                onLike={onLike}
+                onDownload={onDownload}
+                onExport={onExport}
+                onFullscreen={onFullscreen}
+                onCopy={onCopy}
+                onCopyPNG={onCopyPNG}
+                onDescribe={onDescribe}
+                onEditWithPrompt={onEditWithPrompt}
+                onDelete={onDelete}
+                onDuplicate={onDuplicate}
+                imageUrl={imageUrl}
+                isLiked={isLiked}
+              />
+            );
+          })()}
 
         {/* Node Context Menu */}
         {nodeContextMenu && (
@@ -4333,7 +4959,10 @@ export const CanvasPage: React.FC = () => {
             setChatNodeToDelete(null);
           }}
           title={t('canvas.deleteChatNode') || 'Delete Chat Node'}
-          message={t('canvas.deleteChatNodeMessage') || 'This will delete the chat node and clear all conversation history. This action cannot be undone.'}
+          message={
+            t('canvas.deleteChatNodeMessage') ||
+            'This will delete the chat node and clear all conversation history. This action cannot be undone.'
+          }
           confirmText={t('canvas.delete') || 'Delete'}
           cancelText={t('canvas.cancel') || 'Cancel'}
           variant="danger"
@@ -4342,7 +4971,10 @@ export const CanvasPage: React.FC = () => {
         {/* Export Modal */}
         <ExportModal
           isOpen={!!exportPanel}
-          onClose={() => { setExportPanel(null); setExportCanvas(null); }}
+          onClose={() => {
+            setExportPanel(null);
+            setExportCanvas(null);
+          }}
           canvasRef={exportCanvasRef}
           filenamePrefix={exportPanel?.nodeName || 'canvas-node'}
         />
@@ -4391,7 +5023,7 @@ export const CanvasPage: React.FC = () => {
           }}
           onSelectProject={async (projectId: string) => {
             if (projectModalNodeId) {
-              const node = nodes.find(n => n.id === projectModalNodeId);
+              const node = nodes.find((n) => n.id === projectModalNodeId);
               if (node && node.type === 'strategy') {
                 const strategyData = node.data as StrategyNodeData;
                 try {
@@ -4399,11 +5031,22 @@ export const CanvasPage: React.FC = () => {
                   const project = await brandingApi.getById(projectId);
 
                   const convertedStrategyData: any = {};
-                  if (typeof project.data.marketResearch === 'string' && project.data.marketResearch.trim()) {
+                  if (
+                    typeof project.data.marketResearch === 'string' &&
+                    project.data.marketResearch.trim()
+                  ) {
                     convertedStrategyData.marketResearch = project.data.marketResearch;
-                  } else if (typeof project.data.marketResearch === 'object' && project.data.marketResearch !== null) {
+                  } else if (
+                    typeof project.data.marketResearch === 'object' &&
+                    project.data.marketResearch !== null
+                  ) {
                     convertedStrategyData.marketResearch = project.data.marketResearch;
-                  } else if (project.data.mercadoNicho || project.data.publicoAlvo || project.data.posicionamento || project.data.insights) {
+                  } else if (
+                    project.data.mercadoNicho ||
+                    project.data.publicoAlvo ||
+                    project.data.posicionamento ||
+                    project.data.insights
+                  ) {
                     convertedStrategyData.marketResearch = {
                       mercadoNicho: project.data.mercadoNicho || '',
                       publicoAlvo: project.data.publicoAlvo || '',
@@ -4419,13 +5062,22 @@ export const CanvasPage: React.FC = () => {
                   }
 
                   if (project.data.archetypes) {
-                    if (typeof project.data.archetypes === 'object' && project.data.archetypes !== null) {
+                    if (
+                      typeof project.data.archetypes === 'object' &&
+                      project.data.archetypes !== null
+                    ) {
                       convertedStrategyData.archetypes = project.data.archetypes;
                     }
                   }
 
-                  const arraySections = ['competitors', 'references', 'colorPalettes', 'visualElements', 'mockupIdeas'] as const;
-                  arraySections.forEach(key => {
+                  const arraySections = [
+                    'competitors',
+                    'references',
+                    'colorPalettes',
+                    'visualElements',
+                    'mockupIdeas',
+                  ] as const;
+                  arraySections.forEach((key) => {
                     if (project.data[key] !== undefined && project.data[key] !== null) {
                       if (Array.isArray(project.data[key]) && project.data[key].length > 0) {
                         convertedStrategyData[key] = project.data[key];
@@ -4434,7 +5086,7 @@ export const CanvasPage: React.FC = () => {
                   });
 
                   const objectSections = ['swot', 'moodboard'] as const;
-                  objectSections.forEach(key => {
+                  objectSections.forEach((key) => {
                     if (project.data[key] !== undefined && project.data[key] !== null) {
                       if (typeof project.data[key] === 'object') {
                         convertedStrategyData[key] = project.data[key];
@@ -4453,7 +5105,9 @@ export const CanvasPage: React.FC = () => {
 
                   toast.success(t('canvas.projectLoadedSuccessfully'));
                 } catch (error: any) {
-                  toast.error(error?.message || t('canvas.failedToLoadProject'), { duration: 3000 });
+                  toast.error(error?.message || t('canvas.failedToLoadProject'), {
+                    duration: 3000,
+                  });
                 }
               }
             }
@@ -4514,9 +5168,9 @@ export const CanvasPage: React.FC = () => {
       {/* Universal Side Panel */}
       <UniversalSidePanel
         selectedNodes={(() => {
-          const selected = nodes.filter(n => n.selected);
-          const chatNode = nodes.find(n => n.type === 'chat');
-          if (chatNode && !selected.find(n => n.id === chatNode.id)) {
+          const selected = nodes.filter((n) => n.selected);
+          const chatNode = nodes.find((n) => n.type === 'chat');
+          if (chatNode && !selected.find((n) => n.id === chatNode.id)) {
             return [chatNode, ...selected];
           }
           return selected;
@@ -4534,27 +5188,30 @@ export const CanvasPage: React.FC = () => {
       />
 
       {/* Director Side Panel */}
-      {openDirectorNodeId && (() => {
-        const directorNode = nodes.find(n => n.id === openDirectorNodeId && n.type === 'director');
-        if (!directorNode) return null;
-        const directorData = directorNode.data as DirectorNodeData;
-        return (
-          <DirectorSidePanel
-            isOpen={true}
-            onClose={() => setOpenDirectorNodeId(null)}
-            nodeData={directorData}
-            nodeId={openDirectorNodeId}
-            onAnalyze={() => handleDirectorAnalyze(openDirectorNodeId)}
-            onGeneratePrompt={() => handleDirectorGeneratePrompt(openDirectorNodeId)}
-            onUpdateData={handleDirectorNodeDataUpdate}
-          />
-        );
-      })()}
+      {openDirectorNodeId &&
+        (() => {
+          const directorNode = nodes.find(
+            (n) => n.id === openDirectorNodeId && n.type === 'director'
+          );
+          if (!directorNode) return null;
+          const directorData = directorNode.data as DirectorNodeData;
+          return (
+            <DirectorSidePanel
+              isOpen={true}
+              onClose={() => setOpenDirectorNodeId(null)}
+              nodeData={directorData}
+              nodeId={openDirectorNodeId}
+              onAnalyze={() => handleDirectorAnalyze(openDirectorNodeId)}
+              onGeneratePrompt={() => handleDirectorGeneratePrompt(openDirectorNodeId)}
+              onUpdateData={handleDirectorNodeDataUpdate}
+            />
+          );
+        })()}
 
       {/* Save Prompt Modal */}
       <SavePromptModal
         isOpen={savePromptModalState.isOpen}
-        onClose={() => setSavePromptModalState(prev => ({ ...prev, isOpen: false }))}
+        onClose={() => setSavePromptModalState((prev) => ({ ...prev, isOpen: false }))}
         prompt={savePromptModalState.prompt}
         initialData={savePromptModalState.initialData}
       />
@@ -4569,7 +5226,7 @@ export const CanvasPage: React.FC = () => {
         <CanvasToolbar
           variant="stacked"
           position="left"
-          selectedNodesCount={nodes.filter(n => n.selected).length}
+          selectedNodesCount={nodes.filter((n) => n.selected).length}
           experimentalMode={experimentalMode}
           onAddMerge={toolbarActions.onAddMerge}
           onAddEdit={toolbarActions.onAddEdit}

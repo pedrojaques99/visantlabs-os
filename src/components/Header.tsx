@@ -24,11 +24,28 @@ interface HeaderProps {
   onMyOutputsClick?: () => void;
   onMyBrandingsClick?: () => void;
   onLogoClickWithReset?: () => void;
-  getUnsavedOutputsInfo?: () => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null;
+  getUnsavedOutputsInfo?: () => {
+    hasUnsaved: boolean;
+    count: number;
+    onSaveAll?: () => Promise<void>;
+  } | null;
   navigateToHome?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingClick, onJoinClick, onLogoClick, onMockupsClick, onCreditsClick, onCreateNewMockup, onMyOutputsClick, onMyBrandingsClick, onLogoClickWithReset, getUnsavedOutputsInfo, navigateToHome }) => {
+export const Header: React.FC<HeaderProps> = ({
+  subscriptionStatus,
+  onPricingClick,
+  onJoinClick,
+  onLogoClick,
+  onMockupsClick,
+  onCreditsClick,
+  onCreateNewMockup,
+  onMyOutputsClick,
+  onMyBrandingsClick,
+  onLogoClickWithReset,
+  getUnsavedOutputsInfo,
+  navigateToHome,
+}) => {
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const location = useLocation();
@@ -104,7 +121,6 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
     }
   }, [isAuthenticated]);
 
-
   const handleLogoClick = () => {
     // Check for unsaved outputs if handlers are available
     if (getUnsavedOutputsInfo && onLogoClickWithReset && navigateToHome) {
@@ -120,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             navigateToHome();
             setShowUnsavedWarning(false);
             setUnsavedWarningConfig(null);
-          }
+          },
         });
         setShowUnsavedWarning(true);
         return; // Don't call onLogoClick, we're handling it
@@ -143,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             onCreateNewMockup();
             setShowUnsavedWarning(false);
             setUnsavedWarningConfig(null);
-          }
+          },
         });
         setShowUnsavedWarning(true);
         return;
@@ -162,7 +178,9 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
 
   return (
     <header className="fixed top-0 left-0 right-0 h-10 md:h-14 bg-neutral-950/95 backdrop-blur-[2px] border-b border-black/95 flex items-center justify-between px-2 md:px-6 z-50">
-      <Button variant="ghost" onClick={handleLogoClick}
+      <Button
+        variant="ghost"
+        onClick={handleLogoClick}
         className="flex items-center gap-1.5 md:gap-2.5 hover:opacity-80 transition-opacity group cursor-pointer"
       >
         <img
@@ -171,7 +189,9 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           className="h-5 md:h-7 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
         />
         <div className="hidden sm:flex items-baseline gap-1.5">
-          <span className="text-xs md:text-sm font-mono text-neutral-500 uppercase">Visant Labs®</span>
+          <span className="text-xs md:text-sm font-mono text-neutral-500 uppercase">
+            Visant Labs®
+          </span>
           <span className="text-[10px] font-mono text-neutral-600">v1.1</span>
         </div>
       </Button>
@@ -225,11 +245,13 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           <span className="hidden sm:inline">{t('welcome.exploreMockups')}</span>
         </Button> */}
         {/* Community button */}
-        <Button variant="ghost" onClick={() => {
-          window.history.pushState({}, '', '/community');
-          const popStateEvent = new PopStateEvent('popstate', { state: {} });
-          window.dispatchEvent(popStateEvent);
-        }}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            window.history.pushState({}, '', '/community');
+            const popStateEvent = new PopStateEvent('popstate', { state: {} });
+            window.dispatchEvent(popStateEvent);
+          }}
           className="p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30 cursor-pointer"
           title="Community"
           aria-label="Community"
@@ -238,11 +260,13 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         </Button>
         {/* About button - only on WelcomeScreen */}
         {isOnWelcomeScreen && (
-          <Button variant="ghost" onClick={() => {
-            window.history.pushState({}, '', '/about');
-            const popStateEvent = new PopStateEvent('popstate', { state: {} });
-            window.dispatchEvent(popStateEvent);
-          }}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              window.history.pushState({}, '', '/about');
+              const popStateEvent = new PopStateEvent('popstate', { state: {} });
+              window.dispatchEvent(popStateEvent);
+            }}
             className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-neutral-400 hover:text-brand-cyan transition-colors rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 hover:bg-neutral-800/30 cursor-pointer"
             title="About"
             aria-label="About"
@@ -268,7 +292,9 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           Budget
         </Button> */}
         {isAuthenticated === false && (
-          <Button variant="ghost" onClick={() => setShowRegisterModal(true)}
+          <Button
+            variant="ghost"
+            onClick={() => setShowRegisterModal(true)}
             className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-brand-cyan rounded-md border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 hover:bg-brand-cyan/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
           >
             <UserPlus size={11} className="md:w-[14px] md:h-[14px]" />
@@ -276,7 +302,9 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           </Button>
         )}
         {isAuthenticated && onMyOutputsClick && (
-          <Button variant="ghost" onClick={onMyOutputsClick}
+          <Button
+            variant="ghost"
+            onClick={onMyOutputsClick}
             className="relative p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30 cursor-pointer"
             title="Saved"
             aria-label="View saved outputs"
@@ -345,7 +373,10 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           onConfirm={unsavedWarningConfig.onConfirm}
           onSaveAll={unsavedWarningConfig.onSaveAll}
           title={t('messages.unsavedOutputsTitle')}
-          message={t('messages.unsavedOutputsMessage', { count: unsavedWarningConfig.count, plural: unsavedWarningConfig.count > 1 ? 's' : '' })}
+          message={t('messages.unsavedOutputsMessage', {
+            count: unsavedWarningConfig.count,
+            plural: unsavedWarningConfig.count > 1 ? 's' : '',
+          })}
           confirmText={t('messages.resetAnyway')}
           cancelText={t('common.cancel')}
           variant="warning"
@@ -355,5 +386,3 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
     </header>
   );
 };
-
-

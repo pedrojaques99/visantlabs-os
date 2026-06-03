@@ -41,7 +41,8 @@ router.get('/history', usageHistoryLimiter, authenticate, async (req: AuthReques
     // Parallel execution: fetch records, count total, and calculate aggregate stats
     const [usageRecords, totalCount, statsAggregation] = await Promise.all([
       // 1. Fetch usage records with pagination
-      db.collection('usage_records')
+      db
+        .collection('usage_records')
         .find(filter)
         .sort({ timestamp: -1 }) // Most recent first
         .skip(offset)
@@ -52,73 +53,90 @@ router.get('/history', usageHistoryLimiter, authenticate, async (req: AuthReques
       db.collection('usage_records').countDocuments(filter),
 
       // 3. Calculate global stats (ignoring pagination, but respecting user)
-      db.collection('usage_records').aggregate([
-        { $match: { userId: String(userId) } }, // Global stats for the user
-        {
-          $group: {
-            _id: null,
-            totalRecords: { $sum: 1 },
-            totalCredits: { $sum: "$creditsDeducted" },
-            // Group by feature
-            mockupmachineCount: {
-              $sum: { $cond: [{ $eq: ["$feature", "mockupmachine"] }, 1, 0] }
+      db
+        .collection('usage_records')
+        .aggregate([
+          { $match: { userId: String(userId) } }, // Global stats for the user
+          {
+            $group: {
+              _id: null,
+              totalRecords: { $sum: 1 },
+              totalCredits: { $sum: '$creditsDeducted' },
+              // Group by feature
+              mockupmachineCount: {
+                $sum: { $cond: [{ $eq: ['$feature', 'mockupmachine'] }, 1, 0] },
+              },
+              mockupmachineCredits: {
+                $sum: {
+                  $cond: [
+                    { $eq: ['$feature', 'mockupmachine'] },
+                    { $ifNull: ['$creditsDeducted', 0] },
+                    0,
+                  ],
+                },
+              },
+              brandingmachineCount: {
+                $sum: { $cond: [{ $eq: ['$feature', 'brandingmachine'] }, 1, 0] },
+              },
+              brandingmachineCredits: {
+                $sum: {
+                  $cond: [
+                    { $eq: ['$feature', 'brandingmachine'] },
+                    { $ifNull: ['$creditsDeducted', 0] },
+                    0,
+                  ],
+                },
+              },
+              canvasCount: {
+                $sum: { $cond: [{ $eq: ['$feature', 'canvas'] }, 1, 0] },
+              },
+              canvasCredits: {
+                $sum: {
+                  $cond: [{ $eq: ['$feature', 'canvas'] }, { $ifNull: ['$creditsDeducted', 0] }, 0],
+                },
+              },
+              // Last 7 days
+              last7DaysCount: {
+                $sum: {
+                  $cond: [
+                    { $gte: ['$timestamp', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)] },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              last7DaysCredits: {
+                $sum: {
+                  $cond: [
+                    { $gte: ['$timestamp', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)] },
+                    { $ifNull: ['$creditsDeducted', 0] },
+                    0,
+                  ],
+                },
+              },
+              // Last 30 days
+              last30DaysCount: {
+                $sum: {
+                  $cond: [
+                    { $gte: ['$timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)] },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              last30DaysCredits: {
+                $sum: {
+                  $cond: [
+                    { $gte: ['$timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)] },
+                    { $ifNull: ['$creditsDeducted', 0] },
+                    0,
+                  ],
+                },
+              },
             },
-            mockupmachineCredits: {
-              $sum: { $cond: [{ $eq: ["$feature", "mockupmachine"] }, { $ifNull: ["$creditsDeducted", 0] }, 0] }
-            },
-            brandingmachineCount: {
-              $sum: { $cond: [{ $eq: ["$feature", "brandingmachine"] }, 1, 0] }
-            },
-            brandingmachineCredits: {
-              $sum: { $cond: [{ $eq: ["$feature", "brandingmachine"] }, { $ifNull: ["$creditsDeducted", 0] }, 0] }
-            },
-            canvasCount: {
-              $sum: { $cond: [{ $eq: ["$feature", "canvas"] }, 1, 0] }
-            },
-            canvasCredits: {
-              $sum: { $cond: [{ $eq: ["$feature", "canvas"] }, { $ifNull: ["$creditsDeducted", 0] }, 0] }
-            },
-            // Last 7 days
-            last7DaysCount: {
-              $sum: {
-                $cond: [
-                  { $gte: ["$timestamp", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)] },
-                  1,
-                  0
-                ]
-              }
-            },
-            last7DaysCredits: {
-              $sum: {
-                $cond: [
-                  { $gte: ["$timestamp", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)] },
-                  { $ifNull: ["$creditsDeducted", 0] },
-                  0
-                ]
-              }
-            },
-            // Last 30 days
-            last30DaysCount: {
-              $sum: {
-                $cond: [
-                  { $gte: ["$timestamp", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)] },
-                  1,
-                  0
-                ]
-              }
-            },
-            last30DaysCredits: {
-              $sum: {
-                $cond: [
-                  { $gte: ["$timestamp", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)] },
-                  { $ifNull: ["$creditsDeducted", 0] },
-                  0
-                ]
-              }
-            }
-          }
-        }
-      ]).toArray()
+          },
+        ])
+        .toArray(),
     ]);
 
     // Process aggregation result
@@ -134,7 +152,7 @@ router.get('/history', usageHistoryLimiter, authenticate, async (req: AuthReques
       last7DaysCount: 0,
       last7DaysCredits: 0,
       last30DaysCount: 0,
-      last30DaysCredits: 0
+      last30DaysCredits: 0,
     };
 
     // Format stats for frontend
@@ -142,8 +160,14 @@ router.get('/history', usageHistoryLimiter, authenticate, async (req: AuthReques
       totalRecords: statsData.totalRecords,
       totalCredits: statsData.totalCredits,
       byFeature: {
-        mockupmachine: { count: statsData.mockupmachineCount, credits: statsData.mockupmachineCredits },
-        brandingmachine: { count: statsData.brandingmachineCount, credits: statsData.brandingmachineCredits },
+        mockupmachine: {
+          count: statsData.mockupmachineCount,
+          credits: statsData.mockupmachineCredits,
+        },
+        brandingmachine: {
+          count: statsData.brandingmachineCount,
+          credits: statsData.brandingmachineCredits,
+        },
         canvas: { count: statsData.canvasCount, credits: statsData.canvasCredits },
       },
       last7Days: { count: statsData.last7DaysCount, credits: statsData.last7DaysCredits },
@@ -210,17 +234,20 @@ router.get('/daily', usageHistoryLimiter, authenticate, async (req: AuthRequest,
       matchFilter.feature = feature;
     }
 
-    const dailyData = await db.collection('usage_records').aggregate([
-      { $match: matchFilter },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-          calls: { $sum: 1 },
-          credits: { $sum: { $ifNull: ['$creditsDeducted', 0] } },
+    const dailyData = await db
+      .collection('usage_records')
+      .aggregate([
+        { $match: matchFilter },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+            calls: { $sum: 1 },
+            credits: { $sum: { $ifNull: ['$creditsDeducted', 0] } },
+          },
         },
-      },
-      { $sort: { _id: 1 } },
-    ]).toArray();
+        { $sort: { _id: 1 } },
+      ])
+      .toArray();
 
     const daily = dailyData.map((d: any) => ({
       date: d._id,
@@ -245,10 +272,3 @@ router.get('/daily', usageHistoryLimiter, authenticate, async (req: AuthRequest,
 });
 
 export default router;
-
-
-
-
-
-
-

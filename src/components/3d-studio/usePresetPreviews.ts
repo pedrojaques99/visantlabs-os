@@ -13,11 +13,15 @@ function loadCached(): Record<string, string> | null {
     const parsed = JSON.parse(raw);
     if (Object.keys(parsed).length !== Object.keys(SCENE_PRESETS).length) return null;
     return parsed;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function saveCached(thumbs: Record<string, string>) {
-  try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(thumbs)); } catch {}
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(thumbs));
+  } catch {}
 }
 
 export function usePresetPreviews() {
@@ -28,7 +32,10 @@ export function usePresetPreviews() {
     if (ran.current || Object.keys(thumbs).length > 0) return;
     ran.current = true;
 
-    const schedule = typeof requestIdleCallback === 'function' ? requestIdleCallback : (cb: () => void) => setTimeout(cb, 200);
+    const schedule =
+      typeof requestIdleCallback === 'function'
+        ? requestIdleCallback
+        : (cb: () => void) => setTimeout(cb, 200);
     schedule(() => {
       const canvas = document.createElement('canvas');
       canvas.width = SIZE;

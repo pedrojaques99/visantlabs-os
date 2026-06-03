@@ -49,7 +49,12 @@ function verifyPkce(codeVerifier: string, storedChallenge: string): boolean {
   return computed === storedChallenge;
 }
 
-function issueAccessToken(userId: string, clientId: string, scopes: string, resource: string): string {
+function issueAccessToken(
+  userId: string,
+  clientId: string,
+  scopes: string,
+  resource: string
+): string {
   return jwt.sign(
     {
       sub: userId,
@@ -96,12 +101,19 @@ router.post('/oauth/register', async (req, res) => {
     const { client_name, redirect_uris, grant_types, token_endpoint_auth_method } = req.body;
 
     if (!client_name || !Array.isArray(redirect_uris) || redirect_uris.length === 0) {
-      return res.status(400).json({ error: 'invalid_client_metadata', error_description: 'client_name and redirect_uris are required' });
+      return res
+        .status(400)
+        .json({
+          error: 'invalid_client_metadata',
+          error_description: 'client_name and redirect_uris are required',
+        });
     }
 
     const clientId = crypto.randomUUID();
     const normalizedUris = redirect_uris.map((uri: string) => normalizeRedirectUri(uri));
-    const grantTypesResolved: string[] = Array.isArray(grant_types) ? grant_types : ['authorization_code'];
+    const grantTypesResolved: string[] = Array.isArray(grant_types)
+      ? grant_types
+      : ['authorization_code'];
 
     await prisma.oAuthClient.create({
       data: {
@@ -141,7 +153,9 @@ router.get('/oauth/authorize', async (req, res) => {
 
   // Validate required params
   if (!client_id || !redirect_uri || !code_challenge || !state) {
-    return res.status(400).send('Missing required parameters: client_id, redirect_uri, code_challenge, state');
+    return res
+      .status(400)
+      .send('Missing required parameters: client_id, redirect_uri, code_challenge, state');
   }
 
   if (code_challenge_method && code_challenge_method !== 'S256') {
@@ -160,7 +174,9 @@ router.get('/oauth/authorize', async (req, res) => {
     }
 
     // Validate redirect_uri
-    const uriMatch = oauthClient.redirectUris.some((stored) => redirectUriMatches(redirect_uri, stored));
+    const uriMatch = oauthClient.redirectUris.some((stored) =>
+      redirectUriMatches(redirect_uri, stored)
+    );
     if (!uriMatch) {
       return res.status(400).send('redirect_uri not registered for this client');
     }
@@ -197,7 +213,9 @@ router.get('/oauth/authorize', async (req, res) => {
         response_type: response_type || 'code',
         ...(resource ? { resource } : {}),
       });
-      const loginUrl = `${process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://app.visantlabs.com'}/login?redirect_back=${encodeURIComponent(`/oauth/authorize?${params.toString()}`)}`;
+      const loginUrl = `${
+        process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://app.visantlabs.com'
+      }/login?redirect_back=${encodeURIComponent(`/oauth/authorize?${params.toString()}`)}`;
       return res.redirect(loginUrl);
     }
 
@@ -254,7 +272,9 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
       return res.status(400).send('Unknown client_id');
     }
 
-    const uriMatch = oauthClient.redirectUris.some((stored) => redirectUriMatches(redirect_uri, stored));
+    const uriMatch = oauthClient.redirectUris.some((stored) =>
+      redirectUriMatches(redirect_uri, stored)
+    );
     if (!uriMatch) {
       return res.status(400).send('redirect_uri not registered');
     }
@@ -324,26 +344,39 @@ async function handleAuthCodeExchange(req: express.Request, res: express.Respons
   const { code, code_verifier, client_id, redirect_uri } = req.body as Record<string, string>;
 
   if (!code || !code_verifier || !client_id) {
-    return res.status(400).json({ error: 'invalid_request', error_description: 'code, code_verifier, client_id are required' });
+    return res
+      .status(400)
+      .json({
+        error: 'invalid_request',
+        error_description: 'code, code_verifier, client_id are required',
+      });
   }
 
   try {
     const authCode = await prisma.oAuthAuthCode.findUnique({ where: { code } });
 
     if (!authCode) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'Unknown authorization code' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'Unknown authorization code' });
     }
 
     if (authCode.used) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'Authorization code already used' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'Authorization code already used' });
     }
 
     if (new Date() > authCode.expiresAt) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'Authorization code expired' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'Authorization code expired' });
     }
 
     if (authCode.clientId !== client_id) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
     }
 
     // Validate redirect_uri if provided
@@ -352,15 +385,21 @@ async function handleAuthCodeExchange(req: express.Request, res: express.Respons
       if (!oauthClient) {
         return res.status(400).json({ error: 'invalid_client' });
       }
-      const uriMatch = oauthClient.redirectUris.some((stored) => redirectUriMatches(redirect_uri, stored));
+      const uriMatch = oauthClient.redirectUris.some((stored) =>
+        redirectUriMatches(redirect_uri, stored)
+      );
       if (!uriMatch) {
-        return res.status(400).json({ error: 'invalid_grant', error_description: 'redirect_uri mismatch' });
+        return res
+          .status(400)
+          .json({ error: 'invalid_grant', error_description: 'redirect_uri mismatch' });
       }
     }
 
     // Verify PKCE
     if (!verifyPkce(code_verifier, authCode.codeChallenge)) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'PKCE verification failed' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'PKCE verification failed' });
     }
 
     // Mark code as used
@@ -399,17 +438,23 @@ async function handleRefreshToken(req: express.Request, res: express.Response) {
   const { refresh_token, client_id } = req.body as Record<string, string>;
 
   if (!refresh_token) {
-    return res.status(400).json({ error: 'invalid_request', error_description: 'refresh_token is required' });
+    return res
+      .status(400)
+      .json({ error: 'invalid_request', error_description: 'refresh_token is required' });
   }
 
   try {
     const stored = await prisma.oAuthRefreshToken.findUnique({ where: { token: refresh_token } });
     if (!stored || stored.expiresAt < new Date()) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'Unknown or expired refresh token' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'Unknown or expired refresh token' });
     }
 
     if (client_id && stored.clientId !== client_id) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
     }
 
     // Rotate: delete old, create new
@@ -448,7 +493,9 @@ router.post('/oauth/revoke', async (req, res) => {
   const { token, token_type_hint } = req.body as Record<string, string>;
 
   if (!token) {
-    return res.status(400).json({ error: 'invalid_request', error_description: 'token is required' });
+    return res
+      .status(400)
+      .json({ error: 'invalid_request', error_description: 'token is required' });
   }
 
   try {
@@ -472,11 +519,20 @@ router.post('/oauth/revoke', async (req, res) => {
 async function cleanupExpiredOAuthData() {
   const now = new Date();
   const [codes, tokens] = await Promise.all([
-    prisma.oAuthAuthCode.deleteMany({ where: { OR: [{ expiresAt: { lt: now } }, { used: true, createdAt: { lt: new Date(Date.now() - 60 * 60 * 1000) } }] } }),
+    prisma.oAuthAuthCode.deleteMany({
+      where: {
+        OR: [
+          { expiresAt: { lt: now } },
+          { used: true, createdAt: { lt: new Date(Date.now() - 60 * 60 * 1000) } },
+        ],
+      },
+    }),
     prisma.oAuthRefreshToken.deleteMany({ where: { expiresAt: { lt: now } } }),
   ]);
   if (codes.count || tokens.count) {
-    console.log(`[OAuth] Cleanup: ${codes.count} auth codes, ${tokens.count} refresh tokens removed`);
+    console.log(
+      `[OAuth] Cleanup: ${codes.count} auth codes, ${tokens.count} refresh tokens removed`
+    );
   }
 }
 
@@ -500,7 +556,8 @@ interface ConsentPageParams {
 }
 
 function buildConsentPage(p: ConsentPageParams): string {
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   return `<!DOCTYPE html>
 <html lang="en">
 <head>

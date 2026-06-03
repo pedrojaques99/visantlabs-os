@@ -6,13 +6,27 @@
  */
 import type { RisoSettings } from './types.js';
 import { RISO_VERTEX_SHADER, RISO_FRAGMENT_SHADER } from '../../../shared/riso/shaders.js';
-import { createGLContext, createProgram, setupFullscreenQuad, uploadTexture, readPixels, destroyContext } from './glContext.js';
+import {
+  createGLContext,
+  createProgram,
+  setupFullscreenQuad,
+  uploadTexture,
+  readPixels,
+  destroyContext,
+} from './glContext.js';
 
 const DITHER_MODE_MAP: Record<string, number> = {
-  stochastic: 0, atkinson: 1, floydsteinberg: 2, bayer: 3, halftone: 4,
+  stochastic: 0,
+  atkinson: 1,
+  floydsteinberg: 2,
+  bayer: 3,
+  halftone: 4,
 };
 const SHAPE_MAP: Record<string, number> = {
-  circle: 0, line: 1, cross: 2, ellipse: 3,
+  circle: 0,
+  line: 1,
+  cross: 2,
+  ellipse: 3,
 };
 
 function hexToGLColor(hex: string): [number, number, number] {
@@ -24,8 +38,10 @@ function hexToGLColor(hex: string): [number, number, number] {
 }
 
 export async function renderRiso(
-  pixels: Uint8Array, width: number, height: number,
-  settings: RisoSettings,
+  pixels: Uint8Array,
+  width: number,
+  height: number,
+  settings: RisoSettings
 ): Promise<Uint8Array | null> {
   const gl = await createGLContext(width, height);
   if (!gl) return null;
@@ -64,14 +80,22 @@ export async function renderRiso(
 
     for (let i = 0; i < 4; i++) {
       const layer = layers[i];
-      const c = layer ? [layer.color[0] / 255, layer.color[1] / 255, layer.color[2] / 255] : [0, 0, 0];
+      const c = layer
+        ? [layer.color[0] / 255, layer.color[1] / 255, layer.color[2] / 255]
+        : [0, 0, 0];
       gl.uniform3f(u(`u_inkColor${i}`)!, c[0], c[1], c[2]);
       gl.uniform1f(u(`u_inkAlpha${i}`)!, layer?.alpha ?? 0);
       gl.uniform1f(u(`u_inkAngle${i}`)!, layer?.angle ?? 0);
       gl.uniform2f(u(`u_inkOffset${i}`)!, layer?.offsetX ?? 0, layer?.offsetY ?? 0);
       gl.uniform1i(u(`u_inkVisible${i}`)!, layer?.visible ? 1 : 0);
-      gl.uniform1i(u(`u_layerDither${i}`)!, layer?.ditherMode ? DITHER_MODE_MAP[layer.ditherMode] ?? -1 : -1);
-      gl.uniform1i(u(`u_layerHShape${i}`)!, layer?.halftoneShape ? SHAPE_MAP[layer.halftoneShape] ?? -1 : -1);
+      gl.uniform1i(
+        u(`u_layerDither${i}`)!,
+        layer?.ditherMode ? DITHER_MODE_MAP[layer.ditherMode] ?? -1 : -1
+      );
+      gl.uniform1i(
+        u(`u_layerHShape${i}`)!,
+        layer?.halftoneShape ? SHAPE_MAP[layer.halftoneShape] ?? -1 : -1
+      );
     }
 
     gl.viewport(0, 0, width, height);

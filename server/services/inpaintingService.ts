@@ -82,7 +82,8 @@ async function fetchImageAsBase64(imageUrl: string): Promise<{ base64: string; m
     const res = await fetch(imageUrl, { signal: controller.signal });
     if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length > MAX_IMAGE_BYTES) throw new Error(`Image too large (${(buf.length / 1024 / 1024).toFixed(1)} MB).`);
+    if (buf.length > MAX_IMAGE_BYTES)
+      throw new Error(`Image too large (${(buf.length / 1024 / 1024).toFixed(1)} MB).`);
     const mimeType = res.headers.get('content-type') || 'image/png';
     return { base64: buf.toString('base64'), mimeType };
   } finally {
@@ -97,10 +98,7 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
 
 // ── Mask generation from region ──
 
-async function generateMaskFromRegion(
-  imageBase64: string,
-  region: MaskRegion,
-): Promise<string> {
+async function generateMaskFromRegion(imageBase64: string, region: MaskRegion): Promise<string> {
   const imgBuf = Buffer.from(imageBase64, 'base64');
   const dims = probeImageDimensions(imgBuf);
 
@@ -138,7 +136,9 @@ function buildInpaintPrompt(mode: InpaintMode, userPrompt?: string): string {
         'Fill it naturally with the surrounding background — match texture, lighting, and perspective.',
         'The result should look as if the removed content was never there.',
         userPrompt?.trim() ? `Context: ${userPrompt.trim()}` : '',
-      ].filter(Boolean).join(' ');
+      ]
+        .filter(Boolean)
+        .join(' ');
 
     case 'retouch':
       return [
@@ -146,16 +146,15 @@ function buildInpaintPrompt(mode: InpaintMode, userPrompt?: string): string {
         'Clean up imperfections, smooth skin, correct colors, or enhance details.',
         'Keep the overall composition and content identical — only refine quality.',
         userPrompt?.trim() ? `Specific adjustments: ${userPrompt.trim()}` : '',
-      ].filter(Boolean).join(' ');
+      ]
+        .filter(Boolean)
+        .join(' ');
   }
 }
 
 // ── Main service ──
 
-export async function inpaint(
-  req: InpaintRequest,
-  userId: string,
-): Promise<InpaintResult> {
+export async function inpaint(req: InpaintRequest, userId: string): Promise<InpaintResult> {
   if (!req.maskBase64 && !req.maskRegion) {
     throw new Error('Either maskBase64 or maskRegion is required.');
   }
@@ -190,7 +189,9 @@ export async function inpaint(
   maskCtx.globalCompositeOperation = 'source-over';
 
   // Export corrected mask
-  const correctedMaskBase64 = maskCanvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+  const correctedMaskBase64 = maskCanvas
+    .toDataURL('image/png')
+    .replace(/^data:image\/png;base64,/, '');
 
   // Apply feather (gaussian blur) to mask edges for seamless blending
   // Use canvas filter if available, otherwise skip
@@ -203,7 +204,9 @@ export async function inpaint(
   featherCtx.drawImage(correctedMaskImg, 0, 0);
   (featherCtx as any).filter = 'none';
 
-  const featheredMaskBase64 = featherCanvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+  const featheredMaskBase64 = featherCanvas
+    .toDataURL('image/png')
+    .replace(/^data:image\/png;base64,/, '');
 
   const key = req.apiKey || process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
   if (!key) throw new Error('OpenAI API key is not configured');

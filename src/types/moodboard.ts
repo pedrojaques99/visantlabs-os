@@ -1,6 +1,12 @@
 export type AnimationPreset = 'zoom-in' | 'zoom-out' | 'pan-lr' | 'pan-rl' | 'fade-in';
 export type TransitionType = 'fade' | 'slide' | 'wipe' | 'none';
-export type RenderJobStatus = 'queued' | 'rendering' | 'completed' | 'downloaded' | 'cancelled' | 'error';
+export type RenderJobStatus =
+  | 'queued'
+  | 'rendering'
+  | 'completed'
+  | 'downloaded'
+  | 'cancelled'
+  | 'error';
 
 export interface BoundingBox {
   x: number;

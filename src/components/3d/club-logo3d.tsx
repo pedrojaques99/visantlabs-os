@@ -48,7 +48,7 @@ function Diamond({ color }: StarsProps) {
       // Convert mouse position to normalized device coordinates
       mousePosition.current = {
         x: (event.clientX / window.innerWidth) * 2 - 1,
-        y: -(event.clientY / window.innerHeight) * 2 + 1
+        y: -(event.clientY / window.innerHeight) * 2 + 1,
       };
     };
 
@@ -204,7 +204,11 @@ function Model({ url, color }: ModelProps) {
 
                   // Back face indices (reversed)
                   for (let i = indexCount - 1; i >= 0; i -= 3) {
-                    indices.push(indexArray[i - 2] + count, indexArray[i - 1] + count, indexArray[i] + count);
+                    indices.push(
+                      indexArray[i - 2] + count,
+                      indexArray[i - 1] + count,
+                      indexArray[i] + count
+                    );
                   }
 
                   // Side faces (connect front and back)
@@ -272,9 +276,7 @@ function Model({ url, color }: ModelProps) {
 
       // Calculate scale based on screen size and model dimensions
       const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = isMobile ?
-        (isSmallScreen ? 6 : 8) :
-        10;
+      const scale = isMobile ? (isSmallScreen ? 6 : 8) : 10;
 
       modelRef.current.position.set(-center.x, -center.y, -center.z);
       modelRef.current.scale.set(scale, scale, scale);
@@ -288,7 +290,7 @@ export default function ClubLogo3D({
   isMobile,
   modelUrl = '/models/visant-3d-simple-2.glb',
   color = '#1a1a1a',
-  starColor = '#4B4B4BFF'
+  starColor = '#4B4B4BFF',
 }: ClubLogo3DProps) {
   const isSmallScreen = useMediaQuery('(max-width: 640px)');
   const isMediumScreen = useMediaQuery('(max-width: 7610px)');
@@ -312,7 +314,7 @@ export default function ClubLogo3D({
           position: cameraPosition,
           fov: isSmallScreen ? 50 : 45,
           near: 0.1,
-          far: 200
+          far: 200,
         }}
         gl={{ alpha: true, antialias: true }}
         style={{
@@ -320,7 +322,7 @@ export default function ClubLogo3D({
           height: '100%',
           cursor,
           touchAction: isMobile ? 'none' : 'auto',
-          background: 'transparent'
+          background: 'transparent',
         }}
         onPointerDown={() => {
           if (!isMobile) {
@@ -364,4 +366,3 @@ export default function ClubLogo3D({
     </div>
   );
 }
-

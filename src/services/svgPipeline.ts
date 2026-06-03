@@ -11,7 +11,10 @@ export interface TraceOptions {
   preset?: TracePreset;
 }
 
-export const TRACE_PRESETS: Record<Exclude<TracePreset, 'custom'>, { label: string; description: string; defaults: Required<Omit<TraceOptions, 'color' | 'preset'>> }> = {
+export const TRACE_PRESETS: Record<
+  Exclude<TracePreset, 'custom'>,
+  { label: string; description: string; defaults: Required<Omit<TraceOptions, 'color' | 'preset'>> }
+> = {
   logo: {
     label: 'Logo',
     description: 'Sharp corners, clean shapes',

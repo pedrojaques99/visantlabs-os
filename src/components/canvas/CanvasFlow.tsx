@@ -1,12 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  ReactFlow,
-  Background,
-  Controls,
-  MiniMap,
-  type Node,
-  type Edge,
-} from '@xyflow/react';
+import { ReactFlow, Background, Controls, MiniMap, type Node, type Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { FlowNodeData, ShaderNodeData } from '@/types/reactFlow';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
@@ -21,11 +14,10 @@ import {
   MAX_IMAGE_FILE_SIZE_MB,
   formatFileSize,
   isValidMediaFile,
-  getMediaType
+  getMediaType,
 } from '@/utils/canvasConstants';
 import { DrawingLayer } from './DrawingLayer';
 import { lightenColor, getTextColors } from '@/utils/colorUtils';
-
 
 interface CanvasFlowProps {
   nodes: Node<FlowNodeData>[];
@@ -33,7 +25,10 @@ interface CanvasFlowProps {
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
   onConnect: (params: any) => void;
-  onConnectStart?: (event: MouseEvent | TouchEvent, params: { nodeId: string | null; handleId?: string | null }) => void;
+  onConnectStart?: (
+    event: MouseEvent | TouchEvent,
+    params: { nodeId: string | null; handleId?: string | null }
+  ) => void;
   onConnectEnd?: (event: MouseEvent | TouchEvent) => void;
   onNodeDragStart?: (event: React.MouseEvent, node: Node<FlowNodeData>) => void;
   onNodeDragStop: () => void;
@@ -78,7 +73,10 @@ interface CanvasFlowProps {
   onUpdateDrawingText?: (id: string, text: string) => void;
   onStopEditingText?: () => void;
   onCreateTextDrawing?: (position: { x: number; y: number }) => void;
-  onUpdateDrawingBounds?: (id: string, bounds: { x: number; y: number; width: number; height: number }) => void;
+  onUpdateDrawingBounds?: (
+    id: string,
+    bounds: { x: number; y: number; width: number; height: number }
+  ) => void;
   onMoveDrawings?: (ids: Set<string>, delta: { x: number; y: number }) => void;
   onInteractionEnd?: () => void;
   // Shape preview props
@@ -177,10 +175,12 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             const r = parseInt(rgbMatch[0]);
             const g = parseInt(rgbMatch[1]);
             const b = parseInt(rgbMatch[2]);
-            return `#${[r, g, b].map(x => {
-              const hex = x.toString(16);
-              return hex.length === 1 ? '0' + hex : hex;
-            }).join('')}`;
+            return `#${[r, g, b]
+              .map((x) => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+              })
+              .join('')}`;
           }
         }
       } catch {
@@ -195,7 +195,11 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const [isShaderSidebarCollapsed, setIsShaderSidebarCollapsed] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
-  const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0, fileName: '' });
+  const [processingProgress, setProcessingProgress] = useState({
+    current: 0,
+    total: 0,
+    fileName: '',
+  });
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
   const paneRef = useRef<Element | null>(null);
   const justFinishedSelectionRef = useRef(false);
@@ -217,7 +221,11 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       if (e.code === 'Space' && !e.repeat) {
         // Only set if not focusing an input (optional but good practice)
         const target = e.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+        if (
+          target.tagName !== 'INPUT' &&
+          target.tagName !== 'TEXTAREA' &&
+          !target.isContentEditable
+        ) {
           setSpacePressed(true);
         }
       }
@@ -309,43 +317,47 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   }, []);
 
   // Handle drag and drop of images and toolbar nodes
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    // Don't show drop feedback if user is actively interacting (dragging nodes, drawing, or selecting)
-    if (isDragging || isDrawing || selectionBox) {
-      return;
-    }
+      // Don't show drop feedback if user is actively interacting (dragging nodes, drawing, or selecting)
+      if (isDragging || isDrawing || selectionBox) {
+        return;
+      }
 
-    const hasToolbarNode = e.dataTransfer.types.includes('application/vsn-toolbar-node') ||
-      e.dataTransfer.types.includes('text/plain');
+      const hasToolbarNode =
+        e.dataTransfer.types.includes('application/vsn-toolbar-node') ||
+        e.dataTransfer.types.includes('text/plain');
 
-    if (hasToolbarNode) {
-      setIsDraggingOver(true);
-      e.dataTransfer.dropEffect = 'copy';
-      return;
-    }
-
-    // Check if files are valid media files before showing feedback
-    const hasFiles = e.dataTransfer.types.includes('Files');
-    if (hasFiles && e.dataTransfer.items) {
-      // Check if at least one file is valid media
-      const items = Array.from(e.dataTransfer.items);
-      const hasValidMedia = items.some(item => {
-        if (item.kind === 'file') {
-          const file = item.getAsFile();
-          return file && isValidMediaFile(file);
-        }
-        return false;
-      });
-
-      if (hasValidMedia) {
+      if (hasToolbarNode) {
         setIsDraggingOver(true);
         e.dataTransfer.dropEffect = 'copy';
+        return;
       }
-    }
-  }, [isDragging, isDrawing, selectionBox]);
+
+      // Check if files are valid media files before showing feedback
+      const hasFiles = e.dataTransfer.types.includes('Files');
+      if (hasFiles && e.dataTransfer.items) {
+        // Check if at least one file is valid media
+        const items = Array.from(e.dataTransfer.items);
+        const hasValidMedia = items.some((item) => {
+          if (item.kind === 'file') {
+            const file = item.getAsFile();
+            return file && isValidMediaFile(file);
+          }
+          return false;
+        });
+
+        if (hasValidMedia) {
+          setIsDraggingOver(true);
+          e.dataTransfer.dropEffect = 'copy';
+        }
+      }
+    },
+    [isDragging, isDrawing, selectionBox]
+  );
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -356,137 +368,148 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     }
   }, []);
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingOver(false);
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDraggingOver(false);
 
-    // Don't process drop if user is actively interacting (dragging nodes, drawing, or selecting)
-    if (isDragging || isDrawing || selectionBox) {
-      return;
-    }
+      // Don't process drop if user is actively interacting (dragging nodes, drawing, or selecting)
+      if (isDragging || isDrawing || selectionBox) {
+        return;
+      }
 
-    if (!reactFlowInstanceRef.current) return;
+      if (!reactFlowInstanceRef.current) return;
 
-    if (!paneRef.current) {
-      paneRef.current = reactFlowWrapper.current?.querySelector('.react-flow__pane') ?? null;
-    }
-    if (!paneRef.current) return;
+      if (!paneRef.current) {
+        paneRef.current = reactFlowWrapper.current?.querySelector('.react-flow__pane') ?? null;
+      }
+      if (!paneRef.current) return;
 
-    const clientX = e.clientX;
-    const clientY = e.clientY;
+      const clientX = e.clientX;
+      const clientY = e.clientY;
 
-    // Convert screen position to flow position
-    let position;
-    try {
-      position = reactFlowInstanceRef.current.screenToFlowPosition({
-        x: clientX,
-        y: clientY,
-      });
-      if (!position || isNaN(position.x) || isNaN(position.y)) {
+      // Convert screen position to flow position
+      let position;
+      try {
+        position = reactFlowInstanceRef.current.screenToFlowPosition({
+          x: clientX,
+          y: clientY,
+        });
+        if (!position || isNaN(position.x) || isNaN(position.y)) {
+          position = { x: 0, y: 0 };
+        }
+      } catch (error) {
+        console.error('Error converting screen position to flow position:', error);
         position = { x: 0, y: 0 };
       }
-    } catch (error) {
-      console.error('Error converting screen position to flow position:', error);
-      position = { x: 0, y: 0 };
-    }
 
-    // Check if this is an internal asset drop (from Brand Library)
-    const assetUrl = e.dataTransfer.getData('application/vsn-asset-url');
-    const assetType = e.dataTransfer.getData('application/vsn-asset-type') as 'image' | 'logo';
+      // Check if this is an internal asset drop (from Brand Library)
+      const assetUrl = e.dataTransfer.getData('application/vsn-asset-url');
+      const assetType = e.dataTransfer.getData('application/vsn-asset-type') as 'image' | 'logo';
 
-    if (assetUrl && onDropImage) {
-      onDropImage({ url: assetUrl, mimeType: 'image/png' }, position);
-      toast.success(t('canvas.assetAdded') || 'Asset added to board');
-      return;
-    }
-
-    // Check if this is a toolbar node drop
-    const toolbarNodeType = e.dataTransfer.getData('application/vsn-toolbar-node') ||
-      e.dataTransfer.getData('text/plain');
-
-    if (toolbarNodeType && onDropNode) {
-      // Validate it's a known node type using the shared helper
-      if (isValidDroppableNodeType(toolbarNodeType)) {
-        onDropNode(toolbarNodeType, position);
-        return;
-      } else {
-        // Show error for invalid node type
-        toast.error(t('canvas.invalidNodeType', { nodeType: toolbarNodeType }), { duration: 3000 });
+      if (assetUrl && onDropImage) {
+        onDropImage({ url: assetUrl, mimeType: 'image/png' }, position);
+        toast.success(t('canvas.assetAdded') || 'Asset added to board');
         return;
       }
-    }
 
-    // Otherwise, handle as media file drop (image, video, or PDF)
-    if (!onDropImage) return;
+      // Check if this is a toolbar node drop
+      const toolbarNodeType =
+        e.dataTransfer.getData('application/vsn-toolbar-node') ||
+        e.dataTransfer.getData('text/plain');
 
-    // Filter files to only include valid media files
-    const files = Array.from(e.dataTransfer.files).filter(file => isValidMediaFile(file));
+      if (toolbarNodeType && onDropNode) {
+        // Validate it's a known node type using the shared helper
+        if (isValidDroppableNodeType(toolbarNodeType)) {
+          onDropNode(toolbarNodeType, position);
+          return;
+        } else {
+          // Show error for invalid node type
+          toast.error(t('canvas.invalidNodeType', { nodeType: toolbarNodeType }), {
+            duration: 3000,
+          });
+          return;
+        }
+      }
 
-    if (files.length === 0) {
-      return;
-    }
+      // Otherwise, handle as media file drop (image, video, or PDF)
+      if (!onDropImage) return;
 
-    // Show loading state
-    setIsProcessingFiles(true);
-    setProcessingProgress({ current: 0, total: files.length, fileName: '' });
+      // Filter files to only include valid media files
+      const files = Array.from(e.dataTransfer.files).filter((file) => isValidMediaFile(file));
 
-    // Process each dropped media file
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const mediaType = getMediaType(file);
+      if (files.length === 0) {
+        return;
+      }
 
-      // Update progress with file name
-      setProcessingProgress({ current: i + 1, total: files.length, fileName: file.name });
+      // Show loading state
+      setIsProcessingFiles(true);
+      setProcessingProgress({ current: 0, total: files.length, fileName: '' });
 
-      try {
-        // Validate file size using shared constant
-        if (file.size > MAX_IMAGE_FILE_SIZE) {
+      // Process each dropped media file
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const mediaType = getMediaType(file);
+
+        // Update progress with file name
+        setProcessingProgress({ current: i + 1, total: files.length, fileName: file.name });
+
+        try {
+          // Validate file size using shared constant
+          if (file.size > MAX_IMAGE_FILE_SIZE) {
+            toast.error(
+              t('canvas.imageTooLargeDetailed', {
+                fileName: file.name,
+                size: formatFileSize(file.size),
+                limit: formatFileSize(MAX_IMAGE_FILE_SIZE),
+              }),
+              { duration: 5000 }
+            );
+            continue;
+          }
+
+          // Only process images for now (video and PDF support can be added later)
+          if (mediaType === 'image') {
+            // Convert to base64
+            const imageData = await fileToBase64(file);
+
+            // Call the callback to create image node
+            onDropImage(imageData, position);
+
+            // Offset position slightly for multiple files
+            position = {
+              x: position.x + 50,
+              y: position.y + 50,
+            };
+          } else if (mediaType === 'video' || mediaType === 'pdf') {
+            // TODO: Add support for video and PDF nodes
+            toast.info(t('canvas.mediaTypeNotSupported', { mediaType, fileName: file.name }), {
+              duration: 3000,
+            });
+          }
+        } catch (error: any) {
+          console.error('Error processing dropped media:', error);
+          const errorMessage = error?.message || t('common.error');
           toast.error(
-            t('canvas.imageTooLargeDetailed', {
-              fileName: file.name,
-              size: formatFileSize(file.size),
-              limit: formatFileSize(MAX_IMAGE_FILE_SIZE)
-            }),
+            t('canvas.failedToProcessImageWithName', { fileName: file.name, errorMessage }),
             { duration: 5000 }
           );
-          continue;
         }
-
-        // Only process images for now (video and PDF support can be added later)
-        if (mediaType === 'image') {
-          // Convert to base64
-          const imageData = await fileToBase64(file);
-
-          // Call the callback to create image node
-          onDropImage(imageData, position);
-
-          // Offset position slightly for multiple files
-          position = {
-            x: position.x + 50,
-            y: position.y + 50,
-          };
-        } else if (mediaType === 'video' || mediaType === 'pdf') {
-          // TODO: Add support for video and PDF nodes
-          toast.info(t('canvas.mediaTypeNotSupported', { mediaType, fileName: file.name }), { duration: 3000 });
-        }
-      } catch (error: any) {
-        console.error('Error processing dropped media:', error);
-        const errorMessage = error?.message || t('common.error');
-        toast.error(t('canvas.failedToProcessImageWithName', { fileName: file.name, errorMessage }), { duration: 5000 });
       }
-    }
 
-    // Hide loading state
-    setIsProcessingFiles(false);
-    setProcessingProgress({ current: 0, total: 0, fileName: '' });
-  }, [onDropImage, onDropNode, reactFlowWrapper, isDragging, isDrawing, selectionBox, t]);
+      // Hide loading state
+      setIsProcessingFiles(false);
+      setProcessingProgress({ current: 0, total: 0, fileName: '' });
+    },
+    [onDropImage, onDropNode, reactFlowWrapper, isDragging, isDrawing, selectionBox, t]
+  );
 
   // Find selected ShaderNode (but not UpscaleBicubicNode - it has its own type)
   const selectedShaderNode = useMemo(() => {
-    return nodes.find(
-      (node) => node.type === 'shader' && node.selected === true
-    ) as Node<ShaderNodeData> | undefined;
+    return nodes.find((node) => node.type === 'shader' && node.selected === true) as
+      | Node<ShaderNodeData>
+      | undefined;
   }, [nodes]);
 
   // Add event listener for right-click on edges (ReactFlow doesn't have onEdgeContextMenu)
@@ -502,7 +525,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         event.stopPropagation();
 
         // Try different ways to find the edge ID
-        let edgeId = edgeElement.getAttribute('data-id') ||
+        let edgeId =
+          edgeElement.getAttribute('data-id') ||
           edgeElement.getAttribute('id') ||
           edgeElement.getAttribute('data-edge-id');
 
@@ -519,13 +543,12 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         if (!edgeId) {
           const pathElement = edgeElement.querySelector('path');
           if (pathElement) {
-            edgeId = pathElement.getAttribute('data-id') ||
-              pathElement.getAttribute('id');
+            edgeId = pathElement.getAttribute('data-id') || pathElement.getAttribute('id');
           }
         }
 
         if (edgeId) {
-          const edge = edges.find(e => e.id === edgeId);
+          const edge = edges.find((e) => e.id === edgeId);
           if (edge) {
             onEdgeContextMenu(event as any, edge);
           }
@@ -547,32 +570,41 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const sidebarSpace = sidebarWidth > 0 ? sidebarWidth + 32 : 0;
 
   // Enhanced onConnectStart to show indicator
-  const handleConnectStart = useCallback((event: MouseEvent | TouchEvent, params: { nodeId: string | null; handleId?: string | null }) => {
-    if (params.nodeId) {
-      setIsConnecting(true);
-      setShowCreateIndicator(true);
-      if (!paneRef.current) {
-        paneRef.current = reactFlowWrapper.current?.querySelector('.react-flow__pane') ?? null;
+  const handleConnectStart = useCallback(
+    (
+      event: MouseEvent | TouchEvent,
+      params: { nodeId: string | null; handleId?: string | null }
+    ) => {
+      if (params.nodeId) {
+        setIsConnecting(true);
+        setShowCreateIndicator(true);
+        if (!paneRef.current) {
+          paneRef.current = reactFlowWrapper.current?.querySelector('.react-flow__pane') ?? null;
+        }
+        if (paneRef.current) {
+          const rect = paneRef.current.getBoundingClientRect();
+          const clientX = 'clientX' in event ? event.clientX : event.touches[0].clientX;
+          const clientY = 'clientY' in event ? event.clientY : event.touches[0].clientY;
+          setCreateIndicatorPos({
+            x: clientX - rect.left,
+            y: clientY - rect.top,
+          });
+        }
       }
-      if (paneRef.current) {
-        const rect = paneRef.current.getBoundingClientRect();
-        const clientX = 'clientX' in event ? event.clientX : event.touches[0].clientX;
-        const clientY = 'clientY' in event ? event.clientY : event.touches[0].clientY;
-        setCreateIndicatorPos({
-          x: clientX - rect.left,
-          y: clientY - rect.top,
-        });
-      }
-    }
-    onConnectStart?.(event, params);
-  }, [onConnectStart, reactFlowWrapper]);
+      onConnectStart?.(event, params);
+    },
+    [onConnectStart, reactFlowWrapper]
+  );
 
   // Enhanced onConnectEnd to hide indicator
-  const handleConnectEnd = useCallback((event: MouseEvent | TouchEvent) => {
-    setIsConnecting(false);
-    setShowCreateIndicator(false);
-    onConnectEnd?.(event);
-  }, [onConnectEnd]);
+  const handleConnectEnd = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      setIsConnecting(false);
+      setShowCreateIndicator(false);
+      onConnectEnd?.(event);
+    },
+    [onConnectEnd]
+  );
 
   // Update indicator position during mouse move
   useEffect(() => {
@@ -600,55 +632,69 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   // Selection box handlers (when not in drawing mode and tool is select)
   const [isSelecting, setIsSelecting] = useState(false);
 
-  const handleSelectionMouseDown = useCallback((e: React.MouseEvent) => {
-    // Don't start selection box if connecting, if space is pressed (panning), or if clicking on a handle/node
-    if (isConnecting || spacePressed) return;
+  const handleSelectionMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      // Don't start selection box if connecting, if space is pressed (panning), or if clicking on a handle/node
+      if (isConnecting || spacePressed) return;
 
-    if (!isDrawingMode && activeTool === 'select' && reactFlowInstance && e.button === 0) {
-      const target = e.target as HTMLElement;
-      // Check if we're clicking on a handle or node - if so, don't start selection box
-      // ReactFlow handles its own node selection/drag
-      if (target.closest('.react-flow__handle, .react-flow__node')) {
-        return; // Let ReactFlow handle the connection/drag
+      if (!isDrawingMode && activeTool === 'select' && reactFlowInstance && e.button === 0) {
+        const target = e.target as HTMLElement;
+        // Check if we're clicking on a handle or node - if so, don't start selection box
+        // ReactFlow handles its own node selection/drag
+        if (target.closest('.react-flow__handle, .react-flow__node')) {
+          return; // Let ReactFlow handle the connection/drag
+        }
+        // Check if we're clicking on a drawing - if so, don't start selection box
+        if (target.closest('path, rect, circle, line, foreignObject')) {
+          return; // Let the drawing handle the click
+        }
+
+        const position = reactFlowInstance.screenToFlowPosition({
+          x: e.clientX,
+          y: e.clientY,
+        });
+        if (position && !isNaN(position.x) && !isNaN(position.y)) {
+          setIsSelecting(true);
+          selectionDraggedRef.current = false;
+          onSelectionBoxStart?.(position);
+        }
       }
-      // Check if we're clicking on a drawing - if so, don't start selection box
-      if (target.closest('path, rect, circle, line, foreignObject')) {
-        return; // Let the drawing handle the click
+    },
+    [isDrawingMode, activeTool, reactFlowInstance, onSelectionBoxStart, isConnecting, spacePressed]
+  );
+
+  const handleSelectionMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      // Don't update selection box if connecting
+      if (isConnecting) {
+        if (isSelecting) {
+          setIsSelecting(false);
+          onSelectionBoxEnd?.();
+        }
+        return;
       }
 
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: e.clientX,
-        y: e.clientY,
-      });
-      if (position && !isNaN(position.x) && !isNaN(position.y)) {
-        setIsSelecting(true);
-        selectionDraggedRef.current = false;
-        onSelectionBoxStart?.(position);
+      if (isSelecting && !isDrawingMode && activeTool === 'select' && reactFlowInstance) {
+        const position = reactFlowInstance.screenToFlowPosition({
+          x: e.clientX,
+          y: e.clientY,
+        });
+        if (position && !isNaN(position.x) && !isNaN(position.y)) {
+          selectionDraggedRef.current = true;
+          onSelectionBoxUpdate?.(position);
+        }
       }
-    }
-  }, [isDrawingMode, activeTool, reactFlowInstance, onSelectionBoxStart, isConnecting, spacePressed]);
-
-  const handleSelectionMouseMove = useCallback((e: React.MouseEvent) => {
-    // Don't update selection box if connecting
-    if (isConnecting) {
-      if (isSelecting) {
-        setIsSelecting(false);
-        onSelectionBoxEnd?.();
-      }
-      return;
-    }
-
-    if (isSelecting && !isDrawingMode && activeTool === 'select' && reactFlowInstance) {
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: e.clientX,
-        y: e.clientY,
-      });
-      if (position && !isNaN(position.x) && !isNaN(position.y)) {
-        selectionDraggedRef.current = true;
-        onSelectionBoxUpdate?.(position);
-      }
-    }
-  }, [isSelecting, isDrawingMode, activeTool, reactFlowInstance, onSelectionBoxUpdate, isConnecting, onSelectionBoxEnd]);
+    },
+    [
+      isSelecting,
+      isDrawingMode,
+      activeTool,
+      reactFlowInstance,
+      onSelectionBoxUpdate,
+      isConnecting,
+      onSelectionBoxEnd,
+    ]
+  );
 
   const handleSelectionMouseUp = useCallback(() => {
     if (isSelecting) {
@@ -657,61 +703,83 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       // Simple pane clicks should NOT block deselection
       if (selectionDraggedRef.current) {
         justFinishedSelectionRef.current = true;
-        setTimeout(() => { justFinishedSelectionRef.current = false; }, 100);
+        setTimeout(() => {
+          justFinishedSelectionRef.current = false;
+        }, 100);
       }
       onSelectionBoxEnd?.();
     }
   }, [isSelecting, onSelectionBoxEnd]);
 
   // Wrap onNodesChange to suppress deselect-all right after a selection box drag ends
-  const handleNodesChangeInternal = useCallback((changes: any[]) => {
-    if (justFinishedSelectionRef.current) {
-      // Filter out select=false changes that come from the pane click after selection
-      const filtered = changes.filter(
-        (c: any) => !(c.type === 'select' && c.selected === false)
-      );
-      if (filtered.length > 0) onNodesChange(filtered);
-      return;
-    }
-    onNodesChange(changes);
-  }, [onNodesChange]);
-
+  const handleNodesChangeInternal = useCallback(
+    (changes: any[]) => {
+      if (justFinishedSelectionRef.current) {
+        // Filter out select=false changes that come from the pane click after selection
+        const filtered = changes.filter((c: any) => !(c.type === 'select' && c.selected === false));
+        if (filtered.length > 0) onNodesChange(filtered);
+        return;
+      }
+      onNodesChange(changes);
+    },
+    [onNodesChange]
+  );
 
   // Drawing handlers
-  const handleDrawingMouseDown = useCallback((e: React.MouseEvent) => {
-    // Simplified type tool: click to create text directly
-    // Respect panning with space
-    if (activeTool === 'type' && !spacePressed && onCreateTextDrawing && reactFlowInstance && e.button === 0) {
-      const target = e.target as HTMLElement;
-      // Don't create text if clicking on existing drawings or nodes
-      if (target.closest('path, rect, circle, line, foreignObject, .react-flow__node')) {
+  const handleDrawingMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      // Simplified type tool: click to create text directly
+      // Respect panning with space
+      if (
+        activeTool === 'type' &&
+        !spacePressed &&
+        onCreateTextDrawing &&
+        reactFlowInstance &&
+        e.button === 0
+      ) {
+        const target = e.target as HTMLElement;
+        // Don't create text if clicking on existing drawings or nodes
+        if (target.closest('path, rect, circle, line, foreignObject, .react-flow__node')) {
+          return;
+        }
+
+        const position = reactFlowInstance.screenToFlowPosition({
+          x: e.clientX,
+          y: e.clientY,
+        });
+        if (position && !isNaN(position.x) && !isNaN(position.y)) {
+          onCreateTextDrawing(position);
+        }
         return;
       }
 
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: e.clientX,
-        y: e.clientY,
-      });
-      if (position && !isNaN(position.x) && !isNaN(position.y)) {
-        onCreateTextDrawing(position);
+      if (isDrawingMode && onDrawingStart) {
+        onDrawingStart(e);
+      } else if (activeTool !== 'draw' && activeTool !== 'type') {
+        handleSelectionMouseDown(e);
       }
-      return;
-    }
+    },
+    [
+      isDrawingMode,
+      activeTool,
+      onDrawingStart,
+      handleSelectionMouseDown,
+      onCreateTextDrawing,
+      reactFlowInstance,
+      spacePressed,
+    ]
+  );
 
-    if (isDrawingMode && onDrawingStart) {
-      onDrawingStart(e);
-    } else if (activeTool !== 'draw' && activeTool !== 'type') {
-      handleSelectionMouseDown(e);
-    }
-  }, [isDrawingMode, activeTool, onDrawingStart, handleSelectionMouseDown, onCreateTextDrawing, reactFlowInstance, spacePressed]);
-
-  const handleDrawingMouseMove = useCallback((e: React.MouseEvent) => {
-    if (isDrawingMode && isDrawing && onDrawingMove) {
-      onDrawingMove(e);
-    } else {
-      handleSelectionMouseMove(e);
-    }
-  }, [isDrawingMode, isDrawing, onDrawingMove, handleSelectionMouseMove]);
+  const handleDrawingMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (isDrawingMode && isDrawing && onDrawingMove) {
+        onDrawingMove(e);
+      } else {
+        handleSelectionMouseMove(e);
+      }
+    },
+    [isDrawingMode, isDrawing, onDrawingMove, handleSelectionMouseMove]
+  );
 
   const handleDrawingMouseUp = useCallback(() => {
     if (isDrawingMode && isDrawing && onDrawingEnd) {
@@ -728,17 +796,23 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   }, [isDrawingMode, isDrawing, onDrawingEnd]);
 
   // Touch handlers for drawing
-  const handleDrawingTouchStart = useCallback((e: React.TouchEvent) => {
-    if (isDrawingMode && onDrawingStart) {
-      onDrawingStart(e);
-    }
-  }, [isDrawingMode, onDrawingStart]);
+  const handleDrawingTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (isDrawingMode && onDrawingStart) {
+        onDrawingStart(e);
+      }
+    },
+    [isDrawingMode, onDrawingStart]
+  );
 
-  const handleDrawingTouchMove = useCallback((e: React.TouchEvent) => {
-    if (isDrawingMode && isDrawing && onDrawingMove) {
-      onDrawingMove(e);
-    }
-  }, [isDrawingMode, isDrawing, onDrawingMove]);
+  const handleDrawingTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (isDrawingMode && isDrawing && onDrawingMove) {
+        onDrawingMove(e);
+      }
+    },
+    [isDrawingMode, isDrawing, onDrawingMove]
+  );
 
   const handleDrawingTouchEnd = useCallback(() => {
     if (isDrawingMode && isDrawing && onDrawingEnd) {
@@ -760,7 +834,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   }, [cursorColor]);
 
   // Check if we're in drawing mode (freehand or shapes)
-  const isDrawingOrShapes = isDrawingMode && (drawingType === 'freehand' || drawingType === 'shape');
+  const isDrawingOrShapes =
+    isDrawingMode && (drawingType === 'freehand' || drawingType === 'shape');
 
   // Check if type tool is active
   const isTypeTool = activeTool === 'type' || drawingType === 'text';
@@ -790,8 +865,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     <div
       ref={reactFlowWrapper}
       className={cn(
-        "w-full h-full transition-all duration-300 ease-in-out",
-        isDragging && "is-dragging",
+        'w-full h-full transition-all duration-300 ease-in-out',
+        isDragging && 'is-dragging',
         `edge-style-${edgeStyle}`
       )}
       style={{
@@ -800,13 +875,14 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         width: '100%',
         height: '100%',
         // Maintain custom cursor during selection box
-        cursor: isSelecting && !isDrawingMode && activeTool === 'select' && !spacePressed
-          ? customCursorSvg
-          : isTypeTool
+        cursor:
+          isSelecting && !isDrawingMode && activeTool === 'select' && !spacePressed
+            ? customCursorSvg
+            : isTypeTool
             ? 'text'
             : isDrawingOrShapes
-              ? pencilCursorSvg
-              : undefined,
+            ? pencilCursorSvg
+            : undefined,
       }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -838,12 +914,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
                 />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold mb-2 text-neutral-200">
-              {t('canvas.dropHere')}
-            </h3>
-            <p className="text-white/80">
-              {t('canvas.dropHint')}
-            </p>
+            <h3 className="text-2xl font-bold mb-2 text-neutral-200">{t('canvas.dropHere')}</h3>
+            <p className="text-white/80">{t('canvas.dropHint')}</p>
           </div>
           {/* Animated border */}
           <div className="absolute inset-4 rounded-md pointer-events-none border-[3px] border-dashed border-neutral-600 animate-[dash_20s_linear_infinite]" />
@@ -861,7 +933,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             <p className="text-white/80">
               {t('canvas.processingProgress', {
                 current: processingProgress.current,
-                total: processingProgress.total
+                total: processingProgress.total,
               })}
             </p>
             {processingProgress.fileName && (
@@ -879,7 +951,9 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           }
         }
       `}</style>
-      <style key={`cursor-${cursorColor}-${spacePressed}-${activeTool}-${isDrawingOrShapes}-${isTypeTool}`}>{`
+      <style
+        key={`cursor-${cursorColor}-${spacePressed}-${activeTool}-${isDrawingOrShapes}-${isTypeTool}`}
+      >{`
         .react-flow__node {
           overflow: visible !important;
         }
@@ -938,14 +1012,18 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         }
         /* Ajusta stroke-width dos edges baseado no zoom - mais grosso ao dar zoom out */
         .react-flow__edge-path {
-          stroke-width: ${edgeStrokeWidth === 'thin'
-          ? '0.75px'
-          : `${Math.max(1.5, Math.min(3, 1.5 / Math.max(zoom, 0.25)))}px`} !important;
+          stroke-width: ${
+            edgeStrokeWidth === 'thin'
+              ? '0.75px'
+              : `${Math.max(1.5, Math.min(3, 1.5 / Math.max(zoom, 0.25)))}px`
+          } !important;
         }
         .react-flow__edge:hover .react-flow__edge-path {
-          stroke-width: ${edgeStrokeWidth === 'thin'
-          ? '1.5px'
-          : `${Math.max(2, Math.min(4, 2 / Math.max(zoom, 0.25)))}px`} !important;
+          stroke-width: ${
+            edgeStrokeWidth === 'thin'
+              ? '1.5px'
+              : `${Math.max(2, Math.min(4, 2 / Math.max(zoom, 0.25)))}px`
+          } !important;
         }
         /* Grid color customization */
         .react-flow__background circle {
@@ -984,24 +1062,42 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         
         /* Node text colors - automatically adjust based on contrast */
         .react-flow {
-          --node-text-color: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary};
-          --node-text-color-muted: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).muted};
-          --node-text-color-subtle: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).subtle};
-          --node-text-accent: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).accent};
-          --node-text-accent-secondary: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).secondaryAccent};
+          --node-text-color: ${
+            getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary
+          };
+          --node-text-color-muted: ${
+            getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).muted
+          };
+          --node-text-color-subtle: ${
+            getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).subtle
+          };
+          --node-text-accent: ${
+            getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).accent
+          };
+          --node-text-accent-secondary: ${
+            getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).secondaryAccent
+          };
         }
         
         /* Add class to react-flow when background is light (for button/textarea contrast) */
-        ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary === '#000000' ? `
+        ${
+          getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary === '#000000'
+            ? `
         .react-flow[data-node-bg-light="true"] {
           /* This will be set via className on ReactFlow component */
         }
-        ` : ''}
+        `
+            : ''
+        }
         
         /* ReactFlow native selection disabled - using custom selection box for drawings */
       `}</style>
       <ReactFlow
-        data-node-bg-light={getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary === '#000000' ? 'true' : undefined}
+        data-node-bg-light={
+          getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary === '#000000'
+            ? 'true'
+            : undefined
+        }
         nodes={nodes}
         edges={edges}
         onNodesChange={handleNodesChangeInternal}
@@ -1060,7 +1156,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             maskColor="rgba(0, 0, 0, 0.8)"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
             className={cn(
-              "transition-opacity duration-300",
+              'transition-opacity duration-300',
               isDragging ? '!opacity-100' : '!opacity-100 hover:!opacity-100'
             )}
           />
@@ -1073,7 +1169,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         currentPathData={currentPathData}
         isDrawing={isDrawing}
         selectedDrawingIds={selectedDrawingIds}
-        onDrawingClick={onDrawingClick || (() => { })}
+        onDrawingClick={onDrawingClick || (() => {})}
         viewport={viewport}
         strokeColor={strokeColorProp || '#00d9ff'}
         strokeSize={strokeSizeProp || 2}
@@ -1100,16 +1196,10 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           }}
         >
           <div className="w-5 h-5 rounded-full flex items-center justify-center bg-neutral-700/50 border-[1.5px] border-neutral-500/60">
-            <span className="text-xs font-bold text-neutral-300 leading-none">
-              +
-            </span>
+            <span className="text-xs font-bold text-neutral-300 leading-none">+</span>
           </div>
         </div>
       )}
-
     </div>
   );
 };
-
-
-

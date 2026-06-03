@@ -5,7 +5,11 @@ const router = express.Router();
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
-const verifyCronAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+const verifyCronAuth = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
   if (CRON_SECRET && req.headers.authorization !== `Bearer ${CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -97,7 +101,12 @@ router.post('/email-drip', verifyCronAuth, async (_req, res) => {
       }
     }
 
-    res.json({ message: `Drip emails sent: ${sent}`, day1: day1Users.length, day3: day3Users.length, day7: day7Users.length });
+    res.json({
+      message: `Drip emails sent: ${sent}`,
+      day1: day1Users.length,
+      day3: day3Users.length,
+      day7: day7Users.length,
+    });
   } catch (error: any) {
     console.error('Email drip cron error:', error);
     res.status(500).json({ error: 'Drip cron failed' });

@@ -48,9 +48,7 @@ export function useUpdateCreativeProject() {
     onMutate: async ({ id, input }) => {
       await qc.cancelQueries({ queryKey: KEYS.detail(id) });
       const previous = qc.getQueryData(KEYS.detail(id));
-      qc.setQueryData(KEYS.detail(id), (old: any) =>
-        old ? { ...old, ...input } : old
-      );
+      qc.setQueryData(KEYS.detail(id), (old: any) => (old ? { ...old, ...input } : old));
       return { previous };
     },
     onError: (err: Error, { id }, context) => {

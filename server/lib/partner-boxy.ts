@@ -34,10 +34,7 @@ export async function grantBoxyDownloads(
   }
 }
 
-export async function revokeBoxyDownloads(
-  email: string,
-  stripeSubId: string
-): Promise<void> {
+export async function revokeBoxyDownloads(email: string, stripeSubId: string): Promise<void> {
   if (!BOXY_API_URL || !PARTNER_API_KEY) return;
 
   try {

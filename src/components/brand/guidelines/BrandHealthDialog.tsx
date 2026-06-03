@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import type { BrandHealthReport, BrandHealthInsight } from '@/services/brandGuidelineApi';
 import { formatDateTime } from '@/utils/localeUtils';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 interface BrandHealthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -23,10 +23,19 @@ interface BrandHealthDialogProps {
   onRetry?: () => void;
 }
 
-const LEVEL_STYLES: Record<BrandHealthInsight['level'], { icon: React.ComponentType<{ size?: number; className?: string }>; cls: string }> = {
-  pass: { icon: CheckCircle2,  cls: 'text-green-400 bg-green-500/[0.08] border-green-500/20' },
-  warn: { icon: AlertTriangle, cls: 'text-amber-200    bg-amber-500/[0.08]    border-amber-500/20'  },
-  fail: { icon: XOctagon,      cls: 'text-destructive     bg-destructive/[0.08]      border-destructive/20'    },
+const LEVEL_STYLES: Record<
+  BrandHealthInsight['level'],
+  { icon: React.ComponentType<{ size?: number; className?: string }>; cls: string }
+> = {
+  pass: { icon: CheckCircle2, cls: 'text-green-400 bg-green-500/[0.08] border-green-500/20' },
+  warn: {
+    icon: AlertTriangle,
+    cls: 'text-amber-200    bg-amber-500/[0.08]    border-amber-500/20',
+  },
+  fail: {
+    icon: XOctagon,
+    cls: 'text-destructive     bg-destructive/[0.08]      border-destructive/20',
+  },
 };
 
 export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
@@ -67,7 +76,12 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
               <XOctagon size={20} className="text-destructive" />
               <p className="text-xs text-neutral-400 max-w-md">{error}</p>
               {onRetry && (
-                <Button variant="ghost" size="sm" onClick={onRetry} className="text-[10px] font-mono uppercase tracking-widest">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRetry}
+                  className="text-[10px] font-mono uppercase tracking-widest"
+                >
                   Tentar novamente
                 </Button>
               )}
@@ -100,10 +114,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                       return (
                         <li
                           key={i}
-                          className={cn(
-                            'flex gap-3 p-3 rounded-lg border text-xs',
-                            meta.cls
-                          )}
+                          className={cn('flex gap-3 p-3 rounded-lg border text-xs', meta.cls)}
                         >
                           <Icon size={13} className="shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
@@ -134,7 +145,9 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                         className="p-3 rounded-lg border border-neutral-800 bg-white/[0.03]"
                       >
                         <p className="text-xs text-neutral-200 font-semibold">{rec.action}</p>
-                        <p className="mt-1 text-[11px] text-neutral-500 leading-snug">{rec.reason}</p>
+                        <p className="mt-1 text-[11px] text-neutral-500 leading-snug">
+                          {rec.reason}
+                        </p>
                       </li>
                     ))}
                   </ul>

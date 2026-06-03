@@ -34,12 +34,25 @@
       },
       "ctrlSubtitle": {
         "type": "Text",
-        "props": { "variant": "caption", "color": "muted", "text": "Compose a structured prompt visually" }
+        "props": {
+          "variant": "caption",
+          "color": "muted",
+          "text": "Compose a structured prompt visually"
+        }
       },
       "ctrlContent": {
         "type": "ToolPanelContent",
         "props": {},
-        "children": ["subjectSection", "styleSection", "moodSection", "lightSection", "compositionSection", "colorSection", "detailSection", "generateBtn"]
+        "children": [
+          "subjectSection",
+          "styleSection",
+          "moodSection",
+          "lightSection",
+          "compositionSection",
+          "colorSection",
+          "detailSection",
+          "generateBtn"
+        ]
       },
 
       "subjectSection": {
@@ -49,7 +62,10 @@
       },
       "subjectInput": {
         "type": "Textarea",
-        "props": { "placeholder": "What's in the image? e.g. A ceramic coffee mug on a wooden table...", "rows": 2 }
+        "props": {
+          "placeholder": "What's in the image? e.g. A ceramic coffee mug on a wooden table...",
+          "rows": 2
+        }
       },
 
       "styleSection": {
@@ -60,7 +76,14 @@
       "styleGrid": {
         "type": "ToolPanelGrid",
         "props": { "cols": 3 },
-        "children": ["stylePhoto", "style3d", "styleFlat", "styleMinimal", "styleVintage", "styleAbstract"]
+        "children": [
+          "stylePhoto",
+          "style3d",
+          "styleFlat",
+          "styleMinimal",
+          "styleVintage",
+          "styleAbstract"
+        ]
       },
       "stylePhoto": { "type": "ToolPanelChip", "props": { "label": "Photo", "active": true } },
       "style3d": { "type": "ToolPanelChip", "props": { "label": "3D Render" } },
@@ -77,7 +100,14 @@
       "moodGrid": {
         "type": "ToolPanelGrid",
         "props": { "cols": 3 },
-        "children": ["moodCalm", "moodEnergetic", "moodDark", "moodPlayful", "moodElegant", "moodRaw"]
+        "children": [
+          "moodCalm",
+          "moodEnergetic",
+          "moodDark",
+          "moodPlayful",
+          "moodElegant",
+          "moodRaw"
+        ]
       },
       "moodCalm": { "type": "ToolPanelChip", "props": { "label": "Calm" } },
       "moodEnergetic": { "type": "ToolPanelChip", "props": { "label": "Energetic" } },
@@ -94,7 +124,14 @@
       "lightGrid": {
         "type": "ToolPanelGrid",
         "props": { "cols": 3 },
-        "children": ["lightStudio", "lightNatural", "lightDramatic", "lightNeon", "lightGolden", "lightSoft"]
+        "children": [
+          "lightStudio",
+          "lightNatural",
+          "lightDramatic",
+          "lightNeon",
+          "lightGolden",
+          "lightSoft"
+        ]
       },
       "lightStudio": { "type": "ToolPanelChip", "props": { "label": "Studio", "active": true } },
       "lightNatural": { "type": "ToolPanelChip", "props": { "label": "Natural" } },
@@ -115,7 +152,13 @@
       },
       "depthSlider": {
         "type": "NodeSlider",
-        "props": { "label": "Depth of Field", "value": 50, "min": 0, "max": 100, "hint": "shallow → deep" }
+        "props": {
+          "label": "Depth of Field",
+          "value": 50,
+          "min": 0,
+          "max": 100,
+          "hint": "shallow → deep"
+        }
       },
       "blurSlider": {
         "type": "NodeSlider",

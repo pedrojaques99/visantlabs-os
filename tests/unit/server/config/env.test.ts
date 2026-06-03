@@ -26,9 +26,9 @@ describe('loadEnv', () => {
 
   it('demands production secrets when NODE_ENV=production', () => {
     _resetEnvCache();
-    expect(() =>
-      loadEnv({ ...base, NODE_ENV: 'production' } as any)
-    ).toThrow(/GOOGLE_CLIENT_ID|STRIPE_SECRET_KEY|FRONTEND_URL/);
+    expect(() => loadEnv({ ...base, NODE_ENV: 'production' } as any)).toThrow(
+      /GOOGLE_CLIENT_ID|STRIPE_SECRET_KEY|FRONTEND_URL/
+    );
   });
 
   it('coerces PORT from string', () => {

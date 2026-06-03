@@ -19,9 +19,7 @@ export const emailSchema = z
   .transform((v) => v.toLowerCase());
 
 /** MongoDB ObjectId (24 hex chars) */
-export const objectIdSchema = z
-  .string()
-  .regex(/^[a-fA-F0-9]{24}$/, 'Invalid ID format');
+export const objectIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/, 'Invalid ID format');
 
 /** Safe string ID (alphanumeric + hyphens/underscores, max 100 chars) */
 export const safeIdSchema = z
@@ -37,18 +35,25 @@ export const passwordSchema = z
   .max(128, 'Password too long');
 
 /** Positive integer with bounds */
-export const positiveIntSchema = z.coerce
-  .number()
-  .int()
-  .min(1);
+export const positiveIntSchema = z.coerce.number().int().min(1);
 
 /** Aspect ratio whitelist */
-export const VALID_ASPECT_RATIOS = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'] as const;
+export const VALID_ASPECT_RATIOS = [
+  '9:16',
+  '21:9',
+  '2:3',
+  '3:2',
+  '3:4',
+  '4:3',
+  '4:5',
+  '5:4',
+  '16:9',
+  '1:1',
+] as const;
 export const aspectRatioSchema = z.enum(VALID_ASPECT_RATIOS);
 
 /** Bounded string (prevents value injection in $set operations) */
-export const boundedStringSchema = (maxLen = 50000) =>
-  z.string().max(maxLen);
+export const boundedStringSchema = (maxLen = 50000) => z.string().max(maxLen);
 
 // ── Endpoint schemas ──
 

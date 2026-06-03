@@ -13,9 +13,8 @@ export function PipelinePanel({ config, log, isLoading }: Props) {
     <div className="space-y-2">
       {config.behavior === 'iterative-refine' ? (
         <p className="text-[10px] font-mono text-neutral-500">
-          Iterates{' '}
-          <span className="text-brand-cyan/70">{config.iterations ?? 3}×</span>
-          {' '}— evaluates and refines each generation
+          Iterates <span className="text-brand-cyan/70">{config.iterations ?? 3}×</span> — evaluates
+          and refines each generation
         </p>
       ) : (
         <>

@@ -18,10 +18,7 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
   const { t } = useTranslation();
 
   const addGiftOption = () => {
-    onChange([
-      ...giftOptions,
-      { title: '', description: '' },
-    ]);
+    onChange([...giftOptions, { title: '', description: '' }]);
   };
 
   const removeGiftOption = (index: number) => {
@@ -40,7 +37,8 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.giftOptions') || 'Opções de Brinde'}
         </h3>
-        <Button variant="brand"
+        <Button
+          variant="brand"
           onClick={addGiftOption}
           className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
@@ -68,9 +66,7 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
                     </label>
                     <FormInput
                       value={gift.title}
-                      onChange={(e) =>
-                        updateGiftOption(index, 'title', e.target.value)
-                      }
+                      onChange={(e) => updateGiftOption(index, 'title', e.target.value)}
                       placeholder={t('budget.placeholders.giftTitle') || 'Título do brinde'}
                     />
                   </div>
@@ -80,10 +76,10 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
                     </label>
                     <FormTextarea
                       value={gift.description}
-                      onChange={(e) =>
-                        updateGiftOption(index, 'description', e.target.value)
+                      onChange={(e) => updateGiftOption(index, 'description', e.target.value)}
+                      placeholder={
+                        t('budget.placeholders.giftDescription') || 'Descrição do brinde'
                       }
-                      placeholder={t('budget.placeholders.giftDescription') || 'Descrição do brinde'}
                       rows={3}
                     />
                   </div>
@@ -93,14 +89,13 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
                     </label>
                     <FormInput
                       value={gift.imageUrl || ''}
-                      onChange={(e) =>
-                        updateGiftOption(index, 'imageUrl', e.target.value)
-                      }
+                      onChange={(e) => updateGiftOption(index, 'imageUrl', e.target.value)}
                       placeholder={t('budget.placeholders.giftImageUrl') || 'https://...'}
                     />
                   </div>
                 </div>
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   onClick={() => removeGiftOption(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                   title={t('budget.removeGiftOption') || 'Remover brinde'}
@@ -115,4 +110,3 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
     </div>
   );
 };
-

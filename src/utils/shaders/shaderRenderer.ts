@@ -37,25 +37,21 @@ const getApiBaseUrl = () => {
  */
 const isR2Url = (url: string): boolean => {
   // Whitelist of allowed R2 hostnames
-  const allowedR2Hosts = [
-    'r2.dev',
-    'r2.cloudflarestorage.com',
-  ];
-  
+  const allowedR2Hosts = ['r2.dev', 'r2.cloudflarestorage.com'];
+
   try {
     const parsedUrl = new URL(url);
     const hostname = parsedUrl.hostname.toLowerCase();
-    
+
     // Check if hostname ends with allowed R2 domains (supports subdomains like pub-xxxxx.r2.dev)
-    return allowedR2Hosts.some(allowedHost => 
-      hostname === allowedHost || hostname.endsWith('.' + allowedHost)
+    return allowedR2Hosts.some(
+      (allowedHost) => hostname === allowedHost || hostname.endsWith('.' + allowedHost)
     );
   } catch {
     // Invalid URL format - not an R2 URL
     return false;
   }
 };
-
 
 /**
  * Cache for loaded images (URL/base64 -> HTMLImageElement)
@@ -66,7 +62,6 @@ const imageCache = new Map<string, HTMLImageElement>();
  * Cache for proxy responses (R2 URL -> base64 data URL)
  */
 const proxyCache = new Map<string, string>();
-
 
 /**
  * Persistent WebGL Shader Renderer
@@ -110,23 +105,9 @@ export class PersistentShaderRenderer {
   private initializeGeometry(): void {
     const gl = this.gl;
 
-    const positions = new Float32Array([
-      -1, -1,
-      1, -1,
-      -1, 1,
-      -1, 1,
-      1, -1,
-      1, 1,
-    ]);
+    const positions = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
 
-    const texCoords = new Float32Array([
-      0, 0,
-      1, 0,
-      0, 1,
-      0, 1,
-      1, 0,
-      1, 1,
-    ]);
+    const texCoords = new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]);
 
     this.positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
@@ -170,16 +151,21 @@ export class PersistentShaderRenderer {
   /**
    * Update source texture (only if changed)
    */
-  private async updateSourceTexture(image: HTMLImageElement | HTMLCanvasElement, sourceKey: string): Promise<void> {
+  private async updateSourceTexture(
+    image: HTMLImageElement | HTMLCanvasElement,
+    sourceKey: string
+  ): Promise<void> {
     const gl = this.gl;
     const width = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
     const height = image instanceof HTMLImageElement ? image.naturalHeight : image.height;
 
     // Check if texture needs update
-    if (this.currentSourceKey === sourceKey &&
+    if (
+      this.currentSourceKey === sourceKey &&
       this.currentSourceWidth === width &&
       this.currentSourceHeight === height &&
-      this.currentSourceTexture) {
+      this.currentSourceTexture
+    ) {
       return; // Texture already loaded and unchanged
     }
 
@@ -293,7 +279,11 @@ export class PersistentShaderRenderer {
   /**
    * Set shader-specific uniforms
    */
-  private setShaderUniforms(program: WebGLProgram, shaderType: ShaderType, settings: ShaderSettings): void {
+  private setShaderUniforms(
+    program: WebGLProgram,
+    shaderType: ShaderType,
+    settings: ShaderSettings
+  ): void {
     const gl = this.gl;
 
     if (shaderType === 'halftone') {
@@ -356,7 +346,10 @@ export class PersistentShaderRenderer {
         gl.uniform1f(tapeCreaseIntensityLocation, tapeCreaseIntensity);
       }
 
-      const switchingNoiseIntensityLocation = gl.getUniformLocation(program, 'uSwitchingNoiseIntensity');
+      const switchingNoiseIntensityLocation = gl.getUniformLocation(
+        program,
+        'uSwitchingNoiseIntensity'
+      );
       if (switchingNoiseIntensityLocation !== null) {
         gl.uniform1f(switchingNoiseIntensityLocation, switchingNoiseIntensity);
       }
@@ -486,7 +479,12 @@ export class PersistentShaderRenderer {
 
       const highlightColorLocation = gl.getUniformLocation(program, 'u_highlight_color');
       if (highlightColorLocation !== null) {
-        gl.uniform3f(highlightColorLocation, highlightColor[0], highlightColor[1], highlightColor[2]);
+        gl.uniform3f(
+          highlightColorLocation,
+          highlightColor[0],
+          highlightColor[1],
+          highlightColor[2]
+        );
       }
 
       const intensityLocation = gl.getUniformLocation(program, 'u_intensity');
@@ -578,7 +576,7 @@ export class PersistentShaderRenderer {
     }
 
     // Delete programs
-    this.programCache.forEach(program => gl.deleteProgram(program));
+    this.programCache.forEach((program) => gl.deleteProgram(program));
     this.programCache.clear();
 
     // Lose context
@@ -619,7 +617,11 @@ void main() {
 /**
  * Compile shader from source
  */
-function compileShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
+function compileShader(
+  gl: WebGLRenderingContext,
+  type: number,
+  source: string
+): WebGLShader | null {
   const shader = gl.createShader(type);
   if (!shader) return null;
 
@@ -638,7 +640,11 @@ function compileShader(gl: WebGLRenderingContext, type: number, source: string):
 /**
  * Create shader program
  */
-function createProgram(gl: WebGLRenderingContext, vertexSource: string, fragmentSource: string): WebGLProgram | null {
+function createProgram(
+  gl: WebGLRenderingContext,
+  vertexSource: string,
+  fragmentSource: string
+): WebGLProgram | null {
   const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexSource);
   const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
 
@@ -663,7 +669,10 @@ function createProgram(gl: WebGLRenderingContext, vertexSource: string, fragment
 /**
  * Load image as WebGL texture
  */
-function loadTexture(gl: WebGLRenderingContext, image: HTMLImageElement | HTMLCanvasElement): Promise<WebGLTexture> {
+function loadTexture(
+  gl: WebGLRenderingContext,
+  image: HTMLImageElement | HTMLCanvasElement
+): Promise<WebGLTexture> {
   return new Promise((resolve, reject) => {
     const texture = gl.createTexture();
     if (!texture) {
@@ -826,7 +835,9 @@ export async function applyShaderEffect(
 
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({}));
-              throw new Error(errorData.error || `Proxy failed: ${response.status} ${response.statusText}`);
+              throw new Error(
+                errorData.error || `Proxy failed: ${response.status} ${response.statusText}`
+              );
             }
 
             const data = await response.json();
@@ -892,9 +903,11 @@ export async function applyShaderEffect(
  * Check if input is a video
  */
 function isVideo(input: string): boolean {
-  return input.startsWith('data:video/') ||
+  return (
+    input.startsWith('data:video/') ||
     /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(input) ||
-    input.includes('video');
+    input.includes('video')
+  );
 }
 
 /**
@@ -987,7 +1000,12 @@ export async function applyShaderEffectToVideo(
     const frameCanvas = await extractVideoFrame(video, time);
 
     // Apply shader to frame directly from canvas
-    const processedFrame = await applyShaderEffect(frameCanvas, canvas.width, canvas.height, settings);
+    const processedFrame = await applyShaderEffect(
+      frameCanvas,
+      canvas.width,
+      canvas.height,
+      settings
+    );
     processedFrames.push(processedFrame);
   }
 
@@ -1053,7 +1071,7 @@ export async function applyShaderEffectToVideo(
           ctx.drawImage(img, 0, 0);
 
           // Wait for frame to be recorded
-          await new Promise(resolve => setTimeout(resolve, 1000 / fps));
+          await new Promise((resolve) => setTimeout(resolve, 1000 / fps));
         }
 
         // Stop recording after all frames
@@ -1071,4 +1089,3 @@ export async function applyShaderEffectToVideo(
     })();
   });
 }
-

@@ -62,11 +62,13 @@ const geminiProvider: AIProvider = {
 
       // Extract token usage from Gemini response
       const meta = result.response.usageMetadata;
-      const usage = meta ? {
-        inputTokens: meta.promptTokenCount ?? 0,
-        outputTokens: meta.candidatesTokenCount ?? 0,
-        totalTokens: meta.totalTokenCount ?? 0,
-      } : undefined;
+      const usage = meta
+        ? {
+            inputTokens: meta.promptTokenCount ?? 0,
+            outputTokens: meta.candidatesTokenCount ?? 0,
+            totalTokens: meta.totalTokenCount ?? 0,
+          }
+        : undefined;
 
       // Parse JSON response
       let operations: any[] = [];
@@ -87,11 +89,11 @@ const geminiProvider: AIProvider = {
         }
       } catch (parseError) {
         console.warn('[Gemini] Standard JSON.parse failed, trying regex extraction...');
-        
+
         // Try regex fallback - find the first [ and the last ]
         const startBracket = responseText.indexOf('[');
         const endBracket = responseText.lastIndexOf(']');
-        
+
         if (startBracket !== -1 && endBracket !== -1 && endBracket > startBracket) {
           const jsonArrayPart = responseText.substring(startBracket, endBracket + 1);
           try {
@@ -123,7 +125,10 @@ export async function generateText(
   systemPrompt: string,
   userPrompt: string,
   attachments?: Array<{ mimeType: string; data: string }>
-): Promise<{ text: string; usage?: { inputTokens: number; outputTokens: number; totalTokens: number } }> {
+): Promise<{
+  text: string;
+  usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
+}> {
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODELS.TEXT,
     generationConfig: { temperature: 0.3 },
@@ -144,11 +149,13 @@ export async function generateText(
   const text = result.response.text();
 
   const meta = result.response.usageMetadata;
-  const usage = meta ? {
-    inputTokens: meta.promptTokenCount ?? 0,
-    outputTokens: meta.candidatesTokenCount ?? 0,
-    totalTokens: meta.totalTokenCount ?? 0,
-  } : undefined;
+  const usage = meta
+    ? {
+        inputTokens: meta.promptTokenCount ?? 0,
+        outputTokens: meta.candidatesTokenCount ?? 0,
+        totalTokens: meta.totalTokenCount ?? 0,
+      }
+    : undefined;
 
   return { text, usage };
 }

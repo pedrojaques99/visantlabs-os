@@ -92,30 +92,33 @@ export const useImageEditorStore = create<ImageEditorState>((set, get) => ({
   setActiveMode: (mode) => set({ activeMode: mode }),
   setBrushSize: (size) => set({ brushSize: Math.max(2, Math.min(200, size)) }),
 
-  addMaskOperation: (op) => set((s) => ({
-    maskUndoStack: [...s.maskUndoStack, s.maskOperations],
-    maskOperations: [...s.maskOperations, op],
-  })),
+  addMaskOperation: (op) =>
+    set((s) => ({
+      maskUndoStack: [...s.maskUndoStack, s.maskOperations],
+      maskOperations: [...s.maskOperations, op],
+    })),
 
-  undoMask: () => set((s) => {
-    if (s.maskUndoStack.length === 0) return s;
-    const prev = s.maskUndoStack[s.maskUndoStack.length - 1];
-    return {
-      maskOperations: prev,
-      maskUndoStack: s.maskUndoStack.slice(0, -1),
-    };
-  }),
+  undoMask: () =>
+    set((s) => {
+      if (s.maskUndoStack.length === 0) return s;
+      const prev = s.maskUndoStack[s.maskUndoStack.length - 1];
+      return {
+        maskOperations: prev,
+        maskUndoStack: s.maskUndoStack.slice(0, -1),
+      };
+    }),
 
-  clearMask: () => set((s) => ({
-    maskUndoStack: s.maskOperations.length > 0
-      ? [...s.maskUndoStack, s.maskOperations]
-      : s.maskUndoStack,
-    maskOperations: [],
-  })),
+  clearMask: () =>
+    set((s) => ({
+      maskUndoStack:
+        s.maskOperations.length > 0 ? [...s.maskUndoStack, s.maskOperations] : s.maskUndoStack,
+      maskOperations: [],
+    })),
 
-  setExpandEdge: (edge, value) => set((s) => ({
-    expandEdges: { ...s.expandEdges, [edge]: Math.max(0, value) },
-  })),
+  setExpandEdge: (edge, value) =>
+    set((s) => ({
+      expandEdges: { ...s.expandEdges, [edge]: Math.max(0, value) },
+    })),
 
   resetExpandEdges: () => set({ expandEdges: { top: 0, right: 0, bottom: 0, left: 0 } }),
 
@@ -126,16 +129,17 @@ export const useImageEditorStore = create<ImageEditorState>((set, get) => ({
   setZoom: (z) => set({ zoom: Math.max(0.1, Math.min(5, z)) }),
   setPanOffset: (offset) => set({ panOffset: offset }),
 
-  pushHistory: (imageUrl, action) => set((s) => ({
-    editHistory: [...s.editHistory, { imageUrl, action }].slice(-20),
-    currentImageUrl: imageUrl,
-    maskOperations: [],
-    maskUndoStack: [],
-    expandEdges: { top: 0, right: 0, bottom: 0, left: 0 },
-    prompt: '',
-    resultUrl: null,
-    resultBase64: null,
-  })),
+  pushHistory: (imageUrl, action) =>
+    set((s) => ({
+      editHistory: [...s.editHistory, { imageUrl, action }].slice(-20),
+      currentImageUrl: imageUrl,
+      maskOperations: [],
+      maskUndoStack: [],
+      expandEdges: { top: 0, right: 0, bottom: 0, left: 0 },
+      prompt: '',
+      resultUrl: null,
+      resultBase64: null,
+    })),
 
   setCurrentImageUrl: (url) => set({ currentImageUrl: url }),
 

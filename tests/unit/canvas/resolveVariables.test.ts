@@ -19,7 +19,10 @@ describe('applyVariables', () => {
   });
 
   it('replaces multiple different placeholders', () => {
-    const result = applyVariables('{{brand}} — {{tagline}}', { brand: 'Adidas', tagline: 'Impossible is Nothing' });
+    const result = applyVariables('{{brand}} — {{tagline}}', {
+      brand: 'Adidas',
+      tagline: 'Impossible is Nothing',
+    });
     expect(result).toBe('Adidas — Impossible is Nothing');
   });
 
@@ -40,7 +43,10 @@ describe('collectVariables — VariablesNode', () => {
   it('collects vars from a connected VariablesNode', () => {
     const varNode = makeNode('v1', 'variables', {
       type: 'variables',
-      variables: [{ key: 'brand', value: 'Nike' }, { key: 'color', value: 'red' }],
+      variables: [
+        { key: 'brand', value: 'Nike' },
+        { key: 'color', value: 'red' },
+      ],
     } as VariablesNodeData);
 
     const targetNode = makeNode('t1', 'edit', { type: 'edit' });
@@ -53,7 +59,10 @@ describe('collectVariables — VariablesNode', () => {
   it('ignores empty keys', () => {
     const varNode = makeNode('v1', 'variables', {
       type: 'variables',
-      variables: [{ key: '', value: 'ignored' }, { key: 'valid', value: 'kept' }],
+      variables: [
+        { key: '', value: 'ignored' },
+        { key: 'valid', value: 'kept' },
+      ],
     } as VariablesNodeData);
 
     const vars = collectVariables('t1', [varNode], [makeEdge('v1', 't1')]);
@@ -63,14 +72,20 @@ describe('collectVariables — VariablesNode', () => {
 
   it('merges vars from multiple connected VariablesNodes', () => {
     const v1 = makeNode('v1', 'variables', {
-      type: 'variables', variables: [{ key: 'a', value: '1' }],
+      type: 'variables',
+      variables: [{ key: 'a', value: '1' }],
     } as VariablesNodeData);
     const v2 = makeNode('v2', 'variables', {
-      type: 'variables', variables: [{ key: 'b', value: '2' }],
+      type: 'variables',
+      variables: [{ key: 'b', value: '2' }],
     } as VariablesNodeData);
     const target = makeNode('t1', 'edit', { type: 'edit' });
 
-    const vars = collectVariables('t1', [v1, v2, target], [makeEdge('v1', 't1'), makeEdge('v2', 't1')]);
+    const vars = collectVariables(
+      't1',
+      [v1, v2, target],
+      [makeEdge('v1', 't1'), makeEdge('v2', 't1')]
+    );
     expect(vars).toEqual({ a: '1', b: '2' });
   });
 
@@ -84,7 +99,8 @@ describe('collectVariables — VariablesNode', () => {
 
   it('ignores edges targeting other nodes', () => {
     const varNode = makeNode('v1', 'variables', {
-      type: 'variables', variables: [{ key: 'x', value: 'y' }],
+      type: 'variables',
+      variables: [{ key: 'x', value: 'y' }],
     } as VariablesNodeData);
 
     const vars = collectVariables('t1', [varNode], [makeEdge('v1', 'other')]);
@@ -96,7 +112,10 @@ describe('collectVariables — DataNode', () => {
   it('collects selected row from connected DataNode', () => {
     const dataNode = makeNode('d1', 'data', {
       type: 'data',
-      rows: [{ product: 'Air Max', color: 'red' }, { product: 'UB', color: 'black' }],
+      rows: [
+        { product: 'Air Max', color: 'red' },
+        { product: 'UB', color: 'black' },
+      ],
       columns: ['product', 'color'],
       selectedRowIndex: 1,
     } as DataNodeData);
@@ -119,7 +138,10 @@ describe('collectVariables — DataNode', () => {
 
   it('returns empty when DataNode has no rows', () => {
     const dataNode = makeNode('d1', 'data', {
-      type: 'data', rows: [], columns: [], selectedRowIndex: 0,
+      type: 'data',
+      rows: [],
+      columns: [],
+      selectedRowIndex: 0,
     } as DataNodeData);
 
     expect(collectVariables('t1', [dataNode], [makeEdge('d1', 't1')])).toEqual({});

@@ -48,6 +48,7 @@ This separation is non-negotiable. Never try to access `figma.*` from the UI or 
 ### 1. Clarify the plugin's purpose
 
 Before generating code, understand:
+
 - What does the plugin do? (e.g., "batch rename layers", "export tokens", "generate grids")
 - What Figma nodes does it interact with? (selection, all nodes, specific types)
 - Does it need network access? If so, which domains?
@@ -75,6 +76,7 @@ Read `references/figma-api-patterns.md` for common API patterns, then generate a
 ```
 
 Key rules:
+
 - `id` should be `"000000000000000000"` as placeholder (Figma assigns real ID on publish)
 - `documentAccess` must be `"dynamic-page"` for all new plugins
 - `editorType` can include `"figjam"` or `"dev"` if needed
@@ -198,49 +200,61 @@ figma.ui.on('message', async (msg) => {
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      font-size: 11px;
-      color: var(--figma-color-text);
-      background: var(--figma-color-bg);
-      padding: 12px;
-    }
-    button {
-      background: var(--figma-color-bg-brand);
-      color: var(--figma-color-text-onbrand);
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 11px;
-      cursor: pointer;
-      width: 100%;
-    }
-    button:hover { opacity: 0.9; }
-    button.secondary {
-      background: var(--figma-color-bg-secondary);
-      color: var(--figma-color-text);
-    }
-    input, select {
-      width: 100%;
-      padding: 6px 8px;
-      border: 1px solid var(--figma-color-border);
-      border-radius: 4px;
-      background: var(--figma-color-bg);
-      color: var(--figma-color-text);
-      font-size: 11px;
-    }
-    .section { margin-bottom: 12px; }
-    .label { font-weight: 600; margin-bottom: 4px; }
-  </style>
-</head>
-<body>
-  <div id="app">
-    <!-- Plugin UI here -->
-  </div>
-</body>
+  <head>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Inter, system-ui, sans-serif;
+        font-size: 11px;
+        color: var(--figma-color-text);
+        background: var(--figma-color-bg);
+        padding: 12px;
+      }
+      button {
+        background: var(--figma-color-bg-brand);
+        color: var(--figma-color-text-onbrand);
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 11px;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      button.secondary {
+        background: var(--figma-color-bg-secondary);
+        color: var(--figma-color-text);
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid var(--figma-color-border);
+        border-radius: 4px;
+        background: var(--figma-color-bg);
+        color: var(--figma-color-text);
+        font-size: 11px;
+      }
+      .section {
+        margin-bottom: 12px;
+      }
+      .label {
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Plugin UI here -->
+    </div>
+  </body>
 </html>
 ```
 
@@ -263,7 +277,7 @@ function sendMessage(msg: any) {
 
 Always include setup instructions:
 
-```markdown
+````markdown
 # {{Plugin Name}}
 
 {{Description}}
@@ -274,13 +288,16 @@ Always include setup instructions:
    ```bash
    npm install
    ```
+````
 
 2. Build the plugin:
+
    ```bash
    npm run build
    ```
 
 3. Load in Figma:
+
    - Open Figma Desktop
    - Go to Plugins > Development > Import plugin from manifest...
    - Select the `manifest.json` file from this folder
@@ -293,6 +310,7 @@ Always include setup instructions:
 ## Usage
 
 {{Usage instructions}}
+
 ```
 
 ### 4. Deliver the project
@@ -324,3 +342,4 @@ Read `references/figma-api-patterns.md` for patterns covering:
 - Component and variant manipulation
 - Plugin data storage
 - Selection handling
+```

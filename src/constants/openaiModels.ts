@@ -5,7 +5,7 @@ export const OPENAI_IMAGE_MODELS = {
   GPT_IMAGE_2: 'gpt-image-2' as const,
 } as const;
 
-export type OpenAIImageModelId = typeof OPENAI_IMAGE_MODELS[keyof typeof OPENAI_IMAGE_MODELS];
+export type OpenAIImageModelId = (typeof OPENAI_IMAGE_MODELS)[keyof typeof OPENAI_IMAGE_MODELS];
 
 export const OPENAI_IMAGE_MODEL_LIST: OpenAIImageModelId[] = [
   OPENAI_IMAGE_MODELS.GPT_IMAGE_1,
@@ -27,12 +27,12 @@ export interface OpenAIImageModelConfig {
 /** Maps our Resolution tokens to OpenAI size strings (square fallback) */
 export const OPENAI_SIZE_MAP: Record<Resolution, string> = {
   '512px': '1024x1024',
-  'HD':    '1024x1024',
-  '1K':    '1024x1024',
-  '2K':    '1536x1024',
-  '3K':    '1536x1024',
-  '4K':    '1024x1536',
-  '720p':  '1024x1024',
+  HD: '1024x1024',
+  '1K': '1024x1024',
+  '2K': '1536x1024',
+  '3K': '1536x1024',
+  '4K': '1024x1536',
+  '720p': '1024x1024',
   '1080p': '1536x1024',
 };
 
@@ -50,12 +50,12 @@ function getOrientation(aspectRatio?: AspectRatio): Orientation {
 
 const OPENAI_ORIENTED_SIZE: Record<Resolution, Record<Orientation, string>> = {
   '512px': { square: '1024x1024', landscape: '1024x1024', portrait: '1024x1024' },
-  'HD':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
-  '1K':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
-  '2K':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
-  '3K':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
-  '4K':    { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
-  '720p':  { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  HD: { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '1K': { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '2K': { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '3K': { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '4K': { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
+  '720p': { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
   '1080p': { square: '1024x1024', landscape: '1536x1024', portrait: '1024x1536' },
 };
 
@@ -72,12 +72,12 @@ export function resolveOpenAISize(resolution: Resolution, aspectRatio?: AspectRa
 /** Maps our Resolution tokens to OpenAI quality strings */
 export const OPENAI_QUALITY_MAP: Record<Resolution, 'low' | 'medium' | 'high'> = {
   '512px': 'low',
-  'HD':    'medium',
-  '1K':    'medium',
-  '2K':    'high',
-  '3K':    'high',
-  '4K':    'high',
-  '720p':  'medium',
+  HD: 'medium',
+  '1K': 'medium',
+  '2K': 'high',
+  '3K': 'high',
+  '4K': 'high',
+  '720p': 'medium',
   '1080p': 'high',
 };
 
@@ -93,7 +93,8 @@ export const OPENAI_IMAGE_MODEL_CONFIG: Record<OpenAIImageModelId, OpenAIImageMo
   [OPENAI_IMAGE_MODELS.GPT_IMAGE_2]: {
     label: 'GPT-2',
     badge: 'latest' as const,
-    description: 'OpenAI GPT Image 2 — high-quality t2i and image editing (requires org verification)',
+    description:
+      'OpenAI GPT Image 2 — high-quality t2i and image editing (requires org verification)',
     supportedResolutions: ['1K', '2K', '4K'],
     defaultResolution: '1K',
     supportsImageEdit: true,

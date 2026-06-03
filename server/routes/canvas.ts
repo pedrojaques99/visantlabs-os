@@ -2,9 +2,21 @@ import crypto from 'crypto';
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl, deleteImage } from '../services/r2Service.js';
+import {
+  uploadCanvasImage,
+  uploadCanvasPdf,
+  uploadCanvasVideo,
+  isR2Configured,
+  generateCanvasImageUploadUrl,
+  generateCanvasVideoUploadUrl,
+  deleteImage,
+} from '../services/r2Service.js';
 import { compressPdfSimple } from '../utils/pdfCompression.js';
-import { validateAdminOrPremium, requireEditAccess, requireViewAccess } from '../middleware/canvasAuth.js';
+import {
+  validateAdminOrPremium,
+  requireEditAccess,
+  requireViewAccess,
+} from '../middleware/canvasAuth.js';
 import { Liveblocks } from '@liveblocks/node';
 import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
@@ -82,7 +94,8 @@ async function convertEmailsToUserIds(identifiers: string[]): Promise<string[]> 
 
 // Configuration: Base64 image expiration time in milliseconds
 // Default: 7 days (7 * 24 * 60 * 60 * 1000)
-const BASE64_EXPIRATION_MS = parseInt(process.env.CANVAS_BASE64_EXPIRATION_DAYS || '7') * 24 * 60 * 60 * 1000;
+const BASE64_EXPIRATION_MS =
+  parseInt(process.env.CANVAS_BASE64_EXPIRATION_DAYS || '7') * 24 * 60 * 60 * 1000;
 
 /**
  * Check if a base64 string is expired based on its timestamp
@@ -92,7 +105,7 @@ const BASE64_EXPIRATION_MS = parseInt(process.env.CANVAS_BASE64_EXPIRATION_DAYS 
 function isBase64Expired(base64Timestamp: number | undefined): boolean {
   if (!base64Timestamp) return true; // If no timestamp, consider expired
   const now = Date.now();
-  return (now - base64Timestamp) > BASE64_EXPIRATION_MS;
+  return now - base64Timestamp > BASE64_EXPIRATION_MS;
 }
 
 /**
@@ -386,7 +399,11 @@ function addBase64Timestamps(nodes: any[]): any[] {
       }
 
       // Process MergeNode
-      if (node.type === 'merge' && node.data?.resultImageBase64 && !node.data.resultImageBase64Timestamp) {
+      if (
+        node.type === 'merge' &&
+        node.data?.resultImageBase64 &&
+        !node.data.resultImageBase64Timestamp
+      ) {
         timestampedNode.data = {
           ...timestampedNode.data,
           resultImageBase64Timestamp: now,
@@ -436,7 +453,11 @@ function addBase64Timestamps(nodes: any[]): any[] {
       }
 
       // Process UpscaleNode
-      if (node.type === 'upscale' && node.data?.resultImageBase64 && !node.data.resultImageBase64Timestamp) {
+      if (
+        node.type === 'upscale' &&
+        node.data?.resultImageBase64 &&
+        !node.data.resultImageBase64Timestamp
+      ) {
         timestampedNode.data = {
           ...timestampedNode.data,
           resultImageBase64Timestamp: now,
@@ -444,16 +465,23 @@ function addBase64Timestamps(nodes: any[]): any[] {
       }
 
       // Process MockupNode
-      if (node.type === 'mockup' && node.data?.resultImageBase64 && !node.data.resultImageBase64Timestamp) {
+      if (
+        node.type === 'mockup' &&
+        node.data?.resultImageBase64 &&
+        !node.data.resultImageBase64Timestamp
+      ) {
         timestampedNode.data = {
           ...timestampedNode.data,
           resultImageBase64Timestamp: now,
         };
       }
 
-
       // Process OutputNode
-      if (node.type === 'output' && node.data?.resultImageBase64 && !node.data.resultImageBase64Timestamp) {
+      if (
+        node.type === 'output' &&
+        node.data?.resultImageBase64 &&
+        !node.data.resultImageBase64Timestamp
+      ) {
         timestampedNode.data = {
           ...timestampedNode.data,
           resultImageBase64Timestamp: now,
@@ -469,7 +497,11 @@ function addBase64Timestamps(nodes: any[]): any[] {
       }
 
       // Process BrandNode
-      if (node.type === 'brand' && node.data?.identityPdfBase64 && !node.data.identityPdfBase64Timestamp) {
+      if (
+        node.type === 'brand' &&
+        node.data?.identityPdfBase64 &&
+        !node.data.identityPdfBase64Timestamp
+      ) {
         timestampedNode.data = {
           ...timestampedNode.data,
           identityPdfBase64Timestamp: now,
@@ -511,7 +543,10 @@ async function processCanvasNodesForR2(
         if (node.type === 'image' && node.data?.mockup?.imageBase64) {
           const base64Image = node.data.mockup.imageBase64;
           // Only upload if it's base64 (not already a URL)
-          if (base64Image.startsWith('data:image/') || (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))) {
+          if (
+            base64Image.startsWith('data:image/') ||
+            (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))
+          ) {
             try {
               const imageUrl = await uploadCanvasImage(base64Image, userId, canvasId, nodeId);
               processedNode.data = {
@@ -532,7 +567,10 @@ async function processCanvasNodesForR2(
         // Process MergeNode: data.resultImageBase64 -> data.resultImageUrl
         if (node.type === 'merge' && node.data?.resultImageBase64) {
           const base64Image = node.data.resultImageBase64;
-          if (base64Image.startsWith('data:image/') || (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))) {
+          if (
+            base64Image.startsWith('data:image/') ||
+            (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))
+          ) {
             try {
               const imageUrl = await uploadCanvasImage(base64Image, userId, canvasId, nodeId);
               processedNode.data = {
@@ -551,16 +589,27 @@ async function processCanvasNodesForR2(
           // resultImageBase64 -> resultImageUrl
           if (node.data?.resultImageBase64) {
             const base64Image = node.data.resultImageBase64;
-            if (base64Image.startsWith('data:image/') || (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))) {
+            if (
+              base64Image.startsWith('data:image/') ||
+              (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))
+            ) {
               try {
-                const imageUrl = await uploadCanvasImage(base64Image, userId, canvasId, `${nodeId}-result`);
+                const imageUrl = await uploadCanvasImage(
+                  base64Image,
+                  userId,
+                  canvasId,
+                  `${nodeId}-result`
+                );
                 processedNode.data = {
                   ...processedNode.data,
                   resultImageUrl: imageUrl,
                   resultImageBase64: undefined,
                 };
               } catch (uploadError: any) {
-                console.error(`Failed to upload result image for edit node ${nodeId}:`, uploadError);
+                console.error(
+                  `Failed to upload result image for edit node ${nodeId}:`,
+                  uploadError
+                );
               }
             }
           }
@@ -568,9 +617,17 @@ async function processCanvasNodesForR2(
           // uploadedImage.base64 -> uploadedImage.url
           if (node.data?.uploadedImage?.base64) {
             const base64Image = node.data.uploadedImage.base64;
-            if (base64Image.startsWith('data:image/') || (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))) {
+            if (
+              base64Image.startsWith('data:image/') ||
+              (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))
+            ) {
               try {
-                const imageUrl = await uploadCanvasImage(base64Image, userId, canvasId, `${nodeId}-uploaded`);
+                const imageUrl = await uploadCanvasImage(
+                  base64Image,
+                  userId,
+                  canvasId,
+                  `${nodeId}-uploaded`
+                );
                 processedNode.data = {
                   ...processedNode.data,
                   uploadedImage: {
@@ -580,7 +637,10 @@ async function processCanvasNodesForR2(
                   },
                 };
               } catch (uploadError: any) {
-                console.error(`Failed to upload uploadedImage for edit node ${nodeId}:`, uploadError);
+                console.error(
+                  `Failed to upload uploadedImage for edit node ${nodeId}:`,
+                  uploadError
+                );
               }
             }
           }
@@ -588,9 +648,17 @@ async function processCanvasNodesForR2(
           // referenceImage.base64 -> referenceImage.url
           if (node.data?.referenceImage?.base64) {
             const base64Image = node.data.referenceImage.base64;
-            if (base64Image.startsWith('data:image/') || (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))) {
+            if (
+              base64Image.startsWith('data:image/') ||
+              (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))
+            ) {
               try {
-                const imageUrl = await uploadCanvasImage(base64Image, userId, canvasId, `${nodeId}-reference`);
+                const imageUrl = await uploadCanvasImage(
+                  base64Image,
+                  userId,
+                  canvasId,
+                  `${nodeId}-reference`
+                );
                 processedNode.data = {
                   ...processedNode.data,
                   referenceImage: {
@@ -600,7 +668,10 @@ async function processCanvasNodesForR2(
                   },
                 };
               } catch (uploadError: any) {
-                console.error(`Failed to upload referenceImage for edit node ${nodeId}:`, uploadError);
+                console.error(
+                  `Failed to upload referenceImage for edit node ${nodeId}:`,
+                  uploadError
+                );
               }
             }
           }
@@ -611,16 +682,27 @@ async function processCanvasNodesForR2(
               node.data.referenceImages.map(async (refImage: any, index: number) => {
                 if (refImage?.base64) {
                   const base64Image = refImage.base64;
-                  if (base64Image.startsWith('data:image/') || (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))) {
+                  if (
+                    base64Image.startsWith('data:image/') ||
+                    (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))
+                  ) {
                     try {
-                      const imageUrl = await uploadCanvasImage(base64Image, userId, canvasId, `${nodeId}-ref-${index}`);
+                      const imageUrl = await uploadCanvasImage(
+                        base64Image,
+                        userId,
+                        canvasId,
+                        `${nodeId}-ref-${index}`
+                      );
                       return {
                         ...refImage,
                         url: imageUrl,
                         base64: undefined,
                       };
                     } catch (uploadError: any) {
-                      console.error(`Failed to upload referenceImage[${index}] for edit node ${nodeId}:`, uploadError);
+                      console.error(
+                        `Failed to upload referenceImage[${index}] for edit node ${nodeId}:`,
+                        uploadError
+                      );
                       return refImage;
                     }
                   }
@@ -638,7 +720,10 @@ async function processCanvasNodesForR2(
         // Process UpscaleNode: data.resultImageBase64 -> data.resultImageUrl
         if (node.type === 'upscale' && node.data?.resultImageBase64) {
           const base64Image = node.data.resultImageBase64;
-          if (base64Image.startsWith('data:image/') || (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))) {
+          if (
+            base64Image.startsWith('data:image/') ||
+            (!base64Image.startsWith('http://') && !base64Image.startsWith('https://'))
+          ) {
             try {
               const imageUrl = await uploadCanvasImage(base64Image, userId, canvasId, nodeId);
               processedNode.data = {
@@ -647,7 +732,10 @@ async function processCanvasNodesForR2(
                 resultImageBase64: undefined,
               };
             } catch (uploadError: any) {
-              console.error(`Failed to upload result image for upscale node ${nodeId}:`, uploadError);
+              console.error(
+                `Failed to upload result image for upscale node ${nodeId}:`,
+                uploadError
+              );
             }
           }
         }
@@ -656,7 +744,10 @@ async function processCanvasNodesForR2(
         if (node.type === 'pdf' && node.data?.pdfBase64) {
           const base64Pdf = node.data.pdfBase64;
           // Only upload if it's base64 (not already a URL)
-          if (base64Pdf.startsWith('data:application/pdf') || (!base64Pdf.startsWith('http://') && !base64Pdf.startsWith('https://'))) {
+          if (
+            base64Pdf.startsWith('data:application/pdf') ||
+            (!base64Pdf.startsWith('http://') && !base64Pdf.startsWith('https://'))
+          ) {
             try {
               // Compress PDF before upload
               const compressedPdf = await compressPdfSimple(base64Pdf);
@@ -676,11 +767,19 @@ async function processCanvasNodesForR2(
         // Process BrandNode: data.identityPdfBase64 -> data.identityPdfUrl
         if (node.type === 'brand' && node.data?.identityPdfBase64) {
           const base64Pdf = node.data.identityPdfBase64;
-          if (base64Pdf.startsWith('data:application/pdf') || (!base64Pdf.startsWith('http://') && !base64Pdf.startsWith('https://'))) {
+          if (
+            base64Pdf.startsWith('data:application/pdf') ||
+            (!base64Pdf.startsWith('http://') && !base64Pdf.startsWith('https://'))
+          ) {
             try {
               // Compress PDF before upload
               const compressedPdf = await compressPdfSimple(base64Pdf);
-              const pdfUrl = await uploadCanvasPdf(compressedPdf, userId, canvasId, `${nodeId}-identity`);
+              const pdfUrl = await uploadCanvasPdf(
+                compressedPdf,
+                userId,
+                canvasId,
+                `${nodeId}-identity`
+              );
               processedNode.data = {
                 ...processedNode.data,
                 identityPdfUrl: pdfUrl,
@@ -721,13 +820,14 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
     res.json({
-      projects: projects.map(project => ({
+      projects: projects.map((project) => ({
         ...project,
         _id: project.id,
-      }))
+      })),
     });
   } catch (error: any) {
-    const isConnectionError = error.code === 'P1001' ||
+    const isConnectionError =
+      error.code === 'P1001' ||
       error.message?.includes('connect') ||
       error.message?.includes('connection');
 
@@ -761,8 +861,8 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
           code: error.code,
           meta: error.meta,
           connectionIssue: isConnectionError ? connectionStatus : undefined,
-        }
-      })
+        },
+      }),
     });
   }
 });
@@ -794,7 +894,11 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    console.log('[Canvas] Found shared project:', { id: project.id, name: project.name, isCollaborative: project.isCollaborative });
+    console.log('[Canvas] Found shared project:', {
+      id: project.id,
+      name: project.name,
+      isCollaborative: project.isCollaborative,
+    });
 
     // Clean expired base64 images before returning
     let cleanedNodes = project.nodes as any[];
@@ -807,15 +911,11 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
         ...project,
         _id: project.id,
         nodes: cleanedNodes,
-      }
+      },
     };
 
     // Cache shared project for 7 days
-    await redisClient.setex(
-      cacheKey,
-      CACHE_TTL.SHARE_PUBLIC,
-      JSON.stringify(responseData)
-    );
+    await redisClient.setex(cacheKey, CACHE_TTL.SHARE_PUBLIC, JSON.stringify(responseData));
     console.log(`[Cache] SET share:${shareId.slice(0, 8)} (7d)`);
 
     res.json(responseData);
@@ -823,7 +923,7 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
     console.error('Error fetching shared project:', error);
     res.status(500).json({
       error: 'Failed to fetch shared project',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
@@ -893,21 +993,35 @@ router.get('/events/stats', apiRateLimiter, authenticate, async (req: AuthReques
     const since = new Date(Date.now() - daysBack * 86400000);
 
     const [byNodeType, byEvent, timeline] = await Promise.all([
-      db.collection('canvas_events').aggregate([
-        { $match: { serverTs: { $gte: since }, nodeType: { $exists: true } } },
-        { $group: { _id: '$nodeType', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-      ]).toArray(),
-      db.collection('canvas_events').aggregate([
-        { $match: { serverTs: { $gte: since } } },
-        { $group: { _id: '$event', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-      ]).toArray(),
-      db.collection('canvas_events').aggregate([
-        { $match: { serverTs: { $gte: since } } },
-        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$serverTs' } }, count: { $sum: 1 } } },
-        { $sort: { _id: 1 } },
-      ]).toArray(),
+      db
+        .collection('canvas_events')
+        .aggregate([
+          { $match: { serverTs: { $gte: since }, nodeType: { $exists: true } } },
+          { $group: { _id: '$nodeType', count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ])
+        .toArray(),
+      db
+        .collection('canvas_events')
+        .aggregate([
+          { $match: { serverTs: { $gte: since } } },
+          { $group: { _id: '$event', count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ])
+        .toArray(),
+      db
+        .collection('canvas_events')
+        .aggregate([
+          { $match: { serverTs: { $gte: since } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$serverTs' } },
+              count: { $sum: 1 },
+            },
+          },
+          { $sort: { _id: 1 } },
+        ])
+        .toArray(),
     ]);
 
     res.json({
@@ -931,7 +1045,6 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-
     let project = await prisma.canvasProject.findFirst({
       where: {
         id,
@@ -939,9 +1052,7 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       },
     });
 
-
     if (!project) {
-
       // Check if project exists and user has collaboration permissions
       const sharedProject = await prisma.canvasProject.findUnique({
         where: { id },
@@ -954,7 +1065,6 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
         },
       });
 
-
       if (!sharedProject) {
         return res.status(404).json({ error: 'Project not found' });
       }
@@ -964,8 +1074,10 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
         return res.status(403).json({ error: 'Project is not shared' });
       }
 
-      const canEdit = Array.isArray(sharedProject.canEdit) && sharedProject.canEdit.includes(req.userId);
-      const canView = Array.isArray(sharedProject.canView) && sharedProject.canView.includes(req.userId);
+      const canEdit =
+        Array.isArray(sharedProject.canEdit) && sharedProject.canEdit.includes(req.userId);
+      const canView =
+        Array.isArray(sharedProject.canView) && sharedProject.canView.includes(req.userId);
 
       if (!canEdit && !canView) {
         return res.status(403).json({ error: 'You do not have permission to access this project' });
@@ -979,7 +1091,6 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       if (!fullProject) {
         return res.status(404).json({ error: 'Project not found' });
       }
-
 
       // Use fullProject for the rest of the logic
       project = fullProject;
@@ -1012,13 +1123,13 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
         ...project,
         _id: project.id,
         nodes: cleanedNodes,
-      }
+      },
     });
   } catch (error: any) {
     console.error('Error fetching canvas project:', error);
     res.status(500).json({
       error: 'Failed to fetch canvas project',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
@@ -1077,13 +1188,13 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
         ...project,
         _id: project.id,
         nodes: processedNodes,
-      }
+      },
     });
   } catch (error: any) {
     console.error('Error creating canvas project:', error);
     res.status(500).json({
       error: 'Failed to create canvas project',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
@@ -1099,13 +1210,15 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       const sizeMB = (parseInt(contentLength) / 1024 / 1024).toFixed(2);
       return res.status(413).json({
         error: 'Request Entity Too Large',
-        message: `Projeto muito grande (${sizeMB}MB) para salvar. ` +
+        message:
+          `Projeto muito grande (${sizeMB}MB) para salvar. ` +
           `O tamanho máximo é 50MB (Vercel Pro). ` +
           `Configure o R2 nas configurações do sistema para salvar projetos grandes, ou reduza o número de imagens.`,
         sizeMB,
         maxSizeMB: '50',
         limitType: 'vercel',
-        suggestion: 'O R2 permite armazenar imagens separadamente, reduzindo o tamanho do payload e permitindo projetos maiores.'
+        suggestion:
+          'O R2 permite armazenar imagens separadamente, reduzindo o tamanho do payload e permitindo projetos maiores.',
       });
     }
 
@@ -1149,7 +1262,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       if (!Array.isArray(nodes)) {
         return res.status(400).json({
           error: 'Invalid nodes format',
-          message: 'Nodes must be an array'
+          message: 'Nodes must be an array',
         });
       }
     }
@@ -1216,22 +1329,27 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
 
       let suggestion = '';
       if (!r2Configured) {
-        suggestion = 'O limite de 50MB é imposto pela plataforma Vercel Pro. ' +
+        suggestion =
+          'O limite de 50MB é imposto pela plataforma Vercel Pro. ' +
           'Configure o armazenamento R2 nas configurações do sistema para salvar projetos grandes. ' +
           'O R2 permite armazenar imagens separadamente, reduzindo o tamanho do payload.';
       } else if (r2ProcessingFailed) {
-        suggestion = 'O processamento de imagens para R2 falhou. Tente novamente em alguns instantes.';
+        suggestion =
+          'O processamento de imagens para R2 falhou. Tente novamente em alguns instantes.';
       } else if (base64ImageCount > 0) {
-        suggestion = `Ainda há ${base64ImageCount} imagem(ns) em base64 que precisam ser processadas para R2. ` +
+        suggestion =
+          `Ainda há ${base64ImageCount} imagem(ns) em base64 que precisam ser processadas para R2. ` +
           'Aguarde alguns instantes e tente novamente.';
       } else {
-        suggestion = 'O projeto ainda está muito grande mesmo após otimização. ' +
+        suggestion =
+          'O projeto ainda está muito grande mesmo após otimização. ' +
           'Reduza o número de imagens ou elementos no canvas.';
       }
 
       return res.status(413).json({
         error: 'Request Entity Too Large',
-        message: `Projeto muito grande (${(payloadSize / 1024 / 1024).toFixed(2)}MB). ` +
+        message:
+          `Projeto muito grande (${(payloadSize / 1024 / 1024).toFixed(2)}MB). ` +
           `O tamanho máximo é 50MB (Vercel Pro). ${suggestion}`,
         payloadSizeMB: (payloadSize / 1024 / 1024).toFixed(2),
         maxSizeMB: (VERCEL_LIMIT / 1024 / 1024).toFixed(2),
@@ -1252,17 +1370,22 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
         suggestion = `Detectadas ${base64ImageCount} imagem(ns) base64 no payload. `;
       }
       if (!r2Configured) {
-        suggestion += 'R2 não está configurado - configure o R2 para fazer upload automático das imagens e reduzir o tamanho do payload. ';
+        suggestion +=
+          'R2 não está configurado - configure o R2 para fazer upload automático das imagens e reduzir o tamanho do payload. ';
       } else if (r2ProcessingFailed) {
-        suggestion += 'O upload automático para R2 falhou - verifique se o R2 está funcionando corretamente. ';
+        suggestion +=
+          'O upload automático para R2 falhou - verifique se o R2 está funcionando corretamente. ';
       } else {
-        suggestion += 'Após processar as imagens, o payload ainda excede o limite. Reduza o número de imagens no canvas. ';
+        suggestion +=
+          'Após processar as imagens, o payload ainda excede o limite. Reduza o número de imagens no canvas. ';
       }
       suggestion += 'Ou reduza o número de imagens no canvas.';
 
       return res.status(400).json({
         error: 'Payload too large',
-        message: `Payload size (${(payloadSize / 1024 / 1024).toFixed(2)}MB) exceeds maximum allowed size (${MAX_PAYLOAD_SIZE / 1024 / 1024}MB). ${suggestion}`,
+        message: `Payload size (${(payloadSize / 1024 / 1024).toFixed(
+          2
+        )}MB) exceeds maximum allowed size (${MAX_PAYLOAD_SIZE / 1024 / 1024}MB). ${suggestion}`,
         payloadSizeMB: (payloadSize / 1024 / 1024).toFixed(2),
         maxSizeMB: (MAX_PAYLOAD_SIZE / 1024 / 1024).toFixed(2),
         base64ImageCount,
@@ -1275,7 +1398,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     if (nodes !== undefined && Array.isArray(nodes) && nodes.length > 10000) {
       return res.status(400).json({
         error: 'Too many nodes',
-        message: `Number of nodes (${nodes.length}) exceeds maximum allowed (10000)`
+        message: `Number of nodes (${nodes.length}) exceeds maximum allowed (10000)`,
       });
     }
 
@@ -1288,7 +1411,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       if (edges.length > 10000) {
         return res.status(400).json({
           error: 'Too many edges',
-          message: `Number of edges (${edges.length}) exceeds maximum allowed (10000)`
+          message: `Number of edges (${edges.length}) exceeds maximum allowed (10000)`,
         });
       }
     }
@@ -1323,10 +1446,11 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       project: {
         ...project,
         _id: project.id,
-      }
+      },
     });
   } catch (error: any) {
-    const isConnectionError = error.code === 'P1001' ||
+    const isConnectionError =
+      error.code === 'P1001' ||
       error.message?.includes('connect') ||
       error.message?.includes('connection');
 
@@ -1369,9 +1493,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     });
 
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const errorMessage = isDevelopment
-      ? error.message || 'An error occurred'
-      : userMessage;
+    const errorMessage = isDevelopment ? error.message || 'An error occurred' : userMessage;
 
     // Return appropriate status code based on error type
     let statusCode = 500;
@@ -1393,8 +1515,8 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
           meta: error.meta,
           errorType,
           connectionIssue: isConnectionError ? connectionStatus : undefined,
-        }
-      })
+        },
+      }),
     });
   }
 });
@@ -1429,14 +1551,14 @@ router.get('/image/upload-url', apiRateLimiter, authenticate, async (req: AuthRe
       console.error('Error generating presigned URL:', error);
       res.status(500).json({
         error: 'Failed to generate upload URL',
-        message: error.message || 'An error occurred'
+        message: error.message || 'An error occurred',
       });
     }
   } catch (error: any) {
     console.error('Error in canvas image upload URL endpoint:', error);
     res.status(500).json({
       error: 'Failed to process request',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
@@ -1471,140 +1593,157 @@ router.get('/video/upload-url', apiRateLimiter, authenticate, async (req: AuthRe
       console.error('Error generating presigned URL for video:', error);
       res.status(500).json({
         error: 'Failed to generate upload URL',
-        message: error.message || 'An error occurred'
+        message: error.message || 'An error occurred',
       });
     }
   } catch (error: any) {
     console.error('Error in canvas video upload URL endpoint:', error);
     res.status(500).json({
       error: 'Failed to process request',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
 
 // Upload canvas image to R2 (legacy endpoint - still used for smaller images)
-router.post('/image/upload', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    // Check request size early to prevent 413 errors
-    const contentLength = req.headers['content-length'];
-    const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro limit
-
-    if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
-      const sizeMB = (parseInt(contentLength) / 1024 / 1024).toFixed(2);
-      return res.status(413).json({
-        error: 'Request Entity Too Large',
-        message: `Imagem muito grande (${sizeMB}MB). O tamanho máximo é 50MB. Por favor, use uma imagem menor.`,
-        sizeMB,
-        maxSizeMB: '50'
-      });
-    }
-
-    const { base64Image, canvasId, nodeId } = req.body;
-
-    if (!req.userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    if (!base64Image || typeof base64Image !== 'string') {
-      return res.status(400).json({ error: 'base64Image is required' });
-    }
-
-    // Check base64 image size
-    const base64Data = base64Image.includes(',')
-      ? base64Image.split(',')[1]
-      : base64Image;
-    const imageSizeBytes = base64Data ? (base64Data.length * 3) / 4 : 0;
-
-    if (imageSizeBytes > VERCEL_LIMIT) {
-      const sizeMB = (imageSizeBytes / 1024 / 1024).toFixed(2);
-      return res.status(413).json({
-        error: 'Request Entity Too Large',
-        message: `Imagem muito grande (${sizeMB}MB). O tamanho máximo é 50MB. ` +
-          `Nota: Configure o R2 para preservar qualidade máxima em imagens grandes. ` +
-          `Com R2 configurado, imagens são armazenadas com qualidade preservada (95%+).`,
-        sizeMB,
-        maxSizeMB: '50'
-      });
-    }
-
-    if (!isR2Configured()) {
-      return res.status(503).json({ error: 'R2 storage is not configured' });
-    }
-
-    // Use provided canvasId or generate a temporary one
-    const finalCanvasId = canvasId || `temp-${Date.now()}`;
-
-    // Get user info for storage limit check (isAdmin and subscriptionTier)
-    let subscriptionTier = 'free';
-    let isAdmin = false;
-
+router.post(
+  '/image/upload',
+  uploadImageRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: req.userId },
-        select: { subscriptionTier: true, isAdmin: true },
-      });
+      // Check request size early to prevent 413 errors
+      const contentLength = req.headers['content-length'];
+      const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro limit
 
-      if (user) {
-        subscriptionTier = user.subscriptionTier || 'free';
-        isAdmin = user.isAdmin || false;
-      }
-    } catch (userError) {
-      console.warn('Could not fetch user info for storage limit check:', userError);
-      // Continue with defaults (free tier, not admin)
-    }
-
-    try {
-      // Upload to R2 - NO compression on server side
-      // The image is stored as-is to preserve maximum quality for designers
-      // Compression (if needed) is done on client side with high quality settings (0.95)
-      const imageUrl = await uploadCanvasImage(base64Image, req.userId, finalCanvasId, nodeId, subscriptionTier, isAdmin);
-      res.json({ imageUrl });
-    } catch (uploadError: any) {
-      console.error('Error uploading canvas image to R2:', uploadError);
-
-      if (uploadError.name === 'StorageLimitExceededError') {
-        const usedMB = (uploadError.used / 1024 / 1024).toFixed(2);
-        const limitMB = (uploadError.limit / 1024 / 1024).toFixed(2);
-        return res.status(403).json({
-          error: 'Storage Limit Exceeded',
-          message: `Você excedeu seu limite de armazenamento (${usedMB}MB / ${limitMB}MB). Faça upgrade para Premium para ter mais espaço.`,
-          code: 'STORAGE_LIMIT_EXCEEDED',
-          usedMB,
-          limitMB
+      if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
+        const sizeMB = (parseInt(contentLength) / 1024 / 1024).toFixed(2);
+        return res.status(413).json({
+          error: 'Request Entity Too Large',
+          message: `Imagem muito grande (${sizeMB}MB). O tamanho máximo é 50MB. Por favor, use uma imagem menor.`,
+          sizeMB,
+          maxSizeMB: '50',
         });
       }
 
-      // Handle 413 errors from R2 or other services
-      if (uploadError.message?.includes('too large') || uploadError.message?.includes('413')) {
+      const { base64Image, canvasId, nodeId } = req.body;
+
+      if (!req.userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      if (!base64Image || typeof base64Image !== 'string') {
+        return res.status(400).json({ error: 'base64Image is required' });
+      }
+
+      // Check base64 image size
+      const base64Data = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
+      const imageSizeBytes = base64Data ? (base64Data.length * 3) / 4 : 0;
+
+      if (imageSizeBytes > VERCEL_LIMIT) {
+        const sizeMB = (imageSizeBytes / 1024 / 1024).toFixed(2);
         return res.status(413).json({
           error: 'Request Entity Too Large',
-          message: 'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.',
+          message:
+            `Imagem muito grande (${sizeMB}MB). O tamanho máximo é 50MB. ` +
+            `Nota: Configure o R2 para preservar qualidade máxima em imagens grandes. ` +
+            `Com R2 configurado, imagens são armazenadas com qualidade preservada (95%+).`,
+          sizeMB,
+          maxSizeMB: '50',
+        });
+      }
+
+      if (!isR2Configured()) {
+        return res.status(503).json({ error: 'R2 storage is not configured' });
+      }
+
+      // Use provided canvasId or generate a temporary one
+      const finalCanvasId = canvasId || `temp-${Date.now()}`;
+
+      // Get user info for storage limit check (isAdmin and subscriptionTier)
+      let subscriptionTier = 'free';
+      let isAdmin = false;
+
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: req.userId },
+          select: { subscriptionTier: true, isAdmin: true },
+        });
+
+        if (user) {
+          subscriptionTier = user.subscriptionTier || 'free';
+          isAdmin = user.isAdmin || false;
+        }
+      } catch (userError) {
+        console.warn('Could not fetch user info for storage limit check:', userError);
+        // Continue with defaults (free tier, not admin)
+      }
+
+      try {
+        // Upload to R2 - NO compression on server side
+        // The image is stored as-is to preserve maximum quality for designers
+        // Compression (if needed) is done on client side with high quality settings (0.95)
+        const imageUrl = await uploadCanvasImage(
+          base64Image,
+          req.userId,
+          finalCanvasId,
+          nodeId,
+          subscriptionTier,
+          isAdmin
+        );
+        res.json({ imageUrl });
+      } catch (uploadError: any) {
+        console.error('Error uploading canvas image to R2:', uploadError);
+
+        if (uploadError.name === 'StorageLimitExceededError') {
+          const usedMB = (uploadError.used / 1024 / 1024).toFixed(2);
+          const limitMB = (uploadError.limit / 1024 / 1024).toFixed(2);
+          return res.status(403).json({
+            error: 'Storage Limit Exceeded',
+            message: `Você excedeu seu limite de armazenamento (${usedMB}MB / ${limitMB}MB). Faça upgrade para Premium para ter mais espaço.`,
+            code: 'STORAGE_LIMIT_EXCEEDED',
+            usedMB,
+            limitMB,
+          });
+        }
+
+        // Handle 413 errors from R2 or other services
+        if (uploadError.message?.includes('too large') || uploadError.message?.includes('413')) {
+          return res.status(413).json({
+            error: 'Request Entity Too Large',
+            message:
+              'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.',
+          });
+        }
+
+        res.status(500).json({
+          error: 'Failed to upload image to R2',
+          message: uploadError.message || 'An error occurred',
+        });
+      }
+    } catch (error: any) {
+      console.error('Error in canvas image upload endpoint:', error);
+
+      // Handle 413 errors
+      if (
+        error.status === 413 ||
+        error.message?.includes('413') ||
+        error.message?.includes('too large')
+      ) {
+        return res.status(413).json({
+          error: 'Request Entity Too Large',
+          message:
+            'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.',
         });
       }
 
       res.status(500).json({
-        error: 'Failed to upload image to R2',
-        message: uploadError.message || 'An error occurred'
+        error: 'Failed to process image upload',
+        message: error.message || 'An error occurred',
       });
     }
-  } catch (error: any) {
-    console.error('Error in canvas image upload endpoint:', error);
-
-    // Handle 413 errors
-    if (error.status === 413 || error.message?.includes('413') || error.message?.includes('too large')) {
-      return res.status(413).json({
-        error: 'Request Entity Too Large',
-        message: 'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.',
-      });
-    }
-
-    res.status(500).json({
-      error: 'Failed to process image upload',
-      message: error.message || 'An error occurred'
-    });
   }
-});
+);
 
 // Upload canvas PDF to R2
 router.post('/pdf/upload', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
@@ -1635,113 +1774,124 @@ router.post('/pdf/upload', uploadImageRateLimiter, authenticate, async (req: Aut
       console.error('Error uploading canvas PDF to R2:', uploadError);
       res.status(500).json({
         error: 'Failed to upload PDF to R2',
-        message: uploadError.message || 'An error occurred'
+        message: uploadError.message || 'An error occurred',
       });
     }
   } catch (error: any) {
     console.error('Error in canvas PDF upload endpoint:', error);
     res.status(500).json({
       error: 'Failed to process PDF upload',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
 
 // Upload canvas video to R2
-router.post('/video/upload', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    // Check request size early to prevent 413 errors
-    const contentLength = req.headers['content-length'];
-    const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro limit
-
-    if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
-      const sizeMB = (parseInt(contentLength) / 1024 / 1024).toFixed(2);
-      return res.status(413).json({
-        error: 'Request Entity Too Large',
-        message: `Vídeo muito grande (${sizeMB}MB). O tamanho máximo é 50MB (Vercel Pro). ` +
-          `Nota: Configure o R2 para preservar qualidade máxima em vídeos grandes. ` +
-          `Com R2 configurado, vídeos são armazenados sem compressão, mantendo qualidade original.`,
-        sizeMB,
-        maxSizeMB: '50',
-        limitType: 'vercel'
-      });
-    }
-
-    const { videoBase64, canvasId, nodeId } = req.body;
-
-    if (!req.userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    if (!videoBase64 || typeof videoBase64 !== 'string') {
-      return res.status(400).json({ error: 'videoBase64 is required' });
-    }
-
-    // Check base64 video size
-    const base64Data = videoBase64.includes(',')
-      ? videoBase64.split(',')[1]
-      : videoBase64;
-    const videoSizeBytes = base64Data ? (base64Data.length * 3) / 4 : 0;
-
-    if (videoSizeBytes > VERCEL_LIMIT) {
-      const sizeMB = (videoSizeBytes / 1024 / 1024).toFixed(2);
-      return res.status(413).json({
-        error: 'Request Entity Too Large',
-        message: `Vídeo muito grande (${sizeMB}MB). O tamanho máximo é 50MB (Vercel Pro). ` +
-          `Nota: Configure o R2 para preservar qualidade máxima em vídeos grandes. ` +
-          `Com R2 configurado, vídeos são armazenados sem compressão, mantendo qualidade original.`,
-        sizeMB,
-        maxSizeMB: '50',
-        limitType: 'vercel'
-      });
-    }
-
-    if (!isR2Configured()) {
-      return res.status(503).json({ error: 'R2 storage is not configured' });
-    }
-
-    // Use provided canvasId or generate a temporary one
-    const finalCanvasId = canvasId || `temp-${Date.now()}`;
-
+router.post(
+  '/video/upload',
+  uploadImageRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
     try {
-      // Upload to R2 - NO compression on server side
-      // The video is stored as-is to preserve maximum quality for designers
-      // Videos are uploaded directly to R2 without any quality loss
-      const videoUrl = await uploadCanvasVideo(videoBase64, req.userId, finalCanvasId, nodeId);
-      res.json({ videoUrl });
-    } catch (uploadError: any) {
-      console.error('Error uploading canvas video to R2:', uploadError);
+      // Check request size early to prevent 413 errors
+      const contentLength = req.headers['content-length'];
+      const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro limit
 
-      // Handle 413 errors from R2 or other services
-      if (uploadError.message?.includes('too large') || uploadError.message?.includes('413')) {
+      if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
+        const sizeMB = (parseInt(contentLength) / 1024 / 1024).toFixed(2);
         return res.status(413).json({
           error: 'Request Entity Too Large',
-          message: 'Vídeo muito grande para upload. Por favor, use um vídeo menor ou comprima o vídeo antes de fazer upload.',
+          message:
+            `Vídeo muito grande (${sizeMB}MB). O tamanho máximo é 50MB (Vercel Pro). ` +
+            `Nota: Configure o R2 para preservar qualidade máxima em vídeos grandes. ` +
+            `Com R2 configurado, vídeos são armazenados sem compressão, mantendo qualidade original.`,
+          sizeMB,
+          maxSizeMB: '50',
+          limitType: 'vercel',
+        });
+      }
+
+      const { videoBase64, canvasId, nodeId } = req.body;
+
+      if (!req.userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      if (!videoBase64 || typeof videoBase64 !== 'string') {
+        return res.status(400).json({ error: 'videoBase64 is required' });
+      }
+
+      // Check base64 video size
+      const base64Data = videoBase64.includes(',') ? videoBase64.split(',')[1] : videoBase64;
+      const videoSizeBytes = base64Data ? (base64Data.length * 3) / 4 : 0;
+
+      if (videoSizeBytes > VERCEL_LIMIT) {
+        const sizeMB = (videoSizeBytes / 1024 / 1024).toFixed(2);
+        return res.status(413).json({
+          error: 'Request Entity Too Large',
+          message:
+            `Vídeo muito grande (${sizeMB}MB). O tamanho máximo é 50MB (Vercel Pro). ` +
+            `Nota: Configure o R2 para preservar qualidade máxima em vídeos grandes. ` +
+            `Com R2 configurado, vídeos são armazenados sem compressão, mantendo qualidade original.`,
+          sizeMB,
+          maxSizeMB: '50',
+          limitType: 'vercel',
+        });
+      }
+
+      if (!isR2Configured()) {
+        return res.status(503).json({ error: 'R2 storage is not configured' });
+      }
+
+      // Use provided canvasId or generate a temporary one
+      const finalCanvasId = canvasId || `temp-${Date.now()}`;
+
+      try {
+        // Upload to R2 - NO compression on server side
+        // The video is stored as-is to preserve maximum quality for designers
+        // Videos are uploaded directly to R2 without any quality loss
+        const videoUrl = await uploadCanvasVideo(videoBase64, req.userId, finalCanvasId, nodeId);
+        res.json({ videoUrl });
+      } catch (uploadError: any) {
+        console.error('Error uploading canvas video to R2:', uploadError);
+
+        // Handle 413 errors from R2 or other services
+        if (uploadError.message?.includes('too large') || uploadError.message?.includes('413')) {
+          return res.status(413).json({
+            error: 'Request Entity Too Large',
+            message:
+              'Vídeo muito grande para upload. Por favor, use um vídeo menor ou comprima o vídeo antes de fazer upload.',
+          });
+        }
+
+        res.status(500).json({
+          error: 'Failed to upload video to R2',
+          message: uploadError.message || 'An error occurred',
+        });
+      }
+    } catch (error: any) {
+      console.error('Error in canvas video upload endpoint:', error);
+
+      // Handle 413 errors
+      if (
+        error.status === 413 ||
+        error.message?.includes('413') ||
+        error.message?.includes('too large')
+      ) {
+        return res.status(413).json({
+          error: 'Request Entity Too Large',
+          message:
+            'Vídeo muito grande para upload. Por favor, use um vídeo menor ou comprima o vídeo antes de fazer upload.',
         });
       }
 
       res.status(500).json({
-        error: 'Failed to upload video to R2',
-        message: uploadError.message || 'An error occurred'
+        error: 'Failed to process video upload',
+        message: error.message || 'An error occurred',
       });
     }
-  } catch (error: any) {
-    console.error('Error in canvas video upload endpoint:', error);
-
-    // Handle 413 errors
-    if (error.status === 413 || error.message?.includes('413') || error.message?.includes('too large')) {
-      return res.status(413).json({
-        error: 'Request Entity Too Large',
-        message: 'Vídeo muito grande para upload. Por favor, use um vídeo menor ou comprima o vídeo antes de fazer upload.',
-      });
-    }
-
-    res.status(500).json({
-      error: 'Failed to process video upload',
-      message: error.message || 'An error occurred'
-    });
   }
-});
+);
 
 // Delete image from R2
 router.delete('/image', authenticate, async (req: AuthRequest, res) => {
@@ -1771,13 +1921,17 @@ router.delete('/image', authenticate, async (req: AuthRequest, res) => {
     } catch (deleteError: any) {
       console.error('Failed to delete image from R2:', deleteError);
       // Don't fail the request if R2 deletion fails
-      res.json({ success: true, message: 'Image deletion attempted', warning: deleteError.message });
+      res.json({
+        success: true,
+        message: 'Image deletion attempted',
+        warning: deleteError.message,
+      });
     }
   } catch (error: any) {
     console.error('Error deleting image from R2:', error);
     res.status(500).json({
       error: 'Failed to delete image from R2',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
@@ -1811,246 +1965,267 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
     console.error('Error deleting canvas project:', error);
     res.status(500).json({
       error: 'Failed to delete canvas project',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
 
 // Liveblocks authentication endpoint
-router.post('/:id/liveblocks-auth', authenticate, requireViewAccess, async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
+router.post(
+  '/:id/liveblocks-auth',
+  authenticate,
+  requireViewAccess,
+  async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
 
-    if (!req.userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    const project = await prisma.canvasProject.findUnique({
-      where: { id },
-      select: {
-        userId: true,
-        isCollaborative: true,
-        canEdit: true,
-        canView: true,
-      },
-    });
-
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-
-    if (!project.isCollaborative) {
-      return res.status(400).json({ error: 'Project is not in collaborative mode' });
-    }
-
-    const isOwner = project.userId === req.userId;
-    const canEdit = isOwner || (Array.isArray(project.canEdit) && project.canEdit.includes(req.userId!));
-
-    // Owners must have premium to enable collaborative features.
-    // Invited collaborators (canEdit/canView) may be any tier.
-    if (isOwner) {
-      try {
-        const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
-        const { ObjectId } = await import('mongodb');
-        await connectToMongoDB();
-        const db = getDb();
-        const userDoc = await db.collection('users').findOne(
-          { _id: new ObjectId(req.userId) },
-          { projection: { isAdmin: 1, subscriptionStatus: 1, userCategory: 1 } }
-        );
-        const isPremium =
-          userDoc?.isAdmin === true ||
-          userDoc?.subscriptionStatus === 'active' ||
-          userDoc?.userCategory === 'tester';
-        if (!isPremium) {
-          return res.status(403).json({
-            error: 'Access required',
-            message: 'Collaborative features require an active premium subscription',
-          });
-        }
-      } catch (premiumCheckError: any) {
-        console.error('[Liveblocks Auth] Premium check error:', premiumCheckError);
-        return res.status(500).json({ error: 'Internal server error' });
+      if (!req.userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
       }
-    }
 
-    // Get user info for Liveblocks (use Prisma as primary source)
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: { email: true, name: true, picture: true },
-    });
+      const project = await prisma.canvasProject.findUnique({
+        where: { id },
+        select: {
+          userId: true,
+          isCollaborative: true,
+          canEdit: true,
+          canView: true,
+        },
+      });
 
-    // Fallback to MongoDB if Prisma user not found (shouldn't happen, but safe fallback)
-    let userInfo = {
-      name: user?.name || user?.email || 'Anonymous',
-      email: user?.email || undefined,
-      picture: user?.picture || undefined,
-    };
-
-    if (!user) {
-      try {
-        const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
-        const { ObjectId } = await import('mongodb');
-        await connectToMongoDB();
-        const db = getDb();
-        const userDoc = await db.collection('users').findOne(
-          { _id: new ObjectId(req.userId) },
-          { projection: { email: 1, name: 1, picture: 1 } }
-        );
-        if (userDoc) {
-          userInfo = {
-            name: userDoc.name || userDoc.email || 'Anonymous',
-            email: userDoc.email,
-            picture: userDoc.picture,
-          };
-        }
-      } catch (mongoError) {
-        console.warn('Could not fetch user from MongoDB, using defaults:', mongoError);
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found' });
       }
+
+      if (!project.isCollaborative) {
+        return res.status(400).json({ error: 'Project is not in collaborative mode' });
+      }
+
+      const isOwner = project.userId === req.userId;
+      const canEdit =
+        isOwner || (Array.isArray(project.canEdit) && project.canEdit.includes(req.userId!));
+
+      // Owners must have premium to enable collaborative features.
+      // Invited collaborators (canEdit/canView) may be any tier.
+      if (isOwner) {
+        try {
+          const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
+          const { ObjectId } = await import('mongodb');
+          await connectToMongoDB();
+          const db = getDb();
+          const userDoc = await db
+            .collection('users')
+            .findOne(
+              { _id: new ObjectId(req.userId) },
+              { projection: { isAdmin: 1, subscriptionStatus: 1, userCategory: 1 } }
+            );
+          const isPremium =
+            userDoc?.isAdmin === true ||
+            userDoc?.subscriptionStatus === 'active' ||
+            userDoc?.userCategory === 'tester';
+          if (!isPremium) {
+            return res.status(403).json({
+              error: 'Access required',
+              message: 'Collaborative features require an active premium subscription',
+            });
+          }
+        } catch (premiumCheckError: any) {
+          console.error('[Liveblocks Auth] Premium check error:', premiumCheckError);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+      }
+
+      // Get user info for Liveblocks (use Prisma as primary source)
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { email: true, name: true, picture: true },
+      });
+
+      // Fallback to MongoDB if Prisma user not found (shouldn't happen, but safe fallback)
+      let userInfo = {
+        name: user?.name || user?.email || 'Anonymous',
+        email: user?.email || undefined,
+        picture: user?.picture || undefined,
+      };
+
+      if (!user) {
+        try {
+          const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
+          const { ObjectId } = await import('mongodb');
+          await connectToMongoDB();
+          const db = getDb();
+          const userDoc = await db
+            .collection('users')
+            .findOne(
+              { _id: new ObjectId(req.userId) },
+              { projection: { email: 1, name: 1, picture: 1 } }
+            );
+          if (userDoc) {
+            userInfo = {
+              name: userDoc.name || userDoc.email || 'Anonymous',
+              email: userDoc.email,
+              picture: userDoc.picture,
+            };
+          }
+        } catch (mongoError) {
+          console.warn('Could not fetch user from MongoDB, using defaults:', mongoError);
+        }
+      }
+
+      const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY;
+      if (!LIVEBLOCKS_SECRET_KEY) {
+        console.error('[Liveblocks Auth] LIVEBLOCKS_SECRET_KEY not configured');
+        return res.status(500).json({ error: 'Liveblocks is not configured' });
+      }
+
+      const roomId = `canvas-${id}`;
+      const liveblocks = new Liveblocks({
+        secret: LIVEBLOCKS_SECRET_KEY,
+      });
+
+      const session = liveblocks.prepareSession(req.userId, {
+        userInfo: userInfo,
+      });
+
+      // Grant appropriate access based on permissions
+      // Users with edit access get FULL_ACCESS, view-only users get READ_ACCESS
+      session.allow(roomId, canEdit ? session.FULL_ACCESS : session.READ_ACCESS);
+      const { body, status } = await session.authorize();
+
+      res.status(status).end(body);
+    } catch (error: any) {
+      console.error('[Liveblocks Auth] Error:', error);
+      console.error('[Liveblocks Auth] Error stack:', error?.stack);
+      res.status(500).json({
+        error: 'Failed to authenticate with Liveblocks',
+        message: error.message || 'An error occurred',
+      });
     }
-
-    const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY;
-    if (!LIVEBLOCKS_SECRET_KEY) {
-      console.error('[Liveblocks Auth] LIVEBLOCKS_SECRET_KEY not configured');
-      return res.status(500).json({ error: 'Liveblocks is not configured' });
-    }
-
-    const roomId = `canvas-${id}`;
-    const liveblocks = new Liveblocks({
-      secret: LIVEBLOCKS_SECRET_KEY,
-    });
-
-    const session = liveblocks.prepareSession(req.userId, {
-      userInfo: userInfo,
-    });
-
-    // Grant appropriate access based on permissions
-    // Users with edit access get FULL_ACCESS, view-only users get READ_ACCESS
-    session.allow(roomId, canEdit ? session.FULL_ACCESS : session.READ_ACCESS);
-    const { body, status } = await session.authorize();
-
-    res.status(status).end(body);
-  } catch (error: any) {
-    console.error('[Liveblocks Auth] Error:', error);
-    console.error('[Liveblocks Auth] Error stack:', error?.stack);
-    res.status(500).json({
-      error: 'Failed to authenticate with Liveblocks',
-      message: error.message || 'An error occurred'
-    });
   }
-});
+);
 
 // Share project (generate shareId and enable collaboration)
-router.post('/:id/share', apiRateLimiter, authenticate, validateAdminOrPremium, async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
-    const { canEdit = [], canView = [] } = req.body;
+router.post(
+  '/:id/share',
+  apiRateLimiter,
+  authenticate,
+  validateAdminOrPremium,
+  async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      const { canEdit = [], canView = [] } = req.body;
 
-    if (!req.userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
+      if (!req.userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
 
-    const project = await prisma.canvasProject.findFirst({
-      where: {
-        id,
-        userId: req.userId,
-      },
-    });
+      const project = await prisma.canvasProject.findFirst({
+        where: {
+          id,
+          userId: req.userId,
+        },
+      });
 
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
 
-    // Convert emails to user IDs
-    const canEditUserIds = await convertEmailsToUserIds(Array.isArray(canEdit) ? canEdit : []);
-    const canViewUserIds = await convertEmailsToUserIds(Array.isArray(canView) ? canView : []);
-
-    // Generate new shareId if doesn't exist
-    let shareId = project.shareId;
-    if (!shareId) {
-      shareId = generateShareId();
-    }
-
-    // Update project with share settings
-    const updatedProject = await prisma.canvasProject.update({
-      where: { id },
-      data: {
-        shareId,
-        isCollaborative: true,
-        canEdit: canEditUserIds,
-        canView: canViewUserIds,
-      },
-    });
-
-    res.json({
-      shareId,
-      shareUrl: `/canvas/shared/${shareId}`,
-      canEdit: updatedProject.canEdit,
-      canView: updatedProject.canView,
-    });
-  } catch (error: any) {
-    console.error('Error sharing project:', error);
-    res.status(500).json({
-      error: 'Failed to share project',
-      message: error.message || 'An error occurred'
-    });
-  }
-});
-
-// Update share settings (permissions)
-router.put('/:id/share-settings', authenticate, validateAdminOrPremium, async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
-    const { canEdit, canView } = req.body;
-
-    if (!req.userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
-
-    const project = await prisma.canvasProject.findFirst({
-      where: {
-        id,
-        userId: req.userId,
-      },
-    });
-
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-
-    if (!project.isCollaborative) {
-      return res.status(400).json({ error: 'Project is not in collaborative mode' });
-    }
-
-    const updateData: any = {};
-    if (canEdit !== undefined) {
       // Convert emails to user IDs
       const canEditUserIds = await convertEmailsToUserIds(Array.isArray(canEdit) ? canEdit : []);
-      updateData.canEdit = canEditUserIds;
-    }
-    if (canView !== undefined) {
-      // Convert emails to user IDs
       const canViewUserIds = await convertEmailsToUserIds(Array.isArray(canView) ? canView : []);
-      updateData.canView = canViewUserIds;
+
+      // Generate new shareId if doesn't exist
+      let shareId = project.shareId;
+      if (!shareId) {
+        shareId = generateShareId();
+      }
+
+      // Update project with share settings
+      const updatedProject = await prisma.canvasProject.update({
+        where: { id },
+        data: {
+          shareId,
+          isCollaborative: true,
+          canEdit: canEditUserIds,
+          canView: canViewUserIds,
+        },
+      });
+
+      res.json({
+        shareId,
+        shareUrl: `/canvas/shared/${shareId}`,
+        canEdit: updatedProject.canEdit,
+        canView: updatedProject.canView,
+      });
+    } catch (error: any) {
+      console.error('Error sharing project:', error);
+      res.status(500).json({
+        error: 'Failed to share project',
+        message: error.message || 'An error occurred',
+      });
     }
-
-    const updatedProject = await prisma.canvasProject.update({
-      where: { id },
-      data: updateData,
-    });
-
-    res.json({
-      canEdit: updatedProject.canEdit,
-      canView: updatedProject.canView,
-    });
-  } catch (error: any) {
-    console.error('Error updating share settings:', error);
-    res.status(500).json({
-      error: 'Failed to update share settings',
-      message: error.message || 'An error occurred'
-    });
   }
-});
+);
+
+// Update share settings (permissions)
+router.put(
+  '/:id/share-settings',
+  authenticate,
+  validateAdminOrPremium,
+  async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      const { canEdit, canView } = req.body;
+
+      if (!req.userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      const project = await prisma.canvasProject.findFirst({
+        where: {
+          id,
+          userId: req.userId,
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+
+      if (!project.isCollaborative) {
+        return res.status(400).json({ error: 'Project is not in collaborative mode' });
+      }
+
+      const updateData: any = {};
+      if (canEdit !== undefined) {
+        // Convert emails to user IDs
+        const canEditUserIds = await convertEmailsToUserIds(Array.isArray(canEdit) ? canEdit : []);
+        updateData.canEdit = canEditUserIds;
+      }
+      if (canView !== undefined) {
+        // Convert emails to user IDs
+        const canViewUserIds = await convertEmailsToUserIds(Array.isArray(canView) ? canView : []);
+        updateData.canView = canViewUserIds;
+      }
+
+      const updatedProject = await prisma.canvasProject.update({
+        where: { id },
+        data: updateData,
+      });
+
+      res.json({
+        canEdit: updatedProject.canEdit,
+        canView: updatedProject.canView,
+      });
+    } catch (error: any) {
+      console.error('Error updating share settings:', error);
+      res.status(500).json({
+        error: 'Failed to update share settings',
+        message: error.message || 'An error occurred',
+      });
+    }
+  }
+);
 
 // Remove sharing (disable collaboration)
 router.delete('/:id/share', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
@@ -2087,13 +2262,9 @@ router.delete('/:id/share', apiRateLimiter, authenticate, async (req: AuthReques
     console.error('Error removing share:', error);
     res.status(500).json({
       error: 'Failed to remove sharing',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
 
 export default router;
-
-
-
-

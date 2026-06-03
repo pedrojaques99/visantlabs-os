@@ -101,7 +101,8 @@ export function ExportSection() {
       </div>
 
       <p className="text-[9px] text-neutral-500 italic px-1">
-        * Export assets, generate responsive variations, slice for carousels, or extract all page texts as Markdown.
+        * Export assets, generate responsive variations, slice for carousels, or extract all page
+        texts as Markdown.
       </p>
     </div>
   );

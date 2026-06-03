@@ -20,10 +20,16 @@ function downloadBlob(blob: Blob, filename: string) {
 
 async function downloadItem(item: ExportItem) {
   if (item.png) {
-    downloadBlob(new Blob([item.png as unknown as BlobPart], { type: 'image/png' }), `${item.name}.png`);
+    downloadBlob(
+      new Blob([item.png as unknown as BlobPart], { type: 'image/png' }),
+      `${item.name}.png`
+    );
   }
   if (item.svg) {
-    downloadBlob(new Blob([item.svg as unknown as BlobPart], { type: 'image/svg+xml' }), `${item.name}.svg`);
+    downloadBlob(
+      new Blob([item.svg as unknown as BlobPart], { type: 'image/svg+xml' }),
+      `${item.name}.svg`
+    );
   }
 }
 

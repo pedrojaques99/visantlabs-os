@@ -42,8 +42,12 @@ class ChainErrorBoundary extends React.Component<
   { hasError: boolean }
 > {
   state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
 }
 
 const PendantChain: React.FC<{
@@ -58,15 +62,19 @@ const PendantChain: React.FC<{
   const { clone, normalizedScale } = useMemo(() => {
     const c = scene.clone(true);
     const b = new THREE.Box3().setFromObject(c);
-    const s = new THREE.Vector3(); b.getSize(s);
-    const center = new THREE.Vector3(); b.getCenter(center);
+    const s = new THREE.Vector3();
+    b.getSize(s);
+    const center = new THREE.Vector3();
+    b.getCenter(center);
 
     // Center X/Z, anchor bottom at origin (chain grows upward)
     c.position.set(-center.x, -b.min.y, -center.z);
 
     // Show only bottom N links (closest to bail)
     const meshes: THREE.Mesh[] = [];
-    c.traverse((child) => { if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh); });
+    c.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh);
+    });
     // Sort by world Y position ascending (bottom first)
     const meshYPositions = new Map<THREE.Mesh, number>();
     const tempV = new THREE.Vector3();
@@ -76,7 +84,9 @@ const PendantChain: React.FC<{
       meshYPositions.set(m, tempV.y);
     });
     meshes.sort((a, b) => (meshYPositions.get(a) ?? 0) - (meshYPositions.get(b) ?? 0));
-    meshes.forEach((m, i) => { m.visible = i < chainLinks; });
+    meshes.forEach((m, i) => {
+      m.visible = i < chainLinks;
+    });
 
     const ns = (4 * chainScale) / Math.max(s.x, s.y, s.z);
     return { clone: c, normalizedScale: ns };
@@ -93,7 +103,9 @@ const PendantChain: React.FC<{
     clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) (child as THREE.Mesh).material = mat;
     });
-    return () => { mat.dispose(); };
+    return () => {
+      mat.dispose();
+    };
   }, [clone, materialProps.color, materialProps.metalness, materialProps.roughness]);
 
   return (
@@ -169,16 +181,49 @@ interface ExtrudedSVGProps {
 }
 
 export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
-  svgString, depth, smoothness, bevelEnabled = true, bevelThickness = 0.5, bevelSize = 0.5,
-  color, materialSettings, rotationX, rotationY, groupRef,
-  texture: textureUrl, textureRepeat = 1, textureRotation = 0, textureOpacity = 1, textureOffset = [0, 0],
-  envMapIntensity: envMapIntensityProp = 1, fresnelColor, fresnelStrength = 0,
-  normalMapUrl, roughnessMapUrl, metalnessMapUrl,
-  onLoadingChange, shapeType = 'standard',
-  coinRadius = 2.2, badgeWidth = 3.6, badgeHeight = 2.4, badgeRadius = 0.4,
-  stampRadius = 2.4, stampTeeth = 24, stampToothDepth = 0.25,
-  shieldWidth = 2.2, shieldHeight = 2.8, hexRadius = 2.4,
-  chainLinks = 6, chainScale = 1, showChain = false, bailSize = 0.35, bailOffset = 0, chainOffset = 0, chainColor = '', shapeColor = '', reliefDepth: reliefDepthProp = 0.3,
+  svgString,
+  depth,
+  smoothness,
+  bevelEnabled = true,
+  bevelThickness = 0.5,
+  bevelSize = 0.5,
+  color,
+  materialSettings,
+  rotationX,
+  rotationY,
+  groupRef,
+  texture: textureUrl,
+  textureRepeat = 1,
+  textureRotation = 0,
+  textureOpacity = 1,
+  textureOffset = [0, 0],
+  envMapIntensity: envMapIntensityProp = 1,
+  fresnelColor,
+  fresnelStrength = 0,
+  normalMapUrl,
+  roughnessMapUrl,
+  metalnessMapUrl,
+  onLoadingChange,
+  shapeType = 'standard',
+  coinRadius = 2.2,
+  badgeWidth = 3.6,
+  badgeHeight = 2.4,
+  badgeRadius = 0.4,
+  stampRadius = 2.4,
+  stampTeeth = 24,
+  stampToothDepth = 0.25,
+  shieldWidth = 2.2,
+  shieldHeight = 2.8,
+  hexRadius = 2.4,
+  chainLinks = 6,
+  chainScale = 1,
+  showChain = false,
+  bailSize = 0.35,
+  bailOffset = 0,
+  chainOffset = 0,
+  chainColor = '',
+  shapeColor = '',
+  reliefDepth: reliefDepthProp = 0.3,
   blendMode = 'normal',
 }) => {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
@@ -187,60 +232,129 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
   const [metalnessMap, setMetalnessMap] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
-    if (!textureUrl) { setTexture((prev) => { prev?.dispose(); return null; }); return; }
+    if (!textureUrl) {
+      setTexture((prev) => {
+        prev?.dispose();
+        return null;
+      });
+      return;
+    }
     const loader = new THREE.TextureLoader();
     let cancelled = false;
     loader.load(textureUrl, (tex) => {
-      if (cancelled) { tex.dispose(); return; }
+      if (cancelled) {
+        tex.dispose();
+        return;
+      }
       tex.wrapS = THREE.RepeatWrapping;
       tex.wrapT = THREE.RepeatWrapping;
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.needsUpdate = true;
-      setTexture((prev) => { prev?.dispose(); return tex; });
+      setTexture((prev) => {
+        prev?.dispose();
+        return tex;
+      });
     });
     return () => {
       cancelled = true;
-      setTexture((prev) => { prev?.dispose(); return null; });
+      setTexture((prev) => {
+        prev?.dispose();
+        return null;
+      });
     };
   }, [textureUrl]);
 
   useEffect(() => {
-    if (!normalMapUrl) { setNormalMap((prev) => { prev?.dispose(); return null; }); return; }
+    if (!normalMapUrl) {
+      setNormalMap((prev) => {
+        prev?.dispose();
+        return null;
+      });
+      return;
+    }
     const loader = new THREE.TextureLoader();
     let cancelled = false;
     loader.load(normalMapUrl, (tex) => {
-      if (cancelled) { tex.dispose(); return; }
+      if (cancelled) {
+        tex.dispose();
+        return;
+      }
       tex.wrapS = THREE.RepeatWrapping;
       tex.wrapT = THREE.RepeatWrapping;
-      setNormalMap((prev) => { prev?.dispose(); return tex; });
+      setNormalMap((prev) => {
+        prev?.dispose();
+        return tex;
+      });
     });
-    return () => { cancelled = true; setNormalMap((prev) => { prev?.dispose(); return null; }); };
+    return () => {
+      cancelled = true;
+      setNormalMap((prev) => {
+        prev?.dispose();
+        return null;
+      });
+    };
   }, [normalMapUrl]);
 
   useEffect(() => {
-    if (!roughnessMapUrl) { setRoughnessMap((prev) => { prev?.dispose(); return null; }); return; }
+    if (!roughnessMapUrl) {
+      setRoughnessMap((prev) => {
+        prev?.dispose();
+        return null;
+      });
+      return;
+    }
     const loader = new THREE.TextureLoader();
     let cancelled = false;
     loader.load(roughnessMapUrl, (tex) => {
-      if (cancelled) { tex.dispose(); return; }
+      if (cancelled) {
+        tex.dispose();
+        return;
+      }
       tex.wrapS = THREE.RepeatWrapping;
       tex.wrapT = THREE.RepeatWrapping;
-      setRoughnessMap((prev) => { prev?.dispose(); return tex; });
+      setRoughnessMap((prev) => {
+        prev?.dispose();
+        return tex;
+      });
     });
-    return () => { cancelled = true; setRoughnessMap((prev) => { prev?.dispose(); return null; }); };
+    return () => {
+      cancelled = true;
+      setRoughnessMap((prev) => {
+        prev?.dispose();
+        return null;
+      });
+    };
   }, [roughnessMapUrl]);
 
   useEffect(() => {
-    if (!metalnessMapUrl) { setMetalnessMap((prev) => { prev?.dispose(); return null; }); return; }
+    if (!metalnessMapUrl) {
+      setMetalnessMap((prev) => {
+        prev?.dispose();
+        return null;
+      });
+      return;
+    }
     const loader = new THREE.TextureLoader();
     let cancelled = false;
     loader.load(metalnessMapUrl, (tex) => {
-      if (cancelled) { tex.dispose(); return; }
+      if (cancelled) {
+        tex.dispose();
+        return;
+      }
       tex.wrapS = THREE.RepeatWrapping;
       tex.wrapT = THREE.RepeatWrapping;
-      setMetalnessMap((prev) => { prev?.dispose(); return tex; });
+      setMetalnessMap((prev) => {
+        prev?.dispose();
+        return tex;
+      });
     });
-    return () => { cancelled = true; setMetalnessMap((prev) => { prev?.dispose(); return null; }); };
+    return () => {
+      cancelled = true;
+      setMetalnessMap((prev) => {
+        prev?.dispose();
+        return null;
+      });
+    };
   }, [metalnessMapUrl]);
 
   useEffect(() => {
@@ -259,11 +373,16 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
   const logoBevelSize = isEmbossedShape ? bevelSize * 0.12 : bevelSize;
   const logoSmoothness = isEmbossedShape ? Math.max(smoothness, 4) : smoothness;
 
-  const { geometries, center, baseScale, loading, progress } = useExtrudedGeometry(svgString, logoDepth, logoSmoothness, {
-    bevelEnabled: logoBevelEnabled,
-    bevelThickness: logoBevelThickness,
-    bevelSize: logoBevelSize,
-  });
+  const { geometries, center, baseScale, loading, progress } = useExtrudedGeometry(
+    svgString,
+    logoDepth,
+    logoSmoothness,
+    {
+      bevelEnabled: logoBevelEnabled,
+      bevelThickness: logoBevelThickness,
+      bevelSize: logoBevelSize,
+    }
+  );
 
   const onLoadingChangeRef = useRef(onLoadingChange);
   onLoadingChangeRef.current = onLoadingChange;
@@ -303,9 +422,15 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     const r = (v: number) => Math.round(v * 10) / 10;
     const s = useStudio3DStore.getState();
     if (shapeType === 'coin') s.setCoinRadius(r((span / 2) * pad));
-    if (shapeType === 'badge') { s.setBadgeWidth(r(lw * pad)); s.setBadgeHeight(r(lh * pad)); }
+    if (shapeType === 'badge') {
+      s.setBadgeWidth(r(lw * pad));
+      s.setBadgeHeight(r(lh * pad));
+    }
     if (shapeType === 'stamp') s.setStampRadius(r((span / 2) * pad));
-    if (shapeType === 'shield') { s.setShieldWidth(r((lw / 2) * pad)); s.setShieldHeight(r((lh / 2) * pad)); }
+    if (shapeType === 'shield') {
+      s.setShieldWidth(r((lw / 2) * pad));
+      s.setShieldHeight(r((lh / 2) * pad));
+    }
     if (shapeType === 'hexagon') s.setHexRadius(r((span / 2) * pad));
   }, [shapeType, geometries, baseScale]);
 
@@ -328,38 +453,82 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     const threeBlending = BLEND_MAP[blendMode] ?? THREE.NormalBlending;
     const commonMatProps = {
       metalness: isGold ? 1.0 : materialSettings.metalness,
-      roughness: isGold ? 0.12 : (wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness),
-      transmission: materialSettings.transmission !== undefined ? materialSettings.transmission : transmissionAmount,
-      thickness: materialSettings.thickness !== undefined ? materialSettings.thickness : (wantsTransparency ? 2.5 : 0),
-      ior: isGold ? 2.5 : (materialSettings.ior !== undefined ? materialSettings.ior : (wantsTransparency ? 1.5 : 1.45)),
+      roughness: isGold
+        ? 0.12
+        : wantsTransparency
+        ? Math.max(0.02, materialSettings.roughness * 0.3)
+        : materialSettings.roughness,
+      transmission:
+        materialSettings.transmission !== undefined
+          ? materialSettings.transmission
+          : transmissionAmount,
+      thickness:
+        materialSettings.thickness !== undefined
+          ? materialSettings.thickness
+          : wantsTransparency
+          ? 2.5
+          : 0,
+      ior: isGold
+        ? 2.5
+        : materialSettings.ior !== undefined
+        ? materialSettings.ior
+        : wantsTransparency
+        ? 1.5
+        : 1.45,
       opacity: 1 as number,
       transparent: (blendMode !== 'normal') as boolean,
       blending: threeBlending,
       wireframe: materialSettings.wireframe,
       emissive: emissiveColor,
       emissiveIntensity,
-      clearcoat: isGold ? 1.0 : (materialSettings.clearcoat !== undefined ? materialSettings.clearcoat : (wantsTransparency ? 1 : preset.clearcoat ?? 0)),
-      clearcoatRoughness: isGold ? 0.03 : (materialSettings.clearcoatRoughness !== undefined ? materialSettings.clearcoatRoughness : 0.05),
+      clearcoat: isGold
+        ? 1.0
+        : materialSettings.clearcoat !== undefined
+        ? materialSettings.clearcoat
+        : wantsTransparency
+        ? 1
+        : preset.clearcoat ?? 0,
+      clearcoatRoughness: isGold
+        ? 0.03
+        : materialSettings.clearcoatRoughness !== undefined
+        ? materialSettings.clearcoatRoughness
+        : 0.05,
       sheen: materialSettings.sheen !== undefined ? materialSettings.sheen : 0,
-      sheenRoughness: materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0,
-      sheenColor: materialSettings.sheenColor !== undefined ? materialSettings.sheenColor : '#000000',
-      iridescence: isGold ? 0.35 : (materialSettings.iridescence !== undefined ? materialSettings.iridescence : 0),
-      iridescenceIOR: isGold ? 1.6 : (materialSettings.iridescenceIOR !== undefined ? materialSettings.iridescenceIOR : 1.3),
-      reflectivity: isGold ? 0.95 : (materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5),
+      sheenRoughness:
+        materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0,
+      sheenColor:
+        materialSettings.sheenColor !== undefined ? materialSettings.sheenColor : '#000000',
+      iridescence: isGold
+        ? 0.35
+        : materialSettings.iridescence !== undefined
+        ? materialSettings.iridescence
+        : 0,
+      iridescenceIOR: isGold
+        ? 1.6
+        : materialSettings.iridescenceIOR !== undefined
+        ? materialSettings.iridescenceIOR
+        : 1.3,
+      reflectivity: isGold
+        ? 0.95
+        : materialSettings.reflectivity !== undefined
+        ? materialSettings.reflectivity
+        : 0.5,
       side: THREE.DoubleSide,
       envMapIntensity: isGold ? 2.2 : envMapIntensityProp,
     };
 
-    const fresnelBeforeCompile = fresnelStrength > 0 ? (shader: any) => {
-      shader.uniforms.uFresnelColor = uniformsRef.current.uFresnelColor;
-      shader.uniforms.uFresnelStrength = uniformsRef.current.uFresnelStrength;
-      shader.fragmentShader = `
+    const fresnelBeforeCompile =
+      fresnelStrength > 0
+        ? (shader: any) => {
+            shader.uniforms.uFresnelColor = uniformsRef.current.uFresnelColor;
+            shader.uniforms.uFresnelStrength = uniformsRef.current.uFresnelStrength;
+            shader.fragmentShader = `
         uniform vec3 uFresnelColor;
         uniform float uFresnelStrength;
         ${shader.fragmentShader}
       `.replace(
-        '#include <normal_fragment_maps>',
-        `
+              '#include <normal_fragment_maps>',
+              `
         #include <normal_fragment_maps>
         if (uFresnelStrength > 0.0) {
           vec3 fresnelViewDir = normalize(vViewPosition);
@@ -367,15 +536,26 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
           diffuseColor.rgb = mix(diffuseColor.rgb, uFresnelColor, fresnel * uFresnelStrength);
         }
         `
-      );
-    } : undefined;
+            );
+          }
+        : undefined;
 
     const shapeMaterial = (
-      <meshPhysicalMaterial color={shapeBaseColor} map={texture ?? undefined} {...commonMatProps} onBeforeCompile={fresnelBeforeCompile} />
+      <meshPhysicalMaterial
+        color={shapeBaseColor}
+        map={texture ?? undefined}
+        {...commonMatProps}
+        onBeforeCompile={fresnelBeforeCompile}
+      />
     );
 
     const logoMaterial = (
-      <meshPhysicalMaterial color={baseColor} map={texture ?? undefined} {...commonMatProps} onBeforeCompile={fresnelBeforeCompile} />
+      <meshPhysicalMaterial
+        color={baseColor}
+        map={texture ?? undefined}
+        {...commonMatProps}
+        onBeforeCompile={fresnelBeforeCompile}
+      />
     );
 
     const renderEmbossedLogo = (zOffset: number, flipBack = false) => (
@@ -399,7 +579,6 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
         ))}
       </group>
     );
-
 
     const renderBaseShape = () => {
       switch (shapeType) {
@@ -425,7 +604,9 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
 
         case 'badge': {
           const badgeShape = new THREE.Shape();
-          const w = badgeWidth, h = badgeHeight, r = Math.min(badgeRadius, badgeWidth / 2, badgeHeight / 2);
+          const w = badgeWidth,
+            h = badgeHeight,
+            r = Math.min(badgeRadius, badgeWidth / 2, badgeHeight / 2);
           badgeShape.moveTo(-w / 2 + r, -h / 2);
           badgeShape.lineTo(w / 2 - r, -h / 2);
           badgeShape.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r);
@@ -437,13 +618,18 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
           badgeShape.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
           return (
             <mesh>
-              <extrudeGeometry args={[badgeShape, {
-                depth: cylinderHeight,
-                bevelEnabled: true,
-                bevelThickness: 0.06 * shapeBevelScale,
-                bevelSize: 0.05 * shapeBevelScale,
-                bevelSegments: 4,
-              }]} />
+              <extrudeGeometry
+                args={[
+                  badgeShape,
+                  {
+                    depth: cylinderHeight,
+                    bevelEnabled: true,
+                    bevelThickness: 0.06 * shapeBevelScale,
+                    bevelSize: 0.05 * shapeBevelScale,
+                    bevelSegments: 4,
+                  },
+                ]}
+              />
               {shapeMaterial}
             </mesh>
           );
@@ -462,20 +648,26 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
           }
           return (
             <mesh>
-              <extrudeGeometry args={[stampShape, {
-                depth: cylinderHeight,
-                bevelEnabled: true,
-                bevelThickness: 0.05 * shapeBevelScale,
-                bevelSize: 0.04 * shapeBevelScale,
-                bevelSegments: 3,
-              }]} />
+              <extrudeGeometry
+                args={[
+                  stampShape,
+                  {
+                    depth: cylinderHeight,
+                    bevelEnabled: true,
+                    bevelThickness: 0.05 * shapeBevelScale,
+                    bevelSize: 0.04 * shapeBevelScale,
+                    bevelSegments: 3,
+                  },
+                ]}
+              />
               {shapeMaterial}
             </mesh>
           );
         }
 
         case 'shield': {
-          const sw = shieldWidth, sh = shieldHeight;
+          const sw = shieldWidth,
+            sh = shieldHeight;
           const shieldShape = new THREE.Shape();
           shieldShape.moveTo(0, sh);
           shieldShape.bezierCurveTo(sw * 0.55, sh * 0.93, sw, sh * 0.71, sw, sh * 0.43);
@@ -486,13 +678,18 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
           shieldShape.bezierCurveTo(-sw, sh * 0.71, -sw * 0.55, sh * 0.93, 0, sh);
           return (
             <mesh>
-              <extrudeGeometry args={[shieldShape, {
-                depth: cylinderHeight,
-                bevelEnabled: true,
-                bevelThickness: 0.07 * shapeBevelScale,
-                bevelSize: 0.05 * shapeBevelScale,
-                bevelSegments: 4,
-              }]} />
+              <extrudeGeometry
+                args={[
+                  shieldShape,
+                  {
+                    depth: cylinderHeight,
+                    bevelEnabled: true,
+                    bevelThickness: 0.07 * shapeBevelScale,
+                    bevelSize: 0.05 * shapeBevelScale,
+                    bevelSegments: 4,
+                  },
+                ]}
+              />
               {shapeMaterial}
             </mesh>
           );
@@ -510,13 +707,18 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
           hexShape.closePath();
           return (
             <mesh>
-              <extrudeGeometry args={[hexShape, {
-                depth: cylinderHeight,
-                bevelEnabled: true,
-                bevelThickness: 0.06 * shapeBevelScale,
-                bevelSize: 0.05 * shapeBevelScale,
-                bevelSegments: 3,
-              }]} />
+              <extrudeGeometry
+                args={[
+                  hexShape,
+                  {
+                    depth: cylinderHeight,
+                    bevelEnabled: true,
+                    bevelThickness: 0.06 * shapeBevelScale,
+                    bevelSize: 0.05 * shapeBevelScale,
+                    bevelSegments: 3,
+                  },
+                ]}
+              />
               {shapeMaterial}
             </mesh>
           );
@@ -528,15 +730,25 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     };
 
     const halfDepth = cylinderHeight / 2;
-    const isExtrudedBase = shapeType === 'badge' || shapeType === 'stamp' || shapeType === 'shield' || shapeType === 'hexagon';
+    const isExtrudedBase =
+      shapeType === 'badge' ||
+      shapeType === 'stamp' ||
+      shapeType === 'shield' ||
+      shapeType === 'hexagon';
 
     // Compute shape top Y for bail placement
-    const shapeTopY = shapeType === 'coin' ? coinRadius
-      : shapeType === 'shield' ? shieldHeight
-      : shapeType === 'badge' ? badgeHeight / 2
-      : shapeType === 'stamp' ? stampRadius
-      : shapeType === 'hexagon' ? hexRadius
-      : 2.0;
+    const shapeTopY =
+      shapeType === 'coin'
+        ? coinRadius
+        : shapeType === 'shield'
+        ? shieldHeight
+        : shapeType === 'badge'
+        ? badgeHeight / 2
+        : shapeType === 'stamp'
+        ? stampRadius
+        : shapeType === 'hexagon'
+        ? hexRadius
+        : 2.0;
 
     const bailRadius = bailSize;
     const bailTube = bailSize * 0.3;
@@ -546,9 +758,7 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     return (
       <group ref={groupRef}>
         {/* ExtrudeGeometry goes from z=0 to z=depth; shift back by half to center */}
-        <group position={[0, 0, isExtrudedBase ? -halfDepth : 0]}>
-          {renderBaseShape()}
-        </group>
+        <group position={[0, 0, isExtrudedBase ? -halfDepth : 0]}>{renderBaseShape()}</group>
         {renderEmbossedLogo(halfDepth + 0.01)}
         {renderEmbossedLogo(-halfDepth - 0.01, true)}
         {showChain && (
@@ -558,12 +768,34 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
           </mesh>
         )}
         {showChain && (
-          <ChainErrorBoundary fallback={<FallbackChain count={chainLinks} scale={chainScale} material={shapeMaterial} yOffset={bailTopY} />}>
-            <Suspense fallback={<FallbackChain count={chainLinks} scale={chainScale} material={shapeMaterial} yOffset={bailTopY} />}>
+          <ChainErrorBoundary
+            fallback={
+              <FallbackChain
+                count={chainLinks}
+                scale={chainScale}
+                material={shapeMaterial}
+                yOffset={bailTopY}
+              />
+            }
+          >
+            <Suspense
+              fallback={
+                <FallbackChain
+                  count={chainLinks}
+                  scale={chainScale}
+                  material={shapeMaterial}
+                  yOffset={bailTopY}
+                />
+              }
+            >
               <PendantChain
                 chainScale={chainScale}
                 chainLinks={chainLinks}
-                materialProps={{ color: chainColor || color, metalness: materialSettings.metalness, roughness: materialSettings.roughness }}
+                materialProps={{
+                  color: chainColor || color,
+                  metalness: materialSettings.metalness,
+                  roughness: materialSettings.roughness,
+                }}
                 yOffset={bailTopY}
               />
             </Suspense>
@@ -573,47 +805,75 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     );
   }
 
-  const stdChainBlock = showChain && geometries.length > 0 ? (() => {
-    const bb = geometries[0]?.boundingBox;
-    const stdTopY = bb ? Math.abs(bb.min.y - center.y) * baseScale : 2;
-    const stdBailR = bailSize;
-    const stdBailTube = bailSize * 0.3;
-    const stdBailCenterY = stdTopY + stdBailR * 0.6 + bailOffset;
-    const stdBailTopY = stdBailCenterY + stdBailR + stdBailTube + chainOffset;
-    const stdMat = (
-      <meshPhysicalMaterial
-        color={color}
-        metalness={materialSettings.metalness}
-        roughness={materialSettings.roughness}
-        side={THREE.DoubleSide}
-      />
-    );
-    return (
-      <group>
-        <mesh position={[0, stdBailCenterY, 0]}>
-          <torusGeometry args={[stdBailR, stdBailTube, 16, 32]} />
-          {stdMat}
-        </mesh>
-        <ChainErrorBoundary fallback={<FallbackChain count={chainLinks} scale={chainScale} material={stdMat} yOffset={stdBailTopY} />}>
-          <Suspense fallback={<FallbackChain count={chainLinks} scale={chainScale} material={stdMat} yOffset={stdBailTopY} />}>
-            <PendantChain chainScale={chainScale} chainLinks={chainLinks} materialProps={{ color: chainColor || color, metalness: materialSettings.metalness, roughness: materialSettings.roughness }} yOffset={stdBailTopY} />
-          </Suspense>
-        </ChainErrorBoundary>
-      </group>
-    );
-  })() : null;
+  const stdChainBlock =
+    showChain && geometries.length > 0
+      ? (() => {
+          const bb = geometries[0]?.boundingBox;
+          const stdTopY = bb ? Math.abs(bb.min.y - center.y) * baseScale : 2;
+          const stdBailR = bailSize;
+          const stdBailTube = bailSize * 0.3;
+          const stdBailCenterY = stdTopY + stdBailR * 0.6 + bailOffset;
+          const stdBailTopY = stdBailCenterY + stdBailR + stdBailTube + chainOffset;
+          const stdMat = (
+            <meshPhysicalMaterial
+              color={color}
+              metalness={materialSettings.metalness}
+              roughness={materialSettings.roughness}
+              side={THREE.DoubleSide}
+            />
+          );
+          return (
+            <group>
+              <mesh position={[0, stdBailCenterY, 0]}>
+                <torusGeometry args={[stdBailR, stdBailTube, 16, 32]} />
+                {stdMat}
+              </mesh>
+              <ChainErrorBoundary
+                fallback={
+                  <FallbackChain
+                    count={chainLinks}
+                    scale={chainScale}
+                    material={stdMat}
+                    yOffset={stdBailTopY}
+                  />
+                }
+              >
+                <Suspense
+                  fallback={
+                    <FallbackChain
+                      count={chainLinks}
+                      scale={chainScale}
+                      material={stdMat}
+                      yOffset={stdBailTopY}
+                    />
+                  }
+                >
+                  <PendantChain
+                    chainScale={chainScale}
+                    chainLinks={chainLinks}
+                    materialProps={{
+                      color: chainColor || color,
+                      metalness: materialSettings.metalness,
+                      roughness: materialSettings.roughness,
+                    }}
+                    yOffset={stdBailTopY}
+                  />
+                </Suspense>
+              </ChainErrorBoundary>
+            </group>
+          );
+        })()
+      : null;
 
   return (
     <group ref={groupRef}>
-      <group
-        scale={[baseScale, -baseScale, baseScale]}
-      >
+      <group scale={[baseScale, -baseScale, baseScale]}>
         {geometries.map((geometry, i) => {
           const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
           const isGold = materialSettings.preset === 'gold';
           const hasStdEmissive = (preset.emissiveIntensity ?? 0) > 0;
           const wantsTransparency = materialSettings.transparent || materialSettings.opacity < 1;
-          const baseColor = texture ? (isGold ? '#d4a017' : color) : (isGold ? '#d4a017' : color);
+          const baseColor = texture ? (isGold ? '#d4a017' : color) : isGold ? '#d4a017' : color;
           const emissiveColor = hasStdEmissive ? color : '#000000';
           const emissiveIntensity = preset.emissiveIntensity ?? 0;
           const transmissionAmount = wantsTransparency ? 1 - materialSettings.opacity : 0;
@@ -621,57 +881,107 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
 
           return (
             <mesh
-              key={`${i}-${texture ? 'tex' : 'notex'}-${materialSettings.preset}-${wantsTransparency}-${blendMode}`}
+              key={`${i}-${texture ? 'tex' : 'notex'}-${
+                materialSettings.preset
+              }-${wantsTransparency}-${blendMode}`}
               geometry={geometry}
               position={[-center.x, -center.y, -center.z]}
             >
               <meshPhysicalMaterial
-              color={baseColor}
-              map={texture ?? undefined}
-              normalMap={normalMap ?? undefined}
-              roughnessMap={roughnessMap ?? undefined}
-              metalnessMap={metalnessMap ?? undefined}
-              metalness={materialSettings.metalness}
-              roughness={wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness}
-              transmission={materialSettings.transmission !== undefined ? materialSettings.transmission : transmissionAmount}
-              thickness={materialSettings.thickness !== undefined ? materialSettings.thickness : (wantsTransparency ? 2.5 : 0)}
-              ior={materialSettings.ior !== undefined ? materialSettings.ior : (wantsTransparency ? 1.5 : 1.45)}
-              opacity={1}
-              transparent={blendMode !== 'normal'}
-              blending={stdBlending}
-              wireframe={materialSettings.wireframe}
-              emissive={emissiveColor}
-              emissiveIntensity={emissiveIntensity}
-              clearcoat={materialSettings.clearcoat !== undefined ? materialSettings.clearcoat : (wantsTransparency ? 1 : preset.clearcoat ?? 0)}
-              clearcoatRoughness={materialSettings.clearcoatRoughness !== undefined ? materialSettings.clearcoatRoughness : 0.05}
-              sheen={materialSettings.sheen !== undefined ? materialSettings.sheen : 0}
-              sheenRoughness={materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0}
-              sheenColor={materialSettings.sheenColor !== undefined ? materialSettings.sheenColor : '#000000'}
-              iridescence={materialSettings.iridescence !== undefined ? materialSettings.iridescence : 0}
-              iridescenceIOR={materialSettings.iridescenceIOR !== undefined ? materialSettings.iridescenceIOR : 1.3}
-              reflectivity={materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5}
-              side={THREE.FrontSide}
-              envMapIntensity={envMapIntensityProp}
-              onBeforeCompile={(shader) => {
-                shader.uniforms.uTextureOpacity = uniformsRef.current.uTextureOpacity;
-                shader.uniforms.uFresnelColor = uniformsRef.current.uFresnelColor;
-                shader.uniforms.uFresnelStrength = uniformsRef.current.uFresnelStrength;
-                shader.fragmentShader = `
+                color={baseColor}
+                map={texture ?? undefined}
+                normalMap={normalMap ?? undefined}
+                roughnessMap={roughnessMap ?? undefined}
+                metalnessMap={metalnessMap ?? undefined}
+                metalness={materialSettings.metalness}
+                roughness={
+                  wantsTransparency
+                    ? Math.max(0.02, materialSettings.roughness * 0.3)
+                    : materialSettings.roughness
+                }
+                transmission={
+                  materialSettings.transmission !== undefined
+                    ? materialSettings.transmission
+                    : transmissionAmount
+                }
+                thickness={
+                  materialSettings.thickness !== undefined
+                    ? materialSettings.thickness
+                    : wantsTransparency
+                    ? 2.5
+                    : 0
+                }
+                ior={
+                  materialSettings.ior !== undefined
+                    ? materialSettings.ior
+                    : wantsTransparency
+                    ? 1.5
+                    : 1.45
+                }
+                opacity={1}
+                transparent={blendMode !== 'normal'}
+                blending={stdBlending}
+                wireframe={materialSettings.wireframe}
+                emissive={emissiveColor}
+                emissiveIntensity={emissiveIntensity}
+                clearcoat={
+                  materialSettings.clearcoat !== undefined
+                    ? materialSettings.clearcoat
+                    : wantsTransparency
+                    ? 1
+                    : preset.clearcoat ?? 0
+                }
+                clearcoatRoughness={
+                  materialSettings.clearcoatRoughness !== undefined
+                    ? materialSettings.clearcoatRoughness
+                    : 0.05
+                }
+                sheen={materialSettings.sheen !== undefined ? materialSettings.sheen : 0}
+                sheenRoughness={
+                  materialSettings.sheenRoughness !== undefined
+                    ? materialSettings.sheenRoughness
+                    : 0
+                }
+                sheenColor={
+                  materialSettings.sheenColor !== undefined
+                    ? materialSettings.sheenColor
+                    : '#000000'
+                }
+                iridescence={
+                  materialSettings.iridescence !== undefined ? materialSettings.iridescence : 0
+                }
+                iridescenceIOR={
+                  materialSettings.iridescenceIOR !== undefined
+                    ? materialSettings.iridescenceIOR
+                    : 1.3
+                }
+                reflectivity={
+                  materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5
+                }
+                side={THREE.FrontSide}
+                envMapIntensity={envMapIntensityProp}
+                onBeforeCompile={(shader) => {
+                  shader.uniforms.uTextureOpacity = uniformsRef.current.uTextureOpacity;
+                  shader.uniforms.uFresnelColor = uniformsRef.current.uFresnelColor;
+                  shader.uniforms.uFresnelStrength = uniformsRef.current.uFresnelStrength;
+                  shader.fragmentShader = `
                   uniform float uTextureOpacity;
                   uniform vec3 uFresnelColor;
                   uniform float uFresnelStrength;
                   ${shader.fragmentShader}
-                `.replace(
-                  '#include <map_fragment>',
-                  `
+                `
+                    .replace(
+                      '#include <map_fragment>',
+                      `
                   #ifdef USE_MAP
                     vec4 texelColor = texture2D( map, vMapUv );
                     diffuseColor.rgb *= mix(vec3(1.0), texelColor.rgb, uTextureOpacity);
                   #endif
                   `
-                ).replace(
-                  '#include <normal_fragment_maps>',
-                  `
+                    )
+                    .replace(
+                      '#include <normal_fragment_maps>',
+                      `
                   #include <normal_fragment_maps>
                   if (uFresnelStrength > 0.0) {
                     vec3 fresnelViewDir = normalize(vViewPosition);
@@ -679,12 +989,12 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
                     diffuseColor.rgb = mix(diffuseColor.rgb, uFresnelColor, fresnel * uFresnelStrength);
                   }
                   `
-                );
-              }}
-            />
-          </mesh>
-        );
-      })}
+                    );
+                }}
+              />
+            </mesh>
+          );
+        })}
       </group>
       {stdChainBlock}
     </group>

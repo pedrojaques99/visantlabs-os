@@ -28,7 +28,7 @@ export interface AnalysisPromptParams {
  * - Context about available options
  * - User preferences integration
  * - Explicit output format
- * 
+ *
  * @param params - Parameters for building the prompt
  * @returns Complete prompt string ready for AI
  */
@@ -37,16 +37,27 @@ export function buildAnalysisPrompt(params: AnalysisPromptParams): string {
 
   // Limit tags per category to keep prompt smaller and speed up Gemini (fewer input tokens)
   const MAX_TAGS_PER_CATEGORY = 50;
-  const slice = (arr: string[]) => (arr.length > MAX_TAGS_PER_CATEGORY ? arr.slice(0, MAX_TAGS_PER_CATEGORY) : arr);
+  const slice = (arr: string[]) =>
+    arr.length > MAX_TAGS_PER_CATEGORY ? arr.slice(0, MAX_TAGS_PER_CATEGORY) : arr;
   const availableTagsSection = availableTags
     ? `\n\n**AVAILABLE TAGS (Choose from these when possible):**
-- **Branding/Estilo:** ${availableTags.branding.length > 0 ? slice(availableTags.branding).join(', ') : 'N/A'}
-- **Categorias de Mockup:** ${availableTags.categories.length > 0 ? slice(availableTags.categories).join(', ') : 'N/A'}
-- **Locais/Ambientes:** ${availableTags.locations.length > 0 ? slice(availableTags.locations).join(', ') : 'N/A'}
+- **Branding/Estilo:** ${
+        availableTags.branding.length > 0 ? slice(availableTags.branding).join(', ') : 'N/A'
+      }
+- **Categorias de Mockup:** ${
+        availableTags.categories.length > 0 ? slice(availableTags.categories).join(', ') : 'N/A'
+      }
+- **Locais/Ambientes:** ${
+        availableTags.locations.length > 0 ? slice(availableTags.locations).join(', ') : 'N/A'
+      }
 - **Ângulos:** ${availableTags.angles.length > 0 ? slice(availableTags.angles).join(', ') : 'N/A'}
-- **Iluminação:** ${availableTags.lighting.length > 0 ? slice(availableTags.lighting).join(', ') : 'N/A'}
+- **Iluminação:** ${
+        availableTags.lighting.length > 0 ? slice(availableTags.lighting).join(', ') : 'N/A'
+      }
 - **Efeitos:** ${availableTags.effects.length > 0 ? slice(availableTags.effects).join(', ') : 'N/A'}
-- **Materiais/Texturas:** ${availableTags.materials.length > 0 ? slice(availableTags.materials).join(', ') : 'N/A'}
+- **Materiais/Texturas:** ${
+        availableTags.materials.length > 0 ? slice(availableTags.materials).join(', ') : 'N/A'
+      }
 
 **IMPORTANT:** When suggesting tags, prioritize exact matches from the available tags list above. Only suggest tags not in the list if they are highly relevant and no suitable alternative exists.`
     : '';
@@ -60,8 +71,9 @@ ${userContext.brandContext}
     : '';
 
   // Build user context section if provided
-  const userContextSection = userContext?.selectedBrandingTags && userContext.selectedBrandingTags.length > 0
-    ? `\n\n**USER'S CURRENT SELECTIONS:**
+  const userContextSection =
+    userContext?.selectedBrandingTags && userContext.selectedBrandingTags.length > 0
+      ? `\n\n**USER'S CURRENT SELECTIONS:**
 - **Branding já selecionado:** ${userContext.selectedBrandingTags.join(', ')}
 
 **CONTEXT:** The user has already selected these branding tags. Your suggestions should:
@@ -69,7 +81,7 @@ ${userContext.brandContext}
 2. Consider the visual style implied by these selections
 3. Suggest additional branding tags that enhance or expand the current style
 4. Ensure all other category suggestions align with this branding direction`
-    : '';
+      : '';
 
   // Build instructions section if provided
   const instructionsSection = instructions

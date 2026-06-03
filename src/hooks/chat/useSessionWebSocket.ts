@@ -27,7 +27,9 @@ function buildWsUrl(path: string, token: string, sessionId: string): string {
   const wsBase = apiBase.startsWith('http')
     ? apiBase.replace(/^http/, 'ws')
     : `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}${apiBase}`;
-  return `${wsBase}${path}?token=${encodeURIComponent(token)}&sessionId=${encodeURIComponent(sessionId)}`;
+  return `${wsBase}${path}?token=${encodeURIComponent(token)}&sessionId=${encodeURIComponent(
+    sessionId
+  )}`;
 }
 
 /**
@@ -70,7 +72,9 @@ export function useSessionWebSocket({ path, sessionId, onEvent, enabled = true }
     };
 
     return () => {
-      try { ws.close(); } catch {}
+      try {
+        ws.close();
+      } catch {}
       wsRef.current = null;
     };
   }, [path, sessionId, enabled]);

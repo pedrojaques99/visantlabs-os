@@ -9,28 +9,43 @@ import { FlowNodeType } from '@/types/reactFlow';
 interface ActionDetectorProps {
   actions: DetectedAction[];
   onAddPrompt?: (nodeId: string, prompt: string) => void;
-  onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
+  onCreateNode?: (
+    chatNodeId: string,
+    nodeType: FlowNodeType,
+    initialData?: any,
+    connectToChat?: boolean
+  ) => string | undefined;
   nodeId: string;
   t: any;
 }
 
 const getActionIcon = (type: DetectedAction['type']) => {
   switch (type) {
-    case 'prompt': return <Diamond size={10} />;
-    case 'mockup': return <Layers size={10} />;
-    case 'strategy': return <Target size={10} />;
-    case 'text': return <FileText size={10} />;
-    default: return <Plus size={10} />;
+    case 'prompt':
+      return <Diamond size={10} />;
+    case 'mockup':
+      return <Layers size={10} />;
+    case 'strategy':
+      return <Target size={10} />;
+    case 'text':
+      return <FileText size={10} />;
+    default:
+      return <Plus size={10} />;
   }
 };
 
 const getActionColor = (type: DetectedAction['type']) => {
   switch (type) {
-    case 'prompt': return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
-    case 'mockup': return 'text-brand-cyan border-brand-cyan/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
-    case 'strategy': return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
-    case 'text': return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
-    default: return 'text-neutral-400 border-neutral-400/30 bg-neutral-400/10 hover:bg-neutral-400/20';
+    case 'prompt':
+      return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
+    case 'mockup':
+      return 'text-brand-cyan border-brand-cyan/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
+    case 'strategy':
+      return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
+    case 'text':
+      return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
+    default:
+      return 'text-neutral-400 border-neutral-400/30 bg-neutral-400/10 hover:bg-neutral-400/20';
   }
 };
 
@@ -39,7 +54,7 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
   onAddPrompt,
   onCreateNode,
   nodeId,
-  t
+  t,
 }) => {
   if (!actions || actions.length === 0) return null;
 
@@ -47,9 +62,10 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
     if (action.type === 'prompt' && onAddPrompt) {
       onAddPrompt(nodeId, action.fullPrompt);
     } else if (onCreateNode) {
-      const initialData = action.type === 'prompt'
-        ? { prompt: action.fullPrompt }
-        : action.type === 'text'
+      const initialData =
+        action.type === 'prompt'
+          ? { prompt: action.fullPrompt }
+          : action.type === 'text'
           ? { text: action.fullPrompt }
           : undefined;
       onCreateNode(nodeId, action.type as any, initialData, true);
@@ -75,7 +91,7 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
               handleActionClick(action);
             }}
             className={cn(
-              "flex items-center gap-1.5 border rounded-md transition-all text-[10px] h-7 px-2",
+              'flex items-center gap-1.5 border rounded-md transition-all text-[10px] h-7 px-2',
               getActionColor(action.type)
             )}
             title={action.description}

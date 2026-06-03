@@ -73,13 +73,13 @@ router.post('/seed', validateAdmin, async (req: AuthRequest, res: Response) => {
 router.post('/', validateAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const appData = req.body;
-    
+
     // Handle base64 thumbnail upload to R2
     if (appData.thumbnail && appData.thumbnail.startsWith('data:image')) {
       try {
         const r2Url = await uploadAppThumbnail(
-          appData.thumbnail, 
-          req.userId || 'admin', 
+          appData.thumbnail,
+          req.userId || 'admin',
           appData.appId,
           undefined,
           true
@@ -125,8 +125,8 @@ router.put('/:id', validateAdmin, async (req: AuthRequest, res: Response) => {
     if (updates.thumbnail && updates.thumbnail.startsWith('data:image')) {
       try {
         const r2Url = await uploadAppThumbnail(
-          updates.thumbnail, 
-          req.userId || 'admin', 
+          updates.thumbnail,
+          req.userId || 'admin',
           updates.appId || id,
           undefined,
           true
@@ -143,12 +143,23 @@ router.put('/:id', validateAdmin, async (req: AuthRequest, res: Response) => {
     // Construct update data object only with provided fields
     const data: any = {};
     const fields = [
-      'appId', 'name', 'description', 'link', 'thumbnail', 
-      'badge', 'badgeVariant', 'category', 'isExternal', 
-      'free', 'span', 'databaseInfo', 'displayOrder', 'isHidden'
+      'appId',
+      'name',
+      'description',
+      'link',
+      'thumbnail',
+      'badge',
+      'badgeVariant',
+      'category',
+      'isExternal',
+      'free',
+      'span',
+      'databaseInfo',
+      'displayOrder',
+      'isHidden',
     ];
 
-    fields.forEach(field => {
+    fields.forEach((field) => {
       if (updates[field] !== undefined) {
         data[field] = updates[field];
       }
@@ -163,7 +174,7 @@ router.put('/:id', validateAdmin, async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     console.error('Failed to update app:', error);
     if (error.code === 'P2025') {
-       return res.status(404).json({ error: 'App not found in database' });
+      return res.status(404).json({ error: 'App not found in database' });
     }
     return res.status(500).json({ error: 'Failed to update app', message: error.message });
   }

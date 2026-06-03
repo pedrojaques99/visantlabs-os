@@ -199,10 +199,7 @@ export const mediaSessionCache = {
    * Update user preferences
    * Validates inputs and only allows known preference keys
    */
-  updatePreferences(
-    userId: string,
-    prefs: Partial<MediaSessionUser['preferences']>
-  ): void {
+  updatePreferences(userId: string, prefs: Partial<MediaSessionUser['preferences']>): void {
     if (!validateUserId(userId)) {
       throw new Error('Invalid user ID format');
     }
@@ -215,14 +212,19 @@ export const mediaSessionCache = {
 
     // Only allow known preference keys
     const allowed = {
-      defaultLimit: prefs.defaultLimit ? Math.min(Math.max(10, parseInt(String(prefs.defaultLimit))), 100) : undefined,
-      preferredImageFormat: prefs.preferredImageFormat ? String(prefs.preferredImageFormat).slice(0, 20) : undefined,
+      defaultLimit: prefs.defaultLimit
+        ? Math.min(Math.max(10, parseInt(String(prefs.defaultLimit))), 100)
+        : undefined,
+      preferredImageFormat: prefs.preferredImageFormat
+        ? String(prefs.preferredImageFormat).slice(0, 20)
+        : undefined,
       autoDownload: typeof prefs.autoDownload === 'boolean' ? prefs.autoDownload : undefined,
     };
 
-    session.preferences = { ...session.preferences, ...Object.fromEntries(
-      Object.entries(allowed).filter(([, v]) => v !== undefined)
-    )};
+    session.preferences = {
+      ...session.preferences,
+      ...Object.fromEntries(Object.entries(allowed).filter(([, v]) => v !== undefined)),
+    };
   },
 
   /**

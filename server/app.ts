@@ -73,7 +73,13 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
 import { requestContext } from './middleware/requestContext.js';
 
-import { createPlatformMcpServer, setMcpUserId, setMcpScopes, getMcpToolNames, getMcpToolCount } from './mcp/platform-mcp.js';
+import {
+  createPlatformMcpServer,
+  setMcpUserId,
+  setMcpScopes,
+  getMcpToolNames,
+  getMcpToolCount,
+} from './mcp/platform-mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
@@ -85,31 +91,69 @@ export function createApp() {
   app.set('trust proxy', 1);
 
   // ── Security Headers & Performance ───────────────────────────────────────
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com", "https://www.google-analytics.com", "https://*.himetrica.com", "https://*.hcaptcha.com", "https://js.stripe.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-        imgSrc: ["'self'", "data:", "blob:", "https:"],
-        connectSrc: [
-          "'self'", "https://fonts.gstatic.com", "https://api.visantlabs.com", "https://www.visantlabs.com",
-          "https://www.google-analytics.com", "https://www.googletagmanager.com", "https://*.google.com",
-          "https://*.r2.cloudflarestorage.com", "https://*.r2.dev", "https://raw.githack.com", "https://raw.githubusercontent.com",
-          "https://*.himetrica.com", "wss://api.visantlabs.com", "https://api.hcaptcha.com", "https://api.stripe.com",
-          "https://api.figma.com", "https://api.dicebear.com", "https://api.abacatepay.com",
-          "https://api-singapore.klingai.com", "https://ark.ap-southeast-1.byteplusapi.com",
-          "https://google.serper.dev", "https://storage.googleapis.com", "https://api.qrserver.com", "https://*.sentry.io",
-          ...(process.env.NODE_ENV !== 'production' ? ["http://localhost:*", "ws://localhost:*"] : []),
-        ],
-        frameSrc: ["https://accounts.google.com", "https://www.visantlabs.com", "https://*.hcaptcha.com", "https://js.stripe.com", "https://www.abacatepay.com", "data:", "blob:"],
-        mediaSrc: ["'self'", "blob:", "data:"],
-        objectSrc: ["'none'"],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            'https://www.googletagmanager.com',
+            'https://www.google-analytics.com',
+            'https://*.himetrica.com',
+            'https://*.hcaptcha.com',
+            'https://js.stripe.com',
+          ],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+          imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+          connectSrc: [
+            "'self'",
+            'https://fonts.gstatic.com',
+            'https://api.visantlabs.com',
+            'https://www.visantlabs.com',
+            'https://www.google-analytics.com',
+            'https://www.googletagmanager.com',
+            'https://*.google.com',
+            'https://*.r2.cloudflarestorage.com',
+            'https://*.r2.dev',
+            'https://raw.githack.com',
+            'https://raw.githubusercontent.com',
+            'https://*.himetrica.com',
+            'wss://api.visantlabs.com',
+            'https://api.hcaptcha.com',
+            'https://api.stripe.com',
+            'https://api.figma.com',
+            'https://api.dicebear.com',
+            'https://api.abacatepay.com',
+            'https://api-singapore.klingai.com',
+            'https://ark.ap-southeast-1.byteplusapi.com',
+            'https://google.serper.dev',
+            'https://storage.googleapis.com',
+            'https://api.qrserver.com',
+            'https://*.sentry.io',
+            ...(process.env.NODE_ENV !== 'production'
+              ? ['http://localhost:*', 'ws://localhost:*']
+              : []),
+          ],
+          frameSrc: [
+            'https://accounts.google.com',
+            'https://www.visantlabs.com',
+            'https://*.hcaptcha.com',
+            'https://js.stripe.com',
+            'https://www.abacatepay.com',
+            'data:',
+            'blob:',
+          ],
+          mediaSrc: ["'self'", 'blob:', 'data:'],
+          objectSrc: ["'none'"],
+        },
       },
-    },
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-  }));
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
+  );
   app.use(compression());
 
   // ── CORS ─────────────────────────────────────────────────────────────────
@@ -156,7 +200,13 @@ export function createApp() {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'MCP-Session-Id', 'MCP-Protocol-Version'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'Accept',
+        'MCP-Session-Id',
+        'MCP-Protocol-Version',
+      ],
       exposedHeaders: ['MCP-Session-Id'],
     })
   );
@@ -174,7 +224,7 @@ export function createApp() {
     skip: (req) => {
       // Skip rate limit for internal health checks if needed
       return req.path.includes('/health');
-    }
+    },
   });
 
   app.use(`${routePrefix}/`, globalApiLimiter);
@@ -297,7 +347,8 @@ export function createApp() {
   // ── MCP Discovery ────────────────────────────────────────────────────────
   app.get('/.well-known/mcp.json', (_req, res) => {
     const apiBase = process.env.API_BASE_URL || 'https://api.visantlabs.com';
-    const frontendBase = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+    const frontendBase =
+      process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
     res.json({
       mcpVersion: '2025-03-26',
       name: 'Visant Labs',
@@ -335,13 +386,18 @@ export function createApp() {
       'https://vsn-mockup-machine.vercel.app',
       'https://app.visantlabs.com',
     ];
-    const envOrigins = [process.env.FRONTEND_URL, process.env.VITE_API_URL, process.env.VITE_FRONTEND_URL]
+    const envOrigins = [
+      process.env.FRONTEND_URL,
+      process.env.VITE_API_URL,
+      process.env.VITE_FRONTEND_URL,
+    ]
       .filter(Boolean)
       .flatMap((url) => (url as string).split(',').map((u) => u.trim()))
       .filter(Boolean);
     const allowed = [...claudeDomains, ...visantDomains, ...envOrigins];
     if (process.env.NODE_ENV !== 'production') {
-      if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('ngrok')) return true;
+      if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('ngrok'))
+        return true;
     }
     return allowed.some((a) => origin.startsWith(a));
   };
@@ -366,12 +422,18 @@ export function createApp() {
       const token = authHeader.slice(7);
       try {
         const mcpResource = `${process.env.API_BASE_URL || 'https://api.visantlabs.com'}/api/mcp`;
-        const decoded = jwt.verify(token, JWT_SECRET) as { sub?: string; aud?: string | string[]; scope?: string };
+        const decoded = jwt.verify(token, JWT_SECRET) as {
+          sub?: string;
+          aud?: string | string[];
+          scope?: string;
+        };
         const aud = decoded.aud;
         const audValid = aud === mcpResource || (Array.isArray(aud) && aud.includes(mcpResource));
         if (decoded.sub && audValid) {
           authReq.userId = decoded.sub;
-          authReq.mcpScopes = decoded.scope ? decoded.scope.split(' ') : ['read', 'write', 'generate'];
+          authReq.mcpScopes = decoded.scope
+            ? decoded.scope.split(' ')
+            : ['read', 'write', 'generate'];
           setMcpUserId(decoded.sub);
           setMcpScopes(authReq.mcpScopes);
           return true;
@@ -433,7 +495,13 @@ export function createApp() {
     } catch (err) {
       console.error('[MCP] Request error:', err);
       if (!res.headersSent) {
-        res.status(500).json({ jsonrpc: '2.0', error: { code: -32603, message: 'Internal server error' }, id: null });
+        res
+          .status(500)
+          .json({
+            jsonrpc: '2.0',
+            error: { code: -32603, message: 'Internal server error' },
+            id: null,
+          });
       }
     }
   });
@@ -442,7 +510,10 @@ export function createApp() {
     res.setHeader('Allow', 'POST');
     res.status(405).json({
       jsonrpc: '2.0',
-      error: { code: -32600, message: 'Use POST to send requests. GET not supported in stateless mode.' },
+      error: {
+        code: -32600,
+        message: 'Use POST to send requests. GET not supported in stateless mode.',
+      },
       id: null,
     });
   });

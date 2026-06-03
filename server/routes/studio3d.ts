@@ -8,12 +8,32 @@ const router = Router();
 
 // ─── Export GLB (no Prisma dependency) ──────────────────────────────────────
 
-const exportLimiter = rateLimit({ windowMs: 60_000, max: 10, standardHeaders: true, legacyHeaders: false });
+const exportLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 router.post('/export-glb', exportLimiter, async (req, res) => {
   try {
-    const { svgData, image, preset, threshold, turdSize, optTolerance, alphaMax,
-            depth, smoothness, bevelEnabled, bevelThickness, bevelSize, color, metalness, roughness } = req.body;
+    const {
+      svgData,
+      image,
+      preset,
+      threshold,
+      turdSize,
+      optTolerance,
+      alphaMax,
+      depth,
+      smoothness,
+      bevelEnabled,
+      bevelThickness,
+      bevelSize,
+      color,
+      metalness,
+      roughness,
+    } = req.body;
 
     let svg: string;
 
@@ -22,14 +42,30 @@ router.post('/export-glb', exportLimiter, async (req, res) => {
     } else if (image && typeof image === 'string') {
       const buffer = parseBase64Image(image);
       if (!buffer) return res.status(400).json({ error: 'Invalid base64 image format' });
-      if (buffer.length > 10 * 1024 * 1024) return res.status(413).json({ error: 'Image too large (max 10MB)' });
-      svg = await tracePipeline(buffer, { preset: preset || 'logo', threshold, turdSize, optTolerance, alphaMax });
+      if (buffer.length > 10 * 1024 * 1024)
+        return res.status(413).json({ error: 'Image too large (max 10MB)' });
+      svg = await tracePipeline(buffer, {
+        preset: preset || 'logo',
+        threshold,
+        turdSize,
+        optTolerance,
+        alphaMax,
+      });
     } else {
       return res.status(400).json({ error: 'Provide svgData (SVG string) or image (base64 PNG)' });
     }
 
     const { svgToGlb } = await import('../services/studio3dExportService.js');
-    const glbBuffer = await svgToGlb(svg, { depth, smoothness, bevelEnabled, bevelThickness, bevelSize, color, metalness, roughness });
+    const glbBuffer = await svgToGlb(svg, {
+      depth,
+      smoothness,
+      bevelEnabled,
+      bevelThickness,
+      bevelSize,
+      color,
+      metalness,
+      roughness,
+    });
 
     res.setHeader('Content-Type', 'model/gltf-binary');
     res.setHeader('Content-Disposition', 'attachment; filename="scene.glb"');
@@ -48,7 +84,13 @@ async function resolveInputSvg(body: any): Promise<string> {
     const buffer = parseBase64Image(image);
     if (!buffer) throw new Error('Invalid base64 image format');
     if (buffer.length > 10 * 1024 * 1024) throw new Error('Image too large (max 10MB)');
-    return tracePipeline(buffer, { preset: preset || 'logo', threshold, turdSize, optTolerance, alphaMax });
+    return tracePipeline(buffer, {
+      preset: preset || 'logo',
+      threshold,
+      turdSize,
+      optTolerance,
+      alphaMax,
+    });
   }
   throw new Error('Provide svgData (SVG string) or image (base64 PNG)');
 }
@@ -76,15 +118,60 @@ function mapId<T extends { id: string }>(p: T): T & { _id: string } {
 // ─── Scene config validation ─────────────────────────────────────────────────
 
 const VALID_MATERIALS = [
-  'default', 'plastic', 'metal', 'glass', 'rubber', 'chrome', 'gold', 'clay',
-  'emissive', 'holographic', 'brushedSteel', 'aluminum', 'copper', 'roseGold',
-  'platinum', 'ceramic', 'marble', 'concrete', 'wood', 'velvet', 'leather',
-  'frostedGlass', 'diamond', 'pearl', 'carbonFiber', 'carPaint', 'ice',
-  'obsidian', 'wax', 'mattePaint',
+  'default',
+  'plastic',
+  'metal',
+  'glass',
+  'rubber',
+  'chrome',
+  'gold',
+  'clay',
+  'emissive',
+  'holographic',
+  'brushedSteel',
+  'aluminum',
+  'copper',
+  'roseGold',
+  'platinum',
+  'ceramic',
+  'marble',
+  'concrete',
+  'wood',
+  'velvet',
+  'leather',
+  'frostedGlass',
+  'diamond',
+  'pearl',
+  'carbonFiber',
+  'carPaint',
+  'ice',
+  'obsidian',
+  'wax',
+  'mattePaint',
 ];
 
-const VALID_ANIMATIONS = ['none', 'spin', 'float', 'pulse', 'wobble', 'spinFloat', 'swing', 'physicsFall'];
-const VALID_ENVIRONMENTS = ['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby'];
+const VALID_ANIMATIONS = [
+  'none',
+  'spin',
+  'float',
+  'pulse',
+  'wobble',
+  'spinFloat',
+  'swing',
+  'physicsFall',
+];
+const VALID_ENVIRONMENTS = [
+  'studio',
+  'city',
+  'sunset',
+  'dawn',
+  'night',
+  'forest',
+  'apartment',
+  'warehouse',
+  'park',
+  'lobby',
+];
 const VALID_BG_TYPES = ['solid', 'linear', 'radial', 'image'];
 const VALID_SHAPE_TYPES = ['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'];
 const VALID_EASINGS = ['linear', 'easeIn', 'easeOut', 'easeInOut'];
@@ -93,14 +180,21 @@ const HEX_RE = /^#[0-9A-Fa-f]{3,8}$/;
 
 function validateConfig(config: any): string | null {
   if (!config || typeof config !== 'object') return 'config must be an object';
-  if (config.material && !VALID_MATERIALS.includes(config.material)) return `Invalid material: ${config.material}`;
-  if (config.animate && !VALID_ANIMATIONS.includes(config.animate)) return `Invalid animation: ${config.animate}`;
-  if (config.environment && !VALID_ENVIRONMENTS.includes(config.environment)) return `Invalid environment: ${config.environment}`;
-  if (config.bgType && !VALID_BG_TYPES.includes(config.bgType)) return `Invalid bgType: ${config.bgType}`;
-  if (config.shapeType && !VALID_SHAPE_TYPES.includes(config.shapeType)) return `Invalid shapeType: ${config.shapeType}`;
-  if (config.animateEasing && !VALID_EASINGS.includes(config.animateEasing)) return `Invalid easing: ${config.animateEasing}`;
+  if (config.material && !VALID_MATERIALS.includes(config.material))
+    return `Invalid material: ${config.material}`;
+  if (config.animate && !VALID_ANIMATIONS.includes(config.animate))
+    return `Invalid animation: ${config.animate}`;
+  if (config.environment && !VALID_ENVIRONMENTS.includes(config.environment))
+    return `Invalid environment: ${config.environment}`;
+  if (config.bgType && !VALID_BG_TYPES.includes(config.bgType))
+    return `Invalid bgType: ${config.bgType}`;
+  if (config.shapeType && !VALID_SHAPE_TYPES.includes(config.shapeType))
+    return `Invalid shapeType: ${config.shapeType}`;
+  if (config.animateEasing && !VALID_EASINGS.includes(config.animateEasing))
+    return `Invalid easing: ${config.animateEasing}`;
   if (config.color && !HEX_RE.test(config.color)) return `Invalid color: ${config.color}`;
-  if (config.background && !HEX_RE.test(config.background)) return `Invalid background: ${config.background}`;
+  if (config.background && !HEX_RE.test(config.background))
+    return `Invalid background: ${config.background}`;
   return null;
 }
 
@@ -116,10 +210,18 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
       orderBy: { updatedAt: 'desc' },
       take: limit,
       select: {
-        id: true, name: true, description: true, config: true,
-        inputMode: true, text: true, font: true,
-        thumbnailUrl: true, tags: true, isPublic: true,
-        createdAt: true, updatedAt: true,
+        id: true,
+        name: true,
+        description: true,
+        config: true,
+        inputMode: true,
+        text: true,
+        font: true,
+        thumbnailUrl: true,
+        tags: true,
+        isPublic: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     return res.json({ scenes: scenes.map(mapId), total: scenes.length });
@@ -148,10 +250,15 @@ router.get('/public', apiRateLimiter, async (_req, res) => {
         orderBy: { createdAt: 'desc' },
         take: limit,
         select: {
-          id: true, name: true, description: true,
-          thumbnailUrl: true, tags: true, inputMode: true,
+          id: true,
+          name: true,
+          description: true,
+          thumbnailUrl: true,
+          tags: true,
+          inputMode: true,
           config: true,
-          createdAt: true, updatedAt: true,
+          createdAt: true,
+          updatedAt: true,
           user: { select: { name: true } },
         },
       });
@@ -161,10 +268,15 @@ router.get('/public', apiRateLimiter, async (_req, res) => {
         orderBy: { createdAt: 'desc' },
         take: limit,
         select: {
-          id: true, name: true, description: true,
-          thumbnailUrl: true, tags: true, inputMode: true,
+          id: true,
+          name: true,
+          description: true,
+          thumbnailUrl: true,
+          tags: true,
+          inputMode: true,
           config: true,
-          createdAt: true, updatedAt: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
     }
@@ -215,15 +327,32 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
 
-    const { name, description, config, svgData, inputMode, text, font, tags, isPublic, thumbnailUrl } = req.body;
-    if (!name || typeof name !== 'string') return res.status(400).json({ error: 'name is required' });
-    if (!config || typeof config !== 'object') return res.status(400).json({ error: 'config is required' });
+    const {
+      name,
+      description,
+      config,
+      svgData,
+      inputMode,
+      text,
+      font,
+      tags,
+      isPublic,
+      thumbnailUrl,
+    } = req.body;
+    if (!name || typeof name !== 'string')
+      return res.status(400).json({ error: 'name is required' });
+    if (!config || typeof config !== 'object')
+      return res.status(400).json({ error: 'config is required' });
 
     const configErr = validateConfig(config);
     if (configErr) return res.status(400).json({ error: configErr });
 
-    const thumb = typeof thumbnailUrl === 'string' && thumbnailUrl.startsWith('data:image/') && thumbnailUrl.length < 20_000
-      ? thumbnailUrl : null;
+    const thumb =
+      typeof thumbnailUrl === 'string' &&
+      thumbnailUrl.startsWith('data:image/') &&
+      thumbnailUrl.length < 20_000
+        ? thumbnailUrl
+        : null;
 
     const scene = await prisma.studio3DScene.create({
       data: {
@@ -259,15 +388,30 @@ router.patch('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res)
       return res.status(404).json({ error: 'Scene not found' });
     }
 
-    const { name, description, config, svgData, inputMode, text, font, tags, isPublic, thumbnailUrl } = req.body;
+    const {
+      name,
+      description,
+      config,
+      svgData,
+      inputMode,
+      text,
+      font,
+      tags,
+      isPublic,
+      thumbnailUrl,
+    } = req.body;
 
     if (config) {
       const configErr = validateConfig(config);
       if (configErr) return res.status(400).json({ error: configErr });
     }
 
-    const thumb = typeof thumbnailUrl === 'string' && thumbnailUrl.startsWith('data:image/') && thumbnailUrl.length < 20_000
-      ? thumbnailUrl : undefined;
+    const thumb =
+      typeof thumbnailUrl === 'string' &&
+      thumbnailUrl.startsWith('data:image/') &&
+      thumbnailUrl.length < 20_000
+        ? thumbnailUrl
+        : undefined;
 
     const scene = await prisma.studio3DScene.update({
       where: { id: req.params.id },

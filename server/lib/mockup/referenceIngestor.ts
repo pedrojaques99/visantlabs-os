@@ -78,10 +78,18 @@ Return JSON with:
 
 Each dimension array should have 1-3 values. Be precise and specific.`;
 
-export async function ingestReference(params: IngestReferenceParams): Promise<IngestReferenceResult> {
+export async function ingestReference(
+  params: IngestReferenceParams
+): Promise<IngestReferenceResult> {
   const { imageBase64, imageUrl, name, studio, userId, overrideDimensions, tags, prompt } = params;
   const id = randomUUID();
-  const cost: IngestCostMetrics = { r2Bytes: 0, inputTokens: 0, outputTokens: 0, embeddingTokens: 0, apiCalls: 0 };
+  const cost: IngestCostMetrics = {
+    r2Bytes: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+    embeddingTokens: 0,
+    apiCalls: 0,
+  };
 
   // 1. AI analysis — reuses describeImage() but with dimension-aware prompt
   const analysis = await describeImage(imageBase64);
@@ -90,19 +98,31 @@ export async function ingestReference(params: IngestReferenceParams): Promise<In
   cost.apiCalls++;
 
   // 2. Extract dimensions via structured Gemini call
-  const apiKey = (process.env.VITE_GEMINI_API_KEY || process.env.VITE_API_KEY || process.env.GEMINI_API_KEY || '').trim();
+  const apiKey = (
+    process.env.VITE_GEMINI_API_KEY ||
+    process.env.VITE_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    ''
+  ).trim();
   const ai = new GoogleGenAI({ apiKey });
 
   let dimensions: ReferenceDimensions = {};
   try {
     const dimResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: [{
-        parts: [
-          { inlineData: { data: imageBase64.replace(/^data:[^;]+;base64,/, ''), mimeType: 'image/png' } },
-          { text: DIMENSION_PROMPT },
-        ],
-      }],
+      contents: [
+        {
+          parts: [
+            {
+              inlineData: {
+                data: imageBase64.replace(/^data:[^;]+;base64,/, ''),
+                mimeType: 'image/png',
+              },
+            },
+            { text: DIMENSION_PROMPT },
+          ],
+        },
+      ],
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
@@ -205,7 +225,7 @@ export async function ingestReference(params: IngestReferenceParams): Promise<In
     apiCalls: cost.apiCalls,
     imagesGenerated: 0,
     hasInputImage: true,
-    cost: (cost.inputTokens * 0.15 + cost.outputTokens * 0.60) / 1_000_000,
+    cost: (cost.inputTokens * 0.15 + cost.outputTokens * 0.6) / 1_000_000,
     referenceId: id,
   });
 

@@ -103,10 +103,19 @@ export const brandGuidelineApi = {
     return result.guideline;
   },
 
-  async applyFigTokens(id: string, payload: {
-    colors?: any[]; typography?: any[]; gradients?: any[]; shadows?: any[];
-    borders?: any[]; tokens?: any; images?: string[]; replace?: boolean;
-  }): Promise<{ guideline: BrandGuideline }> {
+  async applyFigTokens(
+    id: string,
+    payload: {
+      colors?: any[];
+      typography?: any[];
+      gradients?: any[];
+      shadows?: any[];
+      borders?: any[];
+      tokens?: any;
+      images?: string[];
+      replace?: boolean;
+    }
+  ): Promise<{ guideline: BrandGuideline }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/apply-fig-tokens`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -119,7 +128,10 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  async extractFig(id: string, file: File): Promise<{ extracted: any; preview: BrandGuideline; dryRun: true }> {
+  async extractFig(
+    id: string,
+    file: File
+  ): Promise<{ extracted: any; preview: BrandGuideline; dryRun: true }> {
     const form = new FormData();
     form.append('file', file);
     const { Authorization } = getAuthHeaders() as any;
@@ -135,7 +147,22 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  async ingest(id: string, payload: { source: string; url?: string; data?: any; images?: string[]; filename?: string; dryRun?: boolean }): Promise<{ guideline?: BrandGuideline; extracted: any; preview?: BrandGuideline; dryRun?: boolean }> {
+  async ingest(
+    id: string,
+    payload: {
+      source: string;
+      url?: string;
+      data?: any;
+      images?: string[];
+      filename?: string;
+      dryRun?: boolean;
+    }
+  ): Promise<{
+    guideline?: BrandGuideline;
+    extracted: any;
+    preview?: BrandGuideline;
+    dryRun?: boolean;
+  }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/ingest`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -144,13 +171,20 @@ export const brandGuidelineApi = {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || errorData.error || 'Failed to ingest brand guideline data');
+      throw new Error(
+        errorData.message || errorData.error || 'Failed to ingest brand guideline data'
+      );
     }
     const result = await response.json();
     return result;
   },
 
-  async suggestMockups(id: string, count = 10): Promise<{ suggestions: Array<{ prompt: string; category: string; aspectRatio: string; label: string }> }> {
+  async suggestMockups(
+    id: string,
+    count = 10
+  ): Promise<{
+    suggestions: Array<{ prompt: string; category: string; aspectRatio: string; label: string }>;
+  }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/suggest-mockups`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -163,7 +197,10 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  async aiPopulate(id: string, sections?: string[]): Promise<{ patch: Record<string, any>; generated: string[] }> {
+  async aiPopulate(
+    id: string,
+    sections?: string[]
+  ): Promise<{ patch: Record<string, any>; generated: string[] }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/ai-populate`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -178,7 +215,12 @@ export const brandGuidelineApi = {
 
   // ── Media Kit ──
 
-  async uploadMedia(guidelineId: string, base64Data: string, label?: string, contentType?: string): Promise<{ media: any; allMedia: any[] }> {
+  async uploadMedia(
+    guidelineId: string,
+    base64Data: string,
+    label?: string,
+    contentType?: string
+  ): Promise<{ media: any; allMedia: any[] }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/media`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -189,7 +231,12 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  async uploadMediaFromUrl(guidelineId: string, url: string, label?: string, type?: 'image' | 'pdf'): Promise<{ media: any; allMedia: any[] }> {
+  async uploadMediaFromUrl(
+    guidelineId: string,
+    url: string,
+    label?: string,
+    type?: 'image' | 'pdf'
+  ): Promise<{ media: any; allMedia: any[] }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/media`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -201,17 +248,25 @@ export const brandGuidelineApi = {
   },
 
   async deleteMedia(guidelineId: string, mediaId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/media/${mediaId}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/media/${mediaId}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
+    );
 
     if (!response.ok) throw new Error('Failed to delete media');
   },
 
   // ── Logos ──
 
-  async uploadLogo(guidelineId: string, base64Data: string, variant?: string, label?: string): Promise<{ logo: any; allLogos: any[] }> {
+  async uploadLogo(
+    guidelineId: string,
+    base64Data: string,
+    variant?: string,
+    label?: string
+  ): Promise<{ logo: any; allLogos: any[] }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/logos`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -222,7 +277,12 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  async uploadLogoFromUrl(guidelineId: string, url: string, variant?: string, label?: string): Promise<{ logo: any; allLogos: any[] }> {
+  async uploadLogoFromUrl(
+    guidelineId: string,
+    url: string,
+    variant?: string,
+    label?: string
+  ): Promise<{ logo: any; allLogos: any[] }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/logos`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -234,20 +294,29 @@ export const brandGuidelineApi = {
   },
 
   async deleteLogo(guidelineId: string, logoId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/logos/${logoId}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/logos/${logoId}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
+    );
 
     if (!response.ok) throw new Error('Failed to delete logo');
   },
 
   // ── Agent-First Context ──
 
-  async getContext(guidelineId: string, format: 'structured' | 'prompt' = 'structured'): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/context?format=${format}`, {
-      headers: getAuthHeaders(),
-    });
+  async getContext(
+    guidelineId: string,
+    format: 'structured' | 'prompt' = 'structured'
+  ): Promise<any> {
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/context?format=${format}`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
 
     if (!response.ok) throw new Error('Failed to fetch brand context');
     if (format === 'prompt') return response.text();
@@ -270,7 +339,9 @@ export const brandGuidelineApi = {
 
   // ── Public Sharing ──
 
-  async share(guidelineId: string): Promise<{ publicSlug: string; shareUrl: string; isPublic: boolean }> {
+  async share(
+    guidelineId: string
+  ): Promise<{ publicSlug: string; shareUrl: string; isPublic: boolean }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/share`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -300,7 +371,10 @@ export const brandGuidelineApi = {
 
   // ── Figma Integration ──
 
-  async linkFigmaFile(id: string, figmaFileUrl: string): Promise<{ figmaFileUrl: string; figmaFileKey: string; guideline: BrandGuideline }> {
+  async linkFigmaFile(
+    id: string,
+    figmaFileUrl: string
+  ): Promise<{ figmaFileUrl: string; figmaFileKey: string; guideline: BrandGuideline }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/figma-link`, {
       method: 'PUT',
       headers: getAuthHeaders(),
@@ -324,12 +398,15 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  async syncFromFigma(id: string, data: {
-    fileKey: string;
-    variables?: { colors?: any[]; numbers?: any[] };
-    styles?: { colors?: any[]; text?: any[]; effects?: any[] };
-    components?: any[];
-  }): Promise<{ guideline: BrandGuideline; syncedAt: string; stats: any }> {
+  async syncFromFigma(
+    id: string,
+    data: {
+      fileKey: string;
+      variables?: { colors?: any[]; numbers?: any[] };
+      styles?: { colors?: any[]; text?: any[]; effects?: any[] };
+      components?: any[];
+    }
+  ): Promise<{ guideline: BrandGuideline; syncedAt: string; stats: any }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/figma-sync`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -364,11 +441,18 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  async importFromFigma(id: string, options: {
-    importColors?: boolean;
-    importTypography?: boolean;
-    selectedLogos?: string[];
-  }): Promise<{ success: boolean; imported: { colors: number; typography: number; logos: number }; guideline: BrandGuideline }> {
+  async importFromFigma(
+    id: string,
+    options: {
+      importColors?: boolean;
+      importTypography?: boolean;
+      selectedLogos?: string[];
+    }
+  ): Promise<{
+    success: boolean;
+    imported: { colors: number; typography: number; logos: number };
+    guideline: BrandGuideline;
+  }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/figma-import`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -414,29 +498,46 @@ export const brandGuidelineApi = {
     return Array.isArray(data.files) ? data.files : [];
   },
 
-  async compile(guidelineId: string, format: 'css' | 'tailwind' | 'react' | 'scss' | 'all' = 'all'): Promise<{ outputs: Array<{ format: string; filename: string; content: string }> }> {
+  async compile(
+    guidelineId: string,
+    format: 'css' | 'tailwind' | 'react' | 'scss' | 'all' = 'all'
+  ): Promise<{ outputs: Array<{ format: string; filename: string; content: string }> }> {
     if (format === 'all') {
-      const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/compile?format=all`, {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/brand-guidelines/${guidelineId}/compile?format=all`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
       if (!response.ok) throw new Error('Failed to compile tokens');
       return response.json();
     }
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/compile?format=${format}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/compile?format=${format}`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
     if (!response.ok) throw new Error('Failed to compile tokens');
     const content = await response.text();
-    const filename = response.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1] || `tokens.${format}`;
+    const filename =
+      response.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1] ||
+      `tokens.${format}`;
     return { outputs: [{ format, filename, content }] };
   },
 
-  async uploadKnowledge(guidelineId: string, body: { source: string; data?: string; url?: string; filename?: string }): Promise<BrandKnowledgeFile> {
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/upload`, {
-      method: 'POST',
-      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+  async uploadKnowledge(
+    guidelineId: string,
+    body: { source: string; data?: string; url?: string; filename?: string }
+  ): Promise<BrandKnowledgeFile> {
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/upload`,
+      {
+        method: 'POST',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }
+    );
     if (!response.ok) {
       const err = await response.json().catch(() => ({ error: 'Failed to upload' }));
       throw new Error(err.error || 'Failed to upload knowledge file');
@@ -446,10 +547,13 @@ export const brandGuidelineApi = {
   },
 
   async deleteKnowledge(guidelineId: string, fileId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/${fileId}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/knowledge/${fileId}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
+    );
     if (!response.ok) {
       const err = await response.json().catch(() => ({ error: 'Failed to delete' }));
       throw new Error(err.error || 'Failed to delete knowledge file');
@@ -467,7 +571,11 @@ export const brandGuidelineApi = {
     return data.collaborators;
   },
 
-  async addCollaborator(guidelineId: string, email: string, role: 'editor' | 'viewer'): Promise<BrandCollaborator> {
+  async addCollaborator(
+    guidelineId: string,
+    email: string,
+    role: 'editor' | 'viewer'
+  ): Promise<BrandCollaborator> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/collaborators`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -482,10 +590,13 @@ export const brandGuidelineApi = {
   },
 
   async removeCollaborator(guidelineId: string, userId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/collaborators/${userId}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/collaborators/${userId}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
+    );
     if (!response.ok) throw new Error('Failed to remove collaborator');
   },
 };

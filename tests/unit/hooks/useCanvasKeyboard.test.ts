@@ -8,7 +8,9 @@ import type { FlowNodeData } from '@/types/reactFlow';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() },
+}));
 
 vi.mock('@/hooks/canvas/utils/r2UploadHelpers', () => ({
   collectR2UrlsForDeletion: vi.fn().mockReturnValue([]),
@@ -23,7 +25,13 @@ vi.mock('@/utils/canvas/canvasNodeUtils', () => ({
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
 const makeNode = (id: string, selected = false, type = 'image'): Node<FlowNodeData> =>
-  ({ id, type, selected, position: { x: 0, y: 0 }, data: {} as FlowNodeData } as Node<FlowNodeData>);
+  ({
+    id,
+    type,
+    selected,
+    position: { x: 0, y: 0 },
+    data: {} as FlowNodeData,
+  } as Node<FlowNodeData>);
 
 const makeEdge = (id: string): Edge => ({ id, source: 'a', target: 'b' } as Edge);
 
@@ -45,7 +53,17 @@ function makeDefaults(overrides: Record<string, any> = {}) {
 // renderHook wrapper — useCanvasKeyboard takes positional args
 function renderKeyboard(overrides: Record<string, any> = {}) {
   const defaults = makeDefaults(overrides);
-  const { nodes, edges, setNodes, setEdges, setContextMenu, handleUndo, handleRedo, addToHistory, handlersRef } = defaults;
+  const {
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    setContextMenu,
+    handleUndo,
+    handleRedo,
+    addToHistory,
+    handlersRef,
+  } = defaults;
   const result = renderHook(() =>
     useCanvasKeyboard(
       overrides.nodes ?? nodes,
@@ -66,7 +84,7 @@ function renderKeyboard(overrides: Record<string, any> = {}) {
       overrides.addUpscaleNode,
       overrides.deleteSelectedDrawings,
       overrides.selectedDrawingIds,
-      overrides.setSelectedDrawingIds,
+      overrides.setSelectedDrawingIds
     )
   );
   return { ...defaults, ...overrides, result };
@@ -229,7 +247,9 @@ describe('Ctrl+D → duplicate selected nodes', () => {
 describe('Ctrl+M/P/U → add nodes', () => {
   const reactFlowInstance = { setCenter: vi.fn() };
 
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('Ctrl+M calls addMockupNode', async () => {
     const addMockupNode = vi.fn();

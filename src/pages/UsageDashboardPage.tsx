@@ -52,7 +52,7 @@ function getAuthHeaders(): Record<string, string> {
 
 // Simple inline SVG bar chart
 function BarChart({ data, metric }: { data: DailyPoint[]; metric: ChartMetric }) {
-  const values = data.map(d => d[metric]);
+  const values = data.map((d) => d[metric]);
   const maxValue = Math.max(...values, 1);
   const chartHeight = 140;
   const barWidth = Math.max(4, Math.floor(560 / Math.max(data.length, 1)) - 2);
@@ -179,7 +179,10 @@ export const UsageDashboardPage: React.FC = () => {
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
           <p className="text-destructive font-mono mb-4">Please sign in to view usage analytics</p>
-          <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
+          <BackButton
+            className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0"
+            to="/"
+          />
         </div>
       </div>
     );
@@ -211,17 +214,28 @@ export const UsageDashboardPage: React.FC = () => {
   ];
 
   const featureRows = [
-    { key: 'mockupmachine', label: 'Mockup Machine', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-    { key: 'brandingmachine', label: 'Branding Machine', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+    {
+      key: 'mockupmachine',
+      label: 'Mockup Machine',
+      color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    },
+    {
+      key: 'brandingmachine',
+      label: 'Branding Machine',
+      color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    },
     { key: 'canvas', label: 'Canvas', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
   ] as const;
 
   return (
     <>
-      <SEO title="Usage Dashboard" description="Monitor your API consumption, credits, and historical usage trends." noindex={true} />
+      <SEO
+        title="Usage Dashboard"
+        description="Monitor your API consumption, credits, and historical usage trends."
+        noindex={true}
+      />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
-
           {/* Header Card */}
           <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
@@ -263,7 +277,7 @@ export const UsageDashboardPage: React.FC = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {statCards.map(card => (
+            {statCards.map((card) => (
               <Card key={card.label} className="bg-neutral-900 border border-white/10 rounded-xl">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -292,11 +306,13 @@ export const UsageDashboardPage: React.FC = () => {
                   {/* Feature filter */}
                   <select
                     value={featureFilter}
-                    onChange={e => handleFeatureChange(e.target.value as FeatureFilter)}
+                    onChange={(e) => handleFeatureChange(e.target.value as FeatureFilter)}
                     className="bg-neutral-800/50 border border-neutral-700/50 text-neutral-400 text-xs font-mono rounded-md px-3 py-1.5 focus:outline-none focus:border-neutral-600"
                   >
-                    {FEATURE_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    {FEATURE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
                     ))}
                   </select>
 
@@ -305,14 +321,22 @@ export const UsageDashboardPage: React.FC = () => {
                     <Button
                       variant="ghost"
                       onClick={() => setChartMetric('calls')}
-                      className={`px-3 py-1.5 rounded-none transition-colors ${chartMetric === 'calls' ? 'bg-brand-cyan/10 text-brand-cyan' : 'text-neutral-500 hover:text-neutral-300'}`}
+                      className={`px-3 py-1.5 rounded-none transition-colors ${
+                        chartMetric === 'calls'
+                          ? 'bg-brand-cyan/10 text-brand-cyan'
+                          : 'text-neutral-500 hover:text-neutral-300'
+                      }`}
                     >
                       Calls
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={() => setChartMetric('credits')}
-                      className={`px-3 py-1.5 rounded-none transition-colors ${chartMetric === 'credits' ? 'bg-amber-400/10 text-amber-400' : 'text-neutral-500 hover:text-neutral-300'}`}
+                      className={`px-3 py-1.5 rounded-none transition-colors ${
+                        chartMetric === 'credits'
+                          ? 'bg-amber-400/10 text-amber-400'
+                          : 'text-neutral-500 hover:text-neutral-300'
+                      }`}
                     >
                       Credits
                     </Button>
@@ -346,21 +370,28 @@ export const UsageDashboardPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {featureRows.map(row => {
+                  {featureRows.map((row) => {
                     const data = stats?.byFeature[row.key] ?? { count: 0, credits: 0 };
                     return (
-                      <div key={row.key} className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4">
+                      <div
+                        key={row.key}
+                        className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4"
+                      >
                         <div className="flex items-center justify-between mb-3">
                           <Badge className={`text-xs border ${row.color}`}>{row.label}</Badge>
                         </div>
                         <div className="space-y-1">
                           <div className="flex justify-between text-sm">
                             <span className="text-neutral-500 font-mono text-xs">API Calls</span>
-                            <span className="text-neutral-200 font-semibold">{data.count.toLocaleString()}</span>
+                            <span className="text-neutral-200 font-semibold">
+                              {data.count.toLocaleString()}
+                            </span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span className="text-neutral-500 font-mono text-xs">Credits</span>
-                            <span className="text-neutral-200 font-semibold">{data.credits.toLocaleString()}</span>
+                            <span className="text-neutral-200 font-semibold">
+                              {data.credits.toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -370,7 +401,6 @@ export const UsageDashboardPage: React.FC = () => {
               )}
             </CardContent>
           </Card>
-
         </div>
       </div>
     </>

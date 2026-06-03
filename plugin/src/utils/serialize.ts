@@ -1,11 +1,20 @@
 /// <reference types="@figma/plugin-typings" />
 
-import type { SerializedContext, SerializedNode, SerializedFill, EnrichedContext } from '../../../src/lib/figma-types';
+import type {
+  SerializedContext,
+  SerializedNode,
+  SerializedFill,
+  EnrichedContext,
+} from '../../../src/lib/figma-types';
 
 /**
  * Deep node serialization for context extraction
  */
-export async function serializeNode(node: SceneNode, depth = 0, maxDepth = 12): Promise<SerializedNode> {
+export async function serializeNode(
+  node: SceneNode,
+  depth = 0,
+  maxDepth = 12
+): Promise<SerializedNode> {
   const base: SerializedNode = {
     id: node.id,
     type: node.type,
@@ -58,7 +67,11 @@ export async function serializeNode(node: SceneNode, depth = 0, maxDepth = 12): 
   }
 
   // Effects
-  if ('effects' in node && Array.isArray((node as any).effects) && (node as any).effects.length > 0) {
+  if (
+    'effects' in node &&
+    Array.isArray((node as any).effects) &&
+    (node as any).effects.length > 0
+  ) {
     base.effects = (node as any).effects.map((e: Effect) => ({
       type: e.type,
       radius: 'radius' in e ? e.radius : undefined,
@@ -192,7 +205,7 @@ export async function getEnrichedContext(): Promise<EnrichedContext> {
   const baseContext = await serializeSelection();
 
   // Get all pages
-  const pages = figma.root.children.map(page => ({
+  const pages = figma.root.children.map((page) => ({
     id: page.id,
     name: page.name,
     frameCount: page.children?.length || 0,
@@ -201,7 +214,7 @@ export async function getEnrichedContext(): Promise<EnrichedContext> {
   // Find templates (frames with [Template] prefix)
   const templates: EnrichedContext['templates'] = [];
   const templateFrames = figma.currentPage.findAll(
-    node => node.type === 'FRAME' && node.name.startsWith('[Template]')
+    (node) => node.type === 'FRAME' && node.name.startsWith('[Template]')
   ) as FrameNode[];
 
   for (const t of templateFrames) {
@@ -227,10 +240,10 @@ export async function getEnrichedContext(): Promise<EnrichedContext> {
   const reusableAssets: EnrichedContext['reusableAssets'] = [];
   const assetPatterns = ['fundo', 'background', 'logo', 'sedimentum', 'header', 'footer', 'asset'];
 
-  const potentialAssets = figma.currentPage.findAll(node => {
+  const potentialAssets = figma.currentPage.findAll((node) => {
     if (node.type !== 'FRAME' && node.type !== 'GROUP' && node.type !== 'COMPONENT') return false;
     const nameLower = node.name.toLowerCase();
-    return node.name.startsWith('[Asset]') || assetPatterns.some(p => nameLower.includes(p));
+    return node.name.startsWith('[Asset]') || assetPatterns.some((p) => nameLower.includes(p));
   });
 
   for (const asset of potentialAssets.slice(0, 20)) {

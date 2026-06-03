@@ -15,7 +15,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   children,
   position = 'top',
   delay = 300,
-  dismissible = false
+  dismissible = false,
 }) => {
   const { theme } = useTheme();
   const [isVisible, setIsVisible] = useState(false);
@@ -40,18 +40,18 @@ export const Tooltip: React.FC<TooltipProps> = ({
         switch (position) {
           case 'top':
             top = triggerRect.top - tooltipRect.height - 8;
-            left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+            left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
             break;
           case 'bottom':
             top = triggerRect.bottom + 8;
-            left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+            left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
             break;
           case 'left':
-            top = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
+            top = triggerRect.top + triggerRect.height / 2 - tooltipRect.height / 2;
             left = triggerRect.left - tooltipRect.width - 8;
             break;
           case 'right':
-            top = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
+            top = triggerRect.top + triggerRect.height / 2 - tooltipRect.height / 2;
             left = triggerRect.right + 8;
             break;
         }
@@ -127,18 +127,18 @@ export const Tooltip: React.FC<TooltipProps> = ({
             switch (position) {
               case 'top':
                 top = triggerRect.top - tooltipRect.height - 8;
-                left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+                left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
                 break;
               case 'bottom':
                 top = triggerRect.bottom + 8;
-                left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+                left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
                 break;
               case 'left':
-                top = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
+                top = triggerRect.top + triggerRect.height / 2 - tooltipRect.height / 2;
                 left = triggerRect.left - tooltipRect.width - 8;
                 break;
               case 'right':
-                top = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
+                top = triggerRect.top + triggerRect.height / 2 - tooltipRect.height / 2;
                 left = triggerRect.right + 8;
                 break;
             }
@@ -185,7 +185,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
         onBlur={() => hideTooltip(false)}
         onClick={(e) => {
           e.stopPropagation();
-          if (isVisible) { hideTooltip(true); } else { showTooltip(true); }
+          if (isVisible) {
+            hideTooltip(true);
+          } else {
+            showTooltip(true);
+          }
         }}
         className="inline-block"
       >
@@ -194,10 +198,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {isVisible && !isDismissed && (
         <div
           ref={tooltipRef}
-          className={`fixed z-50 px-2.5 py-1.5 text-xs font-mono backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in ${theme === 'dark'
-            ? 'text-neutral-300 bg-neutral-900/70 border border-neutral-800/40'
-            : 'text-neutral-700 bg-white/70 border border-neutral-200/40'
-            }`}
+          className={`fixed z-50 px-2.5 py-1.5 text-xs font-mono backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in ${
+            theme === 'dark'
+              ? 'text-neutral-300 bg-neutral-900/70 border border-neutral-800/40'
+              : 'text-neutral-700 bg-white/70 border border-neutral-200/40'
+          }`}
           style={{
             top: `${tooltipPosition.top}px`,
             left: `${tooltipPosition.left}px`,
@@ -211,10 +216,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
             {dismissible && (
               <button
                 onClick={handleDismiss}
-                className={`flex-shrink-0 p-0.5 rounded hover:bg-opacity-40 transition-colors ${theme === 'dark'
-                  ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700'
-                  : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200'
-                  }`}
+                className={`flex-shrink-0 p-0.5 rounded hover:bg-opacity-40 transition-colors ${
+                  theme === 'dark'
+                    ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700'
+                    : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200'
+                }`}
                 aria-label="Close tooltip"
               >
                 <X size={12} />
@@ -222,26 +228,26 @@ export const Tooltip: React.FC<TooltipProps> = ({
             )}
           </div>
           <div
-            className={`absolute w-0 h-0 border-4 ${position === 'top'
-              ? theme === 'dark'
-                ? 'top-full left-1/2 -translate-x-1/2 border-t-neutral-900/70 border-r-transparent border-b-transparent border-l-transparent'
-                : 'top-full left-1/2 -translate-x-1/2 border-t-white/70 border-r-transparent border-b-transparent border-l-transparent'
-              : position === 'bottom'
+            className={`absolute w-0 h-0 border-4 ${
+              position === 'top'
+                ? theme === 'dark'
+                  ? 'top-full left-1/2 -translate-x-1/2 border-t-neutral-900/70 border-r-transparent border-b-transparent border-l-transparent'
+                  : 'top-full left-1/2 -translate-x-1/2 border-t-white/70 border-r-transparent border-b-transparent border-l-transparent'
+                : position === 'bottom'
                 ? theme === 'dark'
                   ? 'bottom-full left-1/2 -translate-x-1/2 border-b-neutral-900/70 border-r-transparent border-t-transparent border-l-transparent'
                   : 'bottom-full left-1/2 -translate-x-1/2 border-b-white/70 border-r-transparent border-t-transparent border-l-transparent'
                 : position === 'left'
-                  ? theme === 'dark'
-                    ? 'left-full top-1/2 -translate-y-1/2 border-l-neutral-900/70 border-r-transparent border-t-transparent border-b-transparent'
-                    : 'left-full top-1/2 -translate-y-1/2 border-l-white/70 border-r-transparent border-t-transparent border-b-transparent'
-                  : theme === 'dark'
-                    ? 'right-full top-1/2 -translate-y-1/2 border-r-neutral-900/70 border-l-transparent border-t-transparent border-b-transparent'
-                    : 'right-full top-1/2 -translate-y-1/2 border-r-white/70 border-l-transparent border-t-transparent border-b-transparent'
-              }`}
+                ? theme === 'dark'
+                  ? 'left-full top-1/2 -translate-y-1/2 border-l-neutral-900/70 border-r-transparent border-t-transparent border-b-transparent'
+                  : 'left-full top-1/2 -translate-y-1/2 border-l-white/70 border-r-transparent border-t-transparent border-b-transparent'
+                : theme === 'dark'
+                ? 'right-full top-1/2 -translate-y-1/2 border-r-neutral-900/70 border-l-transparent border-t-transparent border-b-transparent'
+                : 'right-full top-1/2 -translate-y-1/2 border-r-white/70 border-l-transparent border-t-transparent border-b-transparent'
+            }`}
           />
         </div>
       )}
     </>
   );
 };
-

@@ -26,18 +26,21 @@ export interface UsageRecord {
 
 // Text generation pricing (tokens-based)
 // Prices are per 1 million tokens (USD)
-const TEXT_GENERATION_PRICING: Record<string, { inputPricePer1M: number; outputPricePer1M: number }> = {
+const TEXT_GENERATION_PRICING: Record<
+  string,
+  { inputPricePer1M: number; outputPricePer1M: number }
+> = {
   [GEMINI_MODELS.FLASH_3]: {
-    inputPricePer1M: 0.10,
-    outputPricePer1M: 0.40,
+    inputPricePer1M: 0.1,
+    outputPricePer1M: 0.4,
   },
   [GEMINI_MODELS.PRO_3_1]: {
     inputPricePer1M: 1.25,
-    outputPricePer1M: 5.00,
+    outputPricePer1M: 5.0,
   },
   [GEMINI_MODELS.FLASH_2_5]: {
     inputPricePer1M: 0.15,
-    outputPricePer1M: 0.60,
+    outputPricePer1M: 0.6,
   },
 };
 
@@ -45,31 +48,42 @@ const TEXT_GENERATION_PRICING: Record<string, { inputPricePer1M: number; outputP
  * Get credits required for image generation based on model and resolution.
  * Derives values from CREDIT_COSTS in pricing-data.ts (single source of truth).
  */
-export function getCreditsRequired(
-  model: GeminiModel | string,
-  resolution?: Resolution
-): number {
-  const lookup = lookupCredits(model, resolution ? `${resolution}${resolution === '1K' || resolution === 'HD' ? ' (HD)' : ''}` : undefined);
+export function getCreditsRequired(model: GeminiModel | string, resolution?: Resolution): number {
+  const lookup = lookupCredits(
+    model,
+    resolution
+      ? `${resolution}${resolution === '1K' || resolution === 'HD' ? ' (HD)' : ''}`
+      : undefined
+  );
   if (lookup !== undefined) return lookup;
 
   if (isOpenAIImageModel(model)) {
     switch (resolution) {
       case '512px':
       case 'HD':
-      case '1K':    return 2;
-      case '2K':    return 3;
-      case '4K':    return 4;
-      case '1080p': return 3;
-      default:      return 2;
+      case '1K':
+        return 2;
+      case '2K':
+        return 3;
+      case '4K':
+        return 4;
+      case '1080p':
+        return 3;
+      default:
+        return 2;
     }
   }
 
   if (isSeedreamModel(model)) {
     switch (resolution) {
-      case '2K':  return 2;
-      case '3K':  return 3;
-      case '4K':  return 4;
-      default:    return 2;
+      case '2K':
+        return 2;
+      case '3K':
+        return 3;
+      case '4K':
+        return 4;
+      default:
+        return 2;
     }
   }
 
@@ -77,22 +91,31 @@ export function getCreditsRequired(
 
   if (model === GEMINI_MODELS.NB2 || model === GEMINI_MODELS.IMAGE_NB2) {
     switch (resolution) {
-      case '512px': return 1;
+      case '512px':
+        return 1;
       case '1K':
-      case 'HD':    return 2;
-      case '2K':    return 3;
-      case '4K':    return 4;
-      default:      return 2;
+      case 'HD':
+        return 2;
+      case '2K':
+        return 3;
+      case '4K':
+        return 4;
+      default:
+        return 2;
     }
   }
 
   if (model === GEMINI_MODELS.PRO || model === GEMINI_MODELS.IMAGE_PRO) {
     switch (resolution) {
       case '1K':
-      case 'HD':  return 3;
-      case '2K':  return 5;
-      case '4K':  return 7;
-      default:    return 3;
+      case 'HD':
+        return 3;
+      case '2K':
+        return 5;
+      case '4K':
+        return 7;
+      default:
+        return 3;
     }
   }
 
@@ -145,7 +168,7 @@ export function calculateTextGenerationCost(
   if (!pricing) {
     console.warn(`Unknown text model pricing for ${model}, using Flash rates as fallback`);
     // Fallback to Flash rates
-    return (inputTokens / 1_000_000) * 0.30 + (outputTokens / 1_000_000) * 2.50;
+    return (inputTokens / 1_000_000) * 0.3 + (outputTokens / 1_000_000) * 2.5;
   }
 
   // Calculate cost: (Tokens / 1M) * PricePer1M

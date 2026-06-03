@@ -8,20 +8,32 @@
 // All detectable categories
 export const IMAGE_CATEGORIES = {
   // UI/Design
-  'ui-screenshot': { keywords: ['interface', 'dashboard', 'app', 'website', 'ui', 'ux'], color: 'purple' },
+  'ui-screenshot': {
+    keywords: ['interface', 'dashboard', 'app', 'website', 'ui', 'ux'],
+    color: 'purple',
+  },
   'figma-design': { keywords: ['figma', 'design system', 'component', 'frame'], color: 'pink' },
 
   // Mockup types
-  'mockup': { keywords: ['product', 'packaging', 'bottle', 'box', 'bag', 'label', 'branding'], color: 'blue' },
-  'angle': { keywords: ['perspective', 'angle', 'view', 'rotation', '3d view'], color: 'cyan' },
-  'texture': { keywords: ['texture', 'material', 'surface', 'fabric', 'wood', 'metal', 'paper'], color: 'amber' },
-  'ambience': { keywords: ['environment', 'scene', 'background', 'setting', 'mood'], color: 'green' },
-  'luminance': { keywords: ['lighting', 'shadow', 'highlight', 'contrast', 'bright', 'dark'], color: 'yellow' },
+  mockup: {
+    keywords: ['product', 'packaging', 'bottle', 'box', 'bag', 'label', 'branding'],
+    color: 'blue',
+  },
+  angle: { keywords: ['perspective', 'angle', 'view', 'rotation', '3d view'], color: 'cyan' },
+  texture: {
+    keywords: ['texture', 'material', 'surface', 'fabric', 'wood', 'metal', 'paper'],
+    color: 'amber',
+  },
+  ambience: { keywords: ['environment', 'scene', 'background', 'setting', 'mood'], color: 'green' },
+  luminance: {
+    keywords: ['lighting', 'shadow', 'highlight', 'contrast', 'bright', 'dark'],
+    color: 'yellow',
+  },
 
   // Creative
   '3d': { keywords: ['3d render', 'cgi', 'blender', 'cinema4d', 'octane'], color: 'orange' },
-  'aesthetics': { keywords: ['aesthetic', 'mood', 'vibe', 'style', 'artistic'], color: 'rose' },
-  'themes': { keywords: ['theme', 'color scheme', 'palette', 'seasonal'], color: 'indigo' },
+  aesthetics: { keywords: ['aesthetic', 'mood', 'vibe', 'style', 'artistic'], color: 'rose' },
+  themes: { keywords: ['theme', 'color scheme', 'palette', 'seasonal'], color: 'indigo' },
 } as const;
 
 export type ImageCategory = keyof typeof IMAGE_CATEGORIES;
@@ -75,12 +87,14 @@ IMPORTANTE - MODO WHITE LABEL:
 // ============ Figma Plugin Operations Generator ============
 
 export const getFigmaOperationsSystem = (context?: {
-  availableComponents?: any[],
-  brandContext?: string,
-  tokens?: any
+  availableComponents?: any[];
+  brandContext?: string;
+  tokens?: any;
 }) => {
   const componentsList = context?.availableComponents?.length
-    ? `\nCOMPONENTES DISPONÍVEIS NO PROJETO (USE-OS SEMPRE QUE POSSÍVEL):\n${context.availableComponents.map(c => `- ${c.name} (Key: ${c.key || c.id})`).join('\n')}`
+    ? `\nCOMPONENTES DISPONÍVEIS NO PROJETO (USE-OS SEMPRE QUE POSSÍVEL):\n${context.availableComponents
+        .map((c) => `- ${c.name} (Key: ${c.key || c.id})`)
+        .join('\n')}`
     : '';
 
   const brandContext = context?.brandContext

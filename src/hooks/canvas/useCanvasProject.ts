@@ -23,7 +23,9 @@ export const useCanvasProject = (
   isAuthenticated: boolean | null,
   nodes: Node<FlowNodeData>[],
   edges: Edge[],
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void,
   drawings?: any[],
   setDrawings?: (drawings: any[] | ((prev: any[]) => any[])) => void
@@ -99,7 +101,7 @@ export const useCanvasProject = (
       console.error('Failed to migrate project:', error);
       toast.error('Failed to save project', {
         id: 'migrate-project-error',
-        duration: 5000
+        duration: 5000,
       });
     }
   };
@@ -135,7 +137,7 @@ export const useCanvasProject = (
       if (isLocalDevelopment()) {
         console.log('[useCanvasProject] 📥 Starting to load project:', {
           projectId: id,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -146,7 +148,7 @@ export const useCanvasProject = (
         setIsLoadingProject(false);
         toast.error('Timeout loading project. Please try again.', {
           id: `load-project-timeout-${id}`,
-          duration: 5000
+          duration: 5000,
         });
         navigate('/canvas');
       }, 30000); // 30 second timeout
@@ -167,7 +169,7 @@ export const useCanvasProject = (
             isCollaborative: project.isCollaborative || false,
             hasShareId: !!project.shareId,
             loadTimeMs: Math.round(loadTime),
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
 
@@ -218,14 +220,15 @@ export const useCanvasProject = (
           // Snapshot R2 URLs present at load time for orphan cleanup on save
           const loadedR2Urls = new Set<string>();
           validatedNodes.forEach((node) => {
-            const isLiked = (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
+            const isLiked =
+              (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
             collectR2UrlsForDeletion(node, isLiked).forEach((url) => loadedR2Urls.add(url));
           });
           savedR2UrlsRef.current = loadedR2Urls;
 
           // Validate and clean edges after nodes are set
           if (project.edges && Array.isArray(project.edges)) {
-            const nodeIds = new Set(validatedNodes.map(n => n.id));
+            const nodeIds = new Set(validatedNodes.map((n) => n.id));
             const validatedEdges = (project.edges as Edge[])
               .filter((edge) => {
                 // Filter out edges with invalid source or target
@@ -241,7 +244,7 @@ export const useCanvasProject = (
                 projectId: id,
                 validatedNodeCount: validatedNodes.length,
                 validatedEdgeCount: validatedEdges.length,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
               });
             }
           }
@@ -268,10 +271,12 @@ export const useCanvasProject = (
               canvasApi.checkR2Status().then((r2Status) => {
                 if (r2Status.configured) {
                   console.log('[useCanvasProject] Uploading base64 images to R2 in background...');
-                  processNodesForR2Upload(validatedNodes, id, () => { })
+                  processNodesForR2Upload(validatedNodes, id, () => {})
                     .then((result) => {
                       if (result.uploadedCount > 0) {
-                        console.log(`[useCanvasProject] Uploaded ${result.uploadedCount} image(s) to R2`);
+                        console.log(
+                          `[useCanvasProject] Uploaded ${result.uploadedCount} image(s) to R2`
+                        );
                         // Update nodes with R2 URLs (only update nodes that were actually modified)
                         setNodes((currentNodes) => {
                           // Create a map of processed nodes by ID for quick lookup
@@ -307,8 +312,7 @@ export const useCanvasProject = (
           }
         } else if (project.edges && Array.isArray(project.edges)) {
           // If no nodes, still validate edges but they'll be filtered out if source/target don't exist
-          const validatedEdges = (project.edges as Edge[])
-            .map((edge) => cleanEdgeHandles(edge));
+          const validatedEdges = (project.edges as Edge[]).map((edge) => cleanEdgeHandles(edge));
           setEdges(validatedEdges);
         }
       } catch (error: any) {
@@ -320,7 +324,7 @@ export const useCanvasProject = (
             error: error?.message || error,
             status: error?.status,
             stack: error?.stack,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
 
@@ -328,12 +332,11 @@ export const useCanvasProject = (
         // Reset flag on error so it can retry if needed
         hasLoadedProject.current = false;
         // Use unique ID to prevent duplicate toasts
-        const errorMessage = error?.status === 404
-          ? 'Project not found'
-          : error?.message || 'Failed to load project';
+        const errorMessage =
+          error?.status === 404 ? 'Project not found' : error?.message || 'Failed to load project';
         toast.error(errorMessage, {
           id: `load-project-error-${id}`,
-          duration: 5000
+          duration: 5000,
         });
         navigate('/canvas');
       } finally {
@@ -342,7 +345,7 @@ export const useCanvasProject = (
         if (isLocalDevelopment()) {
           console.log('[useCanvasProject] ⏸️ Project loading finished:', {
             projectId: id,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       }
@@ -380,9 +383,10 @@ export const useCanvasProject = (
       return;
     }
 
-    brandGuidelineApi.getById(linkedGuidelineId)
-      .then(guideline => setLinkedGuideline(guideline))
-      .catch(err => {
+    brandGuidelineApi
+      .getById(linkedGuidelineId)
+      .then((guideline) => setLinkedGuideline(guideline))
+      .catch((err) => {
         console.warn('[useCanvasProject] Failed to load linked guideline:', err);
         setLinkedGuideline(null);
       });
@@ -461,18 +465,14 @@ export const useCanvasProject = (
               duration: Infinity,
             });
 
-            const result = await processNodesForR2Upload(
-              nodes,
-              id,
-              (current, total) => {
-                if (total > 0) {
-                  toast.loading(`Otimizando imagens... ${current} de ${total}`, {
-                    id: progressToastId,
-                    duration: Infinity,
-                  });
-                }
+            const result = await processNodesForR2Upload(nodes, id, (current, total) => {
+              if (total > 0) {
+                toast.loading(`Otimizando imagens... ${current} de ${total}`, {
+                  id: progressToastId,
+                  duration: Infinity,
+                });
               }
-            );
+            });
 
             nodesToSave = result.processedNodes;
 
@@ -494,12 +494,9 @@ export const useCanvasProject = (
                 duration: 3000,
               });
             } else if (result.failedCount > 0) {
-              toast.warning(
-                `${result.failedCount} imagem(ns) não puderam ser otimizadas.`,
-                {
-                  duration: 4000,
-                }
-              );
+              toast.warning(`${result.failedCount} imagem(ns) não puderam ser otimizadas.`, {
+                duration: 4000,
+              });
             }
           } catch (processError: any) {
             console.error('Error processing nodes for R2:', processError);
@@ -512,7 +509,12 @@ export const useCanvasProject = (
         }
 
         // If payload is large and R2 is configured, process nodes proactively
-        if (estimatedSize > WARNING_SIZE && r2Status.configured && id && estimatedSize <= VERCEL_LIMIT) {
+        if (
+          estimatedSize > WARNING_SIZE &&
+          r2Status.configured &&
+          id &&
+          estimatedSize <= VERCEL_LIMIT
+        ) {
           const progressToastId = `r2-upload-progress-${id}`;
 
           try {
@@ -523,18 +525,14 @@ export const useCanvasProject = (
             });
 
             // Process nodes with progress callback
-            const result = await processNodesForR2Upload(
-              nodes,
-              id,
-              (current, total) => {
-                if (total > 0) {
-                  toast.loading(`Otimizando imagens... ${current} de ${total}`, {
-                    id: progressToastId,
-                    duration: Infinity,
-                  });
-                }
+            const result = await processNodesForR2Upload(nodes, id, (current, total) => {
+              if (total > 0) {
+                toast.loading(`Otimizando imagens... ${current} de ${total}`, {
+                  id: progressToastId,
+                  duration: Infinity,
+                });
               }
-            );
+            });
 
             nodesToSave = result.processedNodes;
 
@@ -610,7 +608,8 @@ export const useCanvasProject = (
               // 3. Contains base64-like characters (A-Z, a-z, 0-9, +, /, =)
               const isDataUrl = value.startsWith('data:');
               const isUrl = value.startsWith('http://') || value.startsWith('https://');
-              const looksLikeBase64 = value.length > 100 && !isUrl && /^[A-Za-z0-9+/=]+$/.test(value.replace(/\s/g, ''));
+              const looksLikeBase64 =
+                value.length > 100 && !isUrl && /^[A-Za-z0-9+/=]+$/.test(value.replace(/\s/g, ''));
 
               if (isDataUrl || looksLikeBase64) {
                 nodeSize += value.length;
@@ -645,7 +644,13 @@ export const useCanvasProject = (
 
             // Debug log
             if (nodeSize > 0) {
-              console.log(`[Oversized Check] Node ${node.id} (${node.type}): ${(nodeSize / 1024).toFixed(2)}KB, threshold: ${(OVERSIZED_THRESHOLD / 1024).toFixed(2)}KB, isOversized: ${isOversized}`);
+              console.log(
+                `[Oversized Check] Node ${node.id} (${node.type}): ${(nodeSize / 1024).toFixed(
+                  2
+                )}KB, threshold: ${(OVERSIZED_THRESHOLD / 1024).toFixed(
+                  2
+                )}KB, isOversized: ${isOversized}`
+              );
             }
 
             if (isOversized && !currentWarning) {
@@ -683,12 +688,12 @@ export const useCanvasProject = (
             hasShownOversizedWarningRef.current = true;
             const warningMessage = !r2Status.configured
               ? `Seu projeto está muito grande (${sizeMB}MB) para salvar. ` +
-              `Configure o armazenamento R2 nas configurações do sistema para salvar projetos grandes.`
+                `Configure o armazenamento R2 nas configurações do sistema para salvar projetos grandes.`
               : `Seu projeto ainda está muito grande (${sizeMB}MB) mesmo após otimização. ` +
-              `Por favor, reduza o número de imagens ou elementos no canvas.`;
+                `Por favor, reduza o número de imagens ou elementos no canvas.`;
             toast.error(warningMessage, {
               id: `payload-too-large-warning-global`,
-              duration: 8000
+              duration: 8000,
             });
           }
           // Still try to save - the API will handle the error and return a better message
@@ -698,10 +703,10 @@ export const useCanvasProject = (
             hasShownOversizedWarningRef.current = true;
             toast.error(
               `Seu projeto está muito grande (${sizeMB}MB) para salvar no banco de dados. ` +
-              `Por favor, reduza o número de imagens no canvas.`,
+                `Por favor, reduza o número de imagens no canvas.`,
               {
                 id: `payload-too-large-warning-global`,
-                duration: 8000
+                duration: 8000,
               }
             );
           }
@@ -733,17 +738,27 @@ export const useCanvasProject = (
         // Collect R2 URLs in nodes being saved
         const currentR2Urls = new Set<string>();
         nodesToSave.forEach((node) => {
-          const isLiked = (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
+          const isLiked =
+            (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
           collectR2UrlsForDeletion(node, isLiked).forEach((url) => currentR2Urls.add(url));
         });
 
         // Delete orphaned R2 files (present at last save/load but gone from current nodes)
         const orphanedUrls = [...savedR2UrlsRef.current].filter((url) => !currentR2Urls.has(url));
         if (orphanedUrls.length > 0) {
-          Promise.allSettled(orphanedUrls.map((url) => canvasApi.deleteImageFromR2(url))).catch(() => {});
+          Promise.allSettled(orphanedUrls.map((url) => canvasApi.deleteImageFromR2(url))).catch(
+            () => {}
+          );
         }
 
-        await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings, linkedGuidelineId);
+        await canvasApi.save(
+          projectName,
+          nodesToSave,
+          cleanedEdges,
+          id,
+          drawings,
+          linkedGuidelineId
+        );
 
         // Update snapshot to reflect what was just saved
         savedR2UrlsRef.current = currentR2Urls;
@@ -759,8 +774,13 @@ export const useCanvasProject = (
           errorMessage = error.message;
         } else if (error?.status === 413 || error?.status === 400) {
           // 413 is Payload Too Large, 400 might also indicate size issues
-          if (error?.message?.toLowerCase().includes('payload') || error?.message?.toLowerCase().includes('request entity too large') || error?.status === 413) {
-            errorMessage = 'Projeto muito grande para salvar. ' +
+          if (
+            error?.message?.toLowerCase().includes('payload') ||
+            error?.message?.toLowerCase().includes('request entity too large') ||
+            error?.status === 413
+          ) {
+            errorMessage =
+              'Projeto muito grande para salvar. ' +
               'O limite é 50MB (Vercel Pro). ' +
               'Tente reduzir o número de imagens ou configure o R2 nas configurações do sistema.';
           } else {
@@ -774,7 +794,7 @@ export const useCanvasProject = (
 
         toast.error(errorMessage, {
           id: `save-project-error-${id}`,
-          duration: 6000
+          duration: 6000,
         });
       } finally {
         isSavingRef.current = false;
@@ -829,9 +849,13 @@ export const useCanvasProject = (
       let estimatedSize = JSON.stringify(payloadEstimate).length;
 
       // Process nodes if payload exceeds limits
-      if ((estimatedSize > VERCEL_LIMIT || estimatedSize > WARNING_SIZE) && r2Status.configured && id) {
+      if (
+        (estimatedSize > VERCEL_LIMIT || estimatedSize > WARNING_SIZE) &&
+        r2Status.configured &&
+        id
+      ) {
         try {
-          const result = await processNodesForR2Upload(nodes, id, () => { });
+          const result = await processNodesForR2Upload(nodes, id, () => {});
           nodesToSave = result.processedNodes;
           if (result.uploadedCount > 0) {
             setNodes(nodesToSave);
@@ -853,14 +877,17 @@ export const useCanvasProject = (
       // Collect R2 URLs present in the nodes being saved
       const currentR2Urls = new Set<string>();
       nodesToSave.forEach((node) => {
-        const isLiked = (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
+        const isLiked =
+          (node.data as any)?.isLiked === true || (node.data as any)?.mockup?.isLiked === true;
         collectR2UrlsForDeletion(node, isLiked).forEach((url) => currentR2Urls.add(url));
       });
 
       // Delete orphaned R2 files (present at load but gone from current nodes)
       const orphanedUrls = [...savedR2UrlsRef.current].filter((url) => !currentR2Urls.has(url));
       if (orphanedUrls.length > 0) {
-        Promise.allSettled(orphanedUrls.map((url) => canvasApi.deleteImageFromR2(url))).catch(() => {});
+        Promise.allSettled(orphanedUrls.map((url) => canvasApi.deleteImageFromR2(url))).catch(
+          () => {}
+        );
       }
 
       await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings, linkedGuidelineId);
@@ -877,7 +904,7 @@ export const useCanvasProject = (
 
       toast.error(errorMessage, {
         id: `save-project-error-${id}`,
-        duration: 5000
+        duration: 5000,
       });
       throw error; // Re-throw so caller can handle it
     } finally {
@@ -906,6 +933,3 @@ export const useCanvasProject = (
     setLinkedGuidelineId,
   };
 };
-
-
-

@@ -47,10 +47,30 @@ export const fidelityBrand: BrandGuideline = {
     imagery: 'High-contrast action shots with negative space for type.',
   },
   logos: [
-    { id: 'l1', url: 'https://cdn.example/aurora/logo-primary.svg', variant: 'primary', label: 'Wordmark + monogram' },
-    { id: 'l2', url: 'https://cdn.example/aurora/logo-light.svg', variant: 'light', label: 'For dark backgrounds' },
-    { id: 'l3', url: 'https://cdn.example/aurora/logo-dark.svg', variant: 'dark', label: 'For light backgrounds' },
-    { id: 'l4', url: 'https://cdn.example/aurora/icon.svg', variant: 'icon', label: 'Monogram only' },
+    {
+      id: 'l1',
+      url: 'https://cdn.example/aurora/logo-primary.svg',
+      variant: 'primary',
+      label: 'Wordmark + monogram',
+    },
+    {
+      id: 'l2',
+      url: 'https://cdn.example/aurora/logo-light.svg',
+      variant: 'light',
+      label: 'For dark backgrounds',
+    },
+    {
+      id: 'l3',
+      url: 'https://cdn.example/aurora/logo-dark.svg',
+      variant: 'dark',
+      label: 'For light backgrounds',
+    },
+    {
+      id: 'l4',
+      url: 'https://cdn.example/aurora/icon.svg',
+      variant: 'icon',
+      label: 'Monogram only',
+    },
   ],
   media: [
     {
@@ -101,7 +121,12 @@ export const hostileBrand: BrandGuideline = {
   ], // unusual non-Google font names — LLM is biased toward "Inter"/"Helvetica"
   guidelines: { voice: 'Spare, considered, never loud.' },
   logos: [
-    { id: 'l1', url: 'https://cdn.example/vellum/wordmark.svg', variant: 'primary', label: 'Wordmark' },
+    {
+      id: 'l1',
+      url: 'https://cdn.example/vellum/wordmark.svg',
+      variant: 'primary',
+      label: 'Wordmark',
+    },
   ],
   // NO media at all — engine should return pickedMedia=null and the client
   // should fall through to AI gen.
@@ -120,16 +145,28 @@ export interface FidelityCase {
 }
 
 export const fidelityCases: FidelityCase[] = [
-  { name: 'launch-square',  prompt: 'Launch announcement for the spring training collection.', format: '1:1' },
-  { name: 'story-portrait', prompt: 'Recovery week reminder for our community.',                format: '9:16' },
-  { name: 'wide-landing',   prompt: 'New trail running shoe — built for early miles.',         format: '16:9' },
+  {
+    name: 'launch-square',
+    prompt: 'Launch announcement for the spring training collection.',
+    format: '1:1',
+  },
+  { name: 'story-portrait', prompt: 'Recovery week reminder for our community.', format: '9:16' },
+  {
+    name: 'wide-landing',
+    prompt: 'New trail running shoe — built for early miles.',
+    format: '16:9',
+  },
 
   // Hostile #1 — deliberately vague prompt: model has nothing creative to lean
   // on, so it must default to brand assets to fill the layout.
-  { name: 'vague-prompt',   prompt: 'Faça algo legal.',                                         format: '1:1' },
+  { name: 'vague-prompt', prompt: 'Faça algo legal.', format: '1:1' },
 
   // Hostile #2 — prompt actively pulls toward off-brand colors and tone.
-  { name: 'conflicting-style', prompt: 'Make it dramatic crimson red, ornate baroque framing.', format: '4:5' },
+  {
+    name: 'conflicting-style',
+    prompt: 'Make it dramatic crimson red, ornate baroque framing.',
+    format: '4:5',
+  },
 
   // Hostile #3 — rare-font brand with no media. Tests whether LLM tries to
   // substitute "Inter" for "Suisse Int'l" / "Söhne Buch" (clamper safety net),

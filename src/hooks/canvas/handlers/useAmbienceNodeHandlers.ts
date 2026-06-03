@@ -1,6 +1,6 @@
 /**
  * useAmbienceNodeHandlers
- * 
+ *
  * Handlers para gerenciar operações de geração de ambiência
  */
 
@@ -18,10 +18,20 @@ import type { BrandGuideline } from '@/lib/figma-types';
 interface UseAmbienceNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
   edgesRef: React.MutableRefObject<Edge[]>;
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
   setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
-  updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void;
-  updateNodeLoadingState: <T extends FlowNodeData>(nodeId: string, isLoading: boolean, nodeType?: string) => void;
+  updateNodeData: <T extends FlowNodeData>(
+    nodeId: string,
+    newData: Partial<T>,
+    nodeType?: string
+  ) => void;
+  updateNodeLoadingState: <T extends FlowNodeData>(
+    nodeId: string,
+    isLoading: boolean,
+    nodeType?: string
+  ) => void;
   reactFlowInstance: ReactFlowInstance | null;
   addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
   refreshSubscriptionStatus: () => Promise<void>;
@@ -42,27 +52,53 @@ export const useAmbienceNodeHandlers = ({
   canvasId,
   linkedGuideline,
 }: UseAmbienceNodeHandlersParams) => {
-  const handleAmbienceNodeDataUpdate = useNodeDataUpdateHandler<AmbienceNodeData>(updateNodeData, 'ambience');
+  const handleAmbienceNodeDataUpdate = useNodeDataUpdateHandler<AmbienceNodeData>(
+    updateNodeData,
+    'ambience'
+  );
 
-  const handleAmbienceGenerate = useCallback(async (nodeId: string, imageInput: string, presetId: string) => {
-    const preset = getAmbiencePreset(presetId as any);
-    if (!preset) {
-      toast.error(`Ambience preset ${presetId} not found`);
-      return;
-    }
+  const handleAmbienceGenerate = useCallback(
+    async (nodeId: string, imageInput: string, presetId: string) => {
+      const preset = getAmbiencePreset(presetId as any);
+      if (!preset) {
+        toast.error(`Ambience preset ${presetId} not found`);
+        return;
+      }
 
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    const ambienceData = node?.data as AmbienceNodeData;
+      const node = nodesRef.current.find((n) => n.id === nodeId);
+      const ambienceData = node?.data as AmbienceNodeData;
 
-    const promptOverride = buildPromptWithBrandContext(preset.prompt, nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+      const promptOverride = buildPromptWithBrandContext(
+        preset.prompt,
+        nodeId,
+        nodesRef.current,
+        edgesRef.current,
+        linkedGuideline
+      );
 
-    await generateImageWithPreset({
-      nodeId,
-      nodeType: 'ambience',
-      imageInput,
-      presetId,
-      preset,
-      connectedImageFromData: ambienceData?.connectedImage,
+      await generateImageWithPreset({
+        nodeId,
+        nodeType: 'ambience',
+        imageInput,
+        presetId,
+        preset,
+        connectedImageFromData: ambienceData?.connectedImage,
+        nodesRef,
+        edgesRef,
+        setNodes,
+        setEdges,
+        updateNodeData,
+        updateNodeLoadingState,
+        reactFlowInstance,
+        addToHistory,
+        refreshSubscriptionStatus,
+        canvasId,
+        errorMessage: 'Connect an image to generate ambience',
+        successMessage: 'Ambience applied successfully!',
+        promptOverride,
+      });
+    },
+    [
       nodesRef,
       edgesRef,
       setNodes,
@@ -73,11 +109,9 @@ export const useAmbienceNodeHandlers = ({
       addToHistory,
       refreshSubscriptionStatus,
       canvasId,
-      errorMessage: 'Connect an image to generate ambience',
-      successMessage: 'Ambience applied successfully!',
-      promptOverride,
-    });
-  }, [nodesRef, edgesRef, setNodes, setEdges, updateNodeData, updateNodeLoadingState, reactFlowInstance, addToHistory, refreshSubscriptionStatus, canvasId, linkedGuideline]);
+      linkedGuideline,
+    ]
+  );
 
   return {
     handleAmbienceGenerate,

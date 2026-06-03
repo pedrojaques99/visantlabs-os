@@ -193,4 +193,3 @@ registerShader('halftone', halftoneDefinition);
 export function getHalftoneShaderSource(variant: HalftoneVariant): string {
   return createHalftoneFragmentShader(variant);
 }
-

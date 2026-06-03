@@ -29,17 +29,30 @@ export const KLING_VIDEO_MODELS = {
   VIDEO_O1: 'kling-video-o1' as const,
 } as const;
 
-export type KlingVideoModelId = typeof KLING_VIDEO_MODELS[keyof typeof KLING_VIDEO_MODELS];
+export type KlingVideoModelId = (typeof KLING_VIDEO_MODELS)[keyof typeof KLING_VIDEO_MODELS];
 
 // ── Mode and quality tiers ────────────────────────────────────────────────────
 export type KlingMode = 'std' | 'pro' | '4k';
 
 // ── Aspect ratios supported by Kling video API ────────────────────────────────
 export const KLING_VIDEO_ASPECT_RATIOS = ['16:9', '9:16', '1:1'] as const;
-export type KlingVideoAspectRatio = typeof KLING_VIDEO_ASPECT_RATIOS[number];
+export type KlingVideoAspectRatio = (typeof KLING_VIDEO_ASPECT_RATIOS)[number];
 
 // ── Duration options (seconds as string, per API spec) ────────────────────────
-export type KlingDuration = '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15';
+export type KlingDuration =
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9'
+  | '10'
+  | '11'
+  | '12'
+  | '13'
+  | '14'
+  | '15';
 
 // ── Ordered list for UI display ────────────────────────────────────────────────
 export const KLING_VIDEO_MODEL_LIST: KlingVideoModelId[] = [
@@ -346,12 +359,12 @@ export type KlingCameraControlType =
   | 'left_turn_forward';
 
 export interface KlingCameraConfig {
-  horizontal?: number;  // [-10, 10]
-  vertical?: number;    // [-10, 10]
-  pan?: number;         // [-10, 10]
-  tilt?: number;        // [-10, 10]
-  roll?: number;        // [-10, 10]
-  zoom?: number;        // [-10, 10]
+  horizontal?: number; // [-10, 10]
+  vertical?: number; // [-10, 10]
+  pan?: number; // [-10, 10]
+  tilt?: number; // [-10, 10]
+  roll?: number; // [-10, 10]
+  zoom?: number; // [-10, 10]
 }
 
 export interface KlingCameraControl {

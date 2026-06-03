@@ -26,8 +26,17 @@ interface ThumbProps {
 }
 
 const Thumb: React.FC<ThumbProps> = ({
-  page, index, isActive, total, onActivate, onRename, onDuplicate, onRemove,
-  onDragStart, onDragEnter, onDrop,
+  page,
+  index,
+  isActive,
+  total,
+  onActivate,
+  onRename,
+  onDuplicate,
+  onRemove,
+  onDragStart,
+  onDragEnter,
+  onDrop,
 }) => {
   const aspect = formatAspect(page.format);
   const width = THUMB_HEIGHT * aspect;
@@ -56,10 +65,15 @@ const Thumb: React.FC<ThumbProps> = ({
       }}
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={() => onDragEnter(index)}
-      onDrop={(e) => { e.preventDefault(); onDrop(); }}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDrop();
+      }}
       onClick={() => !isActive && onActivate()}
       className={`group/thumb shrink-0 relative cursor-pointer transition-all duration-200 ${
-        isActive ? 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-neutral-950' : 'opacity-60 hover:opacity-100'
+        isActive
+          ? 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-neutral-950'
+          : 'opacity-60 hover:opacity-100'
       }`}
       style={{ width }}
     >
@@ -75,7 +89,10 @@ const Thumb: React.FC<ThumbProps> = ({
       <div className="absolute -top-1 -right-1 z-10 flex items-center gap-0.5 opacity-0 group-hover/thumb:opacity-100 transition-opacity">
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDuplicate();
+          }}
           title="Duplicar (Ctrl+Shift+D)"
           className="w-5 h-5 rounded bg-neutral-900/90 border border-white/10 hover:border-neutral-700 flex items-center justify-center text-neutral-400 hover:text-brand-cyan"
         >
@@ -84,7 +101,10 @@ const Thumb: React.FC<ThumbProps> = ({
         {total > 1 && (
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onRemove(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
             title="Remover"
             className="w-5 h-5 rounded bg-neutral-900/90 border border-white/10 hover:border-destructive/50 flex items-center justify-center text-neutral-400 hover:text-destructive"
           >
@@ -100,7 +120,11 @@ const Thumb: React.FC<ThumbProps> = ({
 
       {/* Name + index */}
       <div className="mt-1 flex items-center justify-between gap-1 px-0.5">
-        <span className={`text-[10px] font-mono tabular-nums ${isActive ? 'text-brand-cyan' : 'text-neutral-500'}`}>
+        <span
+          className={`text-[10px] font-mono tabular-nums ${
+            isActive ? 'text-brand-cyan' : 'text-neutral-500'
+          }`}
+        >
           {index + 1}
         </span>
         {editing ? (
@@ -123,12 +147,18 @@ const Thumb: React.FC<ThumbProps> = ({
         ) : (
           <button
             type="button"
-            onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              setEditing(true);
+            }}
             className="flex-1 min-w-0 text-left truncate text-[10px] text-neutral-400 hover:text-white flex items-center gap-1"
             title="Duplo-clique pra renomear"
           >
             <span className="truncate">{page.name ?? `Página ${index + 1}`}</span>
-            <Pencil size={8} className="opacity-0 group-hover/thumb:opacity-50 transition-opacity shrink-0" />
+            <Pencil
+              size={8}
+              className="opacity-0 group-hover/thumb:opacity-50 transition-opacity shrink-0"
+            />
           </button>
         )}
       </div>
@@ -156,8 +186,12 @@ export const PagesPanel: React.FC = () => {
 
   if (pages.length === 0) return null;
 
-  const onDragStart = (idx: number) => { dragFromRef.current = idx; };
-  const onDragEnter = (idx: number) => { dragOverRef.current = idx; };
+  const onDragStart = (idx: number) => {
+    dragFromRef.current = idx;
+  };
+  const onDragEnter = (idx: number) => {
+    dragOverRef.current = idx;
+  };
   const onDrop = () => {
     const from = dragFromRef.current;
     const to = dragOverRef.current;

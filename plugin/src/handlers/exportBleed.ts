@@ -15,8 +15,7 @@ export async function exportWithBleed() {
   }
 
   const frames = selection.filter(
-    (n): n is FrameNode | ComponentNode =>
-      n.type === 'FRAME' || n.type === 'COMPONENT'
+    (n): n is FrameNode | ComponentNode => n.type === 'FRAME' || n.type === 'COMPONENT'
   );
 
   if (frames.length === 0) {
@@ -40,11 +39,7 @@ export async function exportWithBleed() {
     wrapper.fills = [];
     wrapper.clipsContent = false;
 
-    if (
-      node.fills &&
-      Array.isArray(node.fills) &&
-      node.fills.length > 0
-    ) {
+    if (node.fills && Array.isArray(node.fills) && node.fills.length > 0) {
       const bgRect = figma.createRectangle();
       bgRect.resize(wrapper.width, wrapper.height);
       bgRect.fills = JSON.parse(JSON.stringify(node.fills));

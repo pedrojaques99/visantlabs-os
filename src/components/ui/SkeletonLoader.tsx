@@ -52,13 +52,15 @@ export const SkeletonCard: React.FC<{ aspectRatio?: string }> = ({ aspectRatio =
   const { locale } = useTranslation();
   const skeletonMessages = useMemo(() => {
     const translations = getTranslations(locale);
-    return translations.mockup?.skeletonStatusMessages ?? [
-      'rendering concepts...',
-      'designing compositions...',
-      'searching visual balance...',
-      'polishing details...',
-      'almost there...'
-    ];
+    return (
+      translations.mockup?.skeletonStatusMessages ?? [
+        'rendering concepts...',
+        'designing compositions...',
+        'searching visual balance...',
+        'polishing details...',
+        'almost there...',
+      ]
+    );
   }, [locale]);
   const [messageIndex, setMessageIndex] = useState(0);
 
@@ -77,7 +79,11 @@ export const SkeletonCard: React.FC<{ aspectRatio?: string }> = ({ aspectRatio =
   };
 
   return (
-    <div className={`${aspectClasses[aspectRatio] || 'aspect-[16/9]'} bg-neutral-800/30 rounded-md overflow-hidden border border-neutral-800/50 relative`}>
+    <div
+      className={`${
+        aspectClasses[aspectRatio] || 'aspect-[16/9]'
+      } bg-neutral-800/30 rounded-md overflow-hidden border border-neutral-800/50 relative`}
+    >
       <SkeletonLoader width="100%" height="100%" variant="rectangular" />
       <div className="absolute inset-0 flex items-center justify-center">
         <span
@@ -90,4 +96,3 @@ export const SkeletonCard: React.FC<{ aspectRatio?: string }> = ({ aspectRatio =
     </div>
   );
 };
-

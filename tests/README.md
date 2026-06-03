@@ -43,21 +43,22 @@ npm run test:coverage     # v8 coverage + HTML report
 
 ## Coverage gates (enforced in `vitest.config.ts`)
 
-| Surface                          | Threshold       |
-|----------------------------------|-----------------|
-| Global                           | 50%             |
-| `server/routes/auth.ts`          | 70%             |
-| `server/routes/admin.ts`         | 70%             |
-| `server/routes/payments.ts`      | 70%             |
-| `server/lib/ai-resilience.ts`    | 70%             |
-| `server/middleware/auth.ts`      | 80%             |
-| `server/middleware/adminAuth.ts` | 80%             |
+| Surface                          | Threshold |
+| -------------------------------- | --------- |
+| Global                           | 50%       |
+| `server/routes/auth.ts`          | 70%       |
+| `server/routes/admin.ts`         | 70%       |
+| `server/routes/payments.ts`      | 70%       |
+| `server/lib/ai-resilience.ts`    | 70%       |
+| `server/middleware/auth.ts`      | 80%       |
+| `server/middleware/adminAuth.ts` | 80%       |
 
 Merges to `main` that regress a gated surface are blocked by CI.
 
 ## Writing a new test
 
 ### Integration (touches DB / HTTP)
+
 ```ts
 import { describe, it, expect } from 'vitest';
 import { request } from '../../helpers/app.js';
@@ -67,13 +68,16 @@ describe('GET /api/users/me', () => {
   it('returns authenticated user', async () => {
     const { user } = await createUser();
     const token = signTestToken({ userId: user.id, email: user.email });
-    const res = await (await request()).get('/api/users/me').set('Authorization', `Bearer ${token}`);
+    const res = await (await request())
+      .get('/api/users/me')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
   });
 });
 ```
 
 ### Unit (pure)
+
 ```ts
 import { describe, it, expect } from 'vitest';
 import { myFn } from '@server/lib/my-module.js';
@@ -86,6 +90,7 @@ describe('myFn', () => {
 ```
 
 ### Overriding MSW for a single test
+
 ```ts
 import { mswServer } from '../../mocks/server.js';
 import { aiScenarios } from '../../mocks/ai.js';

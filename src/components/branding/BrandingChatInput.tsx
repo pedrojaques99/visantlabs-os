@@ -42,7 +42,7 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
   promptSuggestions = [],
   onSuggestionClick,
   onGenerateSuggestion,
-  creditsPerGeneration
+  creditsPerGeneration,
 }) => {
   const { t } = useTranslation();
 
@@ -68,7 +68,10 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
         {calculatedCredits !== undefined && calculatedCredits > 0 && (
           <div className="flex items-center justify-end pt-1">
             <Badge variant="secondary" className="text-[10px] py-0 px-2 h-5">
-              {calculatedCredits} {calculatedCredits === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
+              {calculatedCredits}{' '}
+              {calculatedCredits === 1
+                ? t('mockup.creditUnitSingular')
+                : t('mockup.creditUnitPlural')}
             </Badge>
           </div>
         )}
@@ -76,11 +79,15 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
         {/* Sugestões de Prompt (se houver) */}
         {promptSuggestions.length > 0 && (
           <div className="pt-2 border-t border-border/5 space-y-2 animate-fade-in">
-            <p className="text-xs font-medium text-muted-foreground">{t('branding.aiSuggestions')}</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              {t('branding.aiSuggestions')}
+            </p>
             {promptSuggestions.map((suggestion, index) => (
               <GlassPanel key={index} className="border-white/5 bg-white/5" padding="sm">
                 <div className="space-y-2">
-                  <Button variant="ghost" onClick={() => onSuggestionClick?.(suggestion)}
+                  <Button
+                    variant="ghost"
+                    onClick={() => onSuggestionClick?.(suggestion)}
                     className="w-full text-left text-xs h-auto py-2 font-normal justify-start hover:text-brand-cyan transition-colors"
                   >
                     {suggestion}
@@ -104,7 +111,10 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
                       </PremiumButton>
                       {creditsPerGeneration !== undefined && creditsPerGeneration > 0 && (
                         <Badge variant="outline" className="text-xs whitespace-nowrap">
-                          {creditsPerGeneration} {creditsPerGeneration === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
+                          {creditsPerGeneration}{' '}
+                          {creditsPerGeneration === 1
+                            ? t('mockup.creditUnitSingular')
+                            : t('mockup.creditUnitPlural')}
                         </Badge>
                       )}
                     </div>
@@ -118,4 +128,3 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
     </GlassPanel>
   );
 };
-

@@ -4,7 +4,12 @@
 //   2. Matching template  → CLONE_NODE
 //   3. Otherwise          → layout preset from scratch
 
-import type { FigmaOperation, LayoutIntent, LayoutResult, AgentComponent } from '../../src/lib/figma-types.js';
+import type {
+  FigmaOperation,
+  LayoutIntent,
+  LayoutResult,
+  AgentComponent,
+} from '../../src/lib/figma-types.js';
 import type { TemplateSpec } from './templateScanner.js';
 import type { TokenRegistry } from './tokenRegistry.js';
 import { matchComponentToIntent } from './componentScanner.js';
@@ -32,11 +37,11 @@ export function matchTemplateToIntent(
 
   const keywords = [intent.type, intent.subtype]
     .filter((v): v is string => Boolean(v))
-    .map(v => v.toLowerCase());
+    .map((v) => v.toLowerCase());
 
   if (keywords.length === 0) return null;
 
-  const scored = templates.map(t => {
+  const scored = templates.map((t) => {
     const nameLower = t.name.toLowerCase();
     let score = 0;
     for (const kw of keywords) {
@@ -65,26 +70,26 @@ function buildTextOverrides(
 
   // Map common layer name patterns to content fields
   const fieldMap: Record<string, string | undefined> = {
-    title:    content.title,
+    title: content.title,
     headline: content.title,
-    heading:  content.title,
+    heading: content.title,
     subtitle: content.subtitle,
-    subhead:  content.subtitle,
-    body:     content.body,
-    text:     content.body,
-    cta:      content.cta,
-    button:   content.cta,
-    action:   content.cta,
+    subhead: content.subtitle,
+    body: content.body,
+    text: content.body,
+    cta: content.cta,
+    button: content.cta,
+    action: content.cta,
     discount: content.discount,
-    offer:    content.discount,
-    badge:    content.discount,
+    offer: content.discount,
+    badge: content.discount,
   };
 
   for (const layer of template.textLayers) {
     const nameLower = layer.name.toLowerCase();
     // Find first matching field key whose value is defined
-    const matched = Object.entries(fieldMap).find(([key, val]) =>
-      val !== undefined && nameLower.includes(key)
+    const matched = Object.entries(fieldMap).find(
+      ([key, val]) => val !== undefined && nameLower.includes(key)
     );
     if (matched) {
       overrides.push({ name: layer.name, content: matched[1] as string });
@@ -131,7 +136,9 @@ export function resolveLayout(
   const template = matchTemplateToIntent(context.templates, intent);
   if (template) {
     const textOverrides = buildTextOverrides(
-      template as TemplateSpec & { textLayers?: Array<{ id: string; name: string; characters: string }> },
+      template as TemplateSpec & {
+        textLayers?: Array<{ id: string; name: string; characters: string }>;
+      },
       intent.content
     );
 
@@ -188,7 +195,7 @@ export function buildLayoutCapabilitiesContext(): string {
     '**Strategy priority:**',
     '1. `reuse_component` — use CREATE_COMPONENT_INSTANCE when an agent component matches',
     '2. `clone_template`  — use CLONE_NODE when a [Template] frame matches',
-    '3. `create_from_scratch` — use a preset if no component or template exists',
+    '3. `create_from_scratch` — use a preset if no component or template exists'
   );
 
   return lines.join('\n');

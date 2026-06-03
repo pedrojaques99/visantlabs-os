@@ -43,8 +43,15 @@ export const ColorPalettePage: React.FC = () => {
       try {
         const lockedColors = colors.filter((c) => c.locked);
         const slotsNeeded = maxColors - lockedColors.length;
-        const result = await extractColors(data.base64, data.mimeType, Math.max(slotsNeeded, 1), shouldRandomize);
-        const extracted: PaletteColor[] = result.colors.slice(0, slotsNeeded).map((hex) => ({ hex, locked: false }));
+        const result = await extractColors(
+          data.base64,
+          data.mimeType,
+          Math.max(slotsNeeded, 1),
+          shouldRandomize
+        );
+        const extracted: PaletteColor[] = result.colors
+          .slice(0, slotsNeeded)
+          .map((hex) => ({ hex, locked: false }));
         setColors([...lockedColors, ...extracted]);
       } catch (err: any) {
         console.error('Color extraction failed:', err);
@@ -53,7 +60,7 @@ export const ColorPalettePage: React.FC = () => {
         setIsExtracting(false);
       }
     },
-    [colors, maxColors, setColors, setIsExtracting],
+    [colors, maxColors, setColors, setIsExtracting]
   );
 
   const handleFile = useCallback(
@@ -78,7 +85,7 @@ export const ColorPalettePage: React.FC = () => {
         setIsExtracting(false);
       }
     },
-    [maxColors, setImage, setColors, setIsExtracting],
+    [maxColors, setImage, setColors, setIsExtracting]
   );
 
   const handleInputChange = useCallback(
@@ -87,7 +94,7 @@ export const ColorPalettePage: React.FC = () => {
       if (file) handleFile(file);
       if (e.target) e.target.value = '';
     },
-    [handleFile],
+    [handleFile]
   );
 
   const handleDrop = useCallback(
@@ -97,7 +104,7 @@ export const ColorPalettePage: React.FC = () => {
       const file = e.dataTransfer.files?.[0];
       if (file) handleFile(file);
     },
-    [handleFile],
+    [handleFile]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -141,7 +148,7 @@ export const ColorPalettePage: React.FC = () => {
     const json = JSON.stringify(
       colors.map((c, i) => ({ hex: c.hex, name: `Color ${i + 1}` })),
       null,
-      2,
+      2
     );
     const ok = await copyToClipboard(json);
     if (ok) toast.success('JSON copied');
@@ -168,7 +175,11 @@ export const ColorPalettePage: React.FC = () => {
             Color Palette
           </h1>
           {imageUrl && (
-            <button onClick={reset} className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors" title="Reset">
+            <button
+              onClick={reset}
+              className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors"
+              title="Reset"
+            >
               <X size={14} />
             </button>
           )}
@@ -179,7 +190,9 @@ export const ColorPalettePage: React.FC = () => {
           <label
             className={cn(
               'flex flex-col items-center justify-center gap-3 w-full h-48 rounded-xl border-2 border-dashed cursor-pointer transition-all',
-              isDragOver ? 'border-brand-cyan bg-brand-cyan/5' : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40',
+              isDragOver
+                ? 'border-brand-cyan bg-brand-cyan/5'
+                : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
             )}
           >
             <Upload size={24} className="text-neutral-500" />
@@ -205,7 +218,9 @@ export const ColorPalettePage: React.FC = () => {
                   alt={fileName}
                   className="w-32 h-32 rounded-lg object-cover border border-neutral-800 bg-neutral-950"
                 />
-                <p className="text-[10px] font-mono text-neutral-500 mt-1 truncate max-w-[128px]">{fileName}</p>
+                <p className="text-[10px] font-mono text-neutral-500 mt-1 truncate max-w-[128px]">
+                  {fileName}
+                </p>
               </div>
 
               {/* Palette swatches */}
@@ -226,24 +241,35 @@ export const ColorPalettePage: React.FC = () => {
                         >
                           {/* Lock toggle */}
                           <button
-                            onClick={(e) => { e.stopPropagation(); toggleLock(i); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleLock(i);
+                            }}
                             className="absolute top-0.5 left-0.5 p-0.5 rounded bg-black/40 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             {color.locked ? <Lock size={10} /> : <Unlock size={10} />}
                           </button>
                           {/* Remove */}
                           <button
-                            onClick={(e) => { e.stopPropagation(); removeColor(i); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeColor(i);
+                            }}
                             className="absolute top-0.5 right-0.5 p-0.5 rounded bg-black/40 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <X size={10} />
                           </button>
                           {/* Lock indicator */}
                           {color.locked && (
-                            <Lock size={8} className="absolute bottom-1 left-1/2 -translate-x-1/2 text-white/80 drop-shadow" />
+                            <Lock
+                              size={8}
+                              className="absolute bottom-1 left-1/2 -translate-x-1/2 text-white/80 drop-shadow"
+                            />
                           )}
                         </div>
-                        <span className="text-[10px] font-mono text-neutral-400 uppercase">{color.hex}</span>
+                        <span className="text-[10px] font-mono text-neutral-400 uppercase">
+                          {color.hex}
+                        </span>
                       </div>
                     ))}
                     {/* Add color button */}
@@ -253,13 +279,19 @@ export const ColorPalettePage: React.FC = () => {
                           <Input
                             value={newHex}
                             onChange={(e) => setNewHex(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddColor(); if (e.key === 'Escape') setAddingColor(false); }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleAddColor();
+                              if (e.key === 'Escape') setAddingColor(false);
+                            }}
                             className="w-[72px] h-7 text-[10px] font-mono text-center bg-transparent border-neutral-700 px-1"
                             maxLength={7}
                             autoFocus
                           />
                         </div>
-                        <button onClick={handleAddColor} className="text-[10px] font-mono text-brand-cyan hover:underline">
+                        <button
+                          onClick={handleAddColor}
+                          className="text-[10px] font-mono text-brand-cyan hover:underline"
+                        >
                           add
                         </button>
                       </div>
@@ -291,7 +323,9 @@ export const ColorPalettePage: React.FC = () => {
                   disabled={isExtracting}
                   className="flex-1 max-w-[200px] h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
                 />
-                <span className="text-[10px] font-mono text-neutral-500 w-6 text-right">{maxColors}</span>
+                <span className="text-[10px] font-mono text-neutral-500 w-6 text-right">
+                  {maxColors}
+                </span>
               </div>
 
               {/* Action buttons */}
@@ -318,18 +352,36 @@ export const ColorPalettePage: React.FC = () => {
             {/* Export section */}
             {colors.length > 0 && (
               <div className="space-y-3">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Export</span>
+                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+                  Export
+                </span>
                 <div className="flex flex-wrap gap-2">
-                  <Button onClick={exportCSS} variant="outline" className="font-mono text-xs uppercase tracking-widest border-neutral-700">
+                  <Button
+                    onClick={exportCSS}
+                    variant="outline"
+                    className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                  >
                     <Copy size={12} className="mr-1.5" /> CSS Variables
                   </Button>
-                  <Button onClick={exportTailwind} variant="outline" className="font-mono text-xs uppercase tracking-widest border-neutral-700">
+                  <Button
+                    onClick={exportTailwind}
+                    variant="outline"
+                    className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                  >
                     <Copy size={12} className="mr-1.5" /> Tailwind
                   </Button>
-                  <Button onClick={exportJSON} variant="outline" className="font-mono text-xs uppercase tracking-widest border-neutral-700">
+                  <Button
+                    onClick={exportJSON}
+                    variant="outline"
+                    className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                  >
                     <Copy size={12} className="mr-1.5" /> JSON
                   </Button>
-                  <Button onClick={exportAll} variant="outline" className="font-mono text-xs uppercase tracking-widest border-neutral-700">
+                  <Button
+                    onClick={exportAll}
+                    variant="outline"
+                    className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                  >
                     <Copy size={12} className="mr-1.5" /> Copy All
                   </Button>
                 </div>
@@ -339,7 +391,9 @@ export const ColorPalettePage: React.FC = () => {
             {/* WCAG Contrast Grid */}
             {colors.length >= 2 && (
               <div className="space-y-2">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">WCAG Contrast Grid</span>
+                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+                  WCAG Contrast Grid
+                </span>
                 <div className="overflow-x-auto">
                   <table className="border-collapse">
                     <thead>
@@ -347,7 +401,11 @@ export const ColorPalettePage: React.FC = () => {
                         <th className="w-8 h-8" />
                         {colors.map((c, i) => (
                           <th key={i} className="w-14 h-8 text-center">
-                            <div className="w-6 h-6 rounded mx-auto border border-neutral-700" style={{ backgroundColor: c.hex }} title={c.hex} />
+                            <div
+                              className="w-6 h-6 rounded mx-auto border border-neutral-700"
+                              style={{ backgroundColor: c.hex }}
+                              title={c.hex}
+                            />
                           </th>
                         ))}
                       </tr>
@@ -356,18 +414,54 @@ export const ColorPalettePage: React.FC = () => {
                       {colors.map((row, ri) => (
                         <tr key={ri}>
                           <td className="w-8 h-8">
-                            <div className="w-6 h-6 rounded mx-auto border border-neutral-700" style={{ backgroundColor: row.hex }} title={row.hex} />
+                            <div
+                              className="w-6 h-6 rounded mx-auto border border-neutral-700"
+                              style={{ backgroundColor: row.hex }}
+                              title={row.hex}
+                            />
                           </td>
                           {colors.map((col, ci) => {
                             if (ri === ci) {
-                              return <td key={ci} className="w-14 h-8 text-center text-[9px] font-mono text-neutral-700">-</td>;
+                              return (
+                                <td
+                                  key={ci}
+                                  className="w-14 h-8 text-center text-[9px] font-mono text-neutral-700"
+                                >
+                                  -
+                                </td>
+                              );
                             }
                             const ratio = getContrastRatioPublic(row.hex, col.hex);
                             const wcag = checkWCAGCompliance(ratio);
-                            const bg = wcag.normalAA ? 'bg-emerald-950/40' : wcag.largeAA ? 'bg-yellow-950/40' : 'bg-red-950/30';
+                            const bg = wcag.normalAA
+                              ? 'bg-emerald-950/40'
+                              : wcag.largeAA
+                              ? 'bg-yellow-950/40'
+                              : 'bg-red-950/30';
                             return (
-                              <td key={ci} className={cn('w-14 h-8 text-center text-[9px] font-mono rounded', bg)} title={wcag.normalAA ? 'AA pass' : wcag.largeAA ? 'Large AA pass' : 'Fail'}>
-                                <span className={cn(wcag.normalAA ? 'text-emerald-400' : wcag.largeAA ? 'text-yellow-400' : 'text-red-400')}>
+                              <td
+                                key={ci}
+                                className={cn(
+                                  'w-14 h-8 text-center text-[9px] font-mono rounded',
+                                  bg
+                                )}
+                                title={
+                                  wcag.normalAA
+                                    ? 'AA pass'
+                                    : wcag.largeAA
+                                    ? 'Large AA pass'
+                                    : 'Fail'
+                                }
+                              >
+                                <span
+                                  className={cn(
+                                    wcag.normalAA
+                                      ? 'text-emerald-400'
+                                      : wcag.largeAA
+                                      ? 'text-yellow-400'
+                                      : 'text-red-400'
+                                  )}
+                                >
                                   {ratio.toFixed(1)}
                                 </span>
                               </td>

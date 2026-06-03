@@ -34,12 +34,19 @@ function parsePathData(d: string): { anchors: Point[]; handles: Point[]; segment
   const commands = d.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g);
   if (!commands) return { anchors, handles, segments };
 
-  let cx = 0, cy = 0;
-  let startX = 0, startY = 0;
+  let cx = 0,
+    cy = 0;
+  let startX = 0,
+    startY = 0;
 
   for (const cmd of commands) {
     const type = cmd[0];
-    const nums = cmd.slice(1).trim().match(/-?\d+\.?\d*(?:e[+-]?\d+)?/gi)?.map(Number) || [];
+    const nums =
+      cmd
+        .slice(1)
+        .trim()
+        .match(/-?\d+\.?\d*(?:e[+-]?\d+)?/gi)
+        ?.map(Number) || [];
     const isRel = type === type.toLowerCase();
 
     switch (type.toUpperCase()) {
@@ -47,7 +54,10 @@ function parsePathData(d: string): { anchors: Point[]; handles: Point[]; segment
         for (let i = 0; i < nums.length; i += 2) {
           cx = isRel ? cx + nums[i] : nums[i];
           cy = isRel ? cy + nums[i + 1] : nums[i + 1];
-          if (i === 0) { startX = cx; startY = cy; }
+          if (i === 0) {
+            startX = cx;
+            startY = cy;
+          }
           anchors.push({ x: cx, y: cy, type: 'anchor' });
         }
         break;
@@ -169,7 +179,11 @@ function parsePathData(d: string): { anchors: Point[]; handles: Point[]; segment
   return { anchors, handles, segments };
 }
 
-function extractFromElement(el: SVGElement): { anchors: Point[]; handles: Point[]; segments: Segment[] } {
+function extractFromElement(el: SVGElement): {
+  anchors: Point[];
+  handles: Point[];
+  segments: Segment[];
+} {
   const anchors: Point[] = [];
   const handles: Point[] = [];
   const segments: Segment[] = [];
@@ -204,7 +218,7 @@ function extractFromElement(el: SVGElement): { anchors: Point[]; handles: Point[
       { x: cx, y: cy - r, type: 'anchor' },
       { x: cx + r, y: cy, type: 'anchor' },
       { x: cx, y: cy + r, type: 'anchor' },
-      { x: cx - r, y: cy, type: 'anchor' },
+      { x: cx - r, y: cy, type: 'anchor' }
     );
     anchors.push({ x: cx, y: cy, type: 'anchor' });
   }
@@ -218,7 +232,7 @@ function extractFromElement(el: SVGElement): { anchors: Point[]; handles: Point[
       { x: cx, y: cy - ry, type: 'anchor' },
       { x: cx + rx, y: cy, type: 'anchor' },
       { x: cx, y: cy + ry, type: 'anchor' },
-      { x: cx - rx, y: cy, type: 'anchor' },
+      { x: cx - rx, y: cy, type: 'anchor' }
     );
     anchors.push({ x: cx, y: cy, type: 'anchor' });
   }
@@ -237,7 +251,10 @@ function extractFromElement(el: SVGElement): { anchors: Point[]; handles: Point[
   if (el instanceof SVGPolygonElement || el instanceof SVGPolylineElement) {
     const pts = el.getAttribute('points');
     if (pts) {
-      const coords = pts.trim().split(/[\s,]+/).map(Number);
+      const coords = pts
+        .trim()
+        .split(/[\s,]+/)
+        .map(Number);
       const polyPoints: Point[] = [];
       for (let i = 0; i < coords.length; i += 2) {
         polyPoints.push({ x: coords[i], y: coords[i + 1], type: 'anchor' });
@@ -262,11 +279,20 @@ function applyTransform(points: Point[], el: SVGElement): Point[] {
   const translateMatch = transform.match(/translate\(\s*(-?[\d.]+)[\s,]+(-?[\d.]+)\s*\)/);
   const scaleMatch = transform.match(/scale\(\s*(-?[\d.]+)(?:[\s,]+(-?[\d.]+))?\s*\)/);
 
-  let tx = 0, ty = 0, sx = 1, sy = 1;
-  if (translateMatch) { tx = parseFloat(translateMatch[1]); ty = parseFloat(translateMatch[2]); }
-  if (scaleMatch) { sx = parseFloat(scaleMatch[1]); sy = parseFloat(scaleMatch[2] || scaleMatch[1]); }
+  let tx = 0,
+    ty = 0,
+    sx = 1,
+    sy = 1;
+  if (translateMatch) {
+    tx = parseFloat(translateMatch[1]);
+    ty = parseFloat(translateMatch[2]);
+  }
+  if (scaleMatch) {
+    sx = parseFloat(scaleMatch[1]);
+    sy = parseFloat(scaleMatch[2] || scaleMatch[1]);
+  }
 
-  return points.map(p => ({ ...p, x: p.x * sx + tx, y: p.y * sy + ty }));
+  return points.map((p) => ({ ...p, x: p.x * sx + tx, y: p.y * sy + ty }));
 }
 
 export function analyzeSvg(svgString: string): SvgAnalysis {
@@ -275,7 +301,12 @@ export function analyzeSvg(svgString: string): SvgAnalysis {
   const svgEl = doc.querySelector('svg');
 
   if (!svgEl) {
-    return { viewBox: { x: 0, y: 0, width: 100, height: 100 }, points: [], segments: [], svgElement: null };
+    return {
+      viewBox: { x: 0, y: 0, width: 100, height: 100 },
+      points: [],
+      segments: [],
+      svgElement: null,
+    };
   }
 
   const vbAttr = svgEl.getAttribute('viewBox');
@@ -299,7 +330,7 @@ export function analyzeSvg(svgString: string): SvgAnalysis {
     const transformedHandles = applyTransform(handles, el as SVGElement);
     allPoints.push(...transformedAnchors, ...transformedHandles);
 
-    segments.forEach(seg => {
+    segments.forEach((seg) => {
       const [tFrom] = applyTransform([seg.from], el as SVGElement);
       const [tTo] = applyTransform([seg.to], el as SVGElement);
       const tHandles = seg.handles ? applyTransform(seg.handles, el as SVGElement) : undefined;
@@ -325,15 +356,23 @@ export function generateGridLines(
   points: Point[],
   viewBox: { x: number; y: number; width: number; height: number },
   options: {
-    horizontal: boolean; vertical: boolean; diagonal: boolean;
-    hLineSpacing?: number; vLineSpacing?: number; diagonalSpacing?: number;
+    horizontal: boolean;
+    vertical: boolean;
+    diagonal: boolean;
+    hLineSpacing?: number;
+    vLineSpacing?: number;
+    diagonalSpacing?: number;
   }
 ): GridLine[] {
   const lines: GridLine[] = [];
-  const anchors = points.filter(p => p.type === 'anchor');
+  const anchors = points.filter((p) => p.type === 'anchor');
 
-  const uniqueX = [...new Set(anchors.map(p => Math.round(p.x * 100) / 100))].sort((a, b) => a - b);
-  const uniqueY = [...new Set(anchors.map(p => Math.round(p.y * 100) / 100))].sort((a, b) => a - b);
+  const uniqueX = [...new Set(anchors.map((p) => Math.round(p.x * 100) / 100))].sort(
+    (a, b) => a - b
+  );
+  const uniqueY = [...new Set(anchors.map((p) => Math.round(p.y * 100) / 100))].sort(
+    (a, b) => a - b
+  );
 
   const extent = Math.max(viewBox.width, viewBox.height) * 2;
   const minX = viewBox.x - extent;
@@ -368,14 +407,20 @@ export function generateGridLines(
 
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
         for (const target of targetAngles) {
-          if (Math.abs(angle - target) < ANGLE_THRESHOLD || Math.abs(angle - target + 180) < ANGLE_THRESHOLD || Math.abs(angle - target - 180) < ANGLE_THRESHOLD) {
-            const key = `${Math.round(anchors[i].x)},${Math.round(anchors[i].y)},${Math.round(target)}`;
+          if (
+            Math.abs(angle - target) < ANGLE_THRESHOLD ||
+            Math.abs(angle - target + 180) < ANGLE_THRESHOLD ||
+            Math.abs(angle - target - 180) < ANGLE_THRESHOLD
+          ) {
+            const key = `${Math.round(anchors[i].x)},${Math.round(anchors[i].y)},${Math.round(
+              target
+            )}`;
             if (seen.has(key)) break;
             seen.add(key);
 
             if (diagSpacing > 0) {
-              const tooClose = diagOrigins.some(o =>
-                Math.hypot(o.x - anchors[i].x, o.y - anchors[i].y) < diagSpacing
+              const tooClose = diagOrigins.some(
+                (o) => Math.hypot(o.x - anchors[i].x, o.y - anchors[i].y) < diagSpacing
               );
               if (tooClose) break;
             }

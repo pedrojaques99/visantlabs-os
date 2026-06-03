@@ -13,7 +13,7 @@ import { translateTag } from '@/utils/localeUtils';
 import { CollapsibleSidebar } from '../components/mockupmachine/CollapsibleSidebar';
 import { PageShell } from '../components/ui/PageShell';
 import { GlassPanel } from '../components/ui/GlassPanel';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export const MockupsPage: React.FC = () => {
@@ -53,9 +53,9 @@ export const MockupsPage: React.FC = () => {
     try {
       return Array.from(
         new Set(
-          mockups.flatMap(m => [
+          mockups.flatMap((m) => [
             ...(Array.isArray(m.tags) ? m.tags : []),
-            ...(Array.isArray(m.brandingTags) ? m.brandingTags : [])
+            ...(Array.isArray(m.brandingTags) ? m.brandingTags : []),
           ])
         )
       ).sort();
@@ -71,22 +71,28 @@ export const MockupsPage: React.FC = () => {
     }
 
     try {
-      return mockups.filter(mockup => {
+      return mockups.filter((mockup) => {
         if (!mockup || typeof mockup !== 'object') {
           return false;
         }
 
         const prompt = (mockup.prompt || '').toLowerCase();
-        const tags = Array.isArray(mockup.tags) ? mockup.tags.map(t => String(t).toLowerCase()) : [];
-        const brandingTags = Array.isArray(mockup.brandingTags) ? mockup.brandingTags.map(t => String(t).toLowerCase()) : [];
+        const tags = Array.isArray(mockup.tags)
+          ? mockup.tags.map((t) => String(t).toLowerCase())
+          : [];
+        const brandingTags = Array.isArray(mockup.brandingTags)
+          ? mockup.brandingTags.map((t) => String(t).toLowerCase())
+          : [];
         const searchLower = searchQuery.toLowerCase();
 
-        const matchesSearch = searchQuery === '' ||
+        const matchesSearch =
+          searchQuery === '' ||
           prompt.includes(searchLower) ||
-          tags.some(tag => tag.includes(searchLower)) ||
-          brandingTags.some(tag => tag.includes(searchLower));
+          tags.some((tag) => tag.includes(searchLower)) ||
+          brandingTags.some((tag) => tag.includes(searchLower));
 
-        const matchesTag = filterTag === null ||
+        const matchesTag =
+          filterTag === null ||
           tags.includes(filterTag.toLowerCase()) ||
           brandingTags.includes(filterTag.toLowerCase());
 
@@ -108,7 +114,7 @@ export const MockupsPage: React.FC = () => {
 
   const getCurrentIndex = useCallback(() => {
     if (!selectedMockup || !filteredMockups.length) return 0;
-    const index = filteredMockups.findIndex(m => m._id === selectedMockup._id);
+    const index = filteredMockups.findIndex((m) => m._id === selectedMockup._id);
     return index >= 0 ? index : 0;
   }, [selectedMockup, filteredMockups]);
 
@@ -116,44 +122,57 @@ export const MockupsPage: React.FC = () => {
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex < filteredMockups.length - 1;
 
-  const handleImportToCanvas = useCallback((mockup: Mockup) => {
-    // Store mockup in localStorage for CanvasPage to pick up
-    try {
-      localStorage.setItem('import-mockup', JSON.stringify(mockup));
-      navigate('/canvas');
-    } catch (error) {
-      console.error('Failed to store mockup for import:', error);
-    }
-  }, [navigate]);
+  const handleImportToCanvas = useCallback(
+    (mockup: Mockup) => {
+      // Store mockup in localStorage for CanvasPage to pick up
+      try {
+        localStorage.setItem('import-mockup', JSON.stringify(mockup));
+        navigate('/canvas');
+      } catch (error) {
+        console.error('Failed to store mockup for import:', error);
+      }
+    },
+    [navigate]
+  );
 
-  const handleEdit = useCallback((mockup: Mockup) => {
-    const imageUrl = getImageUrl(mockup);
-    if (imageUrl && mockup.imageBase64) {
-      navigate(`/editor?image=${encodeURIComponent(mockup.imageBase64)}`);
-    }
-  }, [navigate]);
+  const handleEdit = useCallback(
+    (mockup: Mockup) => {
+      const imageUrl = getImageUrl(mockup);
+      if (imageUrl && mockup.imageBase64) {
+        navigate(`/editor?image=${encodeURIComponent(mockup.imageBase64)}`);
+      }
+    },
+    [navigate]
+  );
 
   // Handler to navigate to MockupMachinePage with image for editing
-  const handleNavigateToMockupMachine = useCallback(async (mockup: Mockup, operation?: 'zoom-in' | 'zoom-out' | 'new-angle' | 'new-background' | 're-imagine', operationData?: string) => {
-    try {
-      // Store mockup data in localStorage for MockupMachinePage to pick up
-      const mockupData = {
-        imageBase64: mockup.imageBase64,
-        imageUrl: mockup.imageUrl,
-        prompt: mockup.prompt,
-        designType: mockup.designType,
-        tags: mockup.tags,
-        brandingTags: mockup.brandingTags,
-        aspectRatio: mockup.aspectRatio,
-        operation,
-        operationData, // For angle name or re-imagine prompt
-      };
-      localStorage.setItem('edit-mockup', JSON.stringify(mockupData));
-      navigate('/');
-    } catch (error) {
-      console.error('Failed to store mockup for editing:', error);
-    }
-  }, [navigate]);
+  const handleNavigateToMockupMachine = useCallback(
+    async (
+      mockup: Mockup,
+      operation?: 'zoom-in' | 'zoom-out' | 'new-angle' | 'new-background' | 're-imagine',
+      operationData?: string
+    ) => {
+      try {
+        // Store mockup data in localStorage for MockupMachinePage to pick up
+        const mockupData = {
+          imageBase64: mockup.imageBase64,
+          imageUrl: mockup.imageUrl,
+          prompt: mockup.prompt,
+          designType: mockup.designType,
+          tags: mockup.tags,
+          brandingTags: mockup.brandingTags,
+          aspectRatio: mockup.aspectRatio,
+          operation,
+          operationData, // For angle name or re-imagine prompt
+        };
+        localStorage.setItem('edit-mockup', JSON.stringify(mockupData));
+        navigate('/');
+      } catch (error) {
+        console.error('Failed to store mockup for editing:', error);
+      }
+    },
+    [navigate]
+  );
 
   // Calculate credits needed (default to 1 credit for edit operations)
   const creditsNeededForEdit = useMemo(() => {
@@ -202,7 +221,9 @@ export const MockupsPage: React.FC = () => {
   const getGridStyle = useCallback(() => {
     // Mobile sempre 1 coluna, a partir de 640px (sm) usa o número exato selecionado pelo usuário
     return {
-      gridTemplateColumns: isMobile ? 'repeat(1, minmax(0, 1fr))' : `repeat(${columns}, minmax(0, 1fr))`,
+      gridTemplateColumns: isMobile
+        ? 'repeat(1, minmax(0, 1fr))'
+        : `repeat(${columns}, minmax(0, 1fr))`,
     };
   }, [columns, isMobile]);
 
@@ -226,7 +247,7 @@ export const MockupsPage: React.FC = () => {
       // Prioritize imageUrl (R2) over imageBase64
       // Only show blank mockups on public page
       const validMockups = data
-        .filter(mockup => {
+        .filter((mockup) => {
           if (!mockup || typeof mockup !== 'object') return false;
 
           // Only show blank mockups
@@ -236,13 +257,14 @@ export const MockupsPage: React.FC = () => {
           // Check if mockup has a valid imageUrl (R2/SafeURL) or imageBase64
           const hasImageUrl = mockup.imageUrl && isSafeUrl(mockup.imageUrl);
 
-          const hasImageBase64 = mockup.imageBase64 &&
+          const hasImageBase64 =
+            mockup.imageBase64 &&
             typeof mockup.imageBase64 === 'string' &&
             mockup.imageBase64.length > 0;
 
           return hasImageUrl || hasImageBase64;
         })
-        .map(mockup => ({
+        .map((mockup) => ({
           ...mockup,
           _id: mockup._id || '',
           prompt: mockup.prompt || '',
@@ -276,7 +298,9 @@ export const MockupsPage: React.FC = () => {
 
   const headerActions = (
     <div className="relative flex-shrink-0">
-      <Button variant="ghost" onClick={() => setShowSearch(!showSearch)}
+      <Button
+        variant="ghost"
+        onClick={() => setShowSearch(!showSearch)}
         className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-950/20"
         title={t('common.search')}
       >
@@ -309,7 +333,7 @@ export const MockupsPage: React.FC = () => {
       breadcrumb={[
         { label: t('apps.home') || 'Home', to: '/' },
         { label: t('community.title') || 'Community', to: '/community' },
-        { label: t('mockups.title') || 'Mockups' }
+        { label: t('mockups.title') || 'Mockups' },
       ]}
       actions={headerActions}
     >
@@ -319,10 +343,12 @@ export const MockupsPage: React.FC = () => {
           <div className="mb-6">
             <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 flex items-center justify-between backdrop-blur-sm">
               <p className="text-destructive font-mono text-xs flex-1">{error}</p>
-              <Button variant="ghost" onClick={() => {
-                setError(null);
-                loadMockups();
-              }}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setError(null);
+                  loadMockups();
+                }}
                 className="ml-2 px-3 py-1 bg-destructive/20 hover:bg-destructive/30 text-destructive font-mono text-xs rounded transition-colors"
               >
                 {t('mockupsPage.retry')}
@@ -330,7 +356,6 @@ export const MockupsPage: React.FC = () => {
             </div>
           </div>
         )}
-
 
         {/* Top Row: Sidebar */}
         <div className="mb-8">
@@ -353,7 +378,9 @@ export const MockupsPage: React.FC = () => {
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
               <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
-                <Button variant="ghost" onClick={() => handleColumnsChange(columns - 1)}
+                <Button
+                  variant="ghost"
+                  onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
@@ -365,7 +392,9 @@ export const MockupsPage: React.FC = () => {
                     {columns}
                   </span>
                 </div>
-                <Button variant="ghost" onClick={() => handleColumnsChange(columns + 1)}
+                <Button
+                  variant="ghost"
+                  onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"
@@ -381,7 +410,9 @@ export const MockupsPage: React.FC = () => {
             <div className="flex flex-col items-center justify-center min-h-[50vh] text-center py-16">
               <ImageIcon size={64} className="text-neutral-700 mb-6" strokeWidth={1} />
               <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-3">
-                {mockups.length === 0 ? t('mockupsPage.noMockupsYet') : t('mockupsPage.noMatchesFound')}
+                {mockups.length === 0
+                  ? t('mockupsPage.noMockupsYet')
+                  : t('mockupsPage.noMatchesFound')}
               </h2>
               <p className="text-sm text-neutral-600 font-mono max-w-md">
                 {mockups.length === 0
@@ -432,34 +463,48 @@ export const MockupsPage: React.FC = () => {
             }}
             isAuthenticated={isAuthenticated === true}
             mockupId={selectedMockup._id}
-            onToggleLike={selectedMockup._id ? async () => {
-              // Fallback handler for when hook is not used
-              try {
-                const newLikedState = !selectedMockup.isLiked;
-                await mockupApi.update(selectedMockup._id, { isLiked: newLikedState });
-                setMockups(prev => prev.map(m =>
-                  m._id === selectedMockup._id ? { ...m, isLiked: newLikedState } : m
-                ));
-                setSelectedMockup(prev => prev ? { ...prev, isLiked: newLikedState } : null);
-              } catch (error) {
-                console.error('Failed to toggle like:', error);
-              }
-            } : undefined}
+            onToggleLike={
+              selectedMockup._id
+                ? async () => {
+                    // Fallback handler for when hook is not used
+                    try {
+                      const newLikedState = !selectedMockup.isLiked;
+                      await mockupApi.update(selectedMockup._id, { isLiked: newLikedState });
+                      setMockups((prev) =>
+                        prev.map((m) =>
+                          m._id === selectedMockup._id ? { ...m, isLiked: newLikedState } : m
+                        )
+                      );
+                      setSelectedMockup((prev) =>
+                        prev ? { ...prev, isLiked: newLikedState } : null
+                      );
+                    } catch (error) {
+                      console.error('Failed to toggle like:', error);
+                    }
+                  }
+                : undefined
+            }
             onLikeStateChange={(newIsLiked) => {
               // Sync state when hook updates it
               if (selectedMockup._id) {
-                setMockups(prev => prev.map(m =>
-                  m._id === selectedMockup._id ? { ...m, isLiked: newIsLiked } : m
-                ));
-                setSelectedMockup(prev => prev ? { ...prev, isLiked: newIsLiked } : null);
+                setMockups((prev) =>
+                  prev.map((m) =>
+                    m._id === selectedMockup._id ? { ...m, isLiked: newIsLiked } : m
+                  )
+                );
+                setSelectedMockup((prev) => (prev ? { ...prev, isLiked: newIsLiked } : null));
               }
             }}
             isLiked={selectedMockup.isLiked || false}
             onZoomIn={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-in')}
             onZoomOut={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-out')}
-            onNewAngle={(angle) => handleNavigateToMockupMachine(selectedMockup, 'new-angle', angle)}
+            onNewAngle={(angle) =>
+              handleNavigateToMockupMachine(selectedMockup, 'new-angle', angle)
+            }
             onNewBackground={() => handleNavigateToMockupMachine(selectedMockup, 'new-background')}
-            onReImagine={(reimaginePrompt) => handleNavigateToMockupMachine(selectedMockup, 're-imagine', reimaginePrompt)}
+            onReImagine={(reimaginePrompt) =>
+              handleNavigateToMockupMachine(selectedMockup, 're-imagine', reimaginePrompt)
+            }
             editButtonsDisabled={isEditOperationDisabled}
             creditsPerOperation={creditsNeededForEdit}
             onNavigatePrevious={hasPrevious ? handlePreviousMockup : undefined}

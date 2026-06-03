@@ -1,7 +1,7 @@
-import * as React from "react"
-import { createPortal } from "react-dom"
-import { ChevronDown, Check } from "lucide-react"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import { createPortal } from 'react-dom';
+import { ChevronDown, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface SelectOption {
   value: string;
@@ -25,7 +25,21 @@ export interface SelectProps {
 }
 
 const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
-  ({ className, options, value, onChange, placeholder, variant = 'default', disabled = false, loading = false, footer, ...props }, ref) => {
+  (
+    {
+      className,
+      options,
+      value,
+      onChange,
+      placeholder,
+      variant = 'default',
+      disabled = false,
+      loading = false,
+      footer,
+      ...props
+    },
+    ref
+  ) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [focusedIndex, setFocusedIndex] = React.useState(-1);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -39,7 +53,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     // Merge refs
     React.useImperativeHandle(ref, () => buttonRef.current as HTMLButtonElement);
 
-    const selectedOption = options.find(opt => opt.value === value);
+    const selectedOption = options.find((opt) => opt.value === value);
     const displayValue = selectedOption?.label || placeholder || 'Select...';
 
     const updatePosition = React.useCallback(() => {
@@ -58,9 +72,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           left: rect.left,
           width: rect.width,
           zIndex: 99999,
-          ...(showAbove
-            ? { bottom: windowHeight - rect.top + 2 }
-            : { top: rect.bottom + 2 }),
+          ...(showAbove ? { bottom: windowHeight - rect.top + 2 } : { top: rect.bottom + 2 }),
         });
       } else {
         setDropdownStyle({});
@@ -107,14 +119,14 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           buttonRef.current?.focus();
         } else if (e.key === 'ArrowDown') {
           e.preventDefault();
-          setFocusedIndex(prev => {
+          setFocusedIndex((prev) => {
             const next = prev < options.length - 1 ? prev + 1 : 0;
             scrollToOption(next);
             return next;
           });
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
-          setFocusedIndex(prev => {
+          setFocusedIndex((prev) => {
             const next = prev > 0 ? prev - 1 : options.length - 1;
             scrollToOption(next);
             return next;
@@ -150,7 +162,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     // Set initial focus when opening
     React.useEffect(() => {
       if (isOpen && selectedOption) {
-        const index = options.findIndex(opt => opt.value === selectedOption.value);
+        const index = options.findIndex((opt) => opt.value === selectedOption.value);
         setFocusedIndex(index >= 0 ? index : 0);
       }
     }, [isOpen]);
@@ -161,24 +173,26 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       setFocusedIndex(-1);
     };
 
-    const baseStyles = variant === 'node'
-      ? "w-full px-3 py-2 bg-neutral-950/40 border border-neutral-800 rounded-md text-xs text-neutral-300"
-      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-md text-neutral-200 text-sm";
+    const baseStyles =
+      variant === 'node'
+        ? 'w-full px-3 py-2 bg-neutral-950/40 border border-neutral-800 rounded-md text-xs text-neutral-300'
+        : 'w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-md text-neutral-200 text-sm';
 
-    const focusStyles = "focus:outline-none focus:border-neutral-600";
+    const focusStyles = 'focus:outline-none focus:border-neutral-600';
 
     const dropdownContent = (
       <div
         ref={dropdownRef}
         className={cn(
-          "bg-neutral-950/90 backdrop-blur-xl",
-          "border-node border-neutral-800/50 rounded-md",
-          "shadow-2xl overflow-hidden",
-          variant !== 'node' && cn(
-            "absolute w-full",
-            renderPosition === 'bottom' ? "mt-1 top-full" : "mb-1 bottom-full",
-            "z-[99999]"
-          )
+          'bg-neutral-950/90 backdrop-blur-xl',
+          'border-node border-neutral-800/50 rounded-md',
+          'shadow-2xl overflow-hidden',
+          variant !== 'node' &&
+            cn(
+              'absolute w-full',
+              renderPosition === 'bottom' ? 'mt-1 top-full' : 'mb-1 bottom-full',
+              'z-[99999]'
+            )
         )}
         style={variant === 'node' ? dropdownStyle : undefined}
         role="listbox"
@@ -199,58 +213,64 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                 onClick={() => handleSelect(option.value)}
                 onMouseEnter={() => setFocusedIndex(index)}
                 className={cn(
-                  "px-2 py-1.5 cursor-pointer",
-                  "text-[11px] font-medium relative",
-                  "transition-all duration-150",
-                  "flex items-center justify-start gap-2",
-                  "border-l-2 border-transparent",
-                  "text-neutral-400",
-                  isFocused && "bg-neutral-800/60 border-neutral-600 text-neutral-200",
-                  isSelected && "bg-foreground/10 text-foreground border-l border-neutral-600",
-                  !isSelected && !isFocused && "hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700"
+                  'px-2 py-1.5 cursor-pointer',
+                  'text-[11px] font-medium relative',
+                  'transition-all duration-150',
+                  'flex items-center justify-start gap-2',
+                  'border-l-2 border-transparent',
+                  'text-neutral-400',
+                  isFocused && 'bg-neutral-800/60 border-neutral-600 text-neutral-200',
+                  isSelected && 'bg-foreground/10 text-foreground border-l border-neutral-600',
+                  !isSelected &&
+                    !isFocused &&
+                    'hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700'
                 )}
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0 pointer-events-none">
                   {option.icon && (
-                    <span className={cn(
-                      "flex-shrink-0 transition-colors duration-150",
-                      isSelected ? "text-foreground" : "text-neutral-400"
-                    )}>
+                    <span
+                      className={cn(
+                        'flex-shrink-0 transition-colors duration-150',
+                        isSelected ? 'text-foreground' : 'text-neutral-400'
+                      )}
+                    >
                       {option.icon}
                     </span>
                   )}
                   <span className="truncate">{option.label}</span>
                   {option.badge && (
-                    <span className={cn(
-                      "flex-shrink-0 px-1 py-px rounded text-[10px] font-bold uppercase tracking-wider leading-none",
-                      option.badge === 'latest'    && "bg-neutral-700/30 text-neutral-300 border border-neutral-700",
-                      option.badge === 'popular'   && "bg-green-500/15 text-green-400 border border-green-500/30",
-                      option.badge === 'fast'      && "bg-amber-500/15 text-amber-400 border border-amber-500/30",
-                      option.badge === 'edit'      && "bg-violet-500/15 text-violet-400 border border-violet-500/30",
-                      option.badge === 'pro'       && "bg-orange-500/15 text-orange-400 border border-orange-500/30",
-                      option.badge === 'reasoning' && "bg-purple-500/15 text-purple-400 border border-purple-500/30",
-                    )}>
+                    <span
+                      className={cn(
+                        'flex-shrink-0 px-1 py-px rounded text-[10px] font-bold uppercase tracking-wider leading-none',
+                        option.badge === 'latest' &&
+                          'bg-neutral-700/30 text-neutral-300 border border-neutral-700',
+                        option.badge === 'popular' &&
+                          'bg-green-500/15 text-green-400 border border-green-500/30',
+                        option.badge === 'fast' &&
+                          'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+                        option.badge === 'edit' &&
+                          'bg-violet-500/15 text-violet-400 border border-violet-500/30',
+                        option.badge === 'pro' &&
+                          'bg-orange-500/15 text-orange-400 border border-orange-500/30',
+                        option.badge === 'reasoning' &&
+                          'bg-purple-500/15 text-purple-400 border border-purple-500/30'
+                      )}
+                    >
                       {option.badge === 'popular' ? 'top' : option.badge}
                     </span>
                   )}
                 </div>
-                {isSelected && (
-                  <Check size={14} className="text-foreground flex-shrink-0" />
-                )}
+                {isSelected && <Check size={14} className="text-foreground flex-shrink-0" />}
               </li>
             );
           })}
         </ul>
-        {footer && (
-          <div className="border-t border-neutral-800/30">
-            {footer}
-          </div>
-        )}
+        {footer && <div className="border-t border-neutral-800/30">{footer}</div>}
       </div>
     );
 
     return (
-      <div ref={containerRef} className={cn("relative w-full")}>
+      <div ref={containerRef} className={cn('relative w-full')}>
         <button
           ref={buttonRef}
           type="button"
@@ -259,11 +279,11 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           className={cn(
             baseStyles,
             focusStyles,
-            "transition-all duration-200 appearance-none cursor-pointer",
-            "flex items-center justify-start gap-2",
-            "hover:border-neutral-600/50",
-            "disabled:cursor-not-allowed disabled:opacity-50",
-            variant === 'node' ? "node-interactive" : "",
+            'transition-all duration-200 appearance-none cursor-pointer',
+            'flex items-center justify-start gap-2',
+            'hover:border-neutral-600/50',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            variant === 'node' ? 'node-interactive' : '',
             className
           )}
           aria-haspopup="listbox"
@@ -273,14 +293,9 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {selectedOption?.icon && (
-              <span className="text-neutral-400 flex-shrink-0">
-                {selectedOption.icon}
-              </span>
+              <span className="text-neutral-400 flex-shrink-0">{selectedOption.icon}</span>
             )}
-            <span className={cn(
-              "truncate text-left",
-              !selectedOption && "text-neutral-500"
-            )}>
+            <span className={cn('truncate text-left', !selectedOption && 'text-neutral-500')}>
               {loading ? (
                 <span className="inline-block w-20 h-4 rounded bg-neutral-700/50" />
               ) : (
@@ -288,15 +303,23 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               )}
             </span>
             {selectedOption?.badge && (
-              <span className={cn(
-                "flex-shrink-0 px-1 py-px rounded text-[10px] font-bold uppercase tracking-wider leading-none",
-                selectedOption.badge === 'latest'    && "bg-neutral-700/30 text-neutral-300 border border-neutral-700",
-                selectedOption.badge === 'popular'   && "bg-green-500/15 text-green-400 border border-green-500/30",
-                selectedOption.badge === 'fast'      && "bg-amber-500/15 text-amber-400 border border-amber-500/30",
-                selectedOption.badge === 'edit'      && "bg-violet-500/15 text-violet-400 border border-violet-500/30",
-                selectedOption.badge === 'pro'       && "bg-orange-500/15 text-orange-400 border border-orange-500/30",
-                selectedOption.badge === 'reasoning' && "bg-purple-500/15 text-purple-400 border border-purple-500/30",
-              )}>
+              <span
+                className={cn(
+                  'flex-shrink-0 px-1 py-px rounded text-[10px] font-bold uppercase tracking-wider leading-none',
+                  selectedOption.badge === 'latest' &&
+                    'bg-neutral-700/30 text-neutral-300 border border-neutral-700',
+                  selectedOption.badge === 'popular' &&
+                    'bg-green-500/15 text-green-400 border border-green-500/30',
+                  selectedOption.badge === 'fast' &&
+                    'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+                  selectedOption.badge === 'edit' &&
+                    'bg-violet-500/15 text-violet-400 border border-violet-500/30',
+                  selectedOption.badge === 'pro' &&
+                    'bg-orange-500/15 text-orange-400 border border-orange-500/30',
+                  selectedOption.badge === 'reasoning' &&
+                    'bg-purple-500/15 text-purple-400 border border-purple-500/30'
+                )}
+              >
                 {selectedOption.badge === 'popular' ? 'top' : selectedOption.badge}
               </span>
             )}
@@ -304,21 +327,18 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           <ChevronDown
             size={14}
             className={cn(
-              "text-neutral-400 pointer-events-none flex-shrink-0 transition-transform duration-200",
-              isOpen && "rotate-180"
+              'text-neutral-400 pointer-events-none flex-shrink-0 transition-transform duration-200',
+              isOpen && 'rotate-180'
             )}
           />
         </button>
 
-        {isOpen && (
-          variant === 'node'
-            ? createPortal(dropdownContent, document.body)
-            : dropdownContent
-        )}
+        {isOpen &&
+          (variant === 'node' ? createPortal(dropdownContent, document.body) : dropdownContent)}
       </div>
     );
   }
-)
-Select.displayName = "Select"
+);
+Select.displayName = 'Select';
 
-export { Select }
+export { Select };

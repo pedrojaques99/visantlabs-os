@@ -33,10 +33,10 @@ With Gemini configured, you'll have access to:
 
 Google Gemini has rate limits that vary by plan:
 
-| Plan | Requests/minute | Requests/day |
-|------|-----------------|--------------|
-| Free | 15 | 1,500 |
-| Pay-as-you-go | Higher limits | Based on usage |
+| Plan          | Requests/minute | Requests/day   |
+| ------------- | --------------- | -------------- |
+| Free          | 15              | 1,500          |
+| Pay-as-you-go | Higher limits   | Based on usage |
 
 ### User API Keys
 
@@ -61,14 +61,16 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ### Troubleshooting
 
 **Error: "API key not valid"**
+
 - Verify the key is correct and hasn't been revoked
 - Check if the key has the necessary permissions
 
 **Error: "Quota exceeded"**
+
 - You've hit the rate limit; wait a few minutes
 - Consider upgrading to a paid plan
 
 **AI features disabled**
+
 - Ensure `GEMINI_API_KEY` is set in your environment
 - Restart the server after adding the key
-

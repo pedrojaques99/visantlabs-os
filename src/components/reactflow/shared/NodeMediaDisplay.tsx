@@ -51,7 +51,7 @@ export const NodeMediaDisplay: React.FC<NodeMediaDisplayProps> = ({
   alt = 'Output',
   onMediaLoad,
   className,
-  style
+  style,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const loadingStartTimeRef = useRef<number | null>(null);
@@ -82,10 +82,12 @@ export const NodeMediaDisplay: React.FC<NodeMediaDisplayProps> = ({
 
   // Validate URL
   const isValidUrl = (urlToCheck: string): boolean => {
-    return isSafeUrl(urlToCheck) ||
+    return (
+      isSafeUrl(urlToCheck) ||
       urlToCheck.startsWith('http') ||
       urlToCheck.startsWith('blob:') ||
-      urlToCheck.startsWith('data:');
+      urlToCheck.startsWith('data:')
+    );
   };
 
   // Handle image load
@@ -118,7 +120,10 @@ export const NodeMediaDisplay: React.FC<NodeMediaDisplayProps> = ({
       style={{ width: '100%', height: '100%', flex: '1 1 0%', minHeight: 0, ...style }}
     >
       {isVideo && url ? (
-        <div className="relative flex items-center justify-center group/video" style={{ width: '100%', height: '100%' }}>
+        <div
+          className="relative flex items-center justify-center group/video"
+          style={{ width: '100%', height: '100%' }}
+        >
           <video
             src={url}
             controls
@@ -145,7 +150,10 @@ export const NodeMediaDisplay: React.FC<NodeMediaDisplayProps> = ({
           )}
         </div>
       ) : hasMedia && url && isValidUrl(url) ? (
-        <div className="relative flex items-center justify-center group/image" style={{ width: '100%', height: '100%' }}>
+        <div
+          className="relative flex items-center justify-center group/image"
+          style={{ width: '100%', height: '100%' }}
+        >
           <img
             src={url}
             alt={alt}

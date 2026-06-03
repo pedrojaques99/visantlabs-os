@@ -23,11 +23,13 @@ export function getFolderPath(node: BaseNode): string[] {
 /**
  * Export thumbnail for a component
  */
-export async function exportThumbnail(node: ComponentNode | ComponentSetNode): Promise<string | undefined> {
+export async function exportThumbnail(
+  node: ComponentNode | ComponentSetNode
+): Promise<string | undefined> {
   try {
     const bytes = await node.exportAsync({
       format: 'PNG',
-      constraint: { type: 'HEIGHT', value: 64 }
+      constraint: { type: 'HEIGHT', value: 64 },
     });
     const b64 = figma.base64Encode(bytes);
     return `data:image/png;base64,${b64}`;
@@ -53,7 +55,7 @@ export async function getComponentsInCurrentFile(): Promise<ComponentInfo[]> {
           id: node.id,
           name: node.name,
           key: node.key,
-          folderPath: getFolderPath(node)
+          folderPath: getFolderPath(node),
         });
       }
     }
@@ -73,10 +75,14 @@ export async function exportComponentThumbnails(components: ComponentInfo[]): Pr
     const batch = components.slice(i, i + BATCH);
     await Promise.all(
       batch.map(async (comp) => {
-        const node = await figma.getNodeByIdAsync(comp.id) as ComponentNode | ComponentSetNode | null;
+        const node = (await figma.getNodeByIdAsync(comp.id)) as
+          | ComponentNode
+          | ComponentSetNode
+          | null;
         if (node) {
           const thumb = await exportThumbnail(node);
-          if (thumb) postToUI({ type: 'COMPONENT_THUMBNAIL', componentId: comp.id, thumbnail: thumb });
+          if (thumb)
+            postToUI({ type: 'COMPONENT_THUMBNAIL', componentId: comp.id, thumbnail: thumb });
         }
       })
     );
@@ -92,14 +98,26 @@ export async function getComponentFromSelection(): Promise<ComponentInfo | null>
   const node = sel[0];
   if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
     const thumbnail = await exportThumbnail(node);
-    return { id: node.id, name: node.name, key: node.key, folderPath: getFolderPath(node), thumbnail };
+    return {
+      id: node.id,
+      name: node.name,
+      key: node.key,
+      folderPath: getFolderPath(node),
+      thumbnail,
+    };
   }
   if (node.type === 'INSTANCE') {
     try {
       const main = await node.getMainComponentAsync();
       if (main) {
         const thumbnail = await exportThumbnail(main);
-        return { id: main.id, name: main.name, key: main.key, folderPath: main.parent ? getFolderPath(main) : [], thumbnail };
+        return {
+          id: main.id,
+          name: main.name,
+          key: main.key,
+          folderPath: main.parent ? getFolderPath(main) : [],
+          thumbnail,
+        };
       }
     } catch {
       // Component may not be accessible
@@ -115,8 +133,8 @@ export function getAgentComponents(): any[] {
   const components: any[] = [];
 
   // Look for [Agent] pages
-  const agentPages = figma.root.children.filter(
-    page => page.name.toLowerCase().startsWith('[agent]')
+  const agentPages = figma.root.children.filter((page) =>
+    page.name.toLowerCase().startsWith('[agent]')
   );
 
   // Scan agent pages
@@ -138,11 +156,12 @@ export function getAgentComponents(): any[] {
   for (const page of figma.root.children) {
     if (agentPages.includes(page)) continue;
 
-    const prefixedComps = page.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] })
-      .filter(n => n.name.toLowerCase().startsWith('[component]'));
+    const prefixedComps = page
+      .findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] })
+      .filter((n) => n.name.toLowerCase().startsWith('[component]'));
 
     for (const comp of prefixedComps) {
-      if (!components.some(c => c.id === comp.id)) {
+      if (!components.some((c) => c.id === comp.id)) {
         components.push({
           id: comp.id,
           key: (comp as ComponentNode).key || comp.id,

@@ -1,7 +1,12 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import { uploadBrandLogo, uploadBudgetPdf, uploadCustomPdfPreset, uploadGiftImage } from '../../src/services/r2Service.js';
+import {
+  uploadBrandLogo,
+  uploadBudgetPdf,
+  uploadCustomPdfPreset,
+  uploadGiftImage,
+} from '../../src/services/r2Service.js';
 import crypto from 'crypto';
 import { rateLimit } from 'express-rate-limit';
 
@@ -47,7 +52,33 @@ const isBase64Pdf = (str: string): boolean => {
 // Create new budget
 router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
-    const { template, name, clientName, projectName, projectDescription, startDate, endDate, deliverables, observations, links, faq, brandColors, brandName, brandLogo, brandBackgroundColor, brandAccentColor, timeline, paymentInfo, signatures, giftOptions, customContent, finalCTAText, year, data, customPdfUrl } = req.body;
+    const {
+      template,
+      name,
+      clientName,
+      projectName,
+      projectDescription,
+      startDate,
+      endDate,
+      deliverables,
+      observations,
+      links,
+      faq,
+      brandColors,
+      brandName,
+      brandLogo,
+      brandBackgroundColor,
+      brandAccentColor,
+      timeline,
+      paymentInfo,
+      signatures,
+      giftOptions,
+      customContent,
+      finalCTAText,
+      year,
+      data,
+      customPdfUrl,
+    } = req.body;
 
     if (!template) {
       return res.status(400).json({ error: 'Template is required' });
@@ -55,7 +86,18 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
 
     // Skip required fields validation for custom templates
     if (template !== 'custom') {
-      if (!clientName || !projectName || !projectDescription || !startDate || !endDate || !deliverables || !links || !faq || !brandColors || !brandName) {
+      if (
+        !clientName ||
+        !projectName ||
+        !projectDescription ||
+        !startDate ||
+        !endDate ||
+        !deliverables ||
+        !links ||
+        !faq ||
+        !brandColors ||
+        !brandName
+      ) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
     }
@@ -151,14 +193,15 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     });
 
     res.json({
-      budgets: budgets.map(budget => ({
+      budgets: budgets.map((budget) => ({
         ...budget,
         _id: budget.id,
       })),
     });
   } catch (error: any) {
     // Check Prisma connection if error might be connection-related
-    const isConnectionError = error.code === 'P1001' ||
+    const isConnectionError =
+      error.code === 'P1001' ||
       error.message?.includes('connect') ||
       error.message?.includes('connection');
 
@@ -193,8 +236,8 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
           code: error.code,
           meta: error.meta,
           connectionIssue: isConnectionError ? connectionStatus : undefined,
-        }
-      })
+        },
+      }),
     });
   }
 });
@@ -249,14 +292,15 @@ router.get('/pdf-presets', authenticate, async (req: AuthRequest, res) => {
     });
 
     res.json({
-      presets: presets.map(preset => ({
+      presets: presets.map((preset) => ({
         ...preset,
         _id: preset.id,
       })),
     });
   } catch (error: any) {
     // Check Prisma connection if error might be connection-related
-    const isConnectionError = error.code === 'P1001' ||
+    const isConnectionError =
+      error.code === 'P1001' ||
       error.message?.includes('connect') ||
       error.message?.includes('connection');
 
@@ -292,8 +336,8 @@ router.get('/pdf-presets', authenticate, async (req: AuthRequest, res) => {
           code: error.code,
           meta: error.meta,
           connectionIssue: isConnectionError ? connectionStatus : undefined,
-        }
-      })
+        },
+      }),
     });
   }
 });
@@ -417,7 +461,33 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 router.put('/:id', authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
-    const { template, name, clientName, projectName, projectDescription, startDate, endDate, deliverables, observations, links, faq, brandColors, brandName, brandLogo, brandBackgroundColor, brandAccentColor, timeline, paymentInfo, signatures, giftOptions, customContent, finalCTAText, year, data, customPdfUrl } = req.body;
+    const {
+      template,
+      name,
+      clientName,
+      projectName,
+      projectDescription,
+      startDate,
+      endDate,
+      deliverables,
+      observations,
+      links,
+      faq,
+      brandColors,
+      brandName,
+      brandLogo,
+      brandBackgroundColor,
+      brandAccentColor,
+      timeline,
+      paymentInfo,
+      signatures,
+      giftOptions,
+      customContent,
+      finalCTAText,
+      year,
+      data,
+      customPdfUrl,
+    } = req.body;
 
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -441,7 +511,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Migrate customPdfUrl from base64 to R2 if needed
-    const budgetData = data || (existingBudget.data as any || {});
+    const budgetData = data || (existingBudget.data as any) || {};
     const pdfUrlFromData = budgetData.customPdfUrl || customPdfUrl;
 
     if (pdfUrlFromData && isBase64Pdf(pdfUrlFromData)) {
@@ -606,9 +676,7 @@ router.post('/:id/duplicate', apiRateLimiter, authenticate, async (req: AuthRequ
 
     // Create new budget with copied data
     // Set shareId to null for the duplicate
-    const newName = existingBudget.name
-      ? `Copy of ${existingBudget.name}`
-      : `Copy of Budget`;
+    const newName = existingBudget.name ? `Copy of ${existingBudget.name}` : `Copy of Budget`;
 
     const duplicatedBudget = await prisma.budgetProject.create({
       data: {
@@ -784,7 +852,7 @@ router.post('/:id/pdf', uploadImageRateLimiter, authenticate, async (req: AuthRe
       where: { id },
       data: {
         data: {
-          ...(existingBudget.data as any || {}),
+          ...((existingBudget.data as any) || {}),
           customPdfUrl: pdfUrl,
         },
         updatedAt: new Date(),
@@ -808,4 +876,3 @@ router.post('/:id/pdf', uploadImageRateLimiter, authenticate, async (req: AuthRe
 });
 
 export default router;
-

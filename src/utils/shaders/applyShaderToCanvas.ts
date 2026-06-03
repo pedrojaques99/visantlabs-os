@@ -10,13 +10,13 @@ import { loadImage } from '@/utils/imageUtils';
 
 export async function applyShaderToCanvas(
   sourceCanvas: HTMLCanvasElement,
-  settings: ShaderSettings,
+  settings: ShaderSettings
 ): Promise<HTMLCanvasElement> {
   const base64 = await applyShaderEffect(
     sourceCanvas,
     sourceCanvas.width,
     sourceCanvas.height,
-    settings,
+    settings
   );
 
   const imgSrc = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
@@ -32,7 +32,7 @@ export async function applyShaderToCanvas(
 
 export async function applyShaderToBlob(
   sourceCanvas: HTMLCanvasElement,
-  settings: ShaderSettings,
+  settings: ShaderSettings
 ): Promise<Blob> {
   const result = await applyShaderToCanvas(sourceCanvas, settings);
   return new Promise<Blob>((resolve) => {

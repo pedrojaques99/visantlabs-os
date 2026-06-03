@@ -5,9 +5,7 @@ import { SendToButton } from '@/components/shared/SendToButton';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { Download } from 'lucide-react';
-import {
-  ToolPanel, ToolPanelContent,
-} from '@/components/shared/ToolPanel';
+import { ToolPanel, ToolPanelContent } from '@/components/shared/ToolPanel';
 import { SceneTab } from './panels/SceneTab';
 import { LookTab } from './panels/LookTab';
 import { CameraTab } from './panels/CameraTab';
@@ -22,7 +20,7 @@ const TABS = [
   { id: 'effects', label: 'FX' },
 ] as const;
 
-type TabId = typeof TABS[number]['id'];
+type TabId = (typeof TABS)[number]['id'];
 
 interface ControlsPanelProps {
   onExport: () => void;
@@ -65,7 +63,11 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
 
       {/* Sticky bottom — Export button */}
       <div className="shrink-0 border-t border-white/[0.06] px-3 py-2.5 flex gap-2">
-        <Button onClick={onExport} aria-label="Export" className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium text-xs h-8">
+        <Button
+          onClick={onExport}
+          aria-label="Export"
+          className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium text-xs h-8"
+        >
           <Download size={12} className="mr-1.5" />
           {t('studio3d.export.title')}
         </Button>

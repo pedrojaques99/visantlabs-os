@@ -34,7 +34,10 @@ describe('parseCSV', () => {
 
 describe('parseJSON', () => {
   it('parses array of objects', () => {
-    const json = JSON.stringify([{ name: 'Nike', color: 'red' }, { name: 'Adidas', color: 'black' }]);
+    const json = JSON.stringify([
+      { name: 'Nike', color: 'red' },
+      { name: 'Adidas', color: 'black' },
+    ]);
     const { rows, columns, error } = parseJSON(json);
     expect(error).toBeUndefined();
     expect(columns).toEqual(['name', 'color']);

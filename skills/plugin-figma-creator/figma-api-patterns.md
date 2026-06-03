@@ -20,6 +20,7 @@ Quick reference for common Figma Plugin API patterns. Consult when generating pl
 ## Node Traversal
 
 ### Walk all nodes in current page
+
 ```ts
 function walkNodes(node: BaseNode, callback: (node: BaseNode) => void) {
   callback(node);
@@ -36,11 +37,10 @@ walkNodes(figma.currentPage, (node) => {
 ```
 
 ### Find nodes by type
+
 ```ts
 // All text nodes in page
-const textNodes = figma.currentPage.findAll(
-  (n) => n.type === 'TEXT'
-) as TextNode[];
+const textNodes = figma.currentPage.findAll((n) => n.type === 'TEXT') as TextNode[];
 
 // First frame named "Header"
 const header = figma.currentPage.findOne(
@@ -54,10 +54,9 @@ const largeFrames = figma.currentPage.findAll(
 ```
 
 ### Find children (non-recursive)
+
 ```ts
-const directTextChildren = frame.findChildren(
-  (n) => n.type === 'TEXT'
-) as TextNode[];
+const directTextChildren = frame.findChildren((n) => n.type === 'TEXT') as TextNode[];
 ```
 
 ---
@@ -65,6 +64,7 @@ const directTextChildren = frame.findChildren(
 ## Selection
 
 ### Read current selection
+
 ```ts
 const selection = figma.currentPage.selection;
 
@@ -79,16 +79,19 @@ for (const node of selection) {
 ```
 
 ### Set selection
+
 ```ts
 figma.currentPage.selection = [node1, node2];
 ```
 
 ### Zoom to selection
+
 ```ts
 figma.viewport.scrollAndZoomIntoView(figma.currentPage.selection);
 ```
 
 ### Listen for selection changes
+
 ```ts
 figma.on('selectionchange', () => {
   const sel = figma.currentPage.selection;
@@ -107,6 +110,7 @@ figma.on('selectionchange', () => {
 ## Creating Nodes
 
 ### Rectangle
+
 ```ts
 const rect = figma.createRectangle();
 rect.x = 0;
@@ -118,6 +122,7 @@ figma.currentPage.appendChild(rect);
 ```
 
 ### Frame
+
 ```ts
 const frame = figma.createFrame();
 frame.name = 'Card';
@@ -132,6 +137,7 @@ frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
 ```
 
 ### Auto Layout
+
 ```ts
 frame.layoutMode = 'VERTICAL'; // or 'HORIZONTAL'
 frame.primaryAxisSizingMode = 'AUTO'; // or 'FIXED'
@@ -148,6 +154,7 @@ frame.paddingLeft = 12;
 ## Text and Fonts
 
 ### Create text (always load font first)
+
 ```ts
 const text = figma.createText();
 await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
@@ -157,6 +164,7 @@ text.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }];
 ```
 
 ### Change partial text style
+
 ```ts
 await figma.loadFontAsync({ family: 'Inter', style: 'Bold' });
 text.setRangeFontName(0, 5, { family: 'Inter', style: 'Bold' });
@@ -165,6 +173,7 @@ text.setRangeFills(0, 5, [{ type: 'SOLID', color: { r: 1, g: 0, b: 0 } }]);
 ```
 
 ### Edit existing text
+
 ```ts
 // Must load the font that's already in use
 const fontName = text.fontName as FontName;
@@ -173,6 +182,7 @@ text.characters = 'New content';
 ```
 
 ### Handle mixed fonts
+
 ```ts
 if (text.fontName === figma.mixed) {
   // Text has multiple fonts; load each segment's font before editing
@@ -189,6 +199,7 @@ if (text.fontName === figma.mixed) {
 ## Colors and Fills
 
 ### Hex to Figma RGB
+
 ```ts
 function hexToRgb(hex: string): RGB {
   hex = hex.replace('#', '');
@@ -201,16 +212,24 @@ function hexToRgb(hex: string): RGB {
 ```
 
 ### Figma RGB to Hex
+
 ```ts
 function rgbToHex(color: RGB): string {
-  const r = Math.round(color.r * 255).toString(16).padStart(2, '0');
-  const g = Math.round(color.g * 255).toString(16).padStart(2, '0');
-  const b = Math.round(color.b * 255).toString(16).padStart(2, '0');
+  const r = Math.round(color.r * 255)
+    .toString(16)
+    .padStart(2, '0');
+  const g = Math.round(color.g * 255)
+    .toString(16)
+    .padStart(2, '0');
+  const b = Math.round(color.b * 255)
+    .toString(16)
+    .padStart(2, '0');
   return `#${r}${g}${b}`;
 }
 ```
 
 ### Read fill color from a node
+
 ```ts
 function getFillColor(node: GeometryMixin): RGB | null {
   const fills = node.fills as Paint[];
@@ -222,12 +241,15 @@ function getFillColor(node: GeometryMixin): RGB | null {
 ```
 
 ### Set fill with opacity
+
 ```ts
-node.fills = [{
-  type: 'SOLID',
-  color: { r: 0, g: 0, b: 0 },
-  opacity: 0.5,
-}];
+node.fills = [
+  {
+    type: 'SOLID',
+    color: { r: 0, g: 0, b: 0 },
+    opacity: 0.5,
+  },
+];
 ```
 
 ---
@@ -235,6 +257,7 @@ node.fills = [{
 ## Components and Variants
 
 ### Create a component
+
 ```ts
 const component = figma.createComponent();
 component.name = 'Button';
@@ -243,12 +266,14 @@ component.resize(120, 40);
 ```
 
 ### Create instance
+
 ```ts
 const instance = component.createInstance();
 instance.x = 200;
 ```
 
 ### Swap component on instance
+
 ```ts
 const targetComponent = figma.currentPage.findOne(
   (n) => n.type === 'COMPONENT' && n.name === 'Button/Primary'
@@ -264,6 +289,7 @@ if (targetComponent) {
 ## Storage
 
 ### Plugin data (attached to nodes, persists in file)
+
 ```ts
 // Write
 node.setPluginData('settings', JSON.stringify({ color: '#FF0000' }));
@@ -274,6 +300,7 @@ const data = raw ? JSON.parse(raw) : null;
 ```
 
 ### Client storage (persists per user, across files)
+
 ```ts
 // Write
 await figma.clientStorage.setAsync('preferences', { theme: 'dark' });
@@ -287,29 +314,36 @@ const prefs = await figma.clientStorage.getAsync('preferences');
 ## UI Communication
 
 ### Sandbox to UI
+
 ```ts
 // In code.ts
 figma.ui.postMessage({ type: 'data', payload: { items: [...] } });
 ```
 
 ### UI to Sandbox
+
 ```ts
 // In ui.ts
 parent.postMessage({ pluginMessage: { type: 'run', payload: {} } }, '*');
 ```
 
 ### Listening (both sides)
+
 ```ts
 // code.ts
 figma.ui.on('message', (msg) => {
-  if (msg.type === 'run') { /* ... */ }
+  if (msg.type === 'run') {
+    /* ... */
+  }
 });
 
 // ui.ts
 window.onmessage = (event) => {
   const msg = event.data.pluginMessage;
   if (!msg) return;
-  if (msg.type === 'data') { /* ... */ }
+  if (msg.type === 'data') {
+    /* ... */
+  }
 };
 ```
 
@@ -328,6 +362,7 @@ figma.notify('Processing...', { timeout: Infinity }); // dismiss manually
 ## Exporting
 
 ### Export node as PNG
+
 ```ts
 const bytes = await node.exportAsync({ format: 'PNG', constraint: { type: 'SCALE', value: 2 } });
 // Send bytes to UI for download
@@ -335,6 +370,7 @@ figma.ui.postMessage({ type: 'export', payload: Array.from(bytes) });
 ```
 
 ### Export as SVG
+
 ```ts
 const svgString = await node.exportAsync({ format: 'SVG_STRING' });
 ```

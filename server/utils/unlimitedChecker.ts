@@ -29,7 +29,7 @@ export interface UnlimitedCheckParams {
 export function isGenerationUnlimited({
   model,
   resolution,
-  planMetadata
+  planMetadata,
 }: UnlimitedCheckParams): boolean {
   // No plan or no metadata = not unlimited
   if (!planMetadata) return false;
@@ -56,10 +56,7 @@ export function isGenerationUnlimited({
 /**
  * Get the effective credits for a generation, considering unlimited status
  */
-export function getEffectiveCredits(
-  baseCredits: number,
-  params: UnlimitedCheckParams
-): number {
+export function getEffectiveCredits(baseCredits: number, params: UnlimitedCheckParams): number {
   if (isGenerationUnlimited(params)) {
     return 0;
   }
@@ -88,9 +85,9 @@ export async function getUserPlanMetadata(userId: string): Promise<PlanMetadata 
     });
 
     // Match manually to avoid JSON filtering issues on MongoDB
-    const product = products.find(p => 
-      (p.metadata as any)?.tier === subscriptionTier || 
-      p.productId.includes(subscriptionTier)
+    const product = products.find(
+      (p) =>
+        (p.metadata as any)?.tier === subscriptionTier || p.productId.includes(subscriptionTier)
     );
 
     if (product && product.metadata) {

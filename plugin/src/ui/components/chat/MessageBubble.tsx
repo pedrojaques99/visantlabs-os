@@ -1,5 +1,22 @@
 import React, { useState, useMemo, type ReactNode } from 'react';
-import { Braces, Check, Copy, ChevronDown, ChevronUp, Undo2, RefreshCw, Clock, CircleCheck, Layers, Image, Scan, Palette, Download, ExternalLink, Maximize2 } from 'lucide-react';
+import {
+  Braces,
+  Check,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  Undo2,
+  RefreshCw,
+  Clock,
+  CircleCheck,
+  Layers,
+  Image,
+  Scan,
+  Palette,
+  Download,
+  ExternalLink,
+  Maximize2,
+} from 'lucide-react';
 import type { ChatMessage, SummaryItem } from '../../store/types';
 import { copyToClipboard } from '@/utils/clipboard';
 import { relativeTime } from '@/utils/time';
@@ -25,7 +42,6 @@ function formatNum(n: number | undefined): string {
   return n.toLocaleString();
 }
 
-
 function focusNodeInFigma(nodeId: string) {
   parent.postMessage({ pluginMessage: { type: 'FOCUS_NODE', nodeId } }, 'https://www.figma.com');
 }
@@ -41,7 +57,11 @@ function buildNodeMap(items?: SummaryItem[]): Map<string, string> {
 
 const AT_REF_REGEX = /@"([^"]+)"/g;
 
-function renderContentWithLinks(content: string, nodeMap: Map<string, string>, useMarkdown: boolean): ReactNode[] {
+function renderContentWithLinks(
+  content: string,
+  nodeMap: Map<string, string>,
+  useMarkdown: boolean
+): ReactNode[] {
   if (nodeMap.size === 0 && !useMarkdown) return [content];
   if (nodeMap.size === 0 && useMarkdown) return renderMarkdownBlocks(content);
 
@@ -83,7 +103,6 @@ function renderContentWithLinks(content: string, nodeMap: Map<string, string>, u
   return parts;
 }
 
-
 export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const isError = message.isError;
@@ -93,9 +112,10 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
   const json = message.operations ? JSON.stringify(message.operations, null, 2) : '';
   const ops = message.operations ?? [];
   const summaryItems = message.summaryItems ?? [];
-  const displayItems = summaryItems.length > 0
-    ? summaryItems.map((item, i) => ({ label: item.text, nodeId: item.nodeId, key: i }))
-    : ops.map((op, i) => ({ label: friendlyOpLabel(op), nodeId: undefined, key: i }));
+  const displayItems =
+    summaryItems.length > 0
+      ? summaryItems.map((item, i) => ({ label: item.text, nodeId: item.nodeId, key: i }))
+      : ops.map((op, i) => ({ label: friendlyOpLabel(op), nodeId: undefined, key: i }));
   const visibleItems = showAllOps ? displayItems : displayItems.slice(0, OPS_PREVIEW_LIMIT);
   const hiddenItemCount = displayItems.length - OPS_PREVIEW_LIMIT;
 
@@ -116,13 +136,21 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
   const bubbleClass = isUser
     ? 'bg-brand-cyan text-black'
     : isError
-      ? 'bg-destructive/10 border border-destructive/30 text-destructive'
-      : 'bg-card border border-border text-foreground';
+    ? 'bg-destructive/10 border border-destructive/30 text-destructive'
+    : 'bg-card border border-border text-foreground';
 
   return (
-    <div className={`group/bubble flex ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}>
+    <div
+      className={`group/bubble flex ${
+        isUser ? 'justify-end' : 'justify-start'
+      } animate-in fade-in slide-in-from-bottom-1 duration-200`}
+    >
       <div className={`relative max-w-xs px-3 py-2 rounded-lg text-sm select-text ${bubbleClass}`}>
-        <div className={`absolute -top-2 ${isUser ? '-left-2' : '-right-2'} flex items-center gap-0.5 opacity-0 group-hover/bubble:opacity-100 transition-opacity`}>
+        <div
+          className={`absolute -top-2 ${
+            isUser ? '-left-2' : '-right-2'
+          } flex items-center gap-0.5 opacity-0 group-hover/bubble:opacity-100 transition-opacity`}
+        >
           {!isUser && ops.length > 0 && onUndo && (
             <button
               type="button"
@@ -166,37 +194,55 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
 
         {/* Content: markdown for assistant, plain for user */}
         <div className="space-y-1">
-          {useMemo(() => renderContentWithLinks(message.content, buildNodeMap(message.summaryItems), !isUser), [message.content, message.summaryItems, isUser])}
+          {useMemo(
+            () =>
+              renderContentWithLinks(message.content, buildNodeMap(message.summaryItems), !isUser),
+            [message.content, message.summaryItems, isUser]
+          )}
         </div>
 
         {/* User message context chips */}
-        {isUser && message.metadata && (() => {
-          const meta = message.metadata;
-          const frames = meta.selectedFrames as Array<{ id: string; name: string; type: string }> | undefined;
-          const chips: Array<{ icon: ReactNode; label: string }> = [];
-          if (frames && frames.length > 0) {
-            chips.push({ icon: <Layers size={8} />, label: `${frames.length} frame${frames.length > 1 ? 's' : ''}` });
-          }
-          if (meta.scanPage) chips.push({ icon: <Scan size={8} />, label: 'Page scan' });
-          if (meta.useBrand) chips.push({ icon: <Palette size={8} />, label: 'Brand' });
-          if (meta.generateImage) chips.push({ icon: <Image size={8} />, label: 'Image' });
-          if (meta.model) chips.push({ icon: null, label: String(meta.model) });
-          if (chips.length === 0) return null;
-          return (
-            <div className="mt-1.5 flex flex-wrap gap-1">
-              {chips.map((c, i) => (
-                <span key={i} className="inline-flex items-center gap-0.5 text-[8px] font-mono bg-black/20 rounded px-1 py-0.5 text-white/60">
-                  {c.icon}{c.label}
-                </span>
-              ))}
-              {frames && frames.length > 0 && (
-                <span className="text-[8px] font-mono text-white/40 truncate max-w-[180px]" title={frames.map(f => f.name).join(', ')}>
-                  {frames.map(f => f.name).join(', ')}
-                </span>
-              )}
-            </div>
-          );
-        })()}
+        {isUser &&
+          message.metadata &&
+          (() => {
+            const meta = message.metadata;
+            const frames = meta.selectedFrames as
+              | Array<{ id: string; name: string; type: string }>
+              | undefined;
+            const chips: Array<{ icon: ReactNode; label: string }> = [];
+            if (frames && frames.length > 0) {
+              chips.push({
+                icon: <Layers size={8} />,
+                label: `${frames.length} frame${frames.length > 1 ? 's' : ''}`,
+              });
+            }
+            if (meta.scanPage) chips.push({ icon: <Scan size={8} />, label: 'Page scan' });
+            if (meta.useBrand) chips.push({ icon: <Palette size={8} />, label: 'Brand' });
+            if (meta.generateImage) chips.push({ icon: <Image size={8} />, label: 'Image' });
+            if (meta.model) chips.push({ icon: null, label: String(meta.model) });
+            if (chips.length === 0) return null;
+            return (
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {chips.map((c, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-0.5 text-[8px] font-mono bg-black/20 rounded px-1 py-0.5 text-white/60"
+                  >
+                    {c.icon}
+                    {c.label}
+                  </span>
+                ))}
+                {frames && frames.length > 0 && (
+                  <span
+                    className="text-[8px] font-mono text-white/40 truncate max-w-[180px]"
+                    title={frames.map((f) => f.name).join(', ')}
+                  >
+                    {frames.map((f) => f.name).join(', ')}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
 
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -209,7 +255,9 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                   className="max-w-[200px] max-h-[150px] rounded-md object-contain border border-border/50"
                 />
               ) : (
-                <span key={att.id} className="text-[10px] opacity-75">{att.name}</span>
+                <span key={att.id} className="text-[10px] opacity-75">
+                  {att.name}
+                </span>
               )
             )}
           </div>
@@ -274,7 +322,10 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             </div>
             <ul className="px-2.5 py-1.5 space-y-0.5">
               {visibleItems.map((item) => (
-                <li key={item.key} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <li
+                  key={item.key}
+                  className="flex items-center gap-1.5 text-[10px] text-muted-foreground"
+                >
                   <span className="w-1 h-1 rounded-full bg-brand-cyan/50 shrink-0" />
                   {item.nodeId ? (
                     <button
@@ -356,7 +407,6 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             {relativeTime(message.timestamp)}
           </div>
         )}
-
       </div>
     </div>
   );

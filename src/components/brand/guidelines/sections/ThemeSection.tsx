@@ -47,11 +47,17 @@ function ThemePreview({ theme }: { theme: BrandColorTheme }) {
       <div className="p-4 space-y-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ background: theme.primary }} />
-          <span className="text-[10px] font-mono uppercase tracking-widest opacity-60" style={{ color: theme.text }}>
+          <span
+            className="text-[10px] font-mono uppercase tracking-widest opacity-60"
+            style={{ color: theme.text }}
+          >
             {theme.name || 'Theme'}
           </span>
         </div>
-        <h3 className="text-sm font-bold tracking-tight" style={{ color: theme.text, fontFamily: 'inherit' }}>
+        <h3
+          className="text-sm font-bold tracking-tight"
+          style={{ color: theme.text, fontFamily: 'inherit' }}
+        >
           Preview headline
         </h3>
         <p className="text-[11px] opacity-70" style={{ color: theme.text }}>
@@ -87,8 +93,12 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
   );
 
   const addTheme = () => {
-    const defaultBg = brandColors.find(c => c.role?.toLowerCase().includes('bg') || c.name?.toLowerCase().includes('bg'))?.hex || '#1A1A1A';
-    const defaultText = brandColors.find(c => c.role?.toLowerCase().includes('text'))?.hex || '#FFFFFF';
+    const defaultBg =
+      brandColors.find(
+        (c) => c.role?.toLowerCase().includes('bg') || c.name?.toLowerCase().includes('bg')
+      )?.hex || '#1A1A1A';
+    const defaultText =
+      brandColors.find((c) => c.role?.toLowerCase().includes('text'))?.hex || '#FFFFFF';
     const defaultPrimary = brandColors[0]?.hex || '#888888';
     const defaultAccent = brandColors[1]?.hex || brandColors[0]?.hex || '#FF6B00';
 
@@ -106,15 +116,15 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
   };
 
   const updateTheme = (id: string, patch: Partial<BrandColorTheme>) => {
-    persist(themes.map(t => t.id === id ? { ...t, ...patch } : t));
+    persist(themes.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   };
 
   const removeTheme = (id: string) => {
-    persist(themes.filter(t => t.id !== id));
+    persist(themes.filter((t) => t.id !== id));
     if (editingId === id) setEditingId(null);
   };
 
-  const colorOptions = brandColors.map(c => ({
+  const colorOptions = brandColors.map((c) => ({
     hex: c.hex,
     label: c.name || c.role || c.hex,
   }));
@@ -140,8 +150,8 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
           <SwatchBook size={20} className="text-neutral-700" />
           <p className="text-[10px] text-neutral-600 max-w-[280px] leading-relaxed">
-            Define combinações de cores (fundo, texto, primary, accent) para garantir contraste
-            e harmonia nos criativos gerados pela IA.
+            Define combinações de cores (fundo, texto, primary, accent) para garantir contraste e
+            harmonia nos criativos gerados pela IA.
           </p>
           <Button size="sm" variant="outline" onClick={addTheme} className="mt-2 h-7 text-[10px]">
             <Plus size={10} className="mr-1" /> Create first theme
@@ -150,7 +160,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
       ) : (
         <div className="space-y-4">
           <AnimatePresence mode="popLayout">
-            {themes.map(theme => {
+            {themes.map((theme) => {
               const isEditing = editingId === theme.id;
               return (
                 <motion.div
@@ -163,7 +173,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                 >
                   <div className="flex items-center gap-3 px-4 py-2.5 border-b border-neutral-800">
                     <div className="flex gap-1">
-                      {ROLES.map(r => (
+                      {ROLES.map((r) => (
                         <span
                           key={r}
                           className="w-4 h-4 rounded-sm border border-white/10"
@@ -204,11 +214,11 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                         <div className="space-y-3">
                           <Input
                             value={theme.name}
-                            onChange={e => updateTheme(theme.id, { name: e.target.value })}
+                            onChange={(e) => updateTheme(theme.id, { name: e.target.value })}
                             placeholder="Theme name"
                             className="h-7 text-xs bg-transparent border-white/10"
                           />
-                          {ROLES.map(role => (
+                          {ROLES.map((role) => (
                             <div key={role} className="flex items-center gap-2">
                               <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 w-16 shrink-0">
                                 {ROLE_LABELS[role]}
@@ -217,18 +227,22 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                                 <input
                                   type="color"
                                   value={theme[role]}
-                                  onChange={e => updateTheme(theme.id, { [role]: e.target.value })}
+                                  onChange={(e) =>
+                                    updateTheme(theme.id, { [role]: e.target.value })
+                                  }
                                   className="w-6 h-6 rounded cursor-pointer border border-white/10 bg-transparent [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch-wrapper]:p-0"
                                 />
                                 <Input
                                   value={theme[role]}
-                                  onChange={e => updateTheme(theme.id, { [role]: e.target.value })}
+                                  onChange={(e) =>
+                                    updateTheme(theme.id, { [role]: e.target.value })
+                                  }
                                   className="h-6 text-[10px] font-mono bg-transparent border-white/10 flex-1"
                                 />
                               </div>
                               {colorOptions.length > 0 && (
                                 <div className="flex gap-0.5">
-                                  {colorOptions.slice(0, 6).map(c => (
+                                  {colorOptions.slice(0, 6).map((c) => (
                                     <button
                                       key={c.hex}
                                       type="button"

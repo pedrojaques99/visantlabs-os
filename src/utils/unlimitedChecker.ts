@@ -36,7 +36,7 @@ export interface UnlimitedCheckParams {
 export function isGenerationUnlimited({
   model,
   resolution,
-  planMetadata
+  planMetadata,
 }: UnlimitedCheckParams): boolean {
   // No plan or no metadata = not unlimited
   if (!planMetadata) return false;
@@ -64,10 +64,7 @@ export function isGenerationUnlimited({
 /**
  * Get the effective credits for a generation, considering unlimited status
  */
-export function getEffectiveCredits(
-  baseCredits: number,
-  params: UnlimitedCheckParams
-): number {
+export function getEffectiveCredits(baseCredits: number, params: UnlimitedCheckParams): number {
   if (isGenerationUnlimited(params)) {
     return 0;
   }
@@ -84,9 +81,7 @@ export function getUnlimitedDescription(planMetadata?: PlanMetadata | null): str
 
   if (unlimitedModels.length === 0) return null;
 
-  const models = unlimitedModels
-    .map(m => getModelDisplayName(m))
-    .join(', ');
+  const models = unlimitedModels.map((m) => getModelDisplayName(m)).join(', ');
 
   if (unlimitedResolutions.length > 0) {
     const maxRes = unlimitedResolutions[unlimitedResolutions.length - 1];

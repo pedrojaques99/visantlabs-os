@@ -57,7 +57,7 @@ import {
   exportWithBleed,
   scanPaintStyles,
   generateBrandMatrix,
-  generateLogoMatrix
+  generateLogoMatrix,
 } from './handlers/index';
 import { dispatch } from './handlers/registry';
 import { isEnvelope } from '@shared/protocol';
@@ -73,8 +73,8 @@ if (currentUser) {
     user: {
       id: currentUser.id,
       name: currentUser.name,
-      photoUrl: currentUser.photoUrl
-    }
+      photoUrl: currentUser.photoUrl,
+    },
   });
 }
 
@@ -90,7 +90,6 @@ notifyContextChange();
 
 // ═══ Message handler ═══
 figma.ui.onmessage = async (msg: UIMessage) => {
-
   // ── New protocol (shared/protocol.ts): envelope → dispatch → result ──
   if (isEnvelope(msg as any)) {
     const result = await dispatch(msg as any);
@@ -107,7 +106,11 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       console.log(`[Agent] Applied ${operations.length} operations (opId=${opId})`);
     } catch (err) {
       const { opId } = msg as any;
-      postToUI({ type: 'OPERATION_ERROR', opId, error: err instanceof Error ? err.message : String(err) });
+      postToUI({
+        type: 'OPERATION_ERROR',
+        opId,
+        error: err instanceof Error ? err.message : String(err),
+      });
       console.error(`[Agent] Operation failed (opId=${opId}):`, err);
     }
     return;
@@ -124,9 +127,19 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     if (canUndo) {
       figma.triggerUndo();
       setCanUndo(false);
-      postToUI({ type: 'UNDO_RESULT', success: true, message: 'Última operação desfeita com sucesso.', canUndo: false });
+      postToUI({
+        type: 'UNDO_RESULT',
+        success: true,
+        message: 'Última operação desfeita com sucesso.',
+        canUndo: false,
+      });
     } else {
-      postToUI({ type: 'UNDO_RESULT', success: false, message: 'Nenhuma operação para desfazer.', canUndo: false });
+      postToUI({
+        type: 'UNDO_RESULT',
+        success: false,
+        message: 'Nenhuma operação para desfazer.',
+        canUndo: false,
+      });
     }
     return;
   }
@@ -134,7 +147,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   // ── Selection change notification ──
   if (msg.type === 'REPORT_SELECTION') {
     const selection = figma.currentPage.selection;
-    const nodes = selection.map(n => ({ name: n.name, id: n.id, type: n.type }));
+    const nodes = selection.map((n) => ({ name: n.name, id: n.id, type: n.type }));
     postToUI({ type: 'SELECTION_CHANGED', nodes });
     return;
   }
@@ -162,11 +175,19 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const nameLower = node.name.toLowerCase().replace(/[-_/\\]/g, ' ');
 
       // Logo patterns (EN + PT)
-      const isLogoName = /\b(logo|logotipo|logomarca|brand|marca|mark|emblem|badge|brasao|escudo|selo)\b/.test(nameLower);
+      const isLogoName =
+        /\b(logo|logotipo|logomarca|brand|marca|mark|emblem|badge|brasao|escudo|selo)\b/.test(
+          nameLower
+        );
 
       // Color name patterns — known color words + role words (EN + PT)
-      const isColorName = /\b(primary|secondary|accent|neutral|surface|background|foreground|danger|warning|success|info|error|muted|destructive|primari[ao]|secundari[ao]|fundo|superficie|destaque|cor |color)\b/.test(nameLower)
-        || /\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|vermelho|azul|verde|amarelo|laranja|roxo|rosa|preto|branco|cinza)\b/.test(nameLower);
+      const isColorName =
+        /\b(primary|secondary|accent|neutral|surface|background|foreground|danger|warning|success|info|error|muted|destructive|primari[ao]|secundari[ao]|fundo|superficie|destaque|cor |color)\b/.test(
+          nameLower
+        ) ||
+        /\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|vermelho|azul|verde|amarelo|laranja|roxo|rosa|preto|branco|cinza)\b/.test(
+          nameLower
+        );
 
       // Button / UI component patterns (EN + PT)
       const isButtonName = /\b(button|btn|bot[aã]o|cta)\b/.test(nameLower);
@@ -205,33 +226,69 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         };
         // Guess role from name or size
         const size = typeof textNode.fontSize === 'number' ? textNode.fontSize : 0;
-        if (nameLower.includes('heading') || nameLower.includes('title') || nameLower.includes('titulo') || nameLower.includes('h1') || nameLower.includes('h2') || nameLower.includes('h3') || size >= 24) {
+        if (
+          nameLower.includes('heading') ||
+          nameLower.includes('title') ||
+          nameLower.includes('titulo') ||
+          nameLower.includes('h1') ||
+          nameLower.includes('h2') ||
+          nameLower.includes('h3') ||
+          size >= 24
+        ) {
           item.suggestedRole = 'heading';
-        } else if (nameLower.includes('body') || nameLower.includes('paragraph') || nameLower.includes('corpo') || nameLower.includes('texto') || nameLower.includes('text')) {
+        } else if (
+          nameLower.includes('body') ||
+          nameLower.includes('paragraph') ||
+          nameLower.includes('corpo') ||
+          nameLower.includes('texto') ||
+          nameLower.includes('text')
+        ) {
           item.suggestedRole = 'body';
-        } else if (nameLower.includes('caption') || nameLower.includes('label') || nameLower.includes('small') || nameLower.includes('legenda') || nameLower.includes('rodape') || size <= 12) {
+        } else if (
+          nameLower.includes('caption') ||
+          nameLower.includes('label') ||
+          nameLower.includes('small') ||
+          nameLower.includes('legenda') ||
+          nameLower.includes('rodape') ||
+          size <= 12
+        ) {
           item.suggestedRole = 'caption';
         } else {
           item.suggestedRole = 'body';
         }
-      } else if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET' || node.type === 'INSTANCE') {
+      } else if (
+        node.type === 'COMPONENT' ||
+        node.type === 'COMPONENT_SET' ||
+        node.type === 'INSTANCE'
+      ) {
         // Component → classify by name first, then fallback to heuristics
         let comp = node;
         if (node.type === 'INSTANCE') {
-          try { const main = await (node as InstanceNode).getMainComponentAsync(); if (main) comp = main; } catch {}
+          try {
+            const main = await (node as InstanceNode).getMainComponentAsync();
+            if (main) comp = main;
+          } catch {}
         }
 
         // Name takes priority for classification
         const compNameLower = comp.name.toLowerCase().replace(/[-_/\\]/g, ' ');
-        const isLogo = isLogoName
-          || /\b(logo|logotipo|brand|marca|mark|emblem)\b/.test(compNameLower)
-          || (!isButtonName && !isIconName && !isColorName
-            && item.width <= 400 && item.height <= 400
-            && item.width / item.height > 0.3 && item.width / item.height < 3);
+        const isLogo =
+          isLogoName ||
+          /\b(logo|logotipo|brand|marca|mark|emblem)\b/.test(compNameLower) ||
+          (!isButtonName &&
+            !isIconName &&
+            !isColorName &&
+            item.width <= 400 &&
+            item.height <= 400 &&
+            item.width / item.height > 0.3 &&
+            item.width / item.height < 3);
 
         // Export thumbnail for all component types
         try {
-          const bytes = await (comp as SceneNode).exportAsync({ format: 'PNG', constraint: { type: 'HEIGHT', value: 64 } });
+          const bytes = await (comp as SceneNode).exportAsync({
+            format: 'PNG',
+            constraint: { type: 'HEIGHT', value: 64 },
+          });
           item.thumbnail = `data:image/png;base64,${figma.base64Encode(bytes)}`;
         } catch {}
         item.componentData = { id: comp.id, name: comp.name, key: (comp as any).key };
@@ -244,9 +301,16 @@ figma.ui.onmessage = async (msg: UIMessage) => {
           if (isButtonName) item.componentHint = 'button';
           else if (isIconName) item.componentHint = 'icon';
         }
-      } else if (node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'RECTANGLE' || node.type === 'ELLIPSE') {
-        const fills = ('fills' in node) ? (node as any).fills : [];
-        const solidFills = Array.isArray(fills) ? fills.filter((f: any) => f.type === 'SOLID' && f.visible !== false) : [];
+      } else if (
+        node.type === 'FRAME' ||
+        node.type === 'GROUP' ||
+        node.type === 'RECTANGLE' ||
+        node.type === 'ELLIPSE'
+      ) {
+        const fills = 'fills' in node ? (node as any).fills : [];
+        const solidFills = Array.isArray(fills)
+          ? fills.filter((f: any) => f.type === 'SOLID' && f.visible !== false)
+          : [];
 
         // Name says it's a color? Force color category even for larger shapes
         if (isColorName && solidFills.length >= 1) {
@@ -256,7 +320,9 @@ figma.ui.onmessage = async (msg: UIMessage) => {
           const b = Math.round(fill.color.b * 255);
           item.category = 'color';
           item.colorData = {
-            hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase(),
+            hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
+              .toString(16)
+              .padStart(2, '0')}`.toUpperCase(),
             name: node.name,
             role: guessColorRole(node.name),
           };
@@ -268,7 +334,9 @@ figma.ui.onmessage = async (msg: UIMessage) => {
           const b = Math.round(fill.color.b * 255);
           item.category = 'color';
           item.colorData = {
-            hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase(),
+            hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
+              .toString(16)
+              .padStart(2, '0')}`.toUpperCase(),
             name: node.name,
             role: guessColorRole(node.name),
           };
@@ -276,7 +344,10 @@ figma.ui.onmessage = async (msg: UIMessage) => {
           // Name says logo
           item.category = 'logo';
           try {
-            const bytes = await (node as SceneNode).exportAsync({ format: 'PNG', constraint: { type: 'HEIGHT', value: 64 } });
+            const bytes = await (node as SceneNode).exportAsync({
+              format: 'PNG',
+              constraint: { type: 'HEIGHT', value: 64 },
+            });
             item.thumbnail = `data:image/png;base64,${figma.base64Encode(bytes)}`;
           } catch {}
           item.componentData = { id: node.id, name: node.name, key: '' };
@@ -284,7 +355,10 @@ figma.ui.onmessage = async (msg: UIMessage) => {
           // Fallback: treat as potential logo
           item.category = 'logo';
           try {
-            const bytes = await (node as SceneNode).exportAsync({ format: 'PNG', constraint: { type: 'HEIGHT', value: 64 } });
+            const bytes = await (node as SceneNode).exportAsync({
+              format: 'PNG',
+              constraint: { type: 'HEIGHT', value: 64 },
+            });
             item.thumbnail = `data:image/png;base64,${figma.base64Encode(bytes)}`;
           } catch {}
           item.componentData = { id: node.id, name: node.name, key: '' };
@@ -319,18 +393,35 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       }
 
       if (!node || !('exportAsync' in node)) {
-        postToUI({ type: 'EXPORT_NODE_IMAGE_RESULT', nodeId, error: 'Node not found or not exportable' });
+        postToUI({
+          type: 'EXPORT_NODE_IMAGE_RESULT',
+          nodeId,
+          error: 'Node not found or not exportable',
+        });
         return;
       }
       const exportNode = node as SceneNode;
       if (format === 'SVG') {
         const bytes = await exportNode.exportAsync({ format: 'SVG' });
         const b64 = figma.base64Encode(bytes);
-        postToUI({ type: 'EXPORT_NODE_IMAGE_RESULT', nodeId, data: `data:image/svg+xml;base64,${b64}`, format: 'SVG' });
+        postToUI({
+          type: 'EXPORT_NODE_IMAGE_RESULT',
+          nodeId,
+          data: `data:image/svg+xml;base64,${b64}`,
+          format: 'SVG',
+        });
       } else {
-        const bytes = await exportNode.exportAsync({ format: 'PNG', constraint: { type: 'SCALE', value: 2 } });
+        const bytes = await exportNode.exportAsync({
+          format: 'PNG',
+          constraint: { type: 'SCALE', value: 2 },
+        });
         const b64 = figma.base64Encode(bytes);
-        postToUI({ type: 'EXPORT_NODE_IMAGE_RESULT', nodeId, data: `data:image/png;base64,${b64}`, format: 'PNG' });
+        postToUI({
+          type: 'EXPORT_NODE_IMAGE_RESULT',
+          nodeId,
+          data: `data:image/png;base64,${b64}`,
+          format: 'PNG',
+        });
       }
     } catch (e: any) {
       postToUI({ type: 'EXPORT_NODE_IMAGE_RESULT', nodeId, error: e.message || 'Export failed' });
@@ -361,7 +452,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
           family: font.family,
           style: font.style,
           fontSize,
-          lineHeight: lh?.unit === 'PIXELS' ? lh.value : undefined
+          lineHeight: lh?.unit === 'PIXELS' ? lh.value : undefined,
         };
       }
     }
@@ -375,7 +466,6 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     postToUI({ type: 'COMPONENT_CAPTURED', component: comp });
     return;
   }
-
 
   // ── Elements for mentions autocomplete ──
   if (msg.type === 'GET_ELEMENTS_FOR_MENTIONS') {
@@ -422,7 +512,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     const [components, colors, fonts] = await Promise.all([
       getComponentsInCurrentFile(),
       getColorVariablesFromFile(),
-      getFontVariablesFromFile()
+      getFontVariablesFromFile(),
     ]);
     const selection = figma.currentPage.selection;
 
@@ -431,7 +521,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       selectedElements: selection.length,
       componentsCount: components.length,
       colorVariables: colors.length,
-      fontVariables: fonts.length
+      fontVariables: fonts.length,
     });
 
     postToUI({ type: 'COMPONENTS_LOADED', components });
@@ -439,9 +529,11 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     postToUI({ type: 'COLOR_VARIABLES_LOADED', colors });
 
     // Thumbnails are exported on-demand via GET_COMPONENT_THUMBNAILS
-    getAvailableFontFamilies().then((families: any) => {
-      postToUI({ type: 'AVAILABLE_FONTS_LOADED', families });
-    }).catch(() => {});
+    getAvailableFontFamilies()
+      .then((families: any) => {
+        postToUI({ type: 'AVAILABLE_FONTS_LOADED', families });
+      })
+      .catch(() => {});
     return;
   }
 
@@ -449,7 +541,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   if (msg.type === 'GET_COMPONENT_THUMBNAILS') {
     const comps = msg.componentIds;
     const all = (await getComponentsInCurrentFile()) || [];
-    const subset = comps ? all.filter(c => comps.includes(c.id)) : all;
+    const subset = comps ? all.filter((c) => comps.includes(c.id)) : all;
     exportComponentThumbnails(subset).catch(() => {});
     return;
   }
@@ -470,7 +562,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   if (msg.type === 'APPLY_OPERATIONS_FROM_API') {
     // Restore the page that was active when the command was sent
     if ((msg as any).pageId) {
-      const targetPage = figma.root.children.find(p => p.id === (msg as any).pageId);
+      const targetPage = figma.root.children.find((p) => p.id === (msg as any).pageId);
       if (targetPage && targetPage !== figma.currentPage) {
         await figma.setCurrentPageAsync(targetPage);
       }
@@ -486,7 +578,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       getComponentsInCurrentFile(),
       getColorVariablesFromFile(),
       getFontVariablesFromFile(),
-      useScanPage ? serializePage() : serializeSelection()
+      useScanPage ? serializePage() : serializeSelection(),
     ]);
 
     const availableLayers = getAvailableLayers();
@@ -512,7 +604,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       useBrand: (msg as any).useBrand !== undefined ? (msg as any).useBrand : true,
       generateImage: (msg as any).generateImage || false,
       mentions: (msg as any).mentions || [],
-      attachments: (msg as any).attachments || []
+      attachments: (msg as any).attachments || [],
     };
 
     postToUI({ type: 'CALL_API', context });
@@ -521,7 +613,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
   // ── Image paste ──
   if (msg.type === 'PASTE_GENERATED_IMAGE') {
-    await pasteGeneratedImage(msg.imageData, msg.prompt, msg.width || 800, msg.height || 450, msg.isUrl || false);
+    await pasteGeneratedImage(
+      msg.imageData,
+      msg.prompt,
+      msg.width || 800,
+      msg.height || 450,
+      msg.isUrl || false
+    );
     return;
   }
 
@@ -629,7 +727,10 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const data = await extractForSync();
       postToUI({ type: 'EXTRACT_FOR_SYNC_RESULT', data });
     } catch (err) {
-      postToUI({ type: 'EXTRACT_FOR_SYNC_ERROR', error: err instanceof Error ? err.message : String(err) });
+      postToUI({
+        type: 'EXTRACT_FOR_SYNC_ERROR',
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
     return;
   }
@@ -640,7 +741,10 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const result = await pushToFigma(guideline);
       postToUI({ type: 'PUSH_TO_FIGMA_RESULT', ...result });
     } catch (err) {
-      postToUI({ type: 'PUSH_TO_FIGMA_ERROR', error: err instanceof Error ? err.message : String(err) });
+      postToUI({
+        type: 'PUSH_TO_FIGMA_ERROR',
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
     return;
   }
@@ -655,17 +759,29 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         return;
       }
 
-      const allVars = figma.variables
-        ? await figma.variables.getLocalVariablesAsync('COLOR')
-        : [];
-      const palette: { variable: Variable; rgb: { r: number; g: number; b: number }; hex: string; name: string }[] = [];
+      const allVars = figma.variables ? await figma.variables.getLocalVariablesAsync('COLOR') : [];
+      const palette: {
+        variable: Variable;
+        rgb: { r: number; g: number; b: number };
+        hex: string;
+        name: string;
+      }[] = [];
 
       for (const v of allVars) {
         const modeId = Object.keys(v.valuesByMode)[0];
         const val = v.valuesByMode[modeId];
         if (typeof val === 'object' && val !== null && 'r' in val) {
           const rgb = val as { r: number; g: number; b: number };
-          const hex = '#' + [rgb.r, rgb.g, rgb.b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+          const hex =
+            '#' +
+            [rgb.r, rgb.g, rgb.b]
+              .map((c) =>
+                Math.round(c * 255)
+                  .toString(16)
+                  .padStart(2, '0')
+              )
+              .join('')
+              .toUpperCase();
           palette.push({ variable: v, rgb, hex, name: v.name });
         }
       }
@@ -676,8 +792,17 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         const paint = style.paints[0];
         if (paint?.type === 'SOLID' && paint.color) {
           const rgb = paint.color;
-          const hex = '#' + [rgb.r, rgb.g, rgb.b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
-          const alreadyExists = palette.some(p => p.hex === hex);
+          const hex =
+            '#' +
+            [rgb.r, rgb.g, rgb.b]
+              .map((c) =>
+                Math.round(c * 255)
+                  .toString(16)
+                  .padStart(2, '0')
+              )
+              .join('')
+              .toUpperCase();
+          const alreadyExists = palette.some((p) => p.hex === hex);
           if (!alreadyExists) {
             palette.push({ variable: null as any, rgb, hex, name: style.name });
           }
@@ -690,8 +815,10 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       }
 
       const matches: any[] = [];
-      const colorDist = (a: {r:number;g:number;b:number}, b: {r:number;g:number;b:number}) =>
-        Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
+      const colorDist = (
+        a: { r: number; g: number; b: number },
+        b: { r: number; g: number; b: number }
+      ) => Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
 
       function scanNode(node: SceneNode) {
         if ('fills' in node) {
@@ -703,13 +830,25 @@ figma.ui.onmessage = async (msg: UIMessage) => {
               if ((fill as any).boundVariables?.color) continue;
               const { r, g, b } = (fill as SolidPaint).color;
               let bestDist = Infinity;
-              let bestMatch: typeof palette[0] | null = null;
+              let bestMatch: (typeof palette)[0] | null = null;
               for (const p of palette) {
                 const dist = colorDist({ r, g, b }, p.rgb);
-                if (dist < bestDist) { bestDist = dist; bestMatch = p; }
+                if (dist < bestDist) {
+                  bestDist = dist;
+                  bestMatch = p;
+                }
               }
               if (bestMatch && bestDist <= threshold) {
-                const hex = '#' + [r, g, b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+                const hex =
+                  '#' +
+                  [r, g, b]
+                    .map((c) =>
+                      Math.round(c * 255)
+                        .toString(16)
+                        .padStart(2, '0')
+                    )
+                    .join('')
+                    .toUpperCase();
                 matches.push({
                   nodeId: node.id,
                   nodeName: node.name,
@@ -734,13 +873,25 @@ figma.ui.onmessage = async (msg: UIMessage) => {
               if ((stroke as any).boundVariables?.color) continue;
               const { r, g, b } = (stroke as SolidPaint).color;
               let bestDist = Infinity;
-              let bestMatch: typeof palette[0] | null = null;
+              let bestMatch: (typeof palette)[0] | null = null;
               for (const p of palette) {
                 const dist = colorDist({ r, g, b }, p.rgb);
-                if (dist < bestDist) { bestDist = dist; bestMatch = p; }
+                if (dist < bestDist) {
+                  bestDist = dist;
+                  bestMatch = p;
+                }
               }
               if (bestMatch && bestDist <= threshold) {
-                const hex = '#' + [r, g, b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+                const hex =
+                  '#' +
+                  [r, g, b]
+                    .map((c) =>
+                      Math.round(c * 255)
+                        .toString(16)
+                        .padStart(2, '0')
+                    )
+                    .join('')
+                    .toUpperCase();
                 matches.push({
                   nodeId: node.id,
                   nodeName: node.name,
@@ -765,7 +916,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
       // Deduplicate by unique color pair
       const seen = new Set<string>();
-      const deduped = matches.filter(m => {
+      const deduped = matches.filter((m) => {
         const key = `${m.currentHex}:${m.matchedVariableId}`;
         if (seen.has(key)) {
           // Keep all but show count later
@@ -773,9 +924,15 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         return true; // keep all for apply
       });
 
-      postToUI({ type: 'COLOR_SCAN_RESULTS', matches: deduped.filter((m: any) => m.matchedVariableId) });
+      postToUI({
+        type: 'COLOR_SCAN_RESULTS',
+        matches: deduped.filter((m: any) => m.matchedVariableId),
+      });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: `Scan error: ${err instanceof Error ? err.message : String(err)}` });
+      postToUI({
+        type: 'ERROR',
+        message: `Scan error: ${err instanceof Error ? err.message : String(err)}`,
+      });
     }
     return;
   }
@@ -801,14 +958,21 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         const paints = [...((node as any)[prop] as Paint[])];
         const paint = paints[b.index];
         if (!paint || paint.type !== 'SOLID') continue;
-        paints[b.index] = figma.variables.setBoundVariableForPaint(paint as SolidPaint, 'color', variable);
+        paints[b.index] = figma.variables.setBoundVariableForPaint(
+          paint as SolidPaint,
+          'color',
+          variable
+        );
         (node as any)[prop] = paints;
         applied++;
       }
       postToUI({ type: 'OPERATIONS_DONE' });
       figma.notify(`✓ Bound ${applied} colors to variables`);
     } catch (err) {
-      postToUI({ type: 'ERROR', message: `Apply error: ${err instanceof Error ? err.message : String(err)}` });
+      postToUI({
+        type: 'ERROR',
+        message: `Apply error: ${err instanceof Error ? err.message : String(err)}`,
+      });
     }
     return;
   }
@@ -872,7 +1036,6 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
-
   // ── Import Logo Candidates from library ──
   if ((msg as any).type === 'IMPORT_LOGO_CANDIDATES') {
     try {
@@ -898,7 +1061,9 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   // ── Responsive Multiplier ──
   if ((msg as any).type === 'RESPONSIVE_MULTIPLY') {
     try {
-      const formats = (msg as any).formats as Array<{ id: string; label: string; width: number; height: number }> | undefined;
+      const formats = (msg as any).formats as
+        | Array<{ id: string; label: string; width: number; height: number }>
+        | undefined;
       await multiplyResponsive(formats);
       postToUI({ type: 'OPERATIONS_DONE' });
     } catch (err) {
@@ -910,8 +1075,11 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   // ── Illustrator Exporter (PNG + SVG) ──
   if ((msg as any).type === 'ILLUSTRATOR_EXPORT') {
     const selection = figma.currentPage.selection;
-    const frames = selection.filter(n => n.type === 'FRAME') as FrameNode[];
-    if (frames.length === 0) { figma.notify("Selecione um Frame."); return; }
+    const frames = selection.filter((n) => n.type === 'FRAME') as FrameNode[];
+    if (frames.length === 0) {
+      figma.notify('Selecione um Frame.');
+      return;
+    }
 
     const batch: any[] = [];
 
@@ -922,12 +1090,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         // 1 & 2: VECTORS (SVG) - Clone 1: hide images, keep vectors and text
         const vectorClone = node.clone();
         const hideImages = (n: SceneNode) => {
-          const hasImage = 'fills' in n && Array.isArray(n.fills) && n.fills.some((f: any) => f.type === 'IMAGE');
+          const hasImage =
+            'fills' in n && Array.isArray(n.fills) && n.fills.some((f: any) => f.type === 'IMAGE');
           if (hasImage) {
-             n.visible = false;
+            n.visible = false;
           }
           if ('children' in n) {
-             for (const child of n.children) hideImages(child);
+            for (const child of n.children) hideImages(child);
           }
         };
         hideImages(vectorClone);
@@ -937,18 +1106,22 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         // 3: RASTERS (PNG) - Clone 2: hide vectors, keep only images
         const rasterClone = node.clone();
         const hideVectors = (n: SceneNode) => {
-          const hasImage = 'fills' in n && Array.isArray(n.fills) && n.fills.some((f: any) => f.type === 'IMAGE');
+          const hasImage =
+            'fills' in n && Array.isArray(n.fills) && n.fills.some((f: any) => f.type === 'IMAGE');
           if (!hasImage && !('children' in n)) {
-             // Hide pure vectors/text
-             n.visible = false;
+            // Hide pure vectors/text
+            n.visible = false;
           } else if (!hasImage && 'children' in n && n.children.length === 0) {
-             n.visible = false;
+            n.visible = false;
           }
           if ('children' in n) for (const child of n.children) hideVectors(child);
         };
         hideVectors(rasterClone);
         // Export PNG at 3x
-        const pngBytes = await rasterClone.exportAsync({ format: 'PNG', constraint: { type: 'SCALE', value: 3 } });
+        const pngBytes = await rasterClone.exportAsync({
+          format: 'PNG',
+          constraint: { type: 'SCALE', value: 3 },
+        });
 
         // 5: Delete clones
         vectorClone.remove();
@@ -958,24 +1131,27 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         batch.push({
           name: uniqueName,
           png: pngBytes,
-          svg: svgBytes
+          svg: svgBytes,
         });
       } catch (e: any) {
-        figma.notify("Erro no export: " + e.message);
+        figma.notify('Erro no export: ' + e.message);
       }
     }
 
     postToUI({
       type: 'ILLUSTRATOR_EXPORT_BATCH',
       items: batch,
-      count: batch.length
+      count: batch.length,
     });
     return;
   }
 
   if (msg.type === 'COPY_ILLUSTRATOR_CODE') {
     const selection = figma.currentPage.selection;
-    if (selection.length === 0) { figma.notify("Selecione algo."); return; }
+    if (selection.length === 0) {
+      figma.notify('Selecione algo.');
+      return;
+    }
     const node = selection[0];
     const width = 'width' in node ? node.width : 800;
     const height = 'height' in node ? node.height : 600;
@@ -984,20 +1160,32 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     script += `var doc = app.documents.add(DocumentColorSpace.RGB, ${width}, ${height});\n\n`;
 
     const process = (n: SceneNode) => {
-      let code = "";
-      const x = n.x, y = n.y, w = 'width' in n ? n.width : 0, h = 'height' in n ? n.height : 0, top = height - y;
+      let code = '';
+      const x = n.x,
+        y = n.y,
+        w = 'width' in n ? n.width : 0,
+        h = 'height' in n ? n.height : 0,
+        top = height - y;
       if (n.type === 'RECTANGLE' || n.type === 'ELLIPSE' || n.type === 'TEXT') {
         code += `(function(){\n`;
-        if (n.type === 'RECTANGLE') code += `  var item = doc.pathItems.rectangle(${top}, ${x}, ${w}, ${h});\n`;
-        else if (n.type === 'ELLIPSE') code += `  var item = doc.pathItems.ellipse(${top}, ${x}, ${w}, ${h});\n`;
+        if (n.type === 'RECTANGLE')
+          code += `  var item = doc.pathItems.rectangle(${top}, ${x}, ${w}, ${h});\n`;
+        else if (n.type === 'ELLIPSE')
+          code += `  var item = doc.pathItems.ellipse(${top}, ${x}, ${w}, ${h});\n`;
         else if (n.type === 'TEXT') {
-          code += `  var item = doc.textFrames.add(); item.contents = "${n.characters.replace(/"/g, '\\"')}";\n`;
+          code += `  var item = doc.textFrames.add(); item.contents = "${n.characters.replace(
+            /"/g,
+            '\\"'
+          )}";\n`;
           code += `  item.top = ${top}; item.left = ${x};\n`;
-          if ('fontSize' in n && typeof n.fontSize === 'number') code += `  item.textRange.characterAttributes.size = ${n.fontSize};\n`;
+          if ('fontSize' in n && typeof n.fontSize === 'number')
+            code += `  item.textRange.characterAttributes.size = ${n.fontSize};\n`;
         }
         if ('fills' in n && (n.fills as any).length > 0 && (n.fills as any)[0].type === 'SOLID') {
           const c = (n.fills as any)[0].color;
-          code += `  var c = new RGBColor(); c.red=${Math.round(c.r*255)}; c.green=${Math.round(c.g*255)}; c.blue=${Math.round(c.b*255)}; item.fillColor = c; item.filled = true;\n`;
+          code += `  var c = new RGBColor(); c.red=${Math.round(c.r * 255)}; c.green=${Math.round(
+            c.g * 255
+          )}; c.blue=${Math.round(c.b * 255)}; item.fillColor = c; item.filled = true;\n`;
         }
         code += `})();\n\n`;
       }
@@ -1060,12 +1248,14 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     }
     const node = selection[0];
     if ('fills' in node && Array.isArray(node.fills)) {
-      const solidFill = node.fills.find(f => f.type === 'SOLID' && f.visible !== false);
+      const solidFill = node.fills.find((f) => f.type === 'SOLID' && f.visible !== false);
       if (solidFill) {
         const r = Math.round(solidFill.color.r * 255);
         const g = Math.round(solidFill.color.g * 255);
         const b = Math.round(solidFill.color.b * 255);
-        const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+        const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
+          .toString(16)
+          .padStart(2, '0')}`.toUpperCase();
         postToUI({ type: 'SELECTION_FILL_RESULT', hex, name: node.name });
       } else {
         figma.notify('No solid fill found on selection.');

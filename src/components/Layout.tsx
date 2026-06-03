@@ -21,7 +21,6 @@ import { CanvasHeader } from './canvas/CanvasHeader';
 import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 import { identifyUser } from '@/utils/analytics';
 
-
 // Export context values for child components
 export type LayoutContextValue = {
   subscriptionStatus: SubscriptionStatus | null;
@@ -31,7 +30,9 @@ export type LayoutContextValue = {
   onCreditPackagesModalOpen: () => void;
   setSubscriptionStatus: (status: SubscriptionStatus | null) => void;
   user: User | null;
-  registerUnsavedOutputsHandler: (handler: () => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null) => void;
+  registerUnsavedOutputsHandler: (
+    handler: () => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null
+  ) => void;
   registerResetHandler: (handler: () => void) => void;
 };
 
@@ -40,8 +41,6 @@ export const LayoutContext = React.createContext<LayoutContextValue | null>(null
 interface LayoutProps {
   children: React.ReactNode;
 }
-
-
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useTranslation();
@@ -58,7 +57,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Stable setter that only triggers re-render when status actually changes
   const setSubscriptionStatus = useCallback((status: SubscriptionStatus | null) => {
     const prev = subscriptionStatusRef.current;
-    if (prev && status &&
+    if (
+      prev &&
+      status &&
       prev.hasActiveSubscription === status.hasActiveSubscription &&
       prev.subscriptionStatus === status.subscriptionStatus &&
       prev.subscriptionTier === status.subscriptionTier &&
@@ -66,7 +67,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       prev.creditsUsed === status.creditsUsed &&
       prev.creditsRemaining === status.creditsRemaining &&
       prev.canGenerate === status.canGenerate &&
-      prev.freeGenerationsRemaining === status.freeGenerationsRemaining) {
+      prev.freeGenerationsRemaining === status.freeGenerationsRemaining
+    ) {
       return; // No meaningful change, skip re-render
     }
     subscriptionStatusRef.current = status;
@@ -75,7 +77,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
-  const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<'carteira' | 'creditos' | 'assinatura'>('creditos');
+  const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<
+    'carteira' | 'creditos' | 'assinatura'
+  >('creditos');
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(() => {
@@ -88,18 +92,29 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Handlers for unsaved outputs checking
-  const unsavedOutputsHandlerRef = React.useRef<(() => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null) | null>(null);
+  const unsavedOutputsHandlerRef = React.useRef<
+    (() => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null) | null
+  >(null);
   const resetHandlerRef = React.useRef<(() => void) | null>(null);
 
-  const registerUnsavedOutputsHandler = React.useCallback((handler: () => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null) => {
-    unsavedOutputsHandlerRef.current = handler;
-  }, []);
+  const registerUnsavedOutputsHandler = React.useCallback(
+    (
+      handler: () => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null
+    ) => {
+      unsavedOutputsHandlerRef.current = handler;
+    },
+    []
+  );
 
   const registerResetHandler = React.useCallback((handler: () => void) => {
     resetHandlerRef.current = handler;
   }, []);
 
-  const getUnsavedOutputsInfo = React.useCallback((): { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null => {
+  const getUnsavedOutputsInfo = React.useCallback((): {
+    hasUnsaved: boolean;
+    count: number;
+    onSaveAll?: () => Promise<void>;
+  } | null => {
     if (unsavedOutputsHandlerRef.current) {
       return unsavedOutputsHandlerRef.current();
     }
@@ -340,9 +355,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     if (pollCreditsStatus) clearInterval(pollCreditsStatus);
                     setSubscriptionStatus(status);
                     localStorage.removeItem('credit_purchase_pending');
-                    toast.success(t('creditsPackages.purchaseSuccess') || 'Credits added successfully!', {
-                      duration: 5000,
-                    });
+                    toast.success(
+                      t('creditsPackages.purchaseSuccess') || 'Credits added successfully!',
+                      {
+                        duration: 5000,
+                      }
+                    );
                     return;
                   }
 
@@ -392,7 +410,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       // Evita erro loop no cold start do serverless
       if (isFirstCheck) {
         isFirstCheck = false;
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         if (!isMounted) return;
       }
 
@@ -401,8 +419,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         if (!isMounted) return;
 
         if (user) {
-          setIsAuthenticated(prev => prev === true ? prev : true);
-          setCurrentUser(prev => {
+          setIsAuthenticated((prev) => (prev === true ? prev : true));
+          setCurrentUser((prev) => {
             // Only update if user actually changed (avoid re-render on same user)
             if (prev && prev.id === user.id && prev.email === user.email) return prev;
             return user;
@@ -435,7 +453,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         }
       } finally {
         if (isMounted) {
-          setIsCheckingAuth(prev => prev === false ? prev : false);
+          setIsCheckingAuth((prev) => (prev === false ? prev : false));
         }
       }
     };
@@ -513,22 +531,35 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           subscriptionStatus: subscriptionStatus?.subscriptionStatus || 'free',
           creditsRemaining: subscriptionStatus?.creditsRemaining ?? 0,
           totalCreditsEarned: subscriptionStatus?.totalCreditsEarned ?? 0,
-        }
+        },
       });
     }
   }, [currentUser, subscriptionStatus?.subscriptionTier, subscriptionStatus?.subscriptionStatus]);
 
-  const contextValue = useMemo<LayoutContextValue>(() => ({
-    subscriptionStatus,
-    isAuthenticated,
-    isCheckingAuth,
-    onSubscriptionModalOpen,
-    onCreditPackagesModalOpen,
-    setSubscriptionStatus,
-    user: currentUser,
-    registerUnsavedOutputsHandler,
-    registerResetHandler,
-  }), [subscriptionStatus, isAuthenticated, isCheckingAuth, currentUser, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler]);
+  const contextValue = useMemo<LayoutContextValue>(
+    () => ({
+      subscriptionStatus,
+      isAuthenticated,
+      isCheckingAuth,
+      onSubscriptionModalOpen,
+      onCreditPackagesModalOpen,
+      setSubscriptionStatus,
+      user: currentUser,
+      registerUnsavedOutputsHandler,
+      registerResetHandler,
+    }),
+    [
+      subscriptionStatus,
+      isAuthenticated,
+      isCheckingAuth,
+      currentUser,
+      onSubscriptionModalOpen,
+      onCreditPackagesModalOpen,
+      setSubscriptionStatus,
+      registerUnsavedOutputsHandler,
+      registerResetHandler,
+    ]
+  );
 
   return (
     <LayoutContext.Provider value={contextValue}>
@@ -542,9 +573,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           expand={true}
           gap={12}
           toastOptions={{
-            className: theme === 'dark'
-              ? 'bg-neutral-950/70 backdrop-blur-[2px] border border-neutral-800 !text-white/70 shadow-sm cursor-pointer hover:bg-neutral-950/50 transition-all duration-150 margin-2'
-              : 'bg-white/40 backdrop-blur-[2px] border border-neutral-200/10 text-neutral-800/70 shadow-sm cursor-pointer hover:bg-white/50 transition-all duration-150 margin-2',
+            className:
+              theme === 'dark'
+                ? 'bg-neutral-950/70 backdrop-blur-[2px] border border-neutral-800 !text-white/70 shadow-sm cursor-pointer hover:bg-neutral-950/50 transition-all duration-150 margin-2'
+                : 'bg-white/40 backdrop-blur-[2px] border border-neutral-200/10 text-neutral-800/70 shadow-sm cursor-pointer hover:bg-white/50 transition-all duration-150 margin-2',
             style: {
               background: theme === 'dark' ? 'rgba(18, 18, 18, 0.4)' : 'rgba(255, 255, 255, 0.4)',
               padding: '12px 16px',
@@ -554,61 +586,85 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
             },
             classNames: {
-              toast: theme === 'dark'
-                ? 'bg-neutral-950/70 border-neutral-800 !text-white/70 !shadow-sm !p-2 !text-[11px] !font-mono'
-                : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-[11px] !font-mono',
-              title: theme === 'dark' ? '!text-white/70 !font-mono !text-[11px] !font-normal !leading-tight' : 'text-neutral-900/70 !font-mono !text-[11px] !font-normal !leading-tight',
-              description: theme === 'dark' ? '!text-white/60 !font-mono !text-[10px] !leading-tight' : 'text-neutral-600/60 !font-mono !text-[10px] !leading-tight',
-              success: theme === 'dark'
-                ? 'bg-neutral-950/70 border-brand-cyan/15 text-brand-cyan/70'
-                : 'bg-white/40 border-green-500/15 text-green-600/70',
-              error: theme === 'dark'
-                ? 'bg-neutral-950/70 border-destructive/15 text-destructive/70'
-                : 'bg-white/40 border-destructive/15 text-destructive/70',
-              info: theme === 'dark'
-                ? 'bg-neutral-950/70 border-blue-500/15 text-blue-400/70'
-                : 'bg-white/40 border-blue-500/15 text-blue-600/70',
-              closeButton: theme === 'dark'
-                ? 'text-neutral-500/30 hover:text-neutral-400/50 opacity-30 hover:opacity-50 !w-3 !h-3'
-                : 'text-neutral-400/30 hover:text-neutral-500/50 opacity-30 hover:opacity-50 !w-3 !h-3',
+              toast:
+                theme === 'dark'
+                  ? 'bg-neutral-950/70 border-neutral-800 !text-white/70 !shadow-sm !p-2 !text-[11px] !font-mono'
+                  : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-[11px] !font-mono',
+              title:
+                theme === 'dark'
+                  ? '!text-white/70 !font-mono !text-[11px] !font-normal !leading-tight'
+                  : 'text-neutral-900/70 !font-mono !text-[11px] !font-normal !leading-tight',
+              description:
+                theme === 'dark'
+                  ? '!text-white/60 !font-mono !text-[10px] !leading-tight'
+                  : 'text-neutral-600/60 !font-mono !text-[10px] !leading-tight',
+              success:
+                theme === 'dark'
+                  ? 'bg-neutral-950/70 border-brand-cyan/15 text-brand-cyan/70'
+                  : 'bg-white/40 border-green-500/15 text-green-600/70',
+              error:
+                theme === 'dark'
+                  ? 'bg-neutral-950/70 border-destructive/15 text-destructive/70'
+                  : 'bg-white/40 border-destructive/15 text-destructive/70',
+              info:
+                theme === 'dark'
+                  ? 'bg-neutral-950/70 border-blue-500/15 text-blue-400/70'
+                  : 'bg-white/40 border-blue-500/15 text-blue-600/70',
+              closeButton:
+                theme === 'dark'
+                  ? 'text-neutral-500/30 hover:text-neutral-400/50 opacity-30 hover:opacity-50 !w-3 !h-3'
+                  : 'text-neutral-400/30 hover:text-neutral-500/50 opacity-30 hover:opacity-50 !w-3 !h-3',
             },
           }}
         />
         <Analytics />
 
         <PrivacyPolicy isOpen={isPrivacyOpen} onClose={handleClosePrivacy} />
-        <TermsOfService isOpen={isTermsOpen || location.pathname === '/terms'} onClose={handleCloseTerms} />
-        <RefundPolicy isOpen={isRefundOpen || location.pathname === '/refund'} onClose={handleCloseRefund} />
-        <UsagePolicy isOpen={isUsagePolicyOpen || location.pathname === '/usage-policy'} onClose={handleCloseUsagePolicy} />
+        <TermsOfService
+          isOpen={isTermsOpen || location.pathname === '/terms'}
+          onClose={handleCloseTerms}
+        />
+        <RefundPolicy
+          isOpen={isRefundOpen || location.pathname === '/refund'}
+          onClose={handleCloseRefund}
+        />
+        <UsagePolicy
+          isOpen={isUsagePolicyOpen || location.pathname === '/usage-policy'}
+          onClose={handleCloseUsagePolicy}
+        />
 
-        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && location.pathname !== '/' && (
-          <Header
-            subscriptionStatus={subscriptionStatus}
-            onPricingClick={() => navigate('/pricing')}
-            onJoinClick={() => setIsSubscriptionModalOpen(true)}
-            onCreditsClick={() => {
-              setCreditPackagesModalTab('carteira');
-              setIsCreditPackagesModalOpen(true);
-            }}
-            onLogoClick={() => {
-              // This will be intercepted by Header if there are unsaved outputs
-              const unsavedInfo = getUnsavedOutputsInfo();
-              if (!unsavedInfo?.hasUnsaved) {
-                handleReset();
-                navigate('/');
-              }
-            }}
-            onLogoClickWithReset={handleReset}
-            getUnsavedOutputsInfo={getUnsavedOutputsInfo}
-            navigateToHome={() => navigate('/')}
-            onMockupsClick={() => navigate('/mockups')}
-            onCreateNewMockup={() => navigate('/mockupmachine')}
-            onMyOutputsClick={() => navigate('/my-outputs')}
-            onMyBrandingsClick={() => navigate('/my-brandings')}
-          />
+        {!location.pathname.startsWith('/canvas/') &&
+          !location.pathname.startsWith('/brand/') &&
+          location.pathname !== '/' && (
+            <Header
+              subscriptionStatus={subscriptionStatus}
+              onPricingClick={() => navigate('/pricing')}
+              onJoinClick={() => setIsSubscriptionModalOpen(true)}
+              onCreditsClick={() => {
+                setCreditPackagesModalTab('carteira');
+                setIsCreditPackagesModalOpen(true);
+              }}
+              onLogoClick={() => {
+                // This will be intercepted by Header if there are unsaved outputs
+                const unsavedInfo = getUnsavedOutputsInfo();
+                if (!unsavedInfo?.hasUnsaved) {
+                  handleReset();
+                  navigate('/');
+                }
+              }}
+              onLogoClickWithReset={handleReset}
+              getUnsavedOutputsInfo={getUnsavedOutputsInfo}
+              navigateToHome={() => navigate('/')}
+              onMockupsClick={() => navigate('/mockups')}
+              onCreateNewMockup={() => navigate('/mockupmachine')}
+              onMyOutputsClick={() => navigate('/my-outputs')}
+              onMyBrandingsClick={() => navigate('/my-brandings')}
+            />
+          )}
+
+        {location.pathname.startsWith('/canvas/') && (
+          <CanvasHeader onBack={() => navigate('/canvas')} />
         )}
-
-        {location.pathname.startsWith('/canvas/') && <CanvasHeader onBack={() => navigate('/canvas')} />}
 
         <SubscriptionModal
           isOpen={isSubscriptionModalOpen}
@@ -627,9 +683,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           initialTab={creditPackagesModalTab}
         />
 
-        {!location.pathname.startsWith('/budget/shared') && !location.pathname.startsWith('/brand/') && (
-          <FloatingSupportButton onClick={() => setIsSupportModalOpen(true)} />
-        )}
+        {!location.pathname.startsWith('/budget/shared') &&
+          !location.pathname.startsWith('/brand/') && (
+            <FloatingSupportButton onClick={() => setIsSupportModalOpen(true)} />
+          )}
 
         <SupportModal
           isOpen={isSupportModalOpen}
@@ -638,57 +695,72 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           userEmail={currentUser?.email || ''}
         />
 
-        {currentUser && currentUser.emailVerified === false && !location.pathname.startsWith('/verify-email') && (
-          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between">
-            <span className="text-amber-300 text-xs font-mono">
-              Verifique seu email para desbloquear todas as funcionalidades.
-            </span>
-            <button
-              onClick={async () => {
-                try {
-                  await authService.resendVerification();
-                  toast.success('Email de verificacao reenviado!');
-                } catch {
-                  toast.error('Erro ao reenviar email.');
-                }
-              }}
-              className="text-amber-400 hover:text-amber-200 text-xs font-mono underline underline-offset-2 transition-colors"
-            >
-              Reenviar email
-            </button>
-          </div>
-        )}
+        {currentUser &&
+          currentUser.emailVerified === false &&
+          !location.pathname.startsWith('/verify-email') && (
+            <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between">
+              <span className="text-amber-300 text-xs font-mono">
+                Verifique seu email para desbloquear todas as funcionalidades.
+              </span>
+              <button
+                onClick={async () => {
+                  try {
+                    await authService.resendVerification();
+                    toast.success('Email de verificacao reenviado!');
+                  } catch {
+                    toast.error('Erro ao reenviar email.');
+                  }
+                }}
+                className="text-amber-400 hover:text-amber-200 text-xs font-mono underline underline-offset-2 transition-colors"
+              >
+                Reenviar email
+              </button>
+            </div>
+          )}
 
-        <div className={cn(
-          "flex-1 relative",
-          location.pathname.startsWith('/canvas/') || location.pathname.startsWith('/mockupmachine') ? "overflow-hidden" : ""
-        )}>
+        <div
+          className={cn(
+            'flex-1 relative',
+            location.pathname.startsWith('/canvas/') ||
+              location.pathname.startsWith('/mockupmachine')
+              ? 'overflow-hidden'
+              : ''
+          )}
+        >
           {children}
         </div>
 
-        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && !location.pathname.startsWith('/admin/chat') && !location.pathname.startsWith('/3d-studio') && !location.pathname.startsWith('/cmyk-halftone') && !location.pathname.startsWith('/image-lab') && !location.pathname.startsWith('/grid-paint') && !location.pathname.startsWith('/grid-machine') && !location.pathname.startsWith('/labs/wind-tunnel') && location.pathname !== '/' && (
-          <ASCIIFooter
-            className={location.pathname === '/' ? 'hidden lg:block' : ''}
-            isDarkMode={location.pathname !== '/waitlist'}
-            onPrivacyClick={() => {
-              navigate('/privacy');
-            }}
-            onTermsClick={() => {
-              navigate('/terms');
-              setIsTermsOpen(true);
-            }}
-            onUsagePolicyClick={() => {
-              navigate('/usage-policy');
-              setIsUsagePolicyOpen(true);
-            }}
-            onRefundClick={() => {
-              navigate('/refund');
-              setIsRefundOpen(true);
-            }}
-          />
-        )}
+        {!location.pathname.startsWith('/canvas/') &&
+          !location.pathname.startsWith('/brand/') &&
+          !location.pathname.startsWith('/admin/chat') &&
+          !location.pathname.startsWith('/3d-studio') &&
+          !location.pathname.startsWith('/cmyk-halftone') &&
+          !location.pathname.startsWith('/image-lab') &&
+          !location.pathname.startsWith('/grid-paint') &&
+          !location.pathname.startsWith('/grid-machine') &&
+          !location.pathname.startsWith('/labs/wind-tunnel') &&
+          location.pathname !== '/' && (
+            <ASCIIFooter
+              className={location.pathname === '/' ? 'hidden lg:block' : ''}
+              isDarkMode={location.pathname !== '/waitlist'}
+              onPrivacyClick={() => {
+                navigate('/privacy');
+              }}
+              onTermsClick={() => {
+                navigate('/terms');
+                setIsTermsOpen(true);
+              }}
+              onUsagePolicyClick={() => {
+                navigate('/usage-policy');
+                setIsUsagePolicyOpen(true);
+              }}
+              onRefundClick={() => {
+                navigate('/refund');
+                setIsRefundOpen(true);
+              }}
+            />
+          )}
       </div>
     </LayoutContext.Provider>
   );
 };
-

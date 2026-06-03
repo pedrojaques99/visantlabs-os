@@ -1,6 +1,22 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { type NodeProps, type Node, useReactFlow, NodeResizer, Position } from '@xyflow/react';
-import { Image as ImageIcon, ChevronDown, ChevronUp, Plus, X, FileText, ChevronRight, Settings, Camera, Layers, MapPin, Sun, Box, LayoutGrid, Diamond } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  X,
+  FileText,
+  ChevronRight,
+  Settings,
+  Camera,
+  Layers,
+  MapPin,
+  Sun,
+  Box,
+  LayoutGrid,
+  Diamond,
+} from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { MockupNodeData } from '@/types/reactFlow';
@@ -8,7 +24,12 @@ import type { MockupPresetType, MockupPreset } from '@/types/mockupPresets';
 import type { Mockup } from '@/services/mockupApi';
 import type { GeminiModel, SeedreamModel, AspectRatio, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
-import { getAllPresets, getPreset, getAllPresetsAsync, clearPresetsCache } from '@/services/mockupPresetsService';
+import {
+  getAllPresets,
+  getPreset,
+  getAllPresetsAsync,
+  clearPresetsCache,
+} from '@/services/mockupPresetsService';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
@@ -31,12 +52,16 @@ import { applyPresetDataToNodes } from '@/lib/presetImportUtils';
 import { NodeButton } from './shared/node-button';
 import { ModelSelector } from '../shared/ModelSelector';
 import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useNodes } from '@xyflow/react';
 
-
-const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
+const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
+  data,
+  selected,
+  id,
+  dragging,
+}) => {
   const { t } = useTranslation();
 
   const { setNodes } = useReactFlow();
@@ -53,9 +78,15 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   const [withHuman, setWithHuman] = useState(data.withHuman || false);
   const [customPrompt, setCustomPrompt] = useState(data.customPrompt || '');
   const [model, setModel] = useState<GeminiModel | SeedreamModel>(data.model || DEFAULT_MODEL);
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(data.aspectRatio || DEFAULT_ASPECT_RATIO);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
+    data.aspectRatio || DEFAULT_ASPECT_RATIO
+  );
   const [resolution, setResolution] = useState<Resolution>(data.resolution || '1K');
-  const [isBrandActive, setIsBrandActive] = useState<boolean>(data.isBrandActive !== undefined ? data.isBrandActive : (!!(data.connectedLogo || data.connectedIdentity || data.connectedTextDirection)));
+  const [isBrandActive, setIsBrandActive] = useState<boolean>(
+    data.isBrandActive !== undefined
+      ? data.isBrandActive
+      : !!(data.connectedLogo || data.connectedIdentity || data.connectedTextDirection)
+  );
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isColorSectionOpen, setIsColorSectionOpen] = useState(false);
   const { openLibrary } = useBrandKit();
@@ -114,13 +145,23 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
   // Use loaded presets if available, otherwise fallback to sync presets
   const currentPresets = loadedPresets.length > 0 ? loadedPresets : getAllPresets();
-  const isPreset = typeof selectedPresetId === 'string' && currentPresets.some(preset => preset.id === selectedPresetId);
-  const selectedPreset = isPreset ? (currentPresets.find(p => p.id === selectedPresetId) || null) : null;
-  const selectedMockup = !isPreset && userMockups ? userMockups.find(m => m._id === selectedPresetId) : null;
+  const isPreset =
+    typeof selectedPresetId === 'string' &&
+    currentPresets.some((preset) => preset.id === selectedPresetId);
+  const selectedPreset = isPreset
+    ? currentPresets.find((p) => p.id === selectedPresetId) || null
+    : null;
+  const selectedMockup =
+    !isPreset && userMockups ? userMockups.find((m) => m._id === selectedPresetId) : null;
 
   // Determine dynamic identity based on category
-  const presetCategory = (selectedPreset as any)?.presetType || (selectedPreset as any)?.category || (selectedPreset?.id as any) || 'mockup';
-  const categoryConfig = CATEGORY_CONFIG[presetCategory as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.mockup;
+  const presetCategory =
+    (selectedPreset as any)?.presetType ||
+    (selectedPreset as any)?.category ||
+    (selectedPreset?.id as any) ||
+    'mockup';
+  const categoryConfig =
+    CATEGORY_CONFIG[presetCategory as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.mockup;
   const CategoryIcon = categoryConfig.icon;
   const categoryTitle = t(`communityPresets.tabs.${presetCategory}`) || categoryConfig.label;
 
@@ -130,9 +171,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   // Load reference image URL when preset changes
   useEffect(() => {
     // Check if it's a preset or a mockup
-    const preset = typeof selectedPresetId === 'string' && !selectedPresetId.startsWith('mockup-')
-      ? currentPresets.find(p => p.id === selectedPresetId) || null
-      : null;
+    const preset =
+      typeof selectedPresetId === 'string' && !selectedPresetId.startsWith('mockup-')
+        ? currentPresets.find((p) => p.id === selectedPresetId) || null
+        : null;
 
     if (preset?.referenceImageUrl && preset.referenceImageUrl.trim() !== '') {
       setReferenceImageUrl(preset.referenceImageUrl);
@@ -168,9 +210,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     data.model,
     data.aspectRatio,
     data.resolution,
-    data.isBrandActive
+    data.isBrandActive,
   ]);
-
 
   const { getNodes } = useReactFlow();
 
@@ -192,7 +233,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     if (!updated && data.onUpdateData) {
       data.onUpdateData(id, {
         selectedPreset: presetId as any,
-        customPrompt: ''
+        customPrompt: '',
       });
     }
 
@@ -230,7 +271,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   };
 
   const handleRemoveColor = (colorToRemove: string) => {
-    const newColors = selectedColors.filter(color => color !== colorToRemove);
+    const newColors = selectedColors.filter((color) => color !== colorToRemove);
     setSelectedColors(newColors);
     if (data.onUpdateData) {
       data.onUpdateData(id, { selectedColors: newColors });
@@ -267,30 +308,32 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
   const handleAddToBoard = (url: string, type: 'image' | 'logo') => {
     const newNodeId = `image-${Date.now()}`;
-    const currentNode = nodes.find(n => n.id === id);
+    const currentNode = nodes.find((n) => n.id === id);
     const x = currentNode ? currentNode.position.x + 450 : 0;
     const y = currentNode ? currentNode.position.y : 0;
 
-    setNodes((nds) => nds.concat({
-      id: newNodeId,
-      type: 'image',
-      position: { x, y },
-      data: { 
-        mockup: {
-          _id: `brand-${Date.now()}`,
-          imageUrl: url,
-          prompt: `Brand ${type}`,
-          designType: 'other',
-          tags: ['brand'],
-          brandingTags: [],
-          aspectRatio: '1:1'
-        },
-        label: type === 'logo' ? 'Brand Logo' : 'Brand Asset',
-        onUpdateData: data.onUpdateData,
-        onDelete: data.onDelete,
-        onResize: data.onResize
-      } as any
-    }));
+    setNodes((nds) =>
+      nds.concat({
+        id: newNodeId,
+        type: 'image',
+        position: { x, y },
+        data: {
+          mockup: {
+            _id: `brand-${Date.now()}`,
+            imageUrl: url,
+            prompt: `Brand ${type}`,
+            designType: 'other',
+            tags: ['brand'],
+            brandingTags: [],
+            aspectRatio: '1:1',
+          },
+          label: type === 'logo' ? 'Brand Logo' : 'Brand Asset',
+          onUpdateData: data.onUpdateData,
+          onDelete: data.onDelete,
+          onResize: data.onResize,
+        } as any,
+      })
+    );
   };
 
   const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
@@ -319,21 +362,37 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     }
 
     // Combine text direction from BrandCore with custom prompt if active
-    const finalPrompt = (isBrandActive && connectedTextDirection)
-      ? (customPrompt ? `${connectedTextDirection}\n\n${customPrompt}` : connectedTextDirection)
-      : customPrompt;
+    const finalPrompt =
+      isBrandActive && connectedTextDirection
+        ? customPrompt
+          ? `${connectedTextDirection}\n\n${customPrompt}`
+          : connectedTextDirection
+        : customPrompt;
 
     const hasConfig = supportsOutputConfig(model);
     const finalResolution = hasConfig ? resolution : undefined;
     const finalAspectRatio = hasConfig ? aspectRatio : undefined;
 
-    await data.onGenerate(id, imageToUse, selectedPresetId, selectedColors, withHuman, finalPrompt || undefined, model, finalResolution, finalAspectRatio);
+    await data.onGenerate(
+      id,
+      imageToUse,
+      selectedPresetId,
+      selectedColors,
+      withHuman,
+      finalPrompt || undefined,
+      model,
+      finalResolution,
+      finalAspectRatio
+    );
   };
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
-  const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', data.onResize);
-  }, [id, data.onResize, handleResizeWithDebounce]);
+  const handleResize = useCallback(
+    (width: number, height: number) => {
+      handleResizeWithDebounce(id, width, 'auto', data.onResize);
+    },
+    [id, data.onResize, handleResizeWithDebounce]
+  );
 
   const handleFitToContent = useCallback(() => {
     // For mockup nodes, we set height to auto
@@ -348,7 +407,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       onFitToContent={handleFitToContent}
       className="min-w-[320px]"
       style={{
-        height: 'auto'
+        height: 'auto',
       }}
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
@@ -380,24 +439,28 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       />
 
       {/* Header */}
-      <NodeHeader 
-        icon={categoryConfig.icon} 
-        title={categoryTitle} 
+      <NodeHeader
+        icon={categoryConfig.icon}
+        title={categoryTitle}
         selected={selected}
         isBrandActive={isBrandActive}
         onToggleBrand={(active) => {
           setIsBrandActive(active);
           if (data.onUpdateData) data.onUpdateData(id, { isBrandActive: active });
         }}
-        onOpenMediaLibrary={() => openLibrary({ onSelectAsset: handleSelectAsset, onAddToBoard: handleAddToBoard })}
+        onOpenMediaLibrary={() =>
+          openLibrary({ onSelectAsset: handleSelectAsset, onAddToBoard: handleAddToBoard })
+        }
       />
 
       {/* Preset Selector - Button to open modal */}
       <div className="node-margin">
-        <NodeButton variant="ghost" onClick={(e) => {
-          e.stopPropagation();
-          setIsPresetModalOpen(true);
-        }}
+        <NodeButton
+          variant="ghost"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsPresetModalOpen(true);
+          }}
           onMouseDown={(e) => {
             e.stopPropagation();
           }}
@@ -412,7 +475,11 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           {selectedPreset?.referenceImageUrl ? (
             <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded overflow-hidden flex-shrink-0">
               <img
-                src={isSafeUrl(selectedPreset.referenceImageUrl) ? selectedPreset.referenceImageUrl : ''}
+                src={
+                  isSafeUrl(selectedPreset.referenceImageUrl)
+                    ? selectedPreset.referenceImageUrl
+                    : ''
+                }
                 alt={selectedPreset.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -445,7 +512,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           {/* Title with thumbnail in same div */}
           <div className="flex-1 min-w-0">
             <div className="text-xs font-mono truncate text-brand-cyan">
-              {selectedPreset?.name || selectedMockup?.prompt?.substring(0, 30) || t('canvasNodes.mockupNode.selectPreset')}
+              {selectedPreset?.name ||
+                selectedMockup?.prompt?.substring(0, 30) ||
+                t('canvasNodes.mockupNode.selectPreset')}
             </div>
           </div>
           {/* Click indicator */}
@@ -453,42 +522,53 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         </NodeButton>
       </div>
 
-
-
       {/* Connected Images from BrandCore or legacy image node */}
       {/* HIERARCHY: Logo (priority 1) as primary focus, Identity (priority 2) as context/colors/vibe */}
-        <div className={cn("node-margin space-y-[var(--node-gap)] transition-all duration-300", !isBrandActive && "opacity-30 grayscale pointer-events-none")}>
-          {connectedLogo && (
-            <ConnectedImagesDisplay
-              images={[connectedLogo]}
-              label={t('canvasNodes.mockupNode.logoFromBrandCore')}
-              showLabel={true}
-              onImageRemove={() => {
-                if (data.onUpdateData) {
-                  data.onUpdateData(id, { connectedLogo: undefined });
-                }
-              }}
-            />
-          )}
-          {connectedIdentity && (
-            <ConnectedImagesDisplay
-              images={[connectedIdentity]}
-              label={`${t('canvasNodes.mockupNode.identityFromBrandCore')}${connectedIdentity.includes('.pdf') || connectedIdentity.includes('application/pdf') || (connectedIdentity.startsWith('http') && connectedIdentity.includes('pdf')) ? ` ${t('canvasNodes.mockupNode.pdfLabel')}` : ` ${t('canvasNodes.mockupNode.imageLabel')}`}`}
-              showLabel={true}
-              onImageRemove={() => {
-                if (data.onUpdateData) {
-                  data.onUpdateData(id, { connectedIdentity: undefined });
-                }
-              }}
-            />
-          )}
-          {connectedTextDirection && (
-            <div className="p-2 rounded border-node border-neutral-800 bg-brand-cyan/5">
-              <div className="text-xs font-mono text-brand-cyan mb-1">{t('canvasNodes.mockupNode.textDirectionFromBrandCore')}</div>
-              <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>
+      <div
+        className={cn(
+          'node-margin space-y-[var(--node-gap)] transition-all duration-300',
+          !isBrandActive && 'opacity-30 grayscale pointer-events-none'
+        )}
+      >
+        {connectedLogo && (
+          <ConnectedImagesDisplay
+            images={[connectedLogo]}
+            label={t('canvasNodes.mockupNode.logoFromBrandCore')}
+            showLabel={true}
+            onImageRemove={() => {
+              if (data.onUpdateData) {
+                data.onUpdateData(id, { connectedLogo: undefined });
+              }
+            }}
+          />
+        )}
+        {connectedIdentity && (
+          <ConnectedImagesDisplay
+            images={[connectedIdentity]}
+            label={`${t('canvasNodes.mockupNode.identityFromBrandCore')}${
+              connectedIdentity.includes('.pdf') ||
+              connectedIdentity.includes('application/pdf') ||
+              (connectedIdentity.startsWith('http') && connectedIdentity.includes('pdf'))
+                ? ` ${t('canvasNodes.mockupNode.pdfLabel')}`
+                : ` ${t('canvasNodes.mockupNode.imageLabel')}`
+            }`}
+            showLabel={true}
+            onImageRemove={() => {
+              if (data.onUpdateData) {
+                data.onUpdateData(id, { connectedIdentity: undefined });
+              }
+            }}
+          />
+        )}
+        {connectedTextDirection && (
+          <div className="p-2 rounded border-node border-neutral-800 bg-brand-cyan/5">
+            <div className="text-xs font-mono text-brand-cyan mb-1">
+              {t('canvasNodes.mockupNode.textDirectionFromBrandCore')}
             </div>
-          )}
-        </div>
+            <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>
+          </div>
+        )}
+      </div>
 
       {hasConnectedImage && !isBrandActive && (
         <ConnectedImagesDisplay
@@ -505,21 +585,23 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Prompt Editor Toggle */}
       <div className="mb-2">
-        <NodeButton variant="ghost" onClick={(e) => {
-          e.stopPropagation();
-          const newIsOpen = !isPromptOpen;
-          setIsPromptOpen(newIsOpen);
-          // If opening and no custom prompt exists, initialize with base prompt or text direction
-          if (newIsOpen && !customPrompt) {
-            const initialPrompt = connectedTextDirection || basePrompt;
-            if (initialPrompt) {
-              setCustomPrompt(initialPrompt);
-              if (data.onUpdateData) {
-                data.onUpdateData(id, { customPrompt: initialPrompt });
+        <NodeButton
+          variant="ghost"
+          onClick={(e) => {
+            e.stopPropagation();
+            const newIsOpen = !isPromptOpen;
+            setIsPromptOpen(newIsOpen);
+            // If opening and no custom prompt exists, initialize with base prompt or text direction
+            if (newIsOpen && !customPrompt) {
+              const initialPrompt = connectedTextDirection || basePrompt;
+              if (initialPrompt) {
+                setCustomPrompt(initialPrompt);
+                if (data.onUpdateData) {
+                  data.onUpdateData(id, { customPrompt: initialPrompt });
+                }
               }
             }
-          }
-        }}
+          }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading}
           className={cn(
@@ -538,10 +620,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           </div>
           <ChevronRight
             size={12}
-            className={cn(
-              'transition-transform duration-200',
-              isPromptOpen && 'rotate-90'
-            )}
+            className={cn('transition-transform duration-200', isPromptOpen && 'rotate-90')}
           />
         </NodeButton>
       </div>
@@ -570,10 +649,12 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Color & Human Section - Collapsable */}
       <div className="mb-2">
-        <NodeButton variant="ghost" onClick={(e) => {
-          e.stopPropagation();
-          setIsColorSectionOpen(!isColorSectionOpen);
-        }}
+        <NodeButton
+          variant="ghost"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsColorSectionOpen(!isColorSectionOpen);
+          }}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading}
           className={cn(
@@ -585,19 +666,22 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         >
           <div className="flex items-center gap-3">
             <Settings size={12} className="text-neutral-500" />
-            <span className="text-xs font-mono">{t('canvasNodes.mockupNode.advancedControls')}</span>
+            <span className="text-xs font-mono">
+              {t('canvasNodes.mockupNode.advancedControls')}
+            </span>
             {(selectedColors.length > 0 || withHuman) && (
               <span className="text-[10px] text-brand-cyan">
-                ({selectedColors.length} {selectedColors.length !== 1 ? t('canvasNodes.mockupNode.colorsPlural') : t('canvasNodes.mockupNode.colorSingular')}{withHuman ? `, ${t('canvasNodes.mockupNode.humanText')}` : ''})
+                ({selectedColors.length}{' '}
+                {selectedColors.length !== 1
+                  ? t('canvasNodes.mockupNode.colorsPlural')
+                  : t('canvasNodes.mockupNode.colorSingular')}
+                {withHuman ? `, ${t('canvasNodes.mockupNode.humanText')}` : ''})
               </span>
             )}
           </div>
           <ChevronRight
             size={12}
-            className={cn(
-              'transition-transform duration-200',
-              isColorSectionOpen && 'rotate-90'
-            )}
+            className={cn('transition-transform duration-200', isColorSectionOpen && 'rotate-90')}
           />
         </NodeButton>
 
@@ -610,7 +694,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               onModelChange={(newModel, provider) => {
                 setModel(newModel as GeminiModel | SeedreamModel);
                 if (data.onUpdateData) {
-                  data.onUpdateData(id, { model: newModel as GeminiModel | SeedreamModel, provider });
+                  data.onUpdateData(id, {
+                    model: newModel as GeminiModel | SeedreamModel,
+                    provider,
+                  });
                 }
               }}
               resolution={resolution}
@@ -623,7 +710,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                 if (data.onUpdateData) {
                   data.onUpdateData(id, {
                     resolution: undefined,
-                    aspectRatio: undefined
+                    aspectRatio: undefined,
                   });
                 }
               }}
@@ -652,7 +739,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
             {/* Color Picker */}
             <div>
-              <h4 className="text-xs font-mono mb-1.5 text-neutral-500">{t('canvasNodes.mockupNode.colorPalette')}</h4>
+              <h4 className="text-xs font-mono mb-1.5 text-neutral-500">
+                {t('canvasNodes.mockupNode.colorPalette')}
+              </h4>
               <div className="flex gap-3">
                 <div className="flex-grow relative flex items-center">
                   <Input
@@ -679,10 +768,13 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     ></span>
                   )}
                 </div>
-                <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddColor();
-                }}
+                <NodeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddColor();
+                  }}
                   onMouseDown={(e) => e.stopPropagation()}
                   disabled={isLoading || !isValidColor}
                   className="nodrag nopan"
@@ -692,17 +784,23 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               </div>
               {selectedColors.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-1.5 min-h-[24px]">
-                  {selectedColors.map(color => (
-                    <div key={color} className="flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md border-node text-xs bg-neutral-900/80 border-neutral-700">
+                  {selectedColors.map((color) => (
+                    <div
+                      key={color}
+                      className="flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md border-node text-xs bg-neutral-900/80 border-neutral-700"
+                    >
                       <span
                         className="w-2.5 h-2.5 rounded-md border-node border-white/10"
                         style={{ backgroundColor: color }}
                       ></span>
                       <span className="font-mono text-[10px]">{color}</span>
-                      <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveColor(color);
-                      }}
+                      <NodeButton
+                        variant="ghost"
+                        size="xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveColor(color);
+                        }}
                         onMouseDown={(e) => e.stopPropagation()}
                         className="p-1 min-w-0 h-auto"
                       >
@@ -718,8 +816,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             <div>
               <div
                 className={cn(
-                  "flex items-center p-1.5 rounded-md cursor-pointer border-node bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 transition-colors",
-                  "node-interactive"
+                  'flex items-center p-1.5 rounded-md cursor-pointer border-node bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 transition-colors',
+                  'node-interactive'
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -727,17 +825,34 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                <div className={cn(
-                  "w-3.5 h-3.5 rounded-md flex items-center justify-center border-node transition-all duration-200",
-                  withHuman ? 'bg-brand-cyan/80 border-neutral-800' : 'bg-neutral-700 border-neutral-600'
-                )}>
+                <div
+                  className={cn(
+                    'w-3.5 h-3.5 rounded-md flex items-center justify-center border-node transition-all duration-200',
+                    withHuman
+                      ? 'bg-brand-cyan/80 border-neutral-800'
+                      : 'bg-neutral-700 border-neutral-600'
+                  )}
+                >
                   {withHuman && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-2.5 w-2.5 text-black"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </div>
-                <label className="ml-2 text-xs select-none cursor-pointer text-neutral-400 font-mono">{t('canvasNodes.mockupNode.includeHumanInteraction')}</label>
+                <label className="ml-2 text-xs select-none cursor-pointer text-neutral-400 font-mono">
+                  {t('canvasNodes.mockupNode.includeHumanInteraction')}
+                </label>
               </div>
             </div>
           </div>
@@ -748,7 +863,14 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       {(data.resultImageUrl || data.resultImageBase64) && (
         <div className="node-margin">
           <NodeMediaDisplay
-            url={data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null)}
+            url={
+              data.resultImageUrl ||
+              (data.resultImageBase64
+                ? data.resultImageBase64.startsWith('data:')
+                  ? data.resultImageBase64
+                  : `data:image/png;base64,${data.resultImageBase64}`
+                : null)
+            }
             isLoading={isLoading}
             dragging={dragging}
             alt="Generation Result"
@@ -757,8 +879,11 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       )}
 
       {/* Generate Button */}
-      <Tooltip 
-        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired(model, resolution)} ${t('canvasNodes.promptNode.credits')}`}
+      <Tooltip
+        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired(
+          model,
+          resolution
+        )} ${t('canvasNodes.promptNode.credits')}`}
         delay={500}
       >
         <NodeButton
@@ -780,7 +905,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           ) : (
             <div className="flex items-center justify-center gap-2">
               <Diamond size={14} className="group-hover/gen:rotate-12 transition-transform" />
-              <span className="font-semibold tracking-tight">{t('canvasNodes.mockupNode.generateMockup')}</span>
+              <span className="font-semibold tracking-tight">
+                {t('canvasNodes.mockupNode.generateMockup')}
+              </span>
               <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
                 <Diamond size={10} className="opacity-50 fill-current" />
                 {getCreditsRequired(model, resolution)}
@@ -792,12 +919,15 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Add Mockup Button */}
       <div className="mt-2 pt-2 border-t border-neutral-700/30 flex justify-center">
-        <NodeButton variant="ghost" size="xs" onClick={(e) => {
-          e.stopPropagation();
-          if (data.onAddMockupNode) {
-            data.onAddMockupNode();
-          }
-        }}
+        <NodeButton
+          variant="ghost"
+          size="xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (data.onAddMockupNode) {
+              data.onAddMockupNode();
+            }
+          }}
           onMouseDown={(e) => {
             e.stopPropagation();
           }}
@@ -849,7 +979,12 @@ export const MockupNode = memo(MockupNodeComponent, (prevProps, nextProps) => {
   const textDirectionChanged = prevTextDirection !== nextTextDirection;
 
   // If any connected data changed, force re-render
-  if (connectedImageChanged || connectedLogoChanged || connectedIdentityChanged || textDirectionChanged) {
+  if (
+    connectedImageChanged ||
+    connectedLogoChanged ||
+    connectedIdentityChanged ||
+    textDirectionChanged
+  ) {
     return false; // Re-render
   }
 
@@ -874,4 +1009,3 @@ export const MockupNode = memo(MockupNodeComponent, (prevProps, nextProps) => {
 });
 
 MockupNode.displayName = 'MockupNode';
-

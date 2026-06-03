@@ -5,7 +5,7 @@ import type {
   PluginMessage,
   BrandGuideline,
   ColorVariable,
-  FontVariable
+  FontVariable,
 } from '@/lib/figma-types';
 import type { ToolCallRecord } from '@shared/types/chat';
 
@@ -20,12 +20,12 @@ export interface SelectionDetail {
 
 export interface LogoSlot {
   name: 'light' | 'dark' | 'accent';
-  src?: string;                 // preview URL for <img> (thumbnailUrl ?? url)
+  src?: string; // preview URL for <img> (thumbnailUrl ?? url)
   loaded?: boolean;
-  id?: string;                  // server-side logo id
+  id?: string; // server-side logo id
   source?: 'upload' | 'figma';
-  url?: string;                 // uploaded media URL (svg/png/pdf)
-  thumbnailUrl?: string;        // rasterized preview
+  url?: string; // uploaded media URL (svg/png/pdf)
+  thumbnailUrl?: string; // rasterized preview
   format?: string;
   figmaKey?: string;
   figmaFileKey?: string;
@@ -209,7 +209,9 @@ export interface PluginStore {
   setExportedImage: (data: any) => void;
   setIsGenerating: (generating: boolean) => void;
   setGeneratingStatus: (status: string) => void;
-  setMatrixColors: (colors: { id: string; name: string; r: number; g: number; b: number; selected: boolean }[]) => void;
+  setMatrixColors: (
+    colors: { id: string; name: string; r: number; g: number; b: number; selected: boolean }[]
+  ) => void;
   toggleMatrixColor: (id: string) => void;
   addMatrixColor: (color: { id: string; name: string; r: number; g: number; b: number }) => void;
   toggleDevMode: () => void;

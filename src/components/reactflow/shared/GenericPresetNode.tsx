@@ -20,304 +20,332 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import { toast } from 'sonner';
 
 interface PresetItem {
-    id: string;
-    name: string;
-    description?: string;
-    prompt?: string;
+  id: string;
+  name: string;
+  description?: string;
+  prompt?: string;
 }
 
 interface GenericPresetNodeConfig<TPresetType extends string, TNodeData> {
-    // Node configuration
-    icon: LucideIcon;
+  // Node configuration
+  icon: LucideIcon;
+  title: string;
+  defaultPresetId: TPresetType;
+
+  // Preset management
+  getAllPresets: () => PresetItem[];
+  getPreset: (id: TPresetType) => PresetItem | undefined;
+
+  // Modal component - accepts any modal with compatible props
+  PresetModal: ComponentType<any>;
+
+  // Data accessors
+  getSelectedPreset: (data: TNodeData) => TPresetType | string | undefined;
+  getConnectedImage: (data: TNodeData) => string | undefined;
+  getResultImageUrl: (data: TNodeData) => string | undefined;
+  getResultImageBase64: (data: TNodeData) => string | undefined;
+  getIsLoading: (data: TNodeData) => boolean | undefined;
+  getOnGenerate: (
+    data: TNodeData
+  ) => ((nodeId: string, imageBase64: string, presetId: string) => Promise<void>) | undefined;
+  getOnUpdateData: (
+    data: TNodeData
+  ) => ((nodeId: string, newData: Partial<TNodeData>) => void) | undefined;
+
+  // Translation keys
+  translationKeys: {
     title: string;
-    defaultPresetId: TPresetType;
+    selectPreset: string;
+    inputImage: string;
+    connectImageNode: string;
+    generating: string;
+    generateButton: string;
+    result: string;
+  };
 
-    // Preset management
-    getAllPresets: () => PresetItem[];
-    getPreset: (id: TPresetType) => PresetItem | undefined;
-
-    // Modal component - accepts any modal with compatible props
-    PresetModal: ComponentType<any>;
-
-    // Data accessors
-    getSelectedPreset: (data: TNodeData) => TPresetType | string | undefined;
-    getConnectedImage: (data: TNodeData) => string | undefined;
-    getResultImageUrl: (data: TNodeData) => string | undefined;
-    getResultImageBase64: (data: TNodeData) => string | undefined;
-    getIsLoading: (data: TNodeData) => boolean | undefined;
-    getOnGenerate: (data: TNodeData) => ((nodeId: string, imageBase64: string, presetId: string) => Promise<void>) | undefined;
-    getOnUpdateData: (data: TNodeData) => ((nodeId: string, newData: Partial<TNodeData>) => void) | undefined;
-
-    // Translation keys
-    translationKeys: {
-        title: string;
-        selectPreset: string;
-        inputImage: string;
-        connectImageNode: string;
-        generating: string;
-        generateButton: string;
-        result: string;
-    };
-
-    // Node name for logging
-    nodeName: string;
+  // Node name for logging
+  nodeName: string;
 }
 
-export function createGenericPresetNode<TPresetType extends string, TNodeData extends Record<string, any>>(
-    config: GenericPresetNodeConfig<TPresetType, TNodeData>
-) {
-    const GenericPresetNodeComponent: React.FC<NodeProps<Node<TNodeData>>> = ({ data, selected, id, dragging }) => {
-        const { t } = useTranslation();
-        const nodes = useNodes();
-        const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(id, data);
-        const [selectedPresetId, setSelectedPresetId] = useState<TPresetType | string>(
-            (config.getSelectedPreset(data) as TPresetType | string) || config.defaultPresetId
-        );
-        const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
-        const { openLibrary, closeLibrary } = useBrandKit();
-        const containerRef = useRef<HTMLDivElement>(null);
+export function createGenericPresetNode<
+  TPresetType extends string,
+  TNodeData extends Record<string, any>
+>(config: GenericPresetNodeConfig<TPresetType, TNodeData>) {
+  const GenericPresetNodeComponent: React.FC<NodeProps<Node<TNodeData>>> = ({
+    data,
+    selected,
+    id,
+    dragging,
+  }) => {
+    const { t } = useTranslation();
+    const nodes = useNodes();
+    const { handleResize: baseResize, handleFitToContent: baseFitToContent } = useBaseNode(
+      id,
+      data
+    );
+    const [selectedPresetId, setSelectedPresetId] = useState<TPresetType | string>(
+      (config.getSelectedPreset(data) as TPresetType | string) || config.defaultPresetId
+    );
+    const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+    const { openLibrary, closeLibrary } = useBrandKit();
+    const containerRef = useRef<HTMLDivElement>(null);
 
-        const isLoading = config.getIsLoading(data) || false;
-        const resultImageUrl = config.getResultImageUrl(data);
-        const resultImageBase64 = config.getResultImageBase64(data);
-        const hasResult = !!(resultImageUrl || resultImageBase64);
-        const connectedImage = config.getConnectedImage(data);
-        const hasConnectedImage = !!connectedImage;
+    const isLoading = config.getIsLoading(data) || false;
+    const resultImageUrl = config.getResultImageUrl(data);
+    const resultImageBase64 = config.getResultImageBase64(data);
+    const hasResult = !!(resultImageUrl || resultImageBase64);
+    const connectedImage = config.getConnectedImage(data);
+    const hasConnectedImage = !!connectedImage;
 
-        const selectedPreset = config.getPreset(selectedPresetId as TPresetType);
-        const Icon = config.icon;
-        const PresetModal = config.PresetModal;
+    const selectedPreset = config.getPreset(selectedPresetId as TPresetType);
+    const Icon = config.icon;
+    const PresetModal = config.PresetModal;
 
-        // Sync preset with data
-        useEffect(() => {
-            const dataPreset = config.getSelectedPreset(data);
-            if (dataPreset && dataPreset !== selectedPresetId) {
-                setSelectedPresetId(dataPreset as TPresetType);
-            }
-        }, [config.getSelectedPreset(data)]);
+    // Sync preset with data
+    useEffect(() => {
+      const dataPreset = config.getSelectedPreset(data);
+      if (dataPreset && dataPreset !== selectedPresetId) {
+        setSelectedPresetId(dataPreset as TPresetType);
+      }
+    }, [config.getSelectedPreset(data)]);
 
-        const handlePresetChange = (presetId: string | TPresetType) => {
-            setSelectedPresetId(presetId);
-            const onUpdateData = config.getOnUpdateData(data);
-            if (onUpdateData) {
-                onUpdateData(id, { selectedPreset: presetId } as unknown as Partial<TNodeData>);
-            }
-        };
-
-        const handleGenerate = async () => {
-            const onGenerate = config.getOnGenerate(data);
-            if (!onGenerate || !connectedImage) {
-                return;
-            }
-
-            await onGenerate(id, connectedImage, selectedPresetId);
-        };
-
-        const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
-            const onUpdateData = config.getOnUpdateData(data);
-            if (onUpdateData) {
-                onUpdateData(id, { connectedImage: url } as any);
-            }
-            closeLibrary();
-        };
-
-        const handleOpenMediaLibrary = () => {
-            openLibrary({ onSelectAsset: handleSelectAsset });
-        };
-
-        const handleFitToContent = useCallback(() => {
-            baseFitToContent();
-        }, [baseFitToContent]);
-
-        const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-            baseResize(params.width, params.height);
-        }, [baseResize]);
-
-        return (
-            <NodeContainer
-                containerRef={containerRef}
-                selected={selected}
-                dragging={dragging}
-                onFitToContent={handleFitToContent}
-                className={cn(`min-w-[${NODE_LAYOUT.MIN_WIDTH}px]`)}
-                onContextMenu={(e) => {
-                    // Allow ReactFlow to handle the context menu event
-                }}
-            >
-                {selected && !dragging && (
-                    <NodeResizer
-                        color="brand-cyan"
-                        isVisible={selected}
-                        minWidth={NODE_LAYOUT.MIN_WIDTH}
-                        minHeight={NODE_LAYOUT.MIN_HEIGHT}
-                        maxWidth={NODE_LAYOUT.MAX_WIDTH}
-                        maxHeight={NODE_LAYOUT.MAX_HEIGHT}
-                        keepAspectRatio={hasResult}
-                        onResize={handleResize}
-                    />
-                )}
-                <NodeHandles />
-
-                {/* Header */}
-                <NodeHeader
-                    icon={Icon}
-                    title={t(config.translationKeys.title) || config.title}
-                    selected={selected}
-                    isBrandActive={data.isBrandActive}
-                    onToggleBrand={(active) => {
-                        const onUpdateData = config.getOnUpdateData(data);
-                        if (onUpdateData) {
-                            onUpdateData(id, { isBrandActive: active } as any);
-                        }
-                    }}
-                    onOpenMediaLibrary={handleOpenMediaLibrary}
-                />
-
-                {/* Preset Selector - Button to open modal */}
-                <div className="node-margin">
-                    <NodeButton variant="ghost" size="full"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsPresetModalOpen(true);
-                        }}
-                        onMouseDown={(e) => {
-                            e.stopPropagation();
-                        }}
-                        disabled={isLoading}
-                        className={cn(
-                            'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-all text-left node-interactive',
-                            'bg-neutral-900/30 border-neutral-800 hover:bg-neutral-800/50 hover:border-neutral-700',
-                            isLoading && 'opacity-50 cursor-not-allowed'
-                        )}
-                    >
-                        {selectedPreset?.id ? (
-                            <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                <Icon size={14} className="text-neutral-400" />
-                            </div>
-                        ) : (
-                            <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
-                                <Icon size={14} className="text-neutral-400" />
-                            </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                            <div className="text-xs font-mono truncate text-foreground font-semibold">
-                                {selectedPreset?.name || t(config.translationKeys.selectPreset) || `Select ${config.title.toLowerCase()}`}
-                            </div>
-                            {selectedPreset?.description && (
-                                <div className="text-[10px] font-mono text-neutral-500 truncate">
-                                    {selectedPreset.description}
-                                </div>
-                            )}
-                        </div>
-                        <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
-                    </NodeButton>
-                </div>
-
-                {/* Connected Image Thumbnail */}
-                <ConnectedImagesDisplay
-                    images={[connectedImage]}
-                    label={t(config.translationKeys.inputImage)}
-                    showLabel={hasConnectedImage}
-                />
-
-                {!hasConnectedImage && (
-                    <div className="mb-2">
-                        <span className="text-xs font-mono text-neutral-500">
-                            {t(config.translationKeys.connectImageNode) || 'Connect an image node'}
-                        </span>
-                    </div>
-                )}
-
-                {/* Generate Button */}
-                <Tooltip 
-                    content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired('mockup')} ${t('canvasNodes.promptNode.credits')}`}
-                    delay={500}
-                >
-                    <NodeButton variant="primary" size="full"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            handleGenerate();
-                        }}
-                        onMouseDown={(e) => {
-                            e.stopPropagation();
-                        }}
-                        disabled={isLoading || !hasConnectedImage}
-                        className="node-interactive group/gen"
-                    >
-                        {isLoading ? (
-                            <div className="flex items-center justify-center gap-2">
-                                <GlitchLoader size={14} color="brand-cyan" />
-                                <span>{t(config.translationKeys.generating) || 'Generating...'}</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-center gap-2">
-                                <Icon size={14} className="group-hover/gen:rotate-12 transition-transform" />
-                                <span className="font-semibold tracking-tight">{t(config.translationKeys.generateButton) || `Generate ${config.title}`}</span>
-                                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
-                                    <Diamond size={10} className="opacity-50 fill-current" />
-                                    {getCreditsRequired('mockup')}
-                                </div>
-                            </div>
-                        )}
-                    </NodeButton>
-                </Tooltip>
-
-                {/* Result Preview */}
-                {hasResult && (resultImageUrl || resultImageBase64) && (
-                    <div className="mt-2 pt-2 border-t border-neutral-700/30">
-                        <img
-                            src={resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : '')}
-                            alt={t(config.translationKeys.result) || `${config.title} result`}
-                            className="w-full h-auto rounded"
-                            onLoad={(e) => {
-                                const img = e.target as HTMLImageElement;
-                                if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                                    const onUpdateData = config.getOnUpdateData(data);
-                                    if (onUpdateData) {
-                                        onUpdateData(id, {
-                                            imageWidth: img.naturalWidth,
-                                            imageHeight: img.naturalHeight,
-                                        } as any);
-                                    }
-                                }
-                            }}
-                        />
-                    </div>
-                )}
-
-                {/* Preset Selection Modal */}
-                <PresetModal
-                    isOpen={isPresetModalOpen}
-                    selectedPresetId={selectedPresetId}
-                    onClose={() => setIsPresetModalOpen(false)}
-                    onSelectPreset={(presetId: string) => {
-                        handlePresetChange(presetId);
-                    }}
-                    isLoading={isLoading}
-                />
-
-            </NodeContainer>
-        );
+    const handlePresetChange = (presetId: string | TPresetType) => {
+      setSelectedPresetId(presetId);
+      const onUpdateData = config.getOnUpdateData(data);
+      if (onUpdateData) {
+        onUpdateData(id, { selectedPreset: presetId } as unknown as Partial<TNodeData>);
+      }
     };
 
-    return memo(GenericPresetNodeComponent, (prevProps, nextProps) => {
-        const prevConnectedImage = config.getConnectedImage(prevProps.data) ?? undefined;
-        const nextConnectedImage = config.getConnectedImage(nextProps.data) ?? undefined;
-        const connectedImageChanged = prevConnectedImage !== nextConnectedImage;
+    const handleGenerate = async () => {
+      const onGenerate = config.getOnGenerate(data);
+      if (!onGenerate || !connectedImage) {
+        return;
+      }
 
-        if (connectedImageChanged) {
-            return false;
-        }
+      await onGenerate(id, connectedImage, selectedPresetId);
+    };
 
-        return (
-            prevProps.id === nextProps.id &&
-            prevProps.selected === nextProps.selected &&
-            prevProps.dragging === nextProps.dragging &&
-            config.getIsLoading(prevProps.data) === config.getIsLoading(nextProps.data) &&
-            config.getSelectedPreset(prevProps.data) === config.getSelectedPreset(nextProps.data) &&
-            config.getResultImageUrl(prevProps.data) === config.getResultImageUrl(nextProps.data) &&
-            config.getResultImageBase64(prevProps.data) === config.getResultImageBase64(nextProps.data)
-        );
-    });
+    const handleSelectAsset = (url: string, type: 'image' | 'logo') => {
+      const onUpdateData = config.getOnUpdateData(data);
+      if (onUpdateData) {
+        onUpdateData(id, { connectedImage: url } as any);
+      }
+      closeLibrary();
+    };
+
+    const handleOpenMediaLibrary = () => {
+      openLibrary({ onSelectAsset: handleSelectAsset });
+    };
+
+    const handleFitToContent = useCallback(() => {
+      baseFitToContent();
+    }, [baseFitToContent]);
+
+    const handleResize = useCallback(
+      (_: any, params: { width: number; height: number }) => {
+        baseResize(params.width, params.height);
+      },
+      [baseResize]
+    );
+
+    return (
+      <NodeContainer
+        containerRef={containerRef}
+        selected={selected}
+        dragging={dragging}
+        onFitToContent={handleFitToContent}
+        className={cn(`min-w-[${NODE_LAYOUT.MIN_WIDTH}px]`)}
+        onContextMenu={(e) => {
+          // Allow ReactFlow to handle the context menu event
+        }}
+      >
+        {selected && !dragging && (
+          <NodeResizer
+            color="brand-cyan"
+            isVisible={selected}
+            minWidth={NODE_LAYOUT.MIN_WIDTH}
+            minHeight={NODE_LAYOUT.MIN_HEIGHT}
+            maxWidth={NODE_LAYOUT.MAX_WIDTH}
+            maxHeight={NODE_LAYOUT.MAX_HEIGHT}
+            keepAspectRatio={hasResult}
+            onResize={handleResize}
+          />
+        )}
+        <NodeHandles />
+
+        {/* Header */}
+        <NodeHeader
+          icon={Icon}
+          title={t(config.translationKeys.title) || config.title}
+          selected={selected}
+          isBrandActive={data.isBrandActive}
+          onToggleBrand={(active) => {
+            const onUpdateData = config.getOnUpdateData(data);
+            if (onUpdateData) {
+              onUpdateData(id, { isBrandActive: active } as any);
+            }
+          }}
+          onOpenMediaLibrary={handleOpenMediaLibrary}
+        />
+
+        {/* Preset Selector - Button to open modal */}
+        <div className="node-margin">
+          <NodeButton
+            variant="ghost"
+            size="full"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsPresetModalOpen(true);
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+            }}
+            disabled={isLoading}
+            className={cn(
+              'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-all text-left node-interactive',
+              'bg-neutral-900/30 border-neutral-800 hover:bg-neutral-800/50 hover:border-neutral-700',
+              isLoading && 'opacity-50 cursor-not-allowed'
+            )}
+          >
+            {selectedPreset?.id ? (
+              <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <Icon size={14} className="text-neutral-400" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 bg-neutral-900/30 border-node border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
+                <Icon size={14} className="text-neutral-400" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-mono truncate text-foreground font-semibold">
+                {selectedPreset?.name ||
+                  t(config.translationKeys.selectPreset) ||
+                  `Select ${config.title.toLowerCase()}`}
+              </div>
+              {selectedPreset?.description && (
+                <div className="text-[10px] font-mono text-neutral-500 truncate">
+                  {selectedPreset.description}
+                </div>
+              )}
+            </div>
+            <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
+          </NodeButton>
+        </div>
+
+        {/* Connected Image Thumbnail */}
+        <ConnectedImagesDisplay
+          images={[connectedImage]}
+          label={t(config.translationKeys.inputImage)}
+          showLabel={hasConnectedImage}
+        />
+
+        {!hasConnectedImage && (
+          <div className="mb-2">
+            <span className="text-xs font-mono text-neutral-500">
+              {t(config.translationKeys.connectImageNode) || 'Connect an image node'}
+            </span>
+          </div>
+        )}
+
+        {/* Generate Button */}
+        <Tooltip
+          content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired(
+            'mockup'
+          )} ${t('canvasNodes.promptNode.credits')}`}
+          delay={500}
+        >
+          <NodeButton
+            variant="primary"
+            size="full"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleGenerate();
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+            }}
+            disabled={isLoading || !hasConnectedImage}
+            className="node-interactive group/gen"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <GlitchLoader size={14} color="brand-cyan" />
+                <span>{t(config.translationKeys.generating) || 'Generating...'}</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <Icon size={14} className="group-hover/gen:rotate-12 transition-transform" />
+                <span className="font-semibold tracking-tight">
+                  {t(config.translationKeys.generateButton) || `Generate ${config.title}`}
+                </span>
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                  <Diamond size={10} className="opacity-50 fill-current" />
+                  {getCreditsRequired('mockup')}
+                </div>
+              </div>
+            )}
+          </NodeButton>
+        </Tooltip>
+
+        {/* Result Preview */}
+        {hasResult && (resultImageUrl || resultImageBase64) && (
+          <div className="mt-2 pt-2 border-t border-neutral-700/30">
+            <img
+              src={
+                resultImageUrl ||
+                (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : '')
+              }
+              alt={t(config.translationKeys.result) || `${config.title} result`}
+              className="w-full h-auto rounded"
+              onLoad={(e) => {
+                const img = e.target as HTMLImageElement;
+                if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                  const onUpdateData = config.getOnUpdateData(data);
+                  if (onUpdateData) {
+                    onUpdateData(id, {
+                      imageWidth: img.naturalWidth,
+                      imageHeight: img.naturalHeight,
+                    } as any);
+                  }
+                }
+              }}
+            />
+          </div>
+        )}
+
+        {/* Preset Selection Modal */}
+        <PresetModal
+          isOpen={isPresetModalOpen}
+          selectedPresetId={selectedPresetId}
+          onClose={() => setIsPresetModalOpen(false)}
+          onSelectPreset={(presetId: string) => {
+            handlePresetChange(presetId);
+          }}
+          isLoading={isLoading}
+        />
+      </NodeContainer>
+    );
+  };
+
+  return memo(GenericPresetNodeComponent, (prevProps, nextProps) => {
+    const prevConnectedImage = config.getConnectedImage(prevProps.data) ?? undefined;
+    const nextConnectedImage = config.getConnectedImage(nextProps.data) ?? undefined;
+    const connectedImageChanged = prevConnectedImage !== nextConnectedImage;
+
+    if (connectedImageChanged) {
+      return false;
+    }
+
+    return (
+      prevProps.id === nextProps.id &&
+      prevProps.selected === nextProps.selected &&
+      prevProps.dragging === nextProps.dragging &&
+      config.getIsLoading(prevProps.data) === config.getIsLoading(nextProps.data) &&
+      config.getSelectedPreset(prevProps.data) === config.getSelectedPreset(nextProps.data) &&
+      config.getResultImageUrl(prevProps.data) === config.getResultImageUrl(nextProps.data) &&
+      config.getResultImageBase64(prevProps.data) === config.getResultImageBase64(nextProps.data)
+    );
+  });
 }

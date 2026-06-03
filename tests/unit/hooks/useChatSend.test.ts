@@ -32,36 +32,53 @@ function makeStore(overrides: Record<string, any> = {}) {
 function buildPayload(store: ReturnType<typeof makeStore>) {
   // Replicate the mapping logic from useChatSend.ts
   const typo = store.typography as any[];
-  const brandFonts = typo.length > 0 ? {
-    primary: typo.find((t: any) => t.name === 'primary') ? {
-      family: typo.find((t: any) => t.name === 'primary')!.fontFamily,
-      style: typo.find((t: any) => t.name === 'primary')!.fontStyle,
-      size: typo.find((t: any) => t.name === 'primary')!.fontSize,
-    } : undefined,
-    secondary: typo.find((t: any) => t.name === 'secondary') ? {
-      family: typo.find((t: any) => t.name === 'secondary')!.fontFamily,
-      style: typo.find((t: any) => t.name === 'secondary')!.fontStyle,
-      size: typo.find((t: any) => t.name === 'secondary')!.fontSize,
-    } : undefined,
-  } : null;
+  const brandFonts =
+    typo.length > 0
+      ? {
+          primary: typo.find((t: any) => t.name === 'primary')
+            ? {
+                family: typo.find((t: any) => t.name === 'primary')!.fontFamily,
+                style: typo.find((t: any) => t.name === 'primary')!.fontStyle,
+                size: typo.find((t: any) => t.name === 'primary')!.fontSize,
+              }
+            : undefined,
+          secondary: typo.find((t: any) => t.name === 'secondary')
+            ? {
+                family: typo.find((t: any) => t.name === 'secondary')!.fontFamily,
+                style: typo.find((t: any) => t.name === 'secondary')!.fontStyle,
+                size: typo.find((t: any) => t.name === 'secondary')!.fontSize,
+              }
+            : undefined,
+        }
+      : null;
 
   const logos = store.logos as any[];
-  const brandLogos = logos.length > 0 ? {
-    light: logos.find((l: any) => l.name === 'light')
-      ? { name: logos.find((l: any) => l.name === 'light')!.label || 'Logo Light', key: logos.find((l: any) => l.name === 'light')!.figmaKey }
-      : undefined,
-    dark: logos.find((l: any) => l.name === 'dark')
-      ? { name: logos.find((l: any) => l.name === 'dark')!.label || 'Logo Dark', key: logos.find((l: any) => l.name === 'dark')!.figmaKey }
-      : undefined,
-  } : null;
+  const brandLogos =
+    logos.length > 0
+      ? {
+          light: logos.find((l: any) => l.name === 'light')
+            ? {
+                name: logos.find((l: any) => l.name === 'light')!.label || 'Logo Light',
+                key: logos.find((l: any) => l.name === 'light')!.figmaKey,
+              }
+            : undefined,
+          dark: logos.find((l: any) => l.name === 'dark')
+            ? {
+                name: logos.find((l: any) => l.name === 'dark')!.label || 'Logo Dark',
+                key: logos.find((l: any) => l.name === 'dark')!.figmaKey,
+              }
+            : undefined,
+        }
+      : null;
 
-  const brandColors = store.selectedColors.size > 0
-    ? Array.from((store.selectedColors as Map<string, any>).entries()).map(([role, entry]) => ({
-        name: entry.name || role,
-        value: entry.hex,
-        role,
-      }))
-    : null;
+  const brandColors =
+    store.selectedColors.size > 0
+      ? Array.from((store.selectedColors as Map<string, any>).entries()).map(([role, entry]) => ({
+          name: entry.name || role,
+          value: entry.hex,
+          role,
+        }))
+      : null;
 
   return {
     type: 'GENERATE_WITH_CONTEXT',
@@ -95,7 +112,9 @@ describe('useChatSend — brand payload mapping', () => {
 
   it('primary typography → brandFonts.primary mapped correctly', () => {
     const store = makeStore({
-      typography: [{ name: 'primary', fontFamily: 'Bebas Neue', fontStyle: 'Regular', fontSize: 48 }],
+      typography: [
+        { name: 'primary', fontFamily: 'Bebas Neue', fontStyle: 'Regular', fontSize: 48 },
+      ],
     });
     const msg = buildPayload(store);
     expect(msg.brandFonts?.primary?.family).toBe('Bebas Neue');

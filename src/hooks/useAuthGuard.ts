@@ -7,14 +7,14 @@ import { useTranslation } from './useTranslation';
 /**
  * Hook that provides authentication guard function
  * Encapsulates the common pattern of checking authentication before operations
- * 
+ *
  * @returns Object with requireAuth function that returns Promise<boolean>
  *          - Returns true if user is authenticated
  *          - Returns false and shows error toast if not authenticated
- * 
+ *
  * @example
  * const { requireAuth } = useAuthGuard();
- * 
+ *
  * const handleOperation = async () => {
  *   if (!(await requireAuth())) return;
  *   // Proceed with operation...

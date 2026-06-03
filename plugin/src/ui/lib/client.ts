@@ -4,7 +4,13 @@
  * Ver .agent/plans/plugin-webapp-unification.md (Fase 2).
  */
 import type {
-  Envelope, OpName, PayloadOf, ResultOf, Result, Channel, TelemetryEntry,
+  Envelope,
+  OpName,
+  PayloadOf,
+  ResultOf,
+  Result,
+  Channel,
+  TelemetryEntry,
 } from '@shared/protocol';
 import { makeId } from '@shared/protocol';
 
@@ -21,48 +27,48 @@ export interface ClientOptions {
 const ROUTE: Record<OpName, Channel> = {
   // figma (sandbox)
   'canvas.applyOperations': 'figma',
-  'canvas.undoLastBatch':   'figma',
-  'canvas.selectAndZoom':   'figma',
+  'canvas.undoLastBatch': 'figma',
+  'canvas.selectAndZoom': 'figma',
   'canvas.deleteSelection': 'figma',
-  'context.get':            'figma',
-  'context.getEnriched':    'figma',
-  'context.reportSelection':'figma',
-  'components.getInFile':   'figma',
-  'components.getAgent':    'figma',
+  'context.get': 'figma',
+  'context.getEnriched': 'figma',
+  'context.reportSelection': 'figma',
+  'components.getInFile': 'figma',
+  'components.getAgent': 'figma',
   'components.captureSelection': 'figma',
   'components.importFromSelection': 'figma',
-  'templates.get':          'figma',
-  'templates.scaffold':     'figma',
-  'variables.getColors':    'figma',
-  'variables.getFonts':     'figma',
-  'variables.getFontFamilies':'figma',
-  'image.paste':            'figma',
-  'image.exportNode':       'figma',
-  'storage.get':            'figma',
-  'storage.set':            'figma',
-  'storage.delete':         'figma',
-  'brand.applyLocal':       'figma',
-  'brand.lint':             'figma',
-  'brand.fixIssues':        'figma',
-  'brand.generateGrid':     'figma',
-  'brand.generateSocial':   'figma',
-  'brand.importLogos':      'figma',
-  'brand.useSelectionAsLogo':'figma',
-  'brand.useSelectionAsFont':'figma',
-  'sync.extract':           'figma',
-  'sync.push':              'figma',
-  'dev.stickyPrompt':       'figma',
-  'dev.varyColors':         'figma',
-  'dev.selectionToSlices':  'figma',
+  'templates.get': 'figma',
+  'templates.scaffold': 'figma',
+  'variables.getColors': 'figma',
+  'variables.getFonts': 'figma',
+  'variables.getFontFamilies': 'figma',
+  'image.paste': 'figma',
+  'image.exportNode': 'figma',
+  'storage.get': 'figma',
+  'storage.set': 'figma',
+  'storage.delete': 'figma',
+  'brand.applyLocal': 'figma',
+  'brand.lint': 'figma',
+  'brand.fixIssues': 'figma',
+  'brand.generateGrid': 'figma',
+  'brand.generateSocial': 'figma',
+  'brand.importLogos': 'figma',
+  'brand.useSelectionAsLogo': 'figma',
+  'brand.useSelectionAsFont': 'figma',
+  'sync.extract': 'figma',
+  'sync.push': 'figma',
+  'dev.stickyPrompt': 'figma',
+  'dev.varyColors': 'figma',
+  'dev.selectionToSlices': 'figma',
   'dev.multiplyResponsive': 'figma',
-  'text.scanFonts':         'figma',
-  'text.swapFonts':         'figma',
-  'text.getStyles':         'figma',
-  'export.textToMarkdown':  'figma',
+  'text.scanFonts': 'figma',
+  'text.swapFonts': 'figma',
+  'text.getStyles': 'figma',
+  'export.textToMarkdown': 'figma',
 
   // http (server)
-  'ai.chat':       'http',
-  'ai.generate':   'http',
+  'ai.chat': 'http',
+  'ai.generate': 'http',
   'telemetry.log': 'http',
 };
 
@@ -75,7 +81,10 @@ export interface Client {
 
 export function createClient(opts: ClientOptions): Client {
   const timeoutMs = opts.timeoutMs ?? 30_000;
-  const pending = new Map<string, { resolve: (r: Result) => void; timer: ReturnType<typeof setTimeout> }>();
+  const pending = new Map<
+    string,
+    { resolve: (r: Result) => void; timer: ReturnType<typeof setTimeout> }
+  >();
 
   // Single listener para respostas vindas do sandbox Figma
   const onWindowMessage = (ev: MessageEvent) => {
@@ -94,7 +103,12 @@ export function createClient(opts: ClientOptions): Client {
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
         pending.delete(env.id);
-        resolve({ id: env.id, ok: false, error: { code: 'TIMEOUT', message: `Figma op "${env.op}" timed out` }, ms: timeoutMs });
+        resolve({
+          id: env.id,
+          ok: false,
+          error: { code: 'TIMEOUT', message: `Figma op "${env.op}" timed out` },
+          ms: timeoutMs,
+        });
       }, timeoutMs);
       pending.set(env.id, { resolve, timer });
       parent.postMessage({ pluginMessage: env }, '*');
@@ -115,13 +129,24 @@ export function createClient(opts: ClientOptions): Client {
       });
       if (res.status === 401 || res.status === 403) {
         opts.onUnauthorized?.();
-        return { id: env.id, ok: false, error: { code: 'UNAUTHORIZED', message: 'Not authorized' }, ms: performance.now() - t0 };
+        return {
+          id: env.id,
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Not authorized' },
+          ms: performance.now() - t0,
+        };
       }
       const body = await res.json();
-      if (body && typeof body.ok === 'boolean' && typeof body.id === 'string') return body as Result;
+      if (body && typeof body.ok === 'boolean' && typeof body.id === 'string')
+        return body as Result;
       return { id: env.id, ok: true, data: body, ms: performance.now() - t0 };
     } catch (e: any) {
-      return { id: env.id, ok: false, error: { code: 'NETWORK', message: e?.message ?? String(e) }, ms: performance.now() - t0 };
+      return {
+        id: env.id,
+        ok: false,
+        error: { code: 'NETWORK', message: e?.message ?? String(e) },
+        ms: performance.now() - t0,
+      };
     }
   }
 
@@ -145,7 +170,11 @@ export function createClient(opts: ClientOptions): Client {
 
   async function reportTelemetry(entries: TelemetryEntry[]) {
     if (!entries.length) return;
-    try { await request('telemetry.log', { entries }); } catch { /* fire-and-forget */ }
+    try {
+      await request('telemetry.log', { entries });
+    } catch {
+      /* fire-and-forget */
+    }
   }
 
   return {

@@ -10,7 +10,7 @@ const COLOR_ROLES = [
   { role: 'accent', label: 'Accent' },
   { role: 'background', label: 'Background' },
   { role: 'surface', label: 'Surface' },
-  { role: 'text', label: 'Text' }
+  { role: 'text', label: 'Text' },
 ];
 
 export function BrandColorGrid() {
@@ -21,16 +21,19 @@ export function BrandColorGrid() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
 
-  const syncColors = React.useCallback((newColorsMap: Map<string, any>) => {
-    if (linkedGuideline) {
-      const colorsArray = Array.from(newColorsMap.values()).map(c => ({
-        hex: c.hex,
-        name: c.role || c.name || 'Color',
-        role: c.role
-      }));
-      updateBrandGuideline(linkedGuideline, { colors: colorsArray as any });
-    }
-  }, [linkedGuideline, updateBrandGuideline]);
+  const syncColors = React.useCallback(
+    (newColorsMap: Map<string, any>) => {
+      if (linkedGuideline) {
+        const colorsArray = Array.from(newColorsMap.values()).map((c) => ({
+          hex: c.hex,
+          name: c.role || c.name || 'Color',
+          role: c.role,
+        }));
+        updateBrandGuideline(linkedGuideline, { colors: colorsArray as any });
+      }
+    },
+    [linkedGuideline, updateBrandGuideline]
+  );
 
   React.useEffect(() => {
     const handler = (event: MessageEvent) => {
@@ -38,11 +41,11 @@ export function BrandColorGrid() {
       if (msg?.type === 'SELECTION_FILL_RESULT' && selectedRole) {
         const hex = msg.hex;
         addSelectedColor(selectedRole, { role: selectedRole, hex, name: msg.name });
-        
+
         const nextMap = new Map(selectedColors);
         nextMap.set(selectedRole, { role: selectedRole, hex, name: msg.name });
         syncColors(nextMap);
-        
+
         setIsCapturing(false);
         setPickerOpen(false);
       }
@@ -62,7 +65,7 @@ export function BrandColorGrid() {
     if (selectedRole && e.target.value) {
       const hex = e.target.value.toUpperCase();
       addSelectedColor(selectedRole, { role: selectedRole, hex });
-      
+
       const nextMap = new Map(selectedColors);
       nextMap.set(selectedRole, { role: selectedRole, hex });
       syncColors(nextMap);
@@ -72,11 +75,11 @@ export function BrandColorGrid() {
   const pickFigmaColor = (hex: string, name?: string) => {
     if (selectedRole) {
       addSelectedColor(selectedRole, { role: selectedRole, hex, name });
-      
+
       const nextMap = new Map(selectedColors);
       nextMap.set(selectedRole, { role: selectedRole, hex, name });
       syncColors(nextMap);
-      
+
       setPickerOpen(false);
     }
   };
@@ -92,7 +95,7 @@ export function BrandColorGrid() {
       <div className="grid grid-cols-3 gap-3">
         {COLOR_ROLES.map((item) => {
           const color = selectedColors.get(item.role);
-          
+
           if (color) {
             return (
               <div
@@ -107,8 +110,12 @@ export function BrandColorGrid() {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover/color:opacity-100 transition-opacity" />
                 </div>
                 <div className="text-center min-w-0 w-full">
-                  <p className="text-[10px] font-bold text-foreground uppercase tracking-tight truncate">{item.label}</p>
-                  <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">{color.hex}</p>
+                  <p className="text-[10px] font-bold text-foreground uppercase tracking-tight truncate">
+                    {item.label}
+                  </p>
+                  <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                    {color.hex}
+                  </p>
                 </div>
               </div>
             );
@@ -122,9 +129,13 @@ export function BrandColorGrid() {
               className="flex flex-col items-center justify-center gap-2 p-2 rounded-xl border border-white/[0.03] bg-neutral-900/40 opacity-70 cursor-pointer hover:bg-neutral-800/60 transition-colors group/empty"
             >
               <div className="w-full aspect-square max-w-[56px] rounded-xl border border-dashed border-white/20 group-hover/empty:border-brand-cyan/40 transition-colors flex items-center justify-center bg-transparent">
-                <span className="text-white/20 group-hover/empty:text-brand-cyan/50 text-xl font-light">+</span>
+                <span className="text-white/20 group-hover/empty:text-brand-cyan/50 text-xl font-light">
+                  +
+                </span>
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground group-hover/empty:text-foreground transition-colors">{item.label}</span>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground group-hover/empty:text-foreground transition-colors">
+                {item.label}
+              </span>
             </div>
           );
         })}
@@ -132,11 +143,12 @@ export function BrandColorGrid() {
 
       <input ref={colorInputRef} type="color" onChange={handleColorChange} className="hidden" />
 
-      <Dialog 
-        open={pickerOpen} 
+      <Dialog
+        open={pickerOpen}
         onOpenChange={(open) => {
           setPickerOpen(open);
-          if (open) parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, 'https://www.figma.com');
+          if (open)
+            parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, 'https://www.figma.com');
         }}
       >
         <DialogContent className="max-w-md bg-neutral-950 border-white/5 p-6 overflow-hidden flex flex-col max-h-[80vh]">
@@ -155,26 +167,39 @@ export function BrandColorGrid() {
               disabled={isCapturing}
               className="flex-1 bg-brand-cyan text-black hover:bg-brand-cyan/90 text-[10px] h-9 font-bold uppercase tracking-widest"
             >
-              {isCapturing ? <GlitchLoader size={12} className="mr-2" /> : <MousePointer2 size={14} className="mr-2" />}
+              {isCapturing ? (
+                <GlitchLoader size={12} className="mr-2" />
+              ) : (
+                <MousePointer2 size={14} className="mr-2" />
+              )}
               Pick from Selection
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="h-9 px-3 border-white/10"
-              onClick={() => parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, 'https://www.figma.com')}
+              onClick={() =>
+                parent.postMessage(
+                  { pluginMessage: { type: 'GET_CONTEXT' } },
+                  'https://www.figma.com'
+                )
+              }
             >
               <RefreshCw size={14} />
             </Button>
           </div>
 
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-600 mb-3 px-1">Library Variables</p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-600 mb-3 px-1">
+            Library Variables
+          </p>
 
           {figmaColors.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center py-8 gap-3 border border-dashed border-white/5 rounded-xl bg-neutral-900/20">
               <Palette size={24} className="text-neutral-800" />
               <div className="text-center">
-                <p className="text-[9px] font-mono text-neutral-600 px-6 uppercase tracking-wider">No library styles found</p>
+                <p className="text-[9px] font-mono text-neutral-600 px-6 uppercase tracking-wider">
+                  No library styles found
+                </p>
               </div>
             </div>
           ) : (
@@ -218,8 +243,8 @@ export function BrandColorGrid() {
             >
               Custom color…
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="px-4 text-[9px] font-bold uppercase tracking-widest h-9 text-neutral-600 hover:text-white"
               onClick={() => setPickerOpen(false)}
             >

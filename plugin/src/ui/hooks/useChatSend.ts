@@ -31,7 +31,7 @@ export function useChatSend() {
         timestamp: Date.now(),
         attachments: store.pendingAttachments.slice(),
         metadata: {
-          selectedFrames: selection.map(f => ({ id: f.id, name: f.name, type: f.type })),
+          selectedFrames: selection.map((f) => ({ id: f.id, name: f.name, type: f.type })),
           scanPage: store.scanPage,
           useBrand: store.useBrand,
           generateImage: store.generateImage,
@@ -45,28 +45,53 @@ export function useChatSend() {
       try {
         // Map brand data from store to expected payload format
         const typo = store.typography;
-        const brandFonts = (typo.length > 0) ? {
-          primary: typo.find(t => t.name === 'primary') ? {
-            family: typo.find(t => t.name === 'primary')!.fontFamily,
-            style: typo.find(t => t.name === 'primary')!.fontStyle,
-            size: typo.find(t => t.name === 'primary')!.fontSize,
-          } : undefined,
-          secondary: typo.find(t => t.name === 'secondary') ? {
-            family: typo.find(t => t.name === 'secondary')!.fontFamily,
-            style: typo.find(t => t.name === 'secondary')!.fontStyle,
-            size: typo.find(t => t.name === 'secondary')!.fontSize,
-          } : undefined,
-        } : null;
+        const brandFonts =
+          typo.length > 0
+            ? {
+                primary: typo.find((t) => t.name === 'primary')
+                  ? {
+                      family: typo.find((t) => t.name === 'primary')!.fontFamily,
+                      style: typo.find((t) => t.name === 'primary')!.fontStyle,
+                      size: typo.find((t) => t.name === 'primary')!.fontSize,
+                    }
+                  : undefined,
+                secondary: typo.find((t) => t.name === 'secondary')
+                  ? {
+                      family: typo.find((t) => t.name === 'secondary')!.fontFamily,
+                      style: typo.find((t) => t.name === 'secondary')!.fontStyle,
+                      size: typo.find((t) => t.name === 'secondary')!.fontSize,
+                    }
+                  : undefined,
+              }
+            : null;
 
         const logos = store.logos;
-        const brandLogos = logos.length > 0 ? {
-          light: logos.find(l => l.name === 'light') ? { name: logos.find(l => l.name === 'light')!.label || 'Logo Light', key: logos.find(l => l.name === 'light')!.figmaKey } : undefined,
-          dark: logos.find(l => l.name === 'dark') ? { name: logos.find(l => l.name === 'dark')!.label || 'Logo Dark', key: logos.find(l => l.name === 'dark')!.figmaKey } : undefined,
-        } : null;
+        const brandLogos =
+          logos.length > 0
+            ? {
+                light: logos.find((l) => l.name === 'light')
+                  ? {
+                      name: logos.find((l) => l.name === 'light')!.label || 'Logo Light',
+                      key: logos.find((l) => l.name === 'light')!.figmaKey,
+                    }
+                  : undefined,
+                dark: logos.find((l) => l.name === 'dark')
+                  ? {
+                      name: logos.find((l) => l.name === 'dark')!.label || 'Logo Dark',
+                      key: logos.find((l) => l.name === 'dark')!.figmaKey,
+                    }
+                  : undefined,
+              }
+            : null;
 
-        const brandColors = store.selectedColors.size > 0
-          ? Array.from(store.selectedColors.entries()).map(([role, entry]) => ({ name: entry.name || role, value: entry.hex, role }))
-          : null;
+        const brandColors =
+          store.selectedColors.size > 0
+            ? Array.from(store.selectedColors.entries()).map(([role, entry]) => ({
+                name: entry.name || role,
+                value: entry.hex,
+                role,
+              }))
+            : null;
 
         const mentions = parseMentions(content);
 
@@ -74,9 +99,7 @@ export function useChatSend() {
           .filter((a) => a.preview)
           .map((a) => {
             const match = a.preview!.match(/^data:([^;]+);base64,(.+)$/);
-            return match
-              ? { name: a.name, mimeType: match[1], data: match[2] }
-              : null;
+            return match ? { name: a.name, mimeType: match[1], data: match[2] } : null;
           })
           .filter(Boolean);
 

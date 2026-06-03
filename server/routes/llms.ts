@@ -6,7 +6,7 @@ const router = express.Router();
 const COMMON_HEADERS = {
   'Content-Type': 'text/plain; charset=utf-8',
   'Cache-Control': 'public, max-age=86400',
-  'Link': '</llms.txt>; rel="ai-index"',
+  Link: '</llms.txt>; rel="ai-index"',
 };
 
 // GET /llms.txt — concise overview for AI agents

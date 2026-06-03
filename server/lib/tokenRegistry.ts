@@ -45,7 +45,9 @@ export function rgbToHex(rgb: RGB): string {
   const r = Math.round(rgb.r * 255);
   const g = Math.round(rgb.g * 255);
   const b = Math.round(rgb.b * 255);
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
+    .toString(16)
+    .padStart(2, '0')}`;
 }
 
 /**
@@ -128,10 +130,16 @@ export interface DesignSystemJSON {
   name?: string;
   version?: string;
   colors?: Record<string, string | { hex?: string; value?: string; usage?: string }>;
-  typography?: Record<string, { family: string; style?: string; size?: number; lineHeight?: number }>;
+  typography?: Record<
+    string,
+    { family: string; style?: string; size?: number; lineHeight?: number }
+  >;
   spacing?: Record<string, number>;
   radius?: Record<string, number>;
-  shadows?: Record<string, { x?: number; y?: number; blur?: number; spread?: number; color?: string; opacity?: number }>;
+  shadows?: Record<
+    string,
+    { x?: number; y?: number; blur?: number; spread?: number; color?: string; opacity?: number }
+  >;
   components?: Record<string, any>;
   guidelines?: { voice?: string; dos?: string[]; donts?: string[]; imagery?: string };
 }
@@ -145,7 +153,7 @@ export function buildFromDesignSystem(ds: DesignSystemJSON): TokenRegistry {
   // Colors
   if (ds.colors) {
     for (const [name, val] of Object.entries(ds.colors)) {
-      const hex = typeof val === 'string' ? val : (val.hex || val.value || '');
+      const hex = typeof val === 'string' ? val : val.hex || val.value || '';
       if (!hex) continue; // Skip if no valid hex
       const usage = typeof val === 'object' ? val.usage : undefined;
       registry.colors.set(name, {

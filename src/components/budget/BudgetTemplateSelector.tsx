@@ -112,7 +112,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     setDeletingPresetId(presetToDelete);
     try {
       await budgetApi.deletePdfPreset(presetToDelete);
-      setPresets(prev => prev.filter(p => (p._id || p.id) !== presetToDelete));
+      setPresets((prev) => prev.filter((p) => (p._id || p.id) !== presetToDelete));
       toast.success(t('budget.presetDeleted') || 'Preset deleted successfully');
     } catch (error: any) {
       console.error('Error deleting preset:', error);
@@ -130,7 +130,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     setDeletingBudgetId(budgetToDelete);
     try {
       await budgetApi.delete(budgetToDelete);
-      setBudgets(prev => prev.filter(b => b._id !== budgetToDelete));
+      setBudgets((prev) => prev.filter((b) => b._id !== budgetToDelete));
       toast.success(t('budget.deleted') || 'Budget deleted successfully');
     } catch (error: any) {
       console.error('Error deleting budget:', error);
@@ -171,7 +171,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     setEditingTemplateId(null);
   };
 
-  const handleTemplateNameKeyDown = (templateId: string, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleTemplateNameKeyDown = (
+    templateId: string,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleTemplateNameChange(templateId, e.currentTarget.value);
@@ -192,13 +195,16 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
           {t('budget.defaultTemplates') || 'Templates Padrão'}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {BUDGET_TEMPLATES.filter(template => template.id !== 'custom').map((template) => (
-            <Button variant="ghost" key={template.id}
+          {BUDGET_TEMPLATES.filter((template) => template.id !== 'custom').map((template) => (
+            <Button
+              variant="ghost"
+              key={template.id}
               onClick={() => onSelectTemplate(template.id)}
-              className={`relative p-6 bg-neutral-900 border rounded-xl transition-all duration-300 text-left group ${selectedTemplate === template.id
-                ? 'border-[brand-cyan] bg-brand-cyan/10'
-                : 'border-neutral-800 hover:border-neutral-700'
-                }`}
+              className={`relative p-6 bg-neutral-900 border rounded-xl transition-all duration-300 text-left group ${
+                selectedTemplate === template.id
+                  ? 'border-[brand-cyan] bg-brand-cyan/10'
+                  : 'border-neutral-800 hover:border-neutral-700'
+              }`}
             >
               {selectedTemplate === template.id && (
                 <div className="absolute top-4 right-4 w-6 h-6 bg-brand-cyan rounded-md flex items-center justify-center">
@@ -223,9 +229,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                   {getTemplateDisplayName(template.id, template.name)}
                 </h3>
               )}
-              <p className="text-sm text-neutral-400 font-mono">
-                {template.description}
-              </p>
+              <p className="text-sm text-neutral-400 font-mono">{template.description}</p>
             </Button>
           ))}
         </div>
@@ -267,13 +271,17 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-4">
-                      <Button variant="ghost" onClick={() => handleEditPreset(presetId)}
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleEditPreset(presetId)}
                         className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       >
                         <Edit size={14} />
                         {t('common.edit')}
                       </Button>
-                      <Button variant="ghost" onClick={(e) => handleDeletePresetClick(presetId, e)}
+                      <Button
+                        variant="ghost"
+                        onClick={(e) => handleDeletePresetClick(presetId, e)}
                         disabled={deletingPresetId === presetId}
                         className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
@@ -329,13 +337,17 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                     </p>
                   </div>
                   <div className="flex items-center gap-2 mt-4">
-                    <Button variant="ghost" onClick={() => handleEditBudget(budget._id)}
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleEditBudget(budget._id)}
                       className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                     >
                       <Edit size={14} />
                       {t('common.edit')}
                     </Button>
-                    <Button variant="ghost" onClick={(e) => handleDeleteBudgetClick(budget._id, e)}
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => handleDeleteBudgetClick(budget._id, e)}
                       disabled={deletingBudgetId === budget._id}
                       className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
@@ -362,7 +374,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
         }}
         onConfirm={handleDeletePresetConfirm}
         title={t('budget.confirmDeletePresetTitle') || 'Excluir Template'}
-        message={t('budget.confirmDeletePreset') || 'Tem certeza que deseja excluir este template? Esta ação não pode ser desfeita.'}
+        message={
+          t('budget.confirmDeletePreset') ||
+          'Tem certeza que deseja excluir este template? Esta ação não pode ser desfeita.'
+        }
         confirmText={t('common.delete') || 'Excluir'}
         cancelText={t('common.cancel') || 'Cancelar'}
         variant="danger"
@@ -377,7 +392,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
         }}
         onConfirm={handleDeleteBudgetConfirm}
         title={t('budget.confirmDeleteTitle') || 'Excluir Orçamento'}
-        message={t('budget.confirmDelete') || 'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.'}
+        message={
+          t('budget.confirmDelete') ||
+          'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.'
+        }
         confirmText={t('common.delete') || 'Excluir'}
         cancelText={t('common.cancel') || 'Cancelar'}
         variant="danger"
@@ -385,4 +403,3 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     </div>
   );
 };
-

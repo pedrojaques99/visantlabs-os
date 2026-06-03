@@ -3,7 +3,7 @@ import { CheckCircle2, Circle } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { PdfFieldMapping } from '@/types/types';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface VariableThumbnailProps {
   fieldId: string;
@@ -24,13 +24,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
   mapping,
   instanceCount = 0,
 }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    isDragging,
-  } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `variable-${fieldId}`,
     data: {
       type: 'variable',
@@ -69,14 +63,17 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
   };
 
   return (
-    <Button variant="ghost"
+    <Button
+      variant="ghost"
       ref={setNodeRef}
       style={style}
       {...listeners}
       {...attributes}
       onClick={onClick}
       className={`relative p-4 rounded-md border-2 transition-all duration-200 flex flex-col items-center gap-2 min-h-[100px] w-full cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${getStatusStyles()}`}
-      aria-label={`Variável ${label}${instanceCount > 0 ? `, ${instanceCount} instância${instanceCount > 1 ? 's' : ''}` : ''}`}
+      aria-label={`Variável ${label}${
+        instanceCount > 0 ? `, ${instanceCount} instância${instanceCount > 1 ? 's' : ''}` : ''
+      }`}
       role="button"
     >
       {icon && <div className="text-2xl">{icon}</div>}
@@ -91,12 +88,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
           {mapping.page ? `Página ${mapping.page}` : 'Clique para adicionar'}
         </span>
       )}
-      {getStatusIcon() && (
-        <div className="absolute top-2 right-2">
-          {getStatusIcon()}
-        </div>
-      )}
+      {getStatusIcon() && <div className="absolute top-2 right-2">{getStatusIcon()}</div>}
     </Button>
   );
 };
-

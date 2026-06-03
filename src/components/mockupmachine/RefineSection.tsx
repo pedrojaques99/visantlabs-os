@@ -6,9 +6,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import type { DesignType } from '@/types/types';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
-import { Button } from '@/components/ui/button'
-import { MicroTitle } from '@/components/ui/MicroTitle'
-
+import { Button } from '@/components/ui/button';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 
 interface RefineSectionProps {
   isAdvancedOpen: boolean;
@@ -119,12 +118,12 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
     value,
     onChange,
     label,
-    className = ""
+    className = '',
   }: {
-    value: boolean,
-    onChange: (val: boolean) => void,
-    label: string,
-    className?: string
+    value: boolean;
+    onChange: (val: boolean) => void;
+    label: string;
+    className?: string;
   }) => (
     <div
       className={cn(
@@ -137,25 +136,38 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
     >
       <div
         className={cn(
-          "w-3.5 h-3.5 rounded flex items-center justify-center border transition-all duration-200 shrink-0",
+          'w-3.5 h-3.5 rounded flex items-center justify-center border transition-all duration-200 shrink-0',
           value
             ? 'bg-brand-cyan/80 border-brand-cyan'
             : theme === 'dark'
-              ? 'bg-neutral-700 border-neutral-600'
-              : 'bg-white border-neutral-400'
+            ? 'bg-neutral-700 border-neutral-600'
+            : 'bg-white border-neutral-400'
         )}
       >
         {value && (
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-black"
+          >
             <polyline points="20 6 9 17 4 12" />
           </svg>
         )}
       </div>
       <SkeletonText loading={isGenerating} className="min-w-0">
-        <label className={cn(
-          "text-[10px] font-mono select-none cursor-pointer",
-          theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-        )}>
+        <label
+          className={cn(
+            'text-[10px] font-mono select-none cursor-pointer',
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          )}
+        >
           {label}
         </label>
       </SkeletonText>
@@ -167,9 +179,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
     const handlePaletteColorSelected = (event: Event) => {
       const customEvent = event as CustomEvent;
       const color =
-        typeof customEvent.detail === 'string'
-          ? customEvent.detail
-          : customEvent.detail?.color;
+        typeof customEvent.detail === 'string' ? customEvent.detail : customEvent.detail?.color;
 
       if (!color) return;
 
@@ -218,10 +228,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
         'mockup:paletteColorSelected',
         handlePaletteColorSelected as EventListener
       );
-      window.addEventListener(
-        'mockup:openColorPicker',
-        handleOpenColorPicker as EventListener
-      );
+      window.addEventListener('mockup:openColorPicker', handleOpenColorPicker as EventListener);
     }
 
     return () => {
@@ -244,32 +251,57 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
         <AdvancedOptions {...advancedOptionsProps} isGenerating={isGenerating} />
 
         {/* Color Palette Panel (collapsible) */}
-        <div className={`mt-2 rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800' : 'bg-white/50 border-neutral-200'}`}>
-          <Button variant="ghost" onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
+        <div
+          className={`mt-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+            theme === 'dark'
+              ? 'bg-neutral-900/30 border-neutral-800'
+              : 'bg-white/50 border-neutral-200'
+          }`}
+        >
+          <Button
+            variant="ghost"
+            onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
+            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+              theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
+            }`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <PaletteIcon size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+              <PaletteIcon
+                size={14}
+                className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+              />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
-                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+                  <span
+                    className={`text-[10px] font-mono uppercase tracking-widest ${
+                      theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+                    }`}
+                  >
                     {t('mockup.colorPalette')}
                   </span>
                 </SkeletonText>
                 {!isColorPaletteExpanded && selectedColors.length > 0 && (
                   <span className="text-[10px] font-mono truncate max-w-[200px] text-brand-cyan">
-                    {selectedColors.map(color => color).join(', ')}
+                    {selectedColors.map((color) => color).join(', ')}
                   </span>
                 )}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <SkeletonText loading={isGenerating}>
-                <span className={`text-[10px] font-mono ${theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500'}`}>
+                <span
+                  className={`text-[10px] font-mono ${
+                    theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500'
+                  }`}
+                >
                   {selectedColors.length}/{5}
                 </span>
               </SkeletonText>
-              {isColorPaletteExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+              {isColorPaletteExpanded ? (
+                <ChevronUp size={16} className="text-neutral-500" />
+              ) : (
+                <ChevronDown size={16} className="text-neutral-500" />
+              )}
             </div>
           </Button>
 
@@ -277,24 +309,33 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
             <div className="p-3 pt-0 animate-fade-in">
               {/* Selected Colors */}
               <div className="flex flex-wrap gap-1.5 mt-2">
-                {selectedColors.map(color => (
+                {selectedColors.map((color) => (
                   <div
                     key={color}
                     onClick={() => onRemoveColor(color)}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-all duration-200 text-[10px] font-mono group ${theme === 'dark'
-                      ? 'border-neutral-700/40 bg-neutral-900/60 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600'
-                      : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'
-                      }`}
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-all duration-200 text-[10px] font-mono group ${
+                      theme === 'dark'
+                        ? 'border-neutral-700/40 bg-neutral-900/60 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600'
+                        : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'
+                    }`}
                     title={`Click to remove: ${color}`}
                   >
-                    <span className="w-3.5 h-3.5 rounded-full border border-white/10" style={{ backgroundColor: color }} />
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-white/10"
+                      style={{ backgroundColor: color }}
+                    />
                     <span className="truncate max-w-[72px]">{color}</span>
-                    <X size={10} className={`opacity-0 group-hover:opacity-100 transition-opacity ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`} />
+                    <X
+                      size={10}
+                      className={`opacity-0 group-hover:opacity-100 transition-opacity ${
+                        theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
+                      }`}
+                    />
                   </div>
                 ))}
 
                 {/* Suggested Colors */}
-                {suggestedColors.slice(0, Math.max(0, 5 - selectedColors.length)).map(color => {
+                {suggestedColors.slice(0, Math.max(0, 5 - selectedColors.length)).map((color) => {
                   const isSelected = selectedColors.includes(color);
                   if (isSelected) return null;
 
@@ -309,14 +350,19 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                           onAddColor();
                         }
                       }}
-                      className={`w-4 h-4 rounded-full border cursor-pointer transition-all duration-200 ${selectedColors.length >= 5
-                        ? 'opacity-50 cursor-not-allowed'
-                        : theme === 'dark'
+                      className={`w-4 h-4 rounded-full border cursor-pointer transition-all duration-200 ${
+                        selectedColors.length >= 5
+                          ? 'opacity-50 cursor-not-allowed'
+                          : theme === 'dark'
                           ? 'border-neutral-700/40 hover:border-neutral-500 hover:scale-110'
                           : 'border-neutral-300 hover:border-neutral-400 hover:scale-110'
-                        }`}
+                      }`}
                       style={{ backgroundColor: color }}
-                      title={selectedColors.length >= 5 ? 'Maximum 5 colors reached' : `Click to add: ${color}`}
+                      title={
+                        selectedColors.length >= 5
+                          ? 'Maximum 5 colors reached'
+                          : `Click to add: ${color}`
+                      }
                     />
                   );
                 })}
@@ -336,11 +382,14 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                       }}
                       className="hidden"
                     />
-                    <Button variant="ghost" onClick={() => colorPickerRef.current?.click()}
-                      className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-all duration-200 ${theme === 'dark'
-                        ? 'border-neutral-700/40 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-800/50'
-                        : 'border-neutral-300 text-neutral-500 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-100'
-                        }`}
+                    <Button
+                      variant="ghost"
+                      onClick={() => colorPickerRef.current?.click()}
+                      className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-all duration-200 ${
+                        theme === 'dark'
+                          ? 'border-neutral-700/40 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-800/50'
+                          : 'border-neutral-300 text-neutral-500 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-100'
+                      }`}
                       title="Add new color"
                     >
                       <Plus size={14} />
@@ -382,5 +431,3 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
     </section>
   );
 };
-
-

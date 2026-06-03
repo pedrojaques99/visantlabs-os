@@ -23,8 +23,12 @@ import { getPreviewDimensions } from './lib/formatDimensions';
 import { isPersistedId } from './lib/layerUtils';
 import { Link } from 'react-router-dom';
 import {
-  BreadcrumbWithBack, BreadcrumbItem, BreadcrumbLink,
-  BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator
+  BreadcrumbWithBack,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from '@/components/ui/BreadcrumbWithBack';
 import { toast } from 'sonner';
 
@@ -61,7 +65,7 @@ export const CreativeStudio: React.FC = () => {
   const [previewSize, setPreviewSize] = React.useState({ width: 0, height: 0 });
   const [cheatsheetOpen, setCheatsheetOpen] = React.useState(false);
 
-  const currentGuideline = allGuidelines.find(g => g.id === brandId);
+  const currentGuideline = allGuidelines.find((g) => g.id === brandId);
   const accentColor = currentGuideline?.colors?.[0]?.hex ?? colors[0]?.hex ?? '#00e5ff';
   const defaultFont = currentGuideline?.typography?.[0]?.family ?? 'Inter, sans-serif';
 
@@ -96,13 +100,19 @@ export const CreativeStudio: React.FC = () => {
 
       if (isTyping) return;
 
-      if ((e.ctrlKey || e.metaKey)) {
-        if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-        if ((e.shiftKey && e.key === 'z') || e.key === 'y') { e.preventDefault(); redo(); }
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          undo();
+        }
+        if ((e.shiftKey && e.key === 'z') || e.key === 'y') {
+          e.preventDefault();
+          redo();
+        }
         if (e.key === 'd' && selectedLayerIds.length > 0) {
           e.preventDefault();
           const { duplicateLayer } = useCreativeStore.getState();
-          selectedLayerIds.forEach(id => duplicateLayer(id));
+          selectedLayerIds.forEach((id) => duplicateLayer(id));
           toast.info(`${selectedLayerIds.length} layers duplicados`);
         }
         if (e.key === 'g' && !e.shiftKey && selectedLayerIds.length > 1) {
@@ -127,13 +137,20 @@ export const CreativeStudio: React.FC = () => {
         }
         if (e.key === 'a') {
           e.preventDefault();
-          const all = useCreativeStore.getState().layers.filter((l) => !l.locked).map((l) => l.id);
+          const all = useCreativeStore
+            .getState()
+            .layers.filter((l) => !l.locked)
+            .map((l) => l.id);
           setSelectedLayerIds(all);
         }
         // Page navigation: Ctrl+] / Ctrl+[ — next / prev page
         if (e.key === ']' && !e.shiftKey) {
           e.preventDefault();
-          const { activePageIndex: idx, pages: pgs, setActivePageIndex: setIdx } = useCreativeStore.getState();
+          const {
+            activePageIndex: idx,
+            pages: pgs,
+            setActivePageIndex: setIdx,
+          } = useCreativeStore.getState();
           if (idx + 1 < pgs.length) setIdx(idx + 1);
         }
         if (e.key === '[' && !e.shiftKey) {
@@ -162,16 +179,19 @@ export const CreativeStudio: React.FC = () => {
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedLayerIds.length > 0) {
         e.preventDefault();
-        selectedLayerIds.forEach(id => removeLayer(id));
+        selectedLayerIds.forEach((id) => removeLayer(id));
       }
 
       // Arrow nudge — 1px (default) / 10px (shift). Skips locked layers.
       if (
-        (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') &&
+        (e.key === 'ArrowLeft' ||
+          e.key === 'ArrowRight' ||
+          e.key === 'ArrowUp' ||
+          e.key === 'ArrowDown') &&
         selectedLayerIds.length > 0
       ) {
         e.preventDefault();
-        const step = (e.shiftKey ? 10 : 1);
+        const step = e.shiftKey ? 10 : 1;
         const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
         const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
         const { layers: cur, updateLayer } = useCreativeStore.getState();
@@ -191,7 +211,17 @@ export const CreativeStudio: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, selectedLayerIds, setSelectedLayerIds, removeLayer, groupSelected, ungroupSelected, previewSize.width, previewSize.height]);
+  }, [
+    undo,
+    redo,
+    selectedLayerIds,
+    setSelectedLayerIds,
+    removeLayer,
+    groupSelected,
+    ungroupSelected,
+    previewSize.width,
+    previewSize.height,
+  ]);
 
   const handleExport = async () => {
     if (!canvasRef.current) return;
@@ -211,7 +241,17 @@ export const CreativeStudio: React.FC = () => {
   const isEditing = status === 'editing';
 
   const autoSaveData = useMemo(
-    () => ({ projectName, prompt, format, brandId, backgroundUrl, overlay, layers, pages, activePageIndex }),
+    () => ({
+      projectName,
+      prompt,
+      format,
+      brandId,
+      backgroundUrl,
+      overlay,
+      layers,
+      pages,
+      activePageIndex,
+    }),
     [projectName, prompt, format, brandId, backgroundUrl, overlay, layers, pages, activePageIndex]
   );
 
@@ -279,7 +319,9 @@ export const CreativeStudio: React.FC = () => {
           <BreadcrumbWithBack to="/create/projects">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink asChild><Link to="/create/projects">Creative Projects</Link></BreadcrumbLink>
+                <BreadcrumbLink asChild>
+                  <Link to="/create/projects">Creative Projects</Link>
+                </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -291,13 +333,25 @@ export const CreativeStudio: React.FC = () => {
           {status === 'editing' && (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-px bg-neutral-900/60 border border-white/10 rounded-full p-1">
-                <button disabled className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed" title="Em breve">
+                <button
+                  disabled
+                  className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed"
+                  title="Em breve"
+                >
                   <Paintbrush size={12} className="text-neutral-700" /> Variar Cores
                 </button>
-                <button disabled className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed" title="Em breve">
+                <button
+                  disabled
+                  className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed"
+                  title="Em breve"
+                >
                   <ImageIcon size={12} className="text-neutral-700" /> Variar Imagens
                 </button>
-                <button disabled className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed" title="Em breve">
+                <button
+                  disabled
+                  className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed"
+                  title="Em breve"
+                >
                   <TypeIcon size={12} className="text-neutral-700" /> Variar Copy
                 </button>
               </div>
@@ -334,21 +388,20 @@ export const CreativeStudio: React.FC = () => {
             }
           }}
         >
-
-        {status === 'generating' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50 bg-black/80 backdrop-blur-xl animate-in fade-in">
-            <div className="p-8 rounded-3xl bg-neutral-900/40 border border-neutral-800 shadow-2xl flex flex-col items-center gap-6 min-w-[320px]">
-              <PremiumGlitchLoader className="w-full" />
+          {status === 'generating' && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50 bg-black/80 backdrop-blur-xl animate-in fade-in">
+              <div className="p-8 rounded-3xl bg-neutral-900/40 border border-neutral-800 shadow-2xl flex flex-col items-center gap-6 min-w-[320px]">
+                <PremiumGlitchLoader className="w-full" />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {status === 'setup' && previewSize.width > 0 && (
-          <div
-            className="border border-dashed border-white/10 rounded-lg bg-neutral-900/20"
-            style={{ width: previewSize.width, height: previewSize.height }}
-          />
-        )}
+          {status === 'setup' && previewSize.width > 0 && (
+            <div
+              className="border border-dashed border-white/10 rounded-lg bg-neutral-900/20"
+              style={{ width: previewSize.width, height: previewSize.height }}
+            />
+          )}
 
           {/* ── Single canvas — viewport drives multi-page via active page ── */}
           {status === 'editing' && previewSize.width > 0 && (

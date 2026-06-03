@@ -14,13 +14,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
+} from '../components/ui/BreadcrumbWithBack';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
 import { FileText, Calendar, Eye, Trash2, FilePenLine } from 'lucide-react';
 import { SEO } from '../components/SEO';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { formatDateShort } from '@/utils/localeUtils';
 
 export const MyBrandingsPage: React.FC = () => {
@@ -52,7 +52,9 @@ export const MyBrandingsPage: React.FC = () => {
       if (error?.status === 401) {
         setShowAuthModal(true);
       } else {
-        toast.error(t('branding.myBrandings.errors.failedToLoad') || 'Failed to load branding projects');
+        toast.error(
+          t('branding.myBrandings.errors.failedToLoad') || 'Failed to load branding projects'
+        );
       }
     } finally {
       setIsLoading(false);
@@ -79,7 +81,7 @@ export const MyBrandingsPage: React.FC = () => {
     setDeletingId(projectToDelete);
     try {
       await brandingApi.delete(projectToDelete);
-      setProjects(prev => prev.filter(p => p._id !== projectToDelete));
+      setProjects((prev) => prev.filter((p) => p._id !== projectToDelete));
       toast.success(t('branding.myBrandings.deleted') || 'Project deleted successfully');
     } catch (error: any) {
       console.error('Error deleting project:', error);
@@ -101,8 +103,7 @@ export const MyBrandingsPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
-        <div className="fixed inset-0 z-0">
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -125,8 +126,7 @@ export const MyBrandingsPage: React.FC = () => {
         noindex={true}
       />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0">
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Breadcrumb with Back Button */}
           <div className="mb-6">
@@ -162,7 +162,9 @@ export const MyBrandingsPage: React.FC = () => {
                   : `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`}
               </p>
             </div>
-            <Button variant="ghost" onClick={() => navigate('/branding-machine')}
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/branding-machine')}
               className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer flex-shrink-0"
             >
               <FilePenLine className="h-4 w-4" />
@@ -178,7 +180,8 @@ export const MyBrandingsPage: React.FC = () => {
                 {t('branding.myBrandings.emptyTitle') || 'NO PROJECTS YET'}
               </h2>
               <p className="text-sm text-neutral-600 font-mono mb-6">
-                {t('branding.myBrandings.emptyDescription') || 'Create your first branding project to see it here.'}
+                {t('branding.myBrandings.emptyDescription') ||
+                  'Create your first branding project to see it here.'}
               </p>
               <PremiumButton
                 onClick={() => navigate('/branding-machine')}
@@ -202,7 +205,9 @@ export const MyBrandingsPage: React.FC = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-brand-cyan" />
                         <h3 className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2">
-                          {project.name ? truncateText(project.name, 60) : truncateText(project.prompt, 60)}
+                          {project.name
+                            ? truncateText(project.name, 60)
+                            : truncateText(project.prompt, 60)}
                         </h3>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
@@ -217,16 +222,20 @@ export const MyBrandingsPage: React.FC = () => {
                   </p>
 
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={(e) => {
-                      e.stopPropagation();
-                      handleView(project);
-                    }}
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(project);
+                      }}
                       className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('branding.myBrandings.view') || 'View'}
                     </Button>
-                    <Button variant="ghost" onClick={(e) => handleDeleteClick(project._id, e)}
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
                       className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
@@ -270,4 +279,3 @@ export const MyBrandingsPage: React.FC = () => {
     </>
   );
 };
-

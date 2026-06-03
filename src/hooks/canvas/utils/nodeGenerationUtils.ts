@@ -1,6 +1,6 @@
 /**
  * nodeGenerationUtils
- * 
+ *
  * Utilitários compartilhados para criação de output nodes e validação de créditos
  */
 
@@ -63,18 +63,22 @@ export const createOutputNodeWithSkeleton = (
  */
 export const cleanupFailedNode = (
   nodeId: string | null,
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void
 ) => {
   if (!nodeId) return;
-  setNodes((nds: Node<FlowNodeData>[]) => nds.filter(n => n.id !== nodeId));
-  setEdges((eds: Edge[]) => eds.filter(e => e.target !== nodeId && e.source !== nodeId));
+  setNodes((nds: Node<FlowNodeData>[]) => nds.filter((n) => n.id !== nodeId));
+  setEdges((eds: Edge[]) => eds.filter((e) => e.target !== nodeId && e.source !== nodeId));
 };
 
 /**
  * Normalize images to UploadedImage array
  */
-export const normalizeImagesToUploadedImages = async (images: string[]): Promise<UploadedImage[]> => {
+export const normalizeImagesToUploadedImages = async (
+  images: string[]
+): Promise<UploadedImage[]> => {
   return Promise.all(
     images.map(async (image) => {
       const base64 = await normalizeImageToBase64(image);
@@ -102,7 +106,9 @@ export const updateOutputNodeWithResult = (
   nodeId: string,
   result: string,
   addToHistoryCallback: () => void,
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void
 ) => {
   setNodes((nds: Node<FlowNodeData>[]) => {
     const updatedNodes = nds.map((n: Node<FlowNodeData>) => {
@@ -114,12 +120,11 @@ export const updateOutputNodeWithResult = (
         // 1. Check for standard protocols (http/https)
         // 2. Check for relative paths (/)
         // 3. Check for specific R2/storage patterns if needed
-        const isUrl = safeResult.startsWith('http://') ||
+        const isUrl =
+          safeResult.startsWith('http://') ||
           safeResult.startsWith('https://') ||
           safeResult.startsWith('/') ||
           safeResult.startsWith('./');
-
-
 
         return {
           ...n,
@@ -146,7 +151,9 @@ export const updateOutputNodeWithResult = (
 export const updateOutputNodeWithR2Url = (
   nodeId: string,
   imageUrl: string,
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void
 ) => {
   setNodes((nds: Node<FlowNodeData>[]) => {
     return nds.map((n: Node<FlowNodeData>) => {
@@ -165,4 +172,3 @@ export const updateOutputNodeWithR2Url = (
     });
   });
 };
-

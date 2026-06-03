@@ -46,7 +46,9 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
   onFieldFilled,
 }) => {
   const { t } = useTranslation();
-  const fieldRefs = React.useRef<{ [key: string]: HTMLInputElement | HTMLTextAreaElement | null }>({});
+  const fieldRefs = React.useRef<{ [key: string]: HTMLInputElement | HTMLTextAreaElement | null }>(
+    {}
+  );
 
   // Focus and scroll to field when focusedFieldId changes
   React.useEffect(() => {
@@ -109,13 +111,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
   // Se for template visant, usar VisantBudgetForm
   if (data.template === 'visant') {
-    return (
-      <VisantBudgetForm
-        data={data}
-        onChange={onChange}
-        budgetId={budgetId}
-      />
-    );
+    return <VisantBudgetForm data={data} onChange={onChange} budgetId={budgetId} />;
   }
 
   const updateField = <K extends keyof BudgetData>(field: K, value: BudgetData[K]) => {
@@ -141,7 +137,9 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
               onPositioningModeChange={onPositioningModeChange}
               positioningFieldId={positioningFieldId || null}
               data={data}
-              onFocusFormField={onFocusedFieldChange ? (fieldId) => onFocusedFieldChange(fieldId) : undefined}
+              onFocusFormField={
+                onFocusedFieldChange ? (fieldId) => onFocusedFieldChange(fieldId) : undefined
+              }
             />
           )}
         </div>
@@ -160,12 +158,18 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             {t('budget.clientName')} *
           </label>
           <FormInput
-            ref={(el) => { fieldRefs.current['clientName'] = el; }}
+            ref={(el) => {
+              fieldRefs.current['clientName'] = el;
+            }}
             value={data.clientName}
             onChange={(e) => updateField('clientName', e.target.value)}
             placeholder={t('budget.placeholders.clientName')}
             required
-            className={focusedFieldId === 'clientName' ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={
+              focusedFieldId === 'clientName'
+                ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]'
+                : ''
+            }
           />
         </div>
 
@@ -174,12 +178,18 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             {t('budget.projectName')} *
           </label>
           <FormInput
-            ref={(el) => { fieldRefs.current['projectName'] = el; }}
+            ref={(el) => {
+              fieldRefs.current['projectName'] = el;
+            }}
             value={data.projectName}
             onChange={(e) => updateField('projectName', e.target.value)}
             placeholder={t('budget.placeholders.projectName')}
             required
-            className={focusedFieldId === 'projectName' ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={
+              focusedFieldId === 'projectName'
+                ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]'
+                : ''
+            }
           />
         </div>
 
@@ -188,13 +198,19 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             {t('budget.projectDescription')} *
           </label>
           <FormTextarea
-            ref={(el) => { fieldRefs.current['projectDescription'] = el; }}
+            ref={(el) => {
+              fieldRefs.current['projectDescription'] = el;
+            }}
             value={data.projectDescription}
             onChange={(e) => updateField('projectDescription', e.target.value)}
             placeholder={t('budget.placeholders.projectDescription')}
             rows={4}
             required
-            className={focusedFieldId === 'projectDescription' ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={
+              focusedFieldId === 'projectDescription'
+                ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]'
+                : ''
+            }
           />
         </div>
 
@@ -220,26 +236,26 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
           {t('budget.observations')}
         </label>
         <FormTextarea
-          ref={(el) => { fieldRefs.current['observations'] = el; }}
+          ref={(el) => {
+            fieldRefs.current['observations'] = el;
+          }}
           value={data.observations || ''}
           onChange={(e) => updateField('observations', e.target.value)}
           placeholder={t('budget.placeholders.observations')}
           rows={4}
-          className={focusedFieldId === 'observations' ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+          className={
+            focusedFieldId === 'observations'
+              ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]'
+              : ''
+          }
         />
       </div>
 
       {/* Links */}
-      <LinksSection
-        links={data.links}
-        onChange={(links) => updateField('links', links)}
-      />
+      <LinksSection links={data.links} onChange={(links) => updateField('links', links)} />
 
       {/* FAQ */}
-      <FAQSection
-        faq={data.faq}
-        onChange={(faq) => updateField('faq', faq)}
-      />
+      <FAQSection faq={data.faq} onChange={(faq) => updateField('faq', faq)} />
 
       {/* Custom PDF Section */}
       <div className="space-y-6 rounded-xl p-6 bg-neutral-900 border border-neutral-800">
@@ -256,11 +272,12 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             onPositioningModeChange={onPositioningModeChange}
             positioningFieldId={positioningFieldId || null}
             data={data}
-            onFocusFormField={onFocusedFieldChange ? (fieldId) => onFocusedFieldChange(fieldId) : undefined}
+            onFocusFormField={
+              onFocusedFieldChange ? (fieldId) => onFocusedFieldChange(fieldId) : undefined
+            }
           />
         )}
       </div>
     </div>
   );
 };
-

@@ -61,11 +61,7 @@ const COMPLEXITY_INDICATORS = {
 };
 
 // Template indicators
-const TEMPLATE_PATTERNS = [
-  /\[template\]/i,
-  /\btemplate\b/i,
-  /\bmodelo\b/i,
-];
+const TEMPLATE_PATTERNS = [/\[template\]/i, /\btemplate\b/i, /\bmodelo\b/i];
 
 // Chart/Data visualization indicators
 const CHART_PATTERNS = [
@@ -76,17 +72,12 @@ const CHART_PATTERNS = [
 ];
 
 // Dimension requirement indicators (when format is unknown)
-const NEEDS_DIMENSIONS_PATTERNS = [
-  /\b(banner|flyer|poster|cartaz|outdoor|card|modal|popup)\b/i,
-];
+const NEEDS_DIMENSIONS_PATTERNS = [/\b(banner|flyer|poster|cartaz|outdoor|card|modal|popup)\b/i];
 
 /**
  * Classify user intent from prompt
  */
-export function classifyIntent(
-  prompt: string,
-  hasSelection: boolean = false,
-): ClassifiedIntent {
+export function classifyIntent(prompt: string, hasSelection: boolean = false): ClassifiedIntent {
   const normalized = prompt.toLowerCase();
   const keywords: string[] = [];
 
@@ -135,19 +126,19 @@ export function classifyIntent(
   }
 
   // Check if template-related
-  const isTemplate = TEMPLATE_PATTERNS.some(p => p.test(normalized));
+  const isTemplate = TEMPLATE_PATTERNS.some((p) => p.test(normalized));
 
   // Check if chart/data visualization
-  const isChart = CHART_PATTERNS.some(p => p.test(normalized));
+  const isChart = CHART_PATTERNS.some((p) => p.test(normalized));
 
   // Check if color specification request
-  const isColorSpec = COLOR_SPEC_PATTERNS.some(p => p.test(normalized));
+  const isColorSpec = COLOR_SPEC_PATTERNS.some((p) => p.test(normalized));
 
   // Check if needs dimensions (unknown format + dimension-needing keywords)
   const needsDimensions =
     format === 'unknown' &&
     intent === 'create' &&
-    NEEDS_DIMENSIONS_PATTERNS.some(p => p.test(normalized));
+    NEEDS_DIMENSIONS_PATTERNS.some((p) => p.test(normalized));
 
   // Calculate confidence
   const confidence = Math.min(0.95, 0.5 + maxMatches * 0.15 + (format !== 'unknown' ? 0.2 : 0));
@@ -191,7 +182,7 @@ export function isChatOnly(prompt: string): boolean {
 
   // Very short messages are usually chat — unless they match known design actions
   if (normalized.length < 10) {
-    if (SHORT_ACTION_PATTERNS.some(p => p.test(normalized))) return false;
+    if (SHORT_ACTION_PATTERNS.some((p) => p.test(normalized))) return false;
     return true;
   }
 
@@ -231,7 +222,7 @@ export async function refineIntentWithLLM(
   baseIntent: ClassifiedIntent,
   prompt: string,
   selectionNames: string[],
-  llmCall: (systemPrompt: string, userPrompt: string) => Promise<string>,
+  llmCall: (systemPrompt: string, userPrompt: string) => Promise<string>
 ): Promise<EnrichedIntent> {
   if (baseIntent.confidence >= LLM_CONFIDENCE_THRESHOLD) {
     return { ...baseIntent, llmRefined: false };
@@ -242,7 +233,10 @@ export async function refineIntentWithLLM(
 {"intent":"create"|"edit"|"clone"|"arrange"|"chat","sourceFrame":"name or null","cloneCount":number|null,"modifications":["list of changes"]|null}`;
 
     const user = `Command: "${prompt}"
-Selected frames: [${selectionNames.slice(0, 5).map(n => `"${n}"`).join(', ')}]`;
+Selected frames: [${selectionNames
+      .slice(0, 5)
+      .map((n) => `"${n}"`)
+      .join(', ')}]`;
 
     const result = await llmCall(system, user);
     const parsed = JSON.parse(result);

@@ -27,7 +27,7 @@ export const NodeActionBar: React.FC<NodeActionBarProps> = ({
       style={{
         transform: `translateX(-50%) scale(${scale})`,
         transformOrigin: 'top center',
-        marginTop: 'var(--node-margin)'
+        marginTop: 'var(--node-margin)',
       }}
     >
       {children}

@@ -6,8 +6,8 @@ import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export const ForgotPasswordPage: React.FC = () => {
   const { t } = useTranslation();
@@ -23,7 +23,9 @@ export const ForgotPasswordPage: React.FC = () => {
 
   useEffect(() => {
     if (!token) {
-      setError(t('auth.invalidResetLink') || 'Invalid reset link. Please request a new password reset.');
+      setError(
+        t('auth.invalidResetLink') || 'Invalid reset link. Please request a new password reset.'
+      );
     }
   }, [token, t]);
 
@@ -51,7 +53,9 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       await authService.resetPassword(token, password);
       setIsSuccess(true);
-      toast.success(t('auth.passwordResetSuccess') || 'Password reset successfully!', { duration: 3000 });
+      toast.success(t('auth.passwordResetSuccess') || 'Password reset successfully!', {
+        duration: 3000,
+      });
 
       // Redirect to home after 2 seconds
       setTimeout(() => {
@@ -66,9 +70,14 @@ export const ForgotPasswordPage: React.FC = () => {
         errorMessage.includes('NetworkError') ||
         error.name === 'TypeError'
       ) {
-        setError('Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all');
+        setError(
+          'Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all'
+        );
       } else if (errorMessage.includes('expired') || errorMessage.includes('Invalid')) {
-        setError(t('auth.invalidOrExpiredToken') || 'Invalid or expired token. Please request a new password reset.');
+        setError(
+          t('auth.invalidOrExpiredToken') ||
+            'Invalid or expired token. Please request a new password reset.'
+        );
       } else {
         setError(error.message || 'Failed to reset password. Please try again.');
       }
@@ -80,7 +89,6 @@ export const ForgotPasswordPage: React.FC = () => {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-
         <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-green-500/20 mb-4">
@@ -101,7 +109,6 @@ export const ForgotPasswordPage: React.FC = () => {
   if (!token) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-
         <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-destructive/20 mb-4">
@@ -111,9 +118,11 @@ export const ForgotPasswordPage: React.FC = () => {
               {t('auth.invalidResetLink') || 'Invalid Reset Link'}
             </h1>
             <p className="text-sm text-neutral-400 font-mono mb-4">
-              {t('auth.invalidResetLinkMessage') || 'This password reset link is invalid or has expired. Please request a new password reset.'}
+              {t('auth.invalidResetLinkMessage') ||
+                'This password reset link is invalid or has expired. Please request a new password reset.'}
             </p>
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={() => navigate('/')}
               className="px-4 py-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold rounded-md transition-all duration-200 text-sm font-mono"
             >
@@ -127,7 +136,6 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-
       <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
         <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-brand-cyan/20">
           <Lock className="w-8 h-8 text-brand-cyan" />
@@ -180,7 +188,8 @@ export const ForgotPasswordPage: React.FC = () => {
             </div>
           )}
 
-          <Button variant="brand"
+          <Button
+            variant="brand"
             type="submit"
             disabled={isLoading || !password || !confirmPassword}
             className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"

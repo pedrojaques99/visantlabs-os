@@ -94,9 +94,9 @@ export function useNodeResize() {
    */
   const fitToContent = useCallback(
     (
-      nodeId: string, 
-      width: number | 'auto', 
-      height: number | 'auto', 
+      nodeId: string,
+      width: number | 'auto',
+      height: number | 'auto',
       onResize?: (nodeId: string, width: number, height: number) => void,
       measuredWidth?: number,
       measuredHeight?: number
@@ -125,9 +125,9 @@ export function useNodeResize() {
 
       // If dimensions are numeric (passed as main args or as measured extras), call onResize callback
       if (onResize) {
-        const finalWidth = typeof width === 'number' ? width : (measuredWidth || 0);
-        const finalHeight = typeof height === 'number' ? height : (measuredHeight || 0);
-        
+        const finalWidth = typeof width === 'number' ? width : measuredWidth || 0;
+        const finalHeight = typeof height === 'number' ? height : measuredHeight || 0;
+
         if (finalWidth > 0 || finalHeight > 0) {
           onResize(nodeId, finalWidth, finalHeight);
         }
@@ -138,4 +138,3 @@ export function useNodeResize() {
 
   return { handleResize, fitToContent };
 }
-

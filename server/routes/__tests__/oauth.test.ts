@@ -224,15 +224,13 @@ describe('OAuth 2.1 MCP Flow', () => {
       const { default: router } = await import('../oauth.js');
       const { request } = await setupApp(router);
 
-      const res = await request.post('/oauth/authorize')
-        .type('form')
-        .send({
-          action: 'deny',
-          client_id: 'test-client',
-          redirect_uri: 'http://127.0.0.1:8080/callback',
-          code_challenge: 'abc',
-          state: 'my-state',
-        });
+      const res = await request.post('/oauth/authorize').type('form').send({
+        action: 'deny',
+        client_id: 'test-client',
+        redirect_uri: 'http://127.0.0.1:8080/callback',
+        code_challenge: 'abc',
+        state: 'my-state',
+      });
 
       expect(res.status).toBe(302);
       expect(res.headers.location).toContain('error=access_denied');
@@ -252,19 +250,17 @@ describe('OAuth 2.1 MCP Flow', () => {
 
       const userToken = makeUserJwt('user-456');
 
-      const res = await request.post('/oauth/authorize')
-        .type('form')
-        .send({
-          action: 'approve',
-          client_id: clientId,
-          redirect_uri: 'http://127.0.0.1:8080/callback',
-          code_challenge: 'some-challenge',
-          code_challenge_method: 'S256',
-          state: 'my-state',
-          scopes: 'read write generate',
-          resource: 'https://api.visantlabs.com/api/mcp',
-          token: userToken,
-        });
+      const res = await request.post('/oauth/authorize').type('form').send({
+        action: 'approve',
+        client_id: clientId,
+        redirect_uri: 'http://127.0.0.1:8080/callback',
+        code_challenge: 'some-challenge',
+        code_challenge_method: 'S256',
+        state: 'my-state',
+        scopes: 'read write generate',
+        resource: 'https://api.visantlabs.com/api/mcp',
+        token: userToken,
+      });
 
       expect(res.status).toBe(302);
       expect(res.headers.location).toContain('code=');

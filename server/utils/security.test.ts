@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import {
-  validateExternalUrl,
-  validateSafeId,
-  SSRFValidationError,
-} from './securityValidation.js';
+import { validateExternalUrl, validateSafeId, SSRFValidationError } from './securityValidation.js';
 
 describe('Security Validation', () => {
   describe('validateExternalUrl - SSRF Protection', () => {
@@ -165,7 +161,7 @@ describe('Security Validation', () => {
     });
 
     it('should reject SQL injection characters', () => {
-      const result = validateSafeId("1; DROP TABLE users--");
+      const result = validateSafeId('1; DROP TABLE users--');
       expect(result.valid).toBe(false);
     });
 

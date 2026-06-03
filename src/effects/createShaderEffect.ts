@@ -97,10 +97,10 @@ function adaptFragmentShader(originalSource: string): string {
 
   src = src.replace(/precision\s+(lowp|mediump|highp)\s+float\s*;/g, '');
   src = src.replace(/varying\s+vec2\s+v_texCoord\s*;/g, '');
-  
+
   // Remove vertical Y-coordinate flip redundant for Three.js FBO postprocessing
   src = src.replace(/uv\.y\s*=\s*1\.0\s*-\s*uv\.y\s*;(\s*\/\/.*)?/g, '');
-  
+
   // Three.js <common> chunk already defines PI — strip redefinitions to avoid macro collision
   src = src.replace(/^\s*#define\s+PI\s+[\d.]+\s*$/gm, '');
   src = src.replace(/^\s*#ifndef\s+PI[\s\S]*?#endif\s*$/gm, '');
@@ -140,17 +140,15 @@ function adaptFragmentShader(originalSource: string): string {
 
   let mainBody = src.substring(mainStart + mainMatch[0].length, mainEnd - 1);
 
-  const beforeMain = src.substring(0, mainStart)
+  const beforeMain = src
+    .substring(0, mainStart)
     .replace(/uniform\s+vec2\s+iResolution\s*;/g, '')
     .replace(/uniform\s+sampler2D\s+inputBuffer\s*;/g, '')
     .trim();
 
   mainBody = mainBody.replace(/v_texCoord/g, 'vUv');
 
-  mainBody = mainBody.replace(
-    /gl_FragColor\s*=\s*([^;]+);/g,
-    'outputColor = $1;',
-  );
+  mainBody = mainBody.replace(/gl_FragColor\s*=\s*([^;]+);/g, 'outputColor = $1;');
 
   const needsResolution = src.includes('iResolution');
 
@@ -181,7 +179,7 @@ export class DynamicShaderEffect extends Effect {
   constructor(
     shaderType: ShaderType,
     settings: ShaderSettings,
-    halftoneVariant: HalftoneVariant = 'ellipse',
+    halftoneVariant: HalftoneVariant = 'ellipse'
   ) {
     const originalSource = getFragmentSource(shaderType, halftoneVariant);
     const adaptedSource = adaptFragmentShader(originalSource);
@@ -248,16 +246,10 @@ export class DynamicShaderEffect extends Effect {
     }
   }
 
-  update(
-    _renderer: any,
-    _inputBuffer: any,
-    deltaTime?: number,
-    width?: number,
-    height?: number,
-  ) {
+  update(_renderer: any, _inputBuffer: any, deltaTime?: number, width?: number, height?: number) {
     if (this._needsTime) {
       const u = this.uniforms.get('u_time');
-      if (u) u.value += (deltaTime ?? 0.016);
+      if (u) u.value += deltaTime ?? 0.016;
     }
 
     const res = this.uniforms.get('iResolution');

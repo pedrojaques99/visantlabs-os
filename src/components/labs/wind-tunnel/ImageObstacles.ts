@@ -58,7 +58,10 @@ export function rasterizeImageToObstacles(
       for (let y = y0; y < y1 && !hit; y++)
         for (let x = x0; x < x1 && !hit; x++) {
           const idx = (y * canvasWidth + x) * 4;
-          const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
+          const r = data[idx],
+            g = data[idx + 1],
+            b = data[idx + 2],
+            a = data[idx + 3];
           if (a > 128 && (r > 128 || g > 128 || b > 128)) hit = true;
         }
       obs[IX(i, j, N)] = hit;
@@ -71,9 +74,9 @@ export function rasterizeImageToObstacles(
       if (obs[IX(i, j, N)])
         for (let dj = -1; dj <= 1; dj++)
           for (let di = -1; di <= 1; di++) {
-            const ni = i + di, nj = j + dj;
-            if (ni >= 1 && ni <= N && nj >= 1 && nj <= N)
-              dilated[IX(ni, nj, N)] = true;
+            const ni = i + di,
+              nj = j + dj;
+            if (ni >= 1 && ni <= N && nj >= 1 && nj <= N) dilated[IX(ni, nj, N)] = true;
           }
 
   return dilated;

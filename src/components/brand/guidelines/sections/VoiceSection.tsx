@@ -15,21 +15,27 @@ interface VoiceSectionProps {
 export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate, span }) => {
   const values = guideline.strategy?.voiceValues || [];
 
-  const persist = useCallback((next: BrandToneOfVoiceValue[]) => {
-    onUpdate({ strategy: { ...guideline.strategy, voiceValues: next } });
-  }, [onUpdate, guideline.strategy]);
+  const persist = useCallback(
+    (next: BrandToneOfVoiceValue[]) => {
+      onUpdate({ strategy: { ...guideline.strategy, voiceValues: next } });
+    },
+    [onUpdate, guideline.strategy]
+  );
 
   const add = () => persist([...values, { title: '', description: '', example: '' }]);
 
   const set = (i: number, patch: Partial<BrandToneOfVoiceValue>) =>
-    persist(values.map((v, idx) => idx === i ? { ...v, ...patch } : v));
+    persist(values.map((v, idx) => (idx === i ? { ...v, ...patch } : v)));
 
   const remove = (i: number) => persist(values.filter((_, idx) => idx !== i));
 
-  const handleAiResult = useCallback((patch: Record<string, any>) => {
-    const v = patch.strategy?.voiceValues;
-    if (Array.isArray(v)) persist(v);
-  }, [persist]);
+  const handleAiResult = useCallback(
+    (patch: Record<string, any>) => {
+      const v = patch.strategy?.voiceValues;
+      if (Array.isArray(v)) persist(v);
+    },
+    [persist]
+  );
 
   return (
     <SectionBlock
@@ -39,8 +45,20 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
       span={span as any}
       actions={
         <div className="flex items-center gap-1">
-          {values.length === 0 && <AiFieldButton guideline={guideline} section="strategy.voiceValues" onResult={handleAiResult} />}
-          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add tone">
+          {values.length === 0 && (
+            <AiFieldButton
+              guideline={guideline}
+              section="strategy.voiceValues"
+              onResult={handleAiResult}
+            />
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5"
+            onClick={add}
+            aria-label="Add tone"
+          >
             <Plus size={11} />
           </Button>
         </div>
@@ -51,7 +69,10 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
           <p className="text-[11px] text-neutral-700 py-2">No voice values yet. Click + to add.</p>
         )}
         {values.map((v, i) => (
-          <div key={i} className="flex gap-3 items-start py-2.5 border-b border-neutral-800 last:border-0 group/item">
+          <div
+            key={i}
+            className="flex gap-3 items-start py-2.5 border-b border-neutral-800 last:border-0 group/item"
+          >
             <div className="flex-1 min-w-0 space-y-1">
               <Input
                 value={v.title}
@@ -73,9 +94,11 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
               />
             </div>
             <Button
-              variant="ghost" size="icon"
+              variant="ghost"
+              size="icon"
               className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-all shrink-0 mt-0.5"
-              onClick={() => remove(i)} aria-label="Remove"
+              onClick={() => remove(i)}
+              aria-label="Remove"
             >
               <Trash2 size={10} />
             </Button>

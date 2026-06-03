@@ -99,7 +99,7 @@ describe('POST /api/liveblocks/webhook', () => {
       const res = await postWebhook();
       expect(res.status).toBe(200);
       expect(mockGetStorageDocument).not.toHaveBeenCalled();
-    },
+    }
   );
 
   it('200 and skips canvas-* rooms (storageUpdated on non-brand room)', async () => {

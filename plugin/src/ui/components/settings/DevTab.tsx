@@ -5,7 +5,17 @@ import { LintingSection } from '../tools/LintingSection';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Code2, Zap, ShieldCheck, Cpu, LayoutGrid, Server, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import {
+  Code2,
+  Zap,
+  ShieldCheck,
+  Cpu,
+  LayoutGrid,
+  Server,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { useSmartAnalyze } from '../../hooks/useSmartAnalyze';
 import { usePluginStore } from '../../store';
@@ -82,7 +92,12 @@ function ServerSection() {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-muted-foreground font-mono truncate">{serverUrl}</span>
-          <Button variant="ghost" size="sm" className="text-[10px] h-6 gap-1 shrink-0" onClick={ping}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-[10px] h-6 gap-1 shrink-0"
+            onClick={ping}
+          >
             {status === 'loading' && <Loader2 size={10} className="animate-spin" />}
             {status === 'success' && <CheckCircle2 size={10} className="text-green-500" />}
             {status === 'error' && <AlertCircle size={10} className="text-red-500" />}
@@ -111,7 +126,9 @@ export function DevTab() {
       const data = JSON.parse(jsonInput);
       send({
         type: messageType as any,
-        ...(messageType === 'APPLY_OPERATIONS' ? { operations: Array.isArray(data) ? data : [data] } : data)
+        ...(messageType === 'APPLY_OPERATIONS'
+          ? { operations: Array.isArray(data) ? data : [data] }
+          : data),
       });
     } catch (err) {
       alert('Invalid JSON: ' + (err as Error).message);
@@ -207,7 +224,10 @@ export function DevTab() {
             className="font-mono text-xs h-48"
           />
 
-          <Button onClick={handleRun} className="w-full text-xs h-8 bg-brand-cyan text-black hover:bg-brand-cyan/90">
+          <Button
+            onClick={handleRun}
+            className="w-full text-xs h-8 bg-brand-cyan text-black hover:bg-brand-cyan/90"
+          >
             Send Message
           </Button>
         </div>
@@ -216,7 +236,9 @@ export function DevTab() {
       <div className="text-xs text-muted-foreground space-y-1 border border-border rounded-lg p-3">
         <p className="font-semibold">Figma Plugin Messages API</p>
         <p>Send raw messages to the Figma sandbox for testing and debugging.</p>
-        <p className="text-[10px]">Available types: APPLY_OPERATIONS, GET_CONTEXT, DELETE_SELECTION, etc.</p>
+        <p className="text-[10px]">
+          Available types: APPLY_OPERATIONS, GET_CONTEXT, DELETE_SELECTION, etc.
+        </p>
       </div>
     </div>
   );

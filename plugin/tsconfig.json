@@ -11,11 +11,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["@figma/plugin-typings"],
-    "typeRoots": [
-      "./node_modules/@types",
-      "../node_modules/@types",
-      "./node_modules/@figma"
-    ],
+    "typeRoots": ["./node_modules/@types", "../node_modules/@types", "./node_modules/@figma"],
     "paths": {
       "@/*": ["../src/*"],
       "@shared/*": ["../shared/*"]

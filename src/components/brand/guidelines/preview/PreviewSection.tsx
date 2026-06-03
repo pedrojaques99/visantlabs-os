@@ -1,7 +1,22 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SectionBlock } from '../SectionBlock';
-import { LayoutTemplate, Instagram, Linkedin, FileImage, Smartphone, Download, ChevronDown, Twitter, Bell, AppWindow, FileText, Presentation, LayoutGrid, List } from 'lucide-react';
+import {
+  LayoutTemplate,
+  Instagram,
+  Linkedin,
+  FileImage,
+  Smartphone,
+  Download,
+  ChevronDown,
+  Twitter,
+  Bell,
+  AppWindow,
+  FileText,
+  Presentation,
+  LayoutGrid,
+  List,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -22,7 +37,7 @@ import {
   PresentationSlideMock,
 } from './BrandMocks';
 import { exportMockElement, EXPORT_FORMATS, type ExportFormat } from './exportMock';
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 
 interface PreviewSectionProps {
   guideline: BrandGuideline;
@@ -30,22 +45,39 @@ interface PreviewSectionProps {
 }
 
 type ViewMode = 'bento' | 'stacked';
-type FormatId = 'instagram' | 'linkedin' | 'poster' | 'stories' | 'website' | 'card' | 'email' | 'xprofile' | 'socialcard' | 'notification' | 'appstore' | 'letterhead' | 'slide';
+type FormatId =
+  | 'instagram'
+  | 'linkedin'
+  | 'poster'
+  | 'stories'
+  | 'website'
+  | 'card'
+  | 'email'
+  | 'xprofile'
+  | 'socialcard'
+  | 'notification'
+  | 'appstore'
+  | 'letterhead'
+  | 'slide';
 
-const FORMATS: Array<{ id: FormatId; label: string; icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }> }> = [
-  { id: 'website',      label: 'Website',       icon: LayoutTemplate },
-  { id: 'instagram',    label: 'Instagram',    icon: Instagram },
-  { id: 'linkedin',     label: 'LinkedIn',     icon: Linkedin },
-  { id: 'stories',      label: 'Stories',       icon: Smartphone },
-  { id: 'poster',       label: 'Poster',       icon: FileImage },
-  { id: 'card',         label: 'Card',          icon: FileImage },
-  { id: 'slide',        label: 'Slide',         icon: Presentation },
-  { id: 'email',        label: 'Email',         icon: FileImage },
-  { id: 'xprofile',     label: 'X / Twitter',   icon: Twitter },
-  { id: 'notification', label: 'Notification',  icon: Bell },
-  { id: 'socialcard',   label: 'Social Card',   icon: AppWindow },
-  { id: 'appstore',     label: 'App Store',     icon: AppWindow },
-  { id: 'letterhead',   label: 'Letterhead',    icon: FileText },
+const FORMATS: Array<{
+  id: FormatId;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
+}> = [
+  { id: 'website', label: 'Website', icon: LayoutTemplate },
+  { id: 'instagram', label: 'Instagram', icon: Instagram },
+  { id: 'linkedin', label: 'LinkedIn', icon: Linkedin },
+  { id: 'stories', label: 'Stories', icon: Smartphone },
+  { id: 'poster', label: 'Poster', icon: FileImage },
+  { id: 'card', label: 'Card', icon: FileImage },
+  { id: 'slide', label: 'Slide', icon: Presentation },
+  { id: 'email', label: 'Email', icon: FileImage },
+  { id: 'xprofile', label: 'X / Twitter', icon: Twitter },
+  { id: 'notification', label: 'Notification', icon: Bell },
+  { id: 'socialcard', label: 'Social Card', icon: AppWindow },
+  { id: 'appstore', label: 'App Store', icon: AppWindow },
+  { id: 'letterhead', label: 'Letterhead', icon: FileText },
 ];
 
 const SPANS: Record<FormatId, string> = {
@@ -64,13 +96,13 @@ const SPANS: Record<FormatId, string> = {
   letterhead: 'lg:col-span-4 lg:row-span-1',
 };
 
-const BentoCard = ({ 
-  format, 
-  tokens, 
+const BentoCard = ({
+  format,
+  tokens,
   viewMode,
-  onExport 
-}: { 
-  format: typeof FORMATS[0]; 
+  onExport,
+}: {
+  format: (typeof FORMATS)[0];
   tokens: MockTokens;
   viewMode: ViewMode;
   onExport: (el: HTMLElement, format: ExportFormat, id: string) => Promise<void>;
@@ -105,7 +137,7 @@ const BentoCard = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
-        "group relative flex flex-col gap-4 p-4 rounded-lg bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-all overflow-hidden",
+        'group relative flex flex-col gap-4 p-4 rounded-lg bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-all overflow-hidden',
         viewMode === 'bento' ? SPANS[format.id] : 'col-span-full'
       )}
     >
@@ -118,7 +150,7 @@ const BentoCard = ({
             {format.label}
           </span>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <span className="text-[8px] font-mono text-neutral-800 transition-colors">
             {dimsLabel(format.id)}
@@ -132,7 +164,7 @@ const BentoCard = ({
             </button>
             {showExport && (
               <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden min-w-[80px]">
-                {EXPORT_FORMATS.map(f => (
+                {EXPORT_FORMATS.map((f) => (
                   <button
                     key={f.id}
                     onClick={() => handleExport(f.id)}
@@ -147,21 +179,27 @@ const BentoCard = ({
         </div>
       </div>
 
-      <div 
-        ref={ref} 
+      <div
+        ref={ref}
         className={cn(
-          "flex-1 flex items-center justify-center min-h-0 w-full",
-          viewMode === 'stacked' && "py-8"
+          'flex-1 flex items-center justify-center min-h-0 w-full',
+          viewMode === 'stacked' && 'py-8'
         )}
         style={{ containerType: 'inline-size' }}
       >
-        <div className={cn(
-          "w-full transition-transform duration-700 ease-out group-hover:scale-[1.012]",
-          viewMode === 'bento' && (format.id === 'stories' || format.id === 'poster' || format.id === 'appstore') && 'max-w-[280px]',
-          viewMode === 'bento' && (format.id === 'card' || format.id === 'socialcard') && 'max-w-[380px]',
-          viewMode === 'bento' && format.id === 'letterhead' && 'max-w-[320px]',
-          viewMode === 'stacked' && "max-w-4xl"
-        )}>
+        <div
+          className={cn(
+            'w-full transition-transform duration-700 ease-out group-hover:scale-[1.012]',
+            viewMode === 'bento' &&
+              (format.id === 'stories' || format.id === 'poster' || format.id === 'appstore') &&
+              'max-w-[280px]',
+            viewMode === 'bento' &&
+              (format.id === 'card' || format.id === 'socialcard') &&
+              'max-w-[380px]',
+            viewMode === 'bento' && format.id === 'letterhead' && 'max-w-[320px]',
+            viewMode === 'stacked' && 'max-w-4xl'
+          )}
+        >
           {format.id === 'instagram' && <InstagramFeedMock tokens={tokens} />}
           {format.id === 'linkedin' && <LinkedInPostMock tokens={tokens} />}
           {format.id === 'poster' && <PosterMock tokens={tokens} />}
@@ -187,14 +225,16 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
 
   useEffect(() => {
     const families = [tokens.headingFamily, tokens.bodyFamily]
-      .map(stack => stack.match(/^'([^']+)'/)?.[1])
+      .map((stack) => stack.match(/^'([^']+)'/)?.[1])
       .filter((f): f is string => !!f && f !== 'Inter');
     const unique = [...new Set(families)];
     if (!unique.length) return;
 
     const id = 'brand-preview-fonts';
     let link = document.getElementById(id) as HTMLLinkElement | null;
-    const href = `https://fonts.googleapis.com/css2?${unique.map(f => `family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700`).join('&')}&display=swap`;
+    const href = `https://fonts.googleapis.com/css2?${unique
+      .map((f) => `family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700`)
+      .join('&')}&display=swap`;
 
     if (link) {
       if (link.href === href) return;
@@ -209,7 +249,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
   }, [tokens.headingFamily, tokens.bodyFamily]);
 
   const hasMinimum =
-    (tokens.palette.length > 0) || !!tokens.primaryLogo || !!guideline.identity?.name;
+    tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline.identity?.name;
 
   const handleExport = async (el: HTMLElement, format: ExportFormat, id: string) => {
     try {
@@ -225,8 +265,10 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
       <button
         onClick={() => setViewMode('bento')}
         className={cn(
-          "p-1 rounded transition-all",
-          viewMode === 'bento' ? "bg-white/10 text-neutral-200" : "text-neutral-600 hover:text-neutral-400"
+          'p-1 rounded transition-all',
+          viewMode === 'bento'
+            ? 'bg-white/10 text-neutral-200'
+            : 'text-neutral-600 hover:text-neutral-400'
         )}
         title="Bento View"
       >
@@ -235,8 +277,10 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
       <button
         onClick={() => setViewMode('stacked')}
         className={cn(
-          "p-1 rounded transition-all",
-          viewMode === 'stacked' ? "bg-white/10 text-neutral-200" : "text-neutral-600 hover:text-neutral-400"
+          'p-1 rounded transition-all',
+          viewMode === 'stacked'
+            ? 'bg-white/10 text-neutral-200'
+            : 'text-neutral-600 hover:text-neutral-400'
         )}
         title="Stacked View"
       >
@@ -256,21 +300,23 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
       {!hasMinimum ? (
         <div className="flex flex-col items-center justify-center gap-3 py-12 px-6 text-center">
           <p className="text-xs text-neutral-500 max-w-[320px] leading-relaxed">
-            Adicione cores, tipografia e um logo pra visualizar como sua marca aparece em
-            criativos reais. Sem chamada de IA — render local com seus tokens.
+            Adicione cores, tipografia e um logo pra visualizar como sua marca aparece em criativos
+            reais. Sem chamada de IA — render local com seus tokens.
           </p>
         </div>
       ) : (
-        <div className={cn(
-          "grid gap-4 p-1",
-          viewMode === 'bento' ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-12" : "grid-cols-1"
-        )}>
+        <div
+          className={cn(
+            'grid gap-4 p-1',
+            viewMode === 'bento' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-12' : 'grid-cols-1'
+          )}
+        >
           <AnimatePresence>
-            {FORMATS.map(f => (
-              <BentoCard 
-                key={f.id} 
-                format={f} 
-                tokens={tokens} 
+            {FORMATS.map((f) => (
+              <BentoCard
+                key={f.id}
+                format={f}
+                tokens={tokens}
                 viewMode={viewMode}
                 onExport={handleExport}
               />
@@ -284,18 +330,31 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
 
 function dimsLabel(id: FormatId): string {
   switch (id) {
-    case 'instagram': return '1080 × 1080';
-    case 'linkedin':  return '1200 × 627';
-    case 'poster':    return '1080 × 1440';
-    case 'stories':   return '1080 × 1920';
-    case 'website':   return '1920 × 1080';
-    case 'card':      return '3.5 × 2 in';
-    case 'email':        return '600 × 200';
-    case 'xprofile':     return '1920 × 1200';
-    case 'socialcard':   return '800 × 1000';
-    case 'notification': return '1000 × 400';
-    case 'appstore':     return '640 × 960';
-    case 'letterhead':   return 'A4';
-    case 'slide':        return '1920 × 1080';
+    case 'instagram':
+      return '1080 × 1080';
+    case 'linkedin':
+      return '1200 × 627';
+    case 'poster':
+      return '1080 × 1440';
+    case 'stories':
+      return '1080 × 1920';
+    case 'website':
+      return '1920 × 1080';
+    case 'card':
+      return '3.5 × 2 in';
+    case 'email':
+      return '600 × 200';
+    case 'xprofile':
+      return '1920 × 1200';
+    case 'socialcard':
+      return '800 × 1000';
+    case 'notification':
+      return '1000 × 400';
+    case 'appstore':
+      return '640 × 960';
+    case 'letterhead':
+      return 'A4';
+    case 'slide':
+      return '1920 × 1080';
   }
 }

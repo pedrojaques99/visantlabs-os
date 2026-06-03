@@ -7,9 +7,7 @@ export function ComponentLibraryModal() {
   const { allComponents } = usePluginStore();
   const [search, setSearch] = useState('');
 
-  const filtered = allComponents.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = allComponents.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="space-y-2">
@@ -24,9 +22,14 @@ export function ComponentLibraryModal() {
       </div>
       <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
         {filtered.map((comp) => (
-          <div key={comp.id} className="border border-border rounded p-2 text-xs hover:bg-muted cursor-pointer">
+          <div
+            key={comp.id}
+            className="border border-border rounded p-2 text-xs hover:bg-muted cursor-pointer"
+          >
             <div className="font-mono font-semibold truncate">{comp.name}</div>
-            {comp.thumbnail && <img src={comp.thumbnail} alt={comp.name} className="mt-1 rounded" />}
+            {comp.thumbnail && (
+              <img src={comp.thumbnail} alt={comp.name} className="mt-1 rounded" />
+            )}
           </div>
         ))}
       </div>

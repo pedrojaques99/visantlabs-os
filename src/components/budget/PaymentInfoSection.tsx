@@ -5,7 +5,7 @@ import { CurrencyInput } from '@/components/ui/currency-input';
 import { Select } from '@/components/ui/select';
 import type { PaymentInfo, PaymentMethod } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface PaymentInfoSectionProps {
   paymentInfo: PaymentInfo;
@@ -89,9 +89,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
               min="0"
               step="0.5"
               value={paymentInfo.totalHours || ''}
-              onChange={(e) =>
-                updateField('totalHours', parseFloat(e.target.value) || 0)
-              }
+              onChange={(e) => updateField('totalHours', parseFloat(e.target.value) || 0)}
               placeholder="30"
             />
           </div>
@@ -129,23 +127,22 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
               max="100"
               step="0.1"
               value={paymentInfo.cashDiscountPercent || ''}
-              onChange={(e) =>
-                updateField('cashDiscountPercent', parseFloat(e.target.value) || 0)
-              }
+              onChange={(e) => updateField('cashDiscountPercent', parseFloat(e.target.value) || 0)}
               placeholder="8"
               className="w-full"
             />
           </div>
         </div>
 
-        {(paymentInfo.totalHours && paymentInfo.hourlyRate) && (
+        {paymentInfo.totalHours && paymentInfo.hourlyRate && (
           <div className="pt-3 border-t border-neutral-800/50 space-y-1.5">
             <div className="flex justify-between text-xs font-mono">
               <span className="text-neutral-500">
                 {paymentInfo.totalHours}h × R${paymentInfo.hourlyRate}/h:
               </span>
               <span className="text-neutral-400">
-                R$ {(paymentInfo.totalHours * paymentInfo.hourlyRate).toLocaleString('pt-BR', {
+                R${' '}
+                {(paymentInfo.totalHours * paymentInfo.hourlyRate).toLocaleString('pt-BR', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -158,7 +155,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                     Desconto ({paymentInfo.cashDiscountPercent}%):
                   </span>
                   <span className="text-neutral-500">
-                    - R$ {calculateCashDiscount().toLocaleString('pt-BR', {
+                    - R${' '}
+                    {calculateCashDiscount().toLocaleString('pt-BR', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -167,7 +165,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                 <div className="flex justify-between text-xs font-mono border-t border-neutral-800/30 pt-1.5">
                   <span className="text-neutral-400">Total com Desconto:</span>
                   <span className="text-neutral-300">
-                    R$ {calculateTotalWithDiscount().toLocaleString('pt-BR', {
+                    R${' '}
+                    {calculateTotalWithDiscount().toLocaleString('pt-BR', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -192,9 +191,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
           <div className="space-y-3">
             {paymentInfo.paymentMethods.map((method, index) => (
               <div key={index}>
-                <div
-                  className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl space-y-3"
-                >
+                <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl space-y-3">
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex-1 w-full space-y-3">
                       <div>
@@ -204,11 +201,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                         <Select
                           value={method.type}
                           onChange={(value) =>
-                            updatePaymentMethod(
-                              index,
-                              'type',
-                              value as 'pix' | 'credit' | 'crypto'
-                            )
+                            updatePaymentMethod(index, 'type', value as 'pix' | 'credit' | 'crypto')
                           }
                           options={[
                             { value: 'pix', label: 'PIX' },
@@ -223,9 +216,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                         </label>
                         <FormInput
                           value={method.label}
-                          onChange={(e) =>
-                            updatePaymentMethod(index, 'label', e.target.value)
-                          }
+                          onChange={(e) => updatePaymentMethod(index, 'label', e.target.value)}
                           placeholder="PIX"
                         />
                       </div>
@@ -262,7 +253,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                         </div>
                       )}
                     </div>
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       onClick={() => removePaymentMethod(index)}
                       className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
                       title={t('budget.removePaymentMethod') || 'Remover método'}
@@ -273,7 +265,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                 </div>
                 {index === paymentInfo.paymentMethods.length - 1 && (
                   <div className="flex justify-center pt-2">
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       onClick={addPaymentMethod}
                       className="flex items-center justify-center p-1.5 bg-neutral-950/30 hover:bg-neutral-950/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-all duration-200"
                       title={t('budget.addPaymentMethod') || 'Adicionar Método'}
@@ -290,4 +283,3 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
     </div>
   );
 };
-

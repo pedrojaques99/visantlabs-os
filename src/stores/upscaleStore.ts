@@ -60,7 +60,11 @@ export const useUpscaleStore = create<UpscaleState>()((set) => ({
   setScaleFactor: (v) =>
     set((s) => ({
       scaleFactor: v,
-      items: s.items.map((i) => (i.status === 'done' || i.status === 'error' ? { ...i, status: 'queued' as const, resultBase64: '', error: undefined } : i)),
+      items: s.items.map((i) =>
+        i.status === 'done' || i.status === 'error'
+          ? { ...i, status: 'queued' as const, resultBase64: '', error: undefined }
+          : i
+      ),
     })),
   setSharpening: (v) => set({ sharpening: v }),
   setIsProcessing: (v) => set({ isProcessing: v }),

@@ -68,13 +68,20 @@ export function buildTemplateContext(templates: TemplateSpec[]): string {
 
   for (const t of templates) {
     lines.push(`#### ${t.name}`);
-    lines.push(`- ID: \`${t.id}\` | Dimensões: ${t.width}x${t.height}${t.hasImages ? ' | Contém imagens' : ''}`);
+    lines.push(
+      `- ID: \`${t.id}\` | Dimensões: ${t.width}x${t.height}${
+        t.hasImages ? ' | Contém imagens' : ''
+      }`
+    );
 
     if (t.textLayers && t.textLayers.length > 0) {
       lines.push('- Textos editáveis:');
       for (const text of t.textLayers) {
-        const fontInfo = text.fontFamily ? ` (${text.fontFamily} ${text.fontStyle}, ${text.fontSize}px)` : '';
-        const preview = text.characters.length > 40 ? text.characters.slice(0, 40) + '...' : text.characters;
+        const fontInfo = text.fontFamily
+          ? ` (${text.fontFamily} ${text.fontStyle}, ${text.fontSize}px)`
+          : '';
+        const preview =
+          text.characters.length > 40 ? text.characters.slice(0, 40) + '...' : text.characters;
         lines.push(`  - \`${text.id}\` "${text.name}": "${preview}"${fontInfo}`);
       }
     }
@@ -88,7 +95,9 @@ export function buildTemplateContext(templates: TemplateSpec[]): string {
     lines.push('### Exemplo com este arquivo:');
     lines.push('```json');
     lines.push(`{ "type": "CLONE_NODE", "sourceNodeId": "${t.id}",`);
-    lines.push(`  "textOverrides": [{ "name": "${txt.name}", "content": "Seu novo texto aqui" }] }`);
+    lines.push(
+      `  "textOverrides": [{ "name": "${txt.name}", "content": "Seu novo texto aqui" }] }`
+    );
     lines.push('```');
   }
 

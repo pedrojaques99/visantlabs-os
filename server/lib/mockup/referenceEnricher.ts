@@ -17,7 +17,7 @@ export interface EnrichResult {
 export async function enrichWithCuratedReferences(
   prompt: string,
   queryContext?: string,
-  topK = 2,
+  topK = 2
 ): Promise<EnrichResult> {
   try {
     const queryText = queryContext || prompt.slice(0, 500);

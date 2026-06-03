@@ -18,7 +18,6 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
   const textColor = data.coverTextColor || '#f9f9f9';
   const year = data.year || '2025';
 
-
   return (
     <div
       className="w-full h-full flex flex-col justify-between relative overflow-hidden"
@@ -45,7 +44,9 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
           >
             <InlineEditor
               value={`PROPOSTA ${year}`}
-              onChange={(newValue) => onDataChange?.({ year: String(newValue).replace('PROPOSTA ', '') })}
+              onChange={(newValue) =>
+                onDataChange?.({ year: String(newValue).replace('PROPOSTA ', '') })
+              }
               editable={editable}
               style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '1.2px' }}
             />
@@ -113,16 +114,28 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
           >
             <InlineEditor
               value={`ORÇAMENTO`}
-              onChange={(newValue) => onDataChange?.({ year: String(newValue).replace('ORÇAMENTO ', '') })}
+              onChange={(newValue) =>
+                onDataChange?.({ year: String(newValue).replace('ORÇAMENTO ', '') })
+              }
               editable={editable}
-              style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '2.4px', textAlign: 'center', display: 'block', width: '100%' }}
+              style={{
+                fontSize: '12px',
+                fontWeight: 'bold',
+                letterSpacing: '2.4px',
+                textAlign: 'center',
+                display: 'block',
+                width: '100%',
+              }}
             />
           </div>
         </div>
       </div>
 
       {/* Bottom section */}
-      <div className="flex-shrink-0" style={{ paddingBottom: '140px', display: 'flex', justifyContent: 'center' }}>
+      <div
+        className="flex-shrink-0"
+        style={{ paddingBottom: '140px', display: 'flex', justifyContent: 'center' }}
+      >
         <div
           style={{
             display: 'inline-block',
@@ -144,13 +157,13 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
           >
             <InlineEditor
               value="Branding "
-              onChange={() => { }}
+              onChange={() => {}}
               editable={false}
               style={{ fontSize: '21px', fontWeight: 800 }}
             />
             <InlineEditor
               value="COMPLETO+"
-              onChange={() => { }}
+              onChange={() => {}}
               editable={false}
               style={{
                 fontSize: '21px',

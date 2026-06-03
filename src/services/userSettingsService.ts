@@ -1,6 +1,9 @@
 import { authService } from './authService';
 
-const API_BASE_URL = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL ? import.meta.env.VITE_API_URL : '/api';
+const API_BASE_URL =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL
+    ? import.meta.env.VITE_API_URL
+    : '/api';
 
 /**
  * Save user's Gemini API key (encrypted on backend)
@@ -186,16 +189,6 @@ export async function updateCanvasSettings(settings: any): Promise<void> {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
 /**
  * Save user's Seedream API key (encrypted on backend)
  */
@@ -314,7 +307,9 @@ export async function saveLlmPreferences(prefs: Partial<LlmPreferences>): Promis
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Failed to save LLM preferences' }));
+    const errorData = await response
+      .json()
+      .catch(() => ({ error: 'Failed to save LLM preferences' }));
     throw new Error(errorData.error || errorData.message || 'Failed to save LLM preferences');
   }
 
@@ -328,7 +323,9 @@ export async function saveLlmPreferences(prefs: Partial<LlmPreferences>): Promis
 
 // ═══ Figma Token ═══
 
-export async function saveFigmaToken(figmaToken: string): Promise<{ figmaUser: { id: string; email: string; handle: string } }> {
+export async function saveFigmaToken(
+  figmaToken: string
+): Promise<{ figmaUser: { id: string; email: string; handle: string } }> {
   const authToken = authService.getToken();
   if (!authToken) throw new Error('Authentication required');
 
@@ -358,7 +355,9 @@ export async function deleteFigmaToken(): Promise<void> {
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Failed to delete Figma token' }));
+    const errorData = await response
+      .json()
+      .catch(() => ({ error: 'Failed to delete Figma token' }));
     throw new Error(errorData.error || 'Failed to delete Figma token');
   }
 }

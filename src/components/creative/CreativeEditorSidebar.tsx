@@ -1,6 +1,26 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Type, Square, Download, ArrowLeft, Trash2, Undo2, Redo2, Briefcase, Save, FolderOpen, Check, AlertTriangle, Circle, Image, Palette, Lock, Unlock } from 'lucide-react';
+import {
+  Eye,
+  EyeOff,
+  Type,
+  Square,
+  Download,
+  ArrowLeft,
+  Trash2,
+  Undo2,
+  Redo2,
+  Briefcase,
+  Save,
+  FolderOpen,
+  Check,
+  AlertTriangle,
+  Circle,
+  Image,
+  Palette,
+  Lock,
+  Unlock,
+} from 'lucide-react';
 import type { AutoSaveStatus } from '@/hooks/useAutoSave';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
@@ -14,7 +34,7 @@ import {
 import { snapshotCreativeFromStore } from './lib/persistCreative';
 import { isPersistedId } from './lib/layerUtils';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 const FORMATS: CreativeFormat[] = ['1:1', '9:16', '16:9', '4:5'];
 
 interface Props {
@@ -95,8 +115,8 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
       /* toast handled inside mutation */
     }
   };
-  
-  const guideline = allGuidelines.find(g => g.id === brandId) ?? activeGuideline;
+
+  const guideline = allGuidelines.find((g) => g.id === brandId) ?? activeGuideline;
   const accentColor = guideline?.colors?.[0]?.hex ?? colors[0]?.hex ?? '#00e5ff';
   const defaultFont = guideline?.typography?.[0]?.family ?? 'Inter, sans-serif';
 
@@ -128,22 +148,25 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
   };
 
   const handleAddAsset = (asset: { url: string; type: 'logo' | 'image' }) => {
-    const newLayer: CreativeLayerData = asset.type === 'logo' ? {
-      type: 'logo',
-      url: asset.url,
-      position: { x: 0.3, y: 0.3 },
-      size: { w: 0.2, h: 0.1 },
-    } : {
-      type: 'logo', // We reuse LogoLayer for images for now as it handles 'contain' nicely
-      url: asset.url,
-      position: { x: 0.2, y: 0.2 },
-      size: { w: 0.4, h: 0.3 },
-    };
+    const newLayer: CreativeLayerData =
+      asset.type === 'logo'
+        ? {
+            type: 'logo',
+            url: asset.url,
+            position: { x: 0.3, y: 0.3 },
+            size: { w: 0.2, h: 0.1 },
+          }
+        : {
+            type: 'logo', // We reuse LogoLayer for images for now as it handles 'contain' nicely
+            url: asset.url,
+            position: { x: 0.2, y: 0.2 },
+            size: { w: 0.4, h: 0.3 },
+          };
     addLayer(newLayer);
   };
 
   return (
-    <aside 
+    <aside
       role="region"
       aria-label="Creative Editor"
       className="w-[360px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-5 gap-5 overflow-y-auto custom-scrollbar"
@@ -225,7 +248,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
             </label>
           </div>
           <div className="max-h-[240px] overflow-y-auto pr-1">
-            <MediaKitGallery 
+            <MediaKitGallery
               guidelineId={brandId || guideline.id}
               media={guideline.media || []}
               logos={guideline.logos || []}
@@ -298,8 +321,8 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                 key={layer.id}
                 onClick={(e) => {
                   if (e.shiftKey) {
-                    const next = isSelected 
-                      ? selectedLayerIds.filter(id => id !== layer.id)
+                    const next = isSelected
+                      ? selectedLayerIds.filter((id) => id !== layer.id)
                       : [...selectedLayerIds, layer.id];
                     setSelectedLayerIds(next);
                   } else {
@@ -327,7 +350,9 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                     e.stopPropagation();
                     updateLayerMeta(layer.id, { locked: !layer.locked });
                   }}
-                  className={`hover:text-white ${layer.locked ? 'text-brand-cyan' : 'text-neutral-600'}`}
+                  className={`hover:text-white ${
+                    layer.locked ? 'text-brand-cyan' : 'text-neutral-600'
+                  }`}
                   title={layer.locked ? 'Destravar' : 'Travar'}
                 >
                   {layer.locked ? <Lock size={11} /> : <Unlock size={11} />}
@@ -353,7 +378,9 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
             const label = hasBg
               ? 'Imagem'
               : hasOverlay
-              ? overlay.type === 'solid' ? 'Cor sólida' : 'Gradiente'
+              ? overlay.type === 'solid'
+                ? 'Cor sólida'
+                : 'Gradiente'
               : 'Fundo vazio';
             const Icon = hasBg ? Image : Palette;
             return (

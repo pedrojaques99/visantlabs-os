@@ -1,13 +1,29 @@
 import { useState, useCallback, useRef } from 'react';
 
 export type FigCategory =
-  | 'colors' | 'typography' | 'gradients' | 'shadows'
-  | 'borders' | 'radii' | 'components' | 'images' | 'strategy';
+  | 'colors'
+  | 'typography'
+  | 'gradients'
+  | 'shadows'
+  | 'borders'
+  | 'radii'
+  | 'components'
+  | 'images'
+  | 'strategy';
 
 export interface AssetClassification {
   index: number;
   category: 'logo' | 'icon' | 'photo' | 'mockup' | 'pattern' | 'strategy' | 'other';
-  logoVariant?: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom' | 'stacked' | 'horizontal' | 'abbreviated';
+  logoVariant?:
+    | 'primary'
+    | 'dark'
+    | 'light'
+    | 'icon'
+    | 'accent'
+    | 'custom'
+    | 'stacked'
+    | 'horizontal'
+    | 'abbreviated';
   label?: string;
 }
 
@@ -34,7 +50,10 @@ let _cachedBase: string | null = null;
 async function getBackendBase(): Promise<string> {
   if (_cachedBase) return _cachedBase;
   const envUrl = (import.meta as any).env?.VITE_API_URL;
-  if (envUrl) { _cachedBase = envUrl; return _cachedBase; }
+  if (envUrl) {
+    _cachedBase = envUrl;
+    return _cachedBase;
+  }
   for (const port of [3001, 3100, 3002, 3003]) {
     try {
       // Probe a public endpoint that returns non-5xx without auth
@@ -45,7 +64,9 @@ async function getBackendBase(): Promise<string> {
         _cachedBase = `http://localhost:${port}/api`;
         return _cachedBase;
       }
-    } catch { /* try next */ }
+    } catch {
+      /* try next */
+    }
   }
   return '/api'; // fallback to Vite proxy
 }
@@ -60,60 +81,65 @@ export function useExtractFileStream(guidelineId: string, endpointSuffix: string
   const [state, setState] = useState<FigStreamState>({ status: 'idle', statusMessage: '' });
   const abortRef = useRef<AbortController | null>(null);
 
-  const stream = useCallback(async (file: File) => {
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
+  const stream = useCallback(
+    async (file: File) => {
+      abortRef.current?.abort();
+      const ctrl = new AbortController();
+      abortRef.current = ctrl;
 
-    setState({ status: 'streaming', statusMessage: 'Uploading…' });
+      setState({ status: 'streaming', statusMessage: 'Uploading…' });
 
-    const form = new FormData();
-    form.append('file', file);
-    const token = localStorage.getItem('auth_token') || '';
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const form = new FormData();
+      form.append('file', file);
+      const token = localStorage.getItem('auth_token') || '';
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const base = await getBackendBase();
+      const base = await getBackendBase();
 
-    try {
-      const response = await fetch(`${base}/brand-guidelines/${guidelineId}/${endpointSuffix}`, {
-        method: 'POST',
-        headers,
-        body: form,
-        signal: ctrl.signal,
-      });
+      try {
+        const response = await fetch(`${base}/brand-guidelines/${guidelineId}/${endpointSuffix}`, {
+          method: 'POST',
+          headers,
+          body: form,
+          signal: ctrl.signal,
+        });
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        setState(s => ({ ...s, status: 'error', error: err.error || 'Upload failed' }));
-        return;
-      }
-
-      const reader = response.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-          try {
-            const event = JSON.parse(trimmed);
-            setState(prev => applyEvent(prev, event));
-          } catch { /* malformed line, skip */ }
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          setState((s) => ({ ...s, status: 'error', error: err.error || 'Upload failed' }));
+          return;
         }
+
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            try {
+              const event = JSON.parse(trimmed);
+              setState((prev) => applyEvent(prev, event));
+            } catch {
+              /* malformed line, skip */
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+        setState((s) => ({ ...s, status: 'error', error: err?.message || 'Stream failed' }));
       }
-    } catch (err: any) {
-      if (err?.name === 'AbortError') return;
-      setState(s => ({ ...s, status: 'error', error: err?.message || 'Stream failed' }));
-    }
-  }, [guidelineId, endpointSuffix]);
+    },
+    [guidelineId, endpointSuffix]
+  );
 
   const reset = useCallback(() => {
     abortRef.current?.abort();
@@ -130,19 +156,33 @@ export function useExtractFigStream(guidelineId: string) {
 
 function applyEvent(prev: FigStreamState, event: any): FigStreamState {
   switch (event.type) {
-    case 'status':     return { ...prev, statusMessage: event.message };
-    case 'colors':     return { ...prev, colors: event.data };
-    case 'typography': return { ...prev, typography: event.data };
-    case 'gradients':  return { ...prev, gradients: event.data };
-    case 'shadows':    return { ...prev, shadows: event.data };
-    case 'borders':    return { ...prev, borders: event.data };
-    case 'radii':      return { ...prev, radii: event.data };
-    case 'components': return { ...prev, components: event.data };
-    case 'images':     return { ...prev, images: event.data };
-    case 'strategy':   return { ...prev, strategy: event.data };
-    case 'asset_classifications': return { ...prev, assetClassifications: event.data };
-    case 'done':       return { ...prev, status: 'done', statusMessage: 'Complete' };
-    case 'error':      return { ...prev, status: 'error', error: event.message };
-    default:           return prev;
+    case 'status':
+      return { ...prev, statusMessage: event.message };
+    case 'colors':
+      return { ...prev, colors: event.data };
+    case 'typography':
+      return { ...prev, typography: event.data };
+    case 'gradients':
+      return { ...prev, gradients: event.data };
+    case 'shadows':
+      return { ...prev, shadows: event.data };
+    case 'borders':
+      return { ...prev, borders: event.data };
+    case 'radii':
+      return { ...prev, radii: event.data };
+    case 'components':
+      return { ...prev, components: event.data };
+    case 'images':
+      return { ...prev, images: event.data };
+    case 'strategy':
+      return { ...prev, strategy: event.data };
+    case 'asset_classifications':
+      return { ...prev, assetClassifications: event.data };
+    case 'done':
+      return { ...prev, status: 'done', statusMessage: 'Complete' };
+    case 'error':
+      return { ...prev, status: 'error', error: event.message };
+    default:
+      return prev;
   }
 }

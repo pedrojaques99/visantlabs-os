@@ -12,7 +12,12 @@ import { TransformPanel } from './custom-node/TransformPanel';
 import { PipelinePanel } from './custom-node/PipelinePanel';
 import { MultiInputPanel } from './custom-node/MultiInputPanel';
 import type { CustomNodeData } from '@/types/reactFlow';
-import type { MultiOutputConfig, TransformConfig, PipelineConfig, MultiInputConfig } from '@/types/customNode';
+import type {
+  MultiOutputConfig,
+  TransformConfig,
+  PipelineConfig,
+  MultiInputConfig,
+} from '@/types/customNode';
 import { nodeBuilderApi } from '@/services/nodeBuilderApi';
 import { toast } from 'sonner';
 
@@ -37,27 +42,36 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   // ── Local state (user edits; synced back via onUpdateData) ──────────────
   const [localPrompts, setLocalPrompts] = useState<string[]>(
     nodeData.prompts ??
-    (cfg.renderCategory === 'multi-output' ? (cfg as MultiOutputConfig).prompts : [])
+      (cfg.renderCategory === 'multi-output' ? (cfg as MultiOutputConfig).prompts : [])
   );
   const [localDescription, setLocalDescription] = useState<string>(
     nodeData.shaderDescription ??
-    (cfg.renderCategory === 'transform' ? (cfg as TransformConfig).userDescription :
-     cfg.renderCategory === 'multi-input' ? (cfg as MultiInputConfig).userDescription : '')
+      (cfg.renderCategory === 'transform'
+        ? (cfg as TransformConfig).userDescription
+        : cfg.renderCategory === 'multi-input'
+        ? (cfg as MultiInputConfig).userDescription
+        : '')
   );
 
-  const handlePromptChange = useCallback((index: number, value: string) => {
-    setLocalPrompts(prev => {
-      const next = [...prev];
-      next[index] = value;
-      nodeData.onUpdateData?.(id, { prompts: next });
-      return next;
-    });
-  }, [id, nodeData]);
+  const handlePromptChange = useCallback(
+    (index: number, value: string) => {
+      setLocalPrompts((prev) => {
+        const next = [...prev];
+        next[index] = value;
+        nodeData.onUpdateData?.(id, { prompts: next });
+        return next;
+      });
+    },
+    [id, nodeData]
+  );
 
-  const handleDescriptionChange = useCallback((value: string) => {
-    setLocalDescription(value);
-    nodeData.onUpdateData?.(id, { shaderDescription: value });
-  }, [id, nodeData]);
+  const handleDescriptionChange = useCallback(
+    (value: string) => {
+      setLocalDescription(value);
+      nodeData.onUpdateData?.(id, { shaderDescription: value });
+    },
+    [id, nodeData]
+  );
 
   const handleExecute = useCallback(() => {
     nodeData.onExecute?.(id);
@@ -116,11 +130,7 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           />
         )}
         {cfg.renderCategory === 'pipeline' && (
-          <PipelinePanel
-            config={cfg as PipelineConfig}
-            log={executionLog}
-            isLoading={isLoading}
-          />
+          <PipelinePanel config={cfg as PipelineConfig} log={executionLog} isLoading={isLoading} />
         )}
         {cfg.renderCategory === 'multi-input' && (
           <MultiInputPanel

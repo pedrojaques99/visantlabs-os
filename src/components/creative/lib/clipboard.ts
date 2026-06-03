@@ -24,9 +24,7 @@ export async function copyLayersToClipboard(ids: string[]): Promise<number> {
   const payload: ClipboardPayload = { __vsn: CLIPBOARD_TAG, layers: picked };
   try {
     await copyToClipboard(JSON.stringify(payload));
-    toast.info(
-      `${picked.length} ${picked.length === 1 ? 'camada copiada' : 'camadas copiadas'}`
-    );
+    toast.info(`${picked.length} ${picked.length === 1 ? 'camada copiada' : 'camadas copiadas'}`);
     return picked.length;
   } catch {
     toast.error('Falha ao copiar');

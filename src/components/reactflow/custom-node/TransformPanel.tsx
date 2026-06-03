@@ -20,12 +20,11 @@ export function TransformPanel({ config, description, onChange, disabled }: Prop
   if (config.behavior === 'upscale-chain') {
     return (
       <p className="text-[10px] font-mono text-neutral-500">
-        Upscales to{' '}
-        <span className="text-brand-cyan/70">{config.targetResolution ?? '2K'}</span>
+        Upscales to <span className="text-brand-cyan/70">{config.targetResolution ?? '2K'}</span>
         {config.applyShaderAfter && (
           <>
-            {' '}→ applies{' '}
-            <span className="text-brand-cyan/70">{config.applyShaderAfter}</span> shader
+            {' '}
+            → applies <span className="text-brand-cyan/70">{config.applyShaderAfter}</span> shader
           </>
         )}
       </p>
@@ -37,7 +36,7 @@ export function TransformPanel({ config, description, onChange, disabled }: Prop
       <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Description</p>
       <textarea
         value={description}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         placeholder={PLACEHOLDERS[config.behavior] ?? 'Describe the effect...'}
         rows={2}

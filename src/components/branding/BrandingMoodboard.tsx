@@ -63,30 +63,22 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
 
   // Get step IDs - only include sections with data that are not compact
   // Empty sections will be shown in the compact grid as EmptySectionCard
-  const expandedStepIds = useMemo(
-    () => {
-      return steps
-        .filter(step => {
-          const hasData = hasContent(step.id);
-          const isCompact = compactSections.has(step.id);
-          // Only include if has data AND not in compact sections
-          return hasData && !isCompact;
-        })
-        .map(step => step.id);
-    },
-    [steps, compactSections, hasContent]
-  );
+  const expandedStepIds = useMemo(() => {
+    return steps
+      .filter((step) => {
+        const hasData = hasContent(step.id);
+        const isCompact = compactSections.has(step.id);
+        // Only include if has data AND not in compact sections
+        return hasData && !isCompact;
+      })
+      .map((step) => step.id);
+  }, [steps, compactSections, hasContent]);
 
   // Get empty step IDs (without data) to show as EmptySectionCard in compact grid
   // Exclude step 12 (moodboard) from empty cards
-  const emptyStepIds = useMemo(
-    () => {
-      return steps
-        .filter(step => !hasContent(step.id) && step.id !== 12)
-        .map(step => step.id);
-    },
-    [steps, hasContent]
-  );
+  const emptyStepIds = useMemo(() => {
+    return steps.filter((step) => !hasContent(step.id) && step.id !== 12).map((step) => step.id);
+  }, [steps, hasContent]);
 
   // Initialize and manage layout
   // Passar editableData.layout diretamente - o hook faz comparação profunda
@@ -136,7 +128,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
     }
 
     // Always return a cleanup function, even if it's a no-op
-    return () => { };
+    return () => {};
   }, [editingSections, setEditingSections]);
 
   const handleSave = async () => {
@@ -146,7 +138,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
 
   const handleSaveSection = async (stepNumber: number) => {
     await onSave(editableData, false); // Manual save - show toast
-    setEditingSections(prev => {
+    setEditingSections((prev) => {
       const next = new Set(prev);
       next.delete(stepNumber);
       return next;
@@ -200,7 +192,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
 
   const handleNameChange = (newName: string) => {
     setLocalProjectName(newName);
-    setEditableData(prev => ({ ...prev, name: newName }));
+    setEditableData((prev) => ({ ...prev, name: newName }));
   };
 
   const handleNameAccept = async () => {
@@ -233,10 +225,12 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
   };
 
   return (
-    <div className={`w-full relative min-h-screen ${theme === 'dark' ? 'bg-neutral-950 text-neutral-300' : 'bg-neutral-50 text-neutral-800'
-      }`}>
-      <div className="fixed inset-0 z-0">
-      </div>
+    <div
+      className={`w-full relative min-h-screen ${
+        theme === 'dark' ? 'bg-neutral-950 text-neutral-300' : 'bg-neutral-50 text-neutral-800'
+      }`}
+    >
+      <div className="fixed inset-0 z-0"></div>
       <div className="relative z-10 pt-10 md:pt-14">
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 space-y-3">
           {/* Header Section */}
@@ -252,26 +246,31 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       onKeyDown={handleNameKeyDown}
                       onFocus={(e) => e.target.select()}
                       placeholder={t('branding.projectNamePlaceholder') || 'Nome do projeto'}
-                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-[brand-cyan]/50 focus:border-[brand-cyan] focus:outline-none pb-1 transition-colors ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                        }`}
+                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-[brand-cyan]/50 focus:border-[brand-cyan] focus:outline-none pb-1 transition-colors ${
+                        theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
+                      }`}
                       autoFocus
                     />
-                    <Button variant="brand"
+                    <Button
+                      variant="brand"
                       onClick={handleNameAccept}
-                      className={`p-1.5 rounded-md transition-colors ${theme === 'dark'
-                        ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
-                        : 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
-                        }`}
+                      className={`p-1.5 rounded-md transition-colors ${
+                        theme === 'dark'
+                          ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
+                          : 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
+                      }`}
                       title="Salvar (Enter)"
                     >
                       <Check className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       onClick={handleNameCancel}
-                      className={`p-1.5 rounded-md transition-colors ${theme === 'dark'
-                        ? 'bg-neutral-800/60 hover:bg-neutral-800/80 text-neutral-400 hover:text-neutral-300'
-                        : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-600 hover:text-neutral-700'
-                        }`}
+                      className={`p-1.5 rounded-md transition-colors ${
+                        theme === 'dark'
+                          ? 'bg-neutral-800/60 hover:bg-neutral-800/80 text-neutral-400 hover:text-neutral-300'
+                          : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-600 hover:text-neutral-700'
+                      }`}
                       title="Cancelar (ESC)"
                     >
                       <X className="h-4 w-4" />
@@ -282,30 +281,39 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     {localProjectName ? (
                       <>
                         <h2
-                          className={`text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-brand-cyan transition-colors truncate ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                            }`}
+                          className={`text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-brand-cyan transition-colors truncate ${
+                            theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
+                          }`}
                           onClick={() => setIsEditingName(true)}
                           title={localProjectName}
                         >
                           {localProjectName}
                         </h2>
-                        <Button variant="ghost"
+                        <Button
+                          variant="ghost"
                           onClick={() => setIsEditingName(true)}
-                          className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
-                            }`}
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${
+                            theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
+                          }`}
                           title={t('branding.editProjectName') || 'Editar nome do projeto'}
                         >
-                          <Edit2 className={`h-4 w-4 hover:text-brand-cyan ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                            }`} />
+                          <Edit2
+                            className={`h-4 w-4 hover:text-brand-cyan ${
+                              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                            }`}
+                          />
                         </Button>
                       </>
                     ) : (
-                      <Button variant="ghost"
+                      <Button
+                        variant="ghost"
                         onClick={() => setIsEditingName(true)}
-                        className={`text-xl md:text-2xl font-semibold font-manrope hover:text-brand-cyan transition-colors ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-                          }`}
+                        className={`text-xl md:text-2xl font-semibold font-manrope hover:text-brand-cyan transition-colors ${
+                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
+                        }`}
                       >
-                        {t('branding.projectNamePlaceholder') || 'Clique para adicionar nome do projeto'}
+                        {t('branding.projectNamePlaceholder') ||
+                          'Clique para adicionar nome do projeto'}
                       </Button>
                     )}
                   </div>
@@ -313,35 +321,41 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
               </div>
               <div className="flex flex-wrap gap-2">
                 {onGenerateAll && (
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
-                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                      ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300 disabled:border-neutral-800/30 disabled:text-neutral-600'
-                      : 'bg-neutral-100 border-neutral-300 text-neutral-800 disabled:border-neutral-200 disabled:text-neutral-400'
-                      }`}
+                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${
+                      theme === 'dark'
+                        ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300 disabled:border-neutral-800/30 disabled:text-neutral-600'
+                        : 'bg-neutral-100 border-neutral-300 text-neutral-800 disabled:border-neutral-200 disabled:text-neutral-400'
+                    }`}
                   >
                     <Zap className="h-4 w-4" />
                     {t('branding.generateAll')}
                   </Button>
                 )}
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   onClick={handleGeneratePDF}
-                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                    ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
-                    : 'bg-neutral-100 border-neutral-300 text-neutral-800'
-                    }`}
+                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${
+                    theme === 'dark'
+                      ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
+                      : 'bg-neutral-100 border-neutral-300 text-neutral-800'
+                  }`}
                 >
                   <FileDown className="h-4 w-4" />
                   {t('branding.generatePDF')}
                 </Button>
-                <Button variant="brand"
+                <Button
+                  variant="brand"
                   onClick={handleSave}
                   disabled={isSaving || !hasContent(1)}
-                  className={`px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${theme === 'dark'
-                    ? 'disabled:bg-neutral-700 disabled:text-neutral-500'
-                    : 'disabled:bg-neutral-300 disabled:text-neutral-400'
-                    }`}
+                  className={`px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+                    theme === 'dark'
+                      ? 'disabled:bg-neutral-700 disabled:text-neutral-500'
+                      : 'disabled:bg-neutral-300 disabled:text-neutral-400'
+                  }`}
                 >
                   <Save className="h-4 w-4" />
                   {isSaving ? t('branding.saving') : t('branding.saveProject')}
@@ -352,7 +366,6 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
 
           {/* Notion-style Column Layout */}
           <div className="space-y-3">
-
             {/* Column Layout */}
             {expandedStepIds.length > 0 && (
               <NotionColumnLayout
@@ -361,7 +374,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 stepIds={expandedStepIds}
                 steps={steps}
                 renderSection={(stepNumber, dragProps) => {
-                  const step = steps.find(s => s.id === stepNumber);
+                  const step = steps.find((s) => s.id === stepNumber);
                   if (!step) return null;
 
                   const content = getStepContent(stepNumber);
@@ -389,9 +402,13 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       hasContent={hasContent}
                       onToggleCompact={() => toggleSectionCompact(stepNumber)}
                       onEdit={() => toggleSectionEdit(stepNumber)}
-                      onRegenerate={onGenerateSection ? () => handleRegenerateSection(stepNumber) : undefined}
+                      onRegenerate={
+                        onGenerateSection ? () => handleRegenerateSection(stepNumber) : undefined
+                      }
                       onSave={() => handleSaveSection(stepNumber)}
-                      onGenerate={onGenerateSection ? () => onGenerateSection(stepNumber) : undefined}
+                      onGenerate={
+                        onGenerateSection ? () => onGenerateSection(stepNumber) : undefined
+                      }
                       onContentChange={(value) => handleContentChange(stepNumber, value)}
                       isSaving={isSaving}
                       isDraggable={dragProps.isDraggable}
@@ -422,7 +439,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 md:gap-3">
               {/* Empty sections - show as EmptySectionCard in black and white */}
               {emptyStepIds.map((stepNumber) => {
-                const step = steps.find(s => s.id === stepNumber);
+                const step = steps.find((s) => s.id === stepNumber);
                 if (!step) return null;
                 const isGenerating = generatingSteps.has(stepNumber);
                 const missingDeps = checkDependencies ? checkDependencies(stepNumber) : [];

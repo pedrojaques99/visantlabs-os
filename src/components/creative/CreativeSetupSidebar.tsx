@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Upload, Smartphone, Monitor, Square, LayoutTemplate, ChevronDown, Briefcase, ArrowLeft, Image as ImageIcon, FolderOpen, Diamond } from 'lucide-react';
+import {
+  Plus,
+  Upload,
+  Smartphone,
+  Monitor,
+  Square,
+  LayoutTemplate,
+  ChevronDown,
+  Briefcase,
+  ArrowLeft,
+  Image as ImageIcon,
+  FolderOpen,
+  Diamond,
+} from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
@@ -60,8 +73,7 @@ export const CreativeSetupSidebar: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
 
   // Use either explicitly selected brand or context-active brand
-  const selectedGuideline =
-    guidelines.find((g) => g.id === brandId) ?? activeGuideline ?? null;
+  const selectedGuideline = guidelines.find((g) => g.id === brandId) ?? activeGuideline ?? null;
 
   const handleLocalUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,16 +105,21 @@ export const CreativeSetupSidebar: React.FC = () => {
   };
 
   const canGenerate =
-    !!selectedGuideline && prompt.trim().length > 0 && (status === 'setup' || status === 'generating');
+    !!selectedGuideline &&
+    prompt.trim().length > 0 &&
+    (status === 'setup' || status === 'generating');
 
-  const isExistingBg = (backgroundMode === 'upload' || backgroundMode === 'brand') && !!uploadedBackgroundUrl;
-  const creditsRequired = 1 + (isExistingBg ? 0 : getCreditsRequired(modelId || '', resolution, provider));
+  const isExistingBg =
+    (backgroundMode === 'upload' || backgroundMode === 'brand') && !!uploadedBackgroundUrl;
+  const creditsRequired =
+    1 + (isExistingBg ? 0 : getCreditsRequired(modelId || '', resolution, provider));
 
   const handleGenerate = async () => {
     if (!canGenerate) return;
     setStatus('generating');
 
-    const isExistingBg = (backgroundMode === 'upload' || backgroundMode === 'brand') && !!uploadedBackgroundUrl;
+    const isExistingBg =
+      (backgroundMode === 'upload' || backgroundMode === 'brand') && !!uploadedBackgroundUrl;
 
     try {
       const result = await generateCreative({
@@ -140,10 +157,18 @@ export const CreativeSetupSidebar: React.FC = () => {
 
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-white">Adicionar Asset</h2>
+            <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-white">
+              Adicionar Asset
+            </h2>
           </div>
           <label className="cursor-pointer group">
-            <input type="file" className="hidden" accept="image/*" onChange={handleVaultUpload} disabled={isUploading} />
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={handleVaultUpload}
+              disabled={isUploading}
+            />
             <div className="w-full h-32 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 bg-neutral-900/20 group-hover:bg-neutral-900/40 group-hover:border-neutral-700 transition-all">
               {isUploading ? (
                 <GlitchLoader size={24} />
@@ -152,7 +177,9 @@ export const CreativeSetupSidebar: React.FC = () => {
                   <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-neutral-500 group-hover:text-brand-cyan transition-colors">
                     <Plus size={20} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 group-hover:text-neutral-400">Clique para Subir à Brand</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 group-hover:text-neutral-400">
+                    Clique para Subir à Brand
+                  </span>
                 </>
               )}
             </div>
@@ -162,7 +189,9 @@ export const CreativeSetupSidebar: React.FC = () => {
         <section className="flex flex-col gap-6">
           {(selectedGuideline.logos?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">Logos</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+                Logos
+              </h3>
               <div className="grid grid-cols-3 gap-2">
                 {selectedGuideline.logos?.map((logo, i) => (
                   <button
@@ -173,7 +202,11 @@ export const CreativeSetupSidebar: React.FC = () => {
                     }}
                     className="aspect-square rounded-xl border border-neutral-800 bg-neutral-900/40 p-2 hover:border-neutral-700 transition-all group overflow-hidden"
                   >
-                    <img src={getProxiedUrl(logo.url)} alt="Brand logo" className="w-full h-full object-contain group-hover:scale-110 transition-transform" />
+                    <img
+                      src={getProxiedUrl(logo.url)}
+                      alt="Brand logo"
+                      className="w-full h-full object-contain group-hover:scale-110 transition-transform"
+                    />
                   </button>
                 ))}
               </div>
@@ -182,7 +215,9 @@ export const CreativeSetupSidebar: React.FC = () => {
 
           {(selectedGuideline.media?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">Brand Media</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+                Brand Media
+              </h3>
               <div className="grid grid-cols-2 gap-2">
                 {selectedGuideline.media?.map((media, i) => (
                   <button
@@ -193,7 +228,11 @@ export const CreativeSetupSidebar: React.FC = () => {
                     }}
                     className="aspect-video rounded-xl border border-neutral-800 bg-neutral-900/40 p-1.5 hover:border-neutral-700 transition-all group overflow-hidden"
                   >
-                    <img src={getProxiedUrl(media.url)} alt="Brand media" className="w-full h-full object-cover rounded-lg group-hover:scale-110 transition-transform" />
+                    <img
+                      src={getProxiedUrl(media.url)}
+                      alt="Brand media"
+                      className="w-full h-full object-cover rounded-lg group-hover:scale-110 transition-transform"
+                    />
                   </button>
                 ))}
               </div>
@@ -202,7 +241,9 @@ export const CreativeSetupSidebar: React.FC = () => {
 
           {(selectedGuideline.colors?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">Cores</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+                Cores
+              </h3>
               <div className="flex flex-wrap gap-2 px-1">
                 {selectedGuideline.colors?.map((color, i) => (
                   <button
@@ -268,9 +309,9 @@ export const CreativeSetupSidebar: React.FC = () => {
               placeholder="Selecione a marca..."
               variant="node"
               className="h-12"
-              options={guidelines.map(g => ({
+              options={guidelines.map((g) => ({
                 value: g.id!,
-                label: g.identity?.name || 'Sem nome'
+                label: g.identity?.name || 'Sem nome',
               }))}
             />
           </div>
@@ -315,15 +356,22 @@ export const CreativeSetupSidebar: React.FC = () => {
               key={opt.id}
               onClick={() => setFormat(opt.id as CreativeFormat)}
               disabled={status !== 'setup'}
-              className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 group ${format === opt.id
-                ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan shadow-lg shadow-brand-cyan/5'
-                : 'bg-neutral-900/40 border-neutral-800 text-neutral-500 hover:text-white hover:bg-neutral-900/60 hover:border-white/10'
-                }`}
+              className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 group ${
+                format === opt.id
+                  ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan shadow-lg shadow-brand-cyan/5'
+                  : 'bg-neutral-900/40 border-neutral-800 text-neutral-500 hover:text-white hover:bg-neutral-900/60 hover:border-white/10'
+              }`}
             >
-              <opt.icon size={18} strokeWidth={format === opt.id ? 2 : 1.5} className="transition-transform group-hover:scale-110" />
+              <opt.icon
+                size={18}
+                strokeWidth={format === opt.id ? 2 : 1.5}
+                className="transition-transform group-hover:scale-110"
+              />
               <div className="flex flex-col items-center gap-0.5">
                 <span className="text-[11px] font-bold uppercase tracking-wider">{opt.label}</span>
-                <span className="text-[10px] opacity-40 font-mono lowercase tracking-tighter">{opt.sub}</span>
+                <span className="text-[10px] opacity-40 font-mono lowercase tracking-tighter">
+                  {opt.sub}
+                </span>
               </div>
             </button>
           ))}
@@ -338,10 +386,11 @@ export const CreativeSetupSidebar: React.FC = () => {
           <button
             onClick={() => setBackgroundMode('ai')}
             disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'ai'
-              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
-              : 'text-neutral-500 hover:text-neutral-300'
-              }`}
+            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+              backgroundMode === 'ai'
+                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
+                : 'text-neutral-500 hover:text-neutral-300'
+            }`}
           >
             <Diamond size={11} strokeWidth={2} /> IA
           </button>
@@ -355,20 +404,22 @@ export const CreativeSetupSidebar: React.FC = () => {
               setShowVault(true);
             }}
             disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'brand'
-              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
-              : 'text-neutral-500 hover:text-neutral-300'
-              }`}
+            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+              backgroundMode === 'brand'
+                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
+                : 'text-neutral-500 hover:text-neutral-300'
+            }`}
           >
             <Briefcase size={11} strokeWidth={2} /> Vault
           </button>
           <button
             onClick={() => setBackgroundMode('upload')}
             disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${backgroundMode === 'upload'
-              ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
-              : 'text-neutral-500 hover:text-neutral-300'
-              }`}
+            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+              backgroundMode === 'upload'
+                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
+                : 'text-neutral-500 hover:text-neutral-300'
+            }`}
           >
             <Upload size={11} strokeWidth={2} /> Local
           </button>
@@ -376,15 +427,13 @@ export const CreativeSetupSidebar: React.FC = () => {
         {backgroundMode === 'upload' && (
           <div className="mt-2 flex flex-col gap-2">
             <label className="cursor-pointer block relative group">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleLocalUpload}
-              />
+              <input type="file" accept="image/*" className="hidden" onChange={handleLocalUpload} />
               {!uploadedBackgroundUrl ? (
                 <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
-                  <Upload size={16} className="opacity-40 group-hover:text-brand-cyan transition-colors" />
+                  <Upload
+                    size={16}
+                    className="opacity-40 group-hover:text-brand-cyan transition-colors"
+                  />
                   <span className="uppercase tracking-widest">Subir Imagem Local</span>
                 </div>
               ) : (
@@ -396,10 +445,14 @@ export const CreativeSetupSidebar: React.FC = () => {
                   />
                   <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
                     <Upload size={18} className="text-brand-cyan" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-white">Trocar Arquivo</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+                      Trocar Arquivo
+                    </span>
                   </div>
                   <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">Local File</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">
+                      Local File
+                    </span>
                   </div>
                 </div>
               )}
@@ -415,7 +468,10 @@ export const CreativeSetupSidebar: React.FC = () => {
                 className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 hover:bg-neutral-900/60"
               >
                 <div className="flex flex-col items-center gap-2">
-                  <Briefcase size={16} className="opacity-40 hover:text-brand-cyan transition-colors" />
+                  <Briefcase
+                    size={16}
+                    className="opacity-40 hover:text-brand-cyan transition-colors"
+                  />
                   <span className="uppercase tracking-widest">Selecione do Vault</span>
                 </div>
               </button>
@@ -431,10 +487,14 @@ export const CreativeSetupSidebar: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
                   <Briefcase size={18} className="text-brand-cyan" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">Trocar Asset</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+                    Trocar Asset
+                  </span>
                 </div>
                 <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">Vault Asset</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">
+                    Vault Asset
+                  </span>
                 </div>
               </div>
             )}
@@ -477,14 +537,17 @@ export const CreativeSetupSidebar: React.FC = () => {
             )}
           </Button>
 
-          {!status || status === 'setup' && (
-            <div className="flex items-center justify-center gap-1.5 animate-in fade-in slide-in-from-bottom-2">
-              <Gem size={10} className="text-brand-cyan opacity-80" />
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                Esta geração custará <span className="text-white font-bold">{creditsRequired}</span> {creditsRequired === 1 ? 'crédito' : 'créditos'}
-              </span>
-            </div>
-          )}
+          {!status ||
+            (status === 'setup' && (
+              <div className="flex items-center justify-center gap-1.5 animate-in fade-in slide-in-from-bottom-2">
+                <Gem size={10} className="text-brand-cyan opacity-80" />
+                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                  Esta geração custará{' '}
+                  <span className="text-white font-bold">{creditsRequired}</span>{' '}
+                  {creditsRequired === 1 ? 'crédito' : 'créditos'}
+                </span>
+              </div>
+            ))}
         </div>
       </div>
 

@@ -57,7 +57,7 @@ export interface PageShellProps {
 const WIDTH_MAP: Record<NonNullable<PageShellProps['width']>, string> = {
   '5xl': 'max-w-5xl',
   '7xl': 'max-w-7xl',
-  'full': 'max-w-full'
+  full: 'max-w-full',
 };
 
 /**
@@ -90,9 +90,7 @@ export const PageShell: React.FC<PageShellProps> = ({
 
   return (
     <div data-vsn-page={pageId} data-vsn-component={componentName ?? pageId}>
-      {seoTitle && (
-        <SEO title={seoTitle} description={seoDescription} keywords={seoKeywords} />
-      )}
+      {seoTitle && <SEO title={seoTitle} description={seoDescription} keywords={seoKeywords} />}
 
       {/* Background layer */}
       {!noBackground && (
@@ -107,7 +105,7 @@ export const PageShell: React.FC<PageShellProps> = ({
             className={cn(
               'mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 pb-10 sm:pb-16',
               WIDTH_MAP[width],
-              contentClassName,
+              contentClassName
             )}
           >
             {typeof title === 'string' && <h1 className="sr-only">{title}</h1>}
@@ -136,9 +134,7 @@ export const PageShell: React.FC<PageShellProps> = ({
                               </BreadcrumbLink>
                             )}
                           </BreadcrumbItem>
-                          {!isLast && (
-                            <BreadcrumbSeparator className="text-neutral-800" />
-                          )}
+                          {!isLast && <BreadcrumbSeparator className="text-neutral-800" />}
                         </React.Fragment>
                       );
                     })}
@@ -150,9 +146,7 @@ export const PageShell: React.FC<PageShellProps> = ({
             {!hideHeader && (
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 border-b border-white/10 pb-6 sm:pb-10 mb-8 sm:mb-12">
                 <div className="space-y-3">
-                  {microTitle && (
-                    <MicroTitle className="text-neutral-500">{microTitle}</MicroTitle>
-                  )}
+                  {microTitle && <MicroTitle className="text-neutral-500">{microTitle}</MicroTitle>}
                   <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
                     {title}
                   </h2>

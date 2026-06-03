@@ -21,7 +21,9 @@ describe('Batch Runner — variable resolution per row', () => {
 
   it('resolves row 1 correctly', () => {
     const result = applyVariables(template, rows[1]);
-    expect(result).toBe('A black Adidas sneaker with text "Impossible is Nothing" on a studio background');
+    expect(result).toBe(
+      'A black Adidas sneaker with text "Impossible is Nothing" on a studio background'
+    );
   });
 
   it('resolves row 2 correctly', () => {
@@ -78,7 +80,7 @@ describe('Batch Runner — BatchResult shape', () => {
     const done = results.filter((r) => r.status === 'done').length;
     const failed = results.filter((r) => r.status === 'error').length;
     const total = results.length;
-    const progress = Math.round((done + failed) / total * 100);
+    const progress = Math.round(((done + failed) / total) * 100);
     expect(progress).toBe(75);
   });
 });

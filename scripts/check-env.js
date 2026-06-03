@@ -39,11 +39,11 @@ for (const file of envFiles) {
   if (existsSync(filePath)) {
     envFile = file;
     console.log(`✅ Arquivo encontrado: ${file}\n`);
-    
+
     try {
       const content = readFileSync(filePath, 'utf-8');
       const lines = content.split('\n');
-      
+
       for (const line of lines) {
         const trimmed = line.trim();
         if (trimmed && !trimmed.startsWith('#')) {
@@ -64,7 +64,7 @@ for (const file of envFiles) {
 if (!envFile) {
   console.error('❌ Nenhum arquivo .env ou .env.local encontrado!');
   console.log('\n📝 Crie um arquivo .env.local na raiz do projeto com as seguintes variáveis:\n');
-  requiredVars.forEach(varName => {
+  requiredVars.forEach((varName) => {
     console.log(`${varName}=`);
   });
   process.exit(1);
@@ -78,7 +78,7 @@ const warnings = [];
 // Verificar variáveis obrigatórias
 for (const varName of requiredVars) {
   const value = envContent[varName];
-  
+
   if (!value) {
     console.log(`❌ ${varName}: NÃO DEFINIDA`);
     hasErrors = true;
@@ -87,7 +87,9 @@ for (const varName of requiredVars) {
     let isWarning = false;
     if (varName === 'MONGODB_URI') {
       if (!value.startsWith('mongodb://') && !value.startsWith('mongodb+srv://')) {
-        console.log(`⚠️  ${varName}: Formato pode estar incorreto (deve começar com mongodb:// ou mongodb+srv://)`);
+        console.log(
+          `⚠️  ${varName}: Formato pode estar incorreto (deve começar com mongodb:// ou mongodb+srv://)`
+        );
         isWarning = true;
       }
     } else if (varName === 'GOOGLE_CLIENT_ID') {
@@ -135,7 +137,7 @@ if (envFile === '.env' && !existsSync(join(rootDir, '.gitignore'))) {
 const placeholderValues = ['your-secret-key', 'your_', 'placeholder', 'example'];
 for (const [key, value] of Object.entries(envContent)) {
   const lowerValue = value.toLowerCase();
-  if (placeholderValues.some(placeholder => lowerValue.includes(placeholder))) {
+  if (placeholderValues.some((placeholder) => lowerValue.includes(placeholder))) {
     if (key !== 'JWT_SECRET' || value !== 'your-secret-key-change-in-production') {
       console.log(`⚠️  ${key}: Pode conter valor placeholder`);
       warnings.push(key);
@@ -155,5 +157,3 @@ if (hasErrors) {
   console.log('✅ TUDO OK! Todas as variáveis estão configuradas corretamente');
 }
 console.log('='.repeat(50) + '\n');
-
-

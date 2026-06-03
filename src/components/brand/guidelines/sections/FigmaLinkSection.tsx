@@ -10,15 +10,27 @@ import { FigmaImportModal } from '../FigmaImportModal';
 import { Figma } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 // Figma logo SVG
 const FigmaIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z" fill="#0ACF83" />
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z"
+      fill="#0ACF83"
+    />
     <path d="M4 12C4 9.792 5.792 8 8 8H12V16H8C5.792 16 4 14.208 4 12Z" fill="#A259FF" />
     <path d="M4 4C4 1.792 5.792 0 8 0H12V8H8C5.792 8 4 6.208 4 4Z" fill="#F24E1E" />
     <path d="M12 0H16C18.208 0 20 1.792 20 4C20 6.208 18.208 8 16 8H12V0Z" fill="#FF7262" />
-    <path d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z" fill="#1ABCFE" />
+    <path
+      d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z"
+      fill="#1ABCFE"
+    />
   </svg>
 );
 
@@ -28,7 +40,11 @@ interface FigmaLinkSectionProps {
   span?: string;
 }
 
-export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, onUpdate, span }) => {
+export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
+  guideline,
+  onUpdate,
+  span,
+}) => {
   const [isLinking, setIsLinking] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [figmaUrl, setFigmaUrl] = useState('');
@@ -51,7 +67,9 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
     try {
       parsedUrl = new URL(trimmedUrl);
     } catch {
-      toast.error('URL inválida. Use uma URL do Figma (figma.com/file/... ou figma.com/design/...)');
+      toast.error(
+        'URL inválida. Use uma URL do Figma (figma.com/file/... ou figma.com/design/...)'
+      );
       return;
     }
 
@@ -61,7 +79,9 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
     const isExpectedPath = path.startsWith('/file/') || path.startsWith('/design/');
 
     if (!isAllowedHost || !isExpectedPath) {
-      toast.error('URL inválida. Use uma URL do Figma (figma.com/file/... ou figma.com/design/...)');
+      toast.error(
+        'URL inválida. Use uma URL do Figma (figma.com/file/... ou figma.com/design/...)'
+      );
       return;
     }
 
@@ -114,8 +134,8 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
           description: 'Vá em Perfil > Gerenciar para configurar seu token.',
           action: {
             label: 'Configurar',
-            onClick: () => window.location.href = '/profile?tab=configuration'
-          }
+            onClick: () => (window.location.href = '/profile?tab=configuration'),
+          },
         });
       } else {
         toast.error(error.message || 'Erro ao carregar preview do Figma');
@@ -147,18 +167,15 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
   };
 
   return (
-    <SectionBlock
-      id="figma"
-      icon={<FigmaIcon size={14} />}
-      title="Figma"
-      span={span as any}
-    >
+    <SectionBlock id="figma" icon={<FigmaIcon size={14} />} title="Figma" span={span as any}>
       {isLinked ? (
         <div className="space-y-4">
           {/* Linked state */}
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Arquivo Linkado</p>
+              <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">
+                Arquivo Linkado
+              </p>
               <div className="flex items-center gap-2">
                 <p className="text-xs text-neutral-300 truncate font-mono">
                   {guideline.figmaFileKey}
@@ -218,7 +235,11 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({ guideline, o
             disabled={isUnlinking}
             className="h-7 px-2 text-[10px] text-neutral-500 hover:text-destructive hover:bg-destructive/10"
           >
-            {isUnlinking ? <GlitchLoader size={10} className="mr-1" /> : <Unlink size={10} className="mr-1" />}
+            {isUnlinking ? (
+              <GlitchLoader size={10} className="mr-1" />
+            ) : (
+              <Unlink size={10} className="mr-1" />
+            )}
             Desvincular
           </Button>
         </div>

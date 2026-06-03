@@ -11,10 +11,7 @@ interface FAQSectionProps {
   onChange: (faq: FAQ[]) => void;
 }
 
-export const FAQSection: React.FC<FAQSectionProps> = ({
-  faq,
-  onChange,
-}) => {
+export const FAQSection: React.FC<FAQSectionProps> = ({ faq, onChange }) => {
   const { t } = useTranslation();
 
   const addFAQ = () => {
@@ -34,10 +31,9 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-neutral-200 font-mono">
-          {t('budget.faq')}
-        </h3>
-        <Button variant="brand"
+        <h3 className="text-lg font-semibold text-neutral-200 font-mono">{t('budget.faq')}</h3>
+        <Button
+          variant="brand"
           onClick={addFAQ}
           className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
@@ -47,9 +43,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
       </div>
 
       {faq.length === 0 ? (
-        <div className="text-center py-8 text-neutral-500 font-mono text-sm">
-          No FAQs added yet
-        </div>
+        <div className="text-center py-8 text-neutral-500 font-mono text-sm">No FAQs added yet</div>
       ) : (
         <div className="space-y-4">
           {faq.map((item, index) => (
@@ -65,9 +59,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
                     </label>
                     <FormInput
                       value={item.question}
-                      onChange={(e) =>
-                        updateFAQ(index, 'question', e.target.value)
-                      }
+                      onChange={(e) => updateFAQ(index, 'question', e.target.value)}
                       placeholder={t('budget.placeholders.question')}
                     />
                   </div>
@@ -77,15 +69,14 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
                     </label>
                     <FormTextarea
                       value={item.answer}
-                      onChange={(e) =>
-                        updateFAQ(index, 'answer', e.target.value)
-                      }
+                      onChange={(e) => updateFAQ(index, 'answer', e.target.value)}
                       placeholder={t('budget.placeholders.answer')}
                       rows={3}
                     />
                   </div>
                 </div>
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   onClick={() => removeFAQ(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
                   title={t('budget.removeFAQ')}
@@ -100,4 +91,3 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
     </div>
   );
 };
-

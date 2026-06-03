@@ -29,10 +29,11 @@ router.post('/generate', authenticate, async (req: AuthRequest, res) => {
   }
 
   try {
-    const systemInstruction = NODE_BUILDER_SYSTEM_PROMPT +
+    const systemInstruction =
+      NODE_BUILDER_SYSTEM_PROMPT +
       (canvasContext ? `\n\nCurrent canvas context: ${canvasContext}` : '');
 
-    const contents = messages.map(m => ({
+    const contents = messages.map((m) => ({
       role: m.role === 'user' ? 'user' : 'model',
       parts: [{ text: m.content }],
     }));
@@ -88,10 +89,18 @@ router.post('/shader-params', authenticate, async (req: AuthRequest, res) => {
     const result = await getAI().models.generateContent({
       model: GEMINI_MODELS.TEXT,
       config: { systemInstruction: SHADER_SELECTOR_SYSTEM_PROMPT },
-      contents: [{ role: 'user', parts: [{ text: `Select shader for: "${sanitizeForPrompt(description, 500)}"` }] }],
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: `Select shader for: "${sanitizeForPrompt(description, 500)}"` }],
+        },
+      ],
     });
 
-    const cleaned = (result.text ?? '').replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const cleaned = (result.text ?? '')
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
     res.json(JSON.parse(cleaned));
   } catch (err) {
     console.error('[node-builder/shader-params]', err);

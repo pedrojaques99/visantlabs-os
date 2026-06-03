@@ -25,13 +25,13 @@ export function useBrandCollaboration() {
     (section: string | null) => {
       updateMyPresence({ activeSection: section } as any);
     },
-    [updateMyPresence],
+    [updateMyPresence]
   );
 
   /** Users currently viewing/editing this guideline (excludes self) */
   const collaborators = others.map((other) => ({
     connectionId: other.connectionId,
-    presence: (other.presence as unknown) as BrandPresence | null,
+    presence: other.presence as unknown as BrandPresence | null,
     info: other.info as { name?: string; email?: string; picture?: string } | undefined,
   }));
 

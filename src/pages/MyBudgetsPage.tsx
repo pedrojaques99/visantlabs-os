@@ -14,14 +14,14 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
+} from '../components/ui/BreadcrumbWithBack';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
 import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit, Layout } from 'lucide-react';
 import type { CustomPdfPreset } from '../types/types';
 import { SEO } from '../components/SEO';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { formatDateShort } from '@/utils/localeUtils';
 
 export const MyBudgetsPage: React.FC = () => {
@@ -101,7 +101,7 @@ export const MyBudgetsPage: React.FC = () => {
     setDeletingId(budgetToDelete);
     try {
       await budgetApi.delete(budgetToDelete);
-      setBudgets(prev => prev.filter(b => b._id !== budgetToDelete));
+      setBudgets((prev) => prev.filter((b) => b._id !== budgetToDelete));
       toast.success(t('budget.deleted') || 'Budget deleted successfully');
     } catch (error: any) {
       console.error('Error deleting budget:', error);
@@ -129,7 +129,7 @@ export const MyBudgetsPage: React.FC = () => {
     setDeletingPresetId(presetToDelete);
     try {
       await budgetApi.deletePdfPreset(presetToDelete);
-      setPresets(prev => prev.filter(p => (p._id || p.id) !== presetToDelete));
+      setPresets((prev) => prev.filter((p) => (p._id || p.id) !== presetToDelete));
       toast.success(t('budget.presetDeleted') || 'Preset deleted successfully');
     } catch (error: any) {
       console.error('Error deleting preset:', error);
@@ -152,8 +152,7 @@ export const MyBudgetsPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
-        <div className="fixed inset-0 z-0">
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -176,8 +175,7 @@ export const MyBudgetsPage: React.FC = () => {
         noindex={true}
       />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0">
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Breadcrumb with Back Button */}
           <div className="mb-6">
@@ -214,13 +212,17 @@ export const MyBudgetsPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Button variant="ghost" onClick={() => navigate('/budget-machine')}
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/budget-machine')}
                 className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 hover:text-brand-cyan rounded-md text-xs font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Layout className="h-3.5 w-3.5" />
                 {t('budget.selectTemplate') || 'Ver Templates'}
               </Button>
-              <Button variant="ghost" onClick={() => navigate('/budget-machine')}
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/budget-machine')}
                 className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Pickaxe className="h-4 w-4" />
@@ -241,8 +243,8 @@ export const MyBudgetsPage: React.FC = () => {
                     {isLoadingPresets
                       ? 'Carregando...'
                       : presets.length === 0
-                        ? t('budget.noPresets') || 'Nenhum preset salvo ainda'
-                        : `${presets.length} ${presets.length === 1 ? 'preset' : 'presets'}`}
+                      ? t('budget.noPresets') || 'Nenhum preset salvo ainda'
+                      : `${presets.length} ${presets.length === 1 ? 'preset' : 'presets'}`}
                   </p>
                 </div>
               </div>
@@ -251,7 +253,9 @@ export const MyBudgetsPage: React.FC = () => {
                 <div className="flex items-center justify-center py-8">
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-[brand-cyan] border-t-transparent rounded-md animate-spin" />
-                    <span className="text-sm text-neutral-400 font-mono">{t('my.budgets.carregando_presets')}</span>
+                    <span className="text-sm text-neutral-400 font-mono">
+                      {t('my.budgets.carregando_presets')}
+                    </span>
                   </div>
                 </div>
               ) : presets.length === 0 ? (
@@ -287,13 +291,17 @@ export const MyBudgetsPage: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" onClick={() => handleEditPreset(presetId)}
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleEditPreset(presetId)}
                             className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Edit className="h-4 w-4" />
                             {t('common.edit') || 'Edit'}
                           </Button>
-                          <Button variant="ghost" onClick={(e) => handleDeletePresetClick(presetId, e)}
+                          <Button
+                            variant="ghost"
+                            onClick={(e) => handleDeletePresetClick(presetId, e)}
                             disabled={deletingPresetId === presetId}
                             className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                           >
@@ -340,7 +348,9 @@ export const MyBudgetsPage: React.FC = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-brand-cyan" />
                         <h3 className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2">
-                          {budget.name ? truncateText(budget.name, 60) : truncateText(budget.projectDescription, 60)}
+                          {budget.name
+                            ? truncateText(budget.name, 60)
+                            : truncateText(budget.projectDescription, 60)}
                         </h3>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
@@ -355,16 +365,20 @@ export const MyBudgetsPage: React.FC = () => {
                   </p>
 
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={(e) => {
-                      e.stopPropagation();
-                      handleView(budget);
-                    }}
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(budget);
+                      }}
                       className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('budget.view') || 'View'}
                     </Button>
-                    <Button variant="ghost" onClick={(e) => handleDeleteClick(budget._id, e)}
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => handleDeleteClick(budget._id, e)}
                       disabled={deletingId === budget._id}
                       className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
@@ -414,7 +428,10 @@ export const MyBudgetsPage: React.FC = () => {
           }}
           onConfirm={handleDeletePresetConfirm}
           title={t('budget.confirmDeletePresetTitle') || 'Excluir Preset'}
-          message={t('budget.confirmDeletePreset') || 'Tem certeza que deseja excluir este preset? Esta ação não pode ser desfeita.'}
+          message={
+            t('budget.confirmDeletePreset') ||
+            'Tem certeza que deseja excluir este preset? Esta ação não pode ser desfeita.'
+          }
           confirmText={t('common.delete') || 'Excluir'}
           cancelText={t('common.cancel') || 'Cancelar'}
           variant="danger"
@@ -423,4 +440,3 @@ export const MyBudgetsPage: React.FC = () => {
     </>
   );
 };
-

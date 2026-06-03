@@ -10,7 +10,7 @@ import { waitlistService } from '../services/waitlistService';
 import { SEO } from '../components/SEO';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 // Get WhatsApp group URL from environment variable
 const WHATSAPP_GROUP_URL = (import.meta as any).env?.VITE_WHATSAPP_GROUP_URL || '';
@@ -39,17 +39,23 @@ export const WaitlistPage: React.FC = () => {
       await waitlistService.joinWaitlist(email);
 
       setIsSubmitted(true);
-      toast.success(t('waitlist.success.addedToWaitlist') || 'Thank you! You\'ve been added to the waitlist.');
+      toast.success(
+        t('waitlist.success.addedToWaitlist') || "Thank you! You've been added to the waitlist."
+      );
       setEmail('');
     } catch (error: any) {
       console.error('Error joining waitlist:', error);
       // Check if email is already in waitlist (not really an error)
       if (error.message?.includes('already in waitlist')) {
         setIsSubmitted(true);
-        toast.success(t('waitlist.success.addedToWaitlist') || 'Thank you! You\'ve been added to the waitlist.');
+        toast.success(
+          t('waitlist.success.addedToWaitlist') || "Thank you! You've been added to the waitlist."
+        );
         setEmail('');
       } else {
-        toast.error(t('waitlist.errors.failedToJoin') || 'Failed to join waitlist. Please try again.');
+        toast.error(
+          t('waitlist.errors.failedToJoin') || 'Failed to join waitlist. Please try again.'
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -88,7 +94,8 @@ export const WaitlistPage: React.FC = () => {
                 {t('waitlist.title') || 'Closed Alpha // VSN Labs®'}
               </h1>
               <p className="text-neutral-700 font-mono text-sm md:text-base max-w-2xl mx-auto mt-4">
-                {t('waitlist.subtitle') || 'Be among the first to access our premium tools. Get notified when we open access.'}
+                {t('waitlist.subtitle') ||
+                  'Be among the first to access our premium tools. Get notified when we open access.'}
               </p>
             </div>
 
@@ -97,7 +104,10 @@ export const WaitlistPage: React.FC = () => {
               {!isSubmitted ? (
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="email" className="block text-sm font-mono text-neutral-700 mb-2">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-mono text-neutral-700 mb-2"
+                    >
                       {t('waitlist.emailLabel') || 'Email Address'}
                     </label>
                     <div className="relative">
@@ -138,9 +148,11 @@ export const WaitlistPage: React.FC = () => {
               ) : (
                 <div className="text-center py-4">
                   <div className="text-green-400 text-sm font-mono mb-4">
-                    {t('waitlist.addedToWaitlist') || '✓ You\'ve been added to the waitlist!'}
+                    {t('waitlist.addedToWaitlist') || "✓ You've been added to the waitlist!"}
                   </div>
-                  <Button variant="ghost" onClick={() => setIsSubmitted(false)}
+                  <Button
+                    variant="ghost"
+                    onClick={() => setIsSubmitted(false)}
                     className="text-brand-cyan hover:text-brand-cyan/80 text-sm font-mono underline"
                   >
                     {t('waitlist.addAnotherEmail') || 'Add another email'}
@@ -165,5 +177,3 @@ export const WaitlistPage: React.FC = () => {
     </>
   );
 };
-
-

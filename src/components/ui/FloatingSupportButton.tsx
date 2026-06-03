@@ -23,4 +23,3 @@ export const FloatingSupportButton: React.FC<FloatingSupportButtonProps> = ({ on
     </button>
   );
 };
-

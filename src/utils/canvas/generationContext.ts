@@ -5,8 +5,18 @@
  * from a model ID. Used by all canvas generation handlers and components.
  */
 
-import type { GeminiModel, SeedreamModel, ImageProvider, Resolution, AspectRatio } from '@/types/types';
-import { isAdvancedModel, getDefaultResolution, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
+import type {
+  GeminiModel,
+  SeedreamModel,
+  ImageProvider,
+  Resolution,
+  AspectRatio,
+} from '@/types/types';
+import {
+  isAdvancedModel,
+  getDefaultResolution,
+  DEFAULT_ASPECT_RATIO,
+} from '@/constants/geminiModels';
 import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
 import { isOpenAIImageModel, getOpenAIImageModelConfig } from '@/constants/openaiModels';
 
@@ -58,8 +68,10 @@ export function resolveGenerationContext(
   const advanced = isAdvancedModel(geminiModel);
   return {
     provider: 'gemini',
-    resolution: advanced ? (overrides.resolution ?? getDefaultResolution(geminiModel) ?? '1K') : undefined,
-    aspectRatio: advanced ? (overrides.aspectRatio ?? DEFAULT_ASPECT_RATIO) : undefined,
+    resolution: advanced
+      ? overrides.resolution ?? getDefaultResolution(geminiModel) ?? '1K'
+      : undefined,
+    aspectRatio: advanced ? overrides.aspectRatio ?? DEFAULT_ASPECT_RATIO : undefined,
   };
 }
 

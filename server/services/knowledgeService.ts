@@ -16,8 +16,8 @@ const splitPDF = async (pdfBuffer: Buffer, pageSize: number = 5): Promise<Buffer
     const end = Math.min(i + pageSize, totalPages);
     const pageIndices = Array.from({ length: end - i }, (_, index) => i + index);
     const copiedPages = await newDoc.copyPages(pdfDoc, pageIndices);
-    
-    copiedPages.forEach(page => newDoc.addPage(page));
+
+    copiedPages.forEach((page) => newDoc.addPage(page));
     pdfChunks.push(Buffer.from(await newDoc.save()));
   }
   return pdfChunks;
@@ -35,17 +35,26 @@ export const knowledgeService = {
   }) {
     const { userId, projectId, parts, metadata } = params;
 
-    console.log(`[EliteRAG] ingestContent: userId=${userId}, projectId=${projectId}, partsCount=${parts.length}`);
-    console.log(`[EliteRAG] Parts structure:`, JSON.stringify(parts.map(p => ({
-      hasInlineData: !!p.inlineData,
-      mimeType: p.inlineData?.mimeType,
-      dataType: typeof p.inlineData?.data,
-      dataLength: p.inlineData?.data?.length || 'N/A',
-      hasText: !!p.text,
-    })), null, 2));
+    console.log(
+      `[EliteRAG] ingestContent: userId=${userId}, projectId=${projectId}, partsCount=${parts.length}`
+    );
+    console.log(
+      `[EliteRAG] Parts structure:`,
+      JSON.stringify(
+        parts.map((p) => ({
+          hasInlineData: !!p.inlineData,
+          mimeType: p.inlineData?.mimeType,
+          dataType: typeof p.inlineData?.data,
+          dataLength: p.inlineData?.data?.length || 'N/A',
+          hasText: !!p.text,
+        })),
+        null,
+        2
+      )
+    );
 
     // 1. Detect PDF for text extraction + chunking
-    const pdfPart = parts.find(p => p.inlineData?.mimeType === 'application/pdf');
+    const pdfPart = parts.find((p) => p.inlineData?.mimeType === 'application/pdf');
 
     if (pdfPart) {
       console.log(`[KnowledgeService] PDF detectado: ${metadata.fileName || 'desconhecido'}`);
@@ -62,15 +71,19 @@ export const knowledgeService = {
       for (let i = 0; i < chunks.length; i++) {
         try {
           const chunk = chunks[i];
-          console.log(`[KnowledgeService] Gerando embedding para chunk ${i+1}/${chunks.length}...`);
+          console.log(
+            `[KnowledgeService] Gerando embedding para chunk ${i + 1}/${chunks.length}...`
+          );
 
           // Generate embedding for the text chunk
-          const { embedding } = await getMultimodalEmbedding([{
-            text: chunk.text
-          }]);
+          const { embedding } = await getMultimodalEmbedding([
+            {
+              text: chunk.text,
+            },
+          ]);
 
           if (!embedding || embedding.length === 0) {
-            console.error(`[KnowledgeService] Embedding vazio para chunk ${i+1}. Pulando...`);
+            console.error(`[KnowledgeService] Embedding vazio para chunk ${i + 1}. Pulando...`);
             continue;
           }
 
@@ -86,12 +99,14 @@ export const knowledgeService = {
             timestamp: new Date().toISOString(),
           };
 
-          console.log(`[KnowledgeService] Upserting to Pinecone: id=${id} (dim=${embedding.length})`);
+          console.log(
+            `[KnowledgeService] Upserting to Pinecone: id=${id} (dim=${embedding.length})`
+          );
           await vectorService.upsert(id, embedding, chunkMetadata);
           results.push(id);
         } catch (chunkError: any) {
-          console.error(`[KnowledgeService] Erro no chunk ${i+1}:`, chunkError);
-          throw new Error(`Erro ao processar chunk ${i+1}: ${chunkError.message}`);
+          console.error(`[KnowledgeService] Erro no chunk ${i + 1}:`, chunkError);
+          throw new Error(`Erro ao processar chunk ${i + 1}: ${chunkError.message}`);
         }
       }
 
@@ -108,7 +123,7 @@ export const knowledgeService = {
       projectId,
       timestamp: new Date().toISOString(),
     };
-    
+
     await vectorService.upsert(id, embedding, fullMetadata);
     return { id, metadata: fullMetadata, processedAs: 'multimodal_single' };
   },
@@ -119,16 +134,16 @@ export const knowledgeService = {
   async getContext(query: string, userId: string, projectId?: string) {
     // 1. Generate query embedding
     const { embedding } = await getMultimodalEmbedding([{ text: query }]);
-    
+
     // 2. Query Pinecone
     // We can filter by userId to ensure privacy
     const filter: any = { userId };
     if (projectId) {
       filter.projectId = projectId;
     }
-    
+
     const matches = await vectorService.query(embedding, 5, filter);
-    
+
     // 3. Format context string
     const contextParts = matches
       .map((match: any) => {
@@ -136,7 +151,7 @@ export const knowledgeService = {
         return `[Fonte: ${meta.fileName || 'Documento'}]\n${meta.text || ''}`;
       })
       .filter((text: string) => text.length > 0);
-      
+
     return contextParts.join('\n\n---\n\n');
   },
 
@@ -175,7 +190,7 @@ ${context}`;
     return await chatWithLLM(query, context, history, {
       apiKey: userApiKey,
       model,
-      systemInstruction: brandingSystemInstruction
+      systemInstruction: brandingSystemInstruction,
     });
-  }
+  },
 };

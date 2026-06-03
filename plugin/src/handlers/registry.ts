@@ -29,52 +29,58 @@ export const registry: Registry = {
   },
 
   // Context
-  'context.get':         async () => getEnrichedContext(),
+  'context.get': async () => getEnrichedContext(),
   'context.getEnriched': async () => getEnrichedContext(),
 
   // Components / Templates
   'components.getInFile': async () => H.getComponentsInCurrentFile() as any,
-  'components.getAgent':  async () => H.getAgentComponents() as any,
-  'templates.get':        async () => H.getTemplates() as any,
-  'templates.scaffold':   async ({ libraryName }) => {
+  'components.getAgent': async () => H.getAgentComponents() as any,
+  'templates.get': async () => H.getTemplates() as any,
+  'templates.scaffold': async ({ libraryName }) => {
     await H.scaffoldAgentLibrary({ name: libraryName ?? 'Agent' } as any);
     return { ok: true } as any;
   },
 
   // Variables
-  'variables.getColors':       async () => H.getColorVariablesFromFile() as any,
-  'variables.getFonts':        async () => H.getFontVariablesFromFile() as any,
+  'variables.getColors': async () => H.getColorVariablesFromFile() as any,
+  'variables.getFonts': async () => H.getFontVariablesFromFile() as any,
   'variables.getFontFamilies': async () => H.getAvailableFontFamilies() as any,
 
   // Storage
   'storage.get': async ({ key }) => ({ value: await figma.clientStorage.getAsync(key) }),
-  'storage.set': async ({ key, value }) => { await figma.clientStorage.setAsync(key, value); return { ok: true }; },
-  'storage.delete': async ({ key }) => { await figma.clientStorage.deleteAsync(key); return { ok: true }; },
+  'storage.set': async ({ key, value }) => {
+    await figma.clientStorage.setAsync(key, value);
+    return { ok: true };
+  },
+  'storage.delete': async ({ key }) => {
+    await figma.clientStorage.deleteAsync(key);
+    return { ok: true };
+  },
 
   // Brand
-  'brand.applyLocal':     async (p) => H.applyBrandGuidelinesLocally((p as any).guideline ?? p) as any,
-  'brand.lint':           async (p) => H.lintBrandAdherence(p as any) as any,
-  'brand.fixIssues':      async (p) => H.fixBrandIssues(p as any) as any,
-  'brand.generateGrid':   async (p) => H.generateBrandMatrix(p as any) as any,
+  'brand.applyLocal': async (p) => H.applyBrandGuidelinesLocally((p as any).guideline ?? p) as any,
+  'brand.lint': async (p) => H.lintBrandAdherence(p as any) as any,
+  'brand.fixIssues': async (p) => H.fixBrandIssues(p as any) as any,
+  'brand.generateGrid': async (p) => H.generateBrandMatrix(p as any) as any,
   'brand.generateSocial': async (p) => H.generateSocialFrames((p as any).brandColors ?? []) as any,
-  'brand.importLogos':    async () => H.importLogoCandidates() as any,
+  'brand.importLogos': async () => H.importLogoCandidates() as any,
 
   // Sync
   'sync.extract': async () => H.extractForSync() as any,
-  'sync.push':    async (p) => H.pushToFigma(p as any) as any,
+  'sync.push': async (p) => H.pushToFigma(p as any) as any,
 
   // Text
-  'text.scanFonts':  async () => H.scanFontsInSelection(),
-  'text.swapFonts':  async (p) => H.swapFonts(p),
-  'text.getStyles':  async (p) => H.getStylesForFamily(p),
+  'text.scanFonts': async () => H.scanFontsInSelection(),
+  'text.swapFonts': async (p) => H.swapFonts(p),
+  'text.getStyles': async (p) => H.getStylesForFamily(p),
 
   // Export
   'export.textToMarkdown': async (p) => H.exportTextToMarkdown(p),
 
   // Dev
-  'dev.stickyPrompt':       async (p) => H.createStickyPrompt((p as any).text ?? '', 'Prompt') as any,
-  'dev.varyColors':         async (p) => H.varySelectionColors((p as any).brandColors) as any,
-  'dev.selectionToSlices':  async () => H.selectionToSlices() as any,
+  'dev.stickyPrompt': async (p) => H.createStickyPrompt((p as any).text ?? '', 'Prompt') as any,
+  'dev.varyColors': async (p) => H.varySelectionColors((p as any).brandColors) as any,
+  'dev.selectionToSlices': async () => H.selectionToSlices() as any,
   'dev.multiplyResponsive': async (p) => H.multiplyResponsive((p as any).formats) as any,
 };
 
@@ -88,7 +94,8 @@ async function dispatchRaw(env: Envelope): Promise<Result> {
   const handler = (registry as any)[env.op] as HandlerFn<OpName> | undefined;
   if (!handler) {
     return {
-      id: env.id, ok: false,
+      id: env.id,
+      ok: false,
       error: { code: 'UNKNOWN_OP', message: `No handler for op "${env.op}"` },
       ms: performance.now() - t0,
     };
@@ -98,7 +105,8 @@ async function dispatchRaw(env: Envelope): Promise<Result> {
     return { id: env.id, ok: true, data, ms: performance.now() - t0 };
   } catch (e: any) {
     return {
-      id: env.id, ok: false,
+      id: env.id,
+      ok: false,
       error: { code: e?.code ?? 'HANDLER_ERROR', message: e?.message ?? String(e) },
       ms: performance.now() - t0,
     };

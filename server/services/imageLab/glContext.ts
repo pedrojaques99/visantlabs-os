@@ -5,7 +5,8 @@
  * Mesa software rendering — no GPU required.
  */
 
-let createGL: ((w: number, h: number, opts?: Record<string, any>) => WebGLRenderingContext) | null = null;
+let createGL: ((w: number, h: number, opts?: Record<string, any>) => WebGLRenderingContext) | null =
+  null;
 let glAvailable: boolean | null = null;
 
 async function loadGL(): Promise<typeof createGL> {
@@ -19,7 +20,9 @@ async function loadGL(): Promise<typeof createGL> {
     return createGL;
   } catch {
     glAvailable = false;
-    console.warn('[ImageLab] headless-gl not available — riso and shader effects disabled. Install with: npm install gl');
+    console.warn(
+      '[ImageLab] headless-gl not available — riso and shader effects disabled. Install with: npm install gl'
+    );
     return null;
   }
 }
@@ -28,7 +31,10 @@ export function isGLAvailable(): boolean {
   return glAvailable === true;
 }
 
-export async function createGLContext(width: number, height: number): Promise<WebGLRenderingContext | null> {
+export async function createGLContext(
+  width: number,
+  height: number
+): Promise<WebGLRenderingContext | null> {
   const factory = await loadGL();
   if (!factory) return null;
   const gl = factory(width, height, { preserveDrawingBuffer: true, antialias: false });
@@ -37,7 +43,11 @@ export async function createGLContext(width: number, height: number): Promise<We
 
 // ── Shared WebGL helpers ──
 
-export function compileShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader {
+export function compileShader(
+  gl: WebGLRenderingContext,
+  type: number,
+  source: string
+): WebGLShader {
   const shader = gl.createShader(type);
   if (!shader) throw new Error('Failed to create shader');
   gl.shaderSource(shader, source);
@@ -50,7 +60,11 @@ export function compileShader(gl: WebGLRenderingContext, type: number, source: s
   return shader;
 }
 
-export function createProgram(gl: WebGLRenderingContext, vertexSrc: string, fragmentSrc: string): WebGLProgram {
+export function createProgram(
+  gl: WebGLRenderingContext,
+  vertexSrc: string,
+  fragmentSrc: string
+): WebGLProgram {
   const vs = compileShader(gl, gl.VERTEX_SHADER, vertexSrc);
   const fs = compileShader(gl, gl.FRAGMENT_SHADER, fragmentSrc);
   const program = gl.createProgram();
@@ -85,7 +99,12 @@ export function setupFullscreenQuad(gl: WebGLRenderingContext, program: WebGLPro
   gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
 }
 
-export function uploadTexture(gl: WebGLRenderingContext, pixels: Uint8Array, width: number, height: number): WebGLTexture {
+export function uploadTexture(
+  gl: WebGLRenderingContext,
+  pixels: Uint8Array,
+  width: number,
+  height: number
+): WebGLTexture {
   const texture = gl.createTexture();
   if (!texture) throw new Error('Failed to create texture');
   gl.bindTexture(gl.TEXTURE_2D, texture);

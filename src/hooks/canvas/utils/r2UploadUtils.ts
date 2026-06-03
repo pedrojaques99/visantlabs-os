@@ -1,6 +1,6 @@
 /**
  * r2UploadUtils
- * 
+ *
  * Utilitários compartilhados para upload e gerenciamento de imagens no R2
  */
 
@@ -11,13 +11,18 @@ import { canvasApi } from '@/services/canvasApi';
 
 // Mapa para armazenar timeouts de debounce por nodeId
 const uploadDebounceMap = new Map<string, TimerRef>();
-const pendingUploads = new Map<string, {
-  base64Image: string;
-  nodeId: string;
-  canvasId: string;
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
-  updateNodeCallback?: (imageUrl: string) => void;
-}>();
+const pendingUploads = new Map<
+  string,
+  {
+    base64Image: string;
+    nodeId: string;
+    canvasId: string;
+    setNodes: (
+      nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+    ) => void;
+    updateNodeCallback?: (imageUrl: string) => void;
+  }
+>();
 
 export interface UploadOptions {
   skipCompression?: boolean;
@@ -30,7 +35,9 @@ export const uploadImageToR2Auto = async (
   base64Image: string,
   nodeId: string,
   canvasId: string | undefined,
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   updateNodeCallback?: (imageUrl: string) => void,
   options?: UploadOptions
 ): Promise<string | null> => {
@@ -52,7 +59,17 @@ export const uploadImageToR2Auto = async (
             // Remove base64 fields based on node type
             const updatedData: any = { ...nodeData };
 
-            if (n.type === 'upscale' || n.type === 'upscaleBicubic' || n.type === 'merge' || n.type === 'edit' || n.type === 'mockup' || n.type === 'prompt' || n.type === 'texture' || n.type === 'ambience' || n.type === 'angle') {
+            if (
+              n.type === 'upscale' ||
+              n.type === 'upscaleBicubic' ||
+              n.type === 'merge' ||
+              n.type === 'edit' ||
+              n.type === 'mockup' ||
+              n.type === 'prompt' ||
+              n.type === 'texture' ||
+              n.type === 'ambience' ||
+              n.type === 'angle'
+            ) {
               // Remove base64 if URL matches (upload was successful)
               if (updatedData.resultImageUrl === imageUrl && updatedData.resultImageBase64) {
                 updatedData.resultImageUrl = imageUrl;
@@ -111,7 +128,9 @@ export const uploadImageToR2Debounced = (
   base64Image: string,
   nodeId: string,
   canvasId: string | undefined,
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   updateNodeCallback?: (imageUrl: string) => void,
   debounceMs: number = 4000
 ): void => {
@@ -181,4 +200,3 @@ export const flushAllPendingUploads = async (): Promise<void> => {
   pendingUploads.clear();
   await Promise.all(uploadPromises);
 };
-

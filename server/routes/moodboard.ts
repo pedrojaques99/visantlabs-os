@@ -117,114 +117,96 @@ router.post(
 
 // POST /api/moodboard/projects
 // Save or update a moodboard project
-router.post(
-  '/projects',
-  apiRateLimiter,
-  authenticate,
-  async (req: AuthRequest, res, next) => {
-    try {
-      await connectToMongoDB();
-      const db = getDb();
+router.post('/projects', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
 
-      const { id, name, sourceUrl, images, brandGuidelineId } = req.body;
-      const userId = req.userId!;
+    const { id, name, sourceUrl, images, brandGuidelineId } = req.body;
+    const userId = req.userId!;
 
-      const doc = {
+    const doc = {
+      userId,
+      name: name || 'Untitled Moodboard',
+      sourceUrl: sourceUrl || null,
+      images: images || [],
+      brandGuidelineId: brandGuidelineId || null,
+      updatedAt: new Date(),
+    };
+
+    if (id) {
+      const existing = await db.collection('moodboard_projects').findOne({
+        _id: new ObjectId(id),
         userId,
-        name: name || 'Untitled Moodboard',
-        sourceUrl: sourceUrl || null,
-        images: images || [],
-        brandGuidelineId: brandGuidelineId || null,
-        updatedAt: new Date(),
-      };
-
-      if (id) {
-        const existing = await db.collection('moodboard_projects').findOne({
-          _id: new ObjectId(id),
-          userId,
-        });
-        if (!existing) {
-          return res.status(404).json({ error: 'Project not found' });
-        }
-        await db.collection('moodboard_projects').updateOne(
-          { _id: new ObjectId(id) },
-          { $set: doc }
-        );
-        return res.json({ id });
-      }
-
-      const result = await db.collection('moodboard_projects').insertOne({
-        ...doc,
-        createdAt: new Date(),
       });
-      res.json({ id: result.insertedId.toString() });
-    } catch (err) {
-      next(err);
+      if (!existing) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+      await db.collection('moodboard_projects').updateOne({ _id: new ObjectId(id) }, { $set: doc });
+      return res.json({ id });
     }
+
+    const result = await db.collection('moodboard_projects').insertOne({
+      ...doc,
+      createdAt: new Date(),
+    });
+    res.json({ id: result.insertedId.toString() });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 // GET /api/moodboard/projects
 // List user's moodboard projects
-router.get(
-  '/projects',
-  apiRateLimiter,
-  authenticate,
-  async (req: AuthRequest, res, next) => {
-    try {
-      await connectToMongoDB();
-      const db = getDb();
-      const userId = req.userId!;
+router.get('/projects', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const userId = req.userId!;
 
-      const projects = await db
-        .collection('moodboard_projects')
-        .find({ userId })
-        .sort({ updatedAt: -1 })
-        .limit(50)
-        .project({ images: 0 })
-        .toArray();
+    const projects = await db
+      .collection('moodboard_projects')
+      .find({ userId })
+      .sort({ updatedAt: -1 })
+      .limit(50)
+      .project({ images: 0 })
+      .toArray();
 
-      res.json({ projects: projects.map(p => ({ ...p, id: p._id.toString(), _id: undefined })) });
-    } catch (err) {
-      next(err);
-    }
+    res.json({ projects: projects.map((p) => ({ ...p, id: p._id.toString(), _id: undefined })) });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 // GET /api/moodboard/projects/:id
 // Load a specific project
-router.get(
-  '/projects/:id',
-  apiRateLimiter,
-  authenticate,
-  async (req: AuthRequest, res, next) => {
+router.get('/projects/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const userId = req.userId!;
+
+    let projectId: ObjectId;
     try {
-      await connectToMongoDB();
-      const db = getDb();
-      const userId = req.userId!;
-
-      let projectId: ObjectId;
-      try {
-        projectId = new ObjectId(req.params.id);
-      } catch {
-        return res.status(400).json({ error: 'Invalid project id' });
-      }
-
-      const project = await db.collection('moodboard_projects').findOne({
-        _id: projectId,
-        userId,
-      });
-
-      if (!project) {
-        return res.status(404).json({ error: 'Project not found' });
-      }
-
-      res.json({ project: { ...project, id: project._id.toString(), _id: undefined } });
-    } catch (err) {
-      next(err);
+      projectId = new ObjectId(req.params.id);
+    } catch {
+      return res.status(400).json({ error: 'Invalid project id' });
     }
+
+    const project = await db.collection('moodboard_projects').findOne({
+      _id: projectId,
+      userId,
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    res.json({ project: { ...project, id: project._id.toString(), _id: undefined } });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 // DELETE /api/moodboard/projects/:id
 router.delete(

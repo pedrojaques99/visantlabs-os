@@ -29,7 +29,13 @@ export interface LogoMatrixPayload {
 }
 
 function hexFromRGB(r: number, g: number, b: number): string {
-  return '#' + [r, g, b].map(c => Math.round(c).toString(16).padStart(2, '0')).join('').toUpperCase();
+  return (
+    '#' +
+    [r, g, b]
+      .map((c) => Math.round(c).toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase()
+  );
 }
 
 function luminance(r: number, g: number, b: number): number {
@@ -37,7 +43,10 @@ function luminance(r: number, g: number, b: number): number {
 }
 
 function safeName(name: string): string {
-  return name.replace(/[^\w\s\-]/g, '').replace(/\s+/g, '_').replace(/_+/g, '_');
+  return name
+    .replace(/[^\w\s\-]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_');
 }
 
 const EXPORT_PRESETS = {
@@ -118,7 +127,7 @@ export async function generateBrandMatrix(payload: GenerateAssetsPayload) {
   // Pre-fetch source dimensions for rescale
   const assetDims = new Map<string, { w: number; h: number; scale: number }>();
   for (const asset of assets) {
-    const node = await figma.getNodeByIdAsync(asset.nodeId) as SceneNode | null;
+    const node = (await figma.getNodeByIdAsync(asset.nodeId)) as SceneNode | null;
     if (node && 'width' in node) {
       const w = node.width;
       const h = node.height;
@@ -146,7 +155,7 @@ export async function generateBrandMatrix(payload: GenerateAssetsPayload) {
       continue;
     }
 
-    const matchingAssets = assets.filter(a => a.section === def.key);
+    const matchingAssets = assets.filter((a) => a.section === def.key);
     const isSocialEmpty = matchingAssets.length === 0 && def.key === 'social';
 
     if (matchingAssets.length === 0 && !isSocialEmpty) continue;
@@ -222,7 +231,10 @@ export async function generateBrandMatrix(payload: GenerateAssetsPayload) {
         counterAxisSizingMode: 'FIXED',
         width: SUB_W,
         itemSpacing: FRAME_GAP,
-        paddingTop: PAD, paddingRight: PAD, paddingBottom: PAD, paddingLeft: PAD,
+        paddingTop: PAD,
+        paddingRight: PAD,
+        paddingBottom: PAD,
+        paddingLeft: PAD,
         fills: [],
       },
     });
@@ -274,7 +286,11 @@ export async function generateBrandMatrix(payload: GenerateAssetsPayload) {
           props: { fills: [{ type: 'SOLID', color: contrastHex }] },
         });
 
-        ops.push({ type: 'SET_EXPORT_SETTINGS', ref: frameRef, exportSettings: EXPORT_PRESETS.print });
+        ops.push({
+          type: 'SET_EXPORT_SETTINGS',
+          ref: frameRef,
+          exportSettings: EXPORT_PRESETS.print,
+        });
       }
     }
 
@@ -293,7 +309,10 @@ export async function generateBrandMatrix(payload: GenerateAssetsPayload) {
         counterAxisSizingMode: 'FIXED',
         width: SUB_W,
         itemSpacing: FRAME_GAP,
-        paddingTop: PAD, paddingRight: PAD, paddingBottom: PAD, paddingLeft: PAD,
+        paddingTop: PAD,
+        paddingRight: PAD,
+        paddingBottom: PAD,
+        paddingLeft: PAD,
         fills: [],
       },
     });
@@ -343,7 +362,11 @@ export async function generateBrandMatrix(payload: GenerateAssetsPayload) {
           props: { fills: [{ type: 'SOLID', color: hex }] },
         });
 
-        ops.push({ type: 'SET_EXPORT_SETTINGS', ref: isoFrameRef, exportSettings: EXPORT_PRESETS.print });
+        ops.push({
+          type: 'SET_EXPORT_SETTINGS',
+          ref: isoFrameRef,
+          exportSettings: EXPORT_PRESETS.print,
+        });
       }
     }
 
@@ -352,8 +375,8 @@ export async function generateBrandMatrix(payload: GenerateAssetsPayload) {
 
   await applyOperations(ops);
 
-  const createdFrames = ops.filter(o => o.type === 'CREATE_FRAME').length;
-  const createdSections = ops.filter(o => o.type === 'CREATE_SECTION').length;
+  const createdFrames = ops.filter((o) => o.type === 'CREATE_FRAME').length;
+  const createdSections = ops.filter((o) => o.type === 'CREATE_SECTION').length;
   figma.notify(`Brand Matrix: ${createdSections} seções, ${createdFrames} frames ✓`);
 
   postToUI({ type: 'OPERATIONS_DONE' });

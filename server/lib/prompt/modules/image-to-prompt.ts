@@ -10,7 +10,18 @@ import { CREATE_RULES } from './create.js';
 
 // Component type detection patterns
 export const COMPONENT_TYPES = {
-  chart: ['chart', 'graph', 'gráfico', 'grafico', 'bar', 'line', 'pie', 'dashboard', 'metrics', 'data'],
+  chart: [
+    'chart',
+    'graph',
+    'gráfico',
+    'grafico',
+    'bar',
+    'line',
+    'pie',
+    'dashboard',
+    'metrics',
+    'data',
+  ],
   card: ['card', 'cartão', 'cartao', 'tile', 'box', 'container'],
   form: ['form', 'formulário', 'formulario', 'input', 'field', 'login', 'signup', 'cadastro'],
   navigation: ['nav', 'menu', 'sidebar', 'header', 'footer', 'toolbar', 'tab'],
@@ -132,7 +143,7 @@ export function detectComponentType(description: string): ComponentType | undefi
   const lower = description.toLowerCase();
 
   for (const [type, keywords] of Object.entries(COMPONENT_TYPES)) {
-    if (keywords.some(kw => lower.includes(kw))) {
+    if (keywords.some((kw) => lower.includes(kw))) {
       return type as ComponentType;
     }
   }

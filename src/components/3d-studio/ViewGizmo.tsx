@@ -12,19 +12,32 @@ const AXIS_CONFIG = [
 ];
 
 function AxisLine({ color, dir }: { color: string; dir: readonly [number, number, number] }) {
-  const points = useMemo(() => [
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(dir[0] * 0.8, dir[1] * 0.8, dir[2] * 0.8),
-  ], [dir]);
+  const points = useMemo(
+    () => [new THREE.Vector3(0, 0, 0), new THREE.Vector3(dir[0] * 0.8, dir[1] * 0.8, dir[2] * 0.8)],
+    [dir]
+  );
   const geom = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
   const line = useMemo(() => {
-    const l = new THREE.Line(geom, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5 }));
+    const l = new THREE.Line(
+      geom,
+      new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5 })
+    );
     return l;
   }, [geom, color]);
   return <primitive object={line} />;
 }
 
-function AxisHead({ color, dir, view, label }: { color: string; dir: readonly [number, number, number]; view: string; label: string }) {
+function AxisHead({
+  color,
+  dir,
+  view,
+  label,
+}: {
+  color: string;
+  dir: readonly [number, number, number];
+  view: string;
+  label: string;
+}) {
   const meshRef = useRef<THREE.Mesh>(null);
   const pos: [number, number, number] = [dir[0] * 0.9, dir[1] * 0.9, dir[2] * 0.9];
   const negPos: [number, number, number] = [-dir[0] * 0.9, -dir[1] * 0.9, -dir[2] * 0.9];
@@ -35,9 +48,17 @@ function AxisHead({ color, dir, view, label }: { color: string; dir: readonly [n
       <mesh
         ref={meshRef}
         position={pos}
-        onClick={(e) => { e.stopPropagation(); setCameraView(view); }}
-        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-        onPointerOut={() => { document.body.style.cursor = ''; }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setCameraView(view);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = '';
+        }}
       >
         <sphereGeometry args={[0.25, 16, 16]} />
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} />
@@ -45,9 +66,17 @@ function AxisHead({ color, dir, view, label }: { color: string; dir: readonly [n
       {/* Negative head — smaller, dimmer */}
       <mesh
         position={negPos}
-        onClick={(e) => { e.stopPropagation(); setCameraView(view); }}
-        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-        onPointerOut={() => { document.body.style.cursor = ''; }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setCameraView(view);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = '';
+        }}
       >
         <sphereGeometry args={[0.14, 12, 12]} />
         <meshStandardMaterial color={color} transparent opacity={0.4} />

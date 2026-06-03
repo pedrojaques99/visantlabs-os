@@ -21,9 +21,9 @@ export interface CreditPackage {
   priceBRL: number;
   priceUSD: number;
   pricePerCreditUSD: number;
-  imagesHD: number;      // Estimated images at HD (1K)
-  images4K: number;      // Estimated images at 4K
-  videosFast: number;    // Estimated videos (fast mode)
+  imagesHD: number; // Estimated images at HD (1K)
+  images4K: number; // Estimated images at 4K
+  videosFast: number; // Estimated videos (fast mode)
   videosStandard: number; // Estimated videos (standard)
 }
 
@@ -44,16 +44,16 @@ export interface StoragePlan {
  */
 export const VISANT_INFRA_COSTS = {
   // Per-image costs
-  IMAGE_PROCESSING: 0.005,     // Resizing, optimization, format conversion
-  IMAGE_CDN: 0.003,            // R2 storage + Cloudflare delivery
-  IMAGE_API_OVERHEAD: 0.005,   // Rate limiting, auth, logging, monitoring
-  IMAGE_TOTAL: 0.013,          // Total overhead per image
+  IMAGE_PROCESSING: 0.005, // Resizing, optimization, format conversion
+  IMAGE_CDN: 0.003, // R2 storage + Cloudflare delivery
+  IMAGE_API_OVERHEAD: 0.005, // Rate limiting, auth, logging, monitoring
+  IMAGE_TOTAL: 0.013, // Total overhead per image
 
   // Per-video costs (8 sec default)
-  VIDEO_PROCESSING: 0.08,      // Encoding, thumbnail generation
-  VIDEO_CDN: 0.04,             // R2 storage + streaming delivery
-  VIDEO_API_OVERHEAD: 0.03,    // Processing queue, status tracking
-  VIDEO_TOTAL: 0.15,           // Total overhead per video
+  VIDEO_PROCESSING: 0.08, // Encoding, thumbnail generation
+  VIDEO_CDN: 0.04, // R2 storage + streaming delivery
+  VIDEO_API_OVERHEAD: 0.03, // Processing queue, status tracking
+  VIDEO_TOTAL: 0.15, // Total overhead per video
 } as const;
 
 /**
@@ -74,8 +74,8 @@ export const STORAGE_PLANS: StoragePlan[] = [
     id: 'storage_pro',
     name: 'Pro Storage',
     storageMB: 5 * 1024, // 5 GB
-    priceBRL: 9.90,
-    priceUSD: 1.80,
+    priceBRL: 9.9,
+    priceUSD: 1.8,
     billingCycle: 'monthly',
     features: ['5 GB storage', '~1,250 HD images', 'Ideal for active creators'],
     isByok: true,
@@ -84,7 +84,7 @@ export const STORAGE_PLANS: StoragePlan[] = [
     id: 'storage_vision',
     name: 'Vision Storage',
     storageMB: 50 * 1024, // 50 GB
-    priceBRL: 29.90,
+    priceBRL: 29.9,
     priceUSD: 5.45,
     billingCycle: 'monthly',
     features: ['50 GB storage', 'Video storage included', 'Unlimited projects'],
@@ -119,8 +119,8 @@ export const GOOGLE_OFFICIAL_PRICING = {
       '4K': 0.35,
     },
     'veo-3.1-generate-preview': {
-      '720p/1080p': 0.40, // per second
-      '4K': 0.60,
+      '720p/1080p': 0.4, // per second
+      '4K': 0.6,
     },
   },
   defaultVideoDurationSec: 8,
@@ -132,28 +132,112 @@ export const GOOGLE_OFFICIAL_PRICING = {
  */
 export const CREDIT_COSTS: PricingTier[] = [
   // Image Generation - Gemini 2.5 Flash
-  { model: 'Gemini 2.5 Flash', modelId: 'gemini-2.5-flash-image', resolution: '~1K (HD)', googlePriceUSD: 0.039, creditsRequired: 1, category: 'image' },
+  {
+    model: 'Gemini 2.5 Flash',
+    modelId: 'gemini-2.5-flash-image',
+    resolution: '~1K (HD)',
+    googlePriceUSD: 0.039,
+    creditsRequired: 1,
+    category: 'image',
+  },
 
   // Image Generation - Gemini 3.1 Flash (NB2)
-  { model: 'Gemini 3.1 Flash', modelId: 'gemini-3.1-flash-image-preview', resolution: '512px', googlePriceUSD: 0.045, creditsRequired: 1, category: 'image' },
-  { model: 'Gemini 3.1 Flash', modelId: 'gemini-3.1-flash-image-preview', resolution: '1K (HD)', googlePriceUSD: 0.067, creditsRequired: 2, category: 'image' },
-  { model: 'Gemini 3.1 Flash', modelId: 'gemini-3.1-flash-image-preview', resolution: '2K', googlePriceUSD: 0.101, creditsRequired: 3, category: 'image' },
-  { model: 'Gemini 3.1 Flash', modelId: 'gemini-3.1-flash-image-preview', resolution: '4K', googlePriceUSD: 0.151, creditsRequired: 4, category: 'image' },
+  {
+    model: 'Gemini 3.1 Flash',
+    modelId: 'gemini-3.1-flash-image-preview',
+    resolution: '512px',
+    googlePriceUSD: 0.045,
+    creditsRequired: 1,
+    category: 'image',
+  },
+  {
+    model: 'Gemini 3.1 Flash',
+    modelId: 'gemini-3.1-flash-image-preview',
+    resolution: '1K (HD)',
+    googlePriceUSD: 0.067,
+    creditsRequired: 2,
+    category: 'image',
+  },
+  {
+    model: 'Gemini 3.1 Flash',
+    modelId: 'gemini-3.1-flash-image-preview',
+    resolution: '2K',
+    googlePriceUSD: 0.101,
+    creditsRequired: 3,
+    category: 'image',
+  },
+  {
+    model: 'Gemini 3.1 Flash',
+    modelId: 'gemini-3.1-flash-image-preview',
+    resolution: '4K',
+    googlePriceUSD: 0.151,
+    creditsRequired: 4,
+    category: 'image',
+  },
 
   // Image Generation - Gemini 3 Pro
-  { model: 'Gemini 3 Pro', modelId: 'gemini-3-pro-image-preview', resolution: '1K (HD)', googlePriceUSD: 0.134, creditsRequired: 3, category: 'image' },
-  { model: 'Gemini 3 Pro', modelId: 'gemini-3-pro-image-preview', resolution: '2K', googlePriceUSD: 0.134, creditsRequired: 5, category: 'image' },
-  { model: 'Gemini 3 Pro', modelId: 'gemini-3-pro-image-preview', resolution: '4K', googlePriceUSD: 0.24, creditsRequired: 7, category: 'image' },
+  {
+    model: 'Gemini 3 Pro',
+    modelId: 'gemini-3-pro-image-preview',
+    resolution: '1K (HD)',
+    googlePriceUSD: 0.134,
+    creditsRequired: 3,
+    category: 'image',
+  },
+  {
+    model: 'Gemini 3 Pro',
+    modelId: 'gemini-3-pro-image-preview',
+    resolution: '2K',
+    googlePriceUSD: 0.134,
+    creditsRequired: 5,
+    category: 'image',
+  },
+  {
+    model: 'Gemini 3 Pro',
+    modelId: 'gemini-3-pro-image-preview',
+    resolution: '4K',
+    googlePriceUSD: 0.24,
+    creditsRequired: 7,
+    category: 'image',
+  },
 
   // Video Generation - Veo 3.1 (8 seconds default)
-  { model: 'Veo 3.1 Fast', modelId: 'veo-3.1-fast-generate-preview', resolution: '720p/1080p (8s)', googlePriceUSD: 1.20, creditsRequired: 15, category: 'video' },
-  { model: 'Veo 3.1 Standard', modelId: 'veo-3.1-generate-preview', resolution: '720p/1080p (8s)', googlePriceUSD: 3.20, creditsRequired: 40, category: 'video' },
+  {
+    model: 'Veo 3.1 Fast',
+    modelId: 'veo-3.1-fast-generate-preview',
+    resolution: '720p/1080p (8s)',
+    googlePriceUSD: 1.2,
+    creditsRequired: 15,
+    category: 'video',
+  },
+  {
+    model: 'Veo 3.1 Standard',
+    modelId: 'veo-3.1-generate-preview',
+    resolution: '720p/1080p (8s)',
+    googlePriceUSD: 3.2,
+    creditsRequired: 40,
+    category: 'video',
+  },
 
   // Chat (1 credit every 4 messages)
-  { model: 'AI Chat', modelId: 'gemini-2.5-flash', resolution: '4 messages', googlePriceUSD: 0.001, creditsRequired: 1, category: 'chat' },
+  {
+    model: 'AI Chat',
+    modelId: 'gemini-2.5-flash',
+    resolution: '4 messages',
+    googlePriceUSD: 0.001,
+    creditsRequired: 1,
+    category: 'chat',
+  },
 
   // Branding Analysis (10 steps)
-  { model: 'Brand Analysis', modelId: 'gemini-2.5-flash', resolution: 'Complete (10 steps)', googlePriceUSD: 0.01, creditsRequired: 10, category: 'branding' },
+  {
+    model: 'Brand Analysis',
+    modelId: 'gemini-2.5-flash',
+    resolution: 'Complete (10 steps)',
+    googlePriceUSD: 0.01,
+    creditsRequired: 10,
+    category: 'branding',
+  },
 ];
 
 /**
@@ -163,17 +247,17 @@ export const CREDIT_COSTS: PricingTier[] = [
 export const CREDIT_PACKAGES: CreditPackage[] = [
   {
     credits: 20,
-    priceBRL: 9.90,
-    priceUSD: 1.80,
+    priceBRL: 9.9,
+    priceUSD: 1.8,
     pricePerCreditUSD: 0.09,
-    imagesHD: 10,        // 20 / 2 credits per HD image
-    images4K: 5,         // 20 / 4 credits per 4K image
-    videosFast: 1,       // 20 / 15 = 1.3 → 1
-    videosStandard: 0,   // 20 / 40 = 0.5 → 0
+    imagesHD: 10, // 20 / 2 credits per HD image
+    images4K: 5, // 20 / 4 credits per 4K image
+    videosFast: 1, // 20 / 15 = 1.3 → 1
+    videosStandard: 0, // 20 / 40 = 0.5 → 0
   },
   {
     credits: 50,
-    priceBRL: 25.90,
+    priceBRL: 25.9,
     priceUSD: 4.71,
     pricePerCreditUSD: 0.094,
     imagesHD: 25,
@@ -183,7 +267,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   },
   {
     credits: 100,
-    priceBRL: 45.90,
+    priceBRL: 45.9,
     priceUSD: 8.35,
     pricePerCreditUSD: 0.0835,
     imagesHD: 50,
@@ -193,8 +277,8 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   },
   {
     credits: 500,
-    priceBRL: 198.00,
-    priceUSD: 36.00,
+    priceBRL: 198.0,
+    priceUSD: 36.0,
     pricePerCreditUSD: 0.072,
     imagesHD: 250,
     images4K: 125,
@@ -211,7 +295,9 @@ export function generatePricingMarkdown(): string {
 
   lines.push('# Pricing & Credits');
   lines.push('');
-  lines.push('> **Transparency is a core value.** We show exactly what operations cost and how we calculate credits.');
+  lines.push(
+    '> **Transparency is a core value.** We show exactly what operations cost and how we calculate credits.'
+  );
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -228,15 +314,39 @@ export function generatePricingMarkdown(): string {
   lines.push('');
   lines.push('| Model | Resolution | Google API | + Visant Infra | = Total | Credits |');
   lines.push('|-------|------------|------------|----------------|---------|---------|');
-  lines.push(`| Gemini 3.1 Flash | 1K (HD) | $0.067 | $${VISANT_INFRA_COSTS.IMAGE_TOTAL.toFixed(3)} | **$0.080** | 2 |`);
-  lines.push(`| Gemini 3.1 Flash | 4K | $0.151 | $${VISANT_INFRA_COSTS.IMAGE_TOTAL.toFixed(3)} | **$0.164** | 4 |`);
-  lines.push(`| Gemini 3 Pro | 1K (HD) | $0.134 | $${VISANT_INFRA_COSTS.IMAGE_TOTAL.toFixed(3)} | **$0.147** | 3 |`);
+  lines.push(
+    `| Gemini 3.1 Flash | 1K (HD) | $0.067 | $${VISANT_INFRA_COSTS.IMAGE_TOTAL.toFixed(
+      3
+    )} | **$0.080** | 2 |`
+  );
+  lines.push(
+    `| Gemini 3.1 Flash | 4K | $0.151 | $${VISANT_INFRA_COSTS.IMAGE_TOTAL.toFixed(
+      3
+    )} | **$0.164** | 4 |`
+  );
+  lines.push(
+    `| Gemini 3 Pro | 1K (HD) | $0.134 | $${VISANT_INFRA_COSTS.IMAGE_TOTAL.toFixed(
+      3
+    )} | **$0.147** | 3 |`
+  );
   lines.push('');
   lines.push('### What "Visant Infrastructure" Includes');
   lines.push('');
-  lines.push(`- **Image processing** — Resizing, optimization, format conversion ($${VISANT_INFRA_COSTS.IMAGE_PROCESSING.toFixed(3)})`);
-  lines.push(`- **CDN delivery** — Cloudflare R2 storage + global delivery ($${VISANT_INFRA_COSTS.IMAGE_CDN.toFixed(3)})`);
-  lines.push(`- **API overhead** — Rate limiting, auth, monitoring ($${VISANT_INFRA_COSTS.IMAGE_API_OVERHEAD.toFixed(3)})`);
+  lines.push(
+    `- **Image processing** — Resizing, optimization, format conversion ($${VISANT_INFRA_COSTS.IMAGE_PROCESSING.toFixed(
+      3
+    )})`
+  );
+  lines.push(
+    `- **CDN delivery** — Cloudflare R2 storage + global delivery ($${VISANT_INFRA_COSTS.IMAGE_CDN.toFixed(
+      3
+    )})`
+  );
+  lines.push(
+    `- **API overhead** — Rate limiting, auth, monitoring ($${VISANT_INFRA_COSTS.IMAGE_API_OVERHEAD.toFixed(
+      3
+    )})`
+  );
   lines.push('');
   lines.push('### With BYOK (Bring Your Own Key)');
   lines.push('');
@@ -252,7 +362,9 @@ export function generatePricingMarkdown(): string {
   // Official Google Pricing
   lines.push('## Official Google API Pricing');
   lines.push('');
-  lines.push('Source: [ai.google.dev/gemini-api/docs/pricing](https://ai.google.dev/gemini-api/docs/pricing)');
+  lines.push(
+    'Source: [ai.google.dev/gemini-api/docs/pricing](https://ai.google.dev/gemini-api/docs/pricing)'
+  );
   lines.push('');
   lines.push('### Image Generation');
   lines.push('');
@@ -290,11 +402,9 @@ export function generatePricingMarkdown(): string {
   lines.push('| Model | Resolution | Credits |');
   lines.push('|-------|------------|---------|');
 
-  CREDIT_COSTS
-    .filter(c => c.category === 'image')
-    .forEach(c => {
-      lines.push(`| ${c.model} | ${c.resolution} | ${c.creditsRequired} |`);
-    });
+  CREDIT_COSTS.filter((c) => c.category === 'image').forEach((c) => {
+    lines.push(`| ${c.model} | ${c.resolution} | ${c.creditsRequired} |`);
+  });
 
   lines.push('');
   lines.push('### Video Generation Costs');
@@ -302,11 +412,9 @@ export function generatePricingMarkdown(): string {
   lines.push('| Model | Duration | Credits |');
   lines.push('|-------|----------|---------|');
 
-  CREDIT_COSTS
-    .filter(c => c.category === 'video')
-    .forEach(c => {
-      lines.push(`| ${c.model} | ${c.resolution} | ${c.creditsRequired} |`);
-    });
+  CREDIT_COSTS.filter((c) => c.category === 'video').forEach((c) => {
+    lines.push(`| ${c.model} | ${c.resolution} | ${c.creditsRequired} |`);
+  });
 
   lines.push('');
   lines.push('### Other Operations');
@@ -329,8 +437,12 @@ export function generatePricingMarkdown(): string {
   lines.push('| Package | Price (BRL) | Images HD | Images 4K | Videos Fast | Videos Std |');
   lines.push('|---------|-------------|-----------|-----------|-------------|------------|');
 
-  CREDIT_PACKAGES.forEach(pkg => {
-    lines.push(`| ${pkg.credits} credits | R$${pkg.priceBRL.toFixed(2)} | ~${pkg.imagesHD} | ~${pkg.images4K} | ~${pkg.videosFast} | ~${pkg.videosStandard} |`);
+  CREDIT_PACKAGES.forEach((pkg) => {
+    lines.push(
+      `| ${pkg.credits} credits | R$${pkg.priceBRL.toFixed(2)} | ~${pkg.imagesHD} | ~${
+        pkg.images4K
+      } | ~${pkg.videosFast} | ~${pkg.videosStandard} |`
+    );
   });
 
   lines.push('');
@@ -343,26 +455,29 @@ export function generatePricingMarkdown(): string {
   // Storage Plans Section - NEW
   lines.push('## Storage Plans');
   lines.push('');
-  lines.push('Storage is **separate from credits**. BYOK users can purchase storage without buying credits.');
+  lines.push(
+    'Storage is **separate from credits**. BYOK users can purchase storage without buying credits.'
+  );
   lines.push('');
   lines.push('| Plan | Storage | Price (BRL) | Price (USD) | Best For |');
   lines.push('|------|---------|-------------|-------------|----------|');
 
-  STORAGE_PLANS.forEach(plan => {
-    const storageDisplay = plan.storageMB >= 1024
-      ? `${(plan.storageMB / 1024).toFixed(0)} GB`
-      : `${plan.storageMB} MB`;
-    const priceDisplay = plan.priceBRL === 0
-      ? 'Free'
-      : `R$${plan.priceBRL.toFixed(2)}/mo`;
-    const priceUsdDisplay = plan.priceUSD === 0
-      ? 'Free'
-      : `$${plan.priceUSD.toFixed(2)}/mo`;
-    lines.push(`| ${plan.name} | ${storageDisplay} | ${priceDisplay} | ${priceUsdDisplay} | ${plan.features[plan.features.length - 1]} |`);
+  STORAGE_PLANS.forEach((plan) => {
+    const storageDisplay =
+      plan.storageMB >= 1024 ? `${(plan.storageMB / 1024).toFixed(0)} GB` : `${plan.storageMB} MB`;
+    const priceDisplay = plan.priceBRL === 0 ? 'Free' : `R$${plan.priceBRL.toFixed(2)}/mo`;
+    const priceUsdDisplay = plan.priceUSD === 0 ? 'Free' : `$${plan.priceUSD.toFixed(2)}/mo`;
+    lines.push(
+      `| ${plan.name} | ${storageDisplay} | ${priceDisplay} | ${priceUsdDisplay} | ${
+        plan.features[plan.features.length - 1]
+      } |`
+    );
   });
 
   lines.push('');
-  lines.push('> **Note:** Subscription plans (Pro, Vision) include storage. Storage plans are for users who want storage-only or additional storage.');
+  lines.push(
+    '> **Note:** Subscription plans (Pro, Vision) include storage. Storage plans are for users who want storage-only or additional storage.'
+  );
   lines.push('');
 
   lines.push('---');
@@ -410,8 +525,10 @@ export function generatePricingMarkdown(): string {
   lines.push('');
   lines.push('We believe in transparency. This pricing data is:');
   lines.push('');
-  lines.push('1. **Derived from official sources** — Google\'s published API pricing');
-  lines.push('2. **Open in our codebase** — `src/utils/pricing.ts`, `src/utils/creditCalculator.ts`');
+  lines.push("1. **Derived from official sources** — Google's published API pricing");
+  lines.push(
+    '2. **Open in our codebase** — `src/utils/pricing.ts`, `src/utils/creditCalculator.ts`'
+  );
   lines.push('3. **Updated when Google updates** — We track official pricing changes');
   lines.push('');
   lines.push('Questions? Check our [GitHub](https://github.com/visantlabs) or join our Discord.');
@@ -431,11 +548,11 @@ export function getCreditsEstimate(credits: number): {
   brandAnalysis: number;
 } {
   return {
-    imagesHD: Math.floor(credits / 2),      // NB2 1K = 2 credits
-    images4K: Math.floor(credits / 4),      // NB2 4K = 4 credits
-    videosFast: Math.floor(credits / 15),   // Veo Fast = 15 credits
+    imagesHD: Math.floor(credits / 2), // NB2 1K = 2 credits
+    images4K: Math.floor(credits / 4), // NB2 4K = 4 credits
+    videosFast: Math.floor(credits / 15), // Veo Fast = 15 credits
     videosStandard: Math.floor(credits / 40), // Veo Standard = 40 credits
-    chatMessages: credits * 4,              // 1 credit = 4 messages
+    chatMessages: credits * 4, // 1 credit = 4 messages
     brandAnalysis: Math.floor(credits / 10), // 10 credits per analysis
   };
 }

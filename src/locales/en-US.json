@@ -2645,22 +2645,14 @@
     "models": {
       "gemini-2.5-flash-image": {
         "emoji": "⛏️",
-        "features": [
-          "Fast generation",
-          "1 credit per image",
-          "Auto aspect ratio"
-        ],
+        "features": ["Fast generation", "1 credit per image", "Auto aspect ratio"],
         "name": "Mockup Machine® HD",
         "version": "HD"
       },
       "gemini-3-pro-image-preview": {
         "credits": "3-7 credits",
         "emoji": "⛏️",
-        "features": [
-          "4K resolution",
-          "Advanced tools",
-          "Higher quality"
-        ],
+        "features": ["4K resolution", "Advanced tools", "Higher quality"],
         "name": "Mockup Machine® 4K",
         "version": "4K"
       }
@@ -2952,11 +2944,7 @@
           "title": "6.1 Google Analytics"
         },
         "intro": "We use cookies for:",
-        "items": [
-          "Authentication",
-          "Interface preferences",
-          "Internal metrics"
-        ],
+        "items": ["Authentication", "Interface preferences", "Internal metrics"],
         "noAdvertising": "We do not use advertising cookies or tracking pixels for marketing purposes.",
         "title": "6. COOKIES AND TRACKING TECHNOLOGIES"
       },
@@ -3127,12 +3115,7 @@
           "title": "1.2 Payment Information"
         },
         "technicalData": {
-          "items": [
-            "IP address",
-            "Device type",
-            "Browser",
-            "Language preferences"
-          ],
+          "items": ["IP address", "Device type", "Browser", "Language preferences"],
           "title": "1.4 Technical Data"
         },
         "title": "1. INFORMATION WE COLLECT",

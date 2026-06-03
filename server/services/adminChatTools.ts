@@ -16,264 +16,295 @@ function getInternalApiBaseUrl(): string {
   return `http://127.0.0.1:${port}`;
 }
 
-export const ADMIN_CHAT_TOOLS = [{
-  functionDeclarations: [
-    {
-      name: 'generate_or_update_mockup',
-      description: 'Generate or regenerate a mockup image and save as editable Creative Project',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          prompt: {
-            type: Type.STRING,
-            description: 'Design brief describing the mockup to generate'
+export const ADMIN_CHAT_TOOLS = [
+  {
+    functionDeclarations: [
+      {
+        name: 'generate_or_update_mockup',
+        description: 'Generate or regenerate a mockup image and save as editable Creative Project',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            prompt: {
+              type: Type.STRING,
+              description: 'Design brief describing the mockup to generate',
+            },
+            creativeProjectId: {
+              type: Type.STRING,
+              description:
+                'Existing Creative Project ID to update (optional, leave empty to create new)',
+            },
+            brandGuidelineId: {
+              type: Type.STRING,
+              description: 'Brand guideline ID for context injection (optional)',
+            },
+            model: {
+              type: Type.STRING,
+              description: 'Gemini image-gen model to use. Default: gemini-2.5-flash-image.',
+              enum: [GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO],
+            },
+            resolution: {
+              type: Type.STRING,
+              description: 'Image resolution (only applies to advanced models IMAGE_NB2/IMAGE_PRO)',
+              enum: ['1K', '2K', '4K'],
+            },
+            aspectRatio: {
+              type: Type.STRING,
+              description: 'Aspect ratio of the generated image',
+              enum: ['1:1', '16:9', '3:2'],
+            },
+            textMode: {
+              type: Type.STRING,
+              description:
+                'How text appears in the output. "layers" (default): no text in the Gemini image, text comes via editable canvas layers. "image": text baked into Gemini image, no canvas text layers. "both": text in image AND canvas layers (may visually conflict — avoid unless user explicitly wants it).',
+              enum: ['image', 'layers', 'both'],
+            },
           },
-          creativeProjectId: {
-            type: Type.STRING,
-            description: 'Existing Creative Project ID to update (optional, leave empty to create new)'
-          },
-          brandGuidelineId: {
-            type: Type.STRING,
-            description: 'Brand guideline ID for context injection (optional)'
-          },
-          model: {
-            type: Type.STRING,
-            description: 'Gemini image-gen model to use. Default: gemini-2.5-flash-image.',
-            enum: [
-              GEMINI_MODELS.IMAGE_FLASH,
-              GEMINI_MODELS.IMAGE_NB2,
-              GEMINI_MODELS.IMAGE_PRO,
-            ]
-          },
-          resolution: {
-            type: Type.STRING,
-            description: 'Image resolution (only applies to advanced models IMAGE_NB2/IMAGE_PRO)',
-            enum: ['1K', '2K', '4K']
-          },
-          aspectRatio: {
-            type: Type.STRING,
-            description: 'Aspect ratio of the generated image',
-            enum: ['1:1', '16:9', '3:2']
-          },
-          textMode: {
-            type: Type.STRING,
-            description: 'How text appears in the output. "layers" (default): no text in the Gemini image, text comes via editable canvas layers. "image": text baked into Gemini image, no canvas text layers. "both": text in image AND canvas layers (may visually conflict — avoid unless user explicitly wants it).',
-            enum: ['image', 'layers', 'both']
-          }
-        },
-        required: ['prompt']
-      }
-    },
-    {
-      name: 'update_session_memory',
-      description: 'Atualiza a memória persistente da sessão com novas informações detectadas na conversa (marcas mencionadas, clientes, decisões estratégicas, referências). Chame em paralelo com outras ferramentas sempre que identificar informações novas relevantes.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          brands: { type: Type.STRING, description: 'Nome(s) de marca mencionados (separados por vírgula)' },
-          clients: { type: Type.STRING, description: 'Nome(s) de cliente mencionados (separados por vírgula)' },
-          decisions: { type: Type.STRING, description: 'Decisão estratégica tomada (1 frase)' },
-          references: { type: Type.STRING, description: 'Referência visual/cultural mencionada (separados por vírgula)' },
+          required: ['prompt'],
         },
       },
-    },
-    {
-      name: 'generate_in_figma',
-      description: 'Cria um criativo completo (frame + textos + logo + overlay) diretamente no Figma do usuário, usando a brand guideline da sessão. Use quando o usuário pedir explicitamente para criar no Figma. Se o plugin estiver offline, as operações são enfileiradas e aplicadas automaticamente quando o plugin abrir.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          prompt: {
-            type: Type.STRING,
-            description: 'Briefing do criativo a criar no Figma',
-          },
-          format: {
-            type: Type.STRING,
-            enum: ['1:1', '9:16', '16:9', '4:5'],
-            description: 'Formato/aspect ratio do frame. Default: 1:1',
+      {
+        name: 'update_session_memory',
+        description:
+          'Atualiza a memória persistente da sessão com novas informações detectadas na conversa (marcas mencionadas, clientes, decisões estratégicas, referências). Chame em paralelo com outras ferramentas sempre que identificar informações novas relevantes.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            brands: {
+              type: Type.STRING,
+              description: 'Nome(s) de marca mencionados (separados por vírgula)',
+            },
+            clients: {
+              type: Type.STRING,
+              description: 'Nome(s) de cliente mencionados (separados por vírgula)',
+            },
+            decisions: { type: Type.STRING, description: 'Decisão estratégica tomada (1 frase)' },
+            references: {
+              type: Type.STRING,
+              description: 'Referência visual/cultural mencionada (separados por vírgula)',
+            },
           },
         },
-        required: ['prompt'],
       },
-    },
-    {
-      name: 'propose_creative_plan',
-      description: 'Use BEFORE generating mockups when the creative request is open-ended or ambiguous. Propose a set of mockup variations and ask clarifying questions — do NOT generate images yet. Await user approval.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          summary: {
-            type: Type.STRING,
-            description: 'One sentence: what the agent understood from the request',
+      {
+        name: 'generate_in_figma',
+        description:
+          'Cria um criativo completo (frame + textos + logo + overlay) diretamente no Figma do usuário, usando a brand guideline da sessão. Use quando o usuário pedir explicitamente para criar no Figma. Se o plugin estiver offline, as operações são enfileiradas e aplicadas automaticamente quando o plugin abrir.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            prompt: {
+              type: Type.STRING,
+              description: 'Briefing do criativo a criar no Figma',
+            },
+            format: {
+              type: Type.STRING,
+              enum: ['1:1', '9:16', '16:9', '4:5'],
+              description: 'Formato/aspect ratio do frame. Default: 1:1',
+            },
           },
-          proposals: {
-            type: Type.ARRAY,
-            description: 'Proposed mockup variations',
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING, description: 'Short variation title (e.g. "Basquete — lifestyle clean")' },
-                prompt: { type: Type.STRING, description: 'Draft generation prompt for this variation' },
-                aspectRatio: { type: Type.STRING, description: 'Suggested aspect ratio: 1:1, 16:9 or 3:2' },
+          required: ['prompt'],
+        },
+      },
+      {
+        name: 'propose_creative_plan',
+        description:
+          'Use BEFORE generating mockups when the creative request is open-ended or ambiguous. Propose a set of mockup variations and ask clarifying questions — do NOT generate images yet. Await user approval.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            summary: {
+              type: Type.STRING,
+              description: 'One sentence: what the agent understood from the request',
+            },
+            proposals: {
+              type: Type.ARRAY,
+              description: 'Proposed mockup variations',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: {
+                    type: Type.STRING,
+                    description: 'Short variation title (e.g. "Basquete — lifestyle clean")',
+                  },
+                  prompt: {
+                    type: Type.STRING,
+                    description: 'Draft generation prompt for this variation',
+                  },
+                  aspectRatio: {
+                    type: Type.STRING,
+                    description: 'Suggested aspect ratio: 1:1, 16:9 or 3:2',
+                  },
+                },
+                required: ['title', 'prompt'],
               },
-              required: ['title', 'prompt'],
+            },
+            questions: {
+              type: Type.ARRAY,
+              description:
+                'Clarifying questions before generating (e.g. "Usar a logo da marca?", "Formato preferido?")',
+              items: { type: Type.STRING },
             },
           },
-          questions: {
-            type: Type.ARRAY,
-            description: 'Clarifying questions before generating (e.g. "Usar a logo da marca?", "Formato preferido?")',
-            items: { type: Type.STRING },
-          },
+          required: ['summary', 'proposals'],
         },
-        required: ['summary', 'proposals'],
       },
-    },
-    {
-      name: 'save_to_brand_knowledge',
-      description: 'Save a piece of information (strategic insight, positioning note, reference, decision) into the brand\'s long-term memory (RAG). Requires explicit user approval before persisting. Only call when the session is linked to a brand.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          title: {
-            type: Type.STRING,
-            description: 'Short title describing what this knowledge entry is about'
-          },
-          content: {
-            type: Type.STRING,
-            description: 'The text content to save to the brand memory (markdown supported)'
-          },
-          reason: {
-            type: Type.STRING,
-            description: 'Why this should be saved to brand memory (1 sentence)'
-          }
-        },
-        required: ['title', 'content']
-      }
-    },
-    {
-      name: 'brand_guideline_create',
-      description: 'Create a new brand guideline for the user. Use when the user asks to create, start, or set up a new brand. Provide at minimum a name.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          name: { type: Type.STRING, description: 'Brand name' },
-          tagline: { type: Type.STRING, description: 'Brand tagline or slogan' },
-          website: { type: Type.STRING, description: 'Brand website URL' },
-          description: { type: Type.STRING, description: 'Short brand description' },
-        },
-        required: ['name'],
-      },
-    },
-    {
-      name: 'brand_guideline_update',
-      description: 'Update sections of the current session\'s brand guideline. Use when user wants to add/change colors, typography, voice, strategy, personas, archetypes, positioning, or design tokens. Only provide the sections you want to update.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          brand_guideline_id: { type: Type.STRING, description: 'Brand guideline ID. Use the session brand if not provided.' },
-          identity: {
-            type: Type.OBJECT,
-            description: 'Brand identity fields to update (partial)',
-            properties: {
-              name: { type: Type.STRING },
-              tagline: { type: Type.STRING },
-              website: { type: Type.STRING },
-              description: { type: Type.STRING },
+      {
+        name: 'save_to_brand_knowledge',
+        description:
+          "Save a piece of information (strategic insight, positioning note, reference, decision) into the brand's long-term memory (RAG). Requires explicit user approval before persisting. Only call when the session is linked to a brand.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            title: {
+              type: Type.STRING,
+              description: 'Short title describing what this knowledge entry is about',
+            },
+            content: {
+              type: Type.STRING,
+              description: 'The text content to save to the brand memory (markdown supported)',
+            },
+            reason: {
+              type: Type.STRING,
+              description: 'Why this should be saved to brand memory (1 sentence)',
             },
           },
-          colors: {
-            type: Type.ARRAY,
-            description: 'Full replacement of color palette. Each color needs hex, name, and optional role (primary/secondary/background/text/accent/cta).',
-            items: {
+          required: ['title', 'content'],
+        },
+      },
+      {
+        name: 'brand_guideline_create',
+        description:
+          'Create a new brand guideline for the user. Use when the user asks to create, start, or set up a new brand. Provide at minimum a name.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING, description: 'Brand name' },
+            tagline: { type: Type.STRING, description: 'Brand tagline or slogan' },
+            website: { type: Type.STRING, description: 'Brand website URL' },
+            description: { type: Type.STRING, description: 'Short brand description' },
+          },
+          required: ['name'],
+        },
+      },
+      {
+        name: 'brand_guideline_update',
+        description:
+          "Update sections of the current session's brand guideline. Use when user wants to add/change colors, typography, voice, strategy, personas, archetypes, positioning, or design tokens. Only provide the sections you want to update.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            brand_guideline_id: {
+              type: Type.STRING,
+              description: 'Brand guideline ID. Use the session brand if not provided.',
+            },
+            identity: {
               type: Type.OBJECT,
+              description: 'Brand identity fields to update (partial)',
               properties: {
-                hex: { type: Type.STRING },
                 name: { type: Type.STRING },
-                role: { type: Type.STRING },
+                tagline: { type: Type.STRING },
+                website: { type: Type.STRING },
+                description: { type: Type.STRING },
               },
-              required: ['hex', 'name'],
             },
-          },
-          typography: {
-            type: Type.ARRAY,
-            description: 'Full replacement of typography. Each entry needs family, role, and optional style/size.',
-            items: {
+            colors: {
+              type: Type.ARRAY,
+              description:
+                'Full replacement of color palette. Each color needs hex, name, and optional role (primary/secondary/background/text/accent/cta).',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  hex: { type: Type.STRING },
+                  name: { type: Type.STRING },
+                  role: { type: Type.STRING },
+                },
+                required: ['hex', 'name'],
+              },
+            },
+            typography: {
+              type: Type.ARRAY,
+              description:
+                'Full replacement of typography. Each entry needs family, role, and optional style/size.',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  family: { type: Type.STRING },
+                  role: { type: Type.STRING, description: 'e.g. heading, body, accent, mono' },
+                  style: { type: Type.STRING, description: 'e.g. Bold, Regular, SemiBold' },
+                  size: { type: Type.NUMBER },
+                },
+                required: ['family', 'role'],
+              },
+            },
+            guidelines: {
               type: Type.OBJECT,
+              description: 'Brand voice and content guidelines',
               properties: {
-                family: { type: Type.STRING },
-                role: { type: Type.STRING, description: 'e.g. heading, body, accent, mono' },
-                style: { type: Type.STRING, description: 'e.g. Bold, Regular, SemiBold' },
-                size: { type: Type.NUMBER },
+                voice: { type: Type.STRING },
+                dos: { type: Type.ARRAY, items: { type: Type.STRING } },
+                donts: { type: Type.ARRAY, items: { type: Type.STRING } },
+                imagery: { type: Type.STRING },
+                accessibility: { type: Type.STRING },
               },
-              required: ['family', 'role'],
             },
-          },
-          guidelines: {
-            type: Type.OBJECT,
-            description: 'Brand voice and content guidelines',
-            properties: {
-              voice: { type: Type.STRING },
-              dos: { type: Type.ARRAY, items: { type: Type.STRING } },
-              donts: { type: Type.ARRAY, items: { type: Type.STRING } },
-              imagery: { type: Type.STRING },
-              accessibility: { type: Type.STRING },
-            },
-          },
-          strategy: {
-            type: Type.OBJECT,
-            description: 'Brand strategy — manifesto, positioning, archetypes, personas, voice values',
-            properties: {
-              manifesto: { type: Type.STRING },
-              positioning: { type: Type.ARRAY, items: { type: Type.STRING } },
-              archetypes: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    name: { type: Type.STRING },
-                    role: { type: Type.STRING, description: 'primary or secondary' },
-                    description: { type: Type.STRING },
-                    examples: { type: Type.ARRAY, items: { type: Type.STRING } },
+            strategy: {
+              type: Type.OBJECT,
+              description:
+                'Brand strategy — manifesto, positioning, archetypes, personas, voice values',
+              properties: {
+                manifesto: { type: Type.STRING },
+                positioning: { type: Type.ARRAY, items: { type: Type.STRING } },
+                archetypes: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      name: { type: Type.STRING },
+                      role: { type: Type.STRING, description: 'primary or secondary' },
+                      description: { type: Type.STRING },
+                      examples: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    },
+                    required: ['name', 'description'],
                   },
-                  required: ['name', 'description'],
                 },
-              },
-              personas: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    name: { type: Type.STRING },
-                    age: { type: Type.NUMBER },
-                    occupation: { type: Type.STRING },
-                    traits: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    bio: { type: Type.STRING },
-                    desires: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    painPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+                personas: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      name: { type: Type.STRING },
+                      age: { type: Type.NUMBER },
+                      occupation: { type: Type.STRING },
+                      traits: { type: Type.ARRAY, items: { type: Type.STRING } },
+                      bio: { type: Type.STRING },
+                      desires: { type: Type.ARRAY, items: { type: Type.STRING } },
+                      painPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    },
+                    required: ['name'],
                   },
-                  required: ['name'],
                 },
-              },
-              voiceValues: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    title: { type: Type.STRING },
-                    description: { type: Type.STRING },
-                    example: { type: Type.STRING },
+                voiceValues: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      title: { type: Type.STRING },
+                      description: { type: Type.STRING },
+                      example: { type: Type.STRING },
+                    },
+                    required: ['title', 'description', 'example'],
                   },
-                  required: ['title', 'description', 'example'],
                 },
               },
             },
           },
+          required: [],
         },
-        required: [],
       },
-    },
-  ]
-}];
+    ],
+  },
+];
 
 interface GenerateMockupArgs {
   prompt: string;
@@ -309,7 +340,14 @@ async function resolveBrandContext(brandGuidelineId: string): Promise<BrandConte
   try {
     const brand = await prisma.brandGuideline.findUnique({
       where: { id: brandGuidelineId },
-      select: { identity: true, logos: true, colors: true, typography: true, guidelines: true, tags: true },
+      select: {
+        identity: true,
+        logos: true,
+        colors: true,
+        typography: true,
+        guidelines: true,
+        tags: true,
+      },
     });
     if (!brand) return null;
 
@@ -330,7 +368,11 @@ async function resolveBrandContext(brandGuidelineId: string): Promise<BrandConte
       : [];
     const voice = (brand.guidelines as any)?.voice;
     const tags = brand.tags as any;
-    const keywords = tags ? Object.values(tags).flat().filter((v): v is string => typeof v === 'string') : [];
+    const keywords = tags
+      ? Object.values(tags)
+          .flat()
+          .filter((v): v is string => typeof v === 'string')
+      : [];
 
     return { name, logoUrl, colors, fonts, voice, keywords, hasLogos: logos.length > 0 };
   } catch (err: any) {
@@ -377,7 +419,13 @@ export async function executeAdminChatTool(
 
   if (toolName === 'update_session_memory') {
     // Returns the parsed fields — the route applies them to session.memory
-    const split = (v?: string) => v ? v.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const split = (v?: string) =>
+      v
+        ? v
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
     return {
       success: true,
       memoryPatch: {
@@ -421,7 +469,8 @@ export async function executeAdminChatTool(
       return {
         success: false,
         queued: false,
-        error: 'Nenhum arquivo Figma vinculado a esta marca. Abra o plugin Visant no Figma e vincule a marca primeiro.',
+        error:
+          'Nenhum arquivo Figma vinculado a esta marca. Abra o plugin Visant no Figma e vincule a marca primeiro.',
       };
     }
 
@@ -496,7 +545,10 @@ export async function executeAdminChatTool(
           website: args.website,
           description: args.description,
         } as any,
-        extraction: { sources: [{ type: 'manual', date: new Date().toISOString() }], completeness: 0 } as any,
+        extraction: {
+          sources: [{ type: 'manual', date: new Date().toISOString() }],
+          completeness: 0,
+        } as any,
       },
     });
     return { success: true, id: guideline.id, name: args.name };
@@ -504,7 +556,10 @@ export async function executeAdminChatTool(
 
   if (toolName === 'brand_guideline_update') {
     const targetId = args.brand_guideline_id || sessionBrandGuidelineId;
-    if (!targetId) throw new Error('brand_guideline_update requires brand_guideline_id or an active session brand');
+    if (!targetId)
+      throw new Error(
+        'brand_guideline_update requires brand_guideline_id or an active session brand'
+      );
 
     const existing = await prisma.brandGuideline.findFirst({ where: { id: targetId, userId } });
     if (!existing) throw new Error('Brand guideline not found');
@@ -527,7 +582,10 @@ export async function executeAdminChatTool(
       return { success: false, error: 'No fields to update' };
     }
 
-    const updated = await prisma.brandGuideline.update({ where: { id: existing.id }, data: updateData });
+    const updated = await prisma.brandGuideline.update({
+      where: { id: existing.id },
+      data: updateData,
+    });
     return { success: true, id: updated.id, updated: Object.keys(updateData) };
   }
 
@@ -648,9 +706,14 @@ export async function executeAdminChatTool(
         if (textMode === 'image') {
           layers = layers.filter((l: any) => l.type !== 'text');
         }
-        console.log(`[AdminChatTools] Plan OK — ${layers.length} layers built (textMode=${textMode})`);
+        console.log(
+          `[AdminChatTools] Plan OK — ${layers.length} layers built (textMode=${textMode})`
+        );
       } catch (e: any) {
-        console.warn('[AdminChatTools] Creative plan parse failed, proceeding without layers:', e.message);
+        console.warn(
+          '[AdminChatTools] Creative plan parse failed, proceeding without layers:',
+          e.message
+        );
       }
     } else {
       console.warn('[AdminChatTools] Creative plan request failed:', planResponse.status);
@@ -698,7 +761,7 @@ export async function executeAdminChatTool(
       editUrl: `/create?project=${creativeProjectId}`,
       prompt: args.prompt,
       creditsDeducted: imageResult.creditsDeducted,
-      creditsRemaining: imageResult.creditsRemaining
+      creditsRemaining: imageResult.creditsRemaining,
     };
 
     console.log('[AdminChatTools] Tool execution complete:', result);

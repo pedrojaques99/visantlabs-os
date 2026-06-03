@@ -11,7 +11,7 @@ export const BotIdProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       // Skip BotID initialization in localhost/development environment
       // This prevents script loading errors and allows login to work smoothly
-      const isLocalhost = 
+      const isLocalhost =
         window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1' ||
         window.location.hostname === '0.0.0.0' ||
@@ -61,7 +61,7 @@ export const BotIdProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               // Auth endpoints should rely on rate limiting and other security measures instead
             ],
           });
-          
+
           console.log('✅ BotID initialized successfully');
         } catch (initError) {
           console.warn('⚠️ BotID initialization failed (non-blocking):', initError);
@@ -76,5 +76,3 @@ export const BotIdProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return <>{children}</>;
 };
-
-

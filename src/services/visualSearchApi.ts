@@ -1,6 +1,13 @@
 import { API_BASE } from '@/config/api';
 
-export type SearchSource = 'unsplash' | 'pexels' | 'pixabay' | 'wikimedia' | 'clearbit' | 'svgl' | 'google';
+export type SearchSource =
+  | 'unsplash'
+  | 'pexels'
+  | 'pixabay'
+  | 'wikimedia'
+  | 'clearbit'
+  | 'svgl'
+  | 'google';
 export type SearchIntent = 'letter' | 'logo' | 'layout' | 'typography' | 'mixed';
 
 export interface VisualSearchResult {
@@ -59,7 +66,7 @@ export interface SourceInfo {
 export const visualSearchApi = {
   search: async (
     query: string,
-    options?: { sources?: SearchSource[]; limit?: number; page?: number },
+    options?: { sources?: SearchSource[]; limit?: number; page?: number }
   ): Promise<VisualSearchResponse> => {
     const response = await fetch(`${API_BASE}/visual-search/query`, {
       method: 'POST',
@@ -86,9 +93,12 @@ export const visualSearchApi = {
     return response.json();
   },
 
-  getLibrary: async (
-    options?: { letter?: string; style?: string; limit?: number; offset?: number },
-  ): Promise<{ crops: LetterCrop[]; total: number }> => {
+  getLibrary: async (options?: {
+    letter?: string;
+    style?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ crops: LetterCrop[]; total: number }> => {
     const params = new URLSearchParams();
     if (options?.letter) params.set('letter', options.letter);
     if (options?.style) params.set('style', options.style);

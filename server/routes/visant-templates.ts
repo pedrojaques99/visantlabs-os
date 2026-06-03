@@ -17,18 +17,24 @@ const router = express.Router();
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Vsn567349';
 
-const validateAdminPassword = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+const validateAdminPassword = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
   // Security: Prefer header-based authentication over query params
   // Query params are logged in server logs, browser history, and referrer headers
   const headerPassword = req.header('x-admin-password');
   const queryPassword = typeof req.query.password === 'string' ? req.query.password : undefined;
-  
+
   // Use header password first (preferred), then fall back to query (deprecated)
   const providedPassword = headerPassword || queryPassword;
-  
+
   // Log deprecation warning if query param is used
   if (!headerPassword && queryPassword) {
-    console.warn('[SECURITY] Password provided via query param is deprecated. Use x-admin-password header instead.');
+    console.warn(
+      '[SECURITY] Password provided via query param is deprecated. Use x-admin-password header instead.'
+    );
   }
 
   if (!providedPassword || providedPassword !== ADMIN_PASSWORD) {
@@ -42,15 +48,11 @@ const validateAdminPassword = (req: express.Request, res: express.Response, next
 router.get('/', apiRateLimiter, validateAdminPassword, async (_req, res) => {
   try {
     const templates = await prisma.visantTemplate.findMany({
-      orderBy: [
-        { isDefault: 'desc' },
-        { isActive: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ isDefault: 'desc' }, { isActive: 'desc' }, { createdAt: 'desc' }],
     });
 
     res.json({
-      templates: templates.map(t => ({
+      templates: templates.map((t) => ({
         ...t,
         _id: t.id,
       })),
@@ -99,7 +101,12 @@ router.post('/', apiRateLimiter, validateAdminPassword, async (req, res) => {
     if (!nameVal || !layout) {
       return res.status(400).json({ error: 'Name and layout are required' });
     }
-    if (!layout || typeof layout !== 'object' || !layout.pages || typeof layout.pages !== 'object') {
+    if (
+      !layout ||
+      typeof layout !== 'object' ||
+      !layout.pages ||
+      typeof layout.pages !== 'object'
+    ) {
       return res.status(400).json({ error: 'Invalid layout structure' });
     }
 
@@ -172,7 +179,12 @@ router.put('/:id', apiRateLimiter, validateAdminPassword, async (req, res) => {
     const n = name !== undefined ? ensureString(name, 200) : null;
     if (n != null) updateData.name = n;
     if (layout !== undefined) {
-      if (!layout || typeof layout !== 'object' || !layout.pages || typeof layout.pages !== 'object') {
+      if (
+        !layout ||
+        typeof layout !== 'object' ||
+        !layout.pages ||
+        typeof layout.pages !== 'object'
+      ) {
         return res.status(400).json({ error: 'Invalid layout structure' });
       }
       updateData.layout = layout;
@@ -284,36 +296,3 @@ router.post('/:id/activate', apiRateLimiter, validateAdminPassword, async (req, 
 });
 
 export default router;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

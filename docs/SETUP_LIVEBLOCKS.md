@@ -58,7 +58,7 @@ The server authenticates users with Liveblocks using the secret key:
 ```typescript
 // server/routes/canvas.ts
 const session = liveblocks.prepareSession(userId, {
-  userInfo: { name, email, picture }
+  userInfo: { name, email, picture },
 });
 ```
 
@@ -80,26 +80,29 @@ Real-time presence shows:
 
 ## Features
 
-| Feature | With Liveblocks | Without |
-|---------|-----------------|---------|
-| Real-time sync | ✅ | ❌ |
-| Cursor presence | ✅ | ❌ |
-| Collaboration | ✅ | ❌ |
-| Canvas editing | ✅ | ✅ |
-| Saving projects | ✅ | ✅ |
+| Feature         | With Liveblocks | Without |
+| --------------- | --------------- | ------- |
+| Real-time sync  | ✅              | ❌      |
+| Cursor presence | ✅              | ❌      |
+| Collaboration   | ✅              | ❌      |
+| Canvas editing  | ✅              | ✅      |
+| Saving projects | ✅              | ✅      |
 
 ## Troubleshooting
 
 **Error: "Liveblocks not configured"**
+
 - Ensure `LIVEBLOCKS_SECRET_KEY` is set
 - Restart the server
 
 **Collaboration not working**
+
 - Check browser console for connection errors
 - Verify the project has `isCollaborative: true`
 - Ensure users have proper permissions
 
 **"Not allowed to access room"**
+
 - User doesn't have permission
 - Check `canEdit` and `canView` arrays in the canvas project
 
@@ -111,4 +114,3 @@ Liveblocks offers:
 - **Paid plans**: Higher limits and features
 
 See [Liveblocks Pricing](https://liveblocks.io/pricing) for details.
-

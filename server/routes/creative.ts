@@ -38,7 +38,9 @@ async function getLearnedBiasLine(brandId?: string): Promise<string> {
   try {
     const insights = await computeBrandInsights(brandId);
     if (insights.sampleSize >= 3 && insights.commonPatches.length > 0) {
-      return `Brand-learned preferences (from ${insights.sampleSize} past edits across ${insights.creatives} creatives): ${insights.commonPatches.join('; ')}. Apply these proactively.`;
+      return `Brand-learned preferences (from ${insights.sampleSize} past edits across ${
+        insights.creatives
+      } creatives): ${insights.commonPatches.join('; ')}. Apply these proactively.`;
     }
   } catch (e) {
     console.warn('[creative/plan] insights unavailable:', (e as Error).message);
@@ -48,8 +50,7 @@ async function getLearnedBiasLine(brandId?: string): Promise<string> {
 
 router.post('/plan', async (req, res) => {
   try {
-    const { prompt, format, brandGuideline, brandId } =
-      req.body as CreativePlanRequest;
+    const { prompt, format, brandGuideline, brandId } = req.body as CreativePlanRequest;
 
     if (!prompt || !format) {
       return res.status(400).json({ error: 'prompt and format are required' });
@@ -70,7 +71,10 @@ router.post('/plan', async (req, res) => {
       // pickedMedia carries the brand-media URL the engine selected for this
       // format; the client uses it as the background and only falls back to
       // AI image gen when it's null.
-      dispatchWebhookEvent((req as any).userId, 'generation.complete', { type: 'creative', format: req.body.format });
+      dispatchWebhookEvent((req as any).userId, 'generation.complete', {
+        type: 'creative',
+        format: req.body.format,
+      });
       return res.json({ ...plan, pickedMedia });
     } catch (err) {
       if (err instanceof PlanValidationError) {
@@ -159,7 +163,10 @@ router.post('/render', authenticate, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'plan with layers is required' });
     }
 
-    const resolvedPlan = { ...plan, backgroundImageUrl: backgroundImageUrl ?? plan.backgroundImageUrl };
+    const resolvedPlan = {
+      ...plan,
+      backgroundImageUrl: backgroundImageUrl ?? plan.backgroundImageUrl,
+    };
 
     const pngBuffer = await renderCreativePlan(resolvedPlan as any, {
       format: (format as any) ?? '1:1',
@@ -169,7 +176,12 @@ router.post('/render', authenticate, async (req: AuthRequest, res) => {
     try {
       const base64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
       const userId = req.userId ?? 'system';
-      const imageUrl = await uploadCanvasImage(base64, userId, 'creative-render', `render-${Date.now()}`);
+      const imageUrl = await uploadCanvasImage(
+        base64,
+        userId,
+        'creative-render',
+        `render-${Date.now()}`
+      );
       return res.json({ imageUrl });
     } catch {
       return res.json({ imageBase64: pngBuffer.toString('base64') });
@@ -196,7 +208,13 @@ router.post(
   authenticate,
   async (req: AuthRequest, res) => {
     try {
-      const { brandId, format = '1:1', intent, feedback, previousPlan } = req.body as {
+      const {
+        brandId,
+        format = '1:1',
+        intent,
+        feedback,
+        previousPlan,
+      } = req.body as {
         brandId: string;
         format?: CreativeFormat;
         intent?: string;
@@ -222,7 +240,9 @@ router.post(
       const promptParts = [
         intent ? `Creative intent: ${sanitizeForPrompt(intent)}` : '',
         feedback && previousPlan
-          ? `User feedback on previous plan: ${sanitizeForPrompt(feedback)}\nPrevious plan JSON:\n${JSON.stringify(
+          ? `User feedback on previous plan: ${sanitizeForPrompt(
+              feedback
+            )}\nPrevious plan JSON:\n${JSON.stringify(
               previousPlan
             )}\nRefine the plan based on the feedback.`
           : '',
@@ -253,7 +273,10 @@ router.post(
       // (forces a logo layer if missing). Attach the URL here from prisma data
       // since the engine doesn't fill URLs (kept format-agnostic).
       const logos = (brand.logos as any[]) ?? [];
-      const logoUrls = logos.slice(0, 2).map((l: any) => l.url).filter(Boolean);
+      const logoUrls = logos
+        .slice(0, 2)
+        .map((l: any) => l.url)
+        .filter(Boolean);
       if (logoUrls.length && Array.isArray(plan.layers)) {
         let i = 0;
         plan.layers = plan.layers.map((layer: any) =>

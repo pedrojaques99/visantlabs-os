@@ -21,14 +21,43 @@ function downloadString(content: string, filename: string, type: string) {
 
 function inlineAllStyles(node: Element): void {
   const styles = window.getComputedStyle(node);
-  const important = ['font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing',
-    'color', 'background', 'background-color', 'border', 'border-radius', 'padding', 'margin',
-    'display', 'flex-direction', 'align-items', 'justify-content', 'gap', 'width', 'height',
-    'max-width', 'min-width', 'opacity', 'text-transform', 'position', 'top', 'left', 'right',
-    'bottom', 'inset', 'overflow', 'aspect-ratio', 'box-shadow'];
+  const important = [
+    'font-family',
+    'font-size',
+    'font-weight',
+    'line-height',
+    'letter-spacing',
+    'color',
+    'background',
+    'background-color',
+    'border',
+    'border-radius',
+    'padding',
+    'margin',
+    'display',
+    'flex-direction',
+    'align-items',
+    'justify-content',
+    'gap',
+    'width',
+    'height',
+    'max-width',
+    'min-width',
+    'opacity',
+    'text-transform',
+    'position',
+    'top',
+    'left',
+    'right',
+    'bottom',
+    'inset',
+    'overflow',
+    'aspect-ratio',
+    'box-shadow',
+  ];
   const css = important
-    .map(p => `${p}:${styles.getPropertyValue(p)}`)
-    .filter(s => !s.endsWith(':'))
+    .map((p) => `${p}:${styles.getPropertyValue(p)}`)
+    .filter((s) => !s.endsWith(':'))
     .join(';');
   (node as HTMLElement).style.cssText = css;
   Array.from(node.children).forEach(inlineAllStyles);
@@ -40,14 +69,14 @@ export async function exportMockElement(
   el: HTMLElement,
   brandName: string,
   formatId: string,
-  format: ExportFormat,
+  format: ExportFormat
 ): Promise<void> {
   if (!el || el.offsetWidth === 0) {
     throw new Error('Element is not visible');
   }
 
   const base = `${safeFileName(brandName) || 'brand'}-${formatId}`;
-  const pixelRatio = (formatId === 'website' || formatId === 'poster') ? 1.5 : 2;
+  const pixelRatio = formatId === 'website' || formatId === 'poster' ? 1.5 : 2;
 
   const withTimeout = <T>(promise: Promise<T>): Promise<T> =>
     Promise.race([
@@ -94,7 +123,7 @@ ${clone.outerHTML}
 }
 
 export const EXPORT_FORMATS: Array<{ id: ExportFormat; label: string }> = [
-  { id: 'png',  label: 'PNG' },
-  { id: 'svg',  label: 'SVG' },
+  { id: 'png', label: 'PNG' },
+  { id: 'svg', label: 'SVG' },
   { id: 'html', label: 'HTML' },
 ];

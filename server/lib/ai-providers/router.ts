@@ -8,16 +8,44 @@ import geminiProvider from './gemini.js';
 // ═══════════════════════════════════════════
 
 const COMPLEX_KEYWORDS = [
-  'página', 'section', 'seção', 'layout', 'design', 'sistema',
-  'completo', 'complete', 'estrutura', 'structure',
-  'vários', 'multiple', 'múltiplas', ' e ', ' and ', ',',
+  'página',
+  'section',
+  'seção',
+  'layout',
+  'design',
+  'sistema',
+  'completo',
+  'complete',
+  'estrutura',
+  'structure',
+  'vários',
+  'multiple',
+  'múltiplas',
+  ' e ',
+  ' and ',
+  ',',
   // Research keywords → Claude with web_search
-  'pesquis', 'busca', 'busque', 'search',
-  'referência', 'referencia', 'reference',
-  'inspiração', 'inspiracao', 'inspiration',
-  'tendência', 'tendencia', 'trend',
-  'exemplo', 'example', 'similar', 'como',
-  'estilo de', 'style of', 'parecido com', 'like',
+  'pesquis',
+  'busca',
+  'busque',
+  'search',
+  'referência',
+  'referencia',
+  'reference',
+  'inspiração',
+  'inspiracao',
+  'inspiration',
+  'tendência',
+  'tendencia',
+  'trend',
+  'exemplo',
+  'example',
+  'similar',
+  'como',
+  'estilo de',
+  'style of',
+  'parecido com',
+  'like',
 ];
 
 /**
@@ -25,7 +53,7 @@ const COMPLEX_KEYWORDS = [
  */
 function hasComplexitySignals(command: string, contextSize: number): boolean {
   const lower = command.toLowerCase();
-  const hasKeywords = COMPLEX_KEYWORDS.some(kw => lower.includes(kw));
+  const hasKeywords = COMPLEX_KEYWORDS.some((kw) => lower.includes(kw));
   const isLong = command.length > 100;
   const isLargeContext = contextSize > 30;
 
@@ -39,10 +67,7 @@ function hasComplexitySignals(command: string, contextSize: number): boolean {
  * @param command - The user command/prompt
  * @param contextSize - Number of elements in context
  */
-export function chooseProvider(
-  command: string,
-  contextSize: number
-): AIProvider {
+export function chooseProvider(command: string, contextSize: number): AIProvider {
   // If Claude API key is not configured, always use Gemini
   if (!process.env.ANTHROPIC_API_KEY) {
     console.log('[Router] ANTHROPIC_API_KEY not set — using Gemini');

@@ -21,9 +21,12 @@ export const TextSection: React.FC<TextSectionProps> = ({
   const cleanContent = cleanMarketResearchText;
 
   // Ensure content is always a string and clean it
-  const safeContent = typeof content === 'string'
-    ? cleanContent(content)
-    : (content ? cleanContent(String(content)) : '');
+  const safeContent =
+    typeof content === 'string'
+      ? cleanContent(content)
+      : content
+      ? cleanContent(String(content))
+      : '';
 
   if (isEditing && onContentChange) {
     return (
@@ -39,10 +42,19 @@ export const TextSection: React.FC<TextSectionProps> = ({
   // If content is empty, show placeholder
   if (!safeContent.trim()) {
     return (
-      <Card className={theme === 'dark' ? 'bg-neutral-950/70 border-neutral-800/60' : 'bg-neutral-100 border-neutral-300'}>
+      <Card
+        className={
+          theme === 'dark'
+            ? 'bg-neutral-950/70 border-neutral-800/60'
+            : 'bg-neutral-100 border-neutral-300'
+        }
+      >
         <CardContent className="p-4 md:p-6">
-          <div className={`text-sm font-manrope  ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-            }`}>
+          <div
+            className={`text-sm font-manrope  ${
+              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
+            }`}
+          >
             Nenhum conteúdo disponível.
           </div>
         </CardContent>
@@ -52,7 +64,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
 
   // Dividir texto em parágrafos e renderizar em cards se for texto muito longo
   // Apenas dividir se houver múltiplos parágrafos claramente separados E o texto for muito longo
-  const paragraphs = safeContent.split('\n\n').filter(p => p.trim());
+  const paragraphs = safeContent.split('\n\n').filter((p) => p.trim());
   const hasMultipleParagraphs = paragraphs.length > 1;
   const isVeryLongText = safeContent.length > 1000; // Aumentado o limite para evitar divisões desnecessárias
 
@@ -64,13 +76,18 @@ export const TextSection: React.FC<TextSectionProps> = ({
         {paragraphs.map((paragraph, index) => (
           <Card
             key={index}
-            className={theme === 'dark'
-              ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
-              : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}
+            className={
+              theme === 'dark'
+                ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
+                : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
+            }
           >
             <CardContent className="p-4 md:p-6">
-              <div className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}>
+              <div
+                className={`text-sm font-manrope leading-relaxed ${
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                }`}
+              >
                 <MarkdownRenderer content={paragraph.trim()} preserveLines />
               </div>
             </CardContent>
@@ -82,17 +99,22 @@ export const TextSection: React.FC<TextSectionProps> = ({
 
   // Render as a single block of text with proper line breaks
   return (
-    <Card className={theme === 'dark'
-      ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
-      : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}
+    <Card
+      className={
+        theme === 'dark'
+          ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
+          : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
+      }
     >
       <CardContent className="p-4 md:p-6">
-        <div className={`text-sm font-manrope leading-relaxed whitespace-pre-wrap ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-          }`}>
+        <div
+          className={`text-sm font-manrope leading-relaxed whitespace-pre-wrap ${
+            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+          }`}
+        >
           <MarkdownRenderer content={safeContent} preserveLines />
         </div>
       </CardContent>
     </Card>
   );
 };
-

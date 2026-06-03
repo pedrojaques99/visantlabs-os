@@ -32,12 +32,7 @@ interface UseDynamicSuggestionsOptions {
  * });
  */
 export const useDynamicSuggestions = (options: UseDynamicSuggestionsOptions = {}) => {
-  const {
-    enabled = true,
-    debounceMs = 1000,
-    minTags = 1,
-    imageDescription,
-  } = options;
+  const { enabled = true, debounceMs = 1000, minTags = 1, imageDescription } = options;
 
   const {
     selectedTags,
@@ -97,21 +92,23 @@ export const useDynamicSuggestions = (options: UseDynamicSuggestionsOptions = {}
   ]);
 
   // Detect which category changed
-  const detectChangedCategory = useCallback((
-    current: Record<string, string[]>,
-    previous: Record<string, string[]>
-  ): string | null => {
-    const categories = ['categories', 'location', 'angle', 'lighting', 'effects', 'material'];
-    for (const cat of categories) {
-      const currentArr = current[cat] || [];
-      const prevArr = previous[cat] || [];
-      if (currentArr.length !== prevArr.length ||
-          currentArr.some((tag, i) => tag !== prevArr[i])) {
-        return cat;
+  const detectChangedCategory = useCallback(
+    (current: Record<string, string[]>, previous: Record<string, string[]>): string | null => {
+      const categories = ['categories', 'location', 'angle', 'lighting', 'effects', 'material'];
+      for (const cat of categories) {
+        const currentArr = current[cat] || [];
+        const prevArr = previous[cat] || [];
+        if (
+          currentArr.length !== prevArr.length ||
+          currentArr.some((tag, i) => tag !== prevArr[i])
+        ) {
+          return cat;
+        }
       }
-    }
-    return null;
-  }, []);
+      return null;
+    },
+    []
+  );
 
   // Calculate total selected tags
   const totalSelectedTags = useMemo(() => {
@@ -167,38 +164,38 @@ export const useDynamicSuggestions = (options: UseDynamicSuggestionsOptions = {}
 
         // Update suggestions for categories that weren't changed
         if (changedCategory !== 'categories' && result.categories?.length) {
-          setSuggestedTags(prev => {
+          setSuggestedTags((prev) => {
             // Merge new suggestions with existing, avoiding duplicates
             const combined = [...new Set([...result.categories!, ...prev])];
             return combined.slice(0, 5);
           });
         }
         if (changedCategory !== 'location' && result.locations?.length) {
-          setSuggestedLocationTags(prev => {
+          setSuggestedLocationTags((prev) => {
             const combined = [...new Set([...result.locations!, ...prev])];
             return combined.slice(0, 5);
           });
         }
         if (changedCategory !== 'angle' && result.angles?.length) {
-          setSuggestedAngleTags(prev => {
+          setSuggestedAngleTags((prev) => {
             const combined = [...new Set([...result.angles!, ...prev])];
             return combined.slice(0, 5);
           });
         }
         if (changedCategory !== 'lighting' && result.lighting?.length) {
-          setSuggestedLightingTags(prev => {
+          setSuggestedLightingTags((prev) => {
             const combined = [...new Set([...result.lighting!, ...prev])];
             return combined.slice(0, 5);
           });
         }
         if (changedCategory !== 'effects' && result.effects?.length) {
-          setSuggestedEffectTags(prev => {
+          setSuggestedEffectTags((prev) => {
             const combined = [...new Set([...result.effects!, ...prev])];
             return combined.slice(0, 5);
           });
         }
         if (changedCategory !== 'material' && result.materials?.length) {
-          setSuggestedMaterialTags(prev => {
+          setSuggestedMaterialTags((prev) => {
             const combined = [...new Set([...result.materials!, ...prev])];
             return combined.slice(0, 5);
           });

@@ -15,7 +15,8 @@ function getToolTag(toolName: string): string {
     toolName.startsWith('improve_') ||
     toolName.startsWith('suggest_') ||
     toolName.startsWith('extract_')
-  ) return 'AI Generation';
+  )
+    return 'AI Generation';
   if (toolName.includes('mockup')) return 'Mockups';
   if (toolName.includes('canvas')) return 'Canvas';
   if (toolName.includes('campaign') || toolName.includes('ad_')) return 'Campaigns';
@@ -116,7 +117,10 @@ export function generateMCPOpenAPISpec(
   // MCP tool tags
   const mcpTags = [
     { name: 'Brand', description: 'Brand guidelines management and intelligence' },
-    { name: 'AI Generation', description: 'AI-powered prompt generation, image analysis, and extraction' },
+    {
+      name: 'AI Generation',
+      description: 'AI-powered prompt generation, image analysis, and extraction',
+    },
     { name: 'Mockups', description: 'Mockup generation and management via MCP' },
     { name: 'Canvas', description: 'Canvas project management via MCP' },
     { name: 'Campaigns', description: 'Ad campaign generation via MCP' },
@@ -156,7 +160,8 @@ export function generateMCPOpenAPISpec(
         apiKeyAuth: {
           type: 'http',
           scheme: 'bearer',
-          description: 'API key for agent/developer access. Format: visant_sk_xxxxxxxxxxxx. Get yours from Settings → API Keys.',
+          description:
+            'API key for agent/developer access. Format: visant_sk_xxxxxxxxxxxx. Get yours from Settings → API Keys.',
         },
       },
     },

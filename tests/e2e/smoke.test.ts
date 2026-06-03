@@ -30,7 +30,9 @@ describe('Smoke: server boots + core endpoints reachable', () => {
     const token = signin.body.token;
     expect(token).toBeTypeOf('string');
 
-    const me = await agent.get('/api/payments/subscription-status').set('Authorization', `Bearer ${token}`);
+    const me = await agent
+      .get('/api/payments/subscription-status')
+      .set('Authorization', `Bearer ${token}`);
     expect(me.status).toBe(200);
   });
 });

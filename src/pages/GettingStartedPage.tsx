@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Copy, Check, Key, Zap, Image, Palette, ChevronRight, ExternalLink } from 'lucide-react';
+import {
+  BookOpen,
+  Copy,
+  Check,
+  Key,
+  Zap,
+  Image,
+  Palette,
+  ChevronRight,
+  ExternalLink,
+} from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardContent } from '../components/ui/card';
 import { useLayout } from '@/hooks/useLayout';
@@ -12,7 +22,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
+} from '../components/ui/BreadcrumbWithBack';
 import { copyToClipboard } from '@/utils/clipboard';
 
 // ─── Local CodeBlock component ──────────────────────────────────────────────
@@ -46,7 +56,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
   return (
     <div className="relative group rounded-lg overflow-hidden border border-neutral-800/70 bg-neutral-950">
       <div className="flex items-center justify-between px-4 py-2 bg-neutral-900/80 border-b border-white/10">
-        <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">{langLabel[language]}</span>
+        <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+          {langLabel[language]}
+        </span>
         <button
           onClick={handleCopy}
           className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-300 transition-colors py-0.5 px-2 rounded hover:bg-neutral-800/60"
@@ -273,7 +285,6 @@ export const GettingStartedPage: React.FC = () => {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-24 relative z-10">
-
           {/* Header Card */}
           <Card className="bg-neutral-900 border border-white/10 rounded-xl mb-8">
             <CardContent className="p-4 md:p-6">
@@ -316,14 +327,19 @@ export const GettingStartedPage: React.FC = () => {
             {/* Sidebar nav */}
             <aside className="hidden lg:block w-52 shrink-0">
               <div className="sticky top-20 space-y-1">
-                <p className="text-xs font-mono text-neutral-600 uppercase tracking-wider mb-3">On this page</p>
+                <p className="text-xs font-mono text-neutral-600 uppercase tracking-wider mb-3">
+                  On this page
+                </p>
                 {SECTIONS.map((s) => (
                   <a
                     key={s.id}
                     href={`#${s.id}`}
                     className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-200 transition-colors py-1.5 px-2 rounded-md hover:bg-neutral-800/40 group"
                   >
-                    <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-brand-cyan" />
+                    <ChevronRight
+                      size={12}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-brand-cyan"
+                    />
                     {s.label}
                   </a>
                 ))}
@@ -332,7 +348,6 @@ export const GettingStartedPage: React.FC = () => {
 
             {/* Main content */}
             <div className="flex-1 min-w-0 space-y-10">
-
               {/* ── Authentication ── */}
               <section id="authentication">
                 <Card className="bg-neutral-900 border border-white/10 rounded-xl">
@@ -341,12 +356,24 @@ export const GettingStartedPage: React.FC = () => {
                       <div className="p-2 bg-brand-cyan/10 rounded-lg">
                         <Key size={18} className="text-brand-cyan" />
                       </div>
-                      <h2 className="text-xl font-semibold font-manrope text-neutral-200">Authentication</h2>
+                      <h2 className="text-xl font-semibold font-manrope text-neutral-200">
+                        Authentication
+                      </h2>
                     </div>
                     <p className="text-neutral-400 text-sm leading-relaxed">
-                      All API requests require a <code className="text-brand-cyan bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">visant_sk_</code> API key passed as a{' '}
-                      <code className="text-neutral-300 bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">Bearer</code> token in the{' '}
-                      <code className="text-neutral-300 bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">Authorization</code> header.
+                      All API requests require a{' '}
+                      <code className="text-brand-cyan bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">
+                        visant_sk_
+                      </code>{' '}
+                      API key passed as a{' '}
+                      <code className="text-neutral-300 bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">
+                        Bearer
+                      </code>{' '}
+                      token in the{' '}
+                      <code className="text-neutral-300 bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">
+                        Authorization
+                      </code>{' '}
+                      header.
                     </p>
                     <div className="flex items-center gap-2 text-sm text-neutral-400">
                       <span>Don't have a key yet?</span>
@@ -358,18 +385,35 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                     </div>
                     <div>
-                      <p className="text-xs font-mono text-neutral-500 mb-2">List available tools</p>
+                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                        List available tools
+                      </p>
                       <CodeBlock code={AUTH_CURL} language="bash" />
                     </div>
                     <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4">
                       <p className="text-xs font-mono text-neutral-500 mb-2">Available scopes</p>
                       <div className="flex flex-wrap gap-2">
                         {[
-                          { scope: 'read', desc: 'Read resources and metadata', color: 'text-blue-400 bg-blue-500/10 border-blue-500/30' },
-                          { scope: 'write', desc: 'Create and modify resources', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
-                          { scope: 'generate', desc: 'Invoke AI generation tools', color: 'text-purple-400 bg-purple-500/10 border-purple-500/30' },
+                          {
+                            scope: 'read',
+                            desc: 'Read resources and metadata',
+                            color: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
+                          },
+                          {
+                            scope: 'write',
+                            desc: 'Create and modify resources',
+                            color: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+                          },
+                          {
+                            scope: 'generate',
+                            desc: 'Invoke AI generation tools',
+                            color: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
+                          },
                         ].map(({ scope, desc, color }) => (
-                          <div key={scope} className={`text-xs font-mono px-2.5 py-1.5 rounded border ${color}`}>
+                          <div
+                            key={scope}
+                            className={`text-xs font-mono px-2.5 py-1.5 rounded border ${color}`}
+                          >
                             <span className="font-semibold">{scope}</span>
                             <span className="ml-2 opacity-70">{desc}</span>
                           </div>
@@ -389,22 +433,39 @@ export const GettingStartedPage: React.FC = () => {
                         <Palette size={18} className="text-purple-400" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">Brand Generation</h2>
-                        <p className="text-xs font-mono text-neutral-600 mt-0.5">Scope required: <span className="text-purple-400">generate</span></p>
+                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">
+                          Brand Generation
+                        </h2>
+                        <p className="text-xs font-mono text-neutral-600 mt-0.5">
+                          Scope required: <span className="text-purple-400">generate</span>
+                        </p>
                       </div>
                     </div>
                     <p className="text-neutral-400 text-sm leading-relaxed">
-                      Generate complete brand guidelines — colors, typography, voice, and visual direction — from a brand name and industry. Brand guidelines become input for all subsequent generation tools.
+                      Generate complete brand guidelines — colors, typography, voice, and visual
+                      direction — from a brand name and industry. Brand guidelines become input for
+                      all subsequent generation tools.
                     </p>
                     <div>
-                      <p className="text-xs font-mono text-neutral-500 mb-2">Generate brand guidelines</p>
+                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                        Generate brand guidelines
+                      </p>
                       <TabCode js={BRAND_JS} python={BRAND_PY} />
                     </div>
                     <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4 text-xs font-mono text-neutral-500 space-y-1">
-                      <p className="text-neutral-400 font-semibold mb-2">Tool: <span className="text-purple-400">generate-brand-guidelines</span></p>
-                      <p><span className="text-neutral-300">brandName</span> — string, required</p>
-                      <p><span className="text-neutral-300">industry</span> — string, required</p>
-                      <p><span className="text-neutral-300">tone</span> — "professional" | "playful" | "bold" | "minimal"</p>
+                      <p className="text-neutral-400 font-semibold mb-2">
+                        Tool: <span className="text-purple-400">generate-brand-guidelines</span>
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">brandName</span> — string, required
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">industry</span> — string, required
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">tone</span> — "professional" | "playful"
+                        | "bold" | "minimal"
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -419,22 +480,39 @@ export const GettingStartedPage: React.FC = () => {
                         <Image size={18} className="text-amber-400" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">Mockup Generation</h2>
-                        <p className="text-xs font-mono text-neutral-600 mt-0.5">Scope required: <span className="text-amber-400">generate</span></p>
+                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">
+                          Mockup Generation
+                        </h2>
+                        <p className="text-xs font-mono text-neutral-600 mt-0.5">
+                          Scope required: <span className="text-amber-400">generate</span>
+                        </p>
                       </div>
                     </div>
                     <p className="text-neutral-400 text-sm leading-relaxed">
-                      Apply your artwork to professional product templates — apparel, packaging, devices, print — and receive a rendered mockup image URL.
+                      Apply your artwork to professional product templates — apparel, packaging,
+                      devices, print — and receive a rendered mockup image URL.
                     </p>
                     <div>
-                      <p className="text-xs font-mono text-neutral-500 mb-2">Generate a product mockup</p>
+                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                        Generate a product mockup
+                      </p>
                       <TabCode js={MOCKUP_JS} python={MOCKUP_PY} />
                     </div>
                     <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4 text-xs font-mono text-neutral-500 space-y-1">
-                      <p className="text-neutral-400 font-semibold mb-2">Tool: <span className="text-amber-400">mockup-generate</span></p>
-                      <p><span className="text-neutral-300">templateId</span> — string, required</p>
-                      <p><span className="text-neutral-300">imageUrl</span> — string (public URL), required</p>
-                      <p><span className="text-neutral-300">backgroundColor</span> — hex string, optional</p>
+                      <p className="text-neutral-400 font-semibold mb-2">
+                        Tool: <span className="text-amber-400">mockup-generate</span>
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">templateId</span> — string, required
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">imageUrl</span> — string (public URL),
+                        required
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">backgroundColor</span> — hex string,
+                        optional
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -449,23 +527,44 @@ export const GettingStartedPage: React.FC = () => {
                         <Zap size={18} className="text-green-400" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">Creative Studio</h2>
-                        <p className="text-xs font-mono text-neutral-600 mt-0.5">Scope required: <span className="text-green-400">generate</span></p>
+                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">
+                          Creative Studio
+                        </h2>
+                        <p className="text-xs font-mono text-neutral-600 mt-0.5">
+                          Scope required: <span className="text-green-400">generate</span>
+                        </p>
                       </div>
                     </div>
                     <p className="text-neutral-400 text-sm leading-relaxed">
-                      Generate on-brand creative assets — social media posts, banners, ads — using a natural language prompt paired with your brand context. Brand guidelines are used as generation input, not just documentation.
+                      Generate on-brand creative assets — social media posts, banners, ads — using a
+                      natural language prompt paired with your brand context. Brand guidelines are
+                      used as generation input, not just documentation.
                     </p>
                     <div>
-                      <p className="text-xs font-mono text-neutral-500 mb-2">Generate a creative asset</p>
+                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                        Generate a creative asset
+                      </p>
                       <TabCode js={CREATIVE_JS} python={CREATIVE_PY} />
                     </div>
                     <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4 text-xs font-mono text-neutral-500 space-y-1">
-                      <p className="text-neutral-400 font-semibold mb-2">Tool: <span className="text-green-400">creative-generate</span></p>
-                      <p><span className="text-neutral-300">prompt</span> — string, required</p>
-                      <p><span className="text-neutral-300">brandId</span> — string, optional (uses brand context)</p>
-                      <p><span className="text-neutral-300">format</span> — "instagram-post" | "banner" | "thumbnail" | "ad"</p>
-                      <p><span className="text-neutral-300">style</span> — "modern" | "classic" | "bold" | "minimal"</p>
+                      <p className="text-neutral-400 font-semibold mb-2">
+                        Tool: <span className="text-green-400">creative-generate</span>
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">prompt</span> — string, required
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">brandId</span> — string, optional (uses
+                        brand context)
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">format</span> — "instagram-post" |
+                        "banner" | "thumbnail" | "ad"
+                      </p>
+                      <p>
+                        <span className="text-neutral-300">style</span> — "modern" | "classic" |
+                        "bold" | "minimal"
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -475,7 +574,9 @@ export const GettingStartedPage: React.FC = () => {
               <section id="next-steps">
                 <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold font-manrope text-neutral-200 mb-5">Next Steps</h2>
+                    <h2 className="text-xl font-semibold font-manrope text-neutral-200 mb-5">
+                      Next Steps
+                    </h2>
                     <div className="grid sm:grid-cols-3 gap-4">
                       <Link
                         to="/api/docs"
@@ -483,10 +584,15 @@ export const GettingStartedPage: React.FC = () => {
                       >
                         <div className="flex items-center justify-between">
                           <BookOpen size={16} className="text-brand-cyan" />
-                          <ChevronRight size={14} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+                          <ChevronRight
+                            size={14}
+                            className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                          />
                         </div>
                         <p className="text-sm font-medium text-neutral-300">Full API Reference</p>
-                        <p className="text-xs text-neutral-600">Browse all 93 tools with params and response schemas</p>
+                        <p className="text-xs text-neutral-600">
+                          Browse all 93 tools with params and response schemas
+                        </p>
                       </Link>
                       <Link
                         to="/settings/api-keys"
@@ -494,10 +600,15 @@ export const GettingStartedPage: React.FC = () => {
                       >
                         <div className="flex items-center justify-between">
                           <Key size={16} className="text-brand-cyan" />
-                          <ChevronRight size={14} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+                          <ChevronRight
+                            size={14}
+                            className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                          />
                         </div>
                         <p className="text-sm font-medium text-neutral-300">Manage API Keys</p>
-                        <p className="text-xs text-neutral-600">Create, rotate, and scope your API keys</p>
+                        <p className="text-xs text-neutral-600">
+                          Create, rotate, and scope your API keys
+                        </p>
                       </Link>
                       <Link
                         to="/developer/usage"
@@ -505,16 +616,20 @@ export const GettingStartedPage: React.FC = () => {
                       >
                         <div className="flex items-center justify-between">
                           <Zap size={16} className="text-brand-cyan" />
-                          <ChevronRight size={14} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+                          <ChevronRight
+                            size={14}
+                            className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                          />
                         </div>
                         <p className="text-sm font-medium text-neutral-300">Usage Dashboard</p>
-                        <p className="text-xs text-neutral-600">Monitor request counts, credits, and quotas</p>
+                        <p className="text-xs text-neutral-600">
+                          Monitor request counts, credits, and quotas
+                        </p>
                       </Link>
                     </div>
                   </CardContent>
                 </Card>
               </section>
-
             </div>
           </div>
         </div>

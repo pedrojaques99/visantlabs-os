@@ -5,7 +5,12 @@ import { prisma } from '../db/prisma.js';
 
 const router = express.Router();
 
-const webhookLimiter = rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true, legacyHeaders: false });
+const webhookLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY;
 const LIVEBLOCKS_WEBHOOK_SECRET = process.env.LIVEBLOCKS_WEBHOOK_SECRET;
@@ -43,7 +48,7 @@ router.post('/webhook', webhookLimiter, async (req, res) => {
 
   try {
     const liveblocks = new Liveblocks({ secret: LIVEBLOCKS_SECRET_KEY });
-    const { data: storage } = await liveblocks.getStorageDocument(roomId, 'json') as any;
+    const { data: storage } = (await liveblocks.getStorageDocument(roomId, 'json')) as any;
     const guideline = storage?.guideline;
 
     if (!guideline || typeof guideline !== 'object') {

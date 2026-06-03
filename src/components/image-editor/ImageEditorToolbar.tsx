@@ -1,7 +1,12 @@
 import React from 'react';
 import {
-  Square, Circle, Paintbrush, Eraser,
-  Maximize, Scissors, ImageOff,
+  Square,
+  Circle,
+  Paintbrush,
+  Eraser,
+  Maximize,
+  Scissors,
+  ImageOff,
   type LucideIcon,
 } from 'lucide-react';
 import { useImageEditorStore, type EditorTool, type EditorAction } from '@/stores/imageEditorStore';
@@ -36,14 +41,16 @@ export const ImageEditorToolbar: React.FC = () => {
   const maskOperations = useImageEditorStore((s) => s.maskOperations);
 
   return (
-    <div className={cn(
-      'flex items-center justify-center gap-1 px-3 py-1.5 mx-auto',
-      IMAGE_EDITOR.toolbar.bg,
-      IMAGE_EDITOR.toolbar.border,
-      IMAGE_EDITOR.toolbar.radius,
-      'mt-2 w-fit',
-      isGenerating && 'opacity-50 pointer-events-none',
-    )}>
+    <div
+      className={cn(
+        'flex items-center justify-center gap-1 px-3 py-1.5 mx-auto',
+        IMAGE_EDITOR.toolbar.bg,
+        IMAGE_EDITOR.toolbar.border,
+        IMAGE_EDITOR.toolbar.radius,
+        'mt-2 w-fit',
+        isGenerating && 'opacity-50 pointer-events-none'
+      )}
+    >
       {/* Action tabs */}
       {ACTIONS.map((action) => (
         <button
@@ -53,7 +60,7 @@ export const ImageEditorToolbar: React.FC = () => {
             'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
             activeAction === action.id
               ? IMAGE_EDITOR.toolbar.activeTool
-              : IMAGE_EDITOR.toolbar.inactiveTool,
+              : IMAGE_EDITOR.toolbar.inactiveTool
           )}
           title={action.label}
         >
@@ -75,7 +82,7 @@ export const ImageEditorToolbar: React.FC = () => {
                 'p-1.5 rounded-lg transition-colors',
                 activeTool === tool.id
                   ? IMAGE_EDITOR.toolbar.activeTool
-                  : IMAGE_EDITOR.toolbar.inactiveTool,
+                  : IMAGE_EDITOR.toolbar.inactiveTool
               )}
               title={tool.label}
             >
@@ -111,7 +118,7 @@ export const ImageEditorToolbar: React.FC = () => {
             className={cn(
               'px-2 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-colors',
               IMAGE_EDITOR.toolbar.inactiveTool,
-              'disabled:opacity-30',
+              'disabled:opacity-30'
             )}
           >
             Undo
@@ -122,7 +129,7 @@ export const ImageEditorToolbar: React.FC = () => {
             className={cn(
               'px-2 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-colors',
               IMAGE_EDITOR.toolbar.inactiveTool,
-              'disabled:opacity-30',
+              'disabled:opacity-30'
             )}
           >
             Clear

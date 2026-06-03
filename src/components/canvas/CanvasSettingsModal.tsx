@@ -2,14 +2,28 @@ import React, { useEffect, useCallback } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import type { LucideIcon } from 'lucide-react';
 import {
-  X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2,
-  Beaker, Diamond, Link2, LayoutGrid, Paintbrush, Settings2,
+  X,
+  Grid3x3,
+  Maximize2,
+  ZoomIn,
+  Palette,
+  MousePointer2,
+  Beaker,
+  Diamond,
+  Link2,
+  LayoutGrid,
+  Paintbrush,
+  Settings2,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ExpandableColorPicker, SectionLabel, SegmentedControl } from '@/components/shared/ToolPanel';
+import {
+  ExpandableColorPicker,
+  SectionLabel,
+  SegmentedControl,
+} from '@/components/shared/ToolPanel';
 import { cn } from '@/lib/utils';
 
 interface CanvasSettingsModalProps {
@@ -55,7 +69,7 @@ function rgbaToHex(rgba: string): string {
   const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
   if (!match) return '#ffffff';
   const [, r, g, b] = match;
-  return `#${[r, g, b].map(c => Number(c).toString(16).padStart(2, '0')).join('')}`;
+  return `#${[r, g, b].map((c) => Number(c).toString(16).padStart(2, '0')).join('')}`;
 }
 
 // --- Local sub-components ---
@@ -75,7 +89,10 @@ function SettingRow({
     <div className="flex items-center justify-between gap-4 py-2.5 group/row rounded-lg transition-colors">
       <div className="flex items-center gap-3 min-w-0">
         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.04] shrink-0 transition-colors group-hover/row:bg-white/[0.06]">
-          <Icon size={15} className="text-neutral-500 transition-colors group-hover/row:text-neutral-400" />
+          <Icon
+            size={15}
+            className="text-neutral-500 transition-colors group-hover/row:text-neutral-400"
+          />
         </div>
         <div className="min-w-0">
           <p className="text-[13px] text-neutral-200 leading-tight">{label}</p>
@@ -149,17 +166,23 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  const handleGridColorChange = useCallback((hex: string) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    onGridColorChange?.(`rgba(${r}, ${g}, ${b}, 0.2)`);
-  }, [onGridColorChange]);
+  const handleGridColorChange = useCallback(
+    (hex: string) => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      onGridColorChange?.(`rgba(${r}, ${g}, ${b}, 0.2)`);
+    },
+    [onGridColorChange]
+  );
 
   if (!isOpen) return null;
 
-  const gridHexColor = gridColor.startsWith('rgba') ? rgbaToHex(gridColor)
-    : gridColor.startsWith('#') ? gridColor : '#ffffff';
+  const gridHexColor = gridColor.startsWith('rgba')
+    ? rgbaToHex(gridColor)
+    : gridColor.startsWith('#')
+    ? gridColor
+    : '#ffffff';
 
   return (
     <div
@@ -169,7 +192,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
       <div
         className={cn(
           'bg-neutral-950 border border-white/[0.06] rounded-2xl w-full max-w-[460px] max-h-[85vh] flex flex-col shadow-2xl',
-          'animate-in fade-in-0 zoom-in-[0.97] duration-200',
+          'animate-in fade-in-0 zoom-in-[0.97] duration-200'
         )}
         onClick={(e) => e.stopPropagation()}
       >
@@ -214,20 +237,42 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
           <TabsContent value="canvas" className="flex-1 overflow-y-auto px-4 pb-4 pt-1 mt-0">
             <SectionLabel>{t('canvas.settingsDisplay') || 'Display'}</SectionLabel>
             <div className="divide-y divide-white/[0.04]">
-              <SettingRow icon={Grid3x3} label={t('canvas.showGrid') || 'Show Grid'} description={t('canvas.showGridDesc') || 'Dot grid on the canvas background'}>
+              <SettingRow
+                icon={Grid3x3}
+                label={t('canvas.showGrid') || 'Show Grid'}
+                description={t('canvas.showGridDesc') || 'Dot grid on the canvas background'}
+              >
                 <Switch checked={showGrid} onCheckedChange={(v) => onShowGridChange?.(v)} />
               </SettingRow>
-              <SettingRow icon={Maximize2} label={t('canvas.showMinimap') || 'Minimap'} description={t('canvas.showMinimapDesc') || 'Overview of the full canvas'}>
+              <SettingRow
+                icon={Maximize2}
+                label={t('canvas.showMinimap') || 'Minimap'}
+                description={t('canvas.showMinimapDesc') || 'Overview of the full canvas'}
+              >
                 <Switch checked={showMinimap} onCheckedChange={(v) => onShowMinimapChange?.(v)} />
               </SettingRow>
-              <SettingRow icon={ZoomIn} label={t('canvas.showControls') || 'Zoom Controls'} description={t('canvas.showControlsDesc') || 'Zoom and fit controls overlay'}>
+              <SettingRow
+                icon={ZoomIn}
+                label={t('canvas.showControls') || 'Zoom Controls'}
+                description={t('canvas.showControlsDesc') || 'Zoom and fit controls overlay'}
+              >
                 <Switch checked={showControls} onCheckedChange={(v) => onShowControlsChange?.(v)} />
               </SettingRow>
             </div>
             <div className="mt-2">
               <SectionLabel>{t('canvas.settingsAdvanced') || 'Advanced'}</SectionLabel>
-              <SettingRow icon={Beaker} label={t('canvas.experimentalMode') || 'Experimental Mode'} description={t('canvas.experimentalModeDesc') || 'Show preview nodes like Shader, Strategy, etc.'}>
-                <Switch checked={experimentalMode} onCheckedChange={(v) => onExperimentalModeChange?.(v)} />
+              <SettingRow
+                icon={Beaker}
+                label={t('canvas.experimentalMode') || 'Experimental Mode'}
+                description={
+                  t('canvas.experimentalModeDesc') ||
+                  'Show preview nodes like Shader, Strategy, etc.'
+                }
+              >
+                <Switch
+                  checked={experimentalMode}
+                  onCheckedChange={(v) => onExperimentalModeChange?.(v)}
+                />
               </SettingRow>
             </div>
           </TabsContent>
@@ -236,7 +281,11 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
           <TabsContent value="edges" className="flex-1 overflow-y-auto px-4 pb-4 pt-1 mt-0">
             <SectionLabel>{t('canvas.settingsConnections') || 'Connections'}</SectionLabel>
             <div className="divide-y divide-white/[0.04]">
-              <SettingRow icon={Link2} label={t('canvas.edgeStyle') || 'Line Style'} description={t('canvas.edgeStyleDesc') || 'Style for connections between nodes'}>
+              <SettingRow
+                icon={Link2}
+                label={t('canvas.edgeStyle') || 'Line Style'}
+                description={t('canvas.edgeStyleDesc') || 'Style for connections between nodes'}
+              >
                 <SegmentedControl
                   value={edgeStyle}
                   onChange={(v) => onEdgeStyleChange?.(v as 'solid' | 'dashed')}
@@ -246,7 +295,11 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   ]}
                 />
               </SettingRow>
-              <SettingRow icon={Link2} label={t('canvas.edgeWidth') || 'Line Weight'} description={t('canvas.edgeWidthDesc') || 'Thickness of connection lines'}>
+              <SettingRow
+                icon={Link2}
+                label={t('canvas.edgeWidth') || 'Line Weight'}
+                description={t('canvas.edgeWidthDesc') || 'Thickness of connection lines'}
+              >
                 <SegmentedControl
                   value={edgeStrokeWidth}
                   onChange={(v) => onEdgeStrokeWidthChange?.(v as 'normal' | 'thin')}
@@ -263,7 +316,13 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 {t('canvas.preview') || 'Preview'}
               </p>
               <svg viewBox="0 0 300 40" className="w-full" preserveAspectRatio="xMidYMid meet">
-                <line x1="24" y1="20" x2="276" y2="20" stroke="currentColor" className="text-neutral-600"
+                <line
+                  x1="24"
+                  y1="20"
+                  x2="276"
+                  y2="20"
+                  stroke="currentColor"
+                  className="text-neutral-600"
                   strokeWidth={edgeStrokeWidth === 'thin' ? 1 : 2.5}
                   strokeDasharray={edgeStyle === 'dashed' ? '8 5' : 'none'}
                   strokeLinecap="round"
@@ -301,7 +360,9 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
               <ColorSettingRow icon={Grid3x3} label={t('canvas.gridColor') || 'Grid'}>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-neutral-500">{t('canvas.showGrid') || 'Visible'}</span>
+                    <span className="text-[11px] text-neutral-500">
+                      {t('canvas.showGrid') || 'Visible'}
+                    </span>
                     <Switch checked={showGrid} onCheckedChange={(v) => onShowGridChange?.(v)} />
                   </div>
                   <ExpandableColorPicker

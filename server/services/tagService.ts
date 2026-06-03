@@ -40,7 +40,7 @@ const COLLECTION_MAP = {
 /**
  * Fetches all available tags from MongoDB collections
  * Uses cache with TTL to reduce database queries
- * 
+ *
  * @returns Promise resolving to AvailableTags object
  */
 export async function getAllAvailableTags(): Promise<AvailableTags> {
@@ -63,23 +63,44 @@ export async function getAllAvailableTags(): Promise<AvailableTags> {
       effectDocs,
       textureDocs,
     ] = await Promise.all([
-      db.collection(COLLECTION_MAP.branding).find({}, { projection: { name: 1 } }).toArray(),
-      db.collection(COLLECTION_MAP.categories).find({}, { projection: { name: 1 } }).toArray(),
-      db.collection(COLLECTION_MAP.locations).find({}, { projection: { name: 1 } }).toArray(),
-      db.collection(COLLECTION_MAP.angles).find({}, { projection: { name: 1 } }).toArray(),
-      db.collection(COLLECTION_MAP.lighting).find({}, { projection: { name: 1 } }).toArray(),
-      db.collection(COLLECTION_MAP.effects).find({}, { projection: { name: 1 } }).toArray(),
-      db.collection(COLLECTION_MAP.materials).find({}, { projection: { name: 1 } }).toArray(),
+      db
+        .collection(COLLECTION_MAP.branding)
+        .find({}, { projection: { name: 1 } })
+        .toArray(),
+      db
+        .collection(COLLECTION_MAP.categories)
+        .find({}, { projection: { name: 1 } })
+        .toArray(),
+      db
+        .collection(COLLECTION_MAP.locations)
+        .find({}, { projection: { name: 1 } })
+        .toArray(),
+      db
+        .collection(COLLECTION_MAP.angles)
+        .find({}, { projection: { name: 1 } })
+        .toArray(),
+      db
+        .collection(COLLECTION_MAP.lighting)
+        .find({}, { projection: { name: 1 } })
+        .toArray(),
+      db
+        .collection(COLLECTION_MAP.effects)
+        .find({}, { projection: { name: 1 } })
+        .toArray(),
+      db
+        .collection(COLLECTION_MAP.materials)
+        .find({}, { projection: { name: 1 } })
+        .toArray(),
     ]);
 
     const tags: AvailableTags = {
-      branding: brandingDocs.map(d => d.name),
-      categories: [...new Set(mockupDocs.map(d => d.name))], // Remove duplicates
-      locations: locationDocs.map(d => d.name),
-      angles: angleDocs.map(d => d.name),
-      lighting: lightingDocs.map(d => d.name),
-      effects: effectDocs.map(d => d.name),
-      materials: textureDocs.map(d => d.name),
+      branding: brandingDocs.map((d) => d.name),
+      categories: [...new Set(mockupDocs.map((d) => d.name))], // Remove duplicates
+      locations: locationDocs.map((d) => d.name),
+      angles: angleDocs.map((d) => d.name),
+      lighting: lightingDocs.map((d) => d.name),
+      effects: effectDocs.map((d) => d.name),
+      materials: textureDocs.map((d) => d.name),
     };
 
     // Update cache
@@ -107,7 +128,7 @@ export async function getAllAvailableTags(): Promise<AvailableTags> {
 /**
  * Validates and filters suggested tags against available tags
  * Performs case-insensitive matching and optional fuzzy matching
- * 
+ *
  * @param suggestedTags - Tags suggested by AI
  * @param availableTags - Available tags from database
  * @param options - Validation options
@@ -127,22 +148,23 @@ export function validateTags(
   // Helper function to find matching tag
   const findMatch = (suggested: string, available: string[]): string | null => {
     // Exact match (case-insensitive)
-    const exactMatch = available.find(
-      tag => tag.toLowerCase() === suggested.toLowerCase()
-    );
+    const exactMatch = available.find((tag) => tag.toLowerCase() === suggested.toLowerCase());
     if (exactMatch) return exactMatch;
 
     // Fuzzy matching (if enabled)
     if (fuzzyMatching) {
       const normalizedSuggested = suggested.toLowerCase().trim();
-      const fuzzyMatch = available.find(tag => {
+      const fuzzyMatch = available.find((tag) => {
         const normalizedTag = tag.toLowerCase().trim();
         // Check if one contains the other (for cases like "Minimalist" vs "Minimal")
-        return normalizedTag.includes(normalizedSuggested) ||
-               normalizedSuggested.includes(normalizedTag) ||
-               // Check similarity (simple Levenshtein-like check for short strings)
-               (normalizedTag.length <= 15 && normalizedSuggested.length <= 15 &&
-                calculateSimilarity(normalizedTag, normalizedSuggested) > 0.7);
+        return (
+          normalizedTag.includes(normalizedSuggested) ||
+          normalizedSuggested.includes(normalizedTag) ||
+          // Check similarity (simple Levenshtein-like check for short strings)
+          (normalizedTag.length <= 15 &&
+            normalizedSuggested.length <= 15 &&
+            calculateSimilarity(normalizedTag, normalizedSuggested) > 0.7)
+        );
       });
       if (fuzzyMatch) return fuzzyMatch;
     }
@@ -227,8 +249,8 @@ function levenshteinDistance(str1: string, str2: string): number {
       } else {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1      // deletion
+          matrix[i][j - 1] + 1, // insertion
+          matrix[i - 1][j] + 1 // deletion
         );
       }
     }

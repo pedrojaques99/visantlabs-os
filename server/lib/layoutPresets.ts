@@ -8,10 +8,10 @@ import { getFormatPreset } from './formatPresets.js';
 // ── Defaults ──
 
 const DEFAULT_FONT = 'Inter';
-const DEFAULT_PRIMARY = { r: 0.051, g: 0.6, b: 1 };     // #0D99FF
-const DEFAULT_SURFACE = { r: 1, g: 1, b: 1 };             // #FFFFFF
-const DEFAULT_TEXT = { r: 0.067, g: 0.067, b: 0.067 };   // #111111
-const DEFAULT_MUTED = { r: 0.45, g: 0.45, b: 0.45 };     // #737373
+const DEFAULT_PRIMARY = { r: 0.051, g: 0.6, b: 1 }; // #0D99FF
+const DEFAULT_SURFACE = { r: 1, g: 1, b: 1 }; // #FFFFFF
+const DEFAULT_TEXT = { r: 0.067, g: 0.067, b: 0.067 }; // #111111
+const DEFAULT_MUTED = { r: 0.45, g: 0.45, b: 0.45 }; // #737373
 
 // ── Content shape passed to generate() ──
 
@@ -58,11 +58,7 @@ export function getColorFill(
  * Get font family from the token registry by typography role.
  * Falls back to `fallback` when the token is not found.
  */
-export function getTypography(
-  tokens: TokenRegistry,
-  role: string,
-  fallback: string
-): string {
+export function getTypography(tokens: TokenRegistry, role: string, fallback: string): string {
   const token = tokens.typography.get(role);
   if (!token) return fallback;
   const val = token.value as { family?: string } | undefined;
@@ -373,7 +369,10 @@ export const informativePost: LayoutPreset = {
       parentRef: 'content',
       props: {
         name: 'Body',
-        content: content.body ?? content.subtitle ?? 'Add your informative content here. Keep it concise and engaging.',
+        content:
+          content.body ??
+          content.subtitle ??
+          'Add your informative content here. Keep it concise and engaging.',
         fontFamily: bodyFont,
         fontStyle: 'Regular',
         fontSize: Math.round(width * 0.024),
@@ -498,7 +497,10 @@ export const featureCard: LayoutPreset = {
       parentRef: 'root',
       props: {
         name: 'Description',
-        content: content.body ?? content.subtitle ?? 'Describe this feature in one or two short sentences.',
+        content:
+          content.body ??
+          content.subtitle ??
+          'Describe this feature in one or two short sentences.',
         fontFamily: bodyFont,
         fontStyle: 'Regular',
         fontSize: Math.round(width * 0.024),
@@ -517,11 +519,7 @@ export const featureCard: LayoutPreset = {
 
 // ── Registry ──
 
-export const LAYOUT_PRESETS: LayoutPreset[] = [
-  promotionalPost,
-  informativePost,
-  featureCard,
-];
+export const LAYOUT_PRESETS: LayoutPreset[] = [promotionalPost, informativePost, featureCard];
 
 /**
  * Find the best matching preset for a given intent string.

@@ -39,7 +39,12 @@ export class CanvasErrorBoundary extends React.Component<Props, State> {
                 {this.state.error?.message || 'An unexpected error occurred'}
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={this.handleRetry} className="text-neutral-500 gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={this.handleRetry}
+              className="text-neutral-500 gap-1.5"
+            >
               <RotateCcw size={12} />
               <span className="text-[10px] uppercase tracking-widest">Retry</span>
             </Button>

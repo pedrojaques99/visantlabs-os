@@ -35,7 +35,11 @@ export const VHSText: React.FC<VHSTextProps> = ({
   const startTimeRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const isFullHeight = className.includes('h-full');
-  const textCanvasCacheRef = useRef<{ canvas: HTMLCanvasElement; width: number; height: number } | null>(null);
+  const textCanvasCacheRef = useRef<{
+    canvas: HTMLCanvasElement;
+    width: number;
+    height: number;
+  } | null>(null);
   const lastRenderTimeRef = useRef<number>(0);
   const dimensionsRef = useRef<{ width: number; height: number } | null>(null);
 
@@ -61,40 +65,45 @@ export const VHSText: React.FC<VHSTextProps> = ({
   }, [children, color]);
 
   // Create text canvas with text rendered (cached when dimensions don't change)
-  const getTextCanvas = useCallback((width: number, height: number): HTMLCanvasElement => {
-    // Reuse cached canvas if dimensions match
-    if (textCanvasCacheRef.current &&
-      textCanvasCacheRef.current.width === width &&
-      textCanvasCacheRef.current.height === height) {
-      return textCanvasCacheRef.current.canvas;
-    }
+  const getTextCanvas = useCallback(
+    (width: number, height: number): HTMLCanvasElement => {
+      // Reuse cached canvas if dimensions match
+      if (
+        textCanvasCacheRef.current &&
+        textCanvasCacheRef.current.width === width &&
+        textCanvasCacheRef.current.height === height
+      ) {
+        return textCanvasCacheRef.current.canvas;
+      }
 
-    const textCanvas = document.createElement('canvas');
-    textCanvas.width = width;
-    textCanvas.height = height;
-    const ctx = textCanvas.getContext('2d');
+      const textCanvas = document.createElement('canvas');
+      textCanvas.width = width;
+      textCanvas.height = height;
+      const ctx = textCanvas.getContext('2d');
 
-    if (!ctx) return textCanvas;
+      if (!ctx) return textCanvas;
 
-    // Fill canvas with black background (required for shader to process correctly)
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, width, height);
+      // Fill canvas with black background (required for shader to process correctly)
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
 
-    // Set text style - use a large font size that scales with width
-    ctx.fillStyle = color;
-    const fontSize = Math.max(100, Math.floor(width * 0.4));
-    ctx.font = `bold ${fontSize}px monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+      // Set text style - use a large font size that scales with width
+      ctx.fillStyle = color;
+      const fontSize = Math.max(100, Math.floor(width * 0.4));
+      ctx.font = `bold ${fontSize}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
 
-    // Draw text
-    ctx.fillText(children, width / 2, height / 2);
+      // Draw text
+      ctx.fillText(children, width / 2, height / 2);
 
-    // Cache the canvas
-    textCanvasCacheRef.current = { canvas: textCanvas, width, height };
+      // Cache the canvas
+      textCanvasCacheRef.current = { canvas: textCanvas, width, height };
 
-    return textCanvas;
-  }, [children, color]);
+      return textCanvas;
+    },
+    [children, color]
+  );
 
   // Render frame function (optimized for lighter loop)
   const renderFrame = useCallback(async () => {
@@ -154,7 +163,8 @@ export const VHSText: React.FC<VHSTextProps> = ({
       const renderHeight = Math.min(1080, displayHeight);
 
       // Only resize canvas if dimensions changed
-      const dimensionsChanged = !dimensionsRef.current ||
+      const dimensionsChanged =
+        !dimensionsRef.current ||
         dimensionsRef.current.width !== renderWidth ||
         dimensionsRef.current.height !== renderHeight;
 
@@ -170,7 +180,7 @@ export const VHSText: React.FC<VHSTextProps> = ({
       const textCanvas = getTextCanvas(renderWidth, renderHeight);
 
       // Calculate time for animation
-      const currentTime = (performance.now() / 1000) - startTimeRef.current;
+      const currentTime = performance.now() / 1000 - startTimeRef.current;
 
       // VHS shader settings (subtle effect, less neon)
       const settings: ShaderSettings = {
@@ -258,9 +268,10 @@ export const VHSText: React.FC<VHSTextProps> = ({
   }, [renderFrame]);
 
   // Determine drop shadow based on theme (reduced neon effect)
-  const dropShadowClass = theme === 'dark'
-    ? 'drop-shadow-[0_0_15px_rgba(82,221,235,0.3)]'
-    : 'drop-shadow-[0_0_10px_rgba(82,221,235,0.2)]';
+  const dropShadowClass =
+    theme === 'dark'
+      ? 'drop-shadow-[0_0_15px_rgba(82,221,235,0.3)]'
+      : 'drop-shadow-[0_0_10px_rgba(82,221,235,0.2)]';
 
   return (
     <div
@@ -297,4 +308,3 @@ export const VHSText: React.FC<VHSTextProps> = ({
     </div>
   );
 };
-

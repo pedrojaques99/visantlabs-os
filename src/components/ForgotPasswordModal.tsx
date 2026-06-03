@@ -6,8 +6,8 @@ import { PillButton } from './ui/pill-button';
 import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -45,7 +45,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         errorMessage.includes('NetworkError') ||
         error.name === 'TypeError'
       ) {
-        setError('Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all');
+        setError(
+          'Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all'
+        );
       } else {
         setError(error.message || 'Failed to send reset email. Please try again.');
       }
@@ -85,7 +87,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {t('auth.forgotPassword')}
           </h2>
-          <Button variant="ghost" onClick={handleClose}
+          <Button
+            variant="ghost"
+            onClick={handleClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             <X size={20} />
@@ -144,7 +148,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 </div>
               )}
 
-              <Button variant="brand" type="submit"
+              <Button
+                variant="brand"
+                type="submit"
                 disabled={isLoading || !email}
                 className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
               >

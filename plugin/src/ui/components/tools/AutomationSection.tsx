@@ -28,7 +28,6 @@ export function AutomationSection() {
         <Zap size={12} className="mr-2" />
         Variar Cores Inteligente
       </OpButton>
-
     </div>
   );
 }

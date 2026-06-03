@@ -1,6 +1,6 @@
 /**
  * Module: Design Excellence (Sexy Design)
- * 
+ *
  * Instructions to make the output look professional, premium, and "sexy".
  */
 

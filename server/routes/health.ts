@@ -24,12 +24,12 @@ const router = express.Router();
 
 // General health check
 router.get('/', apiRateLimiter, (_req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     message: 'Server is running',
     version: pkg.version,
     uptime: Math.floor((Date.now() - startTime) / 1000),
-    env: process.env.NODE_ENV || 'development'
+    env: process.env.NODE_ENV || 'development',
   });
 });
 
@@ -47,7 +47,7 @@ router.get('/db', apiRateLimiter, async (req, res) => {
     res.json({
       status: 'connected',
       database: db.databaseName,
-      collections: collections.map(c => c.name),
+      collections: collections.map((c) => c.name),
       stats: {
         collections: stats.collections,
         dataSize: stats.dataSize,
@@ -101,10 +101,12 @@ router.get('/r2', apiRateLimiter, async (req, res) => {
     });
 
     try {
-      await client.send(new ListObjectsV2Command({
-        Bucket: bucketName,
-        MaxKeys: 1, // Just check if we can access the bucket
-      }));
+      await client.send(
+        new ListObjectsV2Command({
+          Bucket: bucketName,
+          MaxKeys: 1, // Just check if we can access the bucket
+        })
+      );
 
       return res.json({
         status: 'connected',
@@ -129,13 +131,16 @@ router.get('/r2', apiRateLimiter, async (req, res) => {
           accessKeyIdLength: accessKeyId.length,
           secretAccessKeyLength: secretAccessKey.length,
         },
-        troubleshooting: testError.name === 'SignatureDoesNotMatch' ? [
-          '1. Verify Access Key ID and Secret Access Key are from the same token',
-          '2. Ensure you are using Account API Token (not User API Token)',
-          '3. Check for extra spaces in environment variables',
-          '4. Try creating a new Account API Token',
-          '5. Verify Account ID is correct',
-        ] : undefined,
+        troubleshooting:
+          testError.name === 'SignatureDoesNotMatch'
+            ? [
+                '1. Verify Access Key ID and Secret Access Key are from the same token',
+                '2. Ensure you are using Account API Token (not User API Token)',
+                '3. Check for extra spaces in environment variables',
+                '4. Try creating a new Account API Token',
+                '5. Verify Account ID is correct',
+              ]
+            : undefined,
       });
     }
   } catch (error: any) {
@@ -148,4 +153,3 @@ router.get('/r2', apiRateLimiter, async (req, res) => {
 });
 
 export default router;
-

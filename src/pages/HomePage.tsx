@@ -13,7 +13,9 @@ import { AuthModal } from '@/components/AuthModal';
 const playTick = () => {
   const a = new Audio('/sounds/hihat.wav');
   a.volume = 0.12;
-  a.play().catch(() => { /* autoplay blocked — silent */ });
+  a.play().catch(() => {
+    /* autoplay blocked — silent */
+  });
 };
 
 // ─── Real mobile detection ────────────────────────────────────────────────────
@@ -27,18 +29,27 @@ const detectRealMobile = (): boolean => {
 const MOBILE_BLOCKED = new Set(['mockup-machine', 'canvas', 'moodboard-studio']);
 
 // Apps visible to all authenticated users (not just admin/tester)
-const PUBLIC_APP_IDS = new Set(['mockup-machine', 'brand-guidelines', 'canvas', 'community', 'labs', 'image-lab', '3d-studio', 'playground']);
+const PUBLIC_APP_IDS = new Set([
+  'mockup-machine',
+  'brand-guidelines',
+  'canvas',
+  'community',
+  'labs',
+  'image-lab',
+  '3d-studio',
+  'playground',
+]);
 
 // Fixed preset per appId — index into PRESETS (0=neutral 1=cyan 2=violet 3=amber 4=rose 5=green 6=blue 7=warm)
 const APP_PRESET: Record<string, number> = {
-  'canvas':               1,
-  'mockup-machine':       2,
-  'brand-guidelines':     3,
-  'community':            5,
-  'labs':                 4,
-  'vsn-exporter':         0,
+  canvas: 1,
+  'mockup-machine': 2,
+  'brand-guidelines': 3,
+  community: 5,
+  labs: 4,
+  'vsn-exporter': 0,
 };
-const LS_KEY         = 'vsn_app_last_used';
+const LS_KEY = 'vsn_app_last_used';
 
 // Fixed app roster — order here is the fallback; smart sort re-orders by last-used
 const PINNED_APP_IDS = [
@@ -52,53 +63,57 @@ const PINNED_APP_IDS = [
 
 // Synthetic entry for Visant Exporter (not a backend app — download action)
 const EXPORTER_ENTRY: AppConfig = {
-  id:           'vsn-exporter',
-  appId:        'vsn-exporter',
-  name:         'Visant Exporter',
-  description:  'Export workspace assets as a structured zip',
-  link:         '/vsn-exporter.ps1',
-  badge:        'DOWNLOAD',
+  id: 'vsn-exporter',
+  appId: 'vsn-exporter',
+  name: 'Visant Exporter',
+  description: 'Export workspace assets as a structured zip',
+  link: '/vsn-exporter.ps1',
+  badge: 'DOWNLOAD',
   badgeVariant: 'free',
-  category:     'tools',
-  isExternal:   false,
-  free:         true,
+  category: 'tools',
+  isExternal: false,
+  free: true,
   displayOrder: 99,
-  isHidden:     false,
+  isHidden: false,
 };
 
 const COMMUNITY_ENTRY: AppConfig = {
-  id:           'community',
-  appId:        'community',
-  name:         'Community',
-  description:  'Explore presets and profiles shared by the community',
-  link:         '/community',
-  badge:        'FREE',
+  id: 'community',
+  appId: 'community',
+  name: 'Community',
+  description: 'Explore presets and profiles shared by the community',
+  link: '/community',
+  badge: 'FREE',
   badgeVariant: 'free',
-  category:     'community',
-  isExternal:   false,
-  free:         true,
+  category: 'community',
+  isExternal: false,
+  free: true,
   displayOrder: 4,
-  isHidden:     false,
+  isHidden: false,
 };
 
 const LABS_ENTRY: AppConfig = {
-  id:           'labs',
-  appId:        'labs',
-  name:         'Labs',
-  description:  'Experimental tools and prototypes',
-  link:         '/labs',
-  badge:        'NEW',
+  id: 'labs',
+  appId: 'labs',
+  name: 'Labs',
+  description: 'Experimental tools and prototypes',
+  link: '/labs',
+  badge: 'NEW',
   badgeVariant: 'free',
-  category:     'experimental',
-  isExternal:   false,
-  free:         true,
+  category: 'experimental',
+  isExternal: false,
+  free: true,
   displayOrder: 5,
-  isHidden:     false,
+  isHidden: false,
 };
 
 // ─── Last-used tracking ───────────────────────────────────────────────────────
 const getLastUsed = (): Record<string, number> => {
-  try { return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}'); } catch { return {}; }
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
 };
 const recordLastUsed = (appId: string) => {
   const map = getLastUsed();
@@ -122,11 +137,16 @@ const smartSort = (apps: AppConfig[]): AppConfig[] => {
 // ─── Badge ────────────────────────────────────────────────────────────────────
 const badgeColor = (variant: AppConfig['badgeVariant']): string => {
   switch (variant) {
-    case 'featured':   return 'text-neutral-500';
-    case 'premium':    return 'text-neutral-700';
-    case 'free':       return 'text-neutral-700';
-    case 'comingSoon': return 'text-neutral-800';
-    default:           return 'text-neutral-800';
+    case 'featured':
+      return 'text-neutral-500';
+    case 'premium':
+      return 'text-neutral-700';
+    case 'free':
+      return 'text-neutral-700';
+    case 'comingSoon':
+      return 'text-neutral-800';
+    default:
+      return 'text-neutral-800';
   }
 };
 
@@ -137,7 +157,7 @@ const fillDots = (label: string, badge: string) =>
 // ─── AppRow ───────────────────────────────────────────────────────────────────
 interface AppRowProps {
   app: AppConfig;
-  num: number;          // display number (1-based, stays stable after sort)
+  num: number; // display number (1-based, stays stable after sort)
   focused: boolean;
   onSelect: () => void;
   onFocus: (appId: string) => void;
@@ -145,7 +165,7 @@ interface AppRowProps {
 
 const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus }) => {
   const locked = app.badgeVariant === 'comingSoon';
-  const badge  = (app.badge ?? app.badgeVariant).toUpperCase();
+  const badge = (app.badge ?? app.badgeVariant).toUpperCase();
 
   return (
     <button
@@ -153,43 +173,58 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
       aria-selected={focused}
       aria-label={`${String(num).padStart(2, '0')} ${app.name}${locked ? ', indisponível' : ''}`}
       onClick={() => !locked && onSelect()}
-      onMouseEnter={() => { playTick(); onFocus(app.appId); }}
+      onMouseEnter={() => {
+        playTick();
+        onFocus(app.appId);
+      }}
       disabled={locked}
       className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-all duration-100 disabled:cursor-not-allowed focus:outline-none"
     >
       {/* Main row */}
       <div className="flex items-center font-mono text-[11px] tracking-wider">
         {/* Number */}
-        <span className={`w-6 shrink-0 text-[10px] transition-colors duration-100 ${
-          focused && !locked ? 'text-brand-cyan' : 'text-neutral-800'
-        }`}>
+        <span
+          className={`w-6 shrink-0 text-[10px] transition-colors duration-100 ${
+            focused && !locked ? 'text-brand-cyan' : 'text-neutral-800'
+          }`}
+        >
           {String(num).padStart(2, '0')}
         </span>
 
         {/* Prompt */}
-        <span className={`w-3 shrink-0 transition-colors duration-100 ${
-          focused && !locked ? 'text-brand-cyan' : 'text-neutral-800'
-        }`} aria-hidden>
+        <span
+          className={`w-3 shrink-0 transition-colors duration-100 ${
+            focused && !locked ? 'text-brand-cyan' : 'text-neutral-800'
+          }`}
+          aria-hidden
+        >
           {locked ? ' ' : '>'}
         </span>
 
         {/* Name */}
-        <span className={`transition-colors duration-100 ${
-          locked ? 'text-neutral-700' : focused ? 'text-white' : 'text-neutral-400'
-        }`}>
+        <span
+          className={`transition-colors duration-100 ${
+            locked ? 'text-neutral-700' : focused ? 'text-white' : 'text-neutral-400'
+          }`}
+        >
           {app.name.toUpperCase()}
         </span>
 
         {/* Dots */}
-        <span className="mx-1 select-none" aria-hidden
-          style={{ color: locked ? '#0d0d0d' : focused ? '#3a3a3a' : '#1a1a1a' }}>
+        <span
+          className="mx-1 select-none"
+          aria-hidden
+          style={{ color: locked ? '#0d0d0d' : focused ? '#3a3a3a' : '#1a1a1a' }}
+        >
           {fillDots(app.name, badge)}
         </span>
 
         {/* Badge */}
-        <span className={`shrink-0 transition-colors duration-100 ${
-          locked ? 'text-neutral-700' : focused ? 'text-white' : badgeColor(app.badgeVariant)
-        }`}>
+        <span
+          className={`shrink-0 transition-colors duration-100 ${
+            locked ? 'text-neutral-700' : focused ? 'text-white' : badgeColor(app.badgeVariant)
+          }`}
+        >
           {badge}
         </span>
 
@@ -197,9 +232,12 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
       </div>
 
       {/* Description */}
-      <div className={`pl-9 font-mono text-[10px] tracking-wide transition-colors duration-100 ${
-        locked ? 'text-neutral-800' : focused ? 'text-neutral-500' : 'text-neutral-700'
-      }`} aria-hidden>
+      <div
+        className={`pl-9 font-mono text-[10px] tracking-wide transition-colors duration-100 ${
+          locked ? 'text-neutral-800' : focused ? 'text-neutral-500' : 'text-neutral-700'
+        }`}
+        aria-hidden
+      >
         {app.description}
       </div>
     </button>
@@ -217,7 +255,15 @@ interface AppListProps {
   isMobile: boolean;
 }
 
-const AppList: React.FC<AppListProps> = ({ apps, listRef, focusedIndex, onSelect, onFocus, navigate, isMobile }) => {
+const AppList: React.FC<AppListProps> = ({
+  apps,
+  listRef,
+  focusedIndex,
+  onSelect,
+  onFocus,
+  navigate,
+  isMobile,
+}) => {
   const { t } = useTranslation();
   const [listHovered, setListHovered] = useState(false);
 
@@ -307,47 +353,57 @@ export const HomePage: React.FC = () => {
 
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const [isMobile, setIsMobile]         = useState(false);
-  const [apps, setApps]                 = useState<AppConfig[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+  const [apps, setApps] = useState<AppConfig[]>([]);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [presetIndex, setPresetIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const xOffsetPx = 0;
 
-  useEffect(() => { setIsMobile(detectRealMobile()); }, []);
+  useEffect(() => {
+    setIsMobile(detectRealMobile());
+  }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) { setApps([]); return; }
-    appsService.getAll()
+    if (!isLoggedIn) {
+      setApps([]);
+      return;
+    }
+    appsService
+      .getAll()
       .then((data) => {
-        const byId = Object.fromEntries(data.map(a => [a.appId, a]));
-        const pinned = PINNED_APP_IDS
-          .map(id => byId[id])
+        const byId = Object.fromEntries(data.map((a) => [a.appId, a]));
+        const pinned = PINNED_APP_IDS.map((id) => byId[id])
           .filter(Boolean)
-          .filter(a => !isMobile || !MOBILE_BLOCKED.has(a.appId))
-          .filter(a => isElevated || PUBLIC_APP_IDS.has(a.appId));
+          .filter((a) => !isMobile || !MOBILE_BLOCKED.has(a.appId))
+          .filter((a) => isElevated || PUBLIC_APP_IDS.has(a.appId));
         const withExtras = [...pinned, COMMUNITY_ENTRY, LABS_ENTRY];
         if (!isMobile && isElevated) withExtras.push(EXPORTER_ENTRY);
         setApps(smartSort(withExtras));
       })
-      .catch(() => { /* silent fail */ });
+      .catch(() => {
+        /* silent fail */
+      });
   }, [isMobile, isLoggedIn, isElevated]);
 
-  const handleSelect = useCallback((app: AppConfig) => {
-    recordLastUsed(app.appId);
-    if (app.appId === 'vsn-exporter') {
-      const a = document.createElement('a');
-      a.href = '/vsn-exporter.ps1';
-      a.download = 'vsn-exporter.ps1';
-      a.click();
-      return;
-    }
-    if (app.isExternal) {
-      window.open(app.link, '_blank', 'noopener noreferrer');
-    } else {
-      navigate(app.link);
-    }
-  }, [navigate]);
+  const handleSelect = useCallback(
+    (app: AppConfig) => {
+      recordLastUsed(app.appId);
+      if (app.appId === 'vsn-exporter') {
+        const a = document.createElement('a');
+        a.href = '/vsn-exporter.ps1';
+        a.download = 'vsn-exporter.ps1';
+        a.click();
+        return;
+      }
+      if (app.isExternal) {
+        window.open(app.link, '_blank', 'noopener noreferrer');
+      } else {
+        navigate(app.link);
+      }
+    },
+    [navigate]
+  );
 
   const moveFocus = useCallback((next: number, appId?: string) => {
     setFocusedIndex(next);
@@ -359,9 +415,15 @@ export const HomePage: React.FC = () => {
   useEffect(() => {
     if (!isLoggedIn || apps.length === 0) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown')  { e.preventDefault(); const n = Math.min(focusedIndex + 1, apps.length - 1); moveFocus(n, apps[n]?.appId); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); const n = Math.max(focusedIndex - 1, 0); moveFocus(n, apps[n]?.appId); }
-      else if (e.key === 'Enter') {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const n = Math.min(focusedIndex + 1, apps.length - 1);
+        moveFocus(n, apps[n]?.appId);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const n = Math.max(focusedIndex - 1, 0);
+        moveFocus(n, apps[n]?.appId);
+      } else if (e.key === 'Enter') {
         const app = apps[focusedIndex];
         if (app && app.badgeVariant !== 'comingSoon') handleSelect(app);
       }
@@ -377,10 +439,16 @@ export const HomePage: React.FC = () => {
   }, [focusedIndex]);
 
   const listProps: AppListProps = {
-    apps, listRef, focusedIndex,
+    apps,
+    listRef,
+    focusedIndex,
     onSelect: handleSelect,
-    onFocus: (i, appId) => { setFocusedIndex(i); setPresetIndex(APP_PRESET[appId ?? ''] ?? 0); },
-    navigate, isMobile,
+    onFocus: (i, appId) => {
+      setFocusedIndex(i);
+      setPresetIndex(APP_PRESET[appId ?? ''] ?? 0);
+    },
+    navigate,
+    isMobile,
   };
 
   return (
@@ -398,11 +466,7 @@ export const HomePage: React.FC = () => {
         <GridDotsBackground opacity={0.05} spacing={30} color="#ffffff" />
 
         {/* 3D — full-screen background, centered on right column */}
-        <VisantLogo3D
-          fullScreen
-          presetIndex={presetIndex}
-          xOffsetPx={isMobile ? 0 : xOffsetPx}
-        />
+        <VisantLogo3D fullScreen presetIndex={presetIndex} xOffsetPx={isMobile ? 0 : xOffsetPx} />
 
         <div className="relative z-20 w-full">
           {isMobile ? (
@@ -412,12 +476,23 @@ export const HomePage: React.FC = () => {
 
               <AnimatePresence mode="wait">
                 {isLoggedIn ? (
-                  <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full mt-3">
+                  <motion.div
+                    key="list"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-full mt-3"
+                  >
                     <AppList {...listProps} />
                   </motion.div>
                 ) : (
-                  <motion.div key="guest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-5 mt-4">
+                  <motion.div
+                    key="guest"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col items-center gap-5 mt-4"
+                  >
                     <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 select-none text-center">
                       experimental design laboratory
                     </p>
@@ -429,8 +504,18 @@ export const HomePage: React.FC = () => {
                       <span>{t('home.sign_in')}</span>
                     </button>
                     <div className="flex items-center gap-6 mt-2">
-                      <button onClick={() => navigate('/about')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">{t('home.info')}</button>
-                      <a href="mailto:contact@visantlabs.com" className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">{t('home.contact')}</a>
+                      <button
+                        onClick={() => navigate('/about')}
+                        className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                      >
+                        {t('home.info')}
+                      </button>
+                      <a
+                        href="mailto:contact@visantlabs.com"
+                        className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                      >
+                        {t('home.contact')}
+                      </a>
                     </div>
                   </motion.div>
                 )}
@@ -442,12 +527,22 @@ export const HomePage: React.FC = () => {
               <div className="ml-16 pointer-events-auto inline-flex flex-col">
                 <AnimatePresence mode="wait">
                   {isLoggedIn ? (
-                    <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.div
+                      key="list"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
                       <AppList {...listProps} />
                     </motion.div>
                   ) : (
-                    <motion.div key="guest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      className="flex flex-col gap-5">
+                    <motion.div
+                      key="guest"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex flex-col gap-5"
+                    >
                       <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 select-none">
                         experimental design laboratory
                       </p>
@@ -459,8 +554,18 @@ export const HomePage: React.FC = () => {
                         <span>{t('home.sign_in_2')}</span>
                       </button>
                       <div className="flex items-center gap-6">
-                        <button onClick={() => navigate('/about')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">{t('home.info_2')}</button>
-                        <button onClick={() => navigate('/community')} className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors">{t('home.community')}</button>
+                        <button
+                          onClick={() => navigate('/about')}
+                          className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                        >
+                          {t('home.info_2')}
+                        </button>
+                        <button
+                          onClick={() => navigate('/community')}
+                          className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                        >
+                          {t('home.community')}
+                        </button>
                       </div>
                     </motion.div>
                   )}
@@ -472,7 +577,9 @@ export const HomePage: React.FC = () => {
 
         {isLoggedIn && !isMobile && apps.length > 0 && (
           <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
             className="absolute bottom-6 font-mono text-[10px] text-neutral-800 tracking-widest uppercase select-none"
             aria-hidden
           >
@@ -484,7 +591,10 @@ export const HomePage: React.FC = () => {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        onSuccess={() => { setShowAuthModal(false); window.location.reload(); }}
+        onSuccess={() => {
+          setShowAuthModal(false);
+          window.location.reload();
+        }}
       />
     </>
   );

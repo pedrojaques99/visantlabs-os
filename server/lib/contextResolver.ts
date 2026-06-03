@@ -49,14 +49,11 @@ export async function resolveContext(
     resolveBrandGuideline(fileId, userId, explicitBrandId),
   ]);
 
-  const components =
-    componentsResult.status === 'fulfilled' ? componentsResult.value : [];
+  const components = componentsResult.status === 'fulfilled' ? componentsResult.value : [];
 
-  const templates =
-    templatesResult.status === 'fulfilled' ? templatesResult.value : [];
+  const templates = templatesResult.status === 'fulfilled' ? templatesResult.value : [];
 
-  const brand =
-    brandResult.status === 'fulfilled' ? brandResult.value.guideline : null;
+  const brand = brandResult.status === 'fulfilled' ? brandResult.value.guideline : null;
 
   const tokens = buildTokenRegistry(brand);
   const strategy = determineStrategy(components, templates);

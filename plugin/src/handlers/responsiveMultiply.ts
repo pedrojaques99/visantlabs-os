@@ -19,11 +19,11 @@ export interface ResponsiveFormat {
 }
 
 export const DEFAULT_FORMATS: ResponsiveFormat[] = [
-  { id: 'story',     label: 'Story 9:16',       width: 1080, height: 1920 },
-  { id: 'square',    label: 'Square 1:1',       width: 1080, height: 1080 },
-  { id: 'portrait',  label: 'Portrait 4:5',     width: 1080, height: 1350 },
-  { id: 'landscape', label: 'Landscape 16:9',   width: 1920, height: 1080 },
-  { id: 'og',        label: 'Open Graph 1.91:1',width: 1200, height: 628 },
+  { id: 'story', label: 'Story 9:16', width: 1080, height: 1920 },
+  { id: 'square', label: 'Square 1:1', width: 1080, height: 1080 },
+  { id: 'portrait', label: 'Portrait 4:5', width: 1080, height: 1350 },
+  { id: 'landscape', label: 'Landscape 16:9', width: 1920, height: 1080 },
+  { id: 'og', label: 'Open Graph 1.91:1', width: 1200, height: 628 },
 ];
 
 /**
@@ -40,8 +40,8 @@ function scaleChildrenProportionally(
     if ('x' in child && 'y' in child) {
       const newX = child.x * scaleX;
       const newY = child.y * scaleY;
-      const newW = ('width' in child) ? child.width * scaleX : 0;
-      const newH = ('height' in child) ? child.height * scaleY : 0;
+      const newW = 'width' in child ? child.width * scaleX : 0;
+      const newH = 'height' in child ? child.height * scaleY : 0;
 
       if ('resize' in child && newW > 0 && newH > 0) {
         try {
@@ -93,8 +93,7 @@ export async function multiplyResponsive(formats: ResponsiveFormat[] = DEFAULT_F
     clone.x = cursorX;
     clone.y = cursorY;
 
-    const hasAutoLayout =
-      'layoutMode' in clone && (clone as FrameNode).layoutMode !== 'NONE';
+    const hasAutoLayout = 'layoutMode' in clone && (clone as FrameNode).layoutMode !== 'NONE';
 
     if (hasAutoLayout) {
       // Temporarily switch to fixed sizing so resize() takes effect, then let

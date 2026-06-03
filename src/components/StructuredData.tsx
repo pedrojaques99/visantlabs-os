@@ -232,9 +232,3 @@ export const WebSiteSchema: React.FC<WebSiteSchemaProps> = ({
 
   return null;
 };
-
-
-
-
-
-

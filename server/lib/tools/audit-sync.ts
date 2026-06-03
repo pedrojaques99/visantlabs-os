@@ -26,7 +26,8 @@ while ((match = runtimeToolRegex.exec(runtimeSource)) !== null) {
 // --- Extrair nomes do registry (mcp-gen.ts) ---
 const genSource = readFileSync(resolve(ROOT, 'server/lib/mcp-gen.ts'), 'utf-8');
 // Suporta description com aspas simples ou duplas
-const genToolRegex = /\{\s*name:\s*'([^']+)',\s*description:\s*(?:'([^']*(?:''[^']*)*)'|"([^"]*(?:""[^"]*)*)")/g;
+const genToolRegex =
+  /\{\s*name:\s*'([^']+)',\s*description:\s*(?:'([^']*(?:''[^']*)*)'|"([^"]*(?:""[^"]*)*)")/g;
 const genTools = new Map<string, string>();
 while ((match = genToolRegex.exec(genSource)) !== null) {
   genTools.set(match[1], match[2] ?? match[3]);

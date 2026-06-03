@@ -22,44 +22,65 @@ import { formatGeminiHistory } from '../lib/chat/history.js';
 import { resolveRagScope } from '../lib/chat/ragScope.js';
 import { withRetry } from '../lib/chat/executor.js';
 import { pluginBridgeEvents } from '../lib/pluginBridge.js';
-import type { ChatMessage as SharedChatMessage, ToolCallRecord as SharedToolCallRecord } from '../../shared/types/chat.js';
+import type {
+  ChatMessage as SharedChatMessage,
+  ToolCallRecord as SharedToolCallRecord,
+} from '../../shared/types/chat.js';
 
 const router = express.Router();
 
 // When the Figma plugin connects and drains its queue, notify the originating
 // AdminChat session so the user sees real-time feedback without polling.
-pluginBridgeEvents.on('drain:complete', ({ fileId, batches, appliedCount }: {
-  fileId: string;
-  batches: Array<{ chatSessionId?: string; meta?: any }>;
-  appliedCount: number;
-}) => {
-  const sessionIds = [...new Set(batches.map(b => b.chatSessionId).filter(Boolean))] as string[];
-  for (const sid of sessionIds) {
-    broadcastToSession(sid, {
-      type: 'FIGMA_OPS_APPLIED',
-      payload: {
-        fileId,
-        appliedCount,
-        figmaUrl: `https://www.figma.com/file/${fileId}`,
-        message: `${appliedCount} operações aplicadas no Figma.`,
-      },
-    });
+pluginBridgeEvents.on(
+  'drain:complete',
+  ({
+    fileId,
+    batches,
+    appliedCount,
+  }: {
+    fileId: string;
+    batches: Array<{ chatSessionId?: string; meta?: any }>;
+    appliedCount: number;
+  }) => {
+    const sessionIds = [
+      ...new Set(batches.map((b) => b.chatSessionId).filter(Boolean)),
+    ] as string[];
+    for (const sid of sessionIds) {
+      broadcastToSession(sid, {
+        type: 'FIGMA_OPS_APPLIED',
+        payload: {
+          fileId,
+          appliedCount,
+          figmaUrl: `https://www.figma.com/file/${fileId}`,
+          message: `${appliedCount} operações aplicadas no Figma.`,
+        },
+      });
+    }
   }
-});
+);
 
-pluginBridgeEvents.on('drain:failed', ({ fileId, batches, error }: {
-  fileId: string;
-  batches?: Array<{ chatSessionId?: string }>;
-  error: string;
-}) => {
-  const sessionIds = [...new Set((batches || []).map(b => b.chatSessionId).filter(Boolean))] as string[];
-  for (const sid of sessionIds) {
-    broadcastToSession(sid, {
-      type: 'FIGMA_OPS_FAILED',
-      payload: { fileId, error },
-    });
+pluginBridgeEvents.on(
+  'drain:failed',
+  ({
+    fileId,
+    batches,
+    error,
+  }: {
+    fileId: string;
+    batches?: Array<{ chatSessionId?: string }>;
+    error: string;
+  }) => {
+    const sessionIds = [
+      ...new Set((batches || []).map((b) => b.chatSessionId).filter(Boolean)),
+    ] as string[];
+    for (const sid of sessionIds) {
+      broadcastToSession(sid, {
+        type: 'FIGMA_OPS_FAILED',
+        payload: { fileId, error },
+      });
+    }
   }
-});
+);
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -96,8 +117,8 @@ type ChatMessage = SharedChatMessage;
 
 interface AdminChatSession {
   _id: string;
-  userId: string;              // legacy — kept for back-compat
-  ownerId?: string;            // owner (new — falls back to userId if absent)
+  userId: string; // legacy — kept for back-compat
+  ownerId?: string; // owner (new — falls back to userId if absent)
   isShared?: boolean;
   sharedWithUserIds?: string[]; // team members com acesso
   title: string;
@@ -132,12 +153,15 @@ function buildSystemPrompt(
   brandContext: string,
   ragContext: string
 ): string {
-  const memoryStr = [
-    memory.brands.length ? `Marcas: ${memory.brands.join(', ')}` : '',
-    memory.clients.length ? `Clientes: ${memory.clients.join(', ')}` : '',
-    memory.decisions.length ? `Decisões: ${memory.decisions.join('; ')}` : '',
-    memory.references.length ? `Referências: ${memory.references.join(', ')}` : '',
-  ].filter(Boolean).join('\n') || 'Nenhuma memória acumulada ainda.';
+  const memoryStr =
+    [
+      memory.brands.length ? `Marcas: ${memory.brands.join(', ')}` : '',
+      memory.clients.length ? `Clientes: ${memory.clients.join(', ')}` : '',
+      memory.decisions.length ? `Decisões: ${memory.decisions.join('; ')}` : '',
+      memory.references.length ? `Referências: ${memory.references.join(', ')}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n') || 'Nenhuma memória acumulada ainda.';
 
   return `Você é o assistente estratégico de uma agência de branding e design que segue a Metodologia Visant.
 Especialidades: posicionamento, naming, tom de voz, paletas visuais, referências criativas, mockups, estratégia de marca.
@@ -166,7 +190,11 @@ FERRAMENTAS DISPONÍVEIS:
   Exceções — gere direto sem propor plano: (a) usuário explicitamente aprovou um plano, (b) usuário usou "gera", "faz aí", "pode fazer" de forma direta com produto/formato claros, (c) pedido é regenerar/atualizar mockup existente.
 
 - Use "generate_or_update_mockup" quando o pedido for específico ou após aprovação de plano.
-  Inclua na chamada: prompt descritivo, brandGuidelineId (se disponível), modelo (${GEMINI_MODELS.IMAGE_FLASH}, ${GEMINI_MODELS.IMAGE_NB2}, ou ${GEMINI_MODELS.IMAGE_PRO}), resolução (1K/2K/4K — só se usar NB2 ou PRO), aspect ratio.
+  Inclua na chamada: prompt descritivo, brandGuidelineId (se disponível), modelo (${
+    GEMINI_MODELS.IMAGE_FLASH
+  }, ${GEMINI_MODELS.IMAGE_NB2}, ou ${
+    GEMINI_MODELS.IMAGE_PRO
+  }), resolução (1K/2K/4K — só se usar NB2 ou PRO), aspect ratio.
   IMPORTANTE: quando o usuário pedir N mockups, N variações ou N opções (ex: "3 mockups", "mais 2 variações"), emita N chamadas da ferramenta em PARALELO na MESMA resposta — uma por variação, cada uma com seu próprio prompt distinto. Não descreva opções em texto e gere só uma; gere todas de uma vez.
   LOGO DA MARCA: a logo é injetada automaticamente como imagem de referência quando a sessão está vinculada a uma marca. NÃO descreva a aparência do logo no prompt (ex: "o logo é uma letra Q verde..."). Apenas diga "apply the brand logo" ou similar — o sistema cuida do resto.
   TEXTO: use sempre "textMode: layers" por padrão (texto via layers editáveis, imagem sem tipografia renderizada). Use "textMode: image" apenas se o usuário pedir explicitamente textos/slogans na imagem gerada. Use "textMode: both" apenas se o usuário explicitamente quiser os dois. Nunca use "both" como padrão.
@@ -194,7 +222,6 @@ FERRAMENTAS DISPONÍVEIS:
 - Use "search_reference_library" para buscar referências visuais curadas por dimensão (nicho, estética, vibe, iluminação, textura, material, ângulo, mood, tipo). Use para: (a) embasar sugestões com exemplos world-class, (b) quando o usuário pedir referências ou inspiração, (c) antes de gerar mockups complexos para absorver técnicas de composição e iluminação.
 
 Quando apropriado, use as ferramentas para entregar resultados práticos além da análise textual.`;
-
 }
 
 async function getSession(sessionId: string, userId: string): Promise<AdminChatSession | null> {
@@ -206,7 +233,7 @@ async function getSession(sessionId: string, userId: string): Promise<AdminChatS
     try {
       const parsed = JSON.parse(cached) as AdminChatSession;
       if (canAccessSession(parsed, userId)) return parsed;
-    } catch { }
+    } catch {}
   }
 
   // 2. Mongo fallback — busca por id E verifica acesso (owner OR shared)
@@ -224,9 +251,7 @@ async function getSession(sessionId: string, userId: string): Promise<AdminChatS
   if (!doc) return null;
 
   // 3. Warm cache fire-and-forget
-  redisClient
-    .setex(cacheKey, CACHE_TTL.ADMIN_CHAT_SESSION, JSON.stringify(doc))
-    .catch(() => { });
+  redisClient.setex(cacheKey, CACHE_TTL.ADMIN_CHAT_SESSION, JSON.stringify(doc)).catch(() => {});
 
   return doc;
 }
@@ -239,13 +264,11 @@ async function saveSession(session: AdminChatSession): Promise<void> {
     ownerId: sessionOwnerId(session),
     updatedAt: new Date(),
   };
-  await db.collection('admin_chat_sessions').replaceOne(
-    { _id: session._id as any },
-    normalized,
-    { upsert: true }
-  );
+  await db
+    .collection('admin_chat_sessions')
+    .replaceOne({ _id: session._id as any }, normalized, { upsert: true });
   // Invalidate cache
-  await redisClient.del(CacheKey.adminChatSession(session._id)).catch(() => { });
+  await redisClient.del(CacheKey.adminChatSession(session._id)).catch(() => {});
 }
 
 // ── Tool execution ─────────────────────────────────────────────────────────
@@ -259,7 +282,7 @@ async function executeToolCalls(
   toolCalls: Array<{ name: string; args: any }>,
   session: AdminChatSession,
   userId: string,
-  authHeader: string,
+  authHeader: string
 ): Promise<{
   reply: string;
   creativeProjects: any[];
@@ -267,13 +290,18 @@ async function executeToolCalls(
   toolCallRecords: ToolCallRecord[];
 }> {
   if (!toolCalls.length) {
-    return { reply: stripAction(rawReply), creativeProjects: [], toolsUsed: [], toolCallRecords: [] };
+    return {
+      reply: stripAction(rawReply),
+      creativeProjects: [],
+      toolsUsed: [],
+      toolCallRecords: [],
+    };
   }
 
   console.log(`[AdminChat] Executing ${toolCalls.length} tool(s) in parallel`);
 
   // Pre-allocate records so we can broadcast start events before awaiting
-  const records: ToolCallRecord[] = toolCalls.map(call => ({
+  const records: ToolCallRecord[] = toolCalls.map((call) => ({
     id: uuidv4(),
     name: call.name,
     status: 'running' as const,
@@ -286,7 +314,12 @@ async function executeToolCalls(
   for (const record of records) {
     broadcastToSession(session._id, {
       type: 'TOOL_CALL_START',
-      payload: { toolCallId: record.id, name: record.name, args: record.args, startedAt: record.startedAt },
+      payload: {
+        toolCallId: record.id,
+        name: record.name,
+        args: record.args,
+        startedAt: record.startedAt,
+      },
     });
   }
 
@@ -294,9 +327,15 @@ async function executeToolCalls(
   const results = await Promise.allSettled(
     toolCalls.map((call, i) =>
       withRetry(
-        () => executeChatTool(call.name, call.args, { userId, sessionId: session._id, authHeader, brandGuidelineId: session.brandGuidelineId }),
-        call.name,
-      ).then(r => ({ index: i, result: r }))
+        () =>
+          executeChatTool(call.name, call.args, {
+            userId,
+            sessionId: session._id,
+            authHeader,
+            brandGuidelineId: session.brandGuidelineId,
+          }),
+        call.name
+      ).then((r) => ({ index: i, result: r }))
     )
   );
 
@@ -313,7 +352,12 @@ async function executeToolCalls(
         record.errorMessage = settled.reason?.message || 'Tool execution failed';
         broadcastToSession(session._id, {
           type: 'TOOL_CALL_END',
-          payload: { toolCallId: record.id, status: 'error', endedAt: record.endedAt, errorMessage: record.errorMessage },
+          payload: {
+            toolCallId: record.id,
+            status: 'error',
+            endedAt: record.endedAt,
+            errorMessage: record.errorMessage,
+          },
         });
       }
       continue;
@@ -346,10 +390,24 @@ async function executeToolCalls(
     if (call.name === 'generate_in_figma') {
       if (toolResult.queued) {
         record.summary = `Enfileirado para o Figma (${toolResult.queueSize} pendente(s))`;
-        broadcastToSession(session._id, { type: 'FIGMA_OPS_QUEUED', payload: { figmaUrl: toolResult.figmaUrl, queueSize: toolResult.queueSize, message: 'Será aplicado quando o plugin Visant abrir no Figma.' } });
+        broadcastToSession(session._id, {
+          type: 'FIGMA_OPS_QUEUED',
+          payload: {
+            figmaUrl: toolResult.figmaUrl,
+            queueSize: toolResult.queueSize,
+            message: 'Será aplicado quando o plugin Visant abrir no Figma.',
+          },
+        });
       } else if (toolResult.success) {
         record.summary = `Criativo criado no Figma (${toolResult.appliedCount} ops)`;
-        broadcastToSession(session._id, { type: 'FIGMA_OPS_APPLIED', payload: { figmaUrl: toolResult.figmaUrl, appliedCount: toolResult.appliedCount, message: `${toolResult.appliedCount} operações aplicadas no Figma.` } });
+        broadcastToSession(session._id, {
+          type: 'FIGMA_OPS_APPLIED',
+          payload: {
+            figmaUrl: toolResult.figmaUrl,
+            appliedCount: toolResult.appliedCount,
+            message: `${toolResult.appliedCount} operações aplicadas no Figma.`,
+          },
+        });
       } else {
         record.summary = `Figma: ${toolResult.error || 'falha'}`;
       }
@@ -395,7 +453,12 @@ async function executeToolCalls(
     record.endedAt = new Date().toISOString();
     broadcastToSession(session._id, {
       type: 'TOOL_CALL_END',
-      payload: { toolCallId: record.id, status: 'done', endedAt: record.endedAt, summary: record.summary },
+      payload: {
+        toolCallId: record.id,
+        status: 'done',
+        endedAt: record.endedAt,
+        summary: record.summary,
+      },
     });
   }
 
@@ -499,7 +562,7 @@ router.delete('/sessions/:id', validateAdmin, async (req: AuthRequest, res: Resp
     await connectToMongoDB();
     const db = getDb();
     await db.collection('admin_chat_sessions').deleteOne({ _id: req.params.id as any });
-    await redisClient.del(CacheKey.adminChatSession(req.params.id)).catch(() => { });
+    await redisClient.del(CacheKey.adminChatSession(req.params.id)).catch(() => {});
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -520,7 +583,11 @@ router.patch('/sessions/:id/brand', validateAdmin, async (req: AuthRequest, res:
     const nextBrandId: string | undefined = req.body?.brandGuidelineId || undefined;
     const current = session.brandGuidelineId || undefined;
     if (current && nextBrandId && current !== nextBrandId) {
-      return res.status(409).json({ error: 'Marca desta sessão já está travada. Crie uma nova sessão para outra marca.' });
+      return res
+        .status(409)
+        .json({
+          error: 'Marca desta sessão já está travada. Crie uma nova sessão para outra marca.',
+        });
     }
     if (current === nextBrandId) {
       return res.json({ session });
@@ -547,7 +614,14 @@ router.post('/sessions/:id/upload', validateAdmin, async (req: AuthRequest, res:
       case 'pdf': {
         if (!data) return res.status(400).json({ error: 'PDF data required' });
         // Passa PDF como inlineData para o knowledgeService (Pinecone multimodal)
-        parts = [{ inlineData: { mimeType: 'application/pdf', data: data.replace(/^data:application\/pdf;base64,/, '') } }];
+        parts = [
+          {
+            inlineData: {
+              mimeType: 'application/pdf',
+              data: data.replace(/^data:application\/pdf;base64,/, ''),
+            },
+          },
+        ];
         break;
       }
       case 'image': {
@@ -559,7 +633,7 @@ router.post('/sessions/:id/upload', validateAdmin, async (req: AuthRequest, res:
       case 'url': {
         if (!url) return res.status(400).json({ error: 'URL required' });
         const chunks = await parseUrl(url);
-        parts = [{ text: chunks.map(c => c.text).join('\n\n') }];
+        parts = [{ text: chunks.map((c) => c.text).join('\n\n') }];
         break;
       }
       case 'text': {
@@ -572,10 +646,11 @@ router.post('/sessions/:id/upload', validateAdmin, async (req: AuthRequest, res:
     }
 
     // Resolve RAG scope — brand universe (shared across sessions of same brand) vs session silo.
-    const { ragUserId, ragProjectId, guideline: brandForKnowledge } = await resolveRagScope(
-      session,
-      req.userId!
-    );
+    const {
+      ragUserId,
+      ragProjectId,
+      guideline: brandForKnowledge,
+    } = await resolveRagScope(session, req.userId!);
 
     const displayName = filename || url || source;
     const ingestResult: any = await knowledgeService.ingestContent({
@@ -595,7 +670,9 @@ router.post('/sessions/:id/upload', validateAdmin, async (req: AuthRequest, res:
 
     // If brand-scoped: record the file in the brand's knowledgeFiles so BrandGuidelinesPage can list/delete.
     if (brandForKnowledge) {
-      const existing: any[] = Array.isArray(brandForKnowledge.knowledgeFiles) ? brandForKnowledge.knowledgeFiles : [];
+      const existing: any[] = Array.isArray(brandForKnowledge.knowledgeFiles)
+        ? brandForKnowledge.knowledgeFiles
+        : [];
       const entry = {
         id: uuidv4(),
         fileName: displayName,
@@ -641,10 +718,12 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
     if (!message) return res.status(400).json({ error: 'message required' });
 
     const userApiKey = await getGeminiApiKey(req.userId!).catch(() => undefined);
-    const userPrefs = await prisma.user.findUnique({
-      where: { id: req.userId! },
-      select: { llmProvider: true, ollamaUrl: true, ollamaModel: true } as any,
-    }).catch(() => null) as any;
+    const userPrefs = (await prisma.user
+      .findUnique({
+        where: { id: req.userId! },
+        select: { llmProvider: true, ollamaUrl: true, ollamaModel: true } as any,
+      })
+      .catch(() => null)) as any;
 
     // 1. Brand context + resolve RAG scope (brand universe when linked, else session silo)
     let brandContext = '';
@@ -664,45 +743,55 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
     }
 
     // 3. System prompt de agência composto
-    const systemInstruction = buildSystemPrompt(session.memory, brandContext, ragContext)
-      + (planMode ? '\n\nMODO PLANO ATIVO: O usuário ativou o modo plano explicitamente. Use "propose_creative_plan" OBRIGATORIAMENTE para qualquer pedido criativo nesta mensagem — não gere imagens diretamente.' : '');
+    const systemInstruction =
+      buildSystemPrompt(session.memory, brandContext, ragContext) +
+      (planMode
+        ? '\n\nMODO PLANO ATIVO: O usuário ativou o modo plano explicitamente. Use "propose_creative_plan" OBRIGATORIAMENTE para qualquer pedido criativo nesta mensagem — não gere imagens diretamente.'
+        : '');
 
     // 4. Histórico no formato Gemini (últimas 20 msgs)
     const geminiHistory = formatGeminiHistory(session.messages);
 
     // 5. Chat via llmRouter
-    const { text: rawReply, toolCalls } = await chatWithLLM(
-      message,
-      '',
-      geminiHistory,
-      {
-        provider: (userPrefs?.llmProvider as any) || env.DEFAULT_LLM_PROVIDER || 'gemini',
-        ollamaUrl: userPrefs?.ollamaUrl,
-        ollamaModel: userPrefs?.ollamaModel,
-        apiKey: userApiKey,
-        model: GEMINI_MODELS.TEXT,
-        systemInstruction,
-        tools: getChatTools(true),
-      }
-    );
+    const { text: rawReply, toolCalls } = await chatWithLLM(message, '', geminiHistory, {
+      provider: (userPrefs?.llmProvider as any) || env.DEFAULT_LLM_PROVIDER || 'gemini',
+      ollamaUrl: userPrefs?.ollamaUrl,
+      ollamaModel: userPrefs?.ollamaModel,
+      apiKey: userApiKey,
+      model: GEMINI_MODELS.TEXT,
+      systemInstruction,
+      tools: getChatTools(true),
+    });
 
     // 6. Execute tool calls in parallel
     // Propagate request-level overrides into every generate_or_update_mockup call
-    const resolvedToolCalls = (toolCalls || []).map(tc => {
+    const resolvedToolCalls = (toolCalls || []).map((tc) => {
       if (tc.name !== 'generate_or_update_mockup') return tc;
       const overrides: Record<string, string> = {};
       if (textMode) overrides.textMode = textMode;
       if (imageModel) overrides.model = imageModel;
       if (aspectRatio) overrides.aspectRatio = aspectRatio;
       if (resolution) overrides.resolution = resolution;
-      return Object.keys(overrides).length > 0
-        ? { ...tc, args: { ...tc.args, ...overrides } }
-        : tc;
+      return Object.keys(overrides).length > 0 ? { ...tc, args: { ...tc.args, ...overrides } } : tc;
     });
-    const { reply: rawExecutedReply, creativeProjects, toolsUsed, toolCallRecords } =
-      await executeToolCalls(rawReply, resolvedToolCalls, session, req.userId!, req.headers.authorization || '');
+    const {
+      reply: rawExecutedReply,
+      creativeProjects,
+      toolsUsed,
+      toolCallRecords,
+    } = await executeToolCalls(
+      rawReply,
+      resolvedToolCalls,
+      session,
+      req.userId!,
+      req.headers.authorization || ''
+    );
     // Fallback reply when agent only proposed a plan (no text output)
-    const reply = rawExecutedReply.trim() || (toolsUsed.includes('propose_creative_plan') ? 'Plano criativo pronto — revise as variações propostas.' : rawExecutedReply);
+    const reply =
+      rawExecutedReply.trim() ||
+      (toolsUsed.includes('propose_creative_plan')
+        ? 'Plano criativo pronto — revise as variações propostas.'
+        : rawExecutedReply);
 
     // 7. Smart title on first message (fire-and-forget, non-blocking)
     if (session.messages.length === 0) {
@@ -712,13 +801,18 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
         [],
         { provider: 'gemini', apiKey: userApiKey, model: GEMINI_MODELS.TEXT }
       )
-        .then(r => {
+        .then((r) => {
           const title = r.text.trim().replace(/['"]/g, '').slice(0, 60);
           session.title = title || message.slice(0, 60);
           saveSession(session).catch(() => {});
-          broadcastToSession(session._id, { type: 'SESSION_TITLE_UPDATED', payload: { title: session.title } });
+          broadcastToSession(session._id, {
+            type: 'SESSION_TITLE_UPDATED',
+            payload: { title: session.title },
+          });
         })
-        .catch(() => { session.title = message.slice(0, 60); });
+        .catch(() => {
+          session.title = message.slice(0, 60);
+        });
     }
 
     // 8. Gerar ID único pra feedback
@@ -771,200 +865,261 @@ router.post('/sessions/:id/message', validateAdmin, async (req: AuthRequest, res
 });
 
 // POST /api/admin-chat/sessions/:id/message/stream — SSE streaming
-router.post('/sessions/:id/message/stream', validateAdmin, async (req: AuthRequest, res: Response) => {
-  const session = await getSession(req.params.id, req.userId!).catch(() => null);
-  if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
+router.post(
+  '/sessions/:id/message/stream',
+  validateAdmin,
+  async (req: AuthRequest, res: Response) => {
+    const session = await getSession(req.params.id, req.userId!).catch(() => null);
+    if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
 
-  const { message } = req.body;
-  if (!message) return res.status(400).json({ error: 'message required' });
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'message required' });
 
-  // SSE headers
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
+    // SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
 
-  const send = (event: string, data: any) => {
-    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
-  };
+    const send = (event: string, data: any) => {
+      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    };
 
-  try {
-    send('thinking', { message: 'Processando...' });
+    try {
+      send('thinking', { message: 'Processando...' });
 
-    const userApiKey = await getGeminiApiKey(req.userId!).catch(() => undefined);
-    const userPrefs = await prisma.user.findUnique({
-      where: { id: req.userId! },
-      select: { llmProvider: true, ollamaUrl: true, ollamaModel: true } as any,
-    }).catch(() => null) as any;
-
-    const { ragUserId, ragProjectId, guideline } = await resolveRagScope(session, req.userId!);
-    let brandContext = '';
-    if (guideline) brandContext = await buildBrandContextCached(guideline as any);
-
-    let ragContext = '';
-    if (session.attachments.length > 0 || session.brandGuidelineId) {
-      ragContext = await knowledgeService.getContext(message, ragUserId, ragProjectId).catch(() => '');
-    }
-
-    const systemInstruction = buildSystemPrompt(session.memory, brandContext, ragContext);
-    const geminiHistory = formatGeminiHistory(session.messages);
-
-    send('thinking', { message: 'Gerando resposta...' });
-
-    const { text: rawReply, toolCalls } = await chatWithLLM(message, '', geminiHistory, {
-      provider: (userPrefs?.llmProvider as any) || env.DEFAULT_LLM_PROVIDER || 'gemini',
-      ollamaUrl: userPrefs?.ollamaUrl,
-      ollamaModel: userPrefs?.ollamaModel,
-      apiKey: userApiKey,
-      model: GEMINI_MODELS.TEXT,
-      systemInstruction,
-      tools: getChatTools(true),
-    });
-
-    // Notify client of each tool as it starts
-    if (toolCalls?.length) {
-      for (const call of toolCalls) {
-        send('tool_start', { name: call.name });
-      }
-    }
-
-    const { reply, creativeProjects, toolsUsed, toolCallRecords } =
-      await executeToolCalls(rawReply, toolCalls || [], session, req.userId!, req.headers.authorization || '');
-
-    if (session.messages.length === 0) {
-      chatWithLLM(
-        `Resuma em no máximo 5 palavras, sem pontuação: "${sanitizeForPrompt(message, 300)}"`,
-        '',
-        [],
-        { provider: 'gemini', apiKey: userApiKey, model: GEMINI_MODELS.TEXT }
-      )
-        .then(r => {
-          session.title = r.text.trim().replace(/['"]/g, '').slice(0, 60) || message.slice(0, 60);
-          saveSession(session).catch(() => {});
-          broadcastToSession(session._id, { type: 'SESSION_TITLE_UPDATED', payload: { title: session.title } });
+      const userApiKey = await getGeminiApiKey(req.userId!).catch(() => undefined);
+      const userPrefs = (await prisma.user
+        .findUnique({
+          where: { id: req.userId! },
+          select: { llmProvider: true, ollamaUrl: true, ollamaModel: true } as any,
         })
-        .catch(() => { session.title = message.slice(0, 60); });
+        .catch(() => null)) as any;
+
+      const { ragUserId, ragProjectId, guideline } = await resolveRagScope(session, req.userId!);
+      let brandContext = '';
+      if (guideline) brandContext = await buildBrandContextCached(guideline as any);
+
+      let ragContext = '';
+      if (session.attachments.length > 0 || session.brandGuidelineId) {
+        ragContext = await knowledgeService
+          .getContext(message, ragUserId, ragProjectId)
+          .catch(() => '');
+      }
+
+      const systemInstruction = buildSystemPrompt(session.memory, brandContext, ragContext);
+      const geminiHistory = formatGeminiHistory(session.messages);
+
+      send('thinking', { message: 'Gerando resposta...' });
+
+      const { text: rawReply, toolCalls } = await chatWithLLM(message, '', geminiHistory, {
+        provider: (userPrefs?.llmProvider as any) || env.DEFAULT_LLM_PROVIDER || 'gemini',
+        ollamaUrl: userPrefs?.ollamaUrl,
+        ollamaModel: userPrefs?.ollamaModel,
+        apiKey: userApiKey,
+        model: GEMINI_MODELS.TEXT,
+        systemInstruction,
+        tools: getChatTools(true),
+      });
+
+      // Notify client of each tool as it starts
+      if (toolCalls?.length) {
+        for (const call of toolCalls) {
+          send('tool_start', { name: call.name });
+        }
+      }
+
+      const { reply, creativeProjects, toolsUsed, toolCallRecords } = await executeToolCalls(
+        rawReply,
+        toolCalls || [],
+        session,
+        req.userId!,
+        req.headers.authorization || ''
+      );
+
+      if (session.messages.length === 0) {
+        chatWithLLM(
+          `Resuma em no máximo 5 palavras, sem pontuação: "${sanitizeForPrompt(message, 300)}"`,
+          '',
+          [],
+          { provider: 'gemini', apiKey: userApiKey, model: GEMINI_MODELS.TEXT }
+        )
+          .then((r) => {
+            session.title = r.text.trim().replace(/['"]/g, '').slice(0, 60) || message.slice(0, 60);
+            saveSession(session).catch(() => {});
+            broadcastToSession(session._id, {
+              type: 'SESSION_TITLE_UPDATED',
+              payload: { title: session.title },
+            });
+          })
+          .catch(() => {
+            session.title = message.slice(0, 60);
+          });
+      }
+
+      const generationId = uuidv4();
+      const now = new Date().toISOString();
+
+      broadcastToSession(session._id, {
+        type: 'MESSAGE',
+        payload: { role: 'user', content: message, timestamp: now, by: req.userId },
+      });
+      broadcastToSession(session._id, {
+        type: 'MESSAGE',
+        payload: {
+          role: 'assistant',
+          content: reply,
+          timestamp: now,
+          creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
+          toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
+          generationId,
+        },
+      });
+
+      send('done', {
+        reply,
+        sessionId: session._id,
+        generationId,
+        toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
+        toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
+        creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
+      });
+
+      res.end();
+
+      session.messages.push({ role: 'user', content: message, timestamp: now });
+      session.messages.push({
+        role: 'assistant',
+        content: reply,
+        timestamp: now,
+        creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
+        toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
+        generationId,
+      });
+      await saveSession(session);
+    } catch (err: any) {
+      console.error('[AdminChat] Stream error:', err);
+      send('error', { message: err.message });
+      res.end();
     }
-
-    const generationId = uuidv4();
-    const now = new Date().toISOString();
-
-    broadcastToSession(session._id, { type: 'MESSAGE', payload: { role: 'user', content: message, timestamp: now, by: req.userId } });
-    broadcastToSession(session._id, { type: 'MESSAGE', payload: { role: 'assistant', content: reply, timestamp: now, creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined, toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined, generationId } });
-
-    send('done', {
-      reply,
-      sessionId: session._id,
-      generationId,
-      toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
-      toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
-      creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined,
-    });
-
-    res.end();
-
-    session.messages.push({ role: 'user', content: message, timestamp: now });
-    session.messages.push({ role: 'assistant', content: reply, timestamp: now, creativeProjects: creativeProjects.length > 0 ? creativeProjects : undefined, toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined, generationId });
-    await saveSession(session);
-  } catch (err: any) {
-    console.error('[AdminChat] Stream error:', err);
-    send('error', { message: err.message });
-    res.end();
   }
-});
+);
 
 // POST /api/admin-chat/sessions/:id/pendings/:pendingId/approve — approve brand knowledge write
-router.post('/sessions/:id/pendings/:pendingId/approve', validateAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const session = await getSession(req.params.id, req.userId!);
-    if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
+router.post(
+  '/sessions/:id/pendings/:pendingId/approve',
+  validateAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const session = await getSession(req.params.id, req.userId!);
+      if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
 
-    const pending = (session.pendingApprovals || []).find(p => p.id === req.params.pendingId);
-    if (!pending) return res.status(404).json({ error: 'Pending approval não encontrado' });
-    if (pending.status !== 'pending') return res.status(400).json({ error: 'Já resolvido' });
+      const pending = (session.pendingApprovals || []).find((p) => p.id === req.params.pendingId);
+      if (!pending) return res.status(404).json({ error: 'Pending approval não encontrado' });
+      if (pending.status !== 'pending') return res.status(400).json({ error: 'Já resolvido' });
 
-    const brand = await prisma.brandGuideline.findFirst({
-      where: { id: pending.brandGuidelineId },
-      select: { id: true, userId: true, knowledgeFiles: true },
-    }) as any;
-    if (!brand) return res.status(404).json({ error: 'Brand guideline não encontrada' });
+      const brand = (await prisma.brandGuideline.findFirst({
+        where: { id: pending.brandGuidelineId },
+        select: { id: true, userId: true, knowledgeFiles: true },
+      })) as any;
+      if (!brand) return res.status(404).json({ error: 'Brand guideline não encontrada' });
 
-    // Ingest into brand RAG universe (owner-keyed)
-    const ingestResult: any = await knowledgeService.ingestContent({
-      userId: brand.userId,
-      projectId: brand.id,
-      parts: [{ text: `# ${pending.title}\n\n${pending.content}` }],
-      metadata: {
+      // Ingest into brand RAG universe (owner-keyed)
+      const ingestResult: any = await knowledgeService.ingestContent({
+        userId: brand.userId,
+        projectId: brand.id,
+        parts: [{ text: `# ${pending.title}\n\n${pending.content}` }],
+        metadata: {
+          fileName: pending.title,
+          source: 'text',
+          brandGuidelineId: brand.id,
+          ingestedByUserId: req.userId!,
+        },
+      });
+      const vectorIds: string[] = ingestResult?.ids ?? (ingestResult?.id ? [ingestResult.id] : []);
+
+      // Record in brand knowledgeFiles
+      const existing: any[] = Array.isArray(brand.knowledgeFiles) ? brand.knowledgeFiles : [];
+      const entry = {
+        id: uuidv4(),
         fileName: pending.title,
-        source: 'text',
-        brandGuidelineId: brand.id,
-        ingestedByUserId: req.userId!,
-      },
-    });
-    const vectorIds: string[] = ingestResult?.ids ?? (ingestResult?.id ? [ingestResult.id] : []);
+        source: 'text' as const,
+        vectorIds,
+        addedByUserId: req.userId!,
+        addedAt: new Date().toISOString(),
+      };
+      await prisma.brandGuideline.update({
+        where: { id: brand.id },
+        data: { knowledgeFiles: [...existing, entry] as any },
+      });
 
-    // Record in brand knowledgeFiles
-    const existing: any[] = Array.isArray(brand.knowledgeFiles) ? brand.knowledgeFiles : [];
-    const entry = {
-      id: uuidv4(),
-      fileName: pending.title,
-      source: 'text' as const,
-      vectorIds,
-      addedByUserId: req.userId!,
-      addedAt: new Date().toISOString(),
-    };
-    await prisma.brandGuideline.update({
-      where: { id: brand.id },
-      data: { knowledgeFiles: [...existing, entry] as any },
-    });
+      pending.status = 'approved';
+      pending.resolvedByUserId = req.userId!;
+      pending.resolvedAt = new Date().toISOString();
+      session.pendingApprovals = (session.pendingApprovals || []).map((p) =>
+        p.id === pending.id ? pending : p
+      );
 
-    pending.status = 'approved';
-    pending.resolvedByUserId = req.userId!;
-    pending.resolvedAt = new Date().toISOString();
-    session.pendingApprovals = (session.pendingApprovals || []).map(p => p.id === pending.id ? pending : p);
+      await saveSession(session);
 
-    await saveSession(session);
+      broadcastToSession(session._id, {
+        type: 'APPROVAL_RESOLVED',
+        payload: {
+          pendingId: pending.id,
+          status: 'approved',
+          resolvedByUserId: req.userId!,
+          resolvedAt: pending.resolvedAt,
+          knowledgeFileId: entry.id,
+        },
+      });
 
-    broadcastToSession(session._id, {
-      type: 'APPROVAL_RESOLVED',
-      payload: { pendingId: pending.id, status: 'approved', resolvedByUserId: req.userId!, resolvedAt: pending.resolvedAt, knowledgeFileId: entry.id },
-    });
-
-    res.json({ success: true, pending, knowledgeFile: entry });
-  } catch (err: any) {
-    console.error('[AdminChat] Approve error:', err);
-    res.status(500).json({ error: err.message });
+      res.json({ success: true, pending, knowledgeFile: entry });
+    } catch (err: any) {
+      console.error('[AdminChat] Approve error:', err);
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
 // POST /api/admin-chat/sessions/:id/pendings/:pendingId/reject — reject brand knowledge write
-router.post('/sessions/:id/pendings/:pendingId/reject', validateAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const session = await getSession(req.params.id, req.userId!);
-    if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
+router.post(
+  '/sessions/:id/pendings/:pendingId/reject',
+  validateAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const session = await getSession(req.params.id, req.userId!);
+      if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
 
-    const pending = (session.pendingApprovals || []).find(p => p.id === req.params.pendingId);
-    if (!pending) return res.status(404).json({ error: 'Pending approval não encontrado' });
-    if (pending.status !== 'pending') return res.status(400).json({ error: 'Já resolvido' });
+      const pending = (session.pendingApprovals || []).find((p) => p.id === req.params.pendingId);
+      if (!pending) return res.status(404).json({ error: 'Pending approval não encontrado' });
+      if (pending.status !== 'pending') return res.status(400).json({ error: 'Já resolvido' });
 
-    pending.status = 'rejected';
-    pending.resolvedByUserId = req.userId!;
-    pending.resolvedAt = new Date().toISOString();
-    session.pendingApprovals = (session.pendingApprovals || []).map(p => p.id === pending.id ? pending : p);
+      pending.status = 'rejected';
+      pending.resolvedByUserId = req.userId!;
+      pending.resolvedAt = new Date().toISOString();
+      session.pendingApprovals = (session.pendingApprovals || []).map((p) =>
+        p.id === pending.id ? pending : p
+      );
 
-    await saveSession(session);
+      await saveSession(session);
 
-    broadcastToSession(session._id, {
-      type: 'APPROVAL_RESOLVED',
-      payload: { pendingId: pending.id, status: 'rejected', resolvedByUserId: req.userId!, resolvedAt: pending.resolvedAt },
-    });
+      broadcastToSession(session._id, {
+        type: 'APPROVAL_RESOLVED',
+        payload: {
+          pendingId: pending.id,
+          status: 'rejected',
+          resolvedByUserId: req.userId!,
+          resolvedAt: pending.resolvedAt,
+        },
+      });
 
-    res.json({ success: true, pending });
-  } catch (err: any) {
-    console.error('[AdminChat] Reject error:', err);
-    res.status(500).json({ error: err.message });
+      res.json({ success: true, pending });
+    } catch (err: any) {
+      console.error('[AdminChat] Reject error:', err);
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
 // ── WebSocket (team real-time) ─────────────────────────────────────────────
 //
@@ -996,7 +1151,9 @@ export function broadcastToSession(sessionId: string, event: any) {
   const payload = JSON.stringify(event);
   for (const ws of room) {
     if (ws.readyState === WebSocket.OPEN) {
-      try { ws.send(payload); } catch { }
+      try {
+        ws.send(payload);
+      } catch {}
     }
   }
 }

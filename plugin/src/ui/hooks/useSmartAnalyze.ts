@@ -42,12 +42,16 @@ export function useSmartAnalyze() {
         store.showToast('Iniciando Análise Inteligente...', 'info');
 
         send({ type: 'EXPORT_NODE_IMAGE', nodeId: 'selection', format: 'PNG' } as any);
-        const exportResult = await waitForMessage<{ data?: string; error?: string }>('EXPORT_NODE_IMAGE_RESULT');
+        const exportResult = await waitForMessage<{ data?: string; error?: string }>(
+          'EXPORT_NODE_IMAGE_RESULT'
+        );
         if (exportResult.error || !exportResult.data) {
           throw new Error(exportResult.error || 'Falha ao capturar imagem');
         }
 
-        const base64 = exportResult.data.includes(',') ? exportResult.data.split(',')[1] : exportResult.data;
+        const base64 = exportResult.data.includes(',')
+          ? exportResult.data.split(',')[1]
+          : exportResult.data;
 
         const components = store.designSystem?.tokens
           ? Object.values((store.designSystem.tokens as any).components || {})
@@ -57,7 +61,7 @@ export function useSmartAnalyze() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(store.authToken ? { Authorization: `Bearer ${store.authToken}` } : {})
+            ...(store.authToken ? { Authorization: `Bearer ${store.authToken}` } : {}),
           },
           body: JSON.stringify({
             image: { base64, mimeType: 'image/png' },
@@ -67,8 +71,8 @@ export function useSmartAnalyze() {
             params:
               mode === 'image-gen'
                 ? { intensity: 'balanced', visualStyle: 'auto', aspectRatio: 'auto' }
-                : { useAutoLayout: true, useSemanticNaming: true, useTokens: true, gridSnap: 8 }
-          })
+                : { useAutoLayout: true, useSemanticNaming: true, useTokens: true, gridSnap: 8 },
+          }),
         });
 
         if (!resp.ok) {
@@ -86,7 +90,7 @@ export function useSmartAnalyze() {
             role: 'assistant',
             content: `✦ Análise completa. Mapeados ${ops.length} componentes.`,
             timestamp: Date.now(),
-            operations: ops
+            operations: ops,
           });
           send({ type: 'APPLY_OPERATIONS_FROM_API', operations: ops } as any);
           store.showToast(`${ops.length} operações aplicadas`, 'success');
@@ -96,12 +100,12 @@ export function useSmartAnalyze() {
             id: `msg-${Date.now()}`,
             role: 'assistant',
             content: `✦ Análise Visual completa.\n\n**Prompt:**\n\n\`${prompt}\``,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
           send({
             type: 'CREATE_STICKY_PROMPT',
             prompt,
-            name: result.name || 'Image Analysis'
+            name: result.name || 'Image Analysis',
           } as any);
           store.showToast('Prompt gerado', 'success');
         }

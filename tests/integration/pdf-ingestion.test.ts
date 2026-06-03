@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest'
-import { parsePdf } from '../../server/lib/brand-parse'
-import { knowledgeService } from '../../server/services/knowledgeService'
-import { getMultimodalEmbedding } from '../../server/services/geminiService'
-import * as fs from 'fs'
-import * as path from 'path'
+import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { parsePdf } from '../../server/lib/brand-parse';
+import { knowledgeService } from '../../server/services/knowledgeService';
+import { getMultimodalEmbedding } from '../../server/services/geminiService';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Mock vectorService to avoid Pinecone SDK issues in tests
 vi.mock('../../server/services/vectorService', () => ({
@@ -13,15 +13,15 @@ vi.mock('../../server/services/vectorService', () => ({
     delete: vi.fn(async () => true),
     deleteMany: vi.fn(async () => true),
   },
-}))
+}));
 
 describe('Media Ingestion Flow', () => {
   beforeAll(() => {
     // Force mock mode by clearing Pinecone API key to avoid SDK validator bugs
-    delete process.env.PINECONE_API_KEY
-    delete process.env.PINECONE_KEY
-    console.log('[Test] Running in MOCK mode (Pinecone disabled for unit testing)')
-  })
+    delete process.env.PINECONE_API_KEY;
+    delete process.env.PINECONE_KEY;
+    console.log('[Test] Running in MOCK mode (Pinecone disabled for unit testing)');
+  });
   // Create a minimal valid PDF for testing
   const createTestPdf = (): Buffer => {
     // Minimal PDF structure
@@ -60,36 +60,36 @@ trailer
 << /Size 6 /Root 1 0 R >>
 startxref
 382
-%%EOF`
-    return Buffer.from(pdfContent)
-  }
+%%EOF`;
+    return Buffer.from(pdfContent);
+  };
 
   it('should parse PDF and extract text', async () => {
-    const pdfBuffer = createTestPdf()
-    expect(pdfBuffer.length).toBeGreaterThan(0)
+    const pdfBuffer = createTestPdf();
+    expect(pdfBuffer.length).toBeGreaterThan(0);
 
-    const chunks = await parsePdf(pdfBuffer, 'test.pdf')
-    console.log('Parsed chunks:', chunks)
+    const chunks = await parsePdf(pdfBuffer, 'test.pdf');
+    console.log('Parsed chunks:', chunks);
 
-    expect(chunks.length).toBeGreaterThan(0)
-    expect(chunks[0]).toHaveProperty('text')
-    expect(chunks[0]).toHaveProperty('source', 'test.pdf')
-    expect(chunks[0]).toHaveProperty('type', 'pdf')
-  })
+    expect(chunks.length).toBeGreaterThan(0);
+    expect(chunks[0]).toHaveProperty('text');
+    expect(chunks[0]).toHaveProperty('source', 'test.pdf');
+    expect(chunks[0]).toHaveProperty('type', 'pdf');
+  });
 
   it('should generate embeddings for text chunk', async () => {
-    const testText = 'This is a test document about branding and design'
-    const { embedding } = await getMultimodalEmbedding([{ text: testText }])
+    const testText = 'This is a test document about branding and design';
+    const { embedding } = await getMultimodalEmbedding([{ text: testText }]);
 
-    expect(embedding).toBeDefined()
-    expect(Array.isArray(embedding)).toBe(true)
-    expect(embedding.length).toBeGreaterThan(0)
-    console.log(`Generated embedding with dimension: ${embedding.length}`)
-  })
+    expect(embedding).toBeDefined();
+    expect(Array.isArray(embedding)).toBe(true);
+    expect(embedding.length).toBeGreaterThan(0);
+    console.log(`Generated embedding with dimension: ${embedding.length}`);
+  });
 
   it('should ingest PDF content into knowledge base', async () => {
-    const testUserId = 'test-user-123'
-    const testProjectId = 'test-project-456'
+    const testUserId = 'test-user-123';
+    const testProjectId = 'test-project-456';
 
     const parts = [
       {
@@ -98,7 +98,7 @@ startxref
           data: createTestPdf().toString('base64'),
         },
       },
-    ]
+    ];
 
     const result = await knowledgeService.ingestContent({
       userId: testUserId,
@@ -108,16 +108,16 @@ startxref
         fileName: 'test-document.pdf',
         source: 'pdf',
       },
-    })
+    });
 
-    console.log('PDF Ingest result:', result)
-    expect(result).toBeDefined()
+    console.log('PDF Ingest result:', result);
+    expect(result).toBeDefined();
     // In mock mode, result may not have expected properties, but should not error
-  })
+  });
 
   it('should ingest Markdown content', async () => {
-    const testUserId = 'test-user-123'
-    const testProjectId = 'test-project-456'
+    const testUserId = 'test-user-123';
+    const testProjectId = 'test-project-456';
     const markdownContent = `# Brand Guidelines
 
 ## Colors
@@ -126,9 +126,9 @@ startxref
 
 ## Typography
 - Font: Inter, sans-serif
-- Size: 16px body`
+- Size: 16px body`;
 
-    const parts = [{ text: markdownContent }]
+    const parts = [{ text: markdownContent }];
 
     const result = await knowledgeService.ingestContent({
       userId: testUserId,
@@ -138,19 +138,20 @@ startxref
         fileName: 'guidelines.md',
         source: 'markdown',
       },
-    })
+    });
 
-    console.log('Markdown Ingest result:', result)
-    expect(result).toBeDefined()
-    expect(result).toHaveProperty('id')
-  })
+    console.log('Markdown Ingest result:', result);
+    expect(result).toBeDefined();
+    expect(result).toHaveProperty('id');
+  });
 
   it('should ingest Image metadata', async () => {
-    const testUserId = 'test-user-123'
-    const testProjectId = 'test-project-456'
-    const imageDescription = '[Image: logo.png — analyze visually for brand colors, logos, typography, and style]'
+    const testUserId = 'test-user-123';
+    const testProjectId = 'test-project-456';
+    const imageDescription =
+      '[Image: logo.png — analyze visually for brand colors, logos, typography, and style]';
 
-    const parts = [{ text: imageDescription }]
+    const parts = [{ text: imageDescription }];
 
     const result = await knowledgeService.ingestContent({
       userId: testUserId,
@@ -160,20 +161,22 @@ startxref
         fileName: 'logo.png',
         source: 'image',
       },
-    })
+    });
 
-    console.log('Image Ingest result:', result)
-    expect(result).toBeDefined()
-    expect(result).toHaveProperty('id')
-  })
+    console.log('Image Ingest result:', result);
+    expect(result).toBeDefined();
+    expect(result).toHaveProperty('id');
+  });
 
   it('should handle multiple chunks from large content', async () => {
-    const testUserId = 'test-user-123'
-    const testProjectId = 'test-project-456'
+    const testUserId = 'test-user-123';
+    const testProjectId = 'test-project-456';
     // Create large text that will be chunked
-    const largeText = Array(100).fill('This is a test paragraph about branding and design. ').join('')
+    const largeText = Array(100)
+      .fill('This is a test paragraph about branding and design. ')
+      .join('');
 
-    const parts = [{ text: largeText }]
+    const parts = [{ text: largeText }];
 
     const result = await knowledgeService.ingestContent({
       userId: testUserId,
@@ -183,9 +186,9 @@ startxref
         fileName: 'large-document.txt',
         source: 'text',
       },
-    })
+    });
 
-    console.log('Large content Ingest result:', result)
-    expect(result).toBeDefined()
-  })
-})
+    console.log('Large content Ingest result:', result);
+    expect(result).toBeDefined();
+  });
+});

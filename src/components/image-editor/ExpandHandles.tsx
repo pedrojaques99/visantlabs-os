@@ -10,12 +10,7 @@ interface Props {
   panOffset: { x: number; y: number };
 }
 
-export const ExpandHandles: React.FC<Props> = ({
-  imageWidth,
-  imageHeight,
-  zoom,
-  panOffset,
-}) => {
+export const ExpandHandles: React.FC<Props> = ({ imageWidth, imageHeight, zoom, panOffset }) => {
   const activeAction = useImageEditorStore((s) => s.activeAction);
   const expandEdges = useImageEditorStore((s) => s.expandEdges);
   const isGenerating = useImageEditorStore((s) => s.isGenerating);

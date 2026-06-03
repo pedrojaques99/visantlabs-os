@@ -30,8 +30,15 @@ export function getPresenceLabelColor(color: string): string {
 
 // ─── Coordinate conversion ────────────────────────────────────────────────────
 
-export interface ScreenPoint { x: number; y: number }
-export interface FlowViewport { x: number; y: number; zoom: number }
+export interface ScreenPoint {
+  x: number;
+  y: number;
+}
+export interface FlowViewport {
+  x: number;
+  y: number;
+  zoom: number;
+}
 
 /**
  * Convert a flow-space coordinate to screen-space using the ReactFlow instance.
@@ -39,7 +46,7 @@ export interface FlowViewport { x: number; y: number; zoom: number }
  */
 export function flowToScreen(
   point: ScreenPoint,
-  reactFlowInstance: ReactFlowInstance | null,
+  reactFlowInstance: ReactFlowInstance | null
 ): ScreenPoint | null {
   if (!reactFlowInstance) return null;
 
@@ -62,7 +69,10 @@ export function getViewportZoom(reactFlowInstance: ReactFlowInstance | null): nu
 
 // ─── Ghost drag metrics ───────────────────────────────────────────────────────
 
-export interface NodeDimensions { width: number; height: number }
+export interface NodeDimensions {
+  width: number;
+  height: number;
+}
 
 /**
  * Extract display dimensions for a ReactFlow node.
@@ -87,7 +97,7 @@ export function ghostBoxStyle(
   sy: number,
   w: number,
   h: number,
-  color: string,
+  color: string
 ): React.CSSProperties {
   return {
     position: 'absolute',

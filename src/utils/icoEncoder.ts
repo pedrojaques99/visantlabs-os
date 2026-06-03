@@ -21,9 +21,9 @@ export async function encodePngsToIco(pngBlobs: Blob[]): Promise<Blob> {
   const view = new DataView(ico);
 
   // ICO header
-  view.setUint16(0, 0, true);      // reserved
-  view.setUint16(2, 1, true);      // type = 1 (ICO)
-  view.setUint16(4, count, true);  // image count
+  view.setUint16(0, 0, true); // reserved
+  view.setUint16(2, 1, true); // type = 1 (ICO)
+  view.setUint16(4, count, true); // image count
 
   // Directory entries + data
   for (let i = 0; i < count; i++) {
@@ -34,14 +34,14 @@ export async function encodePngsToIco(pngBlobs: Blob[]): Promise<Blob> {
     const h = pngView.getUint32(20, false);
 
     const offset = headerSize + i * dirEntrySize;
-    view.setUint8(offset, w >= 256 ? 0 : w);      // width (0 = 256)
-    view.setUint8(offset + 1, h >= 256 ? 0 : h);  // height (0 = 256)
-    view.setUint8(offset + 2, 0);                  // color palette
-    view.setUint8(offset + 3, 0);                  // reserved
-    view.setUint16(offset + 4, 1, true);           // color planes
-    view.setUint16(offset + 6, 32, true);          // bits per pixel
-    view.setUint32(offset + 8, pngBuf.byteLength, true);  // image size
-    view.setUint32(offset + 12, dataOffset, true);         // data offset
+    view.setUint8(offset, w >= 256 ? 0 : w); // width (0 = 256)
+    view.setUint8(offset + 1, h >= 256 ? 0 : h); // height (0 = 256)
+    view.setUint8(offset + 2, 0); // color palette
+    view.setUint8(offset + 3, 0); // reserved
+    view.setUint16(offset + 4, 1, true); // color planes
+    view.setUint16(offset + 6, 32, true); // bits per pixel
+    view.setUint32(offset + 8, pngBuf.byteLength, true); // image size
+    view.setUint32(offset + 12, dataOffset, true); // data offset
 
     // Copy PNG data
     new Uint8Array(ico, dataOffset, pngBuf.byteLength).set(new Uint8Array(pngBuf));

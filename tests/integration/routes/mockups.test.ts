@@ -77,9 +77,7 @@ describe('Mockup Routes Integration', () => {
       await createMockup({ userId: otherUser.id, prompt: 'Other Mockup' });
 
       const agent = await request();
-      const res = await agent
-        .get('/api/mockups')
-        .set('Authorization', `Bearer ${token}`);
+      const res = await agent.get('/api/mockups').set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(res.body.length).toBe(1);
@@ -136,7 +134,7 @@ describe('Mockup Routes Integration', () => {
         .send({
           promptText: 'A futuristic chair',
           aspectRatio: '16:9',
-          designType: 'blank'
+          designType: 'blank',
         });
 
       if (res.status !== 200) console.log('Generate error:', res.body);
@@ -150,7 +148,7 @@ describe('Mockup Routes Integration', () => {
 
       // Verify mockup record creation
       const mockup = await prisma.mockup.findFirst({
-        where: { userId: user.id, prompt: 'A futuristic chair' }
+        where: { userId: user.id, prompt: 'A futuristic chair' },
       });
       expect(mockup).toBeDefined();
     });
@@ -168,7 +166,7 @@ describe('Mockup Routes Integration', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           promptText: 'A futuristic chair',
-          aspectRatio: '16:9'
+          aspectRatio: '16:9',
         });
 
       // Status 403 (Forbidden) is often used for credit limits in this app
@@ -184,7 +182,7 @@ describe('Mockup Routes Integration', () => {
       const { mockup } = await createMockup({ userId: user.id, isLiked: false });
 
       const agent = await request();
-      
+
       // First like
       const res1 = await agent
         .put(`/api/mockups/${mockup.id}`)
@@ -196,7 +194,7 @@ describe('Mockup Routes Integration', () => {
       // Verify MockupExample creation
       const { prisma } = await import('../../../server/db/prisma.js');
       const example = await prisma.mockupExample.findFirst({
-        where: { prompt: mockup.prompt }
+        where: { prompt: mockup.prompt },
       });
       expect(example).toBeDefined();
 

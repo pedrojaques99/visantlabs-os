@@ -7,7 +7,7 @@ import { BrandIngestModal } from './BrandIngestModal';
 import type { BrandGuideline } from '@/lib/figma-types';
 import type { FigStreamState } from '@/hooks/useExtractFigStream';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 interface BrandIngestButtonProps {
   guideline: BrandGuideline;
   onSuccess: () => void;
@@ -15,7 +15,12 @@ interface BrandIngestButtonProps {
 }
 
 type SourceTag = 'fig_file' | 'pdf' | 'images';
-type ActiveSource = { state: FigStreamState; reset: () => void; title: string; source: SourceTag } | null;
+type ActiveSource = {
+  state: FigStreamState;
+  reset: () => void;
+  title: string;
+  source: SourceTag;
+} | null;
 
 /**
  * Single entry-point for all brand extraction types.
@@ -24,40 +29,57 @@ type ActiveSource = { state: FigStreamState; reset: () => void; title: string; s
  *   images → useIngestAsStream (dryRun /ingest → normalised FigStreamState)
  * All paths share BrandIngestModal for the approve/select/apply step.
  */
-export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline, onSuccess, triggerRef }) => {
-  const fig    = useExtractFileStream(guideline.id!, 'extract-fig');
-  const pdf    = useExtractFileStream(guideline.id!, 'extract-pdf');
+export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
+  guideline,
+  onSuccess,
+  triggerRef,
+}) => {
+  const fig = useExtractFileStream(guideline.id!, 'extract-fig');
+  const pdf = useExtractFileStream(guideline.id!, 'extract-pdf');
   const images = useIngestAsStream(guideline.id!);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Whichever hook is not idle drives the modal
   const active: ActiveSource =
-    fig.state.status    !== 'idle' ? { state: fig.state,    reset: fig.reset,    title: 'Extract from .fig', source: 'fig_file' } :
-    pdf.state.status    !== 'idle' ? { state: pdf.state,    reset: pdf.reset,    title: 'Extract from PDF',  source: 'pdf'      } :
-    images.state.status !== 'idle' ? { state: images.state, reset: images.reset, title: 'Review extraction', source: 'images'   } :
-    null;
+    fig.state.status !== 'idle'
+      ? { state: fig.state, reset: fig.reset, title: 'Extract from .fig', source: 'fig_file' }
+      : pdf.state.status !== 'idle'
+      ? { state: pdf.state, reset: pdf.reset, title: 'Extract from PDF', source: 'pdf' }
+      : images.state.status !== 'idle'
+      ? { state: images.state, reset: images.reset, title: 'Review extraction', source: 'images' }
+      : null;
 
-  const isBusy    = !!active && active.state.status === 'streaming';
+  const isBusy = !!active && active.state.status === 'streaming';
   const showModal = !!active && active.state.status !== 'idle';
 
-  const handleFiles = useCallback(async (files: FileList | null) => {
-    if (!files?.length) return;
-    const file = files[0];
+  const handleFiles = useCallback(
+    async (files: FileList | null) => {
+      if (!files?.length) return;
+      const file = files[0];
 
-    if (file.name.endsWith('.fig')) {
-      fig.stream(file);
-    } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-      pdf.stream(file);
-    } else if (file.name.endsWith('.txt') || file.name.endsWith('.md') || file.type === 'text/plain' || file.type === 'text/markdown') {
-      pdf.stream(file);
-    } else {
-      await images.ingest(Array.from(files));
-    }
-  }, [fig, pdf, images]);
+      if (file.name.endsWith('.fig')) {
+        fig.stream(file);
+      } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+        pdf.stream(file);
+      } else if (
+        file.name.endsWith('.txt') ||
+        file.name.endsWith('.md') ||
+        file.type === 'text/plain' ||
+        file.type === 'text/markdown'
+      ) {
+        pdf.stream(file);
+      } else {
+        await images.ingest(Array.from(files));
+      }
+    },
+    [fig, pdf, images]
+  );
 
   useEffect(() => {
     if (triggerRef) triggerRef.current = handleFiles;
-    return () => { if (triggerRef) triggerRef.current = null; };
+    return () => {
+      if (triggerRef) triggerRef.current = null;
+    };
   }, [triggerRef, handleFiles]);
 
   return (
@@ -78,7 +100,10 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
         className="hidden"
         accept=".fig,.pdf,.txt,.md,text/plain,text/markdown,image/*"
         multiple
-        onChange={e => { handleFiles(e.target.files); e.target.value = ''; }}
+        onChange={(e) => {
+          handleFiles(e.target.files);
+          e.target.value = '';
+        }}
       />
 
       {showModal && active && (
@@ -87,7 +112,10 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({ guideline,
           source={active.source}
           state={active.state}
           guideline={guideline}
-          onSuccess={() => { onSuccess(); active.reset(); }}
+          onSuccess={() => {
+            onSuccess();
+            active.reset();
+          }}
           onClose={active.reset}
         />
       )}

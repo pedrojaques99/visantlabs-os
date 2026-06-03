@@ -1,7 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Plus, Edit2, Trash2, X, Save, Upload, Image as ImageIcon, Camera, Layers, MapPin, Sun, RefreshCw, Settings, Users, LayoutGrid, Table as TableIcon } from 'lucide-react';
+import {
+  ShieldCheck,
+  Plus,
+  Edit2,
+  Trash2,
+  X,
+  Save,
+  Upload,
+  Image as ImageIcon,
+  Camera,
+  Layers,
+  MapPin,
+  Sun,
+  RefreshCw,
+  Settings,
+  Users,
+  LayoutGrid,
+  Table as TableIcon,
+} from 'lucide-react';
 import { DataTable } from '../components/ui/data-table';
 import { DataTableEditableCell } from '../components/ui/data-table-editable-cell';
 import { ColumnDef } from '@tanstack/react-table';
@@ -21,7 +39,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
+} from '../components/ui/BreadcrumbWithBack';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
@@ -49,7 +67,7 @@ import {
   AVAILABLE_LOCATION_TAGS,
   AVAILABLE_LIGHTING_TAGS,
   AVAILABLE_BRANDING_TAGS,
-  AVAILABLE_EFFECT_TAGS
+  AVAILABLE_EFFECT_TAGS,
 } from '@/utils/mockupConstants';
 import { PresetCard } from '@/components/PresetCard';
 import { migrateLegacyPreset } from '@/types/communityPrompts';
@@ -59,7 +77,18 @@ import { API_BASE } from '@/config/api';
 
 const ADMIN_API = '/api/admin/presets';
 
-const ASPECT_RATIOS: AspectRatio[] = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'];
+const ASPECT_RATIOS: AspectRatio[] = [
+  '9:16',
+  '21:9',
+  '2:3',
+  '3:2',
+  '3:4',
+  '4:3',
+  '4:5',
+  '5:4',
+  '16:9',
+  '1:1',
+];
 const AVAILABLE_MODELS: GeminiModel[] = [GEMINI_MODELS.FLASH, GEMINI_MODELS.PRO];
 
 interface PresetsData {
@@ -72,7 +101,15 @@ interface PresetsData {
   effectPresets: EffectPreset[];
 }
 
-type PresetType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | 'branding' | 'effect';
+type PresetType =
+  | 'all'
+  | 'mockup'
+  | 'angle'
+  | 'texture'
+  | 'ambience'
+  | 'luminance'
+  | 'branding'
+  | 'effect';
 
 interface PresetFormData {
   id: string;
@@ -122,8 +159,6 @@ export const AdminPresetsPage: React.FC = () => {
   const [tagInput, setTagInput] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [mockupCategories, setMockupCategories] = useState<{ id: string; name: string }[]>([]);
-
-
 
   // Check if user is admin and load data
   useEffect(() => {
@@ -208,7 +243,7 @@ export const AdminPresetsPage: React.FC = () => {
         model: preset.model,
         tags: preset.tags,
         referenceImageUrl: preset.referenceImageUrl,
-        mockupCategoryId: preset.mockupCategoryId
+        mockupCategoryId: preset.mockupCategoryId,
       };
 
       // Update the modified field
@@ -256,7 +291,7 @@ export const AdminPresetsPage: React.FC = () => {
         model: preset.model,
         tags: preset.tags,
         referenceImageUrl: preset.referenceImageUrl,
-        mockupCategoryId: preset.mockupCategoryId
+        mockupCategoryId: preset.mockupCategoryId,
       };
 
       // Update the modified field
@@ -283,144 +318,187 @@ export const AdminPresetsPage: React.FC = () => {
     }
   };
 
+  const columns = useMemo<ColumnDef<CommunityPrompt>[]>(
+    () => [
+      {
+        accessorKey: 'referenceImageUrl',
+        header: t('adminPresets.table.image'),
+        cell: ({ row }) => {
+          const imageUrl = row.getValue('referenceImageUrl') as string;
+          const category = row.original.category;
+          const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG['presets'];
+          const Icon = config.icon;
 
-
-  const columns = useMemo<ColumnDef<CommunityPrompt>[]>(() => [
-    {
-      accessorKey: "referenceImageUrl",
-      header: t('adminPresets.table.image'),
-      cell: ({ row }) => {
-        const imageUrl = row.getValue("referenceImageUrl") as string;
-        const category = row.original.category;
-        const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG['presets'];
-        const Icon = config.icon;
-
-        return (
-          <div className="w-10 h-10 rounded overflow-hidden bg-neutral-800 flex items-center justify-center group relative">
-            {imageUrl ? (
-              <>
-                <img src={imageUrl} alt={row.getValue("name")} className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  aria-label={t('admin.presets.editar_preset')}
-                  className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                  onClick={() => handleEdit((row.original.category as PresetType) || 'mockup', row.original as any)}
-                >
-                  <Edit2 className="w-4 h-4 text-white" aria-hidden="true" />
-                </button>
-              </>
-            ) : (
-              <Icon className={cn("w-5 h-5", config.color)} />
-            )}
-          </div>
-        );
+          return (
+            <div className="w-10 h-10 rounded overflow-hidden bg-neutral-800 flex items-center justify-center group relative">
+              {imageUrl ? (
+                <>
+                  <img
+                    src={imageUrl}
+                    alt={row.getValue('name')}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    aria-label={t('admin.presets.editar_preset')}
+                    className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    onClick={() =>
+                      handleEdit(
+                        (row.original.category as PresetType) || 'mockup',
+                        row.original as any
+                      )
+                    }
+                  >
+                    <Edit2 className="w-4 h-4 text-white" aria-hidden="true" />
+                  </button>
+                </>
+              ) : (
+                <Icon className={cn('w-5 h-5', config.color)} />
+              )}
+            </div>
+          );
+        },
+        enableSorting: false,
+        size: 60,
       },
-      enableSorting: false,
-      size: 60,
-    },
-    {
-      accessorKey: "id",
-      header: t('adminPresets.table.id'),
-      cell: ({ row }) => <span className="font-mono text-xs text-neutral-400 select-all">{row.getValue("id")}</span>,
-      size: 100,
-    },
-    {
-      accessorKey: "name",
-      header: t('adminPresets.table.name'),
-      cell: ({ row }) => <DataTableEditableCell row={row} field="name" className="font-medium" onSave={handleInlineSave} />,
-      size: 150,
-    },
-    {
-      accessorKey: "description",
-      header: t('adminPresets.descriptionRequired'), // Using existing key or fallback
-      cell: ({ row }) => <DataTableEditableCell row={row} field="description" className="text-xs text-neutral-400" onSave={handleInlineSave} />,
-      size: 200,
-    },
-    {
-      accessorKey: "prompt",
-      header: t('adminPresets.promptRequired'),
-      cell: ({ row }) => <DataTableEditableCell row={row} field="prompt" type="textarea" className="font-mono text-[10px] text-neutral-500 line-clamp-2" onSave={handleInlineSave} />,
-      size: 300,
-    },
-    {
-      accessorKey: "category",
-      header: "Tipo",
-      cell: ({ row }) => {
-        const category = row.original.category;
-        const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG['presets'];
-        return (
-          <Badge variant="outline" className="bg-neutral-900/50 border-neutral-800">
-            <span className={cn("flex items-center gap-1.5", config.color)}>
-              {React.createElement(config.icon, { className: "w-3 h-3" })}
-              {config.label}
-            </span>
-          </Badge>
-        );
+      {
+        accessorKey: 'id',
+        header: t('adminPresets.table.id'),
+        cell: ({ row }) => (
+          <span className="font-mono text-xs text-neutral-400 select-all">
+            {row.getValue('id')}
+          </span>
+        ),
+        size: 100,
       },
-      size: 100,
-    },
-    {
-      accessorKey: "mockupCategoryId",
-      header: "Categoria Mockup",
-      cell: ({ row }) => {
-        if (row.original.category !== 'mockup') return null;
-        return (
+      {
+        accessorKey: 'name',
+        header: t('adminPresets.table.name'),
+        cell: ({ row }) => (
           <DataTableEditableCell
             row={row}
-            field="mockupCategoryId"
-            type="select"
-            options={mockupCategories.map(c => ({
-              value: c.id,
-              label: t(`mockup.categoryGroups.${c.name}`, { defaultValue: c.name })
-            }))}
-            onSave={handleInlineSaveCategory}
+            field="name"
+            className="font-medium"
+            onSave={handleInlineSave}
           />
-        );
+        ),
+        size: 150,
       },
-      size: 150,
-    },
-    {
-      accessorKey: "model",
-      header: t('adminPresets.table.model'),
-      cell: ({ row }) => {
-        const model = row.original.model;
-        if (!model) return null;
-        return (
-          <Badge variant="secondary" className="text-[10px] h-5 bg-neutral-800 text-neutral-400 hover:bg-neutral-700">
-            {model.includes('flash') ? 'HD' : '4K'}
-          </Badge>
-        );
+      {
+        accessorKey: 'description',
+        header: t('adminPresets.descriptionRequired'), // Using existing key or fallback
+        cell: ({ row }) => (
+          <DataTableEditableCell
+            row={row}
+            field="description"
+            className="text-xs text-neutral-400"
+            onSave={handleInlineSave}
+          />
+        ),
+        size: 200,
       },
-      size: 80,
-    },
-    {
-      id: "actions",
-      header: t('adminPresets.table.actions'),
-      cell: ({ row }) => {
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800"
-              onClick={() => handleEdit((row.original.category as PresetType) || 'mockup', row.original as any)}
+      {
+        accessorKey: 'prompt',
+        header: t('adminPresets.promptRequired'),
+        cell: ({ row }) => (
+          <DataTableEditableCell
+            row={row}
+            field="prompt"
+            type="textarea"
+            className="font-mono text-[10px] text-neutral-500 line-clamp-2"
+            onSave={handleInlineSave}
+          />
+        ),
+        size: 300,
+      },
+      {
+        accessorKey: 'category',
+        header: 'Tipo',
+        cell: ({ row }) => {
+          const category = row.original.category;
+          const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG['presets'];
+          return (
+            <Badge variant="outline" className="bg-neutral-900/50 border-neutral-800">
+              <span className={cn('flex items-center gap-1.5', config.color)}>
+                {React.createElement(config.icon, { className: 'w-3 h-3' })}
+                {config.label}
+              </span>
+            </Badge>
+          );
+        },
+        size: 100,
+      },
+      {
+        accessorKey: 'mockupCategoryId',
+        header: 'Categoria Mockup',
+        cell: ({ row }) => {
+          if (row.original.category !== 'mockup') return null;
+          return (
+            <DataTableEditableCell
+              row={row}
+              field="mockupCategoryId"
+              type="select"
+              options={mockupCategories.map((c) => ({
+                value: c.id,
+                label: t(`mockup.categoryGroups.${c.name}`, { defaultValue: c.name }),
+              }))}
+              onSave={handleInlineSaveCategory}
+            />
+          );
+        },
+        size: 150,
+      },
+      {
+        accessorKey: 'model',
+        header: t('adminPresets.table.model'),
+        cell: ({ row }) => {
+          const model = row.original.model;
+          if (!model) return null;
+          return (
+            <Badge
+              variant="secondary"
+              className="text-[10px] h-5 bg-neutral-800 text-neutral-400 hover:bg-neutral-700"
             >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-neutral-400 hover:text-destructive hover:bg-neutral-800"
-              onClick={() => handleDelete((row.original.category as PresetType) || 'mockup', row.original.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        );
+              {model.includes('flash') ? 'HD' : '4K'}
+            </Badge>
+          );
+        },
+        size: 80,
       },
-      size: 100,
-    },
-  ], [t, mockupCategories]);
+      {
+        id: 'actions',
+        header: t('adminPresets.table.actions'),
+        cell: ({ row }) => {
+          return (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                onClick={() =>
+                  handleEdit((row.original.category as PresetType) || 'mockup', row.original as any)
+                }
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-neutral-400 hover:text-destructive hover:bg-neutral-800"
+                onClick={() =>
+                  handleDelete((row.original.category as PresetType) || 'mockup', row.original.id)
+                }
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          );
+        },
+        size: 100,
+      },
+    ],
+    [t, mockupCategories]
+  );
 
   const handleFetch = async () => {
     const token = authService.getToken();
@@ -456,10 +534,12 @@ export const AdminPresetsPage: React.FC = () => {
       });
       if (categoriesResponse.ok) {
         const categoriesResult = await categoriesResponse.json();
-        setMockupCategories(categoriesResult.map((c: any) => ({
-          id: c.id || c._id,
-          name: c.name
-        })));
+        setMockupCategories(
+          categoriesResult.map((c: any) => ({
+            id: c.id || c._id,
+            name: c.name,
+          }))
+        );
       }
     } catch (fetchError: any) {
       console.error('Erro ao carregar dados do admin:', fetchError);
@@ -474,7 +554,17 @@ export const AdminPresetsPage: React.FC = () => {
     handleFetch();
   };
 
-  const handleEdit = (type: PresetType, preset: MockupPreset | AnglePreset | TexturePreset | AmbiencePreset | LuminancePreset | BrandingPreset | EffectPreset) => {
+  const handleEdit = (
+    type: PresetType,
+    preset:
+      | MockupPreset
+      | AnglePreset
+      | TexturePreset
+      | AmbiencePreset
+      | LuminancePreset
+      | BrandingPreset
+      | EffectPreset
+  ) => {
     setEditingPreset({ type, id: preset.id });
     setIsCreating(false);
     setFormData({
@@ -558,7 +648,9 @@ export const AdminPresetsPage: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || errorData.details || t('adminPresets.failedToUploadImage'));
+        throw new Error(
+          errorData.error || errorData.details || t('adminPresets.failedToUploadImage')
+        );
       }
 
       const { url } = await response.json();
@@ -593,9 +685,7 @@ export const AdminPresetsPage: React.FC = () => {
         throw new Error('Tipo de preset inválido.');
       }
 
-      const url = isCreating
-        ? `${ADMIN_API}/${type}`
-        : `${ADMIN_API}/${type}/${editingPreset?.id}`;
+      const url = isCreating ? `${ADMIN_API}/${type}` : `${ADMIN_API}/${type}/${editingPreset?.id}`;
       const method = isCreating ? 'POST' : 'PUT';
 
       const body: any = {
@@ -706,7 +796,18 @@ export const AdminPresetsPage: React.FC = () => {
         return { valid: false, error: 'Array não pode estar vazio.' };
       }
 
-      const validAspectRatios = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'];
+      const validAspectRatios = [
+        '9:16',
+        '21:9',
+        '2:3',
+        '3:2',
+        '3:4',
+        '4:3',
+        '4:5',
+        '5:4',
+        '16:9',
+        '1:1',
+      ];
       const validModels = [GEMINI_MODELS.FLASH, GEMINI_MODELS.PRO];
 
       for (let i = 0; i < parsed.length; i++) {
@@ -714,31 +815,56 @@ export const AdminPresetsPage: React.FC = () => {
         const index = i + 1;
 
         if (!preset.id || typeof preset.id !== 'string') {
-          return { valid: false, error: `Preset ${index}: campo 'id' é obrigatório e deve ser uma string.` };
+          return {
+            valid: false,
+            error: `Preset ${index}: campo 'id' é obrigatório e deve ser uma string.`,
+          };
         }
 
         if (!preset.name || typeof preset.name !== 'string') {
-          return { valid: false, error: `Preset ${index} (${preset.id}): campo 'name' é obrigatório e deve ser uma string.` };
+          return {
+            valid: false,
+            error: `Preset ${index} (${preset.id}): campo 'name' é obrigatório e deve ser uma string.`,
+          };
         }
 
         if (!preset.description || typeof preset.description !== 'string') {
-          return { valid: false, error: `Preset ${index} (${preset.id}): campo 'description' é obrigatório e deve ser uma string.` };
+          return {
+            valid: false,
+            error: `Preset ${index} (${preset.id}): campo 'description' é obrigatório e deve ser uma string.`,
+          };
         }
 
         if (!preset.prompt || typeof preset.prompt !== 'string') {
-          return { valid: false, error: `Preset ${index} (${preset.id}): campo 'prompt' é obrigatório e deve ser uma string.` };
+          return {
+            valid: false,
+            error: `Preset ${index} (${preset.id}): campo 'prompt' é obrigatório e deve ser uma string.`,
+          };
         }
 
         if (!preset.aspectRatio || typeof preset.aspectRatio !== 'string') {
-          return { valid: false, error: `Preset ${index} (${preset.id}): campo 'aspectRatio' é obrigatório e deve ser uma string.` };
+          return {
+            valid: false,
+            error: `Preset ${index} (${preset.id}): campo 'aspectRatio' é obrigatório e deve ser uma string.`,
+          };
         }
 
         if (!validAspectRatios.includes(preset.aspectRatio)) {
-          return { valid: false, error: `Preset ${index} (${preset.id}): aspectRatio inválido. Valores válidos: ${validAspectRatios.join(', ')}.` };
+          return {
+            valid: false,
+            error: `Preset ${index} (${
+              preset.id
+            }): aspectRatio inválido. Valores válidos: ${validAspectRatios.join(', ')}.`,
+          };
         }
 
         if (preset.model && !validModels.includes(preset.model)) {
-          return { valid: false, error: `Preset ${index} (${preset.id}): model inválido. Valores válidos: ${validModels.join(', ')}.` };
+          return {
+            valid: false,
+            error: `Preset ${index} (${
+              preset.id
+            }): model inválido. Valores válidos: ${validModels.join(', ')}.`,
+          };
         }
       }
 
@@ -746,7 +872,10 @@ export const AdminPresetsPage: React.FC = () => {
       const ids = parsed.map((p: any) => p.id);
       const duplicateIds = ids.filter((id: string, index: number) => ids.indexOf(id) !== index);
       if (duplicateIds.length > 0) {
-        return { valid: false, error: `IDs duplicados encontrados: ${[...new Set(duplicateIds)].join(', ')}.` };
+        return {
+          valid: false,
+          error: `IDs duplicados encontrados: ${[...new Set(duplicateIds)].join(', ')}.`,
+        };
       }
 
       return { valid: true, presets: parsed };
@@ -822,7 +951,11 @@ export const AdminPresetsPage: React.FC = () => {
       return;
     }
 
-    if (!confirm(`Tem certeza que deseja importar ${MOCKUP_PRESETS.length} preset(s) padrão do TypeScript?`)) {
+    if (
+      !confirm(
+        `Tem certeza que deseja importar ${MOCKUP_PRESETS.length} preset(s) padrão do TypeScript?`
+      )
+    ) {
       return;
     }
 
@@ -878,7 +1011,11 @@ export const AdminPresetsPage: React.FC = () => {
       return;
     }
 
-    if (!confirm(`Tem certeza que deseja importar ${ANGLE_PRESETS.length} preset(s) padrão do TypeScript?`)) {
+    if (
+      !confirm(
+        `Tem certeza que deseja importar ${ANGLE_PRESETS.length} preset(s) padrão do TypeScript?`
+      )
+    ) {
       return;
     }
 
@@ -964,7 +1101,11 @@ export const AdminPresetsPage: React.FC = () => {
       return;
     }
 
-    if (!confirm(`Tem certeza que deseja importar ${TEXTURE_PRESETS.length} preset(s) padrão do TypeScript?`)) {
+    if (
+      !confirm(
+        `Tem certeza que deseja importar ${TEXTURE_PRESETS.length} preset(s) padrão do TypeScript?`
+      )
+    ) {
       return;
     }
 
@@ -994,11 +1135,19 @@ export const AdminPresetsPage: React.FC = () => {
           } else {
             failed++;
             const errorData = await response.json();
-            errors.push({ index: i, id: preset.id, error: errorData.error || t('common.unknownError') });
+            errors.push({
+              index: i,
+              id: preset.id,
+              error: errorData.error || t('common.unknownError'),
+            });
           }
         } catch (error: any) {
           failed++;
-          errors.push({ index: i, id: preset.id, error: error.message || t('common.unknownError') });
+          errors.push({
+            index: i,
+            id: preset.id,
+            error: error.message || t('common.unknownError'),
+          });
         }
       }
 
@@ -1024,7 +1173,11 @@ export const AdminPresetsPage: React.FC = () => {
       return;
     }
 
-    if (!confirm(`Tem certeza que deseja importar ${AMBIENCE_PRESETS.length} preset(s) padrão do TypeScript?`)) {
+    if (
+      !confirm(
+        `Tem certeza que deseja importar ${AMBIENCE_PRESETS.length} preset(s) padrão do TypeScript?`
+      )
+    ) {
       return;
     }
 
@@ -1054,11 +1207,19 @@ export const AdminPresetsPage: React.FC = () => {
           } else {
             failed++;
             const errorData = await response.json();
-            errors.push({ index: i, id: preset.id, error: errorData.error || t('common.unknownError') });
+            errors.push({
+              index: i,
+              id: preset.id,
+              error: errorData.error || t('common.unknownError'),
+            });
           }
         } catch (error: any) {
           failed++;
-          errors.push({ index: i, id: preset.id, error: error.message || t('common.unknownError') });
+          errors.push({
+            index: i,
+            id: preset.id,
+            error: error.message || t('common.unknownError'),
+          });
         }
       }
 
@@ -1084,7 +1245,11 @@ export const AdminPresetsPage: React.FC = () => {
       return;
     }
 
-    if (!confirm(`Tem certeza que deseja importar ${LUMINANCE_PRESETS.length} preset(s) padrão do TypeScript?`)) {
+    if (
+      !confirm(
+        `Tem certeza que deseja importar ${LUMINANCE_PRESETS.length} preset(s) padrão do TypeScript?`
+      )
+    ) {
       return;
     }
 
@@ -1114,11 +1279,19 @@ export const AdminPresetsPage: React.FC = () => {
           } else {
             failed++;
             const errorData = await response.json();
-            errors.push({ index: i, id: preset.id, error: errorData.error || t('common.unknownError') });
+            errors.push({
+              index: i,
+              id: preset.id,
+              error: errorData.error || t('common.unknownError'),
+            });
           }
         } catch (error: any) {
           failed++;
-          errors.push({ index: i, id: preset.id, error: error.message || t('common.unknownError') });
+          errors.push({
+            index: i,
+            id: preset.id,
+            error: error.message || t('common.unknownError'),
+          });
         }
       }
 
@@ -1190,7 +1363,10 @@ export const AdminPresetsPage: React.FC = () => {
       for (let i = 0; i < tags.length; i++) {
         const tag = tags[i];
         // Generate ID from tag (kebab-case)
-        const id = tag.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const id = tag
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
 
         const presetData = {
           id,
@@ -1215,8 +1391,8 @@ export const AdminPresetsPage: React.FC = () => {
             created++;
           } else {
             // If it failed, check if it's because it already exists (409 Conflict) - we count as success/skipped or fail?
-            // Usually we just want to know if it *failed* to be created. 
-            // If it exists, we might just skip. 
+            // Usually we just want to know if it *failed* to be created.
+            // If it exists, we might just skip.
             // For now, let's log fail but usually user wants to fill missing ones.
             failed++;
             const errorData = await response.json();
@@ -1246,13 +1422,25 @@ export const AdminPresetsPage: React.FC = () => {
   const allPresetsWithCategory = useMemo(() => {
     if (!data) return [];
 
-    const mockups = (data.mockupPresets || []).map(p => ({ ...p, category: 'mockup' as const }));
-    const angles = (data.anglePresets || []).map(p => ({ ...p, category: 'angle' as const }));
-    const textures = (data.texturePresets || []).map(p => ({ ...p, category: 'texture' as const }));
-    const ambiences = (data.ambiencePresets || []).map(p => ({ ...p, category: 'ambience' as const }));
-    const luminances = (data.luminancePresets || []).map(p => ({ ...p, category: 'luminance' as const }));
-    const brandings = (data.brandingPresets || []).map(p => ({ ...p, category: 'branding' as const }));
-    const effects = (data.effectPresets || []).map(p => ({ ...p, category: 'effect' as const }));
+    const mockups = (data.mockupPresets || []).map((p) => ({ ...p, category: 'mockup' as const }));
+    const angles = (data.anglePresets || []).map((p) => ({ ...p, category: 'angle' as const }));
+    const textures = (data.texturePresets || []).map((p) => ({
+      ...p,
+      category: 'texture' as const,
+    }));
+    const ambiences = (data.ambiencePresets || []).map((p) => ({
+      ...p,
+      category: 'ambience' as const,
+    }));
+    const luminances = (data.luminancePresets || []).map((p) => ({
+      ...p,
+      category: 'luminance' as const,
+    }));
+    const brandings = (data.brandingPresets || []).map((p) => ({
+      ...p,
+      category: 'branding' as const,
+    }));
+    const effects = (data.effectPresets || []).map((p) => ({ ...p, category: 'effect' as const }));
 
     return [
       ...mockups,
@@ -1261,21 +1449,24 @@ export const AdminPresetsPage: React.FC = () => {
       ...ambiences,
       ...luminances,
       ...brandings,
-      ...effects
+      ...effects,
     ];
   }, [data]);
 
   const currentPresets = useMemo(() => {
     if (activeTab === 'all') return allPresetsWithCategory;
-    return allPresetsWithCategory.filter(p => p.category === activeTab);
+    return allPresetsWithCategory.filter((p) => p.category === activeTab);
   }, [activeTab, allPresetsWithCategory]);
   const isEditing = editingPreset !== null || isCreating;
-  const effectiveEditType = isCreating ? (activeTab === 'all' ? 'mockup' : activeTab) : editingPreset?.type;
+  const effectiveEditType = isCreating
+    ? activeTab === 'all'
+      ? 'mockup'
+      : activeTab
+    : editingPreset?.type;
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-      <div className="fixed inset-0 z-0">
-      </div>
+      <div className="fixed inset-0 z-0"></div>
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto">
@@ -1309,9 +1500,13 @@ export const AdminPresetsPage: React.FC = () => {
         )}
 
         {isAuthenticated && data && (
-          <Tabs value="presets" className="space-y-6" onValueChange={(val) => {
-            if (val !== 'presets') navigate('/admin');
-          }}>
+          <Tabs
+            value="presets"
+            className="space-y-6"
+            onValueChange={(val) => {
+              if (val !== 'presets') navigate('/admin');
+            }}
+          >
             {/* Row 1: Header */}
             <Card className="bg-neutral-900 border border-white/10 rounded-xl mb-6">
               <CardContent className="p-4 md:p-6">
@@ -1350,13 +1545,22 @@ export const AdminPresetsPage: React.FC = () => {
                   </div>
 
                   <TabsList className="bg-neutral-900/50 border border-white/10 p-1 h-auto flex-wrap">
-                    <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                    <TabsTrigger
+                      value="overview"
+                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm"
+                    >
                       {t('admin.dashboard')}
                     </TabsTrigger>
-                    <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                    <TabsTrigger
+                      value="generations"
+                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm"
+                    >
                       {t('admin.generations')}
                     </TabsTrigger>
-                    <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                    <TabsTrigger
+                      value="users"
+                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm"
+                    >
                       {t('admin.users')}
                     </TabsTrigger>
                   </TabsList>
@@ -1366,7 +1570,9 @@ export const AdminPresetsPage: React.FC = () => {
 
             {/* Row 2: Action Buttons */}
             <div className="flex flex-wrap items-center gap-2 mb-6">
-              <Button variant="brand" onClick={handleRefresh}
+              <Button
+                variant="brand"
+                onClick={handleRefresh}
                 disabled={isLoading}
                 className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500 h-9"
               >
@@ -1375,7 +1581,9 @@ export const AdminPresetsPage: React.FC = () => {
               </Button>
 
               {!isEditing && (
-                <Button variant="brand" onClick={handleCreate}
+                <Button
+                  variant="brand"
+                  onClick={handleCreate}
                   className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black h-9"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -1385,14 +1593,18 @@ export const AdminPresetsPage: React.FC = () => {
 
               {!isEditing && activeTab === 'mockup' && (
                 <>
-                  <Button variant="brand" onClick={handlePopulateFromDefaults}
+                  <Button
+                    variant="brand"
+                    onClick={handlePopulateFromDefaults}
                     disabled={isLoading}
                     className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
                   >
                     <Layers className="h-4 w-4 mr-2" />
                     Popular Mockups Padrão
                   </Button>
-                  <Button variant="brand" onClick={handleOpenBatchModal}
+                  <Button
+                    variant="brand"
+                    onClick={handleOpenBatchModal}
                     disabled={isLoading}
                     className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
                   >
@@ -1403,7 +1615,9 @@ export const AdminPresetsPage: React.FC = () => {
               )}
 
               {!isEditing && activeTab !== 'mockup' && activeTab !== 'all' && (
-                <Button variant="brand" onClick={handlePopulateFromTags}
+                <Button
+                  variant="brand"
+                  onClick={handlePopulateFromTags}
                   disabled={isLoading}
                   className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
                 >
@@ -1414,23 +1628,27 @@ export const AdminPresetsPage: React.FC = () => {
 
               {/* View Toggle */}
               <div className="bg-neutral-900 border border-neutral-800 p-1 rounded-md h-9 flex items-center ml-auto">
-                <Button variant="ghost" onClick={() => setViewMode('grid')}
+                <Button
+                  variant="ghost"
+                  onClick={() => setViewMode('grid')}
                   className={cn(
-                    "p-1.5 rounded-md transition-all duration-200",
+                    'p-1.5 rounded-md transition-all duration-200',
                     viewMode === 'grid'
-                      ? "bg-neutral-800 text-white shadow-sm"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? 'bg-neutral-800 text-white shadow-sm'
+                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
                   )}
                   title={t('adminPresets.viewGrid')}
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" onClick={() => setViewMode('table')}
+                <Button
+                  variant="ghost"
+                  onClick={() => setViewMode('table')}
                   className={cn(
-                    "p-1.5 rounded-md transition-all duration-200",
+                    'p-1.5 rounded-md transition-all duration-200',
                     viewMode === 'table'
-                      ? "bg-neutral-800 text-white shadow-sm"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? 'bg-neutral-800 text-white shadow-sm'
+                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
                   )}
                   title={t('adminPresets.viewTable')}
                 >
@@ -1449,17 +1667,20 @@ export const AdminPresetsPage: React.FC = () => {
                 { id: 'ambience', label: 'Ambiences' },
                 { id: 'luminance', label: 'Luminances' },
                 { id: 'branding', label: 'Branding' },
-                { id: 'effect', label: 'Effects' }
+                { id: 'effect', label: 'Effects' },
               ].map((tab) => (
-                <Button variant="ghost" key={tab.id}
+                <Button
+                  variant="ghost"
+                  key={tab.id}
                   onClick={() => {
                     setActiveTab(tab.id as PresetType);
                     if (isEditModalOpen) handleCancel();
                   }}
-                  className={`font-mono transition-all h-8 text-xs ${activeTab === tab.id
-                    ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                    : 'border-neutral-700/60 hover:border-[brand-cyan]/30 text-neutral-400'
-                    }`}
+                  className={`font-mono transition-all h-8 text-xs ${
+                    activeTab === tab.id
+                      ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                      : 'border-neutral-700/60 hover:border-[brand-cyan]/30 text-neutral-400'
+                  }`}
                 >
                   {tab.label}
                 </Button>
@@ -1475,12 +1696,16 @@ export const AdminPresetsPage: React.FC = () => {
               )}
 
               {batchResult && !isBatchModalOpen && (
-                <div className={`mb-4 border rounded-xl p-4 text-sm font-mono ${batchResult.created > 0
-                  ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                  : 'bg-destructive/10 border-destructive/30 text-destructive'
-                  }`}>
+                <div
+                  className={`mb-4 border rounded-xl p-4 text-sm font-mono ${
+                    batchResult.created > 0
+                      ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                      : 'bg-destructive/10 border-destructive/30 text-destructive'
+                  }`}
+                >
                   <div className="mb-2">
-                    <strong>{t('admin.presets.resultado_da_importao')}</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
+                    <strong>{t('admin.presets.resultado_da_importao')}</strong>{' '}
+                    {batchResult.created} criado(s), {batchResult.failed} falha(s)
                   </div>
                   {batchResult.errors && batchResult.errors.length > 0 && (
                     <div className="mt-3 space-y-1">
@@ -1498,9 +1723,7 @@ export const AdminPresetsPage: React.FC = () => {
               {currentPresets.length === 0 ? (
                 <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-12 text-center">
-                    <p className="text-neutral-500 font-mono">
-                      {t('adminPresets.noPresets')}
-                    </p>
+                    <p className="text-neutral-500 font-mono">{t('adminPresets.noPresets')}</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -1536,9 +1759,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <h3 className="text-xl font-semibold text-neutral-200 font-mono">
                         Importar Batch de Mockup Presets
                       </h3>
-                      <Button variant="ghost" onClick={handleCloseBatchModal}
-                        
-                      >
+                      <Button variant="ghost" onClick={handleCloseBatchModal}>
                         <X className="h-5 w-5" />
                       </Button>
                     </div>
@@ -1568,12 +1789,16 @@ export const AdminPresetsPage: React.FC = () => {
                       )}
 
                       {batchResult && (
-                        <div className={`border rounded-md p-4 text-sm font-mono ${batchResult.created > 0
-                          ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                          : 'bg-destructive/10 border-destructive/30 text-destructive'
-                          }`}>
+                        <div
+                          className={`border rounded-md p-4 text-sm font-mono ${
+                            batchResult.created > 0
+                              ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                              : 'bg-destructive/10 border-destructive/30 text-destructive'
+                          }`}
+                        >
                           <div className="mb-2">
-                            <strong>{t('admin.presets.resultado')}</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
+                            <strong>{t('admin.presets.resultado')}</strong> {batchResult.created}{' '}
+                            criado(s), {batchResult.failed} falha(s)
                           </div>
                           {batchResult.errors && batchResult.errors.length > 0 && (
                             <div className="mt-3 space-y-1">
@@ -1598,7 +1823,9 @@ export const AdminPresetsPage: React.FC = () => {
                       >
                         {t('adminPresets.validateJson')}
                       </Button>
-                      <Button variant="brand" onClick={handleBatchUpload}
+                      <Button
+                        variant="brand"
+                        onClick={handleBatchUpload}
                         disabled={isLoading || !batchJson.trim()}
                         className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
                       >
@@ -1633,9 +1860,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <h3 className="text-xl font-semibold text-neutral-200 font-mono">
                         {isCreating ? t('adminPresets.createTitle') : t('adminPresets.editTitle')}
                       </h3>
-                      <Button variant="ghost" onClick={handleCancel}
-                        
-                      >
+                      <Button variant="ghost" onClick={handleCancel}>
                         <X className="h-5 w-5" />
                       </Button>
                     </div>
@@ -1680,7 +1905,9 @@ export const AdminPresetsPage: React.FC = () => {
                         <Input
                           type="text"
                           value={formData.description}
-                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, description: e.target.value })
+                          }
                           className="font-mono"
                         />
                       </div>
@@ -1707,13 +1934,19 @@ export const AdminPresetsPage: React.FC = () => {
                               <div className="space-y-3">
                                 <AdminImageUploader
                                   onImageUpload={handleImageUpload}
-                                  disabled={isUploadingImage || !formData.id || formData.id.trim() === ''}
+                                  disabled={
+                                    isUploadingImage || !formData.id || formData.id.trim() === ''
+                                  }
                                 />
                                 {isUploadingImage && (
-                                  <p className="text-sm text-neutral-400 font-mono">{t('admin.presets.fazendo_upload_da_imagem')}</p>
+                                  <p className="text-sm text-neutral-400 font-mono">
+                                    {t('admin.presets.fazendo_upload_da_imagem')}
+                                  </p>
                                 )}
                                 {imageUploadError && (
-                                  <p className="text-sm text-destructive font-mono">{imageUploadError}</p>
+                                  <p className="text-sm text-destructive font-mono">
+                                    {imageUploadError}
+                                  </p>
                                 )}
                                 {(!formData.id || formData.id.trim() === '') && (
                                   <p className="text-xs text-neutral-500 font-mono">
@@ -1728,9 +1961,15 @@ export const AdminPresetsPage: React.FC = () => {
                                     src={formData.referenceImageUrl}
                                     alt={t('adminPresets.reference')}
                                     className="w-full max-h-64 object-contain rounded-md border border-neutral-700/50 bg-neutral-950/70"
-                                    onError={() => setImageUploadError('Erro ao carregar imagem. Verifique a URL.')}
+                                    onError={() =>
+                                      setImageUploadError(
+                                        'Erro ao carregar imagem. Verifique a URL.'
+                                      )
+                                    }
                                   />
-                                  <Button variant="ghost" type="button"
+                                  <Button
+                                    variant="ghost"
+                                    type="button"
                                     onClick={() => {
                                       setFormData({ ...formData, referenceImageUrl: '' });
                                       setImageUploadError(null);
@@ -1742,10 +1981,14 @@ export const AdminPresetsPage: React.FC = () => {
                                   </Button>
                                 </div>
                                 <div>
-                                  <MicroTitle as="p" className="mb-2 lowercase">{t('admin.presets.ou_faa_upload_de_uma_nova_imagem')}</MicroTitle>
+                                  <MicroTitle as="p" className="mb-2 lowercase">
+                                    {t('admin.presets.ou_faa_upload_de_uma_nova_imagem')}
+                                  </MicroTitle>
                                   <AdminImageUploader
                                     onImageUpload={handleImageUpload}
-                                    disabled={isUploadingImage || !formData.id || formData.id.trim() === ''}
+                                    disabled={
+                                      isUploadingImage || !formData.id || formData.id.trim() === ''
+                                    }
                                   />
                                 </div>
                               </div>
@@ -1775,7 +2018,9 @@ export const AdminPresetsPage: React.FC = () => {
                         </MicroTitle>
                         <select
                           value={formData.aspectRatio}
-                          onChange={(e) => setFormData({ ...formData, aspectRatio: e.target.value as AspectRatio })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, aspectRatio: e.target.value as AspectRatio })
+                          }
                           className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           {ASPECT_RATIOS.map((ratio) => (
@@ -1791,7 +2036,12 @@ export const AdminPresetsPage: React.FC = () => {
                         </MicroTitle>
                         <select
                           value={formData.model || ''}
-                          onChange={(e) => setFormData({ ...formData, model: e.target.value as GeminiModel || undefined })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              model: (e.target.value as GeminiModel) || undefined,
+                            })
+                          }
                           className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           <option value="">{t('admin.presets.nenhum')}</option>
@@ -1810,7 +2060,9 @@ export const AdminPresetsPage: React.FC = () => {
                           </MicroTitle>
                           <select
                             value={formData.mockupCategoryId || ''}
-                            onChange={(e) => setFormData({ ...formData, mockupCategoryId: e.target.value })}
+                            onChange={(e) =>
+                              setFormData({ ...formData, mockupCategoryId: e.target.value })
+                            }
                             className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                           >
                             <option value="">{t('admin.presets.nenhuma')}</option>
@@ -1849,7 +2101,9 @@ export const AdminPresetsPage: React.FC = () => {
                               placeholder={t('admin.presets.digite_uma_tag_e_pressione_enter')}
                               className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                             />
-                            <Button variant="ghost" type="button"
+                            <Button
+                              variant="ghost"
+                              type="button"
                               onClick={() => {
                                 if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
                                   setFormData({
@@ -1872,7 +2126,9 @@ export const AdminPresetsPage: React.FC = () => {
                                   className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-neutral-900/50 border border-neutral-700/30 rounded text-xs text-neutral-300 font-mono"
                                 >
                                   {tag}
-                                  <Button variant="ghost" type="button"
+                                  <Button
+                                    variant="ghost"
+                                    type="button"
                                     onClick={() => {
                                       setFormData({
                                         ...formData,
@@ -1892,7 +2148,9 @@ export const AdminPresetsPage: React.FC = () => {
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                      <Button variant="brand" onClick={handleSave}
+                      <Button
+                        variant="brand"
+                        onClick={handleSave}
                         disabled={isLoading}
                         className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
                       >
@@ -1910,12 +2168,11 @@ export const AdminPresetsPage: React.FC = () => {
                   </CardContent>
                 </Card>
               </div>
-            )
-            }
-          </Tabs >
+            )}
+          </Tabs>
         )}
-      </div >
-    </div >
+      </div>
+    </div>
   );
 };
 

@@ -3,11 +3,10 @@ import { request } from '../../helpers/app.js';
 import { createUser } from '../../factories/user.js';
 import { signTestToken, bearer } from '../../helpers/auth.js';
 
-
 // Mock Stripe
 vi.mock('stripe', () => {
   return {
-    default: function() {
+    default: function () {
       return {
         checkout: {
           sessions: {
@@ -32,7 +31,7 @@ vi.mock('stripe', () => {
           }),
         },
       };
-    }
+    },
   };
 });
 
@@ -64,7 +63,9 @@ describe('GET /api/payments/subscription-status', () => {
     const token = signTestToken({ userId: user.id, email: user.email });
     const agent = await request();
 
-    const res = await agent.get('/api/payments/subscription-status').set('Authorization', bearer(token));
+    const res = await agent
+      .get('/api/payments/subscription-status')
+      .set('Authorization', bearer(token));
     expect(res.status).toBe(200);
     // Response shape differs across refactors — assert shape loosely
     expect(res.body).toBeTypeOf('object');

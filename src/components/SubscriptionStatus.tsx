@@ -47,17 +47,17 @@ export const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({
     creditsRemaining,
     creditsResetDate,
     totalCreditsEarned,
-    totalCredits
+    totalCredits,
   } = subscriptionStatus;
 
   // Calculate total credits available: manual credits + monthly credits remaining
   // Use totalCredits from backend if available, otherwise calculate it
-  const totalCreditsAvailable = typeof totalCredits === 'number'
-    ? totalCredits
-    : ((totalCreditsEarned ?? 0) + (creditsRemaining ?? 0));
-  const creditsPercentage = monthlyCredits > 0
-    ? Math.round((creditsUsed / monthlyCredits) * 100)
-    : 0;
+  const totalCreditsAvailable =
+    typeof totalCredits === 'number'
+      ? totalCredits
+      : (totalCreditsEarned ?? 0) + (creditsRemaining ?? 0);
+  const creditsPercentage =
+    monthlyCredits > 0 ? Math.round((creditsUsed / monthlyCredits) * 100) : 0;
   const subscriptionProgressStyle = {
     '--progress': `${Math.min(creditsPercentage, 100)}%`,
   } as CSSProperties;
@@ -90,16 +90,11 @@ export const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({
     <div className="flex flex-col gap-1 text-xs text-neutral-400 font-mono">
       <div className="flex items-center gap-2">
         <span>Free</span>
-        <span className="text-neutral-500">
-          ({totalCreditsAvailable} credits)
-        </span>
+        <span className="text-neutral-500">({totalCreditsAvailable} credits)</span>
       </div>
       {creditsResetDate && (
-        <span className="text-neutral-600 text-[10px]">
-          Resets {formatDate(creditsResetDate)}
-        </span>
+        <span className="text-neutral-600 text-[10px]">Resets {formatDate(creditsResetDate)}</span>
       )}
     </div>
   );
 };
-

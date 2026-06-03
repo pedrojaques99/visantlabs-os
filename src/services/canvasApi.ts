@@ -243,9 +243,11 @@ export const canvasApi = {
       const data = await response.json();
       return Array.isArray(data.projects) ? data.projects : [];
     } catch (error: any) {
-      if (error?.message?.includes('Failed to fetch') ||
+      if (
+        error?.message?.includes('Failed to fetch') ||
         error?.message?.includes('NetworkError') ||
-        error?.name === 'TypeError') {
+        error?.name === 'TypeError'
+      ) {
         console.error('Network error fetching canvas projects:', error);
         return [];
       }
@@ -284,10 +286,15 @@ export const canvasApi = {
     return data.project;
   },
 
-  async save(name: string, nodes: Node[], edges: Edge[], projectId?: string, drawings?: any[], linkedGuidelineId?: string | null): Promise<CanvasProject> {
-    const url = projectId
-      ? `${API_BASE_URL}/canvas/${projectId}`
-      : `${API_BASE_URL}/canvas`;
+  async save(
+    name: string,
+    nodes: Node[],
+    edges: Edge[],
+    projectId?: string,
+    drawings?: any[],
+    linkedGuidelineId?: string | null
+  ): Promise<CanvasProject> {
+    const url = projectId ? `${API_BASE_URL}/canvas/${projectId}` : `${API_BASE_URL}/canvas`;
 
     const method = projectId ? 'PUT' : 'POST';
 
@@ -321,25 +328,33 @@ export const canvasApi = {
         errorMessage = errorData.error || errorData.message || errorMessage;
 
         // Improve error message for payload too large (413) - user-friendly version
-        if (response.status === 413 || (response.status === 400 && errorMessage.toLowerCase().includes('payload too large')) || errorMessage.toLowerCase().includes('request entity too large')) {
+        if (
+          response.status === 413 ||
+          (response.status === 400 && errorMessage.toLowerCase().includes('payload too large')) ||
+          errorMessage.toLowerCase().includes('request entity too large')
+        ) {
           const payloadSizeMB = errorData.payloadSizeMB || errorData.sizeMB || '4.5';
           const maxSizeMB = errorData.maxSizeMB || '4.5';
           const base64ImageCount = errorData.base64ImageCount || 0;
 
           if (errorData.r2Configured === false) {
-            errorMessage = `Projeto muito grande (${payloadSizeMB}MB). ` +
+            errorMessage =
+              `Projeto muito grande (${payloadSizeMB}MB). ` +
               `O limite é ${maxSizeMB}MB devido ao limite da plataforma Vercel. ` +
               `Configure o armazenamento R2 nas configurações do sistema para salvar projetos grandes. ` +
               `O R2 permite armazenar imagens separadamente, liberando espaço no payload.`;
           } else if (errorData.r2ProcessingFailed) {
-            errorMessage = `Algumas imagens não puderam ser otimizadas automaticamente para R2. ` +
+            errorMessage =
+              `Algumas imagens não puderam ser otimizadas automaticamente para R2. ` +
               `Tente novamente em alguns instantes ou reduza o número de imagens no canvas.`;
           } else if (base64ImageCount > 0) {
-            errorMessage = `Projeto muito grande (${payloadSizeMB}MB). ` +
+            errorMessage =
+              `Projeto muito grande (${payloadSizeMB}MB). ` +
               `Contém ${base64ImageCount} imagem(ns) que ainda precisam ser otimizadas para R2. ` +
               `Aguarde alguns instantes e tente novamente, ou reduza o número de imagens no canvas.`;
           } else {
-            errorMessage = `Projeto muito grande (${payloadSizeMB}MB) para salvar. ` +
+            errorMessage =
+              `Projeto muito grande (${payloadSizeMB}MB) para salvar. ` +
               `O limite é ${maxSizeMB}MB devido ao limite da plataforma Vercel. ` +
               `Reduza o número de imagens ou elementos no canvas. ` +
               `Nota: O R2 está configurado, mas o projeto ainda excede o limite após otimização.`;
@@ -396,10 +411,13 @@ export const canvasApi = {
       const contentType = file.type || 'image/png';
       queryParams.append('contentType', contentType);
 
-      const urlResponse = await fetch(`${API_BASE_URL}/canvas/image/upload-url?${queryParams.toString()}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      });
+      const urlResponse = await fetch(
+        `${API_BASE_URL}/canvas/image/upload-url?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (!urlResponse.ok) {
         const errorText = await urlResponse.text();
@@ -427,7 +445,9 @@ export const canvasApi = {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload to R2: ${uploadResponse.status} ${uploadResponse.statusText}`);
+        throw new Error(
+          `Failed to upload to R2: ${uploadResponse.status} ${uploadResponse.statusText}`
+        );
       }
 
       return finalUrl;
@@ -437,7 +457,12 @@ export const canvasApi = {
     }
   },
 
-  async uploadImageToR2(base64Image: string, canvasId?: string, nodeId?: string, options?: { skipCompression?: boolean }): Promise<string> {
+  async uploadImageToR2(
+    base64Image: string,
+    canvasId?: string,
+    nodeId?: string,
+    options?: { skipCompression?: boolean }
+  ): Promise<string> {
     try {
       const skipCompression = options?.skipCompression ?? false;
 
@@ -477,7 +502,10 @@ export const canvasApi = {
         } catch (directUploadError: any) {
           // If direct upload fails (e.g., CORS), fall back to chunked or standard upload
           logR2('Direct upload FAILED', { error: directUploadError.message });
-          console.warn('Direct upload failed, trying standard upload with compression:', directUploadError.message);
+          console.warn(
+            'Direct upload failed, trying standard upload with compression:',
+            directUploadError.message
+          );
 
           // For very large images, we need to compress to fit Vercel limit
           // Use high quality compression to preserve as much detail as possible
@@ -498,11 +526,14 @@ export const canvasApi = {
             ? compressedBase64.split(',')[1]
             : compressedBase64;
 
-          const compressedSizeMB = ((compressedData.length * 3 / 4) / 1024 / 1024).toFixed(2);
+          const compressedSizeMB = ((compressedData.length * 3) / 4 / 1024 / 1024).toFixed(2);
           logR2('Compression complete', {
             originalMB: binarySizeMB,
             compressedMB: compressedSizeMB,
-            reduction: `${(100 - (parseFloat(compressedSizeMB) / parseFloat(binarySizeMB) * 100)).toFixed(0)}%`,
+            reduction: `${(
+              100 -
+              (parseFloat(compressedSizeMB) / parseFloat(binarySizeMB)) * 100
+            ).toFixed(0)}%`,
           });
 
           // Continue with standard upload using compressed image
@@ -592,7 +623,7 @@ export const canvasApi = {
           : ' Configure o R2 para preservar qualidade máxima em imagens grandes.';
         throw new Error(
           `Imagem muito grande (${payloadSizeMB}MB) para upload. ` +
-          `O tamanho máximo é 50MB.${qualityMessage}`
+            `O tamanho máximo é 50MB.${qualityMessage}`
         );
       }
 
@@ -612,14 +643,17 @@ export const canvasApi = {
 
         // Handle 413 Payload Too Large errors with a user-friendly message
         if (response.status === 413) {
-          errorMessage = 'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.';
+          errorMessage =
+            'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.';
         } else if (response.status === 403) {
           // Handle Storage Limit Exceeded (and other permission errors)
           try {
             const errorData = JSON.parse(errorText);
             // Prefer the specific message from server if available
-            errorMessage = errorData.message || 'Limite de armazenamento excedido. Faça upgrade para continuar fazendo upload.';
-            
+            errorMessage =
+              errorData.message ||
+              'Limite de armazenamento excedido. Faça upgrade para continuar fazendo upload.';
+
             // If it's a storage limit error, attach additional info for the modal
             if (errorData.code === 'STORAGE_LIMIT_EXCEEDED') {
               const error = new Error(errorMessage) as any;
@@ -668,10 +702,13 @@ export const canvasApi = {
       const contentType = file.type || 'video/mp4';
       queryParams.append('contentType', contentType);
 
-      const urlResponse = await fetch(`${API_BASE_URL}/canvas/video/upload-url?${queryParams.toString()}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      });
+      const urlResponse = await fetch(
+        `${API_BASE_URL}/canvas/video/upload-url?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (!urlResponse.ok) {
         const errorText = await urlResponse.text();
@@ -701,7 +738,9 @@ export const canvasApi = {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload to R2: ${uploadResponse.status} ${uploadResponse.statusText}`);
+        throw new Error(
+          `Failed to upload to R2: ${uploadResponse.status} ${uploadResponse.statusText}`
+        );
       }
 
       return finalUrl;
@@ -720,9 +759,7 @@ export const canvasApi = {
       const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB (Vercel Pro)
 
       // Calculate base64 video size
-      const base64Data = videoBase64.includes(',')
-        ? videoBase64.split(',')[1]
-        : videoBase64;
+      const base64Data = videoBase64.includes(',') ? videoBase64.split(',')[1] : videoBase64;
       const videoSizeBytes = base64Data ? (base64Data.length * 3) / 4 : 0;
 
       // Check payload size
@@ -738,9 +775,9 @@ export const canvasApi = {
         const payloadSizeMB = (payloadSize / 1024 / 1024).toFixed(2);
         throw new Error(
           `Vídeo muito grande (${payloadSizeMB}MB) para upload. ` +
-          `O tamanho máximo é 50MB (Vercel Pro). ` +
-          `Nota: Configure o R2 para preservar qualidade máxima. ` +
-          `Com R2 configurado, vídeos são armazenados sem compressão, mantendo qualidade original.`
+            `O tamanho máximo é 50MB (Vercel Pro). ` +
+            `Nota: Configure o R2 para preservar qualidade máxima. ` +
+            `Com R2 configurado, vídeos são armazenados sem compressão, mantendo qualidade original.`
         );
       }
 
@@ -761,7 +798,8 @@ export const canvasApi = {
 
         // Handle 413 Payload Too Large errors with a user-friendly message
         if (response.status === 413) {
-          errorMessage = 'Vídeo muito grande para upload. O limite é 50MB (Vercel Pro). ' +
+          errorMessage =
+            'Vídeo muito grande para upload. O limite é 50MB (Vercel Pro). ' +
             'Configure o R2 para preservar qualidade máxima em vídeos grandes. ' +
             'Com R2 configurado, vídeos são armazenados sem compressão, mantendo qualidade original.';
         } else {
@@ -804,7 +842,8 @@ export const canvasApi = {
 
         // Handle 413 Payload Too Large errors with a user-friendly message
         if (response.status === 413) {
-          errorMessage = 'PDF is too large to upload. Maximum size is 3MB. Please compress the PDF or use a smaller file.';
+          errorMessage =
+            'PDF is too large to upload. Maximum size is 3MB. Please compress the PDF or use a smaller file.';
         } else {
           try {
             const errorData = JSON.parse(errorText);
@@ -878,7 +917,11 @@ export const canvasApi = {
     }
   },
 
-  async shareProject(id: string, canEdit: string[] = [], canView: string[] = []): Promise<ShareProjectResponse> {
+  async shareProject(
+    id: string,
+    canEdit: string[] = [],
+    canView: string[] = []
+  ): Promise<ShareProjectResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/canvas/${id}/share`, {
         method: 'POST',
@@ -1071,8 +1114,3 @@ export const canvasApi = {
     return new Blob([bytes], { type: mimeType });
   },
 };
-
-
-
-
-

@@ -34,7 +34,7 @@ const getAuthHeaders = async () => {
   const token = await authService.getToken();
   return {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` }),
+    ...(token && { Authorization: `Bearer ${token}` }),
   };
 };
 

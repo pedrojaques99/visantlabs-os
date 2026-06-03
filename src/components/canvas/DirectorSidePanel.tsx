@@ -1,5 +1,25 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { X, Compass, Diamond, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, FileText, Shirt, Smartphone, CupSoda, Grid3x3, Dices, Shuffle, Plus } from 'lucide-react';
+import {
+  X,
+  Compass,
+  Diamond,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Camera,
+  Lightbulb,
+  Layers,
+  Palette,
+  Package,
+  FileText,
+  Shirt,
+  Smartphone,
+  CupSoda,
+  Grid3x3,
+  Dices,
+  Shuffle,
+  Plus,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -17,7 +37,7 @@ import {
   AVAILABLE_ANGLE_TAGS,
   AVAILABLE_LIGHTING_TAGS,
   AVAILABLE_EFFECT_TAGS,
-  AVAILABLE_MATERIAL_TAGS
+  AVAILABLE_MATERIAL_TAGS,
 } from '@/utils/mockupConstants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,20 +70,22 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
   renderTagButton,
   theme,
   t,
-  icon
+  icon,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const groupSelectedTags = tags.filter(tag => selectedTags.includes(tag));
+  const groupSelectedTags = tags.filter((tag) => selectedTags.includes(tag));
   const hasSelection = groupSelectedTags.length > 0;
   const selectionSummary = hasSelection
-    ? groupSelectedTags.map(tag => translateTag(tag)).join(', ')
+    ? groupSelectedTags.map((tag) => translateTag(tag)).join(', ')
     : '';
 
   return (
-    <div className={cn(
-      'rounded-md border transition-all duration-200',
-      theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
-    )}>
+    <div
+      className={cn(
+        'rounded-md border transition-all duration-200',
+        theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
+      )}
+    >
       <Button
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -76,10 +98,12 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-            <span className={cn(
-              'text-[10px] font-mono uppercase tracking-widest',
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-            )}>
+            <span
+              className={cn(
+                'text-[10px] font-mono uppercase tracking-widest',
+                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+              )}
+            >
               {title}
             </span>
             {!isExpanded && hasSelection && (
@@ -105,10 +129,8 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
       {isExpanded && (
         <div className="p-3 pt-0 animate-fade-in">
           <div className="flex flex-wrap gap-1.5 mt-2">
-            {tags.map(tag => (
-              <React.Fragment key={tag}>
-                {renderTagButton(tag)}
-              </React.Fragment>
+            {tags.map((tag) => (
+              <React.Fragment key={tag}>{renderTagButton(tag)}</React.Fragment>
             ))}
           </div>
         </div>
@@ -150,7 +172,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   isSurpriseMeMode = false,
   poolTags = [],
   onPoolToggle,
-  isSingleSelection = false
+  isSingleSelection = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditingCustom, setIsEditingCustom] = useState(false);
@@ -211,11 +233,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
 
   const hasSelection = selectedTags.length > 0;
   const selectionSummary = hasSelection
-    ? selectedTags.map(tag => translateTag(tag)).join(', ')
+    ? selectedTags.map((tag) => translateTag(tag)).join(', ')
     : '';
-  const poolCount = isSurpriseMeMode
-    ? tags.filter(t => poolTags?.includes(t)).length
-    : 0;
+  const poolCount = isSurpriseMeMode ? tags.filter((t) => poolTags?.includes(t)).length : 0;
 
   const allDisplayTags = [...new Set([...tags, ...selectedTags, ...suggestedTags])];
   const sortedTags = [...allDisplayTags].sort((a, b) => {
@@ -232,10 +252,12 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   });
 
   return (
-    <div className={cn(
-      'rounded-md border transition-all duration-200',
-      theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
-    )}>
+    <div
+      className={cn(
+        'rounded-md border transition-all duration-200',
+        theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
+      )}
+    >
       <Button
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -248,10 +270,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-            <span className={cn(
-              'text-xs',
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-            )}>
+            <span
+              className={cn('text-xs', theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600')}
+            >
               {title}
             </span>
             {!isExpanded && (hasSelection || poolCount > 0) && (
@@ -283,7 +304,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 {t('mockup.suggested') || 'Suggested'}
               </span>
               <div className="flex flex-wrap gap-1.5">
-                {suggestedTags.map(tag => {
+                {suggestedTags.map((tag) => {
                   const isSelected = selectedTags.includes(tag);
                   const isInPool = isSurpriseMeMode && poolTags?.includes(tag);
                   return (
@@ -300,7 +321,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                           onTagToggle(tag);
                         }
                       }}
-                      disabled={!isSurpriseMeMode && hasSelection && !isSelected && isSingleSelection}
+                      disabled={
+                        !isSurpriseMeMode && hasSelection && !isSelected && isSingleSelection
+                      }
                       size="sm"
                     />
                   );
@@ -336,8 +359,8 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
               />
             )}
             {sortedTags
-              .filter(tag => !suggestedTags.includes(tag))
-              .map(tag => {
+              .filter((tag) => !suggestedTags.includes(tag))
+              .map((tag) => {
                 const isSelected = selectedTags.includes(tag);
                 const isInPool = isSurpriseMeMode && poolTags?.includes(tag);
                 return (
@@ -378,17 +401,19 @@ const ColorSection: React.FC<ColorSectionProps> = ({
   selectedColors,
   onColorToggle,
   theme,
-  t
+  t,
 }) => {
   const [isExpanded, setIsExpanded] = useState(suggestedColors.length > 0);
 
   if (suggestedColors.length === 0) return null;
 
   return (
-    <div className={cn(
-      'rounded-md border transition-all duration-200',
-      theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
-    )}>
+    <div
+      className={cn(
+        'rounded-md border transition-all duration-200',
+        theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
+      )}
+    >
       <Button
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -400,17 +425,16 @@ const ColorSection: React.FC<ColorSectionProps> = ({
       >
         <div className="flex items-center gap-2">
           <Palette size={14} className="" />
-          <span className={cn(
-            'text-xs',
-            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-          )}>
+          <span
+            className={cn('text-xs', theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600')}
+          >
             {t('mockup.colorPalette') || 'Color Palette'}
           </span>
         </div>
         <div className="flex items-center gap-2">
           {selectedColors.length > 0 && (
             <div className="flex gap-0.5">
-              {selectedColors.slice(0, 5).map(color => (
+              {selectedColors.slice(0, 5).map((color) => (
                 <div
                   key={color}
                   className="w-3 h-3 rounded-full border border-white/20"
@@ -430,7 +454,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({
       {isExpanded && (
         <div className="p-3 pt-0 animate-fade-in">
           <div className="flex flex-wrap gap-2 mt-2">
-            {suggestedColors.map(color => (
+            {suggestedColors.map((color) => (
               <Button
                 variant="ghost"
                 key={color}
@@ -459,7 +483,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
   nodeId,
   onAnalyze,
   onGeneratePrompt,
-  onUpdateData
+  onUpdateData,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -510,7 +534,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
       selected={selectedBrandingTags.includes(tag)}
       onToggle={() => {
         const updated = selectedBrandingTags.includes(tag)
-          ? selectedBrandingTags.filter(t => t !== tag)
+          ? selectedBrandingTags.filter((t) => t !== tag)
           : [...selectedBrandingTags, tag];
         onUpdateData(nodeId, { selectedBrandingTags: updated });
       }}
@@ -550,7 +574,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 onUpdateData(nodeId, { selectedDesignType: type });
               }}
               uploadedImage={connectedImage ? { url: connectedImage, mimeType: 'image/png' } : null}
-              onScrollToSection={() => { }}
+              onScrollToSection={() => {}}
             />
 
             {!hasAnalyzed && (
@@ -590,7 +614,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   suggestedTags={suggestedBrandingTags}
                   onTagToggle={(tag) => {
                     const updated = selectedBrandingTags.includes(tag)
-                      ? selectedBrandingTags.filter(t => t !== tag)
+                      ? selectedBrandingTags.filter((t) => t !== tag)
                       : [...selectedBrandingTags, tag];
                     onUpdateData(nodeId, { selectedBrandingTags: updated });
                   }}
@@ -599,7 +623,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   onAddCustomTag={() => {
                     if (customBrandingInput.trim()) {
                       onUpdateData(nodeId, {
-                        selectedBrandingTags: [...selectedBrandingTags, customBrandingInput]
+                        selectedBrandingTags: [...selectedBrandingTags, customBrandingInput],
                       });
                       setCustomBrandingInput('');
                     }
@@ -616,7 +640,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   suggestedTags={suggestedLocationTags}
                   onTagToggle={(tag) => {
                     const updated = selectedLocationTags.includes(tag)
-                      ? selectedLocationTags.filter(t => t !== tag)
+                      ? selectedLocationTags.filter((t) => t !== tag)
                       : [...selectedLocationTags, tag];
                     onUpdateData(nodeId, { selectedLocationTags: updated });
                   }}
@@ -625,7 +649,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   onAddCustomTag={() => {
                     if (customLocationInput.trim()) {
                       onUpdateData(nodeId, {
-                        selectedLocationTags: [...selectedLocationTags, customLocationInput]
+                        selectedLocationTags: [...selectedLocationTags, customLocationInput],
                       });
                       setCustomLocationInput('');
                     }
@@ -642,7 +666,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   suggestedTags={suggestedAngleTags}
                   onTagToggle={(tag) => {
                     const updated = selectedAngleTags.includes(tag)
-                      ? selectedAngleTags.filter(t => t !== tag)
+                      ? selectedAngleTags.filter((t) => t !== tag)
                       : [...selectedAngleTags, tag];
                     onUpdateData(nodeId, { selectedAngleTags: updated });
                   }}
@@ -651,7 +675,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   onAddCustomTag={() => {
                     if (customAngleInput.trim()) {
                       onUpdateData(nodeId, {
-                        selectedAngleTags: [...selectedAngleTags, customAngleInput]
+                        selectedAngleTags: [...selectedAngleTags, customAngleInput],
                       });
                       setCustomAngleInput('');
                     }
@@ -668,7 +692,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   suggestedTags={suggestedLightingTags}
                   onTagToggle={(tag) => {
                     const updated = selectedLightingTags.includes(tag)
-                      ? selectedLightingTags.filter(t => t !== tag)
+                      ? selectedLightingTags.filter((t) => t !== tag)
                       : [...selectedLightingTags, tag];
                     onUpdateData(nodeId, { selectedLightingTags: updated });
                   }}
@@ -677,7 +701,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   onAddCustomTag={() => {
                     if (customLightingInput.trim()) {
                       onUpdateData(nodeId, {
-                        selectedLightingTags: [...selectedLightingTags, customLightingInput]
+                        selectedLightingTags: [...selectedLightingTags, customLightingInput],
                       });
                       setCustomLightingInput('');
                     }
@@ -694,7 +718,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   suggestedTags={suggestedEffectTags}
                   onTagToggle={(tag) => {
                     const updated = selectedEffectTags.includes(tag)
-                      ? selectedEffectTags.filter(t => t !== tag)
+                      ? selectedEffectTags.filter((t) => t !== tag)
                       : [...selectedEffectTags, tag];
                     onUpdateData(nodeId, { selectedEffectTags: updated });
                   }}
@@ -703,7 +727,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   onAddCustomTag={() => {
                     if (customEffectInput.trim()) {
                       onUpdateData(nodeId, {
-                        selectedEffectTags: [...selectedEffectTags, customEffectInput]
+                        selectedEffectTags: [...selectedEffectTags, customEffectInput],
                       });
                       setCustomEffectInput('');
                     }
@@ -720,7 +744,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   suggestedTags={suggestedMaterialTags}
                   onTagToggle={(tag) => {
                     const updated = selectedMaterialTags.includes(tag)
-                      ? selectedMaterialTags.filter(t => t !== tag)
+                      ? selectedMaterialTags.filter((t) => t !== tag)
                       : [...selectedMaterialTags, tag];
                     onUpdateData(nodeId, { selectedMaterialTags: updated });
                   }}
@@ -729,7 +753,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   onAddCustomTag={() => {
                     if (customMaterialInput.trim()) {
                       onUpdateData(nodeId, {
-                        selectedMaterialTags: [...selectedMaterialTags, customMaterialInput]
+                        selectedMaterialTags: [...selectedMaterialTags, customMaterialInput],
                       });
                       setCustomMaterialInput('');
                     }
@@ -744,7 +768,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   selectedColors={selectedColors}
                   onColorToggle={(color) => {
                     const updated = selectedColors.includes(color)
-                      ? selectedColors.filter(c => c !== color)
+                      ? selectedColors.filter((c) => c !== color)
                       : [...selectedColors, color];
                     onUpdateData(nodeId, { selectedColors: updated });
                   }}
@@ -765,9 +789,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                         <GlitchLoader size="sm" />
                       </div>
                     ) : (
-                      <p className="text-xs text-neutral-300 leading-relaxed">
-                        {generatedPrompt}
-                      </p>
+                      <p className="text-xs text-neutral-300 leading-relaxed">{generatedPrompt}</p>
                     )}
                   </div>
                 )}
@@ -788,7 +810,8 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Smartphone size={32} className="text-neutral-600 mb-3" />
             <p className="text-sm text-neutral-500">
-              {t('canvasNodes.directorNode.connectImageFirst') || 'Connect an image to the Director node to start'}
+              {t('canvasNodes.directorNode.connectImageFirst') ||
+                'Connect an image to the Director node to start'}
             </p>
           </div>
         )}

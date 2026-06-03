@@ -80,7 +80,12 @@ export function parseMockupErrorType(err: any): MockupErrorType {
     return 'networkError';
   }
 
-  if (status === 500 || errorStr.includes('500') || errorStr.includes('Internal server error') || errorStr.includes('ANALYZE_SETUP_FAILED')) {
+  if (
+    status === 500 ||
+    errorStr.includes('500') ||
+    errorStr.includes('Internal server error') ||
+    errorStr.includes('ANALYZE_SETUP_FAILED')
+  ) {
     return 'serverError';
   }
 
@@ -224,11 +229,11 @@ export function getErrorMessageForType(
 /**
  * Format mockup generation error into user-friendly message
  * Main function that combines parsing and formatting
- * 
+ *
  * @param err - Error object to format
  * @param t - Translation function
  * @returns Object with message and optional suggestion
- * 
+ *
  * @example
  * const errorInfo = formatMockupError(error, t);
  * toast.error(errorInfo.message, { description: errorInfo.suggestion });

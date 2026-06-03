@@ -8,40 +8,40 @@ import { Readable } from 'stream';
 
 // Blocked IP ranges for SSRF protection
 const BLOCKED_IP_PATTERNS = [
-  /^127\./,                       // Loopback (127.0.0.0/8)
-  /^10\./,                        // Private Class A (10.0.0.0/8)
-  /^172\.(1[6-9]|2\d|3[01])\./,   // Private Class B (172.16.0.0/12)
-  /^192\.168\./,                  // Private Class C (192.168.0.0/16)
-  /^169\.254\./,                  // Link-local / AWS/GCP metadata (169.254.0.0/16)
-  /^0\./,                         // Current network (0.0.0.0/8)
+  /^127\./, // Loopback (127.0.0.0/8)
+  /^10\./, // Private Class A (10.0.0.0/8)
+  /^172\.(1[6-9]|2\d|3[01])\./, // Private Class B (172.16.0.0/12)
+  /^192\.168\./, // Private Class C (192.168.0.0/16)
+  /^169\.254\./, // Link-local / AWS/GCP metadata (169.254.0.0/16)
+  /^0\./, // Current network (0.0.0.0/8)
   /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./, // Carrier-grade NAT (100.64.0.0/10)
-  /^192\.0\.0\./,                 // IETF Protocol Assignments (192.0.0.0/24)
-  /^192\.0\.2\./,                 // TEST-NET-1 (192.0.2.0/24)
-  /^198\.51\.100\./,              // TEST-NET-2 (198.51.100.0/24)
-  /^203\.0\.113\./,               // TEST-NET-3 (203.0.113.0/24)
-  /^224\./,                       // Multicast (224.0.0.0/4)
-  /^240\./,                       // Reserved (240.0.0.0/4)
-  /^255\.255\.255\.255$/,         // Broadcast
-  /^::1$/,                        // IPv6 loopback
-  /^fc00:/i,                      // IPv6 unique local
-  /^fd[0-9a-f]{2}:/i,             // IPv6 unique local
-  /^fe80:/i,                      // IPv6 link-local
-  /^::ffff:127\./i,               // IPv4-mapped IPv6 loopback
-  /^::ffff:10\./i,                // IPv4-mapped IPv6 private
+  /^192\.0\.0\./, // IETF Protocol Assignments (192.0.0.0/24)
+  /^192\.0\.2\./, // TEST-NET-1 (192.0.2.0/24)
+  /^198\.51\.100\./, // TEST-NET-2 (198.51.100.0/24)
+  /^203\.0\.113\./, // TEST-NET-3 (203.0.113.0/24)
+  /^224\./, // Multicast (224.0.0.0/4)
+  /^240\./, // Reserved (240.0.0.0/4)
+  /^255\.255\.255\.255$/, // Broadcast
+  /^::1$/, // IPv6 loopback
+  /^fc00:/i, // IPv6 unique local
+  /^fd[0-9a-f]{2}:/i, // IPv6 unique local
+  /^fe80:/i, // IPv6 link-local
+  /^::ffff:127\./i, // IPv4-mapped IPv6 loopback
+  /^::ffff:10\./i, // IPv4-mapped IPv6 private
   /^::ffff:172\.(1[6-9]|2\d|3[01])\./i, // IPv4-mapped IPv6 private
-  /^::ffff:192\.168\./i,          // IPv4-mapped IPv6 private
-  /^::ffff:169\.254\./i,          // IPv4-mapped IPv6 link-local
+  /^::ffff:192\.168\./i, // IPv4-mapped IPv6 private
+  /^::ffff:169\.254\./i, // IPv4-mapped IPv6 link-local
 ];
 
 // Blocked hostnames for SSRF protection
 const BLOCKED_HOSTNAMES = [
   'localhost',
   'localhost.localdomain',
-  'metadata.google.internal',     // GCP metadata
-  'metadata',                     // GCP metadata short
-  'instance-data',                // AWS metadata alias
-  'kubernetes.default',           // Kubernetes internal
-  'kubernetes.default.svc',       // Kubernetes internal
+  'metadata.google.internal', // GCP metadata
+  'metadata', // GCP metadata short
+  'instance-data', // AWS metadata alias
+  'kubernetes.default', // Kubernetes internal
+  'kubernetes.default.svc', // Kubernetes internal
 ];
 
 export class SSRFValidationError extends Error {
@@ -93,13 +93,12 @@ export function validateExternalUrl(url: string): UrlValidationResult {
 
   // Check if hostname is an IP address and validate against blocked ranges
   // This handles both direct IP access and numeric hostnames
-  const isIpAddress = /^[\d.:a-fA-F]+$/.test(hostname) || 
-                      /^\[[\da-fA-F:]+\]$/.test(hostname); // IPv6 in brackets
+  const isIpAddress = /^[\d.:a-fA-F]+$/.test(hostname) || /^\[[\da-fA-F:]+\]$/.test(hostname); // IPv6 in brackets
 
   if (isIpAddress) {
     // Remove brackets for IPv6
     const cleanIp = hostname.replace(/^\[|\]$/g, '');
-    
+
     for (const pattern of BLOCKED_IP_PATTERNS) {
       if (pattern.test(cleanIp)) {
         return { valid: false, error: 'Access to internal IP addresses is not allowed' };
@@ -118,11 +117,12 @@ export function validateExternalUrl(url: string): UrlValidationResult {
     // 169.254.0.0/16 in decimal: 2851995648 - 2852061183
     if (
       (numericIp >= 2130706432 && numericIp <= 2147483647) || // 127.x.x.x
-      (numericIp >= 167772160 && numericIp <= 184549375) ||   // 10.x.x.x
+      (numericIp >= 167772160 && numericIp <= 184549375) || // 10.x.x.x
       (numericIp >= 2886729728 && numericIp <= 2887778303) || // 172.16-31.x.x
       (numericIp >= 3232235520 && numericIp <= 3232301055) || // 192.168.x.x
       (numericIp >= 2851995648 && numericIp <= 2852061183) || // 169.254.x.x
-      numericIp === 0 || numericIp === 4294967295            // 0.0.0.0 and 255.255.255.255
+      numericIp === 0 ||
+      numericIp === 4294967295 // 0.0.0.0 and 255.255.255.255
     ) {
       return { valid: false, error: 'Access to internal IP addresses is not allowed' };
     }

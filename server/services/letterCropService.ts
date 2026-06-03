@@ -30,7 +30,7 @@ const MAX_PROCESS_PER_SEARCH = 12;
 
 export async function processLetterCrops(
   results: VisualSearchResult[],
-  letter: string,
+  letter: string
 ): Promise<CropResult[]> {
   if (!isR2Configured()) return [];
 
@@ -38,7 +38,7 @@ export async function processLetterCrops(
   const candidates = results.slice(0, MAX_PROCESS_PER_SEARCH);
 
   const cached = await getCachedCrops(candidates, normalizedLetter);
-  const uncached = candidates.filter(r => !cached.find(c => c.sourceImageUrl === r.imageUrl));
+  const uncached = candidates.filter((r) => !cached.find((c) => c.sourceImageUrl === r.imageUrl));
 
   const freshCrops = await processInBatches(uncached, normalizedLetter);
 
@@ -49,7 +49,7 @@ export async function processLetterCrops(
 
 async function getCachedCrops(
   results: VisualSearchResult[],
-  letter: string,
+  letter: string
 ): Promise<CropResult[]> {
   const crops: CropResult[] = [];
 
@@ -57,20 +57,26 @@ async function getCachedCrops(
     const cacheKey = CacheKey.letterCrop(letter, r.id);
     const cached = await redisClient.get(cacheKey).catch(() => null);
     if (cached) {
-      try { crops.push(JSON.parse(cached)); } catch { /* skip */ }
+      try {
+        crops.push(JSON.parse(cached));
+      } catch {
+        /* skip */
+      }
     }
   }
 
   if (crops.length < results.length) {
-    const dbCrops = await prisma.letterCrop.findMany({
-      where: {
-        letter,
-        sourceId: { in: results.map(r => r.id) },
-      },
-    }).catch(() => []);
+    const dbCrops = await prisma.letterCrop
+      .findMany({
+        where: {
+          letter,
+          sourceId: { in: results.map((r) => r.id) },
+        },
+      })
+      .catch(() => []);
 
     for (const db of dbCrops) {
-      if (!crops.find(c => c.id === db.id)) {
+      if (!crops.find((c) => c.id === db.id)) {
         const crop: CropResult = {
           id: db.id,
           letter: db.letter,
@@ -82,11 +88,13 @@ async function getCachedCrops(
           dimensions: db.dimensions as { width: number; height: number },
         };
         crops.push(crop);
-        await redisClient.setex(
-          CacheKey.letterCrop(letter, db.sourceId),
-          CACHE_TTL.LETTER_CROP,
-          JSON.stringify(crop),
-        ).catch(() => {});
+        await redisClient
+          .setex(
+            CacheKey.letterCrop(letter, db.sourceId),
+            CACHE_TTL.LETTER_CROP,
+            JSON.stringify(crop)
+          )
+          .catch(() => {});
       }
     }
   }
@@ -98,15 +106,13 @@ async function getCachedCrops(
 
 async function processInBatches(
   results: VisualSearchResult[],
-  letter: string,
+  letter: string
 ): Promise<CropResult[]> {
   const crops: CropResult[] = [];
 
   for (let i = 0; i < results.length; i += MAX_CONCURRENT) {
     const batch = results.slice(i, i + MAX_CONCURRENT);
-    const settled = await Promise.allSettled(
-      batch.map(r => processOneImage(r, letter)),
-    );
+    const settled = await Promise.allSettled(batch.map((r) => processOneImage(r, letter)));
     for (const s of settled) {
       if (s.status === 'fulfilled' && s.value) crops.push(s.value);
     }
@@ -117,7 +123,7 @@ async function processInBatches(
 
 async function processOneImage(
   result: VisualSearchResult,
-  letter: string,
+  letter: string
 ): Promise<CropResult | null> {
   try {
     const imageBuffer = await downloadImage(result.imageUrl);
@@ -130,7 +136,7 @@ async function processOneImage(
     const { cropBuffer, thumbBuffer, dimensions } = await cropAndNormalize(
       imageBuffer,
       metadata.width,
-      metadata.height,
+      metadata.height
     );
 
     const hash = crypto.createHash('md5').update(imageBuffer).digest('hex').slice(0, 12);
@@ -171,11 +177,9 @@ async function processOneImage(
       dimensions,
     };
 
-    await redisClient.setex(
-      CacheKey.letterCrop(letter, result.id),
-      CACHE_TTL.LETTER_CROP,
-      JSON.stringify(crop),
-    ).catch(() => {});
+    await redisClient
+      .setex(CacheKey.letterCrop(letter, result.id), CACHE_TTL.LETTER_CROP, JSON.stringify(crop))
+      .catch(() => {});
 
     return crop;
   } catch (err: any) {
@@ -189,19 +193,30 @@ async function processOneImage(
 async function cropAndNormalize(
   buffer: Buffer,
   width: number,
-  height: number,
-): Promise<{ cropBuffer: Buffer; thumbBuffer: Buffer; dimensions: { width: number; height: number } }> {
+  height: number
+): Promise<{
+  cropBuffer: Buffer;
+  thumbBuffer: Buffer;
+  dimensions: { width: number; height: number };
+}> {
   const size = Math.min(width, height);
   const left = Math.floor((width - size) / 2);
   const top = Math.floor((height - size) / 2);
 
   const { default: sharp } = await import('sharp');
-  const cropped = sharp(buffer)
-    .extract({ left, top, width: size, height: size });
+  const cropped = sharp(buffer).extract({ left, top, width: size, height: size });
 
   const [cropBuffer, thumbBuffer] = await Promise.all([
-    cropped.clone().resize(CROP_SIZE, CROP_SIZE, { fit: 'inside', withoutEnlargement: true }).png({ quality: 90 }).toBuffer(),
-    cropped.clone().resize(THUMB_SIZE, THUMB_SIZE, { fit: 'inside', withoutEnlargement: true }).png({ quality: 80 }).toBuffer(),
+    cropped
+      .clone()
+      .resize(CROP_SIZE, CROP_SIZE, { fit: 'inside', withoutEnlargement: true })
+      .png({ quality: 90 })
+      .toBuffer(),
+    cropped
+      .clone()
+      .resize(THUMB_SIZE, THUMB_SIZE, { fit: 'inside', withoutEnlargement: true })
+      .png({ quality: 80 })
+      .toBuffer(),
   ]);
 
   return {
@@ -246,7 +261,7 @@ export async function getLibraryCrops(
   letter?: string,
   style?: string,
   limit = 50,
-  offset = 0,
+  offset = 0
 ): Promise<{ crops: CropResult[]; total: number }> {
   const where: any = {};
   if (letter) where.letter = letter.toUpperCase();
@@ -263,7 +278,7 @@ export async function getLibraryCrops(
   ]);
 
   return {
-    crops: crops.map(db => ({
+    crops: crops.map((db) => ({
       id: db.id,
       letter: db.letter,
       cropUrl: db.cropUrl,

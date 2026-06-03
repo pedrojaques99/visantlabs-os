@@ -5,7 +5,7 @@ import { X, Upload, FileText, Save, RefreshCw } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 
 interface PdfUploadSectionProps {
   customPdfUrl?: string;
@@ -41,7 +41,10 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
   const [pendingPdfBase64, setPendingPdfBase64] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, isReplace: boolean = false) => {
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    isReplace: boolean = false
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -54,7 +57,9 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
     // Validate file size
     if (file.size > MAX_PDF_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      toast.error(`O arquivo PDF deve ter menos de ${MAX_PDF_SIZE_MB}MB (tamanho atual: ${fileSizeMB}MB)`);
+      toast.error(
+        `O arquivo PDF deve ter menos de ${MAX_PDF_SIZE_MB}MB (tamanho atual: ${fileSizeMB}MB)`
+      );
       return;
     }
 
@@ -152,9 +157,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold font-mono text-neutral-200">
-        PDF Customizado
-      </h3>
+      <h3 className="text-lg font-semibold font-mono text-neutral-200">PDF Customizado</h3>
 
       {/* Modal para salvar preset */}
       {showSavePresetModal && (
@@ -181,7 +184,9 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               autoFocus
             />
             <div className="flex gap-2">
-              <Button variant="brand" onClick={handleSavePreset}
+              <Button
+                variant="brand"
+                onClick={handleSavePreset}
                 disabled={isSavingPreset || !presetName.trim()}
                 className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 text-brand-cyan"
               >
@@ -218,11 +223,11 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
           <div className="flex items-center gap-3">
             <FileText className="h-8 w-8 text-brand-cyan flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-mono text-neutral-300">
-                PDF customizado carregado
-              </p>
+              <p className="text-sm font-mono text-neutral-300">PDF customizado carregado</p>
               <p className="text-xs text-neutral-500 mt-1 truncate">
-                {customPdfUrl.length > 100 && !customPdfUrl.startsWith('http') ? 'Base64 data' : customPdfUrl}
+                {customPdfUrl.length > 100 && !customPdfUrl.startsWith('http')
+                  ? 'Base64 data'
+                  : customPdfUrl}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -245,7 +250,9 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
                 <span className="hidden sm:inline">Substituir PDF</span>
                 <span className="sm:hidden">Substituir</span>
               </Button>
-              <Button variant="destructive" onClick={handleRemovePdf}
+              <Button
+                variant="destructive"
+                onClick={handleRemovePdf}
                 className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors font-mono text-sm whitespace-nowrap"
                 title="Remover PDF"
               >
@@ -286,4 +293,3 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
     </div>
   );
 };
-

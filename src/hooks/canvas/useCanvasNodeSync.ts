@@ -1,36 +1,61 @@
 /**
  * useCanvasNodeSync
- * 
+ *
  * Hook dedicado para sincronização de nodes com edges
  * Extraído do useEffect gigante do useCanvasNodeHandlers
  */
 
 import { useEffect, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, EditNodeData, MockupNodeData, PromptNodeData, AngleNodeData, VideoNodeData, VideoInputNodeData, BrandCoreData, ImageNodeData, OutputNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, ShaderNodeData, UpscaleBicubicNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, BrandNodeData, TextureFilterNodeData, Studio3DNodeData, BrandBatchNodeData } from '@/types/reactFlow';
+import type {
+  FlowNodeData,
+  EditNodeData,
+  MockupNodeData,
+  PromptNodeData,
+  AngleNodeData,
+  VideoNodeData,
+  VideoInputNodeData,
+  BrandCoreData,
+  ImageNodeData,
+  OutputNodeData,
+  LogoNodeData,
+  PDFNodeData,
+  StrategyNodeData,
+  ShaderNodeData,
+  UpscaleBicubicNodeData,
+  ColorExtractorNodeData,
+  TextNodeData,
+  ChatNodeData,
+  BrandNodeData,
+  TextureFilterNodeData,
+  Studio3DNodeData,
+  BrandBatchNodeData,
+} from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { getImageBase64FromNode, getImageUrlFromNode } from './utils/imageSyncUtils';
 
 interface UseCanvasNodeSyncParams {
   nodes: Node<FlowNodeData>[];
   edges: Edge[];
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
 }
 
-export const useCanvasNodeSync = ({
-  nodes,
-  edges,
-  setNodes,
-}: UseCanvasNodeSyncParams) => {
+export const useCanvasNodeSync = ({ nodes, edges, setNodes }: UseCanvasNodeSyncParams) => {
   const isUpdatingNodesRef = useRef(false);
 
   useEffect(() => {
     if (isUpdatingNodesRef.current) return;
 
-    const syncConnectedImage = (nodeId: string, edgeList: Edge[], nodeList: Node<FlowNodeData>[]): string | undefined => {
-      const inEdge = edgeList.find(e => e.target === nodeId);
+    const syncConnectedImage = (
+      nodeId: string,
+      edgeList: Edge[],
+      nodeList: Node<FlowNodeData>[]
+    ): string | undefined => {
+      const inEdge = edgeList.find((e) => e.target === nodeId);
       if (!inEdge) return undefined;
-      const src = nodeList.find(n => n.id === inEdge.source);
+      const src = nodeList.find((n) => n.id === inEdge.source);
       return src ? getImageUrlFromNode(src) : undefined;
     };
 
@@ -40,14 +65,17 @@ export const useCanvasNodeSync = ({
         // Sync EditNode
         if (n.type === 'edit') {
           const editData = n.data as EditNodeData;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
+          const connectedEdge = edges.find((e) => e.target === n.id);
+          const sourceNode = connectedEdge ? nds.find((n) => n.id === connectedEdge.source) : null;
           const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'output';
 
           if (hasConnectedImage && connectedEdge && sourceNode) {
             const imageBase64 = getImageBase64FromNode(sourceNode);
 
-            if (imageBase64 && (!editData.uploadedImage || editData.uploadedImage.base64 !== imageBase64)) {
+            if (
+              imageBase64 &&
+              (!editData.uploadedImage || editData.uploadedImage.base64 !== imageBase64)
+            ) {
               hasChanges = true;
               return {
                 ...n,
@@ -69,10 +97,11 @@ export const useCanvasNodeSync = ({
           const updates: Partial<MockupNodeData> = {};
           let nodeHasChanges = false;
 
-          const brandCoreEdge = edges.find(e =>
-            e.target === n.id &&
-            e.source &&
-            nds.find(src => src.id === e.source)?.type === 'brandCore'
+          const brandCoreEdge = edges.find(
+            (e) =>
+              e.target === n.id &&
+              e.source &&
+              nds.find((src) => src.id === e.source)?.type === 'brandCore'
           );
 
           if (!brandCoreEdge) {
@@ -93,15 +122,16 @@ export const useCanvasNodeSync = ({
               nodeHasChanges = true;
             }
 
-            const imageEdge = edges.find(e =>
-              e.target === n.id &&
-              e.source &&
-              (nds.find(src => src.id === e.source)?.type === 'image' ||
-                nds.find(src => src.id === e.source)?.type === 'output')
+            const imageEdge = edges.find(
+              (e) =>
+                e.target === n.id &&
+                e.source &&
+                (nds.find((src) => src.id === e.source)?.type === 'image' ||
+                  nds.find((src) => src.id === e.source)?.type === 'output')
             );
 
             if (imageEdge) {
-              const sourceNode = nds.find(src => src.id === imageEdge.source);
+              const sourceNode = nds.find((src) => src.id === imageEdge.source);
               const imageUrl = sourceNode ? getImageUrlFromNode(sourceNode) : undefined;
 
               if (imageUrl && imageUrl.length > 0 && mockupData.connectedImage !== imageUrl) {
@@ -115,18 +145,21 @@ export const useCanvasNodeSync = ({
           }
 
           // Also sync from direct StrategyNode connection (strategy-input handle)
-          const strategyEdge = edges.find(e =>
-            e.target === n.id &&
-            e.targetHandle === 'strategy-input' &&
-            e.source &&
-            nds.find(src => src.id === e.source)?.type === 'strategy'
+          const strategyEdge = edges.find(
+            (e) =>
+              e.target === n.id &&
+              e.targetHandle === 'strategy-input' &&
+              e.source &&
+              nds.find((src) => src.id === e.source)?.type === 'strategy'
           );
 
           if (strategyEdge) {
-            const strategyNode = nds.find(src => src.id === strategyEdge.source);
+            const strategyNode = nds.find((src) => src.id === strategyEdge.source);
             if (strategyNode?.type === 'strategy') {
               const strategyNodeData = strategyNode.data as StrategyNodeData;
-              const strategyChanged = JSON.stringify(strategyNodeData.strategyData) !== JSON.stringify(mockupData.connectedStrategyData);
+              const strategyChanged =
+                JSON.stringify(strategyNodeData.strategyData) !==
+                JSON.stringify(mockupData.connectedStrategyData);
               if (strategyChanged && strategyNodeData.strategyData) {
                 updates.connectedStrategyData = strategyNodeData.strategyData;
                 nodeHasChanges = true;
@@ -159,18 +192,19 @@ export const useCanvasNodeSync = ({
           let nodeHasChanges = false;
 
           // 1. Sync from Brand nodes (BrandCore or BrandNode)
-          const brandEdge = edges.find(e =>
-            e.target === n.id &&
-            e.source &&
-            // Ignore specific granular image output handles (treated as generic image inputs instead)
-            e.sourceHandle !== 'logo-output' &&
-            e.sourceHandle !== 'identity-output' &&
-            (nds.find(src => src.id === e.source)?.type === 'brandCore' ||
-              nds.find(src => src.id === e.source)?.type === 'brand')
+          const brandEdge = edges.find(
+            (e) =>
+              e.target === n.id &&
+              e.source &&
+              // Ignore specific granular image output handles (treated as generic image inputs instead)
+              e.sourceHandle !== 'logo-output' &&
+              e.sourceHandle !== 'identity-output' &&
+              (nds.find((src) => src.id === e.source)?.type === 'brandCore' ||
+                nds.find((src) => src.id === e.source)?.type === 'brand')
           );
 
           if (brandEdge) {
-            const sourceNode = nds.find(src => src.id === brandEdge.source);
+            const sourceNode = nds.find((src) => src.id === brandEdge.source);
 
             if (sourceNode?.type === 'brandCore') {
               const brandCoreData = sourceNode.data as BrandCoreData;
@@ -182,7 +216,10 @@ export const useCanvasNodeSync = ({
               }
 
               // Sync Identity (prefer connectedImage/Identity over PDF)
-              const identity = brandCoreData.connectedImage || brandCoreData.uploadedIdentity || brandCoreData.connectedPdf;
+              const identity =
+                brandCoreData.connectedImage ||
+                brandCoreData.uploadedIdentity ||
+                brandCoreData.connectedPdf;
               if (identity !== promptData.connectedIdentity) {
                 updates.connectedIdentity = identity;
 
@@ -203,7 +240,6 @@ export const useCanvasNodeSync = ({
                 updates.connectedTextDirection = textDirection;
                 nodeHasChanges = true;
               }
-
             } else if (sourceNode?.type === 'brand') {
               const brandData = sourceNode.data as BrandNodeData;
 
@@ -218,15 +254,22 @@ export const useCanvasNodeSync = ({
               }
 
               // Sync Identity
-              const identity = brandData.connectedIdentity || brandData.identityImageBase64 || brandData.identityImageUrl || brandData.identityPdfBase64 || brandData.identityPdfUrl;
-              const cleanIdentity = identity && identity.startsWith('data:') ? identity.split(',')[1] : identity;
+              const identity =
+                brandData.connectedIdentity ||
+                brandData.identityImageBase64 ||
+                brandData.identityImageUrl ||
+                brandData.identityPdfBase64 ||
+                brandData.identityPdfUrl;
+              const cleanIdentity =
+                identity && identity.startsWith('data:') ? identity.split(',')[1] : identity;
 
               if (cleanIdentity !== promptData.connectedIdentity) {
                 updates.connectedIdentity = cleanIdentity;
 
                 // Determine type
                 // Either explicit type from BrandNode, or infer from fields
-                const isPdf = brandData.identityFileType === 'pdf' ||
+                const isPdf =
+                  brandData.identityFileType === 'pdf' ||
                   brandData.connectedIdentityType === 'pdf' ||
                   !!brandData.identityPdfBase64 ||
                   !!brandData.identityPdfUrl;
@@ -239,12 +282,16 @@ export const useCanvasNodeSync = ({
               // Sync Text Direction (Brand Identity JSON)
               // BrandNode holds extracted identity in `brandIdentity` object.
               // We might want to pass a summary or specific string.
-              // For now, let's pass the BrandIdentity object if PromptNode supports it, 
+              // For now, let's pass the BrandIdentity object if PromptNode supports it,
               // BUT PromptNode expects connectedTextDirection (string).
-              // Let's rely on what BrandNode provides. 
+              // Let's rely on what BrandNode provides.
               // Warning: BrandNode.tsx doesn't seem to generate a specific text direction prompt property.
               // It has `brandIdentity` object.
-              if (brandData.brandIdentity && JSON.stringify(brandData.brandIdentity) !== JSON.stringify(promptData.connectedBrandIdentity)) {
+              if (
+                brandData.brandIdentity &&
+                JSON.stringify(brandData.brandIdentity) !==
+                  JSON.stringify(promptData.connectedBrandIdentity)
+              ) {
                 updates.connectedBrandIdentity = brandData.brandIdentity;
                 nodeHasChanges = true;
               }
@@ -270,15 +317,16 @@ export const useCanvasNodeSync = ({
           }
 
           // 2. Sync from TextNode
-          const textEdge = edges.find(e =>
-            e.target === n.id &&
-            e.targetHandle === 'text-input' &&
-            e.source &&
-            nds.find(src => src.id === e.source)?.type === 'text'
+          const textEdge = edges.find(
+            (e) =>
+              e.target === n.id &&
+              e.targetHandle === 'text-input' &&
+              e.source &&
+              nds.find((src) => src.id === e.source)?.type === 'text'
           );
 
           if (textEdge) {
-            const textNode = nds.find(src => src.id === textEdge.source);
+            const textNode = nds.find((src) => src.id === textEdge.source);
             if (textNode?.type === 'text') {
               const textData = textNode.data as TextNodeData;
               if (textData.text !== undefined) {
@@ -302,14 +350,15 @@ export const useCanvasNodeSync = ({
           // 3. Sync from Generic Image Inputs (input-1 to input-4)
           const imageHandles = ['input-1', 'input-2', 'input-3', 'input-4'] as const;
           imageHandles.forEach((handleId, index) => {
-            const imageEdge = edges.find(e =>
-              e.target === n.id &&
-              e.targetHandle === handleId
-            );
-            const fieldName = `connectedImage${index + 1}` as 'connectedImage1' | 'connectedImage2' | 'connectedImage3' | 'connectedImage4';
+            const imageEdge = edges.find((e) => e.target === n.id && e.targetHandle === handleId);
+            const fieldName = `connectedImage${index + 1}` as
+              | 'connectedImage1'
+              | 'connectedImage2'
+              | 'connectedImage3'
+              | 'connectedImage4';
 
             if (imageEdge) {
-              const sourceNode = nds.find(src => src.id === imageEdge.source);
+              const sourceNode = nds.find((src) => src.id === imageEdge.source);
               let imageBase64: string | undefined = undefined;
 
               if (sourceNode) {
@@ -333,12 +382,19 @@ export const useCanvasNodeSync = ({
                   const brandData = sourceNode.data as BrandNodeData;
 
                   if (imageEdge.sourceHandle === 'logo-output') {
-                    imageBase64 = brandData.connectedLogo || brandData.logoBase64 || brandData.logoImage;
+                    imageBase64 =
+                      brandData.connectedLogo || brandData.logoBase64 || brandData.logoImage;
                   } else if (imageEdge.sourceHandle === 'identity-output') {
-                    imageBase64 = brandData.connectedIdentity || brandData.identityImageBase64 || brandData.identityImageUrl || brandData.identityPdfBase64 || brandData.identityPdfUrl;
+                    imageBase64 =
+                      brandData.connectedIdentity ||
+                      brandData.identityImageBase64 ||
+                      brandData.identityImageUrl ||
+                      brandData.identityPdfBase64 ||
+                      brandData.identityPdfUrl;
                   } else {
                     // Default to Logo (primary visual symbol) if generic output is used
-                    imageBase64 = brandData.connectedLogo || brandData.logoBase64 || brandData.logoImage;
+                    imageBase64 =
+                      brandData.connectedLogo || brandData.logoBase64 || brandData.logoImage;
                   }
                 }
               }
@@ -371,18 +427,21 @@ export const useCanvasNodeSync = ({
           });
 
           // 4. Sync from StrategyNode (strategy-input handle)
-          const strategyEdge = edges.find(e =>
-            e.target === n.id &&
-            e.targetHandle === 'strategy-input' &&
-            e.source &&
-            nds.find(src => src.id === e.source)?.type === 'strategy'
+          const strategyEdge = edges.find(
+            (e) =>
+              e.target === n.id &&
+              e.targetHandle === 'strategy-input' &&
+              e.source &&
+              nds.find((src) => src.id === e.source)?.type === 'strategy'
           );
 
           if (strategyEdge) {
-            const strategyNode = nds.find(src => src.id === strategyEdge.source);
+            const strategyNode = nds.find((src) => src.id === strategyEdge.source);
             if (strategyNode?.type === 'strategy') {
               const strategyNodeData = strategyNode.data as StrategyNodeData;
-              const strategyChanged = JSON.stringify(strategyNodeData.strategyData) !== JSON.stringify(promptData.connectedStrategyData);
+              const strategyChanged =
+                JSON.stringify(strategyNodeData.strategyData) !==
+                JSON.stringify(promptData.connectedStrategyData);
               if (strategyChanged && strategyNodeData.strategyData) {
                 updates.connectedStrategyData = strategyNodeData.strategyData;
                 nodeHasChanges = true;
@@ -410,8 +469,8 @@ export const useCanvasNodeSync = ({
         // Sync AngleNode
         if (n.type === 'angle') {
           const angleData = n.data as AngleNodeData;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
+          const connectedEdge = edges.find((e) => e.target === n.id);
+          const sourceNode = connectedEdge ? nds.find((n) => n.id === connectedEdge.source) : null;
           const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'output';
 
           if (hasConnectedImage && connectedEdge && sourceNode) {
@@ -444,12 +503,12 @@ export const useCanvasNodeSync = ({
           const videoData = n.data as VideoNodeData;
           const updates: Partial<VideoNodeData> = {};
           let nodeHasChanges = false;
-          const connectedEdges = edges.filter(e => e.target === n.id);
+          const connectedEdges = edges.filter((e) => e.target === n.id);
 
           // Sync text from connected TextNode (text-input handle)
-          const textEdge = connectedEdges.find(e => e.targetHandle === 'text-input');
+          const textEdge = connectedEdges.find((e) => e.targetHandle === 'text-input');
           if (textEdge) {
-            const textNode = nds.find(src => src.id === textEdge.source);
+            const textNode = nds.find((src) => src.id === textEdge.source);
             if (textNode?.type === 'text') {
               const textData = textNode.data as TextNodeData;
               if (textData.text !== videoData.connectedText) {
@@ -467,11 +526,15 @@ export const useCanvasNodeSync = ({
           // Sync images/video handles (input-1 to input-4)
           const imageHandles = ['input-1', 'input-2', 'input-3', 'input-4'] as const;
           imageHandles.forEach((handleId, index) => {
-            const imageEdge = connectedEdges.find(e => e.targetHandle === handleId);
-            const fieldName = `connectedImage${index + 1}` as 'connectedImage1' | 'connectedImage2' | 'connectedImage3' | 'connectedImage4';
+            const imageEdge = connectedEdges.find((e) => e.targetHandle === handleId);
+            const fieldName = `connectedImage${index + 1}` as
+              | 'connectedImage1'
+              | 'connectedImage2'
+              | 'connectedImage3'
+              | 'connectedImage4';
 
             if (imageEdge) {
-              const sourceNode = nds.find(src => src.id === imageEdge.source);
+              const sourceNode = nds.find((src) => src.id === imageEdge.source);
               let imageBase64: string | undefined = undefined;
               let videoUrlOrBase64: string | undefined = undefined;
 
@@ -493,10 +556,12 @@ export const useCanvasNodeSync = ({
                   }
                 } else if (sourceNode.type === 'videoInput') {
                   const videoInputData = sourceNode.data as VideoInputNodeData;
-                  videoUrlOrBase64 = videoInputData.uploadedVideoUrl || videoInputData.uploadedVideo;
+                  videoUrlOrBase64 =
+                    videoInputData.uploadedVideoUrl || videoInputData.uploadedVideo;
                 } else if (sourceNode.type === 'video') {
                   const sourceVideoData = sourceNode.data as VideoNodeData;
-                  videoUrlOrBase64 = sourceVideoData.resultVideoUrl || sourceVideoData.resultVideoBase64;
+                  videoUrlOrBase64 =
+                    sourceVideoData.resultVideoUrl || sourceVideoData.resultVideoBase64;
                 } else if (sourceNode.type === 'logo') {
                   const logoData = sourceNode.data as LogoNodeData;
                   if (logoData.logoBase64) imageBase64 = logoData.logoBase64;
@@ -535,7 +600,6 @@ export const useCanvasNodeSync = ({
                   nodeHasChanges = true;
                 }
               }
-
             } else {
               // Not connected
               if (videoData[fieldName] !== undefined) {
@@ -565,8 +629,8 @@ export const useCanvasNodeSync = ({
         // Sync ShaderNode
         if (n.type === 'shader') {
           const shaderData = n.data as ShaderNodeData;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
+          const connectedEdge = edges.find((e) => e.target === n.id);
+          const sourceNode = connectedEdge ? nds.find((n) => n.id === connectedEdge.source) : null;
 
           let newConnectedImage: string | undefined = undefined;
 
@@ -638,8 +702,8 @@ export const useCanvasNodeSync = ({
         // Sync UpscaleBicubicNode
         if (n.type === 'upscaleBicubic') {
           const upscaleBicubicData = n.data as UpscaleBicubicNodeData;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
+          const connectedEdge = edges.find((e) => e.target === n.id);
+          const sourceNode = connectedEdge ? nds.find((n) => n.id === connectedEdge.source) : null;
 
           let newConnectedImage: string | undefined = undefined;
 
@@ -678,12 +742,12 @@ export const useCanvasNodeSync = ({
         // Sync BrandCore
         if (n.type === 'brandCore') {
           const brandCoreData = n.data as BrandCoreData;
-          const connectedEdges = edges.filter(e => e.target === n.id);
+          const connectedEdges = edges.filter((e) => e.target === n.id);
           const updates: any = {};
 
-          const logoEdge = connectedEdges.find(e => e.targetHandle === 'image-input');
+          const logoEdge = connectedEdges.find((e) => e.targetHandle === 'image-input');
           if (logoEdge) {
-            const logoNode = nds.find(n => n.id === logoEdge.source);
+            const logoNode = nds.find((n) => n.id === logoEdge.source);
             if (logoNode?.type === 'logo') {
               const logoData = logoNode.data as LogoNodeData;
               if (logoData.logoBase64) {
@@ -723,16 +787,20 @@ export const useCanvasNodeSync = ({
             hasChanges = true;
           }
 
-          const pdfEdge = connectedEdges.find(e => e.targetHandle === 'pdf-input');
+          const pdfEdge = connectedEdges.find((e) => e.targetHandle === 'pdf-input');
           if (pdfEdge) {
-            const pdfNode = nds.find(n => n.id === pdfEdge.source);
+            const pdfNode = nds.find((n) => n.id === pdfEdge.source);
             if (pdfNode?.type === 'pdf') {
               const pdfData = pdfNode.data as PDFNodeData;
               if (pdfData.pdfBase64 && brandCoreData.connectedPdf !== pdfData.pdfBase64) {
                 updates.connectedPdf = pdfData.pdfBase64;
                 hasChanges = true;
               }
-            } else if (pdfNode?.type === 'image' || pdfNode?.type === 'output' || pdfNode?.type === 'logo') {
+            } else if (
+              pdfNode?.type === 'image' ||
+              pdfNode?.type === 'output' ||
+              pdfNode?.type === 'logo'
+            ) {
               let imageBase64: string | undefined = undefined;
               if (pdfNode.type === 'image') {
                 const imageData = pdfNode.data as ImageNodeData;
@@ -772,10 +840,10 @@ export const useCanvasNodeSync = ({
             }
           }
 
-          const strategyEdges = connectedEdges.filter(e => e.targetHandle === 'strategy-input');
+          const strategyEdges = connectedEdges.filter((e) => e.targetHandle === 'strategy-input');
           const connectedStrategies: any[] = [];
-          strategyEdges.forEach(edge => {
-            const strategyNode = nds.find(n => n.id === edge.source);
+          strategyEdges.forEach((edge) => {
+            const strategyNode = nds.find((n) => n.id === edge.source);
             if (strategyNode?.type === 'strategy') {
               const strategyData = strategyNode.data as StrategyNodeData;
               if (strategyData.strategyData) {
@@ -788,7 +856,9 @@ export const useCanvasNodeSync = ({
             }
           });
 
-          const strategiesChanged = JSON.stringify(connectedStrategies) !== JSON.stringify(brandCoreData.connectedStrategies || []);
+          const strategiesChanged =
+            JSON.stringify(connectedStrategies) !==
+            JSON.stringify(brandCoreData.connectedStrategies || []);
           if (strategiesChanged) {
             updates.connectedStrategies = connectedStrategies;
             hasChanges = true;
@@ -811,17 +881,18 @@ export const useCanvasNodeSync = ({
           const updates: Partial<ColorExtractorNodeData> = {};
           let nodeHasChanges = false;
 
-          const imageEdge = edges.find(e =>
-            e.target === n.id &&
-            e.targetHandle === 'image-input' &&
-            e.source &&
-            (nds.find(src => src.id === e.source)?.type === 'image' ||
-              nds.find(src => src.id === e.source)?.type === 'output' ||
-              nds.find(src => src.id === e.source)?.type === 'logo')
+          const imageEdge = edges.find(
+            (e) =>
+              e.target === n.id &&
+              e.targetHandle === 'image-input' &&
+              e.source &&
+              (nds.find((src) => src.id === e.source)?.type === 'image' ||
+                nds.find((src) => src.id === e.source)?.type === 'output' ||
+                nds.find((src) => src.id === e.source)?.type === 'logo')
           );
 
           if (imageEdge) {
-            const sourceNode = nds.find(src => src.id === imageEdge.source);
+            const sourceNode = nds.find((src) => src.id === imageEdge.source);
             let imageBase64: string | undefined = undefined;
 
             if (sourceNode) {
@@ -837,9 +908,11 @@ export const useCanvasNodeSync = ({
                 const outputData = sourceNode.data as OutputNodeData;
                 if (outputData.resultImageBase64 || outputData.resultImageUrl) {
                   const sourceImage = outputData.resultImageBase64 || outputData.resultImageUrl;
-                  imageBase64 = sourceImage ? (sourceImage.startsWith('data:')
-                    ? sourceImage.split(',')[1] || sourceImage
-                    : sourceImage) : undefined;
+                  imageBase64 = sourceImage
+                    ? sourceImage.startsWith('data:')
+                      ? sourceImage.split(',')[1] || sourceImage
+                      : sourceImage
+                    : undefined;
                 }
               } else if (sourceNode.type === 'logo') {
                 const logoData = sourceNode.data as LogoNodeData;
@@ -879,25 +952,29 @@ export const useCanvasNodeSync = ({
           const bbData = n.data as BrandBatchNodeData;
           const updates: Partial<BrandBatchNodeData> = {};
           let nodeHasChanges = false;
-          const connectedEdges = edges.filter(e => e.target === n.id);
+          const connectedEdges = edges.filter((e) => e.target === n.id);
 
           // Sync brand from BrandCore
-          const brandEdge = connectedEdges.find(e =>
-            e.targetHandle === 'brand-in' &&
-            e.source &&
-            (nds.find(src => src.id === e.source)?.type === 'brandCore' ||
-              nds.find(src => src.id === e.source)?.type === 'brand')
+          const brandEdge = connectedEdges.find(
+            (e) =>
+              e.targetHandle === 'brand-in' &&
+              e.source &&
+              (nds.find((src) => src.id === e.source)?.type === 'brandCore' ||
+                nds.find((src) => src.id === e.source)?.type === 'brand')
           );
 
           if (brandEdge) {
-            const sourceNode = nds.find(src => src.id === brandEdge.source);
+            const sourceNode = nds.find((src) => src.id === brandEdge.source);
             if (sourceNode?.type === 'brandCore') {
               const brandCoreData = sourceNode.data as BrandCoreData;
               if (brandCoreData.connectedLogo !== bbData.connectedLogo) {
                 updates.connectedLogo = brandCoreData.connectedLogo;
                 nodeHasChanges = true;
               }
-              const identity = brandCoreData.connectedImage || brandCoreData.uploadedIdentity || brandCoreData.connectedPdf;
+              const identity =
+                brandCoreData.connectedImage ||
+                brandCoreData.uploadedIdentity ||
+                brandCoreData.connectedPdf;
               if (identity !== bbData.connectedIdentity) {
                 updates.connectedIdentity = identity;
                 nodeHasChanges = true;
@@ -910,30 +987,41 @@ export const useCanvasNodeSync = ({
               }
             } else if (sourceNode?.type === 'brand') {
               const brandData = sourceNode.data as BrandNodeData;
-              const logo = brandData.connectedLogo || brandData.logoBase64 || (brandData as any).logoImage;
+              const logo =
+                brandData.connectedLogo || brandData.logoBase64 || (brandData as any).logoImage;
               if (logo !== bbData.connectedLogo) {
                 updates.connectedLogo = logo;
                 nodeHasChanges = true;
               }
-              const identity = brandData.connectedIdentity || (brandData as any).identityImageBase64;
+              const identity =
+                brandData.connectedIdentity || (brandData as any).identityImageBase64;
               if (identity !== bbData.connectedIdentity) {
                 updates.connectedIdentity = identity;
                 nodeHasChanges = true;
               }
             }
           } else {
-            if (bbData.connectedLogo) { updates.connectedLogo = undefined; nodeHasChanges = true; }
-            if (bbData.connectedIdentity) { updates.connectedIdentity = undefined; nodeHasChanges = true; }
-            if (bbData.connectedTextDirection) { updates.connectedTextDirection = undefined; nodeHasChanges = true; }
+            if (bbData.connectedLogo) {
+              updates.connectedLogo = undefined;
+              nodeHasChanges = true;
+            }
+            if (bbData.connectedIdentity) {
+              updates.connectedIdentity = undefined;
+              nodeHasChanges = true;
+            }
+            if (bbData.connectedTextDirection) {
+              updates.connectedTextDirection = undefined;
+              nodeHasChanges = true;
+            }
           }
 
           // Sync image inputs (input-1 to input-8)
           const connectedImages: string[] = [];
           for (let idx = 1; idx <= 8; idx++) {
             const handleId = `input-${idx}`;
-            const imageEdge = connectedEdges.find(e => e.targetHandle === handleId);
+            const imageEdge = connectedEdges.find((e) => e.targetHandle === handleId);
             if (imageEdge) {
-              const sourceNode = nds.find(src => src.id === imageEdge.source);
+              const sourceNode = nds.find((src) => src.id === imageEdge.source);
               if (sourceNode) {
                 let img: string | undefined;
                 if (sourceNode.type === 'image') {
@@ -951,7 +1039,8 @@ export const useCanvasNodeSync = ({
             }
           }
 
-          const imagesChanged = JSON.stringify(connectedImages) !== JSON.stringify(bbData.connectedImages || []);
+          const imagesChanged =
+            JSON.stringify(connectedImages) !== JSON.stringify(bbData.connectedImages || []);
           if (imagesChanged) {
             updates.connectedImages = connectedImages;
             nodeHasChanges = true;
@@ -974,12 +1063,12 @@ export const useCanvasNodeSync = ({
           const chatData = n.data as ChatNodeData;
           const updates: Partial<ChatNodeData> = {};
           let nodeHasChanges = false;
-          const connectedEdges = edges.filter(e => e.target === n.id);
+          const connectedEdges = edges.filter((e) => e.target === n.id);
 
           // Sync text from TextNode (text-input handle)
-          const textEdge = connectedEdges.find(e => e.targetHandle === 'text-input');
+          const textEdge = connectedEdges.find((e) => e.targetHandle === 'text-input');
           if (textEdge) {
-            const textNode = nds.find(src => src.id === textEdge.source);
+            const textNode = nds.find((src) => src.id === textEdge.source);
             if (textNode?.type === 'text') {
               const textData = textNode.data as TextNodeData;
               if (textData.text !== chatData.connectedText) {
@@ -995,12 +1084,14 @@ export const useCanvasNodeSync = ({
           }
 
           // Sync strategy from StrategyNode (strategy-input handle)
-          const strategyEdge = connectedEdges.find(e => e.targetHandle === 'strategy-input');
+          const strategyEdge = connectedEdges.find((e) => e.targetHandle === 'strategy-input');
           if (strategyEdge) {
-            const strategyNode = nds.find(src => src.id === strategyEdge.source);
+            const strategyNode = nds.find((src) => src.id === strategyEdge.source);
             if (strategyNode?.type === 'strategy') {
               const strategyNodeData = strategyNode.data as StrategyNodeData;
-              const strategyChanged = JSON.stringify(strategyNodeData.strategyData) !== JSON.stringify(chatData.connectedStrategyData);
+              const strategyChanged =
+                JSON.stringify(strategyNodeData.strategyData) !==
+                JSON.stringify(chatData.connectedStrategyData);
               if (strategyChanged && strategyNodeData.strategyData) {
                 updates.connectedStrategyData = strategyNodeData.strategyData;
                 nodeHasChanges = true;
@@ -1016,11 +1107,15 @@ export const useCanvasNodeSync = ({
           // Sync images from ImageNode/OutputNode/LogoNode (input-1 to input-4 handles)
           const imageHandles = ['input-1', 'input-2', 'input-3', 'input-4'] as const;
           imageHandles.forEach((handleId, index) => {
-            const imageEdge = connectedEdges.find(e => e.targetHandle === handleId);
-            const fieldName = `connectedImage${index + 1}` as 'connectedImage1' | 'connectedImage2' | 'connectedImage3' | 'connectedImage4';
+            const imageEdge = connectedEdges.find((e) => e.targetHandle === handleId);
+            const fieldName = `connectedImage${index + 1}` as
+              | 'connectedImage1'
+              | 'connectedImage2'
+              | 'connectedImage3'
+              | 'connectedImage4';
 
             if (imageEdge) {
-              const sourceNode = nds.find(src => src.id === imageEdge.source);
+              const sourceNode = nds.find((src) => src.id === imageEdge.source);
               let imageBase64: string | undefined = undefined;
 
               if (sourceNode) {
@@ -1085,4 +1180,3 @@ export const useCanvasNodeSync = ({
     });
   }, [edges, setNodes]);
 };
-

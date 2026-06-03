@@ -5,7 +5,8 @@
 import 'dotenv/config';
 import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 
-const CUBEMAP_ROOT = 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d99b8bcce736/hdri/';
+const CUBEMAP_ROOT =
+  'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d99b8bcce736/hdri/';
 
 const PRESETS: Record<string, string> = {
   apartment: 'lebombo_1k.hdr',
@@ -28,7 +29,9 @@ async function main() {
   const publicUrl = process.env.R2_PUBLIC_URL?.trim();
 
   if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !publicUrl) {
-    console.error('Missing R2 env vars: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL');
+    console.error(
+      'Missing R2 env vars: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL'
+    );
     process.exit(1);
   }
 
@@ -67,13 +70,15 @@ async function main() {
     const buffer = Buffer.from(await response.arrayBuffer());
     console.log(`↑ Uploading ${preset} (${(buffer.length / 1024).toFixed(0)} KB) to R2...`);
 
-    await client.send(new PutObjectCommand({
-      Bucket: bucketName,
-      Key: r2Key,
-      Body: buffer,
-      ContentType: 'application/octet-stream',
-      CacheControl: 'public, max-age=31536000, immutable',
-    }));
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: r2Key,
+        Body: buffer,
+        ContentType: 'application/octet-stream',
+        CacheControl: 'public, max-age=31536000, immutable',
+      })
+    );
 
     console.log(`✓ ${preset} → ${finalUrl}`);
     results[preset] = finalUrl;

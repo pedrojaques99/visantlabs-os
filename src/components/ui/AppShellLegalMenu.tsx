@@ -45,7 +45,10 @@ export const AppShellLegalMenu: React.FC<{ className?: string }> = ({ className 
           {items.map((item) => (
             <button
               key={item.path}
-              onClick={() => { navigate(item.path); setOpen(false); }}
+              onClick={() => {
+                navigate(item.path);
+                setOpen(false);
+              }}
               className="w-full text-left px-3 py-1.5 text-[11px] text-neutral-400 hover:text-white hover:bg-white/5 transition-colors font-mono"
             >
               {item.label}

@@ -1,6 +1,6 @@
 /**
  * shaderProcessingUtils
- * 
+ *
  * Utilitários compartilhados para processamento de vídeo/imagem com shader
  * (shader e upscaleBicubic têm lógica similar)
  */
@@ -22,10 +22,20 @@ interface ShaderProcessingParams<T extends FlowNodeData> {
   connectedImageFromData?: string;
   settings: ShaderRendererSettings;
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
-  updateNodeData: <U extends FlowNodeData>(nodeId: string, newData: Partial<U>, nodeType?: string) => void;
-  updateNodeLoadingState: <U extends FlowNodeData>(nodeId: string, isLoading: boolean, nodeType?: string) => void;
+  updateNodeData: <U extends FlowNodeData>(
+    nodeId: string,
+    newData: Partial<U>,
+    nodeType?: string
+  ) => void;
+  updateNodeLoadingState: <U extends FlowNodeData>(
+    nodeId: string,
+    isLoading: boolean,
+    nodeType?: string
+  ) => void;
   canvasId?: string;
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
   errorMessage?: string;
   videoSuccessMessage?: string;
   isUpscale?: boolean; // true for upscale (no debounce, skip compression), false for shader (debounce, compression)
@@ -37,18 +47,18 @@ interface ShaderProcessingParams<T extends FlowNodeData> {
  * Detect if input is a video
  */
 export const isVideoInput = (input: string): boolean => {
-  return input.startsWith('data:video/') ||
+  return (
+    input.startsWith('data:video/') ||
     /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(input) ||
-    input.includes('video');
+    input.includes('video')
+  );
 };
 
 /**
  * Extract base64 from data URL
  */
 export const extractBase64 = (dataUrl: string): string => {
-  return dataUrl.startsWith('data:')
-    ? dataUrl.split(',')[1] || dataUrl
-    : dataUrl;
+  return dataUrl.startsWith('data:') ? dataUrl.split(',')[1] || dataUrl : dataUrl;
 };
 
 /**
@@ -71,9 +81,13 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
   onImageResult,
   onVideoResult,
 }: ShaderProcessingParams<T>): Promise<void> => {
-  const node = nodesRef.current.find(n => n.id === nodeId);
+  const node = nodesRef.current.find((n) => n.id === nodeId);
   if (!node || node.type !== nodeType) {
-    console.warn(`processImageOrVideoWithShader: Node not found or wrong type`, { nodeId, nodeType, foundNode: !!node });
+    console.warn(`processImageOrVideoWithShader: Node not found or wrong type`, {
+      nodeId,
+      nodeType,
+      foundNode: !!node,
+    });
     return;
   }
 
@@ -97,11 +111,15 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
       const videoBase64Only = extractBase64(resultVideoBase64);
 
       // Update node with video result
-      updateNodeData<T>(nodeId, {
-        resultVideoBase64: videoBase64Only,
-        resultImageBase64: undefined,
-        resultImageUrl: undefined,
-      } as Partial<T>, nodeType);
+      updateNodeData<T>(
+        nodeId,
+        {
+          resultVideoBase64: videoBase64Only,
+          resultImageBase64: undefined,
+          resultImageUrl: undefined,
+        } as Partial<T>,
+        nodeType
+      );
 
       // Wait for render cycle before hiding loading
       requestAnimationFrame(() => {
@@ -114,9 +132,13 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
       if (canvasId) {
         try {
           const videoUrl = await canvasApi.uploadVideoToR2(resultVideoBase64, canvasId, nodeId);
-          updateNodeData<T>(nodeId, {
-            resultVideoUrl: videoUrl,
-          } as Partial<T>, nodeType);
+          updateNodeData<T>(
+            nodeId,
+            {
+              resultVideoUrl: videoUrl,
+            } as Partial<T>,
+            nodeType
+          );
         } catch (uploadError: any) {
           console.warn('Failed to upload video to R2:', uploadError);
         }
@@ -133,11 +155,15 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
       const base64Only = extractBase64(resultBase64);
 
       // Update node immediately with base64
-      updateNodeData<T>(nodeId, {
-        resultImageBase64: base64Only,
-        resultVideoBase64: undefined,
-        resultVideoUrl: undefined,
-      } as Partial<T>, nodeType);
+      updateNodeData<T>(
+        nodeId,
+        {
+          resultImageBase64: base64Only,
+          resultVideoBase64: undefined,
+          resultVideoUrl: undefined,
+        } as Partial<T>,
+        nodeType
+      );
 
       updateNodeLoadingState<T>(nodeId, false, nodeType);
 
@@ -151,9 +177,13 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
             canvasId,
             setNodes,
             (imageUrl) => {
-              updateNodeData<T>(nodeId, {
-                resultImageUrl: imageUrl,
-              } as Partial<T>, nodeType);
+              updateNodeData<T>(
+                nodeId,
+                {
+                  resultImageUrl: imageUrl,
+                } as Partial<T>,
+                nodeType
+              );
             },
             { skipCompression: true }
           ).catch((uploadError: any) => {
@@ -167,9 +197,13 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
             canvasId,
             setNodes,
             (imageUrl) => {
-              updateNodeData<T>(nodeId, {
-                resultImageUrl: imageUrl,
-              } as Partial<T>, nodeType);
+              updateNodeData<T>(
+                nodeId,
+                {
+                  resultImageUrl: imageUrl,
+                } as Partial<T>,
+                nodeType
+              );
             },
             4000
           );
@@ -180,13 +214,17 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
         onImageResult(base64Only);
       }
 
-      trackCanvasEvent('generation_completed', nodeType, canvasId, { shaderType: settings.shaderType });
+      trackCanvasEvent('generation_completed', nodeType, canvasId, {
+        shaderType: settings.shaderType,
+      });
     }
   } catch (error: any) {
-    trackCanvasEvent('generation_failed', nodeType, canvasId, { shaderType: settings.shaderType, error: error?.message });
+    trackCanvasEvent('generation_failed', nodeType, canvasId, {
+      shaderType: settings.shaderType,
+      error: error?.message,
+    });
     console.error(`Error processing ${nodeType}:`, error);
     updateNodeLoadingState<T>(nodeId, false, nodeType);
     toast.error(error?.message || `Failed to process ${nodeType}`, { duration: 5000 });
   }
 };
-

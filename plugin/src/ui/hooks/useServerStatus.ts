@@ -10,9 +10,10 @@ export function useServerStatus() {
     let cancelled = false;
 
     const schedule = () => {
-      const delay = failCountRef.current === 0
-        ? 15_000
-        : Math.min(15_000 * Math.pow(2, failCountRef.current), 120_000);
+      const delay =
+        failCountRef.current === 0
+          ? 15_000
+          : Math.min(15_000 * Math.pow(2, failCountRef.current), 120_000);
       timerId = setTimeout(checkServer, delay);
     };
 
@@ -21,7 +22,7 @@ export function useServerStatus() {
       try {
         const response = await fetch(apiUrl('/plugin/auth/status'), {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         });
         setIsConnected(response.status !== 0);
         failCountRef.current = 0;
@@ -33,7 +34,10 @@ export function useServerStatus() {
     };
 
     checkServer();
-    return () => { cancelled = true; clearTimeout(timerId); };
+    return () => {
+      cancelled = true;
+      clearTimeout(timerId);
+    };
   }, []);
 
   return { isConnected };

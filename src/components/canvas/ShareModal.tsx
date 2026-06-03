@@ -135,7 +135,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
     }
   };
 
-  const removeEditUser = (userId: string) => setEditUsers(editUsers.filter(id => id !== userId));
+  const removeEditUser = (userId: string) => setEditUsers(editUsers.filter((id) => id !== userId));
 
   const addViewUser = () => {
     if (newViewUser.trim() && !viewUsers.includes(newViewUser.trim())) {
@@ -144,7 +144,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
     }
   };
 
-  const removeViewUser = (userId: string) => setViewUsers(viewUsers.filter(id => id !== userId));
+  const removeViewUser = (userId: string) => setViewUsers(viewUsers.filter((id) => id !== userId));
 
   const hasChanges =
     JSON.stringify(editUsers) !== JSON.stringify(canEdit) ||
@@ -189,7 +189,9 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <Link2 size={12} className="text-neutral-500" />
-            <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-[0.12em]">Link público</span>
+            <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-[0.12em]">
+              Link público
+            </span>
           </div>
           {shareUrl ? (
             <div className="flex items-center gap-2 p-1.5 pl-3 bg-neutral-800/60 border border-neutral-700/40 rounded-xl">
@@ -213,9 +215,13 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-cyan/15 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/25 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
             >
               {isGenerating ? (
-                <><GlitchLoader size={14} /> Gerando link...</>
+                <>
+                  <GlitchLoader size={14} /> Gerando link...
+                </>
               ) : (
-                <><Share2 size={14} /> {t('shareModal.generateShareLink')}</>
+                <>
+                  <Share2 size={14} /> {t('shareModal.generateShareLink')}
+                </>
               )}
             </button>
           )}
@@ -274,7 +280,15 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                 disabled={isLoading}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/25 rounded-lg transition-all disabled:opacity-50"
               >
-                {isLoading ? <><GlitchLoader size={12} /> Salvando...</> : <><Check size={12} /> Salvar</>}
+                {isLoading ? (
+                  <>
+                    <GlitchLoader size={12} /> Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Check size={12} /> Salvar
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -297,7 +311,15 @@ interface UserSectionProps {
 }
 
 const UserSection: React.FC<UserSectionProps> = ({
-  icon, label, roleColor, users, newUser, onNewUserChange, onAdd, onRemove, placeholder,
+  icon,
+  label,
+  roleColor,
+  users,
+  newUser,
+  onNewUserChange,
+  onAdd,
+  onRemove,
+  placeholder,
 }) => (
   <div className="space-y-2.5">
     <div className="flex items-center gap-1.5">
@@ -312,12 +334,16 @@ const UserSection: React.FC<UserSectionProps> = ({
 
     {users.length > 0 && (
       <div className="space-y-1.5">
-        {users.map(userId => (
+        {users.map((userId) => (
           <div
             key={userId}
             className="flex items-center gap-2.5 px-3 py-2 bg-neutral-800/50 border border-neutral-700/40 rounded-xl group"
           >
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-semibold shrink-0 ${getAvatarColor(userId)}`}>
+            <div
+              className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-semibold shrink-0 ${getAvatarColor(
+                userId
+              )}`}
+            >
               {getInitials(userId)}
             </div>
             <span className="flex-1 text-xs text-neutral-300 truncate" title={userId}>
@@ -338,8 +364,8 @@ const UserSection: React.FC<UserSectionProps> = ({
       <Input
         type="text"
         value={newUser}
-        onChange={e => onNewUserChange(e.target.value)}
-        onKeyPress={e => e.key === 'Enter' && onAdd()}
+        onChange={(e) => onNewUserChange(e.target.value)}
+        onKeyPress={(e) => e.key === 'Enter' && onAdd()}
         placeholder={placeholder}
         className="flex-1 h-8 text-xs bg-neutral-800/40 border-neutral-700/40 placeholder:text-neutral-600 focus:border-neutral-600 rounded-lg"
       />

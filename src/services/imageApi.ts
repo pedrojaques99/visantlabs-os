@@ -41,13 +41,18 @@ export interface DesignerParams {
 }
 
 export const imageApi = {
-  searchImages: async (query: string, mode: 'google' | 'instagram' = 'google', limit: number = 40, designerParams?: DesignerParams): Promise<ImageSearchResult> => {
+  searchImages: async (
+    query: string,
+    mode: 'google' | 'instagram' = 'google',
+    limit: number = 40,
+    designerParams?: DesignerParams
+  ): Promise<ImageSearchResult> => {
     const token = authService.getToken();
     const response = await fetch(`${API_BASE}/images/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ query, mode, limit, designerParams }),
     });
@@ -66,7 +71,7 @@ export const imageApi = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ url, limit }),
     });
@@ -85,7 +90,7 @@ export const imageApi = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ imageBase64, pageNumber }),
     });
@@ -108,5 +113,5 @@ export const imageApi = {
     const encodedUrl = encodeURIComponent(imageUrl);
     const encodedFilename = encodeURIComponent(filename);
     return `${baseUrl}/api/images/download?url=${encodedUrl}&filename=${encodedFilename}`;
-  }
+  },
 };

@@ -25,7 +25,14 @@ export const FORMAT_PRESETS: Record<Exclude<FormatType, 'unknown'>, FormatPreset
     width: 1080,
     height: 1350,
     label: 'Instagram Portrait',
-    aliases: ['portrait', 'vertical post', 'post vertical', 'instagram vertical', 'post 4:5', '1350'],
+    aliases: [
+      'portrait',
+      'vertical post',
+      'post vertical',
+      'instagram vertical',
+      'post 4:5',
+      '1350',
+    ],
   },
   instagram_stories: {
     width: 1080,
@@ -93,7 +100,10 @@ export const FORMAT_PRESETS: Record<Exclude<FormatType, 'unknown'>, FormatPreset
  * Detect format from user input
  */
 export function detectFormat(input: string): FormatType {
-  const normalized = input.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const normalized = input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
   for (const [format, preset] of Object.entries(FORMAT_PRESETS)) {
     for (const alias of preset.aliases) {

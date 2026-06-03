@@ -13,26 +13,42 @@ describe('calculateBounds', () => {
   });
 
   it('calculates correct bounds for a horizontal line', () => {
-    const bounds = calculateBounds([[0, 5], [10, 5], [20, 5]]);
+    const bounds = calculateBounds([
+      [0, 5],
+      [10, 5],
+      [20, 5],
+    ]);
     expect(bounds).toEqual({ x: 0, y: 5, width: 20, height: 0 });
   });
 
   it('calculates correct bounds for a vertical line', () => {
-    const bounds = calculateBounds([[3, 0], [3, 15], [3, 30]]);
+    const bounds = calculateBounds([
+      [3, 0],
+      [3, 15],
+      [3, 30],
+    ]);
     expect(bounds).toEqual({ x: 3, y: 0, width: 0, height: 30 });
   });
 
   it('calculates correct bounds for a scattered polygon', () => {
-    const points = [[1, 4], [8, 1], [5, 9], [2, 7]];
+    const points = [
+      [1, 4],
+      [8, 1],
+      [5, 9],
+      [2, 7],
+    ];
     const bounds = calculateBounds(points);
     expect(bounds.x).toBe(1);
     expect(bounds.y).toBe(1);
-    expect(bounds.width).toBe(7);   // 8 - 1
-    expect(bounds.height).toBe(8);  // 9 - 1
+    expect(bounds.width).toBe(7); // 8 - 1
+    expect(bounds.height).toBe(8); // 9 - 1
   });
 
   it('handles negative coordinates', () => {
-    const bounds = calculateBounds([[-10, -5], [10, 5]]);
+    const bounds = calculateBounds([
+      [-10, -5],
+      [10, 5],
+    ]);
     expect(bounds).toEqual({ x: -10, y: -5, width: 20, height: 10 });
   });
 });
@@ -46,7 +62,10 @@ describe('getSvgPathFromStroke', () => {
 
   it('returns empty string for fewer than 4 points (perfect-freehand minimum)', () => {
     // perfect-freehand needs enough points to generate a stroke
-    const result = getSvgPathFromStroke([[0, 0], [1, 1]]);
+    const result = getSvgPathFromStroke([
+      [0, 0],
+      [1, 1],
+    ]);
     // May return empty or a path — just must not throw
     expect(typeof result).toBe('string');
   });

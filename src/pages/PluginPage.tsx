@@ -4,10 +4,11 @@ import { aiApi } from '@/services/aiApi';
 import { useFigmaBridge } from '@/hooks/useFigmaBridge';
 import type { FigmaOperation, PluginMessage, SerializedContext } from '@/lib/figma-types';
 import '@/styles/figma-plugin.css';
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
-const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://www.visantlabs.com';
+const APP_URL =
+  typeof window !== 'undefined' ? window.location.origin : 'https://www.visantlabs.com';
 
 export default function PluginPage() {
   const [authReady, setAuthReady] = useState(false);
@@ -74,7 +75,10 @@ export default function PluginPage() {
     setError(null);
     setSuccess(false);
     try {
-      const operations: FigmaOperation[] = await aiApi.generateFigmaOperations(prompt.trim(), context);
+      const operations: FigmaOperation[] = await aiApi.generateFigmaOperations(
+        prompt.trim(),
+        context
+      );
       send({ type: 'APPLY_OPERATIONS', payload: operations });
     } catch (err) {
       setLoading(false);
@@ -101,7 +105,12 @@ export default function PluginPage() {
           <p style={{ marginBottom: 8, color: 'var(--fp-text-secondary)' }}>
             Open the main app in your browser to log in, then return here.
           </p>
-          <Button variant="ghost" type="button" className="fp-button fp-button--primary" onClick={handleLogin}>
+          <Button
+            variant="ghost"
+            type="button"
+            className="fp-button fp-button--primary"
+            onClick={handleLogin}
+          >
             Open Visant to Login
           </Button>
         </div>
@@ -132,7 +141,8 @@ export default function PluginPage() {
       )}
 
       <div className="fp-section">
-        <Button variant="ghost" 
+        <Button
+          variant="ghost"
           type="button"
           className="fp-button fp-button--primary"
           onClick={handleGenerate}
@@ -140,7 +150,10 @@ export default function PluginPage() {
         >
           {loading ? (
             <>
-              <span className="fp-spinner" style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }} />
+              <span
+                className="fp-spinner"
+                style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }}
+              />
               Generating...
             </>
           ) : (

@@ -26,7 +26,16 @@ export interface FaviconState {
   reset: () => void;
 }
 
-const INITIAL: Pick<FaviconState, 'sourceUrl' | 'fileName' | 'backgroundColor' | 'borderRadius' | 'padding' | 'generatedIcons' | 'isGenerating'> = {
+const INITIAL: Pick<
+  FaviconState,
+  | 'sourceUrl'
+  | 'fileName'
+  | 'backgroundColor'
+  | 'borderRadius'
+  | 'padding'
+  | 'generatedIcons'
+  | 'isGenerating'
+> = {
   sourceUrl: '',
   fileName: '',
   backgroundColor: 'transparent',

@@ -33,9 +33,7 @@ export async function scaffoldAgentLibrary(brand: BrandInfo) {
   }
 
   // Find or create [Agent] Components page
-  let agentPage = figma.root.children.find(
-    p => p.name.toLowerCase() === '[agent] components'
-  );
+  let agentPage = figma.root.children.find((p) => p.name.toLowerCase() === '[agent] components');
   if (!agentPage) {
     agentPage = figma.createPage();
     agentPage.name = '[Agent] Components';
@@ -44,7 +42,11 @@ export async function scaffoldAgentLibrary(brand: BrandInfo) {
   figma.currentPage = agentPage;
 
   const primary = brand.primary;
-  const secondary = brand.secondary || { r: primary.r * 0.8, g: primary.g * 0.8, b: primary.b * 0.8 };
+  const secondary = brand.secondary || {
+    r: primary.r * 0.8,
+    g: primary.g * 0.8,
+    b: primary.b * 0.8,
+  };
   const background = brand.background;
   const text = brand.text;
   const font = brand.fontFamily || 'Inter';
@@ -108,7 +110,9 @@ export async function scaffoldAgentLibrary(brand: BrandInfo) {
   promoSubtitle.characters = 'Add your subtitle text here';
   promoSubtitle.fontName = { family: font, style: 'Regular' };
   promoSubtitle.fontSize = 28;
-  promoSubtitle.fills = [{ type: 'SOLID', color: { r: text.r * 0.7, g: text.g * 0.7, b: text.b * 0.7 } }];
+  promoSubtitle.fills = [
+    { type: 'SOLID', color: { r: text.r * 0.7, g: text.g * 0.7, b: text.b * 0.7 } },
+  ];
   promoSubtitle.textAlignHorizontal = 'CENTER';
   promoComp.appendChild(promoSubtitle);
 
@@ -183,10 +187,13 @@ export async function scaffoldAgentLibrary(brand: BrandInfo) {
 
   const infoBody = figma.createText();
   infoBody.name = 'Body';
-  infoBody.characters = 'Add your description text here. This component is perfect for announcements, news updates, and informative content.';
+  infoBody.characters =
+    'Add your description text here. This component is perfect for announcements, news updates, and informative content.';
   infoBody.fontName = { family: font, style: 'Regular' };
   infoBody.fontSize = 24;
-  infoBody.fills = [{ type: 'SOLID', color: { r: text.r * 0.7, g: text.g * 0.7, b: text.b * 0.7 } }];
+  infoBody.fills = [
+    { type: 'SOLID', color: { r: text.r * 0.7, g: text.g * 0.7, b: text.b * 0.7 } },
+  ];
   infoBody.layoutSizingHorizontal = 'FILL';
   infoBody.textAutoResize = 'HEIGHT';
   contentArea.appendChild(infoBody);
@@ -208,15 +215,17 @@ export async function scaffoldAgentLibrary(brand: BrandInfo) {
   cardComp.paddingRight = 24;
   cardComp.fills = [{ type: 'SOLID', color: background }];
   cardComp.cornerRadius = 16;
-  cardComp.effects = [{
-    type: 'DROP_SHADOW',
-    color: { r: 0, g: 0, b: 0, a: 0.08 },
-    offset: { x: 0, y: 4 },
-    radius: 16,
-    spread: 0,
-    visible: true,
-    blendMode: 'NORMAL',
-  }];
+  cardComp.effects = [
+    {
+      type: 'DROP_SHADOW',
+      color: { r: 0, g: 0, b: 0, a: 0.08 },
+      offset: { x: 0, y: 4 },
+      radius: 16,
+      spread: 0,
+      visible: true,
+      blendMode: 'NORMAL',
+    },
+  ];
   cardComp.x = xOffset;
 
   // Icon circle
@@ -239,7 +248,9 @@ export async function scaffoldAgentLibrary(brand: BrandInfo) {
   cardDesc.characters = 'Brief description of this feature or benefit.';
   cardDesc.fontName = { family: font, style: 'Regular' };
   cardDesc.fontSize = 16;
-  cardDesc.fills = [{ type: 'SOLID', color: { r: text.r * 0.6, g: text.g * 0.6, b: text.b * 0.6 } }];
+  cardDesc.fills = [
+    { type: 'SOLID', color: { r: text.r * 0.6, g: text.g * 0.6, b: text.b * 0.6 } },
+  ];
   cardDesc.layoutSizingHorizontal = 'FILL';
   cardDesc.textAutoResize = 'HEIGHT';
   cardComp.appendChild(cardDesc);

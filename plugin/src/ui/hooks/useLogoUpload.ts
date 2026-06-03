@@ -47,7 +47,7 @@ export function useLogoUpload() {
       }
       const res: any = await call(`/api/brand-guidelines/${guidelineId}/logos`, {
         method: 'POST',
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       return (res?.logo ?? null) as UploadedLogo | null;
     },
@@ -76,7 +76,7 @@ export function useLogoUpload() {
           variant: slot,
           label: slot,
           source: 'upload',
-          format
+          format,
         });
         if (saved) {
           patchSlot(slot, {
@@ -86,7 +86,7 @@ export function useLogoUpload() {
             thumbnailUrl: saved.thumbnailUrl,
             src: saved.thumbnailUrl || saved.url,
             format: saved.format || format,
-            loaded: true
+            loaded: true,
           });
           usePluginStore.getState().showToast(`Logo uploaded (${slot})`, 'success');
         }
@@ -132,7 +132,7 @@ export function useLogoUpload() {
           source: 'figma',
           thumbnailData: component.thumbnail,
           figmaKey: component.key,
-          figmaNodeId: component.id
+          figmaNodeId: component.id,
         });
         if (saved) {
           patchSlot(slot, {
@@ -145,7 +145,7 @@ export function useLogoUpload() {
             figmaNodeId: saved.figmaNodeId ?? component.id,
             figmaFileKey: saved.figmaFileKey,
             label: component.name,
-            loaded: true
+            loaded: true,
           });
           usePluginStore.getState().showToast(`Linked @${component.name} (${slot})`, 'success');
         }
@@ -158,13 +158,24 @@ export function useLogoUpload() {
     [patchSlot, postLogo, send]
   );
 
-  const clearSlot = useCallback((slot: Variant) => {
-    patchSlot(slot, {
-      id: undefined, source: undefined, url: undefined, thumbnailUrl: undefined,
-      src: undefined, figmaKey: undefined, figmaNodeId: undefined, figmaFileKey: undefined,
-      format: undefined, label: undefined, loaded: false
-    });
-  }, [patchSlot]);
+  const clearSlot = useCallback(
+    (slot: Variant) => {
+      patchSlot(slot, {
+        id: undefined,
+        source: undefined,
+        url: undefined,
+        thumbnailUrl: undefined,
+        src: undefined,
+        figmaKey: undefined,
+        figmaNodeId: undefined,
+        figmaFileKey: undefined,
+        format: undefined,
+        label: undefined,
+        loaded: false,
+      });
+    },
+    [patchSlot]
+  );
 
   return { uploadFile, linkFromSelection, clearSlot, busySlot };
 }

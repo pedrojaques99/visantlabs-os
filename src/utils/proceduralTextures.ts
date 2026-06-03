@@ -1,6 +1,11 @@
 const CACHE = new Map<string, string>();
 
-function getOrCreate(key: string, width: number, height: number, draw: (ctx: CanvasRenderingContext2D) => void): string {
+function getOrCreate(
+  key: string,
+  width: number,
+  height: number,
+  draw: (ctx: CanvasRenderingContext2D) => void
+): string {
   if (CACHE.has(key)) return CACHE.get(key)!;
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -112,9 +117,13 @@ function concrete(ctx: CanvasRenderingContext2D, w: number, h: number) {
   for (let i = 0; i < 50; i++) {
     ctx.beginPath();
     ctx.ellipse(
-      Math.random() * w, Math.random() * h,
-      Math.random() * 20 + 5, Math.random() * 10 + 3,
-      Math.random() * Math.PI, 0, Math.PI * 2
+      Math.random() * w,
+      Math.random() * h,
+      Math.random() * 20 + 5,
+      Math.random() * 10 + 3,
+      Math.random() * Math.PI,
+      0,
+      Math.PI * 2
     );
     ctx.fill();
   }
@@ -179,12 +188,12 @@ function halftonePattern(ctx: CanvasRenderingContext2D, w: number, h: number) {
 
 const GENERATORS: Record<string, (ctx: CanvasRenderingContext2D, w: number, h: number) => void> = {
   'Film Grain': filmGrain,
-  'Paper': paperFiber,
+  Paper: paperFiber,
   'Canvas Weave': canvasWeave,
   'Dust & Scratches': dustScratches,
-  'Concrete': concrete,
+  Concrete: concrete,
   'Diagonal Lines': diagonalLines,
-  'Crosshatch': crosshatch,
+  Crosshatch: crosshatch,
   'Soft Noise': softNoise,
   'Halftone Dots': halftonePattern,
 };

@@ -11,7 +11,10 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { logger } from '../lib/logger.js';
 import { resolveBrandGuideline } from '../lib/brandResolver.js';
-import { buildBrandContextWithKnowledge, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
+import {
+  buildBrandContextWithKnowledge,
+  BRAND_SECTION_PRESETS,
+} from '../lib/brandContextBuilder.js';
 import { improvePrompt } from '../services/geminiService.js';
 import { chargeCredits } from '../lib/credits.js';
 
@@ -29,7 +32,11 @@ const handlers: Partial<Record<OpName, Handler>> = {
     if (userId && brandId) {
       const { guideline } = await resolveBrandGuideline('', userId, brandId);
       if (guideline) {
-        const ctx = await buildBrandContextWithKnowledge(guideline as any, { userId, prompt: p.prompt, sections: BRAND_SECTION_PRESETS.copy });
+        const ctx = await buildBrandContextWithKnowledge(guideline as any, {
+          userId,
+          prompt: p.prompt,
+          sections: BRAND_SECTION_PRESETS.copy,
+        });
         brandPreamble = `# Brand Context\n${ctx}\n\n# User Request\n`;
       }
     }
@@ -70,7 +77,8 @@ router.post('/', authenticate, async (req, res) => {
     return res.json(r);
   } catch (e: any) {
     const r: Result = {
-      id: env.id, ok: false,
+      id: env.id,
+      ok: false,
       error: { code: e?.code ?? 'HANDLER_ERROR', message: e?.message ?? String(e) },
       ms: Date.now() - t0,
     };

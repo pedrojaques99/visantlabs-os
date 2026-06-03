@@ -18,20 +18,22 @@ export async function createStickyPrompt(prompt: string, name: string) {
     // Create a "Design Note" frame
     const frame = figma.createFrame();
     frame.name = `✨ Analysis: ${name}`;
-    
+
     // Setup background and style
     frame.fills = [{ type: 'SOLID', color: { r: 0.07, g: 0.07, b: 0.07 } }];
     frame.strokes = [{ type: 'SOLID', color: { r: 0.2, g: 0.2, b: 0.2 } }];
     frame.strokeWeight = 1;
     frame.cornerRadius = 12;
-    frame.effects = [{
-      type: 'DROP_SHADOW',
-      color: { r: 0, g: 0, b: 0, a: 0.25 },
-      offset: { x: 0, y: 4 },
-      radius: 12,
-      visible: true,
-      blendMode: 'NORMAL'
-    }];
+    frame.effects = [
+      {
+        type: 'DROP_SHADOW',
+        color: { r: 0, g: 0, b: 0, a: 0.25 },
+        offset: { x: 0, y: 4 },
+        radius: 12,
+        visible: true,
+        blendMode: 'NORMAL',
+      },
+    ];
 
     // Layout
     frame.layoutMode = 'VERTICAL';
@@ -48,7 +50,7 @@ export async function createStickyPrompt(prompt: string, name: string) {
     await Promise.all([
       figma.loadFontAsync({ family: 'Inter', style: 'Bold' }),
       figma.loadFontAsync({ family: 'Inter', style: 'Regular' }),
-      figma.loadFontAsync({ family: 'Inter', style: 'Medium' })
+      figma.loadFontAsync({ family: 'Inter', style: 'Medium' }),
     ]);
 
     // Header with Icon-like behavior
@@ -92,7 +94,7 @@ export async function createStickyPrompt(prompt: string, name: string) {
     // Position and finalize
     frame.x = targetX;
     frame.y = targetY;
-    
+
     figma.currentPage.appendChild(frame);
     figma.currentPage.selection = [frame];
     figma.viewport.scrollAndZoomIntoView([frame]);
@@ -126,9 +128,7 @@ export async function varySelectionColors(brandColors?: string[]) {
     return { r, g, b };
   };
 
-  const palette: RGB[] = (brandColors || [])
-    .map(hexToRgb)
-    .filter((c): c is RGB => c !== null);
+  const palette: RGB[] = (brandColors || []).map(hexToRgb).filter((c): c is RGB => c !== null);
 
   if (palette.length === 0) {
     figma.notify('Nenhuma cor da Brand Guideline disponível. Selecione cores na seção COLORS.');
@@ -264,7 +264,9 @@ async function ensureTextContrast(textNode: TextNode) {
 
   while (bgNode) {
     if ('fills' in bgNode && Array.isArray(bgNode.fills)) {
-      const solid = bgNode.fills.find(f => f.type === 'SOLID' && f.visible !== false) as SolidPaint;
+      const solid = bgNode.fills.find(
+        (f) => f.type === 'SOLID' && f.visible !== false
+      ) as SolidPaint;
       if (solid) {
         bgColor = solid.color;
         break;
@@ -274,12 +276,12 @@ async function ensureTextContrast(textNode: TextNode) {
   }
 
   const textFills = textNode.fills as Paint[];
-  const textFill = textFills.find(f => f.type === 'SOLID') as SolidPaint;
+  const textFill = textFills.find((f) => f.type === 'SOLID') as SolidPaint;
   if (!textFill) return;
 
   const bgLum = getLuminance(bgColor);
   const textLum = getLuminance(textFill.color);
-  
+
   const contrast = getContrastRatio(bgLum, textLum);
 
   // If contrast is poor (< 4.5), adjust text color
@@ -328,10 +330,10 @@ export async function selectionToSlices() {
   const createdSlices: SliceNode[] = [];
 
   for (const node of sorted) {
-    if (('width' in node) && node.parent) {
+    if ('width' in node && node.parent) {
       const parent = node.parent;
       const slice = figma.createSlice();
-      
+
       // Add to parent FIRST (Figma requires parent to be set before checking/setting layoutPositioning)
       if ('appendChild' in parent) {
         parent.appendChild(slice);
@@ -346,19 +348,21 @@ export async function selectionToSlices() {
 
       // Preserve your custom names (e.g. "01 / Capa")
       slice.name = node.name;
-      
+
       // Now position it exactly over the source node
       slice.x = node.x;
       slice.y = node.y;
       slice.resize(node.width, node.height);
-      
+
       // High Quality Instagram Settings (@2x PNG)
-      slice.exportSettings = [{
-        format: 'PNG',
-        suffix: '',
-        constraint: { type: 'SCALE', value: 2 },
-        contentsOnly: false // Captures seamless background from parent
-      }];
+      slice.exportSettings = [
+        {
+          format: 'PNG',
+          suffix: '',
+          constraint: { type: 'SCALE', value: 2 },
+          contentsOnly: false, // Captures seamless background from parent
+        },
+      ];
 
       createdSlices.push(slice);
     }

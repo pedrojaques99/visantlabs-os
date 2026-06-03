@@ -4,7 +4,7 @@ What changed and why.
 
 ## Changes
 
-- 
+-
 
 ## Test Plan
 

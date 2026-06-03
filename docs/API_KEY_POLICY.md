@@ -40,7 +40,6 @@ This document explains how we handle and secure your Gemini API keys when you ch
 1. **Restrict Your Key**: In Google AI Studio, set restrictions on your API key:
    - Application restrictions (e.g., IP address restrictions if possible)
    - API restrictions (limit to only Gemini API)
-   
 2. **Set Usage Quotas**: Configure daily/monthly usage quotas in Google Cloud Console to prevent unexpected charges
 
 3. **Monitor Billing**: Regularly check your Google Cloud billing to ensure usage aligns with expectations
@@ -86,14 +85,3 @@ If you have concerns about API key security or notice any suspicious activity:
 **Last Updated**: 2025-01-27
 
 **Version**: 1.0
-
-
-
-
-
-
-
-
-
-
-

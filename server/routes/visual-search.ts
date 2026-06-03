@@ -2,7 +2,11 @@ import express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery } from '../lib/cache-utils.js';
-import { aggregateSearch, classifyIntent, type SearchSource } from '../services/visualSearchService.js';
+import {
+  aggregateSearch,
+  classifyIntent,
+  type SearchSource,
+} from '../services/visualSearchService.js';
 import { processLetterCrops, getLibraryCrops } from '../services/letterCropService.js';
 
 const router = express.Router();
@@ -28,14 +32,18 @@ router.post('/query', searchLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Query is required' });
     }
 
-    const sanitized = query.trim().replace(/[<>"{}]/g, '').slice(0, 200);
+    const sanitized = query
+      .trim()
+      .replace(/[<>"{}]/g, '')
+      .slice(0, 200);
     if (sanitized.length < 2) {
       return res.status(400).json({ error: 'Query must be at least 2 characters' });
     }
 
     const validSources: SearchSource[] | undefined = sources
       ? (sources as string[]).filter((s): s is SearchSource =>
-          ['unsplash', 'pexels', 'pixabay', 'wikimedia', 'clearbit', 'svgl', 'google'].includes(s))
+          ['unsplash', 'pexels', 'pixabay', 'wikimedia', 'clearbit', 'svgl', 'google'].includes(s)
+        )
       : undefined;
 
     const intent = classifyIntent(sanitized);
@@ -47,7 +55,9 @@ router.post('/query', searchLimiter, async (req, res) => {
       try {
         const parsed = JSON.parse(cached);
         return res.json({ success: true, fromCache: true, ...parsed });
-      } catch { /* cache corrupted, continue */ }
+      } catch {
+        /* cache corrupted, continue */
+      }
     }
 
     const result = await aggregateSearch({
@@ -62,7 +72,7 @@ router.post('/query', searchLimiter, async (req, res) => {
     let letterCrops: any[] = [];
     const letterMatch = sanitized.match(LETTER_PATTERN);
     if (intent === 'letter' && letterMatch && page === 1) {
-      letterCrops = await processLetterCrops(result.results, letterMatch[1]).catch(err => {
+      letterCrops = await processLetterCrops(result.results, letterMatch[1]).catch((err) => {
         console.error('[visual-search] Letter crop pipeline error:', err.message);
         return [];
       });
@@ -79,11 +89,9 @@ router.post('/query', searchLimiter, async (req, res) => {
       letterCrops,
     };
 
-    await redisClient.setex(
-      redisCacheKey,
-      CACHE_TTL.VISUAL_SEARCH,
-      JSON.stringify(payload),
-    ).catch(() => {});
+    await redisClient
+      .setex(redisCacheKey, CACHE_TTL.VISUAL_SEARCH, JSON.stringify(payload))
+      .catch(() => {});
 
     return res.json({ success: true, fromCache: false, ...payload });
   } catch (error: any) {
@@ -111,7 +119,12 @@ router.get('/library', async (req, res) => {
 // GET /api/visual-search/sources
 router.get('/sources', (_req, res) => {
   const sources = [
-    { id: 'unsplash', name: 'Unsplash', available: !!process.env.UNSPLASH_ACCESS_KEY, type: 'photos' },
+    {
+      id: 'unsplash',
+      name: 'Unsplash',
+      available: !!process.env.UNSPLASH_ACCESS_KEY,
+      type: 'photos',
+    },
     { id: 'pexels', name: 'Pexels', available: !!process.env.PEXELS_API_KEY, type: 'photos' },
     { id: 'pixabay', name: 'Pixabay', available: !!process.env.PIXABAY_API_KEY, type: 'photos' },
     { id: 'wikimedia', name: 'Wikimedia Commons', available: true, type: 'manuscripts' },

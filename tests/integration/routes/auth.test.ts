@@ -42,7 +42,9 @@ describe('POST /api/auth/signin', () => {
     const { user } = await createUser();
     const agent = await request();
 
-    const res = await agent.post('/api/auth/signin').send({ email: user.email, password: 'wrong-password' });
+    const res = await agent
+      .post('/api/auth/signin')
+      .send({ email: user.email, password: 'wrong-password' });
 
     expect(res.status).toBe(401);
     expect(res.body.token).toBeUndefined();

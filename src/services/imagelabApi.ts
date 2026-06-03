@@ -129,17 +129,21 @@ export const imagelabApi = {
     return post('/remove-background', params as unknown as Record<string, unknown>);
   },
 
-  applyEffect(params: ApplyEffectParams): Promise<{ base64: string; width: number; height: number; imageUrl?: string }> {
+  applyEffect(
+    params: ApplyEffectParams
+  ): Promise<{ base64: string; width: number; height: number; imageUrl?: string }> {
     return post('/apply-effect', params as unknown as Record<string, unknown>);
   },
 
-  applyShader(params: ApplyShaderParams): Promise<{ base64: string; width: number; height: number; imageUrl?: string }> {
+  applyShader(
+    params: ApplyShaderParams
+  ): Promise<{ base64: string; width: number; height: number; imageUrl?: string }> {
     return post('/apply-shader', params as unknown as Record<string, unknown>);
   },
 
   listPresets(mode: string): Promise<Record<string, unknown>[]> {
     const url = `${API_BASE_URL}/imagelab/presets?mode=${encodeURIComponent(mode)}`;
-    return fetch(url, { headers: getAuthHeaders() }).then(r => {
+    return fetch(url, { headers: getAuthHeaders() }).then((r) => {
       if (!r.ok) throw new Error(`Failed to fetch presets: ${r.status}`);
       return r.json();
     });

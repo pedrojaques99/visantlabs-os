@@ -66,7 +66,8 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
     return (
       <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200">
         <Tooltip content={t('common.save') || 'Save'} position="top">
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onSave();
@@ -78,13 +79,17 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
           </Button>
         </Tooltip>
         <Tooltip content={t('branding.cancelEdit') || 'Cancel'} position="top">
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onEdit(); // Toggle edit mode off (dismiss)
             }}
-            className={`h-7 w-7 px-2 hover:bg-red-500/20 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${theme === 'dark' ? 'text-neutral-400 hover:text-red-400' : 'text-neutral-600 hover:text-red-500'
-              }`}
+            className={`h-7 w-7 px-2 hover:bg-red-500/20 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${
+              theme === 'dark'
+                ? 'text-neutral-400 hover:text-red-400'
+                : 'text-neutral-600 hover:text-red-500'
+            }`}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -98,57 +103,70 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
       {hasData && onRegenerate && (
         <Tooltip content={t('branding.regenerate') || 'Regenerate'} position="top">
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onRegenerate();
             }}
             disabled={isGenerating}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed relative transition-all duration-300 hover:text-brand-cyan ${theme === 'dark'
-              ? 'hover:bg-neutral-950/70 text-neutral-400 shadow-[0_0_10px_rgba(82,221,235,0.3)] hover:shadow-[0_0_12px_rgba(82,221,235,0.5)]'
-              : 'hover:bg-neutral-200 text-neutral-600'
-              }`}
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed relative transition-all duration-300 hover:text-brand-cyan ${
+              theme === 'dark'
+                ? 'hover:bg-neutral-950/70 text-neutral-400 shadow-[0_0_10px_rgba(82,221,235,0.3)] hover:shadow-[0_0_12px_rgba(82,221,235,0.5)]'
+                : 'hover:bg-neutral-200 text-neutral-600'
+            }`}
           >
             <RotateCw className="h-4 w-4" />
           </Button>
         </Tooltip>
       )}
       {hasData && (
-        <Tooltip content={copied ? (t('branding.copied') || 'Copied!') : (t('branding.copy') || 'Copy text')} position="top">
-          <Button variant="ghost"
+        <Tooltip
+          content={copied ? t('branding.copied') || 'Copied!' : t('branding.copy') || 'Copy text'}
+          position="top"
+        >
+          <Button
+            variant="ghost"
             onClick={handleCopy}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 transition-colors hover:text-brand-cyan ${theme === 'dark'
-              ? 'hover:bg-neutral-950/70 text-neutral-400'
-              : 'hover:bg-neutral-200 text-neutral-600'
-              }`}
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 transition-colors hover:text-brand-cyan ${
+              theme === 'dark'
+                ? 'hover:bg-neutral-950/70 text-neutral-400'
+                : 'hover:bg-neutral-200 text-neutral-600'
+            }`}
           >
-            {copied ? (
-              <Check className="h-4 w-4 text-brand-cyan" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
+            {copied ? <Check className="h-4 w-4 text-brand-cyan" /> : <Copy className="h-4 w-4" />}
           </Button>
         </Tooltip>
       )}
       {canEdit && (
         <Tooltip content={t('common.edit') || 'Edit'} position="top">
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onEdit();
             }}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 hover:text-brand-cyan ${theme === 'dark'
-              ? 'hover:bg-neutral-950/70 text-neutral-400'
-              : 'hover:bg-neutral-200 text-neutral-600'
-              }`}
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 hover:text-brand-cyan ${
+              theme === 'dark'
+                ? 'hover:bg-neutral-950/70 text-neutral-400'
+                : 'hover:bg-neutral-200 text-neutral-600'
+            }`}
           >
             <Edit2 className="h-4 w-4" />
           </Button>
         </Tooltip>
       )}
       {hasData && onFeedback && prompt && stepNumber && (
-        <Tooltip content={feedbackGiven === 'up' ? (t('branding.feedbackGiven') || 'Thanks for your feedback!') : (t('branding.thumbsUp') || 'Good result')} position="top">
-          <Button variant="ghost"
+        <Tooltip
+          content={
+            feedbackGiven === 'up'
+              ? t('branding.feedbackGiven') || 'Thanks for your feedback!'
+              : t('branding.thumbsUp') || 'Good result'
+          }
+          position="top"
+        >
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               if (feedbackGiven !== null) return;
@@ -156,12 +174,13 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               setFeedbackGiven('up');
             }}
             disabled={feedbackGiven !== null || isGenerating}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${feedbackGiven === 'up'
-              ? 'text-brand-cyan'
-              : theme === 'dark'
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+              feedbackGiven === 'up'
+                ? 'text-brand-cyan'
+                : theme === 'dark'
                 ? 'hover:bg-neutral-950/70 text-neutral-400 hover:text-brand-cyan'
                 : 'hover:bg-neutral-200 text-neutral-600 hover:text-brand-cyan'
-              }`}
+            }`}
           >
             <ThumbsUp className={`h-4 w-4 ${feedbackGiven === 'up' ? 'fill-current' : ''}`} />
           </Button>
@@ -170,4 +189,3 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
     </div>
   );
 };
-

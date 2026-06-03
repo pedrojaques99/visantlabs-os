@@ -86,6 +86,3 @@ const duotoneShaderDefinition: ShaderDefinition = {
 
 // Register the shader
 registerShader('duotone', duotoneShaderDefinition);
-
-
-

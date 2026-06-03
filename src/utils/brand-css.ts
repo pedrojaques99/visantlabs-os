@@ -1,7 +1,11 @@
-import type { BrandGuidelineGradient, BrandGuidelineShadow, BrandGuidelineBorder } from '@/lib/figma-types';
+import type {
+  BrandGuidelineGradient,
+  BrandGuidelineShadow,
+  BrandGuidelineBorder,
+} from '@/lib/figma-types';
 
 export function buildGradientCss(g: BrandGuidelineGradient): string {
-  const stops = g.stops.map(s => `${s.color} ${s.position}%`).join(', ');
+  const stops = g.stops.map((s) => `${s.color} ${s.position}%`).join(', ');
   return g.type === 'radial'
     ? `radial-gradient(circle, ${stops})`
     : `linear-gradient(${g.angle}deg, ${stops})`;

@@ -69,8 +69,14 @@ export const useCompressStore = create<CompressState>()((set) => ({
       quality: v,
       items: s.items.map((i) =>
         i.status === 'done' || i.status === 'error'
-          ? { ...i, status: 'queued' as const, resultBase64: '', compressedSize: 0, error: undefined }
-          : i,
+          ? {
+              ...i,
+              status: 'queued' as const,
+              resultBase64: '',
+              compressedSize: 0,
+              error: undefined,
+            }
+          : i
       ),
     })),
   setMaxDimension: (v) =>
@@ -78,8 +84,14 @@ export const useCompressStore = create<CompressState>()((set) => ({
       maxDimension: v,
       items: s.items.map((i) =>
         i.status === 'done' || i.status === 'error'
-          ? { ...i, status: 'queued' as const, resultBase64: '', compressedSize: 0, error: undefined }
-          : i,
+          ? {
+              ...i,
+              status: 'queued' as const,
+              resultBase64: '',
+              compressedSize: 0,
+              error: undefined,
+            }
+          : i
       ),
     })),
   setOutputFormat: (v) =>
@@ -87,8 +99,14 @@ export const useCompressStore = create<CompressState>()((set) => ({
       outputFormat: v,
       items: s.items.map((i) =>
         i.status === 'done' || i.status === 'error'
-          ? { ...i, status: 'queued' as const, resultBase64: '', compressedSize: 0, error: undefined }
-          : i,
+          ? {
+              ...i,
+              status: 'queued' as const,
+              resultBase64: '',
+              compressedSize: 0,
+              error: undefined,
+            }
+          : i
       ),
     })),
   setIsProcessing: (v) => set({ isProcessing: v }),
@@ -97,6 +115,12 @@ export const useCompressStore = create<CompressState>()((set) => ({
       s.items.forEach((item) => {
         if (item.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(item.sourceUrl);
       });
-      return { items: [], quality: 80, maxDimension: 2048, outputFormat: 'jpeg', isProcessing: false };
+      return {
+        items: [],
+        quality: 80,
+        maxDimension: 2048,
+        outputFormat: 'jpeg',
+        isProcessing: false,
+      };
     }),
 }));

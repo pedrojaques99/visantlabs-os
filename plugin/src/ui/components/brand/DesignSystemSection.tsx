@@ -40,8 +40,12 @@ export function DesignSystemSection() {
         {designSystem ? (
           <div className="space-y-2">
             <div className="bg-muted/50 border border-border rounded px-3 py-2">
-              <p className="text-xs font-mono font-semibold">{designSystem.name || 'Imported Design System'}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">Format: {designSystem.format || 'unknown'}</p>
+              <p className="text-xs font-mono font-semibold">
+                {designSystem.name || 'Imported Design System'}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Format: {designSystem.format || 'unknown'}
+              </p>
               {designSystem.tokens && (
                 <p className="text-[10px] text-muted-foreground">
                   Tokens: {Object.keys(designSystem.tokens).length}
@@ -50,7 +54,12 @@ export function DesignSystemSection() {
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={handleExport} variant="outline" size="sm" className="flex-1 text-xs h-8">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs h-8"
+              >
                 <Download size={12} className="mr-1" />
                 Export
               </Button>

@@ -3,7 +3,17 @@
  * Defines sidebar navigation structure and tab routing
  */
 
-import { Home, Server, Terminal, Puzzle, Layers, Workflow, Diamond, Bot, Coins } from 'lucide-react';
+import {
+  Home,
+  Server,
+  Terminal,
+  Puzzle,
+  Layers,
+  Workflow,
+  Diamond,
+  Bot,
+  Coins,
+} from 'lucide-react';
 import type { NavigationItem } from '@/components/ui/NavigationSidebar';
 
 export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
@@ -126,13 +136,13 @@ export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [
 
 // Helper to build nav with dynamic MCP tools sections
 export function buildNavigationWithMcpTools(mcpToolNames: string[]): NavigationItem[] {
-  return DOCS_NAVIGATION_ITEMS.map(item => {
+  return DOCS_NAVIGATION_ITEMS.map((item) => {
     if (item.id === 'mcp' && mcpToolNames.length > 0) {
       return {
         ...item,
         sections: [
           ...(item.sections || []),
-          ...mcpToolNames.map(name => ({
+          ...mcpToolNames.map((name) => ({
             id: `tool-${name}`,
             label: name,
           })),

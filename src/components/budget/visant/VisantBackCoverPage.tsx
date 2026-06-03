@@ -21,7 +21,15 @@ export const VisantBackCoverPage: React.FC<VisantBackCoverPageProps> = ({
   const finalCTAText = data.finalCTAText || 'VAMOS CONSTRUIR ALGO GRANDE JUNTOS?';
 
   // Arrow decorative element
-  const Arrow = ({ rotation = 0, opacity = 0.3, style: customStyle = {} }: { rotation?: number; opacity?: number; style?: React.CSSProperties }) => (
+  const Arrow = ({
+    rotation = 0,
+    opacity = 0.3,
+    style: customStyle = {},
+  }: {
+    rotation?: number;
+    opacity?: number;
+    style?: React.CSSProperties;
+  }) => (
     <svg
       width="310"
       height="310"
@@ -56,12 +64,8 @@ export const VisantBackCoverPage: React.FC<VisantBackCoverPageProps> = ({
       {/* Background SVG */}
       <BackPageBackground accentColor={accentColor} opacity={1} />
 
-
-
       {/* Top section - Logo and title */}
-      <div
-        className="flex items-start justify-between flex-shrink-0 relative z-10"
-      >
+      <div className="flex items-start justify-between flex-shrink-0 relative z-10">
         <div className="flex flex-col gap-2">
           <div
             style={{
@@ -73,7 +77,9 @@ export const VisantBackCoverPage: React.FC<VisantBackCoverPageProps> = ({
           >
             <InlineEditor
               value={`PROPOSTA ${year}`}
-              onChange={(newValue) => onDataChange?.({ year: String(newValue).replace('PROPOSTA ', '') })}
+              onChange={(newValue) =>
+                onDataChange?.({ year: String(newValue).replace('PROPOSTA ', '') })
+              }
               editable={editable}
               style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '1.2px' }}
             />
@@ -158,4 +164,3 @@ export const VisantBackCoverPage: React.FC<VisantBackCoverPageProps> = ({
     </div>
   );
 };
-

@@ -23,7 +23,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
   const hourlyRate = data.paymentInfo?.hourlyRate || 0;
   const totalFromHours = totalHours * hourlyRate;
   const calculateGrandTotal = () => {
-    return data.deliverables.reduce((sum, d) => sum + (d.quantity * d.unitValue), 0);
+    return data.deliverables.reduce((sum, d) => sum + d.quantity * d.unitValue, 0);
   };
   const finalTotal = totalFromHours > 0 ? totalFromHours : calculateGrandTotal();
   const pixKey = data.paymentInfo?.pixKey || '29673608000169';
@@ -76,9 +76,10 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
     },
   ];
 
-  const paymentMethods = data.paymentInfo?.paymentMethods && data.paymentInfo.paymentMethods.length > 0
-    ? data.paymentInfo.paymentMethods
-    : defaultPaymentMethods;
+  const paymentMethods =
+    data.paymentInfo?.paymentMethods && data.paymentInfo.paymentMethods.length > 0
+      ? data.paymentInfo.paymentMethods
+      : defaultPaymentMethods;
 
   const getPaymentIcon = (type: string) => {
     if (type === 'pix') {
@@ -115,7 +116,16 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
           }}
         >
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
-            <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
+            <rect
+              x="2"
+              y="5"
+              width="20"
+              height="14"
+              rx="2"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
+            />
             <line x1="2" y1="10" x2="22" y2="10" stroke="currentColor" strokeWidth="2" />
           </svg>
         </div>
@@ -136,7 +146,9 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
         >
           <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
             <circle cx="12" cy="12" r="10" />
-            <text x="12" y="16" textAnchor="middle" fontSize="12" fill="white" fontWeight="bold">₿</text>
+            <text x="12" y="16" textAnchor="middle" fontSize="12" fill="white" fontWeight="bold">
+              ₿
+            </text>
           </svg>
         </div>
       );
@@ -155,7 +167,10 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
       }}
     >
       {/* Header with Orçamento + Dotted Pattern + Brand Name Banner */}
-      <div className="flex items-center justify-between pb-4 border-b" style={{ borderColor: secondaryTextColor }}>
+      <div
+        className="flex items-center justify-between pb-4 border-b"
+        style={{ borderColor: secondaryTextColor }}
+      >
         <div className="flex items-center gap-3">
           <DottedPattern />
           <InlineEditor
@@ -200,7 +215,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
         >
           <InlineEditor
             value="Métodos de pagamento"
-            onChange={() => { }}
+            onChange={() => {}}
             editable={false}
             style={{ fontSize: '16px', fontWeight: 'bold' }}
           />
@@ -270,7 +285,9 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
                   style={{ fontSize: '15px' }}
                 />
                 {method.type === 'credit' && (
-                  <span style={{ fontSize: '15px', opacity: 0.5, display: 'block', marginTop: '4px' }}>
+                  <span
+                    style={{ fontSize: '15px', opacity: 0.5, display: 'block', marginTop: '4px' }}
+                  >
                     (consultar taxas)
                   </span>
                 )}
@@ -332,4 +349,3 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
     </div>
   );
 };
-

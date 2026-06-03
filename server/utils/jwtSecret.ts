@@ -28,5 +28,3 @@ export const getJwtSecret = (): string => {
 };
 
 export const JWT_SECRET = getJwtSecret();
-
-

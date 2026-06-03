@@ -22,7 +22,7 @@ if (!mongoUri || mongoUri === 'mongodb://localhost:27017') {
   console.warn('   3. For MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/');
   console.warn('   4. For local MongoDB: Make sure MongoDB is running on localhost:27017');
   console.warn('');
-  
+
   if (!mongoUri || mongoUri === 'mongodb://localhost:27017') {
     console.error('❌ Cannot start Prisma Studio without a valid MONGODB_URI');
     console.error('   Please set MONGODB_URI in your .env.local file');
@@ -47,4 +47,3 @@ try {
   console.error('❌ Failed to start Prisma Studio');
   process.exit(1);
 }
-

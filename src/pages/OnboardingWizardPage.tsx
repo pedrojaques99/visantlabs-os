@@ -74,11 +74,16 @@ export const OnboardingWizardPage: React.FC = () => {
                 </div>
 
                 <div className="flex gap-3">
-                  <Button variant="ghost" onClick={handleSkip} disabled={isSubmitting} className="flex-1">
+                  <Button
+                    variant="ghost"
+                    onClick={handleSkip}
+                    disabled={isSubmitting}
+                    className="flex-1"
+                  >
                     Pular
                   </Button>
                   <Button
-                    onClick={() => selectedCategory ? setStep(1) : handleComplete(true)}
+                    onClick={() => (selectedCategory ? setStep(1) : handleComplete(true))}
                     disabled={isSubmitting}
                     className="flex-1 gap-2"
                   >
@@ -95,13 +100,20 @@ export const OnboardingWizardPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
               >
-                <h2 className="text-xl font-semibold text-white font-mono mb-2">Crie seu primeiro mockup</h2>
+                <h2 className="text-xl font-semibold text-white font-mono mb-2">
+                  Crie seu primeiro mockup
+                </h2>
                 <p className="text-neutral-400 text-sm font-mono mb-6">
                   Veja o poder da plataforma em acao. Crie um mockup profissional em segundos.
                 </p>
 
                 <div className="flex gap-3">
-                  <Button variant="ghost" onClick={handleSkip} disabled={isSubmitting} className="flex-1">
+                  <Button
+                    variant="ghost"
+                    onClick={handleSkip}
+                    disabled={isSubmitting}
+                    className="flex-1"
+                  >
                     Pular
                   </Button>
                   <Button

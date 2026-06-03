@@ -9,18 +9,17 @@ import { ObjectId } from 'mongodb';
 vi.mock('../../../src/services/geminiService.js', async (importOriginal) => {
   const actual = await importOriginal();
   return {
-    ...actual as any,
+    ...(actual as any),
   };
 });
 
 describe('Branding Routes Integration', () => {
-
   describe('POST /api/branding/generate-step', () => {
     it('returns 401 if not authenticated', async () => {
       const agent = await request();
       const res = await agent.post('/api/branding/generate-step').send({
         step: 1,
-        prompt: 'test prompt'
+        prompt: 'test prompt',
       });
       expect(res.status).toBe(401);
     });
@@ -35,7 +34,7 @@ describe('Branding Routes Integration', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           step: 1,
-          prompt: 'A test brand'
+          prompt: 'A test brand',
         });
 
       // Free user explicitly initialized with 0 credits and without usage shouldn't generate (Wait, users test factory assigns monthlyCredits: 0)
@@ -55,7 +54,7 @@ describe('Branding Routes Integration', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           step: 1,
-          prompt: 'A futuristic tech company'
+          prompt: 'A futuristic tech company',
         });
 
       if (res.status !== 200) console.log('Generate Error:', res.body);
@@ -86,8 +85,8 @@ describe('Branding Routes Integration', () => {
           prompt: 'Tech company',
           previousData: {
             swot: { strengths: [] },
-            references: []
-          }
+            references: [],
+          },
         });
 
       // Since MSW mock returns text, Step 8 (Palettes) fails JSON extraction but handles gracefully.
@@ -109,16 +108,18 @@ describe('Branding Routes Integration', () => {
         .send({
           prompt: 'Coffee shop',
           name: 'Central Perk',
-          data: { step1: 'Research' }
+          data: { step1: 'Research' },
         });
 
       expect(res.status).toBe(200);
       expect(res.body.project).toBeDefined();
       expect(res.body.project.name).toBe('Central Perk');
       expect(res.body.project._id).toBeDefined();
-      
+
       const { prisma } = await import('../../../server/db/prisma.js');
-      const saved = await prisma.brandingProject.findUnique({ where: { id: res.body.project._id } });
+      const saved = await prisma.brandingProject.findUnique({
+        where: { id: res.body.project._id },
+      });
       expect(saved).not.toBeNull();
     });
 
@@ -135,7 +136,7 @@ describe('Branding Routes Integration', () => {
           projectId: project.id,
           prompt: 'Coffee shop',
           name: 'New Name',
-          data: { step1: 'Updated' }
+          data: { step1: 'Updated' },
         });
 
       expect(res.status).toBe(200);
@@ -154,9 +155,7 @@ describe('Branding Routes Integration', () => {
       await createBrandingProject({ userId: user2.id, name: 'Brand 2' });
 
       const agent = await request();
-      const res = await agent
-        .get('/api/branding')
-        .set('Authorization', `Bearer ${token}`);
+      const res = await agent.get('/api/branding').set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.projects)).toBe(true);
@@ -213,7 +212,7 @@ describe('Branding Routes Integration', () => {
       if (res.status !== 200) console.log('Usage Error:', res.body);
       expect(res.status).toBe(200);
       expect(res.body.creditsDeducted).toBe(1);
-      
+
       const { prisma } = await import('../../../server/db/prisma.js');
       const updatedUser = await prisma.user.findUnique({ where: { id: user.id } });
       // Total monthly credits should have been consumed

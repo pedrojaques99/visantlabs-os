@@ -21,7 +21,6 @@ const getAuthHeaders = () => {
   };
 };
 
-
 export const brandingApi = {
   async getAll(): Promise<BrandingProject[]> {
     try {
@@ -50,9 +49,11 @@ export const brandingApi = {
       const data = await response.json();
       return Array.isArray(data.projects) ? data.projects : [];
     } catch (error: any) {
-      if (error?.message?.includes('Failed to fetch') ||
+      if (
+        error?.message?.includes('Failed to fetch') ||
         error?.message?.includes('NetworkError') ||
-        error?.name === 'TypeError') {
+        error?.name === 'TypeError'
+      ) {
         console.error('Network error fetching branding projects:', error);
         return [];
       }
@@ -186,4 +187,3 @@ export const brandingApi = {
     }
   },
 };
-

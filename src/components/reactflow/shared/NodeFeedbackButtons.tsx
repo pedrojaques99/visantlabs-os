@@ -46,12 +46,21 @@ export const NodeFeedbackButtons: React.FC<NodeFeedbackButtonsProps> = ({
         variant="ghost"
         size="xs"
         disabled={disabled}
-        onClick={(e) => { e.stopPropagation(); feedback.submit('up'); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          feedback.submit('up');
+        }}
         onMouseDown={(e) => e.stopPropagation()}
-        title={generationId ? (feedback.rating === 'up' ? 'Remover feedback' : 'Valeu! (Melhora o modelo)') : 'Sem generationId'}
+        title={
+          generationId
+            ? feedback.rating === 'up'
+              ? 'Remover feedback'
+              : 'Valeu! (Melhora o modelo)'
+            : 'Sem generationId'
+        }
         className={cn(
           'transition-colors',
-          feedback.rating === 'up' && '!text-green-400 !bg-green-400/10',
+          feedback.rating === 'up' && '!text-green-400 !bg-green-400/10'
         )}
       >
         <ThumbsUp size={12} className={cn(feedback.rating === 'up' && 'fill-current')} />
@@ -60,12 +69,21 @@ export const NodeFeedbackButtons: React.FC<NodeFeedbackButtonsProps> = ({
         variant="ghost"
         size="xs"
         disabled={disabled}
-        onClick={(e) => { e.stopPropagation(); feedback.submit('down'); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          feedback.submit('down');
+        }}
         onMouseDown={(e) => e.stopPropagation()}
-        title={generationId ? (feedback.rating === 'down' ? 'Remover feedback' : 'Ruim (Reportar)') : 'Sem generationId'}
+        title={
+          generationId
+            ? feedback.rating === 'down'
+              ? 'Remover feedback'
+              : 'Ruim (Reportar)'
+            : 'Sem generationId'
+        }
         className={cn(
           'transition-colors',
-          feedback.rating === 'down' && '!text-destructive !bg-destructive/10',
+          feedback.rating === 'down' && '!text-destructive !bg-destructive/10'
         )}
       >
         <ThumbsDown size={12} className={cn(feedback.rating === 'down' && 'fill-current')} />

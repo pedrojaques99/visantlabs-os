@@ -39,18 +39,25 @@ export interface HarmonizedTags extends RawTags {
 
 /** Conflitos conhecidos: se a chave está presente, o valor não pode coexistir. */
 const LIGHTING_CONFLICTS: Record<string, string[]> = {
-  'Night Scene':   ['Golden Hour', 'Direct Sunlight', 'Hard Sunlight', 'Blue Hour', 'Overcast', 'North-Window Daylight'],
-  'Golden Hour':   ['Night Scene', 'Blue Hour', 'Neon Accent Glow'],
-  'Blue Hour':     ['Golden Hour', 'Direct Sunlight', 'Hard Sunlight'],
+  'Night Scene': [
+    'Golden Hour',
+    'Direct Sunlight',
+    'Hard Sunlight',
+    'Blue Hour',
+    'Overcast',
+    'North-Window Daylight',
+  ],
+  'Golden Hour': ['Night Scene', 'Blue Hour', 'Neon Accent Glow'],
+  'Blue Hour': ['Golden Hour', 'Direct Sunlight', 'Hard Sunlight'],
   'Studio Lighting': ['Golden Hour', 'Direct Sunlight', 'Overcast', 'Dappled Leaf Light'],
   'Hard Sunlight': ['Overcast', 'Diffused', 'Soft Light'],
-  'Overcast':      ['Hard Sunlight', 'Direct Sunlight', 'Chiaroscuro'],
+  Overcast: ['Hard Sunlight', 'Direct Sunlight', 'Chiaroscuro'],
 };
 
 const EFFECT_CONFLICTS: Record<string, string[]> = {
   Monochrome: ['Teal & Amber Grade', 'Warm Color Grade'],
   'Teal & Amber Grade': ['Monochrome', 'Warm Color Grade'],
-  'Warm Color Grade':   ['Monochrome', 'Teal & Amber Grade'],
+  'Warm Color Grade': ['Monochrome', 'Teal & Amber Grade'],
 };
 
 /**
@@ -60,97 +67,103 @@ const EFFECT_CONFLICTS: Record<string, string[]> = {
  */
 const ARCHETYPE_DEFAULTS: Record<
   string,
-  Partial<{ locations: string[]; lighting: string[]; angles: string[]; effects: string[]; materials: string[] }>
+  Partial<{
+    locations: string[];
+    lighting: string[];
+    angles: string[];
+    effects: string[];
+    materials: string[];
+  }>
 > = {
   Luxury: {
     locations: ['Black Marble Slab', 'Limestone Surfaces'],
-    lighting:  ['Chiaroscuro', 'Rim Light'],
-    angles:    ['Close-Up', 'Macro 100mm'],
-    effects:   ['Subsurface Scattering', 'Ray-tracing'],
+    lighting: ['Chiaroscuro', 'Rim Light'],
+    angles: ['Close-Up', 'Macro 100mm'],
+    effects: ['Subsurface Scattering', 'Ray-tracing'],
     materials: ['Polished Gold', 'Frosted Glass'],
   },
   Premium: {
     locations: ['Minimalist Studio', 'Modern Office'],
-    lighting:  ['Large Softbox Key', 'Soft Light'],
-    angles:    ['Three-Quarter View', 'Hero Angle'],
-    effects:   ['Micro-contrast', '8k Resolution'],
+    lighting: ['Large Softbox Key', 'Soft Light'],
+    angles: ['Three-Quarter View', 'Hero Angle'],
+    effects: ['Micro-contrast', '8k Resolution'],
     materials: ['Brushed Aluminum', 'Tactile Paper Grain'],
   },
   Sport: {
     locations: ['Brutalist Concrete', 'Urban City'],
-    lighting:  ['Hard Rim Light', 'Direct Sunlight'],
-    angles:    ['Low Angle', 'Hero Angle'],
-    effects:   ['Motion Blur', 'High Contrast'],
+    lighting: ['Hard Rim Light', 'Direct Sunlight'],
+    angles: ['Low Angle', 'Hero Angle'],
+    effects: ['Motion Blur', 'High Contrast'],
     materials: ['Brushed Aluminum', 'Carbon Fiber Weave'],
   },
   Tech: {
     locations: ['Modern Office', 'Workspace'],
-    lighting:  ['Cinematic', 'Rim Light'],
-    angles:    ['Three-Quarter View', 'Hero Angle'],
-    effects:   ['Ray-tracing', 'Anamorphic Flare'],
+    lighting: ['Cinematic', 'Rim Light'],
+    angles: ['Three-Quarter View', 'Hero Angle'],
+    effects: ['Ray-tracing', 'Anamorphic Flare'],
     materials: ['Brushed Aluminum', 'Liquid Chrome'],
   },
   Minimalist: {
     locations: ['Minimalist Studio', 'Seamless Paper Backdrop'],
-    lighting:  ['Soft Light', 'Diffused'],
-    angles:    ['Eye-Level', 'Top-Down (Flat Lay)'],
-    effects:   ['Micro-contrast'],
+    lighting: ['Soft Light', 'Diffused'],
+    angles: ['Eye-Level', 'Top-Down (Flat Lay)'],
+    effects: ['Micro-contrast'],
     materials: ['Uncoated Cotton Paper', 'Tactile Paper Grain'],
   },
   'Eco-friendly': {
     locations: ['Wild Botanical Scene', 'Wooden Table'],
-    lighting:  ['Natural Light', 'Golden Hour', 'Dappled Leaf Light'],
-    angles:    ['Top-Down (Flat Lay)', 'Close-Up'],
-    effects:   ['Bokeh'],
+    lighting: ['Natural Light', 'Golden Hour', 'Dappled Leaf Light'],
+    angles: ['Top-Down (Flat Lay)', 'Close-Up'],
+    effects: ['Bokeh'],
     materials: ['Recycled Kraft', 'Raw Linen'],
   },
   Sustainable: {
     locations: ['Wild Botanical Scene', 'Linen Tabletop'],
-    lighting:  ['Natural Light', 'Diffused'],
-    angles:    ['Top-Down (Flat Lay)'],
-    effects:   ['Bokeh'],
+    lighting: ['Natural Light', 'Diffused'],
+    angles: ['Top-Down (Flat Lay)'],
+    effects: ['Bokeh'],
     materials: ['Recycled Kraft', 'Raw Linen'],
   },
   Handmade: {
     locations: ['Wooden Table', 'Linen Tabletop'],
-    lighting:  ['Golden Hour', 'Warm Practical Tungsten'],
-    angles:    ['Close-Up', 'Top-Down (Flat Lay)'],
-    effects:   ['35mm Film Grain'],
+    lighting: ['Golden Hour', 'Warm Practical Tungsten'],
+    angles: ['Close-Up', 'Top-Down (Flat Lay)'],
+    effects: ['35mm Film Grain'],
     materials: ['Letterpress Cardstock', 'Raw Linen'],
   },
   Playful: {
     locations: ['Light Box', 'Seamless Paper Backdrop'],
-    lighting:  ['Studio Lighting', 'Hard Sunlight'],
-    angles:    ['Dutch Angle', 'Eye-Level'],
-    effects:   ['High Contrast', 'Halftone'],
+    lighting: ['Studio Lighting', 'Hard Sunlight'],
+    angles: ['Dutch Angle', 'Eye-Level'],
+    effects: ['High Contrast', 'Halftone'],
     materials: ['Soft-touch Plastic', 'Glossy Lamination'],
   },
   Vintage: {
     locations: ['Weathered Concrete Wall', 'Painted Brick Alley'],
-    lighting:  ['Overcast', 'Warm Practical Tungsten'],
-    angles:    ['Eye-Level'],
-    effects:   ['Vintage Film', '35mm Film Grain', 'Halation Glow'],
+    lighting: ['Overcast', 'Warm Practical Tungsten'],
+    angles: ['Eye-Level'],
+    effects: ['Vintage Film', '35mm Film Grain', 'Halation Glow'],
     materials: ['Recycled Kraft'],
   },
   Editorial: {
     locations: ['Seamless Paper Backdrop', 'Cyclorama Studio'],
-    lighting:  ['Large Softbox Key', 'Soft Light'],
-    angles:    ['Three-Quarter View', 'Knolling Layout'],
-    effects:   ['Micro-contrast'],
+    lighting: ['Large Softbox Key', 'Soft Light'],
+    angles: ['Three-Quarter View', 'Knolling Layout'],
+    effects: ['Micro-contrast'],
     materials: ['Uncoated Cotton Paper', 'Embossed'],
   },
   Corporate: {
     locations: ['Modern Office', 'Workspace'],
-    lighting:  ['Studio Lighting', 'North-Window Daylight'],
-    angles:    ['Eye-Level', 'Three-Quarter View'],
-    effects:   ['Micro-contrast'],
+    lighting: ['Studio Lighting', 'North-Window Daylight'],
+    angles: ['Eye-Level', 'Three-Quarter View'],
+    effects: ['Micro-contrast'],
     materials: ['Brushed Aluminum', 'Tactile Paper Grain'],
   },
   Food: {
     locations: ['Wooden Table', 'Linen Tabletop'],
-    lighting:  ['Golden Hour', 'Natural Light'],
-    angles:    ['Top-Down (Flat Lay)', 'Close-Up'],
-    effects:   ['Shallow Depth of Field'],
+    lighting: ['Golden Hour', 'Natural Light'],
+    angles: ['Top-Down (Flat Lay)', 'Close-Up'],
+    effects: ['Shallow Depth of Field'],
     materials: ['Ceramic', 'Raw Linen'],
   },
 };
@@ -164,10 +177,10 @@ const fuzzyLookup = (tag: string, pool: readonly string[]): string | null => {
   const trimmed = tag.trim();
   if (pool.includes(trimmed)) return trimmed;
   const lower = trimmed.toLowerCase();
-  const ci = pool.find(p => p.toLowerCase() === lower);
+  const ci = pool.find((p) => p.toLowerCase() === lower);
   if (ci) return ci;
   const partial = pool.find(
-    p => p.toLowerCase().includes(lower) || lower.includes(p.toLowerCase()),
+    (p) => p.toLowerCase().includes(lower) || lower.includes(p.toLowerCase())
   );
   return partial ?? null;
 };
@@ -176,7 +189,7 @@ const normalizeAgainstPool = (
   tags: string[],
   pool: readonly string[],
   rationale: string[],
-  label: string,
+  label: string
 ): string[] => {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -200,7 +213,7 @@ const resolveConflicts = (
   tags: string[],
   conflictMap: Record<string, string[]>,
   rationale: string[],
-  label: string,
+  label: string
 ): string[] => {
   // Estratégia: percorre na ordem fornecida e remove quaisquer conflitos
   // posteriores. A primeira escolha do usuário ganha precedência.
@@ -212,7 +225,7 @@ const resolveConflicts = (
       continue;
     }
     kept.push(tag);
-    (conflictMap[tag] ?? []).forEach(b => banned.add(b));
+    (conflictMap[tag] ?? []).forEach((b) => banned.add(b));
   }
   return kept;
 };
@@ -223,13 +236,13 @@ const fillIfEmpty = (
   pool: readonly string[],
   rationale: string[],
   label: string,
-  archetype: string,
+  archetype: string
 ): string[] => {
   if (current.length > 0 || !defaults || defaults.length === 0) return current;
-  const valid = defaults.filter(d => pool.includes(d));
+  const valid = defaults.filter((d) => pool.includes(d));
   if (valid.length === 0) return current;
   rationale.push(
-    `[${label}] vazio → preenchido com [${valid.join(', ')}] a partir do arquétipo "${archetype}"`,
+    `[${label}] vazio → preenchido com [${valid.join(', ')}] a partir do arquétipo "${archetype}"`
   );
   return valid;
 };
@@ -242,26 +255,81 @@ export function harmonizeTags(raw: RawTags): HarmonizedTags {
   const rationale: string[] = [];
 
   // 1. Normalização contra os pools.
-  let branding = normalizeAgainstPool(raw.brandingTags, AVAILABLE_BRANDING_TAGS, rationale, 'branding');
-  let locations = normalizeAgainstPool(raw.locationTags, AVAILABLE_LOCATION_TAGS, rationale, 'location');
+  let branding = normalizeAgainstPool(
+    raw.brandingTags,
+    AVAILABLE_BRANDING_TAGS,
+    rationale,
+    'branding'
+  );
+  let locations = normalizeAgainstPool(
+    raw.locationTags,
+    AVAILABLE_LOCATION_TAGS,
+    rationale,
+    'location'
+  );
   let angles = normalizeAgainstPool(raw.angleTags, AVAILABLE_ANGLE_TAGS, rationale, 'angle');
-  let lighting = normalizeAgainstPool(raw.lightingTags, AVAILABLE_LIGHTING_TAGS, rationale, 'lighting');
+  let lighting = normalizeAgainstPool(
+    raw.lightingTags,
+    AVAILABLE_LIGHTING_TAGS,
+    rationale,
+    'lighting'
+  );
   let effects = normalizeAgainstPool(raw.effectTags, AVAILABLE_EFFECT_TAGS, rationale, 'effect');
-  let materials = normalizeAgainstPool(raw.materialTags, AVAILABLE_MATERIAL_TAGS, rationale, 'material');
+  let materials = normalizeAgainstPool(
+    raw.materialTags,
+    AVAILABLE_MATERIAL_TAGS,
+    rationale,
+    'material'
+  );
 
   // 2. Resolve conflitos em lighting e effects.
   lighting = resolveConflicts(lighting, LIGHTING_CONFLICTS, rationale, 'lighting');
   effects = resolveConflicts(effects, EFFECT_CONFLICTS, rationale, 'effect');
 
   // 3. Gap fill por arquétipo — usa o primeiro branding tag que tem defaults.
-  const matchedArchetype = branding.find(b => ARCHETYPE_DEFAULTS[b]);
+  const matchedArchetype = branding.find((b) => ARCHETYPE_DEFAULTS[b]);
   if (matchedArchetype) {
     const defaults = ARCHETYPE_DEFAULTS[matchedArchetype];
-    locations = fillIfEmpty(locations, defaults.locations, AVAILABLE_LOCATION_TAGS, rationale, 'location', matchedArchetype);
-    lighting  = fillIfEmpty(lighting,  defaults.lighting,  AVAILABLE_LIGHTING_TAGS, rationale, 'lighting', matchedArchetype);
-    angles    = fillIfEmpty(angles,    defaults.angles,    AVAILABLE_ANGLE_TAGS,    rationale, 'angle',    matchedArchetype);
-    effects   = fillIfEmpty(effects,   defaults.effects,   AVAILABLE_EFFECT_TAGS,   rationale, 'effect',   matchedArchetype);
-    materials = fillIfEmpty(materials, defaults.materials, AVAILABLE_MATERIAL_TAGS, rationale, 'material', matchedArchetype);
+    locations = fillIfEmpty(
+      locations,
+      defaults.locations,
+      AVAILABLE_LOCATION_TAGS,
+      rationale,
+      'location',
+      matchedArchetype
+    );
+    lighting = fillIfEmpty(
+      lighting,
+      defaults.lighting,
+      AVAILABLE_LIGHTING_TAGS,
+      rationale,
+      'lighting',
+      matchedArchetype
+    );
+    angles = fillIfEmpty(
+      angles,
+      defaults.angles,
+      AVAILABLE_ANGLE_TAGS,
+      rationale,
+      'angle',
+      matchedArchetype
+    );
+    effects = fillIfEmpty(
+      effects,
+      defaults.effects,
+      AVAILABLE_EFFECT_TAGS,
+      rationale,
+      'effect',
+      matchedArchetype
+    );
+    materials = fillIfEmpty(
+      materials,
+      defaults.materials,
+      AVAILABLE_MATERIAL_TAGS,
+      rationale,
+      'material',
+      matchedArchetype
+    );
   }
 
   return {

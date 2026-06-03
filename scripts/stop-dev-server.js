@@ -7,8 +7,9 @@ function stopServers() {
 
     if (isWindows) {
       // Use powershell to list processes with their command lines
-      const psCommand = 'powershell -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like \'*server/index.ts*\' -and $_.Name -eq \'node.exe\' } | Select-Object -ExpandProperty ProcessId"';
-      
+      const psCommand =
+        "powershell -Command \"Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*server/index.ts*' -and $_.Name -eq 'node.exe' } | Select-Object -ExpandProperty ProcessId\"";
+
       let pidsString = '';
       try {
         pidsString = execSync(psCommand).toString();
@@ -17,18 +18,19 @@ function stopServers() {
         return;
       }
 
-      const pids = pidsString.split(/\s+/)
-        .map(p => p.trim())
-        .filter(p => /^\d+$/.test(p))
-        .map(p => parseInt(p))
-        .filter(pid => pid !== currentPid);
+      const pids = pidsString
+        .split(/\s+/)
+        .map((p) => p.trim())
+        .filter((p) => /^\d+$/.test(p))
+        .map((p) => parseInt(p))
+        .filter((pid) => pid !== currentPid);
 
       if (pids.length === 0) {
         console.log('No active development servers found.');
         return;
       }
 
-      pids.forEach(pid => {
+      pids.forEach((pid) => {
         try {
           process.kill(pid, 'SIGKILL');
           console.log(`Successfully stopped server process: ${pid}`);
@@ -41,13 +43,14 @@ function stopServers() {
       try {
         const pgrepCommand = "pgrep -f 'server/index.ts'";
         const pidsString = execSync(pgrepCommand).toString();
-        const pids = pidsString.split('\n')
-          .map(p => p.trim())
-          .filter(p => /^\d+$/.test(p))
-          .map(p => parseInt(p))
-          .filter(pid => pid !== currentPid);
+        const pids = pidsString
+          .split('\n')
+          .map((p) => p.trim())
+          .filter((p) => /^\d+$/.test(p))
+          .map((p) => parseInt(p))
+          .filter((pid) => pid !== currentPid);
 
-        pids.forEach(pid => {
+        pids.forEach((pid) => {
           try {
             process.kill(pid, 'SIGKILL');
             console.log(`Successfully stopped server process: ${pid}`);

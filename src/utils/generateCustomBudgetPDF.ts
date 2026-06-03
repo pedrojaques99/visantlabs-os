@@ -40,9 +40,16 @@ const getFieldValue = (data: BudgetData, mapping: PdfFieldMapping): string => {
         if (subField === 'name') return deliverable.name;
         if (subField === 'description') return deliverable.description;
         if (subField === 'quantity') return deliverable.quantity.toString();
-        if (subField === 'unitValue') return deliverable.unitValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        if (subField === 'unitValue')
+          return deliverable.unitValue.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          });
         if (subField === 'total') {
-          return (deliverable.quantity * deliverable.unitValue).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          return (deliverable.quantity * deliverable.unitValue).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          });
         }
       }
       // Custom fields (starting with custom_)
@@ -58,10 +65,10 @@ const hexToRgb = (hex: string) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? rgb(
-      parseInt(result[1], 16) / 255,
-      parseInt(result[2], 16) / 255,
-      parseInt(result[3], 16) / 255,
-    )
+        parseInt(result[1], 16) / 255,
+        parseInt(result[2], 16) / 255,
+        parseInt(result[3], 16) / 255
+      )
     : rgb(0, 0, 0);
 };
 
@@ -151,7 +158,9 @@ export const generateCustomBudgetPDF = async (
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `budget-custom-${data.projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
+    link.download = `budget-custom-${data.projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${
+      new Date().toISOString().split('T')[0]
+    }.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -161,4 +170,3 @@ export const generateCustomBudgetPDF = async (
     throw new Error(`Failed to generate custom PDF: ${error.message}`);
   }
 };
-

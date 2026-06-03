@@ -14,10 +14,7 @@ const INACTIVITY_THRESHOLD = 3000; // 3 segundos de inatividade para considerar 
  * Hook para detectar estado de edição ativa no canvas
  * Rastreia mudanças em nodes/edges e determina quando o usuário está editando
  */
-export const useCanvasEditingState = ({
-  nodes,
-  edges,
-}: UseCanvasEditingStateParams) => {
+export const useCanvasEditingState = ({ nodes, edges }: UseCanvasEditingStateParams) => {
   const [isEditing, setIsEditing] = useState(false);
   const lastEditTimeRef = useRef<number>(Date.now());
   const inactivityTimeoutRef = useRef<TimerRef | null>(null);
@@ -46,10 +43,20 @@ export const useCanvasEditingState = ({
   useEffect(() => {
     // Lista completa de propriedades de slider que devem ser ignoradas na comparação
     const SLIDER_PROPERTIES = [
-      'dotSize', 'angle', 'contrast', 'spacing', 'halftoneThreshold',
-      'tapeWaveIntensity', 'tapeCreaseIntensity', 'switchingNoiseIntensity',
-      'bloomIntensity', 'acBeatIntensity', 'matrixSize', 'bias',
-      'asciiCharSize', 'asciiThreshold', // ASCII shader properties
+      'dotSize',
+      'angle',
+      'contrast',
+      'spacing',
+      'halftoneThreshold',
+      'tapeWaveIntensity',
+      'tapeCreaseIntensity',
+      'switchingNoiseIntensity',
+      'bloomIntensity',
+      'acBeatIntensity',
+      'matrixSize',
+      'bias',
+      'asciiCharSize',
+      'asciiThreshold', // ASCII shader properties
     ];
 
     // Função para criar uma assinatura do node ignorando propriedades de slider
@@ -87,13 +94,15 @@ export const useCanvasEditingState = ({
     };
 
     const currentNodesString = JSON.stringify(nodes.map(getNodeSignature));
-    const currentEdgesString = JSON.stringify(edges.map(e => ({
-      id: e.id,
-      source: e.source,
-      target: e.target,
-      sourceHandle: e.sourceHandle,
-      targetHandle: e.targetHandle,
-    })));
+    const currentEdgesString = JSON.stringify(
+      edges.map((e) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        sourceHandle: e.sourceHandle,
+        targetHandle: e.targetHandle,
+      }))
+    );
 
     const nodesChanged = currentNodesString !== previousNodesRef.current;
     const edgesChanged = currentEdgesString !== previousEdgesRef.current;
@@ -129,4 +138,3 @@ export const useCanvasEditingState = ({
     markEditing, // Permite marcar edição manualmente (útil para shaders)
   };
 };
-

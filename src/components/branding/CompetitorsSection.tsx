@@ -17,10 +17,12 @@ interface CompetitorsSectionProps {
 }
 
 // Helper to normalize competitors to array of objects
-const normalizeCompetitors = (competitors: string[] | Array<{ name: string; url?: string }>): Competitor[] => {
+const normalizeCompetitors = (
+  competitors: string[] | Array<{ name: string; url?: string }>
+): Competitor[] => {
   if (!competitors || competitors.length === 0) return [];
 
-  return competitors.map(item => {
+  return competitors.map((item) => {
     if (typeof item === 'string') {
       return { name: item, url: '' };
     }
@@ -29,22 +31,25 @@ const normalizeCompetitors = (competitors: string[] | Array<{ name: string; url?
 };
 
 // Helper to convert back to the format stored in database
-const denormalizeCompetitors = (competitors: Competitor[], preserveFormat: boolean): string[] | Array<{ name: string; url?: string }> => {
+const denormalizeCompetitors = (
+  competitors: Competitor[],
+  preserveFormat: boolean
+): string[] | Array<{ name: string; url?: string }> => {
   if (!preserveFormat) {
     // If all have URLs, return objects; otherwise return strings
-    const hasUrls = competitors.some(c => c.url && c.url.trim());
+    const hasUrls = competitors.some((c) => c.url && c.url.trim());
     if (hasUrls) {
-      return competitors.map(c => ({ name: c.name, url: c.url || '' }));
+      return competitors.map((c) => ({ name: c.name, url: c.url || '' }));
     }
-    return competitors.map(c => c.name);
+    return competitors.map((c) => c.name);
   }
 
   // Check if original format had objects - return all objects if any has URL, otherwise all strings
-  const hasUrls = competitors.some(c => c.url && c.url.trim());
+  const hasUrls = competitors.some((c) => c.url && c.url.trim());
   if (hasUrls) {
-    return competitors.map(c => ({ name: c.name, url: c.url || '' }));
+    return competitors.map((c) => ({ name: c.name, url: c.url || '' }));
   }
-  return competitors.map(c => c.name);
+  return competitors.map((c) => c.name);
 };
 
 export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
@@ -53,7 +58,9 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
   onContentChange,
 }) => {
   const { theme } = useTheme();
-  const [localCompetitors, setLocalCompetitors] = useState<Competitor[]>(normalizeCompetitors(competitors));
+  const [localCompetitors, setLocalCompetitors] = useState<Competitor[]>(
+    normalizeCompetitors(competitors)
+  );
 
   useEffect(() => {
     setLocalCompetitors(normalizeCompetitors(competitors));
@@ -64,7 +71,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
     newCompetitors[index] = { ...newCompetitors[index], name: value };
     setLocalCompetitors(newCompetitors);
     if (onContentChange) {
-      const hasUrls = newCompetitors.some(c => c.url && c.url.trim());
+      const hasUrls = newCompetitors.some((c) => c.url && c.url.trim());
       onContentChange(denormalizeCompetitors(newCompetitors, hasUrls));
     }
   };
@@ -74,7 +81,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
     newCompetitors[index] = { ...newCompetitors[index], url: value };
     setLocalCompetitors(newCompetitors);
     if (onContentChange) {
-      const hasUrls = newCompetitors.some(c => c.url && c.url.trim());
+      const hasUrls = newCompetitors.some((c) => c.url && c.url.trim());
       onContentChange(denormalizeCompetitors(newCompetitors, hasUrls));
     }
   };
@@ -91,7 +98,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
     const newCompetitors = localCompetitors.filter((_, i) => i !== index);
     setLocalCompetitors(newCompetitors);
     if (onContentChange) {
-      const hasUrls = newCompetitors.some(c => c.url && c.url.trim());
+      const hasUrls = newCompetitors.some((c) => c.url && c.url.trim());
       onContentChange(denormalizeCompetitors(newCompetitors, hasUrls));
     }
   };
@@ -111,46 +118,58 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
           {localCompetitors.map((competitor, index) => (
             <div
               key={index}
-              className={`border rounded-xl p-4 hover:border-[brand-cyan]/50 transition-colors relative ${theme === 'dark'
-                ? 'bg-neutral-950/70 border-neutral-800/60'
-                : 'bg-neutral-100 border-neutral-300'
-                }`}
+              className={`border rounded-xl p-4 hover:border-[brand-cyan]/50 transition-colors relative ${
+                theme === 'dark'
+                  ? 'bg-neutral-950/70 border-neutral-800/60'
+                  : 'bg-neutral-100 border-neutral-300'
+              }`}
             >
               <div className="space-y-3">
                 <div>
-                  <label className={`block text-xs font-medium mb-1 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}>
+                  <label
+                    className={`block text-xs font-medium mb-1 ${
+                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                    }`}
+                  >
                     Nome
                   </label>
                   <Input
                     value={competitor.name}
                     onChange={(e) => handleNameChange(index, e.target.value)}
                     placeholder="Nome do concorrente"
-                    className={`bg-transparent font-manrope text-sm border ${theme === 'dark'
-                      ? 'border-neutral-700/50 text-neutral-300'
-                      : 'border-neutral-400/50 text-neutral-800'
-                      }`}
+                    className={`bg-transparent font-manrope text-sm border ${
+                      theme === 'dark'
+                        ? 'border-neutral-700/50 text-neutral-300'
+                        : 'border-neutral-400/50 text-neutral-800'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className={`block text-xs font-medium mb-1 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}>
+                  <label
+                    className={`block text-xs font-medium mb-1 ${
+                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                    }`}
+                  >
                     Link (opcional)
                   </label>
                   <Input
                     value={competitor.url}
                     onChange={(e) => handleUrlChange(index, e.target.value)}
                     placeholder="https://exemplo.com"
-                    className={`bg-transparent font-manrope text-sm border ${theme === 'dark'
-                      ? 'border-neutral-700/50 text-neutral-300'
-                      : 'border-neutral-400/50 text-neutral-800'
-                      }`}
+                    className={`bg-transparent font-manrope text-sm border ${
+                      theme === 'dark'
+                        ? 'border-neutral-700/50 text-neutral-300'
+                        : 'border-neutral-400/50 text-neutral-800'
+                    }`}
                   />
                 </div>
               </div>
-              <Button variant="ghost" onClick={() => handleRemoveCompetitor(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
+              <Button
+                variant="ghost"
+                onClick={() => handleRemoveCompetitor(index)}
+                className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                }`}
                 title="Remover concorrente"
               >
                 <X className="h-4 w-4" />
@@ -158,11 +177,14 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
             </div>
           ))}
         </div>
-        <Button variant="ghost" onClick={handleAddCompetitor}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-            ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
-            : 'bg-neutral-100 border-neutral-300 text-neutral-800'
-            }`}
+        <Button
+          variant="ghost"
+          onClick={handleAddCompetitor}
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
+            theme === 'dark'
+              ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
+              : 'bg-neutral-100 border-neutral-300 text-neutral-800'
+          }`}
         >
           <Plus className="h-4 w-4" />
           Adicionar concorrente
@@ -176,15 +198,19 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
       {localCompetitors.map((competitor, index) => (
         <div
           key={index}
-          className={`border rounded-xl p-4 transition-colors group overflow-hidden ${theme === 'dark'
-            ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
-            : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
-            }`}
+          className={`border rounded-xl p-4 transition-colors group overflow-hidden ${
+            theme === 'dark'
+              ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
+              : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
+          }`}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-                }`}>
+              <p
+                className={`text-sm font-manrope leading-relaxed ${
+                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
+                }`}
+              >
                 {competitor.name}
               </p>
               {competitor.url && competitor.url.trim() && (
@@ -192,10 +218,11 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                   href={formatUrl(competitor.url)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center gap-1 mt-2 w-full min-w-0 text-xs font-mono transition-colors ${theme === 'dark'
-                    ? 'text-brand-cyan hover:text-brand-cyan/80'
-                    : 'text-blue-600 hover:text-blue-700'
-                    }`}
+                  className={`flex items-center gap-1 mt-2 w-full min-w-0 text-xs font-mono transition-colors ${
+                    theme === 'dark'
+                      ? 'text-brand-cyan hover:text-brand-cyan/80'
+                      : 'text-blue-600 hover:text-blue-700'
+                  }`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink className="h-3 w-3 flex-shrink-0" />
@@ -211,4 +238,3 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
     </div>
   );
 };
-

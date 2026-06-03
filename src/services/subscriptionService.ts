@@ -1,7 +1,6 @@
 import { authService } from './authService';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
-
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
   const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
@@ -26,7 +25,11 @@ const getAuthHeaders = () => {
 };
 
 // Helper function to add timeout to fetch requests
-const fetchWithTimeout = async (url: string, options: RequestInit, timeout: number = REQUEST_TIMEOUT): Promise<Response> => {
+const fetchWithTimeout = async (
+  url: string,
+  options: RequestInit,
+  timeout: number = REQUEST_TIMEOUT
+): Promise<Response> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -124,7 +127,10 @@ export const subscriptionService = {
     return response.json();
   },
 
-  async createCheckoutSession(locale?: string, currency?: string): Promise<{ sessionId: string; url: string }> {
+  async createCheckoutSession(
+    locale?: string,
+    currency?: string
+  ): Promise<{ sessionId: string; url: string }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/payments/create-checkout-session`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -137,7 +143,10 @@ export const subscriptionService = {
     return response.json();
   },
 
-  async createCreditCheckout(credits: number, currency: string): Promise<{ sessionId: string; url: string }> {
+  async createCreditCheckout(
+    credits: number,
+    currency: string
+  ): Promise<{ sessionId: string; url: string }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/payments/create-credit-checkout`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -200,7 +209,7 @@ export const subscriptionService = {
           description: 'Acesso completo a todas as ferramentas do Visant',
         },
         BRL: {
-          amount: 19.90,
+          amount: 19.9,
           currency: 'BRL',
           monthlyCredits: 100,
           interval: 'month',
@@ -265,7 +274,7 @@ export const subscriptionService = {
         hasInputImage,
         promptLength,
         resolution,
-        feature
+        feature,
       }),
     });
     if (!response.ok) {
@@ -290,7 +299,7 @@ export const subscriptionService = {
       body: JSON.stringify({
         success,
         stepNumber,
-        promptLength
+        promptLength,
       }),
     });
     if (!response.ok) {
@@ -304,8 +313,7 @@ export const subscriptionService = {
     return {
       creditsDeducted: data.creditsDeducted || 0,
       creditsRemaining: data.creditsRemaining || 0,
-      totalCredits: data.totalCredits || 0
+      totalCredits: data.totalCredits || 0,
     };
   },
 };
-

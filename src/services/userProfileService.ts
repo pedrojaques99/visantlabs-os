@@ -83,11 +83,14 @@ export const userProfileService = {
    * Get user's public mockups
    */
   async getUserMockups(identifier: string) {
-    const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(identifier)}/mockups`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/users/${encodeURIComponent(identifier)}/mockups`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -115,11 +118,14 @@ export const userProfileService = {
    * Get user's public presets
    */
   async getUserPresets(identifier: string) {
-    const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(identifier)}/presets`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/users/${encodeURIComponent(identifier)}/presets`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -146,12 +152,15 @@ export const userProfileService = {
    * Get user's public workflows
    */
   async getUserWorkflows(identifier: string) {
-    const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(identifier)}/workflows`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(), // Include auth headers for liking status
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/users/${encodeURIComponent(identifier)}/workflows`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(), // Include auth headers for liking status
+        },
+      }
+    );
 
     if (!response.ok) {
       // Similar error handling as other methods
@@ -209,4 +218,3 @@ export const userProfileService = {
     return response.json();
   },
 };
-

@@ -76,11 +76,13 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
   }
 
   const getValue = <K extends keyof PdfFieldMapping>(key: K): PdfFieldMapping[K] => {
-    return localChanges[key] !== undefined ? localChanges[key] as PdfFieldMapping[K] : mapping[key];
+    return localChanges[key] !== undefined
+      ? (localChanges[key] as PdfFieldMapping[K])
+      : mapping[key];
   };
 
   const updateLocal = (updates: Partial<PdfFieldMapping>) => {
-    setLocalChanges(prev => ({ ...prev, ...updates }));
+    setLocalChanges((prev) => ({ ...prev, ...updates }));
   };
 
   const handleApply = () => {
@@ -136,14 +138,13 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
       )}
       <div className="p-4 border-b border-neutral-800">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold font-mono text-neutral-200">
-            Propriedades
-          </h3>
+          <h3 className="text-sm font-semibold font-mono text-neutral-200">Propriedades</h3>
         </div>
         <p className="text-xs text-neutral-400 font-mono mb-3">
           {mapping.label || mapping.fieldId}
         </p>
-        <Button variant="destructive"
+        <Button
+          variant="destructive"
           onClick={onRemove}
           className="w-full px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-400"
           title="Remover campo (Delete)"
@@ -157,12 +158,12 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Fonte */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
-            Fonte
-          </label>
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">Fonte</label>
           <Select
             value={getValue('fontFamily') || 'geist'}
-            onChange={(value) => updateLocal({ fontFamily: value as 'geist' | 'manrope' | 'redhatmono' | 'barlow' })}
+            onChange={(value) =>
+              updateLocal({ fontFamily: value as 'geist' | 'manrope' | 'redhatmono' | 'barlow' })
+            }
             options={[
               { value: 'geist', label: 'Geist' },
               { value: 'manrope', label: 'Manrope' },
@@ -175,9 +176,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
 
         {/* Tamanho da Fonte */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
-            Tamanho da Fonte
-          </label>
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">Tamanho da Fonte</label>
           <div className="flex items-center gap-2">
             <Type size={16} className="text-neutral-500" />
             <FormInput
@@ -204,22 +203,20 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             />
             <span className="text-xs text-neutral-500 font-mono">pt</span>
           </div>
-          {fontSizeError && (
-            <p className="text-xs text-red-400 font-mono mt-1">{fontSizeError}</p>
-          )}
+          {fontSizeError && <p className="text-xs text-red-400 font-mono mt-1">{fontSizeError}</p>}
         </div>
 
         {/* Bold */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
-            Estilo
-          </label>
-          <Button variant="ghost"
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">Estilo</label>
+          <Button
+            variant="ghost"
             onClick={() => updateLocal({ bold: !isBold })}
-            className={`w-full px-3 py-2 rounded-md border transition-colors flex items-center justify-center gap-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${isBold
-              ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-              : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
-              }`}
+            className={`w-full px-3 py-2 rounded-md border transition-colors flex items-center justify-center gap-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${
+              isBold
+                ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
+            }`}
             aria-label={isBold ? 'Desativar negrito' : 'Ativar negrito'}
             aria-pressed={isBold}
           >
@@ -230,9 +227,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
 
         {/* Cor */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
-            Cor
-          </label>
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">Cor</label>
           <div className="flex gap-2">
             <input
               type="color"
@@ -253,40 +248,44 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
 
         {/* Alinhamento */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
-            Alinhamento
-          </label>
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">Alinhamento</label>
           <div className="flex gap-2">
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={() => updateLocal({ align: 'left' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${(getValue('align') || 'left') === 'left'
-                ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
-                }`}
+              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${
+                (getValue('align') || 'left') === 'left'
+                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                  : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
+              }`}
               title="Esquerda"
               aria-label="Alinhar à esquerda"
               aria-pressed={(getValue('align') || 'left') === 'left'}
             >
               <AlignLeft size={18} className="mx-auto" />
             </Button>
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={() => updateLocal({ align: 'center' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${getValue('align') === 'center'
-                ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
-                }`}
+              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${
+                getValue('align') === 'center'
+                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                  : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
+              }`}
               title="Centro"
               aria-label="Alinhar ao centro"
               aria-pressed={getValue('align') === 'center'}
             >
               <AlignCenter size={18} className="mx-auto" />
             </Button>
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={() => updateLocal({ align: 'right' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${getValue('align') === 'right'
-                ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
-                }`}
+              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${
+                getValue('align') === 'right'
+                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                  : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
+              }`}
               title="Direita"
               aria-label="Alinhar à direita"
               aria-pressed={getValue('align') === 'right'}
@@ -298,9 +297,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
 
         {/* Posição */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
-            Posição (pontos)
-          </label>
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">Posição (pontos)</label>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <span className="text-xs text-neutral-500 font-mono">X:</span>
@@ -323,9 +320,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
                 }}
                 className={`text-sm mt-1 ${xError ? 'border-red-500' : ''}`}
               />
-              {xError && (
-                <p className="text-xs text-red-400 font-mono mt-0.5">{xError}</p>
-              )}
+              {xError && <p className="text-xs text-red-400 font-mono mt-0.5">{xError}</p>}
             </div>
             <div>
               <span className="text-xs text-neutral-500 font-mono">Y:</span>
@@ -348,9 +343,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
                 }}
                 className={`text-sm mt-1 ${yError ? 'border-red-500' : ''}`}
               />
-              {yError && (
-                <p className="text-xs text-red-400 font-mono mt-0.5">{yError}</p>
-              )}
+              {yError && <p className="text-xs text-red-400 font-mono mt-0.5">{yError}</p>}
             </div>
           </div>
         </div>
@@ -359,7 +352,8 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
       {/* Apply/Dismiss buttons */}
       {hasChanges && (
         <div className="p-4 border-t border-neutral-800 flex gap-2">
-          <Button variant="brand"
+          <Button
+            variant="brand"
             onClick={handleApply}
             className="flex-1 px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
             title="Aplicar mudanças"
@@ -368,7 +362,8 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             <Check size={16} />
             Aplicar
           </Button>
-          <Button variant="outline"
+          <Button
+            variant="outline"
             onClick={handleDismiss}
             className="flex-1 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-neutral-500"
             title="Descartar mudanças"
@@ -382,4 +377,3 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
     </div>
   );
 };
-

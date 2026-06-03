@@ -21,11 +21,11 @@ for (const file of envFiles) {
   if (existsSync(filePath)) {
     envFile = file;
     console.log(`✅ Arquivo encontrado: ${file}\n`);
-    
+
     try {
       const content = readFileSync(filePath, 'utf-8');
       const lines = content.split('\n');
-      
+
       for (const line of lines) {
         const trimmed = line.trim();
         if (trimmed && !trimmed.startsWith('#')) {
@@ -65,7 +65,8 @@ if (apiKey) {
 }
 
 // Verificar ABACATE_WEBHOOK_SECRET ou ABACATEPAY_WEBHOOK_SECRET
-const webhookSecret = envContent['ABACATE_WEBHOOK_SECRET'] || envContent['ABACATEPAY_WEBHOOK_SECRET'];
+const webhookSecret =
+  envContent['ABACATE_WEBHOOK_SECRET'] || envContent['ABACATEPAY_WEBHOOK_SECRET'];
 if (webhookSecret) {
   console.log(`✅ Webhook Secret: Definida`);
 } else {
@@ -81,12 +82,12 @@ if (webhookId) {
 }
 
 // Verificar variáveis de produto (opcionais)
-const productVars = Object.keys(envContent).filter(key => 
-  key.startsWith('ABACATE_PRODUCT_') || key.startsWith('ABACATEPAY_PRODUCT_')
+const productVars = Object.keys(envContent).filter(
+  (key) => key.startsWith('ABACATE_PRODUCT_') || key.startsWith('ABACATEPAY_PRODUCT_')
 );
 if (productVars.length > 0) {
   console.log(`\n📦 Variáveis de Produto encontradas (${productVars.length}):`);
-  productVars.forEach(varName => {
+  productVars.forEach((varName) => {
     console.log(`   ✅ ${varName}`);
   });
 } else {
@@ -110,29 +111,3 @@ if (!apiKey) {
   console.log('   - Verifique se o webhook está configurado no dashboard do AbacatePay');
 }
 console.log('='.repeat(50) + '\n');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

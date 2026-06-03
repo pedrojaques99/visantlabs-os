@@ -1,11 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, ChevronDown, FileJson, FileCode, Braces, FileText, Brain, Check, ClipboardCheck } from 'lucide-react';
+import {
+  Download,
+  ChevronDown,
+  FileJson,
+  FileCode,
+  Braces,
+  FileText,
+  Brain,
+  Check,
+  ClipboardCheck,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { downloadBlob } from '@/components/brand/brand-shared-config';
-import { extractExportData, renderCSS, renderTailwind, renderMarkdown, renderDesignMd } from '@/lib/guidelineExportRegistry';
+import {
+  extractExportData,
+  renderCSS,
+  renderTailwind,
+  renderMarkdown,
+  renderDesignMd,
+} from '@/lib/guidelineExportRegistry';
 
 interface GuidelineExportBarProps {
   guideline: BrandGuideline;
@@ -21,10 +37,15 @@ interface ExportItem {
   highlight?: boolean;
 }
 
-export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guideline, onStartReview }) => {
+export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({
+  guideline,
+  onStartReview,
+}) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const safeName = (guideline.identity?.name || guideline.name || 'brand').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+  const safeName = (guideline.identity?.name || guideline.name || 'brand')
+    .replace(/[^a-zA-Z0-9]/g, '-')
+    .toLowerCase();
   const data = extractExportData(guideline);
 
   useEffect(() => {
@@ -44,11 +65,61 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
   }, [open]);
 
   const items: ExportItem[] = [
-    { id: 'json', label: 'JSON', group: 'Devs', icon: FileJson, action: () => { downloadBlob(JSON.stringify(guideline, null, 2), `${safeName}-guidelines.json`, 'application/json'); toast.success('Exported as JSON'); } },
-    { id: 'css', label: 'CSS Variables', group: 'Devs', icon: FileCode, action: () => { downloadBlob(renderCSS(data), `${safeName}-variables.css`, 'text/css'); toast.success('Exported as CSS'); } },
-    { id: 'tailwind', label: 'Tailwind Config', group: 'Devs', icon: Braces, action: () => { downloadBlob(renderTailwind(data), `${safeName}.tailwind.config.js`, 'text/javascript'); toast.success('Exported as Tailwind'); } },
-    { id: 'markdown', label: 'Markdown', group: 'Docs', icon: FileText, action: () => { downloadBlob(renderMarkdown(data), `${safeName}-guidelines.md`, 'text/markdown'); toast.success('Exported as Markdown'); } },
-    { id: 'design-md', label: 'DESIGN.md', group: 'AI', icon: Brain, action: () => { downloadBlob(renderDesignMd(data), 'DESIGN.md', 'text/markdown'); toast.success('Exported as DESIGN.md'); }, highlight: true },
+    {
+      id: 'json',
+      label: 'JSON',
+      group: 'Devs',
+      icon: FileJson,
+      action: () => {
+        downloadBlob(
+          JSON.stringify(guideline, null, 2),
+          `${safeName}-guidelines.json`,
+          'application/json'
+        );
+        toast.success('Exported as JSON');
+      },
+    },
+    {
+      id: 'css',
+      label: 'CSS Variables',
+      group: 'Devs',
+      icon: FileCode,
+      action: () => {
+        downloadBlob(renderCSS(data), `${safeName}-variables.css`, 'text/css');
+        toast.success('Exported as CSS');
+      },
+    },
+    {
+      id: 'tailwind',
+      label: 'Tailwind Config',
+      group: 'Devs',
+      icon: Braces,
+      action: () => {
+        downloadBlob(renderTailwind(data), `${safeName}.tailwind.config.js`, 'text/javascript');
+        toast.success('Exported as Tailwind');
+      },
+    },
+    {
+      id: 'markdown',
+      label: 'Markdown',
+      group: 'Docs',
+      icon: FileText,
+      action: () => {
+        downloadBlob(renderMarkdown(data), `${safeName}-guidelines.md`, 'text/markdown');
+        toast.success('Exported as Markdown');
+      },
+    },
+    {
+      id: 'design-md',
+      label: 'DESIGN.md',
+      group: 'AI',
+      icon: Brain,
+      action: () => {
+        downloadBlob(renderDesignMd(data), 'DESIGN.md', 'text/markdown');
+        toast.success('Exported as DESIGN.md');
+      },
+      highlight: true,
+    },
   ];
 
   const groups = ['Devs', 'Docs', 'AI'] as const;
@@ -80,7 +151,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setOpen(v => !v)}
+              onClick={() => setOpen((v) => !v)}
               className="h-8 px-3 text-xs text-neutral-400 hover:text-neutral-200 gap-1.5 border border-neutral-800 hover:border-white/10"
             >
               <Download size={12} />
@@ -94,30 +165,39 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({ guidelin
                   <React.Fragment key={group}>
                     {gi > 0 && <div className="h-px bg-white/5" />}
                     <div className="px-3 pt-2 pb-1">
-                      <span className={cn(
-                        'text-[10px] font-medium',
-                        group === 'AI' ? 'text-brand-cyan/60' : 'text-neutral-600'
-                      )}>{group === 'AI' ? 'For AI' : `For ${group}`}</span>
+                      <span
+                        className={cn(
+                          'text-[10px] font-medium',
+                          group === 'AI' ? 'text-brand-cyan/60' : 'text-neutral-600'
+                        )}
+                      >
+                        {group === 'AI' ? 'For AI' : `For ${group}`}
+                      </span>
                     </div>
-                    {items.filter(i => i.group === group).map(item => {
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => { item.action(); setOpen(false); }}
-                          className={cn(
-                            'w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors',
-                            item.highlight
-                              ? 'text-brand-cyan/90 hover:bg-brand-cyan/[0.08]'
-                              : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                          )}
-                        >
-                          <Icon size={13} className="shrink-0" />
-                          <span className="text-[11px] font-medium">{item.label}</span>
-                        </button>
-                      );
-                    })}
+                    {items
+                      .filter((i) => i.group === group)
+                      .map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              item.action();
+                              setOpen(false);
+                            }}
+                            className={cn(
+                              'w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors',
+                              item.highlight
+                                ? 'text-brand-cyan/90 hover:bg-brand-cyan/[0.08]'
+                                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                            )}
+                          >
+                            <Icon size={13} className="shrink-0" />
+                            <span className="text-[11px] font-medium">{item.label}</span>
+                          </button>
+                        );
+                      })}
                   </React.Fragment>
                 ))}
               </div>

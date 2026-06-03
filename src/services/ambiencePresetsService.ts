@@ -1,11 +1,18 @@
 import type { AmbiencePreset, AmbiencePresetType } from '../types/ambiencePresets.js';
 
-import { getPresetsByType, getPresetsByTypeSync, getPresetByIdSync, fetchAllOfficialPresets } from './unifiedPresetService';
+import {
+  getPresetsByType,
+  getPresetsByTypeSync,
+  getPresetByIdSync,
+  fetchAllOfficialPresets,
+} from './unifiedPresetService';
 
 /**
  * Get a specific ambience preset by ID (synchronous, uses cache)
  */
-export function getAmbiencePreset(presetId: AmbiencePresetType | string): AmbiencePreset | undefined {
+export function getAmbiencePreset(
+  presetId: AmbiencePresetType | string
+): AmbiencePreset | undefined {
   return getPresetByIdSync('ambience', presetId);
 }
 
@@ -19,9 +26,11 @@ export function getAllAmbiencePresets(): AmbiencePreset[] {
 /**
  * Get a specific ambience preset by ID (async, loads from MongoDB)
  */
-export async function getAmbiencePresetAsync(presetId: AmbiencePresetType | string): Promise<AmbiencePreset | undefined> {
+export async function getAmbiencePresetAsync(
+  presetId: AmbiencePresetType | string
+): Promise<AmbiencePreset | undefined> {
   const presets = await getPresetsByType('ambience');
-  return presets.find(preset => preset.id === presetId);
+  return presets.find((preset) => preset.id === presetId);
 }
 
 /**
@@ -43,22 +52,5 @@ export const ambiencePresetsService = {
   getAll: getAllAmbiencePresets,
   getByIdAsync: getAmbiencePresetAsync,
   getAllAsync: getAllAmbiencePresetsAsync,
-  initialize: initializeAmbiencePresets
+  initialize: initializeAmbiencePresets,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

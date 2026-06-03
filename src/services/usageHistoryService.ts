@@ -45,7 +45,6 @@ export interface UsageHistoryPagination {
   offset?: number;
 }
 
-
 export interface UsageStats {
   totalRecords: number;
   totalCredits: number;

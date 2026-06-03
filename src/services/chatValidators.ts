@@ -85,10 +85,7 @@ export function validateMessage(message: string): void {
  * Validate context
  * @throws {ContextValidationError} if validation fails
  */
-export function validateContext(context: {
-  text?: string;
-  images?: string[];
-}): void {
+export function validateContext(context: { text?: string; images?: string[] }): void {
   if (context.text && context.text.length > MAX_CONTEXT_TEXT_LENGTH) {
     throw new ContextValidationError(
       `Context text too long. Maximum ${MAX_CONTEXT_TEXT_LENGTH} characters allowed.`
@@ -101,9 +98,3 @@ export function validateContext(context: {
     );
   }
 }
-
-
-
-
-
-

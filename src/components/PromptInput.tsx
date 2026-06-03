@@ -60,4 +60,3 @@ export const PromptInput: React.FC<PromptInputProps> = ({
     </form>
   );
 };
-

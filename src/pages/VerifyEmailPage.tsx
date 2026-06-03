@@ -23,7 +23,8 @@ export const VerifyEmailPage: React.FC = () => {
       return;
     }
 
-    authService.verifyEmail(token)
+    authService
+      .verifyEmail(token)
       .then(() => setStatus('success'))
       .catch((err) => {
         setStatus('error');
@@ -58,7 +59,9 @@ export const VerifyEmailPage: React.FC = () => {
           {status === 'error' && (
             <>
               <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <h2 className="text-lg font-semibold text-white font-mono mb-2">Erro na verificacao</h2>
+              <h2 className="text-lg font-semibold text-white font-mono mb-2">
+                Erro na verificacao
+              </h2>
               <p className="text-neutral-400 text-sm font-mono mb-6">{errorMessage}</p>
               <Button onClick={() => navigate('/')} variant="outline" className="w-full">
                 Voltar ao inicio

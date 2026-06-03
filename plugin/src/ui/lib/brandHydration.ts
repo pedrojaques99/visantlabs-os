@@ -30,7 +30,7 @@ const TYPE_ROLE_ALIASES: Record<string, 'primary' | 'secondary'> = {
   body: 'secondary',
   text: 'secondary',
   paragraph: 'secondary',
-  subtitle: 'secondary'
+  subtitle: 'secondary',
 };
 
 const LOGO_VARIANT_ALIASES: Record<string, 'light' | 'dark' | 'accent'> = {
@@ -43,7 +43,7 @@ const LOGO_VARIANT_ALIASES: Record<string, 'light' | 'dark' | 'accent'> = {
   accent: 'accent',
   color: 'accent',
   colored: 'accent',
-  primary: 'accent'
+  primary: 'accent',
 };
 
 function toColorsMap(raw: any): Map<string, ColorEntry> {
@@ -91,7 +91,7 @@ function toLogoSlots(raw: any): LogoSlot[] {
       figmaKey: m.figmaKey,
       figmaFileKey: m.figmaFileKey,
       figmaNodeId: m.figmaNodeId,
-      label: m.label
+      label: m.label,
     };
   });
 }
@@ -121,7 +121,7 @@ function toTypographySlots(raw: any): TypographySlot[] {
       fontStyle: m?.style || m?.fontStyle,
       fontSize: m?.size ?? m?.fontSize,
       lineHeight: m?.lineHeight,
-      fontWeight: m?.weight ?? m?.fontWeight
+      fontWeight: m?.weight ?? m?.fontWeight,
     };
   });
 }
@@ -138,7 +138,10 @@ function collectFontFamilies(guideline: any): string[] {
     if (fam && typeof fam === 'string') out.add(fam);
   });
   const existing = guideline?.tokens?.families;
-  if (Array.isArray(existing)) existing.forEach((f: any) => { if (f) out.add(String(f)); });
+  if (Array.isArray(existing))
+    existing.forEach((f: any) => {
+      if (f) out.add(String(f));
+    });
   return Array.from(out);
 }
 
@@ -146,7 +149,7 @@ export function hydrateBrandGuideline(guideline: any): HydratedBrand {
   const families = collectFontFamilies(guideline);
   const tokens: DesignTokens = {
     ...((guideline?.tokens as DesignTokens) || {}),
-    families
+    families,
   };
   return {
     brandGuideline: guideline,
@@ -154,7 +157,7 @@ export function hydrateBrandGuideline(guideline: any): HydratedBrand {
     selectedColors: toColorsMap(guideline?.colors),
     logos: toLogoSlots(guideline?.logos),
     typography: toTypographySlots(guideline?.typography),
-    designTokens: tokens
+    designTokens: tokens,
   };
 }
 

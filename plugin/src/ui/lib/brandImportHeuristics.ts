@@ -13,16 +13,16 @@ import type { ColorEntry, LogoSlot, TypographySlot } from '../store/types';
  *   `brand/primary/500`, `semantic/success`, `neutral/100`, `color-primary`
  */
 const COLOR_ROLE_RULES: Array<{ role: string; match: RegExp; weight: number }> = [
-  { role: 'primary',    match: /\b(primary|brand|main)\b/i,             weight: 10 },
-  { role: 'secondary',  match: /\b(secondary|sub|alt)\b/i,              weight: 9 },
-  { role: 'accent',     match: /\b(accent|highlight|pop)\b/i,           weight: 9 },
-  { role: 'success',    match: /\b(success|positive|ok|confirm)\b/i,    weight: 8 },
-  { role: 'warning',    match: /\b(warn|warning|caution|attention)\b/i, weight: 8 },
-  { role: 'danger',     match: /\b(error|danger|destructive|fail|negative)\b/i, weight: 8 },
-  { role: 'info',       match: /\b(info|informational)\b/i,             weight: 7 },
-  { role: 'background', match: /\b(bg|background|surface|canvas)\b/i,   weight: 6 },
+  { role: 'primary', match: /\b(primary|brand|main)\b/i, weight: 10 },
+  { role: 'secondary', match: /\b(secondary|sub|alt)\b/i, weight: 9 },
+  { role: 'accent', match: /\b(accent|highlight|pop)\b/i, weight: 9 },
+  { role: 'success', match: /\b(success|positive|ok|confirm)\b/i, weight: 8 },
+  { role: 'warning', match: /\b(warn|warning|caution|attention)\b/i, weight: 8 },
+  { role: 'danger', match: /\b(error|danger|destructive|fail|negative)\b/i, weight: 8 },
+  { role: 'info', match: /\b(info|informational)\b/i, weight: 7 },
+  { role: 'background', match: /\b(bg|background|surface|canvas)\b/i, weight: 6 },
   { role: 'foreground', match: /\b(fg|foreground|text|on-surface|ink)\b/i, weight: 6 },
-  { role: 'neutral',    match: /\b(neutral|grey|gray|stone|slate|zinc)\b/i, weight: 5 }
+  { role: 'neutral', match: /\b(neutral|grey|gray|stone|slate|zinc)\b/i, weight: 5 },
 ];
 
 /**
@@ -60,15 +60,19 @@ export function detectColorRoles(colors: ColorVariable[]): Map<string, ColorEntr
 // ── Typography role detection ─────────────────────────────────────────
 
 const TYPE_ROLE_RULES: Array<{ slot: 'primary' | 'secondary'; match: RegExp; weight: number }> = [
-  { slot: 'primary',   match: /\b(display|h1|heading|headline|title|hero)\b/i,      weight: 10 },
-  { slot: 'primary',   match: /\b(h[2-3]|subtitle|lead)\b/i,                        weight: 6 },
-  { slot: 'secondary', match: /\b(body|paragraph|p|text|content|copy|caption|label|default)\b/i, weight: 10 }
+  { slot: 'primary', match: /\b(display|h1|heading|headline|title|hero)\b/i, weight: 10 },
+  { slot: 'primary', match: /\b(h[2-3]|subtitle|lead)\b/i, weight: 6 },
+  {
+    slot: 'secondary',
+    match: /\b(body|paragraph|p|text|content|copy|caption|label|default)\b/i,
+    weight: 10,
+  },
 ];
 
 export function detectTypographyRoles(fonts: FontVariable[]): TypographySlot[] {
   const scored: Record<'primary' | 'secondary', Array<{ font: FontVariable; score: number }>> = {
     primary: [],
-    secondary: []
+    secondary: [],
   };
 
   for (const f of fonts) {
@@ -96,7 +100,7 @@ export function detectTypographyRoles(fonts: FontVariable[]): TypographySlot[] {
     return {
       name: slot,
       fontFamily: best?.family,
-      fontStyle: best?.style
+      fontStyle: best?.style,
     };
   });
 }
@@ -110,10 +114,14 @@ export interface LogoCandidate {
   folderPath?: string[];
 }
 
-const LOGO_VARIANT_RULES: Array<{ slot: 'light' | 'dark' | 'accent'; match: RegExp; weight: number }> = [
-  { slot: 'light',  match: /\b(light|white|on-dark|inverse|reverse)\b/i, weight: 10 },
-  { slot: 'dark',   match: /\b(dark|black|on-light|mono)\b/i,            weight: 10 },
-  { slot: 'accent', match: /\b(color|colou?red|primary|full|rgb)\b/i,    weight: 9 }
+const LOGO_VARIANT_RULES: Array<{
+  slot: 'light' | 'dark' | 'accent';
+  match: RegExp;
+  weight: number;
+}> = [
+  { slot: 'light', match: /\b(light|white|on-dark|inverse|reverse)\b/i, weight: 10 },
+  { slot: 'dark', match: /\b(dark|black|on-light|mono)\b/i, weight: 10 },
+  { slot: 'accent', match: /\b(color|colou?red|primary|full|rgb)\b/i, weight: 9 },
 ];
 
 export function isLogoComponent(name: string, folderPath?: string[]): boolean {
@@ -144,7 +152,7 @@ export function detectLogoSlots(candidates: LogoCandidate[]): LogoSlot[] {
   return (['light', 'dark', 'accent'] as const).map((slot) => ({
     name: slot,
     src: picked[slot]?.thumbnail,
-    loaded: !!picked[slot]?.thumbnail
+    loaded: !!picked[slot]?.thumbnail,
   }));
 }
 
@@ -167,7 +175,11 @@ export interface MergeOptions {
  */
 export function mergeImportIntoBrand(
   detected: BrandImportResult,
-  existing: { selectedColors: Map<string, ColorEntry>; typography: TypographySlot[]; logos: LogoSlot[] },
+  existing: {
+    selectedColors: Map<string, ColorEntry>;
+    typography: TypographySlot[];
+    logos: LogoSlot[];
+  },
   opts: MergeOptions = {}
 ): BrandImportResult {
   const colors = new Map(existing.selectedColors);

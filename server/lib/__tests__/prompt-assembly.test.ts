@@ -2,7 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { classifyIntent, isChatOnly } from '../prompt/classifier.js';
 import { assemblePrompt } from '../prompt/index.js';
 import { detectFormat, getFormatDimensions, buildPresetContext } from '../prompt/presets.js';
-import { flattenNodesCompact, buildSelectionContext, buildContainersHint } from '../prompt/modules/context.js';
+import {
+  flattenNodesCompact,
+  buildSelectionContext,
+  buildContainersHint,
+} from '../prompt/modules/context.js';
 import { buildCompactBrandContext } from '../prompt/modules/brand.js';
 import { buildToolsReference } from '../prompt/modules/tools-reference.js';
 
@@ -25,7 +29,13 @@ const BRAND = {
 };
 
 const FRAME = { type: 'FRAME', id: '1:1', name: 'Card', width: 400, height: 300 };
-const TEXT_NODE = { type: 'TEXT', id: '2:1', name: 'Title', characters: 'Hello World', fontSize: 24 };
+const TEXT_NODE = {
+  type: 'TEXT',
+  id: '2:1',
+  name: 'Title',
+  characters: 'Hello World',
+  fontSize: 24,
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 1. classifyIntent — Primary intents
@@ -124,13 +134,12 @@ describe('classifyIntent — primary intents', () => {
   });
 
   // PT-BR color/size adjectives → edit
-  it.each([
-    'vermelho esse fundo',
-    'azul esse texto',
-    'branco esse card',
-  ])('classifies PT-BR adjective "%s" as edit', (cmd) => {
-    expect(classifyIntent(cmd, true).intent).toBe('edit');
-  });
+  it.each(['vermelho esse fundo', 'azul esse texto', 'branco esse card'])(
+    'classifies PT-BR adjective "%s" as edit',
+    (cmd) => {
+      expect(classifyIntent(cmd, true).intent).toBe('edit');
+    }
+  );
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -212,7 +221,9 @@ describe('classifyIntent — complexity', () => {
   });
 
   it('medium when no complexity keyword matches', () => {
-    expect(classifyIntent('cria post profissional pro instagram feed', false).complexity).toBe('medium');
+    expect(classifyIntent('cria post profissional pro instagram feed', false).complexity).toBe(
+      'medium'
+    );
   });
 });
 
@@ -232,7 +243,10 @@ describe('classifyIntent — confidence', () => {
   });
 
   it('capped at 0.95', () => {
-    const r = classifyIntent('cria e faz e gera e desenha e adiciona para instagram stories', false);
+    const r = classifyIntent(
+      'cria e faz e gera e desenha e adiciona para instagram stories',
+      false
+    );
     expect(r.confidence).toBeLessThanOrEqual(0.95);
   });
 
@@ -249,9 +263,12 @@ describe('classifyIntent — confidence', () => {
 
 describe('isChatOnly', () => {
   // Greetings
-  it.each(['oi', 'olá', 'hello', 'hey', 'bom dia', 'boa tarde', 'boa noite', 'e ai'])('detects greeting "%s" as chat', (msg) => {
+  it.each(['oi', 'olá', 'hello', 'hey', 'bom dia', 'boa tarde', 'boa noite', 'e ai'])(
+    'detects greeting "%s" as chat',
+    (msg) => {
       expect(isChatOnly(msg)).toBe(true);
-    });
+    }
+  );
 
   // Questions without design intent
   it.each([
@@ -264,8 +281,8 @@ describe('isChatOnly', () => {
 
   // Short messages
   it.each(['ok', 'sim', 'não', 'hmm', 'ah'])('detects short "%s" as chat', (msg) => {
-      expect(isChatOnly(msg)).toBe(true);
-    });
+    expect(isChatOnly(msg)).toBe(true);
+  });
 
   // Design commands must NOT be chat
   it.each([
@@ -278,9 +295,12 @@ describe('isChatOnly', () => {
   });
 
   // Short action patterns override short-message rule
-  it.each(['bold', 'red', 'center', 'dark mode', 'escurece', 'maior'])('short action "%s" is NOT chat', (msg) => {
+  it.each(['bold', 'red', 'center', 'dark mode', 'escurece', 'maior'])(
+    'short action "%s" is NOT chat',
+    (msg) => {
       expect(isChatOnly(msg)).toBe(false);
-    });
+    }
+  );
 
   // Questions WITH design intent
   it('question with create verb is not chat', () => {
@@ -355,7 +375,9 @@ describe('flattenNodesCompact', () => {
   });
 
   it('includes dimensions', () => {
-    const lines = flattenNodesCompact([{ name: 'Box', type: 'FRAME', id: '1:1', width: 200, height: 100 }]);
+    const lines = flattenNodesCompact([
+      { name: 'Box', type: 'FRAME', id: '1:1', width: 200, height: 100 },
+    ]);
     expect(lines[0]).toContain('200x100');
   });
 
@@ -365,7 +387,12 @@ describe('flattenNodesCompact', () => {
   });
 
   it('includes fill color', () => {
-    const node = { name: 'Bg', type: 'RECTANGLE', id: '1:1', fills: [{ type: 'SOLID', color: { r: 1, g: 0, b: 0 } }] };
+    const node = {
+      name: 'Bg',
+      type: 'RECTANGLE',
+      id: '1:1',
+      fills: [{ type: 'SOLID', color: { r: 1, g: 0, b: 0 } }],
+    };
     const lines = flattenNodesCompact([node]);
     expect(lines[0]).toContain('fill:#ff0000');
   });
@@ -376,28 +403,38 @@ describe('flattenNodesCompact', () => {
   });
 
   it('includes componentKey', () => {
-    const lines = flattenNodesCompact([{ name: 'Btn', type: 'INSTANCE', id: '1:1', componentKey: 'key-abc' }]);
+    const lines = flattenNodesCompact([
+      { name: 'Btn', type: 'INSTANCE', id: '1:1', componentKey: 'key-abc' },
+    ]);
     expect(lines[0]).toContain('key:"key-abc"');
   });
 
   it('includes corner radius', () => {
-    const lines = flattenNodesCompact([{ name: 'Card', type: 'FRAME', id: '1:1', cornerRadius: 12 }]);
+    const lines = flattenNodesCompact([
+      { name: 'Card', type: 'FRAME', id: '1:1', cornerRadius: 12 },
+    ]);
     expect(lines[0]).toContain('r:12');
   });
 
   it('includes opacity', () => {
-    const lines = flattenNodesCompact([{ name: 'Overlay', type: 'FRAME', id: '1:1', opacity: 0.5 }]);
+    const lines = flattenNodesCompact([
+      { name: 'Overlay', type: 'FRAME', id: '1:1', opacity: 0.5 },
+    ]);
     expect(lines[0]).toContain('op:0.5');
   });
 
   it('includes layout mode', () => {
-    const lines = flattenNodesCompact([{ name: 'Col', type: 'FRAME', id: '1:1', layoutMode: 'VERTICAL' }]);
+    const lines = flattenNodesCompact([
+      { name: 'Col', type: 'FRAME', id: '1:1', layoutMode: 'VERTICAL' },
+    ]);
     expect(lines[0]).toContain('layout:VERTICAL');
   });
 
   it('includes strokes', () => {
     const node = {
-      name: 'Box', type: 'FRAME', id: '1:1',
+      name: 'Box',
+      type: 'FRAME',
+      id: '1:1',
       strokes: [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }],
       strokeWeight: 2,
     };
@@ -412,13 +449,17 @@ describe('flattenNodesCompact', () => {
   });
 
   it('includes truncated text content', () => {
-    const lines = flattenNodesCompact([{ name: 'T', type: 'TEXT', id: '1:1', characters: 'Hello World' }]);
+    const lines = flattenNodesCompact([
+      { name: 'T', type: 'TEXT', id: '1:1', characters: 'Hello World' },
+    ]);
     expect(lines[0]).toContain('"Hello World...');
   });
 
   it('flattens children with indentation', () => {
     const parent = {
-      name: 'Frame', type: 'FRAME', id: '1:1',
+      name: 'Frame',
+      type: 'FRAME',
+      id: '1:1',
       children: [{ name: 'Child', type: 'TEXT', id: '2:1' }],
     };
     const lines = flattenNodesCompact([parent]);
@@ -428,11 +469,17 @@ describe('flattenNodesCompact', () => {
 
   it('respects maxDepth', () => {
     const deep = {
-      name: 'L0', type: 'FRAME', id: '1:1',
-      children: [{
-        name: 'L1', type: 'FRAME', id: '2:1',
-        children: [{ name: 'L2', type: 'TEXT', id: '3:1' }],
-      }],
+      name: 'L0',
+      type: 'FRAME',
+      id: '1:1',
+      children: [
+        {
+          name: 'L1',
+          type: 'FRAME',
+          id: '2:1',
+          children: [{ name: 'L2', type: 'TEXT', id: '3:1' }],
+        },
+      ],
     };
     const lines = flattenNodesCompact([deep], 0, 1);
     expect(lines.length).toBe(2); // L0 + L1 only
@@ -451,7 +498,11 @@ describe('buildSelectionContext', () => {
   });
 
   it('truncates at maxElements', () => {
-    const elements = Array.from({ length: 25 }, (_, i) => ({ ...FRAME, id: `${i}:1`, name: `E${i}` }));
+    const elements = Array.from({ length: 25 }, (_, i) => ({
+      ...FRAME,
+      id: `${i}:1`,
+      name: `E${i}`,
+    }));
     const ctx = buildSelectionContext(elements, 20);
     expect(ctx).toContain('+5 elementos');
   });
@@ -619,7 +670,10 @@ describe('assemblePrompt — intent modules', () => {
   });
 
   it('arrange injects arrange_rules', () => {
-    const r = assemblePrompt({ command: 'centraliza todos os elementos', selectedElements: [FRAME] });
+    const r = assemblePrompt({
+      command: 'centraliza todos os elementos',
+      selectedElements: [FRAME],
+    });
     expect(r.modules).toContain('arrange_rules');
   });
 
@@ -704,12 +758,20 @@ describe('assemblePrompt — selection context', () => {
   });
 
   it('scanPage with no elements shows empty page message', () => {
-    const r = assemblePrompt({ command: 'cria algo novo no canvas', scanPage: true, selectedElements: [] });
+    const r = assemblePrompt({
+      command: 'cria algo novo no canvas',
+      scanPage: true,
+      selectedElements: [],
+    });
     expect(r.system).toContain('vazia');
   });
 
   it('scanPage with elements uses custom label', () => {
-    const r = assemblePrompt({ command: 'edita o layout todo', scanPage: true, selectedElements: [FRAME] });
+    const r = assemblePrompt({
+      command: 'edita o layout todo',
+      scanPage: true,
+      selectedElements: [FRAME],
+    });
     expect(r.system).toContain('TODOS OS ELEMENTOS');
   });
 });
@@ -720,26 +782,38 @@ describe('assemblePrompt — selection context', () => {
 
 describe('assemblePrompt — route contexts', () => {
   it('templateContext injects scanned_templates + triggers template_rules', () => {
-    const r = assemblePrompt({ command: 'usa esse card pra criar', templateContext: '## TEMPLATES\n- Card' });
+    const r = assemblePrompt({
+      command: 'usa esse card pra criar',
+      templateContext: '## TEMPLATES\n- Card',
+    });
     expect(r.modules).toContain('scanned_templates');
     expect(r.modules).toContain('template_rules');
     expect(r.system).toContain('## TEMPLATES');
   });
 
   it('agentComponentsContext injects scanned_agent_components', () => {
-    const r = assemblePrompt({ command: 'cria um banner bonito', agentComponentsContext: '## AGENT COMPONENTS\n- Button' });
+    const r = assemblePrompt({
+      command: 'cria um banner bonito',
+      agentComponentsContext: '## AGENT COMPONENTS\n- Button',
+    });
     expect(r.modules).toContain('scanned_agent_components');
     expect(r.system).toContain('Button');
   });
 
   it('enforcedTokens injects enforced_tokens module', () => {
-    const r = assemblePrompt({ command: 'cria um post pro instagram', enforcedTokens: 'ENFORCED: #FF0000' });
+    const r = assemblePrompt({
+      command: 'cria um post pro instagram',
+      enforcedTokens: 'ENFORCED: #FF0000',
+    });
     expect(r.modules).toContain('enforced_tokens');
     expect(r.system).toContain('#FF0000');
   });
 
   it('brandChoiceContext injects brand_choice', () => {
-    const r = assemblePrompt({ command: 'cria um post pro instagram', brandChoiceContext: 'Escolha: A ou B' });
+    const r = assemblePrompt({
+      command: 'cria um post pro instagram',
+      brandChoiceContext: 'Escolha: A ou B',
+    });
     expect(r.modules).toContain('brand_choice');
     expect(r.system).toContain('Escolha: A ou B');
   });
@@ -762,7 +836,10 @@ describe('assemblePrompt — components & design system', () => {
 
   it('components capped at 20', () => {
     const comps = Array.from({ length: 30 }, (_, i) => ({ name: `Comp${i}`, key: `k${i}` }));
-    const r = assemblePrompt({ command: 'cria um banner profissional', availableComponents: comps });
+    const r = assemblePrompt({
+      command: 'cria um banner profissional',
+      availableComponents: comps,
+    });
     expect(r.system).toContain('Comp19');
     expect(r.system).not.toContain('Comp20');
   });

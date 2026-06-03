@@ -3,11 +3,7 @@
 import { cn } from '@/lib/utils';
 import { Send, Square, X } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import type {
-  ComponentProps,
-  HTMLAttributes,
-  KeyboardEventHandler,
-} from 'react';
+import type { ComponentProps, HTMLAttributes, KeyboardEventHandler } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -77,14 +73,8 @@ export const PromptInputTextarea = ({
 
 export type PromptInputToolbarProps = HTMLAttributes<HTMLDivElement>;
 
-export const PromptInputToolbar = ({
-  className,
-  ...props
-}: PromptInputToolbarProps) => (
-  <div
-    className={cn('flex items-center justify-end p-2', className)}
-    {...props}
-  />
+export const PromptInputToolbar = ({ className, ...props }: PromptInputToolbarProps) => (
+  <div className={cn('flex items-center justify-end p-2', className)} {...props} />
 );
 
 export type PromptInputSubmitProps = ComponentProps<'button'> & {
@@ -108,13 +98,15 @@ export const PromptInputSubmit = ({
   }
 
   return (
-    <Button variant="brand" className={cn(
-      'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5',
-      'bg-brand-cyan text-black font-medium text-sm',
-      'hover:bg-brand-cyan/90 transition-colors',
-      'disabled:opacity-50 disabled:cursor-not-allowed',
-      className
-    )}
+    <Button
+      variant="brand"
+      className={cn(
+        'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5',
+        'bg-brand-cyan text-black font-medium text-sm',
+        'hover:bg-brand-cyan/90 transition-colors',
+        'disabled:opacity-50 disabled:cursor-not-allowed',
+        className
+      )}
       type="submit"
       disabled={disabled || status === 'submitted' || status === 'streaming'}
       {...props}
@@ -123,8 +115,3 @@ export const PromptInputSubmit = ({
     </Button>
   );
 };
-
-
-
-
-

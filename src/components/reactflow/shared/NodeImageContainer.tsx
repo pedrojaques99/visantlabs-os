@@ -14,7 +14,10 @@ export const NodeImageContainer: React.FC<NodeImageContainerProps> = ({
 }) => {
   return (
     <div
-      className={cn('relative flex items-center justify-center box-border node-image-container', className)}
+      className={cn(
+        'relative flex items-center justify-center box-border node-image-container',
+        className
+      )}
       style={{ width: '100%', height: '100%', margin: 0, padding: 0, ...style }}
     >
       {children}

@@ -6,8 +6,8 @@ import { translateTag } from '@/utils/localeUtils';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useMockup } from './MockupContext';
-import { Button } from '@/components/ui/button'
-import { MicroTitle } from '@/components/ui/MicroTitle'
+import { Button } from '@/components/ui/button';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 
 interface KeywordsSectionProps {
   customInput: string;
@@ -42,19 +42,31 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
     >
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <Grid3x3 size={12} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-          <span className={cn('text-[10px] uppercase font-mono', theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}>
+          <Grid3x3
+            size={12}
+            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+          />
+          <span
+            className={cn(
+              'text-[10px] uppercase font-mono',
+              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+            )}
+          >
             {t('mockup.tags') || 'PALAVRAS-CHAVE'}
           </span>
         </div>
-        <Button variant="ghost" type="button"
+        <Button
+          variant="ghost"
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             setIsSearchVisible(!isSearchVisible);
           }}
           className={cn(
             'p-1 rounded-md transition-colors',
-            theme === 'dark' ? 'hover:bg-white/10 text-neutral-500 hover:text-brand-cyan' : 'hover:bg-neutral-100 text-neutral-500 hover:text-brand-cyan'
+            theme === 'dark'
+              ? 'hover:bg-white/10 text-neutral-500 hover:text-brand-cyan'
+              : 'hover:bg-neutral-100 text-neutral-500 hover:text-brand-cyan'
           )}
         >
           {isSearchVisible ? <X size={12} /> : <Plus size={12} />}
@@ -93,7 +105,9 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                 Sugestões:
               </span>
               {displaySuggestedTags.slice(0, 5).map((tag) => (
-                <Button variant="ghost" key={tag}
+                <Button
+                  variant="ghost"
+                  key={tag}
                   onClick={() => !selectedTags.includes(tag) && onTagToggle(tag)}
                   disabled={selectedTags.includes(tag)}
                   className={cn(
@@ -101,8 +115,8 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                     selectedTags.includes(tag)
                       ? 'bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan cursor-default'
                       : theme === 'dark'
-                        ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
-                        : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
+                      ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
+                      : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
                   )}
                 >
                   {translateTag(tag)}

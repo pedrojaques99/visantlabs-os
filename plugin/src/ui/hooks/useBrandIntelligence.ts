@@ -10,7 +10,7 @@ export function useBrandIntelligence() {
     try {
       store.showToast('Scanning design for brand elements...', 'info');
       send({
-        type: 'SYNC_BRAND_INTELLIGENCE'
+        type: 'SYNC_BRAND_INTELLIGENCE',
       } as any);
     } catch (err) {
       console.error('Failed to sync brand intelligence:', err);

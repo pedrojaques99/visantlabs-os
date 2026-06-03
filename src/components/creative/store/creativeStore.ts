@@ -63,7 +63,7 @@ interface CreativeStore {
   duplicatePage: (index: number) => void;
   renamePage: (index: number, name: string) => void;
   reorderPages: (from: number, to: number) => void;
-  
+
   hydrateFromAI: (payload: {
     backgroundUrl: string;
     overlay: CreativeOverlay | null;
@@ -78,7 +78,10 @@ interface CreativeStore {
   setGridSize: (n: number) => void;
   setSelectedLayerIds: (ids: string[], extend?: boolean) => void;
   updateLayer: (id: string, updates: Partial<CreativeLayerData>) => void;
-  updateLayerMeta: (id: string, updates: Partial<Pick<CreativeLayer, 'visible' | 'zIndex' | 'locked'>>) => void;
+  updateLayerMeta: (
+    id: string,
+    updates: Partial<Pick<CreativeLayer, 'visible' | 'zIndex' | 'locked'>>
+  ) => void;
   addLayer: (data: CreativeLayerData) => void;
   removeLayer: (id: string) => void;
   duplicateLayer: (id: string) => void;
@@ -92,8 +95,7 @@ interface CreativeStore {
 
 let layerCounter = 0;
 const nextLayerId = () => `layer_${Date.now()}_${++layerCounter}`;
-const nextCreativeId = () =>
-  `creative_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+const nextCreativeId = () => `creative_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 let pageCounter = 0;
 const nextPageId = () => `page_${Date.now()}_${++pageCounter}`;
 
@@ -116,7 +118,12 @@ function applyToActivePage(
   pages: CreativePage[],
   activePageIndex: number,
   patch: Partial<CreativePage>
-): { pages: CreativePage[]; layers: CreativeLayer[]; backgroundUrl: string | null; overlay: CreativeOverlay | null } | null {
+): {
+  pages: CreativePage[];
+  layers: CreativeLayer[];
+  backgroundUrl: string | null;
+  overlay: CreativeOverlay | null;
+} | null {
   if (!pages[activePageIndex]) return null;
   const newPages = pages.map((p, i) => (i === activePageIndex ? { ...p, ...patch } : p));
   return { pages: newPages, ...rootMirrorOf(newPages, activePageIndex) };
@@ -163,123 +170,142 @@ export const useCreativeStore = create<CreativeStore>()(
         setResolution: (resolution) => set({ resolution }),
 
         setStatus: (status) => set({ status }),
-        setBackgroundSelected: (backgroundSelected) => set(backgroundSelected ? { backgroundSelected, selectedLayerIds: [] } : { backgroundSelected }),
-        setBackgroundUrl: (backgroundUrl) => set((state) => {
-          const patch = applyToActivePage(state.pages, state.activePageIndex, { backgroundUrl });
-          return patch ?? { backgroundUrl };
-        }),
+        setBackgroundSelected: (backgroundSelected) =>
+          set(
+            backgroundSelected
+              ? { backgroundSelected, selectedLayerIds: [] }
+              : { backgroundSelected }
+          ),
+        setBackgroundUrl: (backgroundUrl) =>
+          set((state) => {
+            const patch = applyToActivePage(state.pages, state.activePageIndex, { backgroundUrl });
+            return patch ?? { backgroundUrl };
+          }),
         setActiveTool: (activeTool) => set({ activeTool, lassoRegion: null }),
         setLassoRegion: (lassoRegion) => set({ lassoRegion }),
         setGridEnabled: (gridEnabled) => set({ gridEnabled }),
         setGridSize: (gridSize) => set({ gridSize: Math.max(2, Math.round(gridSize)) }),
 
-        setActivePageIndex: (index) => set((state) => {
-          if (index < 0 || index >= state.pages.length) return state;
-          // Switch the canvas: load the target page's data into root mirror
-          // and clear cross-page selection (ids from page A don't exist in B).
-          return {
-            activePageIndex: index,
-            ...rootMirrorOf(state.pages, index),
-            selectedLayerIds: [],
-            backgroundSelected: false,
-          };
-        }),
+        setActivePageIndex: (index) =>
+          set((state) => {
+            if (index < 0 || index >= state.pages.length) return state;
+            // Switch the canvas: load the target page's data into root mirror
+            // and clear cross-page selection (ids from page A don't exist in B).
+            return {
+              activePageIndex: index,
+              ...rootMirrorOf(state.pages, index),
+              selectedLayerIds: [],
+              backgroundSelected: false,
+            };
+          }),
 
-        addPage: (format) => set((state) => {
-          const newFormat = format || state.format;
-          const newPage: CreativePage = {
-            id: nextPageId(),
-            name: defaultPageName(state.pages.length),
-            format: newFormat,
-            layers: [],
-            backgroundUrl: state.backgroundUrl, // Inherit background
-            overlay: state.overlay,
-          };
-          const pages = [...state.pages, newPage];
-          const activePageIndex = pages.length - 1;
-          return {
-            pages,
-            activePageIndex,
-            ...rootMirrorOf(pages, activePageIndex),
-            selectedLayerIds: [],
-            backgroundSelected: false,
-          };
-        }),
+        addPage: (format) =>
+          set((state) => {
+            const newFormat = format || state.format;
+            const newPage: CreativePage = {
+              id: nextPageId(),
+              name: defaultPageName(state.pages.length),
+              format: newFormat,
+              layers: [],
+              backgroundUrl: state.backgroundUrl, // Inherit background
+              overlay: state.overlay,
+            };
+            const pages = [...state.pages, newPage];
+            const activePageIndex = pages.length - 1;
+            return {
+              pages,
+              activePageIndex,
+              ...rootMirrorOf(pages, activePageIndex),
+              selectedLayerIds: [],
+              backgroundSelected: false,
+            };
+          }),
 
-        removePage: (index) => set((state) => {
-          if (state.pages.length <= 1) return state;
-          const pages = state.pages.filter((_, i) => i !== index);
-          // If removing the active page (or one before it), shift index left.
-          let activePageIndex = state.activePageIndex;
-          if (index < activePageIndex) activePageIndex--;
-          else if (index === activePageIndex) activePageIndex = Math.min(activePageIndex, pages.length - 1);
-          return {
-            pages,
-            activePageIndex,
-            ...rootMirrorOf(pages, activePageIndex),
-            selectedLayerIds: [],
-            backgroundSelected: false,
-          };
-        }),
+        removePage: (index) =>
+          set((state) => {
+            if (state.pages.length <= 1) return state;
+            const pages = state.pages.filter((_, i) => i !== index);
+            // If removing the active page (or one before it), shift index left.
+            let activePageIndex = state.activePageIndex;
+            if (index < activePageIndex) activePageIndex--;
+            else if (index === activePageIndex)
+              activePageIndex = Math.min(activePageIndex, pages.length - 1);
+            return {
+              pages,
+              activePageIndex,
+              ...rootMirrorOf(pages, activePageIndex),
+              selectedLayerIds: [],
+              backgroundSelected: false,
+            };
+          }),
 
-        duplicatePage: (index) => set((state) => {
-          const src = state.pages[index];
-          if (!src) return state;
-          // Re-id the layers so subsequent edits don't mutate both pages.
-          const cloneLayers = src.layers.map((l) => ({ ...l, id: nextLayerId() }));
-          const clone: CreativePage = {
-            id: nextPageId(),
-            name: src.name ? `${src.name} cópia` : defaultPageName(state.pages.length),
-            format: src.format,
-            layers: cloneLayers,
-            backgroundUrl: src.backgroundUrl,
-            overlay: src.overlay,
-          };
-          const pages = [
-            ...state.pages.slice(0, index + 1),
-            clone,
-            ...state.pages.slice(index + 1),
-          ];
-          const activePageIndex = index + 1;
-          return {
-            pages,
-            activePageIndex,
-            ...rootMirrorOf(pages, activePageIndex),
-            selectedLayerIds: [],
-            backgroundSelected: false,
-          };
-        }),
+        duplicatePage: (index) =>
+          set((state) => {
+            const src = state.pages[index];
+            if (!src) return state;
+            // Re-id the layers so subsequent edits don't mutate both pages.
+            const cloneLayers = src.layers.map((l) => ({ ...l, id: nextLayerId() }));
+            const clone: CreativePage = {
+              id: nextPageId(),
+              name: src.name ? `${src.name} cópia` : defaultPageName(state.pages.length),
+              format: src.format,
+              layers: cloneLayers,
+              backgroundUrl: src.backgroundUrl,
+              overlay: src.overlay,
+            };
+            const pages = [
+              ...state.pages.slice(0, index + 1),
+              clone,
+              ...state.pages.slice(index + 1),
+            ];
+            const activePageIndex = index + 1;
+            return {
+              pages,
+              activePageIndex,
+              ...rootMirrorOf(pages, activePageIndex),
+              selectedLayerIds: [],
+              backgroundSelected: false,
+            };
+          }),
 
-        renamePage: (index, name) => set((state) => {
-          const trimmed = name.trim();
-          if (!state.pages[index]) return state;
-          const pages = state.pages.map((p, i) =>
-            i === index ? { ...p, name: trimmed || undefined } : p
-          );
-          return { pages };
-        }),
+        renamePage: (index, name) =>
+          set((state) => {
+            const trimmed = name.trim();
+            if (!state.pages[index]) return state;
+            const pages = state.pages.map((p, i) =>
+              i === index ? { ...p, name: trimmed || undefined } : p
+            );
+            return { pages };
+          }),
 
-        reorderPages: (from, to) => set((state) => {
-          if (from === to || from < 0 || to < 0 || from >= state.pages.length || to >= state.pages.length) {
-            return state;
-          }
-          const pages = state.pages.slice();
-          const [moved] = pages.splice(from, 1);
-          pages.splice(to, 0, moved);
-          // Track the active page through the move.
-          let activePageIndex = state.activePageIndex;
-          if (state.activePageIndex === from) activePageIndex = to;
-          else {
-            if (from < state.activePageIndex) activePageIndex--;
-            if (to <= state.activePageIndex) activePageIndex++;
-          }
-          activePageIndex = Math.max(0, Math.min(pages.length - 1, activePageIndex));
-          return {
-            pages,
-            activePageIndex,
-            ...rootMirrorOf(pages, activePageIndex),
-          };
-        }),
+        reorderPages: (from, to) =>
+          set((state) => {
+            if (
+              from === to ||
+              from < 0 ||
+              to < 0 ||
+              from >= state.pages.length ||
+              to >= state.pages.length
+            ) {
+              return state;
+            }
+            const pages = state.pages.slice();
+            const [moved] = pages.splice(from, 1);
+            pages.splice(to, 0, moved);
+            // Track the active page through the move.
+            let activePageIndex = state.activePageIndex;
+            if (state.activePageIndex === from) activePageIndex = to;
+            else {
+              if (from < state.activePageIndex) activePageIndex--;
+              if (to <= state.activePageIndex) activePageIndex++;
+            }
+            activePageIndex = Math.max(0, Math.min(pages.length - 1, activePageIndex));
+            return {
+              pages,
+              activePageIndex,
+              ...rootMirrorOf(pages, activePageIndex),
+            };
+          }),
 
         hydrateFromAI: ({ backgroundUrl, overlay, layers }) => {
           const creativeId = nextCreativeId();
@@ -321,21 +347,22 @@ export const useCreativeStore = create<CreativeStore>()(
           });
         },
 
-        setSelectedLayerIds: (selectedLayerIds, extend) => set((state) => {
-          if (extend) {
-            const existing = state.selectedLayerIds;
-            const newSelection = [...existing];
-            selectedLayerIds.forEach(id => {
-              if (newSelection.includes(id)) {
-                newSelection.splice(newSelection.indexOf(id), 1);
-              } else {
-                newSelection.push(id);
-              }
-            });
-            return { selectedLayerIds: newSelection, backgroundSelected: false };
-          }
-          return { selectedLayerIds, backgroundSelected: false };
-        }),
+        setSelectedLayerIds: (selectedLayerIds, extend) =>
+          set((state) => {
+            if (extend) {
+              const existing = state.selectedLayerIds;
+              const newSelection = [...existing];
+              selectedLayerIds.forEach((id) => {
+                if (newSelection.includes(id)) {
+                  newSelection.splice(newSelection.indexOf(id), 1);
+                } else {
+                  newSelection.push(id);
+                }
+              });
+              return { selectedLayerIds: newSelection, backgroundSelected: false };
+            }
+            return { selectedLayerIds, backgroundSelected: false };
+          }),
 
         updateLayer: (id, updates) =>
           set((state) => {
@@ -441,47 +468,51 @@ export const useCreativeStore = create<CreativeStore>()(
             return { ...(patch ?? { layers }), selectedLayerIds: [newId] };
           }),
 
-        groupSelected: () => set((state) => {
-          const selectedIds = state.selectedLayerIds;
-          if (selectedIds.length < 2) return state;
+        groupSelected: () =>
+          set((state) => {
+            const selectedIds = state.selectedLayerIds;
+            if (selectedIds.length < 2) return state;
 
-          const selectedLayers = state.layers.filter(l => selectedIds.includes(l.id));
-          const bbox = calculateBoundingBox(selectedLayers.map(l => ({
-            x: l.data.position.x,
-            y: l.data.position.y,
-            w: l.data.size?.w || 0,
-            h: l.data.size?.h || 0
-          })));
+            const selectedLayers = state.layers.filter((l) => selectedIds.includes(l.id));
+            const bbox = calculateBoundingBox(
+              selectedLayers.map((l) => ({
+                x: l.data.position.x,
+                y: l.data.position.y,
+                w: l.data.size?.w || 0,
+                h: l.data.size?.h || 0,
+              }))
+            );
 
-          const groupId = nextLayerId();
-          const newGroup: CreativeLayer = {
-            id: groupId,
-            visible: true,
-            // Sit above children so the wrapper is the topmost — preserves
-            // children zIndex on ungroup (they remain in state.layers untouched).
-            zIndex: Math.max(...selectedLayers.map(l => l.zIndex)) + 1,
-            data: {
-              type: 'group',
-              children: selectedIds,
-              position: { x: bbox.x, y: bbox.y },
-              size: { w: bbox.w, h: bbox.h },
-            }
-          };
+            const groupId = nextLayerId();
+            const newGroup: CreativeLayer = {
+              id: groupId,
+              visible: true,
+              // Sit above children so the wrapper is the topmost — preserves
+              // children zIndex on ungroup (they remain in state.layers untouched).
+              zIndex: Math.max(...selectedLayers.map((l) => l.zIndex)) + 1,
+              data: {
+                type: 'group',
+                children: selectedIds,
+                position: { x: bbox.x, y: bbox.y },
+                size: { w: bbox.w, h: bbox.h },
+              },
+            };
 
-          const layers = [...state.layers, newGroup];
-          const patch = applyToActivePage(state.pages, state.activePageIndex, { layers });
-          return { ...(patch ?? { layers }), selectedLayerIds: [groupId] };
-        }),
+            const layers = [...state.layers, newGroup];
+            const patch = applyToActivePage(state.pages, state.activePageIndex, { layers });
+            return { ...(patch ?? { layers }), selectedLayerIds: [groupId] };
+          }),
 
-        ungroupSelected: () => set((state) => {
-          const selectedId = state.selectedLayerIds[0];
-          const group = state.layers.find(l => l.id === selectedId);
-          if (!group || group.data.type !== 'group') return state;
+        ungroupSelected: () =>
+          set((state) => {
+            const selectedId = state.selectedLayerIds[0];
+            const group = state.layers.find((l) => l.id === selectedId);
+            if (!group || group.data.type !== 'group') return state;
 
-          const layers = state.layers.filter(l => l.id !== selectedId);
-          const patch = applyToActivePage(state.pages, state.activePageIndex, { layers });
-          return { ...(patch ?? { layers }), selectedLayerIds: group.data.children };
-        }),
+            const layers = state.layers.filter((l) => l.id !== selectedId);
+            const patch = applyToActivePage(state.pages, state.activePageIndex, { layers });
+            return { ...(patch ?? { layers }), selectedLayerIds: group.data.children };
+          }),
 
         reorderLayer: (id, direction) =>
           set((state) => {
@@ -514,23 +545,37 @@ export const useCreativeStore = create<CreativeStore>()(
 
             const isSingle = selected.length === 1;
 
-            const bbox = calculateBoundingBox(selected.map(l => ({
-              x: l.data.position.x,
-              y: l.data.position.y,
-              w: l.data.size?.w || 0,
-              h: l.data.size?.h || 0
-            })));
+            const bbox = calculateBoundingBox(
+              selected.map((l) => ({
+                x: l.data.position.x,
+                y: l.data.position.y,
+                w: l.data.size?.w || 0,
+                h: l.data.size?.h || 0,
+              }))
+            );
 
             const layers = state.layers.map((l) => {
               if (!ids.includes(l.id)) return l;
               const pos = { x: l.data.position.x, y: l.data.position.y };
 
               if (axis === 'left') pos.x = isSingle ? 0 : bbox.x;
-              else if (axis === 'right') pos.x = isSingle ? 1 - (l.data.size?.w || 0) : bbox.x + bbox.w - (l.data.size?.w || 0);
-              else if (axis === 'center-h') pos.x = isSingle ? (1 - (l.data.size?.w || 0)) / 2 : (bbox.x + bbox.x + bbox.w) / 2 - (l.data.size?.w || 0) / 2;
+              else if (axis === 'right')
+                pos.x = isSingle
+                  ? 1 - (l.data.size?.w || 0)
+                  : bbox.x + bbox.w - (l.data.size?.w || 0);
+              else if (axis === 'center-h')
+                pos.x = isSingle
+                  ? (1 - (l.data.size?.w || 0)) / 2
+                  : (bbox.x + bbox.x + bbox.w) / 2 - (l.data.size?.w || 0) / 2;
               else if (axis === 'top') pos.y = isSingle ? 0 : bbox.y;
-              else if (axis === 'bottom') pos.y = isSingle ? 1 - (l.data.size?.h || 0) : bbox.y + bbox.h - (l.data.size?.h || 0);
-              else if (axis === 'center-v') pos.y = isSingle ? (1 - (l.data.size?.h || 0)) / 2 : (bbox.y + bbox.y + bbox.h) / 2 - (l.data.size?.h || 0) / 2;
+              else if (axis === 'bottom')
+                pos.y = isSingle
+                  ? 1 - (l.data.size?.h || 0)
+                  : bbox.y + bbox.h - (l.data.size?.h || 0);
+              else if (axis === 'center-v')
+                pos.y = isSingle
+                  ? (1 - (l.data.size?.h || 0)) / 2
+                  : (bbox.y + bbox.y + bbox.h) / 2 - (l.data.size?.h || 0) / 2;
 
               return { ...l, data: { ...l.data, position: pos } as CreativeLayerData };
             });
@@ -558,14 +603,20 @@ export const useCreativeStore = create<CreativeStore>()(
               const endCenter = last.data.position.x + (last.data.size?.w || 0) / 2;
               const step = (endCenter - startCenter) / (selected.length - 1);
               selected.forEach((l, i) => {
-                updates.set(l.id, { x: startCenter + step * i - (l.data.size?.w || 0) / 2, y: l.data.position.y });
+                updates.set(l.id, {
+                  x: startCenter + step * i - (l.data.size?.w || 0) / 2,
+                  y: l.data.position.y,
+                });
               });
             } else {
               const startCenter = first.data.position.y + (first.data.size?.h || 0) / 2;
               const endCenter = last.data.position.y + (last.data.size?.h || 0) / 2;
               const step = (endCenter - startCenter) / (selected.length - 1);
               selected.forEach((l, i) => {
-                updates.set(l.id, { x: l.data.position.x, y: startCenter + step * i - (l.data.size?.h || 0) / 2 });
+                updates.set(l.id, {
+                  x: l.data.position.x,
+                  y: startCenter + step * i - (l.data.size?.h || 0) / 2,
+                });
               });
             }
 

@@ -50,8 +50,7 @@ class OperationValidator {
     switch (op.type) {
       case 'MESSAGE': {
         if (!op.content) errors.push('MESSAGE requires content field');
-        if (typeof op.content !== 'string')
-          errors.push('MESSAGE content must be string');
+        if (typeof op.content !== 'string') errors.push('MESSAGE content must be string');
         break;
       }
 
@@ -70,28 +69,34 @@ class OperationValidator {
         const hasAutoLayout = props.layoutMode && props.layoutMode !== 'NONE';
 
         // layoutSizingHorizontal/Vertical: How this frame sizes in parent's auto-layout
-        const canFillWidth = hasParent && (props.layoutSizingHorizontal === 'FILL' || props.layoutSizingHorizontal === 'HUG');
-        const canFillHeight = hasParent && (props.layoutSizingVertical === 'FILL' || props.layoutSizingVertical === 'HUG');
+        const canFillWidth =
+          hasParent &&
+          (props.layoutSizingHorizontal === 'FILL' || props.layoutSizingHorizontal === 'HUG');
+        const canFillHeight =
+          hasParent &&
+          (props.layoutSizingVertical === 'FILL' || props.layoutSizingVertical === 'HUG');
 
         // primaryAxisSizingMode/counterAxisSizingMode: How this frame's auto-layout sizes
         // AUTO = hug contents, FIXED = explicit dimension
-        const canHugWidth = hasAutoLayout && (
-          (props.layoutMode === 'HORIZONTAL' && props.primaryAxisSizingMode === 'AUTO') ||
-          (props.layoutMode === 'VERTICAL' && props.counterAxisSizingMode === 'AUTO')
-        );
-        const canHugHeight = hasAutoLayout && (
-          (props.layoutMode === 'VERTICAL' && props.primaryAxisSizingMode === 'AUTO') ||
-          (props.layoutMode === 'HORIZONTAL' && props.counterAxisSizingMode === 'AUTO')
-        );
+        const canHugWidth =
+          hasAutoLayout &&
+          ((props.layoutMode === 'HORIZONTAL' && props.primaryAxisSizingMode === 'AUTO') ||
+            (props.layoutMode === 'VERTICAL' && props.counterAxisSizingMode === 'AUTO'));
+        const canHugHeight =
+          hasAutoLayout &&
+          ((props.layoutMode === 'VERTICAL' && props.primaryAxisSizingMode === 'AUTO') ||
+            (props.layoutMode === 'HORIZONTAL' && props.counterAxisSizingMode === 'AUTO'));
 
         if (typeof props.width !== 'number' && !canFillWidth && !canHugWidth)
-          errors.push(`${op.type} requires props.width (number), layoutSizingHorizontal:"FILL", or auto-layout HUG`);
+          errors.push(
+            `${op.type} requires props.width (number), layoutSizingHorizontal:"FILL", or auto-layout HUG`
+          );
         if (typeof props.height !== 'number' && !canFillHeight && !canHugHeight)
-          errors.push(`${op.type} requires props.height (number), layoutSizingVertical:"FILL", or auto-layout HUG`);
-        if (props.width && props.width <= 0)
-          errors.push(`${op.type} width must be positive`);
-        if (props.height && props.height <= 0)
-          errors.push(`${op.type} height must be positive`);
+          errors.push(
+            `${op.type} requires props.height (number), layoutSizingVertical:"FILL", or auto-layout HUG`
+          );
+        if (props.width && props.width <= 0) errors.push(`${op.type} width must be positive`);
+        if (props.height && props.height <= 0) errors.push(`${op.type} height must be positive`);
         break;
       }
 
@@ -106,8 +111,7 @@ class OperationValidator {
         }
         const props = op.props;
         if (!props.content) errors.push('CREATE_TEXT requires props.content');
-        if (typeof props.content !== 'string')
-          errors.push('CREATE_TEXT content must be string');
+        if (typeof props.content !== 'string') errors.push('CREATE_TEXT content must be string');
         if (props.content && props.content.length > 50000)
           errors.push('CREATE_TEXT content exceeds max length (50000 chars)');
         break;
@@ -165,7 +169,9 @@ class OperationValidator {
         if (!op.layoutMode) {
           errors.push('SET_AUTO_LAYOUT requires layoutMode (HORIZONTAL or VERTICAL)');
         } else if (!['HORIZONTAL', 'VERTICAL'].includes(op.layoutMode)) {
-          errors.push(`SET_AUTO_LAYOUT invalid layoutMode: ${op.layoutMode}. Must be HORIZONTAL or VERTICAL`);
+          errors.push(
+            `SET_AUTO_LAYOUT invalid layoutMode: ${op.layoutMode}. Must be HORIZONTAL or VERTICAL`
+          );
         }
         break;
       }
@@ -173,8 +179,7 @@ class OperationValidator {
       case 'RESIZE': {
         if (!op.nodeId) errors.push('RESIZE requires nodeId');
         if (typeof op.width !== 'number') errors.push('RESIZE requires width (number)');
-        if (typeof op.height !== 'number')
-          errors.push('RESIZE requires height (number)');
+        if (typeof op.height !== 'number') errors.push('RESIZE requires height (number)');
         if (op.width && op.width <= 0) errors.push('RESIZE width must be positive');
         if (op.height && op.height <= 0) errors.push('RESIZE height must be positive');
         break;
@@ -199,26 +204,30 @@ class OperationValidator {
       case 'SET_TEXT_CONTENT': {
         if (!op.nodeId) errors.push('SET_TEXT_CONTENT requires nodeId');
         if (!op.content) errors.push('SET_TEXT_CONTENT requires content');
-        if (typeof op.content !== 'string')
-          errors.push('SET_TEXT_CONTENT content must be string');
+        if (typeof op.content !== 'string') errors.push('SET_TEXT_CONTENT content must be string');
         break;
       }
 
       case 'SET_TEXT_STYLE': {
         if (!op.nodeId) errors.push('SET_TEXT_STYLE requires nodeId');
         // At least one style property should be present
-        const hasStyle = op.fontSize || op.fontFamily || op.fontStyle ||
-                         op.textAutoResize || op.textAlignHorizontal ||
-                         op.textAlignVertical || op.lineHeight ||
-                         op.letterSpacing || op.fills;
+        const hasStyle =
+          op.fontSize ||
+          op.fontFamily ||
+          op.fontStyle ||
+          op.textAutoResize ||
+          op.textAlignHorizontal ||
+          op.textAlignVertical ||
+          op.lineHeight ||
+          op.letterSpacing ||
+          op.fills;
         if (!hasStyle) errors.push('SET_TEXT_STYLE requires at least one style property');
         break;
       }
 
       case 'SET_OPACITY': {
         if (!op.nodeId) errors.push('SET_OPACITY requires nodeId');
-        if (typeof op.opacity !== 'number')
-          errors.push('SET_OPACITY requires opacity (number)');
+        if (typeof op.opacity !== 'number') errors.push('SET_OPACITY requires opacity (number)');
         if (op.opacity < 0 || op.opacity > 1) {
           errors.push('SET_OPACITY must be between 0 and 1');
         }
@@ -303,8 +312,7 @@ class OperationValidator {
       case 'REORDER_CHILD': {
         if (!op.nodeId) errors.push('REORDER_CHILD requires nodeId');
         if (!op.parentNodeId) errors.push('REORDER_CHILD requires parentNodeId');
-        if (typeof op.index !== 'number')
-          errors.push('REORDER_CHILD requires index (number)');
+        if (typeof op.index !== 'number') errors.push('REORDER_CHILD requires index (number)');
         break;
       }
 
@@ -343,7 +351,7 @@ class OperationValidator {
         }
         if (!['UNION', 'SUBTRACT', 'INTERSECT', 'EXCLUDE'].includes(op.operation)) {
           errors.push(
-            `BOOLEAN_OPERATION invalid operation: ${op.operation}. Must be UNION, SUBTRACT, INTERSECT, or EXCLUDE`,
+            `BOOLEAN_OPERATION invalid operation: ${op.operation}. Must be UNION, SUBTRACT, INTERSECT, or EXCLUDE`
           );
         }
         break;
@@ -367,9 +375,7 @@ class OperationValidator {
   /**
    * Batch validate (for efficiency)
    */
-  validateBatch(
-    operations: Operation[],
-  ): {
+  validateBatch(operations: Operation[]): {
     valid: Operation[];
     invalid: Array<{ op: Operation; errors: string[] }>;
   } {

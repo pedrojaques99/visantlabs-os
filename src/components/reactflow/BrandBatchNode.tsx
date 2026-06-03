@@ -1,6 +1,18 @@
 import React, { memo, useCallback, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Layers, Play, Square, RotateCcw, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, Plus, Flame } from 'lucide-react';
+import {
+  Layers,
+  Play,
+  Square,
+  RotateCcw,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Flame,
+} from 'lucide-react';
 import { useReferenceSearch } from '@/hooks/useReferenceSearch';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import type { ReferenceResult } from '@/services/referenceApi';
@@ -28,12 +40,19 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const canvasHeader = useCanvasHeader();
-  const refSearch = useReferenceSearch({ brandGuidelineId: canvasHeader.linkedGuidelineId || undefined, enabled: showSuggestions, limit: 6 });
+  const refSearch = useReferenceSearch({
+    brandGuidelineId: canvasHeader.linkedGuidelineId || undefined,
+    enabled: showSuggestions,
+    limit: 6,
+  });
   const suggestions = refSearch.results.slice(0, 3);
 
-  const handleAddRef = useCallback((ref: ReferenceResult) => {
-    nodeData.onAddReferences?.(id, [ref]);
-  }, [id, nodeData]);
+  const handleAddRef = useCallback(
+    (ref: ReferenceResult) => {
+      nodeData.onAddReferences?.(id, [ref]);
+    },
+    [id, nodeData]
+  );
 
   const isRunning = status === 'running';
   const isDone = status === 'done' || status === 'cancelled';
@@ -41,9 +60,13 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
   const total = items.length;
   const done = items.filter((r) => r.status === 'done').length;
   const failed = items.filter((r) => r.status === 'error').length;
-  const progress = total > 0 ? Math.round((done + failed) / total * 100) : 0;
+  const progress = total > 0 ? Math.round(((done + failed) / total) * 100) : 0;
 
-  const hasBrand = !!(nodeData.connectedLogo || nodeData.connectedIdentity || nodeData.connectedTextDirection);
+  const hasBrand = !!(
+    nodeData.connectedLogo ||
+    nodeData.connectedIdentity ||
+    nodeData.connectedTextDirection
+  );
   const imageCount = connectedImages.filter(Boolean).length;
 
   const model = (nodeData.model || getPreferredImageModel()) as GeminiModel | SeedreamModel;
@@ -63,13 +86,19 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
     nodeData.onUpdateData?.(id, { status: 'idle', items: [] });
   }, [id, nodeData]);
 
-  const handlePromptChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    nodeData.onUpdateData?.(id, { prompt: e.target.value });
-  }, [id, nodeData]);
+  const handlePromptChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      nodeData.onUpdateData?.(id, { prompt: e.target.value });
+    },
+    [id, nodeData]
+  );
 
-  const handleModelChange = useCallback((m: GeminiModel | SeedreamModel) => {
-    nodeData.onUpdateData?.(id, { model: m });
-  }, [id, nodeData]);
+  const handleModelChange = useCallback(
+    (m: GeminiModel | SeedreamModel) => {
+      nodeData.onUpdateData?.(id, { model: m });
+    },
+    [id, nodeData]
+  );
 
   return (
     <NodeContainer selected={selected} dragging={dragging} className="min-w-[300px] max-w-[360px]">
@@ -78,7 +107,14 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         type="target"
         position={Position.Left}
         id="brand-in"
-        style={{ top: '20%', left: -6, width: 10, height: 10, background: 'var(--color-amber-400)', border: '2px solid var(--color-neutral-950)' }}
+        style={{
+          top: '20%',
+          left: -6,
+          width: 10,
+          height: 10,
+          background: 'var(--color-amber-400)',
+          border: '2px solid var(--color-neutral-950)',
+        }}
       />
       {/* Image inputs */}
       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -103,7 +139,14 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         type="source"
         position={Position.Right}
         id="output"
-        style={{ top: '50%', right: -6, width: 10, height: 10, background: 'var(--color-green-400)', border: '2px solid var(--color-neutral-950)' }}
+        style={{
+          top: '50%',
+          right: -6,
+          width: 10,
+          height: 10,
+          background: 'var(--color-green-400)',
+          border: '2px solid var(--color-neutral-950)',
+        }}
       />
 
       {/* Header */}
@@ -118,13 +161,15 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               BRAND
             </span>
           )}
-          <span className={cn(
-            'text-[10px] px-1.5 py-0.5 rounded font-medium',
-            status === 'idle' && 'text-white/30 bg-white/5',
-            status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
-            status === 'done' && 'text-green-400 bg-green-400/10',
-            status === 'cancelled' && 'text-orange-400 bg-orange-400/10',
-          )}>
+          <span
+            className={cn(
+              'text-[10px] px-1.5 py-0.5 rounded font-medium',
+              status === 'idle' && 'text-white/30 bg-white/5',
+              status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
+              status === 'done' && 'text-green-400 bg-green-400/10',
+              status === 'cancelled' && 'text-orange-400 bg-orange-400/10'
+            )}
+          >
             {status}
           </span>
         </div>
@@ -138,9 +183,13 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         </p>
         <p className="text-[10px] text-white/30">
           <span className="text-violet-400">●</span>{' '}
-          {imageCount > 0
-            ? <span className="text-white/50">{imageCount} image{imageCount > 1 ? 's' : ''} connected</span>
-            : 'Connect images (up to 8)'}
+          {imageCount > 0 ? (
+            <span className="text-white/50">
+              {imageCount} image{imageCount > 1 ? 's' : ''} connected
+            </span>
+          ) : (
+            'Connect images (up to 8)'
+          )}
         </p>
       </div>
 
@@ -156,21 +205,31 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               Suggest References
             </button>
           ) : refSearch.isLoading ? (
-            <div className="flex items-center justify-center py-2"><GlitchLoader size={10} /></div>
+            <div className="flex items-center justify-center py-2">
+              <GlitchLoader size={10} />
+            </div>
           ) : suggestions.length > 0 ? (
             <div className="flex gap-1">
-              {suggestions.map(ref => (
-                <button key={ref.id} onClick={() => handleAddRef(ref)}
+              {suggestions.map((ref) => (
+                <button
+                  key={ref.id}
+                  onClick={() => handleAddRef(ref)}
                   className="group relative flex-1 aspect-square rounded overflow-hidden bg-neutral-900 border border-violet-500/20 hover:border-violet-400/50 transition-all"
                   title={ref.name}
                 >
-                  <img src={ref.referenceImageUrl} alt={ref.name} loading="lazy"
-                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <img
+                    src={ref.referenceImageUrl}
+                    alt={ref.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
+                  />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
                     <Plus size={12} className="text-white" />
                   </div>
                   {ref.relevanceScore >= 0.7 && (
-                    <div className="absolute top-0.5 left-0.5"><Flame size={6} className="text-brand-cyan" /></div>
+                    <div className="absolute top-0.5 left-0.5">
+                      <Flame size={6} className="text-brand-cyan" />
+                    </div>
                   )}
                 </button>
               ))}
@@ -223,7 +282,9 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
       {total > 0 && (
         <div className="px-3 pt-1 pb-1">
           <div className="flex justify-between text-[10px] text-white/40 mb-1">
-            <span>{done} done · {failed} failed · {total - done - failed} left</span>
+            <span>
+              {done} done · {failed} failed · {total - done - failed} left
+            </span>
             <span>{progress}%</span>
           </div>
           <div className="h-1 bg-white/10 rounded-full overflow-hidden">
@@ -240,13 +301,12 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         <div className="px-3 py-1 max-h-[160px] overflow-y-auto">
           <div className="grid grid-cols-4 gap-1">
             {items.map((item) => (
-              <div key={item.index} className="relative aspect-square rounded overflow-hidden bg-white/5">
+              <div
+                key={item.index}
+                className="relative aspect-square rounded overflow-hidden bg-white/5"
+              >
                 {item.status === 'done' && item.outputImageUrl && (
-                  <img
-                    src={item.outputImageUrl}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={item.outputImageUrl} alt="" className="w-full h-full object-cover" />
                 )}
                 {item.status === 'running' && (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -315,7 +375,6 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           </>
         )}
       </div>
-
     </NodeContainer>
   );
 });

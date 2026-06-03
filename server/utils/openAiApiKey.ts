@@ -44,16 +44,12 @@ export async function getOpenAiApiKey(
   // ── 2. System fallback ──────────────────────────────────────────────────
   if (options.skipFallback) return undefined;
 
-  const systemKey = (
-    process.env.OPENAI_API_KEY ||
-    process.env.OPENAI_KEY ||
-    ''
-  ).trim();
+  const systemKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim();
 
   if (!systemKey || systemKey === 'undefined') {
     throw new Error(
       'OpenAI API key is not configured. ' +
-      'Set OPENAI_API_KEY in environment variables, or add your own key in Settings → API Keys.'
+        'Set OPENAI_API_KEY in environment variables, or add your own key in Settings → API Keys.'
     );
   }
 

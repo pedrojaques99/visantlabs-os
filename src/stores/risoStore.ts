@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
-import { RISO_DEFAULTS, type RisoSettings, type InkLayer, type DitherMode, type HalftoneShape } from '@/components/riso/RisoRenderer';
+import {
+  RISO_DEFAULTS,
+  type RisoSettings,
+  type InkLayer,
+  type DitherMode,
+  type HalftoneShape,
+} from '@/components/riso/RisoRenderer';
 import { hexToRgb } from '@/utils/colorUtils';
 
 interface RisoState extends Omit<RisoSettings, 'layers' | 'soloLayer'> {
@@ -48,7 +54,7 @@ const HISTORY_DEBOUNCE_MS = 400;
 
 function snapshotSettings(s: RisoState): RisoSettings {
   return {
-    layers: s.layers.map(l => ({ ...l })),
+    layers: s.layers.map((l) => ({ ...l })),
     frequency: s.frequency,
     dotSize: s.dotSize,
     contrast: s.contrast,
@@ -67,7 +73,7 @@ function snapshotSettings(s: RisoState): RisoSettings {
 
 function applySnapshot(snap: RisoSettings): Partial<RisoState> {
   return {
-    layers: snap.layers.map(l => ({ ...l })),
+    layers: snap.layers.map((l) => ({ ...l })),
     frequency: snap.frequency,
     dotSize: snap.dotSize,
     contrast: snap.contrast,
@@ -107,7 +113,8 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
 
   mediaType: 'image' as const,
 
-  setImageUrl: (imageUrl, fileName, mediaType) => set({ imageUrl, fileName, mediaType: mediaType || 'image' }),
+  setImageUrl: (imageUrl, fileName, mediaType) =>
+    set({ imageUrl, fileName, mediaType: mediaType || 'image' }),
   setPanelVisible: (panelVisible) => set({ panelVisible }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setIsExporting: (isExporting) => set({ isExporting }),
@@ -162,12 +169,13 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
   setPan: (panX, panY) => set({ panX, panY }),
   setSoloLayer: (i) => set((s) => ({ soloLayer: s.soloLayer === i ? -1 : i })),
 
-  pushHistory: () => set((s) => {
-    const snap = snapshotSettings(s as any);
-    const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
-    const history = [...trimmed, snap].slice(-MAX_HISTORY);
-    return { settingsHistory: history, historyIndex: history.length - 1 };
-  }),
+  pushHistory: () =>
+    set((s) => {
+      const snap = snapshotSettings(s as any);
+      const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
+      const history = [...trimmed, snap].slice(-MAX_HISTORY);
+      return { settingsHistory: history, historyIndex: history.length - 1 };
+    }),
 
   debouncedPushHistory: () => {
     if (!_risoPendingSnap) {
@@ -186,16 +194,18 @@ export const useRisoStore = create<RisoState & ShaderSlice>()((set, get, api) =>
     }, HISTORY_DEBOUNCE_MS);
   },
 
-  undo: () => set((s) => {
-    if (s.historyIndex < 0) return {};
-    const snap = s.settingsHistory[s.historyIndex];
-    return { ...applySnapshot(snap), historyIndex: s.historyIndex - 1 };
-  }),
+  undo: () =>
+    set((s) => {
+      if (s.historyIndex < 0) return {};
+      const snap = s.settingsHistory[s.historyIndex];
+      return { ...applySnapshot(snap), historyIndex: s.historyIndex - 1 };
+    }),
 
-  redo: () => set((s) => {
-    if (s.historyIndex >= s.settingsHistory.length - 1) return {};
-    const nextIndex = s.historyIndex + 1;
-    const snap = s.settingsHistory[nextIndex];
-    return { ...applySnapshot(snap), historyIndex: nextIndex };
-  }),
+  redo: () =>
+    set((s) => {
+      if (s.historyIndex >= s.settingsHistory.length - 1) return {};
+      const nextIndex = s.historyIndex + 1;
+      const snap = s.settingsHistory[nextIndex];
+      return { ...applySnapshot(snap), historyIndex: nextIndex };
+    }),
 }));

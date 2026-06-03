@@ -65,7 +65,8 @@ export function IntelligenceSection() {
           message={{
             type: 'CREATE_STICKY_PROMPT',
             name: 'Design Note',
-            prompt: 'Escreva aqui suas considerações sobre o design para que a IA possa usar como contexto.'
+            prompt:
+              'Escreva aqui suas considerações sobre o design para que a IA possa usar como contexto.',
           }}
           responseTypes={['OPERATIONS_DONE']}
           busyLabel="Criando sticky…"
@@ -77,7 +78,7 @@ export function IntelligenceSection() {
           Add Context Sticky Note
         </OpButton>
 
-        <button 
+        <button
           onClick={() => setGuideOpen(true)}
           className="w-full flex items-center justify-center gap-2 py-2 text-[9px] font-bold text-neutral-500 uppercase tracking-[0.2em] hover:text-brand-cyan transition-colors"
         >
@@ -87,9 +88,9 @@ export function IntelligenceSection() {
       </div>
 
       <NamingGuideModal isOpen={guideOpen} onClose={() => setGuideOpen(false)} />
-      <SmartScanModal 
-        isOpen={scanModalOpen} 
-        items={scanItems} 
+      <SmartScanModal
+        isOpen={scanModalOpen}
+        items={scanItems}
         onClose={() => setScanModalOpen(false)}
         onApply={(items) => {
           // Logic to apply categorized items (syncing to store etc)

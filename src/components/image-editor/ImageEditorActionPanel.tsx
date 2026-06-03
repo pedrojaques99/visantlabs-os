@@ -16,11 +16,7 @@ interface Props {
   imageHeight: number;
 }
 
-export const ImageEditorActionPanel: React.FC<Props> = ({
-  imageUrl,
-  imageWidth,
-  imageHeight,
-}) => {
+export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, imageHeight }) => {
   const activeAction = useImageEditorStore((s) => s.activeAction);
   const activeMode = useImageEditorStore((s) => s.activeMode);
   const prompt = useImageEditorStore((s) => s.prompt);
@@ -36,19 +32,23 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
     imageHeight,
   });
 
-  const hasExpansion = expandEdges.top > 0 || expandEdges.right > 0
-    || expandEdges.bottom > 0 || expandEdges.left > 0;
+  const hasExpansion =
+    expandEdges.top > 0 || expandEdges.right > 0 || expandEdges.bottom > 0 || expandEdges.left > 0;
 
   const canGenerate =
-    (activeAction === 'inpaint' && maskOperations.length > 0 && (activeMode !== 'replace' || prompt.trim().length > 0))
-    || (activeAction === 'expand' && hasExpansion)
-    || activeAction === 'remove-bg';
+    (activeAction === 'inpaint' &&
+      maskOperations.length > 0 &&
+      (activeMode !== 'replace' || prompt.trim().length > 0)) ||
+    (activeAction === 'expand' && hasExpansion) ||
+    activeAction === 'remove-bg';
 
   return (
-    <div className={cn(
-      'flex items-center gap-3 px-4 py-3 border-t border-white/10',
-      IMAGE_EDITOR.toolbar.bg,
-    )}>
+    <div
+      className={cn(
+        'flex items-center gap-3 px-4 py-3 border-t border-white/10',
+        IMAGE_EDITOR.toolbar.bg
+      )}
+    >
       {/* Inpaint mode selector */}
       {activeAction === 'inpaint' && (
         <div className="flex flex-col gap-1">
@@ -62,7 +62,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
                   'px-2.5 py-1 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
                   activeMode === mode.id
                     ? IMAGE_EDITOR.toolbar.activeTool
-                    : IMAGE_EDITOR.toolbar.inactiveTool,
+                    : IMAGE_EDITOR.toolbar.inactiveTool
                 )}
                 title={mode.desc}
               >
@@ -71,7 +71,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
             ))}
           </div>
           <span className="text-[10px] text-neutral-500 pl-0.5">
-            {MODES.find(m => m.id === activeMode)?.desc}
+            {MODES.find((m) => m.id === activeMode)?.desc}
           </span>
         </div>
       )}
@@ -89,7 +89,9 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
           }}
           placeholder={
             activeAction === 'inpaint'
-              ? activeMode === 'replace' ? 'Describe what to generate...' : 'Optional context...'
+              ? activeMode === 'replace'
+                ? 'Describe what to generate...'
+                : 'Optional context...'
               : 'Optional: describe what to generate in expanded area...'
           }
           disabled={isGenerating}
@@ -97,7 +99,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
             'flex-1 px-3 py-2 rounded-lg text-sm bg-neutral-800/50 border border-white/10',
             'text-white placeholder-neutral-500 outline-none',
             'focus:border-brand-cyan/40 transition-colors',
-            'disabled:opacity-50',
+            'disabled:opacity-50'
           )}
         />
       )}
@@ -118,7 +120,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({
           'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30',
           'hover:bg-brand-cyan/30 hover:border-brand-cyan/50',
           'disabled:opacity-30 disabled:cursor-not-allowed',
-          isGenerating && 'animate-pulse',
+          isGenerating && 'animate-pulse'
         )}
       >
         <Zap size={14} />

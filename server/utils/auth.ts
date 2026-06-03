@@ -9,7 +9,9 @@ import { JWT_SECRET } from './jwtSecret.js';
 export function getClientIp(req: Request): string {
   const forwarded = req.headers['x-forwarded-for'];
   const ip = forwarded
-    ? (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : forwarded[0])
+    ? typeof forwarded === 'string'
+      ? forwarded.split(',')[0].trim()
+      : forwarded[0]
     : req.socket.remoteAddress || 'unknown';
   return ip || 'unknown';
 }
@@ -20,13 +22,13 @@ export function getClientIp(req: Request): string {
  * @param token The JWT token string (can be with or without 'Bearer ' prefix)
  */
 export const getUserIdFromToken = (token: string | undefined | null): string | null => {
-    if (!token) return null;
+  if (!token) return null;
 
-    try {
-        const cleanToken = token.replace('Bearer ', '');
-        const decoded = jwt.verify(cleanToken, JWT_SECRET) as { userId: string };
-        return decoded.userId;
-    } catch (err) {
-        return null;
-    }
+  try {
+    const cleanToken = token.replace('Bearer ', '');
+    const decoded = jwt.verify(cleanToken, JWT_SECRET) as { userId: string };
+    return decoded.userId;
+  } catch (err) {
+    return null;
+  }
 };

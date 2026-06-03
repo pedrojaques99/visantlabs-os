@@ -6,7 +6,11 @@ import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
-import { generateMockup, RateLimitError, ModelResponseTextError } from '../../src/services/geminiService.js';
+import {
+  generateMockup,
+  RateLimitError,
+  ModelResponseTextError,
+} from '../../src/services/geminiService.js';
 import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
@@ -15,9 +19,19 @@ import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/ope
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
-import { deductCreditsAtomically, refundCredits, refundCreditsWithRetry, type DeductionSource } from '../lib/credits.js';
+import {
+  deductCreditsAtomically,
+  refundCredits,
+  refundCreditsWithRetry,
+  type DeductionSource,
+} from '../lib/credits.js';
 import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
-import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
+import {
+  ensureOptionalBoolean,
+  ensureString,
+  isValidObjectId,
+  sanitizeLogValue,
+} from '../utils/validation.js';
 import { rateLimit } from 'express-rate-limit';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { redisClient } from '../lib/redis.js';
@@ -59,14 +73,17 @@ function formatMockup(mockup: any) {
 }
 
 // Helper function to create or update MockupExample when mockup is liked
-async function createOrUpdateMockupExample(mockupData: {
-  prompt: string;
-  imageUrl: string;
-  designType: string;
-  tags: string[];
-  brandingTags: string[];
-  aspectRatio: string;
-}, mockupId: string) {
+async function createOrUpdateMockupExample(
+  mockupData: {
+    prompt: string;
+    imageUrl: string;
+    designType: string;
+    tags: string[];
+    brandingTags: string[];
+    aspectRatio: string;
+  },
+  mockupId: string
+) {
   try {
     // Check if example already exists for this prompt + imageUrl combination
     const existing = await prisma.mockupExample.findFirst({
@@ -128,7 +145,9 @@ async function uploadImageToR2(
       hasBucketName: !!process.env.R2_BUCKET_NAME,
       hasPublicUrl: !!process.env.R2_PUBLIC_URL,
     });
-    throw new Error('R2 storage is required but not configured. Please configure R2 environment variables.');
+    throw new Error(
+      'R2 storage is required but not configured. Please configure R2 environment variables.'
+    );
   }
 
   // Get user info for storage limit check
@@ -139,7 +158,13 @@ async function uploadImageToR2(
   const isAdmin = user?.isAdmin || false;
 
   console.log(`Uploading image to R2 for user ${userId}, mockupId: ${mockupId}`);
-  const imageUrl = await r2Service.uploadImage(imageBase64, userId, mockupId, subscriptionTier, isAdmin);
+  const imageUrl = await r2Service.uploadImage(
+    imageBase64,
+    userId,
+    mockupId,
+    subscriptionTier,
+    isAdmin
+  );
   console.log(`Successfully uploaded image to R2 for user ${userId}: ${imageUrl}`);
 
   return imageUrl;
@@ -165,7 +190,10 @@ router.get('/public', apiRateLimiter, async (req, res, next) => {
     // Set a timeout for the entire operation (connection + query)
     const operationTimeout = 15000; // 15 seconds total
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Operation timeout: MongoDB connection/query took too long')), operationTimeout);
+      setTimeout(
+        () => reject(new Error('Operation timeout: MongoDB connection/query took too long')),
+        operationTimeout
+      );
     });
 
     const dbOperation = async () => {
@@ -176,7 +204,9 @@ router.get('/public', apiRateLimiter, async (req, res, next) => {
       try {
         await Promise.race([
           db.collection('mockups').createIndex({ createdAt: -1 }, { background: true }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Index creation timeout')), 5000))
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Index creation timeout')), 5000)
+          ),
         ]);
       } catch (indexError: any) {
         // Index may already exist or timeout - ignore error
@@ -188,17 +218,18 @@ router.get('/public', apiRateLimiter, async (req, res, next) => {
       // Use find() with sort instead of aggregation for better performance with index
       // Add timeout to the query itself
       // Only return blank mockups for public page
-      const queryPromise = db.collection('mockups')
+      const queryPromise = db
+        .collection('mockups')
         .find({ designType: 'blank' })
         .sort({ createdAt: -1 })
         .limit(1000) // Limit results to prevent memory issues
         .maxTimeMS(10000) // 10 second timeout for the query
         .toArray();
 
-      const mockups = await Promise.race([
+      const mockups = (await Promise.race([
         queryPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 10000))
-      ]) as any[];
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 10000)),
+      ])) as any[];
 
       // Convert MongoDB _id to string for JSON serialization
       const formattedMockups = mockups.map(formatMockup);
@@ -207,7 +238,7 @@ router.get('/public', apiRateLimiter, async (req, res, next) => {
     };
 
     // Race between operation and timeout
-    const mockups = await Promise.race([dbOperation(), timeoutPromise]) as any[];
+    const mockups = (await Promise.race([dbOperation(), timeoutPromise])) as any[];
 
     // Success - return mockups
     return res.status(200).json(mockups);
@@ -241,14 +272,17 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next
 
     // Ensure indexes exist for optimized queries
     try {
-      await db.collection('mockups').createIndex({ userId: 1, createdAt: -1 }, { background: true });
+      await db
+        .collection('mockups')
+        .createIndex({ userId: 1, createdAt: -1 }, { background: true });
       await db.collection('mockups').createIndex({ createdAt: -1 }, { background: true });
     } catch (indexError) {
       // Indexes may already exist, ignore error
     }
 
     // Use find() with sort instead of aggregation for better performance with indexes
-    const mockups = await db.collection('mockups')
+    const mockups = await db
+      .collection('mockups')
       .find({ userId: { $in: [req.userId, new ObjectId(req.userId)] } })
       .sort({ createdAt: -1 })
       .toArray();
@@ -277,7 +311,7 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next
         error: 'Database connection failed. Please try again later.',
         details: errorMessage.includes('timed out')
           ? 'Connection timeout - database may be temporarily unavailable'
-          : errorMessage
+          : errorMessage,
       });
     }
     next(error);
@@ -296,7 +330,7 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     const db = getDb();
     const mockup = await db.collection('mockups').findOne({
       _id: new ObjectId(req.params.id),
-      userId: new ObjectId(req.userId)
+      userId: new ObjectId(req.userId),
     });
 
     if (!mockup) {
@@ -354,915 +388,1010 @@ router.post('/upload-temp-url', apiRateLimiter, authenticate, async (req: AuthRe
 
 // Generate mockup image (NEW: validates and deducts credits BEFORE generation)
 // CRITICAL: This endpoint validates and deducts credits atomically before calling Gemini API
-router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
-  const logPrefix = '[CREDIT]';
-  let creditsDeducted = false;
-  let creditsToDeduct = 0;
-  let lockKey: string | null = null;
-  let requestId: string = 'no-request-id';
-  let deductionSource: { fromEarned: number; fromMonthly: number } | undefined = undefined;
-
-  try {
-    await connectToMongoDB();
-
-    // Get or generate request ID for tracking
-    requestId = (req.headers['x-request-id'] as string) || `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-
-    const {
-      promptText,
-      baseImage,
-      model = GEMINI_MODELS.IMAGE_FLASH,
-      resolution,
-      aspectRatio,
-      referenceImages,
-      feature, // Optional: 'mockupmachine' | 'canvas'
-      provider: rawProvider = 'gemini', // 'gemini' | 'seedream' | 'openai'
-      width, // Optional: custom width in pixels (for Figma plugin)
-      height, // Optional: custom height in pixels (for Figma plugin)
-      brandGuidelineId, // Optional: brand guideline ID for context injection
-      seed: rawSeed, // Optional: seed for deterministic generation
-    } = req.body;
-
-    // Auto-infer provider from model when caller omits it
-    let provider = rawProvider;
-    if (provider === 'gemini' && isOpenAIImageModel(model)) {
-      provider = 'openai';
-    } else if (provider === 'gemini' && isSeedreamModel(model)) {
-      provider = 'seedream';
-    }
-
-    // Validate seed: must be a non-negative integer within Int32 range
-    const validSeed = (typeof rawSeed === 'number' && Number.isInteger(rawSeed) && rawSeed >= 0 && rawSeed <= 2_147_483_647)
-      ? rawSeed
-      : undefined;
-
-    // Helper to download image from URL if base64 is not provided
-    const processImageInput = async (img: any) => {
-      if (!img) return null;
-      // Handle plain string inputs (URL or base64) from MCP tools
-      if (typeof img === 'string') {
-        if (img.startsWith('data:') || (!img.startsWith('http') && img.length > 200)) {
-          const base64Data = img.startsWith('data:') ? img.split(',')[1] || img : img;
-          return { base64: base64Data, mimeType: 'image/png' };
-        }
-        img = { url: img };
-      }
-      if (img.base64) return img;
-      if (img.url) {
-        try {
-          console.log(`${logPrefix} [IMAGE PROCESSING] Downloading image from URL:`, img.url.substring(0, 100));
-          const response = await safeFetch(img.url);
-          if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
-          const arrayBuffer = await response.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-          return {
-            base64: buffer.toString('base64'),
-            mimeType: img.mimeType || response.headers.get('content-type') || 'image/png'
-          };
-        } catch (error: unknown) {
-          console.error(`${logPrefix} [IMAGE PROCESSING] Error downloading image:`, error);
-          throw new Error(`Failed to process image URL: ${getErrorMessage(error)}`);
-        }
-      }
-      return null;
-    };
-
-    // Process base image and reference images to ensure we have base64 for Gemini
-    console.log(`${logPrefix} [IMAGE PROCESSING] Processing image inputs`, {
-      hasBaseImage: !!baseImage,
-      hasBaseImageUrl: !!baseImage?.url,
-      referenceImagesCount: referenceImages?.length || 0
-    });
-
-    const processedBaseImage = await processImageInput(baseImage);
-    const processedReferenceImages = referenceImages ?
-      await Promise.all(referenceImages.map((img: any) => processImageInput(img))) :
-      undefined;
-
-    // Replace original images with processed ones (now containing base64)
-    const finalBaseImage = processedBaseImage;
-    let finalReferenceImages = processedReferenceImages?.filter(img => img !== null);
-
-    // Build final prompt with optional brand context injection
-    let finalPromptText = promptText;
-    if (brandGuidelineId) {
-      try {
-        const brandGuideline = await prisma.brandGuideline.findUnique({
-          where: { id: brandGuidelineId },
-        });
-        if (brandGuideline) {
-          // Reconstruct BrandGuideline object from Prisma model fields
-          const guidelineData = {
-            id: brandGuideline.id,
-            identity: brandGuideline.identity as any,
-            logos: brandGuideline.logos as any,
-            colors: brandGuideline.colors as any,
-            typography: brandGuideline.typography as any,
-            tags: brandGuideline.tags as any,
-            media: brandGuideline.media as any,
-            tokens: brandGuideline.tokens as any,
-            guidelines: brandGuideline.guidelines as any,
-          };
-          const brandContext = buildBrandContextForImageGen(guidelineData);
-          // Prepend brand context to prompt
-          finalPromptText = `${brandContext}\n\n--- USER PROMPT ---\n${promptText}`;
-
-          // Inject brand logos as reference images (prepended, so logo comes first)
-          const logos: Array<{ url: string; variant: string; label?: string }> = guidelineData.logos || [];
-          if (logos.length > 0) {
-            // Priority: primary > icon > light > dark > first available
-            const priority = ['primary', 'icon', 'light', 'dark'];
-            const sorted = [...logos].sort((a, b) => {
-              const ai = priority.indexOf(a.variant);
-              const bi = priority.indexOf(b.variant);
-              return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-            });
-            const logoReferenceImages: Array<{ base64: string; mimeType: string }> = [];
-            for (const logo of sorted.slice(0, 2)) {
-              if (!logo.url) continue;
-              if (logo.url.toLowerCase().endsWith('.svg') || logo.url.includes('svg')) continue;
-              try {
-                const processed = await processImageInput({ url: logo.url }) as any;
-                if (processed && processed.mimeType !== 'image/svg+xml') {
-                  logoReferenceImages.push(processed);
-                }
-              } catch {
-                // non-critical
-              }
-            }
-            if (logoReferenceImages.length > 0) {
-              finalReferenceImages = [
-                ...logoReferenceImages,
-                ...(finalReferenceImages || []),
-              ];
-              console.log(`${logPrefix} [BRAND] Injected ${logoReferenceImages.length} brand logo(s) as reference images`);
-            }
-          }
-
-          // Inject media kit images as style reference images (up to 2, appended after logos)
-          const mediaItems: Array<{ url: string; type: string; label?: string }> = guidelineData.media || [];
-          const styleMedia = mediaItems.filter(m => m.type === 'image').slice(0, 2);
-          if (styleMedia.length > 0) {
-            const mediaReferenceImages: Array<{ base64: string; mimeType: string }> = [];
-            for (const media of styleMedia) {
-              if (!media.url) continue;
-              if (media.url.toLowerCase().endsWith('.svg') || media.url.includes('svg')) continue;
-              try {
-                const processed = await processImageInput({ url: media.url }) as any;
-                if (processed && processed.mimeType !== 'image/svg+xml') {
-                  mediaReferenceImages.push(processed);
-                }
-              } catch {
-                // non-critical
-              }
-            }
-            if (mediaReferenceImages.length > 0) {
-              finalReferenceImages = [
-                ...(finalReferenceImages || []),
-                ...mediaReferenceImages,
-              ];
-              console.log(`${logPrefix} [BRAND] Injected ${mediaReferenceImages.length} media kit image(s) as style references`);
-            }
-          }
-
-          console.log(`${logPrefix} [BRAND] Injected brand context from guideline:`, {
-            guidelineId: brandGuidelineId,
-            brandName: (guidelineData.identity as any)?.name || 'Unknown',
-            contextLength: brandContext.length,
-            logoCount: (guidelineData.logos as any[])?.length || 0,
-          });
-        } else {
-          console.warn(`${logPrefix} [BRAND] Brand guideline not found:`, brandGuidelineId);
-        }
-      } catch (brandError: any) {
-        // Non-critical - continue without brand context
-        console.error(`${logPrefix} [BRAND] Error fetching brand guideline:`, brandError.message);
-      }
-    }
-
-    // Enrich prompt with curated references (skip if already injected by generateSmartPrompt)
-    if (!finalPromptText.includes('CURATED REFERENCES')) {
-      const enriched = await enrichWithCuratedReferences(finalPromptText);
-      finalPromptText = enriched.prompt;
-      if (enriched.refsInjected > 0) {
-        console.log(`${logPrefix} [RAG] Injected ${enriched.refsInjected} curated references`);
-      }
-    }
-
-    // Early cache check — before lock acquisition and credit deduction
-    // Key includes input image fingerprint so same prompt + different image = different result
-    const inputImageFingerprint = finalBaseImage
-      ? hashQuery(
-          finalBaseImage.base64
-            ? `${finalBaseImage.base64.slice(0, 500)}:${finalBaseImage.base64.length}`
-            : (finalBaseImage.url || ''),
-          finalBaseImage.mimeType || ''
-        )
-      : 'no-image';
-
-    const mockupCacheKey = CacheKey.mockupGen(
-      req.userId!,
-      hashQuery(finalPromptText, model + (resolution || '') + (aspectRatio || '') + inputImageFingerprint)
-    );
-
-    if (!req.body.skipCache) {
-      const earlyCached = await redisClient.get(mockupCacheKey).catch(() => null);
-      if (earlyCached) {
-        console.log(`[Cache] HIT — early return, no credits deducted: ${mockupCacheKey.slice(0, 30)}`);
-        return res.json({ ...JSON.parse(earlyCached), fromCache: true });
-      }
-    }
-
-    // CRITICAL: Check for duplicate recent requests to prevent multiple credit deductions
-    // Use a distributed lock mechanism to prevent concurrent requests from deducting credits
-    const db = getDb();
-
-    // Ensure TTL index exists on credit_locks collection for automatic cleanup
-    try {
-      await db.collection('credit_locks').createIndex(
-        { expiresAt: 1 },
-        {
-          expireAfterSeconds: 0, // Delete documents when expiresAt time is reached
-          background: true,
-          name: 'expiresAt_ttl_index'
-        }
-      );
-    } catch (indexError: any) {
-      // Index may already exist, ignore error (MongoDB error code 85 = IndexOptionsConflict)
-      if (indexError.code !== 85 && !indexError.message?.includes('already exists')) {
-        console.warn(`${logPrefix} [LOCK] Warning: Could not create TTL index on credit_locks:`, indexError.message);
-      }
-    }
-
-    // Create a lock key to prevent duplicate credit deductions
-    // Use uniqueId from request body (slot index for batch requests) to differentiate parallel batch requests
-    // DO NOT use requestId - it changes per call and would defeat the purpose of the lock
-    const promptHash = promptText ? promptText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '') : 'no-prompt';
-    // Use uniqueId if provided (for batch requests), otherwise use 'single' for single-image requests
-    const batchId = req.body.uniqueId !== undefined ? String(req.body.uniqueId) : 'single';
-    lockKey = `credit-deduction-${req.userId}-${model}-${resolution || 'default'}-${promptHash}-${batchId}`;
-    const lockExpiry = new Date(Date.now() + 30000); // 30 seconds lock
-
-    console.log(`${logPrefix} [LOCK] Checking for existing locks`, {
-      userId: req.userId,
-      requestId,
-      lockKey,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Clean up expired locks first (prevent accumulation of stale locks)
-    // Note: TTL index will also auto-cleanup, but manual cleanup ensures immediate removal
-    const cleanupResult = await db.collection('credit_locks').deleteMany({
-      expiresAt: { $lt: new Date() }
-    });
-    if (cleanupResult.deletedCount > 0) {
-      console.log(`${logPrefix} [LOCK] Cleaned up ${cleanupResult.deletedCount} expired lock(s)`, {
-        timestamp: new Date().toISOString(),
-      });
-    }
-
-    // Check for existing lock with the same lock key (prevent duplicate processing of same request)
-    // Since lock key includes request ID, parallel batch requests with different requestIds
-    // will have different lock keys and won't conflict. Only exact same requestId will be blocked.
-    const existingLock = await db.collection('credit_locks').findOne({
-      lockKey,
-      expiresAt: { $gt: new Date() }
-    });
-
-    if (existingLock) {
-      console.warn(`${logPrefix} [DUPLICATE DETECTION] ⚠️ Active lock found, REJECTING duplicate request`, {
-        userId: req.userId,
-        requestId,
-        existingLockRequestId: existingLock.requestId,
-        existingLockCreatedAt: existingLock.createdAt,
-        lockKey,
-        expiresAt: existingLock.expiresAt,
-        timeSinceLockCreated: Date.now() - new Date(existingLock.createdAt).getTime(),
-        timestamp: new Date().toISOString(),
-      });
-
-      // Return error to prevent duplicate credit deduction
-      return res.status(409).json({
-        error: 'Duplicate request detected',
-        message: 'A similar request is already being processed. Please wait a moment before trying again.',
-        requestId,
-      });
-    }
-
-    // Acquire lock before deducting credits
-    const lockInsertResult = await db.collection('credit_locks').insertOne({
-      lockKey,
-      requestId,
-      userId: req.userId!,
-      model,
-      resolution: resolution || null,
-      createdAt: new Date(),
-      expiresAt: lockExpiry,
-    });
-
-    console.log(`${logPrefix} [LOCK] ✅ Acquired lock for credit deduction`, {
-      userId: req.userId,
-      requestId,
-      lockKey,
-      lockId: lockInsertResult.insertedId,
-      expiresAt: lockExpiry,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Validate prompt text
-    if (!promptText || promptText.trim().length === 0) {
-      // Release lock before returning
-      if (lockKey) {
-        await db.collection('credit_locks').deleteOne({ lockKey, requestId });
-      }
-      return res.status(400).json({ error: 'Prompt text is required' });
-    }
-
-    // Ensure imagesCount is always 1 for this endpoint (we only generate one image per request)
-    // This prevents accidental multiple credit deductions
-    const actualImagesCount = 1;
-
-    // Calculate credits required
-    // Always use 1 image per request to prevent multiple credit deductions
-    const creditsPerImage = getCreditsRequired(model as GeminiModel, resolution);
-    let baseCreditsToDeduct = actualImagesCount * creditsPerImage;
-
-    // Check if generation is unlimited based on user's subscription plan
-    const planMetadata = await getUserPlanMetadata(req.userId!);
-    const isUnlimited = isGenerationUnlimited({ model, resolution, planMetadata });
-
-    // If unlimited, set credits to 0
-    creditsToDeduct = isUnlimited ? 0 : baseCreditsToDeduct;
-
-    console.log(`${logPrefix} [Credit Calculation] Before deduction`, {
-      userId: req.userId,
-      requestId,
-      model,
-      resolution,
-      imagesCount: actualImagesCount,
-      creditsPerImage,
-      baseCreditsToDeduct,
-      isUnlimited,
-      creditsToDeduct,
-      planTier: planMetadata?.tier || 'none',
-      timestamp: new Date().toISOString(),
-    });
-
-    // Check if user is admin before deducting credits
-    const userBeforeDeduction = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
-    const isAdmin = userBeforeDeduction?.isAdmin === true;
-
-    let updatedUser: any;
-    let actualCreditsDeducted = 0;
-
-    // Check for user API key FIRST based on provider
-    let userApiKey: string | undefined;
-    let usingUserKey = false;
-    let apiKeySource: 'user' | 'system' = 'system';
+router.post(
+  '/generate',
+  mockupRateLimiter,
+  authenticate,
+  checkSubscription,
+  async (req: SubscriptionRequest, res, next) => {
+    const logPrefix = '[CREDIT]';
+    let creditsDeducted = false;
+    let creditsToDeduct = 0;
+    let lockKey: string | null = null;
+    let requestId: string = 'no-request-id';
+    let deductionSource: { fromEarned: number; fromMonthly: number } | undefined = undefined;
 
     try {
-      if (provider === 'seedream') {
-        // Check for Seedream API Key
-        const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
-        if (user?.encryptedSeedreamApiKey) {
-          const { decryptApiKey } = await import('../utils/encryption.js');
+      await connectToMongoDB();
+
+      // Get or generate request ID for tracking
+      requestId =
+        (req.headers['x-request-id'] as string) ||
+        `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+      const {
+        promptText,
+        baseImage,
+        model = GEMINI_MODELS.IMAGE_FLASH,
+        resolution,
+        aspectRatio,
+        referenceImages,
+        feature, // Optional: 'mockupmachine' | 'canvas'
+        provider: rawProvider = 'gemini', // 'gemini' | 'seedream' | 'openai'
+        width, // Optional: custom width in pixels (for Figma plugin)
+        height, // Optional: custom height in pixels (for Figma plugin)
+        brandGuidelineId, // Optional: brand guideline ID for context injection
+        seed: rawSeed, // Optional: seed for deterministic generation
+      } = req.body;
+
+      // Auto-infer provider from model when caller omits it
+      let provider = rawProvider;
+      if (provider === 'gemini' && isOpenAIImageModel(model)) {
+        provider = 'openai';
+      } else if (provider === 'gemini' && isSeedreamModel(model)) {
+        provider = 'seedream';
+      }
+
+      // Validate seed: must be a non-negative integer within Int32 range
+      const validSeed =
+        typeof rawSeed === 'number' &&
+        Number.isInteger(rawSeed) &&
+        rawSeed >= 0 &&
+        rawSeed <= 2_147_483_647
+          ? rawSeed
+          : undefined;
+
+      // Helper to download image from URL if base64 is not provided
+      const processImageInput = async (img: any) => {
+        if (!img) return null;
+        // Handle plain string inputs (URL or base64) from MCP tools
+        if (typeof img === 'string') {
+          if (img.startsWith('data:') || (!img.startsWith('http') && img.length > 200)) {
+            const base64Data = img.startsWith('data:') ? img.split(',')[1] || img : img;
+            return { base64: base64Data, mimeType: 'image/png' };
+          }
+          img = { url: img };
+        }
+        if (img.base64) return img;
+        if (img.url) {
           try {
-            userApiKey = decryptApiKey(user.encryptedSeedreamApiKey);
-            if (userApiKey) {
-              usingUserKey = true;
-              apiKeySource = 'user';
-              console.log(`${logPrefix} [API KEY] Using user Seedream API key`);
-            }
-          } catch (decryptError) {
-            console.error(`${logPrefix} [API KEY] Failed to decrypt Seedream key:`, decryptError);
+            console.log(
+              `${logPrefix} [IMAGE PROCESSING] Downloading image from URL:`,
+              img.url.substring(0, 100)
+            );
+            const response = await safeFetch(img.url);
+            if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            return {
+              base64: buffer.toString('base64'),
+              mimeType: img.mimeType || response.headers.get('content-type') || 'image/png',
+            };
+          } catch (error: unknown) {
+            console.error(`${logPrefix} [IMAGE PROCESSING] Error downloading image:`, error);
+            throw new Error(`Failed to process image URL: ${getErrorMessage(error)}`);
           }
         }
-      } else if (provider === 'openai' || isOpenAIImageModel(model)) {
-        // Check for OpenAI API Key (user BYOK) via helper — never access raw key field directly
-        const { getOpenAiApiKey } = await import('../utils/openAiApiKey.js');
-        userApiKey = await getOpenAiApiKey(req.userId!, { skipFallback: true });
-        if (userApiKey) {
-          usingUserKey = true;
-          apiKeySource = 'user';
-        }
-      } else {
-        // Check for Gemini API Key (Default)
-        const { getGeminiApiKey } = await import('../utils/geminiApiKey.js');
-        // Try to get ONLY user key first (skip fallback)
-        userApiKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
+        return null;
+      };
 
-        if (userApiKey) {
-          usingUserKey = true;
-          apiKeySource = 'user';
-          console.log(`${logPrefix} [API KEY] Using user Gemini API key`);
+      // Process base image and reference images to ensure we have base64 for Gemini
+      console.log(`${logPrefix} [IMAGE PROCESSING] Processing image inputs`, {
+        hasBaseImage: !!baseImage,
+        hasBaseImageUrl: !!baseImage?.url,
+        referenceImagesCount: referenceImages?.length || 0,
+      });
+
+      const processedBaseImage = await processImageInput(baseImage);
+      const processedReferenceImages = referenceImages
+        ? await Promise.all(referenceImages.map((img: any) => processImageInput(img)))
+        : undefined;
+
+      // Replace original images with processed ones (now containing base64)
+      const finalBaseImage = processedBaseImage;
+      let finalReferenceImages = processedReferenceImages?.filter((img) => img !== null);
+
+      // Build final prompt with optional brand context injection
+      let finalPromptText = promptText;
+      if (brandGuidelineId) {
+        try {
+          const brandGuideline = await prisma.brandGuideline.findUnique({
+            where: { id: brandGuidelineId },
+          });
+          if (brandGuideline) {
+            // Reconstruct BrandGuideline object from Prisma model fields
+            const guidelineData = {
+              id: brandGuideline.id,
+              identity: brandGuideline.identity as any,
+              logos: brandGuideline.logos as any,
+              colors: brandGuideline.colors as any,
+              typography: brandGuideline.typography as any,
+              tags: brandGuideline.tags as any,
+              media: brandGuideline.media as any,
+              tokens: brandGuideline.tokens as any,
+              guidelines: brandGuideline.guidelines as any,
+            };
+            const brandContext = buildBrandContextForImageGen(guidelineData);
+            // Prepend brand context to prompt
+            finalPromptText = `${brandContext}\n\n--- USER PROMPT ---\n${promptText}`;
+
+            // Inject brand logos as reference images (prepended, so logo comes first)
+            const logos: Array<{ url: string; variant: string; label?: string }> =
+              guidelineData.logos || [];
+            if (logos.length > 0) {
+              // Priority: primary > icon > light > dark > first available
+              const priority = ['primary', 'icon', 'light', 'dark'];
+              const sorted = [...logos].sort((a, b) => {
+                const ai = priority.indexOf(a.variant);
+                const bi = priority.indexOf(b.variant);
+                return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+              });
+              const logoReferenceImages: Array<{ base64: string; mimeType: string }> = [];
+              for (const logo of sorted.slice(0, 2)) {
+                if (!logo.url) continue;
+                if (logo.url.toLowerCase().endsWith('.svg') || logo.url.includes('svg')) continue;
+                try {
+                  const processed = (await processImageInput({ url: logo.url })) as any;
+                  if (processed && processed.mimeType !== 'image/svg+xml') {
+                    logoReferenceImages.push(processed);
+                  }
+                } catch {
+                  // non-critical
+                }
+              }
+              if (logoReferenceImages.length > 0) {
+                finalReferenceImages = [...logoReferenceImages, ...(finalReferenceImages || [])];
+                console.log(
+                  `${logPrefix} [BRAND] Injected ${logoReferenceImages.length} brand logo(s) as reference images`
+                );
+              }
+            }
+
+            // Inject media kit images as style reference images (up to 2, appended after logos)
+            const mediaItems: Array<{ url: string; type: string; label?: string }> =
+              guidelineData.media || [];
+            const styleMedia = mediaItems.filter((m) => m.type === 'image').slice(0, 2);
+            if (styleMedia.length > 0) {
+              const mediaReferenceImages: Array<{ base64: string; mimeType: string }> = [];
+              for (const media of styleMedia) {
+                if (!media.url) continue;
+                if (media.url.toLowerCase().endsWith('.svg') || media.url.includes('svg')) continue;
+                try {
+                  const processed = (await processImageInput({ url: media.url })) as any;
+                  if (processed && processed.mimeType !== 'image/svg+xml') {
+                    mediaReferenceImages.push(processed);
+                  }
+                } catch {
+                  // non-critical
+                }
+              }
+              if (mediaReferenceImages.length > 0) {
+                finalReferenceImages = [...(finalReferenceImages || []), ...mediaReferenceImages];
+                console.log(
+                  `${logPrefix} [BRAND] Injected ${mediaReferenceImages.length} media kit image(s) as style references`
+                );
+              }
+            }
+
+            console.log(`${logPrefix} [BRAND] Injected brand context from guideline:`, {
+              guidelineId: brandGuidelineId,
+              brandName: (guidelineData.identity as any)?.name || 'Unknown',
+              contextLength: brandContext.length,
+              logoCount: (guidelineData.logos as any[])?.length || 0,
+            });
+          } else {
+            console.warn(`${logPrefix} [BRAND] Brand guideline not found:`, brandGuidelineId);
+          }
+        } catch (brandError: any) {
+          // Non-critical - continue without brand context
+          console.error(`${logPrefix} [BRAND] Error fetching brand guideline:`, brandError.message);
         }
       }
-    } catch (apiKeyError: any) {
-      console.warn(`${logPrefix} [API KEY] Error checking for user API key:`, apiKeyError);
-    }
 
-    if (isAdmin) {
-      // Admin users - skip credit deduction
-      console.log(`${logPrefix} [CREDIT DEDUCTION] Admin user - skipping credit deduction`, {
+      // Enrich prompt with curated references (skip if already injected by generateSmartPrompt)
+      if (!finalPromptText.includes('CURATED REFERENCES')) {
+        const enriched = await enrichWithCuratedReferences(finalPromptText);
+        finalPromptText = enriched.prompt;
+        if (enriched.refsInjected > 0) {
+          console.log(`${logPrefix} [RAG] Injected ${enriched.refsInjected} curated references`);
+        }
+      }
+
+      // Early cache check — before lock acquisition and credit deduction
+      // Key includes input image fingerprint so same prompt + different image = different result
+      const inputImageFingerprint = finalBaseImage
+        ? hashQuery(
+            finalBaseImage.base64
+              ? `${finalBaseImage.base64.slice(0, 500)}:${finalBaseImage.base64.length}`
+              : finalBaseImage.url || '',
+            finalBaseImage.mimeType || ''
+          )
+        : 'no-image';
+
+      const mockupCacheKey = CacheKey.mockupGen(
+        req.userId!,
+        hashQuery(
+          finalPromptText,
+          model + (resolution || '') + (aspectRatio || '') + inputImageFingerprint
+        )
+      );
+
+      if (!req.body.skipCache) {
+        const earlyCached = await redisClient.get(mockupCacheKey).catch(() => null);
+        if (earlyCached) {
+          console.log(
+            `[Cache] HIT — early return, no credits deducted: ${mockupCacheKey.slice(0, 30)}`
+          );
+          return res.json({ ...JSON.parse(earlyCached), fromCache: true });
+        }
+      }
+
+      // CRITICAL: Check for duplicate recent requests to prevent multiple credit deductions
+      // Use a distributed lock mechanism to prevent concurrent requests from deducting credits
+      const db = getDb();
+
+      // Ensure TTL index exists on credit_locks collection for automatic cleanup
+      try {
+        await db.collection('credit_locks').createIndex(
+          { expiresAt: 1 },
+          {
+            expireAfterSeconds: 0, // Delete documents when expiresAt time is reached
+            background: true,
+            name: 'expiresAt_ttl_index',
+          }
+        );
+      } catch (indexError: any) {
+        // Index may already exist, ignore error (MongoDB error code 85 = IndexOptionsConflict)
+        if (indexError.code !== 85 && !indexError.message?.includes('already exists')) {
+          console.warn(
+            `${logPrefix} [LOCK] Warning: Could not create TTL index on credit_locks:`,
+            indexError.message
+          );
+        }
+      }
+
+      // Create a lock key to prevent duplicate credit deductions
+      // Use uniqueId from request body (slot index for batch requests) to differentiate parallel batch requests
+      // DO NOT use requestId - it changes per call and would defeat the purpose of the lock
+      const promptHash = promptText
+        ? promptText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '')
+        : 'no-prompt';
+      // Use uniqueId if provided (for batch requests), otherwise use 'single' for single-image requests
+      const batchId = req.body.uniqueId !== undefined ? String(req.body.uniqueId) : 'single';
+      lockKey = `credit-deduction-${req.userId}-${model}-${
+        resolution || 'default'
+      }-${promptHash}-${batchId}`;
+      const lockExpiry = new Date(Date.now() + 30000); // 30 seconds lock
+
+      console.log(`${logPrefix} [LOCK] Checking for existing locks`, {
         userId: req.userId,
         requestId,
         lockKey,
-        creditsToDeduct,
         timestamp: new Date().toISOString(),
       });
-      updatedUser = userBeforeDeduction;
-      creditsDeducted = false; // Mark as not deducted since admin skipped it
-      actualCreditsDeducted = 0;
-      deductionSource = { fromEarned: 0, fromMonthly: 0 };
-    } else if (usingUserKey) {
-      // User API key - skip credit deduction
-      console.log(`${logPrefix} [CREDIT DEDUCTION] User API key present - skipping credit deduction`, {
+
+      // Clean up expired locks first (prevent accumulation of stale locks)
+      // Note: TTL index will also auto-cleanup, but manual cleanup ensures immediate removal
+      const cleanupResult = await db.collection('credit_locks').deleteMany({
+        expiresAt: { $lt: new Date() },
+      });
+      if (cleanupResult.deletedCount > 0) {
+        console.log(
+          `${logPrefix} [LOCK] Cleaned up ${cleanupResult.deletedCount} expired lock(s)`,
+          {
+            timestamp: new Date().toISOString(),
+          }
+        );
+      }
+
+      // Check for existing lock with the same lock key (prevent duplicate processing of same request)
+      // Since lock key includes request ID, parallel batch requests with different requestIds
+      // will have different lock keys and won't conflict. Only exact same requestId will be blocked.
+      const existingLock = await db.collection('credit_locks').findOne({
+        lockKey,
+        expiresAt: { $gt: new Date() },
+      });
+
+      if (existingLock) {
+        console.warn(
+          `${logPrefix} [DUPLICATE DETECTION] ⚠️ Active lock found, REJECTING duplicate request`,
+          {
+            userId: req.userId,
+            requestId,
+            existingLockRequestId: existingLock.requestId,
+            existingLockCreatedAt: existingLock.createdAt,
+            lockKey,
+            expiresAt: existingLock.expiresAt,
+            timeSinceLockCreated: Date.now() - new Date(existingLock.createdAt).getTime(),
+            timestamp: new Date().toISOString(),
+          }
+        );
+
+        // Return error to prevent duplicate credit deduction
+        return res.status(409).json({
+          error: 'Duplicate request detected',
+          message:
+            'A similar request is already being processed. Please wait a moment before trying again.',
+          requestId,
+        });
+      }
+
+      // Acquire lock before deducting credits
+      const lockInsertResult = await db.collection('credit_locks').insertOne({
+        lockKey,
+        requestId,
+        userId: req.userId!,
+        model,
+        resolution: resolution || null,
+        createdAt: new Date(),
+        expiresAt: lockExpiry,
+      });
+
+      console.log(`${logPrefix} [LOCK] ✅ Acquired lock for credit deduction`, {
         userId: req.userId,
         requestId,
         lockKey,
-        creditsToDeduct,
+        lockId: lockInsertResult.insertedId,
+        expiresAt: lockExpiry,
         timestamp: new Date().toISOString(),
       });
-      updatedUser = userBeforeDeduction;
-      creditsDeducted = false;
-      actualCreditsDeducted = 0;
-      deductionSource = { fromEarned: 0, fromMonthly: 0 };
-    } else if (creditsToDeduct === 0) {
-      // Unlimited plan - skip credit deduction
-      console.log(`${logPrefix} [CREDIT DEDUCTION] ∞ Unlimited generation - skipping credit deduction`, {
+
+      // Validate prompt text
+      if (!promptText || promptText.trim().length === 0) {
+        // Release lock before returning
+        if (lockKey) {
+          await db.collection('credit_locks').deleteOne({ lockKey, requestId });
+        }
+        return res.status(400).json({ error: 'Prompt text is required' });
+      }
+
+      // Ensure imagesCount is always 1 for this endpoint (we only generate one image per request)
+      // This prevents accidental multiple credit deductions
+      const actualImagesCount = 1;
+
+      // Calculate credits required
+      // Always use 1 image per request to prevent multiple credit deductions
+      const creditsPerImage = getCreditsRequired(model as GeminiModel, resolution);
+      let baseCreditsToDeduct = actualImagesCount * creditsPerImage;
+
+      // Check if generation is unlimited based on user's subscription plan
+      const planMetadata = await getUserPlanMetadata(req.userId!);
+      const isUnlimited = isGenerationUnlimited({ model, resolution, planMetadata });
+
+      // If unlimited, set credits to 0
+      creditsToDeduct = isUnlimited ? 0 : baseCreditsToDeduct;
+
+      console.log(`${logPrefix} [Credit Calculation] Before deduction`, {
         userId: req.userId,
         requestId,
-        lockKey,
         model,
         resolution,
+        imagesCount: actualImagesCount,
+        creditsPerImage,
+        baseCreditsToDeduct,
+        isUnlimited,
+        creditsToDeduct,
         planTier: planMetadata?.tier || 'none',
         timestamp: new Date().toISOString(),
       });
-      updatedUser = userBeforeDeduction;
-      creditsDeducted = false;
-      actualCreditsDeducted = 0;
-      deductionSource = { fromEarned: 0, fromMonthly: 0 };
-    } else {
-      // CRITICAL: Deduct credits BEFORE generation (atomic operation)
-      // This function uses atomic MongoDB operations to prevent duplicate deductions
-      console.log(`${logPrefix} [CREDIT DEDUCTION] About to deduct credits (lock is held)`, {
-        userId: req.userId,
-        requestId,
-        lockKey,
-        creditsToDeduct,
-        timestamp: new Date().toISOString(),
-      });
 
-      const deductionResult = await deductCreditsAtomically(req.userId!, creditsToDeduct, requestId);
-      updatedUser = deductionResult.updatedUser;
-      deductionSource = deductionResult.deductionSource;
-      creditsDeducted = true;
-      actualCreditsDeducted = creditsToDeduct;
+      // Check if user is admin before deducting credits
+      const userBeforeDeduction = await db
+        .collection('users')
+        .findOne({ _id: new ObjectId(req.userId!) });
+      const isAdmin = userBeforeDeduction?.isAdmin === true;
 
-      if (!isAdmin) {
-        console.log(`${logPrefix} [CREDIT DEDUCTION] ✅ Credits deducted successfully`, {
+      let updatedUser: any;
+      let actualCreditsDeducted = 0;
+
+      // Check for user API key FIRST based on provider
+      let userApiKey: string | undefined;
+      let usingUserKey = false;
+      let apiKeySource: 'user' | 'system' = 'system';
+
+      try {
+        if (provider === 'seedream') {
+          // Check for Seedream API Key
+          const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
+          if (user?.encryptedSeedreamApiKey) {
+            const { decryptApiKey } = await import('../utils/encryption.js');
+            try {
+              userApiKey = decryptApiKey(user.encryptedSeedreamApiKey);
+              if (userApiKey) {
+                usingUserKey = true;
+                apiKeySource = 'user';
+                console.log(`${logPrefix} [API KEY] Using user Seedream API key`);
+              }
+            } catch (decryptError) {
+              console.error(`${logPrefix} [API KEY] Failed to decrypt Seedream key:`, decryptError);
+            }
+          }
+        } else if (provider === 'openai' || isOpenAIImageModel(model)) {
+          // Check for OpenAI API Key (user BYOK) via helper — never access raw key field directly
+          const { getOpenAiApiKey } = await import('../utils/openAiApiKey.js');
+          userApiKey = await getOpenAiApiKey(req.userId!, { skipFallback: true });
+          if (userApiKey) {
+            usingUserKey = true;
+            apiKeySource = 'user';
+          }
+        } else {
+          // Check for Gemini API Key (Default)
+          const { getGeminiApiKey } = await import('../utils/geminiApiKey.js');
+          // Try to get ONLY user key first (skip fallback)
+          userApiKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
+
+          if (userApiKey) {
+            usingUserKey = true;
+            apiKeySource = 'user';
+            console.log(`${logPrefix} [API KEY] Using user Gemini API key`);
+          }
+        }
+      } catch (apiKeyError: any) {
+        console.warn(`${logPrefix} [API KEY] Error checking for user API key:`, apiKeyError);
+      }
+
+      if (isAdmin) {
+        // Admin users - skip credit deduction
+        console.log(`${logPrefix} [CREDIT DEDUCTION] Admin user - skipping credit deduction`, {
           userId: req.userId,
           requestId,
           lockKey,
           creditsToDeduct,
-          fromEarned: deductionSource.fromEarned,
-          fromMonthly: deductionSource.fromMonthly,
-          totalCreditsEarned: updatedUser.totalCreditsEarned,
-          creditsUsed: updatedUser.creditsUsed,
-          monthlyCredits: updatedUser.monthlyCredits,
-          model,
-          resolution,
-          imagesCount: actualImagesCount,
-          creditsPerImage,
           timestamp: new Date().toISOString(),
         });
-      }
-    }
-
-    // Generate mockup image using selected provider
-    // Note: We only generate one image per request
-    let imageBase64: string;
-    let usedSeed: number | undefined;
-
-    if (provider === 'seedream') {
-      // Use Seedream via BytePlus API
-      let seedreamModel = model;
-      if (!isSeedreamModel(seedreamModel)) {
-        console.warn(`${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`);
-        seedreamModel = 'seedream-4.5';
-      }
-
-      console.log(`${logPrefix} [GENERATION] Using Seedream provider`, {
-        originalModel: model,
-        effectiveModel: seedreamModel,
-        resolution,
-        aspectRatio,
-        seed: validSeed ?? 'random',
-      });
-
-      const seedreamResult = await generateSeedreamImage({
-        prompt: finalPromptText,
-        baseImage: finalBaseImage as any,
-        model: seedreamModel as any,
-        resolution: resolution as any,
-        aspectRatio: aspectRatio as any,
-        apiKey: userApiKey,
-        seed: validSeed,
-      });
-      imageBase64 = seedreamResult.base64;
-      usedSeed = seedreamResult.seed;
-    } else if (provider === 'openai' || isOpenAIImageModel(model)) {
-      // Use OpenAI image generation
-      const openaiModel = isOpenAIImageModel(model) ? model : OPENAI_IMAGE_MODELS.GPT_IMAGE_2;
-      console.log(`${logPrefix} [GENERATION] Using OpenAI provider`, {
-        model: openaiModel,
-        resolution,
-        hasBaseImage: !!finalBaseImage,
-        referenceImagesCount: finalReferenceImages?.length ?? 0,
-      });
-
-      const openaiResult = await generateOpenAIImage({
-        prompt: finalPromptText,
-        baseImage: finalBaseImage as any,
-        referenceImages: finalReferenceImages as any,
-        model: openaiModel,
-        resolution: resolution as any,
-        aspectRatio: aspectRatio as any,
-        apiKey: userApiKey,
-      });
-      imageBase64 = openaiResult.base64;
-      // OpenAI doesn't support seed — leave usedSeed undefined
-    } else {
-      // Use Gemini (default)
-      imageBase64 = await generateMockup(
-        finalPromptText,
-        finalBaseImage as any,
-        model as any,
-        resolution as any,
-        aspectRatio as any,
-        finalReferenceImages as any,
-        undefined,
-        userApiKey
-      );
-    }
-
-    // Try to upload to R2 if configured to avoid large payloads
-    let imageUrl: string | undefined;
-
-    try {
-      const r2Service = await import('../../src/services/r2Service.js');
-      if (r2Service.isR2Configured()) {
-        console.log(`${logPrefix} [R2] Uploading generated image to R2...`);
-        // Use a new ID for the file name, or reuse requestId if unique enough
-        const fileId = new ObjectId().toString();
-        imageUrl = await uploadImageToR2(imageBase64, req.userId!, fileId);
-        console.log(`${logPrefix} [R2] Upload success: ${imageUrl}`);
-      }
-    } catch (r2Error: any) {
-      // Log but continue with base64 only
-      console.warn(`${logPrefix} [R2] Optional upload failed, falling back to base64 response:`, r2Error.message);
-    }
-
-    // Generation successful - create usage record for audit/logging
-    // Credits were already deducted before generation
-    // Use retry mechanism to ensure usage record is created for audit trail
-    const createUsageRecordWithRetry = async (maxRetries: number = 3): Promise<void> => {
-      const db = getDb();
-      const { createUsageRecord, calculateImageGenerationCost } = await import('../utils/usageTracking.js');
-
-      const usageRecord = createUsageRecord(
-        req.userId!,
-        actualImagesCount, // Always 1 for this endpoint
-        model,
-        !!baseImage,
-        promptText.length,
-        resolution as Resolution | undefined,
-        (feature || 'mockupmachine') as 'mockupmachine' | 'canvas',
-        apiKeySource
-      );
-
-      const recordToInsert = {
-        ...usageRecord,
-        subscriptionStatus: updatedUser.subscriptionStatus || 'free',
-        hasActiveSubscription: updatedUser.subscriptionStatus === 'active',
-        resolution: resolution as Resolution | undefined,
-        creditsPerImage: creditsPerImage,
-        creditsDeducted: actualCreditsDeducted,
-        creditsDeductedBeforeGeneration: !isAdmin, // Flag to indicate credits were deducted before generation (false for admins)
-        isLocalDevelopment: false, // Always false for backend-generated requests
-        requestId, // Track request ID for duplicate detection
-        createdAt: new Date(),
-        imageUrl: imageUrl // Track R2 URL in usage record if available
-      };
-
-      let lastError: any = null;
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          await db.collection('usage_records').insertOne(recordToInsert);
-
-          if (attempt > 1) {
-            console.log(`${logPrefix} [Usage Tracking] ✅ Usage record created on attempt ${attempt}`, {
-              userId: req.userId,
-              requestId,
-              attempt,
-            });
-          }
-
-          console.log(`${logPrefix} [Usage Tracking] Recorded mockup usage for user ${req.userId}:`, {
+        updatedUser = userBeforeDeduction;
+        creditsDeducted = false; // Mark as not deducted since admin skipped it
+        actualCreditsDeducted = 0;
+        deductionSource = { fromEarned: 0, fromMonthly: 0 };
+      } else if (usingUserKey) {
+        // User API key - skip credit deduction
+        console.log(
+          `${logPrefix} [CREDIT DEDUCTION] User API key present - skipping credit deduction`,
+          {
             userId: req.userId,
             requestId,
-            imagesGenerated: actualImagesCount,
+            lockKey,
+            creditsToDeduct,
+            timestamp: new Date().toISOString(),
+          }
+        );
+        updatedUser = userBeforeDeduction;
+        creditsDeducted = false;
+        actualCreditsDeducted = 0;
+        deductionSource = { fromEarned: 0, fromMonthly: 0 };
+      } else if (creditsToDeduct === 0) {
+        // Unlimited plan - skip credit deduction
+        console.log(
+          `${logPrefix} [CREDIT DEDUCTION] ∞ Unlimited generation - skipping credit deduction`,
+          {
+            userId: req.userId,
+            requestId,
+            lockKey,
             model,
             resolution,
-            creditsPerImage,
-            creditsDeducted: actualCreditsDeducted,
-            creditsDeductedBeforeGeneration: !isAdmin,
-            hasImageUrl: !!imageUrl,
-            timestamp: recordToInsert.createdAt, // corrected property name
-          });
-          return; // Success - exit retry loop
-        } catch (error: any) {
-          lastError = error;
-          const isLastAttempt = attempt === maxRetries;
-
-          if (isLastAttempt) {
-            // Final attempt failed - log critical warning
-            console.error(`${logPrefix} [AUDIT WARNING] [Usage Tracking] ❌ All ${maxRetries} attempts failed to create usage record:`, {
-              severity: 'WARNING',
-              type: 'usage_record_creation_failure',
-              error: error.message,
-              errorStack: error.stack,
-              userId: req.userId,
-              requestId,
-              model,
-              resolution,
-              imagesCount: actualImagesCount,
-              creditsDeducted: creditsToDeduct,
-              timestamp: new Date().toISOString(),
-              // Note: Credits were already deducted, but audit record is missing
-            });
-          } else {
-            // Wait before retry (exponential backoff: 0.5s, 1s, 2s)
-            const delayMs = Math.pow(2, attempt - 2) * 500;
-            console.warn(`${logPrefix} [Usage Tracking] ⚠️ Usage record creation attempt ${attempt} failed, retrying in ${delayMs}ms...`, {
-              userId: req.userId,
-              requestId,
-              attempt,
-              maxRetries,
-              error: error.message,
-            });
-            await new Promise(resolve => setTimeout(resolve, delayMs));
+            planTier: planMetadata?.tier || 'none',
+            timestamp: new Date().toISOString(),
           }
+        );
+        updatedUser = userBeforeDeduction;
+        creditsDeducted = false;
+        actualCreditsDeducted = 0;
+        deductionSource = { fromEarned: 0, fromMonthly: 0 };
+      } else {
+        // CRITICAL: Deduct credits BEFORE generation (atomic operation)
+        // This function uses atomic MongoDB operations to prevent duplicate deductions
+        console.log(`${logPrefix} [CREDIT DEDUCTION] About to deduct credits (lock is held)`, {
+          userId: req.userId,
+          requestId,
+          lockKey,
+          creditsToDeduct,
+          timestamp: new Date().toISOString(),
+        });
+
+        const deductionResult = await deductCreditsAtomically(
+          req.userId!,
+          creditsToDeduct,
+          requestId
+        );
+        updatedUser = deductionResult.updatedUser;
+        deductionSource = deductionResult.deductionSource;
+        creditsDeducted = true;
+        actualCreditsDeducted = creditsToDeduct;
+
+        if (!isAdmin) {
+          console.log(`${logPrefix} [CREDIT DEDUCTION] ✅ Credits deducted successfully`, {
+            userId: req.userId,
+            requestId,
+            lockKey,
+            creditsToDeduct,
+            fromEarned: deductionSource.fromEarned,
+            fromMonthly: deductionSource.fromMonthly,
+            totalCreditsEarned: updatedUser.totalCreditsEarned,
+            creditsUsed: updatedUser.creditsUsed,
+            monthlyCredits: updatedUser.monthlyCredits,
+            model,
+            resolution,
+            imagesCount: actualImagesCount,
+            creditsPerImage,
+            timestamp: new Date().toISOString(),
+          });
         }
       }
 
-      // All retries failed - this is logged above but doesn't throw to avoid breaking the response
-      // The generation succeeded, credits were deducted, but audit trail is incomplete
-    };
+      // Generate mockup image using selected provider
+      // Note: We only generate one image per request
+      let imageBase64: string;
+      let usedSeed: number | undefined;
 
-    // Track total generations for user stats (regardless of credits)
-    // This runs in the background to not delay the response
-    (async () => {
-      try {
-        await incrementUserGenerations(req.userId!, actualImagesCount, 0);
-      } catch (err) {
-        console.error(`${logPrefix} [Stats Tracking] Error incrementing total generations:`, err);
+      if (provider === 'seedream') {
+        // Use Seedream via BytePlus API
+        let seedreamModel = model;
+        if (!isSeedreamModel(seedreamModel)) {
+          console.warn(
+            `${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`
+          );
+          seedreamModel = 'seedream-4.5';
+        }
+
+        console.log(`${logPrefix} [GENERATION] Using Seedream provider`, {
+          originalModel: model,
+          effectiveModel: seedreamModel,
+          resolution,
+          aspectRatio,
+          seed: validSeed ?? 'random',
+        });
+
+        const seedreamResult = await generateSeedreamImage({
+          prompt: finalPromptText,
+          baseImage: finalBaseImage as any,
+          model: seedreamModel as any,
+          resolution: resolution as any,
+          aspectRatio: aspectRatio as any,
+          apiKey: userApiKey,
+          seed: validSeed,
+        });
+        imageBase64 = seedreamResult.base64;
+        usedSeed = seedreamResult.seed;
+      } else if (provider === 'openai' || isOpenAIImageModel(model)) {
+        // Use OpenAI image generation
+        const openaiModel = isOpenAIImageModel(model) ? model : OPENAI_IMAGE_MODELS.GPT_IMAGE_2;
+        console.log(`${logPrefix} [GENERATION] Using OpenAI provider`, {
+          model: openaiModel,
+          resolution,
+          hasBaseImage: !!finalBaseImage,
+          referenceImagesCount: finalReferenceImages?.length ?? 0,
+        });
+
+        const openaiResult = await generateOpenAIImage({
+          prompt: finalPromptText,
+          baseImage: finalBaseImage as any,
+          referenceImages: finalReferenceImages as any,
+          model: openaiModel,
+          resolution: resolution as any,
+          aspectRatio: aspectRatio as any,
+          apiKey: userApiKey,
+        });
+        imageBase64 = openaiResult.base64;
+        // OpenAI doesn't support seed — leave usedSeed undefined
+      } else {
+        // Use Gemini (default)
+        imageBase64 = await generateMockup(
+          finalPromptText,
+          finalBaseImage as any,
+          model as any,
+          resolution as any,
+          aspectRatio as any,
+          finalReferenceImages as any,
+          undefined,
+          userApiKey
+        );
       }
-    })();
 
-    try {
-      await createUsageRecordWithRetry(3);
-    } catch (usageError: any) {
-      // This should not happen as createUsageRecordWithRetry doesn't throw, but handle just in case
-      console.error(`${logPrefix} [AUDIT WARNING] [Usage Tracking] Unexpected error in usage record creation:`, {
-        severity: 'WARNING',
-        type: 'usage_record_creation_failure',
-        error: usageError.message,
-        errorStack: usageError.stack,
-        userId: req.userId,
-        requestId,
-      });
-    }
+      // Try to upload to R2 if configured to avoid large payloads
+      let imageUrl: string | undefined;
 
-    // Calculate total credits remaining after deduction
-    // Use updatedUser from deduction result (no need to re-fetch - it already has the latest values)
-    // For admins, calculate from userBeforeDeduction since no credits were deducted
-    const userForCalculation = isAdmin ? userBeforeDeduction : updatedUser;
-    const monthlyCreditsRemaining = Math.max(0, (userForCalculation.monthlyCredits ?? 20) - (userForCalculation.creditsUsed ?? 0));
-    const totalCreditsRemaining = (userForCalculation.totalCreditsEarned ?? 0) + monthlyCreditsRemaining;
-
-    console.log(`${logPrefix} [Credit Calculation] Final credits after deduction`, {
-      userId: req.userId,
-      requestId,
-      creditsDeducted: actualCreditsDeducted,
-      creditsPerImage,
-      actualImagesCount,
-      isAdmin,
-      totalCreditsEarned: userForCalculation.totalCreditsEarned,
-      monthlyCredits: userForCalculation.monthlyCredits,
-      creditsUsed: userForCalculation.creditsUsed,
-      monthlyCreditsRemaining,
-      totalCreditsRemaining,
-      calculation: `${userForCalculation.totalCreditsEarned} + ${monthlyCreditsRemaining} = ${totalCreditsRemaining}`,
-    });
-
-    // Release lock after successful generation
-    if (lockKey) {
-      await db.collection('credit_locks').deleteOne({ lockKey, requestId });
-      console.log(`${logPrefix} [LOCK] Released lock after successful generation`, {
-        userId: req.userId,
-        requestId,
-        lockKey,
-      });
-    }
-
-    // Cache the result before sending
-    const responseData = {
-      imageBase64: imageUrl ? undefined : imageBase64,
-      imageUrl,
-      seed: usedSeed,
-      modelUsed: model,
-      creditsDeducted: actualCreditsDeducted,
-      creditsRemaining: totalCreditsRemaining,
-      isAdmin,
-      width: width || undefined,
-      height: height || undefined,
-      requestId,
-      generationId: randomUUID(),
-    };
-
-    await redisClient.setex(
-      mockupCacheKey,
-      CACHE_TTL.MOCKUP_GEN,
-      JSON.stringify(responseData)
-    ).catch((err: any) => {
-      console.warn(`[Cache] SET mockup failed (graceful): ${err.message}`);
-    });
-    console.log(`[Cache] SET mockup:${mockupCacheKey.slice(0, 20)} (7d)`);
-
-    // Return generated image
-    res.json(responseData);
-  } catch (error: any) {
-    // Always release lock on error if it was acquired
-    if (lockKey) {
       try {
+        const r2Service = await import('../../src/services/r2Service.js');
+        if (r2Service.isR2Configured()) {
+          console.log(`${logPrefix} [R2] Uploading generated image to R2...`);
+          // Use a new ID for the file name, or reuse requestId if unique enough
+          const fileId = new ObjectId().toString();
+          imageUrl = await uploadImageToR2(imageBase64, req.userId!, fileId);
+          console.log(`${logPrefix} [R2] Upload success: ${imageUrl}`);
+        }
+      } catch (r2Error: any) {
+        // Log but continue with base64 only
+        console.warn(
+          `${logPrefix} [R2] Optional upload failed, falling back to base64 response:`,
+          r2Error.message
+        );
+      }
+
+      // Generation successful - create usage record for audit/logging
+      // Credits were already deducted before generation
+      // Use retry mechanism to ensure usage record is created for audit trail
+      const createUsageRecordWithRetry = async (maxRetries: number = 3): Promise<void> => {
         const db = getDb();
+        const { createUsageRecord, calculateImageGenerationCost } = await import(
+          '../utils/usageTracking.js'
+        );
+
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          actualImagesCount, // Always 1 for this endpoint
+          model,
+          !!baseImage,
+          promptText.length,
+          resolution as Resolution | undefined,
+          (feature || 'mockupmachine') as 'mockupmachine' | 'canvas',
+          apiKeySource
+        );
+
+        const recordToInsert = {
+          ...usageRecord,
+          subscriptionStatus: updatedUser.subscriptionStatus || 'free',
+          hasActiveSubscription: updatedUser.subscriptionStatus === 'active',
+          resolution: resolution as Resolution | undefined,
+          creditsPerImage: creditsPerImage,
+          creditsDeducted: actualCreditsDeducted,
+          creditsDeductedBeforeGeneration: !isAdmin, // Flag to indicate credits were deducted before generation (false for admins)
+          isLocalDevelopment: false, // Always false for backend-generated requests
+          requestId, // Track request ID for duplicate detection
+          createdAt: new Date(),
+          imageUrl: imageUrl, // Track R2 URL in usage record if available
+        };
+
+        let lastError: any = null;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            await db.collection('usage_records').insertOne(recordToInsert);
+
+            if (attempt > 1) {
+              console.log(
+                `${logPrefix} [Usage Tracking] ✅ Usage record created on attempt ${attempt}`,
+                {
+                  userId: req.userId,
+                  requestId,
+                  attempt,
+                }
+              );
+            }
+
+            console.log(
+              `${logPrefix} [Usage Tracking] Recorded mockup usage for user ${req.userId}:`,
+              {
+                userId: req.userId,
+                requestId,
+                imagesGenerated: actualImagesCount,
+                model,
+                resolution,
+                creditsPerImage,
+                creditsDeducted: actualCreditsDeducted,
+                creditsDeductedBeforeGeneration: !isAdmin,
+                hasImageUrl: !!imageUrl,
+                timestamp: recordToInsert.createdAt, // corrected property name
+              }
+            );
+            return; // Success - exit retry loop
+          } catch (error: any) {
+            lastError = error;
+            const isLastAttempt = attempt === maxRetries;
+
+            if (isLastAttempt) {
+              // Final attempt failed - log critical warning
+              console.error(
+                `${logPrefix} [AUDIT WARNING] [Usage Tracking] ❌ All ${maxRetries} attempts failed to create usage record:`,
+                {
+                  severity: 'WARNING',
+                  type: 'usage_record_creation_failure',
+                  error: error.message,
+                  errorStack: error.stack,
+                  userId: req.userId,
+                  requestId,
+                  model,
+                  resolution,
+                  imagesCount: actualImagesCount,
+                  creditsDeducted: creditsToDeduct,
+                  timestamp: new Date().toISOString(),
+                  // Note: Credits were already deducted, but audit record is missing
+                }
+              );
+            } else {
+              // Wait before retry (exponential backoff: 0.5s, 1s, 2s)
+              const delayMs = Math.pow(2, attempt - 2) * 500;
+              console.warn(
+                `${logPrefix} [Usage Tracking] ⚠️ Usage record creation attempt ${attempt} failed, retrying in ${delayMs}ms...`,
+                {
+                  userId: req.userId,
+                  requestId,
+                  attempt,
+                  maxRetries,
+                  error: error.message,
+                }
+              );
+              await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+          }
+        }
+
+        // All retries failed - this is logged above but doesn't throw to avoid breaking the response
+        // The generation succeeded, credits were deducted, but audit trail is incomplete
+      };
+
+      // Track total generations for user stats (regardless of credits)
+      // This runs in the background to not delay the response
+      (async () => {
+        try {
+          await incrementUserGenerations(req.userId!, actualImagesCount, 0);
+        } catch (err) {
+          console.error(`${logPrefix} [Stats Tracking] Error incrementing total generations:`, err);
+        }
+      })();
+
+      try {
+        await createUsageRecordWithRetry(3);
+      } catch (usageError: any) {
+        // This should not happen as createUsageRecordWithRetry doesn't throw, but handle just in case
+        console.error(
+          `${logPrefix} [AUDIT WARNING] [Usage Tracking] Unexpected error in usage record creation:`,
+          {
+            severity: 'WARNING',
+            type: 'usage_record_creation_failure',
+            error: usageError.message,
+            errorStack: usageError.stack,
+            userId: req.userId,
+            requestId,
+          }
+        );
+      }
+
+      // Calculate total credits remaining after deduction
+      // Use updatedUser from deduction result (no need to re-fetch - it already has the latest values)
+      // For admins, calculate from userBeforeDeduction since no credits were deducted
+      const userForCalculation = isAdmin ? userBeforeDeduction : updatedUser;
+      const monthlyCreditsRemaining = Math.max(
+        0,
+        (userForCalculation.monthlyCredits ?? 20) - (userForCalculation.creditsUsed ?? 0)
+      );
+      const totalCreditsRemaining =
+        (userForCalculation.totalCreditsEarned ?? 0) + monthlyCreditsRemaining;
+
+      console.log(`${logPrefix} [Credit Calculation] Final credits after deduction`, {
+        userId: req.userId,
+        requestId,
+        creditsDeducted: actualCreditsDeducted,
+        creditsPerImage,
+        actualImagesCount,
+        isAdmin,
+        totalCreditsEarned: userForCalculation.totalCreditsEarned,
+        monthlyCredits: userForCalculation.monthlyCredits,
+        creditsUsed: userForCalculation.creditsUsed,
+        monthlyCreditsRemaining,
+        totalCreditsRemaining,
+        calculation: `${userForCalculation.totalCreditsEarned} + ${monthlyCreditsRemaining} = ${totalCreditsRemaining}`,
+      });
+
+      // Release lock after successful generation
+      if (lockKey) {
         await db.collection('credit_locks').deleteOne({ lockKey, requestId });
-        console.log(`${logPrefix} [LOCK] Released lock after error`, {
+        console.log(`${logPrefix} [LOCK] Released lock after successful generation`, {
           userId: req.userId,
           requestId,
           lockKey,
         });
-      } catch (lockError: any) {
-        console.error(`${logPrefix} [LOCK] Failed to release lock on error:`, lockError);
       }
-    }
 
-    console.error(`${logPrefix} [Error generating mockup]:`, {
-      error: error.message,
-      stack: error.stack,
-      userId: req.userId,
-      requestId,
-      model: req.body.model,
-      resolution: req.body.resolution,
-    });
-
-    // CRITICAL: Refund credits if generation failed and credits were deducted
-    if (creditsDeducted && creditsToDeduct > 0) {
-      try {
-        // Use retry mechanism for refund to handle transient failures
-        await refundCreditsWithRetry(req.userId!, creditsToDeduct, deductionSource, 3);
-        console.log(`${logPrefix} [Credit Refund] ✅ Successfully refunded ${creditsToDeduct} credit(s) after failed mockup generation`, {
-          userId: req.userId,
-          requestId,
-          model: req.body.model,
-          resolution: req.body.resolution,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        });
-      } catch (refundError: any) {
-        // CRITICAL ALERT: All refund attempts failed - this is a critical audit issue
-        // Log with high severity for monitoring/alerting systems
-        console.error(`${logPrefix} [CRITICAL AUDIT] [Credit Refund] ❌ All refund attempts failed after generation failure:`, {
-          severity: 'CRITICAL',
-          type: 'credit_refund_failure',
-          error: refundError.message,
-          errorStack: refundError.stack,
-          userId: req.userId,
-          requestId,
-          model: req.body.model,
-          resolution: req.body.resolution,
-          creditsToRefund: creditsToDeduct,
-          deductionSource: deductionSource ? {
-            fromEarned: deductionSource.fromEarned,
-            fromMonthly: deductionSource.fromMonthly,
-          } : 'unknown',
-          originalError: error.message,
-          originalErrorStack: error.stack,
-          timestamp: new Date().toISOString(),
-          requiresManualIntervention: true, // Flag for monitoring systems
-          actionRequired: `User ${req.userId} lost ${creditsToDeduct} credit(s) due to failed refund. Manual intervention required.`,
-        });
-
-        // [ENHANCEMENT] Optional: Integrate with monitoring/alerting system (Sentry, DataDog, etc.)
-        // This could trigger an alert to administrators when credit refunds fail.
-        // Contributions welcome - see CONTRIBUTING.md
-      }
-    }
-
-    // Return appropriate error status code
-    let statusCode = 500;
-    let errorResponse: any = {
-      error: 'Failed to generate mockup',
-      message: error.message || 'An error occurred while generating the image'
-    };
-
-    if (error.message?.includes('Insufficient credits')) {
-      statusCode = 403;
-    } else if (error instanceof RateLimitError || error.name === 'RateLimitError' || error.message?.includes('Rate limit exceeded')) {
-      statusCode = 429;
-    } else if (error.name === 'ModelResponseTextError' || error.message?.startsWith('MODEL_RESPONSE_TEXT:')) {
-      // Model responded with text instead of generating an image
-      // Extract the model's response to show user-friendly feedback
-      const modelResponse = error.modelResponse || error.message?.replace('MODEL_RESPONSE_TEXT:', '') || '';
-      statusCode = 422; // Unprocessable Entity - request was valid but model couldn't generate image
-      errorResponse = {
-        error: 'model_response_text',
-        message: modelResponse,
-        isModelQuestion: true // Flag for frontend to show friendly UI
+      // Cache the result before sending
+      const responseData = {
+        imageBase64: imageUrl ? undefined : imageBase64,
+        imageUrl,
+        seed: usedSeed,
+        modelUsed: model,
+        creditsDeducted: actualCreditsDeducted,
+        creditsRemaining: totalCreditsRemaining,
+        isAdmin,
+        width: width || undefined,
+        height: height || undefined,
+        requestId,
+        generationId: randomUUID(),
       };
-    }
 
-    res.status(statusCode).json(errorResponse);
+      await redisClient
+        .setex(mockupCacheKey, CACHE_TTL.MOCKUP_GEN, JSON.stringify(responseData))
+        .catch((err: any) => {
+          console.warn(`[Cache] SET mockup failed (graceful): ${err.message}`);
+        });
+      console.log(`[Cache] SET mockup:${mockupCacheKey.slice(0, 20)} (7d)`);
+
+      // Return generated image
+      res.json(responseData);
+    } catch (error: any) {
+      // Always release lock on error if it was acquired
+      if (lockKey) {
+        try {
+          const db = getDb();
+          await db.collection('credit_locks').deleteOne({ lockKey, requestId });
+          console.log(`${logPrefix} [LOCK] Released lock after error`, {
+            userId: req.userId,
+            requestId,
+            lockKey,
+          });
+        } catch (lockError: any) {
+          console.error(`${logPrefix} [LOCK] Failed to release lock on error:`, lockError);
+        }
+      }
+
+      console.error(`${logPrefix} [Error generating mockup]:`, {
+        error: error.message,
+        stack: error.stack,
+        userId: req.userId,
+        requestId,
+        model: req.body.model,
+        resolution: req.body.resolution,
+      });
+
+      // CRITICAL: Refund credits if generation failed and credits were deducted
+      if (creditsDeducted && creditsToDeduct > 0) {
+        try {
+          // Use retry mechanism for refund to handle transient failures
+          await refundCreditsWithRetry(req.userId!, creditsToDeduct, deductionSource, 3);
+          console.log(
+            `${logPrefix} [Credit Refund] ✅ Successfully refunded ${creditsToDeduct} credit(s) after failed mockup generation`,
+            {
+              userId: req.userId,
+              requestId,
+              model: req.body.model,
+              resolution: req.body.resolution,
+              error: error.message,
+              timestamp: new Date().toISOString(),
+            }
+          );
+        } catch (refundError: any) {
+          // CRITICAL ALERT: All refund attempts failed - this is a critical audit issue
+          // Log with high severity for monitoring/alerting systems
+          console.error(
+            `${logPrefix} [CRITICAL AUDIT] [Credit Refund] ❌ All refund attempts failed after generation failure:`,
+            {
+              severity: 'CRITICAL',
+              type: 'credit_refund_failure',
+              error: refundError.message,
+              errorStack: refundError.stack,
+              userId: req.userId,
+              requestId,
+              model: req.body.model,
+              resolution: req.body.resolution,
+              creditsToRefund: creditsToDeduct,
+              deductionSource: deductionSource
+                ? {
+                    fromEarned: deductionSource.fromEarned,
+                    fromMonthly: deductionSource.fromMonthly,
+                  }
+                : 'unknown',
+              originalError: error.message,
+              originalErrorStack: error.stack,
+              timestamp: new Date().toISOString(),
+              requiresManualIntervention: true, // Flag for monitoring systems
+              actionRequired: `User ${req.userId} lost ${creditsToDeduct} credit(s) due to failed refund. Manual intervention required.`,
+            }
+          );
+
+          // [ENHANCEMENT] Optional: Integrate with monitoring/alerting system (Sentry, DataDog, etc.)
+          // This could trigger an alert to administrators when credit refunds fail.
+          // Contributions welcome - see CONTRIBUTING.md
+        }
+      }
+
+      // Return appropriate error status code
+      let statusCode = 500;
+      let errorResponse: any = {
+        error: 'Failed to generate mockup',
+        message: error.message || 'An error occurred while generating the image',
+      };
+
+      if (error.message?.includes('Insufficient credits')) {
+        statusCode = 403;
+      } else if (
+        error instanceof RateLimitError ||
+        error.name === 'RateLimitError' ||
+        error.message?.includes('Rate limit exceeded')
+      ) {
+        statusCode = 429;
+      } else if (
+        error.name === 'ModelResponseTextError' ||
+        error.message?.startsWith('MODEL_RESPONSE_TEXT:')
+      ) {
+        // Model responded with text instead of generating an image
+        // Extract the model's response to show user-friendly feedback
+        const modelResponse =
+          error.modelResponse || error.message?.replace('MODEL_RESPONSE_TEXT:', '') || '';
+        statusCode = 422; // Unprocessable Entity - request was valid but model couldn't generate image
+        errorResponse = {
+          error: 'model_response_text',
+          message: modelResponse,
+          isModelQuestion: true, // Flag for frontend to show friendly UI
+        };
+      }
+
+      res.status(statusCode).json(errorResponse);
+    }
   }
-});
+);
 
 // Track generation usage (called before/after generation)
 // NOTE: This endpoint is deprecated in favor of /generate which handles credit deduction
 // Keeping for backward compatibility with existing frontend code during migration
 // Note: checkSubscription is NOT used here because generation already succeeded.
 // We're just recording usage, not generating, so credits check should not block this.
-// 
+//
 // CRITICAL: This endpoint should NOT be called if /generate was already used, as that would
 // cause duplicate credit deduction. The /generate endpoint already handles credit deduction
 // and usage record creation atomically.
 // Track prompt generation usage
-router.post('/track-prompt-generation', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    await connectToMongoDB();
-    const db = getDb();
-    const userId = req.userId!;
+router.post(
+  '/track-prompt-generation',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
+    try {
+      await connectToMongoDB();
+      const db = getDb();
+      const userId = req.userId!;
 
-    const { inputTokens, outputTokens, feature } = req.body;
+      const { inputTokens, outputTokens, feature } = req.body;
 
-    if (typeof inputTokens !== 'number' || typeof outputTokens !== 'number') {
-      return res.status(400).json({ error: 'inputTokens and outputTokens are required' });
+      if (typeof inputTokens !== 'number' || typeof outputTokens !== 'number') {
+        return res.status(400).json({ error: 'inputTokens and outputTokens are required' });
+      }
+
+      if (!feature || !['mockupmachine', 'canvas'].includes(feature)) {
+        return res.status(400).json({ error: 'feature must be "mockupmachine" or "canvas"' });
+      }
+
+      // Get user info
+      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const isAdmin = user.role === 'admin';
+      const subscriptionStatus = user.subscriptionStatus || 'free';
+      const hasActiveSubscription = subscriptionStatus === 'active';
+
+      // Calculate cost
+      const { calculateTextGenerationCost } = await import('../utils/usageTracking.js');
+      const cost = calculateTextGenerationCost(
+        inputTokens,
+        outputTokens,
+        GEMINI_MODELS.IMAGE_FLASH
+      );
+
+      // Create usage record
+      const usageRecord = {
+        userId,
+        type: 'prompt-generation',
+        feature: feature as 'mockupmachine' | 'canvas',
+        timestamp: new Date(),
+        inputTokens,
+        outputTokens,
+        promptLength: inputTokens * 4, // Approximate
+        model: GEMINI_MODELS.IMAGE_FLASH,
+        cost,
+        creditsDeducted: 0, // Prompt generation doesn't deduct credits
+        subscriptionStatus,
+        hasActiveSubscription,
+        isAdmin,
+        createdAt: new Date(),
+      };
+
+      await db.collection('usage_records').insertOne(usageRecord);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Error tracking prompt generation:', error);
+      res.status(500).json({ error: 'Failed to track prompt generation' });
     }
-
-    if (!feature || !['mockupmachine', 'canvas'].includes(feature)) {
-      return res.status(400).json({ error: 'feature must be "mockupmachine" or "canvas"' });
-    }
-
-    // Get user info
-    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const isAdmin = user.role === 'admin';
-    const subscriptionStatus = user.subscriptionStatus || 'free';
-    const hasActiveSubscription = subscriptionStatus === 'active';
-
-    // Calculate cost
-    const { calculateTextGenerationCost } = await import('../utils/usageTracking.js');
-    const cost = calculateTextGenerationCost(inputTokens, outputTokens, GEMINI_MODELS.IMAGE_FLASH);
-
-    // Create usage record
-    const usageRecord = {
-      userId,
-      type: 'prompt-generation',
-      feature: feature as 'mockupmachine' | 'canvas',
-      timestamp: new Date(),
-      inputTokens,
-      outputTokens,
-      promptLength: inputTokens * 4, // Approximate
-      model: GEMINI_MODELS.IMAGE_FLASH,
-      cost,
-      creditsDeducted: 0, // Prompt generation doesn't deduct credits
-      subscriptionStatus,
-      hasActiveSubscription,
-      isAdmin,
-      createdAt: new Date(),
-    };
-
-    await db.collection('usage_records').insertOne(usageRecord);
-
-    res.json({ success: true });
-  } catch (error: any) {
-    console.error('Error tracking prompt generation:', error);
-    res.status(500).json({ error: 'Failed to track prompt generation' });
   }
-});
+);
 
 router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
@@ -1276,19 +1405,21 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
       hasInputImage = false,
       promptLength,
       resolution,
-      feature // Optional: 'mockupmachine' | 'canvas'
+      feature, // Optional: 'mockupmachine' | 'canvas'
     } = req.body;
 
     // SECURITY: Credit bypass for local development only
     // This allows developers to test without consuming credits.
     // CRITICAL: Never set ALLOW_LOCAL_CREDIT_BYPASS=true in production!
     // It requires BOTH conditions: NODE_ENV=development AND ALLOW_LOCAL_CREDIT_BYPASS=true
-    const isLocalDevelopment = process.env.NODE_ENV === 'development' &&
-      process.env.ALLOW_LOCAL_CREDIT_BYPASS === 'true';
+    const isLocalDevelopment =
+      process.env.NODE_ENV === 'development' && process.env.ALLOW_LOCAL_CREDIT_BYPASS === 'true';
 
     // Extra safety: ensure we're not in production even if env vars are misconfigured
     if (isLocalDevelopment && process.env.VERCEL) {
-      console.error('❌ SECURITY: ALLOW_LOCAL_CREDIT_BYPASS detected in Vercel environment. Ignoring.');
+      console.error(
+        '❌ SECURITY: ALLOW_LOCAL_CREDIT_BYPASS detected in Vercel environment. Ignoring.'
+      );
     }
 
     // CRITICAL: Check for recent usage records to prevent duplicate credit deduction
@@ -1301,22 +1432,25 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
         model,
         resolution: resolution || null,
         createdAt: { $gte: recentCutoff },
-        creditsDeductedBeforeGeneration: { $exists: true } // Only check records from /generate
+        creditsDeductedBeforeGeneration: { $exists: true }, // Only check records from /generate
       });
 
       if (recentRecord) {
-        console.warn('[Usage Tracking] Duplicate track-usage call detected. Recent usage record found:', {
-          userId,
-          recentRecordId: recentRecord._id,
-          recentRecordCreatedAt: recentRecord.createdAt,
-          timestamp: new Date().toISOString(),
-        });
+        console.warn(
+          '[Usage Tracking] Duplicate track-usage call detected. Recent usage record found:',
+          {
+            userId,
+            recentRecordId: recentRecord._id,
+            recentRecordCreatedAt: recentRecord.createdAt,
+            timestamp: new Date().toISOString(),
+          }
+        );
 
         // Return success but don't deduct credits again
         return res.json({
           message: 'Usage already tracked by /generate endpoint',
           creditsDeducted: 0,
-          duplicate: true
+          duplicate: true,
         });
       }
     }
@@ -1335,10 +1469,15 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
 
     if (success) {
       // Import usage tracking utilities
-      const { createUsageRecord, calculateImageGenerationCost, getCreditsRequired } = await import('../utils/usageTracking.js');
+      const { createUsageRecord, calculateImageGenerationCost, getCreditsRequired } = await import(
+        '../utils/usageTracking.js'
+      );
 
       // Calculate credits required based on model and resolution
-      const creditsPerImage = getCreditsRequired(model as typeof GEMINI_MODELS.IMAGE_FLASH | typeof GEMINI_MODELS.IMAGE_PRO, resolution);
+      const creditsPerImage = getCreditsRequired(
+        model as typeof GEMINI_MODELS.IMAGE_FLASH | typeof GEMINI_MODELS.IMAGE_PRO,
+        resolution
+      );
       // In local development, don't deduct credits but still track usage
       const creditsToDeduct = isLocalDevelopment ? 0 : imagesCount * creditsPerImage;
 
@@ -1392,7 +1531,8 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
       const totalCreditsRemaining = totalCreditsEarned + monthlyCreditsRemaining;
 
       res.json({
-        message: 'Usage tracked (no credits deducted - use /generate endpoint for credit deduction)',
+        message:
+          'Usage tracked (no credits deducted - use /generate endpoint for credit deduction)',
         imagesGenerated: imagesCount,
         cost,
         creditsDeducted: 0, // No credits deducted by this endpoint
@@ -1407,7 +1547,7 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
       // Credits are only deducted when success: true
       res.json({
         message: 'Generation failed - credits not deducted',
-        creditsDeducted: 0
+        creditsDeducted: 0,
       });
     }
   } catch (error: any) {
@@ -1456,7 +1596,7 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, nex
         // R2 upload failed - return error instead of falling back to base64
         return res.status(500).json({
           error: 'Failed to upload image to R2',
-          details: uploadError.message || 'R2 upload failed. Please try again or contact support.'
+          details: uploadError.message || 'R2 upload failed. Please try again or contact support.',
         });
       }
     }
@@ -1476,7 +1616,7 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, nex
       });
       return res.status(400).json({
         error: 'Image URL is required',
-        details: 'Either imageBase64 or imageUrl must be provided.'
+        details: 'Either imageBase64 or imageUrl must be provided.',
       });
     }
 
@@ -1532,7 +1672,10 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, nex
       );
     }
 
-    dispatchWebhookEvent(userId, 'generation.complete', { type: 'mockup', id: result.insertedId.toString() });
+    dispatchWebhookEvent(userId, 'generation.complete', {
+      type: 'mockup',
+      id: result.insertedId.toString(),
+    });
 
     res.status(201).json(formattedMockup);
   } catch (error: any) {
@@ -1571,7 +1714,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
         // R2 upload failed - return error instead of falling back to base64
         return res.status(500).json({
           error: 'Failed to upload image to R2',
-          details: uploadError.message || 'R2 upload failed. Please try again or contact support.'
+          details: uploadError.message || 'R2 upload failed. Please try again or contact support.',
         });
       }
     }
@@ -1589,10 +1732,16 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     if (iu != null) updateData.imageUrl = iu;
 
     if (Array.isArray(req.body.tags)) {
-      updateData.tags = req.body.tags.filter((t: unknown) => typeof t === 'string').map((t: string) => String(t).trim().substring(0, 200)).filter(Boolean);
+      updateData.tags = req.body.tags
+        .filter((t: unknown) => typeof t === 'string')
+        .map((t: string) => String(t).trim().substring(0, 200))
+        .filter(Boolean);
     }
     if (Array.isArray(req.body.brandingTags)) {
-      updateData.brandingTags = req.body.brandingTags.filter((t: unknown) => typeof t === 'string').map((t: string) => String(t).trim().substring(0, 200)).filter(Boolean);
+      updateData.brandingTags = req.body.brandingTags
+        .filter((t: unknown) => typeof t === 'string')
+        .map((t: string) => String(t).trim().substring(0, 200))
+        .filter(Boolean);
     }
 
     const isLikedVal = ensureOptionalBoolean(req.body.isLiked);
@@ -1619,10 +1768,12 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
       isLikedValue: updateData.isLiked,
     });
 
-    const result = await db.collection('mockups').updateOne(
-      { _id: new ObjectId(req.params.id), userId: new ObjectId(req.userId) },
-      { $set: updateData }
-    );
+    const result = await db
+      .collection('mockups')
+      .updateOne(
+        { _id: new ObjectId(req.params.id), userId: new ObjectId(req.userId) },
+        { $set: updateData }
+      );
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Mockup not found' });
@@ -1630,16 +1781,19 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
 
     if (result.modifiedCount === 0) {
       // Use structured logging to avoid format string vulnerability
-      console.warn('[Update] Mockup was matched but not modified. This might indicate the data is the same:', {
-        mockupId: String(req.params.id),
-      });
+      console.warn(
+        '[Update] Mockup was matched but not modified. This might indicate the data is the same:',
+        {
+          mockupId: String(req.params.id),
+        }
+      );
     }
 
     // Verify the update by fetching the updated mockup (only once)
     // Fixed: convert req.userId to ObjectId since mockups are stored with ObjectId by Prisma
     const updatedMockup = await db.collection('mockups').findOne({
       _id: new ObjectId(req.params.id),
-      userId: new ObjectId(req.userId)
+      userId: new ObjectId(req.userId),
     });
 
     // Use structured logging to avoid format string vulnerability
@@ -1691,7 +1845,7 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
     // Get mockup before deletion to check for R2 image
     const mockup = await db.collection('mockups').findOne({
       _id: new ObjectId(req.params.id),
-      userId: req.userId
+      userId: req.userId,
     });
 
     if (!mockup) {
@@ -1713,7 +1867,7 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
 
     const result = await db.collection('mockups').deleteOne({
       _id: new ObjectId(req.params.id),
-      userId: req.userId
+      userId: req.userId,
     });
 
     if (result.deletedCount === 0) {
@@ -1746,13 +1900,17 @@ router.get('/usage/stats', apiRateLimiter, authenticate, async (req: AuthRequest
       }
     }
 
-    const usageRecords = await db.collection('usage_records')
+    const usageRecords = await db
+      .collection('usage_records')
       .find(query)
       .sort({ timestamp: -1 })
       .toArray();
 
     // Calculate totals
-    const totalImages = usageRecords.reduce((sum, record) => sum + (record.imagesGenerated || 1), 0);
+    const totalImages = usageRecords.reduce(
+      (sum, record) => sum + (record.imagesGenerated || 1),
+      0
+    );
     const totalCost = usageRecords.reduce((sum, record) => sum + (record.cost || 0), 0);
     const totalRequests = usageRecords.length;
 
@@ -1791,14 +1949,18 @@ router.get('/usage/current', apiRateLimiter, authenticate, async (req: AuthReque
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const usageRecords = await db.collection('usage_records')
+    const usageRecords = await db
+      .collection('usage_records')
       .find({
         userId,
-        timestamp: { $gte: startOfMonth }
+        timestamp: { $gte: startOfMonth },
       })
       .toArray();
 
-    const totalImages = usageRecords.reduce((sum, record) => sum + (record.imagesGenerated || 1), 0);
+    const totalImages = usageRecords.reduce(
+      (sum, record) => sum + (record.imagesGenerated || 1),
+      0
+    );
     const totalCost = usageRecords.reduce((sum, record) => sum + (record.cost || 0), 0);
 
     res.json({
@@ -1821,67 +1983,70 @@ router.get('/usage/current', apiRateLimiter, authenticate, async (req: AuthReque
  * Delegates each item to the existing /generate logic via internal fetch.
  * Returns array of results in the same order as the input prompts.
  */
-router.post('/batch-generate', mockupRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const {
-      prompts,
-      model,
-      provider,
-      aspectRatio,
-      resolution,
-      brandGuidelineId,
-      baseImage,
-    } = req.body;
+router.post(
+  '/batch-generate',
+  mockupRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const { prompts, model, provider, aspectRatio, resolution, brandGuidelineId, baseImage } =
+        req.body;
 
-    if (!Array.isArray(prompts) || prompts.length === 0) {
-      return res.status(400).json({ error: 'prompts must be a non-empty array' });
+      if (!Array.isArray(prompts) || prompts.length === 0) {
+        return res.status(400).json({ error: 'prompts must be a non-empty array' });
+      }
+      if (prompts.length > 20) {
+        return res.status(400).json({ error: 'Maximum 20 prompts per batch' });
+      }
+
+      const apiBase =
+        process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3000}/api`;
+      const authHeader = req.headers['authorization'];
+
+      const results = await Promise.allSettled(
+        prompts.map(
+          (
+            item: string | { promptText: string; referenceImages?: unknown[]; baseImage?: unknown },
+            idx: number
+          ) => {
+            const isObj = typeof item === 'object' && item !== null;
+            const promptText = isObj ? item.promptText : item;
+            const itemReferenceImages = isObj ? item.referenceImages : undefined;
+            const itemBaseImage = isObj ? item.baseImage : baseImage;
+            return fetch(`${apiBase}/mockups/generate`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(authHeader ? { Authorization: authHeader } : {}),
+              },
+              body: JSON.stringify({
+                promptText,
+                model,
+                provider,
+                aspectRatio,
+                resolution,
+                brandGuidelineId,
+                baseImage: itemBaseImage,
+                referenceImages: itemReferenceImages,
+                uniqueId: idx,
+              }),
+            }).then((r) => r.json());
+          }
+        )
+      );
+
+      res.json({
+        total: prompts.length,
+        results: results.map((r, idx) =>
+          r.status === 'fulfilled'
+            ? { index: idx, success: true, data: r.value }
+            : { index: idx, success: false, error: r.reason?.message ?? 'unknown' }
+        ),
+      });
+    } catch (error) {
+      next(error);
     }
-    if (prompts.length > 20) {
-      return res.status(400).json({ error: 'Maximum 20 prompts per batch' });
-    }
-
-    const apiBase = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3000}/api`;
-    const authHeader = req.headers['authorization'];
-
-    const results = await Promise.allSettled(
-      prompts.map((item: string | { promptText: string; referenceImages?: unknown[]; baseImage?: unknown }, idx: number) => {
-        const isObj = typeof item === 'object' && item !== null;
-        const promptText = isObj ? item.promptText : item;
-        const itemReferenceImages = isObj ? item.referenceImages : undefined;
-        const itemBaseImage = isObj ? item.baseImage : baseImage;
-        return fetch(`${apiBase}/mockups/generate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(authHeader ? { Authorization: authHeader } : {}),
-          },
-          body: JSON.stringify({
-            promptText,
-            model,
-            provider,
-            aspectRatio,
-            resolution,
-            brandGuidelineId,
-            baseImage: itemBaseImage,
-            referenceImages: itemReferenceImages,
-            uniqueId: idx,
-          }),
-        }).then((r) => r.json());
-      })
-    );
-
-    res.json({
-      total: prompts.length,
-      results: results.map((r, idx) =>
-        r.status === 'fulfilled'
-          ? { index: idx, success: true, data: r.value }
-          : { index: idx, success: false, error: r.reason?.message ?? 'unknown' }
-      ),
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 export default router;
-

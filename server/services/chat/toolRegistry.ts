@@ -11,8 +11,13 @@ import { CHAT_TOOLS, executeToolCall } from '../chatToolExecutor.js';
 import { ADMIN_CHAT_TOOLS, executeAdminChatTool } from '../adminChatTools.js';
 import { prisma } from '../../db/prisma.js';
 import { describeImage } from '../geminiService.js';
-import { buildBrandContext, BRAND_SECTION_PRESETS, type BrandContextSection } from '../../lib/brandContextBuilder.js';
-const INTERNAL_API_BASE = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
+import {
+  buildBrandContext,
+  BRAND_SECTION_PRESETS,
+  type BrandContextSection,
+} from '../../lib/brandContextBuilder.js';
+const INTERNAL_API_BASE =
+  process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
 export type ChatToolScope = 'public' | 'admin';
 
@@ -38,7 +43,7 @@ interface RegistryEntry {
 const publicDecls: any[] = (CHAT_TOOLS as any).functionDeclarations ?? [];
 const adminDecls: any[] = Array.isArray(ADMIN_CHAT_TOOLS)
   ? ADMIN_CHAT_TOOLS.flatMap((t: any) => t.functionDeclarations ?? [])
-  : ((ADMIN_CHAT_TOOLS as any).functionDeclarations ?? []);
+  : (ADMIN_CHAT_TOOLS as any).functionDeclarations ?? [];
 
 const REGISTRY: Record<string, RegistryEntry> = {};
 
@@ -55,7 +60,14 @@ for (const d of adminDecls) {
     scope: 'admin',
     declaration: d,
     execute: async (args, ctx) =>
-      executeAdminChatTool(d.name, args, ctx.userId, ctx.sessionId, ctx.authHeader ?? '', ctx.brandGuidelineId),
+      executeAdminChatTool(
+        d.name,
+        args,
+        ctx.userId,
+        ctx.sessionId,
+        ctx.authHeader ?? '',
+        ctx.brandGuidelineId
+      ),
   };
 }
 
@@ -65,7 +77,8 @@ REGISTRY['get_brand_context'] = {
   scope: 'public',
   declaration: {
     name: 'get_brand_context',
-    description: 'Fetch brand guideline context. Use "sections" to fetch only what you need — e.g. ["colors","typography"] for visual tweaks, "minimal" for simple tasks. Presets: "visual", "copy", "minimal", "imageGen", "full". Omit sections for full context.',
+    description:
+      'Fetch brand guideline context. Use "sections" to fetch only what you need — e.g. ["colors","typography"] for visual tweaks, "minimal" for simple tasks. Presets: "visual", "copy", "minimal", "imageGen", "full". Omit sections for full context.',
     parameters: {
       type: 'object',
       properties: {
@@ -75,15 +88,37 @@ REGISTRY['get_brand_context'] = {
         },
         sections: {
           oneOf: [
-            { type: 'array', items: { type: 'string', enum: ['identity', 'colors', 'typography', 'voice', 'strategy', 'tokens', 'logos', 'media', 'tags', 'themes', 'knowledge'] } },
+            {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: [
+                  'identity',
+                  'colors',
+                  'typography',
+                  'voice',
+                  'strategy',
+                  'tokens',
+                  'logos',
+                  'media',
+                  'tags',
+                  'themes',
+                  'knowledge',
+                ],
+              },
+            },
             { type: 'string', enum: ['visual', 'copy', 'full', 'imageGen', 'minimal'] },
           ],
-          description: 'Which brand sections to include. Array of specific sections or a preset name. Defaults to full.',
+          description:
+            'Which brand sections to include. Array of specific sections or a preset name. Defaults to full.',
         },
       },
     },
   },
-  execute: async (args: { brandGuidelineId?: string; sections?: BrandContextSection[] | string }, ctx) => {
+  execute: async (
+    args: { brandGuidelineId?: string; sections?: BrandContextSection[] | string },
+    ctx
+  ) => {
     const id = args.brandGuidelineId || ctx.brandGuidelineId;
     if (!id) return 'No brand guideline selected.';
 
@@ -103,27 +138,73 @@ REGISTRY['generate_mockup'] = {
   scope: 'public',
   declaration: {
     name: 'generate_mockup',
-    description: 'Generate a mockup image using AI. Brand context (logo, colors, typography, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Returns imageUrl to use with SET_IMAGE_FILL.',
+    description:
+      'Generate a mockup image using AI. Brand context (logo, colors, typography, voice) is auto-injected when brandGuidelineId is provided — never describe the logo in the prompt. Returns imageUrl to use with SET_IMAGE_FILL.',
     parameters: {
       type: 'object',
       properties: {
-        prompt: { type: 'string', description: 'Scene description. Do NOT describe the logo or font — they are injected automatically from brandGuidelineId.' },
-        brandGuidelineId: { type: 'string', description: 'Brand guideline ID. Omit to use session default. Injects logo as reference image + colors + typography + voice.' },
-        model: { type: 'string', enum: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'], description: 'Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.' },
-        aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], description: '1:1=square/Instagram, 9:16=story/Reels, 16:9=landscape/cover, 4:5=portrait feed.' },
-        resolution: { type: 'string', enum: ['1K', '2K', '4K'], description: '1K=standard, 2K=high quality, 4K=print/large format. Higher = more credits.' },
-        designType: { type: 'string', description: 'Design type hint: business-card, social-media, packaging, apparel, signage, billboard, etc.' },
-        baseImageUrl: { type: 'string', description: 'Base image URL for image-to-image generation.' },
-        referenceImages: { type: 'array', items: { type: 'string' }, description: 'Extra reference image URLs to guide style. Brand logos are injected automatically.' },
+        prompt: {
+          type: 'string',
+          description:
+            'Scene description. Do NOT describe the logo or font — they are injected automatically from brandGuidelineId.',
+        },
+        brandGuidelineId: {
+          type: 'string',
+          description:
+            'Brand guideline ID. Omit to use session default. Injects logo as reference image + colors + typography + voice.',
+        },
+        model: {
+          type: 'string',
+          enum: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'],
+          description:
+            'Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.',
+        },
+        aspectRatio: {
+          type: 'string',
+          enum: ['1:1', '9:16', '16:9', '4:5'],
+          description:
+            '1:1=square/Instagram, 9:16=story/Reels, 16:9=landscape/cover, 4:5=portrait feed.',
+        },
+        resolution: {
+          type: 'string',
+          enum: ['1K', '2K', '4K'],
+          description:
+            '1K=standard, 2K=high quality, 4K=print/large format. Higher = more credits.',
+        },
+        designType: {
+          type: 'string',
+          description:
+            'Design type hint: business-card, social-media, packaging, apparel, signage, billboard, etc.',
+        },
+        baseImageUrl: {
+          type: 'string',
+          description: 'Base image URL for image-to-image generation.',
+        },
+        referenceImages: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Extra reference image URLs to guide style. Brand logos are injected automatically.',
+        },
         seed: { type: 'number', description: 'Random seed for reproducible generation.' },
       },
       required: ['prompt'],
     },
   },
-  execute: async (args: {
-    prompt: string; brandGuidelineId?: string; model?: string; aspectRatio?: string;
-    resolution?: string; designType?: string; baseImageUrl?: string; referenceImages?: string[]; seed?: number;
-  }, ctx) => {
+  execute: async (
+    args: {
+      prompt: string;
+      brandGuidelineId?: string;
+      model?: string;
+      aspectRatio?: string;
+      resolution?: string;
+      designType?: string;
+      baseImageUrl?: string;
+      referenceImages?: string[];
+      seed?: number;
+    },
+    ctx
+  ) => {
     const response = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': ctx.userId },
@@ -140,7 +221,7 @@ REGISTRY['generate_mockup'] = {
         feature: 'plugin',
       }),
     });
-    const result = await response.json() as any;
+    const result = (await response.json()) as any;
     if (!response.ok) return `Mockup generation failed: ${result.error || response.status}`;
     return JSON.stringify({
       imageUrl: result.imageUrl || null,
@@ -159,12 +240,16 @@ REGISTRY['describe_image'] = {
   scope: 'public',
   declaration: {
     name: 'describe_image',
-    description: 'Analyze an image and return a detailed description. Accepts a URL or base64 data.',
+    description:
+      'Analyze an image and return a detailed description. Accepts a URL or base64 data.',
     parameters: {
       type: 'object',
       properties: {
         imageUrl: { type: 'string', description: 'URL of the image to describe.' },
-        base64: { type: 'string', description: 'Base64-encoded image data (without data: prefix).' },
+        base64: {
+          type: 'string',
+          description: 'Base64-encoded image data (without data: prefix).',
+        },
       },
     },
   },
@@ -195,13 +280,14 @@ REGISTRY['brand_guideline_list'] = {
       orderBy: { updatedAt: 'desc' },
       take: 20,
     });
-    if (!guidelines.length) return 'No brand guidelines found. Create one with brand_guideline_create.';
+    if (!guidelines.length)
+      return 'No brand guidelines found. Create one with brand_guideline_create.';
     return JSON.stringify(
-      guidelines.map(g => ({
+      guidelines.map((g) => ({
         id: g.id,
         name: (g.identity as any)?.name || 'Untitled',
         updatedAt: g.updatedAt.toISOString().slice(0, 10),
-      })),
+      }))
     );
   },
 };
@@ -217,12 +303,30 @@ REGISTRY['search_reference_library'] = {
     parameters: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'Free text search — describe the kind of mockup you are looking for.' },
-        niche: { type: 'string', description: 'Industry niche: luxury, tech, food, fashion, beauty, sports, etc.' },
-        aesthetic: { type: 'string', description: 'Visual style: minimalist, brutalist, organic, retro, editorial, etc.' },
-        vibe: { type: 'string', description: 'Mood: premium, playful, corporate, edgy, warm, etc.' },
-        lighting: { type: 'string', description: 'Lighting: soft studio, golden hour, neon, dramatic, etc.' },
-        mockup_type: { type: 'string', description: 'Type: packaging, stationery, apparel, signage, device, bottle, etc.' },
+        query: {
+          type: 'string',
+          description: 'Free text search — describe the kind of mockup you are looking for.',
+        },
+        niche: {
+          type: 'string',
+          description: 'Industry niche: luxury, tech, food, fashion, beauty, sports, etc.',
+        },
+        aesthetic: {
+          type: 'string',
+          description: 'Visual style: minimalist, brutalist, organic, retro, editorial, etc.',
+        },
+        vibe: {
+          type: 'string',
+          description: 'Mood: premium, playful, corporate, edgy, warm, etc.',
+        },
+        lighting: {
+          type: 'string',
+          description: 'Lighting: soft studio, golden hour, neon, dramatic, etc.',
+        },
+        mockup_type: {
+          type: 'string',
+          description: 'Type: packaging, stationery, apparel, signage, device, bottle, etc.',
+        },
         limit: { type: 'number', description: 'Max results (default 5).' },
       },
     },
@@ -232,20 +336,31 @@ REGISTRY['search_reference_library'] = {
     await connectToMongoDB();
     const db = getDb();
     const filter: any = { category: 'reference', isAdminCurated: true };
-    if (args.query) filter.$or = [
-      { name: { $regex: args.query, $options: 'i' } },
-      { description: { $regex: args.query, $options: 'i' } },
-    ];
+    if (args.query)
+      filter.$or = [
+        { name: { $regex: args.query, $options: 'i' } },
+        { description: { $regex: args.query, $options: 'i' } },
+      ];
     for (const key of ['niche', 'aesthetic', 'vibe', 'lighting', 'mockup_type']) {
       if (args[key]) filter[`dimensions.${key}`] = { $in: [args[key]] };
     }
-    const refs = await db.collection('community_presets')
+    const refs = await db
+      .collection('community_presets')
       .find(filter)
       .sort({ createdAt: -1 })
       .limit(args.limit || 5)
-      .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1 })
+      .project({
+        _id: 0,
+        id: 1,
+        name: 1,
+        description: 1,
+        referenceImageUrl: 1,
+        dimensions: 1,
+        prompt: 1,
+      })
       .toArray();
-    if (!refs.length) return 'No curated references found matching those criteria. Try broader filters.';
+    if (!refs.length)
+      return 'No curated references found matching those criteria. Try broader filters.';
     return JSON.stringify(refs);
   },
 };
@@ -261,15 +376,23 @@ REGISTRY['suggest_mockup_ideas'] = {
     parameters: {
       type: 'object',
       properties: {
-        brandGuidelineId: { type: 'string', description: 'Brand guideline ID. Omit to use session default.' },
+        brandGuidelineId: {
+          type: 'string',
+          description: 'Brand guideline ID. Omit to use session default.',
+        },
         count: { type: 'number', description: 'Number of suggestions (default 3, max 6).' },
-        focus: { type: 'string', description: 'Optional focus: "packaging", "stationery", "social", "signage", "apparel", "device", etc.' },
+        focus: {
+          type: 'string',
+          description:
+            'Optional focus: "packaging", "stationery", "social", "signage", "apparel", "device", etc.',
+        },
       },
     },
   },
   execute: async (args: { brandGuidelineId?: string; count?: number; focus?: string }, ctx) => {
     const bgId = args.brandGuidelineId || ctx.brandGuidelineId;
-    if (!bgId) return 'No brand guideline selected. Provide brandGuidelineId or select one for the session.';
+    if (!bgId)
+      return 'No brand guideline selected. Provide brandGuidelineId or select one for the session.';
 
     const bg = await prisma.brandGuideline.findUnique({ where: { id: bgId } });
     if (!bg) return `Brand guideline ${bgId} not found.`;
@@ -278,7 +401,10 @@ REGISTRY['suggest_mockup_ideas'] = {
     const brandName = identity?.name || 'Brand';
     const niche = identity?.industry || identity?.niche || '';
     const archetype = identity?.archetype || '';
-    const colors = ((bg.colors as any[]) || []).slice(0, 4).map((c: any) => c.hex).join(', ');
+    const colors = ((bg.colors as any[]) || [])
+      .slice(0, 4)
+      .map((c: any) => c.hex)
+      .join(', ');
 
     // Search references matching brand profile
     const { connectToMongoDB, getDb } = await import('../../db/mongodb.js');
@@ -289,21 +415,39 @@ REGISTRY['suggest_mockup_ideas'] = {
     if (niche) refFilter['dimensions.niche'] = { $in: [niche.toLowerCase()] };
     if (args.focus) refFilter['dimensions.mockup_type'] = { $in: [args.focus.toLowerCase()] };
 
-    let refs = await db.collection('community_presets')
+    let refs = await db
+      .collection('community_presets')
       .find(refFilter)
       .sort({ createdAt: -1 })
       .limit(Math.min(args.count || 3, 6) * 2)
-      .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1 })
+      .project({
+        _id: 0,
+        id: 1,
+        name: 1,
+        description: 1,
+        referenceImageUrl: 1,
+        dimensions: 1,
+        prompt: 1,
+      })
       .toArray();
 
     // Fallback: if niche filter too narrow, broaden
     if (refs.length === 0) {
       delete refFilter['dimensions.niche'];
-      refs = await db.collection('community_presets')
+      refs = await db
+        .collection('community_presets')
         .find(refFilter)
         .sort({ createdAt: -1 })
         .limit(Math.min(args.count || 3, 6) * 2)
-        .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1 })
+        .project({
+          _id: 0,
+          id: 1,
+          name: 1,
+          description: 1,
+          referenceImageUrl: 1,
+          dimensions: 1,
+          prompt: 1,
+        })
         .toArray();
     }
 
@@ -312,8 +456,13 @@ REGISTRY['suggest_mockup_ideas'] = {
     return JSON.stringify({
       brand: { name: brandName, niche, archetype, colors },
       references: refs.slice(0, count),
-      instructions: `Use these curated references as visual inspiration. For "${brandName}" (${niche || 'general'}, ${archetype || 'brand'}), ` +
-        `match the lighting, composition, and texture from the references while honoring the brand palette (${colors || 'as defined'}). ` +
+      instructions:
+        `Use these curated references as visual inspiration. For "${brandName}" (${
+          niche || 'general'
+        }, ${archetype || 'brand'}), ` +
+        `match the lighting, composition, and texture from the references while honoring the brand palette (${
+          colors || 'as defined'
+        }). ` +
         `Generate mockups with generate_mockup tool using insights from these references.`,
     });
   },
@@ -332,10 +481,24 @@ REGISTRY['imagelab_apply_effect'] = {
       type: 'object',
       properties: {
         imageUrl: { type: 'string', description: 'Source image URL or base64 data URI.' },
-        mode: { type: 'string', enum: ['halftone', 'texture', 'riso'], description: 'Effect mode.' },
-        preset: { type: 'string', description: 'Named preset (e.g. "Newsprint", "Vintage Poster"). Omit for defaults.' },
-        settings: { type: 'object', description: 'Custom settings that override preset values. Mode-specific params.' },
-        format: { type: 'string', enum: ['png', 'svg', 'jpeg'], description: 'Output format. SVG only for halftone. Default png.' },
+        mode: {
+          type: 'string',
+          enum: ['halftone', 'texture', 'riso'],
+          description: 'Effect mode.',
+        },
+        preset: {
+          type: 'string',
+          description: 'Named preset (e.g. "Newsprint", "Vintage Poster"). Omit for defaults.',
+        },
+        settings: {
+          type: 'object',
+          description: 'Custom settings that override preset values. Mode-specific params.',
+        },
+        format: {
+          type: 'string',
+          enum: ['png', 'svg', 'jpeg'],
+          description: 'Output format. SVG only for halftone. Default png.',
+        },
       },
       required: ['imageUrl', 'mode'],
     },
@@ -360,11 +523,30 @@ REGISTRY['imagelab_apply_shader'] = {
         imageUrl: { type: 'string', description: 'Source image URL or base64.' },
         shaderType: {
           type: 'string',
-          enum: ['halftone', 'vhs', 'ascii', 'matrixDither', 'upscale', 'dither', 'duotone', 'filmGrain', 'pixelate', 'posterize', 'chromaticAberration', 'crtScanlines', 'edgeDetect', 'glitch'],
+          enum: [
+            'halftone',
+            'vhs',
+            'ascii',
+            'matrixDither',
+            'upscale',
+            'dither',
+            'duotone',
+            'filmGrain',
+            'pixelate',
+            'posterize',
+            'chromaticAberration',
+            'crtScanlines',
+            'edgeDetect',
+            'glitch',
+          ],
           description: 'Shader effect type.',
         },
         settings: { type: 'object', description: 'Shader-specific parameters. Omit for defaults.' },
-        format: { type: 'string', enum: ['png', 'jpeg'], description: 'Output format. Default png.' },
+        format: {
+          type: 'string',
+          enum: ['png', 'jpeg'],
+          description: 'Output format. Default png.',
+        },
       },
       required: ['imageUrl', 'shaderType'],
     },
@@ -380,11 +562,16 @@ REGISTRY['imagelab_list_presets'] = {
   scope: 'public',
   declaration: {
     name: 'imagelab_list_presets',
-    description: 'List available ImageLab presets for a mode. Returns preset names with their parameter values.',
+    description:
+      'List available ImageLab presets for a mode. Returns preset names with their parameter values.',
     parameters: {
       type: 'object',
       properties: {
-        mode: { type: 'string', enum: ['halftone', 'texture', 'riso', 'shader'], description: 'Effect mode to list presets for.' },
+        mode: {
+          type: 'string',
+          enum: ['halftone', 'texture', 'riso', 'shader'],
+          description: 'Effect mode to list presets for.',
+        },
       },
       required: ['mode'],
     },
@@ -423,7 +610,10 @@ REGISTRY['imagelab_chain'] = {
           },
           description: 'Post-fx shader to apply after effect.',
         },
-        effectOpacity: { type: 'number', description: 'Effect blend with original (0-1). Default 1.' },
+        effectOpacity: {
+          type: 'number',
+          description: 'Effect blend with original (0-1). Default 1.',
+        },
         format: { type: 'string', enum: ['png', 'jpeg'], description: 'Output format.' },
       },
       required: ['imageUrl'],
@@ -439,7 +629,12 @@ REGISTRY['imagelab_chain'] = {
 // ── Promote admin tools to plugin scope ──
 // These already exist in adminChatTools with full schemas and Prisma-direct
 // execution. Promote to 'public' so the plugin pre-pass can use them.
-for (const name of ['brand_guideline_update', 'brand_guideline_create', 'save_to_brand_knowledge', 'update_session_memory']) {
+for (const name of [
+  'brand_guideline_update',
+  'brand_guideline_create',
+  'save_to_brand_knowledge',
+  'update_session_memory',
+]) {
   if (REGISTRY[name]) {
     REGISTRY[name].scope = 'public';
   }
@@ -451,8 +646,8 @@ for (const name of ['brand_guideline_update', 'brand_guideline_create', 'save_to
  */
 export function getChatTools(isAdmin: boolean): Array<{ functionDeclarations: any[] }> {
   const decls = Object.values(REGISTRY)
-    .filter(e => isAdmin || e.scope === 'public')
-    .map(e => e.declaration);
+    .filter((e) => isAdmin || e.scope === 'public')
+    .map((e) => e.declaration);
   return [{ functionDeclarations: decls }];
 }
 
@@ -460,11 +655,7 @@ export function getChatTools(isAdmin: boolean): Array<{ functionDeclarations: an
  * Execute any registered tool by name. Returns whatever the underlying
  * executor returns — string for `web_search`, object for admin tools.
  */
-export async function executeChatTool(
-  name: string,
-  args: any,
-  ctx: ChatToolContext
-): Promise<any> {
+export async function executeChatTool(name: string, args: any, ctx: ChatToolContext): Promise<any> {
   const entry = REGISTRY[name];
   if (!entry) throw new Error(`Unknown chat tool: ${name}`);
   return entry.execute(args, ctx);

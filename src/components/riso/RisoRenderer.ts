@@ -138,9 +138,9 @@ export const RISO_DEFAULTS: RisoSettings = {
 };
 
 export const RISO_INK_PRESETS: Record<string, string[]> = {
-  'Classic': ['#e3503e', '#00838a', '#f5c520', '#1a1a1a'],
-  'Fluorescent': ['#ff6eb4', '#00c9a7', '#ffe135', '#333333'],
-  'Earth': ['#c4622d', '#2d6a4f', '#dda15e', '#3d3d3d'],
+  Classic: ['#e3503e', '#00838a', '#f5c520', '#1a1a1a'],
+  Fluorescent: ['#ff6eb4', '#00c9a7', '#ffe135', '#333333'],
+  Earth: ['#c4622d', '#2d6a4f', '#dda15e', '#3d3d3d'],
   'Cool Duo': ['#005f73', '#ee6c4d', '#e0e0e0', '#2b2b2b'],
   'Warm Duo': ['#e63946', '#264653', '#f4a261', '#1d1d1d'],
 };
@@ -160,29 +160,120 @@ export interface RisoFullPreset {
 }
 
 export const RISO_FULL_PRESETS: Record<string, RisoFullPreset> = {
-  'Vintage Poster': { frequency: 45, dotSize: 0.95, paperColor: '#f5f0e0', paperNoise: 0.4, inkNoise: 0.5, inkDropout: 0.04, misregistration: 3, edgeBleed: 1.5, colors: ['#e3503e', '#00838a', '#f5c520', '#1a1a1a'] },
-  'Clean Modern': { frequency: 80, dotSize: 0.8, paperColor: '#faf8f2', paperNoise: 0.1, inkNoise: 0.2, inkDropout: 0.01, misregistration: 1, edgeBleed: 0.5, colors: ['#005f73', '#ee6c4d', '#e0e0e0', '#2b2b2b'] },
-  'Punk Zine': { frequency: 35, dotSize: 1.0, paperColor: '#f0e8d0', paperNoise: 0.6, inkNoise: 0.7, inkDropout: 0.06, misregistration: 5, edgeBleed: 2, colors: ['#ff6eb4', '#00c9a7', '#ffe135', '#333333'] },
-  'Minimal Duo': { frequency: 65, dotSize: 0.85, paperColor: '#faf8f2', paperNoise: 0.15, inkNoise: 0.3, inkDropout: 0.02, misregistration: 2, edgeBleed: 1, colors: ['#264653', '#e63946'] },
-  'Atkinson Mono': { frequency: 50, dotSize: 0.9, paperColor: '#f5f0e0', paperNoise: 0.3, inkNoise: 0.3, inkDropout: 0.02, misregistration: 2, edgeBleed: 1, colors: ['#000000', '#ff665e'], ditherMode: 'atkinson' },
-  'Bayer Retro': { frequency: 40, dotSize: 0.85, paperColor: '#f0e8d0', paperNoise: 0.2, inkNoise: 0.2, inkDropout: 0.01, misregistration: 1, edgeBleed: 0.5, colors: ['#3255a4', '#ff6c2f', '#ffe800'], ditherMode: 'bayer' },
-  'Halftone Pop': { frequency: 35, dotSize: 0.95, paperColor: '#faf8f2', paperNoise: 0.1, inkNoise: 0.15, inkDropout: 0.01, misregistration: 2, edgeBleed: 0.5, colors: ['#ff48b0', '#44d62c', '#0078bf', '#000000'], ditherMode: 'halftone', halftoneShape: 'circle' },
-  'Line Screen': { frequency: 45, dotSize: 0.9, paperColor: '#f5f0e0', paperNoise: 0.25, inkNoise: 0.3, inkDropout: 0.02, misregistration: 2, edgeBleed: 1, colors: ['#914e72', '#00838a', '#bb8b41'], ditherMode: 'halftone', halftoneShape: 'line' },
+  'Vintage Poster': {
+    frequency: 45,
+    dotSize: 0.95,
+    paperColor: '#f5f0e0',
+    paperNoise: 0.4,
+    inkNoise: 0.5,
+    inkDropout: 0.04,
+    misregistration: 3,
+    edgeBleed: 1.5,
+    colors: ['#e3503e', '#00838a', '#f5c520', '#1a1a1a'],
+  },
+  'Clean Modern': {
+    frequency: 80,
+    dotSize: 0.8,
+    paperColor: '#faf8f2',
+    paperNoise: 0.1,
+    inkNoise: 0.2,
+    inkDropout: 0.01,
+    misregistration: 1,
+    edgeBleed: 0.5,
+    colors: ['#005f73', '#ee6c4d', '#e0e0e0', '#2b2b2b'],
+  },
+  'Punk Zine': {
+    frequency: 35,
+    dotSize: 1.0,
+    paperColor: '#f0e8d0',
+    paperNoise: 0.6,
+    inkNoise: 0.7,
+    inkDropout: 0.06,
+    misregistration: 5,
+    edgeBleed: 2,
+    colors: ['#ff6eb4', '#00c9a7', '#ffe135', '#333333'],
+  },
+  'Minimal Duo': {
+    frequency: 65,
+    dotSize: 0.85,
+    paperColor: '#faf8f2',
+    paperNoise: 0.15,
+    inkNoise: 0.3,
+    inkDropout: 0.02,
+    misregistration: 2,
+    edgeBleed: 1,
+    colors: ['#264653', '#e63946'],
+  },
+  'Atkinson Mono': {
+    frequency: 50,
+    dotSize: 0.9,
+    paperColor: '#f5f0e0',
+    paperNoise: 0.3,
+    inkNoise: 0.3,
+    inkDropout: 0.02,
+    misregistration: 2,
+    edgeBleed: 1,
+    colors: ['#000000', '#ff665e'],
+    ditherMode: 'atkinson',
+  },
+  'Bayer Retro': {
+    frequency: 40,
+    dotSize: 0.85,
+    paperColor: '#f0e8d0',
+    paperNoise: 0.2,
+    inkNoise: 0.2,
+    inkDropout: 0.01,
+    misregistration: 1,
+    edgeBleed: 0.5,
+    colors: ['#3255a4', '#ff6c2f', '#ffe800'],
+    ditherMode: 'bayer',
+  },
+  'Halftone Pop': {
+    frequency: 35,
+    dotSize: 0.95,
+    paperColor: '#faf8f2',
+    paperNoise: 0.1,
+    inkNoise: 0.15,
+    inkDropout: 0.01,
+    misregistration: 2,
+    edgeBleed: 0.5,
+    colors: ['#ff48b0', '#44d62c', '#0078bf', '#000000'],
+    ditherMode: 'halftone',
+    halftoneShape: 'circle',
+  },
+  'Line Screen': {
+    frequency: 45,
+    dotSize: 0.9,
+    paperColor: '#f5f0e0',
+    paperNoise: 0.25,
+    inkNoise: 0.3,
+    inkDropout: 0.02,
+    misregistration: 2,
+    edgeBleed: 1,
+    colors: ['#914e72', '#00838a', '#bb8b41'],
+    ditherMode: 'halftone',
+    halftoneShape: 'line',
+  },
 };
 
 // GLSL shaders — single source of truth in shared/riso/shaders.ts
-import { RISO_VERTEX_SHADER as VERTEX_SHADER, RISO_FRAGMENT_SHADER as FRAGMENT_SHADER } from '../../../shared/riso/shaders';
+import {
+  RISO_VERTEX_SHADER as VERTEX_SHADER,
+  RISO_FRAGMENT_SHADER as FRAGMENT_SHADER,
+} from '../../../shared/riso/shaders';
 
 // --- Perceptual color distance (CPU-side LAB) ---
 
 function rgbToLab(r: number, g: number, b: number): [number, number, number] {
-  let lr = r / 255, lg = g / 255, lb = b / 255;
+  let lr = r / 255,
+    lg = g / 255,
+    lb = b / 255;
   lr = lr > 0.04045 ? Math.pow((lr + 0.055) / 1.055, 2.4) : lr / 12.92;
   lg = lg > 0.04045 ? Math.pow((lg + 0.055) / 1.055, 2.4) : lg / 12.92;
   lb = lb > 0.04045 ? Math.pow((lb + 0.055) / 1.055, 2.4) : lb / 12.92;
 
   let x = (lr * 0.4124 + lg * 0.3576 + lb * 0.1805) / 0.95047;
-  let y = (lr * 0.2126 + lg * 0.7152 + lb * 0.0722);
+  let y = lr * 0.2126 + lg * 0.7152 + lb * 0.0722;
   let z = (lr * 0.0193 + lg * 0.1192 + lb * 0.9505) / 1.08883;
 
   x = x > 0.008856 ? Math.cbrt(x) : 7.787 * x + 16 / 116;
@@ -204,13 +295,18 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
 
 // --- Color extraction (CPU, runs once on image load) ---
 
-export function extractDominantColors(imageData: ImageData, count: number): [number, number, number][] {
+export function extractDominantColors(
+  imageData: ImageData,
+  count: number
+): [number, number, number][] {
   const { data, width, height } = imageData;
   const step = Math.max(1, Math.floor((width * height) / 2000));
   const samples: [number, number, number][] = [];
 
   for (let i = 0; i < data.length; i += step * 4) {
-    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const r = data[i],
+      g = data[i + 1],
+      b = data[i + 2];
     const brightness = (r + g + b) / 3;
     if (brightness > 240 || brightness < 15) continue;
     samples.push([r, g, b]);
@@ -219,9 +315,11 @@ export function extractDominantColors(imageData: ImageData, count: number): [num
   if (samples.length === 0) return [hexToRgb('#e3503e')];
 
   // K-means++ initialization for better centroid spread
-  const centroids: [number, number, number][] = [samples[Math.floor(Math.random() * samples.length)]];
+  const centroids: [number, number, number][] = [
+    samples[Math.floor(Math.random() * samples.length)],
+  ];
   for (let k = 1; k < count; k++) {
-    const dists = samples.map(s => {
+    const dists = samples.map((s) => {
       let minD = Infinity;
       for (const c of centroids) minD = Math.min(minD, colorDistance(s, c));
       return minD * minD;
@@ -230,7 +328,10 @@ export function extractDominantColors(imageData: ImageData, count: number): [num
     let r = Math.random() * total;
     for (let i = 0; i < dists.length; i++) {
       r -= dists[i];
-      if (r <= 0) { centroids.push(samples[i]); break; }
+      if (r <= 0) {
+        centroids.push(samples[i]);
+        break;
+      }
     }
     if (centroids.length <= k) centroids.push(samples[Math.floor(Math.random() * samples.length)]);
   }
@@ -238,10 +339,14 @@ export function extractDominantColors(imageData: ImageData, count: number): [num
   for (let iter = 0; iter < 20; iter++) {
     const clusters: [number, number, number][][] = centroids.map(() => []);
     for (const s of samples) {
-      let minDist = Infinity, minIdx = 0;
+      let minDist = Infinity,
+        minIdx = 0;
       for (let c = 0; c < centroids.length; c++) {
         const d = colorDistance(s, centroids[c]);
-        if (d < minDist) { minDist = d; minIdx = c; }
+        if (d < minDist) {
+          minDist = d;
+          minIdx = c;
+        }
       }
       clusters[minIdx].push(s);
     }
@@ -250,7 +355,11 @@ export function extractDominantColors(imageData: ImageData, count: number): [num
     for (let c = 0; c < centroids.length; c++) {
       if (clusters[c].length === 0) continue;
       const avg: [number, number, number] = [0, 0, 0];
-      for (const s of clusters[c]) { avg[0] += s[0]; avg[1] += s[1]; avg[2] += s[2]; }
+      for (const s of clusters[c]) {
+        avg[0] += s[0];
+        avg[1] += s[1];
+        avg[2] += s[2];
+      }
       const newCentroid: [number, number, number] = [
         avg[0] / clusters[c].length,
         avg[1] / clusters[c].length,
@@ -276,15 +385,18 @@ export function extractDominantColors(imageData: ImageData, count: number): [num
 export function mapToRisoInks(
   imageData: ImageData,
   targetInks: RisoInkColor[],
-  count: number,
+  count: number
 ): [number, number, number][] {
   const colors = extractDominantColors(imageData, count);
-  return colors.map(c => {
+  return colors.map((c) => {
     let bestInk = targetInks[0];
     let bestDist = Infinity;
     for (const ink of targetInks) {
       const d = colorDistance(c, ink.rgb);
-      if (d < bestDist) { bestDist = d; bestInk = ink; }
+      if (d < bestDist) {
+        bestDist = d;
+        bestInk = ink;
+      }
     }
     return bestInk.rgb;
   });
@@ -337,17 +449,51 @@ export class RisoRenderer {
     }
 
     const uniformNames = [
-      'u_texture', 'u_resolution', 'u_frequency', 'u_dotSize',
-      'u_contrast', 'u_lightness', 'u_paperNoise', 'u_inkNoise',
-      'u_inkDropout', 'u_misregistration', 'u_edgeBleed', 'u_paperColor',
-      'u_layerCount', 'u_soloLayer', 'u_ditherMode', 'u_halftoneShape', 'u_effectOpacity',
-      'u_layerDither0', 'u_layerDither1', 'u_layerDither2', 'u_layerDither3',
-      'u_layerHShape0', 'u_layerHShape1', 'u_layerHShape2', 'u_layerHShape3',
-      'u_inkColor0', 'u_inkColor1', 'u_inkColor2', 'u_inkColor3',
-      'u_inkAlpha0', 'u_inkAlpha1', 'u_inkAlpha2', 'u_inkAlpha3',
-      'u_inkAngle0', 'u_inkAngle1', 'u_inkAngle2', 'u_inkAngle3',
-      'u_inkOffset0', 'u_inkOffset1', 'u_inkOffset2', 'u_inkOffset3',
-      'u_inkVisible0', 'u_inkVisible1', 'u_inkVisible2', 'u_inkVisible3',
+      'u_texture',
+      'u_resolution',
+      'u_frequency',
+      'u_dotSize',
+      'u_contrast',
+      'u_lightness',
+      'u_paperNoise',
+      'u_inkNoise',
+      'u_inkDropout',
+      'u_misregistration',
+      'u_edgeBleed',
+      'u_paperColor',
+      'u_layerCount',
+      'u_soloLayer',
+      'u_ditherMode',
+      'u_halftoneShape',
+      'u_effectOpacity',
+      'u_layerDither0',
+      'u_layerDither1',
+      'u_layerDither2',
+      'u_layerDither3',
+      'u_layerHShape0',
+      'u_layerHShape1',
+      'u_layerHShape2',
+      'u_layerHShape3',
+      'u_inkColor0',
+      'u_inkColor1',
+      'u_inkColor2',
+      'u_inkColor3',
+      'u_inkAlpha0',
+      'u_inkAlpha1',
+      'u_inkAlpha2',
+      'u_inkAlpha3',
+      'u_inkAngle0',
+      'u_inkAngle1',
+      'u_inkAngle2',
+      'u_inkAngle3',
+      'u_inkOffset0',
+      'u_inkOffset1',
+      'u_inkOffset2',
+      'u_inkOffset3',
+      'u_inkVisible0',
+      'u_inkVisible1',
+      'u_inkVisible2',
+      'u_inkVisible3',
     ];
     for (const name of uniformNames) {
       this.uniforms[name] = this.gl.getUniformLocation(this.program, name);
@@ -392,7 +538,14 @@ export class RisoRenderer {
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, source);
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
+      0,
+      this.gl.RGBA,
+      this.gl.RGBA,
+      this.gl.UNSIGNED_BYTE,
+      source
+    );
 
     if (source instanceof HTMLVideoElement) {
       this.imageWidth = source.videoWidth;
@@ -413,7 +566,14 @@ export class RisoRenderer {
   updateTexture(source: TexImageSource): void {
     if (!this.gl || !this.texture) return;
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, source);
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
+      0,
+      this.gl.RGBA,
+      this.gl.RGBA,
+      this.gl.UNSIGNED_BYTE,
+      source
+    );
   }
 
   render(settings: RisoSettings): void {
@@ -450,7 +610,13 @@ export class RisoRenderer {
     gl.uniform1i(u.u_layerCount, layers.length);
     gl.uniform1i(u.u_soloLayer, settings.soloLayer ?? -1);
 
-    const ditherModeMapGlobal: Record<string, number> = { stochastic: 0, atkinson: 1, floydsteinberg: 2, bayer: 3, halftone: 4 };
+    const ditherModeMapGlobal: Record<string, number> = {
+      stochastic: 0,
+      atkinson: 1,
+      floydsteinberg: 2,
+      bayer: 3,
+      halftone: 4,
+    };
     const shapeMapGlobal: Record<string, number> = { circle: 0, line: 1, cross: 2, ellipse: 3 };
     gl.uniform1i(u.u_ditherMode, ditherModeMapGlobal[settings.ditherMode] ?? 0);
     gl.uniform1i(u.u_halftoneShape, shapeMapGlobal[settings.halftoneShape] ?? 0);
@@ -462,10 +628,26 @@ export class RisoRenderer {
     const offsetUniforms = [u.u_inkOffset0, u.u_inkOffset1, u.u_inkOffset2, u.u_inkOffset3];
     const visibleUniforms = [u.u_inkVisible0, u.u_inkVisible1, u.u_inkVisible2, u.u_inkVisible3];
 
-    const ditherModeMap: Record<string, number> = { stochastic: 0, atkinson: 1, floydsteinberg: 2, bayer: 3, halftone: 4 };
+    const ditherModeMap: Record<string, number> = {
+      stochastic: 0,
+      atkinson: 1,
+      floydsteinberg: 2,
+      bayer: 3,
+      halftone: 4,
+    };
     const shapeMap: Record<string, number> = { circle: 0, line: 1, cross: 2, ellipse: 3 };
-    const layerDitherUniforms = [u.u_layerDither0, u.u_layerDither1, u.u_layerDither2, u.u_layerDither3];
-    const layerHShapeUniforms = [u.u_layerHShape0, u.u_layerHShape1, u.u_layerHShape2, u.u_layerHShape3];
+    const layerDitherUniforms = [
+      u.u_layerDither0,
+      u.u_layerDither1,
+      u.u_layerDither2,
+      u.u_layerDither3,
+    ];
+    const layerHShapeUniforms = [
+      u.u_layerHShape0,
+      u.u_layerHShape1,
+      u.u_layerHShape2,
+      u.u_layerHShape3,
+    ];
 
     for (let i = 0; i < 4; i++) {
       if (i < layers.length) {
@@ -476,8 +658,14 @@ export class RisoRenderer {
         gl.uniform1f(angleUniforms[i], layer.angle);
         gl.uniform2f(offsetUniforms[i], layer.offsetX, layer.offsetY);
         gl.uniform1i(visibleUniforms[i], layer.visible ? 1 : 0);
-        gl.uniform1i(layerDitherUniforms[i], layer.ditherMode ? ditherModeMap[layer.ditherMode] ?? -1 : -1);
-        gl.uniform1i(layerHShapeUniforms[i], layer.halftoneShape ? shapeMap[layer.halftoneShape] ?? -1 : -1);
+        gl.uniform1i(
+          layerDitherUniforms[i],
+          layer.ditherMode ? ditherModeMap[layer.ditherMode] ?? -1 : -1
+        );
+        gl.uniform1i(
+          layerHShapeUniforms[i],
+          layer.halftoneShape ? shapeMap[layer.halftoneShape] ?? -1 : -1
+        );
       } else {
         gl.uniform3f(colorUniforms[i], 0, 0, 0);
         gl.uniform1f(alphaUniforms[i], 0);

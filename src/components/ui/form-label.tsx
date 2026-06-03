@@ -1,10 +1,9 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { LucideIcon } from "lucide-react"
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { LucideIcon } from 'lucide-react';
 
-export interface FormLabelProps
-  extends React.LabelHTMLAttributes<HTMLLabelElement> {
-  icon?: LucideIcon
+export interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+  icon?: LucideIcon;
 }
 
 const FormLabel = React.forwardRef<HTMLLabelElement, FormLabelProps>(
@@ -13,7 +12,7 @@ const FormLabel = React.forwardRef<HTMLLabelElement, FormLabelProps>(
       <label
         ref={ref}
         className={cn(
-          "flex items-center gap-2 text-xs text-neutral-400 font-mono uppercase",
+          'flex items-center gap-2 text-xs text-neutral-400 font-mono uppercase',
           className
         )}
         {...props}
@@ -21,14 +20,9 @@ const FormLabel = React.forwardRef<HTMLLabelElement, FormLabelProps>(
         {Icon && <Icon size={14} />}
         {children}
       </label>
-    )
+    );
   }
-)
-FormLabel.displayName = "FormLabel"
+);
+FormLabel.displayName = 'FormLabel';
 
-export { FormLabel }
-
-
-
-
-
+export { FormLabel };

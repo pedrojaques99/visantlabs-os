@@ -38,8 +38,15 @@ let counter = 0;
 function requeueDone(items: BgRemoveItem[]): BgRemoveItem[] {
   return items.map((i) =>
     i.status === 'done' || i.status === 'error'
-      ? { ...i, status: 'queued' as const, resultBase64: '', error: undefined, progressPhase: undefined, progressValue: undefined }
-      : i,
+      ? {
+          ...i,
+          status: 'queued' as const,
+          resultBase64: '',
+          error: undefined,
+          progressPhase: undefined,
+          progressValue: undefined,
+        }
+      : i
   );
 }
 
@@ -84,6 +91,13 @@ export const useBgRemoveStore = create<BgRemoveState>()((set) => ({
       s.items.forEach((item) => {
         if (item.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(item.sourceUrl);
       });
-      return { items: [], mode: 'ai', threshold: 30, feather: 2, isProcessing: false, focusRegion: null };
+      return {
+        items: [],
+        mode: 'ai',
+        threshold: 30,
+        feather: 2,
+        isProcessing: false,
+        focusRegion: null,
+      };
     }),
 }));

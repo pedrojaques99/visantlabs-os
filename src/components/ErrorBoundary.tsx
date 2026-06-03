@@ -109,8 +109,8 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // Clear caches
       if (typeof window !== 'undefined' && 'caches' in window) {
-        caches.keys().then(cacheNames => {
-          Promise.all(cacheNames.map(name => caches.delete(name))).catch(() => {
+        caches.keys().then((cacheNames) => {
+          Promise.all(cacheNames.map((name) => caches.delete(name))).catch(() => {
             // Ignore cache clearing errors
           });
         });
@@ -134,7 +134,7 @@ export class ErrorBoundary extends Component<Props, State> {
         isRetrying: true,
       };
     });
-  }
+  };
 
   handleReset = () => {
     this.setState({
@@ -177,9 +177,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (typeof window !== 'undefined' && 'caches' in window) {
       try {
         const cacheNames = await caches.keys();
-        await Promise.all(
-          cacheNames.map(name => caches.delete(name))
-        );
+        await Promise.all(cacheNames.map((name) => caches.delete(name)));
       } catch (e) {
         // Ignore cache clearing errors
       }
@@ -194,8 +192,11 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       const translations = this.props.translations || {};
-      const errorMessage = this.state.error?.message || (translations.unexpectedError || 'An unexpected error occurred');
-      const isLayoutError = errorMessage.includes('useLayout must be used within a Layout component');
+      const errorMessage =
+        this.state.error?.message || translations.unexpectedError || 'An unexpected error occurred';
+      const isLayoutError = errorMessage.includes(
+        'useLayout must be used within a Layout component'
+      );
       const isChunkError = this.state.isChunkError;
 
       // Show retrying state for chunk errors
@@ -223,27 +224,31 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
               <div>
                 <h1 className="text-xl md:text-2xl font-semibold text-neutral-200 font-mono">
-                  {isChunkError ? (translations.chunkErrorTitle || 'Page Load Error') : (translations.unexpectedErrorTitle || 'Unexpected Error')}
+                  {isChunkError
+                    ? translations.chunkErrorTitle || 'Page Load Error'
+                    : translations.unexpectedErrorTitle || 'Unexpected Error'}
                 </h1>
                 <p className="text-sm text-neutral-400 font-mono mt-1">
-                  {isChunkError ? (translations.chunkErrorDescription || 'Could not load required files') : (translations.unexpectedErrorDescription || 'Something went wrong')}
+                  {isChunkError
+                    ? translations.chunkErrorDescription || 'Could not load required files'
+                    : translations.unexpectedErrorDescription || 'Something went wrong'}
                 </p>
               </div>
             </div>
 
             <div className="bg-neutral-950/70 border border-neutral-800 rounded-md p-4 space-y-2">
               {!isChunkError && (
-                <p className="text-sm font-mono text-destructive font-semibold">
-                  {errorMessage}
-                </p>
+                <p className="text-sm font-mono text-destructive font-semibold">{errorMessage}</p>
               )}
               {isChunkError && (
                 <div className="space-y-2">
                   <p className="text-sm font-mono text-yellow-400">
-                    {translations.chunkErrorMessage || 'A problem occurred while loading the page files. This is usually caused by network or cache issues.'}
+                    {translations.chunkErrorMessage ||
+                      'A problem occurred while loading the page files. This is usually caused by network or cache issues.'}
                   </p>
                   <p className="text-xs font-mono text-neutral-500">
-                    {translations.chunkErrorHint || 'Try reloading the page or clearing your browser cache.'}
+                    {translations.chunkErrorHint ||
+                      'Try reloading the page or clearing your browser cache.'}
                   </p>
                 </div>
               )}
@@ -262,14 +267,16 @@ export class ErrorBoundary extends Component<Props, State> {
             {isLayoutError && (
               <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-md p-4">
                 <p className="text-sm text-yellow-400 font-mono">
-                  {translations.layoutError || 'This error suggests a component is trying to use layout context outside of the Layout component. Please refresh the page or contact support if the issue persists.'}
+                  {translations.layoutError ||
+                    'This error suggests a component is trying to use layout context outside of the Layout component. Please refresh the page or contact support if the issue persists.'}
                 </p>
               </div>
             )}
 
             <div className="flex flex-col sm:flex-row gap-3">
               {!isChunkError && (
-                <Button variant="outline"
+                <Button
+                  variant="outline"
                   onClick={this.handleCopyError}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                 >
@@ -288,14 +295,16 @@ export class ErrorBoundary extends Component<Props, State> {
               )}
               {isChunkError ? (
                 <>
-                  <Button variant="brand"
+                  <Button
+                    variant="brand"
                     onClick={this.handleRetryChunk}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
                   </Button>
-                  <Button variant="outline"
+                  <Button
+                    variant="outline"
                     onClick={this.handleGoHome}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
@@ -305,21 +314,24 @@ export class ErrorBoundary extends Component<Props, State> {
                 </>
               ) : (
                 <>
-                  <Button variant="brand"
+                  <Button
+                    variant="brand"
                     onClick={this.handleReset}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.tryAgain || 'Try Again'}
                   </Button>
-                  <Button variant="outline"
+                  <Button
+                    variant="outline"
                     onClick={this.handleReload}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
                   </Button>
-                  <Button variant="outline"
+                  <Button
+                    variant="outline"
                     onClick={this.handleGoHome}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
@@ -337,16 +349,3 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

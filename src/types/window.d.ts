@@ -4,26 +4,26 @@
  */
 
 interface FileSystemDirectoryHandle {
-    getFileHandle(name: string, options?: { create?: boolean }): Promise<FileSystemFileHandle>;
-    // Add other methods if needed
+  getFileHandle(name: string, options?: { create?: boolean }): Promise<FileSystemFileHandle>;
+  // Add other methods if needed
 }
 
 interface FileSystemFileHandle {
-    createWritable(): Promise<FileSystemWritableFileStream>;
+  createWritable(): Promise<FileSystemWritableFileStream>;
 }
 
 interface FileSystemWritableFileStream extends WritableStream {
-    write(data: BufferSource | Blob | string | WriteParams): Promise<void>;
-    close(): Promise<void>;
+  write(data: BufferSource | Blob | string | WriteParams): Promise<void>;
+  close(): Promise<void>;
 }
 
 interface WriteParams {
-    type: 'write' | 'seek' | 'truncate';
-    data?: BufferSource | Blob | string;
-    position?: number;
-    size?: number;
+  type: 'write' | 'seek' | 'truncate';
+  data?: BufferSource | Blob | string;
+  position?: number;
+  size?: number;
 }
 
 interface Window {
-    showDirectoryPicker(): Promise<FileSystemDirectoryHandle>;
+  showDirectoryPicker(): Promise<FileSystemDirectoryHandle>;
 }

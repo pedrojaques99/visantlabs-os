@@ -12,7 +12,10 @@ export const usePasteImage = (
   const handlePaste = useCallback(
     async (e: ClipboardEvent) => {
       if (isLocalDevelopment()) {
-        console.log('[usePasteImage] Paste event triggered', { enabled, clipboardData: e.clipboardData });
+        console.log('[usePasteImage] Paste event triggered', {
+          enabled,
+          clipboardData: e.clipboardData,
+        });
       }
 
       if (!enabled) return;
@@ -69,9 +72,3 @@ export const usePasteImage = (
     };
   }, [enabled, handlePaste]);
 };
-
-
-
-
-
-

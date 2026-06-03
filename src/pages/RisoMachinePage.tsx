@@ -68,7 +68,11 @@ export const RisoMachinePage: React.FC = () => {
     setPanelVisible,
     undo,
     redo,
-    zoom: { current: zoom, set: (z) => store.getState().setZoom(z), resetPan: () => store.getState().setPan(0, 0) },
+    zoom: {
+      current: zoom,
+      set: (z) => store.getState().setZoom(z),
+      resetPan: () => store.getState().setPan(0, 0),
+    },
   });
 
   // --- SVG Export ---
@@ -110,22 +114,25 @@ export const RisoMachinePage: React.FC = () => {
   }, []);
 
   // --- Per-layer SVG export ---
-  const handleExportLayer = useCallback((index: number) => {
-    if (!canvasRef.current) return;
-    store.getState().setIsExporting(true);
-    try {
-      const settings = store.getState().getSettings();
-      const svg = generateRisoSvgFromCanvas(canvasRef.current, settings, { layerIndex: index });
-      const layerHex = settings.layers[index]?.hex || 'layer';
-      const blob = new Blob([svg], { type: 'image/svg+xml' });
-      downloadBlob(blob, `riso_layer${index + 1}_${layerHex.replace('#', '')}_${Date.now()}.svg`);
-      toast.success(`Layer ${index + 1} exported as SVG`);
-    } catch {
-      toast.error('Layer export failed');
-    } finally {
-      store.getState().setIsExporting(false);
-    }
-  }, [canvasRef]);
+  const handleExportLayer = useCallback(
+    (index: number) => {
+      if (!canvasRef.current) return;
+      store.getState().setIsExporting(true);
+      try {
+        const settings = store.getState().getSettings();
+        const svg = generateRisoSvgFromCanvas(canvasRef.current, settings, { layerIndex: index });
+        const layerHex = settings.layers[index]?.hex || 'layer';
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        downloadBlob(blob, `riso_layer${index + 1}_${layerHex.replace('#', '')}_${Date.now()}.svg`);
+        toast.success(`Layer ${index + 1} exported as SVG`);
+      } catch {
+        toast.error('Layer export failed');
+      } finally {
+        store.getState().setIsExporting(false);
+      }
+    },
+    [canvasRef]
+  );
 
   const handleAiEnhance = useCallback(async () => {
     if (!canvasRef.current) return;
@@ -167,10 +174,10 @@ export const RisoMachinePage: React.FC = () => {
     { label: `dot ${dotSize.toFixed(2)}` },
     { label: ditherMode !== 'stochastic' ? ditherMode : '', color: 'text-neutral-400' },
     { label: `misreg ${misregistration}px` },
-    { label: `${layers.filter(l => l.visible).length} layers` },
+    { label: `${layers.filter((l) => l.visible).length} layers` },
     ...(soloLayer >= 0 ? [{ label: `solo L${soloLayer + 1}`, color: 'text-amber-400' }] : []),
     ...(shaderEnabled ? [{ label: shaderType, color: 'text-cyan-400' }] : []),
-  ].filter(s => s.label);
+  ].filter((s) => s.label);
 
   return (
     <ToolEditorShell

@@ -12,7 +12,7 @@ import { PresetCard, CATEGORY_CONFIG } from './PresetCard';
 import type { CommunityPrompt } from '../types/communityPrompts';
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchAllOfficialPresets } from '../services/unifiedPresetService';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface MockupPresetModalProps {
   isOpen: boolean;
@@ -50,7 +50,9 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   const [communityPresets, setCommunityPresets] = React.useState<any[]>([]);
   const [isLoadingPresets, setIsLoadingPresets] = React.useState(false);
   const [selectedPresetIds, setSelectedPresetIds] = React.useState<Set<string>>(new Set());
-  const [activeFilter, setActiveFilter] = React.useState<PresetFilterType>(initialCategory || 'all');
+  const [activeFilter, setActiveFilter] = React.useState<PresetFilterType>(
+    initialCategory || 'all'
+  );
   const [searchQuery, setSearchQuery] = React.useState('');
   const [presetSource, setPresetSource] = React.useState<'all' | 'official' | 'community'>('all');
 
@@ -73,14 +75,16 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           if (!presets || !Array.isArray(presets)) {
             return [];
           }
-          return presets.map((p: any) => {
-            if (!p) return null;
-            return {
-              ...p,
-              referenceImageUrl: p.referenceImageUrl || '',
-              presetType, // Force override
-            };
-          }).filter(Boolean);
+          return presets
+            .map((p: any) => {
+              if (!p) return null;
+              return {
+                ...p,
+                referenceImageUrl: p.referenceImageUrl || '',
+                presetType, // Force override
+              };
+            })
+            .filter(Boolean);
         };
 
         // Combine all official presets with their correct presetType
@@ -95,7 +99,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         setOfficialPresets(allOfficialPresets);
 
         // Update mockup cache only with mockup presets
-        const mockupOnly = allOfficialPresets.filter(p => p.presetType === 'mockup');
+        const mockupOnly = allOfficialPresets.filter((p) => p.presetType === 'mockup');
         if (mockupOnly.length > 0) {
           updatePresetsCache(mockupOnly);
         }
@@ -105,7 +109,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         const flattened: any[] = [];
         Object.entries(allCommunity).forEach(([type, list]) => {
           if (Array.isArray(list)) {
-            list.forEach(p => {
+            list.forEach((p) => {
               flattened.push({
                 ...p,
                 referenceImageUrl: p.referenceImageUrl || '',
@@ -247,7 +251,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
     const getUniqueKey = (p: UnifiedPreset) => `${p.presetType}:${p.id}`;
 
     // Add presets in order of priority, ensuring no duplicates
-    [...officialUnified, ...communityUnified, ...userUnified].forEach(p => {
+    [...officialUnified, ...communityUnified, ...userUnified].forEach((p) => {
       const key = getUniqueKey(p);
       if (!seenIds.has(key)) {
         seenIds.add(key);
@@ -274,23 +278,24 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
 
     // Filter by Source
     if (presetSource === 'official') {
-      result = result.filter(p => p.isOfficial);
+      result = result.filter((p) => p.isOfficial);
     } else if (presetSource === 'community') {
-      result = result.filter(p => !p.isOfficial);
+      result = result.filter((p) => !p.isOfficial);
     }
 
     // Filter by Type
     if (activeFilter !== 'all') {
-      result = result.filter(p => p.presetType === activeFilter);
+      result = result.filter((p) => p.presetType === activeFilter);
     }
 
     // Filter by Search Query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      result = result.filter(p =>
-        (p.name && p.name.toLowerCase().includes(query)) ||
-        (p.description && p.description.toLowerCase().includes(query)) ||
-        (p.prompt && p.prompt.toLowerCase().includes(query))
+      result = result.filter(
+        (p) =>
+          (p.name && p.name.toLowerCase().includes(query)) ||
+          (p.description && p.description.toLowerCase().includes(query)) ||
+          (p.prompt && p.prompt.toLowerCase().includes(query))
       );
     }
 
@@ -301,7 +306,12 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   // Optimized: single pass reduce instead of multiple filter calls
   const presetCounts = React.useMemo(() => {
     const initialCounts: Record<PresetFilterType, number> = {
-      all: 0, mockup: 0, texture: 0, angle: 0, ambience: 0, luminance: 0,
+      all: 0,
+      mockup: 0,
+      texture: 0,
+      angle: 0,
+      ambience: 0,
+      luminance: 0,
     };
 
     const counts = allUnifiedPresets.reduce((acc, p) => {
@@ -336,15 +346,19 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/50 bg-neutral-900/20">
           <div className="flex items-center gap-2">
             <ImageIcon size={20} className="text-brand-cyan" />
-            <h2 id="mockup-preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase ">
+            <h2
+              id="mockup-preset-modal-title"
+              className="text-sm font-mono text-neutral-300 uppercase "
+            >
               {multiSelect
                 ? t('canvasNodes.promptNode.presetModal.titleMulti')
-                  .replace('{selected}', selectedPresetIds.size.toString())
-                  .replace('{max}', maxSelections.toString())
+                    .replace('{selected}', selectedPresetIds.size.toString())
+                    .replace('{max}', maxSelections.toString())
                 : t('canvasNodes.promptNode.presetModal.title')}
             </h2>
           </div>
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={onClose}
             className="p-2 text-neutral-500 hover:text-white transition-colors hover:bg-neutral-800/50 rounded-full"
             title="Close (Esc)"
@@ -356,13 +370,16 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         {/* Type Filters and Search */}
         <div className="flex flex-col border-b border-neutral-800/50 bg-neutral-900/10">
           <div className="px-4 py-3 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-            {(['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]).map((type) => {
+            {(
+              ['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]
+            ).map((type) => {
               const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
               const Icon = config ? config.icon : ImageIcon;
               const count = presetCounts[type];
 
               return (
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   key={type}
                   onClick={() => setActiveFilter(type)}
                   className={cn(
@@ -380,7 +397,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
             })}
 
             {/* Create New Button */}
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={(e) => {
                 e.stopPropagation();
                 window.location.href = '/canvas';
@@ -406,7 +424,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
 
             {/* Source Toggle */}
             <div className="flex bg-neutral-900/50 border border-neutral-800/50 rounded-md p-1 shrink-0 self-start sm:self-auto">
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 onClick={() => setPresetSource('all')}
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
@@ -419,7 +438,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 <LayoutGrid size={14} />
                 <span className="hidden sm:inline">Todos</span>
               </Button>
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 onClick={() => setPresetSource('official')}
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
@@ -432,7 +452,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 <Crown size={14} />
                 <span className="hidden sm:inline">Oficial</span>
               </Button>
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 onClick={() => setPresetSource('community')}
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
@@ -450,7 +471,10 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         </div>
 
         {/* Content */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-neutral-950/50">
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-neutral-950/50"
+        >
           {isLoadingPresets ? (
             <div className="flex flex-col items-center justify-center py-20 text-neutral-500 gap-2">
               <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
@@ -458,13 +482,15 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
             </div>
           ) : filteredPresets.length === 0 ? (
             <div className="flex items-center justify-center py-20">
-              <p className="text-sm font-mono text-neutral-500">{t('canvasNodes.promptNode.presetModal.noCommunity')}</p>
+              <p className="text-sm font-mono text-neutral-500">
+                {t('canvasNodes.promptNode.presetModal.noCommunity')}
+              </p>
             </div>
           ) : (
             <div
               className="grid gap-4"
               style={{
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))'
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
               }}
             >
               {filteredPresets.map((preset) => (
@@ -495,12 +521,16 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           <div className="border-t border-neutral-800/50 p-4 flex items-center justify-between bg-neutral-900/50 backdrop-blur-md">
             <div className="text-xs font-mono text-neutral-400">
               {selectedPresetIds.size === 0
-                ? t('canvasNodes.promptNode.presetModal.multiSelectMessageEmpty').replace('{max}', maxSelections.toString())
+                ? t('canvasNodes.promptNode.presetModal.multiSelectMessageEmpty').replace(
+                    '{max}',
+                    maxSelections.toString()
+                  )
                 : t('canvasNodes.promptNode.presetModal.multiSelectMessage')
-                  .replace('{selected}', selectedPresetIds.size.toString())
-                  .replace('{max}', maxSelections.toString())}
+                    .replace('{selected}', selectedPresetIds.size.toString())
+                    .replace('{max}', maxSelections.toString())}
             </div>
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={handleSelectMockups}
               disabled={selectedPresetIds.size === 0 || isLoading}
               className={cn(

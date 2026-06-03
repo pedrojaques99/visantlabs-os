@@ -61,7 +61,7 @@ export function dehydrateBrand(input: DehydrateInput): DehydratedPatch {
         format: l.format,
         figmaKey: l.figmaKey,
         figmaFileKey: l.figmaFileKey,
-        figmaNodeId: l.figmaNodeId
+        figmaNodeId: l.figmaNodeId,
       }));
   }
 
@@ -74,7 +74,7 @@ export function dehydrateBrand(input: DehydrateInput): DehydratedPatch {
         style: t.fontStyle,
         size: t.fontSize,
         weight: t.fontWeight,
-        lineHeight: t.lineHeight
+        lineHeight: t.lineHeight,
       }));
   }
 

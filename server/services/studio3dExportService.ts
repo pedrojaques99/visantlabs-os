@@ -23,7 +23,9 @@ function parseShapesFromSVG(svgString: string): THREE.Shape[] {
   const loader = new SVGLoader();
   const svgData = loader.parse(svgString);
   const allShapes: THREE.Shape[] = [];
-  const vbMatch = svgString.match(/viewBox\s*=\s*["']\s*([\d.\-]+)[\s,]+([\d.\-]+)[\s,]+([\d.\-]+)[\s,]+([\d.\-]+)/);
+  const vbMatch = svgString.match(
+    /viewBox\s*=\s*["']\s*([\d.\-]+)[\s,]+([\d.\-]+)[\s,]+([\d.\-]+)[\s,]+([\d.\-]+)/
+  );
   const vbW = vbMatch ? parseFloat(vbMatch[3]) : null;
   const vbH = vbMatch ? parseFloat(vbMatch[4]) : null;
 
@@ -49,9 +51,14 @@ function parseShapesFromSVG(svgString: string): THREE.Shape[] {
         const left: THREE.Vector2[] = [];
         const right: THREE.Vector2[] = [];
         for (let i = 0; i < points.length; i++) {
-          const c = points[i], p = points[Math.max(0, i - 1)], n = points[Math.min(points.length - 1, i + 1)];
-          const dx = n.x - p.x, dy = n.y - p.y, len = Math.sqrt(dx * dx + dy * dy) || 1;
-          const nx = -dy / len, ny = dx / len;
+          const c = points[i],
+            p = points[Math.max(0, i - 1)],
+            n = points[Math.min(points.length - 1, i + 1)];
+          const dx = n.x - p.x,
+            dy = n.y - p.y,
+            len = Math.sqrt(dx * dx + dy * dy) || 1;
+          const nx = -dy / len,
+            ny = dx / len;
           left.push(new THREE.Vector2(c.x + nx * hw, c.y + ny * hw));
           right.push(new THREE.Vector2(c.x - nx * hw, c.y - ny * hw));
         }
@@ -93,20 +100,33 @@ export interface ExportOptions {
 }
 
 const DEFAULTS: Required<ExportOptions> = {
-  depth: 0.9, smoothness: 0.5, bevelEnabled: true,
-  bevelThickness: 0.5, bevelSize: 0.5,
-  color: '#c0c0c0', metalness: 0.6, roughness: 0.3,
+  depth: 0.9,
+  smoothness: 0.5,
+  bevelEnabled: true,
+  bevelThickness: 0.5,
+  bevelSize: 0.5,
+  color: '#c0c0c0',
+  metalness: 0.6,
+  roughness: 0.3,
 };
 
 // ── GLB Builder (no browser APIs needed) ────────────────────────────────────
 
-function buildGlb(positions: Float32Array, normals: Float32Array, indices: Uint32Array, color: number[], metalness: number, roughness: number): Buffer {
+function buildGlb(
+  positions: Float32Array,
+  normals: Float32Array,
+  indices: Uint32Array,
+  color: number[],
+  metalness: number,
+  roughness: number
+): Buffer {
   const posBytes = Buffer.from(positions.buffer, positions.byteOffset, positions.byteLength);
   const normBytes = Buffer.from(normals.buffer, normals.byteOffset, normals.byteLength);
   const idxBytes = Buffer.from(indices.buffer, indices.byteOffset, indices.byteLength);
   const binLength = posBytes.length + normBytes.length + idxBytes.length;
 
-  let min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+  let min = [Infinity, Infinity, Infinity],
+    max = [-Infinity, -Infinity, -Infinity];
   for (let i = 0; i < positions.length; i += 3) {
     for (let j = 0; j < 3; j++) {
       if (positions[i + j] < min[j]) min[j] = positions[i + j];
@@ -136,14 +156,16 @@ function buildGlb(positions: Float32Array, normals: Float32Array, indices: Uint3
       { buffer: 0, byteOffset: idxOffset, byteLength: idxBytes.length, target: 34963 },
     ],
     buffers: [{ byteLength: binLength }],
-    materials: [{
-      pbrMetallicRoughness: {
-        baseColorFactor: [...color, 1],
-        metallicFactor: metalness,
-        roughnessFactor: roughness,
+    materials: [
+      {
+        pbrMetallicRoughness: {
+          baseColorFactor: [...color, 1],
+          metallicFactor: metalness,
+          roughnessFactor: roughness,
+        },
+        name: 'material',
       },
-      name: 'material',
-    }],
+    ],
   };
 
   const jsonStr = JSON.stringify(gltf);
@@ -161,18 +183,26 @@ function buildGlb(positions: Float32Array, normals: Float32Array, indices: Uint3
   let off = 0;
 
   // Header
-  glb.writeUInt32LE(0x46546C67, off); off += 4; // 'glTF'
-  glb.writeUInt32LE(2, off); off += 4;           // version
-  glb.writeUInt32LE(totalLength, off); off += 4;
+  glb.writeUInt32LE(0x46546c67, off);
+  off += 4; // 'glTF'
+  glb.writeUInt32LE(2, off);
+  off += 4; // version
+  glb.writeUInt32LE(totalLength, off);
+  off += 4;
 
   // JSON chunk
-  glb.writeUInt32LE(jsonBuf.length, off); off += 4;
-  glb.writeUInt32LE(0x4E4F534A, off); off += 4; // 'JSON'
-  jsonBuf.copy(glb, off); off += jsonBuf.length;
+  glb.writeUInt32LE(jsonBuf.length, off);
+  off += 4;
+  glb.writeUInt32LE(0x4e4f534a, off);
+  off += 4; // 'JSON'
+  jsonBuf.copy(glb, off);
+  off += jsonBuf.length;
 
   // BIN chunk
-  glb.writeUInt32LE(binBuf.length, off); off += 4;
-  glb.writeUInt32LE(0x004E4942, off); off += 4; // 'BIN\0'
+  glb.writeUInt32LE(binBuf.length, off);
+  off += 4;
+  glb.writeUInt32LE(0x004e4942, off);
+  off += 4; // 'BIN\0'
   binBuf.copy(glb, off);
 
   return glb;

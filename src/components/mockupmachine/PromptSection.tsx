@@ -9,7 +9,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { getTranslations } from '@/utils/localeUtils';
 import { useMockup } from './MockupContext';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useByokStatus } from '@/hooks/useByokStatus';
 import { ByokCostIndicator } from '@/components/ui/ByokBadge';
@@ -84,11 +84,18 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       ...selectedAngleTags,
       ...selectedLightingTags,
       ...selectedEffectTags,
-      ...selectedMaterialTags
+      ...selectedMaterialTags,
     ].filter(Boolean);
     // Sort by length desc to match longest first (avoid partial matches of shorter tags)
     return tags.sort((a, b) => b.length - a.length);
-  }, [selectedTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedMaterialTags]);
+  }, [
+    selectedTags,
+    selectedLocationTags,
+    selectedAngleTags,
+    selectedLightingTags,
+    selectedEffectTags,
+    selectedMaterialTags,
+  ]);
 
   const backdropRef = useRef<HTMLDivElement>(null);
 
@@ -115,7 +122,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     if (tagsToHighlight.length === 0) return text;
 
     // Escape regex special chars in tags
-    const escapedTags = tagsToHighlight.map(tag => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const escapedTags = tagsToHighlight.map((tag) => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     if (escapedTags.length === 0) return text;
 
     const regex = new RegExp(`(${escapedTags.join('|')})`, 'gi');
@@ -123,11 +130,11 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
 
     return parts.map((part, i) => {
       // Check if this part matches one of the tags (case-insensitive check)
-      const isMatch = tagsToHighlight.some(tag => tag.toLowerCase() === part.toLowerCase());
+      const isMatch = tagsToHighlight.some((tag) => tag.toLowerCase() === part.toLowerCase());
       if (!isMatch) return part;
 
       const isBuilderSnippet = builderInstructionSnippets.some(
-        tag => tag.toLowerCase() === part.toLowerCase()
+        (tag) => tag.toLowerCase() === part.toLowerCase()
       );
 
       if (isBuilderSnippet) {
@@ -160,8 +167,8 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <span
           key={i}
           className={cn(
-            "underline decoration-brand-cyan/30 underline-offset-4 transition-all duration-300",
-            "hover:text-brand-cyan hover:decoration-brand-cyan hover:bg-brand-cyan/10 px-0.5 rounded-sm"
+            'underline decoration-brand-cyan/30 underline-offset-4 transition-all duration-300',
+            'hover:text-brand-cyan hover:decoration-brand-cyan hover:bg-brand-cyan/10 px-0.5 rounded-sm'
           )}
         >
           {part}
@@ -172,11 +179,13 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
 
   const statusMessages = useMemo(() => {
     const translations = getTranslations(locale);
-    return translations.mockup?.promptStatusMessages ?? [
-      'understanding your design',
-      'searching for the best visual solutions',
-      'thinking as a senior graphic designer'
-    ];
+    return (
+      translations.mockup?.promptStatusMessages ?? [
+        'understanding your design',
+        'searching for the best visual solutions',
+        'thinking as a senior graphic designer',
+      ]
+    );
   }, [locale]);
   const [messageIndex, setMessageIndex] = useState(0);
 
@@ -233,7 +242,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     <section
       id="prompt-section"
       className={cn(
-        "p-3 rounded-xl border transition-all duration-300",
+        'p-3 rounded-xl border transition-all duration-300',
         theme === 'dark'
           ? 'bg-neutral-900/10 border-neutral-800/40 hover:bg-neutral-900/20'
           : 'bg-neutral-50 border-neutral-200 focus-within:border-brand-cyan/30'
@@ -243,7 +252,10 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <SkeletonText loading={isSidebarGenerating}>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`flex items-center gap-2 text-xs font-mono hover:text-brand-cyan transition-colors focus:outline-none ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+            className={`flex items-center gap-2 text-xs font-mono hover:text-brand-cyan transition-colors focus:outline-none ${
+              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+            }`}
+          >
             <Info size={14} /> {t('mockup.prompt')}
             {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
           </button>
@@ -254,7 +266,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             {isPromptReady ? (
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
                 <div className="w-1 h-1 rounded-full bg-green-500" />
-                <span className="text-[10px] font-mono text-green-400 uppercase tracking-wider">{t('mockup.promptSynced')}</span>
+                <span className="text-[10px] font-mono text-green-400 uppercase tracking-wider">
+                  {t('mockup.promptSynced')}
+                </span>
               </div>
             ) : (
               <Tooltip content={t('mockup.outOfSyncTooltip')} position="top">
@@ -262,8 +276,13 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                   onClick={onGenerateSmartPrompt}
                   className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-all cursor-pointer group/sync"
                 >
-                  <ArrowLeftRight size={8} className="text-amber-400 group-hover/sync:rotate-180 transition-transform duration-500" />
-                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">{t('mockup.promptOutOfSync')}</span>
+                  <ArrowLeftRight
+                    size={8}
+                    className="text-amber-400 group-hover/sync:rotate-180 transition-transform duration-500"
+                  />
+                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">
+                    {t('mockup.promptOutOfSync')}
+                  </span>
                 </button>
               </Tooltip>
             )}
@@ -274,10 +293,15 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           {/* Hide suggest button when prompt is empty */}
           {promptPreview.trim() && (
             <Tooltip content={t('mockup.suggestTooltip')} position="top">
-              <Button variant="ghost" onClick={onSuggestPrompts}
+              <Button
+                variant="ghost"
+                onClick={onSuggestPrompts}
                 disabled={isSuggestingPrompts || !promptPreview.trim() || isGeneratingPrompt}
-                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-neutral-500 disabled:text-neutral-600' : 'text-neutral-600 disabled:text-neutral-400'
-                  }`}
+                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
+                  theme === 'dark'
+                    ? 'text-neutral-500 disabled:text-neutral-600'
+                    : 'text-neutral-600 disabled:text-neutral-400'
+                }`}
               >
                 {isSuggestingPrompts ? <GlitchLoader size={12} /> : <PlusIcon size={12} />}
                 <span>{t('mockup.suggest')}</span>
@@ -287,13 +311,14 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         </div>
       </div>
 
-
       {isCollapsed ? (
         <div
           onClick={() => setIsCollapsed(false)}
           className={cn(
-            "flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-all mt-1",
-            theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-neutral-700 text-neutral-400' : 'bg-white border-neutral-200 hover:border-neutral-700 text-neutral-600'
+            'flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-all mt-1',
+            theme === 'dark'
+              ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-neutral-700 text-neutral-400'
+              : 'bg-white border-neutral-200 hover:border-neutral-700 text-neutral-600'
           )}
         >
           {isGeneratingPrompt ? (
@@ -304,7 +329,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           ) : promptPreview ? (
             <>
               <div className="w-1.5 h-1.5 rounded-full bg-green-500/80 shrink-0"></div>
-              <span className="truncate flex-1">Prompt {isSmartPromptActive ? 'configurado pela IA' : 'personalizado pronto'}</span>
+              <span className="truncate flex-1">
+                Prompt {isSmartPromptActive ? 'configurado pela IA' : 'personalizado pronto'}
+              </span>
               <span className="text-[10px] uppercase opacity-50 shrink-0 ml-2">Editar</span>
             </>
           ) : (
@@ -317,8 +344,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           <div
             ref={backdropRef}
             aria-hidden="true"
-            className={`absolute inset-0 w-full h-full p-3 rounded-md border border-transparent whitespace-pre-wrap font-mono text-sm overflow-hidden pointer-events-none ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-              }`}
+            className={`absolute inset-0 w-full h-full p-3 rounded-md border border-transparent whitespace-pre-wrap font-mono text-sm overflow-hidden pointer-events-none ${
+              theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
+            }`}
             style={{ lineHeight: '1.65' }}
           >
             {promptPreview ? (
@@ -329,7 +357,12 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               </>
             ) : (
               isGeneratingPrompt && (
-                <div className="text-[11px] leading-relaxed space-y-1" role="status" aria-live="polite" aria-label={statusMessages[messageIndex]}>
+                <div
+                  className="text-[11px] leading-relaxed space-y-1"
+                  role="status"
+                  aria-live="polite"
+                  aria-label={statusMessages[messageIndex]}
+                >
                   <div className="flex items-center gap-1">
                     <GlitchLoader size={10} className="text-brand-cyan" />
                   </div>
@@ -366,81 +399,126 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       {!isCollapsed && promptPreview && (
         <div className="mt-2 pl-1">
           <div className="flex flex-wrap items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-            <span className="text-[10px] uppercase font-mono tracking-wider mr-1 text-brand-cyan">⚙️ Regras Injetadas:</span>
-            <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>🚫 No External Text</span>
-            <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>📸 Focus Original Design</span>
-            <span className={cn("text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20", theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>💎�‍♂️ No Humans Interaction</span>
+            <span className="text-[10px] uppercase font-mono tracking-wider mr-1 text-brand-cyan">
+              ⚙️ Regras Injetadas:
+            </span>
+            <span
+              className={cn(
+                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
+                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
+              )}
+            >
+              🚫 No External Text
+            </span>
+            <span
+              className={cn(
+                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
+                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
+              )}
+            >
+              📸 Focus Original Design
+            </span>
+            <span
+              className={cn(
+                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
+                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
+              )}
+            >
+              💎�‍♂️ No Humans Interaction
+            </span>
           </div>
         </div>
       )}
 
-      {
-        promptSuggestions.length > 0 && (
-          <div className="mt-3 space-y-2 animate-fade-in">
-            <SkeletonText loading={isSidebarGenerating}>
-              <p className={`text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.aiSuggestions')}</p>
-            </SkeletonText>
-            {promptSuggestions.map((suggestion, index) => (
-              <div
-                key={index}
-                className={`flex flex-col gap-2 p-2 rounded-md border ${theme === 'dark' ? 'bg-neutral-900/50 border-neutral-700/50' : 'bg-neutral-100 border-neutral-300'
-                  }`}
+      {promptSuggestions.length > 0 && (
+        <div className="mt-3 space-y-2 animate-fade-in">
+          <SkeletonText loading={isSidebarGenerating}>
+            <p
+              className={`text-xs font-mono ${
+                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+              }`}
+            >
+              {t('mockup.aiSuggestions')}
+            </p>
+          </SkeletonText>
+          {promptSuggestions.map((suggestion, index) => (
+            <div
+              key={index}
+              className={`flex flex-col gap-2 p-2 rounded-md border ${
+                theme === 'dark'
+                  ? 'bg-neutral-900/50 border-neutral-700/50'
+                  : 'bg-neutral-100 border-neutral-300'
+              }`}
+            >
+              <Button
+                variant="ghost"
+                onClick={() => onSuggestionClick(suggestion)}
+                className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${
+                  theme === 'dark'
+                    ? 'text-neutral-200 hover:text-neutral-200'
+                    : 'text-neutral-700 hover:text-neutral-900'
+                }`}
               >
-                <Button variant="ghost" onClick={() => onSuggestionClick(suggestion)}
-                  className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-200 hover:text-neutral-200' : 'text-neutral-700 hover:text-neutral-900'
-                    }`}
+                {suggestion}
+              </Button>
+              {onGenerateSuggestion && (
+                <div
+                  className={`flex items-center justify-between gap-2 pt-2 border-t ${
+                    theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300'
+                  }`}
                 >
-                  {suggestion}
-                </Button>
-                {onGenerateSuggestion && (
-                  <div className={`flex items-center justify-between gap-2 pt-2 border-t ${theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300'
-                    }`}>
-                    <Tooltip
-                      content={
-                        isGenerateDisabled
-                          ? (t('mockup.insufficientCredits') || "Insufficient credits to generate")
-                          : (creditsPerGeneration && creditsPerGeneration > 0
-                            ? `${t('mockup.generateOutputs')} — ${creditsPerGeneration} ${creditsPerGeneration === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}`
-                            : t('mockup.generateOutputs'))
-                      }
-                      position="top"
-                    >
-                      <Button variant="ghost" onClick={(e) => {
+                  <Tooltip
+                    content={
+                      isGenerateDisabled
+                        ? t('mockup.insufficientCredits') || 'Insufficient credits to generate'
+                        : creditsPerGeneration && creditsPerGeneration > 0
+                        ? `${t('mockup.generateOutputs')} — ${creditsPerGeneration} ${
+                            creditsPerGeneration === 1
+                              ? t('mockup.creditUnitSingular')
+                              : t('mockup.creditUnitPlural')
+                          }`
+                        : t('mockup.generateOutputs')
+                    }
+                    position="top"
+                  >
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => {
                         e.stopPropagation();
                         onGenerateSuggestion(suggestion);
                       }}
-                        disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 min-h-[44px]"
-                        aria-label={isGenerating ? t('mockup.generatingOutputs') : t('mockup.generateOutputs')}
-                      >
-                        {isGenerating ? (
-                          <>
-                            <GlitchLoader size={12} />
-                            <span>{t('mockup.generatingOutputs')}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Pickaxe size={12} />
-                            <span>{t('mockup.generateOutputs')}</span>
-                          </>
-                        )}
-                      </Button>
-                    </Tooltip>
-                    {creditsPerGeneration !== undefined && creditsPerGeneration > 0 && (
-                      <ByokCostIndicator
-                        isByok={isByokActive}
-                        creditsRequired={creditsPerGeneration}
-                        className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )
-      }
-    </section >
+                      disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
+                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 min-h-[44px]"
+                      aria-label={
+                        isGenerating ? t('mockup.generatingOutputs') : t('mockup.generateOutputs')
+                      }
+                    >
+                      {isGenerating ? (
+                        <>
+                          <GlitchLoader size={12} />
+                          <span>{t('mockup.generatingOutputs')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Pickaxe size={12} />
+                          <span>{t('mockup.generateOutputs')}</span>
+                        </>
+                      )}
+                    </Button>
+                  </Tooltip>
+                  {creditsPerGeneration !== undefined && creditsPerGeneration > 0 && (
+                    <ByokCostIndicator
+                      isByok={isByokActive}
+                      creditsRequired={creditsPerGeneration}
+                      className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 };
-

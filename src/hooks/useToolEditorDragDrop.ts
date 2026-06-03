@@ -12,14 +12,22 @@ export interface UseToolEditorDragDropOptions {
 
 function fileMatchesAccept(file: File, accept: FileAccept): boolean {
   switch (accept) {
-    case 'image': return file.type.startsWith('image/');
-    case 'video': return file.type.startsWith('video/');
-    case 'svg': return file.type === 'image/svg+xml' || file.name.endsWith('.svg');
-    case 'image+video': return file.type.startsWith('image/') || file.type.startsWith('video/');
+    case 'image':
+      return file.type.startsWith('image/');
+    case 'video':
+      return file.type.startsWith('video/');
+    case 'svg':
+      return file.type === 'image/svg+xml' || file.name.endsWith('.svg');
+    case 'image+video':
+      return file.type.startsWith('image/') || file.type.startsWith('video/');
   }
 }
 
-export function useToolEditorDragDrop({ accept, onFile, dropMessage }: UseToolEditorDragDropOptions) {
+export function useToolEditorDragDrop({
+  accept,
+  onFile,
+  dropMessage,
+}: UseToolEditorDragDropOptions) {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -32,18 +40,26 @@ export function useToolEditorDragDrop({ accept, onFile, dropMessage }: UseToolEd
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (!file || !fileMatchesAccept(file, accept)) return;
-    onFile(file);
-  }, [accept, onFile]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+      const file = e.dataTransfer.files?.[0];
+      if (!file || !fileMatchesAccept(file, accept)) return;
+      onFile(file);
+    },
+    [accept, onFile]
+  );
 
-  usePasteImage(useCallback(({ file }) => {
-    if (!file || !fileMatchesAccept(file, accept)) return;
-    onFile(file);
-  }, [accept, onFile]));
+  usePasteImage(
+    useCallback(
+      ({ file }) => {
+        if (!file || !fileMatchesAccept(file, accept)) return;
+        onFile(file);
+      },
+      [accept, onFile]
+    )
+  );
 
   const dragProps = {
     onDragOver: handleDragOver,

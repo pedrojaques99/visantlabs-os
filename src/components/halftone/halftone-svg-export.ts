@@ -20,12 +20,7 @@ function rgbToCmyk(r: number, g: number, b: number): [number, number, number, nu
   const k = 1 - Math.max(r, g, b);
   if (k >= 1) return [0, 0, 0, 1];
   const inv = 1 / (1 - k);
-  return [
-    (1 - r - k) * inv,
-    (1 - g - k) * inv,
-    (1 - b - k) * inv,
-    k,
-  ];
+  return [(1 - r - k) * inv, (1 - g - k) * inv, (1 - b - k) * inv, k];
 }
 
 function hash(x: number, y: number): number {
@@ -42,7 +37,7 @@ function samplePixel(
   h: number,
   u: number,
   v: number,
-  settings: HalftoneSettings,
+  settings: HalftoneSettings
 ): [number, number, number] {
   const x = Math.min(Math.max(Math.round(u * (w - 1)), 0), w - 1);
   const y = Math.min(Math.max(Math.round(v * (h - 1)), 0), h - 1);
@@ -64,20 +59,41 @@ interface ChannelConfig {
   show: boolean;
 }
 
-export function generateHalftoneSvg(
-  imageData: ImageData,
-  settings: HalftoneSettings,
-): string {
+export function generateHalftoneSvg(imageData: ImageData, settings: HalftoneSettings): string {
   const { width: w, height: h, data: pixels } = imageData;
   const aspect = w / h;
   const freq = settings.frequency;
   const cellSize = Math.max(w, h) / freq;
 
   const channels: ChannelConfig[] = [
-    { cmykIndex: 0, angle: settings.cyanAngle, ink: settings.cyanInk, alpha: settings.cyanAlpha, show: settings.showCyan },
-    { cmykIndex: 1, angle: settings.magentaAngle, ink: settings.magentaInk, alpha: settings.magentaAlpha, show: settings.showMagenta },
-    { cmykIndex: 2, angle: settings.yellowAngle, ink: settings.yellowInk, alpha: settings.yellowAlpha, show: settings.showYellow },
-    { cmykIndex: 3, angle: settings.blackAngle, ink: settings.blackInk, alpha: settings.blackAlpha, show: settings.showBlack },
+    {
+      cmykIndex: 0,
+      angle: settings.cyanAngle,
+      ink: settings.cyanInk,
+      alpha: settings.cyanAlpha,
+      show: settings.showCyan,
+    },
+    {
+      cmykIndex: 1,
+      angle: settings.magentaAngle,
+      ink: settings.magentaInk,
+      alpha: settings.magentaAlpha,
+      show: settings.showMagenta,
+    },
+    {
+      cmykIndex: 2,
+      angle: settings.yellowAngle,
+      ink: settings.yellowInk,
+      alpha: settings.yellowAlpha,
+      show: settings.showYellow,
+    },
+    {
+      cmykIndex: 3,
+      angle: settings.blackAngle,
+      ink: settings.blackInk,
+      alpha: settings.blackAlpha,
+      show: settings.showBlack,
+    },
   ];
 
   const dots: DotData[] = [];
@@ -138,7 +154,8 @@ export function generateHalftoneSvg(
     }
   }
 
-  const blendMode = settings.blendMode === 0 ? 'multiply' : settings.blendMode === 1 ? 'screen' : 'normal';
+  const blendMode =
+    settings.blendMode === 0 ? 'multiply' : settings.blendMode === 1 ? 'screen' : 'normal';
 
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">`,
@@ -146,7 +163,7 @@ export function generateHalftoneSvg(
 
   if (settings.paperAlpha > 0) {
     const pa = settings.paperAlpha < 1 ? ` opacity="${settings.paperAlpha}"` : '';
-    parts.push(`<rect width="${w}" height="${h}" fill="${settings.paperColor}"${pa}/>`,);
+    parts.push(`<rect width="${w}" height="${h}" fill="${settings.paperColor}"${pa}/>`);
   }
 
   if (blendMode !== 'normal') {
@@ -168,7 +185,7 @@ export function generateHalftoneSvg(
 
 export function generateHalftoneSvgFromCanvas(
   sourceCanvas: HTMLCanvasElement,
-  settings: HalftoneSettings,
+  settings: HalftoneSettings
 ): string {
   const ctx = document.createElement('canvas').getContext('2d')!;
   const { width: w, height: h } = sourceCanvas;

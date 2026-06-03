@@ -62,9 +62,7 @@ router.post('/enable', totpRateLimiter, authenticate, async (req: AuthRequest, r
       return res.status(400).json({ error: 'Invalid verification code' });
     }
 
-    const backupCodes = Array.from({ length: 8 }, () =>
-      crypto.randomBytes(4).toString('hex')
-    );
+    const backupCodes = Array.from({ length: 8 }, () => crypto.randomBytes(4).toString('hex'));
 
     await prisma.user.update({
       where: { id: req.userId },
@@ -140,7 +138,7 @@ router.post('/verify', totpRateLimiter, async (req, res) => {
       await prisma.user.update({
         where: { id: userId },
         data: {
-          totpBackupCodes: user.totpBackupCodes.filter(c => c !== code),
+          totpBackupCodes: user.totpBackupCodes.filter((c) => c !== code),
         },
       });
       return res.json({ valid: true, usedBackupCode: true });

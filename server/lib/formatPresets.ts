@@ -39,7 +39,9 @@ export function buildFormatPresetsContext(): string {
 /**
  * Get preset by key or find best match for a query
  */
-export function getFormatPreset(query: string): { width: number; height: number; name: string } | null {
+export function getFormatPreset(
+  query: string
+): { width: number; height: number; name: string } | null {
   const normalized = query.toLowerCase().replace(/[^a-z]/g, '');
 
   // Direct match
@@ -51,15 +53,22 @@ export function getFormatPreset(query: string): { width: number; height: number;
 
   // Fuzzy match by platform name
   if (normalized.includes('instagram') || normalized.includes('insta')) {
-    if (normalized.includes('story') || normalized.includes('stories') || normalized.includes('reel')) {
+    if (
+      normalized.includes('story') ||
+      normalized.includes('stories') ||
+      normalized.includes('reel')
+    ) {
       return FORMAT_PRESETS['instagram-story'];
     }
     return FORMAT_PRESETS['instagram-feed'];
   }
   if (normalized.includes('linkedin')) return FORMAT_PRESETS['linkedin-post'];
-  if (normalized.includes('twitter') || normalized.includes('x')) return FORMAT_PRESETS['twitter-post'];
-  if (normalized.includes('facebook') || normalized.includes('fb')) return FORMAT_PRESETS['facebook-post'];
-  if (normalized.includes('youtube') || normalized.includes('thumbnail')) return FORMAT_PRESETS['youtube-thumbnail'];
+  if (normalized.includes('twitter') || normalized.includes('x'))
+    return FORMAT_PRESETS['twitter-post'];
+  if (normalized.includes('facebook') || normalized.includes('fb'))
+    return FORMAT_PRESETS['facebook-post'];
+  if (normalized.includes('youtube') || normalized.includes('thumbnail'))
+    return FORMAT_PRESETS['youtube-thumbnail'];
 
   return null;
 }

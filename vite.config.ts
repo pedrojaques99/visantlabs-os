@@ -31,8 +31,8 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('error', () => {}); // suppress ECONNREFUSED flood while server boots
           },
-        }
-      }
+        },
+      },
     },
     plugins: [react(), tailwindcss()],
     // SECURITY: Do NOT expose API keys in frontend bundle
@@ -40,8 +40,11 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': aliasPath,
-        'onnxruntime-web/webgpu': path.resolve(__dirname, 'node_modules/onnxruntime-web/dist/ort.webgpu.bundle.min.mjs'),
-      }
+        'onnxruntime-web/webgpu': path.resolve(
+          __dirname,
+          'node_modules/onnxruntime-web/dist/ort.webgpu.bundle.min.mjs'
+        ),
+      },
     },
     optimizeDeps: {
       esbuildOptions: {
@@ -60,7 +63,10 @@ export default defineConfig(({ mode }) => {
         // console.log/warn/info/debug; error is intentionally kept for
         // Sentry-style error reporting).
         drop: mode === 'production' ? ['debugger'] : [],
-        pure: mode === 'production' ? ['console.log', 'console.warn', 'console.info', 'console.debug'] : [],
+        pure:
+          mode === 'production'
+            ? ['console.log', 'console.warn', 'console.info', 'console.debug']
+            : [],
       },
       rollupOptions: {
         output: {
@@ -83,10 +89,12 @@ export default defineConfig(({ mode }) => {
             }
 
             // PDF libraries
-            if (id.includes('node_modules/react-pdf/') ||
+            if (
+              id.includes('node_modules/react-pdf/') ||
               id.includes('node_modules/pdf-lib/') ||
               id.includes('node_modules/jspdf/') ||
-              id.includes('node_modules/pdfjs')) {
+              id.includes('node_modules/pdfjs')
+            ) {
               return 'pdf-vendor';
             }
 
@@ -96,31 +104,39 @@ export default defineConfig(({ mode }) => {
             }
 
             // AI/ML libraries
-            if (id.includes('node_modules/@google/genai/') ||
+            if (
+              id.includes('node_modules/@google/genai/') ||
               id.includes('node_modules/ai/') ||
-              id.includes('node_modules/@ai-sdk/')) {
+              id.includes('node_modules/@ai-sdk/')
+            ) {
               return 'ai-vendor';
             }
 
             // Background removal WASM/ONNX
-            if (id.includes('node_modules/@imgly/') ||
-              id.includes('node_modules/onnxruntime-web/')) {
+            if (
+              id.includes('node_modules/@imgly/') ||
+              id.includes('node_modules/onnxruntime-web/')
+            ) {
               return 'bg-removal-vendor';
             }
 
             // Markdown and syntax highlighting
-            if (id.includes('node_modules/react-markdown/') ||
+            if (
+              id.includes('node_modules/react-markdown/') ||
               id.includes('node_modules/react-syntax-highlighter/') ||
               id.includes('node_modules/shiki/') ||
               id.includes('node_modules/remark-') ||
-              id.includes('node_modules/rehype-')) {
+              id.includes('node_modules/rehype-')
+            ) {
               return 'markdown-vendor';
             }
 
             // Stripe and payment
-            if (id.includes('node_modules/@stripe/') ||
+            if (
+              id.includes('node_modules/@stripe/') ||
               id.includes('node_modules/stripe/') ||
-              id.includes('node_modules/abacatepay-')) {
+              id.includes('node_modules/abacatepay-')
+            ) {
               return 'payment-vendor';
             }
 

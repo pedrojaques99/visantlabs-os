@@ -29,8 +29,13 @@ export function createBatcher(flush: (batch: TelemetryEntry[]) => void, interval
   let timer: ReturnType<typeof setInterval> | null = null;
   const tick = () => {
     if (!buf.length) return;
-    const out = buf; buf = [];
-    try { flush(out); } catch { /* swallow */ }
+    const out = buf;
+    buf = [];
+    try {
+      flush(out);
+    } catch {
+      /* swallow */
+    }
   };
   return {
     report: (e: TelemetryEntry) => {
@@ -38,6 +43,12 @@ export function createBatcher(flush: (batch: TelemetryEntry[]) => void, interval
       timer ??= setInterval(tick, intervalMs);
     },
     flush: tick,
-    stop: () => { if (timer) { clearInterval(timer); timer = null; } tick(); },
+    stop: () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      tick();
+    },
   };
 }

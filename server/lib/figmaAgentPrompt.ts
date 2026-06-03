@@ -14,7 +14,14 @@ import {
   type EnrichedIntent,
 } from './prompt/index.js';
 
-export { assemblePrompt, buildRetryFeedback, refineIntentWithLLM, type AssembledPrompt, type ClassifiedIntent, type EnrichedIntent };
+export {
+  assemblePrompt,
+  buildRetryFeedback,
+  refineIntentWithLLM,
+  type AssembledPrompt,
+  type ClassifiedIntent,
+  type EnrichedIntent,
+};
 
 // ============ Interfaces ============
 
@@ -31,8 +38,20 @@ export interface PluginRequest {
   };
   selectedBrandFont?: { id: string; name: string };
   brandFonts?: {
-    primary?: { id: string; name: string; family?: string; style?: string; availableStyles?: string[] } | null;
-    secondary?: { id: string; name: string; family?: string; style?: string; availableStyles?: string[] } | null;
+    primary?: {
+      id: string;
+      name: string;
+      family?: string;
+      style?: string;
+      availableStyles?: string[];
+    } | null;
+    secondary?: {
+      id: string;
+      name: string;
+      family?: string;
+      style?: string;
+      availableStyles?: string[];
+    } | null;
   };
   selectedBrandColors?: Array<{ name: string; value: string; role?: string }>;
   availableComponents?: any[];
@@ -62,10 +81,16 @@ export interface DesignSystemJSON {
   name?: string;
   version?: string;
   colors?: Record<string, string | { hex?: string; value?: string; usage?: string }>;
-  typography?: Record<string, { family: string; style?: string; size?: number; lineHeight?: number }>;
+  typography?: Record<
+    string,
+    { family: string; style?: string; size?: number; lineHeight?: number }
+  >;
   spacing?: Record<string, number>;
   radius?: Record<string, number>;
-  shadows?: Record<string, { x?: number; y?: number; blur?: number; spread?: number; color?: string; opacity?: number }>;
+  shadows?: Record<
+    string,
+    { x?: number; y?: number; blur?: number; spread?: number; color?: string; opacity?: number }
+  >;
   components?: Record<string, any>;
   guidelines?: { voice?: string; dos?: string[]; donts?: string[]; imagery?: string };
 }
@@ -87,37 +112,48 @@ export interface RouteContexts {
 export function buildSystemPrompt(
   req: PluginRequest,
   chatHistoryOrCtx?: string | RouteContexts,
-  previousErrors?: string[],
+  previousErrors?: string[]
 ): AssembledPrompt {
   const useBrand = req.useBrand !== false;
 
   // Support both old (string, string[]) and new (RouteContexts) signatures
-  const ctx: RouteContexts = typeof chatHistoryOrCtx === 'object' && chatHistoryOrCtx !== null
-    ? chatHistoryOrCtx
-    : { chatHistory: chatHistoryOrCtx as string | undefined, previousErrors };
+  const ctx: RouteContexts =
+    typeof chatHistoryOrCtx === 'object' && chatHistoryOrCtx !== null
+      ? chatHistoryOrCtx
+      : { chatHistory: chatHistoryOrCtx as string | undefined, previousErrors };
 
   return assemblePrompt({
     command: req.command,
     selectedElements: req.selectedElements,
     scanPage: req.scanPage,
     brandColors: useBrand ? req.selectedBrandColors : undefined,
-    brandFonts: (useBrand && req.brandFonts) ? {
-      primary: req.brandFonts.primary ? {
-        family: req.brandFonts.primary.family,
-        style: req.brandFonts.primary.style,
-        availableStyles: req.brandFonts.primary.availableStyles,
-      } : undefined,
-      secondary: req.brandFonts.secondary ? {
-        family: req.brandFonts.secondary.family,
-        style: req.brandFonts.secondary.style,
-        availableStyles: req.brandFonts.secondary.availableStyles,
-      } : undefined,
-    } : undefined,
-    brandLogos: (useBrand && req.brandLogos) ? {
-      light: req.brandLogos.light ?? undefined,
-      dark: req.brandLogos.dark ?? undefined,
-    } : undefined,
-    brandTokens: useBrand ? (req.designTokens || req.brandGuideline?.tokens) : undefined,
+    brandFonts:
+      useBrand && req.brandFonts
+        ? {
+            primary: req.brandFonts.primary
+              ? {
+                  family: req.brandFonts.primary.family,
+                  style: req.brandFonts.primary.style,
+                  availableStyles: req.brandFonts.primary.availableStyles,
+                }
+              : undefined,
+            secondary: req.brandFonts.secondary
+              ? {
+                  family: req.brandFonts.secondary.family,
+                  style: req.brandFonts.secondary.style,
+                  availableStyles: req.brandFonts.secondary.availableStyles,
+                }
+              : undefined,
+          }
+        : undefined,
+    brandLogos:
+      useBrand && req.brandLogos
+        ? {
+            light: req.brandLogos.light ?? undefined,
+            dark: req.brandLogos.dark ?? undefined,
+          }
+        : undefined,
+    brandTokens: useBrand ? req.designTokens || req.brandGuideline?.tokens : undefined,
     brandVoice: useBrand ? req.brandGuideline?.guidelines?.voice : undefined,
     brandDos: useBrand ? req.brandGuideline?.guidelines?.dos : undefined,
     brandDonts: useBrand ? req.brandGuideline?.guidelines?.donts : undefined,
@@ -126,7 +162,7 @@ export function buildSystemPrompt(
     colorVariables: req.availableColorVariables,
     fontVariables: req.availableFontVariables,
     designSystem: req.designSystem ?? undefined,
-    attachments: req.attachments?.map(a => ({ name: a.name, mimeType: a.mimeType })),
+    attachments: req.attachments?.map((a) => ({ name: a.name, mimeType: a.mimeType })),
     chatHistory: ctx.chatHistory,
     thinkMode: req.thinkMode,
     useBrand: req.useBrand,

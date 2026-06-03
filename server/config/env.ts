@@ -24,7 +24,9 @@ const baseSchema = z.object({
   DATABASE_URL: z.string().optional(),
 
   // Auth
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 chars (use `npm run generate-jwt-secret`)'),
+  JWT_SECRET: z
+    .string()
+    .min(32, 'JWT_SECRET must be at least 32 chars (use `npm run generate-jwt-secret`)'),
 
   // OAuth (optional in dev/test, required in prod)
   GOOGLE_CLIENT_ID: z.string().optional(),
@@ -87,7 +89,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     const issues = parsed.error.issues
       .map((i) => `  • ${i.path.join('.') || '(root)'}: ${i.message}`)
       .join('\n');
-    throw new Error(`❌ Invalid environment configuration:\n${issues}\n\nFix .env / .env.local and retry.`);
+    throw new Error(
+      `❌ Invalid environment configuration:\n${issues}\n\nFix .env / .env.local and retry.`
+    );
   }
 
   const env = parsed.data;
@@ -96,7 +100,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     const missing = productionRequired.filter((k) => !env[k]);
     if (missing.length) {
       throw new Error(
-        `❌ Missing production env vars:\n${missing.map((k) => `  • ${k}`).join('\n')}\n\nRefusing to boot.`
+        `❌ Missing production env vars:\n${missing
+          .map((k) => `  • ${k}`)
+          .join('\n')}\n\nRefusing to boot.`
       );
     }
   }

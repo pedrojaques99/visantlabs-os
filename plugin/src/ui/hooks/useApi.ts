@@ -31,7 +31,7 @@ export function useApi() {
         const response = await fetch(url, {
           ...options,
           headers,
-          signal: abortControllerRef.current.signal
+          signal: abortControllerRef.current.signal,
         });
 
         if (response.status === 401 || response.status === 403) {

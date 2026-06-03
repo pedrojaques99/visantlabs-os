@@ -17,7 +17,7 @@ export interface ChatSession {
   updatedAt: string;
 }
 
-export type ChatSessionListItem = Omit<ChatSession, 'messages'>
+export type ChatSessionListItem = Omit<ChatSession, 'messages'>;
 
 export interface SendMessageResult {
   reply: string;
@@ -37,16 +37,22 @@ export const chatApi = {
   },
 
   async listSessions(): Promise<ChatSessionListItem[]> {
-    const { sessions } = await chatApiRequest<{ sessions: ChatSessionListItem[] }>('/chat/sessions', {
-      errorMessage: 'Failed to list sessions',
-    });
+    const { sessions } = await chatApiRequest<{ sessions: ChatSessionListItem[] }>(
+      '/chat/sessions',
+      {
+        errorMessage: 'Failed to list sessions',
+      }
+    );
     return sessions;
   },
 
   async getSession(sessionId: string): Promise<ChatSession> {
-    const { session } = await chatApiRequest<{ session: ChatSession }>(`/chat/sessions/${sessionId}`, {
-      errorMessage: 'Failed to get session',
-    });
+    const { session } = await chatApiRequest<{ session: ChatSession }>(
+      `/chat/sessions/${sessionId}`,
+      {
+        errorMessage: 'Failed to get session',
+      }
+    );
     return session;
   },
 
@@ -57,7 +63,11 @@ export const chatApi = {
     });
   },
 
-  async uploadToSession(sessionId: string, parts: any[], metadata?: Record<string, any>): Promise<void> {
+  async uploadToSession(
+    sessionId: string,
+    parts: any[],
+    metadata?: Record<string, any>
+  ): Promise<void> {
     await chatApiRequest<void>(`/chat/sessions/${sessionId}/upload`, {
       method: 'POST',
       body: { parts, metadata },
@@ -74,11 +84,14 @@ export const chatApi = {
   },
 
   async renameSession(sessionId: string, title: string): Promise<ChatSession> {
-    const { session } = await chatApiRequest<{ session: ChatSession }>(`/chat/sessions/${sessionId}`, {
-      method: 'PATCH',
-      body: { title },
-      errorMessage: 'Failed to rename session',
-    });
+    const { session } = await chatApiRequest<{ session: ChatSession }>(
+      `/chat/sessions/${sessionId}`,
+      {
+        method: 'PATCH',
+        body: { title },
+        errorMessage: 'Failed to rename session',
+      }
+    );
     return session;
   },
 };

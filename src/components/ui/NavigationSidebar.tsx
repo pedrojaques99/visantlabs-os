@@ -75,7 +75,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   // Auto-expand active item when it changes
   useEffect(() => {
     if (activeItemId) {
-      setExpandedItems(prev => new Set(prev).add(activeItemId));
+      setExpandedItems((prev) => new Set(prev).add(activeItemId));
     }
   }, [activeItemId]);
 
@@ -90,7 +90,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
 
         sidebarRef.current.scrollTo({
           top: relativeTop - 100, // Offset to show some context above
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
       }
     }
@@ -147,7 +147,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   }, [sidebarWidth, onWidthChange, storageKey]);
 
   const toggleItem = (itemId: string) => {
-    setExpandedItems(prev => {
+    setExpandedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
         newSet.delete(itemId);
@@ -249,7 +249,8 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 {isExpanded && hasSections && (
                   <div className="ml-6 space-y-1 mt-1">
                     {item.sections?.map((section) => {
-                      const isSectionActive = activeSectionId === section.id && activeItemId === item.id;
+                      const isSectionActive =
+                        activeSectionId === section.id && activeItemId === item.id;
                       return (
                         <button
                           key={section.id}
@@ -265,12 +266,12 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                             onToggleOpen(false);
                           }}
                           className={cn(
-                            "w-full text-left px-3 py-1.5 text-xs font-mono rounded transition-colors relative",
+                            'w-full text-left px-3 py-1.5 text-xs font-mono rounded transition-colors relative',
                             isSectionActive
                               ? 'text-neutral-200 bg-neutral-800/30 border-l-2 border-neutral-500'
                               : activeItemId === item.id
-                                ? 'text-neutral-300 hover:text-neutral-200'
-                                : 'text-neutral-500 hover:text-neutral-300',
+                              ? 'text-neutral-300 hover:text-neutral-200'
+                              : 'text-neutral-500 hover:text-neutral-300',
                             'hover:bg-neutral-800/30'
                           )}
                         >
@@ -288,4 +289,3 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     </>
   );
 };
-

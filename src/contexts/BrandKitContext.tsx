@@ -43,42 +43,52 @@ export const ActiveBrandKitProvider: React.FC<{ children: React.ReactNode }> = (
 
   const activeGuideline = useMemo(() => {
     if (!linkedGuidelineId) return null;
-    return allGuidelines.find(g => g.id === linkedGuidelineId) ?? null;
+    return allGuidelines.find((g) => g.id === linkedGuidelineId) ?? null;
   }, [linkedGuidelineId, allGuidelines]);
 
   const isLibraryOpen = canvasHeader.activeSidePanel === 'brand-media';
 
-  const openLibrary = useCallback((opts?: OpenLibraryOptions) => {
-    setLibraryCallbacks({
-      onSelectAsset: opts?.onSelectAsset,
-      onAddToBoard: opts?.onAddToBoard,
-    });
-    canvasHeader.setActiveSidePanel('brand-media');
-  }, [canvasHeader]);
+  const openLibrary = useCallback(
+    (opts?: OpenLibraryOptions) => {
+      setLibraryCallbacks({
+        onSelectAsset: opts?.onSelectAsset,
+        onAddToBoard: opts?.onAddToBoard,
+      });
+      canvasHeader.setActiveSidePanel('brand-media');
+    },
+    [canvasHeader]
+  );
 
   const closeLibrary = useCallback(() => {
     canvasHeader.setActiveSidePanel(null);
     setLibraryCallbacks({});
   }, [canvasHeader]);
 
-  const value = useMemo<BrandKitContextValue>(() => ({
-    activeBrandId: linkedGuidelineId,
-    activeGuideline,
-    logos: activeGuideline?.logos ?? [],
-    colors: activeGuideline?.colors ?? [],
-    media: activeGuideline?.media ?? [],
-    allGuidelines,
-    openLibrary,
-    closeLibrary,
-    isLibraryOpen,
-    libraryCallbacks,
-  }), [linkedGuidelineId, activeGuideline, allGuidelines, openLibrary, closeLibrary, isLibraryOpen, libraryCallbacks]);
-
-  return (
-    <BrandKitContext.Provider value={value}>
-      {children}
-    </BrandKitContext.Provider>
+  const value = useMemo<BrandKitContextValue>(
+    () => ({
+      activeBrandId: linkedGuidelineId,
+      activeGuideline,
+      logos: activeGuideline?.logos ?? [],
+      colors: activeGuideline?.colors ?? [],
+      media: activeGuideline?.media ?? [],
+      allGuidelines,
+      openLibrary,
+      closeLibrary,
+      isLibraryOpen,
+      libraryCallbacks,
+    }),
+    [
+      linkedGuidelineId,
+      activeGuideline,
+      allGuidelines,
+      openLibrary,
+      closeLibrary,
+      isLibraryOpen,
+      libraryCallbacks,
+    ]
   );
+
+  return <BrandKitContext.Provider value={value}>{children}</BrandKitContext.Provider>;
 };
 
 export function useBrandKit(): BrandKitContextValue {

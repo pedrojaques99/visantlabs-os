@@ -32,7 +32,11 @@ import { toast } from 'sonner';
 // ─── Last-used tracking (shared with HomePage) ──────────────────────────────
 const LS_KEY = 'vsn_app_last_used';
 const getLastUsed = (): Record<string, number> => {
-  try { return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}'); } catch { return {}; }
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
 };
 const recordLastUsed = (appId: string) => {
   const map = getLastUsed();
@@ -50,18 +54,53 @@ type CategoryDef = {
 };
 
 const CATEGORY_CONFIG: CategoryDef[] = [
-  { key: 'pro', label: 'Pro Tools', description: 'Professional design & branding suite', icon: Crown },
-  { key: 'creative', label: 'Creative Lab', description: 'Free creative tools to experiment with', icon: Palette },
-  { key: 'image', label: 'Image Tools', description: 'Process, enhance & transform images', icon: ImageIcon },
-  { key: 'converters', label: 'Converters', description: 'Convert formats, colors & optimize files', icon: ArrowUpDown },
-  { key: 'generators', label: 'Generators', description: 'Create QR codes, favicons & OG images', icon: PackageOpen },
+  {
+    key: 'pro',
+    label: 'Pro Tools',
+    description: 'Professional design & branding suite',
+    icon: Crown,
+  },
+  {
+    key: 'creative',
+    label: 'Creative Lab',
+    description: 'Free creative tools to experiment with',
+    icon: Palette,
+  },
+  {
+    key: 'image',
+    label: 'Image Tools',
+    description: 'Process, enhance & transform images',
+    icon: ImageIcon,
+  },
+  {
+    key: 'converters',
+    label: 'Converters',
+    description: 'Convert formats, colors & optimize files',
+    icon: ArrowUpDown,
+  },
+  {
+    key: 'generators',
+    label: 'Generators',
+    description: 'Create QR codes, favicons & OG images',
+    icon: PackageOpen,
+  },
   { key: 'audio', label: 'Audio', description: 'Sound & music tools', icon: Music },
-  { key: 'community', label: 'Community', description: 'Open-source experiments & external tools', icon: Globe },
+  {
+    key: 'community',
+    label: 'Community',
+    description: 'Open-source experiments & external tools',
+    icon: Globe,
+  },
 ];
 
 const COMPACT_CATEGORIES = new Set<string>();
 
-const ADMIN_CATEGORY: CategoryDef = { key: 'admin', label: 'Admin', description: 'Internal tools', icon: ShieldCheck };
+const ADMIN_CATEGORY: CategoryDef = {
+  key: 'admin',
+  label: 'Admin',
+  description: 'Internal tools',
+  icon: ShieldCheck,
+};
 
 type AccessFilter = 'all' | 'free' | 'premium';
 
@@ -69,10 +108,12 @@ type AccessFilter = 'all' | 'free' | 'premium';
 
 function AppCardSkeleton({ large = false }: { large?: boolean }) {
   return (
-    <div className={cn(
-      'rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 animate-pulse',
-      large && 'lg:col-span-2 lg:row-span-2',
-    )}>
+    <div
+      className={cn(
+        'rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 animate-pulse',
+        large && 'lg:col-span-2 lg:row-span-2'
+      )}
+    >
       <div className={cn('bg-neutral-800/20', large ? 'aspect-[16/9]' : 'aspect-[16/10]')} />
       <div className="p-5 space-y-3">
         <div className="h-4 w-1/2 bg-neutral-800/30 rounded-full" />
@@ -105,10 +146,12 @@ function HeroCard({ app, variant, hasAccess, onOpen }: HeroCardProps) {
         'group relative rounded-2xl overflow-hidden cursor-pointer',
         'border border-neutral-800 hover:border-white/15',
         'transition-all duration-500 hover:shadow-2xl hover:shadow-brand-cyan/5',
-        isPrimary ? 'lg:col-span-2 lg:row-span-2' : '',
+        isPrimary ? 'lg:col-span-2 lg:row-span-2' : ''
       )}
     >
-      <div className={cn('relative overflow-hidden', isPrimary ? 'aspect-[16/9]' : 'aspect-[16/10]')}>
+      <div
+        className={cn('relative overflow-hidden', isPrimary ? 'aspect-[16/9]' : 'aspect-[16/10]')}
+      >
         {app.thumbnail ? (
           <img
             src={app.thumbnail}
@@ -131,22 +174,27 @@ function HeroCard({ app, variant, hasAccess, onOpen }: HeroCardProps) {
                 </span>
               )}
             </div>
-            <h3 className={cn(
-              'font-bold text-white',
-              isPrimary ? 'text-2xl lg:text-3xl' : 'text-lg',
-            )}>
+            <h3
+              className={cn('font-bold text-white', isPrimary ? 'text-2xl lg:text-3xl' : 'text-lg')}
+            >
               {app.name}
             </h3>
-            <p className={cn(
-              'text-neutral-400 leading-relaxed line-clamp-2',
-              isPrimary ? 'text-sm max-w-lg' : 'text-xs',
-            )}>
+            <p
+              className={cn(
+                'text-neutral-400 leading-relaxed line-clamp-2',
+                isPrimary ? 'text-sm max-w-lg' : 'text-xs'
+              )}
+            >
               {app.description || app.desc}
             </p>
 
             <div className="pt-2 flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-cyan group-hover:text-white transition-colors">
-                Open app <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                Open app{' '}
+                <ChevronRight
+                  size={14}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </span>
               {isPremium && !hasAccess && (
                 <span className="text-xs text-neutral-600 flex items-center gap-1">
@@ -188,13 +236,23 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
     <motion.div
       variants={{
         hidden: { opacity: 0, y: 12, scale: 0.98 },
-        visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+        visible: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+        },
       }}
       role="button"
       tabIndex={isComingSoon ? -1 : 0}
       aria-label={app.name}
       onClick={() => onOpen(app)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(app); } }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen(app);
+        }
+      }}
       className={cn(
         'group relative rounded-2xl overflow-hidden flex flex-col',
         'bg-white/[0.03] border border-neutral-800',
@@ -202,7 +260,7 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
         'hover:border-white/10 hover:bg-white/[0.035] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20',
         'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
         isComingSoon && 'opacity-30 grayscale pointer-events-none',
-        app.isHidden && 'border-amber-500/20 opacity-60',
+        app.isHidden && 'border-amber-500/20 opacity-60'
       )}
     >
       {app.isHidden && (
@@ -258,7 +316,10 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
       {isAdmin && (
         <div className="absolute top-3 left-3 z-30">
           <button
-            onClick={(e) => { e.stopPropagation(); onEdit(app); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(app);
+            }}
             className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100"
           >
             <Edit3 size={12} />
@@ -326,7 +387,12 @@ function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
       tabIndex={isComingSoon ? -1 : 0}
       aria-label={app.name}
       onClick={() => onOpen(app)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(app); } }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen(app);
+        }
+      }}
       className={cn(
         'group flex items-center gap-3 px-4 py-3 rounded-xl',
         'bg-white/[0.02] border border-neutral-800/60',
@@ -334,7 +400,7 @@ function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
         'hover:border-white/10 hover:bg-white/[0.04]',
         'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
         isComingSoon && 'opacity-30 grayscale pointer-events-none',
-        app.isHidden && 'border-amber-500/20 opacity-60',
+        app.isHidden && 'border-amber-500/20 opacity-60'
       )}
     >
       <div className="flex-1 min-w-0 flex items-center gap-3">
@@ -342,14 +408,22 @@ function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
           {app.name}
         </h4>
         {isComingSoon ? (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-neutral-600 shrink-0">Soon</span>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-neutral-600 shrink-0">
+            Soon
+          </span>
         ) : app.badgeVariant === 'free' || (app as any).free ? (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400/80 shrink-0">Free</span>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400/80 shrink-0">
+            Free
+          </span>
         ) : isPremium ? (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan/80 shrink-0">Pro</span>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan/80 shrink-0">
+            Pro
+          </span>
         ) : null}
         {isAlpha && (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400/80 border border-violet-500/20 shrink-0">Alpha</span>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400/80 border border-violet-500/20 shrink-0">
+            Alpha
+          </span>
         )}
         <p className="text-[12px] text-neutral-600 truncate hidden sm:block">{description}</p>
       </div>
@@ -357,7 +431,10 @@ function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
       <div className="flex items-center gap-2 shrink-0">
         {isAdmin && (
           <button
-            onClick={(e) => { e.stopPropagation(); onEdit(app); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(app);
+            }}
             className="p-1.5 rounded-lg text-neutral-600 hover:text-brand-cyan hover:bg-white/5 transition-all"
           >
             <Edit3 size={12} />
@@ -365,9 +442,15 @@ function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
         )}
         {isPremium && !hasAccess && <Lock size={12} className="text-neutral-600" />}
         {isExternal ? (
-          <ExternalLink size={12} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+          <ExternalLink
+            size={12}
+            className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
+          />
         ) : (
-          <ChevronRight size={12} className="text-neutral-600 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all" />
+          <ChevronRight
+            size={12}
+            className="text-neutral-600 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all"
+          />
         )}
       </div>
     </motion.div>
@@ -391,7 +474,9 @@ function CategoryHeader({ category, count }: { category: CategoryDef; count: num
           </div>
         </div>
       </div>
-      <span className="text-xs text-neutral-700 pb-0.5">{count} {count === 1 ? 'app' : 'apps'}</span>
+      <span className="text-xs text-neutral-700 pb-0.5">
+        {count} {count === 1 ? 'app' : 'apps'}
+      </span>
     </div>
   );
 }
@@ -417,51 +502,366 @@ export const AppsPage: React.FC = () => {
 
   // ─── Static apps config ─────────────────────────────────────────────────
 
-  const staticAppsData = useMemo(() => [
-    // Pro Tools
-    { id: 'mockup-machine', name: t('apps.mockupMachine.name'), desc: t('apps.mockupMachine.description'), link: '/', badge: t('apps.badge.featured'), badgeVariant: 'featured', thumbnail: '/tools/mockup-machine.webp', category: 'pro', free: false },
-    { id: 'branding-machine', name: t('apps.brandingMachine.name'), desc: t('apps.brandingMachine.description'), link: '/branding-machine', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/branding-machine.webp', category: 'pro', free: false },
-    { id: 'brand-guidelines', name: t('apps.brandGuidelines.name'), desc: t('apps.brandGuidelines.description'), link: '/brand-guidelines', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/brand-guidelines.webp', category: 'pro', free: false },
-    { id: 'canvas', name: t('apps.canvas.name'), desc: t('apps.canvas.description'), link: '/canvas', badge: t('apps.badge.premium'), badgeVariant: 'premium', thumbnail: '/tools/canvas.webp', category: 'pro', free: false },
-    { id: 'instagram-extractor', name: t('apps.instagramExtractor.name'), desc: t('apps.instagramExtractor.description'), link: '/extractor', thumbnail: '/tools/instagram-extractor.webp', badge: 'NEW', badgeVariant: 'premium', category: 'pro', free: false },
-    { id: 'moodboard-studio', name: t('apps.moodboardStudio.name'), desc: t('apps.moodboardStudio.description'), link: '/moodboard', thumbnail: '/tools/moodboard-studio.webp', badge: 'NEW', badgeVariant: 'premium', category: 'pro', free: false },
-    { id: 'budget-machine', name: t('apps.budgetMachine.name'), desc: t('apps.budgetMachine.description'), link: '/budget-machine', badge: t('apps.badge.comingSoon'), badgeVariant: 'comingSoon', thumbnail: '/tools/budget-machine.webp', category: 'pro', free: false },
+  const staticAppsData = useMemo(
+    () => [
+      // Pro Tools
+      {
+        id: 'mockup-machine',
+        name: t('apps.mockupMachine.name'),
+        desc: t('apps.mockupMachine.description'),
+        link: '/',
+        badge: t('apps.badge.featured'),
+        badgeVariant: 'featured',
+        thumbnail: '/tools/mockup-machine.webp',
+        category: 'pro',
+        free: false,
+      },
+      {
+        id: 'branding-machine',
+        name: t('apps.brandingMachine.name'),
+        desc: t('apps.brandingMachine.description'),
+        link: '/branding-machine',
+        badge: t('apps.badge.premium'),
+        badgeVariant: 'premium',
+        thumbnail: '/tools/branding-machine.webp',
+        category: 'pro',
+        free: false,
+      },
+      {
+        id: 'brand-guidelines',
+        name: t('apps.brandGuidelines.name'),
+        desc: t('apps.brandGuidelines.description'),
+        link: '/brand-guidelines',
+        badge: t('apps.badge.premium'),
+        badgeVariant: 'premium',
+        thumbnail: '/tools/brand-guidelines.webp',
+        category: 'pro',
+        free: false,
+      },
+      {
+        id: 'canvas',
+        name: t('apps.canvas.name'),
+        desc: t('apps.canvas.description'),
+        link: '/canvas',
+        badge: t('apps.badge.premium'),
+        badgeVariant: 'premium',
+        thumbnail: '/tools/canvas.webp',
+        category: 'pro',
+        free: false,
+      },
+      {
+        id: 'instagram-extractor',
+        name: t('apps.instagramExtractor.name'),
+        desc: t('apps.instagramExtractor.description'),
+        link: '/extractor',
+        thumbnail: '/tools/instagram-extractor.webp',
+        badge: 'NEW',
+        badgeVariant: 'premium',
+        category: 'pro',
+        free: false,
+      },
+      {
+        id: 'moodboard-studio',
+        name: t('apps.moodboardStudio.name'),
+        desc: t('apps.moodboardStudio.description'),
+        link: '/moodboard',
+        thumbnail: '/tools/moodboard-studio.webp',
+        badge: 'NEW',
+        badgeVariant: 'premium',
+        category: 'pro',
+        free: false,
+      },
+      {
+        id: 'budget-machine',
+        name: t('apps.budgetMachine.name'),
+        desc: t('apps.budgetMachine.description'),
+        link: '/budget-machine',
+        badge: t('apps.badge.comingSoon'),
+        badgeVariant: 'comingSoon',
+        thumbnail: '/tools/budget-machine.webp',
+        category: 'pro',
+        free: false,
+      },
 
-    // Creative Lab
-    { id: 'grid-machine', name: t('apps.gridMachine.name'), desc: t('apps.gridMachine.description'), link: '/grid-machine', thumbnail: '/tools/grid-machine.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true },
-    { id: '3d-studio', name: t('apps.studio3d.name'), desc: t('apps.studio3d.description'), link: '/3d-studio', thumbnail: '/tools/3d-studio.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true, alpha: true },
-    { id: 'image-lab', name: 'Image Lab', desc: 'Halftone, texture overlay, and risograph effects in one unified editor. Switch modes instantly without reloading.', link: '/image-lab', thumbnail: '/tools/cmyk-halftone.webp', badge: 'NEW', badgeVariant: 'free', category: 'creative', free: true, alpha: true },
-    { id: 'ascii-vortex', name: t('apps.asciiVortex.name'), desc: t('apps.asciiVortex.description'), link: 'https://vsn-labs.vercel.app/ascii-vortex', thumbnail: '/tools/ascii-vortex.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', isExternal: true, free: true },
-    { id: 'grid-paint', name: t('apps.gridPaint.name'), desc: t('apps.gridPaint.description'), link: '/grid-paint', thumbnail: '/tools/gridpaint.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'creative', free: true },
+      // Creative Lab
+      {
+        id: 'grid-machine',
+        name: t('apps.gridMachine.name'),
+        desc: t('apps.gridMachine.description'),
+        link: '/grid-machine',
+        thumbnail: '/tools/grid-machine.webp',
+        badge: 'NEW',
+        badgeVariant: 'free',
+        category: 'creative',
+        free: true,
+      },
+      {
+        id: '3d-studio',
+        name: t('apps.studio3d.name'),
+        desc: t('apps.studio3d.description'),
+        link: '/3d-studio',
+        thumbnail: '/tools/3d-studio.webp',
+        badge: 'NEW',
+        badgeVariant: 'free',
+        category: 'creative',
+        free: true,
+        alpha: true,
+      },
+      {
+        id: 'image-lab',
+        name: 'Image Lab',
+        desc: 'Halftone, texture overlay, and risograph effects in one unified editor. Switch modes instantly without reloading.',
+        link: '/image-lab',
+        thumbnail: '/tools/cmyk-halftone.webp',
+        badge: 'NEW',
+        badgeVariant: 'free',
+        category: 'creative',
+        free: true,
+        alpha: true,
+      },
+      {
+        id: 'ascii-vortex',
+        name: t('apps.asciiVortex.name'),
+        desc: t('apps.asciiVortex.description'),
+        link: 'https://vsn-labs.vercel.app/ascii-vortex',
+        thumbnail: '/tools/ascii-vortex.webp',
+        badge: t('apps.badge.free'),
+        badgeVariant: 'free',
+        category: 'creative',
+        isExternal: true,
+        free: true,
+      },
+      {
+        id: 'grid-paint',
+        name: t('apps.gridPaint.name'),
+        desc: t('apps.gridPaint.description'),
+        link: '/grid-paint',
+        thumbnail: '/tools/gridpaint.webp',
+        badge: t('apps.badge.free'),
+        badgeVariant: 'free',
+        category: 'creative',
+        free: true,
+      },
 
-    // Image Tools
-    { id: 'compress', name: 'Image Compressor', desc: 'Compress images with quality and format control. Batch supported.', link: '/compress', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/compress.webp', category: 'image', free: true },
-    { id: 'upscale', name: 'Bicubic Upscale', desc: 'Upscale images 2x–4x with sharpening control.', link: '/upscale', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/upscale.webp', category: 'image', free: true, alpha: true },
-    { id: 'remove-bg', name: 'Background Remover', desc: 'Remove backgrounds with AI or simple mode. Batch supported.', link: '/remove-bg', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/remove-bg.webp', category: 'image', free: true },
-    { id: 'watermark', name: 'Watermark', desc: 'Add text or logo watermarks with position, opacity and tile mode.', link: '/watermark', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/watermark.webp', category: 'image', free: true },
-    { id: 'visual-search', name: 'Visual Search', desc: 'Reverse image search across multiple sources.', link: '/visual-search', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/visual-search.webp', category: 'image', free: true, alpha: true },
-    // Converters
-    { id: 'converter', name: 'File Converter', desc: 'Convert images between PNG, JPG, WebP, PDF and ICO.', link: '/converter', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/file-converter.webp', category: 'converters', free: true },
-    { id: 'svg-optimizer', name: 'SVG Optimizer', desc: 'Optimize and minify SVG files. Remove metadata, comments and empty groups.', link: '/svg-optimizer', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/svg-optimizer.webp', category: 'converters', free: true },
-    { id: 'color-converter', name: 'Color Converter', desc: 'Convert colors between HEX, RGB, CMYK, HSL with WCAG contrast check.', link: '/color-converter', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/color-converter.webp', category: 'converters', free: true },
-    // Generators
-    { id: 'qrcode', name: 'QR Code Generator', desc: 'Generate QR codes with custom size, colors and error correction.', link: '/qrcode', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/qrcode.webp', category: 'generators', free: true },
-    { id: 'favicon', name: 'Favicon Generator', desc: 'Generate all favicon sizes, apple-touch-icon and web manifest from one image.', link: '/favicon', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/favicon.webp', category: 'generators', free: true },
-    { id: 'og-image', name: 'OG Image Generator', desc: 'Create Open Graph images with templates, custom text and colors.', link: '/og-image', badge: 'Free', badgeVariant: 'free', thumbnail: '/tools/og-image.webp', category: 'generators', free: true, alpha: true },
+      // Image Tools
+      {
+        id: 'compress',
+        name: 'Image Compressor',
+        desc: 'Compress images with quality and format control. Batch supported.',
+        link: '/compress',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/compress.webp',
+        category: 'image',
+        free: true,
+      },
+      {
+        id: 'upscale',
+        name: 'Bicubic Upscale',
+        desc: 'Upscale images 2x–4x with sharpening control.',
+        link: '/upscale',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/upscale.webp',
+        category: 'image',
+        free: true,
+        alpha: true,
+      },
+      {
+        id: 'remove-bg',
+        name: 'Background Remover',
+        desc: 'Remove backgrounds with AI or simple mode. Batch supported.',
+        link: '/remove-bg',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/remove-bg.webp',
+        category: 'image',
+        free: true,
+      },
+      {
+        id: 'watermark',
+        name: 'Watermark',
+        desc: 'Add text or logo watermarks with position, opacity and tile mode.',
+        link: '/watermark',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/watermark.webp',
+        category: 'image',
+        free: true,
+      },
+      {
+        id: 'visual-search',
+        name: 'Visual Search',
+        desc: 'Reverse image search across multiple sources.',
+        link: '/visual-search',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/visual-search.webp',
+        category: 'image',
+        free: true,
+        alpha: true,
+      },
+      // Converters
+      {
+        id: 'converter',
+        name: 'File Converter',
+        desc: 'Convert images between PNG, JPG, WebP, PDF and ICO.',
+        link: '/converter',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/file-converter.webp',
+        category: 'converters',
+        free: true,
+      },
+      {
+        id: 'svg-optimizer',
+        name: 'SVG Optimizer',
+        desc: 'Optimize and minify SVG files. Remove metadata, comments and empty groups.',
+        link: '/svg-optimizer',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/svg-optimizer.webp',
+        category: 'converters',
+        free: true,
+      },
+      {
+        id: 'color-converter',
+        name: 'Color Converter',
+        desc: 'Convert colors between HEX, RGB, CMYK, HSL with WCAG contrast check.',
+        link: '/color-converter',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/color-converter.webp',
+        category: 'converters',
+        free: true,
+      },
+      // Generators
+      {
+        id: 'qrcode',
+        name: 'QR Code Generator',
+        desc: 'Generate QR codes with custom size, colors and error correction.',
+        link: '/qrcode',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/qrcode.webp',
+        category: 'generators',
+        free: true,
+      },
+      {
+        id: 'favicon',
+        name: 'Favicon Generator',
+        desc: 'Generate all favicon sizes, apple-touch-icon and web manifest from one image.',
+        link: '/favicon',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/favicon.webp',
+        category: 'generators',
+        free: true,
+      },
+      {
+        id: 'og-image',
+        name: 'OG Image Generator',
+        desc: 'Create Open Graph images with templates, custom text and colors.',
+        link: '/og-image',
+        badge: 'Free',
+        badgeVariant: 'free',
+        thumbnail: '/tools/og-image.webp',
+        category: 'generators',
+        free: true,
+        alpha: true,
+      },
 
-    // Audio
-    { id: 'youtube-mixer', name: t('apps.youtubeMixer.name'), desc: t('apps.youtubeMixer.description'), link: 'https://vsn-labs.vercel.app/youtube-mixer', thumbnail: '/tools/youtube-mixer.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'audio', isExternal: true, free: true },
-    { id: 'ellipse-audio', name: t('apps.ellipseAudio.name'), desc: t('apps.ellipseAudio.description'), link: 'https://vsn-labs.vercel.app/elipse-audio-freq', thumbnail: '/tools/elipse-audio.webp', badge: t('apps.badge.free'), badgeVariant: 'free', isExternal: true, free: true, category: 'audio' },
+      // Audio
+      {
+        id: 'youtube-mixer',
+        name: t('apps.youtubeMixer.name'),
+        desc: t('apps.youtubeMixer.description'),
+        link: 'https://vsn-labs.vercel.app/youtube-mixer',
+        thumbnail: '/tools/youtube-mixer.webp',
+        badge: t('apps.badge.free'),
+        badgeVariant: 'free',
+        category: 'audio',
+        isExternal: true,
+        free: true,
+      },
+      {
+        id: 'ellipse-audio',
+        name: t('apps.ellipseAudio.name'),
+        desc: t('apps.ellipseAudio.description'),
+        link: 'https://vsn-labs.vercel.app/elipse-audio-freq',
+        thumbnail: '/tools/elipse-audio.webp',
+        badge: t('apps.badge.free'),
+        badgeVariant: 'free',
+        isExternal: true,
+        free: true,
+        category: 'audio',
+      },
 
-    // Community
-    { id: 'colorfy', name: t('apps.colorfy.name'), desc: t('apps.colorfy.description'), link: 'https://gradient-machine.vercel.app/', badge: t('apps.badge.free'), badgeVariant: 'free', thumbnail: '/tools/color-extractor.webp', category: 'community', isExternal: true, free: true },
-    { id: 'halftone-machine', name: t('apps.halftoneMachine.name'), desc: t('apps.halftoneMachine.description'), link: 'https://pedrojaques99.github.io/halftone-machine/', badge: t('apps.badge.free'), badgeVariant: 'free', thumbnail: '/tools/halftone-machine.webp', isExternal: true, category: 'community', free: true },
-    { id: 'vsn-labs', name: t('apps.vsnLabs.name'), desc: t('apps.vsnLabs.description'), link: 'https://vsn-labs.vercel.app/', thumbnail: '/tools/vsn-labs.webp', badge: t('apps.badge.free'), badgeVariant: 'free', category: 'community', isExternal: true, free: true },
-    { id: 'labs', name: 'Labs', desc: 'Generative design experiments and mini-tools. Wind tunnels, reaction diffusion, and more.', link: '/labs', thumbnail: '/tools/labs.webp', badge: 'NEW', badgeVariant: 'free', category: 'community', free: true },
+      // Community
+      {
+        id: 'colorfy',
+        name: t('apps.colorfy.name'),
+        desc: t('apps.colorfy.description'),
+        link: 'https://gradient-machine.vercel.app/',
+        badge: t('apps.badge.free'),
+        badgeVariant: 'free',
+        thumbnail: '/tools/color-extractor.webp',
+        category: 'community',
+        isExternal: true,
+        free: true,
+      },
+      {
+        id: 'halftone-machine',
+        name: t('apps.halftoneMachine.name'),
+        desc: t('apps.halftoneMachine.description'),
+        link: 'https://pedrojaques99.github.io/halftone-machine/',
+        badge: t('apps.badge.free'),
+        badgeVariant: 'free',
+        thumbnail: '/tools/halftone-machine.webp',
+        isExternal: true,
+        category: 'community',
+        free: true,
+      },
+      {
+        id: 'vsn-labs',
+        name: t('apps.vsnLabs.name'),
+        desc: t('apps.vsnLabs.description'),
+        link: 'https://vsn-labs.vercel.app/',
+        thumbnail: '/tools/vsn-labs.webp',
+        badge: t('apps.badge.free'),
+        badgeVariant: 'free',
+        category: 'community',
+        isExternal: true,
+        free: true,
+      },
+      {
+        id: 'labs',
+        name: 'Labs',
+        desc: 'Generative design experiments and mini-tools. Wind tunnels, reaction diffusion, and more.',
+        link: '/labs',
+        thumbnail: '/tools/labs.webp',
+        badge: 'NEW',
+        badgeVariant: 'free',
+        category: 'community',
+        free: true,
+      },
 
-    // Admin
-    { id: 'smart-analyzer', name: 'Smart Analyzer', desc: 'AI-powered image analysis. Auto-detects image type and generates optimized prompts for Figma plugin or image generation.', link: '/admin/smart-analyzer', thumbnail: '/tools/smart-analyzer.webp', badge: 'ADMIN', badgeVariant: 'admin', category: 'admin', free: false, adminOnly: true },
-  ], [t]);
+      // Admin
+      {
+        id: 'smart-analyzer',
+        name: 'Smart Analyzer',
+        desc: 'AI-powered image analysis. Auto-detects image type and generates optimized prompts for Figma plugin or image generation.',
+        link: '/admin/smart-analyzer',
+        thumbnail: '/tools/smart-analyzer.webp',
+        badge: 'ADMIN',
+        badgeVariant: 'admin',
+        category: 'admin',
+        free: false,
+        adminOnly: true,
+      },
+    ],
+    [t]
+  );
 
   // ─── Categories ─────────────────────────────────────────────────────────
 
@@ -477,10 +877,10 @@ export const AppsPage: React.FC = () => {
     setIsLoading(true);
     try {
       const data = await appsService.getAll();
-      const dbAppIds = new Set(data.map(app => app.appId));
+      const dbAppIds = new Set(data.map((app) => app.appId));
 
       if (isAdmin) {
-        const missingApps = staticAppsData.filter(app => !dbAppIds.has(app.id));
+        const missingApps = staticAppsData.filter((app) => !dbAppIds.has(app.id));
         if (missingApps.length > 0) {
           await appsService.seed(staticAppsData);
           const syncedData = await appsService.getAll();
@@ -489,18 +889,27 @@ export const AppsPage: React.FC = () => {
         }
       }
 
-      const staticById = new Map(staticAppsData.map(a => [a.id, a]));
-      const mergedDbApps = data.map(dbApp => {
+      const staticById = new Map(staticAppsData.map((a) => [a.id, a]));
+      const mergedDbApps = data.map((dbApp) => {
         const s = staticById.get(dbApp.appId);
         if (!s) return dbApp;
-        return { ...dbApp, name: s.name, description: s.desc, badge: s.badge, thumbnail: s.thumbnail, category: s.category };
+        return {
+          ...dbApp,
+          name: s.name,
+          description: s.desc,
+          badge: s.badge,
+          thumbnail: s.thumbnail,
+          category: s.category,
+        };
       });
 
       const missingStaticApps = staticAppsData
-        .filter(app => !dbAppIds.has(app.id))
-        .map(app => ({ ...app, appId: app.id, description: app.desc })) as any[];
+        .filter((app) => !dbAppIds.has(app.id))
+        .map((app) => ({ ...app, appId: app.id, description: app.desc })) as any[];
 
-      setApps(data.length === 0 ? (staticAppsData as any) : [...mergedDbApps, ...missingStaticApps]);
+      setApps(
+        data.length === 0 ? (staticAppsData as any) : [...mergedDbApps, ...missingStaticApps]
+      );
     } catch (error) {
       console.error('Error fetching apps:', error);
       setApps(staticAppsData as any);
@@ -510,15 +919,19 @@ export const AppsPage: React.FC = () => {
     }
   }, [isAdmin, staticAppsData, t]);
 
-  useEffect(() => { fetchApps(); }, [fetchApps]);
+  useEffect(() => {
+    fetchApps();
+  }, [fetchApps]);
 
   // ─── Featured apps for hero (explicit order) ───────────────────────────
 
   const HERO_ORDER = ['canvas', 'brand-guidelines', '3d-studio', 'cmyk-halftone'];
 
   const heroApps = useMemo(() => {
-    const byId = new Map(apps.map(a => [(a as any).id || a.appId, a]));
-    return HERO_ORDER.map(id => byId.get(id)).filter(Boolean).slice(0, 3);
+    const byId = new Map(apps.map((a) => [(a as any).id || a.appId, a]));
+    return HERO_ORDER.map((id) => byId.get(id))
+      .filter(Boolean)
+      .slice(0, 3);
   }, [apps]);
 
   // ─── Filtered & Sorted ────────────────────────────────────────────────
@@ -526,12 +939,14 @@ export const AppsPage: React.FC = () => {
   const filteredApps = useMemo(() => {
     const q = search.toLowerCase().trim();
 
-    return apps.filter(app => {
+    return apps.filter((app) => {
       if (app.isHidden && !isAdmin) return false;
       if ((app as any).adminOnly && !isAdmin) return false;
       if (activeCategory && app.category !== activeCategory) return false;
-      if (accessFilter === 'free' && !(app as any).free && app.badgeVariant !== 'free') return false;
-      if (accessFilter === 'premium' && ((app as any).free || app.badgeVariant === 'free')) return false;
+      if (accessFilter === 'free' && !(app as any).free && app.badgeVariant !== 'free')
+        return false;
+      if (accessFilter === 'premium' && ((app as any).free || app.badgeVariant === 'free'))
+        return false;
       if (q) {
         const name = (app.name || '').toLowerCase();
         const desc = (app.description || (app as any).desc || '').toLowerCase();
@@ -558,20 +973,20 @@ export const AppsPage: React.FC = () => {
 
   const appsByCategory = useMemo(() => {
     const categoriesToShow = activeCategory
-      ? categories.filter(c => c.key === activeCategory)
+      ? categories.filter((c) => c.key === activeCategory)
       : categories;
 
     return categoriesToShow
-      .map(cat => ({
+      .map((cat) => ({
         ...cat,
-        apps: sortedApps.filter(a => a.category === cat.key),
+        apps: sortedApps.filter((a) => a.category === cat.key),
       }))
-      .filter(cat => cat.apps.length > 0);
+      .filter((cat) => cat.apps.length > 0);
   }, [sortedApps, categories, activeCategory]);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    apps.forEach(app => {
+    apps.forEach((app) => {
       if (app.isHidden && !isAdmin) return;
       if ((app as any).adminOnly && !isAdmin) return;
       counts[app.category] = (counts[app.category] || 0) + 1;
@@ -586,14 +1001,21 @@ export const AppsPage: React.FC = () => {
 
   const openApp = (app: any) => {
     if (app.badgeVariant === 'comingSoon') return;
-    if (app.badgeVariant === 'premium' && !hasAccess) { onSubscriptionModalOpen(); return; }
+    if (app.badgeVariant === 'premium' && !hasAccess) {
+      onSubscriptionModalOpen();
+      return;
+    }
     const appId = app.id || app.appId;
     if (appId) recordLastUsed(appId);
     if (app.isExternal) window.open(app.link, '_blank');
     else navigate(app.link);
   };
 
-  const clearFilters = () => { setSearch(''); setActiveCategory(null); setAccessFilter('all'); };
+  const clearFilters = () => {
+    setSearch('');
+    setActiveCategory(null);
+    setAccessFilter('all');
+  };
 
   const showHero = !hasActiveFilters && sortBy === 'default';
 
@@ -608,15 +1030,20 @@ export const AppsPage: React.FC = () => {
       microTitle="Platform // Tools"
       description="Explore our creative toolkit — from pro design tools to free experiments."
       breadcrumb={[{ label: t('apps.home'), to: '/' }, { label: t('apps.title') }]}
-      actions={isAdmin ? (
-        <Button
-          onClick={() => { setEditingApp(undefined); setIsDialogOpen(true); }}
-          variant="ghost"
-          className="h-9 px-4 gap-2 text-xs font-medium text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 rounded-xl"
-        >
-          <Plus size={14} /> Add App
-        </Button>
-      ) : undefined}
+      actions={
+        isAdmin ? (
+          <Button
+            onClick={() => {
+              setEditingApp(undefined);
+              setIsDialogOpen(true);
+            }}
+            variant="ghost"
+            className="h-9 px-4 gap-2 text-xs font-medium text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 rounded-xl"
+          >
+            <Plus size={14} /> Add App
+          </Button>
+        ) : undefined
+      }
     >
       {/* ─── Hero ──────────────────────────────────────────────────────── */}
       {showHero && !isLoading && heroApps.length >= 3 && (
@@ -624,8 +1051,18 @@ export const AppsPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
             <HeroCard app={heroApps[0]} variant="primary" hasAccess={hasAccess} onOpen={openApp} />
             <div className="flex flex-col gap-3 lg:gap-4">
-              <HeroCard app={heroApps[1]} variant="secondary" hasAccess={hasAccess} onOpen={openApp} />
-              <HeroCard app={heroApps[2]} variant="secondary" hasAccess={hasAccess} onOpen={openApp} />
+              <HeroCard
+                app={heroApps[1]}
+                variant="secondary"
+                hasAccess={hasAccess}
+                onOpen={openApp}
+              />
+              <HeroCard
+                app={heroApps[2]}
+                variant="secondary"
+                hasAccess={hasAccess}
+                onOpen={openApp}
+              />
             </div>
           </div>
         </section>
@@ -645,19 +1082,21 @@ export const AppsPage: React.FC = () => {
                 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition-all',
                 !activeCategory
                   ? 'bg-white/10 text-white font-medium'
-                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]',
+                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]'
               )}
             >
               All
-              <span className={cn(
-                'text-[11px] px-1.5 py-0.5 rounded-full',
-                !activeCategory ? 'bg-white/10 text-neutral-300' : 'text-neutral-600',
-              )}>
+              <span
+                className={cn(
+                  'text-[11px] px-1.5 py-0.5 rounded-full',
+                  !activeCategory ? 'bg-white/10 text-neutral-300' : 'text-neutral-600'
+                )}
+              >
                 {totalApps}
               </span>
             </button>
 
-            {categories.map(cat => {
+            {categories.map((cat) => {
               const Icon = cat.icon;
               const count = categoryCounts[cat.key] || 0;
               if (count === 0 && cat.key !== 'admin') return null;
@@ -670,15 +1109,19 @@ export const AppsPage: React.FC = () => {
                     'flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition-all',
                     activeCategory === cat.key
                       ? 'bg-white/10 text-white font-medium'
-                      : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]',
+                      : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]'
                   )}
                 >
                   <Icon size={14} />
                   {cat.label}
-                  <span className={cn(
-                    'text-[11px] px-1.5 py-0.5 rounded-full',
-                    activeCategory === cat.key ? 'bg-white/10 text-neutral-300' : 'text-neutral-600',
-                  )}>
+                  <span
+                    className={cn(
+                      'text-[11px] px-1.5 py-0.5 rounded-full',
+                      activeCategory === cat.key
+                        ? 'bg-white/10 text-neutral-300'
+                        : 'text-neutral-600'
+                    )}
+                  >
                     {count}
                   </span>
                 </button>
@@ -694,7 +1137,7 @@ export const AppsPage: React.FC = () => {
                 'px-3 py-2 rounded-xl text-sm whitespace-nowrap transition-all hidden sm:block',
                 accessFilter === 'free'
                   ? 'bg-green-500/10 text-green-400 font-medium'
-                  : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
+                  : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
               )}
             >
               Free
@@ -705,7 +1148,7 @@ export const AppsPage: React.FC = () => {
                 'px-3 py-2 rounded-xl text-sm whitespace-nowrap transition-all hidden sm:block',
                 accessFilter === 'premium'
                   ? 'bg-brand-cyan/10 text-brand-cyan font-medium'
-                  : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
+                  : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
               )}
             >
               Pro
@@ -715,11 +1158,14 @@ export const AppsPage: React.FC = () => {
           {/* Search + Sort */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-56">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none"
+              />
               <input
                 type="text"
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search apps..."
                 className="w-full pl-9 pr-9 py-2 text-sm bg-white/[0.03] border border-neutral-800 rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/15 focus:bg-white/5 transition-all"
               />
@@ -734,17 +1180,25 @@ export const AppsPage: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setSortBy(sortBy === 'default' ? 'recent' : sortBy === 'recent' ? 'name' : 'default')}
-              title={sortBy === 'recent' ? 'Most used first' : sortBy === 'name' ? 'Sorted A–Z' : 'Sort'}
+              onClick={() =>
+                setSortBy(
+                  sortBy === 'default' ? 'recent' : sortBy === 'recent' ? 'name' : 'default'
+                )
+              }
+              title={
+                sortBy === 'recent' ? 'Most used first' : sortBy === 'name' ? 'Sorted A–Z' : 'Sort'
+              }
               className={cn(
                 'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border transition-all shrink-0',
                 sortBy !== 'default'
                   ? 'border-white/10 text-neutral-200 bg-white/5'
-                  : 'border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]',
+                  : 'border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
               )}
             >
               <ArrowUpDown size={14} />
-              <span className="hidden sm:inline">{sortBy === 'recent' ? 'Most used' : sortBy === 'name' ? 'A–Z' : 'Sort'}</span>
+              <span className="hidden sm:inline">
+                {sortBy === 'recent' ? 'Most used' : sortBy === 'name' ? 'A–Z' : 'Sort'}
+              </span>
             </button>
           </div>
         </div>
@@ -763,7 +1217,9 @@ export const AppsPage: React.FC = () => {
             </div>
           )}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => <AppCardSkeleton key={i} />)}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <AppCardSkeleton key={i} />
+            ))}
           </div>
         </div>
       ) : appsByCategory.length === 0 ? (
@@ -804,15 +1260,15 @@ export const AppsPage: React.FC = () => {
             className="space-y-14"
           >
             {(() => {
-              const cardCategories = appsByCategory.filter(c => !COMPACT_CATEGORIES.has(c.key));
-              const compactCategories = appsByCategory.filter(c => COMPACT_CATEGORIES.has(c.key));
+              const cardCategories = appsByCategory.filter((c) => !COMPACT_CATEGORIES.has(c.key));
+              const compactCategories = appsByCategory.filter((c) => COMPACT_CATEGORIES.has(c.key));
 
               return (
                 <>
                   {/* Card categories (Pro, Creative) — full-width with thumbnails */}
                   {cardCategories.map((category) => {
-                    const withThumb = category.apps.filter(a => a.thumbnail);
-                    const withoutThumb = category.apps.filter(a => !a.thumbnail);
+                    const withThumb = category.apps.filter((a) => a.thumbnail);
+                    const withoutThumb = category.apps.filter((a) => !a.thumbnail);
 
                     return (
                       <section key={category.key}>
@@ -827,7 +1283,10 @@ export const AppsPage: React.FC = () => {
                                 isAdmin={isAdmin}
                                 hasAccess={hasAccess}
                                 onOpen={openApp}
-                                onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
+                                onEdit={(a) => {
+                                  setEditingApp(a);
+                                  setIsDialogOpen(true);
+                                }}
                               />
                             ))}
                           </div>
@@ -842,7 +1301,10 @@ export const AppsPage: React.FC = () => {
                                 isAdmin={isAdmin}
                                 hasAccess={hasAccess}
                                 onOpen={openApp}
-                                onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
+                                onEdit={(a) => {
+                                  setEditingApp(a);
+                                  setIsDialogOpen(true);
+                                }}
                               />
                             ))}
                           </div>
@@ -865,7 +1327,10 @@ export const AppsPage: React.FC = () => {
                                 isAdmin={isAdmin}
                                 hasAccess={hasAccess}
                                 onOpen={openApp}
-                                onEdit={(a) => { setEditingApp(a); setIsDialogOpen(true); }}
+                                onEdit={(a) => {
+                                  setEditingApp(a);
+                                  setIsDialogOpen(true);
+                                }}
                               />
                             ))}
                           </div>

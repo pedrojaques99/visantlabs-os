@@ -31,8 +31,8 @@ export const GridMachinePage: React.FC = () => {
     store.getState().setSvg(content, name);
     const result = analyzeSvg(content);
     store.getState().setAnalysis(result);
-    const anchors = result.points.filter(p => p.type === 'anchor').length;
-    const handles = result.points.filter(p => p.type === 'handle').length;
+    const anchors = result.points.filter((p) => p.type === 'anchor').length;
+    const handles = result.points.filter((p) => p.type === 'handle').length;
     toast.success(t('grid.machine.loaded_name_anchors_anchors_handles_h'));
   }, []);
 
@@ -62,17 +62,28 @@ export const GridMachinePage: React.FC = () => {
     panelVisible,
     setPanelVisible,
     extras: [
-      { keys: 'mod+o', handler: (e) => { e.preventDefault(); fileInputRef.current?.click(); } },
+      {
+        keys: 'mod+o',
+        handler: (e) => {
+          e.preventDefault();
+          fileInputRef.current?.click();
+        },
+      },
     ],
   });
 
-  usePasteImage(useCallback(async ({ file }) => {
-    if (!file) return;
-    if (file.type === 'image/svg+xml') {
-      const text = await file.text();
-      loadSvg(text, file.name || 'pasted.svg');
-    }
-  }, [loadSvg]));
+  usePasteImage(
+    useCallback(
+      async ({ file }) => {
+        if (!file) return;
+        if (file.type === 'image/svg+xml') {
+          const text = await file.text();
+          loadSvg(text, file.name || 'pasted.svg');
+        }
+      },
+      [loadSvg]
+    )
+  );
 
   useEffect(() => {
     const handlePasteText = (e: ClipboardEvent) => {
@@ -86,40 +97,56 @@ export const GridMachinePage: React.FC = () => {
     return () => window.removeEventListener('paste', handlePasteText);
   }, [loadSvg]);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
-      toast.error(t('grid.machine.please_upload_an_svg_file'));
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => loadSvg(reader.result as string, file.name);
-    reader.readAsText(file);
-    e.target.value = '';
-  }, [loadSvg]);
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
+        toast.error(t('grid.machine.please_upload_an_svg_file'));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => loadSvg(reader.result as string, file.name);
+      reader.readAsText(file);
+      e.target.value = '';
+    },
+    [loadSvg]
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
-      toast.error(t('grid.machine.only_svg_files_are_supported'));
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => loadSvg(reader.result as string, file.name);
-    reader.readAsText(file);
-  }, [loadSvg]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files?.[0];
+      if (!file) return;
+      if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
+        toast.error(t('grid.machine.only_svg_files_are_supported'));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => loadSvg(reader.result as string, file.name);
+      reader.readAsText(file);
+    },
+    [loadSvg]
+  );
 
-  const anchorCount = analysis?.points.filter(p => p.type === 'anchor').length ?? 0;
-  const handleCount = analysis?.points.filter(p => p.type === 'handle').length ?? 0;
+  const anchorCount = analysis?.points.filter((p) => p.type === 'anchor').length ?? 0;
+  const handleCount = analysis?.points.filter((p) => p.type === 'handle').length ?? 0;
 
-  const statusItems = svgContent ? [
-    { label: `${anchorCount} anchors` },
-    { label: `${handleCount} handles` },
-    ...(analysis ? [{ label: `${Math.round(analysis.viewBox.width)}×${Math.round(analysis.viewBox.height)}` }] : []),
-  ] : [];
+  const statusItems = svgContent
+    ? [
+        { label: `${anchorCount} anchors` },
+        { label: `${handleCount} handles` },
+        ...(analysis
+          ? [
+              {
+                label: `${Math.round(analysis.viewBox.width)}×${Math.round(
+                  analysis.viewBox.height
+                )}`,
+              },
+            ]
+          : []),
+      ]
+    : [];
 
   return (
     <ToolEditorShell
@@ -133,22 +160,40 @@ export const GridMachinePage: React.FC = () => {
       resetConfirmText="Clear"
       extraTopBarRight={
         <Tooltip content="Open SVG (Ctrl+O)">
-          <Button variant="ghost" size="icon" aria-label="Open SVG" className="h-7 w-7 text-neutral-500" onClick={() => fileInputRef.current?.click()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Open SVG"
+            className="h-7 w-7 text-neutral-500"
+            onClick={() => fileInputRef.current?.click()}
+          >
             <Upload size={14} />
           </Button>
         </Tooltip>
       }
-      controlsPanel={<GridMachineControls onExportPng={handleExportPng} onExportSvg={handleExportSvg} />}
+      controlsPanel={
+        <GridMachineControls onExportPng={handleExportPng} onExportSvg={handleExportSvg} />
+      }
       statusItems={statusItems}
       fileName={svgContent ? fileName : undefined}
       dragProps={{
-        onDrop: (e: React.DragEvent) => { handleDrop(e); },
-        onDragOver: (e: React.DragEvent) => { e.preventDefault(); },
+        onDrop: (e: React.DragEvent) => {
+          handleDrop(e);
+        },
+        onDragOver: (e: React.DragEvent) => {
+          e.preventDefault();
+        },
         onDragLeave: () => {},
       }}
       dropMessage={t('grid.machine.drop_svg_here')}
     >
-      <input ref={fileInputRef} type="file" accept=".svg,image/svg+xml" className="hidden" onChange={handleFileSelect} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".svg,image/svg+xml"
+        className="hidden"
+        onChange={handleFileSelect}
+      />
       {svgContent ? (
         <GridCanvas ref={gridRef} />
       ) : (
@@ -161,8 +206,12 @@ export const GridMachinePage: React.FC = () => {
               <Upload size={20} className="text-neutral-500 group-hover:text-neutral-300" />
             </div>
             <div className="text-center">
-              <p className="text-[12px] text-neutral-400">{t('grid.machine.drop_an_svg_file_here')}</p>
-              <p className="text-[10px] text-neutral-600 mt-1">{t('grid.machine.or_click_ctrlv_to_paste')}</p>
+              <p className="text-[12px] text-neutral-400">
+                {t('grid.machine.drop_an_svg_file_here')}
+              </p>
+              <p className="text-[10px] text-neutral-600 mt-1">
+                {t('grid.machine.or_click_ctrlv_to_paste')}
+              </p>
             </div>
           </button>
         </div>

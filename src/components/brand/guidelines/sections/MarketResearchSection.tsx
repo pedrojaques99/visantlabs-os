@@ -12,21 +12,37 @@ interface MarketResearchSectionProps {
 }
 
 const toLines = (arr?: string[]) => (arr || []).join('\n');
-const fromLines = (text: string) => text.split('\n').map(s => s.trim()).filter(Boolean);
+const fromLines = (text: string) =>
+  text
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
 
-export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({ guideline, onUpdate, span }) => {
+export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({
+  guideline,
+  onUpdate,
+  span,
+}) => {
   const mr = guideline.strategy?.marketResearch || {};
 
-  const persist = useCallback((next: BrandMarketResearch) => {
-    onUpdate({ strategy: { ...guideline.strategy, marketResearch: next } });
-  }, [onUpdate, guideline.strategy]);
+  const persist = useCallback(
+    (next: BrandMarketResearch) => {
+      onUpdate({ strategy: { ...guideline.strategy, marketResearch: next } });
+    },
+    [onUpdate, guideline.strategy]
+  );
 
   const update = (patch: Partial<BrandMarketResearch>) => {
     persist({ ...mr, ...patch });
   };
 
   return (
-    <SectionBlock id="market_research" icon={<Search size={14} />} title="Pesquisa de Mercado" span={span as any}>
+    <SectionBlock
+      id="market_research"
+      icon={<Search size={14} />}
+      title="Pesquisa de Mercado"
+      span={span as any}
+    >
       <div className="space-y-4 py-1">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="space-y-1">
@@ -35,7 +51,7 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({ gu
               value={toLines(mr.competitors)}
               onChange={(e) => update({ competitors: fromLines(e.target.value) })}
               className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
-              placeholder={"Playtomic\nStrava\nFrontify"}
+              placeholder={'Playtomic\nStrava\nFrontify'}
             />
           </div>
           <div className="space-y-1">
@@ -44,7 +60,7 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({ gu
               value={toLines(mr.gaps)}
               onChange={(e) => update({ gaps: fromLines(e.target.value) })}
               className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
-              placeholder={"Sem DNA cultural\nUI fria e genérica"}
+              placeholder={'Sem DNA cultural\nUI fria e genérica'}
             />
           </div>
           <div className="space-y-1">
@@ -53,7 +69,7 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({ gu
               value={toLines(mr.opportunities)}
               onChange={(e) => update({ opportunities: fromLines(e.target.value) })}
               className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
-              placeholder={"Cultura local\nComunidade ativa"}
+              placeholder={'Cultura local\nComunidade ativa'}
             />
           </div>
         </div>

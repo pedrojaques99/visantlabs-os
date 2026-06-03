@@ -71,7 +71,9 @@ export const Studio3DPage: React.FC = () => {
 
   // Auto-render state
   const [autoRender, setAutoRender] = useState<AutoRenderFormat>(null);
-  const [autoRenderState, setAutoRenderState] = useState<'loading' | 'rendering' | 'encoding' | 'done' | 'error' | null>(null);
+  const [autoRenderState, setAutoRenderState] = useState<
+    'loading' | 'rendering' | 'encoding' | 'done' | 'error' | null
+  >(null);
   const [autoRenderProgress, setAutoRenderProgress] = useState(0);
   const [autoRenderStartTime, setAutoRenderStartTime] = useState(0);
   const autoRenderTriggered = useRef(false);
@@ -142,7 +144,14 @@ export const Studio3DPage: React.FC = () => {
         if (autoRender === 'png') {
           setAutoRenderState('rendering');
           setAutoRenderProgress(50);
-          await exportPNG(canvas, s.aspectRatio, s.exportResolution, s.transparentBg, s.background, name);
+          await exportPNG(
+            canvas,
+            s.aspectRatio,
+            s.exportResolution,
+            s.transparentBg,
+            s.background,
+            name
+          );
           setAutoRenderProgress(100);
           setAutoRenderState('done');
         } else {
@@ -164,7 +173,7 @@ export const Studio3DPage: React.FC = () => {
               if (pct >= 75) setAutoRenderState('encoding');
             },
             s.shaderEnabled ? s.getShaderSettings() : undefined,
-            s.videoFps || 30,
+            s.videoFps || 30
           );
 
           store.setState({ animate: prevAnim, animateSpeed: prevSpeed });
@@ -465,13 +474,16 @@ export const Studio3DPage: React.FC = () => {
       s.setIsLoading(true);
       try {
         const { tracePng } = await import('@/services/svgPipeline');
-        s.setSvgData(await tracePng(file, {
-          turdSize: s.traceTurdSize,
-          optTolerance: s.traceOptTolerance,
-          threshold: s.traceThreshold,
-          alphaMax: s.traceAlphaMax,
-          preset: s.tracePreset,
-        }), file.name);
+        s.setSvgData(
+          await tracePng(file, {
+            turdSize: s.traceTurdSize,
+            optTolerance: s.traceOptTolerance,
+            threshold: s.traceThreshold,
+            alphaMax: s.traceAlphaMax,
+            preset: s.tracePreset,
+          }),
+          file.name
+        );
         toast.success(t('studio3d.input.converted', { fileName: file.name }));
       } catch {
         toast.error(t('studio3d.input.processFailed'));
@@ -560,7 +572,9 @@ export const Studio3DPage: React.FC = () => {
           >
             <Undo2 size={isMobile ? 18 : 15} />
             {undoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[8px] font-mono text-neutral-400 px-0.5">{undoCount}</span>
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[8px] font-mono text-neutral-400 px-0.5">
+                {undoCount}
+              </span>
             )}
           </button>
           <button
@@ -574,7 +588,9 @@ export const Studio3DPage: React.FC = () => {
           >
             <Redo2 size={isMobile ? 18 : 15} />
             {redoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[8px] font-mono text-neutral-400 px-0.5">{redoCount}</span>
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[8px] font-mono text-neutral-400 px-0.5">
+                {redoCount}
+              </span>
             )}
           </button>
 
@@ -832,7 +848,15 @@ export const Studio3DPage: React.FC = () => {
             <div className="relative w-20 h-20">
               {autoRenderState === 'done' ? (
                 <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                  <svg
+                    className="w-10 h-10 text-emerald-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 </div>
               ) : autoRenderState === 'error' ? (
                 <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center">
@@ -841,8 +865,23 @@ export const Studio3DPage: React.FC = () => {
               ) : (
                 <>
                   <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="36" fill="none" stroke="currentColor" strokeWidth="3" className="text-neutral-800" />
-                    <circle cx="40" cy="40" r="36" fill="none" stroke="currentColor" strokeWidth="3" className="text-brand-cyan"
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="36"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      className="text-neutral-800"
+                    />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="36"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      className="text-brand-cyan"
                       strokeDasharray={`${2 * Math.PI * 36}`}
                       strokeDashoffset={`${2 * Math.PI * 36 * (1 - autoRenderProgress / 100)}`}
                       strokeLinecap="round"
@@ -864,16 +903,22 @@ export const Studio3DPage: React.FC = () => {
                 {autoRenderState === 'done' && 'Export complete'}
                 {autoRenderState === 'error' && 'Export failed'}
               </p>
-              {autoRenderState !== 'done' && autoRenderState !== 'error' && autoRenderStartTime > 0 && (
-                <p className="text-[10px] font-mono text-neutral-500">
-                  {autoRender?.toUpperCase()} · {Math.round((Date.now() - autoRenderStartTime) / 1000)}s elapsed
-                </p>
-              )}
+              {autoRenderState !== 'done' &&
+                autoRenderState !== 'error' &&
+                autoRenderStartTime > 0 && (
+                  <p className="text-[10px] font-mono text-neutral-500">
+                    {autoRender?.toUpperCase()} ·{' '}
+                    {Math.round((Date.now() - autoRenderStartTime) / 1000)}s elapsed
+                  </p>
+                )}
             </div>
 
             {(autoRenderState === 'done' || autoRenderState === 'error') && (
               <button
-                onClick={() => { setAutoRenderState(null); setAutoRender(null); }}
+                onClick={() => {
+                  setAutoRenderState(null);
+                  setAutoRender(null);
+                }}
                 className="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-mono text-neutral-300 uppercase tracking-wider transition-colors"
               >
                 {autoRenderState === 'done' ? 'Close' : 'Dismiss'}

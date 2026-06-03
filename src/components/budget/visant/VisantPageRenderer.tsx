@@ -24,7 +24,12 @@ const getVariableValue = (data: BudgetData, variable?: string): string => {
     projectDescription: data.projectDescription,
     accentColor: data.brandAccentColor || data.brandColors[0] || 'brand-cyan',
     bgColor: data.brandBackgroundColor || '#151515',
-    textColor: data.brandBackgroundColor !== '#ffffff' && data.brandBackgroundColor !== '#fff' && data.brandBackgroundColor !== 'white' ? '#ffffff' : '#000000',
+    textColor:
+      data.brandBackgroundColor !== '#ffffff' &&
+      data.brandBackgroundColor !== '#fff' &&
+      data.brandBackgroundColor !== 'white'
+        ? '#ffffff'
+        : '#000000',
   };
 
   return variableMap[variable] || '';
@@ -47,10 +52,22 @@ const renderElement = (
   onDataChange?: (data: Partial<BudgetData>) => void,
   depth: number = 0
 ): React.ReactNode => {
-  const { id, type, content, variable, position, size, styles, editable: elementEditable, children } = element;
+  const {
+    id,
+    type,
+    content,
+    variable,
+    position,
+    size,
+    styles,
+    editable: elementEditable,
+    children,
+  } = element;
 
   const isEditable = elementEditable !== false && editable;
-  const elementContent = variable ? getVariableValue(data, variable) : replaceVariables(content || '', data);
+  const elementContent = variable
+    ? getVariableValue(data, variable)
+    : replaceVariables(content || '', data);
 
   const elementStyle: React.CSSProperties = {
     position: 'absolute',
@@ -118,14 +135,7 @@ const renderElement = (
   }
 
   if (type === 'image') {
-    return (
-      <img
-        key={id}
-        src={elementContent}
-        alt=""
-        style={elementStyle}
-      />
-    );
+    return <img key={id} src={elementContent} alt="" style={elementStyle} />;
   }
 
   return null;
@@ -159,4 +169,3 @@ export const VisantPageRenderer: React.FC<VisantPageRendererProps> = ({
     </div>
   );
 };
-

@@ -10,10 +10,7 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log:
-      process.env.NODE_ENV === 'development'
-        ? ['query', 'error', 'warn']
-        : ['error'],
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     // MongoDB connection pooling is handled automatically by Prisma
     // No need for explicit connection options like with native MongoDB driver
   });
@@ -58,13 +55,13 @@ export const verifyPrismaConnectionWithDetails = async (): Promise<{
       code: error.code,
       meta: error.meta || error.cause,
     };
-    
+
     console.error('Prisma connection verification failed:', {
       ...errorDetails,
       stack: error.stack,
       timestamp: new Date().toISOString(),
     });
-    
+
     return {
       connected: false,
       error: errorDetails,
@@ -93,4 +90,3 @@ if (typeof process !== 'undefined') {
     process.exit(0);
   });
 }
-

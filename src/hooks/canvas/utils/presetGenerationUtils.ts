@@ -1,6 +1,6 @@
 /**
  * presetGenerationUtils
- * 
+ *
  * Utilitários compartilhados para geração de imagens com presets
  * (angle, texture, ambience, luminance seguem o mesmo padrão)
  */
@@ -10,7 +10,11 @@ import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
 import type { UploadedImage } from '@/types/types';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
-import { normalizeImageToBase64, detectMimeType, validateCredits } from '@/services/reactFlowService';
+import {
+  normalizeImageToBase64,
+  detectMimeType,
+  validateCredits,
+} from '@/services/reactFlowService';
 import { mockupApi } from '@/services/mockupApi';
 import type { Resolution } from '@/types/types';
 import {
@@ -18,7 +22,7 @@ import {
   validateBase64Image,
   updateOutputNodeWithResult,
   updateOutputNodeWithR2Url,
-  cleanupFailedNode
+  cleanupFailedNode,
 } from './nodeGenerationUtils';
 import { uploadImageToR2Auto } from './r2UploadUtils';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
@@ -41,10 +45,20 @@ interface PresetGenerationParams {
   connectedImageFromData?: string;
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
   edgesRef: React.MutableRefObject<Edge[]>;
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
   setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
-  updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void;
-  updateNodeLoadingState: <T extends FlowNodeData>(nodeId: string, isLoading: boolean, nodeType?: string) => void;
+  updateNodeData: <T extends FlowNodeData>(
+    nodeId: string,
+    newData: Partial<T>,
+    nodeType?: string
+  ) => void;
+  updateNodeLoadingState: <T extends FlowNodeData>(
+    nodeId: string,
+    isLoading: boolean,
+    nodeType?: string
+  ) => void;
   reactFlowInstance: ReactFlowInstance | null;
   addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
   refreshSubscriptionStatus: () => Promise<void>;
@@ -78,9 +92,13 @@ export const generateImageWithPreset = async ({
   onSuccess,
   promptOverride,
 }: PresetGenerationParams): Promise<void> => {
-  const node = nodesRef.current.find(n => n.id === nodeId);
+  const node = nodesRef.current.find((n) => n.id === nodeId);
   if (!node || node.type !== nodeType) {
-    console.warn(`generateImageWithPreset: Node not found or wrong type`, { nodeId, nodeType, foundNode: !!node });
+    console.warn(`generateImageWithPreset: Node not found or wrong type`, {
+      nodeId,
+      nodeType,
+      foundNode: !!node,
+    });
     return;
   }
 
@@ -114,7 +132,9 @@ export const generateImageWithPreset = async ({
   }
 
   let newOutputNodeId: string | null = null;
-  const skeletonNode = reactFlowInstance ? createOutputNodeWithSkeleton(node, nodeId, reactFlowInstance) : null;
+  const skeletonNode = reactFlowInstance
+    ? createOutputNodeWithSkeleton(node, nodeId, reactFlowInstance)
+    : null;
 
   if (skeletonNode) {
     newOutputNodeId = skeletonNode.nodeId;
@@ -158,9 +178,15 @@ export const generateImageWithPreset = async ({
       );
 
       if (canvasId && result.imageBase64) {
-        await uploadImageToR2Auto(result.imageBase64, newOutputNodeId, canvasId, setNodes, (imageUrl) => {
-          updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl, setNodes);
-        });
+        await uploadImageToR2Auto(
+          result.imageBase64,
+          newOutputNodeId,
+          canvasId,
+          setNodes,
+          (imageUrl) => {
+            updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl, setNodes);
+          }
+        );
       }
     }
 
@@ -173,10 +199,13 @@ export const generateImageWithPreset = async ({
     trackCanvasEvent('generation_completed', nodeType, canvasId, { model, presetId });
     toast.success(successMessage, { duration: 3000 });
   } catch (error: any) {
-    trackCanvasEvent('generation_failed', nodeType, canvasId, { model, presetId, error: error?.message });
+    trackCanvasEvent('generation_failed', nodeType, canvasId, {
+      model,
+      presetId,
+      error: error?.message,
+    });
     cleanupFailedNode(newOutputNodeId, setNodes, setEdges);
     updateNodeLoadingState(nodeId, false, nodeType);
     toast.error(error?.message || `Failed to generate ${nodeType}`, { duration: 5000 });
   }
 };
-

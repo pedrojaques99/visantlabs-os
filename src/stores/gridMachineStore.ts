@@ -60,7 +60,10 @@ interface GridMachineState extends GridMachineSettings {
   setAnalysis: (a: SvgAnalysis) => void;
   setPanelVisible: (v: boolean) => void;
   setIsExporting: (v: boolean) => void;
-  updateSetting: <K extends keyof GridMachineSettings>(key: K, value: GridMachineSettings[K]) => void;
+  updateSetting: <K extends keyof GridMachineSettings>(
+    key: K,
+    value: GridMachineSettings[K]
+  ) => void;
   setZoom: (z: number) => void;
   setPan: (x: number, y: number) => void;
   toggleHiddenLine: (index: number) => void;
@@ -84,32 +87,46 @@ export const useGridMachineStore = create<GridMachineState>()(
       hiddenLines: new Set<number>(),
       hiddenHistory: [],
 
-      setSvg: (svgContent, fileName) => set({ svgContent, fileName, hiddenLines: new Set(), hiddenHistory: [] }),
+      setSvg: (svgContent, fileName) =>
+        set({ svgContent, fileName, hiddenLines: new Set(), hiddenHistory: [] }),
       setAnalysis: (analysis) => set({ analysis }),
       setPanelVisible: (panelVisible) => set({ panelVisible }),
       setIsExporting: (isExporting) => set({ isExporting }),
       updateSetting: (key, value) => set({ [key]: value }),
       setZoom: (zoom) => set({ zoom: Math.max(0.1, Math.min(10, zoom)) }),
       setPan: (panX, panY) => set({ panX, panY }),
-      toggleHiddenLine: (index) => set((state) => {
-        const next = new Set(state.hiddenLines);
-        if (next.has(index)) {
-          next.delete(index);
-          return { hiddenLines: next };
-        }
-        next.add(index);
-        return { hiddenLines: next, hiddenHistory: [...state.hiddenHistory, index] };
-      }),
-      undoHideLine: () => set((state) => {
-        if (state.hiddenHistory.length === 0) return state;
-        const history = [...state.hiddenHistory];
-        const last = history.pop()!;
-        const next = new Set(state.hiddenLines);
-        next.delete(last);
-        return { hiddenLines: next, hiddenHistory: history };
-      }),
+      toggleHiddenLine: (index) =>
+        set((state) => {
+          const next = new Set(state.hiddenLines);
+          if (next.has(index)) {
+            next.delete(index);
+            return { hiddenLines: next };
+          }
+          next.add(index);
+          return { hiddenLines: next, hiddenHistory: [...state.hiddenHistory, index] };
+        }),
+      undoHideLine: () =>
+        set((state) => {
+          if (state.hiddenHistory.length === 0) return state;
+          const history = [...state.hiddenHistory];
+          const last = history.pop()!;
+          const next = new Set(state.hiddenLines);
+          next.delete(last);
+          return { hiddenLines: next, hiddenHistory: history };
+        }),
       resetSettings: () => set({ ...DEFAULTS, hiddenLines: new Set(), hiddenHistory: [] }),
-      clear: () => set({ svgContent: '', fileName: '', analysis: null, zoom: 1, panX: 0, panY: 0, hiddenLines: new Set(), hiddenHistory: [], ...DEFAULTS }),
+      clear: () =>
+        set({
+          svgContent: '',
+          fileName: '',
+          analysis: null,
+          zoom: 1,
+          panX: 0,
+          panY: 0,
+          hiddenLines: new Set(),
+          hiddenHistory: [],
+          ...DEFAULTS,
+        }),
     }),
     {
       name: 'vsn-grid-machine-cache',

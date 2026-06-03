@@ -1,4 +1,9 @@
-import { BoundingBox, AnimationSuggestion, MoodboardProject, CroppedImage } from '../types/moodboard';
+import {
+  BoundingBox,
+  AnimationSuggestion,
+  MoodboardProject,
+  CroppedImage,
+} from '../types/moodboard';
 import { authService } from './authService';
 
 const BASE = '/api/moodboard';
@@ -24,17 +29,27 @@ export const moodboardApi = {
   detectGrid: (imageBase64: string): Promise<{ boxes: BoundingBox[] }> =>
     req('/detect-grid', { method: 'POST', body: JSON.stringify({ imageBase64 }) }),
 
-  upscale: (imageBase64: string, size: '1K' | '2K' | '4K' = '4K'): Promise<{ upscaledBase64: string }> =>
+  upscale: (
+    imageBase64: string,
+    size: '1K' | '2K' | '4K' = '4K'
+  ): Promise<{ upscaledBase64: string }> =>
     req('/upscale', { method: 'POST', body: JSON.stringify({ imageBase64, size }) }),
 
-  suggest: (images: { id: string; base64: string }[]): Promise<{ suggestions: AnimationSuggestion[] }> =>
+  suggest: (
+    images: { id: string; base64: string }[]
+  ): Promise<{ suggestions: AnimationSuggestion[] }> =>
     req('/suggest', { method: 'POST', body: JSON.stringify({ images }) }),
 
-  saveProject: (project: { id?: string; name?: string; sourceUrl?: string; images?: CroppedImage[]; brandGuidelineId?: string }): Promise<{ id: string }> =>
+  saveProject: (project: {
+    id?: string;
+    name?: string;
+    sourceUrl?: string;
+    images?: CroppedImage[];
+    brandGuidelineId?: string;
+  }): Promise<{ id: string }> =>
     req('/projects', { method: 'POST', body: JSON.stringify(project) }),
 
-  listProjects: (): Promise<{ projects: MoodboardProject[] }> =>
-    req('/projects'),
+  listProjects: (): Promise<{ projects: MoodboardProject[] }> => req('/projects'),
 
   getProject: (id: string): Promise<{ project: MoodboardProject & { images: CroppedImage[] } }> =>
     req(`/projects/${id}`),

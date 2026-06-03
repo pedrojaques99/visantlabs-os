@@ -44,9 +44,18 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 
 // Charts
 import {
-  BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer,
-  LineChart as ReLineChart, Line,
-  PieChart as RePieChart, Pie, Cell,
+  BarChart as ReBarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as ReTooltip,
+  ResponsiveContainer,
+  LineChart as ReLineChart,
+  Line,
+  PieChart as RePieChart,
+  Pie,
+  Cell,
 } from 'recharts';
 
 import { Separator } from '@/components/ui/separator';
@@ -129,8 +138,15 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     ),
     InlineColorPicker: ({ props }) => (
       <div className="flex items-center gap-2">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{props.label}</span>
-        <input type="color" value={props.value} className="w-6 h-6 rounded border-0 cursor-pointer" readOnly />
+        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+          {props.label}
+        </span>
+        <input
+          type="color"
+          value={props.value}
+          className="w-6 h-6 rounded border-0 cursor-pointer"
+          readOnly
+        />
         <span className="text-[11px] text-neutral-400 font-mono">{props.value}</span>
       </div>
     ),
@@ -145,20 +161,14 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
         <Switch checked={props.checked} />
       </div>
     ),
-    Input: ({ props }) => (
-      <Input placeholder={props.placeholder} type={props.type} />
-    ),
-    Textarea: ({ props }) => (
-      <Textarea placeholder={props.placeholder} rows={props.rows} />
-    ),
+    Input: ({ props }) => <Input placeholder={props.placeholder} type={props.type} />,
+    Textarea: ({ props }) => <Textarea placeholder={props.placeholder} rows={props.rows} />,
 
     // ─── Image ────────────────────────────────────────
     ImageUploader: () => (
       <ImageUploader onImageUpload={() => {}} onProceedWithoutImage={() => {}} />
     ),
-    ImageThumbnail: ({ props }) => (
-      <ImageThumbnail base64={props.src} index={props.index} />
-    ),
+    ImageThumbnail: ({ props }) => <ImageThumbnail base64={props.src} index={props.index} />,
 
     // ─── Data Display ─────────────────────────────────
     Card: ({ props, children }) => (
@@ -172,14 +182,14 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
         <CardContent>{children}</CardContent>
       </Card>
     ),
-    Badge: ({ props }) => (
-      <Badge variant={props.variant as any}>{props.label}</Badge>
-    ),
+    Badge: ({ props }) => <Badge variant={props.variant as any}>{props.label}</Badge>,
     Tabs: ({ props, children }) => (
       <Tabs defaultValue={props.defaultValue || props.tabs[0]?.value}>
         <TabsList>
           {props.tabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
           ))}
         </TabsList>
         {children}
@@ -187,11 +197,22 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     ),
     Metric: ({ props }) => (
       <GlassPanel className="p-4">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{props.label}</span>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+          {props.label}
+        </span>
         <div className="flex items-baseline gap-2 mt-1">
           <span className="text-2xl font-semibold text-neutral-100">{props.value}</span>
           {props.change && (
-            <span className={cn('text-xs font-mono', props.trend === 'up' ? 'text-green-400' : props.trend === 'down' ? 'text-red-400' : 'text-neutral-400')}>
+            <span
+              className={cn(
+                'text-xs font-mono',
+                props.trend === 'up'
+                  ? 'text-green-400'
+                  : props.trend === 'down'
+                  ? 'text-red-400'
+                  : 'text-neutral-400'
+              )}
+            >
               {props.change}
             </span>
           )}
@@ -206,7 +227,9 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
           <CartesianGrid strokeDasharray="3 3" stroke="#333" />
           <XAxis dataKey={props.xAxisKey} stroke="#666" fontSize={10} />
           <YAxis stroke="#666" fontSize={10} />
-          <ReTooltip contentStyle={{ background: '#171717', border: '1px solid #333', borderRadius: 8 }} />
+          <ReTooltip
+            contentStyle={{ background: '#171717', border: '1px solid #333', borderRadius: 8 }}
+          />
           <Bar dataKey={props.dataKey} fill={props.color || BRAND_CYAN} radius={[4, 4, 0, 0]} />
         </ReBarChart>
       </ResponsiveContainer>
@@ -217,20 +240,38 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
           <CartesianGrid strokeDasharray="3 3" stroke="#333" />
           <XAxis dataKey={props.xAxisKey} stroke="#666" fontSize={10} />
           <YAxis stroke="#666" fontSize={10} />
-          <ReTooltip contentStyle={{ background: '#171717', border: '1px solid #333', borderRadius: 8 }} />
-          <Line type="monotone" dataKey={props.dataKey} stroke={props.color || BRAND_CYAN} strokeWidth={2} dot={false} />
+          <ReTooltip
+            contentStyle={{ background: '#171717', border: '1px solid #333', borderRadius: 8 }}
+          />
+          <Line
+            type="monotone"
+            dataKey={props.dataKey}
+            stroke={props.color || BRAND_CYAN}
+            strokeWidth={2}
+            dot={false}
+          />
         </ReLineChart>
       </ResponsiveContainer>
     ),
     PieChart: ({ props }) => (
       <ResponsiveContainer width="100%" height={props.height || 200}>
         <RePieChart>
-          <Pie data={props.data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40}>
+          <Pie
+            data={props.data}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={70}
+            innerRadius={40}
+          >
             {props.data.map((_, i) => (
               <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
             ))}
           </Pie>
-          <ReTooltip contentStyle={{ background: '#171717', border: '1px solid #333', borderRadius: 8 }} />
+          <ReTooltip
+            contentStyle={{ background: '#171717', border: '1px solid #333', borderRadius: 8 }}
+          />
         </RePieChart>
       </ResponsiveContainer>
     ),
@@ -252,7 +293,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
           props.direction === 'horizontal' ? 'flex-row' : 'flex-col',
           props.align === 'center' && 'items-center',
           props.align === 'end' && 'items-end',
-          props.align === 'stretch' && 'items-stretch',
+          props.align === 'stretch' && 'items-stretch'
         )}
         style={{ gap: `${props.gap ?? 4 * 4}px` }}
       >
@@ -270,14 +311,12 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
         {children}
       </div>
     ),
-    Separator: ({ props }) => (
-      <Separator orientation={props.orientation} />
-    ),
+    Separator: ({ props }) => <Separator orientation={props.orientation} />,
 
     // ─── Text ─────────────────────────────────────────
     Heading: ({ props }) => {
       const level = props.level ?? 2;
-      const cls = "font-semibold text-neutral-100";
+      const cls = 'font-semibold text-neutral-100';
       if (level === 1) return <h1 className={cls}>{props.text}</h1>;
       if (level === 3) return <h3 className={cls}>{props.text}</h3>;
       if (level === 4) return <h4 className={cls}>{props.text}</h4>;
@@ -326,7 +365,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       return playgroundFetch('/ai/describe-image', params as Record<string, unknown>);
     },
     complianceCheck: async (params) => {
-      return playgroundFetch('/brand-guidelines/compliance-check', params as Record<string, unknown>);
+      return playgroundFetch(
+        '/brand-guidelines/compliance-check',
+        params as Record<string, unknown>
+      );
     },
     uploadImage: async (params) => {
       return playgroundFetch('/community/upload-image', { image: params?.base64 });
@@ -343,7 +385,8 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     downloadFile: async (params) => {
       if (params?.url) {
         const url = String(params.url);
-        if (!url.startsWith('https://') && !url.startsWith('http://') && !url.startsWith('/')) return;
+        if (!url.startsWith('https://') && !url.startsWith('http://') && !url.startsWith('/'))
+          return;
         const a = document.createElement('a');
         a.href = url;
         a.download = params.filename || 'download';

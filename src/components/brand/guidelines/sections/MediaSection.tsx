@@ -22,7 +22,12 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
   span,
 }) => {
   return (
-    <SectionBlock id="media" span={span as any} icon={<ImageIcon size={14} />} title="Visual Library & Components">
+    <SectionBlock
+      id="media"
+      span={span as any}
+      icon={<ImageIcon size={14} />}
+      title="Visual Library & Components"
+    >
       <div className="py-6">
         <MediaKitGallery
           guidelineId={guidelineId}

@@ -1,6 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,8 +38,14 @@ interface Suggestion {
 }
 
 const CATEGORY_EMOJI: Record<string, string> = {
-  stationery: '📇', packaging: '📦', apparel: '👕', signage: '🏪',
-  digital: '📱', environmental: '🏢', merchandise: '☕', editorial: '📰',
+  stationery: '📇',
+  packaging: '📦',
+  apparel: '👕',
+  signage: '🏪',
+  digital: '📱',
+  environmental: '🏢',
+  merchandise: '☕',
+  editorial: '📰',
 };
 
 type View = 'form' | 'suggestions' | 'loading' | 'generating' | 'result';
@@ -45,18 +56,27 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
   const [resolution, setResolution] = useState<Resolution>('1K');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
   const [view, setView] = useState<View>('form');
-  const [result, setResult] = useState<{ url: string; creditsDeducted: number; creditsRemaining: number } | null>(null);
+  const [result, setResult] = useState<{
+    url: string;
+    creditsDeducted: number;
+    creditsRemaining: number;
+  } | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set());
-  const [batchResults, setBatchResults] = useState<Array<{ url: string; prompt: string; label: string } | null>>([]);
+  const [batchResults, setBatchResults] = useState<
+    Array<{ url: string; prompt: string; label: string } | null>
+  >([]);
   const [batchProgress, setBatchProgress] = useState(0);
 
   const credits = useMemo(() => getCreditsRequired(model, resolution), [model, resolution]);
 
   const handleGenerate = useCallback(async () => {
-    if (!prompt.trim()) { toast.error('Descreva a cena do mockup'); return; }
+    if (!prompt.trim()) {
+      toast.error('Descreva a cena do mockup');
+      return;
+    }
     setView('generating');
     setResult(null);
     try {
@@ -66,23 +86,36 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
         resolution,
         aspectRatio,
         brandGuidelineId: guideline.id,
-        provider: model.startsWith('seedream') ? 'seedream' : model.startsWith('gpt-image') ? 'openai' : 'gemini',
+        provider: model.startsWith('seedream')
+          ? 'seedream'
+          : model.startsWith('gpt-image')
+          ? 'openai'
+          : 'gemini',
         uniqueId: `brand-mockup-${Date.now()}`,
       });
-      const url = res.imageUrl || (res.imageBase64 ? `data:image/png;base64,${res.imageBase64}` : '');
+      const url =
+        res.imageUrl || (res.imageBase64 ? `data:image/png;base64,${res.imageBase64}` : '');
       if (url) {
-        setResult({ url, creditsDeducted: res.creditsDeducted, creditsRemaining: res.creditsRemaining });
+        setResult({
+          url,
+          creditsDeducted: res.creditsDeducted,
+          creditsRemaining: res.creditsRemaining,
+        });
         setView('result');
-        toast.success(`Mockup gerado (${res.creditsDeducted} crédito${res.creditsDeducted !== 1 ? 's' : ''})`);
-        mockupApi.save({
-          imageUrl: res.imageUrl || undefined,
-          imageBase64: !res.imageUrl ? res.imageBase64 : undefined,
-          prompt,
-          designType: 'brand-mockup',
-          tags: ['brand-guidelines'],
-          brandingTags: [guideline.identity?.name || ''].filter(Boolean),
-          aspectRatio,
-        } as any).catch(() => {});
+        toast.success(
+          `Mockup gerado (${res.creditsDeducted} crédito${res.creditsDeducted !== 1 ? 's' : ''})`
+        );
+        mockupApi
+          .save({
+            imageUrl: res.imageUrl || undefined,
+            imageBase64: !res.imageUrl ? res.imageBase64 : undefined,
+            prompt,
+            designType: 'brand-mockup',
+            tags: ['brand-guidelines'],
+            brandingTags: [guideline.identity?.name || ''].filter(Boolean),
+            aspectRatio,
+          } as any)
+          .catch(() => {});
       } else {
         toast.error('Nenhuma imagem retornada');
         setView('form');
@@ -110,7 +143,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
   }, [guideline.id]);
 
   const toggleSuggestion = useCallback((i: number) => {
-    setSelectedSuggestions(prev => {
+    setSelectedSuggestions((prev) => {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
       else next.add(i);
@@ -127,7 +160,9 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
 
     for (let idx = 0; idx < selected.length; idx++) {
       const s = suggestions[selected[idx]];
-      const ar = (['1:1', '16:9', '9:16', '4:3', '4:5'].includes(s.aspectRatio) ? s.aspectRatio : '1:1') as AspectRatio;
+      const ar = (
+        ['1:1', '16:9', '9:16', '4:3', '4:5'].includes(s.aspectRatio) ? s.aspectRatio : '1:1'
+      ) as AspectRatio;
       try {
         const res = await mockupApi.generate({
           promptText: s.prompt,
@@ -135,21 +170,28 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           resolution,
           aspectRatio: ar,
           brandGuidelineId: guideline.id,
-          provider: model.startsWith('seedream') ? 'seedream' : model.startsWith('gpt-image') ? 'openai' : 'gemini',
+          provider: model.startsWith('seedream')
+            ? 'seedream'
+            : model.startsWith('gpt-image')
+            ? 'openai'
+            : 'gemini',
           uniqueId: `brand-surprise-${Date.now()}-${idx}`,
         });
-        const url = res.imageUrl || (res.imageBase64 ? `data:image/png;base64,${res.imageBase64}` : '');
+        const url =
+          res.imageUrl || (res.imageBase64 ? `data:image/png;base64,${res.imageBase64}` : '');
         if (url) {
           results.push({ url, prompt: s.prompt, label: s.label });
-          mockupApi.save({
-            imageUrl: res.imageUrl || undefined,
-            imageBase64: !res.imageUrl ? res.imageBase64 : undefined,
-            prompt: s.prompt,
-            designType: 'brand-mockup',
-            tags: ['brand-guidelines', s.category],
-            brandingTags: [guideline.identity?.name || ''].filter(Boolean),
-            aspectRatio: ar,
-          } as any).catch(() => {});
+          mockupApi
+            .save({
+              imageUrl: res.imageUrl || undefined,
+              imageBase64: !res.imageUrl ? res.imageBase64 : undefined,
+              prompt: s.prompt,
+              designType: 'brand-mockup',
+              tags: ['brand-guidelines', s.category],
+              brandingTags: [guideline.identity?.name || ''].filter(Boolean),
+              aspectRatio: ar,
+            } as any)
+            .catch(() => {});
         } else {
           results.push(null);
         }
@@ -170,25 +212,32 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
     }
   }, [selectedSuggestions, suggestions, model, resolution, guideline.id]);
 
-  const handleSaveToMedia = useCallback(async (url: string, label: string) => {
-    if (!guideline.id) return;
-    setSaving(true);
-    try {
-      if (url.startsWith('data:')) {
-        await brandGuidelineApi.uploadMedia(guideline.id, url, label);
-      } else {
-        await brandGuidelineApi.uploadMediaFromUrl(guideline.id, url, label);
+  const handleSaveToMedia = useCallback(
+    async (url: string, label: string) => {
+      if (!guideline.id) return;
+      setSaving(true);
+      try {
+        if (url.startsWith('data:')) {
+          await brandGuidelineApi.uploadMedia(guideline.id, url, label);
+        } else {
+          await brandGuidelineApi.uploadMediaFromUrl(guideline.id, url, label);
+        }
+        toast.success('Salvo no Media Kit');
+      } catch (err: any) {
+        toast.error(err.message || 'Erro ao salvar');
+      } finally {
+        setSaving(false);
       }
-      toast.success('Salvo no Media Kit');
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao salvar');
-    } finally {
-      setSaving(false);
-    }
-  }, [guideline.id]);
+    },
+    [guideline.id]
+  );
 
   const handleSaveAll = useCallback(async () => {
-    const valid = batchResults.filter(Boolean) as Array<{ url: string; prompt: string; label: string }>;
+    const valid = batchResults.filter(Boolean) as Array<{
+      url: string;
+      prompt: string;
+      label: string;
+    }>;
     setSaving(true);
     let count = 0;
     for (const r of valid) {
@@ -199,11 +248,15 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           await brandGuidelineApi.uploadMediaFromUrl(guideline.id!, r.url, `Mockup — ${r.label}`);
         }
         count++;
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
     setSaved(true);
     setSaving(false);
-    toast.success(`${count} mockup${count !== 1 ? 's' : ''} salvo${count !== 1 ? 's' : ''} no Media Kit`);
+    toast.success(
+      `${count} mockup${count !== 1 ? 's' : ''} salvo${count !== 1 ? 's' : ''} no Media Kit`
+    );
   }, [batchResults, guideline.id]);
 
   const handleDownload = useCallback((url: string, name: string) => {
@@ -225,7 +278,12 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn('transition-all', batchResults.filter(Boolean).length > 1 ? 'max-w-3xl' : 'max-w-lg')}>
+      <DialogContent
+        className={cn(
+          'transition-all',
+          batchResults.filter(Boolean).length > 1 ? 'max-w-3xl' : 'max-w-lg'
+        )}
+      >
         <DialogHeader>
           <div className="flex items-center gap-2.5">
             <Image size={14} className="text-violet-400" />
@@ -285,11 +343,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
 
               <div className="space-y-1.5">
                 <MicroTitle className="text-neutral-500">Proporção</MicroTitle>
-                <AspectRatioSelector
-                  value={aspectRatio}
-                  onChange={setAspectRatio}
-                  compact
-                />
+                <AspectRatioSelector value={aspectRatio} onChange={setAspectRatio} compact />
               </div>
 
               <div className="flex items-center justify-between pt-2">
@@ -317,7 +371,9 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                 </p>
                 <span className="text-[10px] font-mono text-neutral-600">
                   {selectedSuggestions.size} selecionado{selectedSuggestions.size !== 1 ? 's' : ''}
-                  {' · '}{selectedSuggestions.size * credits} crédito{selectedSuggestions.size * credits !== 1 ? 's' : ''}
+                  {' · '}
+                  {selectedSuggestions.size * credits} crédito
+                  {selectedSuggestions.size * credits !== 1 ? 's' : ''}
                 </span>
               </div>
 
@@ -333,10 +389,14 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                         : 'border-neutral-800 bg-white/[0.03] hover:bg-white/5'
                     )}
                   >
-                    <div className={cn(
-                      'w-4 h-4 rounded border flex items-center justify-center shrink-0 mt-0.5',
-                      selectedSuggestions.has(i) ? 'border-violet-500 bg-violet-500' : 'border-neutral-600'
-                    )}>
+                    <div
+                      className={cn(
+                        'w-4 h-4 rounded border flex items-center justify-center shrink-0 mt-0.5',
+                        selectedSuggestions.has(i)
+                          ? 'border-violet-500 bg-violet-500'
+                          : 'border-neutral-600'
+                      )}
+                    >
                       {selectedSuggestions.has(i) && <Check size={9} className="text-black" />}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -389,8 +449,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
               <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-widest">
                 {batchResults.length === 0 && selectedSuggestions.size <= 1
                   ? 'Gerando mockup…'
-                  : `Gerando ${batchProgress}/${selectedSuggestions.size}…`
-                }
+                  : `Gerando ${batchProgress}/${selectedSuggestions.size}…`}
               </p>
             </div>
           )}
@@ -435,36 +494,53 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           {/* ── RESULT (batch) ── */}
           {view === 'result' && batchResults.length > 0 && (
             <div className="space-y-4">
-              <div className={cn(
-                'grid gap-3',
-                batchResults.filter(Boolean).length === 1 ? 'grid-cols-1' :
-                batchResults.filter(Boolean).length <= 4 ? 'grid-cols-2' : 'grid-cols-3'
-              )}>
-                {batchResults.map((r, i) => r && (
-                  <div key={i} className="group relative rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950">
-                    <img src={r.url} alt={r.label} className="w-full aspect-square object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-[10px] text-neutral-300 font-medium truncate mr-2">{r.label}</span>
-                        <div className="flex gap-1 shrink-0">
-                          <button
-                            onClick={() => handleDownload(r.url, r.label)}
-                            className="w-6 h-6 rounded bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
-                          >
-                            <Download size={10} className="text-white" />
-                          </button>
-                          <button
-                            onClick={() => handleSaveToMedia(r.url, `Mockup — ${r.label}`)}
-                            disabled={saving}
-                            className="w-6 h-6 rounded bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
-                          >
-                            <Save size={10} className="text-white" />
-                          </button>
+              <div
+                className={cn(
+                  'grid gap-3',
+                  batchResults.filter(Boolean).length === 1
+                    ? 'grid-cols-1'
+                    : batchResults.filter(Boolean).length <= 4
+                    ? 'grid-cols-2'
+                    : 'grid-cols-3'
+                )}
+              >
+                {batchResults.map(
+                  (r, i) =>
+                    r && (
+                      <div
+                        key={i}
+                        className="group relative rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950"
+                      >
+                        <img
+                          src={r.url}
+                          alt={r.label}
+                          className="w-full aspect-square object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                          <div className="flex items-center justify-between w-full">
+                            <span className="text-[10px] text-neutral-300 font-medium truncate mr-2">
+                              {r.label}
+                            </span>
+                            <div className="flex gap-1 shrink-0">
+                              <button
+                                onClick={() => handleDownload(r.url, r.label)}
+                                className="w-6 h-6 rounded bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                              >
+                                <Download size={10} className="text-white" />
+                              </button>
+                              <button
+                                onClick={() => handleSaveToMedia(r.url, `Mockup — ${r.label}`)}
+                                disabled={saving}
+                                className="w-6 h-6 rounded bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                              >
+                                <Save size={10} className="text-white" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    )
+                )}
               </div>
 
               <div className="flex items-center justify-between pt-1">
@@ -483,7 +559,11 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                     className="h-8 px-3 gap-1.5 text-xs text-neutral-400"
                   >
                     <Save size={12} />
-                    {saved ? 'Todos salvos' : saving ? 'Salvando…' : `Salvar todos (${batchResults.filter(Boolean).length})`}
+                    {saved
+                      ? 'Todos salvos'
+                      : saving
+                      ? 'Salvando…'
+                      : `Salvar todos (${batchResults.filter(Boolean).length})`}
                   </Button>
                   <Button
                     onClick={() => onOpenChange(false)}

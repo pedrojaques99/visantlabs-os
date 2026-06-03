@@ -13,7 +13,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/breadcrumb";
+} from '../components/ui/breadcrumb';
 import { Download, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateBudgetPDF } from '@/utils/generateBudgetPDF';
@@ -80,8 +80,10 @@ export const BudgetSharedPage: React.FC = () => {
         brandColors: budget.brandColors || ['brand-cyan'],
         brandName: budget.brandName,
         brandLogo: budget.brandLogo || undefined,
-        customPdfUrl: (budget as any).data?.customPdfUrl || (budget as any).customPdfUrl || undefined,
-        pdfFieldMappings: (budget as any).data?.pdfFieldMappings || (budget as any).pdfFieldMappings || undefined,
+        customPdfUrl:
+          (budget as any).data?.customPdfUrl || (budget as any).customPdfUrl || undefined,
+        pdfFieldMappings:
+          (budget as any).data?.pdfFieldMappings || (budget as any).pdfFieldMappings || undefined,
         contentWidth: (budget as any).data?.contentWidth || undefined,
         contentHeight: (budget as any).data?.contentHeight || undefined,
         timeline: budget.timeline || undefined,
@@ -91,9 +93,14 @@ export const BudgetSharedPage: React.FC = () => {
         customContent: (budget as any).customContent || undefined,
         finalCTAText: (budget as any).finalCTAText || undefined,
         year: (budget as any).year || undefined,
-        serviceTitle: (budget as any).data?.serviceTitle || (budget as any).serviceTitle || undefined,
-        coverBackgroundColor: (budget as any).data?.coverBackgroundColor || (budget as any).coverBackgroundColor || undefined,
-        coverTextColor: (budget as any).data?.coverTextColor || (budget as any).coverTextColor || undefined,
+        serviceTitle:
+          (budget as any).data?.serviceTitle || (budget as any).serviceTitle || undefined,
+        coverBackgroundColor:
+          (budget as any).data?.coverBackgroundColor ||
+          (budget as any).coverBackgroundColor ||
+          undefined,
+        coverTextColor:
+          (budget as any).data?.coverTextColor || (budget as any).coverTextColor || undefined,
         brandAccentColor: budget.brandAccentColor || undefined,
         brandBackgroundColor: budget.brandBackgroundColor || undefined,
       };
@@ -109,9 +116,7 @@ export const BudgetSharedPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
-        <div className="fixed inset-0 z-0">
-
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <SkeletonLoader height="2rem" className="w-64" />
@@ -124,13 +129,15 @@ export const BudgetSharedPage: React.FC = () => {
   if (error || !budget) {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
-        <div className="fixed inset-0 z-0">
-
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <h2 className="text-2xl font-bold text-neutral-200 mb-4">{t('budget.shared.budgetNotFound')}</h2>
-            <p className="text-neutral-400 mb-6">{error || t('budget.shared.budgetNotFoundDescription')}</p>
+            <h2 className="text-2xl font-bold text-neutral-200 mb-4">
+              {t('budget.shared.budgetNotFound')}
+            </h2>
+            <p className="text-neutral-400 mb-6">
+              {error || t('budget.shared.budgetNotFoundDescription')}
+            </p>
             <FormButton onClick={() => navigate('/')}>{t('notFound.goHome')}</FormButton>
           </div>
         </div>
@@ -155,7 +162,8 @@ export const BudgetSharedPage: React.FC = () => {
     contentWidth: (budget as any).data?.contentWidth || undefined,
     contentHeight: (budget as any).data?.contentHeight || undefined,
     customPdfUrl: (budget as any).data?.customPdfUrl || (budget as any).customPdfUrl || undefined,
-    pdfFieldMappings: (budget as any).data?.pdfFieldMappings || (budget as any).pdfFieldMappings || undefined,
+    pdfFieldMappings:
+      (budget as any).data?.pdfFieldMappings || (budget as any).pdfFieldMappings || undefined,
     timeline: budget.timeline || undefined,
     paymentInfo: budget.paymentInfo || undefined,
     signatures: budget.signatures || undefined,
@@ -164,8 +172,12 @@ export const BudgetSharedPage: React.FC = () => {
     finalCTAText: (budget as any).finalCTAText || undefined,
     year: (budget as any).year || undefined,
     serviceTitle: (budget as any).data?.serviceTitle || (budget as any).serviceTitle || undefined,
-    coverBackgroundColor: (budget as any).data?.coverBackgroundColor || (budget as any).coverBackgroundColor || undefined,
-    coverTextColor: (budget as any).data?.coverTextColor || (budget as any).coverTextColor || undefined,
+    coverBackgroundColor:
+      (budget as any).data?.coverBackgroundColor ||
+      (budget as any).coverBackgroundColor ||
+      undefined,
+    coverTextColor:
+      (budget as any).data?.coverTextColor || (budget as any).coverTextColor || undefined,
     brandAccentColor: budget.brandAccentColor || undefined,
     brandBackgroundColor: budget.brandBackgroundColor || undefined,
   };
@@ -173,11 +185,20 @@ export const BudgetSharedPage: React.FC = () => {
   return (
     <>
       <SEO
-        title={budget ? t('budget.shared.seoTitle', { name: budget.name }) : t('budget.shared.seoTitleDefault')}
+        title={
+          budget
+            ? t('budget.shared.seoTitle', { name: budget.name })
+            : t('budget.shared.seoTitleDefault')
+        }
         description={t('budget.shared.seoDescription')}
         noindex={true}
       />
-      <BudgetSharedContent budgetData={budgetData} budgetName={budget.name || budget.projectDescription.split('\n')[0] || ''} onDownloadPDF={handleDownloadPDF} t={t} />
+      <BudgetSharedContent
+        budgetData={budgetData}
+        budgetName={budget.name || budget.projectDescription.split('\n')[0] || ''}
+        onDownloadPDF={handleDownloadPDF}
+        t={t}
+      />
     </>
   );
 };
@@ -220,10 +241,20 @@ const BudgetSharedContent: React.FC<{
       });
 
       // Define the order of pages to capture
-      const pageOrder = ['cover', 'timeline', 'introduction', 'budget', 'gifts', 'payment', 'backCover'];
+      const pageOrder = [
+        'cover',
+        'timeline',
+        'introduction',
+        'budget',
+        'gifts',
+        'payment',
+        'backCover',
+      ];
 
       // Get all page containers (they have data-page attribute)
-      const allPageContainers = Array.from(document.querySelectorAll('[data-page]')) as HTMLElement[];
+      const allPageContainers = Array.from(
+        document.querySelectorAll('[data-page]')
+      ) as HTMLElement[];
 
       if (allPageContainers.length === 0) {
         // Fallback: use the original PDF generation
@@ -233,10 +264,15 @@ const BudgetSharedContent: React.FC<{
 
       // Sort pages by the defined order
       const sortedPageContainers = pageOrder
-        .map(pageName => allPageContainers.find(container => container.getAttribute('data-page') === pageName))
+        .map((pageName) =>
+          allPageContainers.find((container) => container.getAttribute('data-page') === pageName)
+        )
         .filter((container): container is HTMLElement => container !== undefined);
 
-      console.log(`Found ${sortedPageContainers.length} pages to capture:`, sortedPageContainers.map(c => c.getAttribute('data-page')));
+      console.log(
+        `Found ${sortedPageContainers.length} pages to capture:`,
+        sortedPageContainers.map((c) => c.getAttribute('data-page'))
+      );
 
       // Capture each page in order
       for (let i = 0; i < sortedPageContainers.length; i++) {
@@ -255,7 +291,8 @@ const BudgetSharedContent: React.FC<{
         const actualHeight = pageHeight; // Use configured height in px
 
         // Find the inner content div that contains the actual page
-        const innerContent = wrapper.querySelector('div[style*="maxWidth"]') || wrapper.firstElementChild || wrapper;
+        const innerContent =
+          wrapper.querySelector('div[style*="maxWidth"]') || wrapper.firstElementChild || wrapper;
 
         console.log(`Page ${pageName} dimensions: ${actualWidth}x${actualHeight}`);
 
@@ -344,14 +381,20 @@ const BudgetSharedContent: React.FC<{
           const imgWidth = pageWidthMm;
           const imgHeight = pageHeightMm;
 
-          console.log(`Adding image to page ${currentPageNum} at size ${imgWidth}mm x ${imgHeight}mm`);
+          console.log(
+            `Adding image to page ${currentPageNum} at size ${imgWidth}mm x ${imgHeight}mm`
+          );
 
           // Add image to PDF, filling the entire page
           doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
 
           // Verify page count
           const totalPages = doc.getNumberOfPages();
-          console.log(`✓ Page ${i + 1}/${sortedPageContainers.length} (${pageName}) added to PDF. Total pages: ${totalPages}`);
+          console.log(
+            `✓ Page ${i + 1}/${
+              sortedPageContainers.length
+            } (${pageName}) added to PDF. Total pages: ${totalPages}`
+          );
         } catch (captureError: any) {
           console.error(`Error capturing page ${i + 1} (${pageName}):`, captureError);
           // Continue to next page instead of failing completely
@@ -366,17 +409,23 @@ const BudgetSharedContent: React.FC<{
       console.log(`Expected pages: ${sortedPageContainers.length}`);
 
       if (finalPageCount !== sortedPageContainers.length) {
-        console.warn(`⚠️ WARNING: Page count mismatch! Expected ${sortedPageContainers.length}, got ${finalPageCount}`);
+        console.warn(
+          `⚠️ WARNING: Page count mismatch! Expected ${sortedPageContainers.length}, got ${finalPageCount}`
+        );
       }
 
       // Save PDF
-      const filename = `budget-${budgetName?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'budget'}-${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `budget-${
+        budgetName?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'budget'
+      }-${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(filename);
 
       toast.success(t('budget.shared.pdfGeneratedSuccess'), { id: 'pdf-generation' });
     } catch (error: any) {
       console.error('Error generating PDF from components:', error);
-      toast.error(error.message || t('budget.errors.failedToGeneratePDF'), { id: 'pdf-generation' });
+      toast.error(error.message || t('budget.errors.failedToGeneratePDF'), {
+        id: 'pdf-generation',
+      });
 
       // Fallback to original method
       onDownloadPDF();
@@ -394,12 +443,15 @@ const BudgetSharedContent: React.FC<{
     }
   };
 
-
   // If custom PDF, show it in iframe
   if (budgetData.customPdfUrl) {
     return (
       <div className={`min-h-screen ${theme === 'dark' ? 'bg-neutral-950' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
+        <div
+          className={`sticky top-0 z-50 ${
+            theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'
+          } border-b shadow-sm`}
+        >
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>
@@ -423,7 +475,11 @@ const BudgetSharedContent: React.FC<{
               </Breadcrumb>
             </div>
             <div className="flex items-center justify-between">
-              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}>
+              <h1
+                className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${
+                  theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'
+                }`}
+              >
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
@@ -431,7 +487,10 @@ const BudgetSharedContent: React.FC<{
                   <Share2 size={16} />
                   {t('budget.share')}
                 </FormButton>
-                <FormButton onClick={handleDownloadPDFFromComponents} className="flex items-center gap-2">
+                <FormButton
+                  onClick={handleDownloadPDFFromComponents}
+                  className="flex items-center gap-2"
+                >
                   <Download size={16} />
                   {t('budget.downloadPDF')}
                 </FormButton>
@@ -495,7 +554,11 @@ const BudgetSharedContent: React.FC<{
             </div>
           </div>
           <div className="w-full">
-            <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="cover" budgetData={budgetData}>
+            <ResponsivePageWrapper
+              contentWidth={budgetData.contentWidth}
+              pageName="cover"
+              budgetData={budgetData}
+            >
               <VisantPageRenderer
                 data={budgetData}
                 layout={activeTemplate.layout}
@@ -503,10 +566,18 @@ const BudgetSharedContent: React.FC<{
                 editable={false}
               />
             </ResponsivePageWrapper>
-            <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="timeline" budgetData={budgetData}>
+            <ResponsivePageWrapper
+              contentWidth={budgetData.contentWidth}
+              pageName="timeline"
+              budgetData={budgetData}
+            >
               <VisantTimelinePage data={budgetData} editable={false} />
             </ResponsivePageWrapper>
-            <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="introduction" budgetData={budgetData}>
+            <ResponsivePageWrapper
+              contentWidth={budgetData.contentWidth}
+              pageName="introduction"
+              budgetData={budgetData}
+            >
               <VisantPageRenderer
                 data={budgetData}
                 layout={activeTemplate.layout}
@@ -514,7 +585,11 @@ const BudgetSharedContent: React.FC<{
                 editable={false}
               />
             </ResponsivePageWrapper>
-            <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="budget" budgetData={budgetData}>
+            <ResponsivePageWrapper
+              contentWidth={budgetData.contentWidth}
+              pageName="budget"
+              budgetData={budgetData}
+            >
               <VisantPageRenderer
                 data={budgetData}
                 layout={activeTemplate.layout}
@@ -522,7 +597,11 @@ const BudgetSharedContent: React.FC<{
                 editable={false}
               />
             </ResponsivePageWrapper>
-            <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="gifts" budgetData={budgetData}>
+            <ResponsivePageWrapper
+              contentWidth={budgetData.contentWidth}
+              pageName="gifts"
+              budgetData={budgetData}
+            >
               <VisantPageRenderer
                 data={budgetData}
                 layout={activeTemplate.layout}
@@ -530,7 +609,11 @@ const BudgetSharedContent: React.FC<{
                 editable={false}
               />
             </ResponsivePageWrapper>
-            <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="payment" budgetData={budgetData}>
+            <ResponsivePageWrapper
+              contentWidth={budgetData.contentWidth}
+              pageName="payment"
+              budgetData={budgetData}
+            >
               <VisantPageRenderer
                 data={budgetData}
                 layout={activeTemplate.layout}
@@ -538,7 +621,11 @@ const BudgetSharedContent: React.FC<{
                 editable={false}
               />
             </ResponsivePageWrapper>
-            <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="backCover" budgetData={budgetData}>
+            <ResponsivePageWrapper
+              contentWidth={budgetData.contentWidth}
+              pageName="backCover"
+              budgetData={budgetData}
+            >
               <VisantPageRenderer
                 data={budgetData}
                 layout={activeTemplate.layout}
@@ -554,7 +641,11 @@ const BudgetSharedContent: React.FC<{
     // Default Visant pages
     return (
       <div className={`min-h-screen ${theme === 'dark' ? 'bg-neutral-950' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
+        <div
+          className={`sticky top-0 z-50 ${
+            theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'
+          } border-b shadow-sm`}
+        >
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>
@@ -578,7 +669,11 @@ const BudgetSharedContent: React.FC<{
               </Breadcrumb>
             </div>
             <div className="flex items-center justify-between">
-              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}>
+              <h1
+                className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${
+                  theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'
+                }`}
+              >
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
@@ -586,7 +681,10 @@ const BudgetSharedContent: React.FC<{
                   <Share2 size={16} />
                   {t('budget.share')}
                 </FormButton>
-                <FormButton onClick={handleDownloadPDFFromComponents} className="flex items-center gap-2">
+                <FormButton
+                  onClick={handleDownloadPDFFromComponents}
+                  className="flex items-center gap-2"
+                >
                   <Download size={16} />
                   {t('budget.downloadPDF')}
                 </FormButton>
@@ -595,25 +693,53 @@ const BudgetSharedContent: React.FC<{
           </div>
         </div>
         <div className="w-full">
-          <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="cover" budgetData={budgetData}>
+          <ResponsivePageWrapper
+            contentWidth={budgetData.contentWidth}
+            pageName="cover"
+            budgetData={budgetData}
+          >
             <VisantCoverPage data={budgetData} editable={false} />
           </ResponsivePageWrapper>
-          <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="timeline" budgetData={budgetData}>
+          <ResponsivePageWrapper
+            contentWidth={budgetData.contentWidth}
+            pageName="timeline"
+            budgetData={budgetData}
+          >
             <VisantTimelinePage data={budgetData} editable={false} />
           </ResponsivePageWrapper>
-          <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="introduction" budgetData={budgetData}>
+          <ResponsivePageWrapper
+            contentWidth={budgetData.contentWidth}
+            pageName="introduction"
+            budgetData={budgetData}
+          >
             <VisantIntroductionPage data={budgetData} editable={false} />
           </ResponsivePageWrapper>
-          <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="budget" budgetData={budgetData}>
+          <ResponsivePageWrapper
+            contentWidth={budgetData.contentWidth}
+            pageName="budget"
+            budgetData={budgetData}
+          >
             <VisantBudgetPage data={budgetData} editable={false} />
           </ResponsivePageWrapper>
-          <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="gifts" budgetData={budgetData}>
+          <ResponsivePageWrapper
+            contentWidth={budgetData.contentWidth}
+            pageName="gifts"
+            budgetData={budgetData}
+          >
             <VisantGiftsPage data={budgetData} editable={false} />
           </ResponsivePageWrapper>
-          <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="payment" budgetData={budgetData}>
+          <ResponsivePageWrapper
+            contentWidth={budgetData.contentWidth}
+            pageName="payment"
+            budgetData={budgetData}
+          >
             <VisantPaymentPage data={budgetData} editable={false} />
           </ResponsivePageWrapper>
-          <ResponsivePageWrapper contentWidth={budgetData.contentWidth} pageName="backCover" budgetData={budgetData}>
+          <ResponsivePageWrapper
+            contentWidth={budgetData.contentWidth}
+            pageName="backCover"
+            budgetData={budgetData}
+          >
             <VisantBackCoverPage data={budgetData} editable={false} />
           </ResponsivePageWrapper>
         </div>
@@ -630,7 +756,11 @@ const BudgetSharedContent: React.FC<{
         noindex={true}
       />
       <div className={`min-h-screen ${theme === 'dark' ? 'bg-neutral-950' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
+        <div
+          className={`sticky top-0 z-50 ${
+            theme === 'dark' ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'
+          } border-b shadow-sm`}
+        >
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>
@@ -654,7 +784,11 @@ const BudgetSharedContent: React.FC<{
               </Breadcrumb>
             </div>
             <div className="flex items-center justify-between">
-              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}>
+              <h1
+                className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${
+                  theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'
+                }`}
+              >
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
@@ -671,10 +805,13 @@ const BudgetSharedContent: React.FC<{
           </div>
         </div>
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <p className={`text-center ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>{t('budget.shared.templateNotSupported')}</p>
+          <p
+            className={`text-center ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}
+          >
+            {t('budget.shared.templateNotSupported')}
+          </p>
         </div>
       </div>
     </>
   );
 };
-

@@ -1,6 +1,6 @@
 /**
  * imageSyncUtils
- * 
+ *
  * Utilitários compartilhados para sincronização de imagens com edges
  */
 
@@ -11,9 +11,7 @@ import { getImageUrl } from '@/utils/imageUtils';
 /**
  * Get image base64 from a source node (ImageNode or OutputNode)
  */
-export const getImageBase64FromNode = (
-  sourceNode: Node<FlowNodeData>
-): string | undefined => {
+export const getImageBase64FromNode = (sourceNode: Node<FlowNodeData>): string | undefined => {
   if (sourceNode.type === 'image') {
     const imageData = sourceNode.data as ImageNodeData;
     return imageData.mockup?.imageBase64;
@@ -32,9 +30,7 @@ export const getImageBase64FromNode = (
 /**
  * Get image URL from a source node (ImageNode or OutputNode)
  */
-export const getImageUrlFromNode = (
-  sourceNode: Node<FlowNodeData>
-): string | undefined => {
+export const getImageUrlFromNode = (sourceNode: Node<FlowNodeData>): string | undefined => {
   if (sourceNode.type === 'image') {
     const imageData = sourceNode.data as ImageNodeData;
     return getImageUrl(imageData.mockup);
@@ -51,9 +47,3 @@ export const getImageUrlFromNode = (
   }
   return undefined;
 };
-
-
-
-
-
-

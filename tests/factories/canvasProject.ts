@@ -17,9 +17,7 @@ export function canvasProjectSeed(overrides: Partial<CanvasProjectSeed> = {}): C
   return {
     userId: '', // Required, must be provided
     name: faker.commerce.productName() + ' Design',
-    nodes: [
-      { id: '1', type: 'input', data: { label: 'Start' }, position: { x: 0, y: 0 } }
-    ],
+    nodes: [{ id: '1', type: 'input', data: { label: 'Start' }, position: { x: 0, y: 0 } }],
     edges: [],
     drawings: [],
     shareId: faker.string.alphanumeric(20),
@@ -34,10 +32,12 @@ export function canvasProjectSeed(overrides: Partial<CanvasProjectSeed> = {}): C
 /**
  * Create a CanvasProject directly via Prisma.
  */
-export async function createCanvasProject(overrides: Partial<CanvasProjectSeed> & { userId: string }) {
+export async function createCanvasProject(
+  overrides: Partial<CanvasProjectSeed> & { userId: string }
+) {
   const { prisma } = await import('../../server/db/prisma.js');
   const seed = canvasProjectSeed(overrides);
-  
+
   const project = await prisma.canvasProject.create({
     data: {
       userId: seed.userId,
@@ -52,6 +52,6 @@ export async function createCanvasProject(overrides: Partial<CanvasProjectSeed> 
       linkedGuidelineId: seed.linkedGuidelineId,
     },
   });
-  
+
   return project;
 }

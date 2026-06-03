@@ -46,8 +46,11 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
   const handleExpand = useCallback(async () => {
     const state = useImageEditorStore.getState();
     const { expandEdges } = state;
-    const hasExpansion = expandEdges.top > 0 || expandEdges.right > 0
-      || expandEdges.bottom > 0 || expandEdges.left > 0;
+    const hasExpansion =
+      expandEdges.top > 0 ||
+      expandEdges.right > 0 ||
+      expandEdges.bottom > 0 ||
+      expandEdges.left > 0;
 
     if (!hasExpansion) {
       toast.error('Drag an edge to expand the image');
@@ -61,14 +64,17 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
       const nonZero = Object.entries(expandEdges).filter(([, v]) => v > 0);
       if (nonZero.length === 1) {
         const edgeMap: Record<string, 'up' | 'down' | 'left' | 'right'> = {
-          top: 'up', bottom: 'down', left: 'left', right: 'right',
+          top: 'up',
+          bottom: 'down',
+          left: 'left',
+          right: 'right',
         };
         direction = edgeMap[nonZero[0][0]];
       }
 
       const maxExpand = Math.max(
         (imageWidth + expandEdges.left + expandEdges.right) / imageWidth,
-        (imageHeight + expandEdges.top + expandEdges.bottom) / imageHeight,
+        (imageHeight + expandEdges.top + expandEdges.bottom) / imageHeight
       );
 
       const result = await imagelabApi.generativeExpand({
@@ -105,9 +111,12 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
   const handleGenerate = useCallback(() => {
     const action = useImageEditorStore.getState().activeAction;
     switch (action) {
-      case 'inpaint': return handleInpaint();
-      case 'expand': return handleExpand();
-      case 'remove-bg': return handleRemoveBackground();
+      case 'inpaint':
+        return handleInpaint();
+      case 'expand':
+        return handleExpand();
+      case 'remove-bg':
+        return handleRemoveBackground();
     }
   }, [handleInpaint, handleExpand, handleRemoveBackground]);
 

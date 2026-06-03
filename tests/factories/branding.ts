@@ -15,7 +15,7 @@ export const createBrandingProject = async (overrides: BrandingProjectOverrides)
       name: overrides.name || 'Test Brand',
       prompt: overrides.prompt || 'A futuristic tech company',
       data: overrides.data || {
-        marketResearch: "Test market research",
+        marketResearch: 'Test market research',
       },
     },
   });

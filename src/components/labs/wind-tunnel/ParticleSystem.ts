@@ -34,7 +34,14 @@ export class ParticleSystem {
     }
   }
 
-  emit(x: number, y: number, count: number, baseVx: number = 0, lifetime: number = 100, spread: number = 50): void {
+  emit(
+    x: number,
+    y: number,
+    count: number,
+    baseVx: number = 0,
+    lifetime: number = 100,
+    spread: number = 50
+  ): void {
     const spreadFactor = spread / 100;
     for (let c = 0; c < count; c++) {
       if (this.active >= this.maxParticles) return;
@@ -76,7 +83,13 @@ export class ParticleSystem {
     for (let i = 0; i < this.active; i++) {
       this.life[i] -= 1;
 
-      if (this.life[i] <= 0 || this.x[i] < -10 || this.x[i] > width + 10 || this.y[i] < -10 || this.y[i] > height + 10) {
+      if (
+        this.life[i] <= 0 ||
+        this.x[i] < -10 ||
+        this.x[i] > width + 10 ||
+        this.y[i] < -10 ||
+        this.y[i] > height + 10
+      ) {
         continue;
       }
 
@@ -110,8 +123,10 @@ export class ParticleSystem {
       const v01 = solver.getV(gi0, gj1);
       const u11 = solver.getU(gi1, gj1);
       const v11 = solver.getV(gi1, gj1);
-      const fu = u00 * (1 - fx) * (1 - fy) + u10 * fx * (1 - fy) + u01 * (1 - fx) * fy + u11 * fx * fy;
-      const fv = v00 * (1 - fx) * (1 - fy) + v10 * fx * (1 - fy) + v01 * (1 - fx) * fy + v11 * fx * fy;
+      const fu =
+        u00 * (1 - fx) * (1 - fy) + u10 * fx * (1 - fy) + u01 * (1 - fx) * fy + u11 * fx * fy;
+      const fv =
+        v00 * (1 - fx) * (1 - fy) + v10 * fx * (1 - fy) + v01 * (1 - fx) * fy + v11 * fx * fy;
 
       this.vx[i] = this.vx[i] * 0.92 + fu * scaleX * 0.8;
       this.vy[i] = this.vy[i] * 0.92 + fv * scaleX * 0.8;
@@ -172,8 +187,11 @@ export class ParticleSystem {
 
   private renderParticles(
     ctx: CanvasRenderingContext2D,
-    _width: number, _height: number,
-    colorMode: string, baseColor: string, size: number
+    _width: number,
+    _height: number,
+    colorMode: string,
+    baseColor: string,
+    size: number
   ): void {
     for (let i = 0; i < this.active; i++) {
       const alpha = this.getAlpha(i);
@@ -185,8 +203,10 @@ export class ParticleSystem {
 
   private renderStreamlines(
     ctx: CanvasRenderingContext2D,
-    _width: number, _height: number,
-    colorMode: string, lineWidth: number
+    _width: number,
+    _height: number,
+    colorMode: string,
+    lineWidth: number
   ): void {
     ctx.lineWidth = Math.max(0.5, lineWidth * 0.6);
     ctx.lineCap = 'round';

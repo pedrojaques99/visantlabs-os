@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { getStepContent, hasStepContent, getStepDependencies, getSectionEmoji, getSectionColSpan } from '../../../src/utils/brandingHelpers';
+import {
+  getStepContent,
+  hasStepContent,
+  getStepDependencies,
+  getSectionEmoji,
+  getSectionColSpan,
+} from '../../../src/utils/brandingHelpers';
 import { isVisantV2 } from '../../../src/types/branding';
 import type { BrandingData } from '../../../src/types/types';
 
@@ -32,9 +38,7 @@ const makeV2Data = (overrides: Partial<BrandingData> = {}): BrandingData => ({
       { id: '1', title: 'Falta de tempo', description: 'Rotina de 12h' },
       { id: '2', title: 'Planos genéricos', description: 'Não consideram seu nível' },
     ],
-    desires: [
-      { id: '1', title: 'Eficiência', description: 'Treino de 30min que funcione' },
-    ],
+    desires: [{ id: '1', title: 'Eficiência', description: 'Treino de 30min que funcione' }],
   },
   archetypesV2: {
     primary: { id: 6, title: 'Herói', description: 'Superação', examples: ['Nike'] },
@@ -247,8 +251,16 @@ describe('getStepDependencies — v2 cascata', () => {
 
 describe('getSectionEmoji — v2', () => {
   const expected: Record<number, string> = {
-    101: '🎯', 102: '📊', 103: '👤', 104: '🎭', 105: '📜',
-    106: '⚖️', 107: '🎨', 108: '✏️', 109: '🔷', 110: '💎',
+    101: '🎯',
+    102: '📊',
+    103: '👤',
+    104: '🎭',
+    105: '📜',
+    106: '⚖️',
+    107: '🎨',
+    108: '✏️',
+    109: '🔷',
+    110: '💎',
   };
 
   for (const [step, emoji] of Object.entries(expected)) {

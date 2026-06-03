@@ -11,7 +11,11 @@ interface MockProps {
 type ResolvedTheme = { bg: string; text: string; primary: string; accent: string };
 
 /** Pick a media URL by category, cycling by index */
-function pickMedia(tokens: MockTokens, category: keyof MockTokens['mediaByCategory'], index = 0): string | undefined {
+function pickMedia(
+  tokens: MockTokens,
+  category: keyof MockTokens['mediaByCategory'],
+  index = 0
+): string | undefined {
   const urls = tokens.mediaByCategory[category];
   return urls.length > 0 ? urls[index % urls.length] : undefined;
 }
@@ -74,11 +78,18 @@ export const InstagramFeedMock: React.FC<MockProps> = ({ tokens, className }) =>
   const bgImage = pickMedia(tokens, 'background') || pickMedia(tokens, 'stock');
   return (
     <div
-      className={cn('relative aspect-square w-full overflow-hidden rounded-2xl shadow-2xl', className)}
+      className={cn(
+        'relative aspect-square w-full overflow-hidden rounded-2xl shadow-2xl',
+        className
+      )}
       style={{ background: ct.bg, color: ct.text }}
     >
       {bgImage && (
-        <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+        <img
+          src={bgImage}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
+        />
       )}
       <div className="absolute inset-0 flex flex-col p-[6%]">
         <div className="flex items-center justify-between">
@@ -218,7 +229,11 @@ export const PosterMock: React.FC<MockProps> = ({ tokens, className }) => {
       }}
     >
       {bgImage && (
-        <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+        <img
+          src={bgImage}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
+        />
       )}
       <div className="absolute inset-0 flex flex-col p-[7%]">
         <div className="flex items-center justify-between">
@@ -248,12 +263,11 @@ export const PosterMock: React.FC<MockProps> = ({ tokens, className }) => {
               color: ct.text,
             }}
           >
-            {smartTrunc(tokens.manifestoFirstLine, 30) || smartTrunc(tokens.tagline, 30) || tokens.name}
+            {smartTrunc(tokens.manifestoFirstLine, 30) ||
+              smartTrunc(tokens.tagline, 30) ||
+              tokens.name}
           </h1>
-          <span
-            className="block w-12 h-px"
-            style={{ background: ct.accent }}
-          />
+          <span className="block w-12 h-px" style={{ background: ct.accent }} />
           <p
             className="opacity-60 leading-relaxed max-w-[70%]"
             style={{
@@ -269,11 +283,7 @@ export const PosterMock: React.FC<MockProps> = ({ tokens, className }) => {
         <div className="flex items-end justify-between">
           <div className="flex items-center gap-1.5">
             {tokens.palette.slice(0, 5).map((c, i) => (
-              <span
-                key={i}
-                className="w-4 h-1"
-                style={{ background: c.hex }}
-              />
+              <span key={i} className="w-4 h-1" style={{ background: c.hex }} />
             ))}
           </div>
           <span
@@ -304,11 +314,15 @@ export const StoriesMock: React.FC<MockProps> = ({ tokens, className }) => {
       }}
     >
       {bgImage && (
-        <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+        <img
+          src={bgImage}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-25"
+        />
       )}
       <div className="absolute inset-0 flex flex-col p-[6%]">
         <div className="flex items-center gap-1.5 mb-4">
-          {[0, 1, 2].map(i => (
+          {[0, 1, 2].map((i) => (
             <span
               key={i}
               className="flex-1 h-0.5 rounded-full overflow-hidden"
@@ -328,11 +342,7 @@ export const StoriesMock: React.FC<MockProps> = ({ tokens, className }) => {
             style={{ background: ct.bg, border: `1px solid ${ct.primary}` }}
           >
             {tokens.iconLogo ? (
-              <img
-                src={tokens.iconLogo.url}
-                alt=""
-                className="w-5 h-5 object-contain"
-              />
+              <img src={tokens.iconLogo.url} alt="" className="w-5 h-5 object-contain" />
             ) : (
               <span className="text-[10px] font-bold" style={{ color: ct.primary }}>
                 {tokens.name.charAt(0).toUpperCase()}
@@ -359,7 +369,9 @@ export const StoriesMock: React.FC<MockProps> = ({ tokens, className }) => {
               color: ct.text,
             }}
           >
-            {smartTrunc(tokens.tagline, 40) || smartTrunc(tokens.manifestoFirstLine, 40) || tokens.name}
+            {smartTrunc(tokens.tagline, 40) ||
+              smartTrunc(tokens.manifestoFirstLine, 40) ||
+              tokens.name}
           </h2>
         </div>
 
@@ -399,7 +411,7 @@ export const WebsiteHeroMock: React.FC<MockProps> = ({ tokens, className }) => {
         <div className="flex items-center justify-between px-[5%] py-[3%]">
           <Logo tokens={tokens} size={24} />
           <div className="flex items-center gap-4">
-            {['About', 'Work', 'Contact'].map(l => (
+            {['About', 'Work', 'Contact'].map((l) => (
               <span
                 key={l}
                 className="text-[9px] uppercase tracking-[0.2em] opacity-50"
@@ -410,7 +422,11 @@ export const WebsiteHeroMock: React.FC<MockProps> = ({ tokens, className }) => {
             ))}
             <span
               className="px-3 py-1 rounded-full text-[8px] uppercase tracking-[0.2em] font-semibold"
-              style={{ background: ct.primary, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+              style={{
+                background: ct.primary,
+                color: theme.accentText,
+                fontFamily: tokens.bodyFamily,
+              }}
             >
               Get Started
             </span>
@@ -431,18 +447,25 @@ export const WebsiteHeroMock: React.FC<MockProps> = ({ tokens, className }) => {
               fontSize: 'clamp(18px, 4.5cqi, 40px)',
             }}
           >
-            {smartTrunc(tokens.manifestoFirstLine, 45) || smartTrunc(tokens.description, 45) || `Welcome to ${tokens.name}`}
+            {smartTrunc(tokens.manifestoFirstLine, 45) ||
+              smartTrunc(tokens.description, 45) ||
+              `Welcome to ${tokens.name}`}
           </h1>
           <p
             className="mt-3 opacity-50 leading-relaxed max-w-[80%]"
             style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(8px, 1.5cqi, 12px)' }}
           >
-            {smartTrunc(tokens.description, 80) || 'Build something extraordinary with a brand that stands out.'}
+            {smartTrunc(tokens.description, 80) ||
+              'Build something extraordinary with a brand that stands out.'}
           </p>
           <div className="flex gap-2 mt-4">
             <span
               className="px-4 py-1.5 rounded-lg text-[9px] uppercase tracking-[0.2em] font-semibold"
-              style={{ background: ct.primary, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+              style={{
+                background: ct.primary,
+                color: theme.accentText,
+                fontFamily: tokens.bodyFamily,
+              }}
             >
               Start now
             </span>
@@ -455,13 +478,19 @@ export const WebsiteHeroMock: React.FC<MockProps> = ({ tokens, className }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between px-[5%] py-[2%] border-t" style={{ borderColor: `${ct.text}10` }}>
+        <div
+          className="flex items-center justify-between px-[5%] py-[2%] border-t"
+          style={{ borderColor: `${ct.text}10` }}
+        >
           <div className="flex gap-1.5">
             {tokens.palette.slice(0, 5).map((c, i) => (
               <span key={i} className="w-2.5 h-2.5 rounded-full" style={{ background: c.hex }} />
             ))}
           </div>
-          <span className="text-[8px] uppercase tracking-[0.3em] opacity-30" style={{ fontFamily: tokens.bodyFamily }}>
+          <span
+            className="text-[8px] uppercase tracking-[0.3em] opacity-30"
+            style={{ fontFamily: tokens.bodyFamily }}
+          >
             {tokens.name} · {new Date().getFullYear()}
           </span>
         </div>
@@ -549,11 +578,19 @@ export const XProfileMock: React.FC<MockProps> = ({ tokens, className }) => {
               {tokens.iconLogo ? (
                 <img src={tokens.iconLogo.url} alt="" className="w-[65%] h-[65%] object-contain" />
               ) : tokens.primaryLogo ? (
-                <img src={tokens.primaryLogo.url} alt="" className="w-[65%] h-[65%] object-contain" />
+                <img
+                  src={tokens.primaryLogo.url}
+                  alt=""
+                  className="w-[65%] h-[65%] object-contain"
+                />
               ) : (
                 <span
                   className="font-bold"
-                  style={{ fontFamily: tokens.headingFamily, fontSize: 'clamp(14px, 3cqi, 28px)', color: ct.primary }}
+                  style={{
+                    fontFamily: tokens.headingFamily,
+                    fontSize: 'clamp(14px, 3cqi, 28px)',
+                    color: ct.primary,
+                  }}
                 >
                   {tokens.name.charAt(0).toUpperCase()}
                 </span>
@@ -561,7 +598,11 @@ export const XProfileMock: React.FC<MockProps> = ({ tokens, className }) => {
             </div>
             <span
               className="px-4 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
-              style={{ background: ct.primary, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+              style={{
+                background: ct.primary,
+                color: theme.accentText,
+                fontFamily: tokens.bodyFamily,
+              }}
             >
               Seguir
             </span>
@@ -575,9 +616,19 @@ export const XProfileMock: React.FC<MockProps> = ({ tokens, className }) => {
               >
                 {tokens.name}
               </h3>
-              <svg viewBox="0 0 22 22" className="w-[1em] h-[1em]" style={{ fontSize: 'clamp(12px, 2.5cqi, 20px)' }}>
-                <path d="M20.4 11l-1.4-1.6.2-2.1-2.1-.5-1-1.9-2 .7L11 4.2 7.9 5.6l-2-.7-1 1.9-2.1.5.2 2.1L1.6 11 3 12.6l-.2 2.1 2.1.5 1 1.9 2-.7 3.1 1.4 3.1-1.4 2 .7 1-1.9 2.1-.5-.2-2.1L20.4 11z" fill={ct.primary} />
-                <path d="M9.7 14.8l-3-3 1.4-1.4 1.6 1.6 4.2-4.2 1.4 1.4-5.6 5.6z" fill={theme.accentText} />
+              <svg
+                viewBox="0 0 22 22"
+                className="w-[1em] h-[1em]"
+                style={{ fontSize: 'clamp(12px, 2.5cqi, 20px)' }}
+              >
+                <path
+                  d="M20.4 11l-1.4-1.6.2-2.1-2.1-.5-1-1.9-2 .7L11 4.2 7.9 5.6l-2-.7-1 1.9-2.1.5.2 2.1L1.6 11 3 12.6l-.2 2.1 2.1.5 1 1.9 2-.7 3.1 1.4 3.1-1.4 2 .7 1-1.9 2.1-.5-.2-2.1L20.4 11z"
+                  fill={ct.primary}
+                />
+                <path
+                  d="M9.7 14.8l-3-3 1.4-1.4 1.6 1.6 4.2-4.2 1.4 1.4-5.6 5.6z"
+                  fill={theme.accentText}
+                />
               </svg>
             </div>
             <p
@@ -592,7 +643,9 @@ export const XProfileMock: React.FC<MockProps> = ({ tokens, className }) => {
             className="mt-[3%] opacity-70 leading-relaxed"
             style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(9px, 1.6cqi, 13px)' }}
           >
-            {smartTrunc(tokens.description, 80) || smartTrunc(tokens.tagline, 80) || `Assets by creatives → for creatives`}
+            {smartTrunc(tokens.description, 80) ||
+              smartTrunc(tokens.tagline, 80) ||
+              `Assets by creatives → for creatives`}
           </p>
         </div>
       </div>
@@ -646,23 +699,48 @@ export const SocialCardMock: React.FC<MockProps> = ({ tokens, className }) => {
               {tokens.iconLogo ? (
                 <img src={tokens.iconLogo.url} alt="" className="w-[70%] h-[70%] object-contain" />
               ) : (
-                <span className="font-bold" style={{ fontFamily: tokens.headingFamily, fontSize: 'clamp(10px, 2cqi, 16px)', color: ct.primary }}>
+                <span
+                  className="font-bold"
+                  style={{
+                    fontFamily: tokens.headingFamily,
+                    fontSize: 'clamp(10px, 2cqi, 16px)',
+                    color: ct.primary,
+                  }}
+                >
                   {tokens.name.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
             <div className="flex flex-col">
-              <span className="font-bold" style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(9px, 1.8cqi, 14px)', color: ct.text }}>
+              <span
+                className="font-bold"
+                style={{
+                  fontFamily: tokens.bodyFamily,
+                  fontSize: 'clamp(9px, 1.8cqi, 14px)',
+                  color: ct.text,
+                }}
+              >
                 @{handle}
               </span>
-              <span className="opacity-40" style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(7px, 1.3cqi, 10px)', color: ct.text }}>
+              <span
+                className="opacity-40"
+                style={{
+                  fontFamily: tokens.bodyFamily,
+                  fontSize: 'clamp(7px, 1.3cqi, 10px)',
+                  color: ct.text,
+                }}
+              >
                 Há 5 minutos
               </span>
             </div>
           </div>
           <span
             className="px-4 py-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wider"
-            style={{ background: ct.primary, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+            style={{
+              background: ct.primary,
+              color: theme.accentText,
+              fontFamily: tokens.bodyFamily,
+            }}
           >
             + Adicionar
           </span>
@@ -681,8 +759,14 @@ export const NotificationMock: React.FC<MockProps> = ({ tokens, className }) => 
       style={{ aspectRatio: '5 / 2', background: ct.bg, color: ct.text }}
     >
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-[3%] px-[6%]">
-        <div className="absolute inset-x-[12%] bottom-[18%] h-[38%] rounded-[20px] opacity-20" style={{ background: '#fff' }} />
-        <div className="absolute inset-x-[8%] bottom-[22%] h-[38%] rounded-[22px] opacity-50" style={{ background: '#fff' }} />
+        <div
+          className="absolute inset-x-[12%] bottom-[18%] h-[38%] rounded-[20px] opacity-20"
+          style={{ background: '#fff' }}
+        />
+        <div
+          className="absolute inset-x-[8%] bottom-[22%] h-[38%] rounded-[22px] opacity-50"
+          style={{ background: '#fff' }}
+        />
 
         <div
           className="relative z-10 flex items-center gap-[4%] w-[85%] rounded-[22px] px-[4%] py-[3.5%]"
@@ -697,7 +781,14 @@ export const NotificationMock: React.FC<MockProps> = ({ tokens, className }) => 
             ) : tokens.primaryLogo ? (
               <img src={tokens.primaryLogo.url} alt="" className="w-[70%] h-[70%] object-contain" />
             ) : (
-              <span className="font-bold" style={{ fontFamily: tokens.headingFamily, fontSize: 'clamp(14px, 3cqi, 24px)', color: ct.primary }}>
+              <span
+                className="font-bold"
+                style={{
+                  fontFamily: tokens.headingFamily,
+                  fontSize: 'clamp(14px, 3cqi, 24px)',
+                  color: ct.primary,
+                }}
+              >
                 {tokens.name.charAt(0).toUpperCase()}
               </span>
             )}
@@ -711,14 +802,23 @@ export const NotificationMock: React.FC<MockProps> = ({ tokens, className }) => 
               >
                 {tokens.name}
               </h4>
-              <span className="opacity-40 shrink-0 ml-2" style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(8px, 1.4cqi, 12px)' }}>
+              <span
+                className="opacity-40 shrink-0 ml-2"
+                style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(8px, 1.4cqi, 12px)' }}
+              >
                 Há 1 min
               </span>
             </div>
-            <p className="font-semibold mt-0.5" style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(9px, 2cqi, 16px)' }}>
+            <p
+              className="font-semibold mt-0.5"
+              style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(9px, 2cqi, 16px)' }}
+            >
               {tokens.tagline ? smartTrunc(tokens.tagline, 25) : 'Mockup Alert'}
             </p>
-            <p className="opacity-60 truncate" style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(8px, 1.6cqi, 13px)' }}>
+            <p
+              className="opacity-60 truncate"
+              style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(8px, 1.6cqi, 13px)' }}
+            >
               {smartTrunc(tokens.description, 50) || 'Assets by creatives → for creatives'}
             </p>
           </div>
@@ -747,7 +847,14 @@ export const AppStoreMock: React.FC<MockProps> = ({ tokens, className }) => {
           ) : tokens.primaryLogo ? (
             <img src={tokens.primaryLogo.url} alt="" className="w-[60%] h-[60%] object-contain" />
           ) : (
-            <span className="font-bold" style={{ fontFamily: tokens.headingFamily, fontSize: 'clamp(20px, 5cqi, 40px)', color: ct.primary }}>
+            <span
+              className="font-bold"
+              style={{
+                fontFamily: tokens.headingFamily,
+                fontSize: 'clamp(20px, 5cqi, 40px)',
+                color: ct.primary,
+              }}
+            >
               {tokens.name.charAt(0).toUpperCase()}
             </span>
           )}
@@ -761,7 +868,11 @@ export const AppStoreMock: React.FC<MockProps> = ({ tokens, className }) => {
         </h2>
         <p
           className="opacity-50 mt-1"
-          style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(9px, 2cqi, 14px)', color: ct.accent }}
+          style={{
+            fontFamily: tokens.bodyFamily,
+            fontSize: 'clamp(9px, 2cqi, 14px)',
+            color: ct.accent,
+          }}
         >
           {smartTrunc(tokens.tagline, 40) || 'Creative tools for everyone'}
         </p>
@@ -773,7 +884,11 @@ export const AppStoreMock: React.FC<MockProps> = ({ tokens, className }) => {
           style={{ background: `${ct.primary}0A`, border: `1px solid ${ct.text}10` }}
         >
           {pickMedia(tokens, 'product') ? (
-            <img src={pickMedia(tokens, 'product')!} alt="" className="w-full h-full object-cover" />
+            <img
+              src={pickMedia(tokens, 'product')!}
+              alt=""
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <Logo tokens={tokens} size={48} />
@@ -783,16 +898,27 @@ export const AppStoreMock: React.FC<MockProps> = ({ tokens, className }) => {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map(i => (
-              <svg key={i} viewBox="0 0 12 12" className="w-[10px] h-[10px]" style={{ fill: i <= 4 ? ct.primary : `${ct.text}20` }}>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <svg
+                key={i}
+                viewBox="0 0 12 12"
+                className="w-[10px] h-[10px]"
+                style={{ fill: i <= 4 ? ct.primary : `${ct.text}20` }}
+              >
                 <path d="M6 0l1.8 3.7 4.2.6-3 2.9.7 4.1L6 9.5 2.3 11.3l.7-4.1-3-2.9 4.2-.6z" />
               </svg>
             ))}
-            <span className="text-[8px] opacity-40 ml-1" style={{ fontFamily: tokens.bodyFamily }}>4.8</span>
+            <span className="text-[8px] opacity-40 ml-1" style={{ fontFamily: tokens.bodyFamily }}>
+              4.8
+            </span>
           </div>
           <span
             className="px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-bold"
-            style={{ background: ct.primary, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+            style={{
+              background: ct.primary,
+              color: theme.accentText,
+              fontFamily: tokens.bodyFamily,
+            }}
           >
             GET
           </span>
@@ -811,7 +937,10 @@ export const LetterheadMock: React.FC<MockProps> = ({ tokens, className }) => {
       style={{ aspectRatio: '1 / 1.414', background: '#ffffff', color: '#1a1a1a' }}
     >
       <div className="absolute inset-0 flex flex-col">
-        <div className="flex items-center justify-between px-[8%] py-[5%]" style={{ borderBottom: `2px solid ${ct.primary}` }}>
+        <div
+          className="flex items-center justify-between px-[8%] py-[5%]"
+          style={{ borderBottom: `2px solid ${ct.primary}` }}
+        >
           <Logo tokens={tokens} size={28} mode="dark" />
           <div className="flex flex-col items-end">
             <span className="text-[7px] opacity-40" style={{ fontFamily: tokens.bodyFamily }}>
@@ -825,25 +954,55 @@ export const LetterheadMock: React.FC<MockProps> = ({ tokens, className }) => {
 
         {/* Body placeholder lines */}
         <div className="flex-1 px-[8%] py-[8%] flex flex-col gap-[3%]">
-          <div className="h-[2px] w-[30%] rounded-full opacity-15" style={{ background: '#1a1a1a' }} />
-          <div className="h-[2px] w-full rounded-full opacity-8" style={{ background: '#1a1a1a' }} />
-          <div className="h-[2px] w-full rounded-full opacity-8" style={{ background: '#1a1a1a' }} />
-          <div className="h-[2px] w-[85%] rounded-full opacity-8" style={{ background: '#1a1a1a' }} />
-          <div className="h-[2px] w-full rounded-full opacity-8" style={{ background: '#1a1a1a' }} />
-          <div className="h-[2px] w-[60%] rounded-full opacity-8" style={{ background: '#1a1a1a' }} />
+          <div
+            className="h-[2px] w-[30%] rounded-full opacity-15"
+            style={{ background: '#1a1a1a' }}
+          />
+          <div
+            className="h-[2px] w-full rounded-full opacity-8"
+            style={{ background: '#1a1a1a' }}
+          />
+          <div
+            className="h-[2px] w-full rounded-full opacity-8"
+            style={{ background: '#1a1a1a' }}
+          />
+          <div
+            className="h-[2px] w-[85%] rounded-full opacity-8"
+            style={{ background: '#1a1a1a' }}
+          />
+          <div
+            className="h-[2px] w-full rounded-full opacity-8"
+            style={{ background: '#1a1a1a' }}
+          />
+          <div
+            className="h-[2px] w-[60%] rounded-full opacity-8"
+            style={{ background: '#1a1a1a' }}
+          />
           <div className="mt-auto" />
-          <div className="h-[2px] w-[25%] rounded-full opacity-12" style={{ background: '#1a1a1a' }} />
-          <div className="h-[2px] w-[20%] rounded-full opacity-10" style={{ background: '#1a1a1a' }} />
+          <div
+            className="h-[2px] w-[25%] rounded-full opacity-12"
+            style={{ background: '#1a1a1a' }}
+          />
+          <div
+            className="h-[2px] w-[20%] rounded-full opacity-10"
+            style={{ background: '#1a1a1a' }}
+          />
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-[8%] py-[3%]" style={{ borderTop: `1px solid ${ct.primary}33` }}>
+        <div
+          className="flex items-center justify-between px-[8%] py-[3%]"
+          style={{ borderTop: `1px solid ${ct.primary}33` }}
+        >
           <div className="flex gap-1.5">
             {tokens.palette.slice(0, 4).map((c, i) => (
               <span key={i} className="w-2 h-2 rounded-full" style={{ background: c.hex }} />
             ))}
           </div>
-          <span className="text-[7px] opacity-30 uppercase tracking-widest" style={{ fontFamily: tokens.bodyFamily }}>
+          <span
+            className="text-[7px] opacity-30 uppercase tracking-widest"
+            style={{ fontFamily: tokens.bodyFamily }}
+          >
             {tokens.name}
           </span>
         </div>
@@ -864,7 +1023,10 @@ export const PresentationSlideMock: React.FC<MockProps> = ({ tokens, className }
         <div className="flex-1 flex flex-col justify-between p-[6%]">
           <div className="flex items-center gap-2">
             <Logo tokens={tokens} size={20} />
-            <span className="text-[8px] opacity-30 uppercase tracking-widest" style={{ fontFamily: tokens.bodyFamily }}>
+            <span
+              className="text-[8px] opacity-30 uppercase tracking-widest"
+              style={{ fontFamily: tokens.bodyFamily }}
+            >
               Brand Deck
             </span>
           </div>
@@ -880,7 +1042,9 @@ export const PresentationSlideMock: React.FC<MockProps> = ({ tokens, className }
               className="font-bold leading-[0.92] tracking-tight"
               style={{ fontFamily: tokens.headingFamily, fontSize: 'clamp(18px, 4.5cqi, 40px)' }}
             >
-              {smartTrunc(tokens.manifestoFirstLine, 35) || smartTrunc(tokens.description, 35) || `This is ${tokens.name}`}
+              {smartTrunc(tokens.manifestoFirstLine, 35) ||
+                smartTrunc(tokens.description, 35) ||
+                `This is ${tokens.name}`}
             </h1>
           </div>
 
@@ -890,12 +1054,20 @@ export const PresentationSlideMock: React.FC<MockProps> = ({ tokens, className }
                 <span key={i} className="w-6 h-1.5 rounded-sm" style={{ background: c.hex }} />
               ))}
             </div>
-            <span className="text-[8px] opacity-30" style={{ fontFamily: tokens.bodyFamily }}>01</span>
+            <span className="text-[8px] opacity-30" style={{ fontFamily: tokens.bodyFamily }}>
+              01
+            </span>
           </div>
         </div>
 
-        <div className="w-[38%] flex items-center justify-center relative" style={{ background: ct.primary }}>
-          <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 30% 50%, ${ct.bg}, transparent 70%)` }} />
+        <div
+          className="w-[38%] flex items-center justify-center relative"
+          style={{ background: ct.primary }}
+        >
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{ background: `radial-gradient(circle at 30% 50%, ${ct.bg}, transparent 70%)` }}
+          />
           <div className="relative z-10 opacity-90">
             <Logo tokens={tokens} size={64} mode="auto" />
           </div>
@@ -943,7 +1115,11 @@ export const EmailHeaderMock: React.FC<MockProps> = ({ tokens, className }) => {
         <div className="pr-[5%] flex flex-col items-end gap-1.5">
           <span
             className="px-3 py-1 rounded-md text-[8px] uppercase tracking-[0.2em] font-semibold"
-            style={{ background: ct.primary, color: theme.accentText, fontFamily: tokens.bodyFamily }}
+            style={{
+              background: ct.primary,
+              color: theme.accentText,
+              fontFamily: tokens.bodyFamily,
+            }}
           >
             Read more
           </span>

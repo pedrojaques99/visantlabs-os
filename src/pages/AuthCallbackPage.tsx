@@ -5,7 +5,7 @@ import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 export const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
@@ -52,16 +52,21 @@ export const AuthCallbackPage: React.FC = () => {
 
         switch (errorParam) {
           case 'no_code':
-            errorMessage = t('auth.oauthError.noCode') || 'Authorization code not received. Please try again.';
+            errorMessage =
+              t('auth.oauthError.noCode') || 'Authorization code not received. Please try again.';
             break;
           case 'invalid_token':
-            errorMessage = t('auth.oauthError.invalidToken') || 'Invalid authentication token. Please try again.';
+            errorMessage =
+              t('auth.oauthError.invalidToken') ||
+              'Invalid authentication token. Please try again.';
             break;
           case 'oauth_failed':
-            errorMessage = t('auth.oauthError.failed') || 'OAuth authentication failed. Please try again.';
+            errorMessage =
+              t('auth.oauthError.failed') || 'OAuth authentication failed. Please try again.';
             break;
           default:
-            errorMessage = t('auth.oauthError.generic') || 'Authentication error occurred. Please try again.';
+            errorMessage =
+              t('auth.oauthError.generic') || 'Authentication error occurred. Please try again.';
         }
 
         setError(errorMessage);
@@ -82,7 +87,9 @@ export const AuthCallbackPage: React.FC = () => {
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
         <div className="text-center">
           <GlitchLoader size={32} color="brand-cyan" className="mx-auto mb-4" />
-          <p className="text-neutral-400 font-mono text-sm">{t('auth.processing') || 'Processing authentication...'}</p>
+          <p className="text-neutral-400 font-mono text-sm">
+            {t('auth.processing') || 'Processing authentication...'}
+          </p>
         </div>
       </div>
     );
@@ -105,19 +112,23 @@ export const AuthCallbackPage: React.FC = () => {
         )}
 
         <div className="flex gap-3">
-          <Button variant="ghost" onClick={() => navigate('/')}
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
             className="flex-1 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {t('auth.backToHome') || 'Back to Home'}
           </Button>
-          <Button variant="ghost" onClick={() => {
-            // Open auth modal by navigating to home and triggering auth
-            navigate('/');
-            // Small delay to ensure navigation completes
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('openAuthModal'));
-            }, 100);
-          }}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              // Open auth modal by navigating to home and triggering auth
+              navigate('/');
+              // Small delay to ensure navigation completes
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('openAuthModal'));
+              }, 100);
+            }}
             className="flex-1 bg-neutral-800/50 hover:bg-neutral-800/70 text-neutral-300 font-semibold py-2.5 px-4 rounded-md border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-200 text-sm font-mono"
           >
             {t('auth.tryAgain') || 'Try Again'}
@@ -127,4 +138,3 @@ export const AuthCallbackPage: React.FC = () => {
     </div>
   );
 };
-

@@ -40,26 +40,43 @@ export function ToolCallCard({ tc }: ToolCallCardProps) {
   const [expanded, setExpanded] = useState(false);
   const duration = formatDuration(tc.startedAt, tc.endedAt);
   const elapsed = useElapsed(tc.startedAt, tc.status === 'running');
-  const statusColor = tc.status === 'running' ? 'text-brand-cyan' : tc.status === 'done' ? 'text-green-500' : 'text-destructive';
+  const statusColor =
+    tc.status === 'running'
+      ? 'text-brand-cyan'
+      : tc.status === 'done'
+      ? 'text-green-500'
+      : 'text-destructive';
   const friendlyName = tc.name.replace(/_/g, ' ');
-  const statusLabel = tc.status === 'running' ? 'Running' : tc.status === 'done' ? 'Completed' : 'Failed';
+  const statusLabel =
+    tc.status === 'running' ? 'Running' : tc.status === 'done' ? 'Completed' : 'Failed';
 
   return (
-    <div className="rounded border border-border/40 bg-background/30 overflow-hidden" role="status" aria-label={`${friendlyName}: ${statusLabel}`}>
+    <div
+      className="rounded border border-border/40 bg-background/30 overflow-hidden"
+      role="status"
+      aria-label={`${friendlyName}: ${statusLabel}`}
+    >
       <button
         type="button"
-        onClick={() => setExpanded(v => !v)}
+        onClick={() => setExpanded((v) => !v)}
         className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[10px] hover:bg-muted/30 transition-colors"
         aria-expanded={expanded}
       >
-        {tc.status === 'running' && <Loader2 size={10} className="animate-spin shrink-0 text-brand-cyan" />}
+        {tc.status === 'running' && (
+          <Loader2 size={10} className="animate-spin shrink-0 text-brand-cyan" />
+        )}
         {tc.status === 'done' && <CircleCheck size={10} className="text-green-500 shrink-0" />}
         {tc.status === 'error' && <CircleX size={10} className="text-destructive shrink-0" />}
         <span className={`font-mono ${statusColor}`}>{friendlyName}</span>
         <span className="text-muted-foreground/50 ml-auto font-mono">
           {tc.status === 'running' ? elapsed : duration}
         </span>
-        <ChevronDown size={8} className={`shrink-0 text-muted-foreground/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          size={8}
+          className={`shrink-0 text-muted-foreground/40 transition-transform ${
+            expanded ? 'rotate-180' : ''
+          }`}
+        />
       </button>
       {expanded && (
         <div className="px-2 pb-1.5 text-[10px] border-t border-border/30 space-y-1">

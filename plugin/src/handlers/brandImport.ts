@@ -31,14 +31,14 @@ export async function importLogoCandidates(maxWidth = 512): Promise<void> {
       try {
         const bytes = await node.exportAsync({
           format: 'PNG',
-          constraint: { type: 'WIDTH', value: maxWidth }
+          constraint: { type: 'WIDTH', value: maxWidth },
         });
         const b64 = figma.base64Encode(bytes);
         results.push({
           id: node.id,
           name: node.name,
           thumbnail: `data:image/png;base64,${b64}`,
-          folderPath: getFolderPath(node)
+          folderPath: getFolderPath(node),
         });
       } catch {
         // Skip nodes that fail to export

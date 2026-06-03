@@ -28,12 +28,12 @@ export function ServerDebugPanel() {
   });
 
   const runTest = async (testName: string, fn: () => Promise<Response>) => {
-    setTestResults(prev => ({ ...prev, [testName]: { status: 'loading' } }));
+    setTestResults((prev) => ({ ...prev, [testName]: { status: 'loading' } }));
     const t0 = Date.now();
     try {
       const res = await fn();
       const elapsed = Date.now() - t0;
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         [testName]: {
           status: res.ok ? 'success' : 'error',
@@ -41,7 +41,7 @@ export function ServerDebugPanel() {
         },
       }));
     } catch (err: any) {
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         [testName]: { status: 'error', message: err.message || String(err) },
       }));
@@ -70,31 +70,36 @@ export function ServerDebugPanel() {
     {
       key: 'authStatus',
       label: 'GET /auth/status',
-      run: () => runTest('authStatus', () => fetch(apiUrl('/plugin/auth/status'), { headers: { 'Content-Type': 'application/json' } })),
+      run: () =>
+        runTest('authStatus', () =>
+          fetch(apiUrl('/plugin/auth/status'), { headers: { 'Content-Type': 'application/json' } })
+        ),
     },
     {
       key: 'authLogin',
       label: 'POST /auth/signin',
-      run: () => runTest('authLogin', () =>
-        fetch(apiUrl('/auth/signin'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: 'test@test.com', password: 'test' }),
-        })
-      ),
+      run: () =>
+        runTest('authLogin', () =>
+          fetch(apiUrl('/auth/signin'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: 'test@test.com', password: 'test' }),
+          })
+        ),
     },
     {
       key: 'corsTest',
       label: 'CORS Preflight',
-      run: () => runTest('corsTest', () =>
-        fetch(apiUrl('/'), {
-          method: 'OPTIONS',
-          headers: {
-            'Access-Control-Request-Method': 'GET',
-            'Access-Control-Request-Headers': 'Content-Type',
-          },
-        })
-      ),
+      run: () =>
+        runTest('corsTest', () =>
+          fetch(apiUrl('/'), {
+            method: 'OPTIONS',
+            headers: {
+              'Access-Control-Request-Method': 'GET',
+              'Access-Control-Request-Headers': 'Content-Type',
+            },
+          })
+        ),
     },
   ];
 
@@ -128,9 +133,7 @@ export function ServerDebugPanel() {
               Save
             </Button>
           </div>
-          <div className="mt-2 text-gray-500 break-all">
-            Full: {apiUrl('/auth/status')}
-          </div>
+          <div className="mt-2 text-gray-500 break-all">Full: {apiUrl('/auth/status')}</div>
         </div>
 
         {/* Connectivity Tests */}
@@ -144,7 +147,11 @@ export function ServerDebugPanel() {
                   {label}
                 </div>
                 {testResults[key].message && (
-                  <div className={`text-xs mt-1 ${testResults[key].status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                  <div
+                    className={`text-xs mt-1 ${
+                      testResults[key].status === 'success' ? 'text-green-400' : 'text-red-400'
+                    }`}
+                  >
                     {testResults[key].message}
                   </div>
                 )}
@@ -166,7 +173,10 @@ export function ServerDebugPanel() {
         <div className="text-xs text-gray-400 space-y-1 border-t border-gray-700 pt-3">
           <p className="font-semibold text-gray-300">Troubleshooting:</p>
           <ul className="list-disc list-inside space-y-1">
-            <li>All tests fail → Backend não está rodando. Execute: <code className="bg-black/40 px-1">npm run dev</code></li>
+            <li>
+              All tests fail → Backend não está rodando. Execute:{' '}
+              <code className="bg-black/40 px-1">npm run dev</code>
+            </li>
             <li>CORS fails → Verifique cors middleware em server/index.ts</li>
             <li>/auth/status fails → Verifique se o endpoint existe em server/routes</li>
             <li>Timeout → Backend lento ou travado, reinicie</li>

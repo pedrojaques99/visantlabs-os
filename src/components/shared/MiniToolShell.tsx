@@ -47,7 +47,7 @@ export const MiniToolShell: React.FC<MiniToolShellProps> = ({
     <div
       className={cn(
         'min-h-screen bg-background flex flex-col items-center p-4 sm:p-8 relative',
-        className,
+        className
       )}
       {...(dragDrop && {
         onDrop: dragDrop.onDrop,
@@ -65,9 +65,7 @@ export const MiniToolShell: React.FC<MiniToolShellProps> = ({
               {title}
             </h1>
             {countLabel && (
-              <span className="text-[10px] font-mono text-neutral-500 ml-2">
-                {countLabel}
-              </span>
+              <span className="text-[10px] font-mono text-neutral-500 ml-2">{countLabel}</span>
             )}
             {headerExtra}
             {resetVisible && onReset && (

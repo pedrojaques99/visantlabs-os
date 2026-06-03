@@ -9,7 +9,7 @@ import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 import { validateFile } from '@/utils/fileUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,11 +31,13 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
 
   // Dynamically import PdfThumbnail to avoid SSR issues
   useEffect(() => {
-    import('@/components/ui/PdfThumbnail').then((module) => {
-      setPdfThumbnailComponent(() => module.PdfThumbnail);
-    }).catch((error) => {
-      console.error('Failed to load PdfThumbnail:', error);
-    });
+    import('@/components/ui/PdfThumbnail')
+      .then((module) => {
+        setPdfThumbnailComponent(() => module.PdfThumbnail);
+      })
+      .catch((error) => {
+        console.error('Failed to load PdfThumbnail:', error);
+      });
   }, []);
 
   const handlePdfUploadClick = (e: React.MouseEvent) => {
@@ -85,9 +87,12 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
     }
   };
 
-  const handleResize = useCallback((_: any, params: { width: number }) => {
-    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+  const handleResize = useCallback(
+    (_: any, params: { width: number }) => {
+      handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
+    },
+    [id, nodeData.onResize, handleResizeWithDebounce]
+  );
 
   const handleFitToContent = useCallback(() => {
     fitToContent(id, 'auto', 'auto', nodeData.onResize);
@@ -119,7 +124,11 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
         className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
       />
 
-      <NodeHeader icon={FileText} title={t('canvasNodes.pdfNode.title') || 'PDF Node'} selected={selected} />
+      <NodeHeader
+        icon={FileText}
+        title={t('canvasNodes.pdfNode.title') || 'PDF Node'}
+        selected={selected}
+      />
 
       {/* PDF Upload Section */}
       <div className="node-margin flex-1 flex flex-col gap-[var(--node-gap)]">

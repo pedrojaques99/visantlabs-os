@@ -141,4 +141,3 @@ const upscaleShaderDefinition: ShaderDefinition = {
 
 // Register the shader
 registerShader('upscale', upscaleShaderDefinition);
-

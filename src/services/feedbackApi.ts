@@ -93,10 +93,13 @@ export const feedbackApi = {
    */
   async remove(generationId: string): Promise<{ success: boolean }> {
     try {
-      const res = await fetch(`${API_BASE_URL}/feedback/generation/${encodeURIComponent(generationId)}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/feedback/generation/${encodeURIComponent(generationId)}`,
+        {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        }
+      );
       if (!res.ok) return { success: false };
       return res.json();
     } catch {

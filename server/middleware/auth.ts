@@ -12,11 +12,7 @@ export interface AuthRequest extends Request {
   isAdmin?: boolean;
 }
 
-export const authenticate = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     // Internal MCP calls: trust x-mcp-user-id header from localhost or internal network
     const mcpUserId = req.headers['x-mcp-user-id'] as string | undefined;
@@ -46,7 +42,7 @@ export const authenticate = async (
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-        return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ error: 'Authentication required' });
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as {
@@ -61,9 +57,7 @@ export const authenticate = async (
     const mcpResource = `${process.env.API_BASE_URL || 'https://api.visantlabs.com'}/api/mcp`;
     const aud = decoded.aud;
     const isOAuthToken =
-      decoded.sub &&
-      (aud === mcpResource ||
-        (Array.isArray(aud) && aud.includes(mcpResource)));
+      decoded.sub && (aud === mcpResource || (Array.isArray(aud) && aud.includes(mcpResource)));
 
     if (isOAuthToken && decoded.sub) {
       req.userId = decoded.sub;
@@ -112,14 +106,9 @@ export const authenticate = async (
  * Middleware to require admin access
  * Must be used after authenticate middleware
  */
-export const requireAdmin = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.isAdmin) {
     return res.status(403).json({ error: 'Admin access required' });
   }
   next();
 };
-

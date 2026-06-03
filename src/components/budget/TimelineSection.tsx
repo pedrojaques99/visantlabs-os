@@ -4,24 +4,18 @@ import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import type { TimelineMilestone } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface TimelineSectionProps {
   timeline: TimelineMilestone[];
   onChange: (timeline: TimelineMilestone[]) => void;
 }
 
-export const TimelineSection: React.FC<TimelineSectionProps> = ({
-  timeline,
-  onChange,
-}) => {
+export const TimelineSection: React.FC<TimelineSectionProps> = ({ timeline, onChange }) => {
   const { t } = useTranslation();
 
   const addMilestone = () => {
-    onChange([
-      ...timeline,
-      { day: 0, title: '', description: '' },
-    ]);
+    onChange([...timeline, { day: 0, title: '', description: '' }]);
   };
 
   const removeMilestone = (index: number) => {
@@ -40,7 +34,8 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.timeline') || 'Timeline do Projeto'}
         </h3>
-        <Button variant="brand"
+        <Button
+          variant="brand"
           onClick={addMilestone}
           className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
@@ -70,13 +65,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
                       type="number"
                       min="0"
                       value={milestone.day}
-                      onChange={(e) =>
-                        updateMilestone(
-                          index,
-                          'day',
-                          parseInt(e.target.value) || 0
-                        )
-                      }
+                      onChange={(e) => updateMilestone(index, 'day', parseInt(e.target.value) || 0)}
                       placeholder="1"
                     />
                   </div>
@@ -86,9 +75,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
                     </label>
                     <FormInput
                       value={milestone.title}
-                      onChange={(e) =>
-                        updateMilestone(index, 'title', e.target.value)
-                      }
+                      onChange={(e) => updateMilestone(index, 'title', e.target.value)}
                       placeholder={t('budget.placeholders.milestoneTitle') || 'Título do milestone'}
                     />
                   </div>
@@ -98,15 +85,16 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
                     </label>
                     <FormTextarea
                       value={milestone.description}
-                      onChange={(e) =>
-                        updateMilestone(index, 'description', e.target.value)
+                      onChange={(e) => updateMilestone(index, 'description', e.target.value)}
+                      placeholder={
+                        t('budget.placeholders.milestoneDescription') || 'Descrição do milestone'
                       }
-                      placeholder={t('budget.placeholders.milestoneDescription') || 'Descrição do milestone'}
                       rows={2}
                     />
                   </div>
                 </div>
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   onClick={() => removeMilestone(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                   title={t('budget.removeMilestone') || 'Remover milestone'}
@@ -121,4 +109,3 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
     </div>
   );
 };
-

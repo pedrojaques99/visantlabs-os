@@ -164,7 +164,7 @@ export async function pushToFigma(guideline: any): Promise<{ created: number; up
   let collection: VariableCollection | null = null;
   try {
     const collections = await figma.variables.getLocalVariableCollectionsAsync();
-    collection = collections.find(c => c.name === 'Brand Tokens') || null;
+    collection = collections.find((c) => c.name === 'Brand Tokens') || null;
 
     if (!collection) {
       collection = figma.variables.createVariableCollection('Brand Tokens');
@@ -178,15 +178,11 @@ export async function pushToFigma(guideline: any): Promise<{ created: number; up
   const modeId = collection.modes[0].modeId;
 
   // Helper to create or update variable
-  const upsertVariable = async (
-    name: string,
-    type: VariableResolvedDataType,
-    value: any
-  ) => {
+  const upsertVariable = async (name: string, type: VariableResolvedDataType, value: any) => {
     try {
       const existingVars = await figma.variables.getLocalVariablesAsync(type);
-      const existing = existingVars.find(v =>
-        v.name === name && v.variableCollectionId === collection!.id
+      const existing = existingVars.find(
+        (v) => v.name === name && v.variableCollectionId === collection!.id
       );
 
       if (existing) {
@@ -209,7 +205,11 @@ export async function pushToFigma(guideline: any): Promise<{ created: number; up
       // Parse hex to RGB - skip invalid entries
       const hex = color.hex?.replace('#', '');
       if (!hex || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
-        console.warn(`[FigmaSync] Skipping color "${color.name || 'Unnamed'}" - invalid hex value: ${color.hex}`);
+        console.warn(
+          `[FigmaSync] Skipping color "${color.name || 'Unnamed'}" - invalid hex value: ${
+            color.hex
+          }`
+        );
         continue;
       }
       const r = parseInt(hex.substring(0, 2), 16) / 255;

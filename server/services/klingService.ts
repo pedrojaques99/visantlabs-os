@@ -176,7 +176,7 @@ async function pollTask(taskId: string, isImageToVideo: boolean): Promise<string
 }
 
 function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ── Public entry point ─────────────────────────────────────────────────────────

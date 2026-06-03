@@ -3,7 +3,21 @@
  * Central registry for all shader types and their configurations
  */
 
-export type ShaderType = 'halftone' | 'vhs' | 'ascii' | 'matrixDither' | 'upscale' | 'dither' | 'duotone' | 'filmGrain' | 'pixelate' | 'posterize' | 'chromaticAberration' | 'crtScanlines' | 'edgeDetect' | 'glitch';
+export type ShaderType =
+  | 'halftone'
+  | 'vhs'
+  | 'ascii'
+  | 'matrixDither'
+  | 'upscale'
+  | 'dither'
+  | 'duotone'
+  | 'filmGrain'
+  | 'pixelate'
+  | 'posterize'
+  | 'chromaticAberration'
+  | 'crtScanlines'
+  | 'edgeDetect'
+  | 'glitch';
 export type HalftoneVariant = 'ellipse' | 'square' | 'lines';
 
 export interface ShaderUniform {
@@ -51,4 +65,3 @@ export function getShaderDefinition(type: ShaderType): ShaderDefinition {
 export function isShaderRegistered(type: ShaderType): boolean {
   return type in shaderRegistry;
 }
-

@@ -58,7 +58,7 @@ describe('Pixel Intelligence (lib/pixel)', () => {
       const r1 = { x: 0, y: 0, w: 10, h: 10 };
       const r2 = { x: 5, y: 5, w: 10, h: 10 };
       const r3 = { x: 20, y: 20, w: 10, h: 10 };
-      
+
       expect(doRectsOverlap(r1, r2)).toBe(true);
       expect(doRectsOverlap(r1, r3)).toBe(false);
     });

@@ -195,4 +195,3 @@ router.post('/generate', apiRateLimiter, authenticate, async (req: AuthRequest, 
 });
 
 export default router;
-

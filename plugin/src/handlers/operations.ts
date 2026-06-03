@@ -7,8 +7,14 @@ import { serializeNode, serializeSelection } from '../utils/serialize';
 import { colorDistance } from '../utils/colors';
 
 const AXIS_ALIGN_MAP: Record<string, string> = {
-  START: 'MIN', END: 'MAX', FLEX_START: 'MIN', FLEX_END: 'MAX',
-  start: 'MIN', end: 'MAX', flex_start: 'MIN', flex_end: 'MAX',
+  START: 'MIN',
+  END: 'MAX',
+  FLEX_START: 'MIN',
+  FLEX_END: 'MAX',
+  start: 'MIN',
+  end: 'MAX',
+  flex_start: 'MIN',
+  flex_end: 'MAX',
 };
 type PrimaryAxisAlign = 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
 type CounterAxisAlign = 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
@@ -37,24 +43,26 @@ interface SummaryItem {
 async function applyVariablesToFills(fills: Paint[]): Promise<Paint[]> {
   if (!figma.variables) {
     // Cleanup variableId even if variables API is not available
-    return fills.map(f => {
+    return fills.map((f) => {
       const copy = { ...f };
       delete (copy as any).variableId;
       return copy;
     });
   }
-  
+
   const results: Paint[] = [];
   for (const fill of fills) {
     const variableId = (fill as any).variableId;
     const cleanFill = { ...fill };
     delete (cleanFill as any).variableId;
-    
+
     if (fill.type === 'SOLID' && variableId) {
       try {
         const variable = await figma.variables.getVariableByIdAsync(variableId);
         if (variable) {
-          results.push(figma.variables.setBoundVariableForPaint(cleanFill as SolidPaint, 'color', variable));
+          results.push(
+            figma.variables.setBoundVariableForPaint(cleanFill as SolidPaint, 'color', variable)
+          );
           continue;
         }
       } catch (err) {
@@ -69,74 +77,87 @@ async function applyVariablesToFills(fills: Paint[]): Promise<Paint[]> {
 function normalizeFills(fills: any): Paint[] | undefined {
   if (!fills || !Array.isArray(fills)) return undefined;
 
-  const validTypes = ['SOLID', 'GRADIENT_LINEAR', 'GRADIENT_RADIAL', 'GRADIENT_ANGULAR', 'GRADIENT_DIAMOND', 'IMAGE', 'VIDEO'];
+  const validTypes = [
+    'SOLID',
+    'GRADIENT_LINEAR',
+    'GRADIENT_RADIAL',
+    'GRADIENT_ANGULAR',
+    'GRADIENT_DIAMOND',
+    'IMAGE',
+    'VIDEO',
+  ];
 
-  return fills.map((fill: any) => {
-    // Already valid format
-    if (fill.type && validTypes.includes(fill.type)) {
-      // Ensure color is in correct format { r, g, b }
-      if (fill.type === 'SOLID' && fill.color) {
-        const fullColor = normalizeColor(fill.color);
-        const { a, ...rgbColor } = fullColor;
-        return { 
-          ...fill, 
-          color: rgbColor,
-          opacity: a ?? fill.opacity ?? 1
-        };
-      }
-      
-      // Handle Gradients (which often lack position or transform from AI)
-      if (fill.type.startsWith('GRADIENT_')) {
-        if (!fill.gradientStops) return null;
-        
-        fill.gradientStops = fill.gradientStops.map((stop: any) => {
-          const colorObj = stop.color || stop;
-          const normalizedColor = normalizeColor(colorObj);
+  return fills
+    .map((fill: any) => {
+      // Already valid format
+      if (fill.type && validTypes.includes(fill.type)) {
+        // Ensure color is in correct format { r, g, b }
+        if (fill.type === 'SOLID' && fill.color) {
+          const fullColor = normalizeColor(fill.color);
+          const { a, ...rgbColor } = fullColor;
           return {
-            color: {
-              r: normalizedColor.r,
-              g: normalizedColor.g,
-              b: normalizedColor.b,
-              a: (colorObj as any).a ?? 1
-            },
-            position: stop.position ?? stop.offset ?? 0
+            ...fill,
+            color: rgbColor,
+            opacity: a ?? fill.opacity ?? 1,
           };
-        });
-
-        if (!fill.gradientTransform) {
-          // Default: top-to-bottom identity-ish matrix
-          fill.gradientTransform = [[1, 0, 0], [0, 1, 0]];
         }
+
+        // Handle Gradients (which often lack position or transform from AI)
+        if (fill.type.startsWith('GRADIENT_')) {
+          if (!fill.gradientStops) return null;
+
+          fill.gradientStops = fill.gradientStops.map((stop: any) => {
+            const colorObj = stop.color || stop;
+            const normalizedColor = normalizeColor(colorObj);
+            return {
+              color: {
+                r: normalizedColor.r,
+                g: normalizedColor.g,
+                b: normalizedColor.b,
+                a: (colorObj as any).a ?? 1,
+              },
+              position: stop.position ?? stop.offset ?? 0,
+            };
+          });
+
+          if (!fill.gradientTransform) {
+            // Default: top-to-bottom identity-ish matrix
+            fill.gradientTransform = [
+              [1, 0, 0],
+              [0, 1, 0],
+            ];
+          }
+        }
+
+        // Handle Image detection from AI (which won't have a hash)
+        if (fill.type === 'IMAGE' && !fill.imageHash) {
+          return {
+            type: 'SOLID',
+            color: { r: 0.9, g: 0.92, b: 0.95 },
+            opacity: 1,
+          } as SolidPaint;
+        }
+
+        return fill;
       }
 
-      // Handle Image detection from AI (which won't have a hash)
-      if (fill.type === 'IMAGE' && !fill.imageHash) {
-        return {
-          type: 'SOLID',
-          color: { r: 0.9, g: 0.92, b: 0.95 },
-          opacity: 1
-        } as SolidPaint;
-      }
-      
-      return fill;
-    }
+      // Convert hex string or invalid format to SOLID
+      let colorInput = fill;
+      if (fill.color) colorInput = fill.color;
+      else if (fill.hex) colorInput = fill.hex;
+      else if (fill.r !== undefined) colorInput = fill;
 
-    // Convert hex string or invalid format to SOLID
-    let colorInput = fill;
-    if (fill.color) colorInput = fill.color;
-    else if (fill.hex) colorInput = fill.hex;
-    else if (fill.r !== undefined) colorInput = fill;
+      const fullColor = normalizeColor(colorInput);
+      const { a, ...rgbColor } = fullColor;
 
-    const fullColor = normalizeColor(colorInput);
-    const { a, ...rgbColor } = fullColor;
-
-    return {
-      type: 'SOLID' as const,
-      color: rgbColor,
-      opacity: a ?? (typeof fill === 'object' ? fill.opacity : 1) ?? 1,
-      variableId: (typeof fill === 'object' ? fill.variableId : undefined)
-    };
-  }).filter(Boolean) as Paint[];
+      return {
+        type: 'SOLID' as const,
+        color: rgbColor,
+        opacity: a ?? (typeof fill === 'object' ? fill.opacity : 1) ?? 1,
+        variableId: typeof fill === 'object' ? fill.variableId : undefined,
+      };
+    })
+    .filter(Boolean) as Paint[];
 }
 
 /**
@@ -145,13 +166,18 @@ function normalizeFills(fills: any): Paint[] | undefined {
 function normalizeColor(color: any): RGB & { a?: number } {
   if (!color) return { r: 0, g: 0, b: 0 };
 
-  let r = 0, g = 0, b = 0, a = color.a ?? 1;
+  let r = 0,
+    g = 0,
+    b = 0,
+    a = color.a ?? 1;
 
   if (typeof color === 'string') {
     const rgb = hexToRgb(color);
-    r = rgb.r; g = rgb.g; b = rgb.b;
+    r = rgb.r;
+    g = rgb.g;
+    b = rgb.b;
   } else if (typeof color.r === 'number') {
-    const factor = (color.r > 1 || color.g > 1 || color.b > 1) ? 255 : 1;
+    const factor = color.r > 1 || color.g > 1 || color.b > 1 ? 255 : 1;
     r = color.r / factor;
     g = color.g / factor;
     b = color.b / factor;
@@ -160,13 +186,13 @@ function normalizeColor(color: any): RGB & { a?: number } {
   const result: RGB & { a?: number } = {
     r: Math.max(0, Math.min(1, r)),
     g: Math.max(0, Math.min(1, g)),
-    b: Math.max(0, Math.min(1, b))
+    b: Math.max(0, Math.min(1, b)),
   };
-  
+
   if (color.a !== undefined || typeof color === 'string') {
     result.a = Math.max(0, Math.min(1, a));
   }
-  
+
   return result;
 }
 
@@ -179,7 +205,7 @@ function normalizeRGBA(color: any): RGBA {
     r: c.r,
     g: c.g,
     b: c.b,
-    a: (color && typeof color === 'object' && color.a !== undefined) ? color.a : (c.a ?? 1)
+    a: color && typeof color === 'object' && color.a !== undefined ? color.a : c.a ?? 1,
   };
 }
 
@@ -259,7 +285,10 @@ export async function applyOperations(ops: FigmaOperation[]) {
     });
   }
 
-  async function getParent(parentRef?: string, parentNodeId?: string): Promise<BaseNode & ChildrenMixin> {
+  async function getParent(
+    parentRef?: string,
+    parentNodeId?: string
+  ): Promise<BaseNode & ChildrenMixin> {
     // Check created pages first (for frames inside new pages)
     if (parentRef && createdPages.has(parentRef)) {
       return createdPages.get(parentRef) as BaseNode & ChildrenMixin;
@@ -289,11 +318,17 @@ export async function applyOperations(ops: FigmaOperation[]) {
       total,
       opType: op.type,
       opName,
-      status: 'applying'
+      status: 'applying',
     });
 
     try {
-      await processOperation(op, { createdNodes, createdPages, pushSummary, getParent, snapshotSelection });
+      await processOperation(op, {
+        createdNodes,
+        createdPages,
+        pushSummary,
+        getParent,
+        snapshotSelection,
+      });
 
       // Notify UI of success
       postToUI({
@@ -302,7 +337,7 @@ export async function applyOperations(ops: FigmaOperation[]) {
         total,
         opType: op.type,
         opName,
-        status: 'done'
+        status: 'done',
       });
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -314,13 +349,13 @@ export async function applyOperations(ops: FigmaOperation[]) {
         opType: op.type,
         opName,
         status: 'error',
-        error: errorMsg
+        error: errorMsg,
       });
     }
   }
 
   // Select root nodes created and zoom to view
-  const rootNodes = [...createdNodes.values()].filter(n => n.parent === figma.currentPage);
+  const rootNodes = [...createdNodes.values()].filter((n) => n.parent === figma.currentPage);
   if (rootNodes.length > 0) {
     figma.currentPage.selection = rootNodes;
     figma.viewport.scrollAndZoomIntoView(rootNodes);
@@ -334,14 +369,26 @@ export async function applyOperations(ops: FigmaOperation[]) {
 
   const summary = summaryLines.length > 0 ? summaryLines.join('\n') : undefined;
   const telemetry = auditCreatedNodes(rootNodes);
-  postToUI({ type: 'OPERATIONS_DONE', count: ops.length, summary, summaryItems, canUndo: true, nodeIdMap, telemetry });
+  postToUI({
+    type: 'OPERATIONS_DONE',
+    count: ops.length,
+    summary,
+    summaryItems,
+    canUndo: true,
+    nodeIdMap,
+    telemetry,
+  });
 }
 
 // ─── Telemetry: static audit of generated tree ───────────────────────────────
 // Cheap, deterministic checks. No LLM. Catches the recurring "FIXED where it
 // should be HUG / clipping / structural white frame" classes of error so we
 // can refine the prompt with data instead of screenshots.
-interface AuditViolation { node: string; rule: string; detail?: string }
+interface AuditViolation {
+  node: string;
+  rule: string;
+  detail?: string;
+}
 interface AuditReport {
   rootCount: number;
   nodeCount: number;
@@ -390,7 +437,8 @@ function auditCreatedNodes(roots: SceneNode[]): AuditReport {
 
       // Auto-layout child should default to HUG, not FIXED
       const parent = node.parent as any;
-      const inAutoLayout = parent && 'layoutMode' in parent && parent.layoutMode && parent.layoutMode !== 'NONE';
+      const inAutoLayout =
+        parent && 'layoutMode' in parent && parent.layoutMode && parent.layoutMode !== 'NONE';
       if (inAutoLayout && depth > 0) {
         if (anyNode.layoutSizingVertical === 'FIXED' && f.layoutMode && f.layoutMode !== 'NONE') {
           violations.push({ node: f.name, rule: 'should-be-hug-vertical' });
@@ -451,12 +499,18 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
 
     // Handle Absolute Positioning in Auto Layout
-    if (parentIsAutoLayout && p.layoutPositioning === 'ABSOLUTE' && 'layoutPositioning' in anyNode) {
+    if (
+      parentIsAutoLayout &&
+      p.layoutPositioning === 'ABSOLUTE' &&
+      'layoutPositioning' in anyNode
+    ) {
       anyNode.layoutPositioning = 'ABSOLUTE';
     }
 
     // Handle X, Y (only if not governed by Auto Layout)
-    const governsLayout = parentIsAutoLayout && (!('layoutPositioning' in anyNode) || anyNode.layoutPositioning !== 'ABSOLUTE');
+    const governsLayout =
+      parentIsAutoLayout &&
+      (!('layoutPositioning' in anyNode) || anyNode.layoutPositioning !== 'ABSOLUTE');
     if (!governsLayout) {
       if (p.x !== undefined) anyNode.x = p.x;
       if (p.y !== undefined) anyNode.y = p.y;
@@ -466,7 +520,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (p.opacity !== undefined) anyNode.opacity = p.opacity;
     if (p.blendMode && 'blendMode' in anyNode) anyNode.blendMode = p.blendMode;
     if (p.visible !== undefined) anyNode.visible = p.visible;
-    
+
     // Explicit sizing for absolute/free elements
     if (!governsLayout) {
       if (p.width > 0 && p.height > 0) anyNode.resize(p.width, p.height);
@@ -497,8 +551,14 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       frame.layoutMode = props.layoutMode;
       frame.primaryAxisSizingMode = props.primaryAxisSizingMode ?? 'FIXED';
       frame.counterAxisSizingMode = props.counterAxisSizingMode ?? 'FIXED';
-      frame.primaryAxisAlignItems = normalizeAxisAlign(props.primaryAxisAlignItems, 'MIN') as PrimaryAxisAlign;
-      frame.counterAxisAlignItems = normalizeAxisAlign(props.counterAxisAlignItems, 'MIN') as CounterAxisAlign;
+      frame.primaryAxisAlignItems = normalizeAxisAlign(
+        props.primaryAxisAlignItems,
+        'MIN'
+      ) as PrimaryAxisAlign;
+      frame.counterAxisAlignItems = normalizeAxisAlign(
+        props.counterAxisAlignItems,
+        'MIN'
+      ) as CounterAxisAlign;
       frame.itemSpacing = props.itemSpacing ?? 0;
       if (props.counterAxisSpacing != null && 'counterAxisSpacing' in frame) {
         (frame as any).counterAxisSpacing = props.counterAxisSpacing;
@@ -513,8 +573,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       }
       if (props.minWidth != null && 'minWidth' in frame) (frame as any).minWidth = props.minWidth;
       if (props.maxWidth != null && 'maxWidth' in frame) (frame as any).maxWidth = props.maxWidth;
-      if (props.minHeight != null && 'minHeight' in frame) (frame as any).minHeight = props.minHeight;
-      if (props.maxHeight != null && 'maxHeight' in frame) (frame as any).maxHeight = props.maxHeight;
+      if (props.minHeight != null && 'minHeight' in frame)
+        (frame as any).minHeight = props.minHeight;
+      if (props.maxHeight != null && 'maxHeight' in frame)
+        (frame as any).maxHeight = props.maxHeight;
     }
 
     if (props.fills) {
@@ -540,16 +602,16 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       const gap = props.positionGap ?? 100;
 
       if (props.autoPosition) {
-        const siblings = page.children.filter(n => n.type === 'FRAME' || n.type === 'COMPONENT');
+        const siblings = page.children.filter((n) => n.type === 'FRAME' || n.type === 'COMPONENT');
 
         if (props.autoPosition === 'right' && siblings.length > 0) {
           // Posiciona à direita do último frame
-          const maxX = Math.max(0, ...siblings.map(n => n.x + n.width));
+          const maxX = Math.max(0, ...siblings.map((n) => n.x + n.width));
           frame.x = maxX + gap;
           frame.y = 0;
         } else if (props.autoPosition === 'below' && siblings.length > 0) {
           // Posiciona abaixo do último frame
-          const maxY = Math.max(0, ...siblings.map(n => n.y + n.height));
+          const maxY = Math.max(0, ...siblings.map((n) => n.y + n.height));
           frame.x = 0;
           frame.y = maxY + gap;
         } else if (props.autoPosition === 'grid') {
@@ -558,8 +620,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
           const idx = siblings.length;
           const col = idx % cols;
           const row = Math.floor(idx / cols);
-          const maxW = Math.max(fw, ...siblings.map(n => n.width));
-          const maxH = Math.max(fh, ...siblings.map(n => n.height));
+          const maxW = Math.max(fw, ...siblings.map((n) => n.width));
+          const maxH = Math.max(fh, ...siblings.map((n) => n.height));
           frame.x = col * (maxW + gap);
           frame.y = row * (maxH + gap);
         } else {
@@ -581,7 +643,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (parent !== figma.currentPage && parent.type !== 'PAGE') {
       const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
       if (parentIsAutoLayout) {
-        if (props.layoutSizingHorizontal) frame.layoutSizingHorizontal = props.layoutSizingHorizontal;
+        if (props.layoutSizingHorizontal)
+          frame.layoutSizingHorizontal = props.layoutSizingHorizontal;
         if (props.layoutSizingVertical) frame.layoutSizingVertical = props.layoutSizingVertical;
       }
     }
@@ -625,7 +688,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (parent !== figma.currentPage && parent.type !== 'PAGE') {
       const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
       if (parentIsAutoLayout) {
-        if (props.layoutSizingHorizontal) rect.layoutSizingHorizontal = props.layoutSizingHorizontal;
+        if (props.layoutSizingHorizontal)
+          rect.layoutSizingHorizontal = props.layoutSizingHorizontal;
         if (props.layoutSizingVertical) rect.layoutSizingVertical = props.layoutSizingVertical;
       }
     }
@@ -657,13 +721,15 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (props.opacity != null) ellipse.opacity = props.opacity;
     if (props.effects) ellipse.effects = mapEffects(props.effects);
     if (props.isMask != null) ellipse.isMask = props.isMask;
-    if (props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = props.constraints;
+    if (props.constraints && 'constraints' in ellipse)
+      (ellipse as any).constraints = props.constraints;
     parent.appendChild(ellipse);
 
     if (parent !== figma.currentPage && parent.type !== 'PAGE') {
       const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
       if (parentIsAutoLayout) {
-        if (props.layoutSizingHorizontal) ellipse.layoutSizingHorizontal = props.layoutSizingHorizontal;
+        if (props.layoutSizingHorizontal)
+          ellipse.layoutSizingHorizontal = props.layoutSizingHorizontal;
         if (props.layoutSizingVertical) ellipse.layoutSizingVertical = props.layoutSizingVertical;
       }
     }
@@ -712,7 +778,11 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     text.characters = props.content || props.characters || '';
     if (props.name) text.name = props.name;
     if (props.textStyleId) {
-      try { text.textStyleId = props.textStyleId; } catch { /* style not found */ }
+      try {
+        text.textStyleId = props.textStyleId;
+      } catch {
+        /* style not found */
+      }
     }
     if (props.fontSize) text.fontSize = props.fontSize;
     if (props.fills) {
@@ -741,7 +811,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (parent !== figma.currentPage && parent.type !== 'PAGE') {
       const parentIsAutoLayout = 'layoutMode' in parent && (parent as any).layoutMode !== 'NONE';
       if (parentIsAutoLayout) {
-        if (props.layoutSizingHorizontal) text.layoutSizingHorizontal = props.layoutSizingHorizontal;
+        if (props.layoutSizingHorizontal)
+          text.layoutSizingHorizontal = props.layoutSizingHorizontal;
         text.layoutSizingVertical = props.layoutSizingVertical || 'HUG';
       }
     }
@@ -765,7 +836,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     try {
       await ensurePagesLoaded();
       const allComps = figma.root.findAllWithCriteria({ types: ['COMPONENT'] });
-      component = allComps.find(c => c.key === compKey) || null;
+      component = allComps.find((c) => c.key === compKey) || null;
     } catch {
       // Continue to try import
     }
@@ -808,10 +879,11 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     }
     if (op.x != null) instance.x = op.x;
     if (op.y != null) instance.y = op.y;
-    
+
     const parentIsAutoLayout = 'layoutMode' in parent && parent.layoutMode !== 'NONE';
     if (parentIsAutoLayout) {
-      if (props.layoutSizingHorizontal) instance.layoutSizingHorizontal = props.layoutSizingHorizontal;
+      if (props.layoutSizingHorizontal)
+        instance.layoutSizingHorizontal = props.layoutSizingHorizontal;
       if (props.layoutSizingVertical) instance.layoutSizingVertical = props.layoutSizingVertical;
     }
 
@@ -820,7 +892,9 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (overrides && typeof overrides === 'object') {
       try {
         instance.setProperties(overrides as { [k: string]: string | boolean });
-      } catch { /* component properties not supported or invalid keys */ }
+      } catch {
+        /* component properties not supported or invalid keys */
+      }
     }
 
     applyCommonProps(instance, props, parent);
@@ -831,7 +905,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_FILL ═══
   else if (op.type === 'SET_FILL') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as GeometryMixin | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as GeometryMixin | null;
     if (node && 'fills' in node) {
       node.fills = op.fills as any;
       pushSummary(`Editado fill @"${(node as any).name}"`, node as SceneNode);
@@ -840,7 +914,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_STROKE ═══
   else if (op.type === 'SET_STROKE') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as GeometryMixin | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as GeometryMixin | null;
     if (node && 'strokes' in node) {
       node.strokes = op.strokes as any;
       if (op.strokeWeight != null) node.strokeWeight = op.strokeWeight;
@@ -864,15 +938,19 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'SET_IMAGE_FILL') {
     const node = op.nodeId
       ? await figma.getNodeByIdAsync(op.nodeId)
-      : (op.ref ? createdNodes.get(op.ref) : null);
+      : op.ref
+      ? createdNodes.get(op.ref)
+      : null;
     if (node && 'fills' in node) {
       try {
         const image = await figma.createImageAsync(op.imageUrl);
-        (node as GeometryMixin).fills = [{
-          type: 'IMAGE',
-          imageHash: image.hash,
-          scaleMode: op.scaleMode || 'FILL',
-        } as Paint];
+        (node as GeometryMixin).fills = [
+          {
+            type: 'IMAGE',
+            imageHash: image.hash,
+            scaleMode: op.scaleMode || 'FILL',
+          } as Paint,
+        ];
         pushSummary(`Imagem aplicada @"${(node as any).name}"`, node as SceneNode);
       } catch (e) {
         postToUI({ type: 'ERROR', message: `Falha ao carregar imagem: ${String(e)}` });
@@ -882,7 +960,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_CORNER_RADIUS ═══
   else if (op.type === 'SET_CORNER_RADIUS') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as any;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as any;
     if (node && 'cornerRadius' in node) {
       node.cornerRadius = op.cornerRadius;
       if (op.cornerSmoothing != null && 'cornerSmoothing' in node) {
@@ -894,7 +972,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_EFFECTS ═══
   else if (op.type === 'SET_EFFECTS') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as BlendMixin | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as BlendMixin | null;
     if (node && 'effects' in node) {
       node.effects = mapEffects(op.effects);
       pushSummary(`Editado effects @"${(node as any).name}"`, node as SceneNode);
@@ -903,13 +981,22 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_AUTO_LAYOUT ═══
   else if (op.type === 'SET_AUTO_LAYOUT') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as FrameNode | null;
-    if (node && (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'COMPONENT_SET')) {
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as FrameNode | null;
+    if (
+      node &&
+      (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'COMPONENT_SET')
+    ) {
       node.layoutMode = op.layoutMode;
       if (op.primaryAxisSizingMode) node.primaryAxisSizingMode = op.primaryAxisSizingMode;
       if (op.counterAxisSizingMode) node.counterAxisSizingMode = op.counterAxisSizingMode;
-      if (op.primaryAxisAlignItems) node.primaryAxisAlignItems = normalizeAxisAlign(op.primaryAxisAlignItems) as PrimaryAxisAlign;
-      if (op.counterAxisAlignItems) node.counterAxisAlignItems = normalizeAxisAlign(op.counterAxisAlignItems) as CounterAxisAlign;
+      if (op.primaryAxisAlignItems)
+        node.primaryAxisAlignItems = normalizeAxisAlign(
+          op.primaryAxisAlignItems
+        ) as PrimaryAxisAlign;
+      if (op.counterAxisAlignItems)
+        node.counterAxisAlignItems = normalizeAxisAlign(
+          op.counterAxisAlignItems
+        ) as CounterAxisAlign;
       if (op.layoutWrap) node.layoutWrap = op.layoutWrap;
       if (op.itemSpacing != null) node.itemSpacing = op.itemSpacing;
       if (op.counterAxisSpacing != null && 'counterAxisSpacing' in node) {
@@ -937,7 +1024,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ RESIZE ═══
   else if (op.type === 'RESIZE') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as SceneNode | null;
     if (node && 'resize' in node) {
       (node as any).resize(op.width, op.height);
       pushSummary(`Redimensionado @"${node.name}"`, node);
@@ -946,8 +1033,9 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ MOVE ═══
   else if (op.type === 'MOVE') {
-    const node = (op.ref ? createdNodes.get(op.ref) : null) as SceneNode | null
-      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null : null);
+    const node =
+      ((op.ref ? createdNodes.get(op.ref) : null) as SceneNode | null) ??
+      (op.nodeId ? ((await figma.getNodeByIdAsync(op.nodeId)) as SceneNode | null) : null);
     if (node) {
       node.x = op.x;
       node.y = op.y;
@@ -967,7 +1055,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_TEXT_CONTENT ═══
   else if (op.type === 'SET_TEXT_CONTENT') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as TextNode | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as TextNode | null;
     if (node && node.type === 'TEXT') {
       const fontsUsed: FontName[] = [];
       const seen = new Set<string>();
@@ -979,7 +1067,11 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
           if (!seen.has(key)) {
             seen.add(key);
             fontsUsed.push(fn);
-            try { await figma.loadFontAsync(fn); } catch { /* skip */ }
+            try {
+              await figma.loadFontAsync(fn);
+            } catch {
+              /* skip */
+            }
           }
         }
       } catch {
@@ -1015,7 +1107,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_TEXT_STYLE ═══
   else if (op.type === 'SET_TEXT_STYLE') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as TextNode | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as TextNode | null;
     if (node && node.type === 'TEXT') {
       // Load fonts if changing font
       if (op.fontFamily || op.fontStyle) {
@@ -1046,7 +1138,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_OPACITY ═══
   else if (op.type === 'SET_OPACITY') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as SceneNode | null;
     if (node && 'opacity' in node) {
       node.opacity = op.opacity;
       pushSummary(`Editado opacidade @"${node.name}"`, node);
@@ -1055,7 +1147,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ APPLY_VARIABLE ═══
   else if (op.type === 'APPLY_VARIABLE') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as SceneNode | null;
     if (node && figma.variables) {
       const variable = await figma.variables.getVariableByIdAsync(op.variableId);
       if (variable) {
@@ -1065,9 +1157,17 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
             const paintsCopy = [...paintArray];
             let targetPaint = paintsCopy[0];
             if (targetPaint.type !== 'SOLID') {
-              targetPaint = { type: 'SOLID', color: { r: 0, g: 0, b: 0 }, opacity: 1 } as SolidPaint;
+              targetPaint = {
+                type: 'SOLID',
+                color: { r: 0, g: 0, b: 0 },
+                opacity: 1,
+              } as SolidPaint;
             }
-            paintsCopy[0] = figma.variables.setBoundVariableForPaint(targetPaint, 'color', variable);
+            paintsCopy[0] = figma.variables.setBoundVariableForPaint(
+              targetPaint,
+              'color',
+              variable
+            );
             (node as any)[op.field] = paintsCopy;
           }
         } else {
@@ -1081,7 +1181,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ APPLY_STYLE ═══
   else if (op.type === 'APPLY_STYLE') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as any;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as any;
     if (node) {
       if (op.styleType === 'FILL' && 'fillStyleId' in node) {
         if (typeof node.setFillStyleIdAsync === 'function') {
@@ -1121,9 +1221,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
     const context = node ? await serializeNode(node, 0, depth) : await serializeSelection();
     postToUI({ type: 'DESIGN_CONTEXT_RESULT', nodeId: node?.id || 'selection', context });
-  }
-
-  else if (op.type === 'GET_VARIABLE_DEFS') {
+  } else if (op.type === 'GET_VARIABLE_DEFS') {
     const nodeId = op.nodeId;
     let nodes: readonly SceneNode[] = [];
     if (nodeId) {
@@ -1145,7 +1243,13 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
             if (vRef && vRef.id && !seen.has(vRef.id)) {
               seen.add(vRef.id);
               const v = await figma.variables.getVariableByIdAsync(vRef.id);
-              if (v) variables.push({ id: v.id, name: v.name, type: v.resolvedType, valuesByMode: v.valuesByMode });
+              if (v)
+                variables.push({
+                  id: v.id,
+                  name: v.name,
+                  type: v.resolvedType,
+                  valuesByMode: v.valuesByMode,
+                });
             }
           }
         }
@@ -1157,56 +1261,55 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
     for (const n of nodes) await collectFromNode(n);
     postToUI({ type: 'VARIABLE_DEFS_RESULT', nodeId: nodeId || 'selection', variables });
-  }
-
-  else if (op.type === 'GET_SCREENSHOT') {
+  } else if (op.type === 'GET_SCREENSHOT') {
     const nodeId = op.nodeId;
     let node: SceneNode | null = null;
     if (nodeId) node = (await figma.getNodeByIdAsync(nodeId)) as SceneNode;
     if (!node && snapshotSelection.length > 0) node = snapshotSelection[0];
 
     if (node) {
-      const bytes = await node.exportAsync({ format: 'JPG', constraint: { type: 'SCALE', value: 2 } });
+      const bytes = await node.exportAsync({
+        format: 'JPG',
+        constraint: { type: 'SCALE', value: 2 },
+      });
       const base64 = figma.base64Encode(bytes);
-      postToUI({ type: 'SCREENSHOT_RESULT', nodeId: node.id, base64: `data:image/jpeg;base64,${base64}` });
+      postToUI({
+        type: 'SCREENSHOT_RESULT',
+        nodeId: node.id,
+        base64: `data:image/jpeg;base64,${base64}`,
+      });
     }
-  }
-
-  else if (op.type === 'SEARCH_DESIGN_SYSTEM') {
+  } else if (op.type === 'SEARCH_DESIGN_SYSTEM') {
     const query = op.query.toLowerCase();
     const results = { components: [] as any[], styles: [] as any[], variables: [] as any[] };
 
     const comps = figma.root.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] });
     results.components = comps
-      .filter(c => c.name.toLowerCase().includes(query))
+      .filter((c) => c.name.toLowerCase().includes(query))
       .slice(0, 20)
-      .map(c => ({ id: c.id, name: c.name, key: (c as any).key }));
+      .map((c) => ({ id: c.id, name: c.name, key: (c as any).key }));
 
     const pStyles = await figma.getLocalPaintStylesAsync();
     const tStyles = await figma.getLocalTextStylesAsync();
     results.styles = [...pStyles, ...tStyles]
-      .filter(s => s.name.toLowerCase().includes(query))
+      .filter((s) => s.name.toLowerCase().includes(query))
       .slice(0, 20)
-      .map(s => ({ id: s.id, name: s.name, type: s.type }));
+      .map((s) => ({ id: s.id, name: s.name, type: s.type }));
 
     if (figma.variables) {
       const vars = await figma.variables.getLocalVariablesAsync();
       results.variables = vars
-        .filter(v => v.name.toLowerCase().includes(query))
+        .filter((v) => v.name.toLowerCase().includes(query))
         .slice(0, 20)
-        .map(v => ({ id: v.id, name: v.name, type: v.resolvedType }));
+        .map((v) => ({ id: v.id, name: v.name, type: v.resolvedType }));
     }
 
     postToUI({ type: 'SEARCH_DS_RESULT', results });
-  }
-
-  else if (op.type === 'GET_CODE_CONNECT_MAP') {
+  } else if (op.type === 'GET_CODE_CONNECT_MAP') {
     const raw = figma.root.getPluginData('codeConnectMap');
     const mappings = raw ? JSON.parse(raw) : {};
     postToUI({ type: 'CODE_CONNECT_RESULT', mappings });
-  }
-
-  else if (op.type === 'ADD_CODE_CONNECT_MAP') {
+  } else if (op.type === 'ADD_CODE_CONNECT_MAP') {
     const raw = figma.root.getPluginData('codeConnectMap');
     const mappings = raw ? JSON.parse(raw) : {};
     mappings[op.nodeId] = { componentName: op.componentName, filePath: op.filePath };
@@ -1231,7 +1334,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ UNGROUP ═══
   else if (op.type === 'UNGROUP') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as SceneNode | null;
     if (node && 'children' in node) {
       const name = node.name;
       figma.ungroup(node as SceneNode & ChildrenMixin);
@@ -1241,7 +1344,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ DETACH_INSTANCE ═══
   else if (op.type === 'DETACH_INSTANCE') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as InstanceNode | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as InstanceNode | null;
     if (node && node.type === 'INSTANCE') {
       node.detachInstance();
       pushSummary(`Detached @"${node.name}"`, node);
@@ -1262,8 +1365,14 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       comp.layoutMode = op.props.layoutMode;
       comp.primaryAxisSizingMode = op.props.primaryAxisSizingMode ?? 'AUTO';
       comp.counterAxisSizingMode = op.props.counterAxisSizingMode ?? 'AUTO';
-      comp.primaryAxisAlignItems = normalizeAxisAlign(op.props.primaryAxisAlignItems, 'MIN') as PrimaryAxisAlign;
-      comp.counterAxisAlignItems = normalizeAxisAlign(op.props.counterAxisAlignItems, 'MIN') as CounterAxisAlign;
+      comp.primaryAxisAlignItems = normalizeAxisAlign(
+        op.props.primaryAxisAlignItems,
+        'MIN'
+      ) as PrimaryAxisAlign;
+      comp.counterAxisAlignItems = normalizeAxisAlign(
+        op.props.counterAxisAlignItems,
+        'MIN'
+      ) as CounterAxisAlign;
       comp.itemSpacing = op.props.itemSpacing ?? 0;
       comp.paddingTop = op.props.paddingTop ?? 0;
       comp.paddingRight = op.props.paddingRight ?? 0;
@@ -1275,7 +1384,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
     if (parent !== figma.currentPage && parent.type !== 'PAGE') {
       const parentIsAutoLayout = 'layoutMode' in parent && parent.layoutMode !== 'NONE';
-      
+
       if (!parentIsAutoLayout) {
         // Assume non-AL parent expects coordinates
         if (op.props.x != null) comp.x = op.props.x;
@@ -1283,8 +1392,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       }
 
       if (parentIsAutoLayout) {
-        if (op.props.layoutSizingHorizontal) comp.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
-        if (op.props.layoutSizingVertical) comp.layoutSizingVertical = op.props.layoutSizingVertical;
+        if (op.props.layoutSizingHorizontal)
+          comp.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+        if (op.props.layoutSizingVertical)
+          comp.layoutSizingVertical = op.props.layoutSizingVertical;
       }
     }
     if (op.ref) createdNodes.set(op.ref, comp);
@@ -1314,7 +1425,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       const svgFrame = figma.createNodeFromSvg(op.svgString);
       if (op.name) svgFrame.name = op.name;
       if (op.width && op.height) svgFrame.resize(op.width, op.height);
-      
+
       // Position
       if (op.x != null) svgFrame.x = op.x;
       if (op.y != null) svgFrame.y = op.y;
@@ -1332,37 +1443,36 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
   else if (op.type === 'CREATE_ICON') {
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const { icon, size = 24, color, x = 0, y = 0, name, opacity = 1 } = op.props;
-    
+
     // Parse prefix and name from e.g. "mdi:home"
     const parts = icon.split(':');
     const prefix = parts.length > 1 ? parts[0] : 'mdi';
     const iconName = parts.length > 1 ? parts[1] : parts[0];
-    
+
     try {
       // Fetch SVG from Iconify API
       const url = `https://api.iconify.design/${prefix}/${iconName}.svg`;
       const response = await fetch(url);
       if (!response.ok) throw new Error(`Status ${response.status}`);
       const svgString = await response.text();
-      
+
       const iconNode = figma.createNodeFromSvg(svgString);
       iconNode.name = name || `Icon: ${icon}`;
       iconNode.resize(size, size);
       iconNode.x = x;
       iconNode.y = y;
       iconNode.opacity = opacity;
-      
+
       // Apply color to paths if provided
       if (color) {
         const fills = normalizeFills(color) || [];
         const figmaFills = await applyVariablesToFills(fills);
         await recolorRecursive(iconNode, figmaFills);
       }
-      
+
       parent.appendChild(iconNode);
       if (op.ref) createdNodes.set(op.ref, iconNode);
       pushSummary(`Ícone criado @"${icon}"`, iconNode);
-      
     } catch (e) {
       console.warn(`Failed to fetch icon ${icon}:`, e);
       // Fallback: create a placeholder circle
@@ -1398,7 +1508,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const polygon = figma.createPolygon();
     polygon.name = op.props.name;
     polygon.pointCount = op.props.pointCount;
-    polygon.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
+    polygon.resize(
+      op.props.width > 0 ? op.props.width : 100,
+      op.props.height > 0 ? op.props.height : 100
+    );
     if (op.props.fills) polygon.fills = normalizeFills(op.props.fills) || [];
     parent.appendChild(polygon);
     if (op.ref) createdNodes.set(op.ref, polygon);
@@ -1412,7 +1525,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     star.name = op.props.name;
     star.pointCount = op.props.pointCount;
     star.innerRadius = op.props.innerRadius ?? 0.4;
-    star.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
+    star.resize(
+      op.props.width > 0 ? op.props.width : 100,
+      op.props.height > 0 ? op.props.height : 100
+    );
     if (op.props.fills) star.fills = normalizeFills(op.props.fills) || [];
     parent.appendChild(star);
     if (op.ref) createdNodes.set(op.ref, star);
@@ -1421,13 +1537,13 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_TEXT_RANGES ═══
   else if (op.type === 'SET_TEXT_RANGES') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as TextNode | null;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as TextNode | null;
     if (node && node.type === 'TEXT') {
       for (const range of op.ranges) {
         if (range.fontFamily || range.fontStyle) {
           const targetFont: FontName = {
             family: range.fontFamily ?? 'Inter',
-            style: range.fontStyle ?? 'Regular'
+            style: range.fontStyle ?? 'Regular',
           };
           try {
             await figma.loadFontAsync(targetFont);
@@ -1474,9 +1590,12 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     // Buscar por nome (mais robusto) ou por ID
     if (sourceName) {
       const scope = sourceScope === 'page' ? figma.currentPage : figma.root;
-      sourceNode = scope.findOne(n => n.name === sourceName);
+      sourceNode = scope.findOne((n) => n.name === sourceName);
       if (!sourceNode) {
-        postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó com nome "${sourceName}" não encontrado` });
+        postToUI({
+          type: 'ERROR',
+          message: `CLONE_NODE: Nó com nome "${sourceName}" não encontrado`,
+        });
         return;
       }
     } else {
@@ -1488,7 +1607,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     }
 
     if (typeof (sourceNode as any).clone !== 'function') {
-      postToUI({ type: 'ERROR', message: `CLONE_NODE: Nó "${sourceNode.name}" não suporta clone (tipo: ${sourceNode.type})` });
+      postToUI({
+        type: 'ERROR',
+        message: `CLONE_NODE: Nó "${sourceNode.name}" não suporta clone (tipo: ${sourceNode.type})`,
+      });
       return;
     }
 
@@ -1544,14 +1666,18 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
         for (const override of op.textOverrides) {
           const textNode = findTextByName(cloned, override.name);
           if (textNode) {
-            const fontName = typeof textNode.fontName !== 'symbol' ? textNode.fontName : DEFAULT_FONT;
+            const fontName =
+              typeof textNode.fontName !== 'symbol' ? textNode.fontName : DEFAULT_FONT;
             try {
               await figma.loadFontAsync(fontName);
             } catch {
               await figma.loadFontAsync(DEFAULT_FONT);
             }
             textNode.characters = override.content;
-            pushSummary(`Texto "${override.name}" → "${override.content.slice(0, 30)}..."`, textNode);
+            pushSummary(
+              `Texto "${override.name}" → "${override.content.slice(0, 30)}..."`,
+              textNode
+            );
           }
         }
       }
@@ -1564,7 +1690,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ REORDER_CHILD ═══
   else if (op.type === 'REORDER_CHILD') {
-    const node = await figma.getNodeByIdAsync(op.nodeId) as any;
+    const node = (await figma.getNodeByIdAsync(op.nodeId)) as any;
     const parent = await figma.getNodeByIdAsync(op.parentNodeId);
     if (node && parent && 'children' in parent) {
       const parentFrame = parent as BaseNode & ChildrenMixin;
@@ -1624,7 +1750,11 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
         }
 
         if (collection) {
-          const variable = (figma.variables as any).createVariable?.(op.name, collection.id, op.resolvedType);
+          const variable = (figma.variables as any).createVariable?.(
+            op.name,
+            collection.id,
+            op.resolvedType
+          );
           if (variable) {
             variable.setValueForMode(collection.defaultModeId, op.value);
             if (op.ref) createdNodes.set(op.ref, variable as any);
@@ -1661,17 +1791,24 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
           const fills = (node as GeometryMixin).fills;
           if (!Array.isArray(fills) || fills.length === 0) continue;
 
-          const solidFill = fills.find((f: Paint) => f.type === 'SOLID' && f.visible !== false) as SolidPaint | undefined;
+          const solidFill = fills.find((f: Paint) => f.type === 'SOLID' && f.visible !== false) as
+            | SolidPaint
+            | undefined;
           if (!solidFill) continue;
 
-          const varName = node.name.replace(/[^a-zA-Z0-9\s\-_\/]/g, '').trim() || `color-${created}`;
-          const variable = (figma.variables as any).createVariable?.(varName, collection.id, 'COLOR');
+          const varName =
+            node.name.replace(/[^a-zA-Z0-9\s\-_\/]/g, '').trim() || `color-${created}`;
+          const variable = (figma.variables as any).createVariable?.(
+            varName,
+            collection.id,
+            'COLOR'
+          );
           if (variable) {
             variable.setValueForMode(collection.defaultModeId, {
               r: solidFill.color.r,
               g: solidFill.color.g,
               b: solidFill.color.b,
-              a: solidFill.opacity ?? 1
+              a: solidFill.opacity ?? 1,
             });
             created++;
             pushSummary(`Variável criada: ${varName}`, node);
@@ -1692,9 +1829,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     if (figma.variables) {
       try {
         const threshold = op.threshold ?? 0.05;
-        const roots = op.scope === 'page'
-          ? [...figma.currentPage.children]
-          : [...snapshotSelection];
+        const roots =
+          op.scope === 'page' ? [...figma.currentPage.children] : [...snapshotSelection];
 
         if (roots.length === 0) {
           pushSummary('Nenhum elemento para processar');
@@ -1706,7 +1842,9 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
         for (const v of allVars) {
           if (op.collectionName) {
-            const coll = await figma.variables.getVariableCollectionByIdAsync(v.variableCollectionId);
+            const coll = await figma.variables.getVariableCollectionByIdAsync(
+              v.variableCollectionId
+            );
             if (coll?.name !== op.collectionName) continue;
           }
           const modeId = Object.keys(v.valuesByMode)[0];
@@ -1733,16 +1871,26 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
               for (let i = 0; i < newFills.length; i++) {
                 const fill = newFills[i];
                 if (fill.type !== 'SOLID' || fill.visible === false) continue;
-                if ((fill as any).boundVariables?.color) { skipped++; continue; }
+                if ((fill as any).boundVariables?.color) {
+                  skipped++;
+                  continue;
+                }
                 const { r, g, b } = (fill as SolidPaint).color;
                 let bestDist = Infinity;
                 let bestVar: Variable | null = null;
                 for (const p of palette) {
                   const dist = colorDistance({ r, g, b }, p.rgb);
-                  if (dist < bestDist) { bestDist = dist; bestVar = p.variable; }
+                  if (dist < bestDist) {
+                    bestDist = dist;
+                    bestVar = p.variable;
+                  }
                 }
                 if (bestVar && bestDist <= threshold) {
-                  newFills[i] = figma.variables.setBoundVariableForPaint(fill as SolidPaint, 'color', bestVar);
+                  newFills[i] = figma.variables.setBoundVariableForPaint(
+                    fill as SolidPaint,
+                    'color',
+                    bestVar
+                  );
                   changed = true;
                   bound++;
                 } else {
@@ -1761,16 +1909,26 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
               for (let i = 0; i < newStrokes.length; i++) {
                 const stroke = newStrokes[i];
                 if (stroke.type !== 'SOLID' || stroke.visible === false) continue;
-                if ((stroke as any).boundVariables?.color) { skipped++; continue; }
+                if ((stroke as any).boundVariables?.color) {
+                  skipped++;
+                  continue;
+                }
                 const { r, g, b } = (stroke as SolidPaint).color;
                 let bestDist = Infinity;
                 let bestVar: Variable | null = null;
                 for (const p of palette) {
                   const dist = colorDistance({ r, g, b }, p.rgb);
-                  if (dist < bestDist) { bestDist = dist; bestVar = p.variable; }
+                  if (dist < bestDist) {
+                    bestDist = dist;
+                    bestVar = p.variable;
+                  }
                 }
                 if (bestVar && bestDist <= threshold) {
-                  newStrokes[i] = figma.variables.setBoundVariableForPaint(stroke as SolidPaint, 'color', bestVar);
+                  newStrokes[i] = figma.variables.setBoundVariableForPaint(
+                    stroke as SolidPaint,
+                    'color',
+                    bestVar
+                  );
                   changed = true;
                   bound++;
                 } else {
@@ -1789,7 +1947,9 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
         }
 
         for (const root of roots) await bindNode(root as SceneNode);
-        pushSummary(`Vinculou ${bound} cores a variáveis (${skipped} ignoradas, threshold: ${threshold})`);
+        pushSummary(
+          `Vinculou ${bound} cores a variáveis (${skipped} ignoradas, threshold: ${threshold})`
+        );
       } catch (e) {
         postToUI({ type: 'ERROR', message: `Erro ao vincular variáveis: ${String(e)}` });
       }
@@ -1863,8 +2023,9 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ RECOLOR_NODE ═══
   else if (op.type === 'RECOLOR_NODE') {
-    const node = (op.ref ? createdNodes.get(op.ref) : null)
-      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    const node =
+      (op.ref ? createdNodes.get(op.ref) : null) ??
+      (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
 
     if (node) {
       const normalizedFills = normalizeFills(props.fills) || [];
@@ -1876,8 +2037,9 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ DELETE_NODE ═══
   else if (op.type === 'DELETE_NODE') {
-    const node = (op.ref ? createdNodes.get(op.ref) : null)
-      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    const node =
+      (op.ref ? createdNodes.get(op.ref) : null) ??
+      (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
     if (node && 'remove' in node) {
       const name = (node as any).name;
       (node as SceneNode).remove();
@@ -1887,8 +2049,9 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SELECT_AND_ZOOM ═══
   else if (op.type === 'SELECT_AND_ZOOM') {
-    const node = (op.ref ? createdNodes.get(op.ref) : null)
-      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    const node =
+      (op.ref ? createdNodes.get(op.ref) : null) ??
+      (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
     if (node && node.type !== 'DOCUMENT' && node.type !== 'PAGE') {
       const sceneNode = node as SceneNode;
       figma.currentPage.selection = [sceneNode];
@@ -1899,8 +2062,9 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SWAP_INSTANCE ═══
   else if (op.type === 'SWAP_INSTANCE') {
-    const node = (op.ref ? createdNodes.get(op.ref) : null)
-      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    const node =
+      (op.ref ? createdNodes.get(op.ref) : null) ??
+      (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
     if (node && node.type === 'INSTANCE') {
       const instance = node as InstanceNode;
       let component: ComponentNode | null = null;
@@ -1910,14 +2074,19 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
         try {
           await ensurePagesLoaded();
           const allComps = figma.root.findAllWithCriteria({ types: ['COMPONENT'] });
-          component = allComps.find(c => c.key === op.componentKey) || null;
-        } catch { /* not found */ }
+          component = allComps.find((c) => c.key === op.componentKey) || null;
+        } catch {
+          /* not found */
+        }
       }
       if (component) {
         instance.swapComponent(component);
         pushSummary(`Swap de @"${instance.name}" para ${component.name}`, instance);
       } else {
-        postToUI({ type: 'ERROR', message: `SWAP_INSTANCE: componente não encontrado: ${op.componentKey}` });
+        postToUI({
+          type: 'ERROR',
+          message: `SWAP_INSTANCE: componente não encontrado: ${op.componentKey}`,
+        });
       }
     }
   }
@@ -1927,7 +2096,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const parent = await getParent(op.parentRef, op.parentNodeId);
     const section = figma.createSection();
     section.name = props.name || 'Section/';
-    if (props.width > 0 && props.height > 0) section.resizeWithoutConstraints(props.width, props.height);
+    if (props.width > 0 && props.height > 0)
+      section.resizeWithoutConstraints(props.width, props.height);
     if (props.x != null) section.x = props.x;
     if (props.y != null) section.y = props.y;
     if (props.fills) {
@@ -1941,14 +2111,18 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
 
   // ═══ SET_EXPORT_SETTINGS ═══
   else if (op.type === 'SET_EXPORT_SETTINGS') {
-    const node = (op.ref ? createdNodes.get(op.ref) : null)
-      ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
+    const node =
+      (op.ref ? createdNodes.get(op.ref) : null) ??
+      (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) : null);
     if (node && 'exportSettings' in node) {
-      const settings: ExportSettings[] = op.exportSettings.map((s: any) => ({
-        format: s.format,
-        suffix: s.suffix || '',
-        constraint: s.constraint || { type: 'SCALE', value: 1 },
-      } as ExportSettings));
+      const settings: ExportSettings[] = op.exportSettings.map(
+        (s: any) =>
+          ({
+            format: s.format,
+            suffix: s.suffix || '',
+            constraint: s.constraint || { type: 'SCALE', value: 1 },
+          } as ExportSettings)
+      );
       (node as SceneNode & ExportMixin).exportSettings = settings;
       pushSummary(`Export settings em @"${(node as any).name}"`, node as SceneNode);
     }
@@ -1960,16 +2134,17 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
  */
 async function recolorRecursive(node: BaseNode, fills: Paint[]) {
   // Check if node has fills and is a graphic/text type
-  if ('fills' in node && (
-     node.type === 'VECTOR' || 
-     node.type === 'TEXT' || 
-     node.type === 'STAR' || 
-     node.type === 'LINE' || 
-     node.type === 'ELLIPSE' || 
-     node.type === 'RECTANGLE' || 
-     node.type === 'POLYGON' || 
-     node.type === 'BOOLEAN_OPERATION'
-  )) {
+  if (
+    'fills' in node &&
+    (node.type === 'VECTOR' ||
+      node.type === 'TEXT' ||
+      node.type === 'STAR' ||
+      node.type === 'LINE' ||
+      node.type === 'ELLIPSE' ||
+      node.type === 'RECTANGLE' ||
+      node.type === 'POLYGON' ||
+      node.type === 'BOOLEAN_OPERATION')
+  ) {
     // For text, we must load the font first
     if (node.type === 'TEXT') {
       const font = (node as TextNode).fontName;
@@ -1987,7 +2162,7 @@ async function recolorRecursive(node: BaseNode, fills: Paint[]) {
       console.warn(`Failed to set fill for node type ${node.type}:`, e);
     }
   }
-  
+
   if ('children' in node) {
     for (const child of node.children) {
       await recolorRecursive(child, fills);
@@ -2000,26 +2175,28 @@ async function recolorRecursive(node: BaseNode, fills: Paint[]) {
  */
 function mapEffects(effects: any[]): Effect[] {
   if (!effects || !Array.isArray(effects)) return [];
-  
-  return effects.map(e => {
-    if (!e || typeof e !== 'object') return null;
 
-    if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
-      return { 
-        type: e.type, 
-        radius: typeof e.radius === 'number' ? e.radius : 4, 
-        visible: e.visible ?? true 
+  return effects
+    .map((e) => {
+      if (!e || typeof e !== 'object') return null;
+
+      if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
+        return {
+          type: e.type,
+          radius: typeof e.radius === 'number' ? e.radius : 4,
+          visible: e.visible ?? true,
+        } as Effect;
+      }
+
+      return {
+        type: e.type === 'DROP_SHADOW' || e.type === 'INNER_SHADOW' ? e.type : 'DROP_SHADOW',
+        color: normalizeRGBA(e.color),
+        offset: e.offset ?? { x: 0, y: 4 },
+        radius: typeof e.radius === 'number' ? e.radius : 10,
+        spread: e.spread ?? 0,
+        visible: e.visible ?? true,
+        blendMode: e.blendMode ?? 'NORMAL',
       } as Effect;
-    }
-    
-    return {
-      type: (e.type === 'DROP_SHADOW' || e.type === 'INNER_SHADOW') ? e.type : 'DROP_SHADOW',
-      color: normalizeRGBA(e.color),
-      offset: e.offset ?? { x: 0, y: 4 },
-      radius: typeof e.radius === 'number' ? e.radius : 10,
-      spread: e.spread ?? 0,
-      visible: e.visible ?? true,
-      blendMode: e.blendMode ?? 'NORMAL',
-    } as Effect;
-  }).filter(Boolean) as Effect[];
+    })
+    .filter(Boolean) as Effect[];
 }

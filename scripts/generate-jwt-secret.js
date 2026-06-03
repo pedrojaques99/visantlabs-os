@@ -15,4 +15,3 @@ console.log('   - Mantenha esta chave em segredo');
 console.log('   - NÃO compartilhe ou commite no Git');
 console.log('   - Use a mesma chave em todos os ambientes (dev/prod)');
 console.log('   - Se perder a chave, todos os tokens existentes serão inválidos\n');
-

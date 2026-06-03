@@ -112,12 +112,12 @@ export const Modal: React.FC<ModalProps> = ({
           'relative w-full overflow-hidden flex flex-col transition-all duration-500',
           'bg-neutral-950/98 backdrop-blur-3xl border-t sm:border border-white/10 sm:border-neutral-800 shadow-[0_30px_100px_rgba(0,0,0,0.8)]',
           'animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-2 duration-500',
-          
+
           // Mobile Drawer vs Centered Desktop
-          mobileDrawer 
-            ? 'rounded-t-[2.5rem] sm:rounded-2xl max-h-[95vh] sm:max-h-[92vh]' 
+          mobileDrawer
+            ? 'rounded-t-[2.5rem] sm:rounded-2xl max-h-[95vh] sm:max-h-[92vh]'
             : 'rounded-2xl max-h-[92vh]',
-            
+
           // Sizing
           sizeClasses[size],
           id === 'setup-modal' && 'sm:w-fit sm:min-w-[320px] sm:max-w-[95vw]',
@@ -134,10 +134,12 @@ export const Modal: React.FC<ModalProps> = ({
 
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className={cn(
-            'flex items-center justify-between p-6 sm:p-8 border-b border-neutral-800/50 flex-shrink-0',
-            headerClassName
-          )}>
+          <div
+            className={cn(
+              'flex items-center justify-between p-6 sm:p-8 border-b border-neutral-800/50 flex-shrink-0',
+              headerClassName
+            )}
+          >
             <div className="flex-1 min-w-0">
               {title && (
                 <h2 id={`${id}-title`} className="text-sm font-semibold text-neutral-200">
@@ -145,16 +147,15 @@ export const Modal: React.FC<ModalProps> = ({
                 </h2>
               )}
               {description && (
-                <p id={`${id}-description`} className="text-xs text-neutral-500 font-mono mt-2 opacity-70">
+                <p
+                  id={`${id}-description`}
+                  className="text-xs text-neutral-500 font-mono mt-2 opacity-70"
+                >
                   {description}
                 </p>
               )}
             </div>
-            {headerAction && (
-              <div className="flex-shrink-0 ml-4">
-                {headerAction}
-              </div>
-            )}
+            {headerAction && <div className="flex-shrink-0 ml-4">{headerAction}</div>}
             {showCloseButton && (
               <button
                 onClick={onClose}
@@ -169,16 +170,23 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Content */}
-        <div className={cn(
-          "flex-1 overflow-y-auto custom-scrollbar",
-          id === 'setup-modal' ? "p-6 sm:p-10" : "p-6 sm:p-10 md:p-12"
-        )}>
+        <div
+          className={cn(
+            'flex-1 overflow-y-auto custom-scrollbar',
+            id === 'setup-modal' ? 'p-6 sm:p-10' : 'p-6 sm:p-10 md:p-12'
+          )}
+        >
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className={cn('flex items-center justify-end gap-3 p-6 sm:p-8 border-t border-neutral-800/50 flex-shrink-0 bg-neutral-900/10', footerClassName)}>
+          <div
+            className={cn(
+              'flex items-center justify-end gap-3 p-6 sm:p-8 border-t border-neutral-800/50 flex-shrink-0 bg-neutral-900/10',
+              footerClassName
+            )}
+          >
             {footer}
           </div>
         )}

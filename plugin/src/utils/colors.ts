@@ -5,7 +5,10 @@
  */
 
 export function rgbToHex(r: number, g: number, b: number): string {
-  const toHex = (n: number) => Math.round(n * 255).toString(16).padStart(2, '0');
+  const toHex = (n: number) =>
+    Math.round(n * 255)
+      .toString(16)
+      .padStart(2, '0');
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
 }
 
@@ -20,7 +23,7 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } {
 
 export function colorDistance(
   a: { r: number; g: number; b: number },
-  b: { r: number; g: number; b: number },
+  b: { r: number; g: number; b: number }
 ): number {
   return Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
 }

@@ -5,13 +5,8 @@
   "main": "dist/code.js",
   "ui": "ui.html",
   "documentAccess": "dynamic-page",
-  "editorType": [
-    "figma"
-  ],
-  "permissions": [
-    "currentuser",
-    "teamlibrary"
-  ],
+  "editorType": ["figma"],
+  "permissions": ["currentuser", "teamlibrary"],
   "networkAccess": {
     "allowedDomains": [
       "https://api.visantlabs.com",

@@ -9,8 +9,7 @@ export interface Shortcut {
   group: 'Seleção' | 'Edição' | 'Camera' | 'Camadas' | 'Páginas' | 'Outros';
 }
 
-const isMac =
-  typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 const Mod = isMac ? '⌘' : 'Ctrl';
 
 export const SHORTCUTS: Shortcut[] = [

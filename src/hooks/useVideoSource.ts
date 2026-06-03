@@ -18,7 +18,11 @@ export interface UseVideoSourceResult {
   seek: (time: number) => void;
 }
 
-export function useVideoSource({ url, mediaType, onFrame }: UseVideoSourceOptions): UseVideoSourceResult {
+export function useVideoSource({
+  url,
+  mediaType,
+  onFrame,
+}: UseVideoSourceOptions): UseVideoSourceResult {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const animFrameRef = useRef<number>(0);
   const onFrameRef = useRef(onFrame);
@@ -51,9 +55,18 @@ export function useVideoSource({ url, mediaType, onFrame }: UseVideoSourceOption
       video!.play();
     };
 
-    const onPlay = () => { setIsPlaying(true); setVideoState(true, video!.duration, video!.currentTime); };
-    const onPause = () => { setIsPlaying(false); setVideoState(false, video!.duration, video!.currentTime); };
-    const onTimeUpdate = () => { setCurrentTime(video!.currentTime); setVideoState(!video!.paused, video!.duration, video!.currentTime); };
+    const onPlay = () => {
+      setIsPlaying(true);
+      setVideoState(true, video!.duration, video!.currentTime);
+    };
+    const onPause = () => {
+      setIsPlaying(false);
+      setVideoState(false, video!.duration, video!.currentTime);
+    };
+    const onTimeUpdate = () => {
+      setCurrentTime(video!.currentTime);
+      setVideoState(!video!.paused, video!.duration, video!.currentTime);
+    };
 
     video.addEventListener('loadeddata', onLoaded);
     video.addEventListener('play', onPlay);

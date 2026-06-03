@@ -116,7 +116,7 @@ export const estimateBase64FileSize = (base64: string): number => {
  */
 export const validatePdfBase64Size = (base64: string): { isValid: boolean; error?: string } => {
   const estimatedSize = estimateBase64FileSize(base64);
-  
+
   if (estimatedSize > MAX_PDF_UPLOAD_SIZE_BYTES) {
     const fileSize = formatFileSize(estimatedSize);
     const maxSize = formatFileSize(MAX_PDF_UPLOAD_SIZE_BYTES);
@@ -125,6 +125,6 @@ export const validatePdfBase64Size = (base64: string): { isValid: boolean; error
       error: `PDF is too large (${fileSize}). Maximum size for upload is ${maxSize}. Please compress the PDF or use a smaller file.`,
     };
   }
-  
+
   return { isValid: true };
 };

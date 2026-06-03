@@ -4,10 +4,10 @@ import { NodeWarningIndicator } from './NodeWarningIndicator';
 
 /**
  * NodeContainer - Base container for all React Flow nodes
- * 
+ *
  * Automatically applies default padding (--node-padding) unless overridden.
  * To override padding, include a padding class in className (e.g., "p-4", "p-6").
- * 
+ *
  * Spacing is centralized via CSS variables in index.css.
  * To change spacing globally, modify CSS variables instead of individual nodes.
  */
@@ -65,7 +65,11 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         // Default gap and space-y if not overridden
         'gap-[var(--node-gap)]',
         // Border color - maintain border even when dragging
-        selected ? 'border-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]' : warning ? 'border-neutral-600/40' : 'border-gray-700/30',
+        selected
+          ? 'border-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
+          : warning
+          ? 'border-neutral-600/40'
+          : 'border-gray-700/30',
         dragging && 'pointer-events-none',
         dragging ? 'node-container-dragging' : 'node-container-static',
         // Apply default padding unless overridden by className - maintain padding during dragging
@@ -74,20 +78,23 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         'transition-all duration-200 ease-out',
         className
       )}
-      style={{
-        // Use CSS custom property for background color (set by CanvasFlow)
-        // Falls back to neutral-950 if not available
-        backgroundColor: dragging 
-          ? 'var(--node-bg-color-dragging, #0a0a0a)' 
-          : 'var(--node-bg-color, #0a0a0a)',
-        // Use opacity from style prop if provided, otherwise use default
-        opacity: customOpacity !== undefined ? customOpacity : 1,
-        // Pass through text color variables for button/textarea contrast
-        '--node-text-color': 'var(--node-text-color, #e5e7eb)',
-        '--node-text-color-muted': 'var(--node-text-color-muted, #d1d5db)',        '--node-text-color-subtle': 'var(--node-text-color-subtle, #9ca3af)',
-        // Spread style prop (without opacity) to allow other overrides
-        ...styleWithoutOpacity,
-      } as React.CSSProperties}
+      style={
+        {
+          // Use CSS custom property for background color (set by CanvasFlow)
+          // Falls back to neutral-950 if not available
+          backgroundColor: dragging
+            ? 'var(--node-bg-color-dragging, #0a0a0a)'
+            : 'var(--node-bg-color, #0a0a0a)',
+          // Use opacity from style prop if provided, otherwise use default
+          opacity: customOpacity !== undefined ? customOpacity : 1,
+          // Pass through text color variables for button/textarea contrast
+          '--node-text-color': 'var(--node-text-color, #e5e7eb)',
+          '--node-text-color-muted': 'var(--node-text-color-muted, #d1d5db)',
+          '--node-text-color-subtle': 'var(--node-text-color-subtle, #9ca3af)',
+          // Spread style prop (without opacity) to allow other overrides
+          ...styleWithoutOpacity,
+        } as React.CSSProperties
+      }
       onContextMenu={onContextMenu}
     >
       {/* Warning indicator for oversized content */}

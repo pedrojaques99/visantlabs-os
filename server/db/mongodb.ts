@@ -4,7 +4,11 @@ import dotenv from 'dotenv';
 // Carregar dotenv quando o módulo for importado (para scripts standalone)
 // Only load dotenv in Node.js environment (not in browser builds)
 (function loadDotenv() {
-  if (typeof process === 'undefined' || !process.versions?.node || typeof process.cwd !== 'function') {
+  if (
+    typeof process === 'undefined' ||
+    !process.versions?.node ||
+    typeof process.cwd !== 'function'
+  ) {
     return; // Skip in browser environment
   }
 
@@ -38,47 +42,57 @@ const getErrorMessage = (error: any): string => {
   if (error.message?.includes('ECONNREFUSED') || error.code === 'ECONNREFUSED') {
     const isLocal = mongoUri?.includes('localhost') || mongoUri?.includes('127.0.0.1');
     if (isLocal) {
-      return `MongoDB Connection Refused: Cannot connect to local MongoDB server.\n\n` +
+      return (
+        `MongoDB Connection Refused: Cannot connect to local MongoDB server.\n\n` +
         `Possible solutions:\n` +
         `1. Make sure MongoDB is installed and running locally\n` +
         `2. Start MongoDB service: mongod (or use MongoDB Compass/Community Server)\n` +
         `3. Or use MongoDB Atlas: Set MONGODB_URI to your Atlas connection string\n` +
-        `4. Check if MongoDB is running on port 27017`;
+        `4. Check if MongoDB is running on port 27017`
+      );
     }
-    return `MongoDB Connection Refused: Cannot connect to MongoDB server.\n\n` +
+    return (
+      `MongoDB Connection Refused: Cannot connect to MongoDB server.\n\n` +
       `Possible solutions:\n` +
       `1. Verify MONGODB_URI is correct\n` +
       `2. Check if MongoDB server is running\n` +
-      `3. Check Network Access settings (if using Atlas)`;
+      `3. Check Network Access settings (if using Atlas)`
+    );
   }
 
   // Check for timeout errors
   if (error.message?.includes('timed out') || error.message?.includes('timeout')) {
-    return `MongoDB Connection Timeout: ${error.message}\n\n` +
+    return (
+      `MongoDB Connection Timeout: ${error.message}\n\n` +
       `Possible solutions:\n` +
       `1. Check your internet connection\n` +
       `2. Verify MONGODB_URI is correct\n` +
       `3. Check Network Access settings in MongoDB Atlas (IP whitelist)\n` +
       `4. Try again in a moment (Atlas may be experiencing temporary issues)\n` +
-      `5. For Atlas: Ensure your IP is whitelisted or use 0.0.0.0/0 for all IPs`;
+      `5. For Atlas: Ensure your IP is whitelisted or use 0.0.0.0/0 for all IPs`
+    );
   }
 
   if (error instanceof MongoServerError) {
     if (error.code === 8000 || error.codeName === 'AtlasError') {
-      return `MongoDB Authentication Failed: ${error.message}\n\n` +
+      return (
+        `MongoDB Authentication Failed: ${error.message}\n\n` +
         `Possible solutions:\n` +
         `1. Check if username and password are correct\n` +
         `2. If password contains special characters, URL-encode them (e.g., < → %3C, > → %3E, @ → %40)\n` +
         `3. Verify MONGODB_URI is correctly set in Vercel environment variables\n` +
         `4. Check Network Access settings in MongoDB Atlas (IP whitelist)\n` +
-        `5. See VERCEL_MONGODB_SETUP.md for detailed instructions`;
+        `5. See VERCEL_MONGODB_SETUP.md for detailed instructions`
+      );
     }
     if (error.code === 6 || error.codeName === 'HostUnreachable') {
-      return `MongoDB Connection Failed: Cannot reach MongoDB server\n\n` +
+      return (
+        `MongoDB Connection Failed: Cannot reach MongoDB server\n\n` +
         `Possible solutions:\n` +
         `1. Check Network Access settings in MongoDB Atlas\n` +
         `2. Add your IP address (or 0.0.0.0/0 for all) to Network Access whitelist\n` +
-        `3. Verify MONGODB_URI is correct`;
+        `3. Verify MONGODB_URI is correct`
+      );
     }
   }
   return error.message || 'Unknown MongoDB error';
@@ -98,8 +112,10 @@ export const connectToMongoDB = async (): Promise<Db> => {
 
   // Debounce no cold start para dar tempo do MongoDB estar pronto
   if (isFirstConnection && process.env.NODE_ENV === 'production') {
-    console.log(`🔄 MongoDB: Cold start detected, waiting ${COLD_START_DELAY_MS}ms before connecting...`);
-    await new Promise(resolve => setTimeout(resolve, COLD_START_DELAY_MS));
+    console.log(
+      `🔄 MongoDB: Cold start detected, waiting ${COLD_START_DELAY_MS}ms before connecting...`
+    );
+    await new Promise((resolve) => setTimeout(resolve, COLD_START_DELAY_MS));
     isFirstConnection = false;
   }
 
@@ -122,7 +138,8 @@ const _performConnection = async (): Promise<Db> => {
   const DB_NAME = getDbName();
 
   // Check if using local MongoDB or MongoDB Atlas
-  const isLocalMongoDB = MONGODB_URI?.startsWith('mongodb://localhost') ||
+  const isLocalMongoDB =
+    MONGODB_URI?.startsWith('mongodb://localhost') ||
     MONGODB_URI?.startsWith('mongodb://127.0.0.1') ||
     MONGODB_URI === 'mongodb://localhost:27017';
   const isAtlasMongoDB = MONGODB_URI?.startsWith('mongodb+srv://');
@@ -137,9 +154,13 @@ const _performConnection = async (): Promise<Db> => {
   // Only warn about default URI if not in production
   if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017') {
     if (process.env.NODE_ENV === 'production') {
-      console.warn('⚠️  MONGODB_URI not set or using default. Make sure to set it in Vercel environment variables.');
+      console.warn(
+        '⚠️  MONGODB_URI not set or using default. Make sure to set it in Vercel environment variables.'
+      );
     } else {
-      console.log('ℹ️  Using local MongoDB (default). For production, set MONGODB_URI environment variable.');
+      console.log(
+        'ℹ️  Using local MongoDB (default). For production, set MONGODB_URI environment variable.'
+      );
     }
   }
 
@@ -191,7 +212,6 @@ const _performConnection = async (): Promise<Db> => {
       });
 
       await Promise.race([connectPromise, timeoutPromise]);
-
 
       // Test the connection with a simple command (with timeout)
       const pingPromise = client.db('admin').command({ ping: 1 });
@@ -266,4 +286,3 @@ export const closeConnection = async (): Promise<void> => {
     console.log('MongoDB connection closed');
   }
 };
-

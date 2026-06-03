@@ -25,17 +25,12 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
   // Adicionar deliverable padrão se estiver vazio
   React.useEffect(() => {
     if (deliverables.length === 0) {
-      onChange([
-        { name: 'Design de Website', description: '', quantity: 1, unitValue: 0 },
-      ]);
+      onChange([{ name: 'Design de Website', description: '', quantity: 1, unitValue: 0 }]);
     }
   }, []);
 
   const addDeliverable = () => {
-    onChange([
-      ...deliverables,
-      { name: '', description: '', quantity: 1, unitValue: 0 },
-    ]);
+    onChange([...deliverables, { name: '', description: '', quantity: 1, unitValue: 0 }]);
   };
 
   const removeDeliverable = (index: number) => {
@@ -48,14 +43,14 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
     onChange(updated);
   };
 
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.deliverables')}
         </h3>
-        <Button variant="brand"
+        <Button
+          variant="brand"
           onClick={addDeliverable}
           className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addDeliverable') || 'Adicionar Entregável'}
@@ -72,9 +67,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
         <div className="space-y-4">
           {deliverables.map((deliverable, index) => (
             <div key={index}>
-              <div
-                className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl space-y-3"
-              >
+              <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl space-y-3">
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                   <div className="flex-1 w-full space-y-3">
                     <div className="grid grid-cols-1 gap-3">
@@ -84,9 +77,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                         </label>
                         <FormInput
                           value={deliverable.name}
-                          onChange={(e) =>
-                            updateDeliverable(index, 'name', e.target.value)
-                          }
+                          onChange={(e) => updateDeliverable(index, 'name', e.target.value)}
                           placeholder={t('budget.placeholders.deliverableName')}
                         />
                       </div>
@@ -96,9 +87,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                         </label>
                         <FormInput
                           value={deliverable.description}
-                          onChange={(e) =>
-                            updateDeliverable(index, 'description', e.target.value)
-                          }
+                          onChange={(e) => updateDeliverable(index, 'description', e.target.value)}
                           placeholder={t('budget.placeholders.deliverableDescription')}
                         />
                       </div>
@@ -111,17 +100,14 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                           min="1"
                           value={deliverable.quantity}
                           onChange={(e) =>
-                            updateDeliverable(
-                              index,
-                              'quantity',
-                              parseInt(e.target.value) || 1
-                            )
+                            updateDeliverable(index, 'quantity', parseInt(e.target.value) || 1)
                           }
                         />
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     onClick={() => removeDeliverable(index)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
                     title={t('budget.removeDeliverable')}
@@ -132,7 +118,8 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
               </div>
               {index === deliverables.length - 1 && (
                 <div className="flex justify-center pt-2">
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     onClick={addDeliverable}
                     className="flex items-center justify-center p-1.5 bg-neutral-950/30 hover:bg-neutral-950/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-all duration-200"
                     title={t('budget.addDeliverable') || 'Adicionar Entregável'}
@@ -148,4 +135,3 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
     </div>
   );
 };
-

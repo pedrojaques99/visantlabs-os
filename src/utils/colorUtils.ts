@@ -6,7 +6,7 @@
 export function hexToRgb(hex: string): [number, number, number] {
   // Remove # if present
   const cleanHex = hex.replace('#', '');
-  
+
   // Handle 3-digit hex
   if (cleanHex.length === 3) {
     const r = parseInt(cleanHex[0] + cleanHex[0], 16);
@@ -14,7 +14,7 @@ export function hexToRgb(hex: string): [number, number, number] {
     const b = parseInt(cleanHex[2] + cleanHex[2], 16);
     return [r, g, b];
   }
-  
+
   // Handle 6-digit hex
   const r = parseInt(cleanHex.substring(0, 2), 16);
   const g = parseInt(cleanHex.substring(2, 4), 16);
@@ -23,7 +23,7 @@ export function hexToRgb(hex: string): [number, number, number] {
 }
 
 export function rgbToHex(r: number, g: number, b: number): string {
-  return '#' + [r, g, b].map(c => Math.round(c).toString(16).padStart(2, '0')).join('');
+  return '#' + [r, g, b].map((c) => Math.round(c).toString(16).padStart(2, '0')).join('');
 }
 
 /**
@@ -35,11 +35,11 @@ export function rgbToHex(r: number, g: number, b: number): string {
  */
 function getLuminance(r: number, g: number, b: number): number {
   // Normalize RGB values to 0-1
-  const [rs, gs, bs] = [r, g, b].map(val => {
+  const [rs, gs, bs] = [r, g, b].map((val) => {
     val = val / 255;
     return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
   });
-  
+
   // Calculate relative luminance
   return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
 }
@@ -54,11 +54,11 @@ export function getContrastColor(backgroundColor: string): 'white' | 'black' {
   if (!backgroundColor) {
     return 'black'; // Default to black text
   }
-  
+
   try {
     const [r, g, b] = hexToRgb(backgroundColor);
     const luminance = getLuminance(r, g, b);
-    
+
     // If luminance is less than 0.5, background is dark, use white text
     // Otherwise, background is light, use black text
     return luminance < 0.5 ? 'white' : 'black';
@@ -75,19 +75,19 @@ export function getContrastColor(backgroundColor: string): 'white' | 'black' {
  */
 function normalizeColorToHex(color: string): string {
   if (!color) return '#00d9ff'; // Default brand-cyan
-  
+
   // If already hex, return as is
   if (color.startsWith('#')) {
     return color;
   }
-  
+
   // If it's a CSS variable reference, try to get computed value
   if (color.startsWith('var(') || color.startsWith('--')) {
     // Try to get computed value from document
     if (typeof document !== 'undefined') {
       try {
         const root = document.documentElement;
-        const varName = color.startsWith('var(') 
+        const varName = color.startsWith('var(')
           ? color.replace('var(', '').replace(')', '').trim()
           : color;
         const computed = getComputedStyle(root).getPropertyValue(varName).trim();
@@ -100,7 +100,7 @@ function normalizeColorToHex(color: string): string {
     }
     return '#00d9ff';
   }
-  
+
   // Handle oklch format - try to get from CSS variable if it's brand-cyan
   if (color.startsWith('oklch')) {
     // If it's the default brand-cyan oklch, try to get computed value
@@ -117,7 +117,7 @@ function normalizeColorToHex(color: string): string {
     }
     return '#00d9ff';
   }
-  
+
   // Map common Tailwind color names to hex or try to get from CSS variable
   if (color === 'brand-cyan') {
     // Try to get from CSS variable and convert to hex
@@ -129,7 +129,7 @@ function normalizeColorToHex(color: string): string {
         root.appendChild(tempEl);
         const computed = getComputedStyle(tempEl).color;
         root.removeChild(tempEl);
-        
+
         // Convert rgb/rgba to hex
         if (computed && computed.startsWith('rgb')) {
           const rgbMatch = computed.match(/\d+/g);
@@ -137,10 +137,12 @@ function normalizeColorToHex(color: string): string {
             const r = parseInt(rgbMatch[0]);
             const g = parseInt(rgbMatch[1]);
             const b = parseInt(rgbMatch[2]);
-            return `#${[r, g, b].map(x => {
-              const hex = x.toString(16);
-              return hex.length === 1 ? '0' + hex : hex;
-            }).join('')}`;
+            return `#${[r, g, b]
+              .map((x) => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+              })
+              .join('')}`;
           }
         }
       } catch {
@@ -149,7 +151,7 @@ function normalizeColorToHex(color: string): string {
     }
     return '#00d9ff';
   }
-  
+
   // If it's not a known format, try to use as-is (might be hex without #)
   // If it looks like it could be a color, try to parse it
   return color;
@@ -165,13 +167,13 @@ function getContrastRatio(color1: string, color2: string): number {
   try {
     const [r1, g1, b1] = hexToRgb(color1);
     const [r2, g2, b2] = hexToRgb(color2);
-    
+
     const lum1 = getLuminance(r1, g1, b1);
     const lum2 = getLuminance(r2, g2, b2);
-    
+
     const lighter = Math.max(lum1, lum2);
     const darker = Math.min(lum1, lum2);
-    
+
     return (lighter + 0.05) / (darker + 0.05);
   } catch {
     return 1; // Minimum contrast on error
@@ -186,17 +188,19 @@ function getContrastRatio(color1: string, color2: string): number {
  */
 function darkenColor(hexColor: string, amount: number = 0.4): string {
   if (!hexColor) return '#000000';
-  
+
   try {
     const [r, g, b] = hexToRgb(hexColor);
     const darkenedR = Math.round(r * (1 - amount));
     const darkenedG = Math.round(g * (1 - amount));
     const darkenedB = Math.round(b * (1 - amount));
-    
-    return `#${[darkenedR, darkenedG, darkenedB].map(x => {
-      const hex = x.toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    }).join('')}`;
+
+    return `#${[darkenedR, darkenedG, darkenedB]
+      .map((x) => {
+        const hex = x.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      })
+      .join('')}`;
   } catch {
     return hexColor;
   }
@@ -211,7 +215,7 @@ function darkenColor(hexColor: string, amount: number = 0.4): string {
  */
 function getAccentColor(backgroundColor: string, brandColor?: string): string {
   const isDark = getContrastColor(backgroundColor) === 'white';
-  
+
   // Normalize brand color to hex
   let normalizedBrand = '#00d9ff'; // Default
   if (brandColor) {
@@ -221,15 +225,15 @@ function getAccentColor(backgroundColor: string, brandColor?: string): string {
       normalizedBrand = '#00d9ff';
     }
   }
-  
+
   // Target contrast ratio (WCAG AA requires 4.5:1 for normal text, 3:1 for large text)
   // We aim for at least 3:1 for accent colors
   const minContrast = 3.0;
-  
+
   if (isDark) {
     // For dark backgrounds, check if brand color has enough contrast
     let contrast = getContrastRatio(normalizedBrand, backgroundColor);
-    
+
     if (contrast >= minContrast) {
       // Brand color has adequate contrast, use as-is
       return normalizedBrand;
@@ -249,7 +253,7 @@ function getAccentColor(backgroundColor: string, brandColor?: string): string {
   } else {
     // For light backgrounds, darken the brand color for better contrast
     let contrast = getContrastRatio(normalizedBrand, backgroundColor);
-    
+
     if (contrast >= minContrast) {
       // Brand color already has adequate contrast
       return normalizedBrand;
@@ -278,7 +282,7 @@ function getAccentColor(backgroundColor: string, brandColor?: string): string {
  */
 export function getAdaptiveBrandColor(backgroundColor: string, brandColor?: string): string {
   const isDark = getContrastColor(backgroundColor) === 'white';
-  
+
   // Normalize brand color to hex
   let normalizedBrand = '#00d9ff'; // Default
   if (brandColor) {
@@ -287,20 +291,20 @@ export function getAdaptiveBrandColor(backgroundColor: string, brandColor?: stri
       normalizedBrand = '#00d9ff';
     }
   }
-  
+
   // For secondary brand color, we create a variation that:
   // - In dark mode: slightly lighter/more saturated version
   // - In light mode: darker/more muted version
   // Both ensure adequate contrast
-  
+
   const minContrast = 3.0;
-  
+
   if (isDark) {
     // Dark mode: create a lighter, more vibrant secondary color
     // Start with a lighter version
     let secondary = lightenColor(normalizedBrand, 0.15);
     let contrast = getContrastRatio(secondary, backgroundColor);
-    
+
     // If not enough contrast, lighten more
     if (contrast < minContrast) {
       for (let amount = 0.2; amount <= 0.5; amount += 0.1) {
@@ -313,14 +317,14 @@ export function getAdaptiveBrandColor(backgroundColor: string, brandColor?: stri
       // Fallback: very light version
       return lightenColor(normalizedBrand, 0.4);
     }
-    
+
     return secondary;
   } else {
     // Light mode: create a darker, more muted secondary color
     // Start with a darker version
     let secondary = darkenColor(normalizedBrand, 0.3);
     let contrast = getContrastRatio(secondary, backgroundColor);
-    
+
     // If not enough contrast, darken more
     if (contrast < minContrast) {
       for (let amount = 0.4; amount <= 0.7; amount += 0.1) {
@@ -333,7 +337,7 @@ export function getAdaptiveBrandColor(backgroundColor: string, brandColor?: stri
       // Fallback: very dark version
       return darkenColor(normalizedBrand, 0.6);
     }
-    
+
     return secondary;
   }
 }
@@ -344,7 +348,10 @@ export function getAdaptiveBrandColor(backgroundColor: string, brandColor?: stri
  * @param brandColor - Optional user configured brand color
  * @returns Object with primary, muted, subtle, accent, and secondaryAccent text colors
  */
-export function getTextColors(backgroundColor: string, brandColor?: string): {
+export function getTextColors(
+  backgroundColor: string,
+  brandColor?: string
+): {
   primary: string;
   muted: string;
   subtle: string;
@@ -352,7 +359,7 @@ export function getTextColors(backgroundColor: string, brandColor?: string): {
   secondaryAccent: string;
 } {
   const isDark = getContrastColor(backgroundColor) === 'white';
-  
+
   return {
     primary: isDark ? '#FFFFFF' : '#000000',
     muted: isDark ? '#9ca3af' : '#4b5563',
@@ -401,16 +408,18 @@ export function blendColors(overlayColor: string, baseColor: string, opacity: nu
   try {
     const [or, og, ob] = hexToRgb(overlayColor);
     const [br, bg, bb] = hexToRgb(baseColor);
-    
+
     // Blend: result = overlay * opacity + base * (1 - opacity)
     const r = Math.round(or * opacity + br * (1 - opacity));
     const g = Math.round(og * opacity + bg * (1 - opacity));
     const b = Math.round(ob * opacity + bb * (1 - opacity));
-    
-    return `#${[r, g, b].map(x => {
-      const hex = x.toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    }).join('')}`;
+
+    return `#${[r, g, b]
+      .map((x) => {
+        const hex = x.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      })
+      .join('')}`;
   } catch (error) {
     console.error('Error blending colors:', error);
     return baseColor;
@@ -428,17 +437,17 @@ export function getElementTextColor(elementBgColor: string, nodeBgColor: string)
   if (!elementBgColor || !nodeBgColor) {
     return '#e5e7eb'; // Default light text
   }
-  
+
   // Handle opacity notation (e.g., "brand-cyan/20")
   const opacityMatch = elementBgColor.match(/\/(\d+)$/);
   let effectiveBg = elementBgColor;
   let opacity = 1;
-  
+
   if (opacityMatch) {
     opacity = parseInt(opacityMatch[1]) / 100;
     // Remove opacity notation to get base color
     effectiveBg = elementBgColor.replace(/\/\d+$/, '');
-    
+
     // Map common color names to hex
     const colorMap: Record<string, string> = {
       'brand-cyan': '#00d9ff',
@@ -446,14 +455,14 @@ export function getElementTextColor(elementBgColor: string, nodeBgColor: string)
       'amber-400': '#fbbf24',
       'red-500': '#ef4444',
     };
-    
+
     if (colorMap[effectiveBg]) {
       effectiveBg = colorMap[effectiveBg];
       // Blend with node background
       effectiveBg = blendColors(effectiveBg, nodeBgColor, opacity);
     }
   }
-  
+
   // Calculate contrast
   return getContrastTextColor(effectiveBg);
 }
@@ -470,10 +479,10 @@ export function getElementTextColor(elementBgColor: string, nodeBgColor: string)
  * @returns Object with compliance levels for normal and large text
  */
 export function checkWCAGCompliance(ratio: number): {
-  normalAA: boolean;  // >= 4.5:1 for normal text
+  normalAA: boolean; // >= 4.5:1 for normal text
   normalAAA: boolean; // >= 7.0:1 for normal text
-  largeAA: boolean;   // >= 3.0:1 for large text (18pt+ or 14pt bold)
-  largeAAA: boolean;  // >= 4.5:1 for large text
+  largeAA: boolean; // >= 3.0:1 for large text (18pt+ or 14pt bold)
+  largeAAA: boolean; // >= 4.5:1 for large text
 } {
   return {
     normalAA: ratio >= 4.5,
@@ -496,7 +505,9 @@ export function getContrastRatioPublic(color1: string, color2: string): number {
 /** Convert hex to CMYK (0-100 range) */
 export function hexToCmyk(hex: string): { c: number; m: number; y: number; k: number } {
   const [r, g, b] = hexToRgb(hex);
-  const rn = r / 255, gn = g / 255, bn = b / 255;
+  const rn = r / 255,
+    gn = g / 255,
+    bn = b / 255;
   const k = 1 - Math.max(rn, gn, bn);
   if (k === 1) return { c: 0, m: 0, y: 0, k: 100 };
   return {
@@ -512,7 +523,9 @@ export function cmykToHex(c: number, m: number, y: number, k: number): string {
   const r = Math.round(255 * (1 - c / 100) * (1 - k / 100));
   const g = Math.round(255 * (1 - m / 100) * (1 - k / 100));
   const b = Math.round(255 * (1 - y / 100) * (1 - k / 100));
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
+    .toString(16)
+    .padStart(2, '0')}`.toUpperCase();
 }
 
 export function lightenColor(hexColor: string, amount: number = 0.15): string {
@@ -523,10 +536,10 @@ export function lightenColor(hexColor: string, amount: number = 0.15): string {
   try {
     // Remove # if present
     const cleanHex = hexColor.replace('#', '');
-    
+
     // Handle both 3-digit and 6-digit hex
     let r: number, g: number, b: number;
-    
+
     if (cleanHex.length === 3) {
       r = parseInt(cleanHex[0] + cleanHex[0], 16);
       g = parseInt(cleanHex[1] + cleanHex[1], 16);
@@ -536,43 +549,27 @@ export function lightenColor(hexColor: string, amount: number = 0.15): string {
       g = parseInt(cleanHex.substring(2, 4), 16);
       b = parseInt(cleanHex.substring(4, 6), 16);
     }
-    
+
     // Lighten by blending with white
     // Formula: newColor = originalColor + (255 - originalColor) * amount
     r = Math.round(r + (255 - r) * amount);
     g = Math.round(g + (255 - g) * amount);
     b = Math.round(b + (255 - b) * amount);
-    
+
     // Clamp values to 0-255
     r = Math.min(255, Math.max(0, r));
     g = Math.min(255, Math.max(0, g));
     b = Math.min(255, Math.max(0, b));
-    
+
     // Convert back to hex
-    return `#${[r, g, b].map(x => {
-      const hex = x.toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    }).join('')}`;
+    return `#${[r, g, b]
+      .map((x) => {
+        const hex = x.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      })
+      .join('')}`;
   } catch (error) {
     console.error('Error lightening color:', error);
     return '#0A0A0A'; // Default fallback on error
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

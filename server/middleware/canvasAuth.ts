@@ -23,10 +23,12 @@ export const validateAdminOrPremium = async (
     const db = getDb();
 
     const userIdObjectId = new ObjectId(req.userId);
-    const userDoc = await db.collection('users').findOne(
-      { _id: userIdObjectId },
-      { projection: { isAdmin: 1, subscriptionStatus: 1, userCategory: 1 } }
-    );
+    const userDoc = await db
+      .collection('users')
+      .findOne(
+        { _id: userIdObjectId },
+        { projection: { isAdmin: 1, subscriptionStatus: 1, userCategory: 1 } }
+      );
 
     let isAdmin = false;
     let hasActiveSubscription = false;
@@ -67,9 +69,10 @@ export const validateAdminOrPremium = async (
     }
 
     if (!isAdmin && !hasActiveSubscription && !isTester) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Access required',
-        message: 'This feature is only available for admin users, users with an active premium subscription, or testers'
+        message:
+          'This feature is only available for admin users, users with an active premium subscription, or testers',
       });
     }
 
@@ -131,16 +134,16 @@ export const validateProjectAccess = async (
     const canView = Array.isArray(project.canView) && project.canView.includes(req.userId);
 
     if (requiredPermission === 'edit' && !canEdit) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Edit permission required',
-        message: 'You do not have permission to edit this project'
+        message: 'You do not have permission to edit this project',
       });
     }
 
     if (requiredPermission === 'view' && !canView && !canEdit) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'View permission required',
-        message: 'You do not have permission to view this project'
+        message: 'You do not have permission to view this project',
       });
     }
 
@@ -154,14 +157,8 @@ export const validateProjectAccess = async (
 /**
  * Helper function to create middleware with specific permission
  */
-export const requireEditAccess = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => validateProjectAccess(req, res, next, 'edit');
+export const requireEditAccess = (req: AuthRequest, res: Response, next: NextFunction) =>
+  validateProjectAccess(req, res, next, 'edit');
 
-export const requireViewAccess = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => validateProjectAccess(req, res, next, 'view');
+export const requireViewAccess = (req: AuthRequest, res: Response, next: NextFunction) =>
+  validateProjectAccess(req, res, next, 'view');

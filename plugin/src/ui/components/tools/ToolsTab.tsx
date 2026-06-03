@@ -5,21 +5,48 @@ import { AutomationSection } from './AutomationSection';
 import { IntelligenceSection } from './IntelligenceSection';
 import { FontSwapSection } from './FontSwapSection';
 import { LintingSection } from './LintingSection';
-import {
-  Cpu,
-  Download,
-  ShieldCheck,
-  Type,
-  Zap
-} from 'lucide-react';
+import { Cpu, Download, ShieldCheck, Type, Zap } from 'lucide-react';
 
 export function ToolsTab() {
   const sections = [
-    { id: 'intelligence', title: 'Intelligence', icon: Cpu, component: IntelligenceSection, badge: 'AI', defaultOpen: true },
-    { id: 'fontswap', title: 'Font Swap', icon: Type, component: FontSwapSection, badge: 'TXT', defaultOpen: true },
-    { id: 'automation', title: 'Automation', icon: Zap, component: AutomationSection, badge: 'AUTO', defaultOpen: true },
-    { id: 'audit', title: 'Brand Audit', icon: ShieldCheck, component: LintingSection, defaultOpen: false },
-    { id: 'export', title: 'Export & Layout', icon: Download, component: ExportSection, defaultOpen: false },
+    {
+      id: 'intelligence',
+      title: 'Intelligence',
+      icon: Cpu,
+      component: IntelligenceSection,
+      badge: 'AI',
+      defaultOpen: true,
+    },
+    {
+      id: 'fontswap',
+      title: 'Font Swap',
+      icon: Type,
+      component: FontSwapSection,
+      badge: 'TXT',
+      defaultOpen: true,
+    },
+    {
+      id: 'automation',
+      title: 'Automation',
+      icon: Zap,
+      component: AutomationSection,
+      badge: 'AUTO',
+      defaultOpen: true,
+    },
+    {
+      id: 'audit',
+      title: 'Brand Audit',
+      icon: ShieldCheck,
+      component: LintingSection,
+      defaultOpen: false,
+    },
+    {
+      id: 'export',
+      title: 'Export & Layout',
+      icon: Download,
+      component: ExportSection,
+      defaultOpen: false,
+    },
   ];
 
   return (

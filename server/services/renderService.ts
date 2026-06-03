@@ -59,7 +59,7 @@ export async function getJobDiskUsage(workDir: string): Promise<number> {
 export async function saveFrames(
   workDir: string,
   frames: Buffer[],
-  startIndex: number,
+  startIndex: number
 ): Promise<number> {
   if (startIndex + frames.length > MAX_FRAMES) {
     throw new Error(`Max ${MAX_FRAMES} frames allowed`);
@@ -75,7 +75,7 @@ export async function saveFrames(
     frames.map((buf, i) => {
       const idx = String(startIndex + i).padStart(6, '0');
       return writeFile(join(workDir, `frame_${idx}.jpg`), buf);
-    }),
+    })
   );
   return frames.length;
 }
@@ -88,23 +88,36 @@ export async function encodeToMp4(
   workDir: string,
   fps: number,
   width: number,
-  height: number,
+  height: number
 ): Promise<Buffer> {
   const outputPath = join(workDir, 'output.mp4');
 
-  await execFileAsync('ffmpeg', [
-    '-y',
-    '-framerate', String(fps),
-    '-i', join(workDir, 'frame_%06d.jpg'),
-    '-c:v', 'libx264',
-    '-preset', 'medium',
-    '-crf', '18',
-    '-pix_fmt', 'yuv420p',
-    '-vf', `scale=${ensureEven(width)}:${ensureEven(height)}`,
-    '-movflags', '+faststart',
-    '-threads', '0',
-    outputPath,
-  ], { maxBuffer: 50 * 1024 * 1024, timeout: 300_000 });
+  await execFileAsync(
+    'ffmpeg',
+    [
+      '-y',
+      '-framerate',
+      String(fps),
+      '-i',
+      join(workDir, 'frame_%06d.jpg'),
+      '-c:v',
+      'libx264',
+      '-preset',
+      'medium',
+      '-crf',
+      '18',
+      '-pix_fmt',
+      'yuv420p',
+      '-vf',
+      `scale=${ensureEven(width)}:${ensureEven(height)}`,
+      '-movflags',
+      '+faststart',
+      '-threads',
+      '0',
+      outputPath,
+    ],
+    { maxBuffer: 50 * 1024 * 1024, timeout: 300_000 }
+  );
 
   return readFile(outputPath);
 }
@@ -113,7 +126,7 @@ export async function encodeToGif(
   workDir: string,
   fps: number,
   width: number,
-  height: number,
+  height: number
 ): Promise<Buffer> {
   const palettePath = join(workDir, 'palette.png');
   const outputPath = join(workDir, 'output.gif');
@@ -121,22 +134,37 @@ export async function encodeToGif(
   const maxW = Math.min(width, 640);
   const scale = `scale=${maxW}:-1:flags=lanczos`;
 
-  await execFileAsync('ffmpeg', [
-    '-y',
-    '-framerate', String(fps),
-    '-i', join(workDir, 'frame_%06d.jpg'),
-    '-vf', `${scale},palettegen=stats_mode=diff`,
-    palettePath,
-  ], { maxBuffer: 10 * 1024 * 1024, timeout: 120_000 });
+  await execFileAsync(
+    'ffmpeg',
+    [
+      '-y',
+      '-framerate',
+      String(fps),
+      '-i',
+      join(workDir, 'frame_%06d.jpg'),
+      '-vf',
+      `${scale},palettegen=stats_mode=diff`,
+      palettePath,
+    ],
+    { maxBuffer: 10 * 1024 * 1024, timeout: 120_000 }
+  );
 
-  await execFileAsync('ffmpeg', [
-    '-y',
-    '-framerate', String(fps),
-    '-i', join(workDir, 'frame_%06d.jpg'),
-    '-i', palettePath,
-    '-lavfi', `${scale} [x]; [x][1:v] paletteuse=dither=floyd_steinberg`,
-    outputPath,
-  ], { maxBuffer: 50 * 1024 * 1024, timeout: 300_000 });
+  await execFileAsync(
+    'ffmpeg',
+    [
+      '-y',
+      '-framerate',
+      String(fps),
+      '-i',
+      join(workDir, 'frame_%06d.jpg'),
+      '-i',
+      palettePath,
+      '-lavfi',
+      `${scale} [x]; [x][1:v] paletteuse=dither=floyd_steinberg`,
+      outputPath,
+    ],
+    { maxBuffer: 50 * 1024 * 1024, timeout: 300_000 }
+  );
 
   return readFile(outputPath);
 }
@@ -145,22 +173,34 @@ export async function encodeToWebm(
   workDir: string,
   fps: number,
   width: number,
-  height: number,
+  height: number
 ): Promise<Buffer> {
   const outputPath = join(workDir, 'output.webm');
 
-  await execFileAsync('ffmpeg', [
-    '-y',
-    '-framerate', String(fps),
-    '-i', join(workDir, 'frame_%06d.jpg'),
-    '-c:v', 'libvpx-vp9',
-    '-crf', '30',
-    '-b:v', '0',
-    '-pix_fmt', 'yuv420p',
-    '-vf', `scale=${ensureEven(width)}:${ensureEven(height)}`,
-    '-threads', '0',
-    outputPath,
-  ], { maxBuffer: 50 * 1024 * 1024, timeout: 300_000 });
+  await execFileAsync(
+    'ffmpeg',
+    [
+      '-y',
+      '-framerate',
+      String(fps),
+      '-i',
+      join(workDir, 'frame_%06d.jpg'),
+      '-c:v',
+      'libvpx-vp9',
+      '-crf',
+      '30',
+      '-b:v',
+      '0',
+      '-pix_fmt',
+      'yuv420p',
+      '-vf',
+      `scale=${ensureEven(width)}:${ensureEven(height)}`,
+      '-threads',
+      '0',
+      outputPath,
+    ],
+    { maxBuffer: 50 * 1024 * 1024, timeout: 300_000 }
+  );
 
   return readFile(outputPath);
 }

@@ -3,7 +3,12 @@ import { type Node, type Edge } from '@xyflow/react';
 import { toast } from 'sonner';
 import type { FlowNodeData, ImageNodeData, OutputNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
-import { generateNodeId, copyMediaFromNode, getMediaFromNodeForCopy, copyMediaAsPngFromNode } from '@/utils/canvas/canvasNodeUtils';
+import {
+  generateNodeId,
+  copyMediaFromNode,
+  getMediaFromNodeForCopy,
+  copyMediaAsPngFromNode,
+} from '@/utils/canvas/canvasNodeUtils';
 import { base64ToUint8Array, downloadBlob } from '@/utils/clipboard';
 import { canvasApi } from '@/services/canvasApi';
 import { mockupApi } from '@/services/mockupApi';
@@ -20,12 +25,14 @@ interface UseImageNodeHandlersParams {
   edges: Edge[];
   setNodes: React.Dispatch<React.SetStateAction<Node<FlowNodeData>[]>>;
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
-  setExportPanel: React.Dispatch<React.SetStateAction<{
-    nodeId: string;
-    nodeName: string;
-    imageUrl: string | null;
-    nodeType: string;
-  } | null>>;
+  setExportPanel: React.Dispatch<
+    React.SetStateAction<{
+      nodeId: string;
+      nodeName: string;
+      imageUrl: string | null;
+      nodeType: string;
+    } | null>
+  >;
   reactFlowInstance: ReactFlowInstance | null;
   reactFlowWrapper: React.RefObject<HTMLDivElement>;
   addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
@@ -108,7 +115,7 @@ export const useImageNodeHandlers = ({
   const handleDownload = useCallback(async () => {
     if (!imageContextMenu?.nodeId) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) {
       toast.error(t('canvas.nodeNotFound'), { duration: 2000 });
       return;
@@ -133,9 +140,13 @@ export const useImageNodeHandlers = ({
             const base64Data = base64Match[2];
 
             // Determine file extension from mime type
-            const extension = mimeType.includes('jpeg') ? 'jpg' :
-              mimeType.includes('webp') ? 'webp' :
-                mimeType.includes('gif') ? 'gif' : 'png';
+            const extension = mimeType.includes('jpeg')
+              ? 'jpg'
+              : mimeType.includes('webp')
+              ? 'webp'
+              : mimeType.includes('gif')
+              ? 'gif'
+              : 'png';
             fileName = `${node.type === 'image' ? 'image' : 'output'}-${Date.now()}.${extension}`;
 
             blob = new Blob([base64ToUint8Array(base64Data)], { type: mimeType });
@@ -164,10 +175,13 @@ export const useImageNodeHandlers = ({
 
           // Try to determine file extension from response or URL
           const contentType = response.headers.get('content-type') || '';
-          const extension = contentType.includes('jpeg') ? 'jpg' :
-            contentType.includes('webp') ? 'webp' :
-              contentType.includes('gif') ? 'gif' :
-                imageUrl.match(/\.(jpg|jpeg|png|gif|webp)/i)?.[1] || 'png';
+          const extension = contentType.includes('jpeg')
+            ? 'jpg'
+            : contentType.includes('webp')
+            ? 'webp'
+            : contentType.includes('gif')
+            ? 'gif'
+            : imageUrl.match(/\.(jpg|jpeg|png|gif|webp)/i)?.[1] || 'png';
           fileName = `${node.type === 'image' ? 'image' : 'output'}-${Date.now()}.${extension}`;
         } catch (fetchError: any) {
           console.error('Fetch error:', fetchError);
@@ -195,7 +209,8 @@ export const useImageNodeHandlers = ({
       toast.success(t('canvas.imageDownloaded') || 'Image downloaded!', { duration: 2000 });
     } catch (error: any) {
       console.error('Download error:', error);
-      const errorMessage = error?.message || t('canvas.failedToDownloadImage') || 'Failed to download image';
+      const errorMessage =
+        error?.message || t('canvas.failedToDownloadImage') || 'Failed to download image';
       toast.error(errorMessage, { duration: 3000 });
     }
   }, [imageContextMenu, nodes, getImageUrlFromNode, t]);
@@ -204,7 +219,7 @@ export const useImageNodeHandlers = ({
   const handleExport = useCallback(() => {
     if (!imageContextMenu?.nodeId) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) return;
 
     const imageUrl = getImageUrlFromNode(node);
@@ -222,7 +237,7 @@ export const useImageNodeHandlers = ({
   const handleFullscreen = useCallback(() => {
     if (!imageContextMenu?.nodeId) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) return;
 
     const imageUrl = getImageUrlFromNode(node);
@@ -250,7 +265,7 @@ export const useImageNodeHandlers = ({
   const handleCopy = useCallback(async () => {
     if (!imageContextMenu?.nodeId) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) return;
 
     const media = getMediaFromNodeForCopy(node);
@@ -261,12 +276,9 @@ export const useImageNodeHandlers = ({
 
     const result = await copyMediaFromNode(node);
     if (result.success) {
-      toast.success(
-        media.isVideo
-          ? 'Video copied to clipboard!'
-          : 'Image copied to clipboard!',
-        { duration: 2000 }
-      );
+      toast.success(media.isVideo ? 'Video copied to clipboard!' : 'Image copied to clipboard!', {
+        duration: 2000,
+      });
     } else {
       toast.error(result.error || 'Failed to copy media to clipboard', { duration: 3000 });
     }
@@ -276,7 +288,7 @@ export const useImageNodeHandlers = ({
   const handleCopyPNG = useCallback(async () => {
     if (!imageContextMenu?.nodeId) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) return;
 
     const result = await copyMediaAsPngFromNode(node);
@@ -291,17 +303,20 @@ export const useImageNodeHandlers = ({
   const handleEditWithPrompt = useCallback(() => {
     if (!imageContextMenu?.nodeId) return;
 
-    const imageNode = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const imageNode = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!imageNode) return;
 
     // Check if there's already a connected PromptNode
     const connectedPromptEdge = edges.find(
-      e => e.source === imageNode.id && e.target && nodes.find(n => n.id === e.target && n.type === 'prompt')
+      (e) =>
+        e.source === imageNode.id &&
+        e.target &&
+        nodes.find((n) => n.id === e.target && n.type === 'prompt')
     );
 
     if (connectedPromptEdge) {
       // Focus on existing PromptNode
-      const promptNode = nodes.find(n => n.id === connectedPromptEdge.target);
+      const promptNode = nodes.find((n) => n.id === connectedPromptEdge.target);
       if (promptNode) {
         onNodesChange([
           {
@@ -335,13 +350,23 @@ export const useImageNodeHandlers = ({
         }
       }
     }
-  }, [imageContextMenu, nodes, edges, reactFlowInstance, reactFlowWrapper, addPromptNode, onConnect, onNodesChange, t]);
+  }, [
+    imageContextMenu,
+    nodes,
+    edges,
+    reactFlowInstance,
+    reactFlowWrapper,
+    addPromptNode,
+    onConnect,
+    onNodesChange,
+    t,
+  ]);
 
   // Generic delete handler
   const handleDeleteNode = useCallback(async () => {
     if (!imageContextMenu?.nodeId) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) return;
 
     addToHistory(nodes, edges);
@@ -361,11 +386,11 @@ export const useImageNodeHandlers = ({
 
     // Deletar todas as URLs do R2
     if (urlsToDelete.length > 0) {
-      await Promise.allSettled(
-        urlsToDelete.map(url => canvasApi.deleteImageFromR2(url))
-      ).catch((error) => {
-        console.error('Failed to delete files from R2:', error);
-      });
+      await Promise.allSettled(urlsToDelete.map((url) => canvasApi.deleteImageFromR2(url))).catch(
+        (error) => {
+          console.error('Failed to delete files from R2:', error);
+        }
+      );
     }
 
     // For ImageNode, also delete from backend if saved AND not liked
@@ -383,9 +408,9 @@ export const useImageNodeHandlers = ({
 
     // Remove node and connected edges
     const nodeIdsToRemove = new Set([node.id]);
-    const newNodes = nodes.filter(n => !nodeIdsToRemove.has(n.id));
-    const newEdges = edges.filter(e =>
-      !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
+    const newNodes = nodes.filter((n) => !nodeIdsToRemove.has(n.id));
+    const newEdges = edges.filter(
+      (e) => !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
     );
 
     setNodes(newNodes);
@@ -396,13 +421,23 @@ export const useImageNodeHandlers = ({
     }, 0);
 
     toast.success(t('canvas.nodeDeleted'), { duration: 2000 });
-  }, [imageContextMenu, nodes, edges, isAuthenticated, setNodes, setEdges, addToHistory, getImageUrlFromNode, t]);
+  }, [
+    imageContextMenu,
+    nodes,
+    edges,
+    isAuthenticated,
+    setNodes,
+    setEdges,
+    addToHistory,
+    getImageUrlFromNode,
+    t,
+  ]);
 
   // Generic duplicate handler
   const handleDuplicate = useCallback(() => {
     if (!imageContextMenu?.nodeId || !reactFlowInstance) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) return;
 
     addToHistory(nodes, edges);
@@ -432,7 +467,7 @@ export const useImageNodeHandlers = ({
           onView: handleView,
           onEdit: handleEdit,
           onDelete: onDeleteMockup,
-          onUpload: handlersRef?.current?.handleUploadImage || (() => { }),
+          onUpload: handlersRef?.current?.handleUploadImage || (() => {}),
           onUpdateData: handleImageNodeDataUpdate,
         } as ImageNodeData,
       };
@@ -478,13 +513,26 @@ export const useImageNodeHandlers = ({
     }
 
     toast.success(t('canvas.nodeDuplicatedSingular'), { duration: 2000 });
-  }, [imageContextMenu, nodes, edges, reactFlowInstance, setNodes, addToHistory, handleView, handleEdit, onDeleteMockup, handleImageNodeDataUpdate, handlersRef, t]);
+  }, [
+    imageContextMenu,
+    nodes,
+    edges,
+    reactFlowInstance,
+    setNodes,
+    addToHistory,
+    handleView,
+    handleEdit,
+    onDeleteMockup,
+    handleImageNodeDataUpdate,
+    handlersRef,
+    t,
+  ]);
 
   // Image-specific handlers
   const handleImageLike = useCallback(() => {
     if (!imageContextMenu?.nodeId || !handleImageNodeDataUpdate) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) return;
 
     const nodeData = node.data as any;
@@ -510,13 +558,15 @@ export const useImageNodeHandlers = ({
       });
     }
 
-    toast.success(newLikedState ? t('canvas.addedToFavorites') : t('canvas.removedFromFavorites'), { duration: 2000 });
+    toast.success(newLikedState ? t('canvas.addedToFavorites') : t('canvas.removedFromFavorites'), {
+      duration: 2000,
+    });
   }, [imageContextMenu, nodes, handleImageNodeDataUpdate, t]);
 
   const handleImageDescribe = useCallback(async () => {
     if (!imageContextMenu?.nodeId || !handleImageNodeDataUpdate) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node) return;
 
     const imageData = node.data as ImageNodeData;
@@ -567,7 +617,9 @@ export const useImageNodeHandlers = ({
             mimeType: mimeType,
           };
         } catch (error: any) {
-          toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), { duration: 3000 });
+          toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), {
+            duration: 3000,
+          });
           console.error('Failed to convert image to base64:', error);
           handleImageNodeDataUpdate(imageContextMenu.nodeId, { isDescribing: false });
           return;
@@ -596,11 +648,15 @@ export const useImageNodeHandlers = ({
   const handleOutputLike = useCallback(async () => {
     if (!imageContextMenu?.nodeId) return;
 
-    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    const node = nodes.find((n) => n.id === imageContextMenu.nodeId);
     if (!node || node.type !== 'output') return;
 
     const outputData = node.data as OutputNodeData;
-    const imageUrl = outputData.resultImageUrl || (outputData.resultImageBase64 ? `data:image/png;base64,${outputData.resultImageBase64}` : null);
+    const imageUrl =
+      outputData.resultImageUrl ||
+      (outputData.resultImageBase64
+        ? `data:image/png;base64,${outputData.resultImageBase64}`
+        : null);
 
     if (!imageUrl || imageUrl.startsWith('data:')) {
       toast.error(t('canvas.pleaseSaveImageFirst'), { duration: 3000 });
@@ -641,4 +697,3 @@ export const useImageNodeHandlers = ({
     handleOutputLike,
   };
 };
-

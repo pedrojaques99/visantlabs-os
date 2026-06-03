@@ -6,7 +6,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
  */
 
 // Simulate the enqueue/list/remove logic without Redis
-interface Asset { id: string; userId: string; source: string; imageUrl?: string; label?: string; enqueuedAt: string; }
+interface Asset {
+  id: string;
+  userId: string;
+  source: string;
+  imageUrl?: string;
+  label?: string;
+  enqueuedAt: string;
+}
 
 function makeStore() {
   const store: Record<string, string[]> = {};
@@ -22,34 +29,64 @@ function makeStore() {
       if (!store[key]) return;
       store[key] = store[key].filter((v) => v !== val);
     },
-    async del(key: string) { delete store[key]; },
-    async llen(key: string) { return (store[key] || []).length; },
+    async del(key: string) {
+      delete store[key];
+    },
+    async llen(key: string) {
+      return (store[key] || []).length;
+    },
     async expire() {},
   };
 }
 
 function makePipeline(redis: ReturnType<typeof makeStore>) {
   return {
-    async enqueue(userId: string, asset: Omit<Asset, 'id' | 'userId' | 'enqueuedAt'>): Promise<Asset> {
-      const full: Asset = { ...asset, id: Math.random().toString(36).slice(2), userId, enqueuedAt: new Date().toISOString() };
+    async enqueue(
+      userId: string,
+      asset: Omit<Asset, 'id' | 'userId' | 'enqueuedAt'>
+    ): Promise<Asset> {
+      const full: Asset = {
+        ...asset,
+        id: Math.random().toString(36).slice(2),
+        userId,
+        enqueuedAt: new Date().toISOString(),
+      };
       await redis.lpush(`pipeline:${userId}`, JSON.stringify(full));
       return full;
     },
     async list(userId: string): Promise<Asset[]> {
       const items = await redis.lrange(`pipeline:${userId}`, 0, -1);
-      return items.reverse().map((r) => { try { return JSON.parse(r); } catch { return null; } }).filter(Boolean);
+      return items
+        .reverse()
+        .map((r) => {
+          try {
+            return JSON.parse(r);
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
     },
     async remove(userId: string, id: string): Promise<void> {
       const items = await redis.lrange(`pipeline:${userId}`, 0, -1);
       for (const raw of items) {
         try {
           const a = JSON.parse(raw);
-          if (a.id === id) { await redis.lrem(`pipeline:${userId}`, 1, raw); return; }
-        } catch { /* skip */ }
+          if (a.id === id) {
+            await redis.lrem(`pipeline:${userId}`, 1, raw);
+            return;
+          }
+        } catch {
+          /* skip */
+        }
       }
     },
-    async clear(userId: string): Promise<void> { await redis.del(`pipeline:${userId}`); },
-    async size(userId: string): Promise<number> { return redis.llen(`pipeline:${userId}`); },
+    async clear(userId: string): Promise<void> {
+      await redis.del(`pipeline:${userId}`);
+    },
+    async size(userId: string): Promise<number> {
+      return redis.llen(`pipeline:${userId}`);
+    },
   };
 }
 
@@ -61,7 +98,11 @@ describe('assetPipeline', () => {
   });
 
   it('enqueues an asset and returns it', async () => {
-    const asset = await pipeline.enqueue('user1', { source: 'canvas', imageUrl: 'https://r2/img.png', label: 'Test' });
+    const asset = await pipeline.enqueue('user1', {
+      source: 'canvas',
+      imageUrl: 'https://r2/img.png',
+      label: 'Test',
+    });
     expect(asset.id).toBeTruthy();
     expect(asset.userId).toBe('user1');
     expect(asset.source).toBe('canvas');

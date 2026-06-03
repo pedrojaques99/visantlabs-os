@@ -57,12 +57,17 @@ export const brandGuidelineVersionApi = {
   /**
    * List version history for a guideline
    */
-  async list(guidelineId: string, options?: { limit?: number; offset?: number }): Promise<VersionListResponse> {
+  async list(
+    guidelineId: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<VersionListResponse> {
     const params = new URLSearchParams();
     if (options?.limit) params.set('limit', options.limit.toString());
     if (options?.offset) params.set('offset', options.offset.toString());
 
-    const url = `${API_BASE_URL}/brand-guidelines/${guidelineId}/versions${params.toString() ? '?' + params : ''}`;
+    const url = `${API_BASE_URL}/brand-guidelines/${guidelineId}/versions${
+      params.toString() ? '?' + params : ''
+    }`;
 
     const response = await fetch(url, {
       headers: getAuthHeaders(),

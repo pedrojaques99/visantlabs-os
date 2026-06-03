@@ -20,7 +20,7 @@ export function useBrandGuidelineLoader() {
       usePluginStore.setState({
         ...(slice as any),
         brandHydrationTick: prev + 1,
-        brandHydrationAtMs: Date.now()
+        brandHydrationAtMs: Date.now(),
       });
       if (!opts?.silent) {
         showToast(`Loaded: ${getGuidelineLabel(guideline)}`, 'success');
@@ -37,13 +37,13 @@ export function useBrandGuidelineLoader() {
       logos: [
         { name: 'light', src: undefined, loaded: false },
         { name: 'dark', src: undefined, loaded: false },
-        { name: 'accent', src: undefined, loaded: false }
+        { name: 'accent', src: undefined, loaded: false },
       ],
       typography: [
         { name: 'primary', fontFamily: undefined },
-        { name: 'secondary', fontFamily: undefined }
+        { name: 'secondary', fontFamily: undefined },
       ],
-      designTokens: {}
+      designTokens: {},
     } as any);
   }, []);
 

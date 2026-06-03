@@ -9,7 +9,9 @@ import { describe, it, expect } from 'vitest';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function makeUser() { return 'user_test_123'; }
+function makeUser() {
+  return 'user_test_123';
+}
 
 function makeFetch(status: number, body: object) {
   return async () => ({
@@ -21,11 +23,44 @@ function makeFetch(status: number, body: object) {
 
 // Simulates the ERR object from platform-mcp.ts
 const ERR = {
-  auth:       () => ({ content: [{ type: 'text', text: JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Authentication required.' } }) }] }),
-  notFound:   (w: string) => ({ content: [{ type: 'text', text: JSON.stringify({ error: { code: 'NOT_FOUND', message: `${w} not found` } }) }] }),
-  validation: (m: string) => ({ content: [{ type: 'text', text: JSON.stringify({ error: { code: 'VALIDATION_ERROR', message: m } }) }] }),
-  internal:   (m: string) => ({ content: [{ type: 'text', text: JSON.stringify({ error: { code: 'INTERNAL_ERROR', message: m } }) }] }),
-  credits:    () => ({ content: [{ type: 'text', text: JSON.stringify({ error: { code: 'INSUFFICIENT_CREDITS', message: 'Not enough credits.' } }) }] }),
+  auth: () => ({
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify({
+          error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+        }),
+      },
+    ],
+  }),
+  notFound: (w: string) => ({
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify({ error: { code: 'NOT_FOUND', message: `${w} not found` } }),
+      },
+    ],
+  }),
+  validation: (m: string) => ({
+    content: [
+      { type: 'text', text: JSON.stringify({ error: { code: 'VALIDATION_ERROR', message: m } }) },
+    ],
+  }),
+  internal: (m: string) => ({
+    content: [
+      { type: 'text', text: JSON.stringify({ error: { code: 'INTERNAL_ERROR', message: m } }) },
+    ],
+  }),
+  credits: () => ({
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify({
+          error: { code: 'INSUFFICIENT_CREDITS', message: 'Not enough credits.' },
+        }),
+      },
+    ],
+  }),
 };
 
 function parseResponse(r: { content: { type: string; text: string }[] }) {
@@ -61,7 +96,13 @@ describe('Error response structure', () => {
   });
 
   it('All error variants have consistent shape { error: { code, message } }', () => {
-    const variants = [ERR.auth(), ERR.notFound('X'), ERR.validation('X'), ERR.internal('X'), ERR.credits()];
+    const variants = [
+      ERR.auth(),
+      ERR.notFound('X'),
+      ERR.validation('X'),
+      ERR.internal('X'),
+      ERR.credits(),
+    ];
     for (const v of variants) {
       const d = parseResponse(v);
       expect(d).toHaveProperty('error');
@@ -76,17 +117,29 @@ describe('Error response structure', () => {
 // ── mockup-generate contract ──────────────────────────────────────────────────
 
 describe('mockup-generate tool contract', () => {
-  function simulateMockupGenerate(params: {
-    prompt: string;
-    model?: string;
-    provider?: string;
-    aspectRatio?: string;
-    resolution?: string;
-    brandGuidelineId?: string;
-    seed?: number;
-    referenceImages?: string[];
-  }, fetchResult: { status: number; body: object }) {
-    const { prompt, model = 'gpt-image-2', provider, aspectRatio = '1:1', resolution = '1K', brandGuidelineId, seed, referenceImages } = params;
+  function simulateMockupGenerate(
+    params: {
+      prompt: string;
+      model?: string;
+      provider?: string;
+      aspectRatio?: string;
+      resolution?: string;
+      brandGuidelineId?: string;
+      seed?: number;
+      referenceImages?: string[];
+    },
+    fetchResult: { status: number; body: object }
+  ) {
+    const {
+      prompt,
+      model = 'gpt-image-2',
+      provider,
+      aspectRatio = '1:1',
+      resolution = '1K',
+      brandGuidelineId,
+      seed,
+      referenceImages,
+    } = params;
 
     // Validate required
     if (!prompt?.trim()) return ERR.validation('prompt is required');
@@ -107,31 +160,44 @@ describe('mockup-generate tool contract', () => {
 
     // Simulate fetch
     const { status, body: respBody } = fetchResult as any;
-    if (status >= 400) return ERR.internal((respBody as any).error || `Generation failed (${status})`);
+    if (status >= 400)
+      return ERR.internal((respBody as any).error || `Generation failed (${status})`);
 
     return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({
-          imageUrl: (respBody as any).imageUrl || null,
-          mockupId: (respBody as any).id || null,
-          hasImage: !!(respBody as any).imageUrl,
-          model,
-          provider: (respBody as any).provider || provider,
-          aspectRatio,
-          resolution,
-          seed: (respBody as any).seed ?? seed ?? null,
-          creditsUsed: (respBody as any).creditsUsed ?? null,
-        }),
-      }],
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({
+            imageUrl: (respBody as any).imageUrl || null,
+            mockupId: (respBody as any).id || null,
+            hasImage: !!(respBody as any).imageUrl,
+            model,
+            provider: (respBody as any).provider || provider,
+            aspectRatio,
+            resolution,
+            seed: (respBody as any).seed ?? seed ?? null,
+            creditsUsed: (respBody as any).creditsUsed ?? null,
+          }),
+        },
+      ],
     };
   }
 
   it('returns all output fields on success', () => {
-    const r = parseResponse(simulateMockupGenerate(
-      { prompt: 'product shot', model: 'gpt-image-2', aspectRatio: '1:1', resolution: '1K' },
-      { status: 200, body: { imageUrl: 'https://r2.dev/img.png', id: 'mock_123', creditsUsed: 5, provider: 'openai' } }
-    ));
+    const r = parseResponse(
+      simulateMockupGenerate(
+        { prompt: 'product shot', model: 'gpt-image-2', aspectRatio: '1:1', resolution: '1K' },
+        {
+          status: 200,
+          body: {
+            imageUrl: 'https://r2.dev/img.png',
+            id: 'mock_123',
+            creditsUsed: 5,
+            provider: 'openai',
+          },
+        }
+      )
+    );
     expect(r.imageUrl).toBe('https://r2.dev/img.png');
     expect(r.mockupId).toBe('mock_123');
     expect(r.model).toBe('gpt-image-2');
@@ -142,18 +208,19 @@ describe('mockup-generate tool contract', () => {
   });
 
   it('forwards seed to response', () => {
-    const r = parseResponse(simulateMockupGenerate(
-      { prompt: 'test', seed: 42 },
-      { status: 200, body: { imageUrl: 'https://r2.dev/img.png', seed: 42 } }
-    ));
+    const r = parseResponse(
+      simulateMockupGenerate(
+        { prompt: 'test', seed: 42 },
+        { status: 200, body: { imageUrl: 'https://r2.dev/img.png', seed: 42 } }
+      )
+    );
     expect(r.seed).toBe(42);
   });
 
   it('uses ERR.internal on API error', () => {
-    const r = parseResponse(simulateMockupGenerate(
-      { prompt: 'test' },
-      { status: 500, body: { error: 'server error' } }
-    ));
+    const r = parseResponse(
+      simulateMockupGenerate({ prompt: 'test' }, { status: 500, body: { error: 'server error' } })
+    );
     expect(r.error.code).toBe('INTERNAL_ERROR');
     expect(r.error.message).toContain('server error');
   });
@@ -166,16 +233,21 @@ describe('mockup-generate tool contract', () => {
   it('accepts all valid models', () => {
     const models = ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'];
     for (const model of models) {
-      const r = simulateMockupGenerate({ prompt: 'test', model }, { status: 200, body: { imageUrl: 'https://r2.dev/i.png' } });
+      const r = simulateMockupGenerate(
+        { prompt: 'test', model },
+        { status: 200, body: { imageUrl: 'https://r2.dev/i.png' } }
+      );
       expect(r).not.toHaveProperty('error');
     }
   });
 
   it('accepts referenceImages array', () => {
-    const r = parseResponse(simulateMockupGenerate(
-      { prompt: 'test', referenceImages: ['https://r2.dev/ref1.png', 'https://r2.dev/ref2.png'] },
-      { status: 200, body: { imageUrl: 'https://r2.dev/out.png' } }
-    ));
+    const r = parseResponse(
+      simulateMockupGenerate(
+        { prompt: 'test', referenceImages: ['https://r2.dev/ref1.png', 'https://r2.dev/ref2.png'] },
+        { status: 200, body: { imageUrl: 'https://r2.dev/out.png' } }
+      )
+    );
     expect(r.imageUrl).toBeDefined();
   });
 });
@@ -183,12 +255,15 @@ describe('mockup-generate tool contract', () => {
 // ── branding-generate contract ────────────────────────────────────────────────
 
 describe('branding-generate tool contract', () => {
-  function simulateBrandingGenerate(params: {
-    prompt: string;
-    step?: string;
-    previousData?: Record<string, unknown>;
-    brandGuidelineId?: string;
-  }, fetchResult: { status: number; body: object }) {
+  function simulateBrandingGenerate(
+    params: {
+      prompt: string;
+      step?: string;
+      previousData?: Record<string, unknown>;
+      brandGuidelineId?: string;
+    },
+    fetchResult: { status: number; body: object }
+  ) {
     const { prompt, step = 'full', previousData, brandGuidelineId } = params;
     if (!prompt?.trim()) return ERR.validation('prompt is required');
 
@@ -201,25 +276,38 @@ describe('branding-generate tool contract', () => {
   }
 
   it('defaults step to "full"', () => {
-    const r = parseResponse(simulateBrandingGenerate(
-      { prompt: 'modern startup' },
-      { status: 200, body: { colors: ['#000'], typography: [] } }
-    ));
+    const r = parseResponse(
+      simulateBrandingGenerate(
+        { prompt: 'modern startup' },
+        { status: 200, body: { colors: ['#000'], typography: [] } }
+      )
+    );
     expect(r.step).toBe('full');
   });
 
   it('passes previousData for iterative refinement', () => {
     const prev = { marketResearch: 'competitive market' };
-    const r = parseResponse(simulateBrandingGenerate(
-      { prompt: 'refine the colors', step: 'color-palettes', previousData: prev },
-      { status: 200, body: { colorPalettes: [{ primary: '#1a1a1a' }] } }
-    ));
+    const r = parseResponse(
+      simulateBrandingGenerate(
+        { prompt: 'refine the colors', step: 'color-palettes', previousData: prev },
+        { status: 200, body: { colorPalettes: [{ primary: '#1a1a1a' }] } }
+      )
+    );
     expect(r.step).toBe('color-palettes');
     expect(r.colorPalettes).toBeDefined();
   });
 
   it('accepts all valid steps', () => {
-    const steps = ['full', 'market-research', 'swot', 'persona', 'archetype', 'concept-ideas', 'color-palettes', 'moodboard'];
+    const steps = [
+      'full',
+      'market-research',
+      'swot',
+      'persona',
+      'archetype',
+      'concept-ideas',
+      'color-palettes',
+      'moodboard',
+    ];
     for (const step of steps) {
       const r = simulateBrandingGenerate({ prompt: 'test', step }, { status: 200, body: {} });
       const d = parseResponse(r);
@@ -228,10 +316,12 @@ describe('branding-generate tool contract', () => {
   });
 
   it('uses ERR.internal on API failure', () => {
-    const r = parseResponse(simulateBrandingGenerate(
-      { prompt: 'test' },
-      { status: 422, body: { error: 'invalid prompt' } }
-    ));
+    const r = parseResponse(
+      simulateBrandingGenerate(
+        { prompt: 'test' },
+        { status: 422, body: { error: 'invalid prompt' } }
+      )
+    );
     expect(r.error.code).toBe('INTERNAL_ERROR');
   });
 });
@@ -239,12 +329,15 @@ describe('branding-generate tool contract', () => {
 // ── creative-full contract ────────────────────────────────────────────────────
 
 describe('creative-full tool contract', () => {
-  function simulateCreativeFull(params: {
-    prompt: string;
-    model?: string;
-    resolution?: string;
-    format?: string;
-  }, steps: { plan: object | null; bg: object | null; render: object | null }) {
+  function simulateCreativeFull(
+    params: {
+      prompt: string;
+      model?: string;
+      resolution?: string;
+      format?: string;
+    },
+    steps: { plan: object | null; bg: object | null; render: object | null }
+  ) {
     const { prompt, model = 'gpt-image-2', resolution = '1K', format = '1:1' } = params;
     const credits: Record<string, number | null> = { plan: null, background: null, render: null };
 
@@ -253,28 +346,54 @@ describe('creative-full tool contract', () => {
     credits.plan = (plan as any).creditsUsed ?? null;
 
     const backgroundImageUrl = steps.bg ? (steps.bg as any).imageUrl : undefined;
-    credits.background = steps.bg ? ((steps.bg as any).creditsUsed ?? null) : null;
+    credits.background = steps.bg ? (steps.bg as any).creditsUsed ?? null : null;
 
     if (!steps.render) {
-      return { content: [{ type: 'text', text: JSON.stringify({ error: 'Render failed (500)', step: 'render', plan, backgroundImageUrl, creditsUsed: credits }) }] };
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              error: 'Render failed (500)',
+              step: 'render',
+              plan,
+              backgroundImageUrl,
+              creditsUsed: credits,
+            }),
+          },
+        ],
+      };
     }
     const imageUrl = (steps.render as any).imageUrl;
     credits.render = (steps.render as any).creditsUsed ?? null;
 
     return {
-      content: [{ type: 'text', text: JSON.stringify({ imageUrl, backgroundImageUrl, plan, projectId: 'proj_123', creditsUsed: credits }) }],
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({
+            imageUrl,
+            backgroundImageUrl,
+            plan,
+            projectId: 'proj_123',
+            creditsUsed: credits,
+          }),
+        },
+      ],
     };
   }
 
   it('returns full pipeline output on success', () => {
-    const r = parseResponse(simulateCreativeFull(
-      { prompt: 'brand campaign' },
-      {
-        plan: { layers: [], overlay: null, creditsUsed: 1 },
-        bg: { imageUrl: 'https://r2.dev/bg.png', creditsUsed: 5 },
-        render: { imageUrl: 'https://r2.dev/final.png', creditsUsed: 0 },
-      }
-    ));
+    const r = parseResponse(
+      simulateCreativeFull(
+        { prompt: 'brand campaign' },
+        {
+          plan: { layers: [], overlay: null, creditsUsed: 1 },
+          bg: { imageUrl: 'https://r2.dev/bg.png', creditsUsed: 5 },
+          render: { imageUrl: 'https://r2.dev/final.png', creditsUsed: 0 },
+        }
+      )
+    );
     expect(r.imageUrl).toBe('https://r2.dev/final.png');
     expect(r.backgroundImageUrl).toBe('https://r2.dev/bg.png');
     expect(r.plan).toBeDefined();
@@ -283,14 +402,16 @@ describe('creative-full tool contract', () => {
   });
 
   it('returns partial success with plan+bg when render fails', () => {
-    const r = parseResponse(simulateCreativeFull(
-      { prompt: 'test' },
-      {
-        plan: { layers: [], creditsUsed: 1 },
-        bg: { imageUrl: 'https://r2.dev/bg.png', creditsUsed: 5 },
-        render: null,
-      }
-    ));
+    const r = parseResponse(
+      simulateCreativeFull(
+        { prompt: 'test' },
+        {
+          plan: { layers: [], creditsUsed: 1 },
+          bg: { imageUrl: 'https://r2.dev/bg.png', creditsUsed: 5 },
+          render: null,
+        }
+      )
+    );
     expect(r.error).toContain('Render failed');
     expect(r.plan).toBeDefined();
     expect(r.backgroundImageUrl).toBe('https://r2.dev/bg.png');
@@ -298,22 +419,23 @@ describe('creative-full tool contract', () => {
   });
 
   it('returns ERR.internal when plan step fails', () => {
-    const r = parseResponse(simulateCreativeFull(
-      { prompt: 'test' },
-      { plan: null, bg: null, render: null }
-    ));
+    const r = parseResponse(
+      simulateCreativeFull({ prompt: 'test' }, { plan: null, bg: null, render: null })
+    );
     expect(r.error.code).toBe('INTERNAL_ERROR');
   });
 
   it('creditsUsed breakdown has all three keys', () => {
-    const r = parseResponse(simulateCreativeFull(
-      { prompt: 'test' },
-      {
-        plan: { creditsUsed: 2 },
-        bg: { imageUrl: 'https://r2.dev/bg.png', creditsUsed: 8 },
-        render: { imageUrl: 'https://r2.dev/out.png', creditsUsed: 0 },
-      }
-    ));
+    const r = parseResponse(
+      simulateCreativeFull(
+        { prompt: 'test' },
+        {
+          plan: { creditsUsed: 2 },
+          bg: { imageUrl: 'https://r2.dev/bg.png', creditsUsed: 8 },
+          render: { imageUrl: 'https://r2.dev/out.png', creditsUsed: 0 },
+        }
+      )
+    );
     expect(r.creditsUsed).toHaveProperty('plan');
     expect(r.creditsUsed).toHaveProperty('background');
     expect(r.creditsUsed).toHaveProperty('render');
@@ -323,7 +445,13 @@ describe('creative-full tool contract', () => {
 // ── brand-guidelines-upload-logo contract ────────────────────────────────────
 
 describe('brand-guidelines-upload-logo contract', () => {
-  function simulateUploadLogo(params: { id: string; data?: string; url?: string; variant?: string; label?: string }) {
+  function simulateUploadLogo(params: {
+    id: string;
+    data?: string;
+    url?: string;
+    variant?: string;
+    label?: string;
+  }) {
     const { id, data, url, variant = 'primary', label } = params;
     if (!data && !url) return ERR.validation('Either data (base64) or url is required.');
     const logo = { id: 'logo_abc', url: 'https://r2.dev/logo.png', variant, label };
@@ -336,13 +464,17 @@ describe('brand-guidelines-upload-logo contract', () => {
   });
 
   it('accepts base64 data', () => {
-    const r = parseResponse(simulateUploadLogo({ id: 'bg_1', data: 'base64string', variant: 'icon', label: 'Symbol' }));
+    const r = parseResponse(
+      simulateUploadLogo({ id: 'bg_1', data: 'base64string', variant: 'icon', label: 'Symbol' })
+    );
     expect(r.logo.id).toBe('logo_abc');
     expect(r.logo.variant).toBe('icon');
   });
 
   it('accepts url', () => {
-    const r = parseResponse(simulateUploadLogo({ id: 'bg_1', url: 'https://example.com/logo.png' }));
+    const r = parseResponse(
+      simulateUploadLogo({ id: 'bg_1', url: 'https://example.com/logo.png' })
+    );
     expect(r.logo.url).toBeDefined();
   });
 
@@ -370,12 +502,20 @@ describe('moodboard tools contract', () => {
   function simulateUpscale(imageBase64: string, size: string) {
     if (!imageBase64) return ERR.validation('imageBase64 is required');
     if (!['1K', '2K', '4K'].includes(size)) return ERR.validation(`Invalid size: ${size}`);
-    return { content: [{ type: 'text', text: JSON.stringify({ upscaledBase64: 'upscaled_base64_data', size }) }] };
+    return {
+      content: [
+        { type: 'text', text: JSON.stringify({ upscaledBase64: 'upscaled_base64_data', size }) },
+      ],
+    };
   }
 
   function simulateSuggest(images: { id: string; base64: string }[]) {
     if (!images?.length) return ERR.validation('images array is required');
-    const suggestions = images.map(img => ({ id: img.id, animationPreset: 'fade-in', veoPrompt: 'cinematic fade' }));
+    const suggestions = images.map((img) => ({
+      id: img.id,
+      animationPreset: 'fade-in',
+      veoPrompt: 'cinematic fade',
+    }));
     return { content: [{ type: 'text', text: JSON.stringify({ suggestions }) }] };
   }
 
@@ -404,7 +544,10 @@ describe('moodboard tools contract', () => {
   });
 
   it('suggest returns animation preset per image', () => {
-    const images = [{ id: 'cell-1', base64: 'b64a' }, { id: 'cell-2', base64: 'b64b' }];
+    const images = [
+      { id: 'cell-1', base64: 'b64a' },
+      { id: 'cell-2', base64: 'b64b' },
+    ];
     const r = parseResponse(simulateSuggest(images));
     expect(r.suggestions).toHaveLength(2);
     expect(r.suggestions[0]).toHaveProperty('animationPreset');
@@ -422,35 +565,44 @@ describe('moodboard tools contract', () => {
 describe('auth tools contract', () => {
   function simulateRegister(email: string, password: string, name?: string) {
     if (!email || !email.includes('@')) return ERR.validation('Invalid email');
-    if (!password || password.length < 8) return ERR.validation('Password must be at least 8 characters');
+    if (!password || password.length < 8)
+      return ERR.validation('Password must be at least 8 characters');
     return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({
-          message: 'Account created. Use api-key-create with the returned token to generate your visant_sk_xxx API key.',
-          token: 'jwt_token_abc',
-          user: { id: 'user_123', email, name: name || email.split('@')[0] },
-        }),
-      }],
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({
+            message:
+              'Account created. Use api-key-create with the returned token to generate your visant_sk_xxx API key.',
+            token: 'jwt_token_abc',
+            user: { id: 'user_123', email, name: name || email.split('@')[0] },
+          }),
+        },
+      ],
     };
   }
 
   function simulateApiKeyCreate(name: string, jwt?: string, currentUserId?: string) {
-    if (!currentUserId && !jwt) return ERR.validation('Authentication required. Pass a JWT from auth-login, or connect with an existing API key.');
+    if (!currentUserId && !jwt)
+      return ERR.validation(
+        'Authentication required. Pass a JWT from auth-login, or connect with an existing API key.'
+      );
     if (!name?.trim()) return ERR.validation('Name is required');
     return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({
-          message: 'API key created. Save the key — it will not be shown again.',
-          key: 'visant_sk_testabc123',
-          keyPrefix: 'visant_sk_te',
-          name,
-          scopes: ['read', 'write', 'generate'],
-          usage: 'Authorization: Bearer visant_sk_testabc123',
-          mcpUrl: 'https://visantlabs.com/api/mcp',
-        }),
-      }],
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({
+            message: 'API key created. Save the key — it will not be shown again.',
+            key: 'visant_sk_testabc123',
+            keyPrefix: 'visant_sk_te',
+            name,
+            scopes: ['read', 'write', 'generate'],
+            usage: 'Authorization: Bearer visant_sk_testabc123',
+            mcpUrl: 'https://visantlabs.com/api/mcp',
+          }),
+        },
+      ],
     };
   }
 

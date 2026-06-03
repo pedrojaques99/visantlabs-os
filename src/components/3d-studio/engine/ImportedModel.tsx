@@ -16,8 +16,16 @@ interface ImportedModelProps {
 }
 
 export const ImportedModel: React.FC<ImportedModelProps> = ({
-  url, groupRef, rotationX, rotationY, objectScale,
-  overrideColor, overrideMetalness, overrideRoughness, overrideWireframe, overrideOpacity,
+  url,
+  groupRef,
+  rotationX,
+  rotationY,
+  objectScale,
+  overrideColor,
+  overrideMetalness,
+  overrideRoughness,
+  overrideWireframe,
+  overrideOpacity,
 }) => {
   const { scene } = useGLTF(url);
   const cloned = useMemo(() => {
@@ -49,7 +57,14 @@ export const ImportedModel: React.FC<ImportedModelProps> = ({
       }
       m.needsUpdate = true;
     });
-  }, [cloned, overrideColor, overrideMetalness, overrideRoughness, overrideWireframe, overrideOpacity]);
+  }, [
+    cloned,
+    overrideColor,
+    overrideMetalness,
+    overrideRoughness,
+    overrideWireframe,
+    overrideOpacity,
+  ]);
 
   return (
     <group ref={groupRef} rotation={[rotationX, rotationY, 0]} scale={objectScale}>

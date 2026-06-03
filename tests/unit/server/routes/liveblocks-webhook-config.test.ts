@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest';
 
 function webhookConfigGuard(
   secretKey: string | undefined,
-  webhookSecret: string | undefined,
+  webhookSecret: string | undefined
 ): { status: number; error: string } | null {
   if (!secretKey || !webhookSecret) {
     return { status: 503, error: 'Liveblocks not configured' };

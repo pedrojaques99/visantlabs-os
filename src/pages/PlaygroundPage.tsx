@@ -7,17 +7,35 @@ import { PageShell } from '@/components/ui/PageShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Send, Zap, RotateCcw, Code2, Eye, Save, Settings, GripVertical, Download, AlertTriangle, FileCode } from 'lucide-react';
+import {
+  Send,
+  Zap,
+  RotateCcw,
+  Code2,
+  Eye,
+  Save,
+  Settings,
+  GripVertical,
+  Download,
+  AlertTriangle,
+  FileCode,
+} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { generateMiniApp, iterateMiniApp, saveMiniApp, getMiniApp, type GenerateEvent } from '@/services/playgroundApi';
+import {
+  generateMiniApp,
+  iterateMiniApp,
+  saveMiniApp,
+  getMiniApp,
+  type GenerateEvent,
+} from '@/services/playgroundApi';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { ejectSpec, SANDPACK_DEPS } from '@/lib/playground/eject';
 import { capturePreviewThumbnail } from '@/lib/playground/thumbnail';
 
 const SandpackPreview = React.lazy(() =>
-  import('@codesandbox/sandpack-react').then(m => ({
+  import('@codesandbox/sandpack-react').then((m) => ({
     default: ({ files }: { files: Record<string, string> }) => {
       const sandpackFiles: Record<string, string> = {};
       for (const [path, content] of Object.entries(files)) {
@@ -30,7 +48,9 @@ const SandpackPreview = React.lazy(() =>
           customSetup={{ dependencies: SANDPACK_DEPS }}
           theme="dark"
         >
-          <m.SandpackLayout style={{ height: '100%', border: 'none', borderRadius: 0, background: 'transparent' }}>
+          <m.SandpackLayout
+            style={{ height: '100%', border: 'none', borderRadius: 0, background: 'transparent' }}
+          >
             <m.SandpackFileExplorer style={{ height: '100%' }} />
             <m.SandpackCodeEditor style={{ height: '100%' }} showLineNumbers showTabs />
             <m.SandpackPreview style={{ height: '100%' }} showOpenInCodeSandbox={false} />
@@ -42,12 +62,33 @@ const SandpackPreview = React.lazy(() =>
 );
 
 const SUGGESTIONS = [
-  { label: 'Brand Color Palette', prompt: 'A tool to extract and display color palette from any image, with export options' },
-  { label: 'Mockup Machine', prompt: 'A mockup generator where I select scene types and generate product mockups from my brand' },
-  { label: 'Naming Generator', prompt: 'A brand naming brainstorm tool with context input, style selector, and multiple suggestions' },
-  { label: 'Social Post Creator', prompt: 'A social media post template creator with size presets, text overlay, and image generation' },
-  { label: 'Compliance Checker', prompt: 'Upload a design and check it against brand guidelines for compliance scoring' },
-  { label: 'Logo Tester', prompt: 'A tool to test my logo across different mockup scenarios side by side' },
+  {
+    label: 'Brand Color Palette',
+    prompt: 'A tool to extract and display color palette from any image, with export options',
+  },
+  {
+    label: 'Mockup Machine',
+    prompt:
+      'A mockup generator where I select scene types and generate product mockups from my brand',
+  },
+  {
+    label: 'Naming Generator',
+    prompt:
+      'A brand naming brainstorm tool with context input, style selector, and multiple suggestions',
+  },
+  {
+    label: 'Social Post Creator',
+    prompt:
+      'A social media post template creator with size presets, text overlay, and image generation',
+  },
+  {
+    label: 'Compliance Checker',
+    prompt: 'Upload a design and check it against brand guidelines for compliance scoring',
+  },
+  {
+    label: 'Logo Tester',
+    prompt: 'A tool to test my logo across different mockup scenarios side by side',
+  },
 ];
 
 // ─── Error Boundary ─────────────────────────────────────────────────────
@@ -56,15 +97,21 @@ class RendererErrorBoundary extends React.Component<
   { error: Error | null }
 > {
   state = { error: null as Error | null };
-  static getDerivedStateFromError(error: Error) { return { error }; }
-  componentDidCatch() { this.props.onError?.(); }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  componentDidCatch() {
+    this.props.onError?.();
+  }
   render() {
     if (this.state.error) {
       return (
         <div className="h-full flex flex-col items-center justify-center gap-3 text-neutral-500">
           <AlertTriangle className="w-6 h-6 text-amber-500/60" />
           <p className="text-[11px] font-mono">Render error — try regenerating</p>
-          <p className="text-[10px] text-neutral-600 max-w-sm text-center">{this.state.error.message}</p>
+          <p className="text-[10px] text-neutral-600 max-w-sm text-center">
+            {this.state.error.message}
+          </p>
         </div>
       );
     }
@@ -82,12 +129,16 @@ const PlaygroundRenderer: React.FC<{ spec: Spec }> = ({ spec }) => {
       const next = updater(stateCtx.getSnapshot() as Record<string, unknown>);
       Object.entries(next).forEach(([k, v]) => stateCtx.set(k, v));
     },
-    [stateCtx],
+    [stateCtx]
   );
 
   const actionHandlers = React.useMemo(
-    () => createHandlers(() => setStateAdapter, () => stateCtx.state),
-    [setStateAdapter, stateCtx.state],
+    () =>
+      createHandlers(
+        () => setStateAdapter,
+        () => stateCtx.state
+      ),
+    [setStateAdapter, stateCtx.state]
   );
 
   return (
@@ -102,7 +153,9 @@ const SpecEditor: React.FC<{ spec: Spec; onUpdate: (s: Spec) => void }> = ({ spe
   const [text, setText] = useState(JSON.stringify(spec, null, 2));
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { setText(JSON.stringify(spec, null, 2)); }, [spec]);
+  useEffect(() => {
+    setText(JSON.stringify(spec, null, 2));
+  }, [spec]);
 
   const handleChange = (value: string) => {
     setText(value);
@@ -162,7 +215,9 @@ export const PlaygroundPage: React.FC = () => {
   const [spec, setSpec] = useState<Spec | null>(null);
   const [meta, setMeta] = useState<Record<string, unknown>>({});
   const [miniAppId, setMiniAppId] = useState<string | null>(null);
-  const [chatHistory, setChatHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  const [chatHistory, setChatHistory] = useState<
+    Array<{ role: 'user' | 'assistant'; content: string }>
+  >([]);
   const [expertMode, setExpertMode] = useState(false);
   const [activeTab, setActiveTab] = useState<ViewTab>('preview');
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -171,63 +226,88 @@ export const PlaygroundPage: React.FC = () => {
   // Load existing miniapp from slug
   useEffect(() => {
     if (!slug) return;
-    getMiniApp(slug).then(({ miniApp }) => {
-      setSpec(miniApp.spec as unknown as Spec);
-      setMeta({ title: miniApp.title, description: miniApp.description, tags: miniApp.tags, category: miniApp.category });
-      setMiniAppId(miniApp.id);
-    }).catch(() => {
-      toast.error('Could not load this miniapp. It may have been deleted or the URL is incorrect.');
-    });
+    getMiniApp(slug)
+      .then(({ miniApp }) => {
+        setSpec(miniApp.spec as unknown as Spec);
+        setMeta({
+          title: miniApp.title,
+          description: miniApp.description,
+          tags: miniApp.tags,
+          category: miniApp.category,
+        });
+        setMiniAppId(miniApp.id);
+      })
+      .catch(() => {
+        toast.error(
+          'Could not load this miniapp. It may have been deleted or the URL is incorrect.'
+        );
+      });
   }, [slug]);
 
   // Auto-scroll chat
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatHistory]);
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
 
   const handleEvent = useCallback((event: GenerateEvent) => {
     if (event.event === 'status') setStatusMessage(event.data.message);
   }, []);
 
-  const handleGenerate = useCallback(async (inputPrompt?: string) => {
-    const finalPrompt = inputPrompt || prompt;
-    if (!finalPrompt.trim()) return;
+  const handleGenerate = useCallback(
+    async (inputPrompt?: string) => {
+      const finalPrompt = inputPrompt || prompt;
+      if (!finalPrompt.trim()) return;
 
-    setIsGenerating(true);
-    setStatusMessage('');
-    setChatHistory(prev => [...prev, { role: 'user', content: finalPrompt }]);
-    setPrompt('');
-
-    try {
-      const isIteration = spec !== null;
-      const result = isIteration
-        ? await iterateMiniApp(finalPrompt, spec as unknown as Record<string, unknown>, {}, handleEvent)
-        : await generateMiniApp(finalPrompt, {}, handleEvent);
-
-      if (result) {
-        setSpec(result.spec as unknown as Spec);
-        setMeta(result.meta);
-        setActiveTab('preview');
-        const title = (result.meta?.title as string) || 'Your miniapp';
-        setChatHistory(prev => [...prev, {
-          role: 'assistant',
-          content: isIteration ? `Updated: ${title}` : `Created: ${title}`,
-        }]);
-      }
-    } catch (err: any) {
-      const msg = err?.message || 'Something went wrong.';
-      setChatHistory(prev => [...prev, { role: 'assistant', content: msg }]);
-      toast.error(msg);
-    } finally {
-      setIsGenerating(false);
+      setIsGenerating(true);
       setStatusMessage('');
-    }
-  }, [prompt, spec, handleEvent]);
+      setChatHistory((prev) => [...prev, { role: 'user', content: finalPrompt }]);
+      setPrompt('');
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey || !e.shiftKey)) {
-      e.preventDefault();
-      handleGenerate();
-    }
-  }, [handleGenerate]);
+      try {
+        const isIteration = spec !== null;
+        const result = isIteration
+          ? await iterateMiniApp(
+              finalPrompt,
+              spec as unknown as Record<string, unknown>,
+              {},
+              handleEvent
+            )
+          : await generateMiniApp(finalPrompt, {}, handleEvent);
+
+        if (result) {
+          setSpec(result.spec as unknown as Spec);
+          setMeta(result.meta);
+          setActiveTab('preview');
+          const title = (result.meta?.title as string) || 'Your miniapp';
+          setChatHistory((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: isIteration ? `Updated: ${title}` : `Created: ${title}`,
+            },
+          ]);
+        }
+      } catch (err: any) {
+        const msg = err?.message || 'Something went wrong.';
+        setChatHistory((prev) => [...prev, { role: 'assistant', content: msg }]);
+        toast.error(msg);
+      } finally {
+        setIsGenerating(false);
+        setStatusMessage('');
+      }
+    },
+    [prompt, spec, handleEvent]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey || !e.shiftKey)) {
+        e.preventDefault();
+        handleGenerate();
+      }
+    },
+    [handleGenerate]
+  );
 
   const handleReset = useCallback(() => {
     setSpec(null);
@@ -288,8 +368,16 @@ export const PlaygroundPage: React.FC = () => {
           </div>
         )}
         {chatHistory.map((msg, i) => (
-          <div key={i} className={cn('text-[11px] leading-relaxed', msg.role === 'user' ? 'text-neutral-300' : 'text-brand-cyan/80')}>
-            <span className="font-mono text-neutral-600 mr-1.5 select-none">{msg.role === 'user' ? '>' : '◆'}</span>
+          <div
+            key={i}
+            className={cn(
+              'text-[11px] leading-relaxed',
+              msg.role === 'user' ? 'text-neutral-300' : 'text-brand-cyan/80'
+            )}
+          >
+            <span className="font-mono text-neutral-600 mr-1.5 select-none">
+              {msg.role === 'user' ? '>' : '◆'}
+            </span>
             {msg.content}
           </div>
         ))}
@@ -339,7 +427,7 @@ export const PlaygroundPage: React.FC = () => {
       {/* Tab bar (expert mode) */}
       {expertMode && spec && (
         <div className="shrink-0 flex items-center border-b border-neutral-800/50 px-2">
-          {(['preview', 'spec', 'code'] as ViewTab[]).map(tab => (
+          {(['preview', 'spec', 'code'] as ViewTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -347,7 +435,7 @@ export const PlaygroundPage: React.FC = () => {
                 'px-3 py-2 text-[10px] font-mono uppercase tracking-widest transition-colors border-b-2 -mb-px',
                 activeTab === tab
                   ? 'text-neutral-200 border-brand-cyan'
-                  : 'text-neutral-500 border-transparent hover:text-neutral-300',
+                  : 'text-neutral-500 border-transparent hover:text-neutral-300'
               )}
             >
               {tab === 'preview' && <Eye className="w-3 h-3 inline mr-1.5" />}
@@ -373,9 +461,12 @@ export const PlaygroundPage: React.FC = () => {
             <div className="h-full flex flex-col items-center justify-center gap-8 animate-fade-in">
               <div className="text-center space-y-3">
                 <Zap className="w-8 h-8 text-brand-cyan mx-auto opacity-60" />
-                <h2 className="text-lg font-semibold text-neutral-200">What would you like to build?</h2>
+                <h2 className="text-lg font-semibold text-neutral-200">
+                  What would you like to build?
+                </h2>
                 <p className="text-[11px] text-neutral-500 max-w-md">
-                  Describe your mini-app and the AI will compose it using the Visant design system and API.
+                  Describe your mini-app and the AI will compose it using the Visant design system
+                  and API.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 max-w-2xl">
@@ -401,14 +492,22 @@ export const PlaygroundPage: React.FC = () => {
           <div className="h-full flex items-center justify-center animate-fade-in">
             <div className="text-center space-y-4">
               <GlitchLoader size="lg" />
-              <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-widest">{statusMessage || 'Composing...'}</p>
+              <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-widest">
+                {statusMessage || 'Composing...'}
+              </p>
             </div>
           </div>
         ) : spec ? (
           activeTab === 'spec' ? (
             <SpecEditor spec={spec} onUpdate={setSpec} />
           ) : activeTab === 'code' ? (
-            <Suspense fallback={<div className="h-full flex items-center justify-center"><GlitchLoader size="md" /></div>}>
+            <Suspense
+              fallback={
+                <div className="h-full flex items-center justify-center">
+                  <GlitchLoader size="md" />
+                </div>
+              }
+            >
               <SandpackPreview files={ejectSpec(spec, (meta.title as string) || 'miniapp')} />
             </Suspense>
           ) : (
@@ -432,19 +531,34 @@ export const PlaygroundPage: React.FC = () => {
         <RotateCcw className="w-3 h-3 mr-1" /> Reset
       </Button>
       {!expertMode && (
-        <Button variant="ghost" size="xs" onClick={() => setActiveTab(activeTab === 'spec' ? 'preview' : 'spec')}>
-          {activeTab === 'spec' ? <Eye className="w-3 h-3 mr-1" /> : <Code2 className="w-3 h-3 mr-1" />}
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={() => setActiveTab(activeTab === 'spec' ? 'preview' : 'spec')}
+        >
+          {activeTab === 'spec' ? (
+            <Eye className="w-3 h-3 mr-1" />
+          ) : (
+            <Code2 className="w-3 h-3 mr-1" />
+          )}
           {activeTab === 'spec' ? 'Preview' : 'Spec'}
         </Button>
       )}
-      <Button variant="ghost" size="xs" onClick={() => downloadSpec(spec, (meta.title as string) || 'miniapp')}>
+      <Button
+        variant="ghost"
+        size="xs"
+        onClick={() => downloadSpec(spec, (meta.title as string) || 'miniapp')}
+      >
         <Download className="w-3 h-3 mr-1" /> Export
       </Button>
       <div className="flex-1" />
       <Button
         variant="ghost"
         size="xs"
-        onClick={() => { setExpertMode(!expertMode); if (!expertMode) setActiveTab('preview'); }}
+        onClick={() => {
+          setExpertMode(!expertMode);
+          if (!expertMode) setActiveTab('preview');
+        }}
         className={cn(expertMode && 'text-brand-cyan')}
       >
         <Settings className="w-3 h-3 mr-1" /> {expertMode ? 'Simple' : 'Expert'}
@@ -498,8 +612,16 @@ export const PlaygroundPage: React.FC = () => {
               {chatHistory.length > 0 && (
                 <div className="mb-2 max-h-24 overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-neutral-700">
                   {chatHistory.map((msg, i) => (
-                    <div key={i} className={cn('text-[11px]', msg.role === 'user' ? 'text-neutral-300' : 'text-brand-cyan/80')}>
-                      <span className="font-mono text-neutral-600 mr-1.5">{msg.role === 'user' ? '>' : '◆'}</span>
+                    <div
+                      key={i}
+                      className={cn(
+                        'text-[11px]',
+                        msg.role === 'user' ? 'text-neutral-300' : 'text-brand-cyan/80'
+                      )}
+                    >
+                      <span className="font-mono text-neutral-600 mr-1.5">
+                        {msg.role === 'user' ? '>' : '◆'}
+                      </span>
                       {msg.content}
                     </div>
                   ))}
@@ -516,13 +638,20 @@ export const PlaygroundPage: React.FC = () => {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={spec ? 'Iterate: "add dark mode toggle"' : 'Describe your mini-app...'}
+                  placeholder={
+                    spec ? 'Iterate: "add dark mode toggle"' : 'Describe your mini-app...'
+                  }
                   rows={1}
                   className="flex-1 bg-transparent border-0 text-sm text-neutral-200 placeholder:text-neutral-600 resize-none focus:outline-none min-h-[32px] max-h-[100px]"
                   style={{ fieldSizing: 'content' } as any}
                   disabled={isGenerating}
                 />
-                <Button variant="brand" size="icon-sm" onClick={() => handleGenerate()} disabled={!prompt.trim() || isGenerating}>
+                <Button
+                  variant="brand"
+                  size="icon-sm"
+                  onClick={() => handleGenerate()}
+                  disabled={!prompt.trim() || isGenerating}
+                >
                   <Send className="w-3.5 h-3.5" />
                 </Button>
               </div>

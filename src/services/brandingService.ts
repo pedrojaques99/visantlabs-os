@@ -1,10 +1,7 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type } from '@google/genai';
 import type { BrandingData } from '../types/types.js';
 import { cleanMarketResearchText } from '../utils/brandingHelpersServer.js';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
-
-
-
 
 // Lazy initialization to avoid executing server-side code in frontend bundle
 let ai: GoogleGenAI | null = null;
@@ -16,14 +13,24 @@ const getAI = (): GoogleGenAI => {
 
     // Server-side: check process.env
     if (typeof process !== 'undefined' && process.env) {
-      apiKey = (process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.VITE_API_KEY || '').trim();
+      apiKey = (
+        process.env.GEMINI_API_KEY ||
+        process.env.API_KEY ||
+        process.env.VITE_GEMINI_API_KEY ||
+        process.env.VITE_API_KEY ||
+        ''
+      ).trim();
     }
 
     // Client-side: check import.meta.env if not found in process.env
     if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
       try {
         if (typeof import.meta !== 'undefined' && import.meta.env) {
-          apiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim();
+          apiKey = (
+            import.meta.env.VITE_GEMINI_API_KEY ||
+            import.meta.env.VITE_API_KEY ||
+            ''
+          ).trim();
         }
       } catch (e) {
         // Ignore errors accessing import.meta
@@ -31,7 +38,9 @@ const getAI = (): GoogleGenAI => {
     }
 
     if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
-      throw new Error("GEMINI_API_KEY não encontrada. Verifique o arquivo .env e reinicie o servidor.");
+      throw new Error(
+        'GEMINI_API_KEY não encontrada. Verifique o arquivo .env e reinicie o servidor.'
+      );
     }
     ai = new GoogleGenAI({ apiKey });
   }
@@ -47,17 +56,55 @@ const detectLanguage = (text: string): 'pt-BR' | 'en-US' => {
 
   // Palavras-chave comuns em português
   const ptKeywords = [
-    'é', 'são', 'está', 'estão', 'para', 'com', 'uma', 'um', 'de', 'da', 'do', 'das', 'dos',
-    'que', 'qual', 'quando', 'onde', 'como', 'porque', 'porquê', 'por que',
-    'marca', 'produto', 'empresa', 'negócio', 'cliente', 'consumidor',
-    'sustentável', 'sustentabilidade', 'ecológico', 'ecologia',
-    'design', 'identidade', 'visual', 'branding', 'posicionamento',
-    'mercado', 'nicho', 'público', 'alvo', 'audiência',
-    'competidores', 'concorrentes', 'referências', 'inspirações'
+    'é',
+    'são',
+    'está',
+    'estão',
+    'para',
+    'com',
+    'uma',
+    'um',
+    'de',
+    'da',
+    'do',
+    'das',
+    'dos',
+    'que',
+    'qual',
+    'quando',
+    'onde',
+    'como',
+    'porque',
+    'porquê',
+    'por que',
+    'marca',
+    'produto',
+    'empresa',
+    'negócio',
+    'cliente',
+    'consumidor',
+    'sustentável',
+    'sustentabilidade',
+    'ecológico',
+    'ecologia',
+    'design',
+    'identidade',
+    'visual',
+    'branding',
+    'posicionamento',
+    'mercado',
+    'nicho',
+    'público',
+    'alvo',
+    'audiência',
+    'competidores',
+    'concorrentes',
+    'referências',
+    'inspirações',
   ];
 
   // Conta ocorrências de palavras em português
-  const ptMatches = ptKeywords.filter(keyword => lowerText.includes(keyword)).length;
+  const ptMatches = ptKeywords.filter((keyword) => lowerText.includes(keyword)).length;
 
   // Se encontrar muitas palavras em português, assume PT-BR
   if (ptMatches >= 3) {
@@ -161,20 +208,17 @@ const withRetry = async <T>(
 
   while (attempt < maxRetries) {
     try {
-      const result = await Promise.race([
-        apiCall(),
-        createTimeoutPromise()
-      ]);
+      const result = await Promise.race([apiCall(), createTimeoutPromise()]);
       return result;
     } catch (error: any) {
       attempt++;
       if (attempt >= maxRetries) {
         throw error;
       }
-      await new Promise(res => setTimeout(res, 1000 * attempt));
+      await new Promise((res) => setTimeout(res, 1000 * attempt));
     }
   }
-  throw new Error("API call failed after multiple retries.");
+  throw new Error('API call failed after multiple retries.');
 };
 
 // Helper function to extract tokens from Gemini API response
@@ -186,7 +230,10 @@ const extractTokens = (response: any): { inputTokens?: number; outputTokens?: nu
   };
 };
 
-export const generateMarketResearch = async (prompt: string, examples: string[] = []): Promise<{ result: string; inputTokens?: number; outputTokens?: number }> => {
+export const generateMarketResearch = async (
+  prompt: string,
+  examples: string[] = []
+): Promise<{ result: string; inputTokens?: number; outputTokens?: number }> => {
   return withRetry(async () => {
     let sectionPrompt = `Perform a market benchmarking analysis for the following brand description. Provide a concise, objective benchmarking paragraph that compares the brand with the market and competitors.
 
@@ -212,7 +259,9 @@ IMPORTANT:
 - Start directly with the benchmarking analysis content`;
 
     if (examples.length > 0) {
-      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
+      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join(
+        '\n\n'
+      )}`;
     }
 
     const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
@@ -231,14 +280,18 @@ IMPORTANT:
     const text = response.text.trim();
 
     // Remove markdown code blocks if present
-    let cleanedText = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    let cleanedText = text
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
 
     // Remove any JSON structure if AI still returns it
     try {
       const parsed = JSON.parse(cleanedText);
       // If it's JSON, try to extract text from common keys
       if (typeof parsed === 'object' && parsed !== null) {
-        const textValues = Object.values(parsed).filter(v => typeof v === 'string' && v.trim());
+        const textValues = Object.values(parsed).filter((v) => typeof v === 'string' && v.trim());
         cleanedText = textValues.join(' ').trim() || cleanedText;
       }
     } catch {
@@ -267,18 +320,27 @@ const combineMarketResearch = (data: BrandingData): string => {
 
   // Old format: combine the 4 separate fields
   const parts: string[] = [];
-  if (data.mercadoNicho) parts.push(`Mercado e Nicho:\n${cleanMarketResearchText(data.mercadoNicho)}`);
+  if (data.mercadoNicho)
+    parts.push(`Mercado e Nicho:\n${cleanMarketResearchText(data.mercadoNicho)}`);
   if (data.publicoAlvo) parts.push(`Público Alvo:\n${cleanMarketResearchText(data.publicoAlvo)}`);
-  if (data.posicionamento) parts.push(`Posicionamento:\n${cleanMarketResearchText(data.posicionamento)}`);
+  if (data.posicionamento)
+    parts.push(`Posicionamento:\n${cleanMarketResearchText(data.posicionamento)}`);
   if (data.insights) parts.push(`Insights:\n${cleanMarketResearchText(data.insights)}`);
 
   return parts.join('\n\n');
 };
 
-export const generateCompetitors = async (prompt: string, marketResearch: string | BrandingData, examples: string[] = []): Promise<{ result: string[] | Array<{ name: string; url?: string }>; inputTokens?: number; outputTokens?: number }> => {
-  const researchText = typeof marketResearch === 'string'
-    ? marketResearch
-    : combineMarketResearch(marketResearch);
+export const generateCompetitors = async (
+  prompt: string,
+  marketResearch: string | BrandingData,
+  examples: string[] = []
+): Promise<{
+  result: string[] | Array<{ name: string; url?: string }>;
+  inputTokens?: number;
+  outputTokens?: number;
+}> => {
+  const researchText =
+    typeof marketResearch === 'string' ? marketResearch : combineMarketResearch(marketResearch);
   return withRetry(async () => {
     let sectionPrompt = `Based on the brand description and market research, identify and analyze the main competitors. Focus on strategic differentiation - identify competitors that challenge the brand's unique positioning.
 
@@ -294,7 +356,9 @@ Focus on competitors that are strategically relevant - those that compete for th
 Example: {"competitors": [{"name": "Competitor 1", "url": "https://competitor1.com"}, {"name": "Competitor 2", "url": "https://competitor2.com"}, {"name": "Competitor 3"}]}`;
 
     if (examples.length > 0) {
-      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
+      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join(
+        '\n\n'
+      )}`;
     }
 
     const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
@@ -348,16 +412,19 @@ Example: {"competitors": [{"name": "Competitor 1", "url": "https://competitor1.c
 
       return { result, ...tokens };
     } catch (e) {
-      console.error("Failed to parse competitors JSON:", e);
+      console.error('Failed to parse competitors JSON:', e);
       return { result: [], ...tokens };
     }
   });
 };
 
-export const generateReferences = async (prompt: string, marketResearch: string | BrandingData, competitors: string[]): Promise<{ result: string[]; inputTokens?: number; outputTokens?: number }> => {
-  const researchText = typeof marketResearch === 'string'
-    ? marketResearch
-    : combineMarketResearch(marketResearch);
+export const generateReferences = async (
+  prompt: string,
+  marketResearch: string | BrandingData,
+  competitors: string[]
+): Promise<{ result: string[]; inputTokens?: number; outputTokens?: number }> => {
+  const researchText =
+    typeof marketResearch === 'string' ? marketResearch : combineMarketResearch(marketResearch);
   return withRetry(async () => {
     const sectionPrompt = `Based on the brand description, market research, and competitors, suggest visual references and inspirations that support the brand's strategic differentiation.
 
@@ -398,13 +465,17 @@ Example: {"references": ["Reference 1", "Reference 2", "Reference 3"]}`;
       const result = parsed.references || [];
       return { result, ...tokens };
     } catch (e) {
-      console.error("Failed to parse references JSON:", e);
+      console.error('Failed to parse references JSON:', e);
       return { result: [], ...tokens };
     }
   });
 };
 
-export const generateSWOT = async (prompt: string, marketResearch: string | BrandingData, competitors: string[]): Promise<{
+export const generateSWOT = async (
+  prompt: string,
+  marketResearch: string | BrandingData,
+  competitors: string[]
+): Promise<{
   result: {
     strengths: string[];
     weaknesses: string[];
@@ -414,9 +485,8 @@ export const generateSWOT = async (prompt: string, marketResearch: string | Bran
   inputTokens?: number;
   outputTokens?: number;
 }> => {
-  const researchText = typeof marketResearch === 'string'
-    ? marketResearch
-    : combineMarketResearch(marketResearch);
+  const researchText =
+    typeof marketResearch === 'string' ? marketResearch : combineMarketResearch(marketResearch);
   return withRetry(async () => {
     const sectionPrompt = `Perform a SWOT analysis for the following brand. Focus on strategic factors that impact differentiation and competitive defensibility.
 
@@ -478,7 +548,7 @@ Example: {
       };
       return { result, ...tokens };
     } catch (e) {
-      console.error("Failed to parse SWOT JSON:", e);
+      console.error('Failed to parse SWOT JSON:', e);
       return { result: defaultResult, ...tokens };
     }
   });
@@ -489,7 +559,11 @@ Example: {
  */
 const fixJsonString = (jsonString: string): string => {
   // Remove markdown code blocks if present
-  let cleaned = jsonString.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+  let cleaned = jsonString
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
 
   // If response appears truncated, try to close it properly
   const openBraces = (cleaned.match(/\{/g) || []).length;
@@ -506,11 +580,14 @@ const fixJsonString = (jsonString: string): string => {
 /**
  * Attempts to extract palettes from malformed JSON using regex fallback
  */
-const extractPalettesFromText = (text: string): Array<{ name: string; colors: string[]; psychology: string }> => {
+const extractPalettesFromText = (
+  text: string
+): Array<{ name: string; colors: string[]; psychology: string }> => {
   const palettes: Array<{ name: string; colors: string[]; psychology: string }> = [];
 
   // Try to find palette objects using regex
-  const palettePattern = /\{[^}]*"name"\s*:\s*"([^"]+)"[^}]*"colors"\s*:\s*\[([^\]]+)\][^}]*"psychology"\s*:\s*"([^"]+)"[^}]*\}/g;
+  const palettePattern =
+    /\{[^}]*"name"\s*:\s*"([^"]+)"[^}]*"colors"\s*:\s*\[([^\]]+)\][^}]*"psychology"\s*:\s*"([^"]+)"[^}]*\}/g;
   let match;
 
   while ((match = palettePattern.exec(text)) !== null) {
@@ -538,7 +615,11 @@ const extractPalettesFromText = (text: string): Array<{ name: string; colors: st
   return palettes;
 };
 
-export const generateColorPalettes = async (prompt: string, swot: any, references: string[]): Promise<{
+export const generateColorPalettes = async (
+  prompt: string,
+  swot: any,
+  references: string[]
+): Promise<{
   result: Array<{
     name: string;
     colors: string[];
@@ -622,7 +703,7 @@ Example: {
         return { result, ...tokens };
       }
     } catch (e) {
-      console.warn("First JSON parse attempt failed, trying to fix JSON:", e);
+      console.warn('First JSON parse attempt failed, trying to fix JSON:', e);
     }
 
     // Second attempt: try to fix common JSON issues
@@ -638,29 +719,38 @@ Example: {
         return { result, ...tokens };
       }
     } catch (e) {
-      console.warn("Fixed JSON parse attempt failed, trying regex extraction:", e);
+      console.warn('Fixed JSON parse attempt failed, trying regex extraction:', e);
     }
 
     // Third attempt: regex-based extraction as fallback
     try {
       const extracted = extractPalettesFromText(jsonString);
       if (extracted.length > 0) {
-        console.warn("Used regex fallback to extract color palettes");
+        console.warn('Used regex fallback to extract color palettes');
         return { result: extracted, ...tokens };
       }
     } catch (e) {
-      console.warn("Regex extraction failed:", e);
+      console.warn('Regex extraction failed:', e);
     }
 
     // Final fallback: log error and return empty array
-    console.error("Failed to parse color palettes JSON after all attempts. JSON string length:", jsonString.length);
-    console.error("First 500 chars of JSON:", jsonString.substring(0, 500));
-    console.error("Last 500 chars of JSON:", jsonString.substring(Math.max(0, jsonString.length - 500)));
+    console.error(
+      'Failed to parse color palettes JSON after all attempts. JSON string length:',
+      jsonString.length
+    );
+    console.error('First 500 chars of JSON:', jsonString.substring(0, 500));
+    console.error(
+      'Last 500 chars of JSON:',
+      jsonString.substring(Math.max(0, jsonString.length - 500))
+    );
     return { result: defaultResult, ...tokens };
   });
 };
 
-export const generateVisualElements = async (prompt: string, colorPalettes: any[]): Promise<{ result: string[]; inputTokens?: number; outputTokens?: number }> => {
+export const generateVisualElements = async (
+  prompt: string,
+  colorPalettes: any[]
+): Promise<{ result: string[]; inputTokens?: number; outputTokens?: number }> => {
   return withRetry(async () => {
     const sectionPrompt = `Based on the brand description and color palettes, suggest visual elements that represent the brand and support its strategic differentiation.
 
@@ -702,13 +792,17 @@ Example: {"elements": ["Element 1", "Element 2", "Element 3"]}`;
       const result = parsed.elements || [];
       return { result, ...tokens };
     } catch (e) {
-      console.error("Failed to parse visual elements JSON:", e);
+      console.error('Failed to parse visual elements JSON:', e);
       return { result: [], ...tokens };
     }
   });
 };
 
-export const generateArchetypes = async (prompt: string, marketResearch: string | BrandingData, examples: string[] = []): Promise<{
+export const generateArchetypes = async (
+  prompt: string,
+  marketResearch: string | BrandingData,
+  examples: string[] = []
+): Promise<{
   result: {
     primary: {
       id: number;
@@ -727,30 +821,113 @@ export const generateArchetypes = async (prompt: string, marketResearch: string 
   inputTokens?: number;
   outputTokens?: number;
 }> => {
-  const researchText = typeof marketResearch === 'string'
-    ? marketResearch
-    : combineMarketResearch(marketResearch);
+  const researchText =
+    typeof marketResearch === 'string' ? marketResearch : combineMarketResearch(marketResearch);
 
   return withRetry(async () => {
     const archetypesRAG = [
-      { id: 1, titulo: "O Explorador", tipo: "Secundário", descricao: "Marcas dentro do arquétipo do explorador desafiam o padrão, buscam descobrir novos caminhos e romper limites. Querem levar o cliente além das fronteiras conhecidas. Seus principais valores são: curiosidade, exploração, mente aberta e desafio.", exemplos: ["Jeep", "The North Face", "SpaceX"] },
-      { id: 2, titulo: "O Cara Comum", tipo: "Primário", descricao: "Marcas neste arquétipo são movidas pelo desejo fundamental de se conectar e pertencer. Elas rejeitam a pretensão, o luxo inalcançável e o elitismo, preferindo abraçar a autenticidade da vida cotidiana. A virtude aqui é a empatia e o realismo: ser \"gente como a gente\".", exemplos: ["Hering", "Gap", "IKEA"] },
-      { id: 3, titulo: "O Herói", tipo: "Secundário", descricao: "Marcas nesse arquétipo falam em superação, vitória e conquista. Propõem resolver grandes desafios do cliente. Seu tom de voz é confiante, motivador, firme. Prometem resultado: eficiência, confiança, entrega.", exemplos: ["Nike", "BMW", "RedBull"] },
-      { id: 4, titulo: "O Sábio", tipo: "Primário", descricao: "Marcas nesse arquétipo falam sobre conhecimento, clareza, seu tom de voz é reflexivo, didático e confiável. Transmite autoridade sem arrogância, profundidade sem complicação. Mostra fatos, explica contextos, revela verdades. Ajudam o cliente a enxergar o quadro completo e transmitem lucidez e sabedoria.", exemplos: ["Google", "TED", "National Geographic"] },
-      { id: 5, titulo: "O Cuidador", tipo: "Secundário", descricao: "Marcas dentro desse arquétipo transmitem generosidade, proteção e apoio. Buscam trazer um grande senso de segurança e solidez para seus clientes, causando bem-estar e pertencimento. Funcionam como um porto seguro.", exemplos: ["Unicef", "Natura", "Volvo"] },
-      { id: 6, titulo: "O Governante", tipo: "Primário", descricao: "O arquétipo do Governante no branding representa autoridade, liderança, responsabilidade e controle. Marcas com esse arquétipo transmitem ordem, estabilidade, prestígio e prometem manter o cliente seguro, no comando e em ambientes organizados.", exemplos: ["Rolex", "Mercedez-Benz", "AmEx"] },
-      { id: 7, titulo: "O Mago", tipo: "Secundário", descricao: "Marcas dentro do arquétipo do mago provocam mudança pelo exemplo, quebra de velhos paradigmas por meio da inteligência. Seus principais valores são: inovação, insight visionário, mudança, disrupção.", exemplos: ["Apple", "Tesla", "Disney"] },
-      { id: 8, titulo: "O Rebelde", tipo: "Primário", descricao: "Marcas dentro do arquétipo do rebelde possuem um desejo insaciável pela mudança. Querem romper com padrões, quebrar tradições, destruir o que está ultrapassado. O seu maior medo é serem vistas como irrelevantes, domesticadas ou inofensivas. Valorizam a verdade crua, mesmo que incomode. Usam linguagem, estética e atitudes que incomodam. E, acima de tudo, buscam trazer um senso de liberdade para o mundo.", exemplos: ["Harley-Davidson", "Dr. Martens", "MTV"] },
-      { id: 9, titulo: "O Criador", tipo: "Secundário", descricao: "Marcas que incorporam o arquétipo do Criador são visionárias, originais e profundamente ligadas à expressão artística, inovação e construção de algo que tenha impacto. Seu maior medo é ser genérico, mais do mesmo. Comunicaram ideias e valores através da estética, design ou storytelling e transparência. Têm atenção quase obsessiva a detalhes, personalização, conexão artesania e autenticidade. Valorizam a originalidade, criatividade e a busca constante por se comunicar como ninguém nunca se comunicou.", exemplos: ["Apple", "LEGO", "Patagonia", "SpaceX"] },
-      { id: 10, titulo: "O Prestativo", tipo: "Secundário", descricao: "Marcas do arquétipo Prestativo existem para ajudar, servir, facilitar a vida do cliente. Não buscam protagonismo: buscam utilidade. Entregam suporte, gentileza, resolução rápida. O valor central é \"estou aqui por você\".", exemplos: ["FedEx", "Localiza", "Amazon (Customer Service)"] },
-      { id: 11, titulo: "O Amante", tipo: "Secundário", descricao: "Marcas do arquétipo do Amante falam de desejo, beleza, intensidade e presença. Criam conexão emocional profunda por meio de estética, sensorialidade e experiência íntima. Vendem prazer, paixão, cuidado com o detalhe e atração.", exemplos: ["Chanel", "Victoria's Secret", "Häagen-Dazs"] },
-      { id: 12, titulo: "O Bobo", tipo: "Secundário", descricao: "Marcas do arquétipo do Bobo usam humor, leveza e irreverência para quebrar tensão e aproximar pessoas. Não levam a vida tão a sério. Questionam o status quo com brincadeira, ironia e espontaneidade — mas por trás da piada, existe inteligência social.", exemplos: ["Skol", "Budweiser", "Doritos"] }
+      {
+        id: 1,
+        titulo: 'O Explorador',
+        tipo: 'Secundário',
+        descricao:
+          'Marcas dentro do arquétipo do explorador desafiam o padrão, buscam descobrir novos caminhos e romper limites. Querem levar o cliente além das fronteiras conhecidas. Seus principais valores são: curiosidade, exploração, mente aberta e desafio.',
+        exemplos: ['Jeep', 'The North Face', 'SpaceX'],
+      },
+      {
+        id: 2,
+        titulo: 'O Cara Comum',
+        tipo: 'Primário',
+        descricao:
+          'Marcas neste arquétipo são movidas pelo desejo fundamental de se conectar e pertencer. Elas rejeitam a pretensão, o luxo inalcançável e o elitismo, preferindo abraçar a autenticidade da vida cotidiana. A virtude aqui é a empatia e o realismo: ser "gente como a gente".',
+        exemplos: ['Hering', 'Gap', 'IKEA'],
+      },
+      {
+        id: 3,
+        titulo: 'O Herói',
+        tipo: 'Secundário',
+        descricao:
+          'Marcas nesse arquétipo falam em superação, vitória e conquista. Propõem resolver grandes desafios do cliente. Seu tom de voz é confiante, motivador, firme. Prometem resultado: eficiência, confiança, entrega.',
+        exemplos: ['Nike', 'BMW', 'RedBull'],
+      },
+      {
+        id: 4,
+        titulo: 'O Sábio',
+        tipo: 'Primário',
+        descricao:
+          'Marcas nesse arquétipo falam sobre conhecimento, clareza, seu tom de voz é reflexivo, didático e confiável. Transmite autoridade sem arrogância, profundidade sem complicação. Mostra fatos, explica contextos, revela verdades. Ajudam o cliente a enxergar o quadro completo e transmitem lucidez e sabedoria.',
+        exemplos: ['Google', 'TED', 'National Geographic'],
+      },
+      {
+        id: 5,
+        titulo: 'O Cuidador',
+        tipo: 'Secundário',
+        descricao:
+          'Marcas dentro desse arquétipo transmitem generosidade, proteção e apoio. Buscam trazer um grande senso de segurança e solidez para seus clientes, causando bem-estar e pertencimento. Funcionam como um porto seguro.',
+        exemplos: ['Unicef', 'Natura', 'Volvo'],
+      },
+      {
+        id: 6,
+        titulo: 'O Governante',
+        tipo: 'Primário',
+        descricao:
+          'O arquétipo do Governante no branding representa autoridade, liderança, responsabilidade e controle. Marcas com esse arquétipo transmitem ordem, estabilidade, prestígio e prometem manter o cliente seguro, no comando e em ambientes organizados.',
+        exemplos: ['Rolex', 'Mercedez-Benz', 'AmEx'],
+      },
+      {
+        id: 7,
+        titulo: 'O Mago',
+        tipo: 'Secundário',
+        descricao:
+          'Marcas dentro do arquétipo do mago provocam mudança pelo exemplo, quebra de velhos paradigmas por meio da inteligência. Seus principais valores são: inovação, insight visionário, mudança, disrupção.',
+        exemplos: ['Apple', 'Tesla', 'Disney'],
+      },
+      {
+        id: 8,
+        titulo: 'O Rebelde',
+        tipo: 'Primário',
+        descricao:
+          'Marcas dentro do arquétipo do rebelde possuem um desejo insaciável pela mudança. Querem romper com padrões, quebrar tradições, destruir o que está ultrapassado. O seu maior medo é serem vistas como irrelevantes, domesticadas ou inofensivas. Valorizam a verdade crua, mesmo que incomode. Usam linguagem, estética e atitudes que incomodam. E, acima de tudo, buscam trazer um senso de liberdade para o mundo.',
+        exemplos: ['Harley-Davidson', 'Dr. Martens', 'MTV'],
+      },
+      {
+        id: 9,
+        titulo: 'O Criador',
+        tipo: 'Secundário',
+        descricao:
+          'Marcas que incorporam o arquétipo do Criador são visionárias, originais e profundamente ligadas à expressão artística, inovação e construção de algo que tenha impacto. Seu maior medo é ser genérico, mais do mesmo. Comunicaram ideias e valores através da estética, design ou storytelling e transparência. Têm atenção quase obsessiva a detalhes, personalização, conexão artesania e autenticidade. Valorizam a originalidade, criatividade e a busca constante por se comunicar como ninguém nunca se comunicou.',
+        exemplos: ['Apple', 'LEGO', 'Patagonia', 'SpaceX'],
+      },
+      {
+        id: 10,
+        titulo: 'O Prestativo',
+        tipo: 'Secundário',
+        descricao:
+          'Marcas do arquétipo Prestativo existem para ajudar, servir, facilitar a vida do cliente. Não buscam protagonismo: buscam utilidade. Entregam suporte, gentileza, resolução rápida. O valor central é "estou aqui por você".',
+        exemplos: ['FedEx', 'Localiza', 'Amazon (Customer Service)'],
+      },
+      {
+        id: 11,
+        titulo: 'O Amante',
+        tipo: 'Secundário',
+        descricao:
+          'Marcas do arquétipo do Amante falam de desejo, beleza, intensidade e presença. Criam conexão emocional profunda por meio de estética, sensorialidade e experiência íntima. Vendem prazer, paixão, cuidado com o detalhe e atração.',
+        exemplos: ['Chanel', "Victoria's Secret", 'Häagen-Dazs'],
+      },
+      {
+        id: 12,
+        titulo: 'O Bobo',
+        tipo: 'Secundário',
+        descricao:
+          'Marcas do arquétipo do Bobo usam humor, leveza e irreverência para quebrar tensão e aproximar pessoas. Não levam a vida tão a sério. Questionam o status quo com brincadeira, ironia e espontaneidade — mas por trás da piada, existe inteligência social.',
+        exemplos: ['Skol', 'Budweiser', 'Doritos'],
+      },
     ];
 
     let sectionPrompt = `Based on the brand description and market research, identify the PRIMARY and SECONDARY archetypes that best represent this brand's strategic positioning. Focus on archetypes that support differentiation and competitive defensibility.
 
 Available Archetypes:
-${archetypesRAG.map(a => `- ${a.titulo} (${a.tipo}): ${a.descricao}`).join('\n')}
+${archetypesRAG.map((a) => `- ${a.titulo} (${a.tipo}): ${a.descricao}`).join('\n')}
 
 Brand Description: "${prompt}"
 Market Research: "${researchText}"
@@ -788,7 +965,9 @@ IMPORTANT:
 - Focus on essential points that directly connect the archetypes to the brand's key characteristics`;
 
     if (examples.length > 0) {
-      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
+      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join(
+        '\n\n'
+      )}`;
     }
 
     const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
@@ -848,11 +1027,13 @@ IMPORTANT:
       }
 
       // Ensure IDs match available archetypes
-      const primaryArchetype = archetypesRAG.find(a => a.id === parsed.primary.id);
-      const secondaryArchetype = archetypesRAG.find(a => a.id === parsed.secondary.id);
+      const primaryArchetype = archetypesRAG.find((a) => a.id === parsed.primary.id);
+      const secondaryArchetype = archetypesRAG.find((a) => a.id === parsed.secondary.id);
 
       if (!primaryArchetype || !secondaryArchetype) {
-        throw new Error(`Invalid archetype ID: primary=${parsed.primary.id}, secondary=${parsed.secondary.id}`);
+        throw new Error(
+          `Invalid archetype ID: primary=${parsed.primary.id}, secondary=${parsed.secondary.id}`
+        );
       }
 
       const result = {
@@ -873,7 +1054,7 @@ IMPORTANT:
 
       return { result, ...tokens };
     } catch (e) {
-      console.warn("First JSON parse attempt failed, trying to fix JSON:", e);
+      console.warn('First JSON parse attempt failed, trying to fix JSON:', e);
     }
 
     // Second attempt: try to fix common JSON issues
@@ -893,11 +1074,13 @@ IMPORTANT:
       }
 
       // Ensure IDs match available archetypes
-      const primaryArchetype = archetypesRAG.find(a => a.id === parsed.primary.id);
-      const secondaryArchetype = archetypesRAG.find(a => a.id === parsed.secondary.id);
+      const primaryArchetype = archetypesRAG.find((a) => a.id === parsed.primary.id);
+      const secondaryArchetype = archetypesRAG.find((a) => a.id === parsed.secondary.id);
 
       if (!primaryArchetype || !secondaryArchetype) {
-        throw new Error(`Invalid archetype ID after fix: primary=${parsed.primary.id}, secondary=${parsed.secondary.id}`);
+        throw new Error(
+          `Invalid archetype ID after fix: primary=${parsed.primary.id}, secondary=${parsed.secondary.id}`
+        );
       }
 
       const result = {
@@ -916,21 +1099,30 @@ IMPORTANT:
         reasoning: String(parsed.reasoning || '').trim(),
       };
 
-      console.warn("Used fixed JSON to parse archetypes");
+      console.warn('Used fixed JSON to parse archetypes');
       return { result, ...tokens };
     } catch (e) {
-      console.error("Fixed JSON parse attempt failed:", e);
+      console.error('Fixed JSON parse attempt failed:', e);
     }
 
     // Final error: log details and throw
-    console.error("Failed to parse archetypes JSON after all attempts. JSON string length:", jsonString.length);
-    console.error("First 500 chars of JSON:", jsonString.substring(0, 500));
-    console.error("Last 500 chars of JSON:", jsonString.substring(Math.max(0, jsonString.length - 500)));
+    console.error(
+      'Failed to parse archetypes JSON after all attempts. JSON string length:',
+      jsonString.length
+    );
+    console.error('First 500 chars of JSON:', jsonString.substring(0, 500));
+    console.error(
+      'Last 500 chars of JSON:',
+      jsonString.substring(Math.max(0, jsonString.length - 500))
+    );
     throw new Error(`Failed to parse archetypes response: Invalid response structure`);
   });
 };
 
-export const generatePersona = async (prompt: string, marketResearch: string | BrandingData): Promise<{
+export const generatePersona = async (
+  prompt: string,
+  marketResearch: string | BrandingData
+): Promise<{
   result: {
     demographics: string;
     desires: string[];
@@ -939,9 +1131,8 @@ export const generatePersona = async (prompt: string, marketResearch: string | B
   inputTokens?: number;
   outputTokens?: number;
 }> => {
-  const researchText = typeof marketResearch === 'string'
-    ? marketResearch
-    : combineMarketResearch(marketResearch);
+  const researchText =
+    typeof marketResearch === 'string' ? marketResearch : combineMarketResearch(marketResearch);
   return withRetry(async () => {
     const sectionPrompt = `Create a detailed persona for the target audience of this brand. Focus on the persona that aligns with the brand's strategic positioning and "Winning Difference".
 
@@ -1001,13 +1192,17 @@ Example: {
       };
       return { result, ...tokens };
     } catch (e) {
-      console.error("Failed to parse persona JSON:", e);
+      console.error('Failed to parse persona JSON:', e);
       return { result: defaultResult, ...tokens };
     }
   });
 };
 
-export const generateMockupIdeas = async (prompt: string, allData: BrandingData, examples: string[] = []): Promise<{ result: string[]; inputTokens?: number; outputTokens?: number }> => {
+export const generateMockupIdeas = async (
+  prompt: string,
+  allData: BrandingData,
+  examples: string[] = []
+): Promise<{ result: string[]; inputTokens?: number; outputTokens?: number }> => {
   return withRetry(async () => {
     let sectionPrompt = `Based on all the branding information, suggest mockup ideas that would be coherent with this brand segment and showcase its strategic differentiation.
 
@@ -1021,7 +1216,9 @@ Return a JSON object with a single key "mockups" which is an array of mockup ide
 Example: {"mockups": ["Mockup idea 1", "Mockup idea 2", "Mockup idea 3"]}`;
 
     if (examples.length > 0) {
-      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
+      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join(
+        '\n\n'
+      )}`;
     }
 
     const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
@@ -1053,13 +1250,16 @@ Example: {"mockups": ["Mockup idea 1", "Mockup idea 2", "Mockup idea 3"]}`;
       const result = parsed.mockups || [];
       return { result, ...tokens };
     } catch (e) {
-      console.error("Failed to parse mockup ideas JSON:", e);
+      console.error('Failed to parse mockup ideas JSON:', e);
       return { result: [], ...tokens };
     }
   });
 };
 
-export const generateMoodboard = async (prompt: string, allData: BrandingData): Promise<{
+export const generateMoodboard = async (
+  prompt: string,
+  allData: BrandingData
+): Promise<{
   result: {
     summary: string;
     visualDirection: string;
@@ -1135,7 +1335,7 @@ Example: {
       };
       return { result, ...tokens };
     } catch (e) {
-      console.error("Failed to parse moodboard JSON:", e);
+      console.error('Failed to parse moodboard JSON:', e);
       return { result: defaultResult, ...tokens };
     }
   });

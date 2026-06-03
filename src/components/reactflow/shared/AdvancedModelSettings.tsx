@@ -32,14 +32,14 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
   onModelChange,
   isLoading = false,
   className,
-  allowVideo = false
+  allowVideo = false,
 }) => {
   const { t } = useTranslation();
 
   if (!supportsOutputConfig(model)) return null;
 
   return (
-    <div className={cn("flex flex-col gap-3", className)}>
+    <div className={cn('flex flex-col gap-3', className)}>
       <div>
         <NodeLabel className="mb-1.5 text-[10px]">
           {t('canvasNodes.promptNode.aspectRatio')}

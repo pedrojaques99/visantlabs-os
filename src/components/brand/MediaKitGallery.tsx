@@ -3,84 +3,96 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Plus, Trash2, Image as ImageIcon, FileText, Link2, Copy, Check, MousePointerClick, ChevronDown } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Image as ImageIcon,
+  FileText,
+  Link2,
+  Copy,
+  Check,
+  MousePointerClick,
+  ChevronDown,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 type MediaCategory = 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
 
 interface MediaItem {
-    id: string;
-    url: string;
-    type: 'image' | 'pdf';
-    label?: string;
-    category?: MediaCategory;
+  id: string;
+  url: string;
+  type: 'image' | 'pdf';
+  label?: string;
+  category?: MediaCategory;
 }
 
 const MEDIA_CATEGORIES: Array<{ value: MediaCategory; label: string }> = [
-    { value: 'background', label: 'Background' },
-    { value: 'graphic', label: 'Graphic Asset' },
-    { value: 'stock', label: 'Stock Photo' },
-    { value: 'product', label: 'Product' },
-    { value: 'texture', label: 'Texture' },
-    { value: 'other', label: 'Other' },
+  { value: 'background', label: 'Background' },
+  { value: 'graphic', label: 'Graphic Asset' },
+  { value: 'stock', label: 'Stock Photo' },
+  { value: 'product', label: 'Product' },
+  { value: 'texture', label: 'Texture' },
+  { value: 'other', label: 'Other' },
 ];
 
 interface LogoItem {
-    id: string;
-    url: string;
-    variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom';
-    label?: string;
+  id: string;
+  url: string;
+  variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom';
+  label?: string;
 }
 
 interface MediaKitGalleryProps {
-    guidelineId: string;
-    media: MediaItem[];
-    logos: LogoItem[];
-    onMediaChange: (media: MediaItem[]) => void;
-    onLogosChange: (logos: LogoItem[]) => void;
-    compact?: boolean;
-    readOnly?: boolean;
-    onAssetClick?: (url: string, type: 'logo' | 'image') => void;
-    onAssetDragStart?: (e: React.DragEvent, url: string, type: 'logo' | 'image') => void;
+  guidelineId: string;
+  media: MediaItem[];
+  logos: LogoItem[];
+  onMediaChange: (media: MediaItem[]) => void;
+  onLogosChange: (logos: LogoItem[]) => void;
+  compact?: boolean;
+  readOnly?: boolean;
+  onAssetClick?: (url: string, type: 'logo' | 'image') => void;
+  onAssetDragStart?: (e: React.DragEvent, url: string, type: 'logo' | 'image') => void;
 }
 
 const classifyFile = (file: File): 'logo' | 'media' => {
-    if (file.type === 'image/svg+xml') return 'logo';
-    const name = file.name.toLowerCase();
-    if (/logo|mark|icon|symbol|brand/.test(name)) return 'logo';
-    return 'media';
+  if (file.type === 'image/svg+xml') return 'logo';
+  const name = file.name.toLowerCase();
+  if (/logo|mark|icon|symbol|brand/.test(name)) return 'logo';
+  return 'media';
 };
 
 const detectFormat = (url: string): string => {
-    const clean = url.split('?')[0].toLowerCase();
-    if (clean.endsWith('.svg')) return 'SVG';
-    if (clean.endsWith('.png')) return 'PNG';
-    if (clean.endsWith('.jpg') || clean.endsWith('.jpeg')) return 'JPG';
-    if (clean.endsWith('.webp')) return 'WEBP';
-    if (clean.endsWith('.gif')) return 'GIF';
-    if (clean.endsWith('.pdf')) return 'PDF';
-    return '';
+  const clean = url.split('?')[0].toLowerCase();
+  if (clean.endsWith('.svg')) return 'SVG';
+  if (clean.endsWith('.png')) return 'PNG';
+  if (clean.endsWith('.jpg') || clean.endsWith('.jpeg')) return 'JPG';
+  if (clean.endsWith('.webp')) return 'WEBP';
+  if (clean.endsWith('.gif')) return 'GIF';
+  if (clean.endsWith('.pdf')) return 'PDF';
+  return '';
 };
 
 const FormatBadge: React.FC<{ url: string; className?: string }> = ({ url, className }) => {
-    const fmt = detectFormat(url);
-    if (!fmt) return null;
-    const isSvg = fmt === 'SVG';
-    return (
-        <span className={cn(
-            "absolute text-[10px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10",
-            isSvg
-                ? "bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30"
-                : "bg-white/10 text-neutral-400 border border-white/10",
-            className || "top-1 right-1"
-        )}>
-            {fmt}
-        </span>
-    );
+  const fmt = detectFormat(url);
+  if (!fmt) return null;
+  const isSvg = fmt === 'SVG';
+  return (
+    <span
+      className={cn(
+        'absolute text-[10px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10',
+        isSvg
+          ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
+          : 'bg-white/10 text-neutral-400 border border-white/10',
+        className || 'top-1 right-1'
+      )}
+    >
+      {fmt}
+    </span>
+  );
 };
 
 const ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml';
@@ -88,449 +100,519 @@ const ACCEPTED_ALL_TYPES = `${ACCEPTED_IMAGE_TYPES},application/pdf`;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
-    guidelineId,
-    media,
-    logos,
-    onMediaChange,
-    onLogosChange,
-    compact = false,
-    readOnly = false,
-    onAssetClick,
-    onAssetDragStart
+  guidelineId,
+  media,
+  logos,
+  onMediaChange,
+  onLogosChange,
+  compact = false,
+  readOnly = false,
+  onAssetClick,
+  onAssetDragStart,
 }) => {
-    const { t } = useTranslation();
-    const [isUploading, setIsUploading] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [isPanelHovered, setIsPanelHovered] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
-    const [uploadingFiles, setUploadingFiles] = useState<{ name: string; type: 'media' | 'logo' }[]>([]);
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
-    const mediaInputRef = useRef<HTMLInputElement>(null);
-    const logoInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation();
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isPanelHovered, setIsPanelHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState<{ name: string; type: 'media' | 'logo' }[]>(
+    []
+  );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
-    const toggleSelect = (id: string, e: React.MouseEvent) => {
-        // If onAssetClick is provided and no multi-select is happening, trigger asset click
-        if (onAssetClick && !e.shiftKey && selectedIds.size === 0) {
-            return;
+  const toggleSelect = (id: string, e: React.MouseEvent) => {
+    // If onAssetClick is provided and no multi-select is happening, trigger asset click
+    if (onAssetClick && !e.shiftKey && selectedIds.size === 0) {
+      return;
+    }
+
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const handleItemClick = (
+    id: string,
+    url: string,
+    type: 'logo' | 'image',
+    e: React.MouseEvent
+  ) => {
+    if (onAssetClick && !e.shiftKey) {
+      onAssetClick(url, type);
+      return;
+    }
+    if (!readOnly) {
+      toggleSelect(id, e);
+    }
+  };
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedIds.size === 0 || readOnly) return;
+    setIsBulkDeleting(true);
+    try {
+      const idsToDelete = Array.from(selectedIds);
+      await Promise.all(
+        idsToDelete.map((id) => {
+          const isLogo = logos.some((l) => l.id === id);
+          return isLogo
+            ? brandGuidelineApi.deleteLogo(guidelineId, id)
+            : brandGuidelineApi.deleteMedia(guidelineId, id);
+        })
+      );
+
+      onLogosChange(logos.filter((l) => !selectedIds.has(l.id)));
+      onMediaChange(media.filter((m) => !selectedIds.has(m.id)));
+      setSelectedIds(new Set());
+      toast.success(t('mockup.mediaKit.bulkDeleteSuccess') || 'Assets deleted');
+    } catch {
+      toast.error(t('mockup.mediaKit.bulkDeleteError') || 'Failed to delete some assets');
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  }, [selectedIds, guidelineId, logos, media, onLogosChange, onMediaChange, t, readOnly]);
+
+  const handleRenamePrompt = useCallback(() => {
+    if (selectedIds.size !== 1 || readOnly) return;
+    const id = Array.from(selectedIds)[0];
+    const isLogo = logos.some((l) => l.id === id);
+    const item = isLogo ? logos.find((l) => l.id === id) : media.find((m) => m.id === id);
+    if (!item) return;
+
+    const newLabel = window.prompt('Enter new name for asset:', item.label || '');
+    if (newLabel !== null && newLabel.trim() !== '' && newLabel !== item.label) {
+      handleRename(id, isLogo, newLabel.trim());
+    }
+  }, [selectedIds, logos, media, readOnly]);
+
+  const handleRename = useCallback(
+    async (id: string, isLogo: boolean, newLabel: string) => {
+      try {
+        if (isLogo) {
+          const newLogos = logos.map((l) => (l.id === id ? { ...l, label: newLabel } : l));
+          await brandGuidelineApi.update(guidelineId, { logos: newLogos });
+          onLogosChange(newLogos);
+        } else {
+          const newMedia = media.map((m) => (m.id === id ? { ...m, label: newLabel } : m));
+          await brandGuidelineApi.update(guidelineId, { media: newMedia });
+          onMediaChange(newMedia);
         }
+        setSelectedIds(new Set());
+        toast.success('Asset renamed successfully');
+      } catch (error) {
+        toast.error('Failed to rename asset');
+      }
+    },
+    [guidelineId, logos, media, onLogosChange, onMediaChange]
+  );
 
-        const next = new Set(selectedIds);
-        if (next.has(id)) next.delete(id);
-        else next.add(id);
-        setSelectedIds(next);
-    };
+  const handleCategoryChange = useCallback(
+    async (id: string, category: MediaCategory) => {
+      const newMedia = media.map((m) => (m.id === id ? { ...m, category } : m));
+      onMediaChange(newMedia);
+      try {
+        await brandGuidelineApi.update(guidelineId, { media: newMedia });
+      } catch {
+        toast.error('Failed to update category');
+      }
+    },
+    [guidelineId, media, onMediaChange]
+  );
 
-    const handleItemClick = (id: string, url: string, type: 'logo' | 'image', e: React.MouseEvent) => {
-        if (onAssetClick && !e.shiftKey) {
-            onAssetClick(url, type);
-            return;
-        }
-        if (!readOnly) {
-            toggleSelect(id, e);
-        }
-    };
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+    });
+  };
 
-    const handleBulkDelete = useCallback(async () => {
-        if (selectedIds.size === 0 || readOnly) return;
-        setIsBulkDeleting(true);
-        try {
-            const idsToDelete = Array.from(selectedIds);
-            await Promise.all(idsToDelete.map(id => {
-                const isLogo = logos.some(l => l.id === id);
-                return isLogo ? brandGuidelineApi.deleteLogo(guidelineId, id) : brandGuidelineApi.deleteMedia(guidelineId, id);
-            }));
+  const handleUpload = useCallback(
+    async (files: File[], type: 'media' | 'logo') => {
+      if (readOnly || isUploading) return;
+      setIsUploading(true);
+      setUploadingFiles(files.map((f) => ({ name: f.name, type })));
 
-            onLogosChange(logos.filter(l => !selectedIds.has(l.id)));
-            onMediaChange(media.filter(m => !selectedIds.has(m.id)));
-            setSelectedIds(new Set());
-            toast.success(t('mockup.mediaKit.bulkDeleteSuccess') || 'Assets deleted');
-        } catch {
-            toast.error(t('mockup.mediaKit.bulkDeleteError') || 'Failed to delete some assets');
-        } finally {
-            setIsBulkDeleting(false);
-        }
-    }, [selectedIds, guidelineId, logos, media, onLogosChange, onMediaChange, t, readOnly]);
+      try {
+        const uploadPromises = files.map(async (file) => {
+          if (file.size > MAX_FILE_SIZE) {
+            toast.error(`${file.name}: ${t('mockup.mediaKit.fileTooLarge')}`);
+            return null;
+          }
 
-    const handleRenamePrompt = useCallback(() => {
-        if (selectedIds.size !== 1 || readOnly) return;
-        const id = Array.from(selectedIds)[0];
-        const isLogo = logos.some(l => l.id === id);
-        const item = isLogo ? logos.find(l => l.id === id) : media.find(m => m.id === id);
-        if (!item) return;
+          const base64 = await fileToBase64(file);
+          const fileName = file.name.replace(/\.[^/.]+$/, '');
 
-        const newLabel = window.prompt("Enter new name for asset:", item.label || '');
-        if (newLabel !== null && newLabel.trim() !== '' && newLabel !== item.label) {
-            handleRename(id, isLogo, newLabel.trim());
-        }
-    }, [selectedIds, logos, media, readOnly]);
-
-    const handleRename = useCallback(async (id: string, isLogo: boolean, newLabel: string) => {
-        try {
-            if (isLogo) {
-                const newLogos = logos.map(l => l.id === id ? { ...l, label: newLabel } : l);
-                await brandGuidelineApi.update(guidelineId, { logos: newLogos });
-                onLogosChange(newLogos);
-            } else {
-                const newMedia = media.map(m => m.id === id ? { ...m, label: newLabel } : m);
-                await brandGuidelineApi.update(guidelineId, { media: newMedia });
-                onMediaChange(newMedia);
-            }
-            setSelectedIds(new Set());
-            toast.success("Asset renamed successfully");
-        } catch (error) {
-            toast.error("Failed to rename asset");
-        }
-    }, [guidelineId, logos, media, onLogosChange, onMediaChange]);
-
-    const handleCategoryChange = useCallback(async (id: string, category: MediaCategory) => {
-        const newMedia = media.map(m => m.id === id ? { ...m, category } : m);
-        onMediaChange(newMedia);
-        try {
-            await brandGuidelineApi.update(guidelineId, { media: newMedia });
-        } catch {
-            toast.error('Failed to update category');
-        }
-    }, [guidelineId, media, onMediaChange]);
-
-    const fileToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
+          if (type === 'media') {
+            return brandGuidelineApi.uploadMedia(guidelineId, base64, fileName, file.type);
+          } else {
+            return brandGuidelineApi.uploadLogo(guidelineId, base64, 'primary', fileName);
+          }
         });
-    };
 
-    const handleUpload = useCallback(async (files: File[], type: 'media' | 'logo') => {
-        if (readOnly || isUploading) return;
-        setIsUploading(true);
-        setUploadingFiles(files.map(f => ({ name: f.name, type })));
+        const results = await Promise.all(uploadPromises);
+        const validResults = results.filter(Boolean);
 
-        try {
-            const uploadPromises = files.map(async (file) => {
-                if (file.size > MAX_FILE_SIZE) {
-                    toast.error(`${file.name}: ${t('mockup.mediaKit.fileTooLarge')}`);
-                    return null;
-                }
-
-                const base64 = await fileToBase64(file);
-                const fileName = file.name.replace(/\.[^/.]+$/, '');
-
-                if (type === 'media') {
-                    return brandGuidelineApi.uploadMedia(guidelineId, base64, fileName, file.type);
-                } else {
-                    return brandGuidelineApi.uploadLogo(guidelineId, base64, 'primary', fileName);
-                }
-            });
-
-            const results = await Promise.all(uploadPromises);
-            const validResults = results.filter(Boolean);
-
-            if (validResults.length > 0) {
-                const latestResult = validResults[validResults.length - 1];
-                if (type === 'media' && latestResult && 'allMedia' in latestResult) {
-                    onMediaChange(latestResult.allMedia);
-                } else if (type === 'logo' && latestResult && 'allLogos' in latestResult) {
-                    onLogosChange(latestResult.allLogos);
-                }
-                toast.success(t('mockup.mediaKit.uploadSuccess'));
-            }
-        } catch (error) {
-            console.error('Upload error:', error);
-            toast.error(t('mockup.mediaKit.uploadError'));
-        } finally {
-            setIsUploading(false);
-            setUploadingFiles([]);
+        if (validResults.length > 0) {
+          const latestResult = validResults[validResults.length - 1];
+          if (type === 'media' && latestResult && 'allMedia' in latestResult) {
+            onMediaChange(latestResult.allMedia);
+          } else if (type === 'logo' && latestResult && 'allLogos' in latestResult) {
+            onLogosChange(latestResult.allLogos);
+          }
+          toast.success(t('mockup.mediaKit.uploadSuccess'));
         }
-    }, [guidelineId, readOnly, isUploading, onMediaChange, onLogosChange, t]);
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast.error(t('mockup.mediaKit.uploadError'));
+      } finally {
+        setIsUploading(false);
+        setUploadingFiles([]);
+      }
+    },
+    [guidelineId, readOnly, isUploading, onMediaChange, onLogosChange, t]
+  );
 
-    const handleDrop = useCallback((e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-        if (readOnly) return;
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      if (readOnly) return;
 
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length === 0) return;
-        const logoFiles = files.filter(f => classifyFile(f) === 'logo');
-        const mediaFiles = files.filter(f => classifyFile(f) === 'media');
-        if (logoFiles.length) handleUpload(logoFiles, 'logo');
-        if (mediaFiles.length) handleUpload(mediaFiles, 'media');
-    }, [readOnly, handleUpload]);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length === 0) return;
+      const logoFiles = files.filter((f) => classifyFile(f) === 'logo');
+      const mediaFiles = files.filter((f) => classifyFile(f) === 'media');
+      if (logoFiles.length) handleUpload(logoFiles, 'logo');
+      if (mediaFiles.length) handleUpload(mediaFiles, 'media');
+    },
+    [readOnly, handleUpload]
+  );
 
-    const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
-    const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
-    const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
 
-    // Capture paste when panel is hovered — intercepts before chat handler
-    useEffect(() => {
-        if (readOnly || !isPanelHovered) return;
-        const handlePaste = (e: ClipboardEvent) => {
-            const files = Array.from(e.clipboardData?.items || [])
-                .filter(i => i.kind === 'file')
-                .map(i => i.getAsFile())
-                .filter(Boolean) as File[];
-            if (files.length === 0) return;
-            e.stopPropagation();
-            e.preventDefault();
-            const logoFiles = files.filter(f => classifyFile(f) === 'logo');
-            const mediaFiles = files.filter(f => classifyFile(f) === 'media');
-            if (logoFiles.length) handleUpload(logoFiles, 'logo');
-            if (mediaFiles.length) handleUpload(mediaFiles, 'media');
-        };
-        // capture phase: runs before window listeners (chat paste handler)
-        document.addEventListener('paste', handlePaste, { capture: true });
-        return () => document.removeEventListener('paste', handlePaste, { capture: true });
-    }, [readOnly, isPanelHovered, handleUpload]);
+  // Capture paste when panel is hovered — intercepts before chat handler
+  useEffect(() => {
+    if (readOnly || !isPanelHovered) return;
+    const handlePaste = (e: ClipboardEvent) => {
+      const files = Array.from(e.clipboardData?.items || [])
+        .filter((i) => i.kind === 'file')
+        .map((i) => i.getAsFile())
+        .filter(Boolean) as File[];
+      if (files.length === 0) return;
+      e.stopPropagation();
+      e.preventDefault();
+      const logoFiles = files.filter((f) => classifyFile(f) === 'logo');
+      const mediaFiles = files.filter((f) => classifyFile(f) === 'media');
+      if (logoFiles.length) handleUpload(logoFiles, 'logo');
+      if (mediaFiles.length) handleUpload(mediaFiles, 'media');
+    };
+    // capture phase: runs before window listeners (chat paste handler)
+    document.addEventListener('paste', handlePaste, { capture: true });
+    return () => document.removeEventListener('paste', handlePaste, { capture: true });
+  }, [readOnly, isPanelHovered, handleUpload]);
 
-    const displayedMedia = compact ? media.slice(0, 12) : media;
-    const displayedLogos = compact ? logos.slice(0, 12) : logos;
+  const displayedMedia = compact ? media.slice(0, 12) : media;
+  const displayedLogos = compact ? logos.slice(0, 12) : logos;
 
-    return (
-        <div
-            ref={containerRef}
-            className="flex flex-col gap-4 relative"
-            onMouseEnter={() => setIsPanelHovered(true)}
-            onMouseLeave={() => setIsPanelHovered(false)}
-        >
-            {/* Bulk Actions Bar */}
-            {selectedIds.size > 0 && !readOnly && (
-                <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">
-                    <span className="text-[10px] font-mono text-brand-cyan font-bold px-2 uppercase">
-                        {selectedIds.size} SELECTED
-                    </span>
-                    <div className="flex gap-2">
-                        {selectedIds.size === 1 && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleRenamePrompt}
-                                className="text-[10px] font-mono h-7 bg-black/40 border-brand-cyan/30 text-white hover:bg-brand-cyan/20"
-                            >
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                RENAME
-                            </Button>
-                        )}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedIds(new Set())}
-                            className="text-[10px] font-mono hover:bg-white/5 h-7"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={handleBulkDelete}
-                            disabled={isBulkDeleting}
-                            className="text-[10px] h-7 bg-destructive hover:bg-destructive font-mono"
-                        >
-                            {isBulkDeleting ? <GlitchLoader size={10} /> : <Trash2 size={10} />}
-                            <span className="ml-2 uppercase">Delete</span>
-                        </Button>
-                    </div>
-                </div>
-            )}
-
-            {/* Logos Section */}
-            {(logos.length > 0 || !readOnly || uploadingFiles.some(f => f.type === 'logo')) && (
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                        <MicroTitle className="text-[10px] ">
-                            {t('mockup.mediaKit.logos')}
-                        </MicroTitle>
-                        {!readOnly && (
-                            <Button variant="ghost"
-                                type="button"
-                                onClick={() => logoInputRef.current?.click()}
-                                disabled={isUploading}
-                                className="text-[10px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors flex items-center gap-1 disabled:opacity-50"
-                            >
-                                <Plus size={10} />
-                                {t('mockup.mediaKit.addLogo')}
-                            </Button>
-                        )}
-                    </div>
-                    {(displayedLogos.length > 0 || uploadingFiles.some(f => f.type === 'logo')) ? (
-                        <div className={cn("grid gap-2", compact ? "grid-cols-4" : "grid-cols-3 sm:grid-cols-4 md:grid-cols-6")}>
-                            {displayedLogos.map((logo) => {
-                                const isSelected = selectedIds.has(logo.id);
-                                return (
-                                    <div
-                                        key={logo.id}
-                                        onClick={(e) => handleItemClick(logo.id, logo.url, 'logo', e)}
-                                        className={cn(
-                                            "group/logo relative aspect-square rounded-md border transition-all cursor-pointer overflow-hidden",
-                                            isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-neutral-800 bg-neutral-900/40"
-                                        )}
-                                    >
-                                        <img
-                                            src={getProxiedUrl(logo.url)}
-                                            alt={logo.label || logo.variant}
-                                            className="w-full h-full object-contain p-2"
-                                            loading="lazy"
-                                            draggable={!!onAssetDragStart}
-                                            onDragStart={(e) => onAssetDragStart?.(e, logo.url, 'logo')}
-                                        />
-                                        <FormatBadge url={logo.url} />
-
-                                        <span className={cn(
-                                            "absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase",
-                                            isSelected && "bg-brand-cyan text-black font-bold"
-                                        )}>
-                                            {logo.variant}
-                                        </span>
-
-                                        {/* Asset Click Indicator (Subtle) */}
-                                        {onAssetClick && (
-                                            <div className="absolute inset-0 bg-brand-cyan/0 group-hover/logo:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-all pointer-events-none">
-                                                <MousePointerClick size={14} className="text-brand-cyan/40" />
-                                            </div>
-                                        )}
-
-                                        {/* Selection Checkbox */}
-                                        {!readOnly && (
-                                            <div className={cn(
-                                                "absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg",
-                                                isSelected ? "bg-brand-cyan border-brand-cyan opacity-100" : "bg-black/40 border-white/20 opacity-0 group-hover/logo:opacity-100"
-                                            )}>
-                                                {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <MicroTitle className="text-[10px] text-neutral-700 ">
-                            {t('mockup.mediaKit.noLogos')}
-                        </MicroTitle>
-                    )}
-                </div>
-            )}
-
-            {/* Media Section */}
-            <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                    <span className="text-[10px] ">
-                        {t('mockup.mediaKit.title')}
-                    </span>
-                </div>
-
-                <div
-                    onDrop={handleDrop}
-                    onDragOver={handleDragOver}
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    className={cn(
-                        "rounded-md border border-dashed transition-colors min-h-[80px]",
-                        isDragging
-                            ? "border-brand-cyan/50 bg-brand-cyan/5"
-                            : "border-white/10 bg-transparent",
-                        readOnly && "border-transparent"
-                    )}
+  return (
+    <div
+      ref={containerRef}
+      className="flex flex-col gap-4 relative"
+      onMouseEnter={() => setIsPanelHovered(true)}
+      onMouseLeave={() => setIsPanelHovered(false)}
+    >
+      {/* Bulk Actions Bar */}
+      {selectedIds.size > 0 && !readOnly && (
+        <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">
+          <span className="text-[10px] font-mono text-brand-cyan font-bold px-2 uppercase">
+            {selectedIds.size} SELECTED
+          </span>
+          <div className="flex gap-2">
+            {selectedIds.size === 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRenamePrompt}
+                className="text-[10px] font-mono h-7 bg-black/40 border-brand-cyan/30 text-white hover:bg-brand-cyan/20"
+              >
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-1.5"
                 >
-                    {(displayedMedia.length > 0) ? (
-                        <div className={cn("grid gap-2 p-2", compact ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4")}>
-                            {displayedMedia.map((item) => {
-                                const isSelected = selectedIds.has(item.id);
-                                return (
-                                    <div
-                                        key={item.id}
-                                        onClick={(e) => handleItemClick(item.id, item.url, 'image', e)}
-                                        className={cn(
-                                            "group/media relative aspect-[4/3] rounded-md border transition-all cursor-pointer overflow-hidden",
-                                            isSelected ? "border-brand-cyan bg-brand-cyan/5 scale-[0.98]" : "border-neutral-800 bg-neutral-900/40"
-                                        )}
-                                    >
-                                        {item.type === 'image' ? (
-                                            <>
-                                                <img
-                                                    src={getProxiedUrl(item.url)}
-                                                    alt={item.label || 'Media'}
-                                                    className="w-full h-full object-contain p-2"
-                                                    loading="lazy"
-                                                    draggable={!!onAssetDragStart}
-                                                    onDragStart={(e) => onAssetDragStart?.(e, item.url, 'image')}
-                                                />
-                                                <FormatBadge url={item.url} className="top-1 left-1" />
-                                                {(item.label || item.category) && (
-                                                    <span className={cn(
-                                                        "absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1 flex items-center justify-center gap-1",
-                                                        isSelected && "bg-brand-cyan text-black font-bold"
-                                                    )}>
-                                                        {item.category && !isSelected && (
-                                                            <span className="text-[10px] uppercase tracking-wider text-neutral-600 bg-white/5 px-1 rounded">
-                                                                {item.category}
-                                                            </span>
-                                                        )}
-                                                        {item.label || ''}
-                                                    </span>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-black/20">
-                                                <FileText size={20} className="text-neutral-500 mb-1" />
-                                                <span className="text-[10px] font-mono text-neutral-400 text-center px-2 truncate w-full">
-                                                    {item.label || 'PDF Document'}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        {/* Category selector */}
-                                        {!readOnly && item.type === 'image' && (
-                                            <div className="absolute top-1 right-1 opacity-0 group-hover/media:opacity-100 transition-opacity z-10">
-                                                <select
-                                                    value={item.category || ''}
-                                                    onChange={(e) => {
-                                                        e.stopPropagation();
-                                                        handleCategoryChange(item.id, e.target.value as MediaCategory);
-                                                    }}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className={cn(
-                                                        "h-5 pl-1 pr-4 rounded text-[10px] font-mono uppercase tracking-wider appearance-none cursor-pointer",
-                                                        "bg-black/70 backdrop-blur-sm border border-white/10 text-neutral-300",
-                                                        "hover:border-white/20 focus:border-neutral-600 focus:outline-none transition-colors",
-                                                        !item.category && "text-neutral-600"
-                                                    )}
-                                                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 2px center' }}
-                                                >
-                                                    <option value="">Tag</option>
-                                                    {MEDIA_CATEGORIES.map(c => (
-                                                        <option key={c.value} value={c.value}>{c.label}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
-
-                                        {/* Asset Click Indicator */}
-                                        {onAssetClick && item.type === 'image' && (
-                                            <div className="absolute inset-0 bg-brand-cyan/0 group-hover/media:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-all pointer-events-none">
-                                                <MousePointerClick size={14} className="text-brand-cyan/40" />
-                                            </div>
-                                        )}
-
-                                        {isSelected && (
-                                            <div className={cn(
-                                                "absolute top-1 left-1 w-4 h-4 rounded-full border border-brand-cyan bg-brand-cyan flex items-center justify-center shadow-lg"
-                                            )}>
-                                                <Check size={10} className="text-black" strokeWidth={4} />
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <p className="text-[10px] font-mono text-neutral-700 p-3 text-center">
-                            {t('mockup.mediaKit.noMedia')}
-                        </p>
-                    )}
-                </div>
-            </div>
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                RENAME
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-[10px] font-mono hover:bg-white/5 h-7"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              disabled={isBulkDeleting}
+              className="text-[10px] h-7 bg-destructive hover:bg-destructive font-mono"
+            >
+              {isBulkDeleting ? <GlitchLoader size={10} /> : <Trash2 size={10} />}
+              <span className="ml-2 uppercase">Delete</span>
+            </Button>
+          </div>
         </div>
-    );
+      )}
+
+      {/* Logos Section */}
+      {(logos.length > 0 || !readOnly || uploadingFiles.some((f) => f.type === 'logo')) && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <MicroTitle className="text-[10px] ">{t('mockup.mediaKit.logos')}</MicroTitle>
+            {!readOnly && (
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={isUploading}
+                className="text-[10px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors flex items-center gap-1 disabled:opacity-50"
+              >
+                <Plus size={10} />
+                {t('mockup.mediaKit.addLogo')}
+              </Button>
+            )}
+          </div>
+          {displayedLogos.length > 0 || uploadingFiles.some((f) => f.type === 'logo') ? (
+            <div
+              className={cn(
+                'grid gap-2',
+                compact ? 'grid-cols-4' : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-6'
+              )}
+            >
+              {displayedLogos.map((logo) => {
+                const isSelected = selectedIds.has(logo.id);
+                return (
+                  <div
+                    key={logo.id}
+                    onClick={(e) => handleItemClick(logo.id, logo.url, 'logo', e)}
+                    className={cn(
+                      'group/logo relative aspect-square rounded-md border transition-all cursor-pointer overflow-hidden',
+                      isSelected
+                        ? 'border-brand-cyan bg-brand-cyan/5 scale-[0.98]'
+                        : 'border-neutral-800 bg-neutral-900/40'
+                    )}
+                  >
+                    <img
+                      src={getProxiedUrl(logo.url)}
+                      alt={logo.label || logo.variant}
+                      className="w-full h-full object-contain p-2"
+                      loading="lazy"
+                      draggable={!!onAssetDragStart}
+                      onDragStart={(e) => onAssetDragStart?.(e, logo.url, 'logo')}
+                    />
+                    <FormatBadge url={logo.url} />
+
+                    <span
+                      className={cn(
+                        'absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase',
+                        isSelected && 'bg-brand-cyan text-black font-bold'
+                      )}
+                    >
+                      {logo.variant}
+                    </span>
+
+                    {/* Asset Click Indicator (Subtle) */}
+                    {onAssetClick && (
+                      <div className="absolute inset-0 bg-brand-cyan/0 group-hover/logo:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-all pointer-events-none">
+                        <MousePointerClick size={14} className="text-brand-cyan/40" />
+                      </div>
+                    )}
+
+                    {/* Selection Checkbox */}
+                    {!readOnly && (
+                      <div
+                        className={cn(
+                          'absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg',
+                          isSelected
+                            ? 'bg-brand-cyan border-brand-cyan opacity-100'
+                            : 'bg-black/40 border-white/20 opacity-0 group-hover/logo:opacity-100'
+                        )}
+                      >
+                        {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <MicroTitle className="text-[10px] text-neutral-700 ">
+              {t('mockup.mediaKit.noLogos')}
+            </MicroTitle>
+          )}
+        </div>
+      )}
+
+      {/* Media Section */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] ">{t('mockup.mediaKit.title')}</span>
+        </div>
+
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          className={cn(
+            'rounded-md border border-dashed transition-colors min-h-[80px]',
+            isDragging ? 'border-brand-cyan/50 bg-brand-cyan/5' : 'border-white/10 bg-transparent',
+            readOnly && 'border-transparent'
+          )}
+        >
+          {displayedMedia.length > 0 ? (
+            <div
+              className={cn(
+                'grid gap-2 p-2',
+                compact ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+              )}
+            >
+              {displayedMedia.map((item) => {
+                const isSelected = selectedIds.has(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    onClick={(e) => handleItemClick(item.id, item.url, 'image', e)}
+                    className={cn(
+                      'group/media relative aspect-[4/3] rounded-md border transition-all cursor-pointer overflow-hidden',
+                      isSelected
+                        ? 'border-brand-cyan bg-brand-cyan/5 scale-[0.98]'
+                        : 'border-neutral-800 bg-neutral-900/40'
+                    )}
+                  >
+                    {item.type === 'image' ? (
+                      <>
+                        <img
+                          src={getProxiedUrl(item.url)}
+                          alt={item.label || 'Media'}
+                          className="w-full h-full object-contain p-2"
+                          loading="lazy"
+                          draggable={!!onAssetDragStart}
+                          onDragStart={(e) => onAssetDragStart?.(e, item.url, 'image')}
+                        />
+                        <FormatBadge url={item.url} className="top-1 left-1" />
+                        {(item.label || item.category) && (
+                          <span
+                            className={cn(
+                              'absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1 flex items-center justify-center gap-1',
+                              isSelected && 'bg-brand-cyan text-black font-bold'
+                            )}
+                          >
+                            {item.category && !isSelected && (
+                              <span className="text-[10px] uppercase tracking-wider text-neutral-600 bg-white/5 px-1 rounded">
+                                {item.category}
+                              </span>
+                            )}
+                            {item.label || ''}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-black/20">
+                        <FileText size={20} className="text-neutral-500 mb-1" />
+                        <span className="text-[10px] font-mono text-neutral-400 text-center px-2 truncate w-full">
+                          {item.label || 'PDF Document'}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Category selector */}
+                    {!readOnly && item.type === 'image' && (
+                      <div className="absolute top-1 right-1 opacity-0 group-hover/media:opacity-100 transition-opacity z-10">
+                        <select
+                          value={item.category || ''}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleCategoryChange(item.id, e.target.value as MediaCategory);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn(
+                            'h-5 pl-1 pr-4 rounded text-[10px] font-mono uppercase tracking-wider appearance-none cursor-pointer',
+                            'bg-black/70 backdrop-blur-sm border border-white/10 text-neutral-300',
+                            'hover:border-white/20 focus:border-neutral-600 focus:outline-none transition-colors',
+                            !item.category && 'text-neutral-600'
+                          )}
+                          style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 2px center',
+                          }}
+                        >
+                          <option value="">Tag</option>
+                          {MEDIA_CATEGORIES.map((c) => (
+                            <option key={c.value} value={c.value}>
+                              {c.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Asset Click Indicator */}
+                    {onAssetClick && item.type === 'image' && (
+                      <div className="absolute inset-0 bg-brand-cyan/0 group-hover/media:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-all pointer-events-none">
+                        <MousePointerClick size={14} className="text-brand-cyan/40" />
+                      </div>
+                    )}
+
+                    {isSelected && (
+                      <div
+                        className={cn(
+                          'absolute top-1 left-1 w-4 h-4 rounded-full border border-brand-cyan bg-brand-cyan flex items-center justify-center shadow-lg'
+                        )}
+                      >
+                        <Check size={10} className="text-black" strokeWidth={4} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-[10px] font-mono text-neutral-700 p-3 text-center">
+              {t('mockup.mediaKit.noMedia')}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };

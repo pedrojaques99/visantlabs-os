@@ -12,7 +12,9 @@ function rgbToHex(c: any): string {
   const r = Math.round(c.r * 255);
   const g = Math.round(c.g * 255);
   const b = Math.round(c.b * 255);
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
+    .toString(16)
+    .padStart(2, '0')}`;
 }
 
 /**
@@ -30,7 +32,8 @@ export function flattenNodesCompact(nodes: any[], depth = 0, maxDepth = 4): stri
     if (n.width && n.height) parts.push(`${Math.round(n.width)}x${Math.round(n.height)}`);
 
     // Position (critical for MOVE calculations and free-canvas layouts)
-    if (n.x != null && n.y != null && depth === 0) parts.push(`pos:${Math.round(n.x)},${Math.round(n.y)}`);
+    if (n.x != null && n.y != null && depth === 0)
+      parts.push(`pos:${Math.round(n.x)},${Math.round(n.y)}`);
 
     // Fill color (first solid only)
     const solidFill = n.fills?.find((f: any) => f.type === 'SOLID' && f.color);
@@ -82,18 +85,20 @@ export function flattenNodesCompact(nodes: any[], depth = 0, maxDepth = 4): stri
 export function buildSelectionContext(
   selectedElements: any[],
   maxElements = 20,
-  label?: string,
+  label?: string
 ): string {
   if (!selectedElements?.length) {
     return 'SELECAO: Nenhum elemento selecionado (criacao vai para pagina raiz)';
   }
 
   const lines = flattenNodesCompact(selectedElements.slice(0, maxElements));
-  const truncated = selectedElements.length > maxElements
-    ? `\n... +${selectedElements.length - maxElements} elementos`
-    : '';
+  const truncated =
+    selectedElements.length > maxElements
+      ? `\n... +${selectedElements.length - maxElements} elementos`
+      : '';
 
-  const header = label || 'SELECAO (use nodeId para editar, id como parentNodeId para criar dentro)';
+  const header =
+    label || 'SELECAO (use nodeId para editar, id como parentNodeId para criar dentro)';
   return `${header}:\n${lines.join('\n')}${truncated}`;
 }
 

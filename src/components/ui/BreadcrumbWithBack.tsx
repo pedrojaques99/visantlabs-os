@@ -24,13 +24,14 @@ export const BreadcrumbWithBack: React.FC<BreadcrumbWithBackProps> = ({
   children,
 }) => {
   return (
-    <div className={`flex items-center gap-2 sm:gap-3 h-10 sm:h-[60px] ${className}`} style={{ margin: 0 }}>
+    <div
+      className={`flex items-center gap-2 sm:gap-3 h-10 sm:h-[60px] ${className}`}
+      style={{ margin: 0 }}
+    >
       <div className="flex items-center flex-shrink-0 h-full justify-center flex-wrap">
         <BackButton to={to} onClick={onClick} className="mb-0" />
       </div>
-      <Breadcrumb className="flex-1 flex items-center">
-        {children}
-      </Breadcrumb>
+      <Breadcrumb className="flex-1 flex items-center">{children}</Breadcrumb>
     </div>
   );
 };
@@ -44,4 +45,3 @@ export {
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
 };
-

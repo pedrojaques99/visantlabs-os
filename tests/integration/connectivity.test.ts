@@ -140,9 +140,7 @@ describe('Auth JWT boundary', () => {
     );
 
     const agent = await request();
-    const res = await agent
-      .get('/api/payments/usage')
-      .set('Authorization', `Bearer ${wrongToken}`);
+    const res = await agent.get('/api/payments/usage').set('Authorization', `Bearer ${wrongToken}`);
 
     expect(res.status).toBe(401);
   });
@@ -174,9 +172,7 @@ describe('Auth JWT boundary', () => {
     const token = signTestToken({ userId: user.id, email: user.email });
 
     const agent = await request();
-    const res = await agent
-      .get('/api/payments/usage')
-      .set('Authorization', bearer(token));
+    const res = await agent.get('/api/payments/usage').set('Authorization', bearer(token));
 
     expect(res.status).toBe(200);
   });
@@ -193,9 +189,7 @@ describe('Rate limiter', () => {
     // Fire 20 rapid health checks — they must ALL succeed.
     // If trust-proxy is misconfigured the limiter sees 127.0.0.1 for every
     // request and may trip early; this catches that regression.
-    const responses = await Promise.all(
-      Array.from({ length: 20 }, () => agent.get('/api/health'))
-    );
+    const responses = await Promise.all(Array.from({ length: 20 }, () => agent.get('/api/health')));
     for (const r of responses) {
       expect(r.status).toBe(200);
     }

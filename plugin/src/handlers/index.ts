@@ -7,12 +7,12 @@ export {
   getComponentFromSelection,
   getAgentComponents,
   getFolderPath,
-  exportThumbnail
+  exportThumbnail,
 } from './components';
 export {
   getColorVariablesFromFile,
   getFontVariablesFromFile,
-  getAvailableFontFamilies
+  getAvailableFontFamilies,
 } from './variables';
 export { notifyContextChange } from './context';
 export { getTemplates } from './templates';
@@ -34,7 +34,7 @@ export {
   saveBrandGuideline,
   linkGuideline,
   saveLocalBrandConfig,
-  getLocalBrandConfig
+  getLocalBrandConfig,
 } from './storage';
 export { extractForSync, pushToFigma } from './figmaSync';
 export { applyBrandGuidelinesLocally } from './brandApply';

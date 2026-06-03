@@ -43,10 +43,22 @@ export type FigmaEffect = {
 export type RGBA = { r: number; g: number; b: number; a: number };
 
 export type BlendMode =
-  | 'NORMAL' | 'MULTIPLY' | 'SCREEN' | 'OVERLAY'
-  | 'DARKEN' | 'LIGHTEN' | 'COLOR_DODGE' | 'COLOR_BURN'
-  | 'HARD_LIGHT' | 'SOFT_LIGHT' | 'DIFFERENCE' | 'EXCLUSION'
-  | 'HUE' | 'SATURATION' | 'COLOR' | 'LUMINOSITY';
+  | 'NORMAL'
+  | 'MULTIPLY'
+  | 'SCREEN'
+  | 'OVERLAY'
+  | 'DARKEN'
+  | 'LIGHTEN'
+  | 'COLOR_DODGE'
+  | 'COLOR_BURN'
+  | 'HARD_LIGHT'
+  | 'SOFT_LIGHT'
+  | 'DIFFERENCE'
+  | 'EXCLUSION'
+  | 'HUE'
+  | 'SATURATION'
+  | 'COLOR'
+  | 'LUMINOSITY';
 
 // ── Template Scanning ──
 
@@ -63,44 +75,320 @@ export interface TemplateSpec {
 export type FigmaOperation =
   // ═══ PAGE CREATION ═══
   | {
-    type: 'CREATE_PAGE';
-    ref?: string;
-    props: {
-      name: string;
-    };
-  }
+      type: 'CREATE_PAGE';
+      ref?: string;
+      props: {
+        name: string;
+      };
+    }
   // ═══ CREATION ═══
   | {
-    type: 'CREATE_FRAME';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: {
-      name: string;
-      width: number;
-      height: number;
+      type: 'CREATE_FRAME';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name: string;
+        width: number;
+        height: number;
+        x?: number;
+        y?: number;
+        autoPosition?: 'right' | 'below' | 'grid'; // Posiciona automaticamente
+        positionGap?: number; // Gap entre frames (default: 100)
+        rotation?: number;
+        opacity?: number;
+        fills?: FigmaPaint[];
+        strokes?: FigmaPaint[];
+        strokeWeight?: number;
+        cornerRadius?: number;
+        cornerSmoothing?: number;
+        clipsContent?: boolean;
+        effects?: FigmaEffect[];
+        constraints?: { horizontal: string; vertical: string };
+        blendMode?: BlendMode;
+        isMask?: boolean;
+        visible?: boolean;
+        layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
+        primaryAxisSizingMode?: 'FIXED' | 'AUTO';
+        counterAxisSizingMode?: 'FIXED' | 'AUTO';
+        layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+        layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+        primaryAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
+        counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
+        layoutWrap?: 'NO_WRAP' | 'WRAP';
+        itemSpacing?: number;
+        counterAxisSpacing?: number;
+        paddingTop?: number;
+        paddingRight?: number;
+        paddingBottom?: number;
+        paddingLeft?: number;
+        strokesIncludedInLayout?: boolean;
+        minWidth?: number;
+        maxWidth?: number;
+        minHeight?: number;
+        maxHeight?: number;
+      };
+    }
+  | {
+      type: 'CREATE_RECTANGLE';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name: string;
+        width: number;
+        height: number;
+        x?: number;
+        y?: number;
+        rotation?: number;
+        fills?: FigmaPaint[];
+        cornerRadius?: number;
+        cornerSmoothing?: number;
+        topLeftRadius?: number;
+        topRightRadius?: number;
+        bottomLeftRadius?: number;
+        bottomRightRadius?: number;
+        strokes?: FigmaPaint[];
+        strokeWeight?: number;
+        strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
+        dashPattern?: number[];
+        opacity?: number;
+        effects?: FigmaEffect[];
+        blendMode?: BlendMode;
+        isMask?: boolean;
+        visible?: boolean;
+        constraints?: { horizontal: string; vertical: string };
+        layoutSizingHorizontal?: 'FIXED' | 'FILL';
+        layoutSizingVertical?: 'FIXED' | 'FILL';
+      };
+    }
+  | {
+      type: 'CREATE_ELLIPSE';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name: string;
+        width: number;
+        height: number;
+        x?: number;
+        y?: number;
+        rotation?: number;
+        fills?: FigmaPaint[];
+        strokes?: FigmaPaint[];
+        strokeWeight?: number;
+        strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
+        dashPattern?: number[];
+        opacity?: number;
+        effects?: FigmaEffect[];
+        blendMode?: BlendMode;
+        isMask?: boolean;
+        visible?: boolean;
+        constraints?: { horizontal: string; vertical: string };
+        layoutSizingHorizontal?: 'FIXED' | 'FILL';
+        layoutSizingVertical?: 'FIXED' | 'FILL';
+      };
+    }
+  | {
+      type: 'CREATE_TEXT';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name?: string;
+        content: string;
+        fontFamily?: string;
+        fontStyle?: string;
+        fontWeight?: number;
+        fontSize?: number;
+        lineHeight?: string | { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
+        letterSpacing?: string | { value: number; unit: 'PIXELS' | 'PERCENT' };
+        textAlignHorizontal?: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
+        textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
+        textAutoResize?: 'NONE' | 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'TRUNCATE';
+        textDecoration?: 'NONE' | 'UNDERLINE' | 'STRIKETHROUGH';
+        textCase?: 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE';
+        paragraphSpacing?: number;
+        fills?: FigmaPaint[];
+        textStyleId?: string;
+        x?: number;
+        y?: number;
+        rotation?: number;
+        opacity?: number;
+        layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+        layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+      };
+    }
+  | {
+      type: 'CREATE_COMPONENT_INSTANCE';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      componentKey: string;
+      name?: string;
+      width?: number;
+      height?: number;
       x?: number;
       y?: number;
-      autoPosition?: 'right' | 'below' | 'grid';  // Posiciona automaticamente
-      positionGap?: number;  // Gap entre frames (default: 100)
-      rotation?: number;
       opacity?: number;
-      fills?: FigmaPaint[];
-      strokes?: FigmaPaint[];
+      rotation?: number;
+      layoutSizingHorizontal?: 'FIXED' | 'FILL' | 'HUG';
+      layoutSizingVertical?: 'FIXED' | 'FILL' | 'HUG';
+      componentProperties?: Record<string, string | boolean>;
+    }
+  // ═══ FASE 2: Advanced Creation ═══
+  | {
+      type: 'CREATE_COMPONENT';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name: string;
+        width: number;
+        height: number;
+        description?: string;
+        fills?: FigmaPaint[];
+        cornerRadius?: number;
+        layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
+        primaryAxisSizingMode?: 'FIXED' | 'AUTO';
+        counterAxisSizingMode?: 'FIXED' | 'AUTO';
+        x?: number;
+        y?: number;
+        primaryAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
+        counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
+        itemSpacing?: number;
+        paddingTop?: number;
+        paddingRight?: number;
+        paddingBottom?: number;
+        paddingLeft?: number;
+        layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+        layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+      };
+    }
+  | {
+      type: 'COMBINE_AS_VARIANTS';
+      ref?: string;
+      componentRefs: string[];
+      name: string;
+    }
+  | {
+      type: 'CREATE_SVG';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      svgString: string;
+      name?: string;
+      width?: number;
+      height?: number;
+      x?: number;
+      y?: number;
+      opacity?: number;
+    }
+  | {
+      type: 'CREATE_ICON';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        icon: string; // e.g. "mdi:home", "lucide:check"
+        size?: number;
+        color?: FigmaPaint[];
+        x?: number;
+        y?: number;
+        name?: string;
+        opacity?: number;
+      };
+    }
+  | {
+      type: 'CREATE_LINE';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: { name: string; width: number; strokes?: FigmaPaint[]; strokeWeight?: number };
+    }
+  | {
+      type: 'CREATE_POLYGON';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name: string;
+        width: number;
+        height: number;
+        pointCount: number;
+        fills?: FigmaPaint[];
+      };
+    }
+  | {
+      type: 'CREATE_STAR';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name: string;
+        width: number;
+        height: number;
+        pointCount: number;
+        fills?: FigmaPaint[];
+        innerRadius?: number;
+      };
+    }
+  | {
+      type: 'SET_TEXT_RANGES';
+      nodeId: string;
+      ranges: Array<{
+        start: number;
+        end: number;
+        fontFamily?: string;
+        fontStyle?: string;
+        fontSize?: number;
+        fills?: FigmaPaint[];
+        textDecoration?: 'NONE' | 'UNDERLINE' | 'STRIKETHROUGH';
+        textCase?: 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE';
+        letterSpacing?: { value: number; unit: 'PIXELS' | 'PERCENT' };
+        lineHeight?: { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
+      }>;
+    }
+  // ═══ EDIT EXISTING NODES ═══
+  | {
+      type: 'SET_FILL';
+      nodeId: string;
+      fills: FigmaPaint[];
+    }
+  | {
+      type: 'SET_STROKE';
+      nodeId: string;
+      strokes: FigmaPaint[];
       strokeWeight?: number;
-      cornerRadius?: number;
+      strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
+      strokeCap?: 'NONE' | 'ROUND' | 'SQUARE' | 'ARROW_LINES' | 'ARROW_EQUILATERAL';
+      strokeJoin?: 'MITER' | 'BEVEL' | 'ROUND';
+      dashPattern?: number[];
+    }
+  | {
+      type: 'SET_IMAGE_FILL';
+      nodeId?: string;
+      ref?: string;
+      imageUrl: string;
+      scaleMode?: 'FILL' | 'FIT' | 'CROP' | 'TILE';
+    }
+  | {
+      type: 'SET_CORNER_RADIUS';
+      nodeId: string;
+      cornerRadius: number;
       cornerSmoothing?: number;
-      clipsContent?: boolean;
-      effects?: FigmaEffect[];
-      constraints?: { horizontal: string; vertical: string };
-      blendMode?: BlendMode;
-      isMask?: boolean;
-      visible?: boolean;
-      layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
+    }
+  | {
+      type: 'SET_EFFECTS';
+      nodeId: string;
+      effects: FigmaEffect[];
+    }
+  | {
+      type: 'SET_AUTO_LAYOUT';
+      nodeId: string;
+      layoutMode: 'HORIZONTAL' | 'VERTICAL';
       primaryAxisSizingMode?: 'FIXED' | 'AUTO';
       counterAxisSizingMode?: 'FIXED' | 'AUTO';
-      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
-      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
       primaryAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
       counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
       layoutWrap?: 'NO_WRAP' | 'WRAP';
@@ -111,330 +399,67 @@ export type FigmaOperation =
       paddingBottom?: number;
       paddingLeft?: number;
       strokesIncludedInLayout?: boolean;
-      minWidth?: number;
-      maxWidth?: number;
-      minHeight?: number;
-      maxHeight?: number;
-    };
-  }
+      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+    }
   | {
-    type: 'CREATE_RECTANGLE';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: {
-      name: string;
+      type: 'RESIZE';
+      nodeId: string;
       width: number;
       height: number;
-      x?: number;
-      y?: number;
-      rotation?: number;
-      fills?: FigmaPaint[];
-      cornerRadius?: number;
-      cornerSmoothing?: number;
-      topLeftRadius?: number;
-      topRightRadius?: number;
-      bottomLeftRadius?: number;
-      bottomRightRadius?: number;
-      strokes?: FigmaPaint[];
-      strokeWeight?: number;
-      strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
-      dashPattern?: number[];
-      opacity?: number;
-      effects?: FigmaEffect[];
-      blendMode?: BlendMode;
-      isMask?: boolean;
-      visible?: boolean;
-      constraints?: { horizontal: string; vertical: string };
-      layoutSizingHorizontal?: 'FIXED' | 'FILL';
-      layoutSizingVertical?: 'FIXED' | 'FILL';
-    };
-  }
+    }
   | {
-    type: 'CREATE_ELLIPSE';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: {
+      type: 'MOVE';
+      nodeId?: string;
+      ref?: string;
+      x: number;
+      y: number;
+    }
+  | {
+      type: 'RENAME';
+      nodeId: string;
       name: string;
-      width: number;
-      height: number;
-      x?: number;
-      y?: number;
-      rotation?: number;
-      fills?: FigmaPaint[];
-      strokes?: FigmaPaint[];
-      strokeWeight?: number;
-      strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
-      dashPattern?: number[];
-      opacity?: number;
-      effects?: FigmaEffect[];
-      blendMode?: BlendMode;
-      isMask?: boolean;
-      visible?: boolean;
-      constraints?: { horizontal: string; vertical: string };
-      layoutSizingHorizontal?: 'FIXED' | 'FILL';
-      layoutSizingVertical?: 'FIXED' | 'FILL';
-    };
-  }
+    }
   | {
-    type: 'CREATE_TEXT';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: {
-      name?: string;
+      type: 'SET_TEXT_CONTENT';
+      nodeId: string;
       content: string;
       fontFamily?: string;
       fontStyle?: string;
-      fontWeight?: number;
       fontSize?: number;
-      lineHeight?: string | { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
-      letterSpacing?: string | { value: number; unit: 'PIXELS' | 'PERCENT' };
-      textAlignHorizontal?: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
-      textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
-      textAutoResize?: 'NONE' | 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'TRUNCATE';
-      textDecoration?: 'NONE' | 'UNDERLINE' | 'STRIKETHROUGH';
-      textCase?: 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE';
-      paragraphSpacing?: number;
       fills?: FigmaPaint[];
-      textStyleId?: string;
-      x?: number;
-      y?: number;
-      rotation?: number;
-      opacity?: number;
-      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
-      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
-    };
-  }
+    }
   | {
-    type: 'CREATE_COMPONENT_INSTANCE';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    componentKey: string;
-    name?: string;
-    width?: number;
-    height?: number;
-    x?: number;
-    y?: number;
-    opacity?: number;
-    rotation?: number;
-    layoutSizingHorizontal?: 'FIXED' | 'FILL' | 'HUG';
-    layoutSizingVertical?: 'FIXED' | 'FILL' | 'HUG';
-    componentProperties?: Record<string, string | boolean>;
-  }
-  // ═══ FASE 2: Advanced Creation ═══
-  | {
-    type: 'CREATE_COMPONENT';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: {
-      name: string;
-      width: number;
-      height: number;
-      description?: string;
-      fills?: FigmaPaint[];
-      cornerRadius?: number;
-      layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
-      primaryAxisSizingMode?: 'FIXED' | 'AUTO';
-      counterAxisSizingMode?: 'FIXED' | 'AUTO';
-      x?: number;
-      y?: number;
-      primaryAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
-      counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
-      itemSpacing?: number;
-      paddingTop?: number;
-      paddingRight?: number;
-      paddingBottom?: number;
-      paddingLeft?: number;
-      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
-      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
-    };
-  }
-  | {
-    type: 'COMBINE_AS_VARIANTS';
-    ref?: string;
-    componentRefs: string[];
-    name: string;
-  }
-  | {
-    type: 'CREATE_SVG';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    svgString: string;
-    name?: string;
-    width?: number;
-    height?: number;
-    x?: number;
-    y?: number;
-    opacity?: number;
-  }
-  | {
-    type: 'CREATE_ICON';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: {
-      icon: string; // e.g. "mdi:home", "lucide:check"
-      size?: number;
-      color?: FigmaPaint[];
-      x?: number;
-      y?: number;
-      name?: string;
-      opacity?: number;
-    };
-  }
-  | {
-    type: 'CREATE_LINE';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: { name: string; width: number; strokes?: FigmaPaint[]; strokeWeight?: number };
-  }
-  | {
-    type: 'CREATE_POLYGON';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: { name: string; width: number; height: number; pointCount: number; fills?: FigmaPaint[] };
-  }
-  | {
-    type: 'CREATE_STAR';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: { name: string; width: number; height: number; pointCount: number; fills?: FigmaPaint[]; innerRadius?: number };
-  }
-  | {
-    type: 'SET_TEXT_RANGES';
-    nodeId: string;
-    ranges: Array<{
-      start: number;
-      end: number;
+      type: 'SET_TEXT_STYLE';
+      nodeId: string;
+      fontSize?: number;
       fontFamily?: string;
       fontStyle?: string;
-      fontSize?: number;
-      fills?: FigmaPaint[];
-      textDecoration?: 'NONE' | 'UNDERLINE' | 'STRIKETHROUGH';
-      textCase?: 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE';
-      letterSpacing?: { value: number; unit: 'PIXELS' | 'PERCENT' };
+      textAutoResize?: 'NONE' | 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'TRUNCATE';
+      textAlignHorizontal?: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
+      textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
       lineHeight?: { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
-    }>;
-  }
-  // ═══ EDIT EXISTING NODES ═══
+      letterSpacing?: { value: number; unit: 'PIXELS' | 'PERCENT' };
+      fills?: FigmaPaint[];
+    }
   | {
-    type: 'SET_FILL';
-    nodeId: string;
-    fills: FigmaPaint[];
-  }
-  | {
-    type: 'SET_STROKE';
-    nodeId: string;
-    strokes: FigmaPaint[];
-    strokeWeight?: number;
-    strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
-    strokeCap?: 'NONE' | 'ROUND' | 'SQUARE' | 'ARROW_LINES' | 'ARROW_EQUILATERAL';
-    strokeJoin?: 'MITER' | 'BEVEL' | 'ROUND';
-    dashPattern?: number[];
-  }
-  | {
-    type: 'SET_IMAGE_FILL';
-    nodeId?: string;
-    ref?: string;
-    imageUrl: string;
-    scaleMode?: 'FILL' | 'FIT' | 'CROP' | 'TILE';
-  }
-  | {
-    type: 'SET_CORNER_RADIUS';
-    nodeId: string;
-    cornerRadius: number;
-    cornerSmoothing?: number;
-  }
-  | {
-    type: 'SET_EFFECTS';
-    nodeId: string;
-    effects: FigmaEffect[];
-  }
-  | {
-    type: 'SET_AUTO_LAYOUT';
-    nodeId: string;
-    layoutMode: 'HORIZONTAL' | 'VERTICAL';
-    primaryAxisSizingMode?: 'FIXED' | 'AUTO';
-    counterAxisSizingMode?: 'FIXED' | 'AUTO';
-    primaryAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
-    counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
-    layoutWrap?: 'NO_WRAP' | 'WRAP';
-    itemSpacing?: number;
-    counterAxisSpacing?: number;
-    paddingTop?: number;
-    paddingRight?: number;
-    paddingBottom?: number;
-    paddingLeft?: number;
-    strokesIncludedInLayout?: boolean;
-    layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
-    layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
-  }
-  | {
-    type: 'RESIZE';
-    nodeId: string;
-    width: number;
-    height: number;
-  }
-  | {
-    type: 'MOVE';
-    nodeId?: string;
-    ref?: string;
-    x: number;
-    y: number;
-  }
-  | {
-    type: 'RENAME';
-    nodeId: string;
-    name: string;
-  }
-  | {
-    type: 'SET_TEXT_CONTENT';
-    nodeId: string;
-    content: string;
-    fontFamily?: string;
-    fontStyle?: string;
-    fontSize?: number;
-    fills?: FigmaPaint[];
-  }
-  | {
-    type: 'SET_TEXT_STYLE';
-    nodeId: string;
-    fontSize?: number;
-    fontFamily?: string;
-    fontStyle?: string;
-    textAutoResize?: 'NONE' | 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'TRUNCATE';
-    textAlignHorizontal?: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
-    textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
-    lineHeight?: { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
-    letterSpacing?: { value: number; unit: 'PIXELS' | 'PERCENT' };
-    fills?: FigmaPaint[];
-  }
-  | {
-    type: 'SET_OPACITY';
-    nodeId: string;
-    opacity: number;
-  }
+      type: 'SET_OPACITY';
+      nodeId: string;
+      opacity: number;
+    }
   // ═══ TOKENS / VARIABLES ═══
   | {
-    type: 'APPLY_VARIABLE';
-    nodeId: string;
-    variableId: string;
-    field: string;
-  }
+      type: 'APPLY_VARIABLE';
+      nodeId: string;
+      variableId: string;
+      field: string;
+    }
   | {
-    type: 'APPLY_STYLE';
-    nodeId: string;
-    styleId: string;
-    styleType: 'FILL' | 'TEXT' | 'EFFECT' | 'GRID';
-  }
+      type: 'APPLY_STYLE';
+      nodeId: string;
+      styleId: string;
+      styleType: 'FILL' | 'TEXT' | 'EFFECT' | 'GRID';
+    }
   // ═══ STRUCTURE ═══
   | { type: 'GROUP_NODES'; nodeIds: string[]; name: string }
   | { type: 'UNGROUP'; nodeId: string }
@@ -442,134 +467,134 @@ export type FigmaOperation =
   | { type: 'DELETE_NODE'; nodeId: string; ref?: string }
   | { type: 'SELECT_AND_ZOOM'; nodeId?: string; ref?: string }
   | {
-    type: 'SWAP_INSTANCE';
-    nodeId?: string;
-    ref?: string;
-    componentKey: string;
-  }
+      type: 'SWAP_INSTANCE';
+      nodeId?: string;
+      ref?: string;
+      componentKey: string;
+    }
   | {
-    type: 'SET_EXPORT_SETTINGS';
-    nodeId?: string;
-    ref?: string;
-    exportSettings: Array<{
-      format: 'PNG' | 'JPG' | 'SVG' | 'PDF';
-      suffix?: string;
-      constraint?: { type: 'SCALE' | 'WIDTH' | 'HEIGHT'; value: number };
-    }>;
-  }
+      type: 'SET_EXPORT_SETTINGS';
+      nodeId?: string;
+      ref?: string;
+      exportSettings: Array<{
+        format: 'PNG' | 'JPG' | 'SVG' | 'PDF';
+        suffix?: string;
+        constraint?: { type: 'SCALE' | 'WIDTH' | 'HEIGHT'; value: number };
+      }>;
+    }
   | { type: 'CREATE_STICKY_PROMPT'; prompt: string; name: string }
   | { type: 'UNDO_LAST_BATCH' }
   | { type: 'RECOLOR_NODE'; ref?: string; nodeId?: string; props: { fills: FigmaPaint[] } }
   // ═══ FASE 4: Polish & Advanced Features ═══
   | {
-    type: 'CLONE_NODE';
-    ref?: string;
-    sourceNodeId?: string;        // Clone por ID
-    sourceName?: string;          // OU clone por nome (mais robusto)
-    sourceScope?: 'page' | 'file'; // Onde buscar (default: 'file')
-    parentRef?: string;
-    parentNodeId?: string;
-    props: {
+      type: 'CLONE_NODE';
+      ref?: string;
+      sourceNodeId?: string; // Clone por ID
+      sourceName?: string; // OU clone por nome (mais robusto)
+      sourceScope?: 'page' | 'file'; // Onde buscar (default: 'file')
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name?: string;
+        fills?: FigmaPaint[];
+        width?: number;
+        height?: number;
+        layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+        layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+        isMask?: boolean;
+        opacity?: number;
+      };
+      textOverrides?: Array<{ name: string; content: string }>;
+    }
+  | {
+      type: 'DUPLICATE_NODE';
+      ref?: string;
+      sourceNodeId: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props?: {
+        name?: string;
+        fills?: FigmaPaint[];
+        width?: number;
+        height?: number;
+        layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+        layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+        opacity?: number;
+      };
+      textOverrides?: Array<{ name: string; content: string }>;
+    }
+  | {
+      type: 'REORDER_CHILD';
+      nodeId: string;
+      parentNodeId: string;
+      index: number;
+    }
+  | {
+      type: 'SET_CONSTRAINTS';
+      nodeId: string;
+      horizontal: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE';
+      vertical: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE';
+    }
+  | {
+      type: 'SET_LAYOUT_GRID';
+      nodeId: string;
+      grids: Array<{
+        pattern: 'COLUMNS' | 'ROWS' | 'GRID';
+        alignment?: 'MIN' | 'MAX' | 'STRETCH' | 'CENTER';
+        count?: number;
+        gutterSize?: number;
+        sectionSize?: number;
+        offset?: number;
+        color?: { r: number; g: number; b: number; a: number };
+        visible?: boolean;
+      }>;
+    }
+  | {
+      type: 'CREATE_VARIABLE';
+      ref?: string;
+      collectionName: string;
+      name: string;
+      resolvedType: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN';
+      value: any;
+    }
+  | {
+      type: 'CREATE_COLOR_VARIABLES_FROM_SELECTION';
+      ref?: string;
+      collectionName?: string;
+    }
+  | {
+      type: 'BIND_NEAREST_COLOR_VARIABLES';
+      ref?: string;
+      threshold?: number;
+      scope?: 'selection' | 'page';
+      collectionName?: string;
+    }
+  | {
+      type: 'REQUEST_SCAN';
+      reason?: string;
+    }
+  | {
+      type: 'SET_BLEND_MODE';
+      nodeId: string;
+      blendMode: BlendMode;
+    }
+  | {
+      type: 'SET_INDIVIDUAL_CORNERS';
+      nodeId: string;
+      topLeftRadius?: number;
+      topRightRadius?: number;
+      bottomLeftRadius?: number;
+      bottomRightRadius?: number;
+      cornerSmoothing?: number;
+    }
+  | {
+      type: 'BOOLEAN_OPERATION';
+      ref?: string;
+      operation: 'UNION' | 'SUBTRACT' | 'INTERSECT' | 'EXCLUDE';
+      nodeIds?: string[];
+      nodeRefs?: string[];
       name?: string;
-      fills?: FigmaPaint[];
-      width?: number;
-      height?: number;
-      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
-      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
-      isMask?: boolean;
-      opacity?: number;
-    };
-    textOverrides?: Array<{ name: string; content: string }>;
-  }
-  | {
-    type: 'DUPLICATE_NODE';
-    ref?: string;
-    sourceNodeId: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props?: {
-      name?: string;
-      fills?: FigmaPaint[];
-      width?: number;
-      height?: number;
-      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
-      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
-      opacity?: number;
-    };
-    textOverrides?: Array<{ name: string; content: string }>;
-  }
-  | {
-    type: 'REORDER_CHILD';
-    nodeId: string;
-    parentNodeId: string;
-    index: number;
-  }
-  | {
-    type: 'SET_CONSTRAINTS';
-    nodeId: string;
-    horizontal: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE';
-    vertical: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE';
-  }
-  | {
-    type: 'SET_LAYOUT_GRID';
-    nodeId: string;
-    grids: Array<{
-      pattern: 'COLUMNS' | 'ROWS' | 'GRID';
-      alignment?: 'MIN' | 'MAX' | 'STRETCH' | 'CENTER';
-      count?: number;
-      gutterSize?: number;
-      sectionSize?: number;
-      offset?: number;
-      color?: { r: number; g: number; b: number; a: number };
-      visible?: boolean;
-    }>;
-  }
-  | {
-    type: 'CREATE_VARIABLE';
-    ref?: string;
-    collectionName: string;
-    name: string;
-    resolvedType: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN';
-    value: any;
-  }
-  | {
-    type: 'CREATE_COLOR_VARIABLES_FROM_SELECTION';
-    ref?: string;
-    collectionName?: string;
-  }
-  | {
-    type: 'BIND_NEAREST_COLOR_VARIABLES';
-    ref?: string;
-    threshold?: number;
-    scope?: 'selection' | 'page';
-    collectionName?: string;
-  }
-  | {
-    type: 'REQUEST_SCAN';
-    reason?: string;
-  }
-  | {
-    type: 'SET_BLEND_MODE';
-    nodeId: string;
-    blendMode: BlendMode;
-  }
-  | {
-    type: 'SET_INDIVIDUAL_CORNERS';
-    nodeId: string;
-    topLeftRadius?: number;
-    topRightRadius?: number;
-    bottomLeftRadius?: number;
-    bottomRightRadius?: number;
-    cornerSmoothing?: number;
-  }
-  | {
-    type: 'BOOLEAN_OPERATION';
-    ref?: string;
-    operation: 'UNION' | 'SUBTRACT' | 'INTERSECT' | 'EXCLUDE';
-    nodeIds?: string[];
-    nodeRefs?: string[];
-    name?: string;
-  }
+    }
   // ═══ HIGH-FIDELITY MCP ═══
   | { type: 'GET_DESIGN_CONTEXT'; nodeId?: string; depth?: number }
   | { type: 'GET_VARIABLE_DEFS'; nodeId?: string }
@@ -580,32 +605,32 @@ export type FigmaOperation =
   | { type: 'GET_AGENT_COMPONENTS' }
   // ═══ CREATE_SECTION ═══
   | {
-    type: 'CREATE_SECTION';
-    ref?: string;
-    parentRef?: string;
-    parentNodeId?: string;
-    props: {
-      name?: string;
-      x?: number;
-      y?: number;
-      width?: number;
-      height?: number;
-      fills?: FigmaPaint[];
-    };
-  }
+      type: 'CREATE_SECTION';
+      ref?: string;
+      parentRef?: string;
+      parentNodeId?: string;
+      props: {
+        name?: string;
+        x?: number;
+        y?: number;
+        width?: number;
+        height?: number;
+        fills?: FigmaPaint[];
+      };
+    }
   // ═══ AGENT LIBRARY SCAFFOLD ═══
   | {
-    type: 'SCAFFOLD_AGENT_LIBRARY';
-    brand: {
-      name: string;
-      primary: { r: number; g: number; b: number };
-      secondary?: { r: number; g: number; b: number };
-      background: { r: number; g: number; b: number };
-      text: { r: number; g: number; b: number };
-      fontFamily: string;
-      fontStyle?: string;
+      type: 'SCAFFOLD_AGENT_LIBRARY';
+      brand: {
+        name: string;
+        primary: { r: number; g: number; b: number };
+        secondary?: { r: number; g: number; b: number };
+        background: { r: number; g: number; b: number };
+        text: { r: number; g: number; b: number };
+        fontFamily: string;
+        fontStyle?: string;
+      };
     };
-  };
 
 // ── Serialized context ──
 
@@ -686,7 +711,7 @@ export type EnrichedContext = SerializedContext & {
     name: string;
     width: number;
     height: number;
-    textSlots?: string[];  // nomes dos text layers editáveis
+    textSlots?: string[]; // nomes dos text layers editáveis
   }>;
   reusableAssets?: Array<{
     id: string;
@@ -738,242 +763,254 @@ export type AvailableLayer = {
 
 // ── Brand Guideline preset (V2) ──
 export interface BrandGuidelineColor {
-  hex: string
-  name: string
-  role?: string
-  cmyk?: { c: number; m: number; y: number; k: number }
+  hex: string;
+  name: string;
+  role?: string;
+  cmyk?: { c: number; m: number; y: number; k: number };
 }
 
 export interface BrandGuidelineTypography {
-  family: string
-  style?: string
-  role: string
-  size?: number
-  lineHeight?: number
-  letterSpacing?: string
-  weights?: number[]
-  availableStyles?: string[]
+  family: string;
+  style?: string;
+  role: string;
+  size?: number;
+  lineHeight?: number;
+  letterSpacing?: string;
+  weights?: number[];
+  availableStyles?: string[];
 }
 
 export interface BrandGuidelineGradient {
-  id: string
-  name: string
-  type: 'linear' | 'radial'
-  angle: number
-  stops: { color: string; position: number }[]
-  usage: 'hero' | 'decorative' | 'fill' | 'overlay'
-  css?: string
+  id: string;
+  name: string;
+  type: 'linear' | 'radial';
+  angle: number;
+  stops: { color: string; position: number }[];
+  usage: 'hero' | 'decorative' | 'fill' | 'overlay';
+  css?: string;
 }
 
 export interface BrandGuidelineShadow {
-  id: string
-  name: string
-  x: number
-  y: number
-  blur: number
-  spread: number
-  color: string
-  opacity: number
-  type: 'outer' | 'inner' | 'glow'
-  css?: string
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  blur: number;
+  spread: number;
+  color: string;
+  opacity: number;
+  type: 'outer' | 'inner' | 'glow';
+  css?: string;
 }
 
 export interface BrandGuidelineMotion {
-  easing?: string
-  durations?: { fast: number; medium: number; slow: number }
-  philosophy?: 'minimal' | 'moderate' | 'expressive'
-  respectsReducedMotion?: boolean
+  easing?: string;
+  durations?: { fast: number; medium: number; slow: number };
+  philosophy?: 'minimal' | 'moderate' | 'expressive';
+  respectsReducedMotion?: boolean;
 }
 
 export interface BrandGuidelineBorder {
-  id: string
-  name: string
-  width: number
-  style: 'solid' | 'dashed' | 'dotted'
-  color: string
-  opacity: number
-  role: 'default' | 'emphasis' | 'scaffold' | 'divider'
-  css?: string
+  id: string;
+  name: string;
+  width: number;
+  style: 'solid' | 'dashed' | 'dotted';
+  color: string;
+  opacity: number;
+  role: 'default' | 'emphasis' | 'scaffold' | 'divider';
+  css?: string;
 }
 export interface BrandArchetype {
-  name: string
-  role?: 'primary' | 'secondary'
-  description: string
-  image?: string
-  examples?: string[]
+  name: string;
+  role?: 'primary' | 'secondary';
+  description: string;
+  image?: string;
+  examples?: string[];
 }
 
 export interface BrandPersona {
-  name: string
-  age?: number
-  occupation?: string
-  traits?: string[]
-  bio?: string
-  desires?: string[]
-  painPoints?: string[]
-  image?: string
+  name: string;
+  age?: number;
+  occupation?: string;
+  traits?: string[];
+  bio?: string;
+  desires?: string[];
+  painPoints?: string[];
+  image?: string;
 }
 
 export interface BrandToneOfVoiceValue {
-  title: string
-  description: string
-  example: string
+  title: string;
+  description: string;
+  example: string;
 }
 
 export interface BrandPillar {
-  value: string
-  description: string
+  value: string;
+  description: string;
 }
 
 export interface BrandCoreMessage {
-  product: string
-  differential: string
-  emotionalBond: string
+  product: string;
+  differential: string;
+  emotionalBond: string;
 }
 
 export interface BrandManifesto {
-  provocation?: string
-  tension?: string
-  promise?: string
-  full?: string
+  provocation?: string;
+  tension?: string;
+  promise?: string;
+  full?: string;
 }
 
 export interface BrandMarketResearch {
-  competitors?: string[]
-  gaps?: string[]
-  opportunities?: string[]
-  notes?: string
+  competitors?: string[];
+  gaps?: string[];
+  opportunities?: string[];
+  notes?: string;
 }
 
 export interface BrandGraphicSystem {
-  patterns?: string[]
-  grafisms?: string[]
-  imageRules?: string[]
-  editorialGrid?: string
+  patterns?: string[];
+  grafisms?: string[];
+  imageRules?: string[];
+  editorialGrid?: string;
 }
 
 export interface BrandGuideline {
-  id?: string
-  userId?: string
-  name?: string
-  tagline?: string
-  description?: string
+  id?: string;
+  userId?: string;
+  name?: string;
+  tagline?: string;
+  description?: string;
   identity?: {
-    name?: string
-    website?: string
-    instagram?: string
-    linkedin?: string
-    portfolio?: string
-    x?: string
-    tagline?: string
-    description?: string
-  }
+    name?: string;
+    website?: string;
+    instagram?: string;
+    linkedin?: string;
+    portfolio?: string;
+    x?: string;
+    tagline?: string;
+    description?: string;
+  };
   logos?: Array<{
-    id: string
-    url: string
-    variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom'
-    label?: string
-  }>
-  colors?: BrandGuidelineColor[]
-  typography?: BrandGuidelineTypography[]
-  tags?: Record<string, string[]>
+    id: string;
+    url: string;
+    variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom';
+    label?: string;
+  }>;
+  colors?: BrandGuidelineColor[];
+  typography?: BrandGuidelineTypography[];
+  tags?: Record<string, string[]>;
   media?: Array<{
-    id: string
-    url: string
-    type: 'image' | 'pdf'
-    label?: string
-    category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other'
-  }>
+    id: string;
+    url: string;
+    type: 'image' | 'pdf';
+    label?: string;
+    category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
+  }>;
   tokens?: {
-    spacing?: Record<string, number>
-    radius?: Record<string, number>
-    shadows?: Record<string, { x: number; y: number; blur: number; spread: number; color: string; opacity: number }>
-    components?: Record<string, any>
-  }
+    spacing?: Record<string, number>;
+    radius?: Record<string, number>;
+    shadows?: Record<
+      string,
+      { x: number; y: number; blur: number; spread: number; color: string; opacity: number }
+    >;
+    components?: Record<string, any>;
+  };
   guidelines?: {
-    voice?: string
-    dos?: string[]
-    donts?: string[]
-    imagery?: string
-    accessibility?: string
-    person?: 'first' | 'second' | 'third'
-    emojiPolicy?: 'none' | 'informal' | 'free'
-    casingRules?: string[]
-  }
-  gradients?: BrandGuidelineGradient[]
-  shadows?: BrandGuidelineShadow[]
-  motion?: BrandGuidelineMotion
-  borders?: BrandGuidelineBorder[]
-  validation?: Record<string, 'pending' | 'approved' | 'needs_work'>
+    voice?: string;
+    dos?: string[];
+    donts?: string[];
+    imagery?: string;
+    accessibility?: string;
+    person?: 'first' | 'second' | 'third';
+    emojiPolicy?: 'none' | 'informal' | 'free';
+    casingRules?: string[];
+  };
+  gradients?: BrandGuidelineGradient[];
+  shadows?: BrandGuidelineShadow[];
+  motion?: BrandGuidelineMotion;
+  borders?: BrandGuidelineBorder[];
+  validation?: Record<string, 'pending' | 'approved' | 'needs_work'>;
   strategy?: {
-    manifesto?: string | BrandManifesto
-    positioning?: string[]
-    coreMessage?: BrandCoreMessage
-    pillars?: BrandPillar[]
-    archetypes?: BrandArchetype[]
-    personas?: BrandPersona[]
-    voiceValues?: BrandToneOfVoiceValue[]
-    marketResearch?: BrandMarketResearch
-    graphicSystem?: BrandGraphicSystem
-  }
+    manifesto?: string | BrandManifesto;
+    positioning?: string[];
+    coreMessage?: BrandCoreMessage;
+    pillars?: BrandPillar[];
+    archetypes?: BrandArchetype[];
+    personas?: BrandPersona[];
+    voiceValues?: BrandToneOfVoiceValue[];
+    marketResearch?: BrandMarketResearch;
+    graphicSystem?: BrandGraphicSystem;
+  };
   _extraction?: {
-    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine'; ref?: string; date: string }>
-    completeness: number
-  }
-  extraction?: { // Keep this for backend compatibility if it uses "extraction"
-    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine'; ref?: string; date: string }>
-    completeness: number
-  }
+    sources: Array<{
+      type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine';
+      ref?: string;
+      date: string;
+    }>;
+    completeness: number;
+  };
+  extraction?: {
+    // Keep this for backend compatibility if it uses "extraction"
+    sources: Array<{
+      type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine';
+      ref?: string;
+      date: string;
+    }>;
+    completeness: number;
+  };
 
-  updatedAt?: string
-  orderedBlocks?: string[]
-  activeSections?: string[]
+  updatedAt?: string;
+  orderedBlocks?: string[];
+  activeSections?: string[];
   // Knowledge base (files ingested via admin chat, feeds RAG for this brand)
   knowledgeFiles?: Array<{
-    id: string
-    fileName: string
-    source: 'pdf' | 'image' | 'url' | 'text'
-    vectorIds: string[]
-    addedByUserId: string
-    addedAt: string
-  }>
+    id: string;
+    fileName: string;
+    source: 'pdf' | 'image' | 'url' | 'text';
+    vectorIds: string[];
+    addedByUserId: string;
+    addedAt: string;
+  }>;
   // Organization
-  folder?: string
+  folder?: string;
   // Public sharing
-  publicSlug?: string
-  isPublic?: boolean
+  publicSlug?: string;
+  isPublic?: boolean;
   // Figma Integration
-  figmaFileUrl?: string
-  figmaFileKey?: string
-  figmaSyncedAt?: string
+  figmaFileUrl?: string;
+  figmaFileKey?: string;
+  figmaSyncedAt?: string;
   /** User-defined color schemes — explicit bg/text/primary/accent combos for AI generation */
-  colorThemes?: BrandColorTheme[]
+  colorThemes?: BrandColorTheme[];
 }
 
 export interface BrandColorTheme {
-  id: string
-  name: string
-  bg: string
-  text: string
-  primary: string
-  accent: string
+  id: string;
+  name: string;
+  bg: string;
+  text: string;
+  primary: string;
+  accent: string;
 }
 
 // ── Agent Component System ──
 
 export interface AgentComponentMetadata {
-  intents: string[];      // @agent:intent values
-  slots: string[];        // @agent:slots values
-  formats: string[];      // @agent:format values
-  requires: string[];     // @agent:requires values
+  intents: string[]; // @agent:intent values
+  slots: string[]; // @agent:slots values
+  formats: string[]; // @agent:format values
+  requires: string[]; // @agent:requires values
 }
 
 export interface AgentComponent {
   id: string;
   key: string;
-  name: string;           // "Post/Promotional"
-  category: string;       // "Posts"
-  type: string;           // "Promotional"
+  name: string; // "Post/Promotional"
+  category: string; // "Posts"
+  type: string; // "Promotional"
   metadata: AgentComponentMetadata;
   width: number;
   height: number;
@@ -982,16 +1019,16 @@ export interface AgentComponent {
 
 export interface LayoutIntent {
   type: 'post' | 'card' | 'header' | 'story' | 'slide' | 'custom';
-  subtype?: string;       // "promotional", "testimonial", etc.
+  subtype?: string; // "promotional", "testimonial", etc.
   content: {
     title?: string;
     subtitle?: string;
     body?: string;
     cta?: string;
     discount?: string;
-    image?: string;       // URL or "placeholder"
+    image?: string; // URL or "placeholder"
   };
-  format?: string;        // "instagram-feed", "linkedin-post", etc.
+  format?: string; // "instagram-feed", "linkedin-post", etc.
 }
 
 export interface LayoutResult {
@@ -1010,13 +1047,13 @@ export type UIMessage =
   | { type: 'APPLY_OPERATIONS'; payload: FigmaOperation[] }
   | { type: 'APPLY_OPERATIONS_FROM_API'; operations: FigmaOperation[] }
   | {
-    type: 'GENERATE_WITH_CONTEXT';
-    command: string;
-    scanPage?: boolean;
-    logoComponent?: { id: string; name: string; key?: string };
-    brandFont?: { id: string; name: string };
-    brandColors?: Array<{ name: string; value: string }>;
-  }
+      type: 'GENERATE_WITH_CONTEXT';
+      command: string;
+      scanPage?: boolean;
+      logoComponent?: { id: string; name: string; key?: string };
+      brandFont?: { id: string; name: string };
+      brandColors?: Array<{ name: string; value: string }>;
+    }
   | { type: 'DELETE_SELECTION' }
   | { type: 'OPEN_EXTERNAL'; url: string }
   | { type: 'OPEN_EXTERNAL_URL'; url: string }
@@ -1031,7 +1068,14 @@ export type UIMessage =
   | { type: 'SELECT_AND_ZOOM'; nodeId: string }
   | { type: 'CREATE_STICKY_PROMPT'; prompt: string; name: string }
   // Image generation
-  | { type: 'PASTE_GENERATED_IMAGE'; imageData: string; prompt: string; width?: number; height?: number; isUrl?: boolean }
+  | {
+      type: 'PASTE_GENERATED_IMAGE';
+      imageData: string;
+      prompt: string;
+      width?: number;
+      height?: number;
+      isUrl?: boolean;
+    }
   // Mentions
   | { type: 'GET_ELEMENTS_FOR_MENTIONS' }
   // Agent / WebSocket messages
@@ -1062,17 +1106,17 @@ export type UIMessage =
   | { type: 'CAPTURE_COMPONENT_SELECTION' }
   // Agent Library Scaffold
   | {
-    type: 'SCAFFOLD_AGENT_LIBRARY';
-    brand: {
-      name: string;
-      primary: { r: number; g: number; b: number };
-      secondary?: { r: number; g: number; b: number };
-      background: { r: number; g: number; b: number };
-      text: { r: number; g: number; b: number };
-      fontFamily: string;
-      fontStyle?: string;
-    };
-  }
+      type: 'SCAFFOLD_AGENT_LIBRARY';
+      brand: {
+        name: string;
+        primary: { r: number; g: number; b: number };
+        secondary?: { r: number; g: number; b: number };
+        background: { r: number; g: number; b: number };
+        text: { r: number; g: number; b: number };
+        fontFamily: string;
+        fontStyle?: string;
+      };
+    }
   // Figma Sync
   | { type: 'EXTRACT_FOR_SYNC' }
   | { type: 'PUSH_TO_FIGMA'; guideline: BrandGuideline }
@@ -1085,7 +1129,10 @@ export type UIMessage =
   | { type: 'BRAND_LINT'; brand?: any }
   | { type: 'BRAND_LINT_FOCUS'; nodeId: string }
   | { type: 'BRAND_LINT_FIX'; brand?: any }
-  | { type: 'RESPONSIVE_MULTIPLY'; formats?: Array<{ id: string; label: string; width: number; height: number }> }
+  | {
+      type: 'RESPONSIVE_MULTIPLY';
+      formats?: Array<{ id: string; label: string; width: number; height: number }>;
+    }
   // Grid / Others
   | { type: 'SCAN_PAINT_STYLES' }
   | { type: 'GENERATE_ASSETS'; colors: any[]; assets: any[] }
@@ -1103,15 +1150,23 @@ export type PluginMessage =
   | { type: 'CONTEXT'; payload: SerializedContext }
   | { type: 'ENRICHED_CONTEXT'; payload: EnrichedContext }
   | { type: 'OPERATIONS_DONE'; count?: number; summary?: string }
-  | { type: 'OP_PROGRESS'; current: number; total: number; opType: string; opName: string; status: 'applying' | 'done' | 'error'; error?: string }
+  | {
+      type: 'OP_PROGRESS';
+      current: number;
+      total: number;
+      opType: string;
+      opName: string;
+      status: 'applying' | 'done' | 'error';
+      error?: string;
+    }
   | { type: 'ERROR'; message: string }
   | {
-    type: 'CONTEXT_UPDATED';
-    selectedElements: number;
-    componentsCount: number;
-    colorVariables: number;
-    fontVariables: number;
-  }
+      type: 'CONTEXT_UPDATED';
+      selectedElements: number;
+      componentsCount: number;
+      colorVariables: number;
+      fontVariables: number;
+    }
   | { type: 'COMPONENT_THUMBNAIL'; componentId: string; thumbnail: string }
   | { type: 'COMPONENTS_LOADED'; components: ComponentInfo[] }
   | { type: 'FONT_VARIABLES_LOADED'; fonts: FontVariable[] }
@@ -1148,4 +1203,10 @@ export type PluginMessage =
   | { type: 'PUSH_TO_FIGMA_RESULT'; created: number; updated: number }
   | { type: 'PUSH_TO_FIGMA_ERROR'; error: string }
   | { type: 'SMART_SCAN_RESULT'; items: any[]; error?: string }
-  | { type: 'EXPORT_NODE_IMAGE_RESULT'; nodeId: string; data?: string; format?: string; error?: string };
+  | {
+      type: 'EXPORT_NODE_IMAGE_RESULT';
+      nodeId: string;
+      data?: string;
+      format?: string;
+      error?: string;
+    };

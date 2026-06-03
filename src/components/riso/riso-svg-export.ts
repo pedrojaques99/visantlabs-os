@@ -23,7 +23,7 @@ function samplePixel(
   u: number,
   v: number,
   contrast: number,
-  lightness: number,
+  lightness: number
 ): [number, number, number] {
   const x = Math.min(Math.max(Math.round(u * (w - 1)), 0), w - 1);
   const y = Math.min(Math.max(Math.round(v * (h - 1)), 0), h - 1);
@@ -46,7 +46,7 @@ function getLayerIntensity(
   inkColor: [number, number, number],
   paperRgb: [number, number, number],
   _allDists: number[],
-  _myDist: number,
+  _myDist: number
 ): number {
   // Subtractive model: pixel = paper * (1 - opacity * (1 - ink))
   // Solve for opacity per channel, weight by absorption strength
@@ -67,10 +67,22 @@ function getLayerIntensity(
 
 // Bayer 4x4 matrix
 const BAYER_4X4 = [
-  0/16, 8/16, 2/16, 10/16,
-  12/16, 4/16, 14/16, 6/16,
-  3/16, 11/16, 1/16, 9/16,
-  15/16, 7/16, 13/16, 5/16,
+  0 / 16,
+  8 / 16,
+  2 / 16,
+  10 / 16,
+  12 / 16,
+  4 / 16,
+  14 / 16,
+  6 / 16,
+  3 / 16,
+  11 / 16,
+  1 / 16,
+  9 / 16,
+  15 / 16,
+  7 / 16,
+  13 / 16,
+  5 / 16,
 ];
 
 function shouldDither(
@@ -79,7 +91,7 @@ function shouldDither(
   row: number,
   layerSeed: number,
   mode: DitherMode,
-  _shape: HalftoneShape,
+  _shape: HalftoneShape
 ): { draw: boolean; radiusScale: number } {
   if (intensity < 0.005) return { draw: false, radiusScale: 0 };
   if (intensity > 0.995) return { draw: true, radiusScale: 1 };
@@ -99,7 +111,7 @@ function shouldDither(
     case 'floydsteinberg': {
       const n = hash(col + layerSeed, row);
       const spread = (n - 0.5) * 0.45;
-      return { draw: (intensity + spread) > 0.5, radiusScale: 1 };
+      return { draw: intensity + spread > 0.5, radiusScale: 1 };
     }
     case 'bayer': {
       const bx = ((col % 4) + 4) % 4;
@@ -126,18 +138,21 @@ function hexToNorm(hex: string): [number, number, number] {
 export function generateRisoSvg(
   imageData: ImageData,
   settings: RisoSettings,
-  options?: { layerIndex?: number },
+  options?: { layerIndex?: number }
 ): string {
   const { width: w, height: h, data: pixels } = imageData;
   const freq = settings.frequency;
   const cellSize = Math.max(w, h) / freq;
   const paperRgb = hexToNorm(settings.paperColor);
 
-  const layersToRender = options?.layerIndex !== undefined
-    ? [settings.layers[options.layerIndex]].filter(Boolean)
-    : settings.layers.filter(l => l.visible);
+  const layersToRender =
+    options?.layerIndex !== undefined
+      ? [settings.layers[options.layerIndex]].filter(Boolean)
+      : settings.layers.filter((l) => l.visible);
 
-  const allInkColors = settings.layers.map(l => [l.color[0] / 255, l.color[1] / 255, l.color[2] / 255] as [number, number, number]);
+  const allInkColors = settings.layers.map(
+    (l) => [l.color[0] / 255, l.color[1] / 255, l.color[2] / 255] as [number, number, number]
+  );
 
   const dots: DotData[] = [];
 
@@ -145,7 +160,11 @@ export function generateRisoSvg(
     const layer = layersToRender[li];
     if (!layer.visible && options?.layerIndex === undefined) continue;
 
-    const inkColor: [number, number, number] = [layer.color[0] / 255, layer.color[1] / 255, layer.color[2] / 255];
+    const inkColor: [number, number, number] = [
+      layer.color[0] / 255,
+      layer.color[1] / 255,
+      layer.color[2] / 255,
+    ];
     const rad = (layer.angle * Math.PI) / 180;
     const cos = Math.cos(rad);
     const sin = Math.sin(rad);
@@ -177,7 +196,7 @@ export function generateRisoSvg(
 
         const pixel = samplePixel(pixels, w, h, u, v, settings.contrast, settings.lightness);
 
-        const allDists = allInkColors.map(c => colorDistance(pixel, c));
+        const allDists = allInkColors.map((c) => colorDistance(pixel, c));
         const myIdx = settings.layers.indexOf(layer);
         const myDist = myIdx >= 0 ? allDists[myIdx] : colorDistance(pixel, inkColor);
 
@@ -187,7 +206,14 @@ export function generateRisoSvg(
         // Ink dropout
         if (hash(col + li * 200, row + 200) < settings.inkDropout) continue;
 
-        const { draw, radiusScale } = shouldDither(intensity, col, row, li * 100, ditherMode, hShape);
+        const { draw, radiusScale } = shouldDither(
+          intensity,
+          col,
+          row,
+          li * 100,
+          ditherMode,
+          hShape
+        );
         if (!draw) continue;
 
         const baseRadius = settings.dotSize * cellSize * 0.45;
@@ -218,7 +244,9 @@ export function generateRisoSvg(
   parts.push(`<rect width="${w}" height="${h}" fill="${settings.paperColor}"/>`);
 
   // Paper grain noise (subtle rect noise)
-  parts.push('<g opacity="0.04"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter>');
+  parts.push(
+    '<g opacity="0.04"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter>'
+  );
   parts.push(`<rect width="${w}" height="${h}" filter="url(#grain)"/></g>`);
 
   // Ink layers with multiply blend
@@ -237,7 +265,7 @@ export function generateRisoSvg(
 export function generateRisoSvgFromCanvas(
   sourceCanvas: HTMLCanvasElement,
   settings: RisoSettings,
-  options?: { layerIndex?: number },
+  options?: { layerIndex?: number }
 ): string {
   const tmpCanvas = document.createElement('canvas');
   const { width: w, height: h } = sourceCanvas;

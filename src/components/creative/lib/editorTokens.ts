@@ -4,10 +4,10 @@
  */
 
 // ── Selection / interaction thresholds (logical px) ──────────────────────
-export const MARQUEE_MIN_DRAG = 3;        // distance before mousedown becomes a marquee drag
-export const HUD_GAP_PX = 36;             // selection HUD gap above bbox
+export const MARQUEE_MIN_DRAG = 3; // distance before mousedown becomes a marquee drag
+export const HUD_GAP_PX = 36; // selection HUD gap above bbox
 export const MIN_LAYER_SIZE_NORMALIZED = 0.005; // minimum w/h % a layer can be shrunk to
-export const PASTE_OFFSET_NORMALIZED = 0.02;    // x/y bump applied to pasted layers
+export const PASTE_OFFSET_NORMALIZED = 0.02; // x/y bump applied to pasted layers
 
 // ── Filter slider extents (Konva.Filters semantics) ──────────────────────
 export const FILTER_RANGES = {

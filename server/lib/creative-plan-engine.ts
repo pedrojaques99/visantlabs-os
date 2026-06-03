@@ -42,8 +42,7 @@ export const FORMAT_RULES: Record<CreativeFormat, string> = {
     'Vertical/portrait layout. Stack elements top-to-bottom. Keep headline above 0.5y. CTA near bottom (y > 0.75). Avoid overcrowding the sides.',
   '16:9':
     'Horizontal/landscape layout. Use left half for text (x < 0.5), right half for visual breathing room and background focus.',
-  '4:5':
-    'Slightly vertical. Headline in upper third, subheadline mid, CTA/logo in lower third.',
+  '4:5': 'Slightly vertical. Headline in upper third, subheadline mid, CTA/logo in lower third.',
 };
 
 const FORMAT_RATIOS: Record<CreativeFormat, number> = {
@@ -123,7 +122,9 @@ export async function planFromBrand({
   let brandLine = '';
   let hasLogosFlag = false;
   if (brandGuideline) {
-    brandLine = `Brand: ${JSON.stringify(buildBrandContextJSON(brandGuideline, BRAND_SECTION_PRESETS.imageGen))}`;
+    brandLine = `Brand: ${JSON.stringify(
+      buildBrandContextJSON(brandGuideline, BRAND_SECTION_PRESETS.imageGen)
+    )}`;
     hasLogosFlag = (brandGuideline.logos ?? []).length > 0;
   }
 
@@ -286,25 +287,25 @@ export function applyBrandFidelityPasses(
         layer.role === 'headline'
           ? fonts.heading
           : layer.role === 'subheadline' || layer.role === 'body'
-            ? fonts.body
-            : fonts.heading || fonts.body;
+          ? fonts.body
+          : fonts.heading || fonts.body;
       const fontFamily =
         layer.fontFamily && fonts.all.includes(layer.fontFamily)
           ? layer.fontFamily
           : wantedFont ?? layer.fontFamily;
 
-      const colorIsBrand = palette.some(
-        (h) => h.toLowerCase() === layer.color.toLowerCase()
-      );
-      const color = colorIsBrand ? layer.color : nearestBrandColor(layer.color, palette) ?? layer.color;
+      const colorIsBrand = palette.some((h) => h.toLowerCase() === layer.color.toLowerCase());
+      const color = colorIsBrand
+        ? layer.color
+        : nearestBrandColor(layer.color, palette) ?? layer.color;
 
       return { ...layer, fontFamily: fontFamily ?? layer.fontFamily, color };
     }
     if (layer.type === 'shape') {
-      const colorIsBrand = palette.some(
-        (h) => h.toLowerCase() === layer.color.toLowerCase()
-      );
-      const color = colorIsBrand ? layer.color : nearestBrandColor(layer.color, palette) ?? layer.color;
+      const colorIsBrand = palette.some((h) => h.toLowerCase() === layer.color.toLowerCase());
+      const color = colorIsBrand
+        ? layer.color
+        : nearestBrandColor(layer.color, palette) ?? layer.color;
       return { ...layer, color };
     }
     return layer;

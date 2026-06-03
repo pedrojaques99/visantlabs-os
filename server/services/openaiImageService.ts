@@ -1,9 +1,6 @@
 import OpenAI from 'openai';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
-import {
-  OPENAI_QUALITY_MAP,
-  resolveOpenAISize,
-} from '../../src/constants/openaiModels.js';
+import { OPENAI_QUALITY_MAP, resolveOpenAISize } from '../../src/constants/openaiModels.js';
 
 export interface OpenAIImageInput {
   base64?: string;
@@ -40,7 +37,9 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
   return new File([byteString], filename, { type: mimeType });
 }
 
-export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Promise<OpenAIImageResult> {
+export async function generateOpenAIImage(
+  params: GenerateOpenAIImageParams
+): Promise<OpenAIImageResult> {
   const {
     prompt,
     baseImage,
@@ -56,7 +55,7 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
   const quality = OPENAI_QUALITY_MAP[resolution] ?? 'medium';
 
   const hasBaseImage = !!(baseImage?.base64 || baseImage?.url);
-  const hasReferenceImages = !!(referenceImages?.length && referenceImages.some(r => r?.base64));
+  const hasReferenceImages = !!(referenceImages?.length && referenceImages.some((r) => r?.base64));
 
   if (hasBaseImage || hasReferenceImages) {
     // Image editing mode — uses images.edit
@@ -65,14 +64,18 @@ export async function generateOpenAIImage(params: GenerateOpenAIImageParams): Pr
     const imageFiles: File[] = [];
 
     if (baseImage?.base64) {
-      imageFiles.push(base64ToFile(baseImage.base64, baseImage.mimeType || 'image/png', 'base.png'));
+      imageFiles.push(
+        base64ToFile(baseImage.base64, baseImage.mimeType || 'image/png', 'base.png')
+      );
     }
 
     // Add reference images (logo, brand assets) — up to 16 total per API limit
     if (referenceImages?.length) {
       for (const ref of referenceImages.slice(0, 16 - imageFiles.length)) {
         if (ref?.base64) {
-          imageFiles.push(base64ToFile(ref.base64, ref.mimeType || 'image/png', `ref_${imageFiles.length}.png`));
+          imageFiles.push(
+            base64ToFile(ref.base64, ref.mimeType || 'image/png', `ref_${imageFiles.length}.png`)
+          );
         }
       }
     }

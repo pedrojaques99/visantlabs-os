@@ -1,4 +1,3 @@
-
 import type { UploadedImage } from '../types/types';
 import { loadImage } from '@/utils/imageUtils';
 
@@ -24,7 +23,7 @@ export const validateFile = (
     video: () => file.type.startsWith('video/'),
   };
 
-  const isValidType = types.some(t => typeChecks[t]());
+  const isValidType = types.some((t) => typeChecks[t]());
   if (!isValidType) {
     const typeNames = types.join('/');
     return `Invalid file type. Expected: ${typeNames}`;
@@ -41,7 +40,10 @@ export const validateFile = (
  * Format image to 16:9 aspect ratio without cropping
  * Adds padding (letterboxing/pillarboxing) when necessary
  */
-export const formatImageTo16_9 = async (base64: string, mimeType: string): Promise<UploadedImage> => {
+export const formatImageTo16_9 = async (
+  base64: string,
+  mimeType: string
+): Promise<UploadedImage> => {
   const imgSrc = base64.startsWith('data:') ? base64 : `data:${mimeType};base64,${base64}`;
   const img = await loadImage(imgSrc, null);
 
@@ -82,7 +84,7 @@ export const formatImageTo16_9 = async (base64: string, mimeType: string): Promi
   const ctx = canvas.getContext('2d');
 
   if (!ctx) {
-    throw new Error("Failed to get canvas context.");
+    throw new Error('Failed to get canvas context.');
   }
 
   // Fill background - transparent for PNG/WebP, black for JPG
@@ -103,7 +105,7 @@ export const formatImageTo16_9 = async (base64: string, mimeType: string): Promi
   if (formattedBase64) {
     return { base64: formattedBase64, mimeType: outputMimeType };
   } else {
-    throw new Error("Failed to format image to 16:9.");
+    throw new Error('Failed to format image to 16:9.');
   }
 };
 
@@ -122,7 +124,7 @@ export const fileToBase64 = async (file: File | Blob): Promise<UploadedImage> =>
             resolve(formatted);
           } catch (error) {
             // If formatting fails, return original
-            console.warn("Failed to format image to 16:9, using original:", error);
+            console.warn('Failed to format image to 16:9, using original:', error);
             resolve({ base64, mimeType: file.type });
           }
         } else {
@@ -130,14 +132,16 @@ export const fileToBase64 = async (file: File | Blob): Promise<UploadedImage> =>
           resolve({ base64, mimeType: file.type });
         }
       } else {
-        reject(new Error("Failed to convert file to base64."));
+        reject(new Error('Failed to convert file to base64.'));
       }
     };
-    reader.onerror = error => reject(error);
+    reader.onerror = (error) => reject(error);
   });
 };
 
-export const videoToBase64 = async (file: File | Blob): Promise<{ base64: string; mimeType: string }> => {
+export const videoToBase64 = async (
+  file: File | Blob
+): Promise<{ base64: string; mimeType: string }> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -147,9 +151,9 @@ export const videoToBase64 = async (file: File | Blob): Promise<{ base64: string
       if (base64) {
         resolve({ base64, mimeType: file.type });
       } else {
-        reject(new Error("Failed to convert video to base64."));
+        reject(new Error('Failed to convert video to base64.'));
       }
     };
-    reader.onerror = error => reject(error);
+    reader.onerror = (error) => reject(error);
   });
 };

@@ -1,8 +1,17 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type } from '@google/genai';
 import type {
-    CentralMessage, BrandPillar, MarketResearchV2, PersonaV2,
-    ArchetypesV2, ToneOfVoicePillar, Manifesto, NamedColor,
-    TypographyPair, GraphicSystem, LogoConcept, BrandingData,
+  CentralMessage,
+  BrandPillar,
+  MarketResearchV2,
+  PersonaV2,
+  ArchetypesV2,
+  ToneOfVoicePillar,
+  Manifesto,
+  NamedColor,
+  TypographyPair,
+  GraphicSystem,
+  LogoConcept,
+  BrandingData,
 } from '../../src/types/branding.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
@@ -15,53 +24,73 @@ import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 let ai: GoogleGenAI | null = null;
 
 const getAI = (): GoogleGenAI => {
-    if (!ai) {
-        const apiKey = (process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.VITE_API_KEY || '').trim();
-        if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
-            throw new Error("GEMINI_API_KEY não encontrada.");
-        }
-        ai = new GoogleGenAI({ apiKey });
+  if (!ai) {
+    const apiKey = (
+      process.env.GEMINI_API_KEY ||
+      process.env.API_KEY ||
+      process.env.VITE_GEMINI_API_KEY ||
+      process.env.VITE_API_KEY ||
+      ''
+    ).trim();
+    if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
+      throw new Error('GEMINI_API_KEY não encontrada.');
     }
-    return ai;
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
 };
 
 const detectLanguage = (text: string): 'pt-BR' | 'en-US' => {
-    const lower = text.toLowerCase();
-    const ptWords = ['é', 'são', 'para', 'com', 'uma', 'marca', 'produto', 'empresa', 'negócio', 'mercado', 'público', 'design', 'identidade'];
-    const matches = ptWords.filter(w => lower.includes(w)).length;
-    return matches >= 3 ? 'pt-BR' : 'en-US';
+  const lower = text.toLowerCase();
+  const ptWords = [
+    'é',
+    'são',
+    'para',
+    'com',
+    'uma',
+    'marca',
+    'produto',
+    'empresa',
+    'negócio',
+    'mercado',
+    'público',
+    'design',
+    'identidade',
+  ];
+  const matches = ptWords.filter((w) => lower.includes(w)).length;
+  return matches >= 3 ? 'pt-BR' : 'en-US';
 };
 
 const langInstruction = (prompt: string): string => {
-    return detectLanguage(prompt) === 'pt-BR'
-        ? '\n\n**INSTRUÇÃO DE IDIOMA:** Responda COMPLETAMENTE em PORTUGUÊS BRASILEIRO.'
-        : '';
+  return detectLanguage(prompt) === 'pt-BR'
+    ? '\n\n**INSTRUÇÃO DE IDIOMA:** Responda COMPLETAMENTE em PORTUGUÊS BRASILEIRO.'
+    : '';
 };
 
 interface GenResult<T> {
-    result: T;
-    inputTokens?: number;
-    outputTokens?: number;
+  result: T;
+  inputTokens?: number;
+  outputTokens?: number;
 }
 
 const withRetry = async <T>(fn: () => Promise<T>, retries = 3, timeout = 120000): Promise<T> => {
-    for (let i = 0; i < retries; i++) {
-        try {
-            return await Promise.race([
-                fn(),
-                new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Timeout')), timeout)),
-            ]);
-        } catch (e: any) {
-            if (i >= retries - 1) throw e;
-            await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-        }
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await Promise.race([
+        fn(),
+        new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Timeout')), timeout)),
+      ]);
+    } catch (e: any) {
+      if (i >= retries - 1) throw e;
+      await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
     }
-    throw new Error('Unreachable');
+  }
+  throw new Error('Unreachable');
 };
 
 const extractTokens = (response: any) => ({
-    inputTokens: response?.usageMetadata?.promptTokenCount,
-    outputTokens: response?.usageMetadata?.candidatesTokenCount,
+  inputTokens: response?.usageMetadata?.promptTokenCount,
+  outputTokens: response?.usageMetadata?.candidatesTokenCount,
 });
 
 const VISANT_SYSTEM = `Você é um estrategista de marca seguindo a Metodologia Visant.
@@ -77,9 +106,11 @@ Princípios:
 // Step 1: Mensagem Central & Pilares
 // ═══════════════════════════════════════════
 
-export async function generateCentralMessageAndPillars(prompt: string): Promise<GenResult<{ centralMessage: CentralMessage; pillars: BrandPillar[] }>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateCentralMessageAndPillars(
+  prompt: string
+): Promise<GenResult<{ centralMessage: CentralMessage; pillars: BrandPillar[] }>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 A partir da descrição da marca, extraia:
 
@@ -101,57 +132,60 @@ A partir da descrição da marca, extraia:
 Descrição da marca: "${sanitizeForPrompt(prompt, 5000)}"
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        centralMessage: {
-                            type: Type.OBJECT,
-                            properties: {
-                                product: { type: Type.STRING },
-                                differential: { type: Type.STRING },
-                                emotionalBond: { type: Type.STRING },
-                                statement: { type: Type.STRING },
-                            },
-                        },
-                        pillars: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    description: { type: Type.STRING },
-                                },
-                            },
-                        },
-                    },
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            centralMessage: {
+              type: Type.OBJECT,
+              properties: {
+                product: { type: Type.STRING },
+                differential: { type: Type.STRING },
+                emotionalBond: { type: Type.STRING },
+                statement: { type: Type.STRING },
+              },
+            },
+            pillars: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  description: { type: Type.STRING },
                 },
+              },
             },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return {
-            result: {
-                centralMessage: parsed.centralMessage,
-                pillars: (parsed.pillars || []).slice(0, 3),
-            },
-            ...tokens,
-        };
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return {
+      result: {
+        centralMessage: parsed.centralMessage,
+        pillars: (parsed.pillars || []).slice(0, 3),
+      },
+      ...tokens,
+    };
+  });
 }
 
 // ═══════════════════════════════════════════
 // Step 2: Pesquisa de Mercado (3 camadas)
 // ═══════════════════════════════════════════
 
-export async function generateMarketResearchV2(prompt: string, previousData: BrandingData): Promise<GenResult<MarketResearchV2>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateMarketResearchV2(
+  prompt: string,
+  previousData: BrandingData
+): Promise<GenResult<MarketResearchV2>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Pesquisa de Mercado — 3 camadas Visant:
 
@@ -169,51 +203,54 @@ Também identifique 4-6 concorrentes estratégicos com análise de posicionament
 Contexto:
 - Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
-- Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
+- Pilares: ${previousData.pillars?.map((p) => p.name).join(', ') || 'N/A'}
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        whatCompetitorsDoWell: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        whatAllDoWrong: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        whatNobodyDoes: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        summary: { type: Type.STRING },
-                        competitors: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    url: { type: Type.STRING },
-                                    analysis: { type: Type.STRING },
-                                },
-                                required: ['name', 'analysis'],
-                            },
-                        },
-                    },
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            whatCompetitorsDoWell: { type: Type.ARRAY, items: { type: Type.STRING } },
+            whatAllDoWrong: { type: Type.ARRAY, items: { type: Type.STRING } },
+            whatNobodyDoes: { type: Type.ARRAY, items: { type: Type.STRING } },
+            summary: { type: Type.STRING },
+            competitors: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  url: { type: Type.STRING },
+                  analysis: { type: Type.STRING },
                 },
+                required: ['name', 'analysis'],
+              },
             },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return { result: parsed as MarketResearchV2, ...tokens };
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return { result: parsed as MarketResearchV2, ...tokens };
+  });
 }
 
 // ═══════════════════════════════════════════
 // Step 3: Persona Visant
 // ═══════════════════════════════════════════
 
-export async function generatePersonaV2(prompt: string, previousData: BrandingData): Promise<GenResult<PersonaV2>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generatePersonaV2(
+  prompt: string,
+  previousData: BrandingData
+): Promise<GenResult<PersonaV2>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Persona Visant — foco em DORES, ANSEIOS e NECESSIDADES OCULTAS. Não demografia genérica.
 
@@ -230,53 +267,53 @@ Perguntas-chave:
 Contexto construído:
 - Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
-- Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
+- Pilares: ${previousData.pillars?.map((p) => p.name).join(', ') || 'N/A'}
 - Pesquisa: ${previousData.marketResearchV2?.summary || 'N/A'}
 - Território livre: ${previousData.marketResearchV2?.whatNobodyDoes?.join('; ') || 'N/A'}
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        age: { type: Type.NUMBER },
-                        context: { type: Type.STRING },
-                        painPoints: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    id: { type: Type.STRING },
-                                    title: { type: Type.STRING },
-                                    description: { type: Type.STRING },
-                                },
-                            },
-                        },
-                        desires: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    id: { type: Type.STRING },
-                                    title: { type: Type.STRING },
-                                    description: { type: Type.STRING },
-                                },
-                            },
-                        },
-                    },
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING },
+            age: { type: Type.NUMBER },
+            context: { type: Type.STRING },
+            painPoints: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
                 },
+              },
             },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return { result: parsed as PersonaV2, ...tokens };
+            desires: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                },
+              },
+            },
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return { result: parsed as PersonaV2, ...tokens };
+  });
 }
 
 // ═══════════════════════════════════════════
@@ -284,23 +321,87 @@ ${langInstruction(prompt)}`;
 // ═══════════════════════════════════════════
 
 const ARCHETYPES_RAG = [
-    { id: 1, titulo: "O Explorador", descricao: "Desafia padrões, busca novos caminhos. Curiosidade, exploração, mente aberta.", exemplos: ["Jeep", "The North Face", "SpaceX"] },
-    { id: 2, titulo: "O Cara Comum", descricao: "Conexão e pertencimento. Autenticidade da vida cotidiana. Empatia e realismo.", exemplos: ["Hering", "Gap", "IKEA"] },
-    { id: 3, titulo: "O Herói", descricao: "Superação, vitória, conquista. Tom confiante, motivador, firme.", exemplos: ["Nike", "BMW", "RedBull"] },
-    { id: 4, titulo: "O Sábio", descricao: "Conhecimento, clareza. Reflexivo, didático, confiável. Autoridade sem arrogância.", exemplos: ["Google", "TED", "National Geographic"] },
-    { id: 5, titulo: "O Cuidador", descricao: "Generosidade, proteção, apoio. Porto seguro. Bem-estar e pertencimento.", exemplos: ["Unicef", "Natura", "Volvo"] },
-    { id: 6, titulo: "O Governante", descricao: "Autoridade, liderança, controle. Ordem, estabilidade, prestígio.", exemplos: ["Rolex", "Mercedes-Benz", "AmEx"] },
-    { id: 7, titulo: "O Mago", descricao: "Mudança pelo exemplo, quebra de paradigmas. Inovação, insight visionário, disrupção.", exemplos: ["Apple", "Tesla", "Disney"] },
-    { id: 8, titulo: "O Rebelde", descricao: "Desejo insaciável pela mudança. Rompe padrões, destrói o ultrapassado. Liberdade.", exemplos: ["Harley-Davidson", "Dr. Martens", "MTV"] },
-    { id: 9, titulo: "O Criador", descricao: "Visionário, original. Expressão artística, atenção obsessiva a detalhes.", exemplos: ["Apple", "LEGO", "Patagonia"] },
-    { id: 10, titulo: "O Prestativo", descricao: "Ajudar, servir, facilitar. Suporte, gentileza, resolução rápida.", exemplos: ["FedEx", "Localiza", "Amazon"] },
-    { id: 11, titulo: "O Amante", descricao: "Desejo, beleza, intensidade. Conexão emocional profunda, sensorialidade.", exemplos: ["Chanel", "Victoria's Secret", "Häagen-Dazs"] },
-    { id: 12, titulo: "O Bobo", descricao: "Humor, leveza, irreverência. Questiona o status quo com brincadeira.", exemplos: ["Skol", "Budweiser", "Doritos"] },
+  {
+    id: 1,
+    titulo: 'O Explorador',
+    descricao: 'Desafia padrões, busca novos caminhos. Curiosidade, exploração, mente aberta.',
+    exemplos: ['Jeep', 'The North Face', 'SpaceX'],
+  },
+  {
+    id: 2,
+    titulo: 'O Cara Comum',
+    descricao: 'Conexão e pertencimento. Autenticidade da vida cotidiana. Empatia e realismo.',
+    exemplos: ['Hering', 'Gap', 'IKEA'],
+  },
+  {
+    id: 3,
+    titulo: 'O Herói',
+    descricao: 'Superação, vitória, conquista. Tom confiante, motivador, firme.',
+    exemplos: ['Nike', 'BMW', 'RedBull'],
+  },
+  {
+    id: 4,
+    titulo: 'O Sábio',
+    descricao: 'Conhecimento, clareza. Reflexivo, didático, confiável. Autoridade sem arrogância.',
+    exemplos: ['Google', 'TED', 'National Geographic'],
+  },
+  {
+    id: 5,
+    titulo: 'O Cuidador',
+    descricao: 'Generosidade, proteção, apoio. Porto seguro. Bem-estar e pertencimento.',
+    exemplos: ['Unicef', 'Natura', 'Volvo'],
+  },
+  {
+    id: 6,
+    titulo: 'O Governante',
+    descricao: 'Autoridade, liderança, controle. Ordem, estabilidade, prestígio.',
+    exemplos: ['Rolex', 'Mercedes-Benz', 'AmEx'],
+  },
+  {
+    id: 7,
+    titulo: 'O Mago',
+    descricao:
+      'Mudança pelo exemplo, quebra de paradigmas. Inovação, insight visionário, disrupção.',
+    exemplos: ['Apple', 'Tesla', 'Disney'],
+  },
+  {
+    id: 8,
+    titulo: 'O Rebelde',
+    descricao: 'Desejo insaciável pela mudança. Rompe padrões, destrói o ultrapassado. Liberdade.',
+    exemplos: ['Harley-Davidson', 'Dr. Martens', 'MTV'],
+  },
+  {
+    id: 9,
+    titulo: 'O Criador',
+    descricao: 'Visionário, original. Expressão artística, atenção obsessiva a detalhes.',
+    exemplos: ['Apple', 'LEGO', 'Patagonia'],
+  },
+  {
+    id: 10,
+    titulo: 'O Prestativo',
+    descricao: 'Ajudar, servir, facilitar. Suporte, gentileza, resolução rápida.',
+    exemplos: ['FedEx', 'Localiza', 'Amazon'],
+  },
+  {
+    id: 11,
+    titulo: 'O Amante',
+    descricao: 'Desejo, beleza, intensidade. Conexão emocional profunda, sensorialidade.',
+    exemplos: ['Chanel', "Victoria's Secret", 'Häagen-Dazs'],
+  },
+  {
+    id: 12,
+    titulo: 'O Bobo',
+    descricao: 'Humor, leveza, irreverência. Questiona o status quo com brincadeira.',
+    exemplos: ['Skol', 'Budweiser', 'Doritos'],
+  },
 ];
 
-export async function generateArchetypesAndTone(prompt: string, previousData: BrandingData): Promise<GenResult<{ archetypes: ArchetypesV2; toneOfVoice: ToneOfVoicePillar[] }>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateArchetypesAndTone(
+  prompt: string,
+  previousData: BrandingData
+): Promise<GenResult<{ archetypes: ArchetypesV2; toneOfVoice: ToneOfVoicePillar[] }>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Marca é gente. O público julga marcas como julga pessoas.
 
@@ -315,101 +416,106 @@ Marca é gente. O público julga marcas como julga pessoas.
    - Frase-exemplo real que a marca usaria
 
 Arquétipos disponíveis:
-${ARCHETYPES_RAG.map(a => `- ID ${a.id}: ${a.titulo} — ${a.descricao}`).join('\n')}
+${ARCHETYPES_RAG.map((a) => `- ID ${a.id}: ${a.titulo} — ${a.descricao}`).join('\n')}
 
 Contexto construído:
 - Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
-- Pilares: ${previousData.pillars?.map(p => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
+- Pilares: ${previousData.pillars?.map((p) => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
 - Pesquisa: ${previousData.marketResearchV2?.summary || 'N/A'}
-- Persona: ${previousData.personaV2?.name || 'N/A'} — Dores: ${previousData.personaV2?.painPoints?.map(p => p.title).join(', ') || 'N/A'}
+- Persona: ${previousData.personaV2?.name || 'N/A'} — Dores: ${
+      previousData.personaV2?.painPoints?.map((p) => p.title).join(', ') || 'N/A'
+    }
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        archetypes: {
-                            type: Type.OBJECT,
-                            properties: {
-                                primary: {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                        id: { type: Type.NUMBER },
-                                        title: { type: Type.STRING },
-                                        description: { type: Type.STRING },
-                                        examples: { type: Type.ARRAY, items: { type: Type.STRING } },
-                                    },
-                                },
-                                secondary: {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                        id: { type: Type.NUMBER },
-                                        title: { type: Type.STRING },
-                                        description: { type: Type.STRING },
-                                        examples: { type: Type.ARRAY, items: { type: Type.STRING } },
-                                    },
-                                },
-                                barBehavior: { type: Type.STRING },
-                                reasoning: { type: Type.STRING },
-                            },
-                        },
-                        toneOfVoice: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    pillar: { type: Type.STRING },
-                                    description: { type: Type.STRING },
-                                    example: { type: Type.STRING },
-                                },
-                            },
-                        },
-                    },
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            archetypes: {
+              type: Type.OBJECT,
+              properties: {
+                primary: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.NUMBER },
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    examples: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  },
                 },
+                secondary: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.NUMBER },
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    examples: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  },
+                },
+                barBehavior: { type: Type.STRING },
+                reasoning: { type: Type.STRING },
+              },
             },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-
-        const primaryArch = ARCHETYPES_RAG.find(a => a.id === parsed.archetypes?.primary?.id);
-        const secondaryArch = ARCHETYPES_RAG.find(a => a.id === parsed.archetypes?.secondary?.id);
-
-        const archetypes: ArchetypesV2 = {
-            primary: {
-                id: parsed.archetypes?.primary?.id || 1,
-                title: primaryArch?.titulo || parsed.archetypes?.primary?.title || '',
-                description: primaryArch?.descricao || parsed.archetypes?.primary?.description || '',
-                examples: primaryArch?.exemplos || parsed.archetypes?.primary?.examples || [],
+            toneOfVoice: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  pillar: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  example: { type: Type.STRING },
+                },
+              },
             },
-            secondary: {
-                id: parsed.archetypes?.secondary?.id || 2,
-                title: secondaryArch?.titulo || parsed.archetypes?.secondary?.title || '',
-                description: secondaryArch?.descricao || parsed.archetypes?.secondary?.description || '',
-                examples: secondaryArch?.exemplos || parsed.archetypes?.secondary?.examples || [],
-            },
-            barBehavior: parsed.archetypes?.barBehavior || '',
-            reasoning: parsed.archetypes?.reasoning || '',
-        };
-
-        const toneOfVoice: ToneOfVoicePillar[] = (parsed.toneOfVoice || []).slice(0, 3);
-
-        return { result: { archetypes, toneOfVoice }, ...tokens };
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+
+    const primaryArch = ARCHETYPES_RAG.find((a) => a.id === parsed.archetypes?.primary?.id);
+    const secondaryArch = ARCHETYPES_RAG.find((a) => a.id === parsed.archetypes?.secondary?.id);
+
+    const archetypes: ArchetypesV2 = {
+      primary: {
+        id: parsed.archetypes?.primary?.id || 1,
+        title: primaryArch?.titulo || parsed.archetypes?.primary?.title || '',
+        description: primaryArch?.descricao || parsed.archetypes?.primary?.description || '',
+        examples: primaryArch?.exemplos || parsed.archetypes?.primary?.examples || [],
+      },
+      secondary: {
+        id: parsed.archetypes?.secondary?.id || 2,
+        title: secondaryArch?.titulo || parsed.archetypes?.secondary?.title || '',
+        description: secondaryArch?.descricao || parsed.archetypes?.secondary?.description || '',
+        examples: secondaryArch?.exemplos || parsed.archetypes?.secondary?.examples || [],
+      },
+      barBehavior: parsed.archetypes?.barBehavior || '',
+      reasoning: parsed.archetypes?.reasoning || '',
+    };
+
+    const toneOfVoice: ToneOfVoicePillar[] = (parsed.toneOfVoice || []).slice(0, 3);
+
+    return { result: { archetypes, toneOfVoice }, ...tokens };
+  });
 }
 
 // ═══════════════════════════════════════════
 // Step 5: Manifesto & Slogan
 // ═══════════════════════════════════════════
 
-export async function generateManifesto(prompt: string, previousData: BrandingData): Promise<GenResult<Manifesto>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateManifesto(
+  prompt: string,
+  previousData: BrandingData
+): Promise<GenResult<Manifesto>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Manifesto — condensa toda a estratégia em palavras que respiram.
 Se a Mensagem Central é para dentro, o Manifesto é para fora.
@@ -430,46 +536,56 @@ Escreva o manifesto com emoção, narrativa e alma. Não seja genérico.
 Contexto construído:
 - Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
-- Pilares: ${previousData.pillars?.map(p => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
+- Pilares: ${previousData.pillars?.map((p) => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
 - Persona: ${previousData.personaV2?.name || 'N/A'}, ${previousData.personaV2?.context || 'N/A'}
-  Dores: ${previousData.personaV2?.painPoints?.map(p => p.title).join(', ') || 'N/A'}
-  Desejos: ${previousData.personaV2?.desires?.map(d => d.title).join(', ') || 'N/A'}
+  Dores: ${previousData.personaV2?.painPoints?.map((p) => p.title).join(', ') || 'N/A'}
+  Desejos: ${previousData.personaV2?.desires?.map((d) => d.title).join(', ') || 'N/A'}
 - Arquétipo primário: ${previousData.archetypesV2?.primary?.title || 'N/A'}
 - Arquétipo secundário: ${previousData.archetypesV2?.secondary?.title || 'N/A'}
-- Tom de Voz: ${previousData.toneOfVoice?.map(t => t.pillar).join(', ') || 'N/A'}
+- Tom de Voz: ${previousData.toneOfVoice?.map((t) => t.pillar).join(', ') || 'N/A'}
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        provocation: { type: Type.STRING },
-                        tension: { type: Type.STRING },
-                        promise: { type: Type.STRING },
-                        fullText: { type: Type.STRING },
-                        sloganSuggestion: { type: Type.STRING },
-                    },
-                },
-            },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return { result: parsed as Manifesto, ...tokens };
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            provocation: { type: Type.STRING },
+            tension: { type: Type.STRING },
+            promise: { type: Type.STRING },
+            fullText: { type: Type.STRING },
+            sloganSuggestion: { type: Type.STRING },
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return { result: parsed as Manifesto, ...tokens };
+  });
 }
 
 // ═══════════════════════════════════════════
 // Step 6: SWOT
 // ═══════════════════════════════════════════
 
-export async function generateSWOTV2(prompt: string, previousData: BrandingData): Promise<GenResult<{ strengths: string[]; weaknesses: string[]; opportunities: string[]; threats: string[] }>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateSWOTV2(
+  prompt: string,
+  previousData: BrandingData
+): Promise<
+  GenResult<{
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  }>
+> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Análise SWOT estratégica. Foco em fatores que impactam diferenciação e defensibilidade competitiva.
 
@@ -481,50 +597,55 @@ Análise SWOT estratégica. Foco em fatores que impactam diferenciação e defen
 Contexto:
 - Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
-- Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
-- Concorrentes: ${previousData.marketResearchV2?.competitors?.map(c => c.name).join(', ') || 'N/A'}
+- Pilares: ${previousData.pillars?.map((p) => p.name).join(', ') || 'N/A'}
+- Concorrentes: ${
+      previousData.marketResearchV2?.competitors?.map((c) => c.name).join(', ') || 'N/A'
+    }
 - Território livre: ${previousData.marketResearchV2?.whatNobodyDoes?.join('; ') || 'N/A'}
 - Persona: ${previousData.personaV2?.name || 'N/A'}
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        threats: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    },
-                },
-            },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return {
-            result: {
-                strengths: parsed.strengths || [],
-                weaknesses: parsed.weaknesses || [],
-                opportunities: parsed.opportunities || [],
-                threats: parsed.threats || [],
-            },
-            ...tokens,
-        };
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+            weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+            opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
+            threats: { type: Type.ARRAY, items: { type: Type.STRING } },
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return {
+      result: {
+        strengths: parsed.strengths || [],
+        weaknesses: parsed.weaknesses || [],
+        opportunities: parsed.opportunities || [],
+        threats: parsed.threats || [],
+      },
+      ...tokens,
+    };
+  });
 }
 
 // ═══════════════════════════════════════════
 // Step 7: Paleta Cromática (cores nomeadas)
 // ═══════════════════════════════════════════
 
-export async function generateColorPaletteV2(prompt: string, previousData: BrandingData): Promise<GenResult<NamedColor[]>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateColorPaletteV2(
+  prompt: string,
+  previousData: BrandingData
+): Promise<GenResult<NamedColor[]>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Cromatismo Visant — Cor nomeada é cor com propósito.
 
@@ -541,51 +662,54 @@ Inclua sempre: 1 cor vibrante principal, 1 cor neutra escura (chão), 1 cor clar
 Contexto:
 - Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
-- Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
+- Pilares: ${previousData.pillars?.map((p) => p.name).join(', ') || 'N/A'}
 - Arquétipo primário: ${previousData.archetypesV2?.primary?.title || 'N/A'}
 - Arquétipo secundário: ${previousData.archetypesV2?.secondary?.title || 'N/A'}
 - Manifesto (tom): ${previousData.manifesto?.sloganSuggestion || 'N/A'}
-- Tom de Voz: ${previousData.toneOfVoice?.map(t => t.pillar).join(', ') || 'N/A'}
+- Tom de Voz: ${previousData.toneOfVoice?.map((t) => t.pillar).join(', ') || 'N/A'}
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        colors: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    hex: { type: Type.STRING },
-                                    role: { type: Type.STRING },
-                                    psychology: { type: Type.STRING },
-                                },
-                            },
-                        },
-                    },
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            colors: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  hex: { type: Type.STRING },
+                  role: { type: Type.STRING },
+                  psychology: { type: Type.STRING },
                 },
+              },
             },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return { result: (parsed.colors || []) as NamedColor[], ...tokens };
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return { result: (parsed.colors || []) as NamedColor[], ...tokens };
+  });
 }
 
 // ═══════════════════════════════════════════
 // Step 8: Par Tipográfico
 // ═══════════════════════════════════════════
 
-export async function generateTypography(prompt: string, previousData: BrandingData): Promise<GenResult<TypographyPair>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateTypography(
+  prompt: string,
+  previousData: BrandingData
+): Promise<GenResult<TypographyPair>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Par Tipográfico Visant — tipografia funciona em pares. Mínimo duas famílias, cada uma com função específica.
 
@@ -603,50 +727,53 @@ Contexto:
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
 - Arquétipo primário: ${previousData.archetypesV2?.primary?.title || 'N/A'}
 - Arquétipo secundário: ${previousData.archetypesV2?.secondary?.title || 'N/A'}
-- Tom de Voz: ${previousData.toneOfVoice?.map(t => t.pillar).join(', ') || 'N/A'}
-- Paleta: ${previousData.colorPaletteV2?.map(c => `${c.name} (${c.hex})`).join(', ') || 'N/A'}
+- Tom de Voz: ${previousData.toneOfVoice?.map((t) => t.pillar).join(', ') || 'N/A'}
+- Paleta: ${previousData.colorPaletteV2?.map((c) => `${c.name} (${c.hex})`).join(', ') || 'N/A'}
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        headline: {
-                            type: Type.OBJECT,
-                            properties: {
-                                family: { type: Type.STRING },
-                                rationale: { type: Type.STRING },
-                            },
-                        },
-                        body: {
-                            type: Type.OBJECT,
-                            properties: {
-                                family: { type: Type.STRING },
-                                rationale: { type: Type.STRING },
-                            },
-                        },
-                    },
-                },
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            headline: {
+              type: Type.OBJECT,
+              properties: {
+                family: { type: Type.STRING },
+                rationale: { type: Type.STRING },
+              },
             },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return { result: parsed as TypographyPair, ...tokens };
+            body: {
+              type: Type.OBJECT,
+              properties: {
+                family: { type: Type.STRING },
+                rationale: { type: Type.STRING },
+              },
+            },
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return { result: parsed as TypographyPair, ...tokens };
+  });
 }
 
 // ═══════════════════════════════════════════
 // Step 9: Sistema Gráfico
 // ═══════════════════════════════════════════
 
-export async function generateGraphicSystem(prompt: string, previousData: BrandingData): Promise<GenResult<GraphicSystem>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateGraphicSystem(
+  prompt: string,
+  previousData: BrandingData
+): Promise<GenResult<GraphicSystem>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Sistema Gráfico Visant — Uma marca forte é reconhecida mesmo sem o logo aparecer.
 
@@ -662,43 +789,50 @@ Defina os 4 componentes:
 Contexto:
 - Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
-- Pilares: ${previousData.pillars?.map(p => p.name).join(', ') || 'N/A'}
-- Arquétipos: ${previousData.archetypesV2?.primary?.title || 'N/A'} + ${previousData.archetypesV2?.secondary?.title || 'N/A'}
+- Pilares: ${previousData.pillars?.map((p) => p.name).join(', ') || 'N/A'}
+- Arquétipos: ${previousData.archetypesV2?.primary?.title || 'N/A'} + ${
+      previousData.archetypesV2?.secondary?.title || 'N/A'
+    }
 - Manifesto: ${previousData.manifesto?.sloganSuggestion || 'N/A'}
-- Paleta: ${previousData.colorPaletteV2?.map(c => `${c.name} (${c.hex})`).join(', ') || 'N/A'}
-- Tipografia: ${previousData.typography?.headline?.family || 'N/A'} + ${previousData.typography?.body?.family || 'N/A'}
+- Paleta: ${previousData.colorPaletteV2?.map((c) => `${c.name} (${c.hex})`).join(', ') || 'N/A'}
+- Tipografia: ${previousData.typography?.headline?.family || 'N/A'} + ${
+      previousData.typography?.body?.family || 'N/A'
+    }
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        patterns: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        graphicElements: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        imageRules: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        editorialGrid: { type: Type.STRING },
-                    },
-                },
-            },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return { result: parsed as GraphicSystem, ...tokens };
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            patterns: { type: Type.ARRAY, items: { type: Type.STRING } },
+            graphicElements: { type: Type.ARRAY, items: { type: Type.STRING } },
+            imageRules: { type: Type.ARRAY, items: { type: Type.STRING } },
+            editorialGrid: { type: Type.STRING },
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return { result: parsed as GraphicSystem, ...tokens };
+  });
 }
 
 // ═══════════════════════════════════════════
 // Step 10: Conceito de Logo
 // ═══════════════════════════════════════════
 
-export async function generateLogoConcept(prompt: string, previousData: BrandingData): Promise<GenResult<LogoConcept>> {
-    return withRetry(async () => {
-        const systemPrompt = `${VISANT_SYSTEM}
+export async function generateLogoConcept(
+  prompt: string,
+  previousData: BrandingData
+): Promise<GenResult<LogoConcept>> {
+  return withRetry(async () => {
+    const systemPrompt = `${VISANT_SYSTEM}
 
 Conceito de Logo Visant — Logo é a peça mais vista no mundo (avatar, favicon, bordado).
 
@@ -718,42 +852,44 @@ Gere DIRETRIZES CONCEITUAIS (não o logo em si):
 Contexto:
 - Marca: "${sanitizeForPrompt(prompt, 5000)}"
 - Mensagem Central: ${previousData.centralMessage?.statement || 'N/A'}
-- Pilares: ${previousData.pillars?.map(p => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
-- Arquétipos: ${previousData.archetypesV2?.primary?.title || 'N/A'} + ${previousData.archetypesV2?.secondary?.title || 'N/A'}
+- Pilares: ${previousData.pillars?.map((p) => `${p.name}: ${p.description}`).join('; ') || 'N/A'}
+- Arquétipos: ${previousData.archetypesV2?.primary?.title || 'N/A'} + ${
+      previousData.archetypesV2?.secondary?.title || 'N/A'
+    }
 - Manifesto: ${previousData.manifesto?.sloganSuggestion || 'N/A'}
-- Paleta: ${previousData.colorPaletteV2?.map(c => c.name).join(', ') || 'N/A'}
+- Paleta: ${previousData.colorPaletteV2?.map((c) => c.name).join(', ') || 'N/A'}
 - Tipografia headline: ${previousData.typography?.headline?.family || 'N/A'}
 ${langInstruction(prompt)}`;
 
-        const response = await getAI().models.generateContent({
-            model: GEMINI_MODELS.TEXT,
-            contents: { parts: [{ text: systemPrompt }] },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        whatItMustCommunicate: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        conceptIdeas: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    concept: { type: Type.STRING },
-                                    meanings: { type: Type.ARRAY, items: { type: Type.STRING } },
-                                },
-                            },
-                        },
-                        geometryNotes: { type: Type.STRING },
-                    },
+    const response = await getAI().models.generateContent({
+      model: GEMINI_MODELS.TEXT,
+      contents: { parts: [{ text: systemPrompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            whatItMustCommunicate: { type: Type.ARRAY, items: { type: Type.STRING } },
+            conceptIdeas: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  concept: { type: Type.STRING },
+                  meanings: { type: Type.ARRAY, items: { type: Type.STRING } },
                 },
+              },
             },
-        });
-
-        const tokens = extractTokens(response);
-        const parsed = JSON.parse(response.text?.trim() || '{}');
-        return { result: parsed as LogoConcept, ...tokens };
+            geometryNotes: { type: Type.STRING },
+          },
+        },
+      },
     });
+
+    const tokens = extractTokens(response);
+    const parsed = JSON.parse(response.text?.trim() || '{}');
+    return { result: parsed as LogoConcept, ...tokens };
+  });
 }
 
 // ═══════════════════════════════════════════

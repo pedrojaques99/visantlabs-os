@@ -43,10 +43,20 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
     if (settings.blackInk) colors.push(settings.blackInk);
   }
 
-  const bg = mode === 'halftone' ? 'bg-cyan-950/30' : mode === 'riso' ? 'bg-amber-950/30' : 'bg-purple-950/30';
+  const bg =
+    mode === 'halftone'
+      ? 'bg-cyan-950/30'
+      : mode === 'riso'
+      ? 'bg-amber-950/30'
+      : 'bg-purple-950/30';
 
   return (
-    <div className={cn('w-10 h-10 rounded-md shrink-0 flex items-center justify-center overflow-hidden', bg)}>
+    <div
+      className={cn(
+        'w-10 h-10 rounded-md shrink-0 flex items-center justify-center overflow-hidden',
+        bg
+      )}
+    >
       {colors.length > 0 ? (
         <div className="grid grid-cols-2 gap-0.5 p-1">
           {colors.slice(0, 4).map((c, i) => (
@@ -82,13 +92,21 @@ const PresetDetails: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
   return (
     <div className="flex gap-1.5 mt-0.5 flex-wrap">
       {filtered.map((t, i) => (
-        <span key={i} className="text-[8px] font-mono text-neutral-600 bg-neutral-800/40 px-1 py-0.5 rounded">{t}</span>
+        <span
+          key={i}
+          className="text-[8px] font-mono text-neutral-600 bg-neutral-800/40 px-1 py-0.5 rounded"
+        >
+          {t}
+        </span>
       ))}
     </div>
   );
 };
 
-export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ isOpen, onClose }) => {
+export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const [presets, setPresets] = useState<ImageLabPreset[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<ImageLabMode | 'all'>('all');
@@ -117,24 +135,27 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
     if (isOpen) fetchPresets();
   }, [isOpen, fetchPresets]);
 
-  const applyPreset = useCallback((preset: ImageLabPreset) => {
-    const { mode: presetMode, settings, layers } = preset.data;
-    useImageLabStore.getState().setMode(presetMode);
+  const applyPreset = useCallback(
+    (preset: ImageLabPreset) => {
+      const { mode: presetMode, settings, layers } = preset.data;
+      useImageLabStore.getState().setMode(presetMode);
 
-    if (presetMode === 'halftone') {
-      const store = useHalftoneStore.getState();
-      Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-    } else if (presetMode === 'texture') {
-      const store = useTextureFilterStore.getState();
-      Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-    } else if (presetMode === 'riso') {
-      const store = useRisoStore.getState();
-      Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-      if (layers) store.setLayers(layers);
-    }
-    toast.success(`Applied "${preset.name}"`);
-    onClose();
-  }, [onClose]);
+      if (presetMode === 'halftone') {
+        const store = useHalftoneStore.getState();
+        Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
+      } else if (presetMode === 'texture') {
+        const store = useTextureFilterStore.getState();
+        Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
+      } else if (presetMode === 'riso') {
+        const store = useRisoStore.getState();
+        Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
+        if (layers) store.setLayers(layers);
+      }
+      toast.success(`Applied "${preset.name}"`);
+      onClose();
+    },
+    [onClose]
+  );
 
   const handleLike = useCallback(async (id: string) => {
     try {
@@ -162,15 +183,23 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
         className="w-full max-w-[480px] mx-4 max-h-[80vh] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50 shrink-0">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">Community Presets</span>
-          <button onClick={onClose} className="text-neutral-600 hover:text-neutral-300 transition-colors p-1">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
+            Community Presets
+          </span>
+          <button
+            onClick={onClose}
+            className="text-neutral-600 hover:text-neutral-300 transition-colors p-1"
+          >
             <X size={14} />
           </button>
         </div>
@@ -194,7 +223,10 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
             ))}
           </div>
           <div className="relative">
-            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600" />
+            <Search
+              size={12}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600"
+            />
             <input
               type="text"
               value={search}
@@ -229,22 +261,29 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] text-neutral-300 truncate">{preset.name}</span>
-                      <span className={cn(
-                        'text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
-                        preset.data.mode === 'halftone' && 'bg-cyan-400/10 text-cyan-400',
-                        preset.data.mode === 'texture' && 'bg-purple-400/10 text-purple-400',
-                        preset.data.mode === 'riso' && 'bg-amber-400/10 text-amber-400',
-                      )}>
+                      <span
+                        className={cn(
+                          'text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
+                          preset.data.mode === 'halftone' && 'bg-cyan-400/10 text-cyan-400',
+                          preset.data.mode === 'texture' && 'bg-purple-400/10 text-purple-400',
+                          preset.data.mode === 'riso' && 'bg-amber-400/10 text-amber-400'
+                        )}
+                      >
                         {preset.data.mode}
                       </span>
                     </div>
                     <PresetDetails preset={preset} />
                     {preset.author && (
-                      <span className="text-[9px] text-neutral-600 font-mono">by {preset.author.name}</span>
+                      <span className="text-[9px] text-neutral-600 font-mono">
+                        by {preset.author.name}
+                      </span>
                     )}
                   </div>
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleLike(preset._id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLike(preset._id);
+                    }}
                     className={cn(
                       'flex items-center gap-1 text-[10px] transition-colors p-1 shrink-0',
                       preset.liked ? 'text-red-400' : 'text-neutral-600 hover:text-red-400'
@@ -261,7 +300,9 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({ is
 
         {/* Hint: save via panel */}
         <div className="px-5 py-2.5 border-t border-neutral-800/50 shrink-0">
-          <p className="text-[10px] text-neutral-600 text-center">Save presets from the right panel</p>
+          <p className="text-[10px] text-neutral-600 text-center">
+            Save presets from the right panel
+          </p>
         </div>
       </div>
     </div>

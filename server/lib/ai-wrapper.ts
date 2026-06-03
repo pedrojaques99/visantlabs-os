@@ -40,7 +40,11 @@ export async function aiCall<T>(
   options?: AICallOptions
 ): Promise<{ result: T; requestId: string }> {
   const requestId = getRequestId();
-  const trace = startTrace(provider, options?.metadata?.operation as string || 'ai-call', options?.metadata);
+  const trace = startTrace(
+    provider,
+    (options?.metadata?.operation as string) || 'ai-call',
+    options?.metadata
+  );
 
   // Add metadata to context for tracing
   if (options?.metadata) {
@@ -51,9 +55,7 @@ export async function aiCall<T>(
   addContextMetadata('ai.provider', provider);
 
   try {
-    const result = options?.skipResilience
-      ? await fn()
-      : await withResilience(provider, fn);
+    const result = options?.skipResilience ? await fn() : await withResilience(provider, fn);
 
     endTrace(trace, {});
 

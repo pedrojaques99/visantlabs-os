@@ -66,11 +66,17 @@ export function getContrastRatio(l1: number, l2: number): number {
 export function toCSSVariables(g: BrandGuideline): string {
   const lines: string[] = [':root {'];
   g.colors?.forEach((c) => {
-    const name = (c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const name = (c.name || 'color')
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
     lines.push(`  --color-${name}: ${c.hex};`);
   });
   g.typography?.forEach((t) => {
-    const role = (t.role || 'font').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const role = (t.role || 'font')
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
     lines.push(`  --font-${role}: '${t.family}', sans-serif;`);
   });
   lines.push('}');
@@ -99,19 +105,28 @@ export function extractBrandTheme(
   mode: 'brand' | 'light' | 'dark' = 'brand'
 ): BrandTheme {
   const findByRole = (role: string) =>
-    guideline?.colors?.find((c) => c.role?.toUpperCase() === role || c.name?.toUpperCase() === role);
+    guideline?.colors?.find(
+      (c) => c.role?.toUpperCase() === role || c.name?.toUpperCase() === role
+    );
   const findByMatch = (keywords: string[]) =>
     guideline?.colors?.find((c) =>
       keywords.some((k) => c.name?.toLowerCase().includes(k) || c.role?.toLowerCase().includes(k))
     );
 
   const colors = guideline?.colors || [];
-  const accentToken =
-    findByRole('PRIMARY') || findByRole('ACCENT') || findByMatch(['brand', 'primary', 'accent', 'main']) || colors[0] || { hex: '#888888' };
-  const bgToken = findByRole('BACKGROUND') || findByRole('BG') || findByMatch(['background', 'canvas', 'bg']) || { hex: '#0a0a0a' };
-  const surfaceToken =
-    findByRole('SURFACE') || findByRole('CARD') || findByMatch(['surface', 'card', 'neutral', 'off']) || { hex: '#141414' };
-  const textToken = findByRole('TEXT') || findByRole('HEADLINE') || findByMatch(['text', 'content', 'body']) || { hex: '#ffffff' };
+  const accentToken = findByRole('PRIMARY') ||
+    findByRole('ACCENT') ||
+    findByMatch(['brand', 'primary', 'accent', 'main']) ||
+    colors[0] || { hex: '#888888' };
+  const bgToken = findByRole('BACKGROUND') ||
+    findByRole('BG') ||
+    findByMatch(['background', 'canvas', 'bg']) || { hex: '#0a0a0a' };
+  const surfaceToken = findByRole('SURFACE') ||
+    findByRole('CARD') ||
+    findByMatch(['surface', 'card', 'neutral', 'off']) || { hex: '#141414' };
+  const textToken = findByRole('TEXT') ||
+    findByRole('HEADLINE') ||
+    findByMatch(['text', 'content', 'body']) || { hex: '#ffffff' };
 
   const paletteByLum = [...(guideline?.colors || [])].sort(
     (a, b) => getRelativeLuminance(a.hex) - getRelativeLuminance(b.hex)
@@ -160,7 +175,8 @@ export function extractBrandTheme(
     bg: rBg,
     surface: rSurface,
     text: rText,
-    isCustomBg: mode === 'brand' && (!!findByRole('BACKGROUND') || !!findByMatch(['background', 'bg'])),
+    isCustomBg:
+      mode === 'brand' && (!!findByRole('BACKGROUND') || !!findByMatch(['background', 'bg'])),
   };
 }
 
@@ -181,12 +197,15 @@ interface SectionCommonProps {
 }
 
 const CompactSectionHeader: React.FC<{ label: string }> = ({ label }) => (
-  <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest">{label}</MicroTitle>
+  <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest">
+    {label}
+  </MicroTitle>
 );
 
-const FullSectionHeader: React.FC<{ label: string; className?: string }> = ({ label, className }) => (
-  <h2 className={cn('text-4xl font-bold font-manrope opacity-90', className)}>{label}</h2>
-);
+const FullSectionHeader: React.FC<{ label: string; className?: string }> = ({
+  label,
+  className,
+}) => <h2 className={cn('text-4xl font-bold font-manrope opacity-90', className)}>{label}</h2>;
 
 export const BrandIdentityView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
   const identity = guideline.identity || {};
@@ -197,7 +216,9 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({ guideline, com
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Identity" />
         {identity.tagline && (
-          <p className="text-[11px] font-bold uppercase tracking-wider text-brand-cyan/80">{identity.tagline}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-brand-cyan/80">
+            {identity.tagline}
+          </p>
         )}
         {identity.description && (
           <p className="text-xs text-neutral-400 leading-relaxed">{identity.description}</p>
@@ -219,12 +240,16 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({ guideline, com
         {identity.description && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div className="md:col-span-2">
-              <p className="text-lg md:text-xl leading-relaxed font-light opacity-70">{identity.description}</p>
+              <p className="text-lg md:text-xl leading-relaxed font-light opacity-70">
+                {identity.description}
+              </p>
             </div>
             <div className="space-y-8">
               {identity.tagline && (
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono text-[var(--brand-text)]/50 uppercase tracking-widest">Brand Tagline</span>
+                  <span className="text-[10px] font-mono text-[var(--brand-text)]/50 uppercase tracking-widest">
+                    Brand Tagline
+                  </span>
                   <p className="text-sm font-bold uppercase opacity-80">{identity.tagline}</p>
                 </div>
               )}
@@ -245,7 +270,9 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({ guideline, 
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Mensagem Central" />
         <p className="text-xs text-neutral-400 leading-relaxed">
-          {cm.product}{cm.differential && ` + ${cm.differential}`}{cm.emotionalBond && ` → ${cm.emotionalBond}`}
+          {cm.product}
+          {cm.differential && ` + ${cm.differential}`}
+          {cm.emotionalBond && ` → ${cm.emotionalBond}`}
         </p>
       </div>
     );
@@ -256,20 +283,33 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({ guideline, 
       <FullSectionHeader label="Mensagem Central" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {cm.product && (
-          <GlassPanel padding="md" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
+          <GlassPanel
+            padding="md"
+            className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
+          >
             <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Produto</MicroTitle>
             <p className="text-lg font-medium opacity-80">{cm.product}</p>
           </GlassPanel>
         )}
         {cm.differential && (
-          <GlassPanel padding="md" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
-            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Diferencial</MicroTitle>
+          <GlassPanel
+            padding="md"
+            className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
+          >
+            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">
+              Diferencial
+            </MicroTitle>
             <p className="text-lg font-medium opacity-80">{cm.differential}</p>
           </GlassPanel>
         )}
         {cm.emotionalBond && (
-          <GlassPanel padding="md" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
-            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Elo Emocional</MicroTitle>
+          <GlassPanel
+            padding="md"
+            className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
+          >
+            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">
+              Elo Emocional
+            </MicroTitle>
             <p className="text-lg font-medium opacity-80">{cm.emotionalBond}</p>
           </GlassPanel>
         )}
@@ -288,7 +328,12 @@ export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, comp
         <CompactSectionHeader label="Pilares" />
         <div className="flex flex-wrap gap-2">
           {pillars.map((p, i) => (
-            <span key={i} className="text-xs font-semibold text-neutral-300 bg-white/5 px-2 py-0.5 rounded">{p.value}</span>
+            <span
+              key={i}
+              className="text-xs font-semibold text-neutral-300 bg-white/5 px-2 py-0.5 rounded"
+            >
+              {p.value}
+            </span>
           ))}
         </div>
       </div>
@@ -300,9 +345,15 @@ export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, comp
       <FullSectionHeader label="Pilares" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {pillars.map((p, i) => (
-          <GlassPanel key={i} padding="md" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
+          <GlassPanel
+            key={i}
+            padding="md"
+            className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
+          >
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl font-bold opacity-20">{String(i + 1).padStart(2, '0')}</span>
+              <span className="text-3xl font-bold opacity-20">
+                {String(i + 1).padStart(2, '0')}
+              </span>
               <h4 className="text-xl font-bold opacity-90">{p.value}</h4>
             </div>
             <p className="text-sm font-light opacity-60 leading-relaxed">{p.description}</p>
@@ -318,7 +369,9 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({ guideline, co
   if (!raw) return null;
 
   const isStructured = typeof raw === 'object';
-  const fullText = isStructured ? (raw.full || [raw.provocation, raw.tension, raw.promise].filter(Boolean).join('\n\n')) : raw;
+  const fullText = isStructured
+    ? raw.full || [raw.provocation, raw.tension, raw.promise].filter(Boolean).join('\n\n')
+    : raw;
   if (!fullText) return null;
 
   if (compact) {
@@ -360,7 +413,9 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({ guideline, co
           )}
         </div>
         {raw.full && (
-          <p className="text-xl leading-relaxed font-light opacity-60 mt-8 italic">&ldquo;{raw.full}&rdquo;</p>
+          <p className="text-xl leading-relaxed font-light opacity-60 mt-8 italic">
+            &ldquo;{raw.full}&rdquo;
+          </p>
         )}
       </div>
     );
@@ -405,7 +460,9 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
             <div key={i} className="text-xs">
               <span className="font-bold text-neutral-300 uppercase tracking-wide">{a.name}</span>
               {a.description && (
-                <p className="text-[11px] text-neutral-500 leading-snug mt-0.5 line-clamp-2">{a.description}</p>
+                <p className="text-[11px] text-neutral-500 leading-snug mt-0.5 line-clamp-2">
+                  {a.description}
+                </p>
               )}
             </div>
           ))}
@@ -425,10 +482,16 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
           >
             <div className="w-full md:w-1/2 aspect-[3/4] rounded-2xl border-[3px] p-4 flex flex-col items-center justify-between relative transition-all duration-500 border-[var(--brand-text)]/20 bg-[var(--brand-bg)] shadow-2xl group-hover:rotate-2">
               <div className="w-full text-center border-b border-[var(--brand-text)]/10 pb-2 flex items-center justify-center px-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{arch.name}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
+                  {arch.name}
+                </span>
               </div>
               <div className="flex-1 flex items-center justify-center py-8">
-                {arch.image ? <img src={arch.image} alt={arch.name} className="w-full object-contain" /> : <Diamond size={64} className="opacity-10" aria-hidden="true" />}
+                {arch.image ? (
+                  <img src={arch.image} alt={arch.name} className="w-full object-contain" />
+                ) : (
+                  <Diamond size={64} className="opacity-10" aria-hidden="true" />
+                )}
               </div>
             </div>
             <div className="flex-1 space-y-6">
@@ -481,11 +544,19 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
       <FullSectionHeader label="Personas" />
       <div className="grid grid-cols-1 gap-12">
         {personas.map((persona, i) => (
-          <GlassPanel key={i} padding="lg" className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10">
+          <GlassPanel
+            key={i}
+            padding="lg"
+            className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
+          >
             <div className="flex flex-col md:flex-row gap-12">
               <div className="w-full md:w-1/3 aspect-square rounded-[32px] overflow-hidden border border-[var(--brand-text)]/10 shadow-2xl">
                 {persona.image ? (
-                  <img src={persona.image} alt={persona.name} className="w-full h-full object-cover" />
+                  <img
+                    src={persona.image}
+                    alt={persona.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <div className="w-full h-full bg-black/20 flex items-center justify-center opacity-30">
                     <User size={64} />
@@ -556,7 +627,9 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
             <div key={i} className="text-xs">
               <span className="font-bold text-neutral-300 uppercase tracking-wide">{v.title}</span>
               {v.description && (
-                <p className="text-[11px] text-neutral-500 leading-snug mt-0.5 line-clamp-2">{v.description}</p>
+                <p className="text-[11px] text-neutral-500 leading-snug mt-0.5 line-clamp-2">
+                  {v.description}
+                </p>
               )}
             </div>
           ))}
@@ -579,10 +652,14 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
             </div>
             <div className="mt-12 space-y-8 flex-1">
               <h4 className="text-2xl font-bold opacity-90">{v.title}</h4>
-              <p className="text-sm leading-relaxed opacity-60 transition-colors">{v.description}</p>
+              <p className="text-sm leading-relaxed opacity-60 transition-colors">
+                {v.description}
+              </p>
               {v.example && (
                 <div className="p-4 rounded-xl border mt-auto bg-[var(--brand-text)]/[0.02] border-[var(--brand-text)]/5 shadow-inner">
-                  <p className="text-xs font-medium leading-relaxed italic opacity-80">"{v.example}"</p>
+                  <p className="text-xs font-medium leading-relaxed italic opacity-80">
+                    "{v.example}"
+                  </p>
                 </div>
               )}
             </div>
@@ -598,7 +675,12 @@ export interface BrandColorsViewProps extends SectionCommonProps {
   onColorClick?: (hex: string, item: { name?: string; role?: string }) => void;
 }
 
-export const BrandColorsView: React.FC<BrandColorsViewProps> = ({ guideline, compact, searchTerm, onColorClick }) => {
+export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
+  guideline,
+  compact,
+  searchTerm,
+  onColorClick,
+}) => {
   const colors = guideline.colors || [];
   const filtered = useMemo(
     () =>
@@ -673,7 +755,9 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({ guideline, com
                 </div>
               </div>
               <div>
-                <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">{color.name || 'Untitled'}</p>
+                <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">
+                  {color.name || 'Untitled'}
+                </p>
                 <span className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
                   {color.hex}
                   <span className="w-1 h-1 rounded-full bg-current opacity-20" />
@@ -699,10 +783,15 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
         <div className="flex flex-col gap-1">
           {typography.map((t, i) => (
             <div key={i} className="flex items-baseline justify-between gap-2 text-xs">
-              <span className="font-bold text-neutral-300 truncate" style={{ fontFamily: t.family }}>
+              <span
+                className="font-bold text-neutral-300 truncate"
+                style={{ fontFamily: t.family }}
+              >
                 {t.family}
               </span>
-              <span className="text-[9px] font-mono uppercase text-neutral-600 tracking-widest shrink-0">{t.role}</span>
+              <span className="text-[9px] font-mono uppercase text-neutral-600 tracking-widest shrink-0">
+                {t.role}
+              </span>
             </div>
           ))}
         </div>
@@ -741,16 +830,23 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
                   </span>
                   <span className="text-xs font-mono font-medium opacity-40">{font.family}</span>
                 </div>
-                <p className="text-4xl md:text-5xl tracking-tight leading-none opacity-80" style={{ fontFamily: font.family }}>
+                <p
+                  className="text-4xl md:text-5xl tracking-tight leading-none opacity-80"
+                  style={{ fontFamily: font.family }}
+                >
                   The quick brown fox jumps over the lazy dog.
                 </p>
                 <div className="flex items-center gap-6 pt-2">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">Style</span>
+                    <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">
+                      Style
+                    </span>
                     <p className="text-sm font-bold opacity-70">{font.style || 'Regular'}</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">Base Size</span>
+                    <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">
+                      Base Size
+                    </span>
                     <p className="text-sm font-bold opacity-70">{font.size || '16'}PX</p>
                   </div>
                 </div>
@@ -793,7 +889,10 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
   const handleClick = useCallback(
     (logo: any) => {
       if (onAssetClick) return onAssetClick(logo.url, 'logo', logo);
-      triggerAssetDownload(logo.url, `${safeFileName(logo.label || logo.variant)}.${extFromUrl(logo.url)}`);
+      triggerAssetDownload(
+        logo.url,
+        `${safeFileName(logo.label || logo.variant)}.${extFromUrl(logo.url)}`
+      );
     },
     [onAssetClick]
   );
@@ -812,10 +911,17 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
               onClick={() => handleClick(logo)}
               className="group/logo relative aspect-square rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden hover:border-brand-cyan/30 transition-colors"
               draggable={!!onAssetDragStart}
-              onDragStart={(e) => onAssetDragStart?.(e as unknown as React.DragEvent, logo.url, 'logo')}
+              onDragStart={(e) =>
+                onAssetDragStart?.(e as unknown as React.DragEvent, logo.url, 'logo')
+              }
               title={logo.label || logo.variant}
             >
-              <img src={logo.url} alt={logo.label || logo.variant} className="w-full h-full object-contain p-2" loading="lazy" />
+              <img
+                src={logo.url}
+                alt={logo.label || logo.variant}
+                className="w-full h-full object-contain p-2"
+                loading="lazy"
+              />
               <span className="absolute bottom-0 left-0 right-0 text-[9px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
                 {logo.variant}
               </span>
@@ -859,7 +965,9 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
               animate={{ opacity: 1 }}
               className="group relative flex flex-col gap-4"
               draggable={!!onAssetDragStart}
-              onDragStart={(e) => onAssetDragStart?.(e as unknown as React.DragEvent, logo.url, 'logo')}
+              onDragStart={(e) =>
+                onAssetDragStart?.(e as unknown as React.DragEvent, logo.url, 'logo')
+              }
             >
               <div className="relative aspect-[4/3] rounded-3xl p-8 flex items-center justify-center overflow-hidden transition-all duration-500 border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 group-hover:bg-[var(--brand-surface)]/40 group-hover:border-[var(--brand-text)]/10 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
                 <img
@@ -878,8 +986,12 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                 </div>
               </div>
               <div className="px-2">
-                <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">{logo.label || 'Untitled Asset'}</p>
-                <p className="text-[10px] font-mono uppercase tracking-widest mt-1 opacity-40">{logo.variant} Variant</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">
+                  {logo.label || 'Untitled Asset'}
+                </p>
+                <p className="text-[10px] font-mono uppercase tracking-widest mt-1 opacity-40">
+                  {logo.variant} Variant
+                </p>
               </div>
             </motion.div>
           ))}
@@ -904,18 +1016,19 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
 }) => {
   const media = guideline.media || [];
   const filtered = useMemo(
-    () => media.filter((m) => !searchTerm || m.label?.toLowerCase().includes(searchTerm.toLowerCase())),
+    () =>
+      media.filter((m) => !searchTerm || m.label?.toLowerCase().includes(searchTerm.toLowerCase())),
     [media, searchTerm]
   );
 
   const [fullScreenIdx, setFullScreenIdx] = useState<number | null>(null);
 
-  const handleDownload = useCallback(
-    (item: any) => {
-      triggerAssetDownload(item.url, `${safeFileName(item.label || 'media')}.${extFromUrl(item.url)}`);
-    },
-    []
-  );
+  const handleDownload = useCallback((item: any) => {
+    triggerAssetDownload(
+      item.url,
+      `${safeFileName(item.label || 'media')}.${extFromUrl(item.url)}`
+    );
+  }, []);
 
   const handleClick = useCallback(
     (item: any, idx: number) => {
@@ -938,11 +1051,18 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
               type="button"
               onClick={() => handleClick(item, i)}
               draggable={!!onAssetDragStart}
-              onDragStart={(e) => onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')}
+              onDragStart={(e) =>
+                onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')
+              }
               className="aspect-square rounded-md overflow-hidden border border-white/5 bg-neutral-900/40 hover:border-brand-cyan/30 transition-colors"
               title={item.label || 'Media'}
             >
-              <img src={item.url} alt={item.label || 'Media'} className="w-full h-full object-cover" loading="lazy" />
+              <img
+                src={item.url}
+                alt={item.label || 'Media'}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </button>
           ))}
         </div>
@@ -972,7 +1092,9 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
               animate={{ opacity: 1 }}
               className="group relative flex flex-col gap-4"
               draggable={!!onAssetDragStart}
-              onDragStart={(e) => onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')}
+              onDragStart={(e) =>
+                onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')
+              }
             >
               <div
                 className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10 cursor-pointer"
@@ -988,15 +1110,22 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
                 <Button
                   size="icon"
                   className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-all z-10"
-                  onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload(item);
+                  }}
                 >
                   <Download size={16} />
                 </Button>
 
                 <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm font-bold text-white tracking-tight">{item.label || 'Production File'}</p>
-                    <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Asset // {String(i + 1).padStart(2, '0')}</span>
+                    <p className="text-sm font-bold text-white tracking-tight">
+                      {item.label || 'Production File'}
+                    </p>
+                    <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">
+                      Asset // {String(i + 1).padStart(2, '0')}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1009,8 +1138,14 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
             imageUrl={filtered[fullScreenIdx]?.url}
             isLoading={false}
             onClose={() => setFullScreenIdx(null)}
-            onNavigatePrevious={fullScreenIdx > 0 ? () => setFullScreenIdx(fullScreenIdx - 1) : undefined}
-            onNavigateNext={fullScreenIdx < filtered.length - 1 ? () => setFullScreenIdx(fullScreenIdx + 1) : undefined}
+            onNavigatePrevious={
+              fullScreenIdx > 0 ? () => setFullScreenIdx(fullScreenIdx - 1) : undefined
+            }
+            onNavigateNext={
+              fullScreenIdx < filtered.length - 1
+                ? () => setFullScreenIdx(fullScreenIdx + 1)
+                : undefined
+            }
             hasPrevious={fullScreenIdx > 0}
             hasNext={fullScreenIdx < filtered.length - 1}
           />
@@ -1029,7 +1164,9 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
     return (
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Guidelines" />
-        {g.voice && <p className="text-[11px] text-neutral-400 italic leading-snug mb-2">"{g.voice}"</p>}
+        {g.voice && (
+          <p className="text-[11px] text-neutral-400 italic leading-snug mb-2">"{g.voice}"</p>
+        )}
         {g.dos && g.dos.length > 0 && (
           <ul className="space-y-1 mb-2">
             {g.dos.slice(0, 5).map((item, i) => (
@@ -1067,7 +1204,9 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
           <FullSectionHeader label="Guidelines" />
           {g.voice && (
             <div className="p-8 rounded-3xl bg-[var(--brand-text)]/[0.03] border border-[var(--brand-text)]/[0.05]">
-              <p className="text-lg md:text-xl font-serif italic leading-relaxed opacity-60">"{g.voice}"</p>
+              <p className="text-lg md:text-xl font-serif italic leading-relaxed opacity-60">
+                "{g.voice}"
+              </p>
             </div>
           )}
         </div>
@@ -1080,7 +1219,9 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
                 {g.dos.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
                     <div className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
-                    <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">{item}</span>
+                    <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">
+                      {item}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -1093,7 +1234,9 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
                 {g.donts.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
                     <div className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" />
-                    <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">{item}</span>
+                    <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">
+                      {item}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -1142,14 +1285,23 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   return (
     <div className={cn(wrapperCls, className)}>
       {enabled.has('identity') && <BrandIdentityView guideline={guideline} compact={compact} />}
-      {enabled.has('coreMessage') && <BrandCoreMessageView guideline={guideline} compact={compact} />}
+      {enabled.has('coreMessage') && (
+        <BrandCoreMessageView guideline={guideline} compact={compact} />
+      )}
       {enabled.has('pillars') && <BrandPillarsView guideline={guideline} compact={compact} />}
       {enabled.has('manifesto') && <BrandManifestoView guideline={guideline} compact={compact} />}
       {enabled.has('archetypes') && <BrandArchetypesView guideline={guideline} compact={compact} />}
       {enabled.has('personas') && <BrandPersonasView guideline={guideline} compact={compact} />}
-      {enabled.has('voiceValues') && <BrandVoiceValuesView guideline={guideline} compact={compact} />}
+      {enabled.has('voiceValues') && (
+        <BrandVoiceValuesView guideline={guideline} compact={compact} />
+      )}
       {enabled.has('colors') && (
-        <BrandColorsView guideline={guideline} compact={compact} searchTerm={searchTerm} onColorClick={onColorClick} />
+        <BrandColorsView
+          guideline={guideline}
+          compact={compact}
+          searchTerm={searchTerm}
+          onColorClick={onColorClick}
+        />
       )}
       {enabled.has('typography') && <BrandTypographyView guideline={guideline} compact={compact} />}
       {enabled.has('logos') && (

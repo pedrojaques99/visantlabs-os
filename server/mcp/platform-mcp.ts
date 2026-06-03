@@ -12,7 +12,11 @@ import { ObjectId } from 'mongodb';
 import { improvePrompt, describeImage } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { getCurrentUserId, runWithContext } from '../lib/request-context.js';
-import { buildBrandContext, BRAND_SECTION_PRESETS, type BrandContextSection } from '../lib/brandContextBuilder.js';
+import {
+  buildBrandContext,
+  BRAND_SECTION_PRESETS,
+  type BrandContextSection,
+} from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
 
 // ─── Structured error codes ───────────────────────────────────────────────────
@@ -20,7 +24,11 @@ function mcpError(code: string, message: string, extra?: Record<string, any>) {
   return jsonResponse({ error: { code, message, ...extra } });
 }
 const ERR = {
-  auth: () => mcpError('UNAUTHORIZED', 'Authentication required. Connect with API key: Authorization: Bearer visant_sk_xxx'),
+  auth: () =>
+    mcpError(
+      'UNAUTHORIZED',
+      'Authentication required. Connect with API key: Authorization: Bearer visant_sk_xxx'
+    ),
   notFound: (what: string) => mcpError('NOT_FOUND', `${what} not found`),
   credits: () => mcpError('INSUFFICIENT_CREDITS', 'Not enough credits to perform this operation'),
   validation: (msg: string) => mcpError('VALIDATION_ERROR', msg),
@@ -32,7 +40,8 @@ const hexColorRegex = /^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/;
 function validateColors(colors?: Array<{ hex: string; name: string; role?: string }>) {
   if (!colors) return null;
   for (const c of colors) {
-    if (!hexColorRegex.test(c.hex)) return `Invalid hex color "${c.hex}" for "${c.name}". Expected format: #RRGGBB`;
+    if (!hexColorRegex.test(c.hex))
+      return `Invalid hex color "${c.hex}" for "${c.name}". Expected format: #RRGGBB`;
   }
   return null;
 }
@@ -109,10 +118,9 @@ async function getQuotaMeta(userId: string) {
     const nextReset = user.subscriptionEndDate
       ? new Date(user.subscriptionEndDate)
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    await db.collection('users').updateOne(
-      { _id: user._id },
-      { $set: { creditsUsed: 0, creditsResetDate: nextReset } }
-    );
+    await db
+      .collection('users')
+      .updateOne({ _id: user._id }, { $set: { creditsUsed: 0, creditsResetDate: nextReset } });
     creditsUsed = 0;
   }
 
@@ -125,7 +133,8 @@ async function getQuotaMeta(userId: string) {
   const hasActiveSubscription = plan === 'active';
   const can_generate = hasActiveSubscription
     ? credits_remaining > 0
-    : totalCreditsEarned > 0 || (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && credits_remaining > 0);
+    : totalCreditsEarned > 0 ||
+      (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && credits_remaining > 0);
 
   return {
     credits_remaining,
@@ -138,7 +147,6 @@ async function getQuotaMeta(userId: string) {
   };
 }
 
-
 function jsonResponse(data: unknown) {
   return {
     content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }],
@@ -146,10 +154,17 @@ function jsonResponse(data: unknown) {
 }
 
 // ─── Community likes helper ──────────────────────────────────────────────────
-async function getCommunityLikesMap(db: any, presetIds: string[], userId?: string): Promise<Map<string, { likesCount: number; isLikedByUser: boolean }>> {
-  const likes = await db.collection('community_preset_likes').find({ presetId: { $in: presetIds } }).toArray();
+async function getCommunityLikesMap(
+  db: any,
+  presetIds: string[],
+  userId?: string
+): Promise<Map<string, { likesCount: number; isLikedByUser: boolean }>> {
+  const likes = await db
+    .collection('community_preset_likes')
+    .find({ presetId: { $in: presetIds } })
+    .toArray();
   const map = new Map<string, { likesCount: number; isLikedByUser: boolean }>();
-  presetIds.forEach(id => map.set(id, { likesCount: 0, isLikedByUser: false }));
+  presetIds.forEach((id) => map.set(id, { likesCount: 0, isLikedByUser: false }));
   const userOid = userId ? new ObjectId(userId) : null;
   likes.forEach((like: any) => {
     const entry = map.get(like.presetId) || { likesCount: 0, isLikedByUser: false };
@@ -161,7 +176,8 @@ async function getCommunityLikesMap(db: any, presetIds: string[], userId?: strin
 }
 
 /** Base URL for internal API calls (reuses existing route logic for credits, validation, etc.) */
-const INTERNAL_API_BASE = process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
+const INTERNAL_API_BASE =
+  process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
 /** Extract the `data:` payload from a specific SSE event in raw text. */
 function extractSseEventData(sseText: string, eventName: string): string | null {
@@ -180,9 +196,13 @@ function extractSseEventData(sseText: string, eventName: string): string | null 
 let _registeredToolNames: string[] = [];
 
 /** Returns the live list of tool names registered in the platform MCP server. */
-export function getMcpToolNames(): string[] { return _registeredToolNames; }
+export function getMcpToolNames(): string[] {
+  return _registeredToolNames;
+}
 /** Returns the live count of tools registered in the platform MCP server. */
-export function getMcpToolCount(): number { return _registeredToolNames.length; }
+export function getMcpToolCount(): number {
+  return _registeredToolNames.length;
+}
 
 /**
  * Creates and returns a Platform MCP server with all tools registered.
@@ -325,10 +345,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password, name: name || email.split('@')[0] }),
         });
-        const result = await resp.json() as any;
-        if (!resp.ok) return ERR.validation(result?.error || result?.message || `Registration failed (${resp.status})`);
+        const result = (await resp.json()) as any;
+        if (!resp.ok)
+          return ERR.validation(
+            result?.error || result?.message || `Registration failed (${resp.status})`
+          );
         return jsonResponse({
-          message: 'Account created. Use api-key-create with the returned token to generate your visant_sk_xxx API key.',
+          message:
+            'Account created. Use api-key-create with the returned token to generate your visant_sk_xxx API key.',
           token: result.token,
           user: { id: result.user?.id, email: result.user?.email, name: result.user?.name },
         });
@@ -352,10 +376,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
         });
-        const result = await resp.json() as any;
-        if (!resp.ok) return ERR.validation(result?.error || result?.message || `Login failed (${resp.status})`);
+        const result = (await resp.json()) as any;
+        if (!resp.ok)
+          return ERR.validation(
+            result?.error || result?.message || `Login failed (${resp.status})`
+          );
         return jsonResponse({
-          message: 'Signed in. Use api-key-create with this token to generate a persistent visant_sk_xxx API key.',
+          message:
+            'Signed in. Use api-key-create with this token to generate a persistent visant_sk_xxx API key.',
           token: result.token,
           user: { id: result.user?.id, email: result.user?.email, name: result.user?.name },
         });
@@ -369,19 +397,32 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'api-key-create',
     'Create a new Visant API key (visant_sk_xxx). Requires either an active API key (Bearer token) OR a JWT from auth-login/auth-register. The raw key is shown only once — save it immediately.',
     {
-      name: z.string().max(100).describe('A label for this key, e.g. "Claude.ai MCP" or "Production".'),
-      scopes: z.array(z.enum(['read', 'write', 'generate'])).default(['read', 'write', 'generate']).describe('Permission scopes.'),
-      jwt: z.string().optional().describe('JWT token from auth-login or auth-register (if you have no API key yet).'),
+      name: z
+        .string()
+        .max(100)
+        .describe('A label for this key, e.g. "Claude.ai MCP" or "Production".'),
+      scopes: z
+        .array(z.enum(['read', 'write', 'generate']))
+        .default(['read', 'write', 'generate'])
+        .describe('Permission scopes.'),
+      jwt: z
+        .string()
+        .optional()
+        .describe('JWT token from auth-login or auth-register (if you have no API key yet).'),
     },
     async ({ name, scopes, jwt }) => {
       const currentUserId = getMcpUserId();
       // Allow either MCP API key auth OR a JWT passed directly
       const authHeader = currentUserId
         ? `x-mcp-user-id: ${currentUserId}` // will be handled below
-        : jwt ? null : null;
+        : jwt
+        ? null
+        : null;
 
       if (!currentUserId && !jwt) {
-        return ERR.validation('Authentication required. Pass a JWT from auth-login, or connect with an existing API key.');
+        return ERR.validation(
+          'Authentication required. Pass a JWT from auth-login, or connect with an existing API key.'
+        );
       }
       try {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -395,7 +436,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers,
           body: JSON.stringify({ name, scopes }),
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Key creation failed (${resp.status})`);
         return jsonResponse({
           message: 'API key created. Save the key — it will not be shown again.',
@@ -423,7 +464,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const resp = await fetch(`${INTERNAL_API_BASE}/api/api-keys`, {
           headers: { 'x-mcp-user-id': currentUserId },
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Failed to list keys (${resp.status})`);
         return jsonResponse({ keys: result.keys });
       } catch (err: any) {
@@ -451,7 +492,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ imageBase64 }),
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Detection failed (${resp.status})`);
         return jsonResponse({ boxes: result.boxes, count: result.boxes?.length ?? 0 });
       } catch (err: any) {
@@ -476,7 +517,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ imageBase64, size }),
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upscale failed (${resp.status})`);
         return jsonResponse({ upscaledBase64: result.upscaledBase64, size });
       } catch (err: any) {
@@ -489,10 +530,16 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'moodboard-suggest',
     'Analyze images from a moodboard and suggest Remotion animation presets and Veo video generation prompts for each cell. Useful for turning static moodboard cells into motion content.',
     {
-      images: z.array(z.object({
-        id: z.string().describe('Cell identifier (e.g. "cell-1").'),
-        base64: z.string().describe('Base64-encoded image data for this cell.'),
-      })).min(1).max(9).describe('Array of moodboard cells to analyze.'),
+      images: z
+        .array(
+          z.object({
+            id: z.string().describe('Cell identifier (e.g. "cell-1").'),
+            base64: z.string().describe('Base64-encoded image data for this cell.'),
+          })
+        )
+        .min(1)
+        .max(9)
+        .describe('Array of moodboard cells to analyze.'),
     },
     async ({ images }) => {
       const currentUserId = getMcpUserId();
@@ -503,7 +550,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ images }),
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Suggest failed (${resp.status})`);
         return jsonResponse({ suggestions: result.suggestions });
       } catch (err: any) {
@@ -543,10 +590,23 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       try {
         await connectToMongoDB();
         const db = getDb();
-        const user = await db.collection('users').findOne(
-          { _id: new ObjectId(currentUserId) },
-          { projection: { _id: 1, name: 1, email: 1, picture: 1, subscriptionStatus: 1, username: 1, bio: 1, createdAt: 1 } }
-        );
+        const user = await db
+          .collection('users')
+          .findOne(
+            { _id: new ObjectId(currentUserId) },
+            {
+              projection: {
+                _id: 1,
+                name: 1,
+                email: 1,
+                picture: 1,
+                subscriptionStatus: 1,
+                username: 1,
+                bio: 1,
+                createdAt: 1,
+              },
+            }
+          );
         if (!user) return jsonResponse({ error: 'User not found' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ id: currentUserId, ...user, _id: undefined, _meta: quota });
@@ -576,7 +636,15 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           take: limit,
           skip,
           orderBy: { createdAt: 'desc' },
-          select: { id: true, prompt: true, imageUrl: true, designType: true, tags: true, aspectRatio: true, createdAt: true },
+          select: {
+            id: true,
+            prompt: true,
+            imageUrl: true,
+            designType: true,
+            tags: true,
+            aspectRatio: true,
+            createdAt: true,
+          },
         });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ mockups, total: mockups.length, _meta: quota });
@@ -647,11 +715,30 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'ai-generate-image',
     'Generate an image from a text prompt. No brand injection, no project saving — just prompt → image. For placing existing designs in scenes, use mockup-generate instead. Costs credits.',
     {
-      prompt: z.string().min(1).describe('Full image description — style, composition, colors, lighting, mood.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
-      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('Output aspect ratio.'),
+      prompt: z
+        .string()
+        .min(1)
+        .describe('Full image description — style, composition, colors, lighting, mood.'),
+      model: z
+        .enum([
+          'gpt-image-2',
+          'gpt-image-1',
+          GEMINI_MODELS.IMAGE_FLASH,
+          GEMINI_MODELS.IMAGE_NB2,
+          GEMINI_MODELS.IMAGE_PRO,
+          'seedream-3-0',
+        ])
+        .default('gpt-image-2')
+        .describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
+      aspectRatio: z
+        .enum(['1:1', '9:16', '16:9', '4:5'])
+        .default('1:1')
+        .describe('Output aspect ratio.'),
       resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
-      referenceImages: z.array(z.string()).optional().describe('Reference URLs or base64 to guide style. Use upload-image for local files.'),
+      referenceImages: z
+        .array(z.string())
+        .optional()
+        .describe('Reference URLs or base64 to guide style. Use upload-image for local files.'),
       seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
     async ({ prompt, model, aspectRatio, resolution, referenceImages, seed }) => {
@@ -672,8 +759,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             feature: 'agent',
           }),
         });
-        const result = await response.json() as any;
-        if (!response.ok) return ERR.internal(result.error || `Image generation failed (${response.status})`);
+        const result = (await response.json()) as any;
+        if (!response.ok)
+          return ERR.internal(result.error || `Image generation failed (${response.status})`);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
           imageUrl: result.imageUrl || null,
@@ -694,18 +782,65 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'mockup-generate',
     'Generate a mockup image placing a design into a realistic scene. Pass the design as referenceImages URL; describe only the scene in the prompt. See server instructions for the full workflow.',
     {
-      prompt: z.string().min(1).describe('Scene/environment ONLY — surface, lighting, camera angle, wear, background. Never describe the design content here; pass it via referenceImages instead.'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID. Auto-injects logo, colors, typography, voice into generation.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'),
-      provider: z.enum(['openai', 'gemini', 'seedream']).optional().describe('Provider override. Inferred from model by default.'),
-      aspectRatio: z.enum(['1:1', '9:16', '16:9', '4:5']).default('1:1').describe('1:1=square, 9:16=story, 16:9=landscape, 4:5=portrait.'),
+      prompt: z
+        .string()
+        .min(1)
+        .describe(
+          'Scene/environment ONLY — surface, lighting, camera angle, wear, background. Never describe the design content here; pass it via referenceImages instead.'
+        ),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe(
+          'Brand guideline ID. Auto-injects logo, colors, typography, voice into generation.'
+        ),
+      model: z
+        .enum([
+          'gpt-image-2',
+          'gpt-image-1',
+          GEMINI_MODELS.IMAGE_FLASH,
+          GEMINI_MODELS.IMAGE_NB2,
+          GEMINI_MODELS.IMAGE_PRO,
+          'seedream-3-0',
+        ])
+        .default('gpt-image-2')
+        .describe(
+          'gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'
+        ),
+      provider: z
+        .enum(['openai', 'gemini', 'seedream'])
+        .optional()
+        .describe('Provider override. Inferred from model by default.'),
+      aspectRatio: z
+        .enum(['1:1', '9:16', '16:9', '4:5'])
+        .default('1:1')
+        .describe('1:1=square, 9:16=story, 16:9=landscape, 4:5=portrait.'),
       resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
-      designType: z.string().optional().describe('Hint: business-card, social-media, packaging, apparel, signage, sticker, etc.'),
+      designType: z
+        .string()
+        .optional()
+        .describe('Hint: business-card, social-media, packaging, apparel, signage, sticker, etc.'),
       baseImageUrl: z.string().optional().describe('Base image URL for image-to-image generation.'),
-      referenceImages: z.array(z.string()).optional().describe('URLs of the design/artwork to place in the scene. Get URLs via upload-image. Also accepts base64 strings.'),
+      referenceImages: z
+        .array(z.string())
+        .optional()
+        .describe(
+          'URLs of the design/artwork to place in the scene. Get URLs via upload-image. Also accepts base64 strings.'
+        ),
       seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
-    async ({ prompt, brandGuidelineId, model, provider, aspectRatio, resolution, designType, baseImageUrl, referenceImages, seed }) => {
+    async ({
+      prompt,
+      brandGuidelineId,
+      model,
+      provider,
+      aspectRatio,
+      resolution,
+      designType,
+      baseImageUrl,
+      referenceImages,
+      seed,
+    }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -726,8 +861,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             feature: 'agent',
           }),
         });
-        const result = await response.json() as any;
-        if (!response.ok) return ERR.internal(result.error || `Generation failed (${response.status})`);
+        const result = (await response.json()) as any;
+        if (!response.ok)
+          return ERR.internal(result.error || `Generation failed (${response.status})`);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
           imageUrl: result.imageUrl || null,
@@ -753,26 +889,75 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Generate a video using AI (Google Veo or Kling). Supports text-to-video, image-to-video, frames-to-video, extend-video, and references modes. Costs credits based on model.',
     {
       prompt: z.string().min(1).describe('Video scene description.'),
-      model: z.enum([
-        'veo-3.1-generate-preview', 'veo-3.1-fast-generate-preview',
-        'kling-v3-omni', 'kling-v3', 'kling-v2.6', 'kling-v2.5-turbo',
-        'kling-v2.1', 'kling-v1.6', 'kling-v1.5', 'kling-v1',
-      ]).default('veo-3.1-generate-preview').describe('Video model. veo-3.1=high quality, veo-3.1-fast=faster, kling-v3-omni=latest Kling.'),
-      mode: z.enum(['text_to_video', 'image_to_video', 'frames_to_video', 'extend_video', 'references']).default('text_to_video').describe('Generation mode.'),
-      aspectRatio: z.enum(['16:9', '9:16', '1:1', '4:3', '3:4']).default('16:9').describe('Output aspect ratio.'),
+      model: z
+        .enum([
+          'veo-3.1-generate-preview',
+          'veo-3.1-fast-generate-preview',
+          'kling-v3-omni',
+          'kling-v3',
+          'kling-v2.6',
+          'kling-v2.5-turbo',
+          'kling-v2.1',
+          'kling-v1.6',
+          'kling-v1.5',
+          'kling-v1',
+        ])
+        .default('veo-3.1-generate-preview')
+        .describe(
+          'Video model. veo-3.1=high quality, veo-3.1-fast=faster, kling-v3-omni=latest Kling.'
+        ),
+      mode: z
+        .enum(['text_to_video', 'image_to_video', 'frames_to_video', 'extend_video', 'references'])
+        .default('text_to_video')
+        .describe('Generation mode.'),
+      aspectRatio: z
+        .enum(['16:9', '9:16', '1:1', '4:3', '3:4'])
+        .default('16:9')
+        .describe('Output aspect ratio.'),
       duration: z.enum(['5s', '10s']).default('5s').describe('Video duration.'),
       negativePrompt: z.string().optional().describe('What to avoid (Kling models only).'),
       isLooping: z.boolean().optional().describe('Loop the video (Veo models only).'),
       seed: z.number().int().optional().describe('Random seed for reproducible generation.'),
-      startFrame: z.string().optional().describe('Start frame image URL (for frames_to_video or image_to_video mode).'),
+      startFrame: z
+        .string()
+        .optional()
+        .describe('Start frame image URL (for frames_to_video or image_to_video mode).'),
       endFrame: z.string().optional().describe('End frame image URL (for frames_to_video mode).'),
-      referenceImages: z.array(z.string()).max(4).optional().describe('Reference image URLs (up to 4, for references mode).'),
+      referenceImages: z
+        .array(z.string())
+        .max(4)
+        .optional()
+        .describe('Reference image URLs (up to 4, for references mode).'),
       inputVideo: z.string().optional().describe('Input video URL (for extend_video mode).'),
-      klingMode: z.enum(['std', 'pro', '4k']).optional().describe('Kling quality mode (Kling models only).'),
+      klingMode: z
+        .enum(['std', 'pro', '4k'])
+        .optional()
+        .describe('Kling quality mode (Kling models only).'),
       sound: z.enum(['on', 'off']).optional().describe('Generate audio (Kling v2.6+ and Veo 3.1).'),
-      cfgScale: z.number().min(0).max(1).optional().describe('CFG scale 0-1 (Kling v1.x only). 0=free, 1=strict prompt adherence.'),
+      cfgScale: z
+        .number()
+        .min(0)
+        .max(1)
+        .optional()
+        .describe('CFG scale 0-1 (Kling v1.x only). 0=free, 1=strict prompt adherence.'),
     },
-    async ({ prompt, model, mode, aspectRatio, duration, negativePrompt, isLooping, seed, startFrame, endFrame, referenceImages, inputVideo, klingMode, sound, cfgScale }) => {
+    async ({
+      prompt,
+      model,
+      mode,
+      aspectRatio,
+      duration,
+      negativePrompt,
+      isLooping,
+      seed,
+      startFrame,
+      endFrame,
+      referenceImages,
+      inputVideo,
+      klingMode,
+      sound,
+      cfgScale,
+    }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -797,8 +982,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             cfgScale,
           }),
         });
-        const result = await response.json() as any;
-        if (!response.ok) return ERR.internal(result.error || result.message || `Video generation failed (${response.status})`);
+        const result = (await response.json()) as any;
+        if (!response.ok)
+          return ERR.internal(
+            result.error || result.message || `Video generation failed (${response.status})`
+          );
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
           videoUrl: result.videoUrl || null,
@@ -865,23 +1053,64 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'branding-generate',
     'Generate brand identity elements from a text prompt. Use step="full" for complete generation or target a specific step for iterative refinement. Costs credits.',
     {
-      prompt: z.string().min(1).describe('Brand brief (e.g. "modern tech startup called Acme, targets developers, dark aesthetic").'),
-      step: z.enum([
-        'full', 'market-research', 'swot', 'persona', 'archetype', 'concept-ideas', 'color-palettes', 'moodboard',
-        'visant-full', 'visant-central-message', 'visant-market-research', 'visant-persona', 'visant-archetypes-tone',
-        'visant-manifesto', 'visant-swot', 'visant-color-palette', 'visant-typography', 'visant-graphic-system', 'visant-logo-concept',
-      ]).default('full').describe('Generation step. RECOMMENDED: use "visant-full" for the complete Metodologia Visant pipeline (10 steps, higher quality). Legacy: "full" runs the older single-pass pipeline. For iterative refinement, use individual "visant-*" steps in order and pass previousData between calls.'),
-      previousData: z.record(z.string(), z.unknown()).optional().describe('Output from a previous step to use as context for the next step. Pass the result of the previous branding-generate call here.'),
-      brandGuidelineId: z.string().optional().describe('Existing brand guideline ID to use as context/reference.'),
+      prompt: z
+        .string()
+        .min(1)
+        .describe(
+          'Brand brief (e.g. "modern tech startup called Acme, targets developers, dark aesthetic").'
+        ),
+      step: z
+        .enum([
+          'full',
+          'market-research',
+          'swot',
+          'persona',
+          'archetype',
+          'concept-ideas',
+          'color-palettes',
+          'moodboard',
+          'visant-full',
+          'visant-central-message',
+          'visant-market-research',
+          'visant-persona',
+          'visant-archetypes-tone',
+          'visant-manifesto',
+          'visant-swot',
+          'visant-color-palette',
+          'visant-typography',
+          'visant-graphic-system',
+          'visant-logo-concept',
+        ])
+        .default('full')
+        .describe(
+          'Generation step. RECOMMENDED: use "visant-full" for the complete Metodologia Visant pipeline (10 steps, higher quality). Legacy: "full" runs the older single-pass pipeline. For iterative refinement, use individual "visant-*" steps in order and pass previousData between calls.'
+        ),
+      previousData: z
+        .record(z.string(), z.unknown())
+        .optional()
+        .describe(
+          'Output from a previous step to use as context for the next step. Pass the result of the previous branding-generate call here.'
+        ),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe('Existing brand guideline ID to use as context/reference.'),
     },
     async ({ prompt, step, previousData, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
 
       const visantStepMap: Record<string, number> = {
-        'visant-central-message': 101, 'visant-market-research': 102, 'visant-persona': 103,
-        'visant-archetypes-tone': 104, 'visant-manifesto': 105, 'visant-swot': 106,
-        'visant-color-palette': 107, 'visant-typography': 108, 'visant-graphic-system': 109, 'visant-logo-concept': 110,
+        'visant-central-message': 101,
+        'visant-market-research': 102,
+        'visant-persona': 103,
+        'visant-archetypes-tone': 104,
+        'visant-manifesto': 105,
+        'visant-swot': 106,
+        'visant-color-palette': 107,
+        'visant-typography': 108,
+        'visant-graphic-system': 109,
+        'visant-logo-concept': 110,
       };
 
       const isVisantFull = step === 'visant-full';
@@ -895,17 +1124,27 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             const response = await fetch(`${INTERNAL_API_BASE}/api/branding/generate-step`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-              body: JSON.stringify({ prompt, step: stepNum, previousData: accumulatedData, feature: 'agent' }),
+              body: JSON.stringify({
+                prompt,
+                step: stepNum,
+                previousData: accumulatedData,
+                feature: 'agent',
+              }),
             });
-            const result = await response.json() as any;
+            const result = (await response.json()) as any;
             if (!response.ok) return ERR.internal(result.error || `Visant step ${stepNum} failed`);
             // Accumulate data for cascading context
             if (result.data) {
-              if (stepNum === 101) { accumulatedData.centralMessage = result.data.centralMessage; accumulatedData.pillars = result.data.pillars; accumulatedData.version = 'v2'; }
-              else if (stepNum === 102) accumulatedData.marketResearchV2 = result.data;
+              if (stepNum === 101) {
+                accumulatedData.centralMessage = result.data.centralMessage;
+                accumulatedData.pillars = result.data.pillars;
+                accumulatedData.version = 'v2';
+              } else if (stepNum === 102) accumulatedData.marketResearchV2 = result.data;
               else if (stepNum === 103) accumulatedData.personaV2 = result.data;
-              else if (stepNum === 104) { accumulatedData.archetypesV2 = result.data.archetypes; accumulatedData.toneOfVoice = result.data.toneOfVoice; }
-              else if (stepNum === 105) accumulatedData.manifesto = result.data;
+              else if (stepNum === 104) {
+                accumulatedData.archetypesV2 = result.data.archetypes;
+                accumulatedData.toneOfVoice = result.data.toneOfVoice;
+              } else if (stepNum === 105) accumulatedData.manifesto = result.data;
               else if (stepNum === 106) accumulatedData.swot = result.data;
               else if (stepNum === 107) accumulatedData.colorPaletteV2 = result.data;
               else if (stepNum === 108) accumulatedData.typography = result.data;
@@ -922,10 +1161,17 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const response = await fetch(`${INTERNAL_API_BASE}/api/branding/generate-step`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ prompt, step: resolvedStep, previousData, brandGuidelineId, feature: 'agent' }),
+          body: JSON.stringify({
+            prompt,
+            step: resolvedStep,
+            previousData,
+            brandGuidelineId,
+            feature: 'agent',
+          }),
         });
-        const result = await response.json() as any;
-        if (!response.ok) return ERR.internal(result.error || `Branding generation failed (${response.status})`);
+        const result = (await response.json()) as any;
+        if (!response.ok)
+          return ERR.internal(result.error || `Branding generation failed (${response.status})`);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, step, _meta: quota });
       } catch (err: any) {
@@ -1101,7 +1347,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       if (!currentUserId) return ERR.auth();
       try {
         let userApiKey: string | undefined;
-        try { userApiKey = await getGeminiApiKey(currentUserId); } catch { /* use system key */ }
+        try {
+          userApiKey = await getGeminiApiKey(currentUserId);
+        } catch {
+          /* use system key */
+        }
         const result = await improvePrompt(prompt, userApiKey);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ improvedPrompt: result.improvedPrompt, _meta: quota });
@@ -1119,8 +1369,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'upload-image',
     'Upload a base64 image and get a permanent public URL. Required before mockup-generate/ai-generate-image when you have a local file. Free, no credits, max 20MB.',
     {
-      data: z.string().min(1).describe('Base64-encoded image data. With or without data URI prefix — both work.'),
-      contentType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']).default('image/png').describe('MIME type. Default: image/png.'),
+      data: z
+        .string()
+        .min(1)
+        .describe('Base64-encoded image data. With or without data URI prefix — both work.'),
+      contentType: z
+        .enum(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+        .default('image/png')
+        .describe('MIME type. Default: image/png.'),
       label: z.string().optional().describe('Optional label for organization (e.g. "sticker-v1").'),
     },
     async ({ data, contentType, label }) => {
@@ -1134,7 +1390,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ data, contentType, label }),
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ url: result.url, id: result.id, size: result.size, _meta: quota });
@@ -1149,7 +1405,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Analyze an image and return a detailed text description. Provide either a URL or base64-encoded data. Free, no credit cost.',
     {
       imageUrl: z.string().url().optional().describe('Public URL of the image to analyze.'),
-      base64: z.string().optional().describe('Base64-encoded image data (include data URI prefix or raw base64).'),
+      base64: z
+        .string()
+        .optional()
+        .describe('Base64-encoded image data (include data URI prefix or raw base64).'),
     },
     async ({ imageUrl, base64 }) => {
       const currentUserId = getMcpUserId();
@@ -1160,12 +1419,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         }
 
         let userApiKey: string | undefined;
-        try { userApiKey = await getGeminiApiKey(currentUserId); } catch { /* use system key */ }
+        try {
+          userApiKey = await getGeminiApiKey(currentUserId);
+        } catch {
+          /* use system key */
+        }
 
         // Build image input
-        const imageInput = base64
-          ? { base64, mimeType: 'image/png' }
-          : imageUrl!;
+        const imageInput = base64 ? { base64, mimeType: 'image/png' } : imageUrl!;
 
         const result = await describeImage(imageInput as any, userApiKey);
         const quota = await getQuotaMeta(currentUserId);
@@ -1184,8 +1445,16 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'image-extract-url',
     'Extract high-resolution images from any public URL (Behance, Pinterest, Dribbble, portfolios, blogs). Returns a list of image URLs with metadata. Supports lazy-loaded images, srcset, and background images.',
     {
-      url: z.string().url().describe('The public URL to extract images from (e.g. Behance gallery, portfolio page).'),
-      limit: z.number().min(1).max(200).default(80).describe('Maximum number of images to return (default 80).'),
+      url: z
+        .string()
+        .url()
+        .describe('The public URL to extract images from (e.g. Behance gallery, portfolio page).'),
+      limit: z
+        .number()
+        .min(1)
+        .max(200)
+        .default(80)
+        .describe('Maximum number of images to return (default 80).'),
     },
     async ({ url, limit }) => {
       const currentUserId = getMcpUserId();
@@ -1201,7 +1470,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           },
           body: JSON.stringify({ url, limit }),
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || 'Extraction failed');
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
@@ -1241,11 +1510,33 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Get a brand guideline by ID. Use "sections" to fetch only what you need (e.g. ["colors","typography"] for visual tasks). Presets: "visual" (colors/typo/tokens), "copy" (voice/strategy), "minimal" (identity/colors/typo), "imageGen", "full". Omit sections for full context.',
     {
       id: z.string().describe('The brand guideline ID.'),
-      format: z.enum(['structured', 'prompt']).default('structured').describe('Output format: "structured" (JSON) or "prompt" (LLM-ready text).'),
-      sections: z.union([
-        z.array(z.enum(['identity', 'colors', 'typography', 'voice', 'strategy', 'tokens', 'logos', 'media', 'tags', 'themes', 'knowledge'])),
-        z.enum(['visual', 'copy', 'full', 'imageGen', 'minimal']),
-      ]).optional().describe('Which brand sections to include. Pass an array of specific sections or a preset name. Omit for full context.'),
+      format: z
+        .enum(['structured', 'prompt'])
+        .default('structured')
+        .describe('Output format: "structured" (JSON) or "prompt" (LLM-ready text).'),
+      sections: z
+        .union([
+          z.array(
+            z.enum([
+              'identity',
+              'colors',
+              'typography',
+              'voice',
+              'strategy',
+              'tokens',
+              'logos',
+              'media',
+              'tags',
+              'themes',
+              'knowledge',
+            ])
+          ),
+          z.enum(['visual', 'copy', 'full', 'imageGen', 'minimal']),
+        ])
+        .optional()
+        .describe(
+          'Which brand sections to include. Pass an array of specific sections or a preset name. Omit for full context.'
+        ),
     },
     async ({ id, format, sections: sectionsInput }) => {
       const currentUserId = getMcpUserId();
@@ -1259,13 +1550,16 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const quota = await getQuotaMeta(currentUserId);
 
         const resolvedSections: BrandContextSection[] | undefined =
-          typeof sectionsInput === 'string'
-            ? BRAND_SECTION_PRESETS[sectionsInput]
-            : sectionsInput;
+          typeof sectionsInput === 'string' ? BRAND_SECTION_PRESETS[sectionsInput] : sectionsInput;
 
         if (format === 'prompt') {
           const context = buildBrandContext(guideline as any, { sections: resolvedSections });
-          return jsonResponse({ context, id: guideline.id, sections: resolvedSections || 'full', _meta: quota });
+          return jsonResponse({
+            context,
+            id: guideline.id,
+            sections: resolvedSections || 'full',
+            _meta: quota,
+          });
         }
 
         return jsonResponse({ ...guideline, _meta: quota });
@@ -1286,8 +1580,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const guideline = await prisma.brandGuideline.findFirst({
           where: { publicSlug: slug, isPublic: true },
         });
-        if (!guideline) return jsonResponse({ error: 'Public brand guideline not found or not public' });
-        
+        if (!guideline)
+          return jsonResponse({ error: 'Public brand guideline not found or not public' });
+
         // Return without userId for privacy
         const { userId, ...publicData } = guideline as any;
         return jsonResponse({ guideline: publicData });
@@ -1305,58 +1600,89 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'brand-guidelines-create',
     'Create a new brand guideline. Provide at minimum an identity.name. All other sections (colors, typography, guidelines, strategy, tokens) are optional and can be added now or via brand-guidelines-update later.',
     {
-      identity: z.object({
-        name: z.string().describe('Brand name (required).'),
-        tagline: z.string().optional(),
-        website: z.string().optional(),
-        description: z.string().optional(),
-      }).describe('Brand identity.'),
-      colors: z.array(z.object({
-        hex: z.string().describe('Hex color e.g. #FF5733'),
-        name: z.string(),
-        role: z.string().optional().describe('e.g. primary, secondary, background, text, accent'),
-      })).optional(),
-      typography: z.array(z.object({
-        family: z.string(),
-        role: z.string().describe('e.g. heading, body, accent, mono'),
-        style: z.string().optional().describe('e.g. Bold, Regular, SemiBold'),
-        size: z.number().optional(),
-      })).optional(),
-      guidelines: z.object({
-        voice: z.string().optional().describe('Brand tone of voice description.'),
-        dos: z.array(z.string()).optional(),
-        donts: z.array(z.string()).optional(),
-        imagery: z.string().optional(),
-        accessibility: z.string().optional(),
-      }).optional(),
-      strategy: z.object({
-        manifesto: z.string().optional(),
-        positioning: z.array(z.string()).optional(),
-        archetypes: z.array(z.object({
-          name: z.string(),
-          role: z.enum(['primary', 'secondary']).optional(),
-          description: z.string(),
-          examples: z.array(z.string()).optional(),
-        })).optional(),
-        personas: z.array(z.object({
-          name: z.string(),
-          age: z.number().optional(),
-          occupation: z.string().optional(),
-          traits: z.array(z.string()).optional(),
-          bio: z.string().optional(),
-          desires: z.array(z.string()).optional(),
-          painPoints: z.array(z.string()).optional(),
-        })).optional(),
-        voiceValues: z.array(z.object({
-          title: z.string(),
-          description: z.string(),
-          example: z.string(),
-        })).optional(),
-      }).optional(),
-      tokens: z.object({
-        spacing: z.record(z.string(), z.number()).optional(),
-        radius: z.record(z.string(), z.number()).optional(),
-      }).optional(),
+      identity: z
+        .object({
+          name: z.string().describe('Brand name (required).'),
+          tagline: z.string().optional(),
+          website: z.string().optional(),
+          description: z.string().optional(),
+        })
+        .describe('Brand identity.'),
+      colors: z
+        .array(
+          z.object({
+            hex: z.string().describe('Hex color e.g. #FF5733'),
+            name: z.string(),
+            role: z
+              .string()
+              .optional()
+              .describe('e.g. primary, secondary, background, text, accent'),
+          })
+        )
+        .optional(),
+      typography: z
+        .array(
+          z.object({
+            family: z.string(),
+            role: z.string().describe('e.g. heading, body, accent, mono'),
+            style: z.string().optional().describe('e.g. Bold, Regular, SemiBold'),
+            size: z.number().optional(),
+          })
+        )
+        .optional(),
+      guidelines: z
+        .object({
+          voice: z.string().optional().describe('Brand tone of voice description.'),
+          dos: z.array(z.string()).optional(),
+          donts: z.array(z.string()).optional(),
+          imagery: z.string().optional(),
+          accessibility: z.string().optional(),
+        })
+        .optional(),
+      strategy: z
+        .object({
+          manifesto: z.string().optional(),
+          positioning: z.array(z.string()).optional(),
+          archetypes: z
+            .array(
+              z.object({
+                name: z.string(),
+                role: z.enum(['primary', 'secondary']).optional(),
+                description: z.string(),
+                examples: z.array(z.string()).optional(),
+              })
+            )
+            .optional(),
+          personas: z
+            .array(
+              z.object({
+                name: z.string(),
+                age: z.number().optional(),
+                occupation: z.string().optional(),
+                traits: z.array(z.string()).optional(),
+                bio: z.string().optional(),
+                desires: z.array(z.string()).optional(),
+                painPoints: z.array(z.string()).optional(),
+              })
+            )
+            .optional(),
+          voiceValues: z
+            .array(
+              z.object({
+                title: z.string(),
+                description: z.string(),
+                example: z.string(),
+              })
+            )
+            .optional(),
+        })
+        .optional(),
+      tokens: z
+        .object({
+          spacing: z.record(z.string(), z.number()).optional(),
+          radius: z.record(z.string(), z.number()).optional(),
+        })
+        .optional(),
     },
     async (input) => {
       const currentUserId = getMcpUserId();
@@ -1370,15 +1696,21 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           data: {
             userId: currentUserId,
             identity: input.identity as any,
-            colors: input.colors as any ?? undefined,
-            typography: input.typography as any ?? undefined,
-            guidelines: input.guidelines as any ?? undefined,
-            strategy: input.strategy as any ?? undefined,
-            tokens: input.tokens as any ?? undefined,
-            extraction: { sources: [{ type: 'manual', date: new Date().toISOString() }], completeness: 0 } as any,
+            colors: (input.colors as any) ?? undefined,
+            typography: (input.typography as any) ?? undefined,
+            guidelines: (input.guidelines as any) ?? undefined,
+            strategy: (input.strategy as any) ?? undefined,
+            tokens: (input.tokens as any) ?? undefined,
+            extraction: {
+              sources: [{ type: 'manual', date: new Date().toISOString() }],
+              completeness: 0,
+            } as any,
           },
         });
-        return jsonResponse({ guideline: { id: guideline.id, identity: guideline.identity }, _meta: quota });
+        return jsonResponse({
+          guideline: { id: guideline.id, identity: guideline.identity },
+          _meta: quota,
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1390,60 +1722,96 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Patch one or more sections of an existing brand guideline. Only the fields you provide are updated — others remain unchanged. Use this to iteratively build or refine a guideline section by section.',
     {
       id: z.string().describe('The brand guideline ID to update.'),
-      identity: z.object({
-        name: z.string().optional(),
-        tagline: z.string().optional(),
-        website: z.string().optional(),
-        description: z.string().optional(),
-      }).optional(),
-      colors: z.array(z.object({
-        hex: z.string(),
-        name: z.string(),
-        role: z.string().optional().describe('e.g. primary, secondary, background, text, accent, cta'),
-      })).optional().describe('Replaces the full colors array.'),
-      typography: z.array(z.object({
-        family: z.string(),
-        role: z.string(),
-        style: z.string().optional(),
-        size: z.number().optional(),
-        lineHeight: z.number().optional(),
-      })).optional().describe('Replaces the full typography array.'),
-      guidelines: z.object({
-        voice: z.string().optional(),
-        dos: z.array(z.string()).optional(),
-        donts: z.array(z.string()).optional(),
-        imagery: z.string().optional(),
-        accessibility: z.string().optional(),
-      }).optional(),
-      strategy: z.object({
-        manifesto: z.string().optional(),
-        positioning: z.array(z.string()).optional(),
-        archetypes: z.array(z.object({
-          name: z.string(),
-          role: z.enum(['primary', 'secondary']).optional(),
-          description: z.string(),
-          examples: z.array(z.string()).optional(),
-        })).optional(),
-        personas: z.array(z.object({
-          name: z.string(),
-          age: z.number().optional(),
-          occupation: z.string().optional(),
-          traits: z.array(z.string()).optional(),
-          bio: z.string().optional(),
-          desires: z.array(z.string()).optional(),
-          painPoints: z.array(z.string()).optional(),
-        })).optional(),
-        voiceValues: z.array(z.object({
-          title: z.string(),
-          description: z.string(),
-          example: z.string(),
-        })).optional(),
-      }).optional(),
-      tokens: z.object({
-        spacing: z.record(z.string(), z.number()).optional(),
-        radius: z.record(z.string(), z.number()).optional(),
-      }).optional(),
-      tags: z.record(z.string(), z.array(z.string())).optional().describe('Industry/keyword tags by category, e.g. { "style": ["premium", "minimal"] }'),
+      identity: z
+        .object({
+          name: z.string().optional(),
+          tagline: z.string().optional(),
+          website: z.string().optional(),
+          description: z.string().optional(),
+        })
+        .optional(),
+      colors: z
+        .array(
+          z.object({
+            hex: z.string(),
+            name: z.string(),
+            role: z
+              .string()
+              .optional()
+              .describe('e.g. primary, secondary, background, text, accent, cta'),
+          })
+        )
+        .optional()
+        .describe('Replaces the full colors array.'),
+      typography: z
+        .array(
+          z.object({
+            family: z.string(),
+            role: z.string(),
+            style: z.string().optional(),
+            size: z.number().optional(),
+            lineHeight: z.number().optional(),
+          })
+        )
+        .optional()
+        .describe('Replaces the full typography array.'),
+      guidelines: z
+        .object({
+          voice: z.string().optional(),
+          dos: z.array(z.string()).optional(),
+          donts: z.array(z.string()).optional(),
+          imagery: z.string().optional(),
+          accessibility: z.string().optional(),
+        })
+        .optional(),
+      strategy: z
+        .object({
+          manifesto: z.string().optional(),
+          positioning: z.array(z.string()).optional(),
+          archetypes: z
+            .array(
+              z.object({
+                name: z.string(),
+                role: z.enum(['primary', 'secondary']).optional(),
+                description: z.string(),
+                examples: z.array(z.string()).optional(),
+              })
+            )
+            .optional(),
+          personas: z
+            .array(
+              z.object({
+                name: z.string(),
+                age: z.number().optional(),
+                occupation: z.string().optional(),
+                traits: z.array(z.string()).optional(),
+                bio: z.string().optional(),
+                desires: z.array(z.string()).optional(),
+                painPoints: z.array(z.string()).optional(),
+              })
+            )
+            .optional(),
+          voiceValues: z
+            .array(
+              z.object({
+                title: z.string(),
+                description: z.string(),
+                example: z.string(),
+              })
+            )
+            .optional(),
+        })
+        .optional(),
+      tokens: z
+        .object({
+          spacing: z.record(z.string(), z.number()).optional(),
+          radius: z.record(z.string(), z.number()).optional(),
+        })
+        .optional(),
+      tags: z
+        .record(z.string(), z.array(z.string()))
+        .optional()
+        .describe('Industry/keyword tags by category, e.g. { "style": ["premium", "minimal"] }'),
     },
     async ({ id, ...patch }) => {
       const currentUserId = getMcpUserId();
@@ -1533,9 +1901,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Extract brand data (colors, typography, voice, strategy) from a URL or raw text and merge it into an existing brand guideline. Useful for bootstrapping a guideline from a website, landing page, or brand document. Returns what was extracted so the user can review before saving.',
     {
       id: z.string().describe('Brand guideline ID to merge extracted data into.'),
-      source: z.enum(['url', 'text']).describe('"url" to scrape a webpage; "text" to extract from raw text/markdown.'),
+      source: z
+        .enum(['url', 'text'])
+        .describe('"url" to scrape a webpage; "text" to extract from raw text/markdown.'),
       url: z.string().optional().describe('URL to scrape (required when source=url).'),
-      text: z.string().optional().describe('Raw text or markdown to extract from (required when source=text).'),
+      text: z
+        .string()
+        .optional()
+        .describe('Raw text or markdown to extract from (required when source=text).'),
     },
     async ({ id, source, url, text }) => {
       const currentUserId = getMcpUserId();
@@ -1543,7 +1916,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       if (source === 'url' && !url) return ERR.validation('url is required when source=url');
       if (source === 'text' && !text) return ERR.validation('text is required when source=text');
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
 
         const quota = await getQuotaMeta(currentUserId);
@@ -1562,10 +1937,12 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
 
         if (!resp.ok) {
           const errBody = await resp.json().catch(() => ({}));
-          return ERR.internal((errBody as any).message || `Ingest failed with status ${resp.status}`);
+          return ERR.internal(
+            (errBody as any).message || `Ingest failed with status ${resp.status}`
+          );
         }
 
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         const extracted = result.extracted || {};
         return jsonResponse({
           message: 'Extracted and merged successfully.',
@@ -1589,31 +1966,49 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Generate a public read-only link for a brand guideline. Once shared, anyone with the link can view colors, typography, logos, and brand strategy — without authentication. Returns the public URL.',
     {
       id: z.string().describe('Brand guideline ID to share.'),
-      disable: z.boolean().optional().describe('Pass true to revoke public access instead of enabling it.'),
+      disable: z
+        .boolean()
+        .optional()
+        .describe('Pass true to revoke public access instead of enabling it.'),
     },
     async ({ id, disable }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
 
         const quota = await getQuotaMeta(currentUserId);
 
         if (disable) {
-          await prisma.brandGuideline.update({ where: { id: existing.id }, data: { isPublic: false } });
-          return jsonResponse({ success: true, isPublic: false, message: 'Public access revoked.', _meta: quota });
+          await prisma.brandGuideline.update({
+            where: { id: existing.id },
+            data: { isPublic: false },
+          });
+          return jsonResponse({
+            success: true,
+            isPublic: false,
+            message: 'Public access revoked.',
+            _meta: quota,
+          });
         }
 
         const { nanoid } = await import('nanoid');
         let publicSlug = existing.publicSlug;
         if (!publicSlug) {
           const baseName = ((existing.identity as any)?.name || 'brand')
-            .toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .slice(0, 30);
           publicSlug = `${baseName}-${nanoid(8)}`;
         }
 
-        await prisma.brandGuideline.update({ where: { id: existing.id }, data: { publicSlug, isPublic: true } });
+        await prisma.brandGuideline.update({
+          where: { id: existing.id },
+          data: { publicSlug, isPublic: true },
+        });
 
         const baseUrl = process.env.VITE_SITE_URL || 'https://visantlabs.com';
         const shareUrl = `${baseUrl}/brand/${publicSlug}`;
@@ -1650,12 +2045,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           select: { versionNumber: true, changeNote: true, changedFields: true, createdAt: true },
         });
 
-        const total = await prisma.brandGuidelineVersion.count({ where: { guidelineId: existing.id } });
+        const total = await prisma.brandGuidelineVersion.count({
+          where: { guidelineId: existing.id },
+        });
 
         return jsonResponse({
           currentVersion: (existing as any).currentVersion || 1,
           total,
-          versions: versions.map(v => ({
+          versions: versions.map((v) => ({
             version: v.versionNumber,
             note: v.changeNote,
             changed: v.changedFields,
@@ -1679,16 +2076,27 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID.'),
       data: z.string().optional().describe('Base64-encoded image data (PNG, SVG, WEBP).'),
-      url: z.string().optional().describe('Public URL of the logo image (alternative to base64 data).'),
-      variant: z.enum(['primary', 'dark', 'light', 'icon', 'accent', 'custom']).default('primary').describe('Logo variant.'),
-      label: z.string().optional().describe('Human-readable label, e.g. "Horizontal", "Dark mode".'),
+      url: z
+        .string()
+        .optional()
+        .describe('Public URL of the logo image (alternative to base64 data).'),
+      variant: z
+        .enum(['primary', 'dark', 'light', 'icon', 'accent', 'custom'])
+        .default('primary')
+        .describe('Logo variant.'),
+      label: z
+        .string()
+        .optional()
+        .describe('Human-readable label, e.g. "Horizontal", "Dark mode".'),
     },
     async ({ id, data, url, variant, label }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       if (!data && !url) return ERR.validation('Either data (base64) or url is required.');
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
         const quota = await getQuotaMeta(currentUserId);
         const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/logos`, {
@@ -1696,7 +2104,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ data, url, variant, label }),
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
         return jsonResponse({ logo: result.logo, allLogos: result.allLogos, _meta: quota });
       } catch (err: any) {
@@ -1716,15 +2124,20 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
         const quota = await getQuotaMeta(currentUserId);
-        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/logos/${logoId}`, {
-          method: 'DELETE',
-          headers: { 'x-mcp-user-id': currentUserId },
-        });
+        const resp = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/logos/${logoId}`,
+          {
+            method: 'DELETE',
+            headers: { 'x-mcp-user-id': currentUserId },
+          }
+        );
         if (!resp.ok) {
-          const errBody = await resp.json().catch(() => ({})) as any;
+          const errBody = (await resp.json().catch(() => ({}))) as any;
           return ERR.internal(errBody?.error || `Delete failed (${resp.status})`);
         }
         return jsonResponse({ success: true, deleted: logoId, _meta: quota });
@@ -1740,16 +2153,24 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID.'),
       data: z.string().optional().describe('Base64-encoded image or PDF data.'),
-      url: z.string().optional().describe('Public URL of the media asset (alternative to base64 data).'),
+      url: z
+        .string()
+        .optional()
+        .describe('Public URL of the media asset (alternative to base64 data).'),
       type: z.enum(['image', 'pdf']).default('image').describe('Asset type.'),
-      label: z.string().optional().describe('Label for this media asset, e.g. "Brand Presentation", "Campaign Photo".'),
+      label: z
+        .string()
+        .optional()
+        .describe('Label for this media asset, e.g. "Brand Presentation", "Campaign Photo".'),
     },
     async ({ id, data, url, type, label }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       if (!data && !url) return ERR.validation('Either data (base64) or url is required.');
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
         const quota = await getQuotaMeta(currentUserId);
         const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media`, {
@@ -1757,7 +2178,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ data, url, type, label }),
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
         return jsonResponse({ media: result.media, allMedia: result.allMedia, _meta: quota });
       } catch (err: any) {
@@ -1777,15 +2198,20 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
         const quota = await getQuotaMeta(currentUserId);
-        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media/${mediaId}`, {
-          method: 'DELETE',
-          headers: { 'x-mcp-user-id': currentUserId },
-        });
+        const resp = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media/${mediaId}`,
+          {
+            method: 'DELETE',
+            headers: { 'x-mcp-user-id': currentUserId },
+          }
+        );
         if (!resp.ok) {
-          const errBody = await resp.json().catch(() => ({})) as any;
+          const errBody = (await resp.json().catch(() => ({}))) as any;
           return ERR.internal(errBody?.error || `Delete failed (${resp.status})`);
         }
         return jsonResponse({ success: true, deleted: mediaId, _meta: quota });
@@ -1805,14 +2231,16 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
         const quota = await getQuotaMeta(currentUserId);
         const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/duplicate`, {
           method: 'POST',
           headers: { 'x-mcp-user-id': currentUserId },
         });
-        const result = await resp.json() as any;
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Duplicate failed (${resp.status})`);
         return jsonResponse({ guideline: result.guideline, _meta: quota });
       } catch (err: any) {
@@ -1826,20 +2254,29 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Restore a brand guideline to a previous version. The current state is preserved as a version before restoring.',
     {
       id: z.string().describe('Brand guideline ID.'),
-      version: z.number().int().min(1).describe('Version number to restore (from brand-guidelines-versions).'),
+      version: z
+        .number()
+        .int()
+        .min(1)
+        .describe('Version number to restore (from brand-guidelines-versions).'),
     },
     async ({ id, version }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
         const quota = await getQuotaMeta(currentUserId);
-        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/versions/${version}/restore`, {
-          method: 'POST',
-          headers: { 'x-mcp-user-id': currentUserId },
-        });
-        const result = await resp.json() as any;
+        const resp = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/versions/${version}/restore`,
+          {
+            method: 'POST',
+            headers: { 'x-mcp-user-id': currentUserId },
+          }
+        );
+        const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Restore failed (${resp.status})`);
         return jsonResponse({ success: true, restoredTo: version, id, _meta: quota });
       } catch (err: any) {
@@ -1858,15 +2295,21 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const existing = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!existing) return ERR.notFound('Brand guideline');
         const quota = await getQuotaMeta(currentUserId);
-        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compliance-check`, {
-          method: 'POST',
-          headers: { 'x-mcp-user-id': currentUserId },
-        });
-        const result = await resp.json() as any;
-        if (!resp.ok) return ERR.internal(result?.error || `Compliance check failed (${resp.status})`);
+        const resp = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compliance-check`,
+          {
+            method: 'POST',
+            headers: { 'x-mcp-user-id': currentUserId },
+          }
+        );
+        const result = (await resp.json()) as any;
+        if (!resp.ok)
+          return ERR.internal(result?.error || `Compliance check failed (${resp.status})`);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -1878,7 +2321,17 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
   // Community
   // ═══════════════════════════════════════════
 
-  const validCategories = ['3d', 'presets', 'aesthetics', 'themes', 'mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
+  const validCategories = [
+    '3d',
+    'presets',
+    'aesthetics',
+    'themes',
+    'mockup',
+    'angle',
+    'texture',
+    'ambience',
+    'luminance',
+  ] as const;
   const validPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
 
   server.tool(
@@ -1901,16 +2354,27 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           filter.$or = [{ name: regex }, { description: regex }, { tags: regex }];
         }
         const [presets, total] = await Promise.all([
-          db.collection('community_presets').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+          db
+            .collection('community_presets')
+            .find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray(),
           db.collection('community_presets').countDocuments(filter),
         ]);
         const presetIds = presets.map((p: any) => p.id);
-        const likesData = presetIds.length > 0 ? await getCommunityLikesMap(db, presetIds) : new Map();
+        const likesData =
+          presetIds.length > 0 ? await getCommunityLikesMap(db, presetIds) : new Map();
         const enriched = presets.map((p: any) => {
           const likes = likesData.get(p.id);
           return { ...p, _id: undefined, likesCount: likes?.likesCount ?? 0 };
         });
-        return jsonResponse({ presets: enriched, total, page: { limit, skip, hasMore: skip + limit < total } });
+        return jsonResponse({
+          presets: enriched,
+          total,
+          page: { limit, skip, hasMore: skip + limit < total },
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1946,17 +2410,48 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       description: z.string().min(1).max(5000).describe('What this preset does.'),
       prompt: z.string().min(1).max(50000).describe('The generation prompt.'),
       category: z.enum(validCategories).describe('Preset category.'),
-      presetType: z.enum(validPresetTypes).optional().describe('Required when category is "presets".'),
-      aspectRatio: z.string().max(20).default('1:1').describe('Aspect ratio (e.g. 1:1, 16:9, 9:16, 4:5).'),
+      presetType: z
+        .enum(validPresetTypes)
+        .optional()
+        .describe('Required when category is "presets".'),
+      aspectRatio: z
+        .string()
+        .max(20)
+        .default('1:1')
+        .describe('Aspect ratio (e.g. 1:1, 16:9, 9:16, 4:5).'),
       model: z.string().max(100).optional().describe('AI model used (e.g. gemini-2.0-flash).'),
       tags: z.array(z.string().max(50)).max(20).optional().describe('Tags for discoverability.'),
       referenceImageUrl: z.string().url().max(2000).optional().describe('Reference image URL.'),
-      difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional().describe('Difficulty level.'),
-      context: z.enum(['canvas', 'mockup', 'branding', 'general']).optional().describe('Usage context.'),
+      difficulty: z
+        .enum(['beginner', 'intermediate', 'advanced'])
+        .optional()
+        .describe('Difficulty level.'),
+      context: z
+        .enum(['canvas', 'mockup', 'branding', 'general'])
+        .optional()
+        .describe('Usage context.'),
       useCase: z.string().max(1000).optional().describe('Example use case description.'),
-      examples: z.array(z.string().max(2000)).max(5).optional().describe('Example outputs or variations.'),
+      examples: z
+        .array(z.string().max(2000))
+        .max(5)
+        .optional()
+        .describe('Example outputs or variations.'),
     },
-    async ({ name, description, prompt, category, presetType, aspectRatio, model, tags, referenceImageUrl, difficulty, context, useCase, examples }) => {
+    async ({
+      name,
+      description,
+      prompt,
+      category,
+      presetType,
+      aspectRatio,
+      model,
+      tags,
+      referenceImageUrl,
+      difficulty,
+      context,
+      useCase,
+      examples,
+    }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -1982,12 +2477,13 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         };
         if (presetType) preset.presetType = presetType;
         if (model) preset.model = model;
-        if (tags && tags.length > 0) preset.tags = tags.map(t => t.trim()).filter(Boolean);
+        if (tags && tags.length > 0) preset.tags = tags.map((t) => t.trim()).filter(Boolean);
         if (referenceImageUrl) preset.referenceImageUrl = referenceImageUrl;
         if (difficulty) preset.difficulty = difficulty;
         if (context) preset.context = context;
         if (useCase) preset.useCase = useCase;
-        if (examples && examples.length > 0) preset.examples = examples.map(e => e.trim()).filter(Boolean);
+        if (examples && examples.length > 0)
+          preset.examples = examples.map((e) => e.trim()).filter(Boolean);
 
         await db.collection('community_presets').insertOne(preset);
         return jsonResponse({ created: true, preset: { ...preset, _id: undefined } });
@@ -2036,12 +2532,15 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         if (fields.presetType !== undefined) update.presetType = fields.presetType;
         if (fields.aspectRatio !== undefined) update.aspectRatio = fields.aspectRatio;
         if (fields.model !== undefined) update.model = fields.model;
-        if (fields.tags !== undefined) update.tags = fields.tags.map(t => t.trim()).filter(Boolean);
-        if (fields.referenceImageUrl !== undefined) update.referenceImageUrl = fields.referenceImageUrl;
+        if (fields.tags !== undefined)
+          update.tags = fields.tags.map((t) => t.trim()).filter(Boolean);
+        if (fields.referenceImageUrl !== undefined)
+          update.referenceImageUrl = fields.referenceImageUrl;
         if (fields.difficulty !== undefined) update.difficulty = fields.difficulty;
         if (fields.context !== undefined) update.context = fields.context;
         if (fields.useCase !== undefined) update.useCase = fields.useCase;
-        if (fields.examples !== undefined) update.examples = fields.examples.map(e => e.trim()).filter(Boolean);
+        if (fields.examples !== undefined)
+          update.examples = fields.examples.map((e) => e.trim()).filter(Boolean);
 
         await db.collection('community_presets').updateOne({ id }, { $set: update });
         const updated = await db.collection('community_presets').findOne({ id });
@@ -2095,13 +2594,19 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const preset = await db.collection('community_presets').findOne({ id });
         if (!preset) return ERR.notFound('Preset');
         const userId = new ObjectId(currentUserId);
-        const existing = await db.collection('community_preset_likes').findOne({ presetId: id, userId });
+        const existing = await db
+          .collection('community_preset_likes')
+          .findOne({ presetId: id, userId });
         if (existing) {
           await db.collection('community_preset_likes').deleteOne({ presetId: id, userId });
         } else {
-          await db.collection('community_preset_likes').insertOne({ presetId: id, userId, createdAt: new Date().toISOString() });
+          await db
+            .collection('community_preset_likes')
+            .insertOne({ presetId: id, userId, createdAt: new Date().toISOString() });
         }
-        const likesCount = await db.collection('community_preset_likes').countDocuments({ presetId: id });
+        const likesCount = await db
+          .collection('community_preset_likes')
+          .countDocuments({ presetId: id });
         return jsonResponse({ liked: !existing, likesCount });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2124,16 +2629,34 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const db = getDb();
         const filter = { userId: new ObjectId(currentUserId) };
         const [presets, total] = await Promise.all([
-          db.collection('community_presets').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+          db
+            .collection('community_presets')
+            .find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray(),
           db.collection('community_presets').countDocuments(filter),
         ]);
         const presetIds = presets.map((p: any) => p.id);
-        const likesData = presetIds.length > 0 ? await getCommunityLikesMap(db, presetIds, currentUserId) : new Map();
+        const likesData =
+          presetIds.length > 0
+            ? await getCommunityLikesMap(db, presetIds, currentUserId)
+            : new Map();
         const enriched = presets.map((p: any) => {
           const likes = likesData.get(p.id);
-          return { ...p, _id: undefined, likesCount: likes?.likesCount ?? 0, isLikedByUser: likes?.isLikedByUser ?? false };
+          return {
+            ...p,
+            _id: undefined,
+            likesCount: likes?.likesCount ?? 0,
+            isLikedByUser: likes?.isLikedByUser ?? false,
+          };
         });
-        return jsonResponse({ presets: enriched, total, page: { limit, skip, hasMore: skip + limit < total } });
+        return jsonResponse({
+          presets: enriched,
+          total,
+          page: { limit, skip, hasMore: skip + limit < total },
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2150,11 +2673,20 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       search: z.string().optional().describe('Free text search across name and description.'),
       niche: z.string().optional().describe('Filter by niche (e.g. "luxury", "tech", "food").'),
-      aesthetic: z.string().optional().describe('Filter by aesthetic (e.g. "minimalist", "brutalist").'),
+      aesthetic: z
+        .string()
+        .optional()
+        .describe('Filter by aesthetic (e.g. "minimalist", "brutalist").'),
       vibe: z.string().optional().describe('Filter by vibe (e.g. "premium", "playful").'),
-      lighting: z.string().optional().describe('Filter by lighting (e.g. "soft studio", "golden hour").'),
+      lighting: z
+        .string()
+        .optional()
+        .describe('Filter by lighting (e.g. "soft studio", "golden hour").'),
       texture: z.string().optional().describe('Filter by texture (e.g. "marble", "concrete").'),
-      mockup_type: z.string().optional().describe('Filter by mockup type (e.g. "packaging", "stationery").'),
+      mockup_type: z
+        .string()
+        .optional()
+        .describe('Filter by mockup type (e.g. "packaging", "stationery").'),
       limit: z.number().int().min(1).max(50).default(20).describe('Max results.'),
     },
     async ({ search, niche, aesthetic, vibe, lighting, texture, mockup_type, limit }) => {
@@ -2162,10 +2694,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         await connectToMongoDB();
         const db = getDb();
         const filter: any = { category: 'reference', isAdminCurated: true };
-        if (search) filter.$or = [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-        ];
+        if (search)
+          filter.$or = [
+            { name: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+          ];
         if (niche) filter['dimensions.niche'] = { $in: [niche] };
         if (aesthetic) filter['dimensions.aesthetic'] = { $in: [aesthetic] };
         if (vibe) filter['dimensions.vibe'] = { $in: [vibe] };
@@ -2173,11 +2706,22 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         if (texture) filter['dimensions.texture'] = { $in: [texture] };
         if (mockup_type) filter['dimensions.mockup_type'] = { $in: [mockup_type] };
 
-        const refs = await db.collection('community_presets')
+        const refs = await db
+          .collection('community_presets')
           .find(filter)
           .sort({ createdAt: -1 })
           .limit(limit)
-          .project({ _id: 0, id: 1, name: 1, studio: 1, description: 1, referenceImageUrl: 1, dimensions: 1, tags: 1, prompt: 1 })
+          .project({
+            _id: 0,
+            id: 1,
+            name: 1,
+            studio: 1,
+            description: 1,
+            referenceImageUrl: 1,
+            dimensions: 1,
+            tags: 1,
+            prompt: 1,
+          })
           .toArray();
         return jsonResponse({ references: refs, total: refs.length });
       } catch (err: any) {
@@ -2192,7 +2736,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       imageUrl: z.string().url().describe('Public URL of the reference image.'),
       name: z.string().optional().describe('Name for the reference.'),
-      studio: z.string().optional().describe('Studio or creator name (e.g. "Hazard Mockups", "Visant Labs").'),
+      studio: z
+        .string()
+        .optional()
+        .describe('Studio or creator name (e.g. "Hazard Mockups", "Visant Labs").'),
       tags: z.array(z.string()).optional().describe('Manual tags to add.'),
       prompt: z.string().optional().describe('The prompt that generated this mockup (if known).'),
     },
@@ -2238,7 +2785,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           take: limit,
           skip,
           orderBy: { createdAt: 'desc' },
-          select: { id: true, name: true, username: true, picture: true, bio: true, createdAt: true },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            picture: true,
+            bio: true,
+            createdAt: true,
+          },
         });
         return jsonResponse({ profiles: users, total: users.length, page: { limit, skip } });
       } catch (err: any) {
@@ -2267,7 +2821,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           { headers: { 'x-mcp-user-id': currentUserId } }
         );
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to list creative projects' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to list creative projects' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2286,12 +2841,12 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const response = await fetch(
-          `${INTERNAL_API_BASE}/api/creative-projects/${id}`,
-          { headers: { 'x-mcp-user-id': currentUserId } }
-        );
+        const response = await fetch(`${INTERNAL_API_BASE}/api/creative-projects/${id}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Creative project not found' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Creative project not found' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2308,9 +2863,20 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'creative-generate',
     'Generate a structured marketing creative layout (background, text layers, logo, shapes) from a prompt. Optionally inject brand guideline context. Returns a layered creative plan ready for the Creative Studio. Costs credits.',
     {
-      prompt: z.string().min(1).describe('Creative brief (e.g. "Summer sale banner for a surf brand, bold and energetic").'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject colors, fonts, and voice into the creative.'),
-      format: z.enum(['1:1', '16:9', '9:16', '4:5']).default('1:1').describe('Output aspect ratio.'),
+      prompt: z
+        .string()
+        .min(1)
+        .describe(
+          'Creative brief (e.g. "Summer sale banner for a surf brand, bold and energetic").'
+        ),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe('Brand guideline ID to inject colors, fonts, and voice into the creative.'),
+      format: z
+        .enum(['1:1', '16:9', '9:16', '4:5'])
+        .default('1:1')
+        .describe('Output aspect ratio.'),
     },
     async ({ prompt, brandGuidelineId, format }) => {
       const currentUserId = getMcpUserId();
@@ -2325,7 +2891,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           body: JSON.stringify({ prompt, brandGuidelineId, format, feature: 'agent' }),
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Creative generation failed', status: response.status });
+        if (!response.ok)
+          return jsonResponse({
+            error: result.error || 'Creative generation failed',
+            status: response.status,
+          });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2342,19 +2912,34 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'creative-render',
     'Render a creative plan (from creative-generate) into a PNG image server-side. Pass the plan JSON and the pre-generated background image URL. Returns imageUrl (R2) or imageBase64. Use this to close the generate→image loop without a browser: generate plan, render, inspect image with vision, adjust, re-render.',
     {
-      plan: z.object({
-        background: z.object({ prompt: z.string().optional(), url: z.string().optional() }).optional(),
-        overlay: z.object({
-          type: z.enum(['gradient', 'solid']),
-          direction: z.enum(['bottom', 'top', 'left', 'right']).optional(),
-          opacity: z.number(),
-          color: z.string().optional(),
-        }).nullable().optional(),
-        layers: z.array(z.record(z.string(), z.any())).describe('Layer array from creative-generate.'),
-      }).describe('Creative plan from creative-generate.'),
-      backgroundImageUrl: z.string().optional().describe('Pre-generated background image URL (from mockup-generate or any image URL).'),
+      plan: z
+        .object({
+          background: z
+            .object({ prompt: z.string().optional(), url: z.string().optional() })
+            .optional(),
+          overlay: z
+            .object({
+              type: z.enum(['gradient', 'solid']),
+              direction: z.enum(['bottom', 'top', 'left', 'right']).optional(),
+              opacity: z.number(),
+              color: z.string().optional(),
+            })
+            .nullable()
+            .optional(),
+          layers: z
+            .array(z.record(z.string(), z.any()))
+            .describe('Layer array from creative-generate.'),
+        })
+        .describe('Creative plan from creative-generate.'),
+      backgroundImageUrl: z
+        .string()
+        .optional()
+        .describe('Pre-generated background image URL (from mockup-generate or any image URL).'),
       format: z.enum(['1:1', '16:9', '9:16', '4:5']).default('1:1').describe('Output format.'),
-      accentColor: z.string().optional().describe('Hex color for <accent> words in text layers. Defaults to white.'),
+      accentColor: z
+        .string()
+        .optional()
+        .describe('Hex color for <accent> words in text layers. Defaults to white.'),
     },
     async ({ plan, backgroundImageUrl, format, accentColor }) => {
       const currentUserId = getMcpUserId();
@@ -2369,7 +2954,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           body: JSON.stringify({ plan, backgroundImageUrl, format, accentColor }),
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Render failed', status: response.status });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Render failed', status: response.status });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2387,10 +2973,29 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Full creative pipeline in one call. Generates layout plan → background image → renders to PNG → saves project. Returns imageUrl, projectId, plan, and per-step credits. Use this instead of chaining creative-generate + mockup-generate + creative-render manually.',
     {
       prompt: z.string().min(1).describe('Creative brief describing the desired visual.'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID to inject brand context.'),
-      format: z.enum(['1:1', '16:9', '9:16', '4:5']).default('1:1').describe('Output aspect ratio.'),
-      model: z.enum(['gpt-image-2', 'gpt-image-1', GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO, 'seedream-3-0']).default('gpt-image-2').describe('Model for background image generation.'),
-      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Resolution for background image generation.'),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe('Brand guideline ID to inject brand context.'),
+      format: z
+        .enum(['1:1', '16:9', '9:16', '4:5'])
+        .default('1:1')
+        .describe('Output aspect ratio.'),
+      model: z
+        .enum([
+          'gpt-image-2',
+          'gpt-image-1',
+          GEMINI_MODELS.IMAGE_FLASH,
+          GEMINI_MODELS.IMAGE_NB2,
+          GEMINI_MODELS.IMAGE_PRO,
+          'seedream-3-0',
+        ])
+        .default('gpt-image-2')
+        .describe('Model for background image generation.'),
+      resolution: z
+        .enum(['1K', '2K', '4K'])
+        .default('1K')
+        .describe('Resolution for background image generation.'),
       autoSave: z.boolean().default(true).describe('Persist result as a creative project.'),
     },
     async ({ prompt, brandGuidelineId, format, model, resolution, autoSave }) => {
@@ -2406,8 +3011,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ prompt, brandGuidelineId, format, feature: 'agent' }),
         });
-        const planData = await planRes.json() as any;
-        if (!planRes.ok) return ERR.internal(planData.error || `Creative plan failed (${planRes.status})`);
+        const planData = (await planRes.json()) as any;
+        if (!planRes.ok)
+          return ERR.internal(planData.error || `Creative plan failed (${planRes.status})`);
         const plan = planData.plan ?? planData;
         credits.plan = planData.creditsUsed ?? null;
 
@@ -2416,10 +3022,19 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const mockupRes = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ promptText: bgPrompt, brandGuidelineId, model, resolution, aspectRatio: format, designType: 'background', feature: 'agent' }),
+          body: JSON.stringify({
+            promptText: bgPrompt,
+            brandGuidelineId,
+            model,
+            resolution,
+            aspectRatio: format,
+            designType: 'background',
+            feature: 'agent',
+          }),
         });
-        const mockupData = await mockupRes.json() as any;
-        const backgroundImageUrl: string | undefined = mockupData.imageUrl ?? mockupData.mockup?.imageUrl;
+        const mockupData = (await mockupRes.json()) as any;
+        const backgroundImageUrl: string | undefined =
+          mockupData.imageUrl ?? mockupData.mockup?.imageUrl;
         credits.background = mockupData.creditsUsed ?? null;
 
         // Step 3: Render creative to PNG
@@ -2428,10 +3043,16 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({ plan, backgroundImageUrl, format }),
         });
-        const renderData = await renderRes.json() as any;
+        const renderData = (await renderRes.json()) as any;
         if (!renderRes.ok) {
           // Partial success — return what we have so the agent can retry render
-          return jsonResponse({ error: renderData.error || `Render failed (${renderRes.status})`, step: 'render', plan, backgroundImageUrl, creditsUsed: credits });
+          return jsonResponse({
+            error: renderData.error || `Render failed (${renderRes.status})`,
+            step: 'render',
+            plan,
+            backgroundImageUrl,
+            creditsUsed: credits,
+          });
         }
         const imageUrl: string = renderData.imageUrl ?? renderData.imageBase64;
         credits.render = renderData.creditsUsed ?? null;
@@ -2443,7 +3064,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
             body: JSON.stringify({
-              prompt, format,
+              prompt,
+              format,
               brandId: brandGuidelineId || null,
               backgroundUrl: backgroundImageUrl || null,
               layers: plan.layers ?? [],
@@ -2452,12 +3074,19 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
               name: `Creative — ${prompt.slice(0, 50)}`,
             }),
           });
-          const saveData = await saveRes.json() as any;
+          const saveData = (await saveRes.json()) as any;
           projectId = saveData.project?.id;
         }
 
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ imageUrl, backgroundImageUrl, plan, projectId, creditsUsed: credits, _meta: quota });
+        return jsonResponse({
+          imageUrl,
+          backgroundImageUrl,
+          plan,
+          projectId,
+          creditsUsed: credits,
+          _meta: quota,
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2474,11 +3103,20 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       prompt: z.string().min(1).describe('Creative brief used to generate this project.'),
       format: z.string().describe('Aspect ratio (e.g. "1:1", "16:9").'),
-      layers: z.array(z.record(z.string(), z.any())).describe('Layer array from creative-generate.'),
-      name: z.string().optional().describe('Project display name. Defaults to "Untitled Creative".'),
+      layers: z
+        .array(z.record(z.string(), z.any()))
+        .describe('Layer array from creative-generate.'),
+      name: z
+        .string()
+        .optional()
+        .describe('Project display name. Defaults to "Untitled Creative".'),
       brandId: z.string().nullable().optional().describe('Brand guideline ID to associate.'),
       backgroundUrl: z.string().nullable().optional().describe('Background image URL.'),
-      overlay: z.record(z.string(), z.any()).nullable().optional().describe('Overlay config from creative plan.'),
+      overlay: z
+        .record(z.string(), z.any())
+        .nullable()
+        .optional()
+        .describe('Overlay config from creative plan.'),
       thumbnailUrl: z.string().nullable().optional().describe('Thumbnail image URL.'),
     },
     async ({ prompt, format, layers, name, brandId, backgroundUrl, overlay, thumbnailUrl }) => {
@@ -2488,10 +3126,20 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const response = await fetch(`${INTERNAL_API_BASE}/api/creative-projects`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ prompt, format, layers, name, brandId, backgroundUrl, overlay, thumbnailUrl }),
+          body: JSON.stringify({
+            prompt,
+            format,
+            layers,
+            name,
+            brandId,
+            backgroundUrl,
+            overlay,
+            thumbnailUrl,
+          }),
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to create creative project' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to create creative project' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2511,7 +3159,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       layers: z.array(z.record(z.string(), z.any())).optional().describe('Updated layers array.'),
       brandId: z.string().nullable().optional().describe('Brand guideline ID to associate.'),
       backgroundUrl: z.string().nullable().optional().describe('Updated background image URL.'),
-      overlay: z.record(z.string(), z.any()).nullable().optional().describe('Updated overlay config.'),
+      overlay: z
+        .record(z.string(), z.any())
+        .nullable()
+        .optional()
+        .describe('Updated overlay config.'),
       thumbnailUrl: z.string().nullable().optional().describe('Updated thumbnail URL.'),
     },
     async ({ id, name, prompt, format, layers, brandId, backgroundUrl, overlay, thumbnailUrl }) => {
@@ -2521,10 +3173,20 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const response = await fetch(`${INTERNAL_API_BASE}/api/creative-projects/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ name, prompt, format, layers, brandId, backgroundUrl, overlay, thumbnailUrl }),
+          body: JSON.stringify({
+            name,
+            prompt,
+            format,
+            layers,
+            brandId,
+            backgroundUrl,
+            overlay,
+            thumbnailUrl,
+          }),
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to update creative project' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to update creative project' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2548,7 +3210,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'x-mcp-user-id': currentUserId },
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to delete creative project' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to delete creative project' });
         return jsonResponse({ ok: result.ok ?? true });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2562,7 +3225,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
 
   server.tool(
     'mockup-update',
-    'Update a mockup\'s metadata (prompt, tags, isLiked, designType, aspectRatio). Does not regenerate the image.',
+    "Update a mockup's metadata (prompt, tags, isLiked, designType, aspectRatio). Does not regenerate the image.",
     {
       id: z.string().describe('Mockup MongoDB ObjectId.'),
       prompt: z.string().optional().describe('Updated prompt text.'),
@@ -2621,9 +3284,17 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'branding-save',
     'Create or update a branding project. If projectId is provided and the project exists, it updates it; otherwise creates a new one. Returns the saved project.',
     {
-      prompt: z.string().min(1).describe('Brand brief or description used to generate the project.'),
-      data: z.record(z.string(), z.any()).describe('Branding project data (colors, typography, logos, etc.).'),
-      projectId: z.string().optional().describe('Existing project ID to update. Omit to create a new project.'),
+      prompt: z
+        .string()
+        .min(1)
+        .describe('Brand brief or description used to generate the project.'),
+      data: z
+        .record(z.string(), z.any())
+        .describe('Branding project data (colors, typography, logos, etc.).'),
+      projectId: z
+        .string()
+        .optional()
+        .describe('Existing project ID to update. Omit to create a new project.'),
       name: z.string().optional().describe('Project display name.'),
     },
     async ({ prompt, data, projectId, name }) => {
@@ -2636,7 +3307,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           body: JSON.stringify({ prompt, data, projectId, name }),
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to save branding project' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to save branding project' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2660,7 +3332,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'x-mcp-user-id': currentUserId },
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to delete branding project' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to delete branding project' });
         return jsonResponse({ ok: result.success ?? true });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2680,7 +3353,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       name: z.string().optional().describe('New project name.'),
       nodes: z.array(z.record(z.string(), z.any())).optional().describe('Updated node array.'),
       edges: z.array(z.record(z.string(), z.any())).optional().describe('Updated edge array.'),
-      drawings: z.array(z.record(z.string(), z.any())).optional().describe('Updated drawings array.'),
+      drawings: z
+        .array(z.record(z.string(), z.any()))
+        .optional()
+        .describe('Updated drawings array.'),
       linkedGuidelineId: z.string().nullable().optional().describe('Brand guideline ID to link.'),
     },
     async ({ id, name, nodes, edges, drawings, linkedGuidelineId }) => {
@@ -2693,7 +3369,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           body: JSON.stringify({ name, nodes, edges, drawings, linkedGuidelineId }),
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to update canvas project' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to update canvas project' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2717,7 +3394,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           headers: { 'x-mcp-user-id': currentUserId },
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to delete canvas project' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to delete canvas project' });
         return jsonResponse({ ok: result.success ?? true });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2743,7 +3421,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           body: JSON.stringify({ canEdit, canView }),
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to share canvas project' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to share canvas project' });
         return jsonResponse(result);
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2767,16 +3446,38 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       endDate: z.string().optional().describe('End date (ISO string).'),
       deliverables: z.array(z.any()).optional().describe('Deliverables list.'),
       observations: z.string().optional().describe('Additional observations.'),
-      data: z.record(z.string(), z.any()).optional().describe('Full budget data object (replaces existing data field).'),
+      data: z
+        .record(z.string(), z.any())
+        .optional()
+        .describe('Full budget data object (replaces existing data field).'),
     },
-    async ({ id, name, clientName, projectDescription, startDate, endDate, deliverables, observations, data }) => {
+    async ({
+      id,
+      name,
+      clientName,
+      projectDescription,
+      startDate,
+      endDate,
+      deliverables,
+      observations,
+      data,
+    }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
         const response = await fetch(`${INTERNAL_API_BASE}/api/budget/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ name, clientName, projectDescription, startDate, endDate, deliverables, observations, data }),
+          body: JSON.stringify({
+            name,
+            clientName,
+            projectDescription,
+            startDate,
+            endDate,
+            deliverables,
+            observations,
+            data,
+          }),
         });
         const result = await response.json();
         if (!response.ok) return jsonResponse({ error: result.error || 'Failed to update budget' });
@@ -2827,7 +3528,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           body: JSON.stringify({}),
         });
         const result = await response.json();
-        if (!response.ok) return jsonResponse({ error: result.error || 'Failed to duplicate budget' });
+        if (!response.ok)
+          return jsonResponse({ error: result.error || 'Failed to duplicate budget' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -2856,14 +3558,22 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Given a prompt string and a variables map (key→value pairs), resolve all {{placeholder}} tokens and return the final prompt. Useful for previewing what a VariablesNode or DataNode will produce before generation.',
     {
       prompt: z.string().describe('The prompt text containing {{variable}} placeholders.'),
-      variables: z.record(z.string(), z.string()).describe('Map of variable name to value, e.g. {"brand":"Nike","color":"red"}.'),
+      variables: z
+        .record(z.string(), z.string())
+        .describe('Map of variable name to value, e.g. {"brand":"Nike","color":"red"}.'),
     },
     async ({ prompt, variables }) => {
       const resolved = prompt.replace(/\{\{(\w+)\}\}/g, (match: string, key: string) =>
-        Object.prototype.hasOwnProperty.call(variables, key) ? (variables as Record<string, string>)[key] : match
+        Object.prototype.hasOwnProperty.call(variables, key)
+          ? (variables as Record<string, string>)[key]
+          : match
       );
-      const placeholders = Array.from(prompt.matchAll(/\{\{(\w+)\}\}/g)).map((m: RegExpMatchArray) => m[1] as string);
-      const unresolved = placeholders.filter((p: string) => !Object.prototype.hasOwnProperty.call(variables, p));
+      const placeholders = Array.from(prompt.matchAll(/\{\{(\w+)\}\}/g)).map(
+        (m: RegExpMatchArray) => m[1] as string
+      );
+      const unresolved = placeholders.filter(
+        (p: string) => !Object.prototype.hasOwnProperty.call(variables, p)
+      );
       return jsonResponse({ resolved, unresolved, variables_used: Object.keys(variables).length });
     }
   );
@@ -2873,13 +3583,20 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Parse a CSV string and return the rows as an array of objects. Use this to preview what a DataNode will produce from a CSV file before uploading it to the canvas.',
     {
       csv: z.string().describe('Raw CSV text with a header row.'),
-      preview_rows: z.number().int().min(1).max(50).default(5).describe('Number of rows to return in the preview (1-50).'),
+      preview_rows: z
+        .number()
+        .int()
+        .min(1)
+        .max(50)
+        .default(5)
+        .describe('Number of rows to return in the preview (1-50).'),
     },
     async ({ csv, preview_rows }) => {
       try {
         // Inline minimal CSV parse (no external deps in MCP context)
         const lines = csv.trim().split('\n').filter(Boolean);
-        if (lines.length < 2) return jsonResponse({ error: 'CSV must have a header row and at least one data row.' });
+        if (lines.length < 2)
+          return jsonResponse({ error: 'CSV must have a header row and at least one data row.' });
         const headers = lines[0].split(',').map((h: string) => h.trim());
         const rows = lines.slice(1, preview_rows + 1).map((line: string) => {
           const vals = line.split(',').map((v: string) => v.trim());
@@ -2889,7 +3606,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           columns: headers,
           total_rows: lines.length - 1,
           preview: rows,
-          note: rows.length < lines.length - 1 ? `Showing ${rows.length} of ${lines.length - 1} rows` : undefined,
+          note:
+            rows.length < lines.length - 1
+              ? `Showing ${rows.length} of ${lines.length - 1} rows`
+              : undefined,
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2920,7 +3640,13 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             acc[n.type] = (acc[n.type] ?? 0) + 1;
             return acc;
           }, {});
-          return { id: p.id, name: p.name, node_count: nodes.length, node_types: typeCounts, updated_at: p.updatedAt };
+          return {
+            id: p.id,
+            name: p.name,
+            node_count: nodes.length,
+            node_types: typeCounts,
+            updated_at: p.updatedAt,
+          };
         });
         return jsonResponse({ projects: summary, total: summary.length });
       } catch (err: any) {
@@ -2932,26 +3658,42 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
   server.tool(
     'document-extract',
     'Extract content from a PDF using a 2-phase pipeline: algorithmic (exact colors, fonts, embedded images) ' +
-    'then Gemini semantic analysis (strategy, personas, voice, dos/donts, asset classification). ' +
-    'Returns markdownText (structured, page-separated — ideal for RAG chunking) plus brand tokens. ' +
-    'Accepts either pdf_base64 (base64-encoded PDF content, preferred for remote MCP usage) or pdf_path (server-side path). ' +
-    'IMPORTANT: before calling, ask the user whether they want the result saved to disk as a .md file or returned inline.',
+      'then Gemini semantic analysis (strategy, personas, voice, dos/donts, asset classification). ' +
+      'Returns markdownText (structured, page-separated — ideal for RAG chunking) plus brand tokens. ' +
+      'Accepts either pdf_base64 (base64-encoded PDF content, preferred for remote MCP usage) or pdf_path (server-side path). ' +
+      'IMPORTANT: before calling, ask the user whether they want the result saved to disk as a .md file or returned inline.',
     {
-      pdf_base64: z.string().optional().describe(
-        'Base64-encoded PDF content. Preferred when calling from a remote agent — read the file locally and encode it. ' +
-        'Mutually exclusive with pdf_path.'
-      ),
-      pdf_filename: z.string().optional().describe(
-        'Original filename (e.g. "brand.pdf"). Required when using pdf_base64 with output="disk" so the .md file can be named correctly.'
-      ),
-      pdf_path: z.string().optional().describe('Absolute server-side path to a PDF. Only use when the file is on the same machine as the MCP server.'),
-      output: z.enum(['disk', 'inline']).describe(
-        '"disk" — saves a .md file alongside the PDF (pdf_path) or in the current directory (pdf_base64) and returns { saved_to, characters, preview }. ' +
-        '"inline" — returns the full markdownText in the response (no file written).'
-      ),
-      include_brand_tokens: z.boolean().default(true).describe(
-        'Include colors, typography, strategy, and asset classifications. Default: true.'
-      ),
+      pdf_base64: z
+        .string()
+        .optional()
+        .describe(
+          'Base64-encoded PDF content. Preferred when calling from a remote agent — read the file locally and encode it. ' +
+            'Mutually exclusive with pdf_path.'
+        ),
+      pdf_filename: z
+        .string()
+        .optional()
+        .describe(
+          'Original filename (e.g. "brand.pdf"). Required when using pdf_base64 with output="disk" so the .md file can be named correctly.'
+        ),
+      pdf_path: z
+        .string()
+        .optional()
+        .describe(
+          'Absolute server-side path to a PDF. Only use when the file is on the same machine as the MCP server.'
+        ),
+      output: z
+        .enum(['disk', 'inline'])
+        .describe(
+          '"disk" — saves a .md file alongside the PDF (pdf_path) or in the current directory (pdf_base64) and returns { saved_to, characters, preview }. ' +
+            '"inline" — returns the full markdownText in the response (no file written).'
+        ),
+      include_brand_tokens: z
+        .boolean()
+        .default(true)
+        .describe(
+          'Include colors, typography, strategy, and asset classifications. Default: true.'
+        ),
     },
     async ({ pdf_base64, pdf_filename, pdf_path, output, include_brand_tokens }) => {
       const currentUserId = getMcpUserId();
@@ -2979,13 +3721,27 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const result: Record<string, any> = {};
       const writeEvent = (event: any) => {
         switch (event.type) {
-          case 'text':                result.markdownText = event.data; break;
-          case 'colors':              result.colors = event.data; break;
-          case 'typography':          result.typography = event.data; break;
-          case 'images':              result.imageCount = (event.data as any[]).length; break;
-          case 'strategy':            result.strategy = event.data; break;
-          case 'asset_classifications': result.assetClassifications = event.data; break;
-          case 'error':               result._error = event.message; break;
+          case 'text':
+            result.markdownText = event.data;
+            break;
+          case 'colors':
+            result.colors = event.data;
+            break;
+          case 'typography':
+            result.typography = event.data;
+            break;
+          case 'images':
+            result.imageCount = (event.data as any[]).length;
+            break;
+          case 'strategy':
+            result.strategy = event.data;
+            break;
+          case 'asset_classifications':
+            result.assetClassifications = event.data;
+            break;
+          case 'error':
+            result._error = event.message;
+            break;
         }
       };
 
@@ -2996,13 +3752,15 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       }
 
       const md: string = result.markdownText ?? '';
-      const tokens = include_brand_tokens ? {
-        colors: result.colors,
-        typography: result.typography,
-        strategy: result.strategy,
-        assetClassifications: result.assetClassifications,
-        imageCount: result.imageCount,
-      } : {};
+      const tokens = include_brand_tokens
+        ? {
+            colors: result.colors,
+            typography: result.typography,
+            strategy: result.strategy,
+            assetClassifications: result.assetClassifications,
+            imageCount: result.imageCount,
+          }
+        : {};
 
       if (output === 'disk') {
         const { writeFileSync } = await import('fs');
@@ -3016,7 +3774,12 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           outPath = join(process.cwd(), `${stem}.md`);
         }
         writeFileSync(outPath, md, 'utf-8');
-        return jsonResponse({ saved_to: outPath, characters: md.length, preview: md.slice(0, 600), ...tokens });
+        return jsonResponse({
+          saved_to: outPath,
+          characters: md.length,
+          preview: md.slice(0, 600),
+          ...tokens,
+        });
       }
 
       return jsonResponse({ markdownText: md, ...tokens });
@@ -3045,7 +3808,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3071,7 +3836,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3080,10 +3847,21 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'ai-generate-naming',
     'Generate brand/product name ideas from a brief. Optionally uses brand guideline for tone consistency. Costs credits.',
     {
-      brief: z.string().min(1).describe('Description of what needs naming (e.g. "eco-friendly water bottle brand targeting millennials").'),
+      brief: z
+        .string()
+        .min(1)
+        .describe(
+          'Description of what needs naming (e.g. "eco-friendly water bottle brand targeting millennials").'
+        ),
       count: z.number().int().min(1).max(20).default(10).describe('Number of name suggestions.'),
-      style: z.string().optional().describe('Naming style: minimal, playful, corporate, abstract, etc.'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID for tone/voice consistency.'),
+      style: z
+        .string()
+        .optional()
+        .describe('Naming style: minimal, playful, corporate, abstract, etc.'),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe('Brand guideline ID for tone/voice consistency.'),
     },
     async ({ brief, count, style, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
@@ -3096,7 +3874,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3108,7 +3888,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       imageUrl: z.string().optional().describe('Public URL of the image to modify.'),
       base64: z.string().optional().describe('Base64 of the image to modify.'),
       mimeType: z.string().optional().describe('MIME type if using base64.'),
-      newObject: z.string().describe('Description of what to replace/change (e.g. "replace the coffee cup with a wine glass").'),
+      newObject: z
+        .string()
+        .describe(
+          'Description of what to replace/change (e.g. "replace the coffee cup with a wine glass").'
+        ),
       model: z.string().optional().describe('AI model override.'),
       resolution: z.string().optional().describe('Output resolution: hd, 1k, 2k, 4k.'),
     },
@@ -3125,7 +3909,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3137,7 +3923,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       imageUrl: z.string().optional().describe('Public URL of the image.'),
       base64: z.string().optional().describe('Base64 of the image.'),
       mimeType: z.string().optional().describe('MIME type if using base64.'),
-      themes: z.array(z.string()).min(1).describe('Theme keywords to apply (e.g. ["christmas", "warm lighting"]).'),
+      themes: z
+        .array(z.string())
+        .min(1)
+        .describe('Theme keywords to apply (e.g. ["christmas", "warm lighting"]).'),
       model: z.string().optional().describe('AI model override.'),
       resolution: z.string().optional().describe('Output resolution: hd, 1k, 2k, 4k.'),
     },
@@ -3154,7 +3943,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3169,10 +3960,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const guideline = await prisma.brandGuideline.findFirst({ where: { id, userId: currentUserId } });
+        const guideline = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
         if (!guideline) return ERR.notFound('Brand guideline');
         return jsonResponse(guideline);
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3192,7 +3987,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3213,7 +4010,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3230,12 +4029,17 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/versions/${v1}/compare/${v2}`, {
-          headers: { 'x-mcp-user-id': currentUserId },
-        });
+        const res = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/versions/${v1}/compare/${v2}`,
+          {
+            headers: { 'x-mcp-user-id': currentUserId },
+          }
+        );
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3246,8 +4050,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID.'),
       fileId: z.string().describe('Figma file ID (from URL: figma.com/design/:fileId/...).'),
-      includeVariables: z.boolean().default(true).describe('Import Figma variables as design tokens.'),
-      includeComponents: z.boolean().default(false).describe('Import component names and structure.'),
+      includeVariables: z
+        .boolean()
+        .default(true)
+        .describe('Import Figma variables as design tokens.'),
+      includeComponents: z
+        .boolean()
+        .default(false)
+        .describe('Import component names and structure.'),
     },
     async ({ id, fileId, includeVariables, includeComponents }) => {
       const currentUserId = getMcpUserId();
@@ -3260,7 +4070,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3293,7 +4105,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           if (!res.ok) return ERR.internal(await res.text());
           return jsonResponse({ success: true, message: 'Figma file unlinked.' });
         }
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3313,7 +4127,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3331,7 +4147,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3349,7 +4167,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3365,7 +4185,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const res = await fetch(`${INTERNAL_API_BASE}/api/payments/plans?currency=${currency}`);
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3383,7 +4205,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3393,10 +4217,27 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'Start a batch ad campaign generation. Returns a jobId for polling. Creates multiple mockup variations across formats (square, story, banner, portrait). Costs credits per image.',
     {
       productImageUrl: z.string().describe('Public URL of the product/design image.'),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID for brand-consistent ad copy and styling.'),
-      brief: z.string().optional().describe('Campaign brief: target audience, goal, tone (e.g. "launch campaign for Gen Z, playful tone").'),
-      count: z.number().int().min(1).max(20).default(10).describe('Number of ad variations to generate.'),
-      formats: z.array(z.enum(['square', 'story', 'banner', 'portrait'])).default(['square']).describe('Output formats to generate.'),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe('Brand guideline ID for brand-consistent ad copy and styling.'),
+      brief: z
+        .string()
+        .optional()
+        .describe(
+          'Campaign brief: target audience, goal, tone (e.g. "launch campaign for Gen Z, playful tone").'
+        ),
+      count: z
+        .number()
+        .int()
+        .min(1)
+        .max(20)
+        .default(10)
+        .describe('Number of ad variations to generate.'),
+      formats: z
+        .array(z.enum(['square', 'story', 'banner', 'portrait']))
+        .default(['square'])
+        .describe('Output formats to generate.'),
       model: z.string().optional().describe('AI model override (e.g. gpt-image-1).'),
     },
     async ({ productImageUrl, brandGuidelineId, brief, count, formats, model }) => {
@@ -3410,7 +4251,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3430,7 +4273,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3441,7 +4286,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       base64: z.string().describe('Base64-encoded image to analyze.'),
       mimeType: z.string().default('image/png').describe('Image MIME type.'),
-      brandGuideline: z.string().optional().describe('Brand guideline ID for brand-aware analysis.'),
+      brandGuideline: z
+        .string()
+        .optional()
+        .describe('Brand guideline ID for brand-aware analysis.'),
     },
     async ({ base64, mimeType, brandGuideline }) => {
       const currentUserId = getMcpUserId();
@@ -3458,7 +4306,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3473,21 +4323,124 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     async () => {
       // Import presets inline to avoid circular deps — these are static constants
       const presets: Record<string, any> = {
-        'Product Shot': { material: 'plastic', color: '#ffffff', depth: 3, roughness: 0.3, metalness: 0.1, animate: 'spin', background: '#0a0a0a', lightIntensity: 1.2, ambientIntensity: 0.5, environment: 'studio' },
-        'Hero Banner': { material: 'chrome', color: '#00e5ff', depth: 4, roughness: 0.1, metalness: 0.9, animate: 'float', background: '#050510', lightIntensity: 1.5, ambientIntensity: 0.3, environment: 'city' },
-        'Social Media': { material: 'gold', color: '#ffd700', depth: 2.5, roughness: 0.2, metalness: 0.8, animate: 'spinFloat', background: '#0d0d0d', lightIntensity: 1.3, ambientIntensity: 0.4, environment: 'sunset' },
-        'Dark Studio': { material: 'glass', color: '#8b5cf6', depth: 3, roughness: 0.05, metalness: 0.1, animate: 'wobble', background: '#000000', lightIntensity: 0.8, ambientIntensity: 0.2, environment: 'night' },
-        'Neon': { material: 'emissive', color: '#ff00ff', depth: 2, roughness: 0.1, metalness: 0.3, animate: 'pulse', background: '#050005', lightIntensity: 0.6, ambientIntensity: 0.15, environment: 'night' },
-        'Clay Render': { material: 'clay', color: '#e8ddd3', depth: 3.5, roughness: 0.9, metalness: 0, animate: 'spin', background: '#f5f0eb', lightIntensity: 1.4, ambientIntensity: 0.6, environment: 'studio' },
+        'Product Shot': {
+          material: 'plastic',
+          color: '#ffffff',
+          depth: 3,
+          roughness: 0.3,
+          metalness: 0.1,
+          animate: 'spin',
+          background: '#0a0a0a',
+          lightIntensity: 1.2,
+          ambientIntensity: 0.5,
+          environment: 'studio',
+        },
+        'Hero Banner': {
+          material: 'chrome',
+          color: '#00e5ff',
+          depth: 4,
+          roughness: 0.1,
+          metalness: 0.9,
+          animate: 'float',
+          background: '#050510',
+          lightIntensity: 1.5,
+          ambientIntensity: 0.3,
+          environment: 'city',
+        },
+        'Social Media': {
+          material: 'gold',
+          color: '#ffd700',
+          depth: 2.5,
+          roughness: 0.2,
+          metalness: 0.8,
+          animate: 'spinFloat',
+          background: '#0d0d0d',
+          lightIntensity: 1.3,
+          ambientIntensity: 0.4,
+          environment: 'sunset',
+        },
+        'Dark Studio': {
+          material: 'glass',
+          color: '#8b5cf6',
+          depth: 3,
+          roughness: 0.05,
+          metalness: 0.1,
+          animate: 'wobble',
+          background: '#000000',
+          lightIntensity: 0.8,
+          ambientIntensity: 0.2,
+          environment: 'night',
+        },
+        Neon: {
+          material: 'emissive',
+          color: '#ff00ff',
+          depth: 2,
+          roughness: 0.1,
+          metalness: 0.3,
+          animate: 'pulse',
+          background: '#050005',
+          lightIntensity: 0.6,
+          ambientIntensity: 0.15,
+          environment: 'night',
+        },
+        'Clay Render': {
+          material: 'clay',
+          color: '#e8ddd3',
+          depth: 3.5,
+          roughness: 0.9,
+          metalness: 0,
+          animate: 'spin',
+          background: '#f5f0eb',
+          lightIntensity: 1.4,
+          ambientIntensity: 0.6,
+          environment: 'studio',
+        },
       };
 
       const materials = [
-        'default', 'plastic', 'clay', 'emissive', 'chrome', 'brushedSteel', 'gold', 'roseGold', 'copper',
-        'marble', 'wood', 'leather', 'carbonFiber', 'carPaint', 'glass', 'frostedGlass', 'diamond',
-        'pearl', 'obsidian', 'holographic',
+        'default',
+        'plastic',
+        'clay',
+        'emissive',
+        'chrome',
+        'brushedSteel',
+        'gold',
+        'roseGold',
+        'copper',
+        'marble',
+        'wood',
+        'leather',
+        'carbonFiber',
+        'carPaint',
+        'glass',
+        'frostedGlass',
+        'diamond',
+        'pearl',
+        'obsidian',
+        'holographic',
       ];
-      const animations = ['none', 'spin', 'float', 'pulse', 'wobble', 'swing', 'spinFloat', 'physicsFall'];
-      const environments = ['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby'];
+      const animations = [
+        'none',
+        'spin',
+        'float',
+        'pulse',
+        'wobble',
+        'swing',
+        'spinFloat',
+        'physicsFall',
+      ];
+      const environments = [
+        'studio',
+        'city',
+        'sunset',
+        'dawn',
+        'night',
+        'forest',
+        'apartment',
+        'warehouse',
+        'park',
+        'lobby',
+      ];
 
       return jsonResponse({ presets, materials, animations, environments });
     }
@@ -3499,34 +4452,112 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       name: z.string().min(1).max(200).describe('Scene name.'),
       description: z.string().max(1000).optional().describe('Scene description.'),
-      config: z.object({
-        material: z.enum(['default', 'plastic', 'metal', 'glass', 'rubber', 'chrome', 'gold', 'clay', 'emissive', 'holographic', 'brushedSteel', 'aluminum', 'copper', 'roseGold', 'platinum', 'ceramic', 'marble', 'concrete', 'wood', 'velvet', 'leather', 'frostedGlass', 'diamond', 'pearl', 'carbonFiber', 'carPaint', 'ice', 'obsidian', 'wax', 'mattePaint']).optional().describe('Material preset.'),
-        color: z.string().regex(/^#[0-9A-Fa-f]{3,8}$/).optional().describe('Object color (hex).'),
-        depth: z.number().min(0.1).max(20).optional().describe('Extrusion depth.'),
-        roughness: z.number().min(0).max(1).optional().describe('Surface roughness.'),
-        metalness: z.number().min(0).max(1).optional().describe('Metalness.'),
-        opacity: z.number().min(0).max(1).optional().describe('Opacity.'),
-        animate: z.enum(['none', 'spin', 'float', 'pulse', 'wobble', 'spinFloat', 'swing', 'physicsFall']).optional().describe('Animation type.'),
-        animateSpeed: z.number().min(0.01).max(5).optional().describe('Animation speed.'),
-        animateEasing: z.enum(['linear', 'easeIn', 'easeOut', 'easeInOut']).optional().describe('Animation easing.'),
-        background: z.string().regex(/^#[0-9A-Fa-f]{3,8}$/).optional().describe('Background color (hex).'),
-        bgType: z.enum(['solid', 'linear', 'radial']).optional().describe('Background type.'),
-        environment: z.enum(['studio', 'city', 'sunset', 'dawn', 'night', 'forest', 'apartment', 'warehouse', 'park', 'lobby']).optional().describe('HDRI environment.'),
-        lightIntensity: z.number().min(0).max(10).optional().describe('Key light intensity.'),
-        ambientIntensity: z.number().min(0).max(5).optional().describe('Ambient light intensity.'),
-        shadow: z.boolean().optional().describe('Enable shadows.'),
-        showGrid: z.boolean().optional().describe('Show floor grid.'),
-        shapeType: z.enum(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon']).optional().describe('Geometry shape.'),
-        showChain: z.boolean().optional().describe('Enable chain + bail on any shape.'),
-        smoothness: z.number().min(0).max(1).optional().describe('Curve smoothness.'),
-        bevelEnabled: z.boolean().optional().describe('Enable edge bevel.'),
-        bevelThickness: z.number().min(0).max(5).optional().describe('Bevel thickness.'),
-        bevelSize: z.number().min(0).max(5).optional().describe('Bevel size.'),
-        wireframe: z.boolean().optional().describe('Wireframe mode.'),
-        physicsCount: z.number().int().min(1).max(200).optional().describe('Physics sim instance count.'),
-        physicsGravity: z.number().min(0).max(50).optional().describe('Gravity strength.'),
-        physicsBounciness: z.number().min(0).max(1).optional().describe('Bounce factor.'),
-      }).describe('Scene configuration object — all fields optional, unset fields use defaults.'),
+      config: z
+        .object({
+          material: z
+            .enum([
+              'default',
+              'plastic',
+              'metal',
+              'glass',
+              'rubber',
+              'chrome',
+              'gold',
+              'clay',
+              'emissive',
+              'holographic',
+              'brushedSteel',
+              'aluminum',
+              'copper',
+              'roseGold',
+              'platinum',
+              'ceramic',
+              'marble',
+              'concrete',
+              'wood',
+              'velvet',
+              'leather',
+              'frostedGlass',
+              'diamond',
+              'pearl',
+              'carbonFiber',
+              'carPaint',
+              'ice',
+              'obsidian',
+              'wax',
+              'mattePaint',
+            ])
+            .optional()
+            .describe('Material preset.'),
+          color: z
+            .string()
+            .regex(/^#[0-9A-Fa-f]{3,8}$/)
+            .optional()
+            .describe('Object color (hex).'),
+          depth: z.number().min(0.1).max(20).optional().describe('Extrusion depth.'),
+          roughness: z.number().min(0).max(1).optional().describe('Surface roughness.'),
+          metalness: z.number().min(0).max(1).optional().describe('Metalness.'),
+          opacity: z.number().min(0).max(1).optional().describe('Opacity.'),
+          animate: z
+            .enum(['none', 'spin', 'float', 'pulse', 'wobble', 'spinFloat', 'swing', 'physicsFall'])
+            .optional()
+            .describe('Animation type.'),
+          animateSpeed: z.number().min(0.01).max(5).optional().describe('Animation speed.'),
+          animateEasing: z
+            .enum(['linear', 'easeIn', 'easeOut', 'easeInOut'])
+            .optional()
+            .describe('Animation easing.'),
+          background: z
+            .string()
+            .regex(/^#[0-9A-Fa-f]{3,8}$/)
+            .optional()
+            .describe('Background color (hex).'),
+          bgType: z.enum(['solid', 'linear', 'radial']).optional().describe('Background type.'),
+          environment: z
+            .enum([
+              'studio',
+              'city',
+              'sunset',
+              'dawn',
+              'night',
+              'forest',
+              'apartment',
+              'warehouse',
+              'park',
+              'lobby',
+            ])
+            .optional()
+            .describe('HDRI environment.'),
+          lightIntensity: z.number().min(0).max(10).optional().describe('Key light intensity.'),
+          ambientIntensity: z
+            .number()
+            .min(0)
+            .max(5)
+            .optional()
+            .describe('Ambient light intensity.'),
+          shadow: z.boolean().optional().describe('Enable shadows.'),
+          showGrid: z.boolean().optional().describe('Show floor grid.'),
+          shapeType: z
+            .enum(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'])
+            .optional()
+            .describe('Geometry shape.'),
+          showChain: z.boolean().optional().describe('Enable chain + bail on any shape.'),
+          smoothness: z.number().min(0).max(1).optional().describe('Curve smoothness.'),
+          bevelEnabled: z.boolean().optional().describe('Enable edge bevel.'),
+          bevelThickness: z.number().min(0).max(5).optional().describe('Bevel thickness.'),
+          bevelSize: z.number().min(0).max(5).optional().describe('Bevel size.'),
+          wireframe: z.boolean().optional().describe('Wireframe mode.'),
+          physicsCount: z
+            .number()
+            .int()
+            .min(1)
+            .max(200)
+            .optional()
+            .describe('Physics sim instance count.'),
+          physicsGravity: z.number().min(0).max(50).optional().describe('Gravity strength.'),
+          physicsBounciness: z.number().min(0).max(1).optional().describe('Bounce factor.'),
+        })
+        .describe('Scene configuration object — all fields optional, unset fields use defaults.'),
       svgData: z.string().optional().describe('SVG markup to extrude into 3D.'),
       inputMode: z.enum(['svg', 'text']).optional().describe('Input mode.'),
       text: z.string().optional().describe('Text to render in 3D (when inputMode="text").'),
@@ -3541,14 +4572,25 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ name, description, config, svgData, inputMode, text, font, tags, isPublic }),
+          body: JSON.stringify({
+            name,
+            description,
+            config,
+            svgData,
+            inputMode,
+            text,
+            font,
+            tags,
+            isPublic,
+          }),
         });
 
         if (!res.ok) return ERR.internal(await res.text());
         const data = await res.json();
         const sceneId = data.scene?._id || data.scene?.id;
 
-        const frontendBase = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+        const frontendBase =
+          process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
         const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
 
         return jsonResponse({
@@ -3556,7 +4598,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           deepLink,
           message: `Scene "${name}" saved. Open in app: ${deepLink}`,
         });
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3575,7 +4619,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3595,11 +4641,14 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         if (!res.ok) return ERR.internal(await res.text());
         const data = await res.json();
 
-        const frontendBase = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+        const frontendBase =
+          process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
         const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
 
         return jsonResponse({ ...data, deepLink });
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3610,7 +4659,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       sceneId: z.string().describe('Scene ID to update.'),
       name: z.string().max(200).optional().describe('New scene name.'),
       description: z.string().max(1000).optional().describe('New description.'),
-      config: z.record(z.string(), z.unknown()).optional().describe('Partial config to merge (same schema as studio3d-create-scene).'),
+      config: z
+        .record(z.string(), z.unknown())
+        .optional()
+        .describe('Partial config to merge (same schema as studio3d-create-scene).'),
       tags: z.array(z.string()).max(20).optional().describe('New tags.'),
       isPublic: z.boolean().optional().describe('Update public visibility.'),
     },
@@ -3625,7 +4677,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3645,7 +4699,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3657,8 +4713,16 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'playground-generate',
     'Generate a mini-app from a natural-language prompt. Returns a JSON spec that renders inside the Playground. Costs 1 credit.',
     {
-      prompt: z.string().min(3).describe('What the mini-app should do (e.g. "brand color palette extractor with drag-drop upload").'),
-      brandGuidelineId: z.string().optional().describe('Optional brand guideline ID to inject colors/fonts/logos into the generation.'),
+      prompt: z
+        .string()
+        .min(3)
+        .describe(
+          'What the mini-app should do (e.g. "brand color palette extractor with drag-drop upload").'
+        ),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe('Optional brand guideline ID to inject colors/fonts/logos into the generation.'),
     },
     async ({ prompt, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
@@ -3666,9 +4730,12 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       try {
         const body: Record<string, string> = { prompt };
         if (brandGuidelineId) {
-          const ctxRes = await fetch(`${INTERNAL_API_BASE}/api/playground/brand-context/${brandGuidelineId}`, {
-            headers: { 'x-mcp-user-id': currentUserId },
-          });
+          const ctxRes = await fetch(
+            `${INTERNAL_API_BASE}/api/playground/brand-context/${brandGuidelineId}`,
+            {
+              headers: { 'x-mcp-user-id': currentUserId },
+            }
+          );
           if (ctxRes.ok) {
             const { context } = await ctxRes.json();
             body.brandContext = context;
@@ -3676,7 +4743,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         }
         const res = await fetch(`${INTERNAL_API_BASE}/api/playground/generate`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId, 'Accept': 'text/event-stream' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-mcp-user-id': currentUserId,
+            Accept: 'text/event-stream',
+          },
           body: JSON.stringify(body),
         });
         if (!res.ok) return ERR.internal(await res.text());
@@ -3686,7 +4757,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         if (!specData) return ERR.internal('Generation failed — no spec event received');
         const parsed = JSON.parse(specData);
         return jsonResponse({ spec: parsed.spec, meta: parsed.meta });
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3694,8 +4767,13 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'playground-iterate',
     'Refine an existing mini-app spec with a follow-up instruction. Returns updated spec. Costs 1 credit.',
     {
-      prompt: z.string().min(3).describe('What to change (e.g. "add a pie chart showing color distribution").'),
-      currentSpec: z.record(z.string(), z.unknown()).describe('The current spec JSON to iterate on.'),
+      prompt: z
+        .string()
+        .min(3)
+        .describe('What to change (e.g. "add a pie chart showing color distribution").'),
+      currentSpec: z
+        .record(z.string(), z.unknown())
+        .describe('The current spec JSON to iterate on.'),
     },
     async ({ prompt, currentSpec }) => {
       const currentUserId = getMcpUserId();
@@ -3703,7 +4781,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       try {
         const res = await fetch(`${INTERNAL_API_BASE}/api/playground/iterate`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId, 'Accept': 'text/event-stream' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-mcp-user-id': currentUserId,
+            Accept: 'text/event-stream',
+          },
           body: JSON.stringify({ prompt, currentSpec }),
         });
         if (!res.ok) return ERR.internal(await res.text());
@@ -3713,18 +4795,23 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         if (!specData) return ERR.internal('Iteration failed — no spec event received');
         const parsed = JSON.parse(specData);
         return jsonResponse({ spec: parsed.spec, meta: parsed.meta });
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
   server.tool(
     'playground-save',
-    'Save a mini-app spec to the user\'s library. Returns the saved mini-app with slug.',
+    "Save a mini-app spec to the user's library. Returns the saved mini-app with slug.",
     {
       title: z.string().min(1).describe('Mini-app title.'),
       description: z.string().optional().describe('Short description.'),
       tags: z.array(z.string()).optional().describe('Tags for discovery.'),
-      category: z.enum(['utility', 'brand', 'design', 'marketing', 'data', 'fun']).optional().describe('Category (default: utility).'),
+      category: z
+        .enum(['utility', 'brand', 'design', 'marketing', 'data', 'fun'])
+        .optional()
+        .describe('Category (default: utility).'),
       spec: z.record(z.string(), z.unknown()).describe('The mini-app spec JSON (root + elements).'),
       actionsUsed: z.array(z.string()).optional().describe('List of action names used.'),
     },
@@ -3739,26 +4826,25 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
-  server.tool(
-    'playground-list',
-    'List the authenticated user\'s saved mini-apps.',
-    {},
-    async () => {
-      const currentUserId = getMcpUserId();
-      if (!currentUserId) return ERR.auth();
-      try {
-        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/my`, {
-          headers: { 'x-mcp-user-id': currentUserId },
-        });
-        if (!res.ok) return ERR.internal(await res.text());
-        return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+  server.tool('playground-list', "List the authenticated user's saved mini-apps.", {}, async () => {
+    const currentUserId = getMcpUserId();
+    if (!currentUserId) return ERR.auth();
+    try {
+      const res = await fetch(`${INTERNAL_API_BASE}/api/playground/my`, {
+        headers: { 'x-mcp-user-id': currentUserId },
+      });
+      if (!res.ok) return ERR.internal(await res.text());
+      return jsonResponse(await res.json());
+    } catch (err: any) {
+      return ERR.internal(err.message);
     }
-  );
+  });
 
   server.tool(
     'playground-get',
@@ -3771,7 +4857,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const res = await fetch(`${INTERNAL_API_BASE}/api/playground/${slug}`);
         if (!res.ok) return ERR.notFound('MiniApp');
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3791,7 +4879,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3801,7 +4891,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       category: z.string().optional().describe('Filter by category.'),
       search: z.string().optional().describe('Search by title.'),
-      sort: z.enum(['newest', 'likes', 'popular']).optional().describe('Sort order (default: newest).'),
+      sort: z
+        .enum(['newest', 'likes', 'popular'])
+        .optional()
+        .describe('Sort order (default: newest).'),
       take: z.number().max(50).optional().describe('Results per page (default: 20, max: 50).'),
       skip: z.number().optional().describe('Pagination offset.'),
     },
@@ -3816,7 +4909,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const res = await fetch(`${INTERNAL_API_BASE}/api/playground/feed?${params}`);
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3836,7 +4931,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3858,7 +4955,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const data = await res.json();
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
         return jsonResponse({ ...data, fullUrl: `${baseUrl}${data.shareUrl}` });
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3871,7 +4970,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       description: z.string().optional().describe('Short description.'),
       tags: z.array(z.string()).optional().describe('Tags for discovery.'),
       category: z.enum(['utility', 'brand', 'design', 'marketing', 'data', 'fun']).optional(),
-      brandGuidelineId: z.string().optional().describe('Brand guideline ID for brand-aware generation.'),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe('Brand guideline ID for brand-aware generation.'),
     },
     async ({ prompt, title, description, tags, category, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
@@ -3884,7 +4986,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3924,7 +5028,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           if (props.direction) details.push(props.direction);
           if (props.cols) details.push(`${props.cols}col`);
           if (props.gap) details.push(`gap=${props.gap}`);
-          if (props.value && typeof props.value === 'string') details.push(`value="${props.value}"`);
+          if (props.value && typeof props.value === 'string')
+            details.push(`value="${props.value}"`);
           if (props.placeholder) details.push(`placeholder="${props.placeholder}"`);
           if (props.active) details.push('ACTIVE');
           if (props.level) details.push(`h${props.level}`);
@@ -3935,7 +5040,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           let line = `${indent}├─ ${type}${detailStr}`;
 
           if (children.length > 0) {
-            const childLines = children.map(c => describeTree(c, depth + 1)).filter(Boolean);
+            const childLines = children.map((c) => describeTree(c, depth + 1)).filter(Boolean);
             return line + '\n' + childLines.join('\n');
           }
           return line;
@@ -3947,7 +5052,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           `## MiniApp Layout Description`,
           ``,
           `**Elements:** ${totalElements}`,
-          `**Components used:** ${Object.entries(componentCounts).map(([k, v]) => `${k}(${v})`).join(', ')}`,
+          `**Components used:** ${Object.entries(componentCounts)
+            .map(([k, v]) => `${k}(${v})`)
+            .join(', ')}`,
           ``,
           `### Visual Tree`,
           '```',
@@ -3960,27 +5067,39 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         // Detect layout pattern
         const hasToolPanel = !!componentCounts['ToolPanel'];
         const hasGlassPanel = !!componentCounts['GlassPanel'];
-        const hasCharts = !!(componentCounts['BarChart'] || componentCounts['LineChart'] || componentCounts['PieChart']);
+        const hasCharts = !!(
+          componentCounts['BarChart'] ||
+          componentCounts['LineChart'] ||
+          componentCounts['PieChart']
+        );
         const hasMetrics = !!componentCounts['Metric'];
         const hasImageUploader = !!componentCounts['ImageUploader'];
 
         if (hasToolPanel) summary.push('- **Pattern:** Tool-panel sidebar + content area');
         if (hasGlassPanel) summary.push('- **Style:** Glassmorphism panels');
-        if (hasCharts) summary.push('- **Data viz:** Charts present (' + ['BarChart', 'LineChart', 'PieChart'].filter(c => componentCounts[c]).join(', ') + ')');
+        if (hasCharts)
+          summary.push(
+            '- **Data viz:** Charts present (' +
+              ['BarChart', 'LineChart', 'PieChart'].filter((c) => componentCounts[c]).join(', ') +
+              ')'
+          );
         if (hasMetrics) summary.push(`- **KPIs:** ${componentCounts['Metric']} metric cards`);
         if (hasImageUploader) summary.push('- **Upload:** Image uploader present');
 
         const chipCount = componentCounts['ToolPanelChip'] || 0;
         if (chipCount > 0) summary.push(`- **Toggles:** ${chipCount} chip selectors`);
 
-        const sliderCount = (componentCounts['NodeSlider'] || 0) + (componentCounts['ScrubInput'] || 0);
+        const sliderCount =
+          (componentCounts['NodeSlider'] || 0) + (componentCounts['ScrubInput'] || 0);
         if (sliderCount > 0) summary.push(`- **Sliders:** ${sliderCount} numeric controls`);
 
         const colorCount = componentCounts['InlineColorPicker'] || 0;
         if (colorCount > 0) summary.push(`- **Colors:** ${colorCount} color pickers`);
 
         return { content: [{ type: 'text' as const, text: summary.join('\n') }] };
-      } catch (err: any) { return ERR.internal(err.message); }
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
   );
 
@@ -3996,10 +5115,29 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'mockup-scene',
     {
       title: 'Mockup Scene Prompt',
-      description: 'Get a proven, high-quality scene description for mockup-generate. Pulls from community presets and user-validated examples (thumbs-up feedback). Returns a ready-to-use prompt — just pass your design as referenceImages.',
+      description:
+        'Get a proven, high-quality scene description for mockup-generate. Pulls from community presets and user-validated examples (thumbs-up feedback). Returns a ready-to-use prompt — just pass your design as referenceImages.',
       argsSchema: {
-        category: z.enum(['sticker', 'business-card', 'packaging', 'apparel', 'signage', 'social-media', 'device', 'print', 'any']).default('any').describe('Design category to find scene prompts for.'),
-        style: z.string().optional().describe('Optional style keywords to match (e.g. "minimal", "realistic", "vintage", "industrial").'),
+        category: z
+          .enum([
+            'sticker',
+            'business-card',
+            'packaging',
+            'apparel',
+            'signage',
+            'social-media',
+            'device',
+            'print',
+            'any',
+          ])
+          .default('any')
+          .describe('Design category to find scene prompts for.'),
+        style: z
+          .string()
+          .optional()
+          .describe(
+            'Optional style keywords to match (e.g. "minimal", "realistic", "vintage", "industrial").'
+          ),
       },
     },
     async ({ category, style }) => {
@@ -4021,7 +5159,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           communityFilter.prompt = styleFilter;
         }
 
-        const communityPresets = await db.collection('community_presets')
+        const communityPresets = await db
+          .collection('community_presets')
           .find(communityFilter)
           .sort({ likesCount: -1, createdAt: -1 })
           .limit(5)
@@ -4029,7 +5168,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
 
         // 2. Prisma MockupExamples (user-validated via thumbs-up)
         const prismaFilter: any = { rating: 1 };
-        if (category !== 'any') prismaFilter.designType = { contains: category, mode: 'insensitive' };
+        if (category !== 'any')
+          prismaFilter.designType = { contains: category, mode: 'insensitive' };
         if (style) prismaFilter.prompt = { contains: style, mode: 'insensitive' };
 
         const mockupExamples = await prisma.mockupExample.findMany({
@@ -4041,7 +5181,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
 
         // 3. Official MockupPatterns (auto-promoted from feedback loop)
         const patternFilter: any = { isOfficial: true };
-        if (category !== 'any') patternFilter.designType = { contains: category, mode: 'insensitive' };
+        if (category !== 'any')
+          patternFilter.designType = { contains: category, mode: 'insensitive' };
 
         const patterns = await prisma.mockupPattern.findMany({
           where: patternFilter,
@@ -4056,42 +5197,64 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         if (patterns.length > 0) {
           sections.push('## Top Proven Patterns (auto-promoted from 5+ positive feedback)\n');
           for (const p of patterns) {
-            sections.push(`**[${p.designType}]** (${p.rating} thumbs-up)\n\`\`\`\n${p.prompt}\n\`\`\`\nTags: ${p.tags.join(', ')}\n`);
+            sections.push(
+              `**[${p.designType}]** (${p.rating} thumbs-up)\n\`\`\`\n${
+                p.prompt
+              }\n\`\`\`\nTags: ${p.tags.join(', ')}\n`
+            );
           }
         }
 
         if (communityPresets.length > 0) {
           sections.push('## Community Presets (curated & approved)\n');
           for (const c of communityPresets) {
-            sections.push(`**${c.name}** — ${c.description || ''}\n\`\`\`\n${c.prompt}\n\`\`\`\nCategory: ${c.category} | Tags: ${(c.tags || []).join(', ')} | Use case: ${c.useCase || 'general'}\n`);
+            sections.push(
+              `**${c.name}** — ${c.description || ''}\n\`\`\`\n${c.prompt}\n\`\`\`\nCategory: ${
+                c.category
+              } | Tags: ${(c.tags || []).join(', ')} | Use case: ${c.useCase || 'general'}\n`
+            );
           }
         }
 
         if (mockupExamples.length > 0) {
           sections.push('## User-Validated Examples (thumbs-up feedback)\n');
           for (const e of mockupExamples) {
-            sections.push(`**[${e.designType}]** ${e.aspectRatio}\n\`\`\`\n${e.prompt}\n\`\`\`\nTags: ${e.tags.join(', ')}${e.imageUrl ? `\nResult: ${e.imageUrl}` : ''}\n`);
+            sections.push(
+              `**[${e.designType}]** ${e.aspectRatio}\n\`\`\`\n${
+                e.prompt
+              }\n\`\`\`\nTags: ${e.tags.join(', ')}${e.imageUrl ? `\nResult: ${e.imageUrl}` : ''}\n`
+            );
           }
         }
 
         if (sections.length === 0) {
-          sections.push(`No matching prompts found for category="${category}"${style ? ` style="${style}"` : ''}. Try category="any" or different style keywords.`);
+          sections.push(
+            `No matching prompts found for category="${category}"${
+              style ? ` style="${style}"` : ''
+            }. Try category="any" or different style keywords.`
+          );
         }
 
-        const intro = `# Mockup Scene Prompts\nCategory: ${category}${style ? ` | Style: ${style}` : ''}\n\nThese are proven prompts. Pick one and use it as the \`prompt\` parameter in mockup-generate. Pass your design as \`referenceImages\`.\n\n`;
+        const intro = `# Mockup Scene Prompts\nCategory: ${category}${
+          style ? ` | Style: ${style}` : ''
+        }\n\nThese are proven prompts. Pick one and use it as the \`prompt\` parameter in mockup-generate. Pass your design as \`referenceImages\`.\n\n`;
 
         return {
-          messages: [{
-            role: 'user' as const,
-            content: { type: 'text' as const, text: intro + sections.join('\n') },
-          }],
+          messages: [
+            {
+              role: 'user' as const,
+              content: { type: 'text' as const, text: intro + sections.join('\n') },
+            },
+          ],
         };
       } catch (err: any) {
         return {
-          messages: [{
-            role: 'user' as const,
-            content: { type: 'text' as const, text: `Error fetching prompts: ${err.message}` },
-          }],
+          messages: [
+            {
+              role: 'user' as const,
+              content: { type: 'text' as const, text: `Error fetching prompts: ${err.message}` },
+            },
+          ],
         };
       }
     }
@@ -4101,11 +5264,23 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'prompt-library',
     {
       title: 'Prompt Library',
-      description: 'Browse the full prompt library — community presets, user-validated examples, and official patterns. Filter by category, tags, or search keywords. Use these as starting points for any generation tool.',
+      description:
+        'Browse the full prompt library — community presets, user-validated examples, and official patterns. Filter by category, tags, or search keywords. Use these as starting points for any generation tool.',
       argsSchema: {
-        search: z.string().optional().describe('Keyword search across prompt text, name, and tags.'),
-        category: z.string().optional().describe('Filter by category: mockup, 3d, presets, aesthetics, themes, angle, texture, ambience, luminance.'),
-        source: z.enum(['community', 'feedback', 'patterns', 'all']).default('all').describe('Which database to query.'),
+        search: z
+          .string()
+          .optional()
+          .describe('Keyword search across prompt text, name, and tags.'),
+        category: z
+          .string()
+          .optional()
+          .describe(
+            'Filter by category: mockup, 3d, presets, aesthetics, themes, angle, texture, ambience, luminance.'
+          ),
+        source: z
+          .enum(['community', 'feedback', 'patterns', 'all'])
+          .default('all')
+          .describe('Which database to query.'),
         limit: z.number().int().min(1).max(20).default(10).describe('Max results to return.'),
       },
     },
@@ -4126,13 +5301,24 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
               { tags: { $regex: search, $options: 'i' } },
             ];
           }
-          const presets = await db.collection('community_presets')
-            .find(filter).sort({ likesCount: -1, createdAt: -1 }).limit(limit).toArray();
+          const presets = await db
+            .collection('community_presets')
+            .find(filter)
+            .sort({ likesCount: -1, createdAt: -1 })
+            .limit(limit)
+            .toArray();
 
           if (presets.length > 0) {
             results.push('## Community Presets\n');
             for (const p of presets) {
-              results.push(`### ${p.name}\n${p.description || ''}\n\`\`\`\n${(p.prompt || '').substring(0, 2000)}\n\`\`\`\nCategory: ${p.category} | Tags: ${(p.tags || []).join(', ')}${p.examples?.length ? `\nExamples: ${p.examples.slice(0, 3).join(' | ')}` : ''}\n`);
+              results.push(
+                `### ${p.name}\n${p.description || ''}\n\`\`\`\n${(p.prompt || '').substring(
+                  0,
+                  2000
+                )}\n\`\`\`\nCategory: ${p.category} | Tags: ${(p.tags || []).join(', ')}${
+                  p.examples?.length ? `\nExamples: ${p.examples.slice(0, 3).join(' | ')}` : ''
+                }\n`
+              );
             }
           }
         }
@@ -4143,14 +5329,29 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           if (category) where.designType = { contains: category, mode: 'insensitive' };
           if (search) where.prompt = { contains: search, mode: 'insensitive' };
           const examples = await prisma.mockupExample.findMany({
-            where, orderBy: { createdAt: 'desc' }, take: limit,
-            select: { prompt: true, designType: true, tags: true, aspectRatio: true, imageUrl: true },
+            where,
+            orderBy: { createdAt: 'desc' },
+            take: limit,
+            select: {
+              prompt: true,
+              designType: true,
+              tags: true,
+              aspectRatio: true,
+              imageUrl: true,
+            },
           });
 
           if (examples.length > 0) {
             results.push('## User-Validated Examples\n');
             for (const e of examples) {
-              results.push(`**[${e.designType}]** ${e.aspectRatio}\n\`\`\`\n${e.prompt.substring(0, 2000)}\n\`\`\`\nTags: ${e.tags.join(', ')}${e.imageUrl ? `\nResult: ${e.imageUrl}` : ''}\n`);
+              results.push(
+                `**[${e.designType}]** ${e.aspectRatio}\n\`\`\`\n${e.prompt.substring(
+                  0,
+                  2000
+                )}\n\`\`\`\nTags: ${e.tags.join(', ')}${
+                  e.imageUrl ? `\nResult: ${e.imageUrl}` : ''
+                }\n`
+              );
             }
           }
         }
@@ -4161,32 +5362,52 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           if (category) where.designType = { contains: category, mode: 'insensitive' };
           if (search) where.prompt = { contains: search, mode: 'insensitive' };
           const patterns = await prisma.mockupPattern.findMany({
-            where, orderBy: { rating: 'desc' }, take: limit,
+            where,
+            orderBy: { rating: 'desc' },
+            take: limit,
             select: { prompt: true, designType: true, tags: true, rating: true },
           });
 
           if (patterns.length > 0) {
             results.push('## Official Patterns (auto-promoted)\n');
             for (const p of patterns) {
-              results.push(`**[${p.designType}]** (${p.rating} thumbs-up)\n\`\`\`\n${p.prompt.substring(0, 2000)}\n\`\`\`\nTags: ${p.tags.join(', ')}\n`);
+              results.push(
+                `**[${p.designType}]** (${p.rating} thumbs-up)\n\`\`\`\n${p.prompt.substring(
+                  0,
+                  2000
+                )}\n\`\`\`\nTags: ${p.tags.join(', ')}\n`
+              );
             }
           }
         }
 
-        const header = `# Prompt Library\n${search ? `Search: "${search}" | ` : ''}${category ? `Category: ${category} | ` : ''}Source: ${source} | Limit: ${limit}\n\n`;
+        const header = `# Prompt Library\n${search ? `Search: "${search}" | ` : ''}${
+          category ? `Category: ${category} | ` : ''
+        }Source: ${source} | Limit: ${limit}\n\n`;
 
         return {
-          messages: [{
-            role: 'user' as const,
-            content: { type: 'text' as const, text: results.length > 0 ? header + results.join('\n') : header + 'No matching prompts found. Try broader search terms or category="mockup".' },
-          }],
+          messages: [
+            {
+              role: 'user' as const,
+              content: {
+                type: 'text' as const,
+                text:
+                  results.length > 0
+                    ? header + results.join('\n')
+                    : header +
+                      'No matching prompts found. Try broader search terms or category="mockup".',
+              },
+            },
+          ],
         };
       } catch (err: any) {
         return {
-          messages: [{
-            role: 'user' as const,
-            content: { type: 'text' as const, text: `Error: ${err.message}` },
-          }],
+          messages: [
+            {
+              role: 'user' as const,
+              content: { type: 'text' as const, text: `Error: ${err.message}` },
+            },
+          ],
         };
       }
     }

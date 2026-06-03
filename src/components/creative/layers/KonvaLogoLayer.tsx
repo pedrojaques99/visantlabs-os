@@ -59,9 +59,10 @@ const KonvaLogoLayerImpl: React.FC<Props> = ({
   useEffect(() => {
     const node = shapeRef.current;
     if (!node || !image) return;
-    if (!filters || (
-      !filters.brightness && !filters.contrast && !filters.blur && !filters.grayscale
-    )) {
+    if (
+      !filters ||
+      (!filters.brightness && !filters.contrast && !filters.blur && !filters.grayscale)
+    ) {
       node.clearCache();
       node.filters([]);
       node.getLayer()?.batchDraw();
@@ -161,15 +162,17 @@ const KonvaLogoLayerImpl: React.FC<Props> = ({
   );
 };
 
-export const KonvaLogoLayer = React.memo(KonvaLogoLayerImpl, (prev, next) =>
-  prev.layer === next.layer &&
-  prev.isSelected === next.isSelected &&
-  prev.canvasWidth === next.canvasWidth &&
-  prev.canvasHeight === next.canvasHeight &&
-  prev.registerNode === next.registerNode &&
-  prev.onSelect === next.onSelect &&
-  prev.onDragStart === next.onDragStart &&
-  prev.onSmartDragMove === next.onSmartDragMove &&
-  prev.onSmartTransform === next.onSmartTransform &&
-  prev.onSmartClear === next.onSmartClear
+export const KonvaLogoLayer = React.memo(
+  KonvaLogoLayerImpl,
+  (prev, next) =>
+    prev.layer === next.layer &&
+    prev.isSelected === next.isSelected &&
+    prev.canvasWidth === next.canvasWidth &&
+    prev.canvasHeight === next.canvasHeight &&
+    prev.registerNode === next.registerNode &&
+    prev.onSelect === next.onSelect &&
+    prev.onDragStart === next.onDragStart &&
+    prev.onSmartDragMove === next.onSmartDragMove &&
+    prev.onSmartTransform === next.onSmartTransform &&
+    prev.onSmartClear === next.onSmartClear
 );

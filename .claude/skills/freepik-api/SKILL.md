@@ -1,4 +1,5 @@
 > ## Documentation Index
+>
 > Fetch the complete documentation index at: https://docs.freepik.com/llms.txt
 > Use this file to discover all available pages before exploring further.
 
@@ -42,6 +43,7 @@ background: 'linear-gradient(180deg, #336AEA 0%, #1F408C 100%)',
     <Card title="Stock content API" icon="photo-film" href="api-reference/resources/get-all-resources" cta="Learn more">
       Access millions of vectors, photos, icons, and templates to enhance your applications.
     </Card>
+
   </Columns>
 </div>
 
@@ -67,8 +69,8 @@ Our documentation is also available in an LLM-friendly format, making it easy to
 
 You can access it in two ways:
 
-* [llms.txt](https://docs.freepik.com/llms.txt) – A lightweight sitemap that lists all documentation pages.
-* [llms-full.txt](https://docs.freepik.com/llms-full.txt) – The full documentation in markdown format. (Note: This may exceed your model’s context window.)
+- [llms.txt](https://docs.freepik.com/llms.txt) – A lightweight sitemap that lists all documentation pages.
+- [llms-full.txt](https://docs.freepik.com/llms-full.txt) – The full documentation in markdown format. (Note: This may exceed your model’s context window.)
 
 Additionally, any page can be accessed as Markdown by appending .md to the URL.
 For example:

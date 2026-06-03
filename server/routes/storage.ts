@@ -1,7 +1,11 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
-import { getUserStorageLimit, syncUserStorage, calculateUserStorage } from '../services/r2Service.js';
+import {
+  getUserStorageLimit,
+  syncUserStorage,
+  calculateUserStorage,
+} from '../services/r2Service.js';
 import { rateLimit } from 'express-rate-limit';
 
 // API rate limiter - general authenticated endpoints
@@ -85,7 +89,9 @@ router.get('/usage', apiRateLimiter, authenticate, async (req: AuthRequest, res,
           if (actualStorage > 0) {
             // Counter is wrong, sync it
             used = await syncUserStorage(userId);
-            console.log(`[Storage Auto-Sync] Fixed storage counter for user ${userId}: ${used} bytes`);
+            console.log(
+              `[Storage Auto-Sync] Fixed storage counter for user ${userId}: ${used} bytes`
+            );
           }
         } catch (autoSyncError: any) {
           // If auto-sync fails, just use the counter (0)
@@ -186,4 +192,3 @@ router.post('/sync', apiRateLimiter, authenticate, async (req: AuthRequest, res,
 });
 
 export default router;
-

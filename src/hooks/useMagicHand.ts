@@ -37,9 +37,7 @@ const TEXTURE_MAP = {
     { key: 'opacity', min: 0.05, max: 1.0 },
     { key: 'scale', min: 0.3, max: 3.0 },
   ],
-  yAxis: [
-    { key: 'rotation', min: 0, max: 360 },
-  ],
+  yAxis: [{ key: 'rotation', min: 0, max: 360 }],
   dragDistance: [
     { key: 'tileGapX', min: 0, max: 50 },
     { key: 'tileGapY', min: 0, max: 50 },
@@ -79,92 +77,106 @@ export function useMagicHand(containerRef: React.RefObject<HTMLDivElement | null
   const dragState = useRef<DragState | null>(null);
   const frameRef = useRef<number>(0);
 
-  const applyUpdates = useCallback((clientX: number, clientY: number) => {
-    const drag = dragState.current;
-    if (!drag) return;
+  const applyUpdates = useCallback(
+    (clientX: number, clientY: number) => {
+      const drag = dragState.current;
+      if (!drag) return;
 
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect || rect.width === 0) return;
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect || rect.width === 0) return;
 
-    const { mode } = drag;
-    const store = getStore(mode);
-    const map = getParamMap(mode);
+      const { mode } = drag;
+      const store = getStore(mode);
+      const map = getParamMap(mode);
 
-    const nx = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    const ny = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+      const nx = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const ny = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
 
-    const dx = clientX - drag.startX;
-    const dy = clientY - drag.startY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const normDist = Math.min(dist / Math.max(rect.width, rect.height), 1);
+      const dx = clientX - drag.startX;
+      const dy = clientY - drag.startY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const normDist = Math.min(dist / Math.max(rect.width, rect.height), 1);
 
-    const batch: Record<string, number> = {};
+      const batch: Record<string, number> = {};
 
-    for (const p of map.xAxis) {
-      batch[p.key] = parseFloat(lerp(p.min, p.max, nx).toFixed(4));
-    }
-    for (const p of map.yAxis) {
-      batch[p.key] = parseFloat(lerp(p.min, p.max, 1 - ny).toFixed(4));
-    }
-    for (const p of map.dragDistance) {
-      const base = drag.startParams[p.key] ?? p.min;
-      const range = p.max - p.min;
-      const val = base + normDist * range * 0.5;
-      batch[p.key] = parseFloat(Math.min(p.max, Math.max(p.min, val)).toFixed(4));
-    }
+      for (const p of map.xAxis) {
+        batch[p.key] = parseFloat(lerp(p.min, p.max, nx).toFixed(4));
+      }
+      for (const p of map.yAxis) {
+        batch[p.key] = parseFloat(lerp(p.min, p.max, 1 - ny).toFixed(4));
+      }
+      for (const p of map.dragDistance) {
+        const base = drag.startParams[p.key] ?? p.min;
+        const range = p.max - p.min;
+        const val = base + normDist * range * 0.5;
+        batch[p.key] = parseFloat(Math.min(p.max, Math.max(p.min, val)).toFixed(4));
+      }
 
-    // Direct set — skip pushHistory to avoid flooding undo stack during drag
-    (store.setState as (partial: Record<string, number>) => void)(batch);
-  }, [containerRef]);
+      // Direct set — skip pushHistory to avoid flooding undo stack during drag
+      (store.setState as (partial: Record<string, number>) => void)(batch);
+    },
+    [containerRef]
+  );
 
-  const handlePointerDown = useCallback((e: PointerEvent) => {
-    if (!useImageLabStore.getState().magicHandActive) return;
-    if (e.button !== 0) return;
+  const handlePointerDown = useCallback(
+    (e: PointerEvent) => {
+      if (!useImageLabStore.getState().magicHandActive) return;
+      if (e.button !== 0) return;
 
-    const mode = useImageLabStore.getState().mode;
-    const store = getStore(mode);
-    const state = store.getState() as any;
-    const map = getParamMap(mode);
-    const allKeys = [...map.xAxis, ...map.yAxis, ...map.dragDistance];
+      const mode = useImageLabStore.getState().mode;
+      const store = getStore(mode);
+      const state = store.getState() as any;
+      const map = getParamMap(mode);
+      const allKeys = [...map.xAxis, ...map.yAxis, ...map.dragDistance];
 
-    // Push one history snapshot before the drag starts (for undo)
-    state.pushHistory();
+      // Push one history snapshot before the drag starts (for undo)
+      state.pushHistory();
 
-    const startParams: Record<string, number> = {};
-    for (const p of allKeys) startParams[p.key] = state[p.key] ?? 0;
+      const startParams: Record<string, number> = {};
+      for (const p of allKeys) startParams[p.key] = state[p.key] ?? 0;
 
-    dragState.current = { startX: e.clientX, startY: e.clientY, startParams, mode };
+      dragState.current = { startX: e.clientX, startY: e.clientY, startParams, mode };
 
-    const el = containerRef.current;
-    if (el) {
-      el.setPointerCapture(e.pointerId);
-    }
-    e.preventDefault();
-    e.stopPropagation();
-  }, [containerRef]);
+      const el = containerRef.current;
+      if (el) {
+        el.setPointerCapture(e.pointerId);
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    [containerRef]
+  );
 
-  const handlePointerMove = useCallback((e: PointerEvent) => {
-    if (!dragState.current) return;
-    e.preventDefault();
+  const handlePointerMove = useCallback(
+    (e: PointerEvent) => {
+      if (!dragState.current) return;
+      e.preventDefault();
 
-    cancelAnimationFrame(frameRef.current);
-    const clientX = e.clientX;
-    const clientY = e.clientY;
-    frameRef.current = requestAnimationFrame(() => {
-      applyUpdates(clientX, clientY);
-    });
-  }, [applyUpdates]);
+      cancelAnimationFrame(frameRef.current);
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      frameRef.current = requestAnimationFrame(() => {
+        applyUpdates(clientX, clientY);
+      });
+    },
+    [applyUpdates]
+  );
 
-  const handlePointerUp = useCallback((e: PointerEvent) => {
-    if (!dragState.current) return;
-    dragState.current = null;
-    cancelAnimationFrame(frameRef.current);
+  const handlePointerUp = useCallback(
+    (e: PointerEvent) => {
+      if (!dragState.current) return;
+      dragState.current = null;
+      cancelAnimationFrame(frameRef.current);
 
-    const el = containerRef.current;
-    if (el) {
-      try { el.releasePointerCapture(e.pointerId); } catch {}
-    }
-  }, [containerRef]);
+      const el = containerRef.current;
+      if (el) {
+        try {
+          el.releasePointerCapture(e.pointerId);
+        } catch {}
+      }
+    },
+    [containerRef]
+  );
 
   // Re-attach listeners whenever the ref element changes (conditional render)
   useEffect(() => {

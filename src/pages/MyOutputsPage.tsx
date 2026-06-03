@@ -19,9 +19,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
+} from '../components/ui/BreadcrumbWithBack';
 import { GlassPanel } from '../components/ui/GlassPanel';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 export const MyOutputsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -60,9 +60,9 @@ export const MyOutputsPage: React.FC = () => {
     try {
       return Array.from(
         new Set(
-          mockups.flatMap(m => [
+          mockups.flatMap((m) => [
             ...(Array.isArray(m.tags) ? m.tags : []),
-            ...(Array.isArray(m.brandingTags) ? m.brandingTags : [])
+            ...(Array.isArray(m.brandingTags) ? m.brandingTags : []),
           ])
         )
       ).sort();
@@ -78,22 +78,28 @@ export const MyOutputsPage: React.FC = () => {
     }
 
     try {
-      return mockups.filter(mockup => {
+      return mockups.filter((mockup) => {
         if (!mockup || typeof mockup !== 'object') {
           return false;
         }
 
         const prompt = (mockup.prompt || '').toLowerCase();
-        const tags = Array.isArray(mockup.tags) ? mockup.tags.map(t => String(t).toLowerCase()) : [];
-        const brandingTags = Array.isArray(mockup.brandingTags) ? mockup.brandingTags.map(t => String(t).toLowerCase()) : [];
+        const tags = Array.isArray(mockup.tags)
+          ? mockup.tags.map((t) => String(t).toLowerCase())
+          : [];
+        const brandingTags = Array.isArray(mockup.brandingTags)
+          ? mockup.brandingTags.map((t) => String(t).toLowerCase())
+          : [];
         const searchLower = searchQuery.toLowerCase();
 
-        const matchesSearch = searchQuery === '' ||
+        const matchesSearch =
+          searchQuery === '' ||
           prompt.includes(searchLower) ||
-          tags.some(tag => tag.includes(searchLower)) ||
-          brandingTags.some(tag => tag.includes(searchLower));
+          tags.some((tag) => tag.includes(searchLower)) ||
+          brandingTags.some((tag) => tag.includes(searchLower));
 
-        const matchesTag = filterTag === null ||
+        const matchesTag =
+          filterTag === null ||
           tags.includes(filterTag.toLowerCase()) ||
           brandingTags.includes(filterTag.toLowerCase());
 
@@ -109,88 +115,94 @@ export const MyOutputsPage: React.FC = () => {
     setSelectedMockup(mockup);
   }, []);
 
-  const handleDelete = useCallback(async (id: string) => {
-    if (!id || !isAuthenticated) {
-      return;
-    }
+  const handleDelete = useCallback(
+    async (id: string) => {
+      if (!id || !isAuthenticated) {
+        return;
+      }
 
-    setDeletingId(id);
-    try {
-      await mockupApi.delete(id);
-      setMockups(prev => prev.filter(m => m._id !== id));
-      setSelectedMockup(null);
-      toast.success(t('my.outputs.output_deleted_successfully'), { duration: 2000 });
-    } catch (err: any) {
-      toast.error(t('my.outputs.failed_to_delete_output'), { duration: 5000 });
-    } finally {
-      setDeletingId(null);
-    }
-  }, [isAuthenticated]);
-
-  const handleToggleLike = useCallback(async (mockup: Mockup) => {
-    if (!mockup._id || !isAuthenticated) {
-      return;
-    }
-
-    const currentLikedState = mockup.isLiked === true;
-    const newLikedState = !currentLikedState;
-    const isLiked = Boolean(newLikedState);
-
-    // Check if this is a canvas image (has imageUrl with /canvas/ in path)
-    const imageUrl = getImageUrl(mockup);
-    const isCanvasImage = imageUrl && imageUrl.includes('/canvas/');
-
-    // If disliking a canvas image, delete it instead of just toggling like status
-    if (!isLiked && isCanvasImage) {
-      setDeletingId(mockup._id);
+      setDeletingId(id);
       try {
-        await mockupApi.delete(mockup._id);
-        setMockups(prev => prev.filter(m => m._id !== mockup._id));
-        if (selectedMockup?._id === mockup._id) {
-          setSelectedMockup(null);
-        }
-        toast.success(t('my.outputs.canvas_image_removed'), { duration: 2000 });
+        await mockupApi.delete(id);
+        setMockups((prev) => prev.filter((m) => m._id !== id));
+        setSelectedMockup(null);
+        toast.success(t('my.outputs.output_deleted_successfully'), { duration: 2000 });
       } catch (err: any) {
-        toast.error(t('my.outputs.failed_to_remove_canvas_image'), { duration: 5000 });
+        toast.error(t('my.outputs.failed_to_delete_output'), { duration: 5000 });
       } finally {
         setDeletingId(null);
       }
-      return;
-    }
+    },
+    [isAuthenticated]
+  );
 
-    // For non-canvas images or when liking, just update like status
-    // Update local state immediately for responsive UI
-    setMockups(prev => prev.map(m =>
-      m._id === mockup._id ? { ...m, isLiked } : m
-    ));
-
-    // Update selected mockup if it's the one being liked
-    if (selectedMockup?._id === mockup._id) {
-      setSelectedMockup(prev => prev ? { ...prev, isLiked } : null);
-    }
-
-    // Update in backend
-    try {
-      console.log(`[Like] Updating like status for mockup ${mockup._id}: isLiked=${isLiked}`);
-      await mockupApi.update(mockup._id, { isLiked: isLiked });
-      console.log(`[Like] Successfully updated like status for mockup ${mockup._id}`);
-      toast.success(isLiked ? 'Added to favorites' : 'Removed from favorites', { duration: 2000 });
-    } catch (error: any) {
-      console.error('[Like] Failed to update like status:', {
-        mockupId: mockup._id,
-        isLiked,
-        error: error?.message || error,
-      });
-      // Revert local state on error
-      setMockups(prev => prev.map(m =>
-        m._id === mockup._id ? { ...m, isLiked: !isLiked } : m
-      ));
-      if (selectedMockup?._id === mockup._id) {
-        setSelectedMockup(prev => prev ? { ...prev, isLiked: !isLiked } : null);
+  const handleToggleLike = useCallback(
+    async (mockup: Mockup) => {
+      if (!mockup._id || !isAuthenticated) {
+        return;
       }
-      toast.error('Failed to update like status. Please try again.', { duration: 3000 });
-    }
-  }, [isAuthenticated, selectedMockup]);
+
+      const currentLikedState = mockup.isLiked === true;
+      const newLikedState = !currentLikedState;
+      const isLiked = Boolean(newLikedState);
+
+      // Check if this is a canvas image (has imageUrl with /canvas/ in path)
+      const imageUrl = getImageUrl(mockup);
+      const isCanvasImage = imageUrl && imageUrl.includes('/canvas/');
+
+      // If disliking a canvas image, delete it instead of just toggling like status
+      if (!isLiked && isCanvasImage) {
+        setDeletingId(mockup._id);
+        try {
+          await mockupApi.delete(mockup._id);
+          setMockups((prev) => prev.filter((m) => m._id !== mockup._id));
+          if (selectedMockup?._id === mockup._id) {
+            setSelectedMockup(null);
+          }
+          toast.success(t('my.outputs.canvas_image_removed'), { duration: 2000 });
+        } catch (err: any) {
+          toast.error(t('my.outputs.failed_to_remove_canvas_image'), { duration: 5000 });
+        } finally {
+          setDeletingId(null);
+        }
+        return;
+      }
+
+      // For non-canvas images or when liking, just update like status
+      // Update local state immediately for responsive UI
+      setMockups((prev) => prev.map((m) => (m._id === mockup._id ? { ...m, isLiked } : m)));
+
+      // Update selected mockup if it's the one being liked
+      if (selectedMockup?._id === mockup._id) {
+        setSelectedMockup((prev) => (prev ? { ...prev, isLiked } : null));
+      }
+
+      // Update in backend
+      try {
+        console.log(`[Like] Updating like status for mockup ${mockup._id}: isLiked=${isLiked}`);
+        await mockupApi.update(mockup._id, { isLiked: isLiked });
+        console.log(`[Like] Successfully updated like status for mockup ${mockup._id}`);
+        toast.success(isLiked ? 'Added to favorites' : 'Removed from favorites', {
+          duration: 2000,
+        });
+      } catch (error: any) {
+        console.error('[Like] Failed to update like status:', {
+          mockupId: mockup._id,
+          isLiked,
+          error: error?.message || error,
+        });
+        // Revert local state on error
+        setMockups((prev) =>
+          prev.map((m) => (m._id === mockup._id ? { ...m, isLiked: !isLiked } : m))
+        );
+        if (selectedMockup?._id === mockup._id) {
+          setSelectedMockup((prev) => (prev ? { ...prev, isLiked: !isLiked } : null));
+        }
+        toast.error('Failed to update like status. Please try again.', { duration: 3000 });
+      }
+    },
+    [isAuthenticated, selectedMockup]
+  );
 
   useEffect(() => {
     loadMockups();
@@ -215,14 +227,19 @@ export const MyOutputsPage: React.FC = () => {
       }
 
       const validMockups = data
-        .filter(mockup =>
-          mockup &&
-          typeof mockup === 'object' &&
-          (mockup.imageBase64 || mockup.imageUrl) &&
-          ((mockup.imageBase64 && typeof mockup.imageBase64 === 'string' && mockup.imageBase64.length > 0) ||
-            (mockup.imageUrl && typeof mockup.imageUrl === 'string' && mockup.imageUrl.length > 0))
+        .filter(
+          (mockup) =>
+            mockup &&
+            typeof mockup === 'object' &&
+            (mockup.imageBase64 || mockup.imageUrl) &&
+            ((mockup.imageBase64 &&
+              typeof mockup.imageBase64 === 'string' &&
+              mockup.imageBase64.length > 0) ||
+              (mockup.imageUrl &&
+                typeof mockup.imageUrl === 'string' &&
+                mockup.imageUrl.length > 0))
         )
-        .map(mockup => ({
+        .map((mockup) => ({
           ...mockup,
           _id: mockup._id || '',
           prompt: mockup.prompt || '',
@@ -262,7 +279,7 @@ export const MyOutputsPage: React.FC = () => {
   // Get current index for navigation
   const getCurrentIndex = useCallback(() => {
     if (!selectedMockup || !filteredMockups.length) return 0;
-    const index = filteredMockups.findIndex(m => m._id === selectedMockup._id);
+    const index = filteredMockups.findIndex((m) => m._id === selectedMockup._id);
     return index >= 0 ? index : 0;
   }, [selectedMockup, filteredMockups]);
 
@@ -287,26 +304,33 @@ export const MyOutputsPage: React.FC = () => {
   }, [hasNext, filteredMockups, currentIndex]);
 
   // Handler to navigate to MockupMachinePage with image for editing
-  const handleNavigateToMockupMachine = useCallback(async (mockup: Mockup, operation?: 'zoom-in' | 'zoom-out' | 'new-angle' | 'new-background' | 're-imagine', operationData?: string) => {
-    try {
-      // Store mockup data in localStorage for MockupMachinePage to pick up
-      const mockupData = {
-        imageBase64: mockup.imageBase64,
-        imageUrl: mockup.imageUrl,
-        prompt: mockup.prompt,
-        designType: mockup.designType,
-        tags: mockup.tags,
-        brandingTags: mockup.brandingTags,
-        aspectRatio: mockup.aspectRatio,
-        operation,
-        operationData, // For angle name or re-imagine prompt
-      };
-      localStorage.setItem('edit-mockup', JSON.stringify(mockupData));
-      navigate('/');
-    } catch (error) {
-      console.error('Failed to store mockup for editing:', error);
-    }
-  }, [navigate]);
+  const handleNavigateToMockupMachine = useCallback(
+    async (
+      mockup: Mockup,
+      operation?: 'zoom-in' | 'zoom-out' | 'new-angle' | 'new-background' | 're-imagine',
+      operationData?: string
+    ) => {
+      try {
+        // Store mockup data in localStorage for MockupMachinePage to pick up
+        const mockupData = {
+          imageBase64: mockup.imageBase64,
+          imageUrl: mockup.imageUrl,
+          prompt: mockup.prompt,
+          designType: mockup.designType,
+          tags: mockup.tags,
+          brandingTags: mockup.brandingTags,
+          aspectRatio: mockup.aspectRatio,
+          operation,
+          operationData, // For angle name or re-imagine prompt
+        };
+        localStorage.setItem('edit-mockup', JSON.stringify(mockupData));
+        navigate('/');
+      } catch (error) {
+        console.error('Failed to store mockup for editing:', error);
+      }
+    },
+    [navigate]
+  );
 
   // Calculate credits needed (default to 1 credit for edit operations)
   const creditsNeededForEdit = useMemo(() => {
@@ -335,7 +359,9 @@ export const MyOutputsPage: React.FC = () => {
   const getGridStyle = useCallback(() => {
     // Mobile sempre 1 coluna, a partir de 640px (sm) usa o número exato selecionado pelo usuário
     return {
-      gridTemplateColumns: isMobile ? 'repeat(1, minmax(0, 1fr))' : `repeat(${columns}, minmax(0, 1fr))`,
+      gridTemplateColumns: isMobile
+        ? 'repeat(1, minmax(0, 1fr))'
+        : `repeat(${columns}, minmax(0, 1fr))`,
     };
   }, [columns, isMobile]);
 
@@ -346,7 +372,9 @@ export const MyOutputsPage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">{t('my.outputs.loading_your_outputs')}</p>
+              <p className="text-neutral-400 font-mono text-sm">
+                {t('my.outputs.loading_your_outputs')}
+              </p>
             </div>
           </div>
         </div>
@@ -363,8 +391,7 @@ export const MyOutputsPage: React.FC = () => {
       />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 relative overflow-hidden">
         {/* Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-        </div>
+        <div className="fixed inset-0 z-0 pointer-events-none"></div>
 
         {/* Header with Controls and Sidebar */}
         <div className="relative z-30 pt-16 md:pt-20 pb-6">
@@ -415,7 +442,9 @@ export const MyOutputsPage: React.FC = () => {
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
               <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
-                <Button variant="ghost" onClick={() => handleColumnsChange(columns - 1)}
+                <Button
+                  variant="ghost"
+                  onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
@@ -427,7 +456,9 @@ export const MyOutputsPage: React.FC = () => {
                     {columns}
                   </span>
                 </div>
-                <Button variant="ghost" onClick={() => handleColumnsChange(columns + 1)}
+                <Button
+                  variant="ghost"
+                  onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"
@@ -474,10 +505,12 @@ export const MyOutputsPage: React.FC = () => {
                       {/* Overlay on hover */}
                       <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity">
                         {isAuthenticated && mockup._id && (
-                          <Button variant="ghost" onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(mockup._id);
-                          }}
+                          <Button
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(mockup._id);
+                            }}
                             disabled={deletingId === mockup._id}
                             className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-xs font-mono text-destructive hover:text-destructive hover:border-destructive/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
                             aria-label={t('my.outputs.delete_output')}
@@ -506,25 +539,35 @@ export const MyOutputsPage: React.FC = () => {
             }}
             mockup={selectedMockup}
             mockupId={selectedMockup._id}
-            onDelete={isAuthenticated && selectedMockup._id ? () => handleDelete(selectedMockup._id) : undefined}
+            onDelete={
+              isAuthenticated && selectedMockup._id
+                ? () => handleDelete(selectedMockup._id)
+                : undefined
+            }
             isDeleting={deletingId === selectedMockup._id}
             isAuthenticated={isAuthenticated === true}
             onToggleLike={selectedMockup._id ? () => handleToggleLike(selectedMockup) : undefined}
             onLikeStateChange={(newIsLiked) => {
               // Sync state when hook updates it
               if (selectedMockup._id) {
-                setMockups(prev => prev.map(m =>
-                  m._id === selectedMockup._id ? { ...m, isLiked: newIsLiked } : m
-                ));
-                setSelectedMockup(prev => prev ? { ...prev, isLiked: newIsLiked } : null);
+                setMockups((prev) =>
+                  prev.map((m) =>
+                    m._id === selectedMockup._id ? { ...m, isLiked: newIsLiked } : m
+                  )
+                );
+                setSelectedMockup((prev) => (prev ? { ...prev, isLiked: newIsLiked } : null));
               }
             }}
             isLiked={selectedMockup.isLiked || false}
             onZoomIn={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-in')}
             onZoomOut={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-out')}
-            onNewAngle={(angle) => handleNavigateToMockupMachine(selectedMockup, 'new-angle', angle)}
+            onNewAngle={(angle) =>
+              handleNavigateToMockupMachine(selectedMockup, 'new-angle', angle)
+            }
             onNewBackground={() => handleNavigateToMockupMachine(selectedMockup, 'new-background')}
-            onReImagine={(reimaginePrompt) => handleNavigateToMockupMachine(selectedMockup, 're-imagine', reimaginePrompt)}
+            onReImagine={(reimaginePrompt) =>
+              handleNavigateToMockupMachine(selectedMockup, 're-imagine', reimaginePrompt)
+            }
             editButtonsDisabled={isEditOperationDisabled}
             creditsPerOperation={creditsNeededForEdit}
             onNavigatePrevious={hasPrevious ? handlePreviousMockup : undefined}

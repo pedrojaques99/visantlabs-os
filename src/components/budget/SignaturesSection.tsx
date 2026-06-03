@@ -3,24 +3,18 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { FormInput } from '@/components/ui/form-input';
 import type { Signature } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface SignaturesSectionProps {
   signatures: Signature[];
   onChange: (signatures: Signature[]) => void;
 }
 
-export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
-  signatures,
-  onChange,
-}) => {
+export const SignaturesSection: React.FC<SignaturesSectionProps> = ({ signatures, onChange }) => {
   const { t } = useTranslation();
 
   const addSignature = () => {
-    onChange([
-      ...signatures,
-      { name: '', role: '' },
-    ]);
+    onChange([...signatures, { name: '', role: '' }]);
   };
 
   const removeSignature = (index: number) => {
@@ -39,7 +33,8 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.signatures') || 'Assinaturas'}
         </h3>
-        <Button variant="brand"
+        <Button
+          variant="brand"
           onClick={addSignature}
           className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addSignature') || 'Adicionar Assinatura'}
@@ -67,9 +62,7 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
                     </label>
                     <FormInput
                       value={signature.name}
-                      onChange={(e) =>
-                        updateSignature(index, 'name', e.target.value)
-                      }
+                      onChange={(e) => updateSignature(index, 'name', e.target.value)}
                       placeholder={t('budget.placeholders.signatureName') || 'Nome do signatário'}
                     />
                   </div>
@@ -79,14 +72,13 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
                     </label>
                     <FormInput
                       value={signature.role}
-                      onChange={(e) =>
-                        updateSignature(index, 'role', e.target.value)
-                      }
+                      onChange={(e) => updateSignature(index, 'role', e.target.value)}
                       placeholder={t('budget.placeholders.signatureRole') || 'Cargo/Função'}
                     />
                   </div>
                 </div>
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   onClick={() => removeSignature(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                   title={t('budget.removeSignature') || 'Remover assinatura'}
@@ -101,4 +93,3 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
     </div>
   );
 };
-

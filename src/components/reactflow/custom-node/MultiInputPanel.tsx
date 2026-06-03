@@ -22,7 +22,7 @@ export function MultiInputPanel({ config, description, onChange, disabled }: Pro
       </p>
       <textarea
         value={description}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         placeholder={PLACEHOLDERS[config.behavior] ?? 'Describe the operation...'}
         rows={2}

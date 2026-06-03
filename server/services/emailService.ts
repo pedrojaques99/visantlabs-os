@@ -64,13 +64,17 @@ const creditsPurchasedHtml = (
   creditsText: string,
   totalCredits: number | undefined,
   formattedAmount: string | null,
-  dashboardUrl: string,
+  dashboardUrl: string
 ) =>
   baseHtml(`<h2>Créditos adicionados</h2>
 <p>Olá, <strong>${userName}</strong>!</p>
 <p>Você adquiriu <strong>${creditsText}</strong> com sucesso.</p>
 ${formattedAmount ? `<p>Valor pago: <strong>${formattedAmount}</strong></p>` : ''}
-${totalCredits !== undefined ? `<p>Total disponível: <strong>${totalCredits} créditos</strong></p>` : ''}
+${
+  totalCredits !== undefined
+    ? `<p>Total disponível: <strong>${totalCredits} créditos</strong></p>`
+    : ''
+}
 <a class="btn" href="${dashboardUrl}">Acessar painel</a>`);
 
 const emailVerificationHtml = (userName: string, verifyUrl: string) =>
@@ -95,7 +99,7 @@ const withTemplate = (
   base: { from: string; to: string; subject: string },
   templateId: string,
   variables: Record<string, unknown>,
-  htmlFallback: string,
+  htmlFallback: string
 ): SendPayload => {
   if (templateId) {
     return { ...base, template: { id: templateId, variables } } as unknown as SendPayload;
@@ -113,12 +117,16 @@ export interface SendPasswordResetEmailParams {
   resetToken: string;
 }
 
-export const sendPasswordResetEmail = async (params: SendPasswordResetEmailParams): Promise<void> => {
+export const sendPasswordResetEmail = async (
+  params: SendPasswordResetEmailParams
+): Promise<void> => {
   const { email, name, resetToken } = params;
 
   const emailService = getEmailService();
   if (!emailService) {
-    throw new Error('Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.');
+    throw new Error(
+      'Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.'
+    );
   }
 
   const resetUrl = `${FRONTEND_URL}/forgot-password?token=${resetToken}`;
@@ -130,8 +138,8 @@ export const sendPasswordResetEmail = async (params: SendPasswordResetEmailParam
         { from: RESEND_FROM_EMAIL, to: email, subject: 'Redefinição de senha — Visant Labs' },
         TEMPLATE_IDS.passwordReset,
         { USER_NAME: userName, RESET_URL: resetUrl },
-        passwordResetHtml(userName, resetUrl),
-      ),
+        passwordResetHtml(userName, resetUrl)
+      )
     );
   } catch (error: any) {
     console.error('Error sending password reset email:', error);
@@ -149,7 +157,9 @@ export const sendWelcomeEmail = async (params: SendWelcomeEmailParams): Promise<
 
   const emailService = getEmailService();
   if (!emailService) {
-    throw new Error('Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.');
+    throw new Error(
+      'Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.'
+    );
   }
 
   const dashboardUrl = `${FRONTEND_URL}`;
@@ -161,8 +171,8 @@ export const sendWelcomeEmail = async (params: SendWelcomeEmailParams): Promise<
         { from: RESEND_FROM_EMAIL, to: email, subject: 'Bem-vindo à Visant Labs!' },
         TEMPLATE_IDS.welcome,
         { USER_NAME: userName, DASHBOARD_URL: dashboardUrl },
-        welcomeHtml(userName, dashboardUrl),
-      ),
+        welcomeHtml(userName, dashboardUrl)
+      )
     );
   } catch (error: any) {
     console.error('Error sending welcome email:', error);
@@ -179,12 +189,16 @@ export interface SendCreditsPurchasedEmailParams {
   currency?: string;
 }
 
-export const sendCreditsPurchasedEmail = async (params: SendCreditsPurchasedEmailParams): Promise<void> => {
+export const sendCreditsPurchasedEmail = async (
+  params: SendCreditsPurchasedEmailParams
+): Promise<void> => {
   const { email, name, credits, totalCredits, amount, currency = 'BRL' } = params;
 
   const emailService = getEmailService();
   if (!emailService) {
-    throw new Error('Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.');
+    throw new Error(
+      'Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.'
+    );
   }
 
   const dashboardUrl = `${FRONTEND_URL}`;
@@ -207,8 +221,8 @@ export const sendCreditsPurchasedEmail = async (params: SendCreditsPurchasedEmai
           AMOUNT: formattedAmount ?? null,
           DASHBOARD_URL: dashboardUrl,
         },
-        creditsPurchasedHtml(userName, creditsText, totalCredits, formattedAmount, dashboardUrl),
-      ),
+        creditsPurchasedHtml(userName, creditsText, totalCredits, formattedAmount, dashboardUrl)
+      )
     );
   } catch (error: any) {
     console.error('Error sending credits purchased email:', error);
@@ -231,7 +245,9 @@ export const sendVerificationEmail = async (params: SendVerificationEmailParams)
 
   const emailService = getEmailService();
   if (!emailService) {
-    throw new Error('Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.');
+    throw new Error(
+      'Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.'
+    );
   }
 
   const verifyUrl = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
@@ -243,8 +259,8 @@ export const sendVerificationEmail = async (params: SendVerificationEmailParams)
         { from: RESEND_FROM_EMAIL, to: email, subject: 'Verifique seu email — Visant Labs' },
         TEMPLATE_IDS.emailVerification,
         { USER_NAME: userName, VERIFY_URL: verifyUrl },
-        emailVerificationHtml(userName, verifyUrl),
-      ),
+        emailVerificationHtml(userName, verifyUrl)
+      )
     );
   } catch (error: any) {
     console.error('Error sending verification email:', error);
@@ -252,12 +268,16 @@ export const sendVerificationEmail = async (params: SendVerificationEmailParams)
   }
 };
 
-export const sendNewsletterWelcomeEmail = async (params: SendNewsletterWelcomeEmailParams): Promise<void> => {
+export const sendNewsletterWelcomeEmail = async (
+  params: SendNewsletterWelcomeEmailParams
+): Promise<void> => {
   const { email } = params;
 
   const emailService = getEmailService();
   if (!emailService) {
-    throw new Error('Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.');
+    throw new Error(
+      'Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.'
+    );
   }
 
   try {
@@ -266,8 +286,8 @@ export const sendNewsletterWelcomeEmail = async (params: SendNewsletterWelcomeEm
         { from: RESEND_FROM_EMAIL, to: email, subject: 'Você está na lista — Visant Labs' },
         TEMPLATE_IDS.newsletterWelcome,
         { WHATSAPP_URL: WHATSAPP_GROUP_URL || null },
-        newsletterWelcomeHtml(WHATSAPP_GROUP_URL),
-      ),
+        newsletterWelcomeHtml(WHATSAPP_GROUP_URL)
+      )
     );
   } catch (error: any) {
     console.error('Error sending newsletter welcome email:', error);

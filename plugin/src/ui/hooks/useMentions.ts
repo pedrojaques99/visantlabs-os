@@ -41,7 +41,7 @@ export function useMentions(
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filterText, setFilterText] = useState('');
   const { send } = useFigmaMessages();
-  const mentionElements = usePluginStore(s => s.mentionElements);
+  const mentionElements = usePluginStore((s) => s.mentionElements);
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -159,6 +159,6 @@ export function useMentions(
     selectMention,
     handleKeyDown,
     setItems,
-    refresh: fetchElements
+    refresh: fetchElements,
   };
 }

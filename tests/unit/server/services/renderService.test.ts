@@ -55,22 +55,48 @@ describe('renderService', () => {
   });
 
   describe('validateFormat', () => {
-    it('accepts mp4', () => { expect(validateFormat('mp4')).toBe(true); });
-    it('accepts gif', () => { expect(validateFormat('gif')).toBe(true); });
-    it('accepts webm', () => { expect(validateFormat('webm')).toBe(true); });
-    it('rejects avi', () => { expect(validateFormat('avi')).toBe(false); });
-    it('rejects empty', () => { expect(validateFormat('')).toBe(false); });
-    it('rejects arbitrary string', () => { expect(validateFormat('mov')).toBe(false); });
+    it('accepts mp4', () => {
+      expect(validateFormat('mp4')).toBe(true);
+    });
+    it('accepts gif', () => {
+      expect(validateFormat('gif')).toBe(true);
+    });
+    it('accepts webm', () => {
+      expect(validateFormat('webm')).toBe(true);
+    });
+    it('rejects avi', () => {
+      expect(validateFormat('avi')).toBe(false);
+    });
+    it('rejects empty', () => {
+      expect(validateFormat('')).toBe(false);
+    });
+    it('rejects arbitrary string', () => {
+      expect(validateFormat('mov')).toBe(false);
+    });
   });
 
   describe('validateFps', () => {
-    it('accepts valid fps', () => { expect(validateFps(30)).toBeNull(); });
-    it('accepts 1 fps', () => { expect(validateFps(1)).toBeNull(); });
-    it('accepts 60 fps', () => { expect(validateFps(60)).toBeNull(); });
-    it('rejects 0 fps', () => { expect(validateFps(0)).toBeTruthy(); });
-    it('rejects negative fps', () => { expect(validateFps(-1)).toBeTruthy(); });
-    it('rejects fps > 60', () => { expect(validateFps(120)).toBeTruthy(); });
-    it('rejects NaN', () => { expect(validateFps(NaN)).toBeTruthy(); });
+    it('accepts valid fps', () => {
+      expect(validateFps(30)).toBeNull();
+    });
+    it('accepts 1 fps', () => {
+      expect(validateFps(1)).toBeNull();
+    });
+    it('accepts 60 fps', () => {
+      expect(validateFps(60)).toBeNull();
+    });
+    it('rejects 0 fps', () => {
+      expect(validateFps(0)).toBeTruthy();
+    });
+    it('rejects negative fps', () => {
+      expect(validateFps(-1)).toBeTruthy();
+    });
+    it('rejects fps > 60', () => {
+      expect(validateFps(120)).toBeTruthy();
+    });
+    it('rejects NaN', () => {
+      expect(validateFps(NaN)).toBeTruthy();
+    });
   });
 
   describe('createRenderJob', () => {
@@ -134,8 +160,8 @@ describe('renderService', () => {
 
   describe('parseFrameBuffer', () => {
     it('parses valid frame buffer', () => {
-      const frame1 = Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]); // JPEG header-like
-      const frame2 = Buffer.from([0xFF, 0xD8, 0xFF, 0xE1]);
+      const frame1 = Buffer.from([0xff, 0xd8, 0xff, 0xe0]); // JPEG header-like
+      const frame2 = Buffer.from([0xff, 0xd8, 0xff, 0xe1]);
 
       const buf = Buffer.alloc(4 + frame1.length + 4 + frame2.length);
       buf.writeUInt32LE(frame1.length, 0);

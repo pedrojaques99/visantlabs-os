@@ -83,7 +83,10 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
   useEffect(() => {
     if (!open) return;
     const onDocDown = (e: MouseEvent) => {
-      if (!popoverRef.current?.contains(e.target as Node) && !triggerRef.current?.contains(e.target as Node)) {
+      if (
+        !popoverRef.current?.contains(e.target as Node) &&
+        !triggerRef.current?.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -120,9 +123,13 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
     updateLayer(layerId, { filters: undefined, crop: undefined } as Partial<LogoLayerData>);
   };
 
-  const hasAny =
-    !!(filters.brightness || filters.contrast || filters.blur || filters.grayscale ||
-       (data.crop && (data.crop.x || data.crop.y || data.crop.w !== 1 || data.crop.h !== 1)));
+  const hasAny = !!(
+    filters.brightness ||
+    filters.contrast ||
+    filters.blur ||
+    filters.grayscale ||
+    (data.crop && (data.crop.x || data.crop.y || data.crop.w !== 1 || data.crop.h !== 1))
+  );
 
   return (
     <>
@@ -132,92 +139,96 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
         onClick={toggle}
         title="Ajustes de imagem"
         className={`p-1.5 rounded transition-colors ${
-          hasAny || open ? 'bg-brand-cyan/20 text-brand-cyan' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+          hasAny || open
+            ? 'bg-brand-cyan/20 text-brand-cyan'
+            : 'text-neutral-400 hover:text-white hover:bg-white/5'
         }`}
       >
         <Sliders size={14} />
       </button>
 
-      {open && coords && createPortal(
-        <div
-          ref={popoverRef}
-          onMouseDown={(e) => e.stopPropagation()}
-          style={{ left: coords.left, top: coords.top, width: 240 }}
-          className="fixed z-[10001] bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl p-3 flex flex-col gap-3"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-300">
-              Ajustes
-            </span>
-            <button
-              type="button"
-              onClick={reset}
-              title="Resetar ajustes"
-              className="p-1 rounded text-neutral-500 hover:text-white hover:bg-white/5"
-            >
-              <RotateCcw size={11} />
-            </button>
-          </div>
+      {open &&
+        coords &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{ left: coords.left, top: coords.top, width: 240 }}
+            className="fixed z-[10001] bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl p-3 flex flex-col gap-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-300">
+                Ajustes
+              </span>
+              <button
+                type="button"
+                onClick={reset}
+                title="Resetar ajustes"
+                className="p-1 rounded text-neutral-500 hover:text-white hover:bg-white/5"
+              >
+                <RotateCcw size={11} />
+              </button>
+            </div>
 
-          <Slider
-            label="Brilho"
-            value={filters.brightness ?? 0}
-            min={FILTER_RANGES.brightness.min}
-            max={FILTER_RANGES.brightness.max}
-            step={FILTER_RANGES.brightness.step}
-            onChange={(n) => setFilter({ brightness: n === 0 ? undefined : n })}
-          />
-          <Slider
-            label="Contraste"
-            value={filters.contrast ?? 0}
-            min={FILTER_RANGES.contrast.min}
-            max={FILTER_RANGES.contrast.max}
-            step={FILTER_RANGES.contrast.step}
-            onChange={(n) => setFilter({ contrast: n === 0 ? undefined : n })}
-          />
-          <Slider
-            label="Desfoque"
-            value={filters.blur ?? 0}
-            min={FILTER_RANGES.blur.min}
-            max={FILTER_RANGES.blur.max}
-            step={FILTER_RANGES.blur.step}
-            onChange={(n) => setFilter({ blur: n === 0 ? undefined : n })}
-            suffix="px"
-          />
-
-          <label className="flex items-center gap-2 text-[10px] font-mono text-neutral-300">
-            <input
-              type="checkbox"
-              checked={!!filters.grayscale}
-              onChange={(e) => setFilter({ grayscale: e.target.checked || undefined })}
-              className="accent-brand-cyan"
+            <Slider
+              label="Brilho"
+              value={filters.brightness ?? 0}
+              min={FILTER_RANGES.brightness.min}
+              max={FILTER_RANGES.brightness.max}
+              step={FILTER_RANGES.brightness.step}
+              onChange={(n) => setFilter({ brightness: n === 0 ? undefined : n })}
             />
-            <span className="uppercase tracking-wider">Preto e branco</span>
-          </label>
+            <Slider
+              label="Contraste"
+              value={filters.contrast ?? 0}
+              min={FILTER_RANGES.contrast.min}
+              max={FILTER_RANGES.contrast.max}
+              step={FILTER_RANGES.contrast.step}
+              onChange={(n) => setFilter({ contrast: n === 0 ? undefined : n })}
+            />
+            <Slider
+              label="Desfoque"
+              value={filters.blur ?? 0}
+              min={FILTER_RANGES.blur.min}
+              max={FILTER_RANGES.blur.max}
+              step={FILTER_RANGES.blur.step}
+              onChange={(n) => setFilter({ blur: n === 0 ? undefined : n })}
+              suffix="px"
+            />
 
-          <div className="h-px bg-white/5" />
+            <label className="flex items-center gap-2 text-[10px] font-mono text-neutral-300">
+              <input
+                type="checkbox"
+                checked={!!filters.grayscale}
+                onChange={(e) => setFilter({ grayscale: e.target.checked || undefined })}
+                className="accent-brand-cyan"
+              />
+              <span className="uppercase tracking-wider">Preto e branco</span>
+            </label>
 
-          <NumPair
-            label="Crop pos %"
-            ax={crop.x}
-            ay={crop.y}
-            labelA="X"
-            labelB="Y"
-            onA={(n) => setCrop({ x: n })}
-            onB={(n) => setCrop({ y: n })}
-          />
-          <NumPair
-            label="Crop tam %"
-            ax={crop.w}
-            ay={crop.h}
-            labelA="W"
-            labelB="H"
-            onA={(n) => setCrop({ w: n })}
-            onB={(n) => setCrop({ h: n })}
-          />
-        </div>,
-        document.body
-      )}
+            <div className="h-px bg-white/5" />
+
+            <NumPair
+              label="Crop pos %"
+              ax={crop.x}
+              ay={crop.y}
+              labelA="X"
+              labelB="Y"
+              onA={(n) => setCrop({ x: n })}
+              onB={(n) => setCrop({ y: n })}
+            />
+            <NumPair
+              label="Crop tam %"
+              ax={crop.w}
+              ay={crop.h}
+              labelA="W"
+              labelB="H"
+              onA={(n) => setCrop({ w: n })}
+              onB={(n) => setCrop({ h: n })}
+            />
+          </div>,
+          document.body
+        )}
     </>
   );
 };

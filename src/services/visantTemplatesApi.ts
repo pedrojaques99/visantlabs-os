@@ -58,7 +58,9 @@ export const visantTemplatesApi = {
     return data.template || null;
   },
 
-  async create(template: Omit<VisantTemplate, '_id' | 'id' | 'createdAt' | 'updatedAt'>): Promise<VisantTemplate> {
+  async create(
+    template: Omit<VisantTemplate, '_id' | 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<VisantTemplate> {
     const response = await fetch(`${API_BASE_URL}/visant-templates`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -161,15 +163,3 @@ export const visantTemplatesApi = {
     return data.template;
   },
 };
-
-
-
-
-
-
-
-
-
-
-
-

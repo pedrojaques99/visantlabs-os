@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { NodeSlider } from './node-slider';
 import { useNodeDownload } from './useNodeDownload';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface ImageFullscreenModalProps {
   imageUrl: string | null;
@@ -135,33 +135,24 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
       >
         {/* Top Bar - Minimal controls */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
-          {title && (
-            <h3 className="text-sm font-mono text-neutral-400">{title}</h3>
-          )}
+          {title && <h3 className="text-sm font-mono text-neutral-400">{title}</h3>}
           <div className="flex items-center gap-2 ml-auto">
             {/* Zoom Controls */}
             <div className="flex items-center gap-1 bg-neutral-950/70 backdrop-blur-sm rounded-md border-node border-neutral-700/50 p-1">
-              <Button variant="action"
-                onClick={handleZoomOut}
-                
-                title={t('common.zoomOut')}
-              >
+              <Button variant="action" onClick={handleZoomOut} title={t('common.zoomOut')}>
                 <ZoomOut size={14} strokeWidth={2} />
               </Button>
               <span className="text-xs font-mono text-neutral-500 px-2 min-w-[3rem] text-center">
                 {Math.round(zoom * 100)}%
               </span>
-              <Button variant="action"
-                onClick={handleZoomIn}
-                
-                title={t('common.zoomIn')}
-              >
+              <Button variant="action" onClick={handleZoomIn} title={t('common.zoomIn')}>
                 <ZoomIn size={14} strokeWidth={2} />
               </Button>
             </div>
 
             {/* Rotate */}
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={handleRotate}
               className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
               title={t('common.rotate')}
@@ -170,7 +161,8 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             </Button>
 
             {/* Download */}
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={handleDownload}
               className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
               title={t('common.download')}
@@ -179,7 +171,8 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             </Button>
 
             {/* Close */}
-            <Button variant="destructive"
+            <Button
+              variant="destructive"
               onClick={onClose}
               className="p-1.5 bg-neutral-950/70 backdrop-blur-sm hover:bg-destructive/80 rounded text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
               title={t('common.closeEsc')}
@@ -201,7 +194,9 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             alt={t('common.fullscreenPreview')}
             className="max-w-full max-h-full object-contain select-none"
             style={{
-              transform: `scale(${zoom}) rotate(${rotation}deg) translate(${panX / zoom}px, ${panY / zoom}px)`,
+              transform: `scale(${zoom}) rotate(${rotation}deg) translate(${panX / zoom}px, ${
+                panY / zoom
+              }px)`,
               transition: isDragging ? 'none' : 'transform 0.2s ease-out',
             }}
             draggable={false}
@@ -230,7 +225,8 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
 
         {/* Reset button - appears when zoomed or rotated */}
         {(zoom !== 1 || rotation !== 0 || panX !== 0 || panY !== 0) && (
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={handleReset}
             className="absolute bottom-4 right-4 z-10 px-3 py-1.5 bg-neutral-950/60 backdrop-blur-sm hover:bg-neutral-950/80 rounded text-xs font-mono text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
             title={t('common.resetView')}
@@ -242,13 +238,3 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
     </div>
   );
 };
-
-
-
-
-
-
-
-
-
-

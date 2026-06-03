@@ -224,4 +224,3 @@ const ditherShaderDefinition: ShaderDefinition = {
 
 // Register the shader
 registerShader('dither', ditherShaderDefinition);
-

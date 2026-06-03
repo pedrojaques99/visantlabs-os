@@ -92,7 +92,7 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 1000
+        zIndex: 1000,
       }}
     >
       {others.map((user) => {
@@ -185,4 +185,3 @@ export const CollaborativeCursors: React.FC<CollaborativeCursorsProps> = ({
 
   return createPortal(cursorsContent, paneElement);
 };
-

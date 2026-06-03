@@ -14,7 +14,7 @@ export interface QueuedBatch {
   operations: any[];
   enqueuedAt: string;
   userId: string;
-  chatSessionId?: string;   // AdminChat session to notify on drain
+  chatSessionId?: string; // AdminChat session to notify on drain
   meta?: {
     prompt?: string;
     brandId?: string;
@@ -40,8 +40,11 @@ export const pluginQueue = {
     return items
       .reverse()
       .map((raw) => {
-        try { return JSON.parse(raw) as QueuedBatch; }
-        catch { return null; }
+        try {
+          return JSON.parse(raw) as QueuedBatch;
+        } catch {
+          return null;
+        }
       })
       .filter((b): b is QueuedBatch => b !== null);
   },

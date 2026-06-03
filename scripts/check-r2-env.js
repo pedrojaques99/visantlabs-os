@@ -81,8 +81,10 @@ function loadEnv() {
       let value = trimmed.substring(equalIndex + 1).trim();
 
       // Remove aspas se existirem
-      if ((value.startsWith('"') && value.endsWith('"')) || 
-          (value.startsWith("'") && value.endsWith("'"))) {
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
         value = value.slice(1, -1);
       }
 
@@ -110,10 +112,10 @@ if (!result) {
 console.log(`✅ Arquivo carregado: ${result.file}\n`);
 
 // Debug: mostrar todas as variáveis R2 encontradas
-const r2Vars = Object.keys(result.env).filter(key => key.startsWith('R2_'));
+const r2Vars = Object.keys(result.env).filter((key) => key.startsWith('R2_'));
 if (r2Vars.length > 0) {
   console.log('📋 Variáveis R2 encontradas no arquivo:');
-  r2Vars.forEach(key => {
+  r2Vars.forEach((key) => {
     const value = result.env[key];
     const preview = value.length > 30 ? value.substring(0, 30) + '...' : value;
     console.log(`   ${key}=${preview}`);
@@ -123,7 +125,7 @@ if (r2Vars.length > 0) {
   console.log('⚠️  Nenhuma variável R2_* encontrada no arquivo.');
   console.log('📝 Todas as chaves encontradas (primeiras 20):');
   const allKeys = Object.keys(result.env).slice(0, 20);
-  allKeys.forEach(key => {
+  allKeys.forEach((key) => {
     console.log(`   ${key}`);
   });
   if (Object.keys(result.env).length > 20) {
@@ -185,5 +187,3 @@ if (warnings.length > 0) {
 
 console.log('✅ Tudo certo! Configuração R2 parece consistente.');
 console.log('='.repeat(50));
-
-

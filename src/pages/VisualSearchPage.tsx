@@ -1,11 +1,29 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Search, ExternalLink, X, Minus, Plus, Image, Type, Layout, Layers, Compass, type LucideIcon } from 'lucide-react';
+import {
+  Search,
+  ExternalLink,
+  X,
+  Minus,
+  Plus,
+  Image,
+  Type,
+  Layout,
+  Layers,
+  Compass,
+  type LucideIcon,
+} from 'lucide-react';
 import { PageShell } from '@/components/ui/PageShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { visualSearchApi, type VisualSearchResult, type LetterCrop, type SearchSource, type SearchIntent } from '@/services/visualSearchApi';
+import {
+  visualSearchApi,
+  type VisualSearchResult,
+  type LetterCrop,
+  type SearchSource,
+  type SearchIntent,
+} from '@/services/visualSearchApi';
 import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -23,15 +41,27 @@ const TABS: Tab[] = [
   { id: 'all', label: 'All', icon: Compass },
   { id: 'photos', label: 'Photos', icon: Image, sources: ['unsplash', 'pexels'] },
   { id: 'logos', label: 'Logos', icon: Layers, sources: ['svgl', 'clearbit'] },
-  { id: 'typography', label: 'Typography', icon: Type, sources: ['unsplash', 'pexels', 'wikimedia'] },
+  {
+    id: 'typography',
+    label: 'Typography',
+    icon: Type,
+    sources: ['unsplash', 'pexels', 'wikimedia'],
+  },
   { id: 'layouts', label: 'Layouts', icon: Layout, sources: ['unsplash', 'pexels'] },
 ];
 
 const TAB_KEYWORDS: { tab: TabId; pattern: RegExp }[] = [
-  { tab: 'typography', pattern: /\b(letra|letter|character|glyph|tipografia|typography|font|typeface|lettering|caligrafia|calligraphy|serif|sans.?serif)\b/i },
+  {
+    tab: 'typography',
+    pattern:
+      /\b(letra|letter|character|glyph|tipografia|typography|font|typeface|lettering|caligrafia|calligraphy|serif|sans.?serif)\b/i,
+  },
   { tab: 'logos', pattern: /\b(logo|marca|brand|logotipo|logomarca|emblem|badge|icon)\b/i },
   { tab: 'layouts', pattern: /\b(layout|grid|editorial|diagramação|composição|composition)\b/i },
-  { tab: 'photos', pattern: /\b(photo|foto|photograph|imagem|picture|landscape|retrato|portrait)\b/i },
+  {
+    tab: 'photos',
+    pattern: /\b(photo|foto|photograph|imagem|picture|landscape|retrato|portrait)\b/i,
+  },
 ];
 
 function suggestTab(q: string): TabId | null {
@@ -51,7 +81,9 @@ export const VisualSearchPage: React.FC = () => {
   const [userPickedTab, setUserPickedTab] = useState(false);
   const [results, setResults] = useState<VisualSearchResult[]>([]);
   const [intent, setIntent] = useState<SearchIntent>('mixed');
-  const [sourceSummary, setSourceSummary] = useState<{ source: SearchSource; count: number; error?: string }[]>([]);
+  const [sourceSummary, setSourceSummary] = useState<
+    { source: SearchSource; count: number; error?: string }[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -69,60 +101,63 @@ export const VisualSearchPage: React.FC = () => {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const handleColumnsChange = useCallback((delta: number) => {
-    setColumns(prev => {
+    setColumns((prev) => {
       const next = Math.max(2, Math.min(6, prev + delta));
       localStorage.setItem('visualSearchColumns', String(next));
       return next;
     });
   }, []);
 
-  const performSearch = useCallback(async (searchQuery: string, tab: TabId, pageNum = 1, append = false) => {
-    if (searchQuery.trim().length < 2) return;
+  const performSearch = useCallback(
+    async (searchQuery: string, tab: TabId, pageNum = 1, append = false) => {
+      if (searchQuery.trim().length < 2) return;
 
-    if (!append) {
-      abortRef.current?.abort();
-      abortRef.current = new AbortController();
-    }
-
-    if (append) {
-      setIsLoadingMore(true);
-    } else {
-      setIsLoading(true);
-      setHasSearched(true);
-    }
-
-    try {
-      const activeTabDef = TABS.find(t => t.id === tab);
-      const response = await visualSearchApi.search(searchQuery, {
-        sources: activeTabDef?.sources,
-        limit: 30,
-        page: pageNum,
-      });
+      if (!append) {
+        abortRef.current?.abort();
+        abortRef.current = new AbortController();
+      }
 
       if (append) {
-        setResults(prev => {
-          const existingIds = new Set(prev.map(r => r.id));
-          const newResults = response.results.filter(r => !existingIds.has(r.id));
-          return [...prev, ...newResults];
-        });
+        setIsLoadingMore(true);
       } else {
-        setResults(response.results);
-        setLetterCrops(response.letterCrops || []);
+        setIsLoading(true);
+        setHasSearched(true);
       }
-      setIntent(response.intent);
-      setSourceSummary(response.sources);
-      setHasMore(response.hasMore);
-      setPage(pageNum);
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        console.error('[VisualSearch] Error:', err.message);
-        if (!append) setResults([]);
+
+      try {
+        const activeTabDef = TABS.find((t) => t.id === tab);
+        const response = await visualSearchApi.search(searchQuery, {
+          sources: activeTabDef?.sources,
+          limit: 30,
+          page: pageNum,
+        });
+
+        if (append) {
+          setResults((prev) => {
+            const existingIds = new Set(prev.map((r) => r.id));
+            const newResults = response.results.filter((r) => !existingIds.has(r.id));
+            return [...prev, ...newResults];
+          });
+        } else {
+          setResults(response.results);
+          setLetterCrops(response.letterCrops || []);
+        }
+        setIntent(response.intent);
+        setSourceSummary(response.sources);
+        setHasMore(response.hasMore);
+        setPage(pageNum);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error('[VisualSearch] Error:', err.message);
+          if (!append) setResults([]);
+        }
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
       }
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     if (!userPickedTab) {
@@ -148,7 +183,9 @@ export const VisualSearchPage: React.FC = () => {
       performSearch(query, activeTab, 1, false);
     }, 400);
 
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [query, activeTab, performSearch]);
 
   // Infinite scroll via IntersectionObserver
@@ -158,11 +195,17 @@ export const VisualSearchPage: React.FC = () => {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore && query.trim().length >= 2) {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !isLoading &&
+          !isLoadingMore &&
+          query.trim().length >= 2
+        ) {
           performSearch(query, activeTab, page + 1, true);
         }
       },
-      { rootMargin: '400px' },
+      { rootMargin: '400px' }
     );
 
     observer.observe(sentinel);
@@ -171,13 +214,18 @@ export const VisualSearchPage: React.FC = () => {
 
   const filteredResults = useMemo(() => {
     if (activeTab === 'all') return results;
-    return results.filter(r => {
+    return results.filter((r) => {
       switch (activeTab) {
-        case 'photos': return r.type === 'photo';
-        case 'logos': return r.type === 'logo' || r.type === 'vector';
-        case 'typography': return true;
-        case 'layouts': return true;
-        default: return true;
+        case 'photos':
+          return r.type === 'photo';
+        case 'logos':
+          return r.type === 'logo' || r.type === 'vector';
+        case 'typography':
+          return true;
+        case 'layouts':
+          return true;
+        default:
+          return true;
       }
     });
   }, [results, activeTab]);
@@ -196,13 +244,16 @@ export const VisualSearchPage: React.FC = () => {
 
   const tabBar = (
     <div className="flex items-center gap-1.5 mt-2.5">
-      {TABS.map(tab => {
+      {TABS.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
         return (
           <button
             key={tab.id}
-            onClick={() => { setActiveTab(tab.id); setUserPickedTab(true); }}
+            onClick={() => {
+              setActiveTab(tab.id);
+              setUserPickedTab(true);
+            }}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-wider border transition-all',
               isActive
@@ -251,119 +302,130 @@ export const VisualSearchPage: React.FC = () => {
         </div>
       ) : (
         <>
-        {/* Sticky search bar + tabs — below the fixed h-10/md:h-14 header */}
-        <div className="sticky top-10 md:top-14 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-white/5">
-          <SearchBar
-            ref={searchBarRef}
-            value={query}
-            onChange={setQuery}
-            size="md"
-            placeholder="Search..."
-            containerClassName="max-w-2xl"
-            className="bg-white/[0.03] border-white/5 focus:border-white/10"
-          />
-          {tabBar}
-        </div>
-
-      {/* Letter Crops */}
-      {letterCrops.length > 0 && !isLoading && (
-        <div className="mt-4 mb-6">
-          <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-wider mb-3">
-            Isolated · {letterCrops.length} crops
-          </p>
-          <div
-            className="grid gap-3"
-            style={{ gridTemplateColumns: `repeat(${isMobile ? 3 : Math.min(columns + 2, 8)}, minmax(0, 1fr))` }}
-          >
-            {letterCrops.map(crop => (
-              <CropCard key={crop.id} crop={crop} />
-            ))}
+          {/* Sticky search bar + tabs — below the fixed h-10/md:h-14 header */}
+          <div className="sticky top-10 md:top-14 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-white/5">
+            <SearchBar
+              ref={searchBarRef}
+              value={query}
+              onChange={setQuery}
+              size="md"
+              placeholder="Search..."
+              containerClassName="max-w-2xl"
+              className="bg-white/[0.03] border-white/5 focus:border-white/10"
+            />
+            {tabBar}
           </div>
-        </div>
-      )}
 
-      {/* Results Grid */}
-      <div className="mt-4">
-        {isLoading ? (
-          <div
-            className="grid gap-3"
-            style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
-          >
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-lg bg-neutral-900/50 animate-pulse" />
-            ))}
-          </div>
-        ) : filteredResults.length > 0 ? (
-          <>
-            <div
-              className="grid gap-3"
-              style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
-            >
-              {filteredResults.map(result => (
-                <ResultCard
-                  key={result.id}
-                  result={result}
-                  onClick={() => setSelectedResult(result)}
-                />
-              ))}
-            </div>
-
-            <div ref={sentinelRef} className="h-1" />
-
-            {isLoadingMore && (
+          {/* Letter Crops */}
+          {letterCrops.length > 0 && !isLoading && (
+            <div className="mt-4 mb-6">
+              <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-wider mb-3">
+                Isolated · {letterCrops.length} crops
+              </p>
               <div
-                className="grid gap-3 mt-3"
-                style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
+                className="grid gap-3"
+                style={{
+                  gridTemplateColumns: `repeat(${
+                    isMobile ? 3 : Math.min(columns + 2, 8)
+                  }, minmax(0, 1fr))`,
+                }}
               >
-                {Array.from({ length: columns }).map((_, i) => (
-                  <div key={`loader-${i}`} className="aspect-square rounded-lg bg-neutral-900/50 animate-pulse" />
+                {letterCrops.map((crop) => (
+                  <CropCard key={crop.id} crop={crop} />
                 ))}
               </div>
-            )}
-          </>
-        ) : hasSearched ? (
-          <div className="flex flex-col items-center justify-center py-20 text-neutral-600">
-            <Search size={24} className="mb-3 text-neutral-700" />
-            <p className="text-sm">No results for "{query}"</p>
+            </div>
+          )}
+
+          {/* Results Grid */}
+          <div className="mt-4">
+            {isLoading ? (
+              <div
+                className="grid gap-3"
+                style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
+              >
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square rounded-lg bg-neutral-900/50 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : filteredResults.length > 0 ? (
+              <>
+                <div
+                  className="grid gap-3"
+                  style={{
+                    gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {filteredResults.map((result) => (
+                    <ResultCard
+                      key={result.id}
+                      result={result}
+                      onClick={() => setSelectedResult(result)}
+                    />
+                  ))}
+                </div>
+
+                <div ref={sentinelRef} className="h-1" />
+
+                {isLoadingMore && (
+                  <div
+                    className="grid gap-3 mt-3"
+                    style={{
+                      gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {Array.from({ length: columns }).map((_, i) => (
+                      <div
+                        key={`loader-${i}`}
+                        className="aspect-square rounded-lg bg-neutral-900/50 animate-pulse"
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : hasSearched ? (
+              <div className="flex flex-col items-center justify-center py-20 text-neutral-600">
+                <Search size={24} className="mb-3 text-neutral-700" />
+                <p className="text-sm">No results for "{query}"</p>
+              </div>
+            ) : null}
           </div>
-        ) : null}
-      </div>
 
-      {/* Column Controls */}
-      {filteredResults.length > 0 && !isMobile && (
-        <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-          <GlassPanel padding="sm" className="!flex-row items-center gap-1">
-            <Button
-              variant="ghost"
-              onClick={() => handleColumnsChange(-1)}
-              disabled={columns <= 2}
-              className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30"
-            >
-              <Minus size={14} />
-            </Button>
-            <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
-              {columns}
-            </span>
-            <Button
-              variant="ghost"
-              onClick={() => handleColumnsChange(1)}
-              disabled={columns >= 6}
-              className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30"
-            >
-              <Plus size={14} />
-            </Button>
-          </GlassPanel>
-        </div>
-      )}
+          {/* Column Controls */}
+          {filteredResults.length > 0 && !isMobile && (
+            <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
+              <GlassPanel padding="sm" className="!flex-row items-center gap-1">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleColumnsChange(-1)}
+                  disabled={columns <= 2}
+                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30"
+                >
+                  <Minus size={14} />
+                </Button>
+                <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
+                  {columns}
+                </span>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleColumnsChange(1)}
+                  disabled={columns >= 6}
+                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30"
+                >
+                  <Plus size={14} />
+                </Button>
+              </GlassPanel>
+            </div>
+          )}
 
-      {/* Detail Modal */}
-      {selectedResult && (
-        <ResultModal
-          result={selectedResult}
-          onClose={() => setSelectedResult(null)}
-        />
-      )}
-      </>
+          {/* Detail Modal */}
+          {selectedResult && (
+            <ResultModal result={selectedResult} onClose={() => setSelectedResult(null)} />
+          )}
+        </>
       )}
     </PageShell>
   );
@@ -381,10 +443,12 @@ const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
       rel="noopener noreferrer"
       className="group relative overflow-hidden rounded-lg border border-white/[0.04] hover:border-white/10 transition-all"
     >
-      <div className={cn(
-        'aspect-square relative overflow-hidden flex items-center justify-center p-2',
-        needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
-      )}>
+      <div
+        className={cn(
+          'aspect-square relative overflow-hidden flex items-center justify-center p-2',
+          needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
+        )}
+      >
         <img
           src={crop.thumbnailUrl}
           alt={`${crop.letter} — ${crop.style || 'letter'}`}
@@ -415,10 +479,12 @@ const ResultCard: React.FC<{
       className="group relative overflow-hidden rounded-lg border border-white/[0.04] hover:border-white/10 cursor-pointer transition-all"
       onClick={onClick}
     >
-      <div className={cn(
-        'aspect-square relative overflow-hidden',
-        isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
-      )}>
+      <div
+        className={cn(
+          'aspect-square relative overflow-hidden',
+          isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
+        )}
+      >
         <img
           src={result.thumbnailUrl}
           alt={result.title}
@@ -427,11 +493,15 @@ const ResultCard: React.FC<{
             isVector ? 'object-contain p-3' : 'object-cover'
           )}
           loading="lazy"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
         />
 
         <div className="absolute inset-0 bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
-          <p className="text-[11px] text-neutral-200 line-clamp-2 leading-relaxed">{result.title}</p>
+          <p className="text-[11px] text-neutral-200 line-clamp-2 leading-relaxed">
+            {result.title}
+          </p>
         </div>
       </div>
     </div>
@@ -472,7 +542,7 @@ const ResultModal: React.FC<{
     >
       <div
         className="relative max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <GlassPanel intensity="strong" padding="md" className="space-y-4">
           <button
@@ -482,10 +552,12 @@ const ResultModal: React.FC<{
             <X size={18} />
           </button>
 
-          <div className={cn(
-            'rounded-lg overflow-hidden',
-            isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
-          )}>
+          <div
+            className={cn(
+              'rounded-lg overflow-hidden',
+              isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
+            )}
+          >
             <img
               src={result.imageUrl}
               alt={result.title}

@@ -106,7 +106,8 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
       {/* Hint */}
       <div className="px-3 pb-2">
         <p className="text-[10px] text-white/25 leading-tight">
-          Use <span className="text-brand-cyan/60 font-mono">{`{{name}}`}</span> in any prompt to insert a value
+          Use <span className="text-brand-cyan/60 font-mono">{`{{name}}`}</span> in any prompt to
+          insert a value
         </p>
       </div>
 
@@ -115,7 +116,14 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
         type="source"
         position={Position.Right}
         id="variables-out"
-        style={{ top: '50%', right: -6, width: 10, height: 10, background: 'var(--brand-cyan)', border: '2px solid var(--color-neutral-950)' }}
+        style={{
+          top: '50%',
+          right: -6,
+          width: 10,
+          height: 10,
+          background: 'var(--brand-cyan)',
+          border: '2px solid var(--color-neutral-950)',
+        }}
       />
     </NodeContainer>
   );

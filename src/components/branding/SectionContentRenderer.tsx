@@ -12,9 +12,15 @@ import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 import { TextSection } from './TextSection';
 import { EmptySectionCard } from './EmptySectionCard';
 import {
-  CentralMessageSection, MarketResearchV2Section, PersonaV2Section,
-  ArchetypesV2Section, ManifestoSection, ColorPaletteV2Section,
-  TypographySection, GraphicSystemSection, LogoConceptSection,
+  CentralMessageSection,
+  MarketResearchV2Section,
+  PersonaV2Section,
+  ArchetypesV2Section,
+  ManifestoSection,
+  ColorPaletteV2Section,
+  TypographySection,
+  GraphicSystemSection,
+  LogoConceptSection,
 } from './VisantSections';
 
 interface SectionContentRendererProps {
@@ -93,7 +99,9 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
     return <PersonaV2Section data={content} />;
   }
   if (stepNumber === 104 && content?.archetypes && content?.toneOfVoice) {
-    return <ArchetypesV2Section archetypes={content.archetypes} toneOfVoice={content.toneOfVoice} />;
+    return (
+      <ArchetypesV2Section archetypes={content.archetypes} toneOfVoice={content.toneOfVoice} />
+    );
   }
   if (stepNumber === 105 && content?.provocation) {
     return <ManifestoSection data={content} />;
@@ -130,24 +138,12 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
   // Render content based on step number and type
   // Steps 6, 9 are arrays (references, visual elements)
   if ((stepNumber === 6 || stepNumber === 9) && Array.isArray(content)) {
-    return (
-      <ListSection
-        items={content}
-        isEditing={isEditing}
-        onContentChange={onContentChange}
-      />
-    );
+    return <ListSection items={content} isEditing={isEditing} onContentChange={onContentChange} />;
   }
 
   // Step 7 is SWOT (object)
   if (stepNumber === 7 && typeof content === 'object' && content !== null) {
-    return (
-      <SWOTSection
-        swot={content}
-        isEditing={isEditing}
-        onContentChange={onContentChange}
-      />
-    );
+    return <SWOTSection swot={content} isEditing={isEditing} onContentChange={onContentChange} />;
   }
 
   // Step 8 is Color Palettes (array)
@@ -164,11 +160,7 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
   // Step 10 is Persona (object)
   if (stepNumber === 10 && typeof content === 'object' && content !== null) {
     return (
-      <PersonaSection
-        persona={content}
-        isEditing={isEditing}
-        onContentChange={onContentChange}
-      />
+      <PersonaSection persona={content} isEditing={isEditing} onContentChange={onContentChange} />
     );
   }
 
@@ -185,7 +177,7 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
       moodboard.summary ? `**Resumo:**\n${moodboard.summary}` : '',
       moodboard.visualDirection ? `**Direção Visual:**\n${moodboard.visualDirection}` : '',
       moodboard.keyElements && moodboard.keyElements.length > 0
-        ? `**Elementos Chave:**\n${moodboard.keyElements.map(el => `• ${el}`).join('\n')}`
+        ? `**Elementos Chave:**\n${moodboard.keyElements.map((el) => `• ${el}`).join('\n')}`
         : '',
     ]
       .filter(Boolean)
@@ -214,19 +206,17 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
   // Fallback for other string content
   if (typeof content === 'string') {
     return (
-      <TextSection
-        content={content}
-        isEditing={isEditing}
-        onContentChange={onContentChange}
-      />
+      <TextSection content={content} isEditing={isEditing} onContentChange={onContentChange} />
     );
   }
 
   return (
-    <div className={`text-sm font-manrope ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-      }`}>
+    <div
+      className={`text-sm font-manrope ${
+        theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+      }`}
+    >
       {JSON.stringify(content, null, 2)}
     </div>
   );
 };
-

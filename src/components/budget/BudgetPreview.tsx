@@ -31,7 +31,9 @@ interface BudgetPreviewProps {
   onFieldSelect?: (fieldId: string | null) => void;
   selectedFieldId?: string | null;
   pendingFieldPosition?: { pageNum: number; x: number; y: number } | null;
-  onPendingFieldPositionChange?: (position: { pageNum: number; x: number; y: number } | null) => void;
+  onPendingFieldPositionChange?: (
+    position: { pageNum: number; x: number; y: number } | null
+  ) => void;
   onAddFieldFromForm?: (fieldId: string) => void;
   onDragStart?: (event: DragStartEvent) => void;
   onDragEnd?: (event: DragEndEvent) => void;
@@ -42,7 +44,14 @@ interface BudgetPreviewProps {
 }
 
 // Component to render Visant preview (with or without custom template)
-const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onDataChange?: (data: Partial<BudgetData>) => void; saveStatus?: 'idle' | 'saving' | 'saved' | 'error'; budgetId?: string | null; isSidebarOpen?: boolean }> = ({
+const VisantPreviewContent: React.FC<{
+  data: BudgetData;
+  editable?: boolean;
+  onDataChange?: (data: Partial<BudgetData>) => void;
+  saveStatus?: 'idle' | 'saving' | 'saved' | 'error';
+  budgetId?: string | null;
+  isSidebarOpen?: boolean;
+}> = ({
   data,
   editable = false,
   onDataChange,
@@ -56,34 +65,46 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
   // If loading or no custom template, use default components
   if (isLoading || !activeTemplate) {
     return (
-      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'}`}>
+      <div
+        className={`w-full h-full min-h-full flex flex-col ${
+          theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'
+        }`}
+      >
         <div className="flex-1 min-h-full overflow-visible">
           {/* Page 1: Cover */}
-          <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="cover" budgetData={data} isSidebarOpen={isSidebarOpen}>
-            <VisantCoverPage
-              data={data}
-              editable={editable}
-              onDataChange={onDataChange}
-            />
+          <ResponsivePageWrapper
+            contentWidth={data.contentWidth}
+            pageName="cover"
+            budgetData={data}
+            isSidebarOpen={isSidebarOpen}
+          >
+            <VisantCoverPage data={data} editable={editable} onDataChange={onDataChange} />
           </ResponsivePageWrapper>
           {/* Page 2: Timeline */}
-          <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="timeline" budgetData={data} isSidebarOpen={isSidebarOpen}>
-            <VisantTimelinePage
-              data={data}
-              editable={editable}
-              onDataChange={onDataChange}
-            />
+          <ResponsivePageWrapper
+            contentWidth={data.contentWidth}
+            pageName="timeline"
+            budgetData={data}
+            isSidebarOpen={isSidebarOpen}
+          >
+            <VisantTimelinePage data={data} editable={editable} onDataChange={onDataChange} />
           </ResponsivePageWrapper>
           {/* Page 3: Introduction */}
-          <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="introduction" budgetData={data} isSidebarOpen={isSidebarOpen}>
-            <VisantIntroductionPage
-              data={data}
-              editable={editable}
-              onDataChange={onDataChange}
-            />
+          <ResponsivePageWrapper
+            contentWidth={data.contentWidth}
+            pageName="introduction"
+            budgetData={data}
+            isSidebarOpen={isSidebarOpen}
+          >
+            <VisantIntroductionPage data={data} editable={editable} onDataChange={onDataChange} />
           </ResponsivePageWrapper>
           {/* Page 4: Budget */}
-          <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="budget" budgetData={data} isSidebarOpen={isSidebarOpen}>
+          <ResponsivePageWrapper
+            contentWidth={data.contentWidth}
+            pageName="budget"
+            budgetData={data}
+            isSidebarOpen={isSidebarOpen}
+          >
             <VisantBudgetPage
               data={data}
               editable={editable}
@@ -92,7 +113,12 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
             />
           </ResponsivePageWrapper>
           {/* Page 5: Gifts */}
-          <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="gifts" budgetData={data} isSidebarOpen={isSidebarOpen}>
+          <ResponsivePageWrapper
+            contentWidth={data.contentWidth}
+            pageName="gifts"
+            budgetData={data}
+            isSidebarOpen={isSidebarOpen}
+          >
             <VisantGiftsPage
               data={data}
               editable={editable}
@@ -101,20 +127,22 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
             />
           </ResponsivePageWrapper>
           {/* Page 6: Payment */}
-          <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="payment" budgetData={data} isSidebarOpen={isSidebarOpen}>
-            <VisantPaymentPage
-              data={data}
-              editable={editable}
-              onDataChange={onDataChange}
-            />
+          <ResponsivePageWrapper
+            contentWidth={data.contentWidth}
+            pageName="payment"
+            budgetData={data}
+            isSidebarOpen={isSidebarOpen}
+          >
+            <VisantPaymentPage data={data} editable={editable} onDataChange={onDataChange} />
           </ResponsivePageWrapper>
           {/* Page 7: Back Cover */}
-          <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="backCover" budgetData={data} isSidebarOpen={isSidebarOpen}>
-            <VisantBackCoverPage
-              data={data}
-              editable={editable}
-              onDataChange={onDataChange}
-            />
+          <ResponsivePageWrapper
+            contentWidth={data.contentWidth}
+            pageName="backCover"
+            budgetData={data}
+            isSidebarOpen={isSidebarOpen}
+          >
+            <VisantBackCoverPage data={data} editable={editable} onDataChange={onDataChange} />
           </ResponsivePageWrapper>
         </div>
       </div>
@@ -123,10 +151,19 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
 
   // Use custom template layout
   return (
-    <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'}`}>
+    <div
+      className={`w-full h-full min-h-full flex flex-col ${
+        theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'
+      }`}
+    >
       <div className="flex-1 min-h-full overflow-visible">
         {/* Page 1: Cover */}
-        <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="cover" budgetData={data} isSidebarOpen={isSidebarOpen}>
+        <ResponsivePageWrapper
+          contentWidth={data.contentWidth}
+          pageName="cover"
+          budgetData={data}
+          isSidebarOpen={isSidebarOpen}
+        >
           <VisantPageRenderer
             data={data}
             layout={activeTemplate.layout}
@@ -136,15 +173,21 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
           />
         </ResponsivePageWrapper>
         {/* Page 2: Timeline */}
-        <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="timeline" budgetData={data} isSidebarOpen={isSidebarOpen}>
-          <VisantTimelinePage
-            data={data}
-            editable={editable}
-            onDataChange={onDataChange}
-          />
+        <ResponsivePageWrapper
+          contentWidth={data.contentWidth}
+          pageName="timeline"
+          budgetData={data}
+          isSidebarOpen={isSidebarOpen}
+        >
+          <VisantTimelinePage data={data} editable={editable} onDataChange={onDataChange} />
         </ResponsivePageWrapper>
         {/* Page 3: Introduction */}
-        <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="introduction" budgetData={data} isSidebarOpen={isSidebarOpen}>
+        <ResponsivePageWrapper
+          contentWidth={data.contentWidth}
+          pageName="introduction"
+          budgetData={data}
+          isSidebarOpen={isSidebarOpen}
+        >
           <VisantPageRenderer
             data={data}
             layout={activeTemplate.layout}
@@ -154,7 +197,12 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
           />
         </ResponsivePageWrapper>
         {/* Page 4: Budget */}
-        <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="budget" budgetData={data} isSidebarOpen={isSidebarOpen}>
+        <ResponsivePageWrapper
+          contentWidth={data.contentWidth}
+          pageName="budget"
+          budgetData={data}
+          isSidebarOpen={isSidebarOpen}
+        >
           <VisantPageRenderer
             data={data}
             layout={activeTemplate.layout}
@@ -164,7 +212,12 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
           />
         </ResponsivePageWrapper>
         {/* Page 5: Gifts */}
-        <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="gifts" budgetData={data} isSidebarOpen={isSidebarOpen}>
+        <ResponsivePageWrapper
+          contentWidth={data.contentWidth}
+          pageName="gifts"
+          budgetData={data}
+          isSidebarOpen={isSidebarOpen}
+        >
           <VisantPageRenderer
             data={data}
             layout={activeTemplate.layout}
@@ -174,7 +227,12 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
           />
         </ResponsivePageWrapper>
         {/* Page 6: Payment */}
-        <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="payment" budgetData={data} isSidebarOpen={isSidebarOpen}>
+        <ResponsivePageWrapper
+          contentWidth={data.contentWidth}
+          pageName="payment"
+          budgetData={data}
+          isSidebarOpen={isSidebarOpen}
+        >
           <VisantPageRenderer
             data={data}
             layout={activeTemplate.layout}
@@ -184,7 +242,12 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
           />
         </ResponsivePageWrapper>
         {/* Page 7: Back Cover */}
-        <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="backCover" budgetData={data} isSidebarOpen={isSidebarOpen}>
+        <ResponsivePageWrapper
+          contentWidth={data.contentWidth}
+          pageName="backCover"
+          budgetData={data}
+          isSidebarOpen={isSidebarOpen}
+        >
           <VisantPageRenderer
             data={data}
             layout={activeTemplate.layout}
@@ -227,7 +290,11 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
   // If custom PDF is provided, show it instead
   if (data.customPdfUrl) {
     return (
-      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'}`}>
+      <div
+        className={`w-full h-full min-h-full flex flex-col ${
+          theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'
+        }`}
+      >
         <PdfPreviewWithFields
           pdfUrl={data.customPdfUrl}
           data={data}
@@ -252,12 +319,24 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
   // If template is custom but no PDF uploaded yet
   if (data.template === 'custom') {
     return (
-      <div className={`w-full h-full min-h-full flex items-center justify-center ${theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'}`}>
+      <div
+        className={`w-full h-full min-h-full flex items-center justify-center ${
+          theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-100'
+        }`}
+      >
         <div className="text-center p-8">
-          <p className={`text-lg font-mono mb-2 ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-600'}`}>
+          <p
+            className={`text-lg font-mono mb-2 ${
+              theme === 'dark' ? 'text-neutral-300' : 'text-neutral-600'
+            }`}
+          >
             Layout Custom
           </p>
-          <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>
+          <p
+            className={`text-sm font-mono ${
+              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
+            }`}
+          >
             Faça upload de um PDF customizado no formulário para ver o preview aqui
           </p>
         </div>
@@ -267,7 +346,16 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
 
   // Render visant layout if template is visant
   if (data.template === 'visant') {
-    return <VisantPreviewContent data={data} editable={editable} onDataChange={onDataChange} saveStatus={saveStatus} budgetId={budgetId} isSidebarOpen={isSidebarOpen} />;
+    return (
+      <VisantPreviewContent
+        data={data}
+        editable={editable}
+        onDataChange={onDataChange}
+        saveStatus={saveStatus}
+        budgetId={budgetId}
+        isSidebarOpen={isSidebarOpen}
+      />
+    );
   }
 
   const calculateTotal = (deliverable: Deliverable): number => {
@@ -278,12 +366,15 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
     return data.deliverables.reduce((sum, d) => sum + calculateTotal(d), 0);
   };
 
-
   const primaryColor = data.brandColors[0] || 'brand-cyan';
   const secondaryColor = data.brandColors[1] || '#34d399';
 
   return (
-    <div className={`w-full h-full overflow-auto p-8 ${theme === 'dark' ? 'bg-neutral-950 text-neutral-100' : 'bg-white text-neutral-900'}`}>
+    <div
+      className={`w-full h-full overflow-auto p-8 ${
+        theme === 'dark' ? 'bg-neutral-950 text-neutral-100' : 'bg-white text-neutral-900'
+      }`}
+    >
       <style>
         {`
           @media print {
@@ -296,11 +387,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
       <div className="mb-8 pb-6 border-b-2" style={{ borderColor: primaryColor }}>
         <div className="flex items-center justify-between mb-4">
           {data.brandLogo && (
-            <img
-              src={data.brandLogo}
-              alt={data.brandName}
-              className="h-16 object-contain"
-            />
+            <img src={data.brandLogo} alt={data.brandName} className="h-16 object-contain" />
           )}
           <div className="text-right">
             <h1 className="text-3xl font-bold" style={{ color: primaryColor }}>
@@ -385,7 +472,10 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
               <td colSpan={3} className="text-right py-4 px-4 font-bold text-lg">
                 {t('budget.total')}:
               </td>
-              <td className="text-right py-4 px-4 font-bold text-lg" style={{ color: primaryColor }}>
+              <td
+                className="text-right py-4 px-4 font-bold text-lg"
+                style={{ color: primaryColor }}
+              >
                 {formatCurrency(calculateGrandTotal())}
               </td>
             </tr>
@@ -399,9 +489,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
           <h3 className="text-lg font-semibold mb-2" style={{ color: primaryColor }}>
             {t('budget.observations')}
           </h3>
-          <p className="text-base text-neutral-700 whitespace-pre-wrap">
-            {data.observations}
-          </p>
+          <p className="text-base text-neutral-700 whitespace-pre-wrap">{data.observations}</p>
         </div>
       )}
 
@@ -473,4 +561,3 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
     </div>
   );
 };
-

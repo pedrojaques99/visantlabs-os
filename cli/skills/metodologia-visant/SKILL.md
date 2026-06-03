@@ -37,6 +37,7 @@ PRODUTO + DIFERENCIAL + ELO EMOCIONAL = Mensagem Central
 **Os 3 Pilares:** Valores fundamentais. Pilar bom = se violado, a marca deixa de ser ela mesma. Pilar bom = a marca pode FAZER, não só dizer.
 
 **Exemplo (Quadraclub):**
+
 - MC: "App de matchmaking para esportes de raquete com o diferencial da socialização que transmite o sentimento de comunidade."
 - Pilares: Pertencimento | Progresso Compartilhado | Facilidade
 
@@ -47,6 +48,7 @@ PRODUTO + DIFERENCIAL + ELO EMOCIONAL = Mensagem Central
 **Pesquisa ≠ Inspiração.** Moodboard não é diagnóstico.
 
 **3 camadas para mapear:**
+
 1. O que concorrentes entregam **bem** (não competir nisso)
 2. O que todos entregam **mal** (oportunidade)
 3. O que **ninguém** entrega (território livre)
@@ -54,6 +56,7 @@ PRODUTO + DIFERENCIAL + ELO EMOCIONAL = Mensagem Central
 > A frustração não resolvida do mercado é o ouro.
 
 **Persona Visant:** Foco em **dores, anseios e necessidades ocultas** — não demografia.
+
 - ~8 dores/desejos nomeados (Dor 01, Dor 02, Desejo 01...)
 - Nome, idade, contexto real
 - Perguntas: O que deseja e não consegue? O que tenta resolver sozinha e falha? O que teme?
@@ -67,6 +70,7 @@ PRODUTO + DIFERENCIAL + ELO EMOCIONAL = Mensagem Central
 **Pergunta-chave:** "Se essa marca fosse uma pessoa, como ela se comportaria numa mesa de bar com estranhos?"
 
 **12 Arquétipos Visant:**
+
 1. O Explorador (curiosidade, desafio)
 2. O Cara Comum (pertencimento, autenticidade)
 3. O Herói (superação, conquista)
@@ -89,6 +93,7 @@ PRODUTO + DIFERENCIAL + ELO EMOCIONAL = Mensagem Central
 Condensa a estratégia em palavras que respiram. **Se a MC é para dentro, o Manifesto é para fora.**
 
 **3 Movimentos:**
+
 1. **Provocação:** Pergunta/imagem que o leitor reconhece ("sim, isso é comigo")
 2. **Tensão:** O problema que existe — frustração, falta, incômodo
 3. **Promessa:** O que a marca faz, com quem, para quê. Frase final de impacto.
@@ -107,7 +112,7 @@ Condensa a estratégia em palavras que respiram. **Se a MC é para dentro, o Man
 - Logo construído em grid = profissionalismo e longevidade
 - Aplicar em layouts ANTES do refino (logo isolado engana)
 
-*Nota: Etapa visual — a IA gera diretrizes conceituais, não o logo em si.*
+_Nota: Etapa visual — a IA gera diretrizes conceituais, não o logo em si._
 
 ---
 
@@ -120,6 +125,7 @@ Cada cor recebe um nome que comunica quando usá-la.
 Exemplo: "Matchday Green" (#9BAE00) — o verde de dia de jogo, denso, maduro.
 
 **Par Tipográfico (mínimo 2 famílias):**
+
 - **Headline:** Destaque, títulos grandes, sotaque visual.
 - **Corpo (Legibilidade):** Texto corrido, neutra, clara em tamanhos pequenos.
 
@@ -130,6 +136,7 @@ Exemplo: "Matchday Green" (#9BAE00) — o verde de dia de jogo, denso, maduro.
 > Uma marca forte é reconhecida mesmo sem o logo aparecer.
 
 **4 componentes:**
+
 1. **Patterns:** Padrões para fundos, tecidos, embalagens.
 2. **Grafismos:** Formas/ilustrações próprias com DNA da marca.
 3. **Regras de imagem:** Como fotografa, como corta, que filtros aplica.
@@ -144,6 +151,7 @@ Exemplo: "Matchday Green" (#9BAE00) — o verde de dia de jogo, denso, maduro.
 **O cliente precisa ver o PROCESSO antes de ver o RESULTADO.**
 
 3 princípios:
+
 1. Narrativa antes do resultado (suspense)
 2. Uma decisão por vez
 3. Confiança e autoridade
@@ -173,18 +181,18 @@ Exemplo: "Matchday Green" (#9BAE00) — o verde de dia de jogo, denso, maduro.
 
 Ao gerar branding via IA, siga a cascata rigorosamente:
 
-| Step | Etapa Visant | Campo BrandingData | Depende de |
-|------|---|---|---|
-| 1 | Mensagem Central & Pilares | `centralMessage`, `pillars` | prompt |
-| 2 | Pesquisa de Mercado | `marketResearch` (3 camadas) | step 1 |
-| 3 | Persona | `persona` (8 dores/desejos) | steps 1-2 |
-| 4 | Arquétipos & Tom de Voz | `archetypes`, `toneOfVoice` | steps 1-3 |
-| 5 | Manifesto & Slogan | `manifesto`, `sloganSuggestion` | steps 1-4 |
-| 6 | Análise SWOT | `swot` | steps 1-3 |
-| 7 | Paleta Cromática | `colorPalette` (cores nomeadas) | steps 1-5 |
-| 8 | Par Tipográfico | `typography` | steps 1-5 |
-| 9 | Sistema Gráfico | `graphicSystem` | steps 5-8 |
-| 10 | Conceito de Logo | `logoConcept` | steps 1-5, 7-8 |
+| Step | Etapa Visant               | Campo BrandingData              | Depende de     |
+| ---- | -------------------------- | ------------------------------- | -------------- |
+| 1    | Mensagem Central & Pilares | `centralMessage`, `pillars`     | prompt         |
+| 2    | Pesquisa de Mercado        | `marketResearch` (3 camadas)    | step 1         |
+| 3    | Persona                    | `persona` (8 dores/desejos)     | steps 1-2      |
+| 4    | Arquétipos & Tom de Voz    | `archetypes`, `toneOfVoice`     | steps 1-3      |
+| 5    | Manifesto & Slogan         | `manifesto`, `sloganSuggestion` | steps 1-4      |
+| 6    | Análise SWOT               | `swot`                          | steps 1-3      |
+| 7    | Paleta Cromática           | `colorPalette` (cores nomeadas) | steps 1-5      |
+| 8    | Par Tipográfico            | `typography`                    | steps 1-5      |
+| 9    | Sistema Gráfico            | `graphicSystem`                 | steps 5-8      |
+| 10   | Conceito de Logo           | `logoConcept`                   | steps 1-5, 7-8 |
 
 **Regra de ouro:** Cada prompt de geração DEVE receber como contexto os outputs das etapas anteriores. A cascata é o que faz a IA gerar com coerência, não com genericidade.
 
@@ -192,15 +200,15 @@ Ao gerar branding via IA, siga a cascata rigorosamente:
 
 ## Glossário
 
-| Termo | Definição |
-|---|---|
-| Brand System | Pacote completo de entregáveis finais |
-| Cascata | Lógica de dependência: cada etapa alimenta a próxima |
-| Cromatismo Dinâmico | Validação de paletas por aplicação em layouts reais |
-| Elo Emocional | O sentimento que a marca transmite (3o ingrediente da MC) |
-| Identidade Flexível | Sistema gráfico que aguenta qualquer superfície |
-| Manifesto | Declaração emocional e pública sobre a existência da marca |
-| Mensagem Central | Frase técnica interna: Produto + Diferencial + Elo |
-| Mix Arquetípico | Combinação de arquétipo primário e secundário |
-| Pilares | 3 valores que, se violados, a marca deixa de ser ela mesma |
-| Sistema Gráfico | Elementos visuais que permitem reconhecer a marca sem o logo |
+| Termo               | Definição                                                    |
+| ------------------- | ------------------------------------------------------------ |
+| Brand System        | Pacote completo de entregáveis finais                        |
+| Cascata             | Lógica de dependência: cada etapa alimenta a próxima         |
+| Cromatismo Dinâmico | Validação de paletas por aplicação em layouts reais          |
+| Elo Emocional       | O sentimento que a marca transmite (3o ingrediente da MC)    |
+| Identidade Flexível | Sistema gráfico que aguenta qualquer superfície              |
+| Manifesto           | Declaração emocional e pública sobre a existência da marca   |
+| Mensagem Central    | Frase técnica interna: Produto + Diferencial + Elo           |
+| Mix Arquetípico     | Combinação de arquétipo primário e secundário                |
+| Pilares             | 3 valores que, se violados, a marca deixa de ser ela mesma   |
+| Sistema Gráfico     | Elementos visuais que permitem reconhecer a marca sem o logo |

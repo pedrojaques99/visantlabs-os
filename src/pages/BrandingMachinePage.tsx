@@ -33,7 +33,8 @@ export const BrandingMachinePage: React.FC = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isAuthenticated, isCheckingAuth, subscriptionStatus, onCreditPackagesModalOpen } = useLayout();
+  const { isAuthenticated, isCheckingAuth, subscriptionStatus, onCreditPackagesModalOpen } =
+    useLayout();
   const { hasAccess, isLoading: isLoadingAccess } = usePremiumAccess();
   const [currentStep, setCurrentStep] = useState<number>(0); // 0 = welcome, 10 = moodboard
   const [prompt, setPrompt] = useState<string>('');
@@ -95,7 +96,12 @@ export const BrandingMachinePage: React.FC = () => {
   // Load project from URL if projectId is present
   useEffect(() => {
     const projectId = searchParams.get('projectId');
-    if (projectId && projectId.trim() !== '' && projectId !== 'undefined' && isAuthenticated === true) {
+    if (
+      projectId &&
+      projectId.trim() !== '' &&
+      projectId !== 'undefined' &&
+      isAuthenticated === true
+    ) {
       // Only load if it's a different project or hasn't been loaded yet
       if (loadedProjectIdRef.current !== projectId) {
         loadProject(projectId);
@@ -133,7 +139,9 @@ export const BrandingMachinePage: React.FC = () => {
       toast.success(t('branding.projectLoaded') || 'Project loaded successfully');
     } catch (error: any) {
       console.error('Error loading project:', error);
-      toast.error(error.message || t('branding.errors.failedToLoadProject') || 'Failed to load project');
+      toast.error(
+        error.message || t('branding.errors.failedToLoadProject') || 'Failed to load project'
+      );
       // Clear projectId from URL if loading failed
       navigate('/branding-machine', { replace: true });
       loadedProjectIdRef.current = null;
@@ -141,7 +149,6 @@ export const BrandingMachinePage: React.FC = () => {
       setIsLoadingProject(false);
     }
   };
-
 
   // Check if step has required dependencies
   const checkDependencies = (stepNumber: number): number[] => {
@@ -195,16 +202,47 @@ export const BrandingMachinePage: React.FC = () => {
       // Steps 11 and 12 don't have strict dependencies
 
       // ═══ Metodologia Visant v2 ═══
-      case 101: break; // No deps
-      case 102: if (!brandingData.centralMessage) missing.push(101); break;
-      case 103: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.marketResearchV2) missing.push(102); break;
-      case 104: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.marketResearchV2) missing.push(102); if (!brandingData.personaV2) missing.push(103); break;
-      case 105: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.archetypesV2) missing.push(104); break;
-      case 106: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.marketResearchV2) missing.push(102); if (!brandingData.personaV2) missing.push(103); break;
-      case 107: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.manifesto) missing.push(105); break;
-      case 108: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.archetypesV2) missing.push(104); break;
-      case 109: if (!brandingData.manifesto) missing.push(105); if (!brandingData.colorPaletteV2) missing.push(107); if (!brandingData.typography) missing.push(108); break;
-      case 110: if (!brandingData.centralMessage) missing.push(101); if (!brandingData.colorPaletteV2) missing.push(107); if (!brandingData.typography) missing.push(108); break;
+      case 101:
+        break; // No deps
+      case 102:
+        if (!brandingData.centralMessage) missing.push(101);
+        break;
+      case 103:
+        if (!brandingData.centralMessage) missing.push(101);
+        if (!brandingData.marketResearchV2) missing.push(102);
+        break;
+      case 104:
+        if (!brandingData.centralMessage) missing.push(101);
+        if (!brandingData.marketResearchV2) missing.push(102);
+        if (!brandingData.personaV2) missing.push(103);
+        break;
+      case 105:
+        if (!brandingData.centralMessage) missing.push(101);
+        if (!brandingData.archetypesV2) missing.push(104);
+        break;
+      case 106:
+        if (!brandingData.centralMessage) missing.push(101);
+        if (!brandingData.marketResearchV2) missing.push(102);
+        if (!brandingData.personaV2) missing.push(103);
+        break;
+      case 107:
+        if (!brandingData.centralMessage) missing.push(101);
+        if (!brandingData.manifesto) missing.push(105);
+        break;
+      case 108:
+        if (!brandingData.centralMessage) missing.push(101);
+        if (!brandingData.archetypesV2) missing.push(104);
+        break;
+      case 109:
+        if (!brandingData.manifesto) missing.push(105);
+        if (!brandingData.colorPaletteV2) missing.push(107);
+        if (!brandingData.typography) missing.push(108);
+        break;
+      case 110:
+        if (!brandingData.centralMessage) missing.push(101);
+        if (!brandingData.colorPaletteV2) missing.push(107);
+        if (!brandingData.typography) missing.push(108);
+        break;
     }
 
     return missing;
@@ -213,7 +251,7 @@ export const BrandingMachinePage: React.FC = () => {
   const generateDependencies = async (missingDeps: number[]): Promise<boolean> => {
     // Generate missing dependencies first
     for (const depStep of missingDeps) {
-      const depStepTitle = STEPS.find(s => s.id === depStep)?.title || `Step ${depStep}`;
+      const depStepTitle = STEPS.find((s) => s.id === depStep)?.title || `Step ${depStep}`;
       toast.info(t('branding.generatingDependency', { step: depStepTitle }));
       const success = await generateStepInternal(depStep, false);
       if (!success) {
@@ -221,12 +259,16 @@ export const BrandingMachinePage: React.FC = () => {
         return false;
       }
       // Small delay between steps
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
     return true;
   };
 
-  const generateStepInternal = async (stepNumber: number, isInitial = false, silent = false): Promise<boolean> => {
+  const generateStepInternal = async (
+    stepNumber: number,
+    isInitial = false,
+    silent = false
+  ): Promise<boolean> => {
     if (!prompt.trim()) {
       if (!silent) {
         toast.error(t('branding.errors.enterBrandDescription'));
@@ -249,7 +291,7 @@ export const BrandingMachinePage: React.FC = () => {
     if (isInitial) {
       setIsGeneratingInitial(true);
     } else {
-      setGeneratingSteps(prev => new Set([...prev, stepNumber]));
+      setGeneratingSteps((prev) => new Set([...prev, stepNumber]));
     }
 
     try {
@@ -268,7 +310,7 @@ export const BrandingMachinePage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           step: stepNumber,
@@ -278,7 +320,9 @@ export const BrandingMachinePage: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to generate step' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Failed to generate step' }));
         throw new Error(errorData.error || errorData.message || 'Failed to generate step');
       }
 
@@ -292,7 +336,10 @@ export const BrandingMachinePage: React.FC = () => {
         const plural = creditsDeducted > 1 ? 's' : '';
         const remainingPlural = creditsRemaining > 1 ? 's' : '';
         toast.success(
-          `${t('credits.notificationUsed', { count: creditsDeducted, plural })}. ${t('credits.notificationRemaining', { remaining: creditsRemaining, plural: remainingPlural })}`
+          `${t('credits.notificationUsed', { count: creditsDeducted, plural })}. ${t(
+            'credits.notificationRemaining',
+            { remaining: creditsRemaining, plural: remainingPlural }
+          )}`
         );
       }
 
@@ -428,17 +475,22 @@ export const BrandingMachinePage: React.FC = () => {
         } catch (trackError: any) {
           // If trackUsage fails, the content was still generated but credits weren't deducted
           // This is a critical error - log it but don't remove the content
-          console.error(`[Usage Tracking] Failed to track usage after successful branding step ${stepNumber} generation:`, {
-            error: trackError.message,
-            stack: trackError.stack,
-            stepNumber,
-          });
+          console.error(
+            `[Usage Tracking] Failed to track usage after successful branding step ${stepNumber} generation:`,
+            {
+              error: trackError.message,
+              stack: trackError.stack,
+              stepNumber,
+            }
+          );
 
           if (trackError.message === 'SUBSCRIPTION_REQUIRED' && !silent) {
             // Defer error handling to next event loop to avoid React hooks violations
             setTimeout(() => {
               toast.error(t('branding.errors.insufficientCredits') || 'Insufficient credits', {
-                description: t('branding.errors.trackingFailedButContentGenerated') || 'Your content was generated successfully, but we couldn\'t update your credits. Please check your account.',
+                description:
+                  t('branding.errors.trackingFailedButContentGenerated') ||
+                  "Your content was generated successfully, but we couldn't update your credits. Please check your account.",
                 duration: 6000,
               });
               onCreditPackagesModalOpen();
@@ -446,9 +498,13 @@ export const BrandingMachinePage: React.FC = () => {
           } else if (!silent) {
             // Show friendly message for other tracking errors
             setTimeout(() => {
-              toast.info(t('branding.errors.trackingFailedButContentGenerated') || 'Your content was generated successfully! There was a minor issue updating your credits, but your work is safe.', {
-                duration: 5000,
-              });
+              toast.info(
+                t('branding.errors.trackingFailedButContentGenerated') ||
+                  'Your content was generated successfully! There was a minor issue updating your credits, but your work is safe.',
+                {
+                  duration: 5000,
+                }
+              );
             }, 0);
           }
         }
@@ -465,7 +521,7 @@ export const BrandingMachinePage: React.FC = () => {
       if (isInitial) {
         setIsGeneratingInitial(false);
       } else {
-        setGeneratingSteps(prev => {
+        setGeneratingSteps((prev) => {
           const next = new Set(prev);
           next.delete(stepNumber);
           return next;
@@ -505,7 +561,9 @@ export const BrandingMachinePage: React.FC = () => {
         };
       });
     } else if (missingDeps.length > 0) {
-      const missingSteps = missingDeps.map(s => STEPS.find(st => st.id === s)?.title || `Step ${s}`).join(', ');
+      const missingSteps = missingDeps
+        .map((s) => STEPS.find((st) => st.id === s)?.title || `Step ${s}`)
+        .join(', ');
       toast.error(t('branding.errors.missingDependencies', { steps: missingSteps }));
       return false;
     }
@@ -590,13 +648,17 @@ export const BrandingMachinePage: React.FC = () => {
 
       // ═══ Metodologia Visant v2 ═══
       case 101:
-        return brandingData.centralMessage ? { centralMessage: brandingData.centralMessage, pillars: brandingData.pillars } : null;
+        return brandingData.centralMessage
+          ? { centralMessage: brandingData.centralMessage, pillars: brandingData.pillars }
+          : null;
       case 102:
         return brandingData.marketResearchV2;
       case 103:
         return brandingData.personaV2;
       case 104:
-        return brandingData.archetypesV2 ? { archetypes: brandingData.archetypesV2, toneOfVoice: brandingData.toneOfVoice } : null;
+        return brandingData.archetypesV2
+          ? { archetypes: brandingData.archetypesV2, toneOfVoice: brandingData.toneOfVoice }
+          : null;
       case 105:
         return brandingData.manifesto;
       case 106:
@@ -621,14 +683,19 @@ export const BrandingMachinePage: React.FC = () => {
   // Helper function to check if a step has content
   const hasStepContent = (stepNumber: number): boolean => {
     const content = getStepContent(stepNumber);
-    return !!(content &&
+    return !!(
+      content &&
       !(typeof content === 'string' && !content.trim()) &&
       !(Array.isArray(content) && content.length === 0) &&
-      !(typeof content === 'object' && Object.keys(content).length === 0));
+      !(typeof content === 'object' && Object.keys(content).length === 0)
+    );
   };
 
   // Helper function to generate a step with its dependencies recursively (silently, without showing errors)
-  const generateStepWithDependencies = async (stepNumber: number, generatedSet: Set<number>): Promise<boolean> => {
+  const generateStepWithDependencies = async (
+    stepNumber: number,
+    generatedSet: Set<number>
+  ): Promise<boolean> => {
     // Skip if already generated or being generated
     if (generatedSet.has(stepNumber) || generatingSteps.has(stepNumber)) {
       return true;
@@ -659,7 +726,7 @@ export const BrandingMachinePage: React.FC = () => {
             continue;
           }
           // Small delay after generating dependency
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (error) {
           // Silently continue on error
           console.error(`Error generating dependency step ${depStep}:`, error);
@@ -675,7 +742,7 @@ export const BrandingMachinePage: React.FC = () => {
       if (success) {
         generatedSet.add(stepNumber);
         // Small delay after generating step
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 800));
         return true;
       }
 
@@ -693,12 +760,15 @@ export const BrandingMachinePage: React.FC = () => {
       return;
     }
 
-    const stepsToGenerate = STEPS.filter(step => {
+    const stepsToGenerate = STEPS.filter((step) => {
       const content = getStepContent(step.id);
-      return !content || (typeof content === 'string' && !content.trim()) ||
+      return (
+        !content ||
+        (typeof content === 'string' && !content.trim()) ||
         (Array.isArray(content) && content.length === 0) ||
-        (typeof content === 'object' && Object.keys(content).length === 0);
-    }).map(step => step.id);
+        (typeof content === 'object' && Object.keys(content).length === 0)
+      );
+    }).map((step) => step.id);
 
     if (stepsToGenerate.length === 0) {
       toast.info(t('branding.allSectionsGenerated'));
@@ -763,7 +833,7 @@ export const BrandingMachinePage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           prompt,
@@ -792,14 +862,13 @@ export const BrandingMachinePage: React.FC = () => {
       // Update brandingData.name with the saved name from database
       const savedName = result.project?.name || data.name || null;
       if (savedName !== brandingData.name) {
-        setBrandingData(prev => ({ ...prev, name: savedName }));
+        setBrandingData((prev) => ({ ...prev, name: savedName }));
       }
 
       // Only show toast for manual saves, not auto-saves
       if (!isAutoSave) {
         toast.success(t('branding.success.projectSaved'));
       }
-
     } catch (error: any) {
       console.error('Error saving project:', error);
       // Only show error toast for manual saves
@@ -811,26 +880,33 @@ export const BrandingMachinePage: React.FC = () => {
     }
   };
 
-
   const getDependencyModalMessage = () => {
     if (!pendingGeneration) return '';
 
     const depTitles = pendingGeneration.missingDeps
-      .map(dep => STEPS.find(s => s.id === dep)?.title || `Step ${dep}`)
+      .map((dep) => STEPS.find((s) => s.id === dep)?.title || `Step ${dep}`)
       .join(', ');
 
     return t('branding.dependencyModalMessage', {
-      dependencies: depTitles
+      dependencies: depTitles,
     });
   };
 
   if (isLoadingProject) {
     return (
-      <div className={`h-screen w-full flex items-center justify-center ${theme === 'dark' ? 'bg-neutral-950 text-neutral-300' : 'bg-neutral-50 text-neutral-800'
-        }`}>
+      <div
+        className={`h-screen w-full flex items-center justify-center ${
+          theme === 'dark' ? 'bg-neutral-950 text-neutral-300' : 'bg-neutral-50 text-neutral-800'
+        }`}
+      >
         <div className="text-center">
-          <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}>{t('branding.loadingProject')}</p>
+          <p
+            className={`text-sm font-mono ${
+              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+            }`}
+          >
+            {t('branding.loadingProject')}
+          </p>
         </div>
       </div>
     );
@@ -893,7 +969,9 @@ export const BrandingMachinePage: React.FC = () => {
       {/* Floating Expert Chat Button */}
       {currentStep !== 0 && (
         <button
-          onClick={() => navigate(`/branding-expert${currentProjectId ? `?projectId=${currentProjectId}` : ''}`)}
+          onClick={() =>
+            navigate(`/branding-expert${currentProjectId ? `?projectId=${currentProjectId}` : ''}`)
+          }
           className="fixed bottom-20 right-6 z-40 w-12 h-12 bg-brand-gradient text-white rounded-full shadow-lg hover:shadow-brand-cyan/20 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group"
           title={t('branding.machine.falar_com_especialista')}
         >
@@ -903,4 +981,3 @@ export const BrandingMachinePage: React.FC = () => {
     </CanvasErrorBoundary>
   );
 };
-

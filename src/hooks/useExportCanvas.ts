@@ -40,27 +40,30 @@ export function useExportCanvas(options: UseExportCanvasOptions) {
     }
   }, [options]);
 
-  const exportScaled = useCallback(async (sourceCanvas: HTMLCanvasElement, scale = 2) => {
-    options.setIsExporting?.(true);
-    try {
-      const offscreen = document.createElement('canvas');
-      offscreen.width = sourceCanvas.width * scale;
-      offscreen.height = sourceCanvas.height * scale;
-      const ctx = offscreen.getContext('2d')!;
-      ctx.scale(scale, scale);
-      ctx.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height);
+  const exportScaled = useCallback(
+    async (sourceCanvas: HTMLCanvasElement, scale = 2) => {
+      options.setIsExporting?.(true);
+      try {
+        const offscreen = document.createElement('canvas');
+        offscreen.width = sourceCanvas.width * scale;
+        offscreen.height = sourceCanvas.height * scale;
+        const ctx = offscreen.getContext('2d')!;
+        ctx.scale(scale, scale);
+        ctx.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height);
 
-      const blob = await new Promise<Blob>((resolve) => {
-        offscreen.toBlob((b) => resolve(b!), 'image/png');
-      });
-      downloadBlob(blob, `${options.filenamePrefix}_${Date.now()}.png`);
-      toast.success(options.successMessage || 'PNG exported');
-    } catch {
-      toast.error('Export failed — try again');
-    } finally {
-      options.setIsExporting?.(false);
-    }
-  }, [options]);
+        const blob = await new Promise<Blob>((resolve) => {
+          offscreen.toBlob((b) => resolve(b!), 'image/png');
+        });
+        downloadBlob(blob, `${options.filenamePrefix}_${Date.now()}.png`);
+        toast.success(options.successMessage || 'PNG exported');
+      } catch {
+        toast.error('Export failed — try again');
+      } finally {
+        options.setIsExporting?.(false);
+      }
+    },
+    [options]
+  );
 
   return { canvasRef, onCanvasReady, exportPng, exportScaled };
 }

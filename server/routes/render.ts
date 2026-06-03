@@ -81,7 +81,7 @@ router.put(
       if (!job) return res.status(404).json({ error: 'Job not found' });
       if (job.userId !== req.userId) return res.status(403).json({ error: 'Forbidden' });
 
-      const startIndex = parseInt(req.headers['x-frame-start'] as string || '0', 10);
+      const startIndex = parseInt((req.headers['x-frame-start'] as string) || '0', 10);
       if (!Number.isFinite(startIndex) || startIndex < 0) {
         return res.status(400).json({ error: 'Invalid X-Frame-Start' });
       }
@@ -95,12 +95,13 @@ router.put(
       res.json({ received: frames.length, totalFrames: job.frameCount });
     } catch (err: any) {
       console.error('[render/frames]', err);
-      const msg = err.message?.includes('limit') || err.message?.includes('Max')
-        ? err.message
-        : 'Failed to save frames';
+      const msg =
+        err.message?.includes('limit') || err.message?.includes('Max')
+          ? err.message
+          : 'Failed to save frames';
       res.status(400).json({ error: msg });
     }
-  },
+  }
 );
 
 router.post('/:jobId/finish', authenticate, renderLimiter, async (req: AuthRequest, res) => {
@@ -113,7 +114,8 @@ router.post('/:jobId/finish', authenticate, renderLimiter, async (req: AuthReque
     const format = String(req.body.format || 'mp4');
     const fps = Number(req.body.fps || 30);
 
-    if (!validateFormat(format)) return res.status(400).json({ error: 'Format must be mp4, gif, or webm' });
+    if (!validateFormat(format))
+      return res.status(400).json({ error: 'Format must be mp4, gif, or webm' });
     const fpsErr = validateFps(fps);
     if (fpsErr) return res.status(400).json({ error: fpsErr });
     if (job.frameCount === 0) return res.status(400).json({ error: 'No frames uploaded' });

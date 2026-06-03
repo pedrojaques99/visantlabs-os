@@ -4,7 +4,18 @@ import { subscriptionService, type SubscriptionStatus } from '../services/subscr
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { GlitchLoader } from './ui/GlitchLoader';
-import { LogIn, LogOut, User as UserIcon, Mail, X, Pickaxe, ChevronDown, Globe, Key, ShieldCheck } from 'lucide-react';
+import {
+  LogIn,
+  LogOut,
+  User as UserIcon,
+  Mail,
+  X,
+  Pickaxe,
+  ChevronDown,
+  Globe,
+  Key,
+  ShieldCheck,
+} from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { toast } from 'sonner';
@@ -16,7 +27,10 @@ interface AuthButtonProps {
   onCreditsClick?: () => void;
 }
 
-export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: propSubscriptionStatus, onCreditsClick }) => {
+export const AuthButton: React.FC<AuthButtonProps> = ({
+  subscriptionStatus: propSubscriptionStatus,
+  onCreditsClick,
+}) => {
   const { t } = useTranslation();
   // Try to get layout context, but don't fail if not available (e.g., in EditorApp)
   let isAuthenticated: boolean | null = null;
@@ -49,9 +63,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<HCaptcha>(null);
 
-  const hcaptchaSiteKey = typeof window !== 'undefined'
-    ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY
-    : undefined;
+  const hcaptchaSiteKey =
+    typeof window !== 'undefined' ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY : undefined;
   const captchaEnabled = !!hcaptchaSiteKey;
 
   // Load user data when authenticated state changes (sincronizado com contexto)
@@ -105,11 +118,16 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
       let result;
       if (isSignUp) {
         // Get referral code from localStorage if available
-        const referralCode = typeof window !== 'undefined'
-          ? localStorage.getItem('referral_code')
-          : null;
+        const referralCode =
+          typeof window !== 'undefined' ? localStorage.getItem('referral_code') : null;
 
-        result = await authService.signUp(email, password, name || undefined, referralCode || undefined, captchaToken || undefined);
+        result = await authService.signUp(
+          email,
+          password,
+          name || undefined,
+          referralCode || undefined,
+          captchaToken || undefined
+        );
 
         // Reset CAPTCHA after successful signup
         if (captchaRef.current) {
@@ -125,7 +143,9 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
         result = await authService.signIn(email, password);
       }
 
-      toast.success(isSignUp ? t('auth.accountCreatedSuccess') : t('auth.signedInSuccess'), { duration: 2000 });
+      toast.success(isSignUp ? t('auth.accountCreatedSuccess') : t('auth.signedInSuccess'), {
+        duration: 2000,
+      });
       setUser(result.user);
       setShowEmailModal(false);
       setEmail('');
@@ -141,7 +161,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
       }
     } catch (error: any) {
       // Handle Event objects (from script loading errors, etc.) vs Error objects
-      const isEventObject = error && typeof error === 'object' && 'type' in error && 'target' in error;
+      const isEventObject =
+        error && typeof error === 'object' && 'type' in error && 'target' in error;
 
       // Check if this is a BotID script loading error (converted to "Network error during authentication")
       // BotID errors typically have no status and the message "Network error during authentication"
@@ -242,9 +263,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
   const handleGoogleAuth = async () => {
     setIsGoogleLoading(true);
     try {
-      const referralCode = typeof window !== 'undefined'
-        ? localStorage.getItem('referral_code')
-        : null;
+      const referralCode =
+        typeof window !== 'undefined' ? localStorage.getItem('referral_code') : null;
 
       const authUrl = await authService.getAuthUrl(referralCode || undefined);
       window.location.href = authUrl;
@@ -280,7 +300,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isDropdownOpen]);
 
-
   if (isCheckingAuth || isLoading) {
     return (
       <div className="px-3 py-2 flex items-center gap-2 text-xs text-neutral-500 font-mono">
@@ -295,7 +314,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
     if (!status) return 0;
     return typeof status.totalCredits === 'number'
       ? status.totalCredits
-      : ((status.totalCreditsEarned ?? 0) + (status.creditsRemaining ?? 0));
+      : (status.totalCreditsEarned ?? 0) + (status.creditsRemaining ?? 0);
   };
 
   const availableCredits = getAvailableCredits();
@@ -310,18 +329,34 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
       <div className="flex items-center gap-2" data-auth-dropdown>
         {currentStatus ? (
           <>
-            <Button variant="ghost" onClick={onCreditsClick}
-              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-neutral-900/40 border hover:bg-[#252525]/60 hover:border-neutral-700 transition-all cursor-pointer shadow-sm ${isLowCredits ? 'text-amber-400 border-amber-500/30' : 'text-brand-cyan border-brand-cyan/20'}`}
+            <Button
+              variant="ghost"
+              onClick={onCreditsClick}
+              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-neutral-900/40 border hover:bg-[#252525]/60 hover:border-neutral-700 transition-all cursor-pointer shadow-sm ${
+                isLowCredits
+                  ? 'text-amber-400 border-amber-500/30'
+                  : 'text-brand-cyan border-brand-cyan/20'
+              }`}
               aria-label={t('auth.availableCredits', { count: availableCredits })}
-              title={isLowCredits ? `Apenas ${availableCredits} creditos restantes` : t('auth.creditsAvailable', { count: availableCredits })}
+              title={
+                isLowCredits
+                  ? `Apenas ${availableCredits} creditos restantes`
+                  : t('auth.creditsAvailable', { count: availableCredits })
+              }
             >
-              <Pickaxe size={12} className={`md:w-3 md:h-3 ${isLowCredits ? 'text-amber-400' : 'text-brand-cyan'}`} aria-hidden="true" />
+              <Pickaxe
+                size={12}
+                className={`md:w-3 md:h-3 ${isLowCredits ? 'text-amber-400' : 'text-brand-cyan'}`}
+                aria-hidden="true"
+              />
               <span>{availableCredits}</span>
             </Button>
           </>
         ) : null}
         <div className="relative">
-          <Button variant="ghost" onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          <Button
+            variant="ghost"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-neutral-400 font-mono bg-neutral-900/40 border border-neutral-800 hover:bg-[#252525]/60 hover:border-neutral-600/50 hover:text-neutral-300 transition-all cursor-pointer shadow-sm"
             title={t('auth.userMenu')}
           >
@@ -335,7 +370,12 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
               <UserIcon size={14} className="md:w-4 md:h-4" />
             )}
             <span className="hidden sm:inline lowercase">{user.name || user.email}</span>
-            <ChevronDown size={12} className={`hidden sm:block transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              size={12}
+              className={`hidden sm:block transition-transform ${
+                isDropdownOpen ? 'rotate-180' : ''
+              }`}
+            />
           </Button>
           {isDropdownOpen && (
             <>
@@ -351,20 +391,26 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                 onClick={() => setIsDropdownOpen(false)}
               />
               <div className="absolute right-0 top-full mt-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[160px] dropdown-menu">
-                <Button variant="ghost" onClick={handleProfileClick}
+                <Button
+                  variant="ghost"
+                  onClick={handleProfileClick}
                   className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2 justify-between"
                 >
                   <span className="flex items-center gap-2">
                     <UserIcon size={14} />
                     {t('common.profile')}
                   </span>
-                  <span className="text-[9px] text-neutral-600 uppercase tracking-wider">{tierLabel}</span>
+                  <span className="text-[9px] text-neutral-600 uppercase tracking-wider">
+                    {tierLabel}
+                  </span>
                 </Button>
-                <Button variant="ghost" onClick={() => {
-                  setIsDropdownOpen(false);
-                  window.history.pushState({}, '', '/community');
-                  window.dispatchEvent(new PopStateEvent('popstate'));
-                }}
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    window.history.pushState({}, '', '/community');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
                   className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
                 >
                   <Globe size={14} />
@@ -373,11 +419,13 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                 {user.isAdmin && (
                   <>
                     <div className="border-t border-neutral-800/50 my-1" />
-                    <Button variant="ghost" onClick={() => {
-                      setIsDropdownOpen(false);
-                      window.history.pushState({}, '', '/admin');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }}
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        window.history.pushState({}, '', '/admin');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }}
                       className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center gap-2"
                     >
                       <ShieldCheck size={14} />
@@ -387,7 +435,9 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                 )}
 
                 <div className="border-t border-neutral-800/50 my-1" />
-                <Button variant="ghost" onClick={handleLogout}
+                <Button
+                  variant="ghost"
+                  onClick={handleLogout}
                   className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
                 >
                   <LogOut size={14} />
@@ -405,7 +455,9 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
     <>
       <div className="flex items-center gap-1 md:gap-2">
         {/* Google OAuth button hidden */}
-        <Button variant="ghost" onClick={() => setShowEmailModal(true)}
+        <Button
+          variant="ghost"
+          onClick={() => setShowEmailModal(true)}
           className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-neutral-800/50 text-neutral-400 rounded-md border border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300 text-[10px] md:text-xs font-mono transition-colors"
         >
           <Mail size={12} className="md:w-[14px] md:h-[14px]" />
@@ -421,17 +473,19 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
               <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
                 {isSignUp ? t('auth.signUp') : t('auth.signIn')}
               </h2>
-              <Button variant="ghost" onClick={() => {
-                setShowEmailModal(false);
-                setAuthError(null);
-                setEmail('');
-                setPassword('');
-                setName('');
-                setCaptchaToken(null);
-                if (captchaRef.current) {
-                  captchaRef.current.resetCaptcha();
-                }
-              }}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowEmailModal(false);
+                  setAuthError(null);
+                  setEmail('');
+                  setPassword('');
+                  setName('');
+                  setCaptchaToken(null);
+                  if (captchaRef.current) {
+                    captchaRef.current.resetCaptcha();
+                  }
+                }}
                 className="text-neutral-500 hover:text-neutral-300 transition-colors"
               >
                 <X size={20} />
@@ -489,7 +543,9 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                   </p>
                 )}
                 {!isSignUp && (
-                  <Button variant="ghost" type="button"
+                  <Button
+                    variant="ghost"
+                    type="button"
                     onClick={() => {
                       setShowEmailModal(false);
                       setShowForgotPassword(true);
@@ -523,8 +579,15 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                 </div>
               )}
 
-              <Button variant="brand" type="submit"
-                disabled={isAuthLoading || !email || !password || (isSignUp && captchaEnabled && !captchaToken)}
+              <Button
+                variant="brand"
+                type="submit"
+                disabled={
+                  isAuthLoading ||
+                  !email ||
+                  !password ||
+                  (isSignUp && captchaEnabled && !captchaToken)
+                }
                 className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
               >
                 {isAuthLoading ? (
@@ -532,22 +595,24 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                     <GlitchLoader size={16} color="currentColor" />
                     {isSignUp ? t('auth.creatingAccount') : t('auth.signingIn')}
                   </>
+                ) : isSignUp ? (
+                  t('auth.signUp')
                 ) : (
-                  isSignUp ? t('auth.signUp') : t('auth.signIn')
+                  t('auth.signIn')
                 )}
               </Button>
             </form>
 
             <div className="mt-4 pt-4 border-t border-neutral-800/50">
-              <Button variant="ghost" onClick={() => {
-                setIsSignUp(!isSignUp);
-                setAuthError(null);
-              }}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setAuthError(null);
+                }}
                 className="w-full text-xs text-neutral-500 hover:text-neutral-400 font-mono transition-colors"
               >
-                {isSignUp
-                  ? t('auth.alreadyHaveAccount')
-                  : t('auth.dontHaveAccount')}
+                {isSignUp ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}
               </Button>
             </div>
           </div>
@@ -563,10 +628,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
           setIsSignUp(false);
         }}
       />
-
-
-
     </>
   );
 };
-

@@ -5,8 +5,8 @@ import { authService, type User as UserType } from '../services/authService';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export interface EditProfileModalProps {
   isOpen: boolean;
@@ -164,7 +164,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           });
 
           if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: t('common.uploadFailed') }));
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: t('common.uploadFailed') }));
             throw new Error(errorData.error || t('common.failedToUploadPicture'));
           }
 
@@ -226,7 +228,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             <p className="font-mono mb-4 text-destructive">
               {t('common.notAuthenticated') || 'Please sign in to edit your profile'}
             </p>
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={onClose}
               className="px-4 py-2 bg-neutral-800/50 text-neutral-400 hover:bg-neutral-700/50 rounded-md text-sm font-mono transition-colors"
             >
@@ -244,23 +247,34 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
       onClick={onClose}
     >
       <div
-        className={`relative w-full max-w-2xl mx-4 my-8 ${theme === 'dark'
-          ? 'bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50'
-          : 'bg-white border border-neutral-200'
-          } rounded-md shadow-2xl overflow-hidden`}
+        className={`relative w-full max-w-2xl mx-4 my-8 ${
+          theme === 'dark'
+            ? 'bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50'
+            : 'bg-white border border-neutral-200'
+        } rounded-md shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`flex items-center justify-between px-6 py-5 border-b ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
-          }`}>
-          <h2 className={`text-lg font-semibold font-mono ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-900'
-            } uppercase`}>
+        <div
+          className={`flex items-center justify-between px-6 py-5 border-b ${
+            theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
+          }`}
+        >
+          <h2
+            className={`text-lg font-semibold font-mono ${
+              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-900'
+            } uppercase`}
+          >
             {t('profile.editTitle') || 'Edit profile'}
           </h2>
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className={`transition-colors ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-600 hover:text-neutral-900'
-              }`}
+            className={`transition-colors ${
+              theme === 'dark'
+                ? 'text-neutral-500 hover:text-neutral-300'
+                : 'text-neutral-600 hover:text-neutral-900'
+            }`}
             aria-label={t('common.close')}
           >
             <X size={20} />
@@ -269,23 +283,28 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
         {/* Content */}
         <div className="px-8 py-8 overflow-y-auto max-h-[calc(100vh-200px)]">
-
           {(error || success) && (
             <div className="space-y-3 mb-8">
               {error && (
-                <div className={`rounded-xl p-4 text-sm font-mono flex items-center gap-2 ${theme === 'dark'
-                  ? 'bg-destructive/10 border border-destructive/30 text-destructive'
-                  : 'bg-red-50 border border-red-200 text-destructive'
-                  }`}>
+                <div
+                  className={`rounded-xl p-4 text-sm font-mono flex items-center gap-2 ${
+                    theme === 'dark'
+                      ? 'bg-destructive/10 border border-destructive/30 text-destructive'
+                      : 'bg-red-50 border border-red-200 text-destructive'
+                  }`}
+                >
                   <X size={16} />
                   {error}
                 </div>
               )}
               {success && (
-                <div className={`rounded-xl p-4 text-sm font-mono flex items-center gap-2 ${theme === 'dark'
-                  ? 'bg-green-500/10 border border-green-500/30 text-green-400'
-                  : 'bg-green-50 border border-green-200 text-green-600'
-                  }`}>
+                <div
+                  className={`rounded-xl p-4 text-sm font-mono flex items-center gap-2 ${
+                    theme === 'dark'
+                      ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+                      : 'bg-green-50 border border-green-200 text-green-600'
+                  }`}
+                >
                   <Check size={16} />
                   {success}
                 </div>
@@ -305,11 +324,16 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             />
             <div
               onClick={handlePictureClick}
-              className={`relative w-28 h-28 rounded-md overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 ${theme === 'dark'
-                ? 'bg-neutral-800 border border-neutral-700'
-                : 'bg-neutral-200 border border-neutral-300'
-                } ${isUploadingPicture ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={isUploadingPicture ? (t('common.processing') || 'Uploading...') : (t('profile.uploadPicture') || 'Click to upload picture')}
+              className={`relative w-28 h-28 rounded-md overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 ${
+                theme === 'dark'
+                  ? 'bg-neutral-800 border border-neutral-700'
+                  : 'bg-neutral-200 border border-neutral-300'
+              } ${isUploadingPicture ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={
+                isUploadingPicture
+                  ? t('common.processing') || 'Uploading...'
+                  : t('profile.uploadPicture') || 'Click to upload picture'
+              }
             >
               {isUploadingPicture ? (
                 <GlitchLoader size={32} />
@@ -321,24 +345,41 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   onError={() => setPictureUrl('')}
                 />
               ) : (
-                <User size={44} className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'} />
+                <User
+                  size={44}
+                  className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'}
+                />
               )}
-              <span className={`absolute bottom-2 right-2 rounded-md p-2 shadow-lg transition ${isUploadingPicture
-                ? 'bg-neutral-600 text-neutral-300'
-                : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'
-                }`}>
+              <span
+                className={`absolute bottom-2 right-2 rounded-md p-2 shadow-lg transition ${
+                  isUploadingPicture
+                    ? 'bg-neutral-600 text-neutral-300'
+                    : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'
+                }`}
+              >
                 <Camera size={16} />
               </span>
             </div>
             <div className="flex-1 space-y-3">
-              <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}>
+              <p
+                className={`text-sm font-mono ${
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                }`}
+              >
                 {t('profile.currentEmail') || 'Signed in as'}
               </p>
-              <p className={`text-xl font-semibold font-manrope ${theme === 'dark' ? 'text-white' : 'text-neutral-900'
-                }`}>{user.email}</p>
-              <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                }`}>
+              <p
+                className={`text-xl font-semibold font-manrope ${
+                  theme === 'dark' ? 'text-white' : 'text-neutral-900'
+                }`}
+              >
+                {user.email}
+              </p>
+              <p
+                className={`text-sm font-mono ${
+                  theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+                }`}
+              >
                 {t('profile.editHint') || 'Changes will reflect instantly across the platform.'}
               </p>
             </div>
@@ -347,8 +388,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           {/* Form Fields Section */}
           <div className="space-y-8 pt-8 mt-8 border-t border-neutral-800/30">
             <div className="space-y-4">
-              <label className={`flex items-center gap-2 text-xs font-mono uppercase mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}>
+              <label
+                className={`flex items-center gap-2 text-xs font-mono uppercase mb-2 ${
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                }`}
+              >
                 <User size={14} />
                 {t('profile.name') || 'Name'}
               </label>
@@ -356,15 +400,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${theme === 'dark'
-                  ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
-                  : 'bg-white border border-neutral-300 text-neutral-900'
-                  }`}
+                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${
+                  theme === 'dark'
+                    ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
+                    : 'bg-white border border-neutral-300 text-neutral-900'
+                }`}
               />
             </div>
             <div className="space-y-4">
-              <label className={`flex items-center gap-2 text-xs font-mono uppercase mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}>
+              <label
+                className={`flex items-center gap-2 text-xs font-mono uppercase mb-2 ${
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                }`}
+              >
                 <Mail size={14} />
                 {t('profile.email') || 'Email'}
               </label>
@@ -372,23 +420,26 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${theme === 'dark'
-                  ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
-                  : 'bg-white border border-neutral-300 text-neutral-900'
-                  }`}
+                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${
+                  theme === 'dark'
+                    ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
+                    : 'bg-white border border-neutral-300 text-neutral-900'
+                }`}
               />
             </div>
           </div>
 
           {/* Save Button */}
           <div className="pt-10 mt-10 border-t border-neutral-800/30">
-            <Button variant="brand"
+            <Button
+              variant="brand"
               onClick={handleSave}
               disabled={isSaving}
-              className={`w-full px-4 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition flex items-center justify-center gap-2 ${theme === 'dark'
-                ? 'disabled:bg-neutral-700 disabled:text-neutral-500'
-                : 'disabled:bg-neutral-300 disabled:text-neutral-400'
-                }`}
+              className={`w-full px-4 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition flex items-center justify-center gap-2 ${
+                theme === 'dark'
+                  ? 'disabled:bg-neutral-700 disabled:text-neutral-500'
+                  : 'disabled:bg-neutral-300 disabled:text-neutral-400'
+              }`}
             >
               {isSaving ? (
                 <>
@@ -408,5 +459,3 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
     </div>
   );
 };
-
-

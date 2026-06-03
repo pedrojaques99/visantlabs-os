@@ -8,7 +8,14 @@ function BrandLintReport({ report }: { report: any }) {
   const totals = report?.totals || {};
   const issues: any[] = Array.isArray(report?.issues) ? report.issues : [];
   const score = typeof report?.score === 'number' ? report.score : null;
-  const scoreColor = score === null ? '' : score >= 80 ? 'text-green-500' : score >= 50 ? 'text-yellow-500' : 'text-red-500';
+  const scoreColor =
+    score === null
+      ? ''
+      : score >= 80
+      ? 'text-green-500'
+      : score >= 50
+      ? 'text-yellow-500'
+      : 'text-red-500';
 
   return (
     <div className="border border-white/5 rounded-lg p-3 space-y-2 mt-3 bg-white/[0.02]">
@@ -24,8 +31,13 @@ function BrandLintReport({ report }: { report: any }) {
       {issues.length > 0 && (
         <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
           {issues.slice(0, 15).map((iss, i) => (
-            <div key={`${iss.nodeId}-${i}`} className="text-[9px] border-l border-white/10 pl-2 py-1 bg-white/[0.01]">
-              <div className="font-mono truncate text-neutral-400">{iss.nodeName || iss.nodeId}</div>
+            <div
+              key={`${iss.nodeId}-${i}`}
+              className="text-[9px] border-l border-white/10 pl-2 py-1 bg-white/[0.01]"
+            >
+              <div className="font-mono truncate text-neutral-400">
+                {iss.nodeName || iss.nodeId}
+              </div>
               <div className="text-neutral-500">{iss.message}</div>
             </div>
           ))}

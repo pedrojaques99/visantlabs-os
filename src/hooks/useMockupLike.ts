@@ -39,12 +39,14 @@ export const useMockupLike = ({
       await mockupApi.update(mockupId, { isLiked: newLikedState });
       console.log(`[Like] Successfully updated like status for mockup ${mockupId}`);
 
-      const addKey = translationKeyPrefix === 'canvasNodes.imageNode'
-        ? 'canvasNodes.imageNode.addToFavorites'
-        : 'canvas.addedToFavorites';
-      const removeKey = translationKeyPrefix === 'canvasNodes.imageNode'
-        ? 'canvasNodes.imageNode.removeFromFavorites'
-        : 'canvas.removedFromFavorites';
+      const addKey =
+        translationKeyPrefix === 'canvasNodes.imageNode'
+          ? 'canvasNodes.imageNode.addToFavorites'
+          : 'canvas.addedToFavorites';
+      const removeKey =
+        translationKeyPrefix === 'canvasNodes.imageNode'
+          ? 'canvasNodes.imageNode.removeFromFavorites'
+          : 'canvas.removedFromFavorites';
 
       toast.success(newLikedState ? t(addKey) : t(removeKey), { duration: 2000 });
     } catch (error: any) {
@@ -60,9 +62,10 @@ export const useMockupLike = ({
         onLikeStateChange(isLiked);
       }
 
-      const errorKey = translationKeyPrefix === 'canvasNodes.imageNode'
-        ? 'canvasNodes.imageNode.failedToUpdateLikeStatus'
-        : 'canvasNodes.outputNode.failedToUpdateLikeStatus';
+      const errorKey =
+        translationKeyPrefix === 'canvasNodes.imageNode'
+          ? 'canvasNodes.imageNode.failedToUpdateLikeStatus'
+          : 'canvasNodes.outputNode.failedToUpdateLikeStatus';
 
       toast.error(t(errorKey), { duration: 3000 });
     }
@@ -70,4 +73,3 @@ export const useMockupLike = ({
 
   return { toggleLike, isLiked };
 };
-

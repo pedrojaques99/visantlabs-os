@@ -24,30 +24,53 @@ const toStorable = (m: BrandManifesto): BrandManifesto | string => {
   return m.full ?? '';
 };
 
-export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, onUpdate, span }) => {
+export const ManifestoSection: React.FC<ManifestoSectionProps> = ({
+  guideline,
+  onUpdate,
+  span,
+}) => {
   const manifesto = readManifesto(guideline);
 
-  const persist = useCallback((next: BrandManifesto) => {
-    onUpdate({ strategy: { ...guideline.strategy, manifesto: toStorable(next) } });
-  }, [onUpdate, guideline.strategy]);
+  const persist = useCallback(
+    (next: BrandManifesto) => {
+      onUpdate({ strategy: { ...guideline.strategy, manifesto: toStorable(next) } });
+    },
+    [onUpdate, guideline.strategy]
+  );
 
   const update = (patch: Partial<BrandManifesto>) => {
     persist({ ...manifesto, ...patch });
   };
 
   const hasStructured = manifesto.provocation || manifesto.tension || manifesto.promise;
-  const isEmpty = !manifesto.provocation && !manifesto.tension && !manifesto.promise && !manifesto.full;
+  const isEmpty =
+    !manifesto.provocation && !manifesto.tension && !manifesto.promise && !manifesto.full;
 
-  const handleAiResult = useCallback((patch: Record<string, any>) => {
-    const m = patch.strategy?.manifesto;
-    if (!m) return;
-    if (typeof m === 'string') persist({ ...manifesto, full: m });
-    else persist({ ...manifesto, ...m });
-  }, [persist, manifesto]);
+  const handleAiResult = useCallback(
+    (patch: Record<string, any>) => {
+      const m = patch.strategy?.manifesto;
+      if (!m) return;
+      if (typeof m === 'string') persist({ ...manifesto, full: m });
+      else persist({ ...manifesto, ...m });
+    },
+    [persist, manifesto]
+  );
 
   return (
-    <SectionBlock id="manifesto" icon={<BookOpen size={14} />} title="Manifesto" span={span as any}
-      actions={isEmpty ? <AiFieldButton guideline={guideline} section="strategy.manifesto" onResult={handleAiResult} /> : undefined}
+    <SectionBlock
+      id="manifesto"
+      icon={<BookOpen size={14} />}
+      title="Manifesto"
+      span={span as any}
+      actions={
+        isEmpty ? (
+          <AiFieldButton
+            guideline={guideline}
+            section="strategy.manifesto"
+            onResult={handleAiResult}
+          />
+        ) : undefined
+      }
     >
       <div className="space-y-4 py-1">
         <div className="space-y-3">
@@ -81,7 +104,9 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({ guideline, o
         </div>
 
         <div className="space-y-1">
-          <MicroTitle className="text-neutral-600">{hasStructured ? 'Texto completo (opcional)' : 'Texto livre'}</MicroTitle>
+          <MicroTitle className="text-neutral-600">
+            {hasStructured ? 'Texto completo (opcional)' : 'Texto livre'}
+          </MicroTitle>
           <Textarea
             value={manifesto.full || ''}
             onChange={(e) => update({ full: e.target.value })}

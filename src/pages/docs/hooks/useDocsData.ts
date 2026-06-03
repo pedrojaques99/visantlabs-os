@@ -146,25 +146,22 @@ export function useDocsData() {
 
   // Filter endpoints by tag
   const authEndpoints = useMemo(
-    () => apiEndpoints.filter(e => e.tags?.includes('auth')),
+    () => apiEndpoints.filter((e) => e.tags?.includes('auth')),
     [apiEndpoints]
   );
 
   const mockupEndpoints = useMemo(
-    () => apiEndpoints.filter(e => e.tags?.includes('mockups')),
+    () => apiEndpoints.filter((e) => e.tags?.includes('mockups')),
     [apiEndpoints]
   );
 
   const pluginEndpoints = useMemo(
-    () => apiEndpoints.filter(e => e.tags?.includes('plugin')),
+    () => apiEndpoints.filter((e) => e.tags?.includes('plugin')),
     [apiEndpoints]
   );
 
   // MCP tool names for navigation
-  const mcpToolNames = useMemo(
-    () => mcpSpec?.tools.map(t => t.name) || [],
-    [mcpSpec]
-  );
+  const mcpToolNames = useMemo(() => mcpSpec?.tools.map((t) => t.name) || [], [mcpSpec]);
 
   return {
     openApiSpec,

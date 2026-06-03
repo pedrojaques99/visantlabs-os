@@ -5,7 +5,10 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, Plus, Trash2 } from 'lucide-react';
 import type { BrandGuideline, BrandPersona } from '@/lib/figma-types';
@@ -18,7 +21,11 @@ interface PersonasSectionProps {
 }
 
 const toLines = (arr?: string[]) => (arr || []).join('\n');
-const fromLines = (text: string) => text.split('\n').map(s => s.trim()).filter(Boolean);
+const fromLines = (text: string) =>
+  text
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
 
 const Avatar: React.FC<{
   persona: BrandPersona;
@@ -26,7 +33,14 @@ const Avatar: React.FC<{
   onPickImage: (url: string) => void;
 }> = ({ persona, mediaItems, onPickImage }) => {
   const img = (persona as any).image as string | undefined;
-  const initials = persona.name ? persona.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
+  const initials = persona.name
+    ? persona.name
+        .split(' ')
+        .map((w) => w[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : '?';
   const hasMedia = mediaItems && mediaItems.length > 0;
 
   return (
@@ -62,7 +76,9 @@ const Avatar: React.FC<{
             ))}
           </div>
         ) : (
-          <p className="text-[10px] text-neutral-600 px-2 py-1.5">No media yet. Add images in the Logotipo tab.</p>
+          <p className="text-[10px] text-neutral-600 px-2 py-1.5">
+            No media yet. Add images in the Logotipo tab.
+          </p>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -72,26 +88,60 @@ const Avatar: React.FC<{
 export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onUpdate, span }) => {
   const personas = guideline.strategy?.personas || [];
 
-  const persist = useCallback((next: BrandPersona[]) => {
-    onUpdate({ strategy: { ...guideline.strategy, personas: next } });
-  }, [onUpdate, guideline.strategy]);
+  const persist = useCallback(
+    (next: BrandPersona[]) => {
+      onUpdate({ strategy: { ...guideline.strategy, personas: next } });
+    },
+    [onUpdate, guideline.strategy]
+  );
 
   const set = (i: number, patch: Partial<BrandPersona>) =>
-    persist(personas.map((p, idx) => idx === i ? { ...p, ...patch } : p));
-  const add = () => persist([...personas, { name: '', age: undefined, occupation: '', bio: '', desires: [], painPoints: [], traits: [] }]);
+    persist(personas.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
+  const add = () =>
+    persist([
+      ...personas,
+      {
+        name: '',
+        age: undefined,
+        occupation: '',
+        bio: '',
+        desires: [],
+        painPoints: [],
+        traits: [],
+      },
+    ]);
   const remove = (i: number) => persist(personas.filter((_, idx) => idx !== i));
 
-  const handleAiResult = useCallback((patch: Record<string, any>) => {
-    const p = patch.strategy?.personas;
-    if (Array.isArray(p)) persist(p);
-  }, [persist]);
+  const handleAiResult = useCallback(
+    (patch: Record<string, any>) => {
+      const p = patch.strategy?.personas;
+      if (Array.isArray(p)) persist(p);
+    },
+    [persist]
+  );
 
   return (
-    <SectionBlock id="personas" icon={<User size={14} />} title="Personas" span={span as any}
+    <SectionBlock
+      id="personas"
+      icon={<User size={14} />}
+      title="Personas"
+      span={span as any}
       actions={
         <div className="flex items-center gap-1">
-          {personas.length === 0 && <AiFieldButton guideline={guideline} section="strategy.personas" onResult={handleAiResult} />}
-          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={add} aria-label="Add persona">
+          {personas.length === 0 && (
+            <AiFieldButton
+              guideline={guideline}
+              section="strategy.personas"
+              onResult={handleAiResult}
+            />
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5"
+            onClick={add}
+            aria-label="Add persona"
+          >
             <Plus size={11} />
           </Button>
         </div>
@@ -102,7 +152,10 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
           <p className="text-[11px] text-neutral-700 py-2">No personas yet. Click + to add.</p>
         )}
         {personas.map((p, i) => (
-          <div key={i} className="group/persona border-b border-neutral-800 last:border-0 overflow-hidden">
+          <div
+            key={i}
+            className="group/persona border-b border-neutral-800 last:border-0 overflow-hidden"
+          >
             {/* Header row: avatar + name + age */}
             <div className="flex items-center gap-3 py-3">
               <Avatar
@@ -127,11 +180,19 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
               <Input
                 value={p.age ?? ''}
                 type="number"
-                onChange={(e) => set(i, { age: e.target.value ? Number(e.target.value) : undefined })}
+                onChange={(e) =>
+                  set(i, { age: e.target.value ? Number(e.target.value) : undefined })
+                }
                 className="h-7 bg-transparent border-none px-0 text-sm text-neutral-500 focus-visible:ring-0 w-10 text-right shrink-0"
                 placeholder="—"
               />
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/persona:opacity-100 transition-all shrink-0" onClick={() => remove(i)} aria-label="Remove">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/persona:opacity-100 transition-all shrink-0"
+                onClick={() => remove(i)}
+                aria-label="Remove"
+              >
                 <Trash2 size={10} />
               </Button>
             </div>
@@ -158,7 +219,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                       value={toLines(p.desires)}
                       onChange={(e) => set(i, { desires: fromLines(e.target.value) })}
                       className="auto-textarea w-full bg-transparent border border-neutral-800 rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-colors"
-                      placeholder={"Reduzir fricção\nROI claro\nTime autônomo"}
+                      placeholder={'Reduzir fricção\nROI claro\nTime autônomo'}
                     />
                   </div>
                   <div className="space-y-1">
@@ -167,7 +228,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                       value={toLines(p.painPoints)}
                       onChange={(e) => set(i, { painPoints: fromLines(e.target.value) })}
                       className="auto-textarea w-full bg-transparent border border-neutral-800 rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-colors"
-                      placeholder={"Ferramentas fragmentadas\nSem visibilidade\nOnboarding lento"}
+                      placeholder={'Ferramentas fragmentadas\nSem visibilidade\nOnboarding lento'}
                     />
                   </div>
                 </div>

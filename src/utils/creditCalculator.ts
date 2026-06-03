@@ -115,7 +115,10 @@ export function getCreditYieldRows(): { label: string; cost: number }[] {
       rows.push({ label: config.label, cost: getCreditsRequired(modelId, undefined, 'gemini') });
     } else {
       for (const res of resolutions) {
-        rows.push({ label: `${config.label} ${res}`, cost: getCreditsRequired(modelId, res, 'gemini') });
+        rows.push({
+          label: `${config.label} ${res}`,
+          cost: getCreditsRequired(modelId, res, 'gemini'),
+        });
       }
     }
   }
@@ -162,10 +165,10 @@ export function getVideoCreditsRequired(model?: string): number {
 /**
  * Get credits required for chat message
  * Rule: 1 credit every 4 messages sent by the user
- * 
+ *
  * @param userMessageCount - Total number of messages sent by the user (before adding the new one)
  * @returns Number of credits to deduct (0 or 1)
- * 
+ *
  * @example
  * getChatMessageCreditsRequired(1) // 0 - first message
  * getChatMessageCreditsRequired(2) // 0 - second message

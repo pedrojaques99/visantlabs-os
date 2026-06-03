@@ -7,7 +7,9 @@ import type { RGB, ResolvedToken } from './tokenRegistry.js';
  */
 function rgbToLab(rgb: RGB): { L: number; a: number; b: number } {
   // RGB to XYZ
-  let r = rgb.r, g = rgb.g, b = rgb.b;
+  let r = rgb.r,
+    g = rgb.g,
+    b = rgb.b;
 
   r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
   g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
@@ -18,12 +20,12 @@ function rgbToLab(rgb: RGB): { L: number; a: number; b: number } {
   const z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
 
   // XYZ to LAB
-  const fx = x > 0.008856 ? Math.pow(x, 1/3) : (7.787 * x) + 16/116;
-  const fy = y > 0.008856 ? Math.pow(y, 1/3) : (7.787 * y) + 16/116;
-  const fz = z > 0.008856 ? Math.pow(z, 1/3) : (7.787 * z) + 16/116;
+  const fx = x > 0.008856 ? Math.pow(x, 1 / 3) : 7.787 * x + 16 / 116;
+  const fy = y > 0.008856 ? Math.pow(y, 1 / 3) : 7.787 * y + 16 / 116;
+  const fz = z > 0.008856 ? Math.pow(z, 1 / 3) : 7.787 * z + 16 / 116;
 
   return {
-    L: (116 * fy) - 16,
+    L: 116 * fy - 16,
     a: 500 * (fx - fy),
     b: 200 * (fy - fz),
   };
@@ -37,9 +39,7 @@ export function colorDistance(c1: RGB, c2: RGB): number {
   const lab1 = rgbToLab(c1);
   const lab2 = rgbToLab(c2);
   return Math.sqrt(
-    Math.pow(lab1.L - lab2.L, 2) +
-    Math.pow(lab1.a - lab2.a, 2) +
-    Math.pow(lab1.b - lab2.b, 2)
+    Math.pow(lab1.L - lab2.L, 2) + Math.pow(lab1.a - lab2.a, 2) + Math.pow(lab1.b - lab2.b, 2)
   );
 }
 
@@ -92,7 +92,11 @@ export function findClosestNumber(
 /**
  * Check if RGB matches any color in palette (with tolerance)
  */
-export function colorInPalette(rgb: RGB, palette: Map<string, ResolvedToken>, tolerance = 0.01): string | null {
+export function colorInPalette(
+  rgb: RGB,
+  palette: Map<string, ResolvedToken>,
+  tolerance = 0.01
+): string | null {
   for (const [name, token] of palette) {
     if (!token.rgb) continue;
     if (

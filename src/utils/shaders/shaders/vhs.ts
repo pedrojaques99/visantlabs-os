@@ -123,4 +123,3 @@ const vhsShaderDefinition: ShaderDefinition = {
 
 // Register the shader
 registerShader('vhs', vhsShaderDefinition);
-

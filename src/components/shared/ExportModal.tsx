@@ -24,7 +24,10 @@ interface ExportModalProps {
   videoFps?: number;
   onVideoDurationChange?: (duration: number) => void;
   onVideoFpsChange?: (fps: number) => void;
-  onExportVideo?: (format: 'mp4' | 'gif' | 'webm', onProgress: (pct: number) => void) => Promise<Blob>;
+  onExportVideo?: (
+    format: 'mp4' | 'gif' | 'webm',
+    onProgress: (pct: number) => void
+  ) => Promise<Blob>;
 }
 
 const RASTER_FORMATS: { id: ExportFormat; label: string; ext: string; mime: string }[] = [
@@ -72,7 +75,13 @@ const EXPORT_PRESETS: ExportPreset[] = [
   { label: 'Web Preview', format: 'webp', scale: 1 },
 ];
 
-function estimateVideoSize(w: number, h: number, duration: number, fps: number, format: ExportFormat): string {
+function estimateVideoSize(
+  w: number,
+  h: number,
+  duration: number,
+  fps: number,
+  format: ExportFormat
+): string {
   const bitsPerPixel = format === 'gif' ? 4 : 0.15;
   const bytes = (w * h * bitsPerPixel * fps * duration) / 8;
   if (bytes > 1024 * 1024) return `~${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -83,11 +92,20 @@ function estimateFileSize(w: number, h: number, format: ExportFormat, quality: n
   const pixels = w * h;
   let bytes: number;
   switch (format) {
-    case 'png': bytes = pixels * 1.5; break;
-    case 'jpeg': bytes = pixels * quality * 0.8; break;
-    case 'webp': bytes = pixels * quality * 0.5; break;
-    case 'svg': bytes = pixels * 0.3; break;
-    default: return '';
+    case 'png':
+      bytes = pixels * 1.5;
+      break;
+    case 'jpeg':
+      bytes = pixels * quality * 0.8;
+      break;
+    case 'webp':
+      bytes = pixels * quality * 0.5;
+      break;
+    case 'svg':
+      bytes = pixels * 0.3;
+      break;
+    default:
+      return '';
   }
   if (bytes > 1024 * 1024) return `~${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `~${Math.round(bytes / 1024)} KB`;
@@ -108,12 +126,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   onVideoFpsChange,
   onExportVideo,
 }) => {
-  const baseFormats = onExportSvg
-    ? [...RASTER_FORMATS, SVG_FORMAT]
-    : RASTER_FORMATS;
-  const FORMAT_OPTIONS = isVideo && onExportVideo
-    ? [...baseFormats, ...VIDEO_FORMATS]
-    : baseFormats;
+  const baseFormats = onExportSvg ? [...RASTER_FORMATS, SVG_FORMAT] : RASTER_FORMATS;
+  const FORMAT_OPTIONS =
+    isVideo && onExportVideo ? [...baseFormats, ...VIDEO_FORMATS] : baseFormats;
   const [format, setFormat] = useState<ExportFormat>('png');
   const [quality, setQuality] = useState(0.92);
   const [scale, setScale] = useState(1);
@@ -140,7 +155,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   useEffect(() => {
     if (!isOpen || !isVideoFormat) {
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
       }
       cancelAnimationFrame(videoTimeRAF.current);
@@ -178,7 +193,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     return () => {
       cancelAnimationFrame(videoTimeRAF.current);
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
       }
     };
@@ -230,8 +245,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
-      if (e.key === 'Enter' && !e.shiftKey && !isExporting) { e.preventDefault(); handleExport(); }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+      if (e.key === 'Enter' && !e.shiftKey && !isExporting) {
+        e.preventDefault();
+        handleExport();
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -264,7 +285,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       }
 
       const blob = await new Promise<Blob>((resolve, reject) => {
-        exportCanvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed')), 'image/png');
+        exportCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Failed'))), 'image/png');
       });
 
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
@@ -345,7 +366,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     } finally {
       setIsExporting(false);
     }
-  }, [canvasRef, format, quality, scale, filenamePrefix, getShaderSettings, onExportSvg, onExportScaled, onClose, FORMAT_OPTIONS, onExportVideo]);
+  }, [
+    canvasRef,
+    format,
+    quality,
+    scale,
+    filenamePrefix,
+    getShaderSettings,
+    onExportSvg,
+    onExportScaled,
+    onClose,
+    FORMAT_OPTIONS,
+    onExportVideo,
+  ]);
 
   if (!isOpen) return null;
 
@@ -354,29 +387,39 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const sourceH = source?.height || 0;
   const outputW = Math.round(sourceW * scale);
   const outputH = Math.round(sourceH * scale);
-  const sizeEstimate = !IS_VIDEO_FORMAT(format) ? estimateFileSize(outputW, outputH, format, quality) : null;
-  const videoSizeEstimate = IS_VIDEO_FORMAT(format) ? estimateVideoSize(sourceW, sourceH, videoDuration, videoFps, format) : null;
+  const sizeEstimate = !IS_VIDEO_FORMAT(format)
+    ? estimateFileSize(outputW, outputH, format, quality)
+    : null;
+  const videoSizeEstimate = IS_VIDEO_FORMAT(format)
+    ? estimateVideoSize(sourceW, sourceH, videoDuration, videoFps, format)
+    : null;
 
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-black/60 transition-all duration-200",
-        isVisible ? "backdrop-blur-sm opacity-100" : "backdrop-blur-none opacity-0"
+        'fixed inset-0 z-50 flex items-center justify-center bg-black/60 transition-all duration-200',
+        isVisible ? 'backdrop-blur-sm opacity-100' : 'backdrop-blur-none opacity-0'
       )}
       onClick={onClose}
     >
       <div
         ref={modalRef}
         className={cn(
-          "w-[400px] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl transition-all duration-200",
-          isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
+          'w-[400px] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl transition-all duration-200',
+          isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">Export Settings</span>
-          <button onClick={onClose} className="text-neutral-600 hover:text-neutral-300 transition-colors p-1" title="Close (Esc)">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
+            Export Settings
+          </span>
+          <button
+            onClick={onClose}
+            className="text-neutral-600 hover:text-neutral-300 transition-colors p-1"
+            title="Close (Esc)"
+          >
             <X size={14} />
           </button>
         </div>
@@ -399,11 +442,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 onClick={toggleVideoPlayback}
                 className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 transition-colors group"
               >
-                <div className={cn(
-                  "w-8 h-8 rounded-full bg-black/60 flex items-center justify-center transition-opacity",
-                  videoPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-                )}>
-                  {videoPlaying ? <Pause size={14} className="text-white" /> : <Play size={14} className="text-white ml-0.5" />}
+                <div
+                  className={cn(
+                    'w-8 h-8 rounded-full bg-black/60 flex items-center justify-center transition-opacity',
+                    videoPlaying ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
+                  )}
+                >
+                  {videoPlaying ? (
+                    <Pause size={14} className="text-white" />
+                  ) : (
+                    <Play size={14} className="text-white ml-0.5" />
+                  )}
                 </div>
               </button>
             </div>
@@ -422,7 +471,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           {/* Format */}
           <div className="space-y-2">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Format</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+              Format
+            </span>
             <div className="flex flex-wrap gap-1.5">
               {FORMAT_OPTIONS.map((f) => (
                 <button
@@ -444,7 +495,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Presets */}
           {isVideo && onExportVideo && (
             <div className="flex flex-wrap gap-1.5">
-              {EXPORT_PRESETS.filter(p => isVideoFormat ? IS_VIDEO_FORMAT(p.format) : !IS_VIDEO_FORMAT(p.format)).map((p) => (
+              {EXPORT_PRESETS.filter((p) =>
+                isVideoFormat ? IS_VIDEO_FORMAT(p.format) : !IS_VIDEO_FORMAT(p.format)
+              ).map((p) => (
                 <button
                   key={p.label}
                   onClick={() => {
@@ -479,7 +532,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Scale (raster image only) */}
           {!isVideoFormat && format !== 'svg' && (
             <div className="space-y-2">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Scale</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                Scale
+              </span>
               <div className="flex gap-1.5">
                 {SCALE_OPTIONS.map((s) => (
                   <button
@@ -514,7 +569,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   hint="Video duration in seconds"
                 />
                 <div className="space-y-1">
-                  <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest">FPS</span>
+                  <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest">
+                    FPS
+                  </span>
                   <div className="flex gap-1">
                     {FPS_OPTIONS.map((f) => (
                       <button
@@ -544,8 +601,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <>
                   <span>{videoDuration.toFixed(1)}s</span>
                   <span>{totalFrames} frames</span>
-                  <span>{sourceW} × {sourceH}px</span>
-                  {videoSizeEstimate && <span className="text-neutral-600">{videoSizeEstimate}</span>}
+                  <span>
+                    {sourceW} × {sourceH}px
+                  </span>
+                  {videoSizeEstimate && (
+                    <span className="text-neutral-600">{videoSizeEstimate}</span>
+                  )}
                 </>
               ) : (
                 <>

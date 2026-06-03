@@ -370,18 +370,40 @@ export class HalftoneRenderer {
     }
 
     const uniformNames = [
-      'u_texture', 'u_resolution', 'u_frequency', 'u_dotSize', 'u_roughness',
-      'u_fuzz', 'u_paperNoise', 'u_inkNoise', 'u_randomness', 'u_contrast',
-      'u_lightness', 'u_blur', 'u_threshold', 'u_paperColor',
-      'u_cyanAngle', 'u_magentaAngle', 'u_yellowAngle', 'u_blackAngle',
-      'u_cyanColor', 'u_magentaColor', 'u_yellowColor', 'u_blackColor',
-      'u_showCyan', 'u_showMagenta', 'u_showYellow', 'u_showBlack', 'u_blendMode', 'u_effectOpacity',
+      'u_texture',
+      'u_resolution',
+      'u_frequency',
+      'u_dotSize',
+      'u_roughness',
+      'u_fuzz',
+      'u_paperNoise',
+      'u_inkNoise',
+      'u_randomness',
+      'u_contrast',
+      'u_lightness',
+      'u_blur',
+      'u_threshold',
+      'u_paperColor',
+      'u_cyanAngle',
+      'u_magentaAngle',
+      'u_yellowAngle',
+      'u_blackAngle',
+      'u_cyanColor',
+      'u_magentaColor',
+      'u_yellowColor',
+      'u_blackColor',
+      'u_showCyan',
+      'u_showMagenta',
+      'u_showYellow',
+      'u_showBlack',
+      'u_blendMode',
+      'u_effectOpacity',
     ];
     for (const name of uniformNames) {
       this.uniforms[name] = this.gl.getUniformLocation(this.program, name);
     }
 
-    const vertices = new Float32Array([-1,-1,0,0, 1,-1,1,0, -1,1,0,1, 1,1,1,1]);
+    const vertices = new Float32Array([-1, -1, 0, 0, 1, -1, 1, 0, -1, 1, 0, 1, 1, 1, 1, 1]);
     const buffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
@@ -420,7 +442,14 @@ export class HalftoneRenderer {
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, source);
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
+      0,
+      this.gl.RGBA,
+      this.gl.RGBA,
+      this.gl.UNSIGNED_BYTE,
+      source
+    );
 
     if (source instanceof HTMLVideoElement) {
       this.imageWidth = source.videoWidth;
@@ -441,7 +470,14 @@ export class HalftoneRenderer {
   updateTexture(source: TexImageSource): void {
     if (!this.gl || !this.texture) return;
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, source);
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
+      0,
+      this.gl.RGBA,
+      this.gl.RGBA,
+      this.gl.UNSIGNED_BYTE,
+      source
+    );
   }
 
   render(settings: HalftoneSettings): void {

@@ -8,25 +8,25 @@ export type RenderCategory = 'multi-output' | 'transform' | 'pipeline' | 'multi-
 // ─── Behaviors ──────────────────────────────────────────────────────────────
 
 export type MultiOutputBehavior =
-  | 'batch-generate'    // N prompts → N images
-  | 'model-comparison'  // 1 prompt + N models → N images
-  | 'prompt-expander'   // LLM expands 1 prompt → N variations → N images
-  | 'style-matrix';     // 1 image + N style prompts → N variations
+  | 'batch-generate' // N prompts → N images
+  | 'model-comparison' // 1 prompt + N models → N images
+  | 'prompt-expander' // LLM expands 1 prompt → N variations → N images
+  | 'style-matrix'; // 1 image + N style prompts → N variations
 
 export type TransformBehavior =
-  | 'ai-shader'         // image + desc → LLM picks shader+params → ShaderNode
-  | 'angle-series'      // 1 image → N angles → N outputs
-  | 'mockup-series'     // 1 product → N mockup presets → N outputs
-  | 'upscale-chain'     // image → upscale → optional shader (sequential)
-  | 'image-chain';      // image → LLM describes → prompt → new image
+  | 'ai-shader' // image + desc → LLM picks shader+params → ShaderNode
+  | 'angle-series' // 1 image → N angles → N outputs
+  | 'mockup-series' // 1 product → N mockup presets → N outputs
+  | 'upscale-chain' // image → upscale → optional shader (sequential)
+  | 'image-chain'; // image → LLM describes → prompt → new image
 
 export type PipelineBehavior =
-  | 'iterative-refine'  // generate → LLM evaluates → refine → repeat
-  | 'pipeline';         // custom sequential steps
+  | 'iterative-refine' // generate → LLM evaluates → refine → repeat
+  | 'pipeline'; // custom sequential steps
 
 export type MultiInputBehavior =
-  | 'merge-creative'      // N images → LLM writes merge prompt → merged output
-  | 'palette-generate'    // extract palette → N images using those colors
+  | 'merge-creative' // N images → LLM writes merge prompt → merged output
+  | 'palette-generate' // extract palette → N images using those colors
   | 'conditional-branch'; // image → LLM analyzes → best operation
 
 export type CustomNodeBehavior =
@@ -38,8 +38,14 @@ export type CustomNodeBehavior =
 // ─── Shader types (mirrors ShaderNode's shaderType) ─────────────────────────
 
 export type ShaderBehaviorType =
-  | 'halftone' | 'vhs' | 'matrixDither' | 'dither'
-  | 'ascii' | 'duotone' | 'luminance' | 'ambience';
+  | 'halftone'
+  | 'vhs'
+  | 'matrixDither'
+  | 'dither'
+  | 'ascii'
+  | 'duotone'
+  | 'luminance'
+  | 'ambience';
 
 // ─── Pipeline step (for 'pipeline' behavior) ────────────────────────────────
 
@@ -55,26 +61,26 @@ export interface PipelineStep {
 export interface MultiOutputConfig {
   behavior: MultiOutputBehavior;
   renderCategory: 'multi-output';
-  outputCount: number;            // 2–6
-  prompts: string[];              // initial prompts; length === outputCount
+  outputCount: number; // 2–6
+  prompts: string[]; // initial prompts; length === outputCount
   model: GeminiModel;
-  models?: GeminiModel[];         // for model-comparison: one per output
+  models?: GeminiModel[]; // for model-comparison: one per output
   aspectRatio: AspectRatio;
   resolution?: Resolution;
-  acceptsImage?: boolean;         // for style-matrix: accepts a connected image
-  seedPrompt?: string;            // for prompt-expander: user's seed prompt
+  acceptsImage?: boolean; // for style-matrix: accepts a connected image
+  seedPrompt?: string; // for prompt-expander: user's seed prompt
 }
 
 export interface TransformConfig {
   behavior: TransformBehavior;
   renderCategory: 'transform';
   userDescription: string;
-  systemInstruction: string;      // embedded instruction for runtime LLM calls
-  availableShaders?: ShaderBehaviorType[];   // ai-shader
-  angles?: string[];              // angle-series
-  mockupPresets?: string[];       // mockup-series
-  targetResolution?: Resolution;  // upscale-chain
-  applyShaderAfter?: ShaderBehaviorType;    // upscale-chain post-shader
+  systemInstruction: string; // embedded instruction for runtime LLM calls
+  availableShaders?: ShaderBehaviorType[]; // ai-shader
+  angles?: string[]; // angle-series
+  mockupPresets?: string[]; // mockup-series
+  targetResolution?: Resolution; // upscale-chain
+  applyShaderAfter?: ShaderBehaviorType; // upscale-chain post-shader
   model?: GeminiModel;
   outputCount?: number;
 }
@@ -83,7 +89,7 @@ export interface PipelineConfig {
   behavior: PipelineBehavior;
   renderCategory: 'pipeline';
   steps: PipelineStep[];
-  iterations?: number;            // iterative-refine
+  iterations?: number; // iterative-refine
   model?: GeminiModel;
   userDescription?: string;
 }
@@ -91,7 +97,7 @@ export interface PipelineConfig {
 export interface MultiInputConfig {
   behavior: MultiInputBehavior;
   renderCategory: 'multi-input';
-  inputCount: number;             // number of image handles
+  inputCount: number; // number of image handles
   userDescription: string;
   systemInstruction: string;
   model?: GeminiModel;
@@ -118,12 +124,12 @@ export interface CustomNodeDefinition {
   id: string;
   name: string;
   description: string;
-  iconName: string;               // Lucide icon name e.g. 'Layers', 'Diamond'
+  iconName: string; // Lucide icon name e.g. 'Layers', 'Diamond'
   inputs: CustomNodeHandle[];
   behaviorConfig: BehaviorConfig;
   savedToDb?: boolean;
   isPublic?: boolean;
-  createdAt?: string;             // ISO string
+  createdAt?: string; // ISO string
 }
 
 // ─── LLM response from backend ───────────────────────────────────────────────

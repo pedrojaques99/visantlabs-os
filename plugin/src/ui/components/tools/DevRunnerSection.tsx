@@ -15,7 +15,9 @@ export function DevRunnerSection() {
       const data = JSON.parse(jsonInput);
       send({
         type: messageType as any,
-        ...(messageType === 'APPLY_OPERATIONS' ? { operations: Array.isArray(data) ? data : [data] } : data)
+        ...(messageType === 'APPLY_OPERATIONS'
+          ? { operations: Array.isArray(data) ? data : [data] }
+          : data),
       });
     } catch (err) {
       alert('Invalid JSON: ' + (err as Error).message);
@@ -25,7 +27,9 @@ export function DevRunnerSection() {
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-600 px-1">Message Protocol</label>
+        <label className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-600 px-1">
+          Message Protocol
+        </label>
         <Input
           type="text"
           value={messageType}
@@ -36,7 +40,9 @@ export function DevRunnerSection() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-600 px-1">Payload (JSON)</label>
+        <label className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-600 px-1">
+          Payload (JSON)
+        </label>
         <Textarea
           value={jsonInput}
           onChange={(e) => setJsonInput(e.target.value)}
@@ -45,7 +51,12 @@ export function DevRunnerSection() {
         />
       </div>
 
-      <Button onClick={handleRun} variant="brand" size="sm" className="w-full h-8 text-[10px] font-bold uppercase tracking-widest">
+      <Button
+        onClick={handleRun}
+        variant="brand"
+        size="sm"
+        className="w-full h-8 text-[10px] font-bold uppercase tracking-widest"
+      >
         <Play size={12} className="mr-2" />
         Execute Operation
       </Button>

@@ -47,7 +47,10 @@ export async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
 
   // 3. Library color variables
   try {
-    if (figma.teamLibrary && typeof figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync === 'function') {
+    if (
+      figma.teamLibrary &&
+      typeof figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync === 'function'
+    ) {
       const collections = await figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync();
       for (const col of collections) {
         const libVars = await figma.teamLibrary.getVariablesInLibraryCollectionAsync(col.key);
@@ -58,10 +61,20 @@ export async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
               if (imported && imported.valuesByMode && typeof imported.valuesByMode === 'object') {
                 const modeId = Object.keys(imported.valuesByMode)[0];
                 const val = imported.valuesByMode[modeId];
-                if (typeof val === 'object' && val !== null && 'r' in val && 'g' in val && 'b' in val) {
+                if (
+                  typeof val === 'object' &&
+                  val !== null &&
+                  'r' in val &&
+                  'g' in val &&
+                  'b' in val
+                ) {
                   const hex = rgbToHex((val as any).r, (val as any).g, (val as any).b);
                   if (!seen.has(hex)) {
-                    colors.push({ id: imported.id, name: `${col.name}/${libVar.name}`, value: hex });
+                    colors.push({
+                      id: imported.id,
+                      name: `${col.name}/${libVar.name}`,
+                      value: hex,
+                    });
                     seen.add(hex);
                   }
                 }
@@ -99,7 +112,11 @@ export async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
             const c = (stroke as SolidPaint).color;
             const hex = rgbToHex(c.r, c.g, c.b);
             if (!seen.has(hex)) {
-              colors.push({ id: `sel:${node.id}:stroke`, name: `${node.name} (stroke)`, value: hex });
+              colors.push({
+                id: `sel:${node.id}:stroke`,
+                name: `${node.name} (stroke)`,
+                value: hex,
+              });
               seen.add(hex);
             }
           }
@@ -128,7 +145,7 @@ export async function getFontVariablesFromFile(): Promise<FontVariable[]> {
           family: style.fontName.family,
           style: style.fontName.style,
           fontSize: style.fontSize,
-          lineHeight: style.lineHeight?.unit === 'PIXELS' ? style.lineHeight.value : undefined
+          lineHeight: style.lineHeight?.unit === 'PIXELS' ? style.lineHeight.value : undefined,
         });
         seen.add(style.id);
       }
@@ -143,11 +160,15 @@ export async function getFontVariablesFromFile(): Promise<FontVariable[]> {
       const allVariables = await figma.variables.getLocalVariablesAsync('STRING');
       for (const variable of allVariables) {
         const nameLower = variable.name.toLowerCase();
-        if (nameLower.includes('font') || nameLower.includes('typeface') || nameLower.includes('typography')) {
+        if (
+          nameLower.includes('font') ||
+          nameLower.includes('typeface') ||
+          nameLower.includes('typography')
+        ) {
           if (!seen.has(variable.id)) {
             fonts.push({
               id: variable.id,
-              name: variable.name
+              name: variable.name,
             });
             seen.add(variable.id);
           }

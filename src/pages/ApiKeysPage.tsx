@@ -1,6 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Key, Copy, Trash2, Plus, Shield, AlertTriangle, Check, X, Clock, Eye, EyeOff } from 'lucide-react';
+import {
+  Key,
+  Copy,
+  Trash2,
+  Plus,
+  Shield,
+  AlertTriangle,
+  Check,
+  X,
+  Clock,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardContent } from '../components/ui/card';
@@ -16,10 +28,10 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/BreadcrumbWithBack";
-import { BackButton } from "../components/ui/BackButton";
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+} from '../components/ui/BreadcrumbWithBack';
+import { BackButton } from '../components/ui/BackButton';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { API_BASE } from '@/config/api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -147,7 +159,7 @@ export const ApiKeysPage: React.FC = () => {
         expiresAt: data.expiresAt,
         active: true,
       });
-      setKeys(prev => [newKey, ...prev]);
+      setKeys((prev) => [newKey, ...prev]);
       setShowCreateForm(false);
       setNewKeyName('');
       setNewKeyScopes(['read']);
@@ -169,7 +181,7 @@ export const ApiKeysPage: React.FC = () => {
         headers: getAuthHeaders(),
       });
       if (!res.ok) throw new Error('Failed to revoke API key');
-      setKeys(prev => prev.filter(k => k.id !== revokeTarget.id));
+      setKeys((prev) => prev.filter((k) => k.id !== revokeTarget.id));
       setRevokeTarget(null);
       toast.success('API key revoked');
     } catch (err: any) {
@@ -191,8 +203,8 @@ export const ApiKeysPage: React.FC = () => {
   };
 
   const toggleScope = (scope: string) => {
-    setNewKeyScopes(prev =>
-      prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope]
+    setNewKeyScopes((prev) =>
+      prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope]
     );
   };
 
@@ -203,10 +215,14 @@ export const ApiKeysPage: React.FC = () => {
 
   const scopeColor = (scope: string) => {
     switch (scope) {
-      case 'read': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'write': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-      case 'generate': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      default: return 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
+      case 'read':
+        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'write':
+        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+      case 'generate':
+        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      default:
+        return 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
     }
   };
 
@@ -224,8 +240,13 @@ export const ApiKeysPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-destructive font-mono mb-4">{t('api.keys.please_sign_in_to_manage_api_keys')}</p>
-          <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
+          <p className="text-destructive font-mono mb-4">
+            {t('api.keys.please_sign_in_to_manage_api_keys')}
+          </p>
+          <BackButton
+            className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0"
+            to="/"
+          />
         </div>
       </div>
     );
@@ -233,13 +254,14 @@ export const ApiKeysPage: React.FC = () => {
 
   return (
     <>
-      <SEO title="API Keys" description={t('api.keys.manage_your_api_keys_for_agent_and_progr')} noindex={true} />
+      <SEO
+        title="API Keys"
+        description={t('api.keys.manage_your_api_keys_for_agent_and_progr')}
+        noindex={true}
+      />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0">
-
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
-
           {/* Header Card */}
           <Card className="bg-neutral-900 border border-white/10 rounded-xl">
             <CardContent className="p-4 md:p-6">
@@ -277,8 +299,12 @@ export const ApiKeysPage: React.FC = () => {
                     Create and manage API keys for agent and programmatic access
                   </p>
                 </div>
-                <Button variant="ghost"
-                  onClick={() => { setShowCreateForm(true); setCreatedKeyRaw(null); }}
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setShowCreateForm(true);
+                    setCreatedKeyRaw(null);
+                  }}
                   className="flex items-center gap-2 px-4 py-2.5 bg-brand-cyan text-black rounded-md font-medium text-sm hover:bg-brand-cyan/90 transition-colors shrink-0"
                 >
                   <Plus size={16} />
@@ -302,22 +328,28 @@ export const ApiKeysPage: React.FC = () => {
                 <div className="flex items-start gap-3 mb-3">
                   <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-amber-400 font-semibold text-sm">{t('api.keys.save_your_api_key_now')}</p>
-                    <p className="text-amber-400/70 text-xs mt-1">{t('api.keys.this_key_will_not_be_shown_again_copy_it')}</p>
+                    <p className="text-amber-400 font-semibold text-sm">
+                      {t('api.keys.save_your_api_key_now')}
+                    </p>
+                    <p className="text-amber-400/70 text-xs mt-1">
+                      {t('api.keys.this_key_will_not_be_shown_again_copy_it')}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 bg-neutral-900/80 border border-neutral-700/50 rounded-md p-3 font-mono text-sm">
                   <code className="flex-1 break-all text-neutral-200">
                     {showRawKey ? createdKeyRaw : createdKeyRaw.replace(/./g, '\u2022')}
                   </code>
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     onClick={() => setShowRawKey(!showRawKey)}
                     className="p-1.5 hover:bg-neutral-700/50 rounded transition-colors text-neutral-400 hover:text-neutral-200"
                     title={showRawKey ? 'Hide key' : 'Show key'}
                   >
                     {showRawKey ? <EyeOff size={16} /> : <Eye size={16} />}
                   </Button>
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     onClick={() => handleCopyKey(createdKeyRaw)}
                     className="p-1.5 hover:bg-neutral-700/50 rounded transition-colors text-neutral-400 hover:text-neutral-200"
                     title={t('api.keys.copy_to_clipboard')}
@@ -325,7 +357,8 @@ export const ApiKeysPage: React.FC = () => {
                     {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
                   </Button>
                 </div>
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   onClick={() => setCreatedKeyRaw(null)}
                   className="mt-3 text-xs text-neutral-500 hover:text-neutral-400 transition-colors"
                 >
@@ -346,11 +379,13 @@ export const ApiKeysPage: React.FC = () => {
                 <form onSubmit={handleCreateKey} className="space-y-4">
                   {/* Name */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-400 mb-1.5">Name</label>
+                    <label className="block text-sm font-medium text-neutral-400 mb-1.5">
+                      Name
+                    </label>
                     <Input
                       type="text"
                       value={newKeyName}
-                      onChange={e => setNewKeyName(e.target.value)}
+                      onChange={(e) => setNewKeyName(e.target.value)}
                       placeholder="e.g. Production Agent, CI/CD Pipeline"
                       className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors"
                       autoFocus
@@ -359,17 +394,21 @@ export const ApiKeysPage: React.FC = () => {
 
                   {/* Scopes */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-400 mb-1.5">{t('api.keys.scopes')}</label>
+                    <label className="block text-sm font-medium text-neutral-400 mb-1.5">
+                      {t('api.keys.scopes')}
+                    </label>
                     <div className="flex flex-wrap gap-2">
-                      {AVAILABLE_SCOPES.map(scope => (
-                        <Button variant="ghost"
+                      {AVAILABLE_SCOPES.map((scope) => (
+                        <Button
+                          variant="ghost"
                           key={scope.value}
                           type="button"
                           onClick={() => toggleScope(scope.value)}
-                          className={`px-3 py-2 rounded-md border text-sm transition-colors ${newKeyScopes.includes(scope.value)
-                            ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
-                            : 'bg-neutral-800/30 border-neutral-700/50 text-neutral-500 hover:border-neutral-600'
-                            }`}
+                          className={`px-3 py-2 rounded-md border text-sm transition-colors ${
+                            newKeyScopes.includes(scope.value)
+                              ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
+                              : 'bg-neutral-800/30 border-neutral-700/50 text-neutral-500 hover:border-neutral-600'
+                          }`}
                         >
                           <span className="font-medium">{scope.label}</span>
                           <span className="text-xs ml-1.5 opacity-70">— {scope.description}</span>
@@ -386,7 +425,7 @@ export const ApiKeysPage: React.FC = () => {
                     <Input
                       type="date"
                       value={newKeyExpiry}
-                      onChange={e => setNewKeyExpiry(e.target.value)}
+                      onChange={(e) => setNewKeyExpiry(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
                       className="w-full max-w-xs px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-colors"
                     />
@@ -394,7 +433,8 @@ export const ApiKeysPage: React.FC = () => {
 
                   {/* Actions */}
                   <div className="flex items-center gap-3 pt-2">
-                    <Button variant="brand"
+                    <Button
+                      variant="brand"
                       type="submit"
                       disabled={isCreating}
                       className="flex items-center gap-2 px-4 py-2.5 bg-brand-cyan text-black rounded-md font-medium text-sm hover:bg-brand-cyan/90 transition-colors disabled:opacity-50"
@@ -402,7 +442,8 @@ export const ApiKeysPage: React.FC = () => {
                       {isCreating ? <GlitchLoader size={14} /> : <Plus size={16} />}
                       {isCreating ? 'Creating...' : 'Create Key'}
                     </Button>
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => setShowCreateForm(false)}
                       className="px-4 py-2.5 bg-neutral-800/50 text-neutral-400 rounded-md text-sm hover:bg-neutral-700/50 transition-colors"
@@ -425,7 +466,9 @@ export const ApiKeysPage: React.FC = () => {
               ) : keys.length === 0 ? (
                 <div className="p-12 text-center">
                   <Key className="h-12 w-12 text-neutral-700 mx-auto mb-4" />
-                  <p className="text-neutral-400 font-medium mb-1">{t('api.keys.no_api_keys_yet')}</p>
+                  <p className="text-neutral-400 font-medium mb-1">
+                    {t('api.keys.no_api_keys_yet')}
+                  </p>
                   <p className="text-neutral-600 text-sm font-mono">
                     Create your first key to start using the API programmatically.
                   </p>
@@ -435,18 +478,33 @@ export const ApiKeysPage: React.FC = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-white/10">
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">Name</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.key')}</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.scopes_2')}</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">{t('api.keys.last_used')}</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">{t('api.keys.created')}</th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">{t('api.keys.status')}</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">
+                          Name
+                        </th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">
+                          {t('api.keys.key')}
+                        </th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">
+                          {t('api.keys.scopes_2')}
+                        </th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">
+                          {t('api.keys.last_used')}
+                        </th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">
+                          {t('api.keys.created')}
+                        </th>
+                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">
+                          {t('api.keys.status')}
+                        </th>
                         <th className="text-right p-4 text-neutral-500 font-medium font-mono text-xs uppercase "></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {keys.map(key => (
-                        <tr key={key.id} className="border-b border-white/10 hover:bg-neutral-800/20 transition-colors">
+                      {keys.map((key) => (
+                        <tr
+                          key={key.id}
+                          className="border-b border-white/10 hover:bg-neutral-800/20 transition-colors"
+                        >
                           <td className="p-4 text-neutral-200 font-medium">{key.name}</td>
                           <td className="p-4">
                             <code className="text-neutral-500 font-mono text-xs bg-neutral-800/50 px-2 py-1 rounded">
@@ -455,8 +513,11 @@ export const ApiKeysPage: React.FC = () => {
                           </td>
                           <td className="p-4">
                             <div className="flex flex-wrap gap-1">
-                              {key.scopes.map(scope => (
-                                <Badge key={scope} className={`text-xs border ${scopeColor(scope)}`}>
+                              {key.scopes.map((scope) => (
+                                <Badge
+                                  key={scope}
+                                  className={`text-xs border ${scopeColor(scope)}`}
+                                >
                                   {scope}
                                 </Badge>
                               ))}
@@ -492,7 +553,8 @@ export const ApiKeysPage: React.FC = () => {
                           </td>
                           <td className="p-4 text-right">
                             {key.status === 'active' && (
-                              <Button variant="ghost"
+                              <Button
+                                variant="ghost"
                                 onClick={() => setRevokeTarget(key)}
                                 className="p-2 text-neutral-500 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                                 title={t('api.keys.revoke_key')}
@@ -519,23 +581,29 @@ export const ApiKeysPage: React.FC = () => {
                     <div className="p-2 bg-destructive/10 rounded-md">
                       <AlertTriangle className="h-5 w-5 text-destructive" />
                     </div>
-                    <h3 className="text-lg font-semibold text-neutral-200">{t('api.keys.revoke_api_key')}</h3>
+                    <h3 className="text-lg font-semibold text-neutral-200">
+                      {t('api.keys.revoke_api_key')}
+                    </h3>
                   </div>
                   <p className="text-neutral-400 text-sm mb-1">
-                    Are you sure you want to revoke <span className="text-neutral-200 font-medium">"{revokeTarget.name}"</span>?
+                    Are you sure you want to revoke{' '}
+                    <span className="text-neutral-200 font-medium">"{revokeTarget.name}"</span>?
                   </p>
                   <p className="text-neutral-500 text-xs mb-6">
-                    This action cannot be undone. Any applications using this key will lose access immediately.
+                    This action cannot be undone. Any applications using this key will lose access
+                    immediately.
                   </p>
                   <div className="flex items-center gap-3 justify-end">
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       onClick={() => setRevokeTarget(null)}
                       className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm hover:bg-neutral-700/50 transition-colors"
                       disabled={isRevoking}
                     >
                       Cancel
                     </Button>
-                    <Button variant="destructive"
+                    <Button
+                      variant="destructive"
                       onClick={handleRevokeKey}
                       disabled={isRevoking}
                       className="flex items-center gap-2 px-4 py-2 bg-destructive/20 text-destructive border border-destructive/30 rounded-md text-sm hover:bg-destructive/30 transition-colors disabled:opacity-50"
@@ -548,7 +616,6 @@ export const ApiKeysPage: React.FC = () => {
               </Card>
             </div>
           )}
-
         </div>
       </div>
     </>

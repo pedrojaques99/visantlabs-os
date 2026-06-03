@@ -11,7 +11,10 @@ function yieldToMain() {
 
 const SMOOTH_VERTEX_LIMIT = 300_000;
 
-function smoothCreaseNormals(geometry: THREE.BufferGeometry, creaseAngleRad: number): THREE.BufferGeometry {
+function smoothCreaseNormals(
+  geometry: THREE.BufferGeometry,
+  creaseAngleRad: number
+): THREE.BufferGeometry {
   const tempGeo = geometry.index ? geometry.toNonIndexed() : geometry.clone();
   const posAttr = tempGeo.attributes.position;
   if (!posAttr) return geometry;
@@ -139,7 +142,9 @@ function parseShapesFromSVG(svgString: string): THREE.Shape[] {
   const loader = new SVGLoader();
   const svgData = loader.parse(svgString);
   const allShapes: THREE.Shape[] = [];
-  const vbMatch = svgString.match(/viewBox\s*=\s*["']\s*([\d.\-]+)\s+([\d.\-]+)\s+([\d.\-]+)\s+([\d.\-]+)/);
+  const vbMatch = svgString.match(
+    /viewBox\s*=\s*["']\s*([\d.\-]+)\s+([\d.\-]+)\s+([\d.\-]+)\s+([\d.\-]+)/
+  );
   const vbW = vbMatch ? parseFloat(vbMatch[3]) : null;
   const vbH = vbMatch ? parseFloat(vbMatch[4]) : null;
 
@@ -182,7 +187,8 @@ function parseShapesFromSVG(svgString: string): THREE.Shape[] {
 
         shape.moveTo(leftSide[0].x, leftSide[0].y);
         for (let i = 1; i < leftSide.length; i++) shape.lineTo(leftSide[i].x, leftSide[i].y);
-        for (let i = rightSide.length - 1; i >= 0; i--) shape.lineTo(rightSide[i].x, rightSide[i].y);
+        for (let i = rightSide.length - 1; i >= 0; i--)
+          shape.lineTo(rightSide[i].x, rightSide[i].y);
         shape.closePath();
         allShapes.push(shape);
       });
@@ -221,7 +227,7 @@ export function useExtrudedGeometry(
   svgString: string,
   depth: number,
   smoothness: number,
-  bevelOpts: BevelOptions = {},
+  bevelOpts: BevelOptions = {}
 ): ExtrudedGeometryResult {
   const [result, setResult] = useState(EMPTY_RESULT);
   const [loading, setLoading] = useState(false);
@@ -233,10 +239,14 @@ export function useExtrudedGeometry(
   useEffect(() => {
     const oldGeos = prevGeosRef.current;
     prevGeosRef.current = result.geometries;
-    return () => { oldGeos.forEach((g) => g.dispose()); };
+    return () => {
+      oldGeos.forEach((g) => g.dispose());
+    };
   }, [result]);
 
-  const cancel = useCallback(() => { cancelRef.current = true; }, []);
+  const cancel = useCallback(() => {
+    cancelRef.current = true;
+  }, []);
 
   useEffect(() => {
     if (!svgString) {
@@ -266,7 +276,11 @@ export function useExtrudedGeometry(
       const maxFlatDim = Math.max(flatSize.x, flatSize.y, 1);
       tempGeo.dispose();
 
-      const { bevelEnabled = true, bevelThickness: userThickness = 0.5, bevelSize: userSize = 0.5 } = bevelOpts;
+      const {
+        bevelEnabled = true,
+        bevelThickness: userThickness = 0.5,
+        bevelSize: userSize = 0.5,
+      } = bevelOpts;
       const complexity = allShapes.length;
       const budget = 600_000;
       const vertsBudgetPerShape = Math.max(Math.floor(budget / Math.max(complexity, 1)), 500);
@@ -276,9 +290,8 @@ export function useExtrudedGeometry(
       const idealBevel = Math.round(4 + smoothness * 8); // More segments for smoothness
       const idealCurve = Math.round(32 + smoothness * 64); // Increased curve subdivisions
       const estimatedVerts = idealBevel * idealCurve * 6;
-      const reductionFactor = estimatedVerts > vertsBudgetPerShape
-        ? Math.sqrt(vertsBudgetPerShape / estimatedVerts)
-        : 1;
+      const reductionFactor =
+        estimatedVerts > vertsBudgetPerShape ? Math.sqrt(vertsBudgetPerShape / estimatedVerts) : 1;
 
       const bevelSegments = Math.max(2, Math.min(Math.round(idealBevel * reductionFactor), 64));
       const curveSegments = Math.max(8, Math.min(Math.round(idealCurve * reductionFactor), 128));
@@ -357,8 +370,17 @@ export function useExtrudedGeometry(
       setLoading(false);
     })();
 
-    return () => { cancelRef.current = true; };
-  }, [svgString, depth, smoothness, bevelOpts.bevelEnabled, bevelOpts.bevelThickness, bevelOpts.bevelSize]);
+    return () => {
+      cancelRef.current = true;
+    };
+  }, [
+    svgString,
+    depth,
+    smoothness,
+    bevelOpts.bevelEnabled,
+    bevelOpts.bevelThickness,
+    bevelOpts.bevelSize,
+  ]);
 
   return { ...result, loading, progress, cancel };
 }

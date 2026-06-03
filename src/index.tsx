@@ -78,14 +78,13 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 });
 
-
 // Initialize HTML lang attribute based on user's locale preference
 const initialLocale = getCurrentLocale();
 document.documentElement.lang = initialLocale === 'pt-BR' ? 'pt-BR' : 'en-US';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
+  throw new Error('Could not find root element to mount to');
 }
 
 const routeErrorElement = (
@@ -112,7 +111,11 @@ const routeErrorElement = (
 const router = createBrowserRouter([
   {
     path: '/plugin',
-    element: <Suspense fallback={null}><PluginPage /></Suspense>,
+    element: (
+      <Suspense fallback={null}>
+        <PluginPage />
+      </Suspense>
+    ),
   },
   {
     path: '/*',

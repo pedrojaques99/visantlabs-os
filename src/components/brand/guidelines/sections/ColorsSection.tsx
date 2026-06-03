@@ -22,21 +22,30 @@ interface ColorsSectionProps {
 }
 
 interface ContrastPair {
-  fg: string; fgName: string; bg: string; bgName: string;
-  ratio: number; wcagAA: boolean; wcagAAA: boolean; largeAA: boolean;
+  fg: string;
+  fgName: string;
+  bg: string;
+  bgName: string;
+  ratio: number;
+  wcagAA: boolean;
+  wcagAAA: boolean;
+  largeAA: boolean;
 }
 
 export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdate, span }) => {
   const local = guideline.colors || [];
   const [showWCAG, setShowWCAG] = useState(false);
 
-  const persist = useCallback((colors: typeof local) => {
-    const withCmyk = colors.map(c => ({ ...c, cmyk: hexToCmyk(c.hex) }));
-    onUpdate({ colors: withCmyk });
-  }, [onUpdate]);
+  const persist = useCallback(
+    (colors: typeof local) => {
+      const withCmyk = colors.map((c) => ({ ...c, cmyk: hexToCmyk(c.hex) }));
+      onUpdate({ colors: withCmyk });
+    },
+    [onUpdate]
+  );
 
-  const updateColor = (i: number, patch: Partial<typeof local[0]>) => {
-    const next = local.map((c, idx) => idx === i ? { ...c, ...patch } : c);
+  const updateColor = (i: number, patch: Partial<(typeof local)[0]>) => {
+    const next = local.map((c, idx) => (idx === i ? { ...c, ...patch } : c));
     persist(next);
   };
 
@@ -57,19 +66,61 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       for (let j = i + 1; j < local.length; j++) {
         const ratio = getContrastRatioPublic(local[i].hex, local[j].hex);
         const c = checkWCAGCompliance(ratio);
-        pairs.push({ fg: local[i].hex, fgName: local[i].name || `Color ${i + 1}`, bg: local[j].hex, bgName: local[j].name || `Color ${j + 1}`, ratio, wcagAA: c.normalAA, wcagAAA: c.normalAAA, largeAA: c.largeAA });
+        pairs.push({
+          fg: local[i].hex,
+          fgName: local[i].name || `Color ${i + 1}`,
+          bg: local[j].hex,
+          bgName: local[j].name || `Color ${j + 1}`,
+          ratio,
+          wcagAA: c.normalAA,
+          wcagAAA: c.normalAAA,
+          largeAA: c.largeAA,
+        });
       }
     }
     return pairs.sort((a, b) => b.ratio - a.ratio);
   }, [local]);
 
   const copyAll = (format: 'json' | 'css' | 'tailwind' | 'cmyk') => {
-    if (!local.length) { toast.error('No colors to copy'); return; }
+    if (!local.length) {
+      toast.error('No colors to copy');
+      return;
+    }
     let content = '';
-    if (format === 'json') content = JSON.stringify(local.map(c => ({ name: c.name, hex: c.hex })), null, 2);
-    else if (format === 'css') content = local.map(c => `--color-${(c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}: ${c.hex};`).join('\n');
-    else if (format === 'tailwind') { const o: Record<string, string> = {}; local.forEach(c => { o[(c.name || 'color').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')] = c.hex; }); content = JSON.stringify(o, null, 2); }
-    else content = local.map(c => { const cm = c.cmyk || hexToCmyk(c.hex); return `${c.name || 'Color'}: C${cm.c} M${cm.m} Y${cm.y} K${cm.k}`; }).join('\n');
+    if (format === 'json')
+      content = JSON.stringify(
+        local.map((c) => ({ name: c.name, hex: c.hex })),
+        null,
+        2
+      );
+    else if (format === 'css')
+      content = local
+        .map(
+          (c) =>
+            `--color-${(c.name || 'color')
+              .toLowerCase()
+              .replace(/\s+/g, '-')
+              .replace(/[^a-z0-9-]/g, '')}: ${c.hex};`
+        )
+        .join('\n');
+    else if (format === 'tailwind') {
+      const o: Record<string, string> = {};
+      local.forEach((c) => {
+        o[
+          (c.name || 'color')
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+        ] = c.hex;
+      });
+      content = JSON.stringify(o, null, 2);
+    } else
+      content = local
+        .map((c) => {
+          const cm = c.cmyk || hexToCmyk(c.hex);
+          return `${c.name || 'Color'}: C${cm.c} M${cm.m} Y${cm.y} K${cm.k}`;
+        })
+        .join('\n');
     copyToClipboard(content);
     toast.success(`Copied ${local.length} colors as ${format.toUpperCase()}`);
   };
@@ -80,10 +131,16 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       icon={<Palette size={14} />}
       title="Colors"
       span={span as any}
-      actions={(
+      actions={
         <div className="flex items-center gap-1">
           {local.length >= 2 && (
-            <Button variant="action" size="icon-sm" onClick={() => setShowWCAG(!showWCAG)} title="WCAG Contrast" aria-label="Toggle WCAG matrix">
+            <Button
+              variant="action"
+              size="icon-sm"
+              onClick={() => setShowWCAG(!showWCAG)}
+              title="WCAG Contrast"
+              aria-label="Toggle WCAG matrix"
+            >
               <ShieldCheck size={12} />
             </Button>
           )}
@@ -95,8 +152,10 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[120px]">
-                {(['json', 'css', 'tailwind', 'cmyk'] as const).map(f => (
-                  <DropdownMenuItem key={f} onClick={() => copyAll(f)} className="text-xs">{f === 'css' ? 'CSS Variables' : f.toUpperCase()}</DropdownMenuItem>
+                {(['json', 'css', 'tailwind', 'cmyk'] as const).map((f) => (
+                  <DropdownMenuItem key={f} onClick={() => copyAll(f)} className="text-xs">
+                    {f === 'css' ? 'CSS Variables' : f.toUpperCase()}
+                  </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -105,7 +164,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             <Plus size={12} />
           </Button>
         </div>
-      )}
+      }
     >
       <div className="space-y-1.5 py-1">
         {local.length === 0 && (
@@ -115,7 +174,10 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
           <div key={i} className="flex items-center gap-3 group/color">
             {/* Color swatch + picker */}
             <div className="relative w-8 h-8 shrink-0 cursor-pointer" title="Click to change color">
-              <div className="w-full h-full rounded-md border border-white/10" style={{ backgroundColor: c.hex }} />
+              <div
+                className="w-full h-full rounded-md border border-white/10"
+                style={{ backgroundColor: c.hex }}
+              />
               <input
                 type="color"
                 value={c.hex}
@@ -133,16 +195,32 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             {/* Hex */}
             <span
               className="text-[10px] font-mono text-neutral-500 w-16 text-right cursor-pointer hover:text-neutral-300 transition-colors"
-              onClick={() => { copyToClipboard(c.hex); toast.success(`Copied ${c.hex}`); }}
+              onClick={() => {
+                copyToClipboard(c.hex);
+                toast.success(`Copied ${c.hex}`);
+              }}
               title="Copy hex"
             >
               {c.hex}
             </span>
             {/* CMYK */}
             <span className="text-[10px] font-mono text-neutral-700 w-28 text-right hidden sm:block">
-              {(() => { try { const cm = c.cmyk || hexToCmyk(c.hex); return `C${cm.c} M${cm.m} Y${cm.y} K${cm.k}`; } catch { return ''; } })()}
+              {(() => {
+                try {
+                  const cm = c.cmyk || hexToCmyk(c.hex);
+                  return `C${cm.c} M${cm.m} Y${cm.y} K${cm.k}`;
+                } catch {
+                  return '';
+                }
+              })()}
             </span>
-            <Button variant="danger" size="icon-sm" className="opacity-0 group-hover/color:opacity-100 transition-all shrink-0" onClick={() => removeColor(i)} aria-label="Remove color">
+            <Button
+              variant="danger"
+              size="icon-sm"
+              className="opacity-0 group-hover/color:opacity-100 transition-all shrink-0"
+              onClick={() => removeColor(i)}
+              aria-label="Remove color"
+            >
               <Trash2 size={11} />
             </Button>
           </div>
@@ -152,19 +230,55 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       {/* WCAG panel */}
       <AnimatePresence>
         {showWCAG && contrastMatrix.length > 0 && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
             <div className="mt-4 pt-4 border-t border-neutral-800 space-y-2">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-neutral-500">WCAG Contrast</span>
-                <Button variant="action" size="icon-sm" onClick={() => setShowWCAG(false)} aria-label="Close"><X size={10} /></Button>
+                <Button
+                  variant="action"
+                  size="icon-sm"
+                  onClick={() => setShowWCAG(false)}
+                  aria-label="Close"
+                >
+                  <X size={10} />
+                </Button>
               </div>
               {contrastMatrix.map((pair, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 rounded-md bg-white/[0.03] border border-white/[0.03]">
-                  <div className="w-5 h-5 rounded border border-white/10 shrink-0" style={{ backgroundColor: pair.fg }} />
-                  <div className="w-5 h-5 rounded border border-white/10 shrink-0" style={{ backgroundColor: pair.bg }} />
-                  <span className="text-[10px] font-mono text-neutral-400 flex-1 truncate">{pair.fgName} / {pair.bgName}</span>
-                  <span className="text-[10px] font-mono text-neutral-300 tabular-nums">{pair.ratio.toFixed(2)}:1</span>
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pair.wcagAAA ? 'bg-green-500/20 text-green-400' : pair.wcagAA ? 'bg-white/10 text-neutral-300' : pair.largeAA ? 'bg-amber-500/20 text-amber-400' : 'bg-destructive/20 text-destructive'}`}>
+                <div
+                  key={i}
+                  className="flex items-center gap-2 p-2 rounded-md bg-white/[0.03] border border-white/[0.03]"
+                >
+                  <div
+                    className="w-5 h-5 rounded border border-white/10 shrink-0"
+                    style={{ backgroundColor: pair.fg }}
+                  />
+                  <div
+                    className="w-5 h-5 rounded border border-white/10 shrink-0"
+                    style={{ backgroundColor: pair.bg }}
+                  />
+                  <span className="text-[10px] font-mono text-neutral-400 flex-1 truncate">
+                    {pair.fgName} / {pair.bgName}
+                  </span>
+                  <span className="text-[10px] font-mono text-neutral-300 tabular-nums">
+                    {pair.ratio.toFixed(2)}:1
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      pair.wcagAAA
+                        ? 'bg-green-500/20 text-green-400'
+                        : pair.wcagAA
+                        ? 'bg-white/10 text-neutral-300'
+                        : pair.largeAA
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : 'bg-destructive/20 text-destructive'
+                    }`}
+                  >
                     {pair.wcagAAA ? 'AAA' : pair.wcagAA ? 'AA' : pair.largeAA ? 'AA Lg' : 'Fail'}
                   </span>
                 </div>

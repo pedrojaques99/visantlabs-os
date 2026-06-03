@@ -2,9 +2,7 @@ import React from 'react';
 import { Key, CreditCard } from 'lucide-react';
 import { Badge } from './badge';
 import { cn } from '@/lib/utils';
-import {
-  Tooltip
-} from './Tooltip';
+import { Tooltip } from './Tooltip';
 
 interface ByokBadgeProps {
   active: boolean;
@@ -46,23 +44,23 @@ export function ByokBadge({ active, showTooltip = true, className }: ByokBadgePr
   }
 
   return (
-    <Tooltip 
+    <Tooltip
       position="bottom"
       content={
         active ? (
           <div className="space-y-1">
             <p className="font-medium text-green-400">BYOK Mode Active</p>
             <p className="text-xs text-neutral-400">
-              Using your own API key. Charges go directly to Google.
-              No credits deducted from Visant.
+              Using your own API key. Charges go directly to Google. No credits deducted from
+              Visant.
             </p>
           </div>
         ) : (
           <div className="space-y-1">
             <p className="font-medium">Using Platform Credits</p>
             <p className="text-xs text-neutral-400">
-              Each generation deducts credits from your account.
-              Add your own API key in Settings for unlimited generations.
+              Each generation deducts credits from your account. Add your own API key in Settings
+              for unlimited generations.
             </p>
           </div>
         )

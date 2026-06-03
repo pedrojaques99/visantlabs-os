@@ -1,5 +1,9 @@
 import AbacatePayModule from 'abacatepay-nodejs-sdk';
-import { getCreditPackage, getAbacateBillId, getCreditsByAmount } from '../../src/utils/creditPackages.js';
+import {
+  getCreditPackage,
+  getAbacateBillId,
+  getCreditsByAmount,
+} from '../../src/utils/creditPackages.js';
 import { ObjectId } from 'mongodb';
 import { sendCreditsPurchasedEmail, isEmailConfigured } from './emailService.js';
 import { validateSafeId } from '../utils/securityValidation.js';
@@ -8,7 +12,9 @@ import { validateSafeId } from '../utils/securityValidation.js';
 const ABACATEPAY_API_KEY = process.env.ABACATEPAY_API_KEY || process.env.ABACATE_API_KEY || '';
 
 if (!ABACATEPAY_API_KEY) {
-  console.warn('⚠️ ABACATEPAY_API_KEY or ABACATE_API_KEY is not configured. AbacatePay functionality will not work.');
+  console.warn(
+    '⚠️ ABACATEPAY_API_KEY or ABACATE_API_KEY is not configured. AbacatePay functionality will not work.'
+  );
 }
 
 // The SDK exports the function as default, handle both CommonJS and ES module formats
@@ -72,7 +78,9 @@ export const abacatepayService = {
    */
   async createPayment(data: CreateAbacatePaymentRequest): Promise<AbacatePaymentResponse> {
     if (!abacate) {
-      throw new Error('AbacatePay is not configured. Please set ABACATEPAY_API_KEY in your environment variables.');
+      throw new Error(
+        'AbacatePay is not configured. Please set ABACATEPAY_API_KEY in your environment variables.'
+      );
     }
 
     // Verify SDK is properly initialized
@@ -83,13 +91,18 @@ export const abacatepayService = {
         hasCreate: !!abacate.billing?.create,
         abacateKeys: abacate ? Object.keys(abacate) : [],
       });
-      throw new Error('AbacatePay SDK billing API is not available. Please check SDK initialization.');
+      throw new Error(
+        'AbacatePay SDK billing API is not available. Please check SDK initialization.'
+      );
     }
 
     // Helper function to get the first valid frontend URL (handles comma-separated URLs)
     const getFrontendUrl = (): string => {
       const rawUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      const urls = rawUrl.split(',').map(url => url.trim()).filter(url => url.length > 0);
+      const urls = rawUrl
+        .split(',')
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0);
       const firstUrl = urls[0] || 'http://localhost:3000';
 
       try {
@@ -174,7 +187,11 @@ export const abacatepayService = {
       }
 
       console.log('📤 AbacatePay billing request:', JSON.stringify(billingRequest, null, 2));
-      console.log('🔑 AbacatePay API Key configured:', !!ABACATEPAY_API_KEY, ABACATEPAY_API_KEY ? `${ABACATEPAY_API_KEY.substring(0, 10)}...` : 'NOT SET');
+      console.log(
+        '🔑 AbacatePay API Key configured:',
+        !!ABACATEPAY_API_KEY,
+        ABACATEPAY_API_KEY ? `${ABACATEPAY_API_KEY.substring(0, 10)}...` : 'NOT SET'
+      );
 
       let billing;
       try {
@@ -193,12 +210,17 @@ export const abacatepayService = {
           createPromise = Promise.resolve(abacate.billing.create(billingRequest));
         } catch (syncError: any) {
           console.error('❌ Synchronous error calling abacate.billing.create():', syncError);
-          throw new Error(`AbacatePay SDK error: ${syncError?.message || 'Unknown synchronous error'}`);
+          throw new Error(
+            `AbacatePay SDK error: ${syncError?.message || 'Unknown synchronous error'}`
+          );
         }
 
         // Add timeout to detect if the promise hangs
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('AbacatePay API call timed out after 30 seconds')), 30000);
+          setTimeout(
+            () => reject(new Error('AbacatePay API call timed out after 30 seconds')),
+            30000
+          );
         });
 
         billing = await Promise.race([createPromise, timeoutPromise]);
@@ -254,7 +276,11 @@ export const abacatepayService = {
           // Check if response has only 'error' property with undefined value
           // This indicates the SDK returned an error object but didn't populate it
           // This MUST be checked BEFORE we check for error !== null/undefined
-          if (responseKeys.length === 1 && responseKeys[0] === 'error' && billing.error === undefined) {
+          if (
+            responseKeys.length === 1 &&
+            responseKeys[0] === 'error' &&
+            billing.error === undefined
+          ) {
             console.error('❌ AbacatePay SDK returned error object with undefined error property');
             console.error('❌ This usually indicates:');
             console.error('   1. API authentication issue (check API key)');
@@ -280,7 +306,13 @@ export const abacatepayService = {
                 if (linkResponse && typeof linkResponse === 'object') {
                   if ('error' in linkResponse) {
                     if (linkResponse.error !== null && linkResponse.error !== undefined) {
-                      throw new Error(`AbacatePay createLink error: ${typeof linkResponse.error === 'string' ? linkResponse.error : JSON.stringify(linkResponse.error)}`);
+                      throw new Error(
+                        `AbacatePay createLink error: ${
+                          typeof linkResponse.error === 'string'
+                            ? linkResponse.error
+                            : JSON.stringify(linkResponse.error)
+                        }`
+                      );
                     }
                     if (linkResponse.data) {
                       billing = linkResponse.data;
@@ -292,7 +324,9 @@ export const abacatepayService = {
                   } else if (!('error' in linkResponse)) {
                     // Direct response without error wrapper
                     billing = linkResponse;
-                    console.log('✅ Successfully created billing using createLink fallback (direct)');
+                    console.log(
+                      '✅ Successfully created billing using createLink fallback (direct)'
+                    );
                   } else {
                     throw new Error('createLink returned unexpected response structure');
                   }
@@ -336,8 +370,17 @@ export const abacatepayService = {
                     if (pixQrCodeResponse && typeof pixQrCodeResponse === 'object') {
                       let pixData = pixQrCodeResponse;
                       if ('error' in pixQrCodeResponse) {
-                        if (pixQrCodeResponse.error !== null && pixQrCodeResponse.error !== undefined) {
-                          throw new Error(`AbacatePay pixQrCode error: ${typeof pixQrCodeResponse.error === 'string' ? pixQrCodeResponse.error : JSON.stringify(pixQrCodeResponse.error)}`);
+                        if (
+                          pixQrCodeResponse.error !== null &&
+                          pixQrCodeResponse.error !== undefined
+                        ) {
+                          throw new Error(
+                            `AbacatePay pixQrCode error: ${
+                              typeof pixQrCodeResponse.error === 'string'
+                                ? pixQrCodeResponse.error
+                                : JSON.stringify(pixQrCodeResponse.error)
+                            }`
+                          );
                         }
                         if (pixQrCodeResponse.data) {
                           pixData = pixQrCodeResponse.data;
@@ -365,7 +408,12 @@ export const abacatepayService = {
             }
 
             // If fallback didn't work, try direct PIX QRCode endpoint as final fallback (simpler, doesn't require billing)
-            if (!billing || (typeof billing === 'object' && Object.keys(billing).length === 1 && billing.error === undefined)) {
+            if (
+              !billing ||
+              (typeof billing === 'object' &&
+                Object.keys(billing).length === 1 &&
+                billing.error === undefined)
+            ) {
               console.log('🔄 Attempting direct PIX QRCode endpoint as final fallback...');
               try {
                 // Use global fetch (available in Node.js 18+)
@@ -395,13 +443,16 @@ export const abacatepayService = {
                   };
                 }
 
-                console.log('📤 Direct PIX QRCode request:', JSON.stringify(pixQrCodeRequest, null, 2));
+                console.log(
+                  '📤 Direct PIX QRCode request:',
+                  JSON.stringify(pixQrCodeRequest, null, 2)
+                );
 
                 const pixResponse = await fetch(pixQrCodeUrl, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${ABACATEPAY_API_KEY}`,
+                    Authorization: `Bearer ${ABACATEPAY_API_KEY}`,
                   },
                   body: JSON.stringify(pixQrCodeRequest),
                 });
@@ -437,9 +488,15 @@ export const abacatepayService = {
             }
 
             // If we still don't have valid billing, throw detailed error
-            if (!billing || (typeof billing === 'object' && Object.keys(billing).length === 1 && billing.error === undefined)) {
+            if (
+              !billing ||
+              (typeof billing === 'object' &&
+                Object.keys(billing).length === 1 &&
+                billing.error === undefined)
+            ) {
               const customerEmail = billingRequest.customer?.email || data.customerEmail || 'N/A';
-              const errorMessage = 'AbacatePay SDK returned an error response with no error details. ' +
+              const errorMessage =
+                'AbacatePay SDK returned an error response with no error details. ' +
                 'This typically indicates:\n' +
                 '1. Invalid or expired API key (verify in AbacatePay dashboard)\n' +
                 '2. Product ID does not exist or is incorrect in your AbacatePay dashboard\n' +
@@ -452,7 +509,9 @@ export const abacatepayService = {
                 `Product ID: ${products[0]?.productId || 'N/A'}\n` +
                 `Customer Email: ${customerEmail}\n` +
                 `Has Customer Object: ${!!billingRequest.customer}\n` +
-                `Customer Fields: ${billingRequest.customer ? Object.keys(billingRequest.customer).join(', ') : 'none'}\n` +
+                `Customer Fields: ${
+                  billingRequest.customer ? Object.keys(billingRequest.customer).join(', ') : 'none'
+                }\n` +
                 `Amount: ${packagePriceInCents} cents (${packagePriceInCents / 100} BRL)\n\n` +
                 `Troubleshooting:\n` +
                 `- Check AbacatePay dashboard for API key status\n` +
@@ -543,14 +602,15 @@ export const abacatepayService = {
       // Check if response is empty or invalid
       if (!billing) {
         console.error('❌ AbacatePay returned null/undefined response');
-        throw new Error('AbacatePay returned an empty response. Please check your API key and configuration.');
+        throw new Error(
+          'AbacatePay returned an empty response. Please check your API key and configuration.'
+        );
       }
 
       // Check if response is an empty object or has only error: undefined
       const responseKeys = Object.keys(billing);
-      const hasOnlyErrorUndefined = responseKeys.length === 1 &&
-        responseKeys[0] === 'error' &&
-        billing.error === undefined;
+      const hasOnlyErrorUndefined =
+        responseKeys.length === 1 && responseKeys[0] === 'error' && billing.error === undefined;
       const isEmptyObject = responseKeys.length === 0 || stringifiedResponse === '{}';
 
       if (isEmptyObject || hasOnlyErrorUndefined) {
@@ -577,7 +637,13 @@ export const abacatepayService = {
             // Handle response structure
             if (linkResponse && typeof linkResponse === 'object' && 'error' in linkResponse) {
               if (linkResponse.error !== null && linkResponse.error !== undefined) {
-                throw new Error(`AbacatePay createLink error: ${typeof linkResponse.error === 'string' ? linkResponse.error : JSON.stringify(linkResponse.error)}`);
+                throw new Error(
+                  `AbacatePay createLink error: ${
+                    typeof linkResponse.error === 'string'
+                      ? linkResponse.error
+                      : JSON.stringify(linkResponse.error)
+                  }`
+                );
               }
               if (linkResponse.data) {
                 billing = linkResponse.data;
@@ -596,8 +662,14 @@ export const abacatepayService = {
         // If we still don't have valid billing data, throw error
         const finalResponseKeys = billing ? Object.keys(billing) : [];
         const finalStringified = billing ? JSON.stringify(billing) : '{}';
-        if (!billing || finalResponseKeys.length === 0 || finalStringified === '{}' ||
-          (finalResponseKeys.length === 1 && finalResponseKeys[0] === 'error' && billing.error === undefined)) {
+        if (
+          !billing ||
+          finalResponseKeys.length === 0 ||
+          finalStringified === '{}' ||
+          (finalResponseKeys.length === 1 &&
+            finalResponseKeys[0] === 'error' &&
+            billing.error === undefined)
+        ) {
           // Validate API key format (AbacatePay keys typically start with abc_)
           const apiKeyPrefix = ABACATEPAY_API_KEY.substring(0, 4);
           const apiKeyValidFormat = ABACATEPAY_API_KEY.startsWith('abc_');
@@ -606,7 +678,8 @@ export const abacatepayService = {
           if (!apiKeyValidFormat) {
             errorMessage += `⚠️ Invalid API key format (expected to start with 'abc_', got '${apiKeyPrefix}...')\n`;
           }
-          errorMessage += '1. Your API key is correct and active (check ABACATEPAY_API_KEY or ABACATEPAY_API_KEY)\n' +
+          errorMessage +=
+            '1. Your API key is correct and active (check ABACATEPAY_API_KEY or ABACATEPAY_API_KEY)\n' +
             '2. The product ID exists in your AbacatePay dashboard\n' +
             '3. Your network connection is working\n' +
             '4. Check AbacatePay dashboard for any account issues\n' +
@@ -640,7 +713,13 @@ export const abacatepayService = {
       // Extract PIX details from the billing response
       // Handle both direct response and nested data structure
       // Try multiple possible structures
-      const billingData = billing?.data || billing?.billing || billing?.result || billing?.response || billing?.body || billing;
+      const billingData =
+        billing?.data ||
+        billing?.billing ||
+        billing?.result ||
+        billing?.response ||
+        billing?.body ||
+        billing;
       const billingId = billingData?.id || billing?.id || possibleIdPaths[0];
 
       console.log('🔍 Extracting billing data:', {
@@ -660,7 +739,9 @@ export const abacatepayService = {
           keys: billing ? Object.keys(billing) : [],
           sample: billing ? JSON.stringify(billing, null, 2).substring(0, 500) : 'null',
         });
-        throw new Error('AbacatePay did not return a valid billing ID. Please check the API response structure.');
+        throw new Error(
+          'AbacatePay did not return a valid billing ID. Please check the API response structure.'
+        );
       }
 
       let qrCode: string | undefined;
@@ -708,7 +789,10 @@ export const abacatepayService = {
       // Also check if there's a separate pixQrCode method (according to docs: POST /pix-qrcode)
       // Try to get QR code if not found in initial response
       if ((!pixCode || !qrCode) && abacate.pixQrCode && billingId) {
-        console.log('🔍 QR code not found in initial response, trying pixQrCode method with billingId:', billingId);
+        console.log(
+          '🔍 QR code not found in initial response, trying pixQrCode method with billingId:',
+          billingId
+        );
         try {
           let qrCodeResponse = await abacate.pixQrCode(billingId);
           console.log('📦 pixQrCode response:', qrCodeResponse);
@@ -724,18 +808,27 @@ export const abacatepayService = {
 
           if (qrCodeResponse) {
             if (!qrCode) {
-              qrCode = qrCodeResponse.qrCode || qrCodeResponse.qrcode || qrCodeResponse.brCodeBase64;
+              qrCode =
+                qrCodeResponse.qrCode || qrCodeResponse.qrcode || qrCodeResponse.brCodeBase64;
             }
             if (!pixCode) {
-              pixCode = qrCodeResponse.code || qrCodeResponse.pixCode || qrCodeResponse.pix_code || qrCodeResponse.brCode;
+              pixCode =
+                qrCodeResponse.code ||
+                qrCodeResponse.pixCode ||
+                qrCodeResponse.pix_code ||
+                qrCodeResponse.brCode;
             }
             // Update expiration if provided
             if (qrCodeResponse.expiresAt && !expiresAt) {
-              expiresAt = typeof qrCodeResponse.expiresAt === 'string'
-                ? qrCodeResponse.expiresAt
-                : new Date(qrCodeResponse.expiresAt).toISOString();
+              expiresAt =
+                typeof qrCodeResponse.expiresAt === 'string'
+                  ? qrCodeResponse.expiresAt
+                  : new Date(qrCodeResponse.expiresAt).toISOString();
             }
-            console.log('✅ Got PIX from pixQrCode method:', { hasQrCode: !!qrCode, hasPixCode: !!pixCode });
+            console.log('✅ Got PIX from pixQrCode method:', {
+              hasQrCode: !!qrCode,
+              hasPixCode: !!pixCode,
+            });
           }
         } catch (qrError: any) {
           console.warn('⚠️ Could not get PIX QR code via pixQrCode method:', qrError.message);
@@ -753,9 +846,10 @@ export const abacatepayService = {
       // Check expiration - default to 1 hour if not provided
       const expiresAtValue = billingData?.expiresAt || billing?.expiresAt;
       if (expiresAtValue) {
-        expiresAt = typeof expiresAtValue === 'string'
-          ? expiresAtValue
-          : new Date(expiresAtValue).toISOString();
+        expiresAt =
+          typeof expiresAtValue === 'string'
+            ? expiresAtValue
+            : new Date(expiresAtValue).toISOString();
       } else {
         // Default expiration: 1 hour from now (PIX payments typically expire in 1 hour)
         const defaultExpiration = new Date();
@@ -781,7 +875,8 @@ export const abacatepayService = {
         console.log('✅ Constructed AbacatePay payment URL:', paymentUrl);
       } else {
         // If no valid billId, try to extract from existing URL if it's already in correct format
-        const existingUrl = billingData?.url || billing?.url || billingData?.checkoutUrl || billing?.checkout_url;
+        const existingUrl =
+          billingData?.url || billing?.url || billingData?.checkoutUrl || billing?.checkout_url;
         if (existingUrl && existingUrl.includes('abacatepay.com/pay/')) {
           paymentUrl = existingUrl;
         } else {
@@ -793,7 +888,12 @@ export const abacatepayService = {
       const response: AbacatePaymentResponse = {
         id: billingId,
         url: paymentUrl,
-        amount: billingData?.amount || billing?.amount || billingData?.total || billing?.total || packagePriceInCents,
+        amount:
+          billingData?.amount ||
+          billing?.amount ||
+          billingData?.total ||
+          billing?.total ||
+          packagePriceInCents,
         status: (billingData?.status || billing?.status || 'PENDING').toUpperCase(),
         methods: billingData?.methods || billing?.methods || billingData?.paymentMethods || ['PIX'],
         qrCode,
@@ -849,12 +949,14 @@ export const abacatepayService = {
         // Use direct API endpoint to get PIX QRCode status
         console.log('🔍 Detected PIX QRCode ID, using direct endpoint...');
         try {
-          const pixQrCodeUrl = `https://api.abacatepay.com/v1/pixQrCode/${encodeURIComponent(billId)}`;
+          const pixQrCodeUrl = `https://api.abacatepay.com/v1/pixQrCode/${encodeURIComponent(
+            billId
+          )}`;
           const pixResponse = await fetch(pixQrCodeUrl, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${ABACATEPAY_API_KEY}`,
+              Authorization: `Bearer ${ABACATEPAY_API_KEY}`,
             },
           });
 
@@ -876,10 +978,14 @@ export const abacatepayService = {
               qrCode: pixData.brCodeBase64 || pixData.qrCode,
               pixCode: pixData.brCode || pixData.code || pixData.pixCode,
               expiresAt: pixData.expiresAt
-                ? (typeof pixData.expiresAt === 'string' ? pixData.expiresAt : new Date(pixData.expiresAt).toISOString())
+                ? typeof pixData.expiresAt === 'string'
+                  ? pixData.expiresAt
+                  : new Date(pixData.expiresAt).toISOString()
                 : undefined,
               paidAt: pixData.paidAt
-                ? (typeof pixData.paidAt === 'string' ? pixData.paidAt : new Date(pixData.paidAt).toISOString())
+                ? typeof pixData.paidAt === 'string'
+                  ? pixData.paidAt
+                  : new Date(pixData.paidAt).toISOString()
                 : undefined,
             };
           } else {
@@ -906,7 +1012,13 @@ export const abacatepayService = {
         // Handle AbacatePay response structure: { data: {...}, error: null }
         if (listResponse && typeof listResponse === 'object' && 'error' in listResponse) {
           if (listResponse.error !== null && listResponse.error !== undefined) {
-            throw new Error(`AbacatePay API error: ${typeof listResponse.error === 'string' ? listResponse.error : JSON.stringify(listResponse.error)}`);
+            throw new Error(
+              `AbacatePay API error: ${
+                typeof listResponse.error === 'string'
+                  ? listResponse.error
+                  : JSON.stringify(listResponse.error)
+              }`
+            );
           }
           // Extract data from response structure
           if (listResponse.data !== null && listResponse.data !== undefined) {
@@ -914,7 +1026,9 @@ export const abacatepayService = {
           }
         }
 
-        const billings = Array.isArray(listResponse) ? listResponse : (listResponse?.data || [listResponse]).filter(Boolean);
+        const billings = Array.isArray(listResponse)
+          ? listResponse
+          : (listResponse?.data || [listResponse]).filter(Boolean);
         const billing = billings[0];
 
         if (billing) {
@@ -935,7 +1049,11 @@ export const abacatepayService = {
                 let qrCodeResponse = await abacate.pixQrCode(billId);
 
                 // Handle AbacatePay response structure
-                if (qrCodeResponse && typeof qrCodeResponse === 'object' && 'error' in qrCodeResponse) {
+                if (
+                  qrCodeResponse &&
+                  typeof qrCodeResponse === 'object' &&
+                  'error' in qrCodeResponse
+                ) {
                   if (qrCodeResponse.error !== null && qrCodeResponse.error !== undefined) {
                     console.warn('⚠️ AbacatePay pixQrCode returned error:', qrCodeResponse.error);
                   } else if (qrCodeResponse.data !== null && qrCodeResponse.data !== undefined) {
@@ -945,7 +1063,8 @@ export const abacatepayService = {
 
                 if (qrCodeResponse) {
                   qrCode = qrCodeResponse.qrCode || qrCodeResponse.qrcode;
-                  pixCode = qrCodeResponse.code || qrCodeResponse.pixCode || qrCodeResponse.pix_code;
+                  pixCode =
+                    qrCodeResponse.code || qrCodeResponse.pixCode || qrCodeResponse.pix_code;
                 }
               } catch (qrError: any) {
                 console.warn('⚠️ Could not get PIX QR code:', qrError.message);
@@ -960,10 +1079,14 @@ export const abacatepayService = {
             qrCode,
             pixCode,
             expiresAt: billing.expiresAt
-              ? (typeof billing.expiresAt === 'string' ? billing.expiresAt : new Date(billing.expiresAt).toISOString())
+              ? typeof billing.expiresAt === 'string'
+                ? billing.expiresAt
+                : new Date(billing.expiresAt).toISOString()
               : undefined,
             paidAt: billing.paidAt
-              ? (typeof billing.paidAt === 'string' ? billing.paidAt : new Date(billing.paidAt).toISOString())
+              ? typeof billing.paidAt === 'string'
+                ? billing.paidAt
+                : new Date(billing.paidAt).toISOString()
               : undefined,
           };
         }
@@ -1070,13 +1193,17 @@ export const abacatepayService = {
 
           // 2. Fallback to payment record
           if (!user && payment && payment.userId) {
-            userId = payment.userId instanceof ObjectId ? payment.userId : new ObjectId(payment.userId);
+            userId =
+              payment.userId instanceof ObjectId ? payment.userId : new ObjectId(payment.userId);
             user = await db.collection('users').findOne({ _id: userId });
             if (user) console.log('👤 Found user by payment record userId');
           }
 
           // 3. Fallback to email from customer data
-          const customerEmail = data?.customer?.email || data?.billing?.customer?.email || data?.pixQrCode?.customer?.email;
+          const customerEmail =
+            data?.customer?.email ||
+            data?.billing?.customer?.email ||
+            data?.pixQrCode?.customer?.email;
           if (!user && customerEmail) {
             user = await db.collection('users').findOne({ email: customerEmail });
             if (user) {
@@ -1090,7 +1217,7 @@ export const abacatepayService = {
               billId,
               metadataUserId,
               paymentUserId: payment?.userId,
-              email: customerEmail
+              email: customerEmail,
             });
             return { success: false, message: 'User not found' };
           }
@@ -1106,7 +1233,9 @@ export const abacatepayService = {
             { _id: userId },
             {
               $inc: { totalCreditsEarned: credits },
-              ...(abacateCustomerId && !user.abacateCustomerId ? { $set: { abacateCustomerId } } : {}),
+              ...(abacateCustomerId && !user.abacateCustomerId
+                ? { $set: { abacateCustomerId } }
+                : {}),
             }
           );
 
@@ -1147,16 +1276,13 @@ export const abacatepayService = {
             }
 
             // Record transaction
-            const recordTransaction = async (
-              db: any,
-              transaction: any
-            ) => {
+            const recordTransaction = async (db: any, transaction: any) => {
               try {
                 const now = new Date();
                 const payload = {
                   userId: transaction.userId,
                   type: transaction.type,
-                  status: (transaction.status || 'pending'),
+                  status: transaction.status || 'pending',
                   credits: transaction.credits,
                   amount: transaction.amount ?? 0,
                   currency: (transaction.currency || 'USD').toUpperCase(),
@@ -1170,7 +1296,10 @@ export const abacatepayService = {
 
                 await db.collection('transactions').insertOne(payload);
               } catch (transactionError: any) {
-                console.error('❌ Failed to record transaction in webhook service:', transactionError.message);
+                console.error(
+                  '❌ Failed to record transaction in webhook service:',
+                  transactionError.message
+                );
               }
             };
 
@@ -1193,7 +1322,8 @@ export const abacatepayService = {
                 // Get updated user to calculate total credits
                 const updatedUser = await db.collection('users').findOne({ _id: userId });
                 if (updatedUser) {
-                  const currentCredits = (updatedUser.totalCreditsEarned || 0) +
+                  const currentCredits =
+                    (updatedUser.totalCreditsEarned || 0) +
                     Math.max(0, (updatedUser.monthlyCredits || 0) - (updatedUser.creditsUsed || 0));
 
                   await sendCreditsPurchasedEmail({
@@ -1212,7 +1342,10 @@ export const abacatepayService = {
               // Don't fail the webhook processing if email fails
             }
 
-            return { success: true, message: `Successfully credited ${credits} credits to user ${userId}` };
+            return {
+              success: true,
+              message: `Successfully credited ${credits} credits to user ${userId}`,
+            };
           }
         }
       }
@@ -1224,4 +1357,3 @@ export const abacatepayService = {
     }
   },
 };
-

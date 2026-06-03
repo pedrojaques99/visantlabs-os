@@ -92,9 +92,7 @@ function getContrastRatio(color1: string, color2: string): number {
 function colorDistance(hex1: string, hex2: string): number {
   const [r1, g1, b1] = hexToRgb(hex1);
   const [r2, g2, b2] = hexToRgb(hex2);
-  return Math.sqrt(
-    Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2)
-  );
+  return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
 }
 
 // --------------------------------------------------------------------------
@@ -161,9 +159,10 @@ function checkColorCompliance(
 /**
  * Check contrast between color pairs
  */
-function checkContrastCompliance(
-  colors: string[]
-): { violations: ComplianceViolation[]; compliance: 'AAA' | 'AA' | 'FAIL' } {
+function checkContrastCompliance(colors: string[]): {
+  violations: ComplianceViolation[];
+  compliance: 'AAA' | 'AA' | 'FAIL';
+} {
   const violations: ComplianceViolation[] = [];
   let worstCompliance: 'AAA' | 'AA' | 'FAIL' = 'AAA';
 
@@ -177,7 +176,9 @@ function checkContrastCompliance(
         violations.push({
           type: 'contrast',
           severity: 'critical',
-          message: `Contrast between ${colors[i]} and ${colors[j]} is ${ratio.toFixed(2)}:1 (fails WCAG)`,
+          message: `Contrast between ${colors[i]} and ${colors[j]} is ${ratio.toFixed(
+            2
+          )}:1 (fails WCAG)`,
           suggestion: 'Increase contrast to at least 4.5:1 for normal text',
           affected: { contrast: ratio },
         });
@@ -188,7 +189,9 @@ function checkContrastCompliance(
           violations.push({
             type: 'contrast',
             severity: 'high',
-            message: `Contrast between ${colors[i]} and ${colors[j]} is ${ratio.toFixed(2)}:1 (AA for large text only)`,
+            message: `Contrast between ${colors[i]} and ${colors[j]} is ${ratio.toFixed(
+              2
+            )}:1 (AA for large text only)`,
             suggestion: 'Consider increasing contrast for better accessibility',
             affected: { contrast: ratio },
           });
@@ -286,7 +289,12 @@ async function analyzeImageCompliance(
   image: { base64?: string; url?: string; mimeType?: string },
   guideline: BrandGuideline,
   apiKey?: string
-): Promise<{ isOnBrand: boolean; confidence: number; violations: ComplianceViolation[]; notes: string }> {
+): Promise<{
+  isOnBrand: boolean;
+  confidence: number;
+  violations: ComplianceViolation[];
+  notes: string;
+}> {
   const violations: ComplianceViolation[] = [];
 
   if (!image.base64 && !image.url) {
@@ -295,7 +303,10 @@ async function analyzeImageCompliance(
 
   try {
     const ai = new GoogleGenAI({ apiKey: apiKey || process.env.GEMINI_API_KEY || '' });
-    const brandContext = buildBrandContext(guideline, { compact: true, sections: BRAND_SECTION_PRESETS.visual });
+    const brandContext = buildBrandContext(guideline, {
+      compact: true,
+      sections: BRAND_SECTION_PRESETS.visual,
+    });
 
     const prompt = `You are a brand compliance analyst. Analyze if this image aligns with the brand guidelines.
 

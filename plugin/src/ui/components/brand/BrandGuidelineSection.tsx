@@ -49,13 +49,16 @@ export function BrandGuidelineSection() {
     const guideline = guidelines.find((g) => getGuidelineId(g) === id);
     if (guideline) {
       apply(guideline);
-      parent.postMessage({
-        pluginMessage: {
-          type: 'SAVE_BRAND_GUIDELINE',
-          selectedId: id,
-          guideline: JSON.stringify(guideline),
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'SAVE_BRAND_GUIDELINE',
+            selectedId: id,
+            guideline: JSON.stringify(guideline),
+          },
         },
-      }, 'https://www.figma.com');
+        'https://www.figma.com'
+      );
     }
   };
 
@@ -67,7 +70,10 @@ export function BrandGuidelineSection() {
       return;
     }
     const name = newName.trim();
-    if (!name) { setIsCreating(false); return; }
+    if (!name) {
+      setIsCreating(false);
+      return;
+    }
     setLoading(true);
     setIsCreating(false);
     const created = await saveBrandGuideline({ identity: { name } } as any);
@@ -75,13 +81,16 @@ export function BrandGuidelineSection() {
       apply(created, { silent: true });
       const createdId = getGuidelineId(created);
       if (createdId) {
-        parent.postMessage({
-          pluginMessage: {
-            type: 'SAVE_BRAND_GUIDELINE',
-            selectedId: createdId,
-            guideline: JSON.stringify(created),
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: 'SAVE_BRAND_GUIDELINE',
+              selectedId: createdId,
+              guideline: JSON.stringify(created),
+            },
           },
-        }, 'https://www.figma.com');
+          'https://www.figma.com'
+        );
       }
     }
     await refresh();
@@ -96,10 +105,13 @@ export function BrandGuidelineSection() {
           {guidelines.length > 0 && !isCreating && (
             <Select
               options={guidelines.map((g) => {
-                const colors = Array.isArray(g.colors) ? g.colors as any[] : [];
+                const colors = Array.isArray(g.colors) ? (g.colors as any[]) : [];
                 const primary = colors.find((c: any) => c?.role === 'primary') || colors[0];
                 const swatch = primary?.hex ? (
-                  <span className="w-3 h-3 rounded-full shrink-0 border border-white/10" style={{ backgroundColor: primary.hex }} />
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0 border border-white/10"
+                    style={{ backgroundColor: primary.hex }}
+                  />
                 ) : (
                   <span className="w-3 h-3 rounded-full shrink-0 bg-neutral-700 border border-white/10" />
                 );
@@ -118,27 +130,53 @@ export function BrandGuidelineSection() {
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleCreateNew(); if (e.key === 'Escape') setIsCreating(false); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCreateNew();
+                if (e.key === 'Escape') setIsCreating(false);
+              }}
               placeholder="Guideline name..."
               className="flex-1 h-8 px-2 text-xs bg-white/5 border border-white/10 rounded outline-none focus:border-brand-cyan"
             />
           )}
           {isCreating ? (
             <>
-              <Button onClick={handleCreateNew} variant="outline" size="sm" className="h-8" disabled={!newName.trim()}>
+              <Button
+                onClick={handleCreateNew}
+                variant="outline"
+                size="sm"
+                className="h-8"
+                disabled={!newName.trim()}
+              >
                 <Check size={14} />
               </Button>
-              <Button onClick={() => setIsCreating(false)} variant="ghost" size="sm" className="h-8">
+              <Button
+                onClick={() => setIsCreating(false)}
+                variant="ghost"
+                size="sm"
+                className="h-8"
+              >
                 <X size={14} />
               </Button>
             </>
           ) : (
             <>
-              <Button onClick={handleCreateNew} variant="outline" size="sm" className="h-8" disabled={loading}>
+              <Button
+                onClick={handleCreateNew}
+                variant="outline"
+                size="sm"
+                className="h-8"
+                disabled={loading}
+              >
                 <Plus size={14} className="mr-2" />
                 New
               </Button>
-              <Button onClick={refresh} variant="ghost" size="sm" className="h-8" aria-label="Refresh guidelines">
+              <Button
+                onClick={refresh}
+                variant="ghost"
+                size="sm"
+                className="h-8"
+                aria-label="Refresh guidelines"
+              >
                 <RefreshCw size={14} />
               </Button>
             </>
@@ -146,14 +184,18 @@ export function BrandGuidelineSection() {
         </div>
 
         {guidelines.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-4">No guidelines yet. Create one to get started.</p>
+          <p className="text-xs text-muted-foreground text-center py-4">
+            No guidelines yet. Create one to get started.
+          </p>
         )}
 
         {linkedGuideline && (
           <div className="flex items-center justify-between bg-brand-cyan/[0.04] border border-brand-cyan/10 rounded px-3 py-1.5 text-[10px]">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
-              <span className="text-neutral-400 font-mono uppercase tracking-wider">Brand Active</span>
+              <span className="text-neutral-400 font-mono uppercase tracking-wider">
+                Brand Active
+              </span>
             </div>
             <Button
               variant="ghost"
@@ -171,7 +213,7 @@ export function BrandGuidelineSection() {
         <p className="text-[9px] text-neutral-500 leading-snug">
           Matches by naming: <code className="text-[10px] text-neutral-400">primary/500</code>...
         </p>
-        <button 
+        <button
           onClick={() => setGuideOpen(true)}
           className="text-[9px] font-bold text-brand-cyan uppercase tracking-widest hover:underline flex items-center gap-1"
         >
@@ -181,13 +223,13 @@ export function BrandGuidelineSection() {
       </div>
 
       <NamingGuideModal isOpen={guideOpen} onClose={() => setGuideOpen(false)} />
-      <PushPreviewModal 
-        isOpen={pushOpen} 
-        onClose={() => setPushOpen(false)} 
+      <PushPreviewModal
+        isOpen={pushOpen}
+        onClose={() => setPushOpen(false)}
         changes={{
           colors: Array.from(usePluginStore.getState().selectedColors.values()),
           typography: usePluginStore.getState().typography,
-          logos: usePluginStore.getState().logos
+          logos: usePluginStore.getState().logos,
         }}
         onPush={async (selected) => {
           const store = usePluginStore.getState();
@@ -195,7 +237,7 @@ export function BrandGuidelineSection() {
           if (selected.includes('colors')) patch.colors = Array.from(store.selectedColors.values());
           if (selected.includes('typography')) patch.typography = store.typography;
           if (selected.includes('logos')) patch.logos = store.logos;
-          
+
           if (linkedGuideline) {
             await updateBrandGuideline(linkedGuideline, patch);
           }

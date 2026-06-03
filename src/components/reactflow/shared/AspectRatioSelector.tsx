@@ -17,7 +17,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
   value,
   onChange,
   disabled = false,
-  compact = false
+  compact = false,
 }) => {
   const [showOther, setShowOther] = useState(false);
   const isOtherSelected = !MAIN_ASPECT_RATIOS.includes(value);
@@ -34,7 +34,8 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             const isSelected = value === ratio;
 
             return (
-              <NodeButton variant="ghost"
+              <NodeButton
+                variant="ghost"
                 key={ratio}
                 onClick={() => !disabled && onChange(ratio)}
                 disabled={disabled}
@@ -45,19 +46,22 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-700 hover:text-brand-cyan',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
-              /* onMouseDown removed to allow node selection */
+                /* onMouseDown removed to allow node selection */
               >
-                <div className={cn(
-                  isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
-                  'border-node rounded-sm shrink-0',
-                  isSelected ? 'border-neutral-600 bg-foreground/20' : 'border-neutral-600/50'
-                )} />
+                <div
+                  className={cn(
+                    isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
+                    'border-node rounded-sm shrink-0',
+                    isSelected ? 'border-neutral-600 bg-foreground/20' : 'border-neutral-600/50'
+                  )}
+                />
                 <span className="text-[10px] leading-none">{ratio}</span>
               </NodeButton>
             );
           })}
 
-          <NodeButton variant="ghost"
+          <NodeButton
+            variant="ghost"
             onClick={() => !disabled && setShowOther(!showOther)}
             disabled={disabled}
             className={cn(
@@ -73,7 +77,6 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
           </NodeButton>
         </div>
 
-
         {showOther && (
           <div className="pt-1.5 border-t border-neutral-700/30">
             <div className="flex flex-wrap gap-1.5">
@@ -84,7 +87,8 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 const isSelected = value === ratio;
 
                 return (
-                  <NodeButton variant="ghost"
+                  <NodeButton
+                    variant="ghost"
                     key={ratio}
                     onClick={() => {
                       if (!disabled) {
@@ -102,17 +106,18 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     )}
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <div className={cn(
-                      isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
-                      'border-node rounded-sm shrink-0',
-                      isSelected ? 'border-neutral-600 bg-foreground/20' : 'border-neutral-600/50'
-                    )} />
+                    <div
+                      className={cn(
+                        isSquare ? 'w-4 h-4' : isLandscape ? 'w-6 h-3.5' : 'w-3.5 h-6',
+                        'border-node rounded-sm shrink-0',
+                        isSelected ? 'border-neutral-600 bg-foreground/20' : 'border-neutral-600/50'
+                      )}
+                    />
                     <span className="text-[10px] leading-none">{ratio}</span>
                   </NodeButton>
                 );
               })}
             </div>
-
           </div>
         )}
       </div>
@@ -129,7 +134,8 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
         const isSelected = value === ratio;
 
         return (
-          <NodeButton variant="ghost"
+          <NodeButton
+            variant="ghost"
             key={ratio}
             onClick={() => !disabled && onChange(ratio)}
             disabled={disabled}
@@ -141,17 +147,20 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
               disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
-            <div className={cn(
-              isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8',
-              'border-node rounded-md',
-              isSelected ? 'border-neutral-600' : 'border-neutral-600/50'
-            )} />
+            <div
+              className={cn(
+                isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8',
+                'border-node rounded-md',
+                isSelected ? 'border-neutral-600' : 'border-neutral-600/50'
+              )}
+            />
             <span className="text-[10px] mt-0.5">{ratio}</span>
           </NodeButton>
         );
       })}
 
-      <NodeButton variant="ghost"
+      <NodeButton
+        variant="ghost"
         onClick={() => !disabled && setShowOther(!showOther)}
         disabled={disabled}
         className={cn(
@@ -175,7 +184,8 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
               const isSelected = value === ratio;
 
               return (
-                <NodeButton variant="ghost"
+                <NodeButton
+                  variant="ghost"
                   key={ratio}
                   onClick={() => {
                     if (!disabled) {
@@ -192,11 +202,13 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     disabled && 'opacity-50 cursor-not-allowed'
                   )}
                 >
-                  <div className={cn(
-                    isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8',
-                    'border-node rounded-md',
-                    isSelected ? 'border-white/40 bg-white/10' : 'border-neutral-600/50'
-                  )} />
+                  <div
+                    className={cn(
+                      isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8',
+                      'border-node rounded-md',
+                      isSelected ? 'border-white/40 bg-white/10' : 'border-neutral-600/50'
+                    )}
+                  />
                   <span className="text-[10px] mt-0.5">{ratio}</span>
                 </NodeButton>
               );
