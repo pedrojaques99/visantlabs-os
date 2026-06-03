@@ -4,10 +4,16 @@ import type { FlowNodeData, DirectorNodeData, PromptNodeData } from '@/types/rea
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
 import { aiApi } from '@/services/aiApi';
+import { mockupApi } from '@/services/mockupApi';
 import { generateNodeId } from '@/utils/canvas/canvasNodeUtils';
 import { isLocalDevelopment } from '@/utils/env';
-import { normalizeImageToBase64, detectMimeType } from '@/services/reactFlowService';
+import {
+  normalizeImageToBase64,
+  detectMimeType,
+  validateCredits,
+} from '@/services/reactFlowService';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
+import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -26,6 +32,23 @@ interface UseDirectorNodeHandlerParams {
   addToHistory?: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
   handlersRef: React.MutableRefObject<any>;
   linkedGuideline?: BrandGuideline | null;
+  createOutputNodeWithSkeleton?: (
+    sourceNode: Node<FlowNodeData>,
+    sourceNodeId: string
+  ) => { node: Node<FlowNodeData>; edge: Edge; nodeId: string } | null;
+  updateOutputNodeWithResult?: (
+    nodeId: string,
+    result: string,
+    addToHistoryCallback: () => void
+  ) => void;
+  updateOutputNodeWithR2Url?: (nodeId: string, imageUrl: string) => void;
+  uploadImageToR2Auto?: (
+    base64Image: string,
+    nodeId: string,
+    updateNodeCallback?: (imageUrl: string) => void
+  ) => Promise<string | null>;
+  cleanupFailedNode?: (nodeId: string | null) => void;
+  refreshSubscriptionStatus?: () => Promise<void>;
 }
 
 export const useDirectorNodeHandler = ({
@@ -37,6 +60,12 @@ export const useDirectorNodeHandler = ({
   addToHistory,
   handlersRef,
   linkedGuideline,
+  createOutputNodeWithSkeleton,
+  updateOutputNodeWithResult,
+  updateOutputNodeWithR2Url,
+  uploadImageToR2Auto,
+  cleanupFailedNode,
+  refreshSubscriptionStatus,
 }: UseDirectorNodeHandlerParams) => {
   /**
    * Analyze the connected image and suggest tags
@@ -429,6 +458,168 @@ export const useDirectorNodeHandler = ({
   );
 
   /**
+   * Generate mockup directly — auto-generates prompt then calls mockupApi
+   */
+  const handleDirectorGenerateMockup = useCallback(
+    async (nodeId: string) => {
+      const node = nodesRef.current.find((n) => n.id === nodeId);
+      if (!node || node.type !== 'director') {
+        toast.error('Director node not found');
+        return;
+      }
+
+      const directorData = node.data as DirectorNodeData;
+      const connectedImage = directorData.connectedImage;
+
+      if (!connectedImage) {
+        toast.error('No image connected to the Director node');
+        return;
+      }
+
+      if (!createOutputNodeWithSkeleton || !updateOutputNodeWithResult) {
+        toast.error('Mockup generation is not available');
+        return;
+      }
+
+      const selectedModel = DEFAULT_MODEL;
+      const { provider, resolution, aspectRatio } = resolveGenerationContext(selectedModel, {
+        aspectRatio: DEFAULT_ASPECT_RATIO,
+      });
+
+      const hasCredits = await validateCredits(selectedModel, resolution, provider);
+      if (!hasCredits) return;
+
+      trackCanvasEvent('generation_started', 'director_mockup');
+      updateNodeData<DirectorNodeData>(nodeId, { isGeneratingMockup: true }, 'director');
+
+      let newOutputNodeId: string | null = null;
+      const skeletonNode = createOutputNodeWithSkeleton(node, nodeId);
+      if (skeletonNode) {
+        newOutputNodeId = skeletonNode.nodeId;
+        if (addToHistory) addToHistory(nodesRef.current, edgesRef.current);
+        setNodes((nds) => [...nds, skeletonNode.node]);
+        setEdges((eds) => [...eds, skeletonNode.edge]);
+      }
+
+      try {
+        const mimeType = detectMimeType(connectedImage);
+        const base64Data = await normalizeImageToBase64(connectedImage);
+        const imageData = { base64: base64Data, mimeType };
+
+        // Use selected tags if analyzed, otherwise let AI generate from scratch
+        const hasAnalyzedTags = directorData.hasAnalyzed;
+        const promptResult = await aiApi.generateSmartPrompt({
+          baseImage: imageData,
+          designType: directorData.selectedDesignType || directorData.suggestedDesignType || 'mockup',
+          brandingTags: hasAnalyzedTags ? (directorData.selectedBrandingTags || []) : [],
+          categoryTags: hasAnalyzedTags ? (directorData.selectedCategoryTags || []) : [],
+          locationTags: hasAnalyzedTags ? (directorData.selectedLocationTags || []) : [],
+          angleTags: hasAnalyzedTags ? (directorData.selectedAngleTags || []) : [],
+          lightingTags: hasAnalyzedTags ? (directorData.selectedLightingTags || []) : [],
+          effectTags: hasAnalyzedTags
+            ? [...(directorData.selectedEffectTags || []), ...(directorData.selectedMaterialTags || [])]
+            : [],
+          selectedColors: hasAnalyzedTags ? (directorData.selectedColors || []) : [],
+          aspectRatio: DEFAULT_ASPECT_RATIO,
+          generateText: false,
+          withHuman: false,
+          enhanceTexture: false,
+          removeText: false,
+          negativePrompt: '',
+          additionalPrompt: '',
+          instructions: '',
+        });
+
+        let generatedPrompt = promptResult.prompt;
+
+        // Apply brand context
+        const { source, tokens: brandTokens } = getBrandContextForNode(
+          nodeId,
+          nodesRef.current,
+          edgesRef.current,
+          linkedGuideline
+        );
+        if (source === 'edge' && brandTokens) {
+          generatedPrompt = buildEnhancement(generatedPrompt, brandTokens);
+        }
+
+        updateNodeData<DirectorNodeData>(
+          nodeId,
+          { generatedPrompt },
+          'director'
+        );
+
+        if (isLocalDevelopment()) {
+          console.log('[DirectorNode] Direct mockup generation with prompt:', generatedPrompt.substring(0, 120));
+        }
+
+        const result = await mockupApi.generate({
+          promptText: generatedPrompt,
+          baseImage: { base64: base64Data, mimeType },
+          model: selectedModel,
+          resolution,
+          aspectRatio,
+          imagesCount: 1,
+          feature: 'canvas',
+          provider,
+          brandGuidelineId: source === 'guideline' ? linkedGuideline?.id : undefined,
+        });
+
+        const resultImage = result.imageUrl || result.imageBase64 || '';
+
+        updateNodeData<DirectorNodeData>(nodeId, { isGeneratingMockup: false }, 'director');
+
+        if (newOutputNodeId) {
+          updateOutputNodeWithResult(newOutputNodeId, resultImage, () => {
+            if (addToHistory) addToHistory(nodesRef.current, edgesRef.current);
+          });
+
+          if (uploadImageToR2Auto && result.imageBase64) {
+            await uploadImageToR2Auto(result.imageBase64, newOutputNodeId, (imageUrl) => {
+              if (updateOutputNodeWithR2Url) updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl);
+            });
+          }
+        }
+
+        if (refreshSubscriptionStatus) {
+          try { await refreshSubscriptionStatus(); } catch {}
+        }
+
+        trackCanvasEvent('generation_completed', 'director_mockup');
+        toast.success('Mockup generated!');
+      } catch (error: any) {
+        trackCanvasEvent('generation_failed', 'director_mockup', undefined, { error: error?.message });
+        if (isLocalDevelopment()) {
+          console.error('[DirectorNode] Direct mockup generation error:', error);
+        }
+
+        updateNodeData<DirectorNodeData>(nodeId, { isGeneratingMockup: false }, 'director');
+
+        if (newOutputNodeId && cleanupFailedNode) {
+          cleanupFailedNode(newOutputNodeId);
+        }
+
+        toast.error(error?.message || 'Failed to generate mockup');
+      }
+    },
+    [
+      nodesRef,
+      edgesRef,
+      updateNodeData,
+      setNodes,
+      setEdges,
+      addToHistory,
+      linkedGuideline,
+      createOutputNodeWithSkeleton,
+      updateOutputNodeWithResult,
+      updateOutputNodeWithR2Url,
+      uploadImageToR2Auto,
+      cleanupFailedNode,
+      refreshSubscriptionStatus,
+    ]
+  );
+
+  /**
    * Update Director node data
    */
   const handleDirectorNodeDataUpdate = useCallback(
@@ -441,6 +632,7 @@ export const useDirectorNodeHandler = ({
   return {
     handleDirectorAnalyze,
     handleDirectorGeneratePrompt,
+    handleDirectorGenerateMockup,
     handleDirectorNodeDataUpdate,
   };
 };

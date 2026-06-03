@@ -1206,6 +1206,12 @@ export const CanvasPage: React.FC = () => {
     handlersRef,
     nodesRef,
     updateNodeData,
+    createOutputNodeWithSkeleton,
+    updateOutputNodeWithResult,
+    updateOutputNodeWithR2Url,
+    uploadImageToR2Auto,
+    cleanupFailedNode,
+    refreshSubscriptionStatus,
   } = useCanvasNodeHandlers(
     nodes,
     edges,
@@ -1246,17 +1252,27 @@ export const CanvasPage: React.FC = () => {
   }, [edges]);
 
   // Director Node handlers
-  const { handleDirectorAnalyze, handleDirectorGeneratePrompt, handleDirectorNodeDataUpdate } =
-    useDirectorNodeHandler({
-      nodesRef,
-      edgesRef,
-      updateNodeData,
-      setNodes,
-      setEdges,
-      addToHistory,
-      handlersRef,
-      linkedGuideline: canvasHeader.linkedGuideline,
-    });
+  const {
+    handleDirectorAnalyze,
+    handleDirectorGeneratePrompt,
+    handleDirectorGenerateMockup,
+    handleDirectorNodeDataUpdate,
+  } = useDirectorNodeHandler({
+    nodesRef,
+    edgesRef,
+    updateNodeData,
+    setNodes,
+    setEdges,
+    addToHistory,
+    handlersRef,
+    linkedGuideline: canvasHeader.linkedGuideline,
+    createOutputNodeWithSkeleton,
+    updateOutputNodeWithResult,
+    updateOutputNodeWithR2Url,
+    uploadImageToR2Auto,
+    cleanupFailedNode,
+    refreshSubscriptionStatus,
+  });
 
   // Canvas tool state
   const [activeTool, setActiveTool] = useState<CanvasTool>('select');
@@ -2070,7 +2086,6 @@ export const CanvasPage: React.FC = () => {
       addShaderNode,
       addAngleNode,
       addBrandKitNodes,
-      addLogoNode,
       addPDFNode,
       addStrategyNode,
       addBrandCoreNode,
@@ -3630,6 +3645,7 @@ export const CanvasPage: React.FC = () => {
           const needsUpdate =
             !directorData.onAnalyze ||
             !directorData.onGeneratePrompt ||
+            !directorData.onGenerateMockup ||
             !directorData.onUpdateData ||
             !directorData.onOpenSidePanel ||
             connectedImageChanged ||
@@ -3642,6 +3658,7 @@ export const CanvasPage: React.FC = () => {
                 ...directorData,
                 onAnalyze: handleDirectorAnalyze,
                 onGeneratePrompt: handleDirectorGeneratePrompt,
+                onGenerateMockup: handleDirectorGenerateMockup,
                 onUpdateData: handleDirectorNodeDataUpdate,
                 onOpenSidePanel: handleDirectorOpenSidebar,
                 onDelete: handleDeleteNodeById,
@@ -4087,6 +4104,7 @@ export const CanvasPage: React.FC = () => {
     handleDirectorOpenSidebar,
     handleDirectorAnalyze,
     handleDirectorGeneratePrompt,
+    handleDirectorGenerateMockup,
     handleDirectorNodeDataUpdate,
   ]);
 

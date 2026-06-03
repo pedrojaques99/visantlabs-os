@@ -1319,5 +1319,11 @@ export const useCanvasNodeHandlers = (
     handlersRef,
     nodesRef,
     updateNodeData,
+    createOutputNodeWithSkeleton: createOutputNodeWithSkeletonForGenerated,
+    updateOutputNodeWithResult,
+    updateOutputNodeWithR2Url,
+    uploadImageToR2Auto,
+    cleanupFailedNode,
+    refreshSubscriptionStatus,
   };
 };
