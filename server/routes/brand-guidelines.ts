@@ -13,7 +13,7 @@ import {
   BrandGuidelineLogo,
   calculateCompleteness,
 } from '../types/brandGuideline.js';
-import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js';
+import { parseUrl, parsePdf, parseImage, parseJson, parseText } from '../lib/brand-parse.js';
 import { extractBrandData, type AssetClassification } from '../lib/brand-extract.js';
 import { mergeBrandGuidelines } from '../lib/brand-merge.js';
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js';
@@ -346,6 +346,11 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
               : data
             : JSON.stringify(data);
         chunks = parseJson(jsonStr, filename);
+        break;
+      }
+      case 'text': {
+        if (!data) return res.status(400).json({ error: 'Text data required' });
+        chunks = parseText(typeof data === 'string' ? data : JSON.stringify(data), filename);
         break;
       }
       case 'fig_file': {
