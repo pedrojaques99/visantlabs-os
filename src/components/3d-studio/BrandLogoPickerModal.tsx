@@ -6,7 +6,8 @@ import { cn } from '@/lib/utils';
 import { ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
-function isSvgUrl(url: string): boolean {
+function isSvgUrl(url: string | undefined): boolean {
+  if (!url) return false;
   const path = url.split('?')[0].toLowerCase();
   return path.endsWith('.svg');
 }
@@ -47,7 +48,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
   };
 
   const handlePickLogo = (logo: { url: string; variant: string; label?: string }) => {
-    const ext = logo.url.split('.').pop()?.split('?')[0] || 'svg';
+    const ext = (logo.url ?? '').split('.').pop()?.split('?')[0] || 'svg';
     const name =
       logo.label || `${selectedGuideline?.identity?.name || 'brand'}-${logo.variant}.${ext}`;
     onSelectLogo(logo.url, name);

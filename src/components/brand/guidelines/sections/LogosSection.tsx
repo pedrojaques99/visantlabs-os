@@ -112,7 +112,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                 className="relative group/logo flex flex-col items-center gap-1.5 p-3 rounded-md border border-neutral-800 bg-white/[0.03] hover:border-white/10 transition-colors"
               >
                 {(() => {
-                  const ext = logo.url.split('?')[0].toLowerCase();
+                  const ext = (logo.url ?? '').split('?')[0].toLowerCase();
                   const fmt = ext.endsWith('.svg')
                     ? 'SVG'
                     : ext.endsWith('.png')
