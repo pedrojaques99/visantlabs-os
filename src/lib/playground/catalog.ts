@@ -1,6 +1,20 @@
 import { schema } from '@json-render/react';
 import { z } from 'zod';
 
+const shaderTypeEnum = z.enum([
+  'halftone', 'vhs', 'ascii', 'matrixDither', 'dither', 'duotone',
+  'filmGrain', 'pixelate', 'posterize', 'chromaticAberration',
+  'crtScanlines', 'edgeDetect', 'glitch',
+]);
+
+const materialPresetEnum = z.enum([
+  'default', 'plastic', 'metal', 'glass', 'rubber', 'chrome', 'gold',
+  'clay', 'emissive', 'holographic', 'brushedSteel', 'copper', 'marble',
+  'wood', 'concrete', 'fabric', 'leather', 'paper', 'ceramic', 'ice',
+  'crystal', 'neon', 'frostedGlass', 'carbonFiber', 'titanium', 'bronze',
+  'obsidian', 'jade', 'pearl', 'velvet', 'resin', 'wax',
+]);
+
 export const visantCatalog = schema.createCatalog({
   components: {
     // ─── Layout & Shells ────────────────────────────────
@@ -15,10 +29,11 @@ export const visantCatalog = schema.createCatalog({
     GlassPanel: {
       props: z.object({
         className: z.string().optional(),
+        style: z.record(z.string(), z.any()).optional(),
       }),
       slots: ['default'],
       description:
-        'Glassmorphism container with backdrop blur and subtle border. Use to group content.',
+        'Glassmorphism container with backdrop blur and subtle border. Use to group content. Use style with $state for dynamic backgroundColor.',
     },
 
     // ─── Tool Panel Family ──────────────────────────────
@@ -131,17 +146,19 @@ export const visantCatalog = schema.createCatalog({
       props: z.object({
         placeholder: z.string().optional(),
         type: z.enum(['text', 'number', 'email', 'url']).optional(),
+        value: z.string().optional(),
       }),
       slots: [],
-      description: 'Text input field.',
+      description: 'Text input field. Use $bindState on value for two-way binding.',
     },
     Textarea: {
       props: z.object({
         placeholder: z.string().optional(),
         rows: z.number().optional(),
+        value: z.string().optional(),
       }),
       slots: [],
-      description: 'Multi-line text input.',
+      description: 'Multi-line text input. Use $bindState on value for two-way binding.',
     },
 
     // ─── Image & Upload ─────────────────────────────────
@@ -281,23 +298,154 @@ export const visantCatalog = schema.createCatalog({
       description: 'Visual divider line.',
     },
 
+    // ─── Power Components ───────────────────────────────
+    ShaderPreview: {
+      props: z.object({
+        imageUrl: z.string(),
+        shaderType: shaderTypeEnum,
+        params: z.record(z.string(), z.any()).optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+      }),
+      slots: [],
+      description:
+        'WebGL shader effect preview. Applies shader (halftone, vhs, ascii, dither, glitch, etc.) to an image in real-time. Use $bindState on shaderType and params for dynamic control.',
+    },
+    Scene3D: {
+      props: z.object({
+        mode: z.enum(['text', 'shape']).optional(),
+        input: z.string().optional(),
+        shape: z.enum(['coin', 'badge', 'stamp', 'shield', 'hexagon', 'pendant']).optional(),
+        material: materialPresetEnum.optional(),
+        color: z.string().optional(),
+        animation: z.enum(['none', 'spin', 'float', 'pulse', 'wobble']).optional(),
+        depth: z.number().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+      }),
+      slots: [],
+      description:
+        'Interactive 3D scene with material presets. mode="text" extrudes text, mode="shape" uses preset shapes. 43 material presets available. Use $bindState on material/color/animation for dynamic control.',
+    },
+    VideoPlayer: {
+      props: z.object({
+        src: z.string().optional(),
+        autoPlay: z.boolean().optional(),
+        loop: z.boolean().optional(),
+        controls: z.boolean().optional(),
+        muted: z.boolean().optional(),
+        poster: z.string().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+      }),
+      slots: [],
+      description:
+        'Video player with native controls. Use with generateVideo action to display generated videos. Supports MP4, WebM.',
+    },
+    ImageCanvas: {
+      props: z.object({
+        width: z.number().optional(),
+        height: z.number().optional(),
+        layers: z
+          .array(
+            z.object({
+              type: z.enum(['image', 'text', 'rect', 'circle']),
+              x: z.number().optional(),
+              y: z.number().optional(),
+              width: z.number().optional(),
+              height: z.number().optional(),
+              src: z.string().optional(),
+              text: z.string().optional(),
+              fontSize: z.number().optional(),
+              fontFamily: z.string().optional(),
+              fill: z.string().optional(),
+              stroke: z.string().optional(),
+              strokeWidth: z.number().optional(),
+              rotation: z.number().optional(),
+              opacity: z.number().optional(),
+              radius: z.number().optional(),
+            })
+          )
+          .optional(),
+      }),
+      slots: [],
+      description:
+        'Konva 2D canvas for compositing. Define layers as array of image/text/rect/circle objects. Use $bindState on layers for dynamic updates.',
+    },
+    HalftonePreview: {
+      props: z.object({
+        imageUrl: z.string(),
+        variant: z.enum(['ellipse', 'square', 'lines']).optional(),
+        dotSize: z.number().optional(),
+        angle: z.number().optional(),
+        contrast: z.number().optional(),
+        spacing: z.number().optional(),
+        threshold: z.number().optional(),
+        invert: z.boolean().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+      }),
+      slots: [],
+      description:
+        'Dedicated halftone effect renderer with variant support (ellipse/square/lines). More control than ShaderPreview halftone. Use $bindState on dotSize/angle/contrast for live control.',
+    },
+    RisoPreview: {
+      props: z.object({
+        imageUrl: z.string(),
+        color1: z.string().optional(),
+        color2: z.string().optional(),
+        halftoneAngle1: z.number().optional(),
+        halftoneAngle2: z.number().optional(),
+        dotSize: z.number().optional(),
+        paperColor: z.string().optional(),
+        blendMode: z.enum(['multiply', 'screen', 'overlay']).optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+      }),
+      slots: [],
+      description:
+        'Riso printing simulator. 2-color separation with halftone screening. Use $bindState on colors and angles for live preview.',
+    },
+    MoodboardGrid: {
+      props: z.object({
+        images: z.array(
+          z.object({
+            src: z.string(),
+            alt: z.string().optional(),
+            span: z.number().optional(),
+          })
+        ),
+        layout: z.enum(['bento', 'masonry', 'grid']).optional(),
+        columns: z.number().optional(),
+        gap: z.number().optional(),
+        aspectRatio: z.string().optional(),
+      }),
+      slots: [],
+      description:
+        'Image collection layout with bento/masonry/grid modes. Use for moodboards, galleries, or image grids.',
+    },
+
     // ─── Text ───────────────────────────────────────────
     Heading: {
       props: z.object({
         level: z.number().min(1).max(6).optional(),
         text: z.string(),
+        style: z.record(z.string(), z.any()).optional(),
       }),
       slots: [],
-      description: 'Heading text. Uses Manrope font, semibold.',
+      description:
+        'Heading text. Uses Manrope font, semibold. Use style prop with $bindState for dynamic fontSize/fontFamily/fontWeight.',
     },
     Text: {
       props: z.object({
         variant: z.enum(['body', 'label', 'caption', 'mono']).optional(),
         color: z.enum(['default', 'muted', 'brand', 'danger']).optional(),
         text: z.string(),
+        style: z.record(z.string(), z.any()).optional(),
       }),
       slots: [],
-      description: "Text element. 'label' = 10px mono uppercase. 'caption' = 11px muted.",
+      description:
+        "Text element. 'label' = 10px mono uppercase. 'caption' = 11px muted. Use style prop with $bindState for dynamic fontSize/fontWeight/lineHeight.",
     },
     MicroTitle: {
       props: z.object({
@@ -374,6 +522,38 @@ export const visantCatalog = schema.createCatalog({
       params: z.object({
         url: z.string(),
         filename: z.string().optional(),
+      }),
+    },
+    generateVideo: {
+      description: 'Generate a video from text prompt or image. Returns { videoUrl }',
+      params: z.object({
+        prompt: z.string(),
+        startFrame: z.string().optional(),
+        aspectRatio: z.string().optional(),
+        duration: z.string().optional(),
+        model: z.string().optional(),
+      }),
+    },
+    applyShader: {
+      description:
+        'Apply a WebGL shader effect to an image client-side. Returns { resultBase64 }',
+      params: z.object({
+        imageUrl: z.string(),
+        shaderType: shaderTypeEnum,
+        params: z.record(z.string(), z.any()).optional(),
+      }),
+    },
+    detectGrid: {
+      description: 'Detect grid layout in an image. Returns { boxes: BoundingBox[] }',
+      params: z.object({
+        imageBase64: z.string(),
+      }),
+    },
+    upscaleImage: {
+      description: 'Upscale an image to higher resolution. Returns { upscaledBase64 }',
+      params: z.object({
+        imageBase64: z.string(),
+        size: z.enum(['1K', '2K', '4K']).optional(),
       }),
     },
   },

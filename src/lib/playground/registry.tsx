@@ -1,4 +1,5 @@
-import { defineRegistry } from '@json-render/react';
+import React, { useEffect, useRef, useState, useMemo, Suspense } from 'react';
+import { defineRegistry, useBoundProp } from '@json-render/react';
 import { visantCatalog } from './catalog';
 import { toast } from 'sonner';
 import { Zap } from 'lucide-react';
@@ -84,12 +85,17 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
   components: {
     // ─── Layout ───────────────────────────────────────
     PageShell: ({ props, children }) => (
-      <PageShell pageId="playground-miniapp" title={props.title}>
+      <div className="h-full w-full overflow-auto p-6">
+        {props.title && (
+          <h2 className="text-lg font-semibold text-neutral-100 mb-4">{props.title}</h2>
+        )}
         <div className={props.className}>{children}</div>
-      </PageShell>
+      </div>
     ),
     GlassPanel: ({ props, children }) => (
-      <GlassPanel className={props.className}>{children}</GlassPanel>
+      <GlassPanel className={props.className} style={props.style as React.CSSProperties | undefined}>
+        {children}
+      </GlassPanel>
     ),
 
     // ─── Tool Panel ───────────────────────────────────
@@ -107,62 +113,111 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     ToolPanelGrid: ({ props, children }) => (
       <ToolPanelGrid cols={props.cols as 2 | 3 | 4 | 5 | undefined}>{children}</ToolPanelGrid>
     ),
-    ToolPanelChip: ({ props }) => (
-      <ToolPanelChip active={props.active}>{props.label}</ToolPanelChip>
-    ),
+    ToolPanelChip: ({ props, bindings, emit }) => {
+      const [active, setActive] = useBoundProp<boolean>(props.active, bindings?.active);
+      return (
+        <ToolPanelChip
+          active={active ?? props.active}
+          onClick={() => {
+            setActive(!(active ?? props.active));
+            emit('press');
+          }}
+        >
+          {props.label}
+        </ToolPanelChip>
+      );
+    },
     ToolPanelRow: ({ props, children }) => (
       <ToolPanelRow label={props.label}>{children}</ToolPanelRow>
     ),
 
     // ─── Inputs ───────────────────────────────────────
-    NodeSlider: ({ props }) => (
-      <NodeSlider
-        label={props.label}
-        value={props.value}
-        min={props.min}
-        max={props.max}
-        step={props.step}
-        onChange={() => {}}
-        hint={props.hint}
-      />
-    ),
-    ScrubInput: ({ props }) => (
-      <ScrubInput
-        label={props.label}
-        value={props.value}
-        min={props.min}
-        max={props.max}
-        suffix={props.suffix}
-        onChange={() => {}}
-      />
-    ),
-    InlineColorPicker: ({ props }) => (
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-          {props.label}
-        </span>
-        <input
-          type="color"
-          value={props.value}
-          className="w-6 h-6 rounded border-0 cursor-pointer"
-          readOnly
+    NodeSlider: ({ props, bindings }) => {
+      const [value, setValue] = useBoundProp<number>(props.value, bindings?.value);
+      return (
+        <NodeSlider
+          label={props.label}
+          value={value ?? props.value}
+          min={props.min}
+          max={props.max}
+          step={props.step}
+          onChange={setValue}
+          hint={props.hint}
         />
-        <span className="text-[11px] text-neutral-400 font-mono">{props.value}</span>
-      </div>
-    ),
-    Button: ({ props, children }) => (
-      <Button variant={props.variant as any} size={props.size as any} disabled={props.disabled}>
+      );
+    },
+    ScrubInput: ({ props, bindings }) => {
+      const [value, setValue] = useBoundProp<number>(props.value, bindings?.value);
+      return (
+        <ScrubInput
+          label={props.label}
+          value={value ?? props.value}
+          min={props.min}
+          max={props.max}
+          suffix={props.suffix}
+          onChange={setValue}
+        />
+      );
+    },
+    InlineColorPicker: ({ props, bindings }) => {
+      const [value, setValue] = useBoundProp<string>(props.value, bindings?.value);
+      const current = value ?? props.value;
+      return (
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+            {props.label}
+          </span>
+          <input
+            type="color"
+            value={current}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-6 h-6 rounded border-0 cursor-pointer"
+          />
+          <span className="text-[11px] text-neutral-400 font-mono">{current}</span>
+        </div>
+      );
+    },
+    Button: ({ props, children, emit }) => (
+      <Button
+        variant={props.variant as any}
+        size={props.size as any}
+        disabled={props.disabled}
+        onClick={() => emit('press')}
+      >
         {children}
       </Button>
     ),
-    Switch: ({ props }) => (
-      <div className="flex items-center gap-2">
-        {props.label && <span className="text-[11px] text-neutral-400">{props.label}</span>}
-        <Switch checked={props.checked} />
-      </div>
-    ),
-    Input: ({ props }) => <Input placeholder={props.placeholder} type={props.type} />,
-    Textarea: ({ props }) => <Textarea placeholder={props.placeholder} rows={props.rows} />,
+    Switch: ({ props, bindings }) => {
+      const [checked, setChecked] = useBoundProp<boolean>(props.checked, bindings?.checked);
+      return (
+        <div className="flex items-center gap-2">
+          {props.label && <span className="text-[11px] text-neutral-400">{props.label}</span>}
+          <Switch checked={checked ?? props.checked} onCheckedChange={setChecked} />
+        </div>
+      );
+    },
+    Input: ({ props, bindings }) => {
+      const [value, setValue] = useBoundProp<string>(props.value, bindings?.value);
+      return (
+        <Input
+          placeholder={props.placeholder}
+          type={props.type}
+          value={value ?? ''}
+          onChange={(e) => setValue(e.target.value)}
+        />
+      );
+    },
+    Textarea: ({ props, bindings }) => {
+      const [value, setValue] = useBoundProp<string>(props.value, bindings?.value);
+      return (
+        <Textarea
+          placeholder={props.placeholder}
+          rows={props.rows}
+          value={value ?? ''}
+          onChange={(e) => setValue(e.target.value)}
+        />
+      );
+    },
 
     // ─── Image ────────────────────────────────────────
     ImageUploader: () => (
@@ -313,14 +368,457 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     ),
     Separator: ({ props }) => <Separator orientation={props.orientation} />,
 
+    // ─── Power Components ─────────────────────────────
+    ShaderPreview: ({ props, bindings }) => {
+      const canvasRef = useRef<HTMLCanvasElement>(null);
+      const [shaderType] = useBoundProp<string>(props.shaderType, bindings?.shaderType);
+      const [params] = useBoundProp<Record<string, any>>(props.params, bindings?.params);
+      const currentType = shaderType ?? props.shaderType;
+      const currentParams = params ?? props.params ?? {};
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState<string | null>(null);
+      const w = props.width || 512;
+      const h = props.height || 512;
+
+      useEffect(() => {
+        if (!props.imageUrl) return;
+        let cancelled = false;
+        setLoading(true);
+        setError(null);
+        (async () => {
+          try {
+            const { applyShaderEffect } = await import('@/utils/shaders/shaderRenderer');
+            const result = await applyShaderEffect(
+              props.imageUrl, w, h,
+              { shaderType: currentType as any, ...currentParams }
+            );
+            if (!cancelled && canvasRef.current) {
+              const ctx = canvasRef.current.getContext('2d');
+              if (ctx) {
+                const img = new Image();
+                img.onload = () => {
+                  canvasRef.current!.width = img.naturalWidth;
+                  canvasRef.current!.height = img.naturalHeight;
+                  ctx.drawImage(img, 0, 0);
+                  setLoading(false);
+                };
+                img.onerror = () => { setError('Failed to render'); setLoading(false); };
+                img.src = result;
+              }
+            }
+          } catch (e: any) {
+            if (!cancelled) { setError(e.message || 'Shader error'); setLoading(false); }
+          }
+        })();
+        return () => { cancelled = true; };
+      }, [props.imageUrl, currentType, JSON.stringify(currentParams)]);
+
+      if (!props.imageUrl) {
+        return (
+          <div className="rounded-lg bg-neutral-900 flex items-center justify-center" style={{ width: w, height: h }}>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Upload an image to apply shader</span>
+          </div>
+        );
+      }
+
+      return (
+        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
+              <GlitchLoader size="sm" />
+            </div>
+          )}
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
+              <span className="text-[11px] text-red-400 font-mono">{error}</span>
+            </div>
+          )}
+          <canvas ref={canvasRef} className="w-full h-auto" style={{ maxWidth: w, maxHeight: h }} />
+        </div>
+      );
+    },
+
+    Scene3D: ({ props, bindings }) => {
+      const containerRef = useRef<HTMLDivElement>(null);
+      const [material] = useBoundProp<string>(props.material, bindings?.material);
+      const [color] = useBoundProp<string>(props.color, bindings?.color);
+      const [animation] = useBoundProp<string>(props.animation, bindings?.animation);
+      const Scene3DLazy = useMemo(
+        () => React.lazy(() => import('@/lib/playground/components/PlaygroundScene3D')),
+        []
+      );
+
+      return (
+        <div
+          ref={containerRef}
+          className="relative rounded-lg overflow-hidden bg-neutral-900"
+          style={{ width: props.width || '100%', height: props.height || 400 }}
+        >
+          <Suspense fallback={<GlitchLoader size="md" />}>
+            <Scene3DLazy
+              mode={props.mode || 'text'}
+              input={props.input || 'Visant'}
+              shape={props.shape}
+              material={(material ?? props.material) || 'chrome'}
+              color={(color ?? props.color) || '#00e5ff'}
+              animation={(animation ?? props.animation) || 'spin'}
+              depth={props.depth || 20}
+            />
+          </Suspense>
+        </div>
+      );
+    },
+
+    VideoPlayer: ({ props, bindings }) => {
+      const [src] = useBoundProp<string>(props.src, bindings?.src);
+      const currentSrc = src ?? props.src;
+      const w = props.width || '100%';
+      const h = props.height || 300;
+
+      if (!currentSrc) {
+        return (
+          <div
+            className="relative rounded-lg overflow-hidden bg-neutral-900 flex items-center justify-center"
+            style={{ width: w, height: h }}
+          >
+            <div className="text-center">
+              <div className="text-neutral-600 text-3xl mb-2">▶</div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                No video loaded
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+          <video
+            src={currentSrc}
+            autoPlay={props.autoPlay ?? false}
+            loop={props.loop ?? false}
+            controls={props.controls ?? true}
+            muted={props.muted ?? true}
+            poster={props.poster}
+            style={{ width: w, height: props.height || 'auto', maxWidth: '100%' }}
+            className="rounded-lg"
+          />
+        </div>
+      );
+    },
+
+    ImageCanvas: ({ props, bindings }) => {
+      const canvasRef = useRef<HTMLCanvasElement>(null);
+      const [layers] = useBoundProp<any[]>(props.layers, bindings?.layers);
+      const currentLayers = layers ?? props.layers ?? [];
+      const w = props.width || 512;
+      const h = props.height || 512;
+
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        canvas.width = w;
+        canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+
+        const drawLayers = async () => {
+          for (const layer of currentLayers) {
+            ctx.save();
+            if (layer.x || layer.y) ctx.translate(layer.x || 0, layer.y || 0);
+            if (layer.rotation) {
+              const cx = (layer.width || 0) / 2;
+              const cy = (layer.height || 0) / 2;
+              ctx.translate(cx, cy);
+              ctx.rotate((layer.rotation * Math.PI) / 180);
+              ctx.translate(-cx, -cy);
+            }
+            if (layer.opacity !== undefined) ctx.globalAlpha = layer.opacity;
+
+            switch (layer.type) {
+              case 'image': {
+                if (layer.src) {
+                  try {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    await new Promise<void>((resolve, reject) => {
+                      img.onload = () => resolve();
+                      img.onerror = reject;
+                      img.src = layer.src;
+                    });
+                    ctx.drawImage(img, 0, 0, layer.width || img.naturalWidth, layer.height || img.naturalHeight);
+                  } catch { /* skip broken images */ }
+                }
+                break;
+              }
+              case 'text': {
+                ctx.font = `${layer.fontSize || 16}px ${layer.fontFamily || 'Manrope, sans-serif'}`;
+                if (layer.fill) ctx.fillStyle = layer.fill;
+                if (layer.stroke) {
+                  ctx.strokeStyle = layer.stroke;
+                  ctx.lineWidth = layer.strokeWidth || 1;
+                  ctx.strokeText(layer.text || '', 0, layer.fontSize || 16);
+                }
+                ctx.fillText(layer.text || '', 0, layer.fontSize || 16);
+                break;
+              }
+              case 'rect': {
+                if (layer.fill) {
+                  ctx.fillStyle = layer.fill;
+                  ctx.fillRect(0, 0, layer.width || 100, layer.height || 100);
+                }
+                if (layer.stroke) {
+                  ctx.strokeStyle = layer.stroke;
+                  ctx.lineWidth = layer.strokeWidth || 1;
+                  ctx.strokeRect(0, 0, layer.width || 100, layer.height || 100);
+                }
+                break;
+              }
+              case 'circle': {
+                const r = layer.radius || 50;
+                ctx.beginPath();
+                ctx.arc(r, r, r, 0, Math.PI * 2);
+                if (layer.fill) { ctx.fillStyle = layer.fill; ctx.fill(); }
+                if (layer.stroke) { ctx.strokeStyle = layer.stroke; ctx.lineWidth = layer.strokeWidth || 1; ctx.stroke(); }
+                break;
+              }
+            }
+            ctx.restore();
+          }
+        };
+        drawLayers();
+      }, [w, h, JSON.stringify(currentLayers)]);
+
+      return (
+        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+          <canvas ref={canvasRef} className="w-full h-auto" style={{ maxWidth: w }} />
+        </div>
+      );
+    },
+
+    HalftonePreview: ({ props, bindings }) => {
+      const canvasRef = useRef<HTMLCanvasElement>(null);
+      const [dotSize] = useBoundProp<number>(props.dotSize, bindings?.dotSize);
+      const [angle] = useBoundProp<number>(props.angle, bindings?.angle);
+      const [contrast] = useBoundProp<number>(props.contrast, bindings?.contrast);
+      const [spacing] = useBoundProp<number>(props.spacing, bindings?.spacing);
+      const [loading, setLoading] = useState(false);
+      const w = props.width || 512;
+      const h = props.height || 512;
+
+      useEffect(() => {
+        if (!props.imageUrl) return;
+        let cancelled = false;
+        setLoading(true);
+        (async () => {
+          try {
+            const { applyShaderEffect } = await import('@/utils/shaders/shaderRenderer');
+            const result = await applyShaderEffect(props.imageUrl, w, h, {
+              shaderType: 'halftone',
+              halftoneVariant: (props.variant as any) || 'ellipse',
+              dotSize: dotSize ?? props.dotSize ?? 5,
+              angle: angle ?? props.angle ?? 0,
+              contrast: contrast ?? props.contrast ?? 1,
+              spacing: spacing ?? props.spacing ?? 2,
+              halftoneThreshold: props.threshold ?? 1,
+              halftoneInvert: props.invert ? 1 : 0,
+            });
+            if (!cancelled && canvasRef.current) {
+              const ctx = canvasRef.current.getContext('2d');
+              if (ctx) {
+                const img = new Image();
+                img.onload = () => {
+                  canvasRef.current!.width = img.naturalWidth;
+                  canvasRef.current!.height = img.naturalHeight;
+                  ctx.drawImage(img, 0, 0);
+                  setLoading(false);
+                };
+                img.src = result;
+              }
+            }
+          } catch (e) {
+            console.error('[HalftonePreview]', e);
+            if (!cancelled) setLoading(false);
+          }
+        })();
+        return () => { cancelled = true; };
+      }, [props.imageUrl, props.variant, dotSize, angle, contrast, spacing, props.threshold, props.invert]);
+
+      if (!props.imageUrl) {
+        return (
+          <div className="rounded-lg bg-neutral-900 flex items-center justify-center" style={{ width: w, height: h }}>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Upload an image for halftone</span>
+          </div>
+        );
+      }
+
+      return (
+        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
+              <GlitchLoader size="sm" />
+            </div>
+          )}
+          <canvas ref={canvasRef} className="w-full h-auto" style={{ maxWidth: w }} />
+        </div>
+      );
+    },
+
+    RisoPreview: ({ props, bindings }) => {
+      const canvasRef = useRef<HTMLCanvasElement>(null);
+      const [color1] = useBoundProp<string>(props.color1, bindings?.color1);
+      const [color2] = useBoundProp<string>(props.color2, bindings?.color2);
+      const [loading, setLoading] = useState(false);
+      const w = props.width || 512;
+      const h = props.height || 512;
+
+      const hexToRgb = (hex: string): [number, number, number] => {
+        const r = parseInt(hex.slice(1, 3), 16) / 255;
+        const g = parseInt(hex.slice(3, 5), 16) / 255;
+        const b = parseInt(hex.slice(5, 7), 16) / 255;
+        return [r, g, b];
+      };
+
+      useEffect(() => {
+        if (!props.imageUrl) return;
+        let cancelled = false;
+        setLoading(true);
+        (async () => {
+          try {
+            const { applyShaderEffect } = await import('@/utils/shaders/shaderRenderer');
+            const c1 = color1 ?? props.color1 ?? '#e63946';
+            const c2 = color2 ?? props.color2 ?? '#1d3557';
+            const result = await applyShaderEffect(props.imageUrl, w, h, {
+              shaderType: 'duotone',
+              duotoneShadowColor: hexToRgb(c1),
+              duotoneHighlightColor: hexToRgb(c2),
+              duotoneIntensity: 1,
+              duotoneContrast: 1.2,
+            });
+            if (!cancelled && canvasRef.current) {
+              const ctx = canvasRef.current.getContext('2d');
+              if (ctx) {
+                const img = new Image();
+                img.onload = () => {
+                  canvasRef.current!.width = img.naturalWidth;
+                  canvasRef.current!.height = img.naturalHeight;
+                  ctx.drawImage(img, 0, 0);
+                  setLoading(false);
+                };
+                img.src = result;
+              }
+            }
+          } catch (e) {
+            console.error('[RisoPreview]', e);
+            if (!cancelled) setLoading(false);
+          }
+        })();
+        return () => { cancelled = true; };
+      }, [props.imageUrl, color1, color2, props.halftoneAngle1, props.dotSize]);
+
+      if (!props.imageUrl) {
+        return (
+          <div className="rounded-lg bg-neutral-900 flex items-center justify-center" style={{ width: w, height: h }}>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Upload an image for riso effect</span>
+          </div>
+        );
+      }
+
+      return (
+        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
+              <GlitchLoader size="sm" />
+            </div>
+          )}
+          <canvas ref={canvasRef} className="w-full h-auto" style={{ maxWidth: w }} />
+        </div>
+      );
+    },
+
+    MoodboardGrid: ({ props }) => {
+      const layout = props.layout || 'grid';
+      const cols = props.columns || 3;
+      const gap = props.gap ?? 4;
+
+      const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+        const img = e.currentTarget;
+        if (img.dataset.retried) return;
+        img.dataset.retried = '1';
+        img.crossOrigin = '';
+        img.src = `/api/images/proxy?url=${encodeURIComponent(img.src)}`;
+      };
+
+      const renderImg = (img: { src: string; alt?: string }, cls: string) => (
+        <img
+          src={img.src}
+          alt={img.alt || ''}
+          className={cls}
+          crossOrigin="anonymous"
+          onError={handleImgError}
+        />
+      );
+
+      if (layout === 'bento') {
+        return (
+          <div
+            className="grid auto-rows-[200px]"
+            style={{ gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: `${gap * 4}px` }}
+          >
+            {props.images.map((img, i) => (
+              <div
+                key={i}
+                className="rounded-lg overflow-hidden bg-neutral-800"
+                style={{ gridColumn: img.span ? `span ${img.span}` : undefined }}
+              >
+                {renderImg(img, 'w-full h-full object-cover')}
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      if (layout === 'masonry') {
+        return (
+          <div style={{ columnCount: cols, columnGap: `${gap * 4}px` }}>
+            {props.images.map((img, i) => (
+              <div key={i} className="mb-4 rounded-lg overflow-hidden bg-neutral-800 break-inside-avoid">
+                {renderImg(img, 'w-full h-auto')}
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      return (
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            gap: `${gap * 4}px`,
+            aspectRatio: props.aspectRatio || 'auto',
+          }}
+        >
+          {props.images.map((img, i) => (
+            <div key={i} className="rounded-lg overflow-hidden bg-neutral-800 aspect-square">
+              {renderImg(img, 'w-full h-full object-cover')}
+            </div>
+          ))}
+        </div>
+      );
+    },
+
     // ─── Text ─────────────────────────────────────────
     Heading: ({ props }) => {
       const level = props.level ?? 2;
       const cls = 'font-semibold text-neutral-100';
-      if (level === 1) return <h1 className={cls}>{props.text}</h1>;
-      if (level === 3) return <h3 className={cls}>{props.text}</h3>;
-      if (level === 4) return <h4 className={cls}>{props.text}</h4>;
-      return <h2 className={cls}>{props.text}</h2>;
+      const style = props.style as React.CSSProperties | undefined;
+      if (level === 1) return <h1 className={cls} style={style}>{props.text}</h1>;
+      if (level === 3) return <h3 className={cls} style={style}>{props.text}</h3>;
+      if (level === 4) return <h4 className={cls} style={style}>{props.text}</h4>;
+      return <h2 className={cls} style={style}>{props.text}</h2>;
     },
     Text: ({ props }) => {
       const styles: Record<string, string> = {
@@ -336,7 +834,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
         danger: 'text-red-400',
       };
       return (
-        <span className={cn(styles[props.variant ?? 'body'], colors[props.color ?? 'default'])}>
+        <span
+          className={cn(styles[props.variant ?? 'body'], colors[props.color ?? 'default'])}
+          style={props.style as React.CSSProperties | undefined}
+        >
           {props.text}
         </span>
       );
@@ -392,6 +893,36 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
         a.download = params.filename || 'download';
         a.click();
       }
+    },
+    generateVideo: async (params) => {
+      const result = await playgroundFetch('/video/generate', params as Record<string, unknown>);
+      toast.success('Video generated!');
+      return result;
+    },
+    applyShader: async (params) => {
+      try {
+        const { applyShaderEffect } = await import('@/utils/shaders/shaderRenderer');
+        const shaderParams = (params as any)?.params || {};
+        const resultBase64 = await applyShaderEffect(
+          (params as any)?.imageUrl,
+          undefined,
+          undefined,
+          { shaderType: (params as any)?.shaderType, ...shaderParams }
+        );
+        toast.success('Shader applied!');
+        return resultBase64 as any;
+      } catch (e: any) {
+        toast.error(`Shader failed: ${e.message}`);
+        throw e;
+      }
+    },
+    detectGrid: async (params) => {
+      return playgroundFetch('/moodboard/detect-grid', params as Record<string, unknown>);
+    },
+    upscaleImage: async (params) => {
+      const result = await playgroundFetch('/moodboard/upscale', params as Record<string, unknown>);
+      toast.success('Image upscaled!');
+      return result;
     },
   },
 });
