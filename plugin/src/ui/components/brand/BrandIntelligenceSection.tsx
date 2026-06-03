@@ -77,7 +77,6 @@ export function BrandIntelligenceSection() {
         </div>
       </div>
 
-
       {references.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">

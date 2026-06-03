@@ -43,8 +43,8 @@ const GROUP_LABELS: Record<CompletenessRule['group'], string> = {
 export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ guideline }) => {
   const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
   const status = completenessStatus(report.score);
-  const style = STATUS_STYLES[status];
-  const missingCount = report.missing.length;
+  const style = STATUS_STYLES[status] ?? STATUS_STYLES.low;
+  const missingCount = report.missing?.length ?? 0;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [healthReport, setHealthReport] = useState<BrandHealthReport | null>(null);
