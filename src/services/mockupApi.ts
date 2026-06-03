@@ -304,7 +304,7 @@ export const mockupApi = {
     referenceImages?: Array<{ base64?: string; url?: string; mimeType: string }>;
     imagesCount?: number;
     feature?: 'mockupmachine' | 'canvas';
-    provider?: 'gemini' | 'seedream' | 'openai'; // Image generation provider
+    provider?: 'gemini' | 'seedream' | 'openai' | 'imagen';
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
     brandGuidelineId?: string; // Optional brand guideline ID for context injection
     seed?: number; // Optional seed for deterministic generation
@@ -548,9 +548,10 @@ export const mockupApi = {
 
           const error = new Error(errorMessage);
           (error as any).status = response.status;
-          (error as any).errorData = errorData; // Attach full error data
+          (error as any).errorData = errorData;
+          if (errorData?.hint) (error as any).hint = errorData.hint;
+          if (errorData?.suggestModel) (error as any).suggestModel = errorData.suggestModel;
 
-          // Handle specific error types
           if (
             response.status === 403 ||
             errorMessage.includes('Insufficient credits') ||

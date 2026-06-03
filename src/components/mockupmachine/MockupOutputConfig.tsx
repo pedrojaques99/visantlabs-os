@@ -70,8 +70,7 @@ export const MockupOutputConfig: React.FC = () => {
       <ModelSelector
         type="image"
         selectedModel={
-          selectedModel ||
-          (imageProvider === 'seedream' ? 'seedream-4.5' : GEMINI_MODELS.IMAGE_NB2)
+          selectedModel || (imageProvider === 'seedream' ? 'seedream-4.5' : GEMINI_MODELS.IMAGE_NB2)
         }
         onModelChange={handleModelChange}
         resolution={resolution}

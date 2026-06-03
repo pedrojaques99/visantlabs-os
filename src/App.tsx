@@ -180,6 +180,9 @@ const PlaygroundPage = lazyWithRetry(() =>
 const PlaygroundGalleryPage = lazyWithRetry(() =>
   import('./pages/PlaygroundGalleryPage').then((m) => ({ default: m.PlaygroundGalleryPage }))
 );
+const PlaygroundSharedPage = lazyWithRetry(() =>
+  import('./pages/PlaygroundSharedPage').then((m) => ({ default: m.PlaygroundSharedPage }))
+);
 const DeveloperPortalPage = lazyWithRetry(() =>
   import('./pages/DeveloperPortalPage').then((m) => ({ default: m.DeveloperPortalPage }))
 );
@@ -341,6 +344,7 @@ const App: React.FC = () => {
                   <Route path="/create/projects" element={<CreativeProjectsPage />} />
                   <Route path="/playground" element={<PlaygroundPage />} />
                   <Route path="/playground/explore" element={<PlaygroundGalleryPage />} />
+                  <Route path="/playground/shared/:shareId" element={<PlaygroundSharedPage />} />
                   <Route path="/playground/:slug" element={<PlaygroundPage />} />
                   <Route path="/community" element={<CommunityPage />} />
                   <Route path="/community/presets" element={<CommunityPresetsPage />} />

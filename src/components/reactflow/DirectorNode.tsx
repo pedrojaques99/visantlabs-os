@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { type NodeProps, Position, NodeResizer } from '@xyflow/react';
-import { Compass, PanelRight, Image as ImageIcon, Check, Diamond, Dices } from 'lucide-react';
+import { Compass, PanelRight, Image as ImageIcon, Check, Diamond, Dices, Zap } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { DirectorNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,7 @@ export const DirectorNode = memo(
     const isAnalyzing = nodeData.isAnalyzing || false;
     const hasAnalyzed = nodeData.hasAnalyzed || false;
     const isGeneratingPrompt = nodeData.isGeneratingPrompt || false;
+    const isGeneratingMockup = nodeData.isGeneratingMockup || false;
     const generatedPrompt = nodeData.generatedPrompt;
 
     // Count selected tags
@@ -60,6 +61,16 @@ export const DirectorNode = memo(
       [nodeData.onGeneratePrompt, id]
     );
 
+    const handleGenerateMockup = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (nodeData.onGenerateMockup) {
+          nodeData.onGenerateMockup(id);
+        }
+      },
+      [nodeData.onGenerateMockup, id]
+    );
+
     // Check if we have selections for generate button
     const hasSelections =
       nodeData.selectedDesignType !== null &&
@@ -75,6 +86,7 @@ export const DirectorNode = memo(
 
     // Get status for display
     const getStatusLabel = () => {
+      if (isGeneratingMockup) return 'Generating mockup...';
       if (isGeneratingPrompt)
         return t('canvasNodes.directorNode.generatingPrompt') || 'Generating...';
       if (generatedPrompt) return t('canvasNodes.directorNode.promptReady') || 'Prompt Ready';
@@ -88,6 +100,7 @@ export const DirectorNode = memo(
     };
 
     const getStatusColor = () => {
+      if (isGeneratingMockup) return 'text-amber-400';
       if (isGeneratingPrompt) return 'text-amber-400';
       if (generatedPrompt) return 'text-green-400';
       if (hasAnalyzed) return 'node-text-accent';
@@ -174,12 +187,34 @@ export const DirectorNode = memo(
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-2">
-            {/* Open Side Panel Button */}
+            {/* Generate Mockup — direct, no side panel needed */}
             <NodeButton
               variant="primary"
               size="full"
+              onClick={handleGenerateMockup}
+              disabled={!connectedImage || isGeneratingMockup || isGeneratingPrompt}
+              className="shadow-sm backdrop-blur-sm nodrag"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              {isGeneratingMockup ? (
+                <>
+                  <GlitchLoader size={14} className="mr-2" color="currentColor" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Zap size={14} className="mr-2" />
+                  <span>Generate Mockup</span>
+                </>
+              )}
+            </NodeButton>
+
+            {/* Open Side Panel — advanced users */}
+            <NodeButton
+              variant="default"
+              size="full"
               onClick={handleOpenSidePanel}
-              disabled={!connectedImage}
+              disabled={!connectedImage || isGeneratingMockup}
               className="shadow-sm backdrop-blur-sm nodrag"
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -190,10 +225,10 @@ export const DirectorNode = memo(
             {/* Generate Prompt Button (only shown when analyzed and has selections) */}
             {hasAnalyzed && (
               <NodeButton
-                variant="primary"
+                variant="default"
                 size="full"
                 onClick={handleGeneratePrompt}
-                disabled={!hasSelections || isGeneratingPrompt}
+                disabled={!hasSelections || isGeneratingPrompt || isGeneratingMockup}
                 className="shadow-sm backdrop-blur-sm nodrag"
                 onMouseDown={(e) => e.stopPropagation()}
               >
@@ -237,6 +272,7 @@ export const DirectorNode = memo(
       prevData.isAnalyzing !== nextData.isAnalyzing ||
       prevData.hasAnalyzed !== nextData.hasAnalyzed ||
       prevData.isGeneratingPrompt !== nextData.isGeneratingPrompt ||
+      prevData.isGeneratingMockup !== nextData.isGeneratingMockup ||
       prevData.generatedPrompt !== nextData.generatedPrompt ||
       prevData.selectedBrandingTags?.length !== nextData.selectedBrandingTags?.length ||
       prevData.selectedCategoryTags?.length !== nextData.selectedCategoryTags?.length ||

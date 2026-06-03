@@ -2348,6 +2348,8 @@ export const useCanvasNodeCreation = (
           onAnalyze: handlersRef.current?.handleDirectorAnalyze || (() => Promise.resolve()),
           onGeneratePrompt:
             handlersRef.current?.handleDirectorGeneratePrompt || (() => Promise.resolve()),
+          onGenerateMockup:
+            handlersRef.current?.handleDirectorGenerateMockup || (() => Promise.resolve()),
           onUpdateData: handlersRef.current?.handleDirectorNodeDataUpdate || (() => {}),
           onOpenSidePanel: handlersRef.current?.handleDirectorOpenSidebar || (() => {}),
           onDelete: handleDelete,

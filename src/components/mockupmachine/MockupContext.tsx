@@ -22,6 +22,7 @@ import {
   saveSurpriseMeSelectedTags,
   type SurpriseMeSelectedTags,
 } from '@/utils/surpriseMeSettings';
+import { getPreferredImageProvider, setModelPreference } from '@/utils/modelPreferences';
 
 interface MockupContextState {
   uploadedImage: UploadedImage | null;
@@ -201,28 +202,16 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [selectedVibeSegment, setSelectedVibeSegment] = useState<string | null>(null);
   const [selectedVibeStyle, setSelectedVibeStyle] = useState<string | null>(null);
 
-  // Image provider state with localStorage persistence
-  const [imageProvider, setImageProviderState] = useState<ImageProvider>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('visantlabs-image-provider');
-      return (saved === 'seedream' ? 'seedream' : 'gemini') as ImageProvider;
-    }
-    return 'gemini';
-  });
+  // Image provider state with centralized persistence
+  const [imageProvider, setImageProviderState] = useState<ImageProvider>(() =>
+    getPreferredImageProvider()
+  );
 
-  // Wrapper to persist imageProvider to localStorage
   const setImageProvider = useCallback(
     (value: ImageProvider | ((prev: ImageProvider) => ImageProvider)) => {
       setImageProviderState((prev) => {
         const newValue = typeof value === 'function' ? value(prev) : value;
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.setItem('visantlabs-image-provider', newValue);
-          } catch (e) {
-            // Ignore localStorage quota errors
-            console.warn('Failed to persist image provider to localStorage:', e);
-          }
-        }
+        setModelPreference('imageProvider', newValue);
         return newValue;
       });
     },

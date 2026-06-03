@@ -1618,6 +1618,7 @@
     "addTextureNode": "Add Texture Node",
     "addUpscaleNode": "Add Upscale Node",
     "categories": {
+      "advanced": "Advanced",
       "branding": "Branding",
       "composition": "Composition",
       "core": "Core"
@@ -2451,6 +2452,7 @@
     "essentialModeFootnote": "Essential mode uses presets optimized for speed and professional quality.",
     "generateResults": "GENERATE MOCKUPS",
     "selectVibe": "Please select a style before generating.",
+    "selectVibeHint": "Select a style above to generate",
     "switchToExpert": "EXPERT MODE",
     "vibeSelect": "CHOOSE THE STYLE (VIBE)",
     "scenarioDetails": "SCENARIO DETAILS",
@@ -4213,6 +4215,7 @@
     "uploadLogo": "Upload your logo or layout",
     "version": "v1.0",
     "viewAllApps": "View All Apps",
+    "openBrandGuideline": "Open Brand Guideline",
     "screen": {
       "fechar": "Fechar",
       "close_tutorial": "Close tutorial"

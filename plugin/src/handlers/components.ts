@@ -139,7 +139,12 @@ export async function getComponentFromSelection(): Promise<ComponentInfo | null>
       // Component may not be accessible
     }
   }
-  if (node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'RECTANGLE' || node.type === 'VECTOR') {
+  if (
+    node.type === 'FRAME' ||
+    node.type === 'GROUP' ||
+    node.type === 'RECTANGLE' ||
+    node.type === 'VECTOR'
+  ) {
     const thumbnail = await exportNodeThumbnail(node);
     return {
       id: node.id,

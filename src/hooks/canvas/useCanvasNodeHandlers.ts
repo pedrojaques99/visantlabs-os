@@ -856,7 +856,19 @@ export const useCanvasNodeHandlers = (
 
   // ========== BRAND BATCH HANDLERS ==========
   const { handleBrandBatchRun, handleBrandBatchCancel, handleBrandBatchNodeDataUpdate } =
-    useBrandBatchHandlers({ nodesRef, edgesRef, updateNodeData, linkedGuideline });
+    useBrandBatchHandlers({
+      nodesRef,
+      edgesRef,
+      updateNodeData,
+      setNodes,
+      setEdges,
+      addToHistory,
+      createOutputNodeWithSkeleton: createOutputNodeWithSkeletonForGenerated,
+      updateOutputNodeWithResult,
+      uploadImageToR2Auto,
+      cleanupFailedNode,
+      linkedGuideline,
+    });
 
   // ========== BRAND BATCH ADD REFERENCES HANDLER ==========
   const handleBrandBatchAddReferences = useCallback(
@@ -1307,5 +1319,11 @@ export const useCanvasNodeHandlers = (
     handlersRef,
     nodesRef,
     updateNodeData,
+    createOutputNodeWithSkeleton: createOutputNodeWithSkeletonForGenerated,
+    updateOutputNodeWithResult,
+    updateOutputNodeWithR2Url,
+    uploadImageToR2Auto,
+    cleanupFailedNode,
+    refreshSubscriptionStatus,
   };
 };

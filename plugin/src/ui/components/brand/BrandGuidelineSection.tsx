@@ -13,7 +13,7 @@ import { NamingGuideModal, PushPreviewModal } from './BrandModals';
 export function BrandGuidelineSection() {
   const linkedGuideline = usePluginStore((s) => s.linkedGuideline);
   const { loadBrandGuidelines, saveBrandGuideline, updateBrandGuideline } = useBrandSync();
-  const { apply } = useBrandGuidelineLoader();
+  const { apply, clear } = useBrandGuidelineLoader();
   const { run: runImport, isImporting } = useBrandImport();
 
   const [guidelines, setGuidelines] = useState<any[]>([]);
@@ -103,26 +103,49 @@ export function BrandGuidelineSection() {
       <div className="space-y-2">
         <div className="flex gap-2">
           {guidelines.length > 0 && !isCreating && (
-            <Select
-              options={guidelines.map((g) => {
-                const colors = Array.isArray(g.colors) ? (g.colors as any[]) : [];
-                const primary = colors.find((c: any) => c?.role === 'primary') || colors[0];
-                const swatch = primary?.hex ? (
-                  <span
-                    className="w-3 h-3 rounded-full shrink-0 border border-white/10"
-                    style={{ backgroundColor: primary.hex }}
-                  />
-                ) : (
-                  <span className="w-3 h-3 rounded-full shrink-0 bg-neutral-700 border border-white/10" />
-                );
-                return { value: getGuidelineId(g)!, label: getGuidelineLabel(g), icon: swatch };
-              })}
-              value={linkedGuideline || ''}
-              onChange={(value) => handleSelectGuideline(value as string)}
-              variant="node"
-              placeholder="Select a guideline..."
-              className="flex-1"
-            />
+            <div className="flex-1 group/gl relative">
+              <Select
+                options={guidelines.map((g) => {
+                  const colors = Array.isArray(g.colors) ? (g.colors as any[]) : [];
+                  const primary = colors.find((c: any) => c?.role === 'primary') || colors[0];
+                  const swatch = primary?.hex ? (
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0 border border-white/10"
+                      style={{ backgroundColor: primary.hex }}
+                    />
+                  ) : (
+                    <span className="w-3 h-3 rounded-full shrink-0 bg-neutral-700 border border-white/10" />
+                  );
+                  return { value: getGuidelineId(g)!, label: getGuidelineLabel(g), icon: swatch };
+                })}
+                value={linkedGuideline || ''}
+                onChange={(value) => handleSelectGuideline(value as string)}
+                variant="node"
+                placeholder="Select a guideline..."
+                className="w-full"
+              />
+              {linkedGuideline && (
+                <button
+                  onClick={() => {
+                    clear();
+                    parent.postMessage(
+                      {
+                        pluginMessage: {
+                          type: 'SAVE_BRAND_GUIDELINE',
+                          selectedId: null,
+                          guideline: null,
+                        },
+                      },
+                      'https://www.figma.com'
+                    );
+                  }}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 p-0.5 rounded opacity-0 group-hover/gl:opacity-100 transition-opacity bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 z-10"
+                  title="Disconnect brand"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
           )}
           {isCreating && (
             <input

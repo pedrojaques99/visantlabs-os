@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { getPreferredImageModel } from '@/utils/modelPreferences';
 import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 import { useSessionWebSocket, type SessionWsEvent } from '@/hooks/chat/useSessionWebSocket';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -90,7 +91,9 @@ export const AdminChat: React.FC<AdminChatProps> = ({
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<string>('gpt-image-2');
+  const [selectedModel, setSelectedModel] = useState<string>(
+    () => getPreferredImageModel() || 'gpt-image-2'
+  );
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [resolution, setResolution] = useState<Resolution>('2K');
   const [isDraggingFile, setIsDraggingFile] = useState(false);

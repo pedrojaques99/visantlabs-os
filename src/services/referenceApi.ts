@@ -1,5 +1,7 @@
 import { API_BASE } from '@/config/api';
 import { authService } from './authService';
+import { aiApi } from './aiApi';
+import { mockupApi } from './mockupApi';
 
 export interface ReferenceResult {
   id: string;
@@ -10,6 +12,7 @@ export interface ReferenceResult {
   prompt?: string;
   tags?: string[];
   relevanceScore: number;
+  sanitized?: boolean;
 }
 
 interface SmartSearchParams {
@@ -45,4 +48,33 @@ export const referenceApi = {
   },
 
   clearCache: () => cache.clear(),
+
+  sanitize: async (ref: ReferenceResult): Promise<string> => {
+    const SANITIZE_PROMPT =
+      'Remove all logos, text, branding, artwork, symbols, patterns and any design from this mockup. Make all design surfaces plain white or blank. Slightly shift the camera angle, focal point and scene background to create a unique composition. Keep the product/object and materials intact.';
+
+    const base64 = await aiApi.changeObjectInMockup(
+      { url: ref.referenceImageUrl, mimeType: 'image/png' },
+      SANITIZE_PROMPT,
+      'gemini',
+      '1024x1024'
+    );
+
+    const newUrl = await mockupApi.uploadTempImage(base64, 'image/png');
+
+    const token = authService.getToken();
+    const resp = await fetch(`${API_BASE}/admin/references/${ref.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ referenceImageUrl: newUrl, sanitized: true }),
+    });
+
+    if (!resp.ok) throw new Error('Failed to update reference');
+
+    cache.clear();
+    return newUrl;
+  },
 };

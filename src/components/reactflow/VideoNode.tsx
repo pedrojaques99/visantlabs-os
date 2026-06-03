@@ -36,26 +36,39 @@ import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 import {
   VIDEO_MODEL_LIST,
   VIDEO_MODEL_CONFIG,
+  type VideoModelId,
   getVideoModelConfig,
   getDurationOptions,
   getModeOptions,
   isKlingModel,
   isVeoModel,
 } from '@/constants/videoModels';
+import { setModelPreference } from '@/utils/modelPreferences';
+import { getVideoCreditsRequired } from '@/utils/creditCalculator';
+import { useAvailableProviders } from '@/hooks/useAvailableProviders';
+import { getVideoProvider } from '@/constants/videoModels';
 
 // Constants
 const DEFAULT_MODEL = 'veo-3.1-generate-preview';
 const DEFAULT_ASPECT_RATIO: AspectRatio = '16:9';
 const DEFAULT_RESOLUTION: Resolution = '1080p';
 const DEFAULT_DURATION = '5s';
-const CREDITS_REQUIRED = 20;
 
-// Static model options for the model selector
-const MODEL_OPTIONS = VIDEO_MODEL_LIST.map((id) => ({
+const FEATURED_MODEL_OPTIONS = VIDEO_MODEL_LIST.filter(
+  (id) => !VIDEO_MODEL_CONFIG[id]?.deprecated
+).map((id) => ({
   value: id,
   label: VIDEO_MODEL_CONFIG[id].label,
   badge: VIDEO_MODEL_CONFIG[id].badge,
 }));
+
+const ALL_MODEL_OPTIONS = VIDEO_MODEL_LIST.map((id) => ({
+  value: id,
+  label: VIDEO_MODEL_CONFIG[id].label,
+  badge: VIDEO_MODEL_CONFIG[id].badge,
+}));
+
+const HAS_DEPRECATED_VIDEO = VIDEO_MODEL_LIST.some((id) => VIDEO_MODEL_CONFIG[id]?.deprecated);
 
 // Generation mode options (shared, filtered per model capabilities)
 const ALL_MODE_OPTIONS = [
@@ -74,6 +87,25 @@ export const VideoNode = memo(
     const { setNodes } = useReactFlow();
     const nodeData = data as VideoNodeData;
     const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
+    const [showOlderVideoModels, setShowOlderVideoModels] = useState(false);
+    const availableProviders = useAvailableProviders();
+    const videoModelOptions = useMemo(() => {
+      const pool = showOlderVideoModels ? ALL_MODEL_OPTIONS : [...FEATURED_MODEL_OPTIONS];
+      const filtered = pool.filter((o) => {
+        const provider = getVideoProvider(o.value);
+        return availableProviders[provider] !== false;
+      });
+      if (nodeData.model && !filtered.some((o) => o.value === nodeData.model)) {
+        const cfg = VIDEO_MODEL_CONFIG[nodeData.model as VideoModelId];
+        if (cfg)
+          filtered.push({
+            value: nodeData.model as VideoModelId,
+            label: cfg.label,
+            badge: cfg.badge,
+          });
+      }
+      return filtered;
+    }, [showOlderVideoModels, nodeData.model, availableProviders]);
 
     // Refs
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -97,6 +129,10 @@ export const VideoNode = memo(
     const [isLooping, setIsLooping] = useState<boolean>(nodeData.isLooping || false);
     const [isBrandActive, setIsBrandActive] = useState<boolean>(nodeData.isBrandActive ?? true);
     const [klingMode, setKlingMode] = useState<'std' | 'pro' | '4k'>(nodeData.klingMode || 'pro');
+    const creditsRequired = useMemo(
+      () => getVideoCreditsRequired(model, klingMode),
+      [model, klingMode]
+    );
     const [sound, setSound] = useState<'on' | 'off'>(nodeData.sound || 'off');
     const [cfgScale, setCfgScale] = useState<number>(nodeData.cfgScale ?? 0.5);
 
@@ -567,6 +603,7 @@ export const VideoNode = memo(
                   const caps = getVideoModelConfig(v);
                   setModel(v);
                   persistDefaults({ model: v });
+                  setModelPreference('videoModel', v);
                   // Reset duration to model default if current is invalid
                   if (caps && !caps.durations.includes(duration)) {
                     setDuration(caps.defaultDuration);
@@ -581,9 +618,23 @@ export const VideoNode = memo(
                     updateData({ klingMode: newKlingMode });
                   }
                 }}
-                options={MODEL_OPTIONS}
+                options={videoModelOptions}
                 variant="node"
                 disabled={isLoading}
+                footer={
+                  HAS_DEPRECATED_VIDEO ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowOlderVideoModels(!showOlderVideoModels);
+                      }}
+                      className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
+                    >
+                      {showOlderVideoModels ? 'Hide older models' : 'Show older models'}
+                    </button>
+                  ) : undefined
+                }
               />
             </div>
 
@@ -759,7 +810,7 @@ export const VideoNode = memo(
         <Tooltip
           content={`${
             t('canvasNodes.promptNode.creditsRequired') || 'Costs'
-          } ${CREDITS_REQUIRED} ${t('canvasNodes.promptNode.credits')}`}
+          } ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
           delay={500}
         >
           <NodeButton
@@ -786,7 +837,7 @@ export const VideoNode = memo(
                 </span>
                 <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
                   <Diamond size={10} className="opacity-50 fill-current" />
-                  {CREDITS_REQUIRED}
+                  {creditsRequired}
                 </div>
               </div>
             )}
