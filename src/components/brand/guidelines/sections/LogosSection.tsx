@@ -106,55 +106,57 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
             className="grid gap-2"
             style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}
           >
-            {logos.filter((l) => l.url).map((logo, i) => (
-              <div
-                key={i}
-                className="relative group/logo flex flex-col items-center gap-1.5 p-3 rounded-md border border-neutral-800 bg-white/[0.03] hover:border-white/10 transition-colors"
-              >
-                {(() => {
-                  const ext = (logo.url ?? '').split('?')[0].toLowerCase();
-                  const fmt = ext.endsWith('.svg')
-                    ? 'SVG'
-                    : ext.endsWith('.png')
-                    ? 'PNG'
-                    : ext.endsWith('.jpg') || ext.endsWith('.jpeg')
-                    ? 'JPG'
-                    : ext.endsWith('.webp')
-                    ? 'WEBP'
-                    : '';
-                  return fmt ? (
-                    <span
-                      className={`absolute top-1 right-1 text-[10px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10 ${
-                        fmt === 'SVG'
-                          ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
-                          : 'bg-white/10 text-neutral-400 border border-white/10'
-                      }`}
-                    >
-                      {fmt}
-                    </span>
-                  ) : null;
-                })()}
-                <div className="w-full h-16 flex items-center justify-center">
-                  <img
-                    src={logo.url}
-                    alt={logo.label || `Logo ${i + 1}`}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
-                <span className="text-[10px] font-mono text-neutral-500 truncate w-full text-center">
-                  {logo.label || `Logo ${i + 1}`}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-1 right-1 h-5 w-5 text-neutral-700 hover:text-destructive opacity-0 group-hover/logo:opacity-100 transition-all"
-                  onClick={() => handleDelete(i)}
-                  aria-label="Remove logo"
+            {logos
+              .filter((l) => l.url)
+              .map((logo, i) => (
+                <div
+                  key={i}
+                  className="relative group/logo flex flex-col items-center gap-1.5 p-3 rounded-md border border-neutral-800 bg-white/[0.03] hover:border-white/10 transition-colors"
                 >
-                  <Trash2 size={10} />
-                </Button>
-              </div>
-            ))}
+                  {(() => {
+                    const ext = (logo.url ?? '').split('?')[0].toLowerCase();
+                    const fmt = ext.endsWith('.svg')
+                      ? 'SVG'
+                      : ext.endsWith('.png')
+                      ? 'PNG'
+                      : ext.endsWith('.jpg') || ext.endsWith('.jpeg')
+                      ? 'JPG'
+                      : ext.endsWith('.webp')
+                      ? 'WEBP'
+                      : '';
+                    return fmt ? (
+                      <span
+                        className={`absolute top-1 right-1 text-[10px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10 ${
+                          fmt === 'SVG'
+                            ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
+                            : 'bg-white/10 text-neutral-400 border border-white/10'
+                        }`}
+                      >
+                        {fmt}
+                      </span>
+                    ) : null;
+                  })()}
+                  <div className="w-full h-16 flex items-center justify-center">
+                    <img
+                      src={logo.url}
+                      alt={logo.label || `Logo ${i + 1}`}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                  <span className="text-[10px] font-mono text-neutral-500 truncate w-full text-center">
+                    {logo.label || `Logo ${i + 1}`}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-1 right-1 h-5 w-5 text-neutral-700 hover:text-destructive opacity-0 group-hover/logo:opacity-100 transition-all"
+                    onClick={() => handleDelete(i)}
+                    aria-label="Remove logo"
+                  >
+                    <Trash2 size={10} />
+                  </Button>
+                </div>
+              ))}
           </div>
         ) : (
           <button

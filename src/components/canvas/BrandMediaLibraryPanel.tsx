@@ -156,9 +156,13 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
             />
             <input
               type="text"
-              placeholder="Search assets..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={activeTab === 'refs' ? 'Search references...' : 'Search assets...'}
+              value={activeTab === 'refs' ? refSearch.query : searchQuery}
+              onChange={(e) =>
+                activeTab === 'refs'
+                  ? refSearch.setQuery(e.target.value)
+                  : setSearchQuery(e.target.value)
+              }
               className="w-full bg-neutral-900/50 border border-white/5 rounded-md pl-7 pr-2 py-1 text-[10px] text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 font-mono"
             />
           </div>
@@ -300,20 +304,6 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                     </button>
                   )}
                 </div>
-                {/* Search */}
-                <div className="relative">
-                  <Search
-                    className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-600"
-                    size={11}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search references..."
-                    value={refSearch.query}
-                    onChange={(e) => refSearch.setQuery(e.target.value)}
-                    className="w-full bg-neutral-900/50 border border-white/5 rounded-md pl-7 pr-2 py-1 text-[10px] text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 font-mono"
-                  />
-                </div>
                 {/* Dimension refinement chips */}
                 <div className="flex flex-wrap gap-1 relative">
                   {refFilterKeys.map((key) => {
@@ -380,9 +370,76 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                     No references found
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div
+                    className={cn(
+                      viewMode === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-1'
+                    )}
+                  >
                     {refSearch.results.map((ref) => {
                       const isRecommended = ref.relevanceScore >= 0.7;
+
+                      if (viewMode === 'list') {
+                        return (
+                          <div
+                            key={ref.id}
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData(
+                                'application/vsn-asset-url',
+                                ref.referenceImageUrl
+                              );
+                              e.dataTransfer.setData('application/vsn-asset-type', 'image');
+                              e.dataTransfer.effectAllowed = 'copy';
+                            }}
+                            onClick={() => {
+                              if (onAddToBoard) onAddToBoard(ref.referenceImageUrl, 'image');
+                              toast.success('Reference added');
+                            }}
+                            className={cn(
+                              'flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border transition-all group cursor-pointer',
+                              isRecommended
+                                ? 'border-brand-cyan/20'
+                                : 'border-white/5 hover:border-neutral-700'
+                            )}
+                          >
+                            <div className="w-8 h-8 rounded overflow-hidden flex-shrink-0 bg-neutral-950">
+                              <img
+                                src={ref.referenceImageUrl}
+                                alt={ref.name}
+                                loading="lazy"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-mono font-bold text-neutral-400 truncate">
+                                {ref.name}
+                              </p>
+                              <div className="flex gap-0.5 mt-0.5">
+                                {[
+                                  ...(ref.dimensions.mockup_type || []).slice(0, 1),
+                                  ...(ref.dimensions.aesthetic || []).slice(0, 1),
+                                ].map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="text-[7px] px-1 py-0.5 rounded bg-white/10 text-white/60"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            {isRecommended && (
+                              <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-brand-cyan/90 text-black">
+                                <Zap size={7} />
+                                <span className="text-[7px] font-bold uppercase tracking-wider">
+                                  Match
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
                       return (
                         <div
                           key={ref.id}

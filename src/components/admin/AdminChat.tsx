@@ -91,7 +91,9 @@ export const AdminChat: React.FC<AdminChatProps> = ({
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<string>(() => getPreferredImageModel() || 'gpt-image-2');
+  const [selectedModel, setSelectedModel] = useState<string>(
+    () => getPreferredImageModel() || 'gpt-image-2'
+  );
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [resolution, setResolution] = useState<Resolution>('2K');
   const [isDraggingFile, setIsDraggingFile] = useState(false);

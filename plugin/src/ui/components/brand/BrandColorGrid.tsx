@@ -75,7 +75,10 @@ export function BrandColorGrid() {
     } else {
       setActiveRole(role);
       setIsCapturing(true);
-      parent.postMessage({ pluginMessage: { type: 'GET_SELECTION_FILL' } }, 'https://www.figma.com');
+      parent.postMessage(
+        { pluginMessage: { type: 'GET_SELECTION_FILL' } },
+        'https://www.figma.com'
+      );
     }
   };
 
@@ -133,7 +136,11 @@ export function BrandColorGrid() {
                 type="button"
                 onClick={() => handleSlotClick(item.role)}
                 onDoubleClick={() => openNativePicker(item.role)}
-                title={pendingHex ? `Assign ${pendingHex.hex} to ${item.label}` : 'Click: pick from selection · Double-click: custom color'}
+                title={
+                  pendingHex
+                    ? `Assign ${pendingHex.hex} to ${item.label}`
+                    : 'Click: pick from selection · Double-click: custom color'
+                }
                 className={cn(
                   'w-full aspect-square rounded-lg border transition-all relative overflow-hidden group',
                   awaitingSlot && 'border-brand-cyan/40 animate-pulse'
@@ -143,8 +150,8 @@ export function BrandColorGrid() {
                   borderColor: awaitingSlot
                     ? undefined
                     : color
-                      ? 'rgba(255,255,255,0.08)'
-                      : 'rgba(255,255,255,0.15)',
+                    ? 'rgba(255,255,255,0.08)'
+                    : 'rgba(255,255,255,0.15)',
                   borderStyle: color ? 'solid' : 'dashed',
                 }}
               >

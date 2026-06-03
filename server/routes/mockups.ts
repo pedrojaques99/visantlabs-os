@@ -1334,8 +1334,7 @@ router.post(
         error.name === 'ModelResponseTextError' ||
         msg.startsWith('MODEL_RESPONSE_TEXT:')
       ) {
-        const modelResponse =
-          error.modelResponse || msg.replace('MODEL_RESPONSE_TEXT:', '') || '';
+        const modelResponse = error.modelResponse || msg.replace('MODEL_RESPONSE_TEXT:', '') || '';
         statusCode = 422;
         errorResponse = {
           error: 'model_response_text',

@@ -22,10 +22,7 @@ import {
   saveSurpriseMeSelectedTags,
   type SurpriseMeSelectedTags,
 } from '@/utils/surpriseMeSettings';
-import {
-  getPreferredImageProvider,
-  setModelPreference,
-} from '@/utils/modelPreferences';
+import { getPreferredImageProvider, setModelPreference } from '@/utils/modelPreferences';
 
 interface MockupContextState {
   uploadedImage: UploadedImage | null;
@@ -206,8 +203,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [selectedVibeStyle, setSelectedVibeStyle] = useState<string | null>(null);
 
   // Image provider state with centralized persistence
-  const [imageProvider, setImageProviderState] = useState<ImageProvider>(
-    () => getPreferredImageProvider()
+  const [imageProvider, setImageProviderState] = useState<ImageProvider>(() =>
+    getPreferredImageProvider()
   );
 
   const setImageProvider = useCallback(

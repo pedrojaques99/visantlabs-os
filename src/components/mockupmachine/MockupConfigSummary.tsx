@@ -7,9 +7,7 @@ export const MockupConfigSummary: React.FC = () => {
   const { selectedModel, resolution, aspectRatio, imageProvider } = useMockup();
 
   if (!selectedModel) {
-    return (
-      <span className="text-[9px] font-mono text-neutral-700 tracking-wider">—</span>
-    );
+    return <span className="text-[9px] font-mono text-neutral-700 tracking-wider">—</span>;
   }
 
   const credits = getCreditsRequired(selectedModel, resolution, imageProvider);

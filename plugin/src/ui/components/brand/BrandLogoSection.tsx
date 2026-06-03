@@ -117,7 +117,10 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
         {/* Empty state hint */}
         {!hasLogo && !busy && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-            <MousePointer2 size={12} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+            <MousePointer2
+              size={12}
+              className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+            />
             <span className="text-[7px] font-mono uppercase text-neutral-600 group-hover:text-brand-cyan transition-colors text-center leading-tight px-1">
               Select → Click
             </span>
@@ -172,7 +175,10 @@ export function BrandLogoSection() {
         onClick={handleAddSlot}
         title="Add logo variant"
       >
-        <Plus size={14} className="text-neutral-500 group-hover:text-brand-cyan transition-colors" />
+        <Plus
+          size={14}
+          className="text-neutral-500 group-hover:text-brand-cyan transition-colors"
+        />
         <span className="text-[7px] mt-1 font-mono uppercase tracking-tighter text-neutral-600 group-hover:text-brand-cyan transition-colors">
           Add Slot
         </span>

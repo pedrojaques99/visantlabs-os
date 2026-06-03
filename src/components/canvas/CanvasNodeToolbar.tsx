@@ -10,11 +10,10 @@ import {
   FileText as FileTextIcon,
   MessageSquare,
   ChevronLeft,
-  ChevronRight,
+  ChevronDown,
   Layers,
   Diamond,
   Building2,
-  Plus,
   Grid3x3,
   Pickaxe,
   X,
@@ -31,7 +30,7 @@ import { Button } from '@/components/ui/button';
 
 interface CanvasToolbarProps {
   onAddMerge: () => void;
-  onAddEdit: () => void;
+  onAddEdit?: () => void;
   onAddUpscale: () => void;
   onAddMockup: () => void;
   onAddAngle: () => void;
@@ -143,279 +142,77 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     }
   }, [forceCollapsed, isCollapsed]);
 
-  // Organize tools by category
-  const tools: ToolItem[] = [
-    // Core tools
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // Top 10 most-used tools — shown by default
+  const PRIMARY_IDS = [
+    'prompt', 'mockup', 'director', 'merge', 'upscale',
+    'angle', 'studio3d', 'shader', 'brandBatch', 'chat',
+  ];
+
+  // All available tools (flat list, no categories)
+  const allTools: ToolItem[] = [
     ...(onAddPrompt
-      ? [
-          {
-            id: 'prompt',
-            icon: <Pickaxe className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.prompt'),
-            tooltip: t('canvasToolbar.addPromptNode'),
-            onClick: onAddPrompt,
-            category: 'core' as const,
-          },
-        ]
+      ? [{ id: 'prompt', icon: <Pickaxe className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.prompt'), tooltip: t('canvasToolbar.addPromptNode'), onClick: onAddPrompt }]
       : []),
+    { id: 'mockup', icon: <ImageIcon className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.mockup'), tooltip: t('canvasToolbar.addMockupPresetNode'), onClick: onAddMockup },
     ...(onAddDirector
-      ? [
-          {
-            id: 'director',
-            icon: <Compass className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.director') || 'Director',
-            tooltip: t('canvasToolbar.addDirectorNode') || 'Add Director Node',
-            onClick: onAddDirector,
-            category: 'core' as const,
-          },
-        ]
+      ? [{ id: 'director', icon: <Compass className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.director') || 'Director', tooltip: t('canvasToolbar.addDirectorNode') || 'Add Director Node', onClick: onAddDirector }]
       : []),
-    {
-      id: 'mockup',
-      icon: <ImageIcon className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.mockup'),
-      tooltip: t('canvasToolbar.addMockupPresetNode'),
-      onClick: onAddMockup,
-      category: 'core' as const,
-    },
-    ...(experimentalMode && onAddChat
-      ? [
-          {
-            id: 'chat',
-            icon: <MessageSquare className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.chat') || 'Chat',
-            tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
-            onClick: onAddChat,
-            category: 'core' as const,
-          },
-        ]
-      : []),
-    ...(onAddNodeBuilder
-      ? [
-          {
-            id: 'nodeBuilder',
-            icon: <Blocks className="w-4 h-4" />,
-            label: 'Node Builder',
-            tooltip: 'Build a custom AI node',
-            onClick: onAddNodeBuilder,
-            category: 'core' as const,
-          },
-        ]
-      : []),
-    {
-      id: 'edit',
-      icon: <FileText className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.edit'),
-      tooltip: t('canvasToolbar.addPromptEditNode'),
-      onClick: onAddEdit,
-      category: 'core' as const,
-    },
-    // Merge & Upscale — were missing
     ...(onAddMerge
-      ? [
-          {
-            id: 'merge',
-            icon: <Layers className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.merge') || 'Merge',
-            tooltip: t('canvasToolbar.addMergeNode') || 'Add Merge Node',
-            onClick: onAddMerge,
-            category: 'composition' as const,
-          },
-        ]
+      ? [{ id: 'merge', icon: <Layers className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.merge') || 'Merge', tooltip: t('canvasToolbar.addMergeNode') || 'Add Merge Node', onClick: onAddMerge }]
       : []),
     ...(onAddUpscale
-      ? [
-          {
-            id: 'upscale',
-            icon: <Diamond className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.upscale') || 'Upscale',
-            tooltip: t('canvasToolbar.addUpscaleNode') || 'Add Upscale Node',
-            onClick: onAddUpscale,
-            category: 'composition' as const,
-          },
-        ]
+      ? [{ id: 'upscale', icon: <Diamond className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.upscale') || 'Upscale', tooltip: t('canvasToolbar.addUpscaleNode') || 'Add Upscale Node', onClick: onAddUpscale }]
       : []),
-    {
-      id: 'angle',
-      icon: <Camera className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.angle'),
-      tooltip: t('canvasToolbar.addCameraAngleNode'),
-      onClick: onAddAngle,
-      category: 'composition' as const,
-    },
-    ...(onAddAmbience
-      ? [
-          {
-            id: 'ambience',
-            icon: <Target className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.ambience') || 'Ambience',
-            tooltip: t('canvasToolbar.addAmbienceNode') || 'Add Ambience Node',
-            onClick: onAddAmbience,
-            category: 'composition' as const,
-          },
-        ]
-      : []),
-    ...(onAddLuminance
-      ? [
-          {
-            id: 'luminance',
-            icon: <Grid3x3 className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.luminance') || 'Luminance',
-            tooltip: t('canvasToolbar.addLuminanceNode') || 'Add Luminance Node',
-            onClick: onAddLuminance,
-            category: 'composition' as const,
-          },
-        ]
-      : []),
-    ...(onAddTexture
-      ? [
-          {
-            id: 'texture',
-            icon: <Dna className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.texture') || 'Texture',
-            tooltip: t('canvasToolbar.addTextureNode') || 'Add Texture Node',
-            onClick: onAddTexture,
-            category: 'composition' as const,
-          },
-        ]
-      : []),
-    // Branding tools
-    ...(onAddBrandBatch
-      ? [
-          {
-            id: 'brandBatch',
-            icon: <Layers className="w-4 h-4" />,
-            label: 'Brand Batch',
-            tooltip: 'Batch generate with branding applied to all connected images',
-            onClick: onAddBrandBatch,
-            category: 'branding' as const,
-          },
-        ]
-      : []),
-    ...(onAddColorExtractor
-      ? [
-          {
-            id: 'colorExtractor',
-            icon: <Building2 className="w-4 h-4" />,
-            label: 'Color Extract',
-            tooltip: 'Add Color Extractor Node',
-            onClick: onAddColorExtractor,
-            category: 'branding' as const,
-          },
-        ]
-      : []),
-    ...(onAddBrandCore
-      ? [
-          {
-            id: 'brandCore',
-            icon: <Diamond className="w-4 h-4" />,
-            label: 'Brand Core',
-            tooltip: 'Add Brand Core Node',
-            onClick: onAddBrandCore,
-            category: 'branding' as const,
-          },
-        ]
-      : []),
-    ...(onAddStrategy
-      ? [
-          {
-            id: 'strategy',
-            icon: <Compass className="w-4 h-4" />,
-            label: 'Strategy',
-            tooltip: 'Add Strategy Node',
-            onClick: onAddStrategy,
-            category: 'branding' as const,
-          },
-        ]
-      : []),
-    {
-      id: 'brandkit',
-      icon: <Palette className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.brandKit'),
-      tooltip: t('canvasToolbar.addBrandKit'),
-      onClick: onAddBrandKit,
-      category: 'branding' as const,
-    },
-    ...(onAddLogo
-      ? [
-          {
-            id: 'logo',
-            icon: <Upload className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.logo'),
-            tooltip: t('canvasToolbar.addLogoNode'),
-            onClick: onAddLogo,
-            category: 'branding' as const,
-          },
-        ]
-      : []),
-    ...(onAddPDF
-      ? [
-          {
-            id: 'pdf',
-            icon: <FileTextIcon className="w-4 h-4" />,
-            label: t('canvasToolbar.labels.pdf'),
-            tooltip: t('canvasToolbar.addPdfNode'),
-            onClick: onAddPDF,
-            category: 'branding' as const,
-          },
-        ]
+    { id: 'angle', icon: <Camera className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.angle'), tooltip: t('canvasToolbar.addCameraAngleNode'), onClick: onAddAngle },
+    ...(onAddStudio3D
+      ? [{ id: 'studio3d', icon: <Box className="w-3.5 h-3.5" />, label: '3D Studio', tooltip: 'Add 3D Studio Node', onClick: onAddStudio3D }]
       : []),
     ...(onAddShader
-      ? [
-          {
-            id: 'shader',
-            icon: <Brush className="w-4 h-4" />,
-            label: 'Shader',
-            tooltip: 'Add Shader Node',
-            onClick: onAddShader,
-            category: 'composition' as const,
-          },
-        ]
+      ? [{ id: 'shader', icon: <Brush className="w-3.5 h-3.5" />, label: 'Shader', tooltip: 'Add Shader Node', onClick: onAddShader }]
+      : []),
+    ...(onAddBrandBatch
+      ? [{ id: 'brandBatch', icon: <Layers className="w-3.5 h-3.5" />, label: 'Brand Batch', tooltip: 'Batch generate with branding applied', onClick: onAddBrandBatch }]
+      : []),
+    ...(onAddChat
+      ? [{ id: 'chat', icon: <MessageSquare className="w-3.5 h-3.5" />, label: 'Chat', tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node', onClick: onAddChat }]
+      : []),
+    // Advanced tools
+    ...(onAddAmbience
+      ? [{ id: 'ambience', icon: <Target className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.ambience') || 'Ambience', tooltip: t('canvasToolbar.addAmbienceNode') || 'Add Ambience Node', onClick: onAddAmbience }]
+      : []),
+    ...(onAddLuminance
+      ? [{ id: 'luminance', icon: <Grid3x3 className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.luminance') || 'Luminance', tooltip: t('canvasToolbar.addLuminanceNode') || 'Add Luminance Node', onClick: onAddLuminance }]
+      : []),
+    ...(onAddTexture
+      ? [{ id: 'texture', icon: <Dna className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.texture') || 'Texture', tooltip: t('canvasToolbar.addTextureNode') || 'Add Texture Node', onClick: onAddTexture }]
       : []),
     ...(onAddTextureFilter
-      ? [
-          {
-            id: 'textureFilter',
-            icon: <Layers className="w-4 h-4" />,
-            label: 'Texture',
-            tooltip: 'Add Texture Filter Node',
-            onClick: onAddTextureFilter,
-            category: 'composition' as const,
-          },
-        ]
+      ? [{ id: 'textureFilter', icon: <Layers className="w-3.5 h-3.5" />, label: 'Texture Filter', tooltip: 'Add Texture Filter Node', onClick: onAddTextureFilter }]
       : []),
-    ...(onAddStudio3D
-      ? [
-          {
-            id: 'studio3d',
-            icon: <Box className="w-4 h-4" />,
-            label: '3D',
-            tooltip: 'Add 3D Studio Node',
-            onClick: onAddStudio3D,
-            category: 'composition' as const,
-          },
-        ]
+    ...(onAddNodeBuilder
+      ? [{ id: 'nodeBuilder', icon: <Blocks className="w-3.5 h-3.5" />, label: 'Node Builder', tooltip: 'Build a custom AI node', onClick: onAddNodeBuilder }]
       : []),
-    ...(onAddChat && !experimentalMode
-      ? [
-          {
-            id: 'chat',
-            icon: <MessageSquare className="w-4 h-4" />,
-            label: 'Chat',
-            tooltip: 'Add Chat Node',
-            onClick: onAddChat,
-            category: 'core' as const,
-          },
-        ]
+    ...(onAddBrandCore
+      ? [{ id: 'brandCore', icon: <Diamond className="w-3.5 h-3.5" />, label: 'Brand Core', tooltip: 'Add Brand Core Node', onClick: onAddBrandCore }]
+      : []),
+    { id: 'brandkit', icon: <Palette className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.brandKit'), tooltip: t('canvasToolbar.addBrandKit'), onClick: onAddBrandKit },
+    ...(onAddColorExtractor
+      ? [{ id: 'colorExtractor', icon: <Building2 className="w-3.5 h-3.5" />, label: 'Color Extract', tooltip: 'Add Color Extractor Node', onClick: onAddColorExtractor }]
+      : []),
+    ...(onAddPDF
+      ? [{ id: 'pdf', icon: <FileTextIcon className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.pdf'), tooltip: t('canvasToolbar.addPdfNode'), onClick: onAddPDF }]
+      : []),
+    ...(onAddStrategy
+      ? [{ id: 'strategy', icon: <Compass className="w-3.5 h-3.5" />, label: 'Strategy', tooltip: 'Add Strategy Node', onClick: onAddStrategy }]
       : []),
   ];
 
-  const coreTools = tools.filter((t) => t.category === 'core');
-  const compositionTools = tools.filter((t) => t.category === 'composition');
-  const brandingTools = tools.filter((t) => t.category === 'branding');
+  const primaryTools = allTools.filter((t) => PRIMARY_IDS.includes(t.id));
+  const advancedTools = allTools.filter((t) => !PRIMARY_IDS.includes(t.id));
 
-  const COLLAPSED_WIDTH = 56;
-  const EXPANDED_WIDTH = 200;
+  const EXPANDED_WIDTH = 180;
 
   // Determine position based on variant and position prop
   const getPositionClasses = () => {
@@ -432,146 +229,34 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   const handleDragStart = (e: React.DragEvent, toolId: string) => {
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('application/vsn-toolbar-node', toolId);
-    e.dataTransfer.setData('text/plain', toolId); // Fallback for browsers
+    e.dataTransfer.setData('text/plain', toolId);
   };
 
-  const ToolButton: React.FC<{ tool: ToolItem }> = ({ tool }) => {
-    const isActive = tool.id === 'drawing' && isDrawingMode;
+  const ToolButton: React.FC<{ tool: ToolItem }> = ({ tool }) => (
+    <Tooltip content={tool.tooltip} position="right">
+      <button
+        draggable
+        onDragStart={(e) => handleDragStart(e, tool.id)}
+        onClick={tool.onClick}
+        className={cn(
+          'w-full px-2 py-1 rounded',
+          'flex items-center gap-2 cursor-grab active:cursor-grabbing',
+          'transition-colors duration-100',
+          isLight
+            ? 'hover:bg-neutral-200/60'
+            : 'hover:bg-white/[0.06]'
+        )}
+        style={{ color: textColors.muted }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = textColors.primary; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = textColors.muted; }}
+        aria-label={tool.label}
+      >
+        <span className="flex-shrink-0">{tool.icon}</span>
+        <span className="text-[11px] font-medium whitespace-nowrap tracking-wide">{tool.label}</span>
+      </button>
+    </Tooltip>
+  );
 
-    if (isCollapsed) {
-      return (
-        <Tooltip content={tool.tooltip} position="right">
-          <Button
-            variant="ghost"
-            draggable
-            onDragStart={(e) => handleDragStart(e, tool.id)}
-            onClick={tool.onClick}
-            className={cn(
-              'w-10 h-10 flex items-center justify-center',
-              'backdrop-blur-md',
-              'border rounded-md',
-              'transition-colors duration-150',
-              'cursor-grab active:cursor-grabbing',
-              isActive
-                ? 'border-[brand-cyan] bg-brand-cyan/10'
-                : isLight
-                ? 'border-neutral-300/40 hover:border-neutral-500/40 hover:bg-neutral-200/50'
-                : 'border-neutral-800/40 hover:border-neutral-600/40 hover:bg-neutral-800/50'
-            )}
-            style={{
-              backgroundColor: isActive
-                ? undefined
-                : isLight
-                ? 'rgba(255, 255, 255, 0.3)'
-                : 'rgba(0, 0, 0, 0.3)',
-              color: isActive ? 'var(--brand-cyan)' : textColors.muted,
-            }}
-            onMouseEnter={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.color = textColors.primary;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.color = textColors.muted;
-              }
-            }}
-            aria-label={tool.label}
-          >
-            {tool.icon}
-          </Button>
-        </Tooltip>
-      );
-    }
-
-    return (
-      <Tooltip content={tool.tooltip} position="right">
-        <Button
-          variant="ghost"
-          draggable
-          onDragStart={(e) => handleDragStart(e, tool.id)}
-          onClick={tool.onClick}
-          className={cn(
-            'w-full px-2 py-1.5',
-            'backdrop-blur-md',
-            'border rounded-md',
-            'transition-colors duration-150',
-            'flex items-center gap-2 cursor-grab active:cursor-grabbing',
-            isActive
-              ? 'border-[brand-cyan] bg-brand-cyan/10'
-              : isLight
-              ? 'border-neutral-300/40 hover:border-neutral-500/40 hover:bg-neutral-200/50'
-              : 'border-neutral-800/40 hover:border-neutral-600/40 hover:bg-neutral-800/50'
-          )}
-          style={{
-            backgroundColor: isActive
-              ? undefined
-              : isLight
-              ? 'rgba(255, 255, 255, 0.3)'
-              : 'rgba(0, 0, 0, 0.3)',
-            color: isActive ? 'var(--brand-cyan)' : textColors.muted,
-          }}
-          onMouseEnter={(e) => {
-            if (!isActive) {
-              e.currentTarget.style.color = textColors.primary;
-              e.currentTarget.style.borderColor = '';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive) {
-              e.currentTarget.style.color = textColors.muted;
-              e.currentTarget.style.borderColor = '';
-            }
-          }}
-          aria-label={tool.label}
-        >
-          <span className="flex-shrink-0">{tool.icon}</span>
-          <span
-            className="text-xs font-medium whitespace-nowrap flex-1 text-left tracking-wide"
-            style={{ color: 'inherit' }}
-          >
-            {tool.label}
-          </span>
-        </Button>
-      </Tooltip>
-    );
-  };
-
-  const Section: React.FC<{ title: string; tools: ToolItem[]; icon: React.ReactNode }> = ({
-    title,
-    tools,
-    icon,
-  }) => {
-    if (tools.length === 0) return null;
-
-    if (isCollapsed) {
-      return (
-        <div className="flex flex-col gap-1.5">
-          {tools.map((tool) => (
-            <ToolButton key={tool.id} tool={tool} />
-          ))}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-1">
-        <div className="flex items-center gap-1.5 px-1 py-1">
-          <span style={{ color: textColors.subtle }}>{icon}</span>
-          <span className="text-xs font-semibold uppercase " style={{ color: textColors.subtle }}>
-            {title}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          {tools.map((tool) => (
-            <ToolButton key={tool.id} tool={tool} />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // Don't render when collapsed - the toggle button is now in CanvasBottomToolbar
   if (isCollapsed) {
     return null;
   }
@@ -584,7 +269,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         'z-40',
         'backdrop-blur-md border',
         isLight ? 'border-neutral-300/50' : 'border-neutral-800/50',
-        'rounded-md shadow-2xl',
+        'rounded-lg shadow-2xl',
         'transition-all duration-300 ease-out',
         'flex flex-col'
       )}
@@ -596,103 +281,92 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         color: textColors.primary,
       }}
     >
-      {/* Expanded State - Full Content with Sections */}
       <div className="w-full flex flex-col h-full overflow-hidden">
-        {/* Header with Toggle and Close Button */}
+        {/* Header */}
         <div
           className={cn(
-            'flex items-center justify-between border-b relative bg-transparent rounded-t-2xl',
+            'flex items-center justify-between border-b',
             isLight ? 'border-neutral-300/30' : 'border-neutral-800/30'
           )}
-          style={{ color: textColors.primary }}
         >
-          <div className="flex items-center gap-1.5 px-3 py-3">
-            <h2
-              className="text-xs font-semibold tracking-wide"
-              style={{ color: textColors.primary }}
-            >
-              {t('canvasToolbar.title')}
-            </h2>
-          </div>
+          <h2
+            className="text-[11px] font-semibold tracking-wide px-3 py-2"
+            style={{ color: textColors.primary }}
+          >
+            {t('canvasToolbar.title')}
+          </h2>
           <div className="flex items-center">
-            {/* Toggle Toolbar Button */}
             {onToggleToolbar && (
-              <Tooltip
-                content={
-                  isCollapsed
-                    ? t('canvasToolbar.expandToolbar') || 'Expand Toolbar'
-                    : t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar'
-                }
-                position="bottom"
+              <button
+                onClick={onToggleToolbar}
+                className={cn(
+                  'p-1.5 transition-colors',
+                  isLight ? 'hover:bg-neutral-200/50' : 'hover:bg-neutral-800/50'
+                )}
+                style={{ color: textColors.muted }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = textColors.primary)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = textColors.muted)}
+                aria-label="Collapse Toolbar"
               >
-                <Button
-                  variant="ghost"
-                  onClick={onToggleToolbar}
-                  className={cn(
-                    'p-2 transition-colors h-full',
-                    isLight ? 'hover:bg-neutral-200/50' : 'hover:bg-neutral-800/50'
-                  )}
-                  style={{ color: textColors.muted }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = textColors.primary)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = textColors.muted)}
-                  aria-label={isCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}
-                >
-                  <ChevronLeft
-                    size={14}
-                    className={cn('transition-transform duration-150', isCollapsed && 'rotate-180')}
-                  />
-                </Button>
-              </Tooltip>
+                <ChevronLeft size={12} />
+              </button>
             )}
-            {/* Close Button */}
             {onClose && (
-              <Button
-                variant="ghost"
+              <button
                 onClick={onClose}
                 className={cn(
-                  'p-2 border-l transition-colors h-full rounded-tr-2xl',
-                  isLight
-                    ? 'border-neutral-300/50 hover:bg-neutral-200/50'
-                    : 'border-neutral-800/50 hover:bg-neutral-800/50'
+                  'p-1.5 border-l transition-colors',
+                  isLight ? 'border-neutral-300/50 hover:bg-neutral-200/50' : 'border-neutral-800/50 hover:bg-neutral-800/50'
                 )}
                 style={{ color: textColors.muted }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = textColors.primary)}
                 onMouseLeave={(e) => (e.currentTarget.style.color = textColors.muted)}
               >
-                <X size={14} />
-              </Button>
+                <X size={12} />
+              </button>
             )}
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-          <div className="flex flex-col p-2 gap-2">
-            {/* Core Tools */}
-            {coreTools.length > 0 && (
-              <Section
-                title={t('canvasToolbar.categories.core')}
-                tools={coreTools}
-                icon={<Diamond size={12} />}
-              />
-            )}
+        {/* Tools */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+          <div className="flex flex-col p-1.5 gap-0.5">
+            {primaryTools.map((tool) => (
+              <ToolButton key={tool.id} tool={tool} />
+            ))}
 
-            {/* Composition Tools */}
-            {compositionTools.length > 0 && (
-              <Section
-                title={t('canvasToolbar.categories.composition')}
-                tools={compositionTools}
-                icon={<Layers size={12} />}
-              />
-            )}
-
-            {/* Branding Tools */}
-            {brandingTools.length > 0 && (
-              <Section
-                title={t('canvasToolbar.categories.branding')}
-                tools={brandingTools}
-                icon={<Building2 size={12} />}
-              />
+            {advancedTools.length > 0 && (
+              <>
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className={cn(
+                    'w-full flex items-center gap-1.5 px-2 py-1 mt-1 rounded',
+                    'text-[10px] font-medium uppercase tracking-widest',
+                    'transition-colors duration-100',
+                    isLight ? 'hover:bg-neutral-200/40' : 'hover:bg-white/[0.04]'
+                  )}
+                  style={{ color: textColors.subtle }}
+                >
+                  <ChevronDown
+                    size={10}
+                    className={cn('transition-transform duration-150', showAdvanced && 'rotate-180')}
+                  />
+                  {t('canvasToolbar.categories.advanced') || 'Advanced'}
+                  <span
+                    className="ml-auto text-[9px] tabular-nums"
+                    style={{ color: textColors.subtle }}
+                  >
+                    {advancedTools.length}
+                  </span>
+                </button>
+                {showAdvanced && (
+                  <div className="flex flex-col gap-0.5 mt-0.5">
+                    {advancedTools.map((tool) => (
+                      <ToolButton key={tool.id} tool={tool} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

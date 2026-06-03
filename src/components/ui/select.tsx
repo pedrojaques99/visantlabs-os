@@ -241,7 +241,9 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   <span className={cn('truncate', option.description && 'flex flex-col')}>
                     <span className="truncate">{option.label}</span>
                     {option.description && (
-                      <span className="text-[9px] text-neutral-500 truncate font-normal leading-tight">{option.description}</span>
+                      <span className="text-[9px] text-neutral-500 truncate font-normal leading-tight">
+                        {option.description}
+                      </span>
                     )}
                   </span>
                   {option.badge && (

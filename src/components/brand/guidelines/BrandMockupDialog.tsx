@@ -253,7 +253,11 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
     }
 
     if (cancelledRef.current && successCount > 0) {
-      toast.info(`Cancelado — ${successCount} mockup${successCount !== 1 ? 's' : ''} gerado${successCount !== 1 ? 's' : ''}`);
+      toast.info(
+        `Cancelado — ${successCount} mockup${successCount !== 1 ? 's' : ''} gerado${
+          successCount !== 1 ? 's' : ''
+        }`
+      );
       setView('result');
     } else if (successCount > 0) {
       toast.success(`${successCount}/${selected.length} mockups gerados`);
@@ -537,7 +541,10 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                 )}
               >
                 {batchResults.map((r, i) => (
-                  <div key={i} className="relative aspect-square rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950">
+                  <div
+                    key={i}
+                    className="relative aspect-square rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950"
+                  >
                     {r ? (
                       <img
                         src={r.url}
@@ -631,7 +638,9 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-500">
-                  {batchResults.filter(Boolean).length} mockup{batchResults.filter(Boolean).length !== 1 ? 's' : ''} gerado{batchResults.filter(Boolean).length !== 1 ? 's' : ''}
+                  {batchResults.filter(Boolean).length} mockup
+                  {batchResults.filter(Boolean).length !== 1 ? 's' : ''} gerado
+                  {batchResults.filter(Boolean).length !== 1 ? 's' : ''}
                 </p>
               </div>
 
@@ -648,11 +657,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                         key={i}
                         className="group relative aspect-square rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950"
                       >
-                        <img
-                          src={r.url}
-                          alt={r.label}
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={r.url} alt={r.label} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                           <div className="flex items-center justify-between w-full">
                             <span className="text-[10px] text-neutral-300 font-medium truncate mr-2">

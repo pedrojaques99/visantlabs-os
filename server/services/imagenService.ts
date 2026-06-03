@@ -38,9 +38,7 @@ export interface ImagenResult {
   mimeType: string;
 }
 
-export async function generateImagenImage(
-  opts: ImagenGenerateOptions
-): Promise<ImagenResult> {
+export async function generateImagenImage(opts: ImagenGenerateOptions): Promise<ImagenResult> {
   const { prompt, model, aspectRatio = '1:1', apiKey } = opts;
 
   const client = getAI(apiKey);

@@ -80,8 +80,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
   const hasDeprecated = useMemo(() => {
     if (type === 'image') {
-      return AVAILABLE_IMAGE_MODELS.some((id) => MODEL_CONFIG[id]?.deprecated) ||
-        SEEDREAM_IMAGE_MODELS.some((id) => SEEDREAM_MODEL_CONFIG[id]?.deprecated);
+      return (
+        AVAILABLE_IMAGE_MODELS.some((id) => MODEL_CONFIG[id]?.deprecated) ||
+        SEEDREAM_IMAGE_MODELS.some((id) => SEEDREAM_MODEL_CONFIG[id]?.deprecated)
+      );
     }
     return CHAT_MODELS.some((id) => MODEL_CONFIG[id]?.deprecated);
   }, [type]);
@@ -92,154 +94,197 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
     // IMAGE MODELS LOGIC
     if (type === 'image') {
-      const geminiOptions = !availableProviders.gemini ? [] : AVAILABLE_IMAGE_MODELS.map((modelId) => {
-        const config = MODEL_CONFIG[modelId];
-        if (!config || !isVisible(modelId, config)) return null;
+      const geminiOptions = !availableProviders.gemini
+        ? []
+        : (AVAILABLE_IMAGE_MODELS.map((modelId) => {
+            const config = MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
 
-        const effectiveResolution = supportsOutputConfig(modelId)
-          ? selectedModel === modelId
-            ? resolution
-            : config?.defaultResolution
-          : undefined;
+            const effectiveResolution = supportsOutputConfig(modelId)
+              ? selectedModel === modelId
+                ? resolution
+                : config?.defaultResolution
+              : undefined;
 
-        const credits = getCreditsRequired(modelId, effectiveResolution, 'gemini');
-        const isUnlimited = isGenerationUnlimited({
-          model: modelId,
-          resolution: effectiveResolution,
-          planMetadata,
-        });
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'gemini');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
 
-        const icon = config.providerDomain ? (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${
-              token ? `&token=${token}` : ''
-            }`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        ) : undefined;
+            const icon = config.providerDomain ? (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            ) : undefined;
 
-        const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
-        const label = `${config.label}${creditSuffix}`;
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
 
-        const desc = config.supportsImageConfig
-          ? `${config.maxRefImages} ref images, ${config.defaultResolution || 'auto'}`
-          : `${config.maxRefImages} ref images`;
+            const desc = config.supportsImageConfig
+              ? `${config.maxRefImages} ref images, ${config.defaultResolution || 'auto'}`
+              : `${config.maxRefImages} ref images`;
 
-        return { value: modelId, label: label || modelId, icon, badge: config.badge, description: desc };
-      }).filter(Boolean) as any[];
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: desc,
+            };
+          }).filter(Boolean) as any[]);
 
-      const seedreamOptions = !availableProviders.seedream ? [] : SEEDREAM_IMAGE_MODELS.map((modelId) => {
-        const config = SEEDREAM_MODEL_CONFIG[modelId];
-        if (!config || !isVisible(modelId, config)) return null;
+      const seedreamOptions = !availableProviders.seedream
+        ? []
+        : (SEEDREAM_IMAGE_MODELS.map((modelId) => {
+            const config = SEEDREAM_MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
 
-        const effectiveResolution =
-          selectedModel === modelId ? resolution : config?.defaultResolution;
-        const credits = getCreditsRequired(modelId, effectiveResolution, 'seedream');
-        const isUnlimited = isGenerationUnlimited({
-          model: modelId,
-          resolution: effectiveResolution,
-          planMetadata,
-        });
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config?.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'seedream');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
 
-        const icon = config.providerDomain ? (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${
-              token ? `&token=${token}` : ''
-            }`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        ) : undefined;
+            const icon = config.providerDomain ? (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            ) : undefined;
 
-        const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
-        const label = `${config.label}${creditSuffix}`;
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
 
-        return { value: modelId, label: label || modelId, icon, badge: config.badge, description: config.description };
-      }).filter(Boolean) as any[];
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
 
-      const openaiOptions = !availableProviders.openai ? [] : OPENAI_IMAGE_MODEL_LIST.map((modelId) => {
-        const config = OPENAI_IMAGE_MODEL_CONFIG[modelId];
-        if (!config) return null;
+      const openaiOptions = !availableProviders.openai
+        ? []
+        : (OPENAI_IMAGE_MODEL_LIST.map((modelId) => {
+            const config = OPENAI_IMAGE_MODEL_CONFIG[modelId];
+            if (!config) return null;
 
-        const effectiveResolution =
-          selectedModel === modelId ? resolution : config.defaultResolution;
-        const credits = getCreditsRequired(modelId, effectiveResolution, 'openai');
-        const isUnlimited = isGenerationUnlimited({
-          model: modelId,
-          resolution: effectiveResolution,
-          planMetadata,
-        });
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'openai');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
 
-        const icon = (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${
-              token ? `&token=${token}` : ''
-            }`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        );
+            const icon = (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            );
 
-        const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
-        const label = `${config.label}${creditSuffix}`;
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
 
-        return { value: modelId, label: label || modelId, icon, badge: config.badge, description: config.description };
-      }).filter(Boolean) as any[];
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
 
-      const imagenOptions = !availableProviders.imagen ? [] : IMAGEN_MODEL_LIST.map((modelId) => {
-        const config = IMAGEN_MODEL_CONFIG[modelId];
-        if (!config || !isVisible(modelId, config)) return null;
+      const imagenOptions = !availableProviders.imagen
+        ? []
+        : (IMAGEN_MODEL_LIST.map((modelId) => {
+            const config = IMAGEN_MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
 
-        const effectiveResolution =
-          selectedModel === modelId ? resolution : config.defaultResolution;
-        const credits = getCreditsRequired(modelId, effectiveResolution, 'imagen');
-        const isUnlimited = isGenerationUnlimited({
-          model: modelId,
-          resolution: effectiveResolution,
-          planMetadata,
-        });
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'imagen');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
 
-        const icon = (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${
-              token ? `&token=${token}` : ''
-            }`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        );
+            const icon = (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            );
 
-        const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
-        const label = `${config.label}${creditSuffix}`;
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
 
-        return { value: modelId, label: label || modelId, icon, badge: config.badge, description: config.description };
-      }).filter(Boolean) as any[];
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
 
       return [...geminiOptions, ...imagenOptions, ...seedreamOptions, ...openaiOptions];
     }
 
     // CHAT MODELS LOGIC
-    return CHAT_MODELS.filter((modelId) => isVisible(modelId, MODEL_CONFIG[modelId])).map((modelId) => {
-      const config = MODEL_CONFIG[modelId];
-      return {
-        value: modelId,
-        label: config?.label || modelId,
-        icon: config?.providerDomain ? (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        ) : undefined,
-      };
-    });
-  }, [type, selectedModel, resolution, planMetadata, token, variant, showOlderModels, availableProviders]);
+    return CHAT_MODELS.filter((modelId) => isVisible(modelId, MODEL_CONFIG[modelId])).map(
+      (modelId) => {
+        const config = MODEL_CONFIG[modelId];
+        return {
+          value: modelId,
+          label: config?.label || modelId,
+          icon: config?.providerDomain ? (
+            <img
+              src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
+              className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+              alt=""
+            />
+          ) : undefined,
+        };
+      }
+    );
+  }, [
+    type,
+    selectedModel,
+    resolution,
+    planMetadata,
+    token,
+    variant,
+    showOlderModels,
+    availableProviders,
+  ]);
 
   // Normalization logic for image models
   const effectiveModel = useMemo(() => {
@@ -332,15 +377,20 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         onChange={handleValueChange}
         disabled={disabled}
         placeholder={t('canvasNodes.promptNode.selectModel') || 'Select Model'}
-        footer={hasDeprecated ? (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setShowOlderModels(!showOlderModels); }}
-            className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
-          >
-            {showOlderModels ? 'Hide older models' : 'Show older models'}
-          </button>
-        ) : undefined}
+        footer={
+          hasDeprecated ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowOlderModels(!showOlderModels);
+              }}
+              className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
+            >
+              {showOlderModels ? 'Hide older models' : 'Show older models'}
+            </button>
+          ) : undefined
+        }
         className={cn(
           type === 'chat' &&
             '!bg-transparent border-neutral-800 hover:border-white/10 !px-2 !py-0.5 h-auto',

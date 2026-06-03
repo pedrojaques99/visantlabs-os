@@ -5,9 +5,6 @@ import {
   Play,
   Square,
   RotateCcw,
-  CheckCircle2,
-  XCircle,
-  Clock,
   ChevronDown,
   ChevronUp,
   Plus,
@@ -16,7 +13,7 @@ import {
 import { useReferenceSearch } from '@/hooks/useReferenceSearch';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import type { ReferenceResult } from '@/services/referenceApi';
-import type { BrandBatchNodeData, BrandBatchItem } from '@/types/reactFlow';
+import type { BrandBatchNodeData } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -25,13 +22,6 @@ import { ModelSelector, getPreferredImageModel } from '../shared/ModelSelector';
 import { DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import type { GeminiModel, SeedreamModel, AspectRatio, Resolution } from '@/types/types';
 import { getCreditsRequired } from '@/utils/creditCalculator';
-
-const STATUS_ICON: Record<BrandBatchItem['status'], React.ReactNode> = {
-  pending: <Clock size={9} className="text-white/30" />,
-  running: <GlitchLoader size={9} />,
-  done: <CheckCircle2 size={9} className="text-green-400" />,
-  error: <XCircle size={9} className="text-destructive" />,
-};
 
 export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const nodeData = data as BrandBatchNodeData;
@@ -292,39 +282,6 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               className="h-full bg-amber-400 transition-all duration-300 rounded-full"
               style={{ width: `${progress}%` }}
             />
-          </div>
-        </div>
-      )}
-
-      {/* Results grid */}
-      {items.length > 0 && (
-        <div className="px-3 py-1 max-h-[160px] overflow-y-auto">
-          <div className="grid grid-cols-4 gap-1">
-            {items.map((item) => (
-              <div
-                key={item.index}
-                className="relative aspect-square rounded overflow-hidden bg-white/5"
-              >
-                {item.status === 'done' && item.outputImageUrl && (
-                  <img src={item.outputImageUrl} alt="" className="w-full h-full object-cover" />
-                )}
-                {item.status === 'running' && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <GlitchLoader size={12} />
-                  </div>
-                )}
-                {item.status === 'error' && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <XCircle size={10} className="text-destructive" />
-                  </div>
-                )}
-                {item.status === 'pending' && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Clock size={8} className="text-white/20" />
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </div>
       )}

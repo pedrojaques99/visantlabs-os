@@ -7,7 +7,6 @@ import type {
   BrandBatchItem,
   ImageNodeData,
   OutputNodeData,
-  LogoNodeData,
   BrandCoreData,
   BrandNodeData,
 } from '@/types/reactFlow';
@@ -29,6 +28,26 @@ interface UseBrandBatchHandlersParams {
     newData: Partial<T>,
     nodeType?: string
   ) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
+  setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
+  addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
+  createOutputNodeWithSkeleton: (
+    sourceNode: Node<FlowNodeData>,
+    sourceNodeId: string
+  ) => { node: Node<FlowNodeData>; edge: Edge; nodeId: string } | null;
+  updateOutputNodeWithResult: (
+    nodeId: string,
+    result: string,
+    addToHistoryCallback: () => void
+  ) => void;
+  uploadImageToR2Auto: (
+    base64Image: string,
+    nodeId: string,
+    updateNodeCallback?: (imageUrl: string) => void
+  ) => Promise<string | null>;
+  cleanupFailedNode: (nodeId: string | null) => void;
   linkedGuideline: BrandGuideline | null | undefined;
 }
 
@@ -47,15 +66,12 @@ function getConnectedImageUrls(
     if (!src) continue;
 
     let imageUrl: string | undefined;
-    if (src.type === 'image') {
+    if (src.type === 'image' || src.type === 'logo') {
       const d = src.data as ImageNodeData;
       imageUrl = d.mockup?.imageBase64 || d.mockup?.imageUrl;
     } else if (src.type === 'output') {
       const d = src.data as OutputNodeData;
       imageUrl = d.resultImageBase64 || d.resultImageUrl;
-    } else if (src.type === 'logo') {
-      const d = src.data as LogoNodeData;
-      imageUrl = d.logoBase64 || d.logoImageUrl;
     }
 
     if (imageUrl) {
@@ -70,6 +86,13 @@ export function useBrandBatchHandlers({
   nodesRef,
   edgesRef,
   updateNodeData,
+  setNodes,
+  setEdges,
+  addToHistory,
+  createOutputNodeWithSkeleton,
+  updateOutputNodeWithResult,
+  uploadImageToR2Auto,
+  cleanupFailedNode,
   linkedGuideline,
 }: UseBrandBatchHandlersParams) {
   const cancelRef = useRef(false);
@@ -109,6 +132,35 @@ export function useBrandBatchHandlers({
         provider,
       });
 
+      // Create skeleton OutputNodes upfront for each image
+      const outputNodeIds: (string | null)[] = [];
+      const OUTPUT_SPACING_Y = 280;
+      const batchNode = nodesRef.current.find((n) => n.id === batchNodeId);
+
+      addToHistory(nodesRef.current, edgesRef.current);
+
+      for (let i = 0; i < images.length; i++) {
+        const skeleton = createOutputNodeWithSkeleton(
+          batchNode || node,
+          batchNodeId
+        );
+        if (skeleton) {
+          skeleton.node.position = {
+            x: (batchNode || node).position.x + 400,
+            y: (batchNode || node).position.y + i * OUTPUT_SPACING_Y,
+          };
+          skeleton.edge = {
+            ...skeleton.edge,
+            sourceHandle: 'output',
+          };
+          outputNodeIds.push(skeleton.nodeId);
+          setNodes((nds: Node<FlowNodeData>[]) => [...nds, skeleton.node]);
+          setEdges((eds: Edge[]) => [...eds, skeleton.edge]);
+        } else {
+          outputNodeIds.push(null);
+        }
+      }
+
       updateNodeData<BrandBatchNodeData>(
         batchNodeId,
         {
@@ -137,6 +189,7 @@ export function useBrandBatchHandlers({
       const runItem = async (i: number) => {
         if (cancelRef.current) {
           items[i] = { ...items[i], status: 'error', error: 'Cancelled' };
+          cleanupFailedNode(outputNodeIds[i]);
           updateNodeData<BrandBatchNodeData>(batchNodeId, { items: [...items] }, 'brandBatch');
           return;
         }
@@ -194,8 +247,20 @@ export function useBrandBatchHandlers({
 
           const outputUrl = result.imageUrl || result.imageBase64 || '';
           items[i] = { ...items[i], status: 'done', outputImageUrl: outputUrl };
+
+          const outputNodeId = outputNodeIds[i];
+          if (outputNodeId && outputUrl) {
+            updateOutputNodeWithResult(outputNodeId, outputUrl, () => {
+              addToHistory(nodesRef.current, edgesRef.current);
+            });
+
+            if (!outputUrl.startsWith('http')) {
+              uploadImageToR2Auto(outputUrl, outputNodeId);
+            }
+          }
         } catch (err: any) {
           items[i] = { ...items[i], status: 'error', error: err?.message || 'Generation failed' };
+          cleanupFailedNode(outputNodeIds[i]);
         }
 
         updateNodeData<BrandBatchNodeData>(batchNodeId, { items: [...items] }, 'brandBatch');
@@ -241,7 +306,7 @@ export function useBrandBatchHandlers({
         toast.info(`Brand Batch cancelled — ${doneCount} generated before cancel.`);
       }
     },
-    [nodesRef, edgesRef, updateNodeData, linkedGuideline]
+    [nodesRef, edgesRef, updateNodeData, setNodes, setEdges, addToHistory, createOutputNodeWithSkeleton, updateOutputNodeWithResult, uploadImageToR2Auto, cleanupFailedNode, linkedGuideline]
   );
 
   const handleBrandBatchCancel = useCallback(

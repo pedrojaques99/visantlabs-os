@@ -8,7 +8,6 @@ import { getImageUrl } from '@/utils/imageUtils';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { ImageNode } from '../components/reactflow/ImageNode';
 import { MergeNode } from '../components/reactflow/MergeNode';
-import { EditNode } from '../components/reactflow/EditNode';
 import { UpscaleNode } from '../components/reactflow/UpscaleNode';
 import { UpscaleBicubicNode } from '../components/reactflow/UpscaleBicubicNode';
 import { MockupNode } from '../components/reactflow/MockupNode';
@@ -21,7 +20,6 @@ import { PromptNode } from '../components/reactflow/PromptNode';
 import { SavePromptModal } from '../components/reactflow/SavePromptModal';
 import { OutputNode } from '../components/reactflow/OutputNode';
 import { BrandNode } from '../components/reactflow/BrandNode';
-import { LogoNode } from '../components/reactflow/LogoNode';
 import { PDFNode } from '../components/reactflow/PDFNode';
 import { StrategyNode } from '../components/reactflow/StrategyNode';
 import { BrandCore } from '../components/reactflow/BrandCore';
@@ -157,7 +155,7 @@ import { PageShell } from '@/components/ui/PageShell';
 const nodeTypes = {
   image: ImageNode,
   merge: MergeNode,
-  edit: EditNode,
+  logo: ImageNode,
   upscale: UpscaleNode,
   upscaleBicubic: UpscaleBicubicNode,
   mockup: MockupNode,
@@ -169,7 +167,6 @@ const nodeTypes = {
   prompt: PromptNode,
   output: OutputNode,
   brand: BrandNode,
-  logo: LogoNode,
   pdf: PDFNode,
   strategy: StrategyNode,
   brandCore: BrandCore,
@@ -2039,9 +2036,6 @@ export const CanvasPage: React.FC = () => {
           break;
         case 'brandkit':
           addBrandKitNodes(flowToScreen(flowPosition));
-          break;
-        case 'logo':
-          addLogoNode(flowToScreen(flowPosition));
           break;
         case 'pdf':
           addPDFNode(flowToScreen(flowPosition));
@@ -4837,7 +4831,6 @@ export const CanvasPage: React.FC = () => {
             onAddPrompt={() => handleAddNode(addPromptNode, { targetHandle: 'input-1' })}
             onAddVideo={() => handleAddNode(addVideoNode, { targetHandle: 'input-image' })}
             onAddBrand={() => handleAddNode(addBrandNode)}
-            onAddEdit={() => handleAddNode(addEditNode)}
             onAddUpscale={() => handleAddNode(addUpscaleNode)}
             onAddUpscaleBicubic={() => handleAddNode(addUpscaleBicubicNode)}
             onAddMockup={() => handleAddNode(addMockupNode)}
@@ -4852,7 +4845,6 @@ export const CanvasPage: React.FC = () => {
               handleAddNode(addColorExtractorNode, { targetHandle: 'image-input' })
             }
             onAddBrandKit={() => handleAddNode((pos) => addBrandKitNodes(pos)[0])}
-            onAddLogo={() => handleAddNode(addLogoNode)}
             onAddPDF={() => handleAddNode(addPDFNode)}
             onAddVideoInput={() => handleAddNode(addVideoInputNode)}
             onAddStrategy={() => handleAddNode(addStrategyNode)}
@@ -5231,7 +5223,6 @@ export const CanvasPage: React.FC = () => {
           selectedNodesCount={nodes.filter((n) => n.selected).length}
           experimentalMode={experimentalMode}
           onAddMerge={toolbarActions.onAddMerge}
-          onAddEdit={toolbarActions.onAddEdit}
           onAddUpscale={toolbarActions.onAddUpscale}
           onAddMockup={toolbarActions.onAddMockup}
           onAddAngle={toolbarActions.onAddAngle}
@@ -5239,7 +5230,6 @@ export const CanvasPage: React.FC = () => {
           onAddAmbience={toolbarActions.onAddAmbience}
           onAddLuminance={toolbarActions.onAddLuminance}
           onAddBrandKit={toolbarActions.onAddBrandKit}
-          onAddLogo={toolbarActions.onAddLogo}
           onAddPDF={toolbarActions.onAddPDF}
           onAddStrategy={toolbarActions.onAddStrategy}
           onAddBrandCore={toolbarActions.onAddBrandCore}

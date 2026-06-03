@@ -54,13 +54,13 @@ const DEFAULT_ASPECT_RATIO: AspectRatio = '16:9';
 const DEFAULT_RESOLUTION: Resolution = '1080p';
 const DEFAULT_DURATION = '5s';
 
-const FEATURED_MODEL_OPTIONS = VIDEO_MODEL_LIST
-  .filter((id) => !VIDEO_MODEL_CONFIG[id]?.deprecated)
-  .map((id) => ({
-    value: id,
-    label: VIDEO_MODEL_CONFIG[id].label,
-    badge: VIDEO_MODEL_CONFIG[id].badge,
-  }));
+const FEATURED_MODEL_OPTIONS = VIDEO_MODEL_LIST.filter(
+  (id) => !VIDEO_MODEL_CONFIG[id]?.deprecated
+).map((id) => ({
+  value: id,
+  label: VIDEO_MODEL_CONFIG[id].label,
+  badge: VIDEO_MODEL_CONFIG[id].badge,
+}));
 
 const ALL_MODEL_OPTIONS = VIDEO_MODEL_LIST.map((id) => ({
   value: id,
@@ -97,7 +97,12 @@ export const VideoNode = memo(
       });
       if (nodeData.model && !filtered.some((o) => o.value === nodeData.model)) {
         const cfg = VIDEO_MODEL_CONFIG[nodeData.model as VideoModelId];
-        if (cfg) filtered.push({ value: nodeData.model as VideoModelId, label: cfg.label, badge: cfg.badge });
+        if (cfg)
+          filtered.push({
+            value: nodeData.model as VideoModelId,
+            label: cfg.label,
+            badge: cfg.badge,
+          });
       }
       return filtered;
     }, [showOlderVideoModels, nodeData.model, availableProviders]);
@@ -124,7 +129,10 @@ export const VideoNode = memo(
     const [isLooping, setIsLooping] = useState<boolean>(nodeData.isLooping || false);
     const [isBrandActive, setIsBrandActive] = useState<boolean>(nodeData.isBrandActive ?? true);
     const [klingMode, setKlingMode] = useState<'std' | 'pro' | '4k'>(nodeData.klingMode || 'pro');
-    const creditsRequired = useMemo(() => getVideoCreditsRequired(model, klingMode), [model, klingMode]);
+    const creditsRequired = useMemo(
+      () => getVideoCreditsRequired(model, klingMode),
+      [model, klingMode]
+    );
     const [sound, setSound] = useState<'on' | 'off'>(nodeData.sound || 'off');
     const [cfgScale, setCfgScale] = useState<number>(nodeData.cfgScale ?? 0.5);
 
@@ -613,15 +621,20 @@ export const VideoNode = memo(
                 options={videoModelOptions}
                 variant="node"
                 disabled={isLoading}
-                footer={HAS_DEPRECATED_VIDEO ? (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setShowOlderVideoModels(!showOlderVideoModels); }}
-                    className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
-                  >
-                    {showOlderVideoModels ? 'Hide older models' : 'Show older models'}
-                  </button>
-                ) : undefined}
+                footer={
+                  HAS_DEPRECATED_VIDEO ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowOlderVideoModels(!showOlderVideoModels);
+                      }}
+                      className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
+                    >
+                      {showOlderVideoModels ? 'Hide older models' : 'Show older models'}
+                    </button>
+                  ) : undefined
+                }
               />
             </div>
 

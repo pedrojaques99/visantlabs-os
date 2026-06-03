@@ -357,33 +357,34 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         </div>
       </div>
 
-      {showSettingsModal && createPortal(
-        <CanvasSettingsModal
-          isOpen={showSettingsModal}
-          onClose={() => setShowSettingsModal(false)}
-          backgroundColor={backgroundColor}
-          onBackgroundColorChange={setBackgroundColor}
-          gridColor={gridColor}
-          onGridColorChange={setGridColor}
-          showGrid={showGrid}
-          onShowGridChange={setShowGrid}
-          showMinimap={showMinimap}
-          onShowMinimapChange={setShowMinimap}
-          showControls={showControls}
-          onShowControlsChange={setShowControls}
-          cursorColor={cursorColor}
-          onCursorColorChange={setCursorColor}
-          brandCyan={brandCyan}
-          onBrandCyanChange={setBrandCyan}
-          experimentalMode={experimentalMode}
-          onExperimentalModeChange={setExperimentalMode}
-          edgeStyle={edgeStyle}
-          onEdgeStyleChange={setEdgeStyle}
-          edgeStrokeWidth={edgeStrokeWidth}
-          onEdgeStrokeWidthChange={setEdgeStrokeWidth}
-        />,
-        document.body
-      )}
+      {showSettingsModal &&
+        createPortal(
+          <CanvasSettingsModal
+            isOpen={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+            backgroundColor={backgroundColor}
+            onBackgroundColorChange={setBackgroundColor}
+            gridColor={gridColor}
+            onGridColorChange={setGridColor}
+            showGrid={showGrid}
+            onShowGridChange={setShowGrid}
+            showMinimap={showMinimap}
+            onShowMinimapChange={setShowMinimap}
+            showControls={showControls}
+            onShowControlsChange={setShowControls}
+            cursorColor={cursorColor}
+            onCursorColorChange={setCursorColor}
+            brandCyan={brandCyan}
+            onBrandCyanChange={setBrandCyan}
+            experimentalMode={experimentalMode}
+            onExperimentalModeChange={setExperimentalMode}
+            edgeStyle={edgeStyle}
+            onEdgeStyleChange={setEdgeStyle}
+            edgeStrokeWidth={edgeStrokeWidth}
+            onEdgeStrokeWidthChange={setEdgeStrokeWidth}
+          />,
+          document.body
+        )}
 
       {/* Share Modal */}
       {projectId && (
