@@ -2866,8 +2866,8 @@ router.post(
       const userId = req.userId!;
       const { sessionId } = req.body;
 
-      if (!sessionId) {
-        return res.status(400).json({ error: 'Session ID is required' });
+      if (!sessionId || typeof sessionId !== 'string') {
+        return res.status(400).json({ error: 'Session ID is required and must be a string' });
       }
 
       // Get user

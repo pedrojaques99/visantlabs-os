@@ -1,5 +1,5 @@
 import express, { Request, Response as ExpressResponse } from 'express';
-import { exec } from 'child_process';
+import { exec, execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
@@ -19,6 +19,7 @@ import { redisClient } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
 
 const execPromise = promisify(exec);
+const execFilePromise = promisify(execFile);
 
 // Cache for extraction results (30 minute TTL)
 const extractionCache = new LRUCache<string, any>({
@@ -663,6 +664,12 @@ router.post(
 
       const outputFile = path.join(firecrawlDir, `insta-${cleanUsername}-${Date.now()}.json`);
 
+      // Ensure output file stays within the firecrawl directory (prevent path traversal)
+      const resolvedOutput = path.resolve(outputFile);
+      if (!resolvedOutput.startsWith(path.resolve(firecrawlDir) + path.sep)) {
+        return res.status(400).json({ error: 'Invalid username' });
+      }
+
       // Construct Firecrawl agent command
       // Using spark-1-mini for speed and a focused prompt to avoid deep navigation
       const prompt = `CRITICAL: Extract ONLY static image URLs from the Instagram profile grid of @${cleanUsername}.
@@ -684,12 +691,24 @@ RESPONSE FORMAT: Return ONLY valid JSON array:
 [{"url": "https://...", "caption": "..."}, ...]
 
 DO NOT include any text, markdown, or explanation. ONLY JSON.`;
-      const command = `firecrawl agent "${prompt}" --urls "${instagramUrl}" --model spark-1-mini --wait --pretty -o "${outputFile}"`;
+      // Use execFile (no shell) to prevent command injection
+      const args = [
+        'agent',
+        prompt,
+        '--urls',
+        instagramUrl,
+        '--model',
+        'spark-1-mini',
+        '--wait',
+        '--pretty',
+        '-o',
+        outputFile,
+      ];
 
-      console.log(`🚀 Executing: ${command}`);
+      console.log(`🚀 Executing: firecrawl ${args.map((a) => a.length > 50 ? a.slice(0, 50) + '...' : a).join(' ')}`);
 
       try {
-        await execPromise(command);
+        await execFilePromise('firecrawl', args);
       } catch (execError: any) {
         console.error('Firecrawl execution failed:', execError);
 

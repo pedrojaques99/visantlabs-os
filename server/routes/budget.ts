@@ -458,7 +458,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Update budget
-router.put('/:id', authenticate, async (req: AuthRequest, res) => {
+router.put('/:id', authenticate, apiRateLimiter, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const {

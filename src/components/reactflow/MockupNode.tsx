@@ -55,6 +55,7 @@ import { AdvancedModelSettings } from './shared/AdvancedModelSettings';
 import { Input } from '@/components/ui/input';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useNodes } from '@xyflow/react';
+import { useOutputDefaults } from '@/hooks/canvas/useOutputDefaults';
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
   data,
@@ -77,11 +78,12 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
   const [isValidColor, setIsValidColor] = useState(data.isValidColor || false);
   const [withHuman, setWithHuman] = useState(data.withHuman || false);
   const [customPrompt, setCustomPrompt] = useState(data.customPrompt || '');
-  const [model, setModel] = useState<GeminiModel | SeedreamModel>(data.model || DEFAULT_MODEL);
+  const { defaults: outputDefaults, persist: persistDefaults } = useOutputDefaults('mockup');
+  const [model, setModel] = useState<GeminiModel | SeedreamModel>(data.model || (outputDefaults.model as GeminiModel | SeedreamModel) || DEFAULT_MODEL);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
-    data.aspectRatio || DEFAULT_ASPECT_RATIO
+    data.aspectRatio || outputDefaults.aspectRatio || DEFAULT_ASPECT_RATIO
   );
-  const [resolution, setResolution] = useState<Resolution>(data.resolution || '1K');
+  const [resolution, setResolution] = useState<Resolution>(data.resolution || outputDefaults.resolution || '1K');
   const [isBrandActive, setIsBrandActive] = useState<boolean>(
     data.isBrandActive !== undefined
       ? data.isBrandActive

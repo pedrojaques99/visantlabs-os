@@ -1974,6 +1974,7 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
 router.post(
   '/:id/liveblocks-auth',
   authenticate,
+  apiRateLimiter,
   requireViewAccess,
   async (req: AuthRequest, res) => {
     try {
@@ -2171,6 +2172,7 @@ router.post(
 router.put(
   '/:id/share-settings',
   authenticate,
+  apiRateLimiter,
   validateAdminOrPremium,
   async (req: AuthRequest, res) => {
     try {
