@@ -120,9 +120,7 @@ async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
   }
 }
 
-async function loadSourceImage(
-  imageUrl: string
-): Promise<{
+async function loadSourceImage(imageUrl: string): Promise<{
   image: CanvasImage;
   canvas: Canvas;
   pixels: Uint8Array;

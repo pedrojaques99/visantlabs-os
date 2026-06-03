@@ -750,12 +750,9 @@ router.post(
         (migrated.category && migrated.category !== 'presets');
 
       if (!canHaveImage) {
-        return res
-          .status(400)
-          .json({
-            error:
-              'Reference images are only supported for mockup presets or non-preset categories',
-          });
+        return res.status(400).json({
+          error: 'Reference images are only supported for mockup presets or non-preset categories',
+        });
       }
 
       const r2Service = await import('../../src/services/r2Service.js');

@@ -590,23 +590,21 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       try {
         await connectToMongoDB();
         const db = getDb();
-        const user = await db
-          .collection('users')
-          .findOne(
-            { _id: new ObjectId(currentUserId) },
-            {
-              projection: {
-                _id: 1,
-                name: 1,
-                email: 1,
-                picture: 1,
-                subscriptionStatus: 1,
-                username: 1,
-                bio: 1,
-                createdAt: 1,
-              },
-            }
-          );
+        const user = await db.collection('users').findOne(
+          { _id: new ObjectId(currentUserId) },
+          {
+            projection: {
+              _id: 1,
+              name: 1,
+              email: 1,
+              picture: 1,
+              subscriptionStatus: 1,
+              username: 1,
+              bio: 1,
+              createdAt: 1,
+            },
+          }
+        );
         if (!user) return jsonResponse({ error: 'User not found' });
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ id: currentUserId, ...user, _id: undefined, _meta: quota });

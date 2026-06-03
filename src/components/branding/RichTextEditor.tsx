@@ -202,7 +202,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </Button>
           {showColorPicker && (
             <>
-              <div className="fixed inset-0 z-10" onClick={() => setShowColorPicker(false)} />
+              <div
+                className="fixed inset-0 z-10"
+                role="button"
+                tabIndex={-1}
+                aria-label="Close color picker"
+                onClick={() => setShowColorPicker(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' || e.key === 'Enter') setShowColorPicker(false);
+                }}
+              />
               <div
                 className={`absolute top-full left-0 mt-1 p-2 border rounded-md shadow-lg z-20 ${
                   theme === 'dark'

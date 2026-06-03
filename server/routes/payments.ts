@@ -340,12 +340,10 @@ router.post(
     try {
       if (!stripe) {
         console.error('❌ Stripe is not configured');
-        return res
-          .status(500)
-          .json({
-            error:
-              'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.',
-          });
+        return res.status(500).json({
+          error:
+            'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.',
+        });
       }
 
       const { currency, locale } = req.body || {};
@@ -355,12 +353,10 @@ router.post(
 
       if (!priceId) {
         console.error('❌ Price ID not configured');
-        return res
-          .status(500)
-          .json({
-            error:
-              'Stripe price ID not configured. Please set STRIPE_PRICE_ID_USD or STRIPE_PRICE_ID_BRL in your environment variables.',
-          });
+        return res.status(500).json({
+          error:
+            'Stripe price ID not configured. Please set STRIPE_PRICE_ID_USD or STRIPE_PRICE_ID_BRL in your environment variables.',
+        });
       }
 
       // Verify price exists in Stripe
@@ -368,11 +364,9 @@ router.post(
         await stripe.prices.retrieve(priceId);
       } catch (priceError: any) {
         console.error('❌ Invalid price ID:', priceError.message);
-        return res
-          .status(400)
-          .json({
-            error: `Invalid price ID: ${priceError.message}. Please check your STRIPE_PRICE_ID configuration.`,
-          });
+        return res.status(400).json({
+          error: `Invalid price ID: ${priceError.message}. Please check your STRIPE_PRICE_ID configuration.`,
+        });
       }
 
       await connectToMongoDB();
@@ -458,12 +452,10 @@ router.post(
   async (req: AuthRequest, res, next) => {
     try {
       if (!stripe) {
-        return res
-          .status(500)
-          .json({
-            error:
-              'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.',
-          });
+        return res.status(500).json({
+          error:
+            'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.',
+        });
       }
 
       await connectToMongoDB();
@@ -876,12 +868,10 @@ router.post(
     try {
       if (!stripe) {
         console.error('❌ Stripe is not configured');
-        return res
-          .status(500)
-          .json({
-            error:
-              'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.',
-          });
+        return res.status(500).json({
+          error:
+            'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.',
+        });
       }
 
       const { credits, currency } = req.body || {};
@@ -1112,12 +1102,10 @@ router.post(
     try {
       if (!stripe) {
         console.error('❌ Stripe is not configured');
-        return res
-          .status(500)
-          .json({
-            error:
-              'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.',
-          });
+        return res.status(500).json({
+          error:
+            'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.',
+        });
       }
 
       const { credits, currency } = req.body || {};

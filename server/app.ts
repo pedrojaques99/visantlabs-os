@@ -495,13 +495,11 @@ export function createApp() {
     } catch (err) {
       console.error('[MCP] Request error:', err);
       if (!res.headersSent) {
-        res
-          .status(500)
-          .json({
-            jsonrpc: '2.0',
-            error: { code: -32603, message: 'Internal server error' },
-            id: null,
-          });
+        res.status(500).json({
+          jsonrpc: '2.0',
+          error: { code: -32603, message: 'Internal server error' },
+          id: null,
+        });
       }
     }
   });

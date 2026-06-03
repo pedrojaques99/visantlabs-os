@@ -377,12 +377,10 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         }
 
         if (figImages.length === 0) {
-          return res
-            .status(422)
-            .json({
-              error:
-                'No images found inside .fig file — try exporting frames as PNG from Figma first',
-            });
+          return res.status(422).json({
+            error:
+              'No images found inside .fig file — try exporting frames as PNG from Figma first',
+          });
         }
         chunks = parseImage(filename || 'design.fig');
         imagesToExtract = figImages;
@@ -747,13 +745,11 @@ router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest,
       data: { media: updatedMedia as any },
     });
 
-    res
-      .status(201)
-      .json({
-        media: newMedia,
-        allMedia: updatedMedia,
-        guideline: { ...updated, _id: updated.id },
-      });
+    res.status(201).json({
+      media: newMedia,
+      allMedia: updatedMedia,
+      guideline: { ...updated, _id: updated.id },
+    });
   } catch (error: any) {
     console.error('[Brand Media Upload] Error:', error);
     res.status(500).json({ error: 'Failed to upload media', message: error.message });

@@ -250,11 +250,9 @@ app.get('/mcp', (_req, res) => {
 app.post('/mcp', async (req: AuthRequest, res) => {
   const authed = await authenticateApiKey(req);
   if (!authed) {
-    res
-      .status(401)
-      .json({
-        error: 'Unauthorized — provide a valid visant_sk_ token in Authorization: Bearer header',
-      });
+    res.status(401).json({
+      error: 'Unauthorized — provide a valid visant_sk_ token in Authorization: Bearer header',
+    });
     return;
   }
 

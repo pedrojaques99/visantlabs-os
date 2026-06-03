@@ -101,12 +101,10 @@ router.post('/oauth/register', async (req, res) => {
     const { client_name, redirect_uris, grant_types, token_endpoint_auth_method } = req.body;
 
     if (!client_name || !Array.isArray(redirect_uris) || redirect_uris.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error: 'invalid_client_metadata',
-          error_description: 'client_name and redirect_uris are required',
-        });
+      return res.status(400).json({
+        error: 'invalid_client_metadata',
+        error_description: 'client_name and redirect_uris are required',
+      });
     }
 
     const clientId = crypto.randomUUID();
@@ -344,12 +342,10 @@ async function handleAuthCodeExchange(req: express.Request, res: express.Respons
   const { code, code_verifier, client_id, redirect_uri } = req.body as Record<string, string>;
 
   if (!code || !code_verifier || !client_id) {
-    return res
-      .status(400)
-      .json({
-        error: 'invalid_request',
-        error_description: 'code, code_verifier, client_id are required',
-      });
+    return res.status(400).json({
+      error: 'invalid_request',
+      error_description: 'code, code_verifier, client_id are required',
+    });
   }
 
   try {

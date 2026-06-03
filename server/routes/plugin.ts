@@ -657,16 +657,14 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
     if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
-        const session = await db
-          .collection<any>('plugin_sessions')
-          .findOneAndUpdate(
-            { _id: sessionId },
-            {
-              $set: { updatedAt: new Date(), fileId },
-              $setOnInsert: { createdAt: new Date(), messages: [], context: {} },
-            },
-            { upsert: true, returnDocument: 'after' }
-          );
+        const session = await db.collection<any>('plugin_sessions').findOneAndUpdate(
+          { _id: sessionId },
+          {
+            $set: { updatedAt: new Date(), fileId },
+            $setOnInsert: { createdAt: new Date(), messages: [], context: {} },
+          },
+          { upsert: true, returnDocument: 'after' }
+        );
         if (session?.messages?.length > 0) {
           const msgs = session.messages as Array<{ role: string; content: string }>;
           const HISTORY_TOKEN_BUDGET = 12_000;
@@ -938,11 +936,9 @@ ${
               timestamp: new Date(),
             },
           ];
-          await db
-            .collection('plugin_sessions')
-            .updateOne({ _id: sessionId } as any, {
-              $push: { messages: { $each: newMessages } } as any,
-            });
+          await db.collection('plugin_sessions').updateOne({ _id: sessionId } as any, {
+            $push: { messages: { $each: newMessages } } as any,
+          });
           const updated = await db
             .collection<any>('plugin_sessions')
             .findOne({ _id: sessionId } as any);
@@ -1262,11 +1258,9 @@ ${
             timestamp: new Date(),
           },
         ];
-        await db
-          .collection('plugin_sessions')
-          .updateOne({ _id: sessionId } as any, {
-            $push: { messages: { $each: newMessages } } as any,
-          });
+        await db.collection('plugin_sessions').updateOne({ _id: sessionId } as any, {
+          $push: { messages: { $each: newMessages } } as any,
+        });
         const updated = await db
           .collection<any>('plugin_sessions')
           .findOne({ _id: sessionId } as any);
