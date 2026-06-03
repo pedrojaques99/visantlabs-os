@@ -142,7 +142,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="min-w-[400px] max-w-[440px] !bg-neutral-950/90 border-brand-cyan/20"
+      className="min-w-[400px] max-w-[440px] !bg-neutral-950/90 border-neutral-800"
     >
       {/* Header */}
       <div className="flex items-center justify-between node-margin-lg border-b border-neutral-800 pb-3">
