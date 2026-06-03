@@ -234,17 +234,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             </div>
           ) : mode === 'essential' ? (
             <EssentialSidebar
-              onSurpriseMe={onSurpriseMe}
-              onGenerateSmartPrompt={onGenerateSmartPrompt}
-              onGenerateOutputs={onGenerateClick}
               onSwitchToExpert={() => setMode('expert')}
-              isGeneratingPrompt={isGeneratingPrompt}
-              isGeneratingOutputs={isOutputsLoading}
-              isDiceAnimating={false}
               isSurpriseMeActive={isSurpriseMeMode}
-              authenticationRequiredMessage={authenticationRequiredMessage}
-              generateOutputsButtonRef={generateOutputsButtonRef}
-              isPromptReady={isPromptReady}
             />
           ) : (
             <SidebarGenerationConfig

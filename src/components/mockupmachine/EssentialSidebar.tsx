@@ -8,36 +8,17 @@ import { MicroTitle } from '../ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 import { Gem, Diamond, ChevronRight, MessageSquareText } from 'lucide-react';
-import { SurpriseMeControl } from './SurpriseMeControl';
 import { MockupOutputConfig } from './MockupOutputConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface EssentialSidebarProps {
-  onSurpriseMe: (autoGenerate: boolean) => void;
   onSwitchToExpert: () => void;
-  isGeneratingPrompt: boolean;
-  isGeneratingOutputs: boolean;
-  isDiceAnimating: boolean;
   isSurpriseMeActive: boolean;
-  onGenerateSmartPrompt: (generateOutputs?: boolean) => Promise<void>;
-  onGenerateOutputs: () => void;
-  generateOutputsButtonRef?: React.RefObject<HTMLButtonElement>;
-  authenticationRequiredMessage?: string;
-  isPromptReady?: boolean;
 }
 
 export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
-  onSurpriseMe,
   onSwitchToExpert,
-  isGeneratingPrompt,
-  isGeneratingOutputs,
-  isDiceAnimating,
   isSurpriseMeActive,
-  onGenerateSmartPrompt,
-  onGenerateOutputs,
-  generateOutputsButtonRef,
-  authenticationRequiredMessage,
-  isPromptReady = false,
 }) => {
   const { t } = useTranslation();
   const { data: guidelines = [] } = useBrandGuidelines(true);
@@ -48,9 +29,6 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
     setSelectedAngleTags,
     setSelectedEffectTags,
     setSelectedMaterialTags,
-    uploadedImage,
-    autoGenerate,
-    isSurpriseMeMode,
     instructions,
     setInstructions,
     selectedBrandGuideline,
@@ -222,28 +200,12 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
         <MockupOutputConfig />
       </section>
 
-      {/* 5. GENERATION ACTIONS */}
-      <section className="animate-fade-in-up stagger-5 space-y-2">
-        <SurpriseMeControl
-          onSurpriseMe={onSurpriseMe}
-          isGeneratingPrompt={isGeneratingPrompt}
-          isDiceAnimating={isDiceAnimating}
-          isSurpriseMeMode={isSurpriseMeActive}
-          setIsSurpriseMeMode={() => onSurpriseMe(!isSurpriseMeActive)}
-          onGeneratePrompt={() => onGenerateSmartPrompt(autoGenerate)}
-          onGenerateOutputs={onGenerateOutputs}
-          isGenerateDisabled={(!selectedVibeSegment || !selectedVibeStyle) && !isSurpriseMeActive}
-          isGeneratingOutputs={isGeneratingOutputs}
-          isPromptReady={isPromptReady}
-          variant="inline"
-          uploadedImage={uploadedImage}
-        />
-        {!isSurpriseMeActive && (!selectedVibeSegment || !selectedVibeStyle) && (
-          <p className="text-center text-[10px] font-mono text-neutral-600 animate-fade-in">
-            {t('mockup.selectVibeHint') || 'Selecione um estilo acima para gerar'}
-          </p>
-        )}
-      </section>
+      {/* Hint when actions are disabled */}
+      {!isSurpriseMeActive && (!selectedVibeSegment || !selectedVibeStyle) && (
+        <p className="text-center text-[10px] font-mono text-neutral-600 animate-fade-in">
+          {t('mockup.selectVibeHint') || 'Selecione um estilo acima para gerar'}
+        </p>
+      )}
     </div>
   );
 };
