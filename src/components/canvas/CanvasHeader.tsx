@@ -1,7 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '@/components/ui/BackButton';
-import { Share2, ChevronRight, Settings, Users, Save, FolderOpen, Download, Check, FileJson, Upload, Plus, Library } from 'lucide-react';
+import {
+  Share2,
+  ChevronRight,
+  Settings,
+  Users,
+  Save,
+  FolderOpen,
+  Download,
+  Check,
+  FileJson,
+  Upload,
+  Plus,
+  Library,
+} from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { AuthButton } from '../AuthButton';
@@ -15,8 +28,8 @@ import { useBrandKit } from '@/contexts/BrandKitContext';
 import { canvasApi } from '@/services/canvasApi';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/utils/localeUtils';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface CanvasHeaderProps {
   onBack: () => void;
@@ -81,8 +94,9 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   const { openLibrary: openBrandLibrary } = useBrandKit();
 
   // Common button classes
-  const headerButtonClass = "h-9 w-9 p-0 border rounded-[10px] transition-all flex items-center justify-center bg-neutral-900/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-all duration-200";
-  const activeHeaderButtonClass = "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20";
+  const headerButtonClass =
+    'h-9 w-9 p-0 border rounded-[10px] transition-all flex items-center justify-center bg-neutral-900/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-all duration-200';
+  const activeHeaderButtonClass = 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20';
 
   // Handle share button click
   const handleShareClick = useCallback(() => {
@@ -154,14 +168,17 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   }, [localName, projectName, onProjectNameChange, generateGenericName]);
 
   // Handle keyboard shortcuts in edit mode
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSaveProjectName();
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
-      setLocalName(projectName || generateGenericName());
-    }
-  }, [handleSaveProjectName, projectName, generateGenericName]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        handleSaveProjectName();
+      } else if (e.key === 'Escape') {
+        setIsEditing(false);
+        setLocalName(projectName || generateGenericName());
+      }
+    },
+    [handleSaveProjectName, projectName, generateGenericName]
+  );
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-neutral-950/95 backdrop-blur-sm border-b border-neutral-800/50">
@@ -169,7 +186,9 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BackButton onClick={onBack} className="mt-8 flex-shrink-0" />
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 min-w-0">
-            <Button variant="ghost" onClick={() => navigate('/canvas')}
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/canvas')}
               className="hover:text-neutral-300 transition-colors truncate cursor-pointer"
             >
               {t('canvas.title') || 'Canvas'}
@@ -208,7 +227,10 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               variant="ghost"
               onClick={() => openBrandLibrary()}
               disabled={!linkedGuidelineId}
-              className={cn(headerButtonClass, "hover:border-neutral-600/30 flex-shrink-0 disabled:opacity-30")}
+              className={cn(
+                headerButtonClass,
+                'hover:border-neutral-600/30 flex-shrink-0 disabled:opacity-30'
+              )}
               title={t('mockup.openMediaLibrary') || 'Brand Media Library'}
             >
               <Library size={16} />
@@ -216,38 +238,41 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           </div>
 
           {projectId && (
-            <Button variant="ghost" onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleShareClick();
-            }}
-              className={cn(
-                headerButtonClass,
-                isCollaborative ? activeHeaderButtonClass : ""
-              )}
+            <Button
+              variant="ghost"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleShareClick();
+              }}
+              className={cn(headerButtonClass, isCollaborative ? activeHeaderButtonClass : '')}
               title={t('canvas.share')}
               type="button"
             >
               <Share2 size={16} />
             </Button>
           )}
-          <Button variant="ghost" onClick={() => {
-            if (activeSidePanel === 'community-presets') {
-              setActiveSidePanel(null);
-            } else {
-              setActiveSidePanel('community-presets');
-            }
-          }}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (activeSidePanel === 'community-presets') {
+                setActiveSidePanel(null);
+              } else {
+                setActiveSidePanel('community-presets');
+              }
+            }}
             className={cn(
               headerButtonClass,
-              activeSidePanel === 'community-presets' ? activeHeaderButtonClass : ""
+              activeSidePanel === 'community-presets' ? activeHeaderButtonClass : ''
             )}
             title="Community Presets"
           >
             <Users size={16} />
           </Button>
           {onLoadWorkflow && (
-            <Button variant="ghost" onClick={() => onLoadWorkflow?.()}
+            <Button
+              variant="ghost"
+              onClick={() => onLoadWorkflow?.()}
               className={headerButtonClass}
               title={t('workflows.loadWorkflow') || 'Load Workflow'}
             >
@@ -255,7 +280,9 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             </Button>
           )}
           {onSaveWorkflow && (
-            <Button variant="ghost" onClick={() => onSaveWorkflow?.()}
+            <Button
+              variant="ghost"
+              onClick={() => onSaveWorkflow?.()}
               className={headerButtonClass}
               title={t('workflows.saveWorkflow') || 'Save as Workflow'}
             >
@@ -265,32 +292,42 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
 
           {/* Download Dropdown */}
           <div className="relative group">
-            <Button variant="ghost" className={headerButtonClass}
+            <Button
+              variant="ghost"
+              className={headerButtonClass}
               title={t('canvas.download') || 'Download'}
             >
               <Download size={16} />
             </Button>
             <div className="absolute right-0 top-full mt-1 w-52 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
-              <Button variant="ghost" onClick={() => onExportImagesRequest?.()}
+              <Button
+                variant="ghost"
+                onClick={() => onExportImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2"
               >
                 <Download size={12} className="text-neutral-400" />
                 Exportar imagens...
               </Button>
-              <Button variant="ghost" onClick={() => onExportAllImagesRequest?.()}
+              <Button
+                variant="ghost"
+                onClick={() => onExportAllImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2"
               >
                 <Check size={12} className="text-neutral-400" />
                 Exportar todas (PNG)
               </Button>
               <div className="border-t border-neutral-800/60 my-1" />
-              <Button variant="ghost" onClick={() => onExportJson?.()}
+              <Button
+                variant="ghost"
+                onClick={() => onExportJson?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2"
               >
                 <FileJson size={12} className="text-neutral-400" />
                 Exportar como JSON
               </Button>
-              <Button variant="ghost" onClick={() => onImportJson?.()}
+              <Button
+                variant="ghost"
+                onClick={() => onImportJson?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2"
               >
                 <Upload size={12} className="text-neutral-400" />
@@ -302,13 +339,15 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             subscriptionStatus={contextSubscriptionStatus}
             onCreditsClick={() => onCreditPackagesModalOpen?.()}
           />
-          <Button variant="ghost" onClick={() => {
-            if (onSettingsClick) {
-              onSettingsClick();
-            } else {
-              setShowSettingsModal(true);
-            }
-          }}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (onSettingsClick) {
+                onSettingsClick();
+              } else {
+                setShowSettingsModal(true);
+              }
+            }}
             className={headerButtonClass}
             title={t('canvas.settings')}
           >
@@ -344,8 +383,6 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         />
       )}
 
-
-
       {/* Share Modal */}
       {projectId && (
         <ShareModal
@@ -369,33 +406,6 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           setShowBrandWizard(false);
         }}
       />
-
     </div>
   );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

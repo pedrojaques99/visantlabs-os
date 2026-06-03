@@ -23,23 +23,24 @@ interface BrandCompletenessPillProps {
 }
 
 const STATUS_STYLES = {
-  low:    { ring: 'border-destructive/20    bg-destructive/[0.06]    text-destructive',     dot: 'bg-destructive'    },
-  medium: { ring: 'border-amber-500/20  bg-amber-500/[0.06]  text-amber-200',   dot: 'bg-amber-400'  },
-  high:   { ring: 'border-green-500/20 bg-green-500/[0.06] text-green-400', dot: 'bg-green-500' },
+  low: {
+    ring: 'border-destructive/20    bg-destructive/[0.06]    text-destructive',
+    dot: 'bg-destructive',
+  },
+  medium: { ring: 'border-amber-500/20  bg-amber-500/[0.06]  text-amber-200', dot: 'bg-amber-400' },
+  high: { ring: 'border-green-500/20 bg-green-500/[0.06] text-green-400', dot: 'bg-green-500' },
 } as const;
 
 const GROUP_LABELS: Record<CompletenessRule['group'], string> = {
   identity: 'Identidade',
-  visual:   'Visual',
+  visual: 'Visual',
   strategy: 'Estratégia',
-  voice:    'Voz',
-  tokens:   'Tokens',
-  assets:   'Assets',
+  voice: 'Voz',
+  tokens: 'Tokens',
+  assets: 'Assets',
 };
 
-export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
-  guideline,
-}) => {
+export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ guideline }) => {
   const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
   const status = completenessStatus(report.score);
   const style = STATUS_STYLES[status];
@@ -66,108 +67,124 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({
   };
 
   return (
-    <><DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-[11px] font-medium transition-all hover:opacity-90',
-            style.ring
-          )}
-          aria-label={`Brand completeness ${report.score}%`}
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-[11px] font-medium transition-all hover:opacity-90',
+              style.ring
+            )}
+            aria-label={`Brand completeness ${report.score}%`}
+          >
+            <span className={cn('w-1.5 h-1.5 rounded-full', style.dot)} />
+            <span className="font-bold tabular-nums">{report.score}%</span>
+            <span className="opacity-50 hidden sm:inline">
+              {missingCount === 0 ? '· completa' : `· ${missingCount} pend.`}
+            </span>
+          </button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent
+          align="end"
+          className="w-[320px] p-0 bg-neutral-950/95 backdrop-blur-xl border-white/10"
         >
-          <span className={cn('w-1.5 h-1.5 rounded-full', style.dot)} />
-          <span className="font-bold tabular-nums">{report.score}%</span>
-          <span className="opacity-50 hidden sm:inline">
-            {missingCount === 0 ? '· completa' : `· ${missingCount} pend.`}
-          </span>
-        </button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-[320px] p-0 bg-neutral-950/95 backdrop-blur-xl border-white/10">
-        <div className="p-4 border-b border-neutral-800">
-          <div className="flex items-baseline justify-between mb-1">
-            <span className="text-[11px] font-medium text-neutral-500">
-              Brand completeness
-            </span>
-            <span className={cn('text-2xl font-bold tabular-nums', style.ring.split(' ').find(c => c.startsWith('text-')))}>
-              {report.score}%
-            </span>
-          </div>
-          <p className="text-[11px] text-neutral-500 leading-relaxed">
-            Quanto desta marca está pronto para alimentar geração IA.
-          </p>
-
-          <div className="mt-3 grid grid-cols-3 gap-1.5">
-            {Object.entries(report.byGroup).map(([key, val]) => {
-              if (val.max === 0) return null;
-              const pct = Math.round((val.score / val.max) * 100);
-              return (
-                <div key={key} className="flex flex-col gap-1">
-                  <span className="text-[10px] font-medium text-neutral-600">
-                    {GROUP_LABELS[key as CompletenessRule['group']]}
-                  </span>
-                  <div className="h-1 rounded-full bg-white/5 overflow-hidden">
-                    <div
-                      className={cn('h-full transition-all',
-                        pct >= 75 ? 'bg-green-500/60' : pct >= 40 ? 'bg-amber-500/60' : 'bg-destructive/40'
-                      )}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="max-h-[260px] overflow-y-auto p-2">
-          {missingCount === 0 ? (
-            <div className="flex items-center gap-2 px-2 py-3 text-[11px] text-green-400">
-              <CheckCircle2 size={14} />
-              Tudo preenchido. Brand pronta pra IA.
+          <div className="p-4 border-b border-neutral-800">
+            <div className="flex items-baseline justify-between mb-1">
+              <span className="text-[11px] font-medium text-neutral-500">Brand completeness</span>
+              <span
+                className={cn(
+                  'text-2xl font-bold tabular-nums',
+                  style.ring.split(' ').find((c) => c.startsWith('text-'))
+                )}
+              >
+                {report.score}%
+              </span>
             </div>
-          ) : (
-            <ul className="flex flex-col gap-0.5">
-              {report.missing.map((rule) => (
-                <li
-                  key={rule.id}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors"
-                >
-                  <AlertCircle size={12} className="text-amber-400/70 shrink-0" />
-                  <span className="text-[11px] text-neutral-300 flex-1 truncate">{rule.label}</span>
-                  <span className="text-[10px] font-mono text-neutral-600 tabular-nums">+{rule.weight}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+            <p className="text-[11px] text-neutral-500 leading-relaxed">
+              Quanto desta marca está pronto para alimentar geração IA.
+            </p>
 
-        {guideline.id && (
-          <div className="p-2 border-t border-neutral-800">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={triggerHealthCheck}
-              disabled={healthMutation.isPending}
-              className="w-full h-8 text-xs gap-2 text-brand-cyan/80 hover:text-brand-cyan hover:bg-brand-cyan/5"
-            >
-              <Brain size={11} />
-              {healthMutation.isPending ? 'Analisando...' : 'Run Brand Health (IA)'}
-            </Button>
+            <div className="mt-3 grid grid-cols-3 gap-1.5">
+              {Object.entries(report.byGroup).map(([key, val]) => {
+                if (val.max === 0) return null;
+                const pct = Math.round((val.score / val.max) * 100);
+                return (
+                  <div key={key} className="flex flex-col gap-1">
+                    <span className="text-[10px] font-medium text-neutral-600">
+                      {GROUP_LABELS[key as CompletenessRule['group']]}
+                    </span>
+                    <div className="h-1 rounded-full bg-white/5 overflow-hidden">
+                      <div
+                        className={cn(
+                          'h-full transition-all',
+                          pct >= 75
+                            ? 'bg-green-500/60'
+                            : pct >= 40
+                            ? 'bg-amber-500/60'
+                            : 'bg-destructive/40'
+                        )}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
 
-    <BrandHealthDialog
-      open={dialogOpen}
-      onOpenChange={setDialogOpen}
-      report={healthReport}
-      isLoading={healthMutation.isPending}
-      error={healthMutation.error ? (healthMutation.error as Error).message : null}
-      onRetry={triggerHealthCheck}
-    />
+          <div className="max-h-[260px] overflow-y-auto p-2">
+            {missingCount === 0 ? (
+              <div className="flex items-center gap-2 px-2 py-3 text-[11px] text-green-400">
+                <CheckCircle2 size={14} />
+                Tudo preenchido. Brand pronta pra IA.
+              </div>
+            ) : (
+              <ul className="flex flex-col gap-0.5">
+                {report.missing.map((rule) => (
+                  <li
+                    key={rule.id}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors"
+                  >
+                    <AlertCircle size={12} className="text-amber-400/70 shrink-0" />
+                    <span className="text-[11px] text-neutral-300 flex-1 truncate">
+                      {rule.label}
+                    </span>
+                    <span className="text-[10px] font-mono text-neutral-600 tabular-nums">
+                      +{rule.weight}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {guideline.id && (
+            <div className="p-2 border-t border-neutral-800">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={triggerHealthCheck}
+                disabled={healthMutation.isPending}
+                className="w-full h-8 text-xs gap-2 text-brand-cyan/80 hover:text-brand-cyan hover:bg-brand-cyan/5"
+              >
+                <Brain size={11} />
+                {healthMutation.isPending ? 'Analisando...' : 'Run Brand Health (IA)'}
+              </Button>
+            </div>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <BrandHealthDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        report={healthReport}
+        isLoading={healthMutation.isPending}
+        error={healthMutation.error ? (healthMutation.error as Error).message : null}
+        onRetry={triggerHealthCheck}
+      />
     </>
   );
 };

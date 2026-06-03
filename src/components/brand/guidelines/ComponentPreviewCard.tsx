@@ -17,9 +17,24 @@ interface ComponentPreviewCardProps {
 }
 
 const STATE_CONFIG = {
-  pending: { icon: Clock, label: 'Pending', color: 'text-neutral-500', bg: 'bg-neutral-800/50 border-neutral-800' },
-  approved: { icon: ThumbsUp, label: 'Approved', color: 'text-brand-cyan', bg: 'bg-brand-cyan/5 border-brand-cyan/20' },
-  needs_work: { icon: Wrench, label: 'Needs work', color: 'text-amber-400', bg: 'bg-amber-400/5 border-amber-400/20' },
+  pending: {
+    icon: Clock,
+    label: 'Pending',
+    color: 'text-neutral-500',
+    bg: 'bg-neutral-800/50 border-neutral-800',
+  },
+  approved: {
+    icon: ThumbsUp,
+    label: 'Approved',
+    color: 'text-brand-cyan',
+    bg: 'bg-brand-cyan/5 border-brand-cyan/20',
+  },
+  needs_work: {
+    icon: Wrench,
+    label: 'Needs work',
+    color: 'text-amber-400',
+    bg: 'bg-amber-400/5 border-amber-400/20',
+  },
 };
 
 export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
@@ -42,7 +57,9 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
         'rounded-2xl border overflow-hidden transition-all duration-300',
-        state === 'approved' ? 'border-brand-cyan/20 bg-brand-cyan/[0.02]' : 'border-neutral-800 bg-white/[0.03]',
+        state === 'approved'
+          ? 'border-brand-cyan/20 bg-brand-cyan/[0.02]'
+          : 'border-neutral-800 bg-white/[0.03]',
         className
       )}
     >
@@ -53,17 +70,19 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
             <p className="text-[11px] font-bold text-white truncate">{title}</p>
             <div className={cn('flex items-center gap-1 px-1.5 py-0.5 rounded-md border', cfg.bg)}>
               <StateIcon size={9} className={cfg.color} />
-              <span className={cn('text-[10px] font-mono uppercase tracking-widest', cfg.color)}>{cfg.label}</span>
+              <span className={cn('text-[10px] font-mono uppercase tracking-widest', cfg.color)}>
+                {cfg.label}
+              </span>
             </div>
           </div>
-          {subtitle && <p className="text-[10px] text-neutral-600 font-mono mt-0.5 truncate">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-[10px] text-neutral-600 font-mono mt-0.5 truncate">{subtitle}</p>
+          )}
         </div>
       </div>
 
       {/* Visual Preview */}
-      <div className="p-4 bg-neutral-950/40 min-h-[80px]">
-        {children}
-      </div>
+      <div className="p-4 bg-neutral-950/40 min-h-[80px]">{children}</div>
 
       {/* Approval Buttons */}
       <div className="flex items-center gap-2 px-4 py-3 border-t border-neutral-800">

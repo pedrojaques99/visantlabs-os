@@ -26,13 +26,13 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
 
     // Update compact sections: sections without content should be compact
     const newCompactSections = new Set<number>(data.compactSections || []);
-    steps.forEach(step => {
+    steps.forEach((step) => {
       const content = getStepContent(step.id, data);
-      const hasData = content && (
-        (typeof content === 'string' && content.trim().length > 0) ||
-        (Array.isArray(content) && content.length > 0) ||
-        (typeof content === 'object' && Object.keys(content).length > 0)
-      );
+      const hasData =
+        content &&
+        ((typeof content === 'string' && content.trim().length > 0) ||
+          (Array.isArray(content) && content.length > 0) ||
+          (typeof content === 'object' && Object.keys(content).length > 0));
       // If section now has data and was compact, remove from compact set
       if (hasData && newCompactSections.has(step.id)) {
         newCompactSections.delete(step.id);
@@ -47,7 +47,7 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
 
   // Update layout in editableData
   const updateLayout = useCallback((layout: SectionLayout) => {
-    setEditableData(prev => ({
+    setEditableData((prev) => ({
       ...prev,
       layout,
     }));
@@ -55,7 +55,7 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
 
   // Update UI states in editableData when they change
   const updateUIStates = useCallback(() => {
-    setEditableData(prev => ({
+    setEditableData((prev) => ({
       ...prev,
       collapsedSections: Array.from(collapsedSections),
       compactSections: Array.from(compactSections),
@@ -68,7 +68,7 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
   }, [editableData]);
 
   const toggleSectionCollapse = (stepNumber: number) => {
-    setCollapsedSections(prev => {
+    setCollapsedSections((prev) => {
       const next = new Set(prev);
       if (next.has(stepNumber)) {
         next.delete(stepNumber);
@@ -76,7 +76,7 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
         next.add(stepNumber);
       }
       // Update editableData with new collapsed state
-      setEditableData(current => ({
+      setEditableData((current) => ({
         ...current,
         collapsedSections: Array.from(next),
       }));
@@ -85,7 +85,7 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
   };
 
   const toggleSectionCompact = (stepNumber: number) => {
-    setCompactSections(prev => {
+    setCompactSections((prev) => {
       const next = new Set(prev);
       if (next.has(stepNumber)) {
         next.delete(stepNumber);
@@ -93,7 +93,7 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
         next.add(stepNumber);
       }
       // Update editableData with new compact state
-      setEditableData(current => ({
+      setEditableData((current) => ({
         ...current,
         compactSections: Array.from(next),
       }));
@@ -102,7 +102,7 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
   };
 
   const toggleSectionEdit = (stepNumber: number) => {
-    setEditingSections(prev => {
+    setEditingSections((prev) => {
       const next = new Set(prev);
       if (next.has(stepNumber)) {
         next.delete(stepNumber);
@@ -137,7 +137,7 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
       return cleanString(String(val));
     };
 
-    setEditableData(prev => {
+    setEditableData((prev) => {
       const updated = { ...prev };
       switch (stepNumber) {
         case 1:
@@ -218,9 +218,12 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
     return getStepContent(stepNumber, editableData);
   };
 
-  const hasContentForStep = useCallback((stepNumber: number) => {
-    return hasStepContent(stepNumber, editableData);
-  }, [editableData]);
+  const hasContentForStep = useCallback(
+    (stepNumber: number) => {
+      return hasStepContent(stepNumber, editableData);
+    },
+    [editableData]
+  );
 
   return {
     editableData,
@@ -239,4 +242,3 @@ export const useBrandingMoodboard = ({ data, steps }: UseBrandingMoodboardProps)
     getLayout,
   };
 };
-

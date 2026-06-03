@@ -8,10 +8,7 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
@@ -59,13 +56,19 @@ function getBaseUrl(): string {
   return `http://localhost:${process.env.PORT || 3001}`;
 }
 
-async function pushValidated(fileId: string, operations: any[], successMsg: string): Promise<McpResponse> {
+async function pushValidated(
+  fileId: string,
+  operations: any[],
+  successMsg: string
+): Promise<McpResponse> {
   const validation = operationValidator.validateBatch(operations);
   if (validation.invalid.length > 0) {
     return errorResponse(`Validation: ${validation.invalid[0].errors.join(', ')}`);
   }
   const result = await pluginBridge.push(fileId, validation.valid);
-  return successResponse(result.success ? `✓ ${successMsg}` : `✗ Failed: ${result.errors?.join(', ')}`);
+  return successResponse(
+    result.success ? `✓ ${successMsg}` : `✗ Failed: ${result.errors?.join(', ')}`
+  );
 }
 
 // ─── Tool Handlers ───────────────────────────────────────────────────────────
@@ -84,71 +87,112 @@ const handlers: Record<string, ToolHandler> = {
 
   async create_frame(args) {
     const { fileId, name, x, y, width, height, backgroundColor } = args;
-    return pushValidated(fileId as string, [{
-      type: 'CREATE_FRAME',
-      props: {
-        name: name || 'Frame',
-        width: width || 1440,
-        height: height || 900,
-        fills: backgroundColor ? [{ type: 'SOLID', color: parseHexColor(backgroundColor as string) }] : [],
-      },
-      ...(x !== undefined && { x }),
-      ...(y !== undefined && { y }),
-    }], `Created frame "${name}"`);
+    return pushValidated(
+      fileId as string,
+      [
+        {
+          type: 'CREATE_FRAME',
+          props: {
+            name: name || 'Frame',
+            width: width || 1440,
+            height: height || 900,
+            fills: backgroundColor
+              ? [{ type: 'SOLID', color: parseHexColor(backgroundColor as string) }]
+              : [],
+          },
+          ...(x !== undefined && { x }),
+          ...(y !== undefined && { y }),
+        },
+      ],
+      `Created frame "${name}"`
+    );
   },
 
   async create_rectangle(args) {
     const { fileId, name, x, y, width, height, fill } = args;
-    return pushValidated(fileId as string, [{
-      type: 'CREATE_RECTANGLE',
-      props: {
-        name: name || 'Rectangle',
-        width: width || 200,
-        height: height || 200,
-        fills: fill ? [{ type: 'SOLID', color: parseHexColor(fill as string) }] : [],
-      },
-      ...(x !== undefined && { x }),
-      ...(y !== undefined && { y }),
-    }], `Created rectangle "${name}"`);
+    return pushValidated(
+      fileId as string,
+      [
+        {
+          type: 'CREATE_RECTANGLE',
+          props: {
+            name: name || 'Rectangle',
+            width: width || 200,
+            height: height || 200,
+            fills: fill ? [{ type: 'SOLID', color: parseHexColor(fill as string) }] : [],
+          },
+          ...(x !== undefined && { x }),
+          ...(y !== undefined && { y }),
+        },
+      ],
+      `Created rectangle "${name}"`
+    );
   },
 
   async create_text(args) {
     const { fileId, text, name, fontSize, fontFamily } = args;
-    return pushValidated(fileId as string, [{
-      type: 'CREATE_TEXT',
-      props: {
-        name: name || 'Text',
-        content: text || 'Hello',
-        fontSize: fontSize || 16,
-        fontFamily: fontFamily || 'Inter',
-        fontStyle: 'Regular',
-        fills: [{ type: 'SOLID', color: { r: 0.07, g: 0.07, b: 0.07 } }],
-        textAutoResize: 'WIDTH_AND_HEIGHT',
-      },
-    }], `Created text "${name}"`);
+    return pushValidated(
+      fileId as string,
+      [
+        {
+          type: 'CREATE_TEXT',
+          props: {
+            name: name || 'Text',
+            content: text || 'Hello',
+            fontSize: fontSize || 16,
+            fontFamily: fontFamily || 'Inter',
+            fontStyle: 'Regular',
+            fills: [{ type: 'SOLID', color: { r: 0.07, g: 0.07, b: 0.07 } }],
+            textAutoResize: 'WIDTH_AND_HEIGHT',
+          },
+        },
+      ],
+      `Created text "${name}"`
+    );
   },
 
   async set_fill(args) {
     const { fileId, nodeId, fill } = args;
-    return pushValidated(fileId as string, [{
-      type: 'SET_FILL',
-      nodeId,
-      fills: [{ type: 'SOLID', color: parseHexColor(fill as string) }],
-    }], `Set fill color to ${fill}`);
+    return pushValidated(
+      fileId as string,
+      [
+        {
+          type: 'SET_FILL',
+          nodeId,
+          fills: [{ type: 'SOLID', color: parseHexColor(fill as string) }],
+        },
+      ],
+      `Set fill color to ${fill}`
+    );
   },
 
   async rename_node(args) {
     const { fileId, nodeId, name } = args;
-    return pushValidated(fileId as string, [{
-      type: 'RENAME', nodeId, name,
-    }], `Renamed node to "${name}"`);
+    return pushValidated(
+      fileId as string,
+      [
+        {
+          type: 'RENAME',
+          nodeId,
+          name,
+        },
+      ],
+      `Renamed node to "${name}"`
+    );
   },
 
   async delete_node(args) {
     const { fileId, nodeId } = args;
-    return pushValidated(fileId as string, [{
-      type: 'DELETE_NODE', nodeId,
-    }], 'Deleted node');
+    return pushValidated(
+      fileId as string,
+      [
+        {
+          type: 'DELETE_NODE',
+          nodeId,
+        },
+      ],
+      'Deleted node'
+    );
   },
 
   async chat(args) {
@@ -165,8 +209,14 @@ const handlers: Record<string, ToolHandler> = {
 
   async generate_mockup(args) {
     const {
-      fileId, promptText, baseImage, width, height, resolution,
-      model = GEMINI_MODELS.IMAGE_FLASH, targetNodeId,
+      fileId,
+      promptText,
+      baseImage,
+      width,
+      height,
+      resolution,
+      model = GEMINI_MODELS.IMAGE_FLASH,
+      targetNodeId,
     } = args;
 
     if (!promptText) throw new Error('promptText is required');
@@ -175,7 +225,15 @@ const handlers: Record<string, ToolHandler> = {
     const generateResponse = await fetch(`${getBaseUrl()}/api/mockups/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ promptText, baseImage, width, height, resolution, model, feature: 'agent' }),
+      body: JSON.stringify({
+        promptText,
+        baseImage,
+        width,
+        height,
+        resolution,
+        model,
+        feature: 'agent',
+      }),
     });
 
     if (!generateResponse.ok) {
@@ -187,7 +245,9 @@ const handlers: Record<string, ToolHandler> = {
 
     let pasteResult: any = null;
     if (fileId && targetNodeId) {
-      const ops = [{ type: 'SET_IMAGE_FILL', nodeId: targetNodeId, imageUrl: mockupResult.imageUrl }];
+      const ops = [
+        { type: 'SET_IMAGE_FILL', nodeId: targetNodeId, imageUrl: mockupResult.imageUrl },
+      ];
       const validation = operationValidator.validateBatch(ops);
       if (validation.invalid.length === 0) {
         pasteResult = await pluginBridge.push(fileId as string, validation.valid);
@@ -238,20 +298,20 @@ const handlers: Record<string, ToolHandler> = {
 
   async get_code_connect_map(args) {
     const { fileId } = args;
-    const result = await pluginBridge.push(fileId as string, [
-      { type: 'GET_CODE_CONNECT_MAP' },
-    ]);
+    const result = await pluginBridge.push(fileId as string, [{ type: 'GET_CODE_CONNECT_MAP' }]);
     return jsonResponse({ mappings: result });
   },
 
   async add_code_connect_map(args) {
     const { fileId, nodeId, componentName, filePath } = args;
-    const result = await pluginBridge.push(fileId as string, [{
-      type: 'ADD_CODE_CONNECT_MAP',
-      nodeId: nodeId as string,
-      componentName: componentName as string,
-      filePath: filePath as string,
-    }]);
+    const result = await pluginBridge.push(fileId as string, [
+      {
+        type: 'ADD_CODE_CONNECT_MAP',
+        nodeId: nodeId as string,
+        componentName: componentName as string,
+        filePath: filePath as string,
+      },
+    ]);
     return jsonResponse(result);
   },
 };
@@ -261,11 +321,15 @@ const handlers: Record<string, ToolHandler> = {
 const tools: Tool[] = [
   {
     name: 'get_selection',
-    description: 'Get currently selected nodes in Figma. Use to inspect what the user has selected before performing operations.',
+    description:
+      'Get currently selected nodes in Figma. Use to inspect what the user has selected before performing operations.',
     inputSchema: {
       type: 'object',
       properties: {
-        fileId: { type: 'string', description: 'Figma file ID (from the URL: figma.com/design/:fileId/...)' },
+        fileId: {
+          type: 'string',
+          description: 'Figma file ID (from the URL: figma.com/design/:fileId/...)',
+        },
       },
       required: ['fileId'],
     },
@@ -314,7 +378,10 @@ const tools: Tool[] = [
         text: { type: 'string', description: 'Text content to display' },
         name: { type: 'string', description: 'Layer name (default: "Text")' },
         fontSize: { type: 'number', description: 'Font size in pixels (default: 16)' },
-        fontFamily: { type: 'string', description: 'Font family (default: Inter). Must be available in the Figma file.' },
+        fontFamily: {
+          type: 'string',
+          description: 'Font family (default: Inter). Must be available in the Figma file.',
+        },
       },
       required: ['fileId', 'text'],
     },
@@ -326,7 +393,10 @@ const tools: Tool[] = [
       type: 'object',
       properties: {
         fileId: { type: 'string', description: 'Figma file ID' },
-        nodeId: { type: 'string', description: 'Target node ID (from get_selection or get_design_context)' },
+        nodeId: {
+          type: 'string',
+          description: 'Target node ID (from get_selection or get_design_context)',
+        },
         fill: { type: 'string', description: 'Hex color, e.g. #0000FF' },
       },
       required: ['fileId', 'nodeId', 'fill'],
@@ -347,7 +417,8 @@ const tools: Tool[] = [
   },
   {
     name: 'delete_node',
-    description: 'Delete a node from Figma. This cannot be undone via MCP — confirm with the user first.',
+    description:
+      'Delete a node from Figma. This cannot be undone via MCP — confirm with the user first.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -359,7 +430,8 @@ const tools: Tool[] = [
   },
   {
     name: 'chat',
-    description: 'Send a natural language design command to the Figma AI pipeline. Use for complex operations that combine multiple steps (e.g. "create a card component with title, subtitle, and image").',
+    description:
+      'Send a natural language design command to the Figma AI pipeline. Use for complex operations that combine multiple steps (e.g. "create a card component with title, subtitle, and image").',
     inputSchema: {
       type: 'object',
       properties: {
@@ -371,12 +443,20 @@ const tools: Tool[] = [
   },
   {
     name: 'generate_mockup',
-    description: 'Generate a mockup image using AI. Describe ONLY the scene (surface, lighting, angle) — do NOT describe the design content. Can auto-paste the result into a Figma node if fileId + targetNodeId are provided.',
+    description:
+      'Generate a mockup image using AI. Describe ONLY the scene (surface, lighting, angle) — do NOT describe the design content. Can auto-paste the result into a Figma node if fileId + targetNodeId are provided.',
     inputSchema: {
       type: 'object',
       properties: {
-        fileId: { type: 'string', description: 'Figma file ID (optional — required for auto-paste into a node)' },
-        promptText: { type: 'string', description: 'Scene description ONLY: surface material, lighting, camera angle, background. Do NOT describe the design artwork.' },
+        fileId: {
+          type: 'string',
+          description: 'Figma file ID (optional — required for auto-paste into a node)',
+        },
+        promptText: {
+          type: 'string',
+          description:
+            'Scene description ONLY: surface material, lighting, camera angle, background. Do NOT describe the design artwork.',
+        },
         baseImage: {
           type: 'object',
           description: 'The design artwork to place in the scene',
@@ -390,14 +470,18 @@ const tools: Tool[] = [
         height: { type: 'number', description: 'Output height in pixels (default: 450)' },
         resolution: { type: 'string', description: 'Resolution: hd, 1k, 2k, or 4k' },
         model: { type: 'string', description: `AI model (default: ${GEMINI_MODELS.IMAGE_FLASH})` },
-        targetNodeId: { type: 'string', description: 'Figma node ID to paste the generated image into' },
+        targetNodeId: {
+          type: 'string',
+          description: 'Figma node ID to paste the generated image into',
+        },
       },
       required: ['promptText', 'baseImage'],
     },
   },
   {
     name: 'get_design_context',
-    description: 'Extract recursive node tree with properties (fills, strokes, effects, auto-layout, constraints). Use for architecture analysis or design-to-code workflows.',
+    description:
+      'Extract recursive node tree with properties (fills, strokes, effects, auto-layout, constraints). Use for architecture analysis or design-to-code workflows.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -410,7 +494,8 @@ const tools: Tool[] = [
   },
   {
     name: 'get_variable_defs',
-    description: 'Find all design token variables bound to a node and its children, including their mode values.',
+    description:
+      'Find all design token variables bound to a node and its children, including their mode values.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -427,26 +512,34 @@ const tools: Tool[] = [
       type: 'object',
       properties: {
         fileId: { type: 'string', description: 'Figma file ID' },
-        nodeId: { type: 'string', description: 'Node ID to screenshot (defaults to current selection)' },
+        nodeId: {
+          type: 'string',
+          description: 'Node ID to screenshot (defaults to current selection)',
+        },
       },
       required: ['fileId'],
     },
   },
   {
     name: 'search_design_system',
-    description: 'Search for components, styles, and variables in the Figma file by name or keyword.',
+    description:
+      'Search for components, styles, and variables in the Figma file by name or keyword.',
     inputSchema: {
       type: 'object',
       properties: {
         fileId: { type: 'string', description: 'Figma file ID' },
-        query: { type: 'string', description: 'Search term (component name, style name, or keyword)' },
+        query: {
+          type: 'string',
+          description: 'Search term (component name, style name, or keyword)',
+        },
       },
       required: ['fileId', 'query'],
     },
   },
   {
     name: 'get_code_connect_map',
-    description: 'Retrieve all Figma-to-code mappings (which Figma components map to which React components).',
+    description:
+      'Retrieve all Figma-to-code mappings (which Figma components map to which React components).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -457,14 +550,21 @@ const tools: Tool[] = [
   },
   {
     name: 'add_code_connect_map',
-    description: 'Map a Figma component to a code file so design-to-code workflows know which React component to use.',
+    description:
+      'Map a Figma component to a code file so design-to-code workflows know which React component to use.',
     inputSchema: {
       type: 'object',
       properties: {
         fileId: { type: 'string', description: 'Figma file ID' },
         nodeId: { type: 'string', description: 'Figma component node ID' },
-        componentName: { type: 'string', description: 'React component name (e.g. "Button", "Card")' },
-        filePath: { type: 'string', description: 'Source file path (e.g. "src/components/ui/Button.tsx")' },
+        componentName: {
+          type: 'string',
+          description: 'React component name (e.g. "Button", "Card")',
+        },
+        filePath: {
+          type: 'string',
+          description: 'Source file path (e.g. "src/components/ui/Button.tsx")',
+        },
       },
       required: ['fileId', 'nodeId', 'componentName', 'filePath'],
     },
@@ -473,31 +573,25 @@ const tools: Tool[] = [
 
 // ─── Server Setup ────────────────────────────────────────────────────────────
 
-const server = new Server(
-  { name: 'figma-mcp', version: '1.0.0' },
-  { capabilities: { tools: {} } }
-);
+const server = new Server({ name: 'figma-mcp', version: '1.0.0' }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 
-server.setRequestHandler(
-  CallToolRequestSchema,
-  async (request): Promise<McpResponse> => {
-    const { name, arguments: rawArgs } = request.params;
-    const args = (rawArgs ?? {}) as Args;
+server.setRequestHandler(CallToolRequestSchema, async (request): Promise<McpResponse> => {
+  const { name, arguments: rawArgs } = request.params;
+  const args = (rawArgs ?? {}) as Args;
 
-    const handler = handlers[name];
-    if (!handler) return errorResponse(`Unknown tool: ${name}`);
+  const handler = handlers[name];
+  if (!handler) return errorResponse(`Unknown tool: ${name}`);
 
-    try {
-      return await handler(args);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[Figma MCP] ${name} error:`, err);
-      return errorResponse(msg);
-    }
+  try {
+    return await handler(args);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[Figma MCP] ${name} error:`, err);
+    return errorResponse(msg);
   }
-);
+});
 
 async function start() {
   const transport = new StdioServerTransport();

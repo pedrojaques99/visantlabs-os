@@ -27,9 +27,10 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
 
   if (!isOpen) return null;
 
-  const currentDate = getCurrentLocale() === 'pt-BR'
-    ? new Date().toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' })
-    : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const currentDate =
+    getCurrentLocale() === 'pt-BR'
+      ? new Date().toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
     <div className="min-h-screen bg-background text-neutral-300">
@@ -42,19 +43,29 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
         </p>
 
         <div className="space-y-8 text-base leading-relaxed">
-          <p className="text-neutral-400" dangerouslySetInnerHTML={{ __html: t('refund.overview') }} />
+          <p
+            className="text-neutral-400"
+            dangerouslySetInnerHTML={{ __html: t('refund.overview') }}
+          />
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.rightOfWithdrawal.title')}</h2>
-            <p className="text-neutral-400 mb-3" dangerouslySetInnerHTML={{ __html: t('refund.sections.rightOfWithdrawal.content') }} />
-            <p className="text-neutral-400">
-              {t('refund.sections.rightOfWithdrawal.applicable')}
-            </p>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.rightOfWithdrawal.title')}
+            </h2>
+            <p
+              className="text-neutral-400 mb-3"
+              dangerouslySetInnerHTML={{ __html: t('refund.sections.rightOfWithdrawal.content') }}
+            />
+            <p className="text-neutral-400">{t('refund.sections.rightOfWithdrawal.applicable')}</p>
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.procedure.title')}</h2>
-            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">{t('refund.sections.procedure.howToRequest.title')}</h3>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.procedure.title')}
+            </h2>
+            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">
+              {t('refund.sections.procedure.howToRequest.title')}
+            </h3>
             <p className="text-neutral-400 mb-3">
               {t('refund.sections.procedure.howToRequest.intro')}
             </p>
@@ -64,7 +75,9 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
                   return (
                     <li key={idx}>
                       {item.split('contato@visant.co')[0]}
-                      <strong className="text-brand-cyan">{t('refund.policy.contatovisantco')}</strong>
+                      <strong className="text-brand-cyan">
+                        {t('refund.policy.contatovisantco')}
+                      </strong>
                       {item.split('contato@visant.co')[1]}
                     </li>
                   );
@@ -73,13 +86,24 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
               })}
             </ul>
 
-            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">{t('refund.sections.procedure.processing.title')}</h3>
-            <p className="text-neutral-400" dangerouslySetInnerHTML={{ __html: t('refund.sections.procedure.processing.content') }} />
+            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">
+              {t('refund.sections.procedure.processing.title')}
+            </h3>
+            <p
+              className="text-neutral-400"
+              dangerouslySetInnerHTML={{
+                __html: t('refund.sections.procedure.processing.content'),
+              }}
+            />
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.subscriptionRefund.title')}</h2>
-            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">{t('refund.sections.subscriptionRefund.partial.title')}</h3>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.subscriptionRefund.title')}
+            </h2>
+            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">
+              {t('refund.sections.subscriptionRefund.partial.title')}
+            </h3>
             <p className="text-neutral-400 mb-3">
               {t('refund.sections.subscriptionRefund.partial.intro')}
             </p>
@@ -89,26 +113,44 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
               ))}
             </ul>
 
-            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">{t('refund.sections.subscriptionRefund.full.title')}</h3>
-            <p className="text-neutral-400" dangerouslySetInnerHTML={{ __html: t('refund.sections.subscriptionRefund.full.content') }} />
+            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">
+              {t('refund.sections.subscriptionRefund.full.title')}
+            </h3>
+            <p
+              className="text-neutral-400"
+              dangerouslySetInnerHTML={{
+                __html: t('refund.sections.subscriptionRefund.full.content'),
+              }}
+            />
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.creditRefund.title')}</h2>
-            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">{t('refund.sections.creditRefund.unused.title')}</h3>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.creditRefund.title')}
+            </h2>
+            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">
+              {t('refund.sections.creditRefund.unused.title')}
+            </h3>
             <p className="text-neutral-400 mb-3">
               {t('refund.sections.creditRefund.unused.content')}
             </p>
 
-            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">{t('refund.sections.creditRefund.partiallyUsed.title')}</h3>
-            <p className="text-neutral-400" dangerouslySetInnerHTML={{ __html: t('refund.sections.creditRefund.partiallyUsed.content') }} />
+            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">
+              {t('refund.sections.creditRefund.partiallyUsed.title')}
+            </h3>
+            <p
+              className="text-neutral-400"
+              dangerouslySetInnerHTML={{
+                __html: t('refund.sections.creditRefund.partiallyUsed.content'),
+              }}
+            />
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.processingTimes.title')}</h2>
-            <p className="text-neutral-400 mb-3">
-              {t('refund.sections.processingTimes.intro')}
-            </p>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.processingTimes.title')}
+            </h2>
+            <p className="text-neutral-400 mb-3">{t('refund.sections.processingTimes.intro')}</p>
             <ul className="list-disc list-inside space-y-2 text-neutral-400 ml-4 mb-4">
               {getArray('refund.sections.processingTimes.items').map((item, idx) => (
                 <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
@@ -117,21 +159,32 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.specialCases.title')}</h2>
-            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">{t('refund.sections.specialCases.technicalIssues.title')}</h3>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.specialCases.title')}
+            </h2>
+            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">
+              {t('refund.sections.specialCases.technicalIssues.title')}
+            </h3>
             <p className="text-neutral-400 mb-3">
               {t('refund.sections.specialCases.technicalIssues.content')}
             </p>
 
-            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">{t('refund.sections.specialCases.purchaseError.title')}</h3>
+            <h3 className="text-lg font-semibold text-neutral-300 mt-6 mb-3">
+              {t('refund.sections.specialCases.purchaseError.title')}
+            </h3>
             <p className="text-neutral-400">
               {t('refund.sections.specialCases.purchaseError.content')}
             </p>
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.exceptions.title')}</h2>
-            <p className="text-neutral-400 mb-3" dangerouslySetInnerHTML={{ __html: t('refund.sections.exceptions.intro') }} />
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.exceptions.title')}
+            </h2>
+            <p
+              className="text-neutral-400 mb-3"
+              dangerouslySetInnerHTML={{ __html: t('refund.sections.exceptions.intro') }}
+            />
             <ul className="list-disc list-inside space-y-2 text-neutral-400 ml-4 mb-4">
               {getArray('refund.sections.exceptions.items').map((item, idx) => (
                 <li key={idx}>{item}</li>
@@ -140,35 +193,46 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.cancellation.title')}</h2>
-            <p className="text-neutral-400 mb-3">
-              {t('refund.sections.cancellation.content')}
-            </p>
-            <p className="text-neutral-400">
-              {t('refund.sections.cancellation.refundNote')}
-            </p>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.cancellation.title')}
+            </h2>
+            <p className="text-neutral-400 mb-3">{t('refund.sections.cancellation.content')}</p>
+            <p className="text-neutral-400">{t('refund.sections.cancellation.refundNote')}</p>
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.contact.title')}</h2>
-            <p className="text-neutral-400 mb-3">
-              {t('refund.sections.contact.intro')}
-            </p>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.contact.title')}
+            </h2>
+            <p className="text-neutral-400 mb-3">{t('refund.sections.contact.intro')}</p>
             <ul className="list-none space-y-2 text-neutral-400 ml-0 mb-4">
-              <li><strong className="text-brand-cyan">{t('refund.sections.contact.email').split(':')[0]}:</strong> {t('refund.sections.contact.email').split(':')[1]}</li>
-              <li><strong className="text-brand-cyan">{t('refund.sections.contact.responseTime').split(':')[0]}:</strong> {t('refund.sections.contact.responseTime').split(':')[1]}</li>
+              <li>
+                <strong className="text-brand-cyan">
+                  {t('refund.sections.contact.email').split(':')[0]}:
+                </strong>{' '}
+                {t('refund.sections.contact.email').split(':')[1]}
+              </li>
+              <li>
+                <strong className="text-brand-cyan">
+                  {t('refund.sections.contact.responseTime').split(':')[0]}:
+                </strong>{' '}
+                {t('refund.sections.contact.responseTime').split(':')[1]}
+              </li>
             </ul>
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-neutral-200 mb-4">{t('refund.sections.changes.title')}</h2>
-            <p className="text-neutral-400">
-              {t('refund.sections.changes.content')}
-            </p>
+            <h2 className="text-xl font-semibold text-neutral-200 mb-4">
+              {t('refund.sections.changes.title')}
+            </h2>
+            <p className="text-neutral-400">{t('refund.sections.changes.content')}</p>
           </section>
 
           <div className="pt-12 mt-8 bg-neutral-900/30 p-6 rounded-md">
-            <p className="text-sm text-neutral-500 leading-relaxed" dangerouslySetInnerHTML={{ __html: t('refund.sections.legalNote') }} />
+            <p
+              className="text-sm text-neutral-500 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: t('refund.sections.legalNote') }}
+            />
           </div>
         </div>
       </div>

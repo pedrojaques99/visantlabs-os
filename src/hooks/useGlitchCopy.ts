@@ -15,8 +15,9 @@ export function useGlitchCopy(text: string) {
 
     const interval = setInterval(() => {
       setGlitchText(
-        Array.from({ length: 4 }, () =>
-          GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
+        Array.from(
+          { length: 4 },
+          () => GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
         ).join('')
       );
     }, GLITCH_INTERVAL_MS);

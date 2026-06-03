@@ -21,7 +21,7 @@ interface AuthEndpointResult {
 async function authEndpoint(
   room: string,
   getToken: () => string | null,
-  fetchFn: typeof fetch,
+  fetchFn: typeof fetch
 ): Promise<AuthEndpointResult> {
   const token = getToken();
   if (!token) throw new Error('Authentication token not found. Please log in.');
@@ -80,7 +80,7 @@ describe('Liveblocks authEndpoint routing', () => {
 
     expect(fetch).toHaveBeenCalledWith(
       '/api/brand-guidelines/abc123/liveblocks-auth',
-      expect.objectContaining({ method: 'POST' }),
+      expect.objectContaining({ method: 'POST' })
     );
   });
 
@@ -90,14 +90,14 @@ describe('Liveblocks authEndpoint routing', () => {
 
     expect(fetch).toHaveBeenCalledWith(
       '/api/canvas/xyz789/liveblocks-auth',
-      expect.objectContaining({ method: 'POST' }),
+      expect.objectContaining({ method: 'POST' })
     );
   });
 
   it('throws for unknown room prefix', async () => {
     const fetch = mockFetch(200, {});
     await expect(authEndpoint('unknown-room', getToken, fetch)).rejects.toThrow(
-      /unknown room prefix/i,
+      /unknown room prefix/i
     );
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -115,7 +115,7 @@ describe('Liveblocks authEndpoint routing', () => {
   it('throws when auth token is missing before fetch', async () => {
     const fetch = mockFetch(200, {});
     await expect(authEndpoint('brand-id1', noToken, fetch)).rejects.toThrow(
-      /authentication token not found/i,
+      /authentication token not found/i
     );
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -154,7 +154,7 @@ describe('Liveblocks authEndpoint routing', () => {
 
     expect(fetch).toHaveBeenCalledWith(
       `/api/brand-guidelines/${objectId}/liveblocks-auth`,
-      expect.any(Object),
+      expect.any(Object)
     );
   });
 
@@ -165,7 +165,7 @@ describe('Liveblocks authEndpoint routing', () => {
 
     expect(fetch).toHaveBeenCalledWith(
       `/api/canvas/${objectId}/liveblocks-auth`,
-      expect.any(Object),
+      expect.any(Object)
     );
   });
 });

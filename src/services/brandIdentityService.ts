@@ -1,8 +1,7 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type } from '@google/genai';
 import type { BrandIdentity } from '../types/reactFlow';
 import type { UploadedImage } from '../types/types';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
-
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
@@ -10,14 +9,22 @@ let currentApiKey: string | null = null;
 
 const getAI = (): GoogleGenAI => {
   // Use cached instance or create from environment
-  if (!ai || currentApiKey !== (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim()) {
-    const envApiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim();
+  if (
+    !ai ||
+    currentApiKey !==
+      (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim()
+  ) {
+    const envApiKey = (
+      import.meta.env.VITE_GEMINI_API_KEY ||
+      import.meta.env.VITE_API_KEY ||
+      ''
+    ).trim();
 
     if (!envApiKey || envApiKey === 'undefined' || envApiKey.length === 0) {
       throw new Error(
-        "GEMINI_API_KEY não encontrada. " +
-        "Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. " +
-        "Veja docs/SETUP_LLM.md para mais informações."
+        'GEMINI_API_KEY não encontrada. ' +
+          'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. ' +
+          'Veja docs/SETUP_LLM.md para mais informações.'
       );
     }
 
@@ -106,7 +113,9 @@ You must return a JSON object matching this exact structure:
 **INSTRUCTIONS:**
 1. Be thorough but CONCISE in descriptions. Avoid long paragraphs. 
 2. Extract ALL colors as hex codes (e.g., #FF5733)
-3. If information is missing from the ${identityTypeName}, infer from the logo where reasonable${strategyText ? ', or use strategic context to inform your analysis' : ''}
+3. If information is missing from the ${identityTypeName}, infer from the logo where reasonable${
+    strategyText ? ', or use strategic context to inform your analysis' : ''
+  }
 4. Return ONLY valid JSON, no markdown, no code blocks, no explanation
 5. All arrays should have at least one item if possible
 6. Use empty arrays only when absolutely no information is available`;
@@ -229,7 +238,14 @@ You must return a JSON object matching this exact structure:
     const identity = JSON.parse(jsonString) as BrandIdentity;
 
     // Validate required fields
-    if (!identity.logo || !identity.colors || !identity.typography || !identity.composition || !identity.personality || !identity.visualElements) {
+    if (
+      !identity.logo ||
+      !identity.colors ||
+      !identity.typography ||
+      !identity.composition ||
+      !identity.personality ||
+      !identity.visualElements
+    ) {
       throw new Error('Invalid brand identity structure returned from Gemini');
     }
 
@@ -247,6 +263,8 @@ You must return a JSON object matching this exact structure:
   } catch (error) {
     console.error('Failed to parse brand identity JSON:', error);
     console.error('Response text:', jsonString);
-    throw new Error(`Failed to parse brand identity: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to parse brand identity: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 };

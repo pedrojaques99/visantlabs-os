@@ -28,8 +28,12 @@ const playgroundRateLimit = rateLimit({
 });
 
 const generateSlug = (title: string) =>
-  title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
-  + '-' + crypto.randomBytes(3).toString('hex');
+  title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '') +
+  '-' +
+  crypto.randomBytes(3).toString('hex');
 
 // ─── Catalog prompt (generated from component descriptions) ─────────────
 // This is a simplified version; in production, use catalog.prompt() from json-render
@@ -131,12 +135,13 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
     await chargeCredits(req.userId!, 1);
     credited = true;
 
-    const systemInstruction = PLAYGROUND_SYSTEM_PROMPT + CATALOG_PROMPT +
+    const systemInstruction =
+      PLAYGROUND_SYSTEM_PROMPT +
+      CATALOG_PROMPT +
       (brandContext ? `\n\n## User Brand Context\n${sanitizeForPrompt(brandContext)}` : '');
 
-    const selectedModel = model && Object.values(GEMINI_MODELS).includes(model as any)
-      ? model
-      : GEMINI_MODELS.TEXT;
+    const selectedModel =
+      model && Object.values(GEMINI_MODELS).includes(model as any) ? model : GEMINI_MODELS.TEXT;
 
     const result = await getAI().models.generateContent({
       model: selectedModel,
@@ -180,9 +185,11 @@ router.post('/generate', playgroundRateLimit, authenticate, async (req: AuthRequ
     if (credited && !err?.message?.includes('Insufficient credits')) {
       await refundCredits(req.userId!, 1).catch(() => {});
     }
-    send('error', { message: err?.message?.includes('Insufficient credits')
-      ? 'Insufficient credits'
-      : 'Generation failed. Please try again.' });
+    send('error', {
+      message: err?.message?.includes('Insufficient credits')
+        ? 'Insufficient credits'
+        : 'Generation failed. Please try again.',
+    });
   } finally {
     res.end();
   }
@@ -223,13 +230,11 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
     await chargeCredits(req.userId!, 1);
     credited = true;
 
-    const systemInstruction = PLAYGROUND_ITERATE_PROMPT +
-      JSON.stringify(currentSpec, null, 2) +
-      '\n\n' + CATALOG_PROMPT;
+    const systemInstruction =
+      PLAYGROUND_ITERATE_PROMPT + JSON.stringify(currentSpec, null, 2) + '\n\n' + CATALOG_PROMPT;
 
-    const selectedModel = model && Object.values(GEMINI_MODELS).includes(model as any)
-      ? model
-      : GEMINI_MODELS.TEXT;
+    const selectedModel =
+      model && Object.values(GEMINI_MODELS).includes(model as any) ? model : GEMINI_MODELS.TEXT;
 
     const result = await getAI().models.generateContent({
       model: selectedModel,
@@ -238,7 +243,11 @@ router.post('/iterate', playgroundRateLimit, authenticate, async (req: AuthReque
     });
 
     const raw = (result.text ?? '').trim();
-    const cleaned = raw.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/\s*```$/m, '').trim();
+    const cleaned = raw
+      .replace(/^```json\s*/m, '')
+      .replace(/^```\s*/m, '')
+      .replace(/\s*```$/m, '')
+      .trim();
 
     try {
       const parsed = JSON.parse(cleaned);
@@ -300,7 +309,9 @@ router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRe
       }
     }
 
-    const systemInstruction = PLAYGROUND_SYSTEM_PROMPT + CATALOG_PROMPT +
+    const systemInstruction =
+      PLAYGROUND_SYSTEM_PROMPT +
+      CATALOG_PROMPT +
       (brandContext ? `\n\n## User Brand Context\n${brandContext}` : '');
 
     const result = await getAI().models.generateContent({
@@ -310,7 +321,11 @@ router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRe
     });
 
     const raw = (result.text ?? '').trim();
-    const cleaned = raw.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/\s*```$/m, '').trim();
+    const cleaned = raw
+      .replace(/^```json\s*/m, '')
+      .replace(/^```\s*/m, '')
+      .replace(/\s*```$/m, '')
+      .trim();
 
     let spec: Record<string, unknown>;
     let meta: Record<string, unknown> = {};
@@ -370,7 +385,8 @@ router.post('/quickstart', playgroundRateLimit, authenticate, async (req: AuthRe
 router.post('/', authenticate, async (req: AuthRequest, res) => {
   if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { title, description, tags, category, spec, stateDefaults, actionsUsed, thumbnail } = req.body;
+  const { title, description, tags, category, spec, stateDefaults, actionsUsed, thumbnail } =
+    req.body;
 
   if (!title || !spec) {
     return res.status(400).json({ error: 'title and spec required' });
@@ -472,10 +488,19 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
       where: { userId: req.userId },
       orderBy: { updatedAt: 'desc' },
       select: {
-        id: true, slug: true, title: true, description: true,
-        tags: true, category: true, thumbnail: true,
-        likesCount: true, forksCount: true, viewsCount: true,
-        isPublished: true, createdAt: true, updatedAt: true,
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        tags: true,
+        category: true,
+        thumbnail: true,
+        likesCount: true,
+        forksCount: true,
+        viewsCount: true,
+        isPublished: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -488,16 +513,25 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
 
 // ─── GET /feed — Community feed ─────────────────────────────────────────
 router.get('/feed', async (req, res) => {
-  const { category, sort = 'newest', search, skip = '0', take = '20' } = req.query as Record<string, string>;
+  const {
+    category,
+    sort = 'newest',
+    search,
+    skip = '0',
+    take = '20',
+  } = req.query as Record<string, string>;
 
   try {
     const where: Record<string, unknown> = { isPublished: true };
     if (category) where.category = category;
     if (search) where.title = { contains: search, mode: 'insensitive' };
 
-    const orderBy = sort === 'likes' ? { likesCount: 'desc' as const }
-      : sort === 'popular' ? { viewsCount: 'desc' as const }
-      : { createdAt: 'desc' as const };
+    const orderBy =
+      sort === 'likes'
+        ? { likesCount: 'desc' as const }
+        : sort === 'popular'
+        ? { viewsCount: 'desc' as const }
+        : { createdAt: 'desc' as const };
 
     const [miniApps, total] = await Promise.all([
       prisma.miniApp.findMany({
@@ -506,27 +540,41 @@ router.get('/feed', async (req, res) => {
         skip: parseInt(skip),
         take: Math.min(parseInt(take), 50),
         select: {
-          id: true, slug: true, title: true, description: true,
-          tags: true, category: true, thumbnail: true,
-          likesCount: true, forksCount: true, viewsCount: true,
-          userId: true, createdAt: true,
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          tags: true,
+          category: true,
+          thumbnail: true,
+          likesCount: true,
+          forksCount: true,
+          viewsCount: true,
+          userId: true,
+          createdAt: true,
         },
       }),
       prisma.miniApp.count({ where }),
     ]);
 
-    const userIds = [...new Set(miniApps.map(a => a.userId))];
-    const users = userIds.length > 0
-      ? await prisma.user.findMany({
-          where: { id: { in: userIds } },
-          select: { id: true, name: true, picture: true, username: true },
-        })
-      : [];
-    const userMap = new Map(users.map(u => [u.id, u]));
+    const userIds = [...new Set(miniApps.map((a) => a.userId))];
+    const users =
+      userIds.length > 0
+        ? await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true, name: true, picture: true, username: true },
+          })
+        : [];
+    const userMap = new Map(users.map((u) => [u.id, u]));
 
-    const enriched = miniApps.map(a => {
+    const enriched = miniApps.map((a) => {
       const author = userMap.get(a.userId);
-      return { ...a, author: author ? { name: author.name, picture: author.picture, username: author.username } : null };
+      return {
+        ...a,
+        author: author
+          ? { name: author.name, picture: author.picture, username: author.username }
+          : null,
+      };
     });
 
     res.json({ miniApps: enriched, total });
@@ -613,7 +661,7 @@ router.post('/:id/fork', authenticate, async (req: AuthRequest, res) => {
           tags: original.tags,
           category: original.category,
           spec: original.spec as any,
-          stateDefaults: original.stateDefaults as any ?? undefined,
+          stateDefaults: (original.stateDefaults as any) ?? undefined,
           actionsUsed: original.actionsUsed,
           forkedFromId: original.id,
         },
@@ -646,11 +694,17 @@ router.post('/:id/like', authenticate, async (req: AuthRequest, res) => {
 
       if (existing) {
         await tx.miniAppLike.delete({ where: { id: existing.id } });
-        await tx.miniApp.update({ where: { id: miniAppId }, data: { likesCount: { decrement: 1 } } });
+        await tx.miniApp.update({
+          where: { id: miniAppId },
+          data: { likesCount: { decrement: 1 } },
+        });
         return { liked: false };
       } else {
         await tx.miniAppLike.create({ data: { miniAppId, userId: req.userId! } });
-        await tx.miniApp.update({ where: { id: miniAppId }, data: { likesCount: { increment: 1 } } });
+        await tx.miniApp.update({
+          where: { id: miniAppId },
+          data: { likesCount: { increment: 1 } },
+        });
         return { liked: true };
       }
     });
@@ -726,7 +780,7 @@ router.all('/proxy/*', proxyRateLimit, authenticate, async (req: AuthRequest, re
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Authorization': req.headers.authorization || '',
+      Authorization: req.headers.authorization || '',
     };
 
     const proxyRes = await fetch(internalUrl, {
@@ -748,9 +802,11 @@ router.get('/brand-context/:guidelineId', authenticate, async (req: AuthRequest,
   if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const internalUrl = `${req.protocol}://${req.get('host')}/api/brand-guidelines/${req.params.guidelineId}`;
+    const internalUrl = `${req.protocol}://${req.get('host')}/api/brand-guidelines/${
+      req.params.guidelineId
+    }`;
     const brandRes = await fetch(internalUrl, {
-      headers: { 'Authorization': req.headers.authorization || '' },
+      headers: { Authorization: req.headers.authorization || '' },
     });
 
     if (!brandRes.ok) return res.status(404).json({ error: 'Brand not found' });
@@ -759,11 +815,14 @@ router.get('/brand-context/:guidelineId', authenticate, async (req: AuthRequest,
 
     const context = [
       brand.brandName && `Brand: ${brand.brandName}`,
-      brand.colors?.length && `Colors: ${brand.colors.map((c: any) => c.hex || c.value).join(', ')}`,
+      brand.colors?.length &&
+        `Colors: ${brand.colors.map((c: any) => c.hex || c.value).join(', ')}`,
       brand.typography?.primary && `Primary font: ${brand.typography.primary}`,
       brand.logoUrl && `Logo URL: ${brand.logoUrl}`,
       brand.tagline && `Tagline: ${brand.tagline}`,
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     res.json({ context, brandName: brand.brandName });
   } catch (err) {

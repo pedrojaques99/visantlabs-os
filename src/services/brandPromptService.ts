@@ -2,24 +2,31 @@ import type { BrandIdentity, StrategyNodeData } from '../types/reactFlow';
 import { GoogleGenAI } from '@google/genai';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
-
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
 let currentApiKey: string | null = null;
 
 const getAI = (): GoogleGenAI => {
   // Use cached instance or create from environment
-  if (!ai || currentApiKey !== (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim()) {
-    const envApiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim();
-    
+  if (
+    !ai ||
+    currentApiKey !==
+      (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim()
+  ) {
+    const envApiKey = (
+      import.meta.env.VITE_GEMINI_API_KEY ||
+      import.meta.env.VITE_API_KEY ||
+      ''
+    ).trim();
+
     if (!envApiKey || envApiKey === 'undefined' || envApiKey.length === 0) {
       throw new Error(
-        "GEMINI_API_KEY não encontrada. " +
-        "Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. " +
-        "Veja docs/SETUP_LLM.md para mais informações."
+        'GEMINI_API_KEY não encontrada. ' +
+          'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. ' +
+          'Veja docs/SETUP_LLM.md para mais informações.'
       );
     }
-    
+
     currentApiKey = envApiKey;
     ai = new GoogleGenAI({ apiKey: envApiKey });
   }
@@ -46,7 +53,7 @@ export const generateVisualPrompt = async (
 }> => {
   const aspectRatio = context?.aspectRatio || '16:9';
   const mockupType = context?.mockupType || 'product';
-  
+
   // Construir prompt baseado no BrandIdentity
   const colorPalette = [
     ...brandIdentity.colors.primary,
@@ -55,10 +62,9 @@ export const generateVisualPrompt = async (
   ].join(', ');
 
   // Visual style: apenas descritores visuais, sem filosofia
-  const visualStyle = [
-    brandIdentity.logo.style,
-    brandIdentity.composition.style,
-  ].filter(Boolean).join(', ');
+  const visualStyle = [brandIdentity.logo.style, brandIdentity.composition.style]
+    .filter(Boolean)
+    .join(', ');
 
   const visualElements = brandIdentity.visualElements.join(', ');
 
@@ -69,13 +75,23 @@ export const generateVisualPrompt = async (
   }
 
   // Prompt para mockups - arquitetura perfeita, direto, APENAS VISUAL
-  const mockupPrompt = `A photorealistic, super-detailed ${aspectRatio === '16:9' ? 'widescreen cinematic shot' : aspectRatio === '4:3' ? 'standard photo' : 'square composition'} of a ${mockupType} mockup. 
+  const mockupPrompt = `A photorealistic, super-detailed ${
+    aspectRatio === '16:9'
+      ? 'widescreen cinematic shot'
+      : aspectRatio === '4:3'
+      ? 'standard photo'
+      : 'square composition'
+  } of a ${mockupType} mockup. 
 Color palette: ${colorPalette || 'brand colors'}. 
 Visual style: ${visualStyle || 'brand style'}. 
 Typography: ${brandIdentity.typography.primary || 'brand typography'}. 
 Visual elements: ${visualElements || 'brand elements'}. 
-Composition: ${brandIdentity.composition.style || 'brand composition'}, grid: ${brandIdentity.composition.grid || 'brand grid'}, spacing: ${brandIdentity.composition.spacing || 'brand spacing'}.${additionalVisualInfo} 
-Professional product photography with authentic materials, subtle surface details, natural reflections, sharp focus.${context?.additionalDetails ? ` ${context.additionalDetails}` : ''}`;
+Composition: ${brandIdentity.composition.style || 'brand composition'}, grid: ${
+    brandIdentity.composition.grid || 'brand grid'
+  }, spacing: ${brandIdentity.composition.spacing || 'brand spacing'}.${additionalVisualInfo} 
+Professional product photography with authentic materials, subtle surface details, natural reflections, sharp focus.${
+    context?.additionalDetails ? ` ${context.additionalDetails}` : ''
+  }`;
 
   // Prompt para composição
   const compositionPrompt = `Composition style: ${brandIdentity.composition.style || 'balanced'}. 
@@ -87,7 +103,9 @@ Safe area: Maintain comfortable breathing room around design elements.${addition
   // Prompt para estilo visual - APENAS DESCRITORES VISUAIS
   const stylePrompt = `Visual style: ${visualStyle || 'modern'}. 
 Color palette: ${colorPalette || 'brand colors'}. 
-Typography: ${brandIdentity.typography.primary || 'brand font'}${brandIdentity.typography.secondary ? `, ${brandIdentity.typography.secondary}` : ''}. 
+Typography: ${brandIdentity.typography.primary || 'brand font'}${
+    brandIdentity.typography.secondary ? `, ${brandIdentity.typography.secondary}` : ''
+  }. 
 Visual elements: ${visualElements || 'brand elements'}.${additionalVisualInfo}`;
 
   return {
@@ -133,23 +151,21 @@ export const consolidateStrategies = (
         consolidated.competitors = [];
       }
       const existing = consolidated.competitors as Array<{ name: string; url?: string }>;
-      const newCompetitors = Array.isArray(strategy.data.competitors) 
-        ? strategy.data.competitors 
+      const newCompetitors = Array.isArray(strategy.data.competitors)
+        ? strategy.data.competitors
         : [];
-      
+
       // Evitar duplicatas
-      const existingNames = new Set(existing.map(c => 
-        typeof c === 'string' ? c : c.name
-      ));
-      
-      newCompetitors.forEach(c => {
+      const existingNames = new Set(existing.map((c) => (typeof c === 'string' ? c : c.name)));
+
+      newCompetitors.forEach((c) => {
         const name = typeof c === 'string' ? c : c.name;
         if (!existingNames.has(name)) {
           existingNames.add(name);
           existing.push(typeof c === 'string' ? { name: c } : c);
         }
       });
-      
+
       consolidated.competitors = existing;
     }
 
@@ -159,7 +175,7 @@ export const consolidateStrategies = (
         consolidated.references = [];
       }
       const existing = consolidated.references;
-      strategy.data.references.forEach(ref => {
+      strategy.data.references.forEach((ref) => {
         if (!existing.includes(ref)) {
           existing.push(ref);
         }
@@ -193,7 +209,7 @@ export const consolidateStrategies = (
         consolidated.visualElements = [];
       }
       const existing = consolidated.visualElements;
-      strategy.data.visualElements.forEach(el => {
+      strategy.data.visualElements.forEach((el) => {
         if (!existing.includes(el)) {
           existing.push(el);
         }
@@ -206,7 +222,7 @@ export const consolidateStrategies = (
         consolidated.mockupIdeas = [];
       }
       const existing = consolidated.mockupIdeas;
-      strategy.data.mockupIdeas.forEach(idea => {
+      strategy.data.mockupIdeas.forEach((idea) => {
         if (!existing.includes(idea)) {
           existing.push(idea);
         }
@@ -235,9 +251,9 @@ export const extractVisualStrategyText = (
 
   // Color Palettes - APENAS cores (sem psychology filosófica)
   if (consolidatedStrategies.colorPalettes && consolidatedStrategies.colorPalettes.length > 0) {
-    const palettes = consolidatedStrategies.colorPalettes.map(p => 
-      `${p.name}: ${p.colors.join(', ')}`
-    ).join('\n');
+    const palettes = consolidatedStrategies.colorPalettes
+      .map((p) => `${p.name}: ${p.colors.join(', ')}`)
+      .join('\n');
     sections.push(`COLOR PALETTES:\n${palettes}`);
   }
 
@@ -248,7 +264,11 @@ export const extractVisualStrategyText = (
 
   // Mockup Ideas - ideias visuais concretas
   if (consolidatedStrategies.mockupIdeas && consolidatedStrategies.mockupIdeas.length > 0) {
-    sections.push(`MOCKUP IDEAS:\n${consolidatedStrategies.mockupIdeas.map((idea, idx) => `${idx + 1}. ${idea}`).join('\n')}`);
+    sections.push(
+      `MOCKUP IDEAS:\n${consolidatedStrategies.mockupIdeas
+        .map((idea, idx) => `${idx + 1}. ${idea}`)
+        .join('\n')}`
+    );
   }
 
   // Moodboard - APENAS visual direction e key elements (sem summary conceitual)
@@ -320,9 +340,9 @@ export const consolidateStrategiesToText = (
 
   // Competitors
   if (consolidatedStrategies.competitors && consolidatedStrategies.competitors.length > 0) {
-    const competitors = consolidatedStrategies.competitors.map(c => 
-      typeof c === 'string' ? c : c.name
-    ).join(', ');
+    const competitors = consolidatedStrategies.competitors
+      .map((c) => (typeof c === 'string' ? c : c.name))
+      .join(', ');
     sections.push(`COMPETITORS: ${competitors}`);
   }
 
@@ -343,9 +363,9 @@ export const consolidateStrategiesToText = (
 
   // Color Palettes
   if (consolidatedStrategies.colorPalettes && consolidatedStrategies.colorPalettes.length > 0) {
-    const palettes = consolidatedStrategies.colorPalettes.map(p => 
-      `${p.name}: ${p.colors.join(', ')} (${p.psychology})`
-    ).join('\n');
+    const palettes = consolidatedStrategies.colorPalettes
+      .map((p) => `${p.name}: ${p.colors.join(', ')} (${p.psychology})`)
+      .join('\n');
     sections.push(`COLOR PALETTES:\n${palettes}`);
   }
 
@@ -356,7 +376,11 @@ export const consolidateStrategiesToText = (
 
   // Mockup Ideas
   if (consolidatedStrategies.mockupIdeas && consolidatedStrategies.mockupIdeas.length > 0) {
-    sections.push(`MOCKUP IDEAS:\n${consolidatedStrategies.mockupIdeas.map((idea, idx) => `${idx + 1}. ${idea}`).join('\n')}`);
+    sections.push(
+      `MOCKUP IDEAS:\n${consolidatedStrategies.mockupIdeas
+        .map((idea, idx) => `${idx + 1}. ${idea}`)
+        .join('\n')}`
+    );
   }
 
   // Moodboard
@@ -379,10 +403,16 @@ export const generateStrategicPrompt = async (
   consolidatedStrategies: StrategyNodeData['strategyData'],
   targetStep?: string
 ): Promise<string> => {
-  const prompt = `You are a branding expert. Based on the brand identity and strategic data, generate a refined strategic prompt for ${targetStep || 'branding strategy'}.
+  const prompt = `You are a branding expert. Based on the brand identity and strategic data, generate a refined strategic prompt for ${
+    targetStep || 'branding strategy'
+  }.
 
 Brand Identity:
-- Colors: ${[...brandIdentity.colors.primary, ...brandIdentity.colors.secondary, ...brandIdentity.colors.accent].join(', ')}
+- Colors: ${[
+    ...brandIdentity.colors.primary,
+    ...brandIdentity.colors.secondary,
+    ...brandIdentity.colors.accent,
+  ].join(', ')}
 - Typography: ${brandIdentity.typography.primary}
 - Personality: ${brandIdentity.personality.tone}, ${brandIdentity.personality.feeling}
 - Values: ${brandIdentity.personality.values.join(', ')}

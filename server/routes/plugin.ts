@@ -86,7 +86,10 @@ function validateImageInput(image: any): { valid: boolean; error?: string } {
   // Validate mime type
   const mimeType = image.mimeType || 'image/png';
   if (!ALLOWED_IMAGE_TYPES.includes(mimeType)) {
-    return { valid: false, error: `Invalid image type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}` };
+    return {
+      valid: false,
+      error: `Invalid image type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`,
+    };
   }
 
   // Basic base64 format validation
@@ -164,7 +167,7 @@ function handlePluginConnection(ws: WebSocket, req: any) {
         JSON.stringify({
           type: 'ERROR',
           error: 'Invalid JSON',
-        }),
+        })
       );
     }
   });
@@ -186,7 +189,7 @@ function handlePluginConnection(ws: WebSocket, req: any) {
     JSON.stringify({
       type: 'PLUGIN_READY',
       fileId,
-    }),
+    })
   );
 }
 
@@ -239,7 +242,9 @@ const FREE_GENERATIONS_LIMIT = 4;
 /**
  * Check if user can generate (reuses same logic as /payments/usage)
  */
-async function checkCredits(userId: string): Promise<{ canGenerate: boolean; reason?: string; isByok?: boolean }> {
+async function checkCredits(
+  userId: string
+): Promise<{ canGenerate: boolean; reason?: string; isByok?: boolean }> {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -256,7 +261,7 @@ async function checkCredits(userId: string): Promise<{ canGenerate: boolean; rea
 
     const canGenerate = hasActiveSubscription
       ? totalCredits > 0
-      : (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0);
+      : freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0;
 
     if (!canGenerate) {
       return {
@@ -274,8 +279,11 @@ async function checkCredits(userId: string): Promise<{ canGenerate: boolean; rea
 }
 
 async function deductCredit(userId: string): Promise<void> {
-  try { await chargeCredits(userId, 1); }
-  catch (_e) { console.error('[Plugin] Failed to deduct credit:', _e); }
+  try {
+    await chargeCredits(userId, 1);
+  } catch (_e) {
+    console.error('[Plugin] Failed to deduct credit:', _e);
+  }
 }
 
 // Types and prompt builder imported from ../lib/figmaAgentPrompt.js
@@ -287,57 +295,66 @@ async function deductCredit(userId: string): Promise<void> {
  * Called by MCP server or external agents to push operations to plugin
  * SECURITY: Requires authentication + rate limiting (CRIT-001 fix)
  */
-router.post('/agent-command', agentCommandLimiter, authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const { fileId, operations } = req.body;
-    const userId = req.userId;
+router.post(
+  '/agent-command',
+  agentCommandLimiter,
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { fileId, operations } = req.body;
+      const userId = req.userId;
 
-    // Log for audit trail
-    console.log(`[Plugin Agent] User ${userId} sending ${operations?.length || 0} operations to file ${fileId}`);
+      // Log for audit trail
+      console.log(
+        `[Plugin Agent] User ${userId} sending ${
+          operations?.length || 0
+        } operations to file ${fileId}`
+      );
 
-    // Validate input
-    if (!fileId) {
-      return res.status(400).json({ error: 'Missing fileId' });
-    }
+      // Validate input
+      if (!fileId) {
+        return res.status(400).json({ error: 'Missing fileId' });
+      }
 
-    if (!Array.isArray(operations) || operations.length === 0) {
-      return res.status(400).json({ error: 'Missing or empty operations array' });
-    }
+      if (!Array.isArray(operations) || operations.length === 0) {
+        return res.status(400).json({ error: 'Missing or empty operations array' });
+      }
 
-    // Validate operations
-    const validation = operationValidator.validateBatch(operations);
+      // Validate operations
+      const validation = operationValidator.validateBatch(operations);
 
-    if (validation.invalid.length > 0) {
-      return res.status(400).json({
-        error: 'Operation validation failed',
-        invalid: validation.invalid.map((inv) => ({
-          type: inv.op.type,
-          errors: inv.errors,
-        })),
+      if (validation.invalid.length > 0) {
+        return res.status(400).json({
+          error: 'Operation validation failed',
+          invalid: validation.invalid.map((inv) => ({
+            type: inv.op.type,
+            errors: inv.errors,
+          })),
+        });
+      }
+
+      // Push to plugin
+      const result = await pluginBridge.push(fileId, validation.valid);
+
+      if (!result.success) {
+        return res.status(500).json({
+          error: 'Plugin did not acknowledge operations',
+          errors: result.errors,
+        });
+      }
+
+      res.json({
+        success: true,
+        appliedCount: result.appliedCount,
+      });
+    } catch (err) {
+      console.error('[Plugin Agent] Error:', err);
+      res.status(500).json({
+        error: err instanceof Error ? err.message : 'Unknown error',
       });
     }
-
-    // Push to plugin
-    const result = await pluginBridge.push(fileId, validation.valid);
-
-    if (!result.success) {
-      return res.status(500).json({
-        error: 'Plugin did not acknowledge operations',
-        errors: result.errors,
-      });
-    }
-
-    res.json({
-      success: true,
-      appliedCount: result.appliedCount,
-    });
-  } catch (err) {
-    console.error('[Plugin Agent] Error:', err);
-    res.status(500).json({
-      error: err instanceof Error ? err.message : 'Unknown error',
-    });
   }
-});
+);
 
 // ============ Debug Endpoint (Secured) ============
 
@@ -381,38 +398,43 @@ router.get('/debug/sessions', authenticate, async (req: AuthRequest, res: Respon
  * GET /api/plugin/session/:id/messages
  * Restore chat history for a plugin session (used on plugin reopen)
  */
-router.get('/session/:id/messages', rateLimit({ windowMs: 15 * 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false }), optionalAuth, async (req: AuthRequest, res: Response) => {
-  const sessionId = req.params.id;
-  if (!sessionId || !isSafeId(sessionId)) {
-    return res.status(400).json({ error: 'Invalid session ID' });
-  }
-  try {
-    const db = getDb();
-    const session = await db.collection<any>('plugin_sessions').findOne({ _id: sessionId });
-    if (!session) return res.json({ messages: [], sessionContext: null });
+router.get(
+  '/session/:id/messages',
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false }),
+  optionalAuth,
+  async (req: AuthRequest, res: Response) => {
+    const sessionId = req.params.id;
+    if (!sessionId || !isSafeId(sessionId)) {
+      return res.status(400).json({ error: 'Invalid session ID' });
+    }
+    try {
+      const db = getDb();
+      const session = await db.collection<any>('plugin_sessions').findOne({ _id: sessionId });
+      if (!session) return res.json({ messages: [], sessionContext: null });
 
-    const msgs = session.messages || [];
-    const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
-    res.json({
-      messages: msgs.slice(-50).map((m: any) => ({
-        id: m.id || `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        role: m.role,
-        content: m.content,
-        timestamp: m.timestamp ? new Date(m.timestamp).getTime() : Date.now(),
-        operations: m.operations,
-        toolCalls: m.toolCalls,
-      })),
-      sessionContext: {
-        messageCount: msgs.length,
-        tokenEstimate: Math.ceil(totalChars / 4),
-        contextLimit: 80_000,
-      },
-    });
-  } catch (err) {
-    console.error('[Plugin] Session restore error:', err);
-    res.status(500).json({ error: 'Failed to restore session' });
+      const msgs = session.messages || [];
+      const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
+      res.json({
+        messages: msgs.slice(-50).map((m: any) => ({
+          id: m.id || `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          role: m.role,
+          content: m.content,
+          timestamp: m.timestamp ? new Date(m.timestamp).getTime() : Date.now(),
+          operations: m.operations,
+          toolCalls: m.toolCalls,
+        })),
+        sessionContext: {
+          messageCount: msgs.length,
+          tokenEstimate: Math.ceil(totalChars / 4),
+          contextLimit: 80_000,
+        },
+      });
+    } catch (err) {
+      console.error('[Plugin] Session restore error:', err);
+      res.status(500).json({ error: 'Failed to restore session' });
+    }
   }
-});
+);
 
 // ============ Documentation Route ============
 
@@ -495,7 +517,9 @@ router.post('/scaffold-library', optionalAuth, async (req: AuthRequest, res: Res
         brand.name = identity?.name || 'Brand';
 
         // Find primary color
-        const primaryColor = colors?.find(c => c.role === 'primary' || c.name?.toLowerCase().includes('primary'));
+        const primaryColor = colors?.find(
+          (c) => c.role === 'primary' || c.name?.toLowerCase().includes('primary')
+        );
         if (primaryColor?.hex) {
           const hex = primaryColor.hex.replace('#', '');
           brand.primary = {
@@ -506,7 +530,9 @@ router.post('/scaffold-library', optionalAuth, async (req: AuthRequest, res: Res
         }
 
         // Find background color
-        const bgColor = colors?.find(c => c.role === 'background' || c.name?.toLowerCase().includes('background'));
+        const bgColor = colors?.find(
+          (c) => c.role === 'background' || c.name?.toLowerCase().includes('background')
+        );
         if (bgColor?.hex) {
           const hex = bgColor.hex.replace('#', '');
           brand.background = {
@@ -517,7 +543,9 @@ router.post('/scaffold-library', optionalAuth, async (req: AuthRequest, res: Res
         }
 
         // Find text color
-        const textColor = colors?.find(c => c.role === 'text' || c.name?.toLowerCase().includes('text'));
+        const textColor = colors?.find(
+          (c) => c.role === 'text' || c.name?.toLowerCase().includes('text')
+        );
         if (textColor?.hex) {
           const hex = textColor.hex.replace('#', '');
           brand.text = {
@@ -528,7 +556,7 @@ router.post('/scaffold-library', optionalAuth, async (req: AuthRequest, res: Res
         }
 
         // Find primary font
-        const primaryFont = typography?.find(t => t.role === 'heading' || t.role === 'primary');
+        const primaryFont = typography?.find((t) => t.role === 'heading' || t.role === 'primary');
         if (primaryFont?.family) {
           brand.fontFamily = primaryFont.family;
         }
@@ -629,11 +657,16 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
     if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
-        const session = await db.collection<any>('plugin_sessions').findOneAndUpdate(
-          { _id: sessionId },
-          { $set: { updatedAt: new Date(), fileId }, $setOnInsert: { createdAt: new Date(), messages: [], context: {} } },
-          { upsert: true, returnDocument: 'after' },
-        );
+        const session = await db
+          .collection<any>('plugin_sessions')
+          .findOneAndUpdate(
+            { _id: sessionId },
+            {
+              $set: { updatedAt: new Date(), fileId },
+              $setOnInsert: { createdAt: new Date(), messages: [], context: {} },
+            },
+            { upsert: true, returnDocument: 'after' }
+          );
         if (session?.messages?.length > 0) {
           const msgs = session.messages as Array<{ role: string; content: string }>;
           const HISTORY_TOKEN_BUDGET = 12_000;
@@ -675,16 +708,21 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
       const extractTextFromNode = (node: any): string[] => {
         const texts: string[] = [];
         if (node.characters) texts.push(`[${node.name || node.type}]: ${node.characters}`);
-        if (node.children) for (const child of node.children) texts.push(...extractTextFromNode(child));
+        if (node.children)
+          for (const child of node.children) texts.push(...extractTextFromNode(child));
         return texts;
       };
-      const selectionTextContent = selectedElements
-        .flatMap(extractTextFromNode)
-        .filter(Boolean);
+      const selectionTextContent = selectedElements.flatMap(extractTextFromNode).filter(Boolean);
 
-      const selectionContext = selectionTextContent.length > 0
-        ? `\n\nSELECTED ELEMENTS TEXT CONTENT (${selectionTextContent.length} text nodes):\n${sanitizeForPrompt(selectionTextContent.slice(0, 200).join('\n'), 5000)}`
-        : '';
+      const selectionContext =
+        selectionTextContent.length > 0
+          ? `\n\nSELECTED ELEMENTS TEXT CONTENT (${
+              selectionTextContent.length
+            } text nodes):\n${sanitizeForPrompt(
+              selectionTextContent.slice(0, 200).join('\n'),
+              5000
+            )}`
+          : '';
 
       const prePassPrompt = `You are a Figma design assistant deciding which tools to use before generating design operations.
 
@@ -711,8 +749,16 @@ Rules:
 - If the user mentions a brand by name but no brandGuidelineId is active, call brand_guideline_list first to resolve the name to an ID, then proceed with the resolved ID.
 - If the request doesn't need any tools, respond with just "READY".
 - You can call multiple tools if needed.
-${brandGuidelineId ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this as brand_guideline_id to brand_guideline_update, and as brandGuidelineId to generate_mockup and get_brand_context.` : '\nNo brandGuidelineId is active. If the user references a brand, call brand_guideline_list to find it.'}
-${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".` : ''}${selectionContext}`;
+${
+  brandGuidelineId
+    ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this as brand_guideline_id to brand_guideline_update, and as brandGuidelineId to generate_mockup and get_brand_context.`
+    : '\nNo brandGuidelineId is active. If the user references a brand, call brand_guideline_list to find it.'
+}
+${
+  generateImage
+    ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call generate_mockup for this request. Infer prompt, aspectRatio, designType, and model from the user message. Do NOT respond with just "READY".`
+    : ''
+}${selectionContext}`;
 
       const prePassResult = await chatWithLLM(command, '', [], {
         provider: 'gemini',
@@ -727,7 +773,13 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
           const startedAt = new Date().toISOString();
 
           send('tool_start', { id: tcId, name: call.name, args: call.args });
-          toolCallRecords.push({ id: tcId, name: call.name, status: 'running', args: call.args, startedAt });
+          toolCallRecords.push({
+            id: tcId,
+            name: call.name,
+            status: 'running',
+            args: call.args,
+            startedAt,
+          });
 
           try {
             const result = await executeChatTool(call.name, call.args, {
@@ -741,8 +793,12 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
             enrichedContext += `\n\n[Tool: ${call.name}] Result:\n${resultStr.slice(0, 3000)}`;
 
             const endedAt = new Date().toISOString();
-            send('tool_end', { id: tcId, name: call.name, duration_ms: Date.now() - new Date(startedAt).getTime() });
-            const idx = toolCallRecords.findIndex(t => t.id === tcId);
+            send('tool_end', {
+              id: tcId,
+              name: call.name,
+              duration_ms: Date.now() - new Date(startedAt).getTime(),
+            });
+            const idx = toolCallRecords.findIndex((t) => t.id === tcId);
             if (idx >= 0) {
               toolCallRecords[idx].status = 'done';
               toolCallRecords[idx].endedAt = endedAt;
@@ -750,7 +806,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
             }
           } catch (toolErr) {
             send('tool_end', { id: tcId, name: call.name, error: (toolErr as Error).message });
-            const idx = toolCallRecords.findIndex(t => t.id === tcId);
+            const idx = toolCallRecords.findIndex((t) => t.id === tcId);
             if (idx >= 0) toolCallRecords[idx].status = 'error';
           }
         }
@@ -760,7 +816,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     }
 
     // Force generate_mockup if IMAGE mode is on but pre-pass didn't call it
-    if (generateImage && !toolCallRecords.some(t => t.name === 'generate_mockup')) {
+    if (generateImage && !toolCallRecords.some((t) => t.name === 'generate_mockup')) {
       try {
         const tcId = `tc-${Date.now()}-force`;
         const startedAt = new Date().toISOString();
@@ -768,7 +824,13 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
         if (brandGuidelineId) forceArgs.brandGuidelineId = brandGuidelineId;
 
         send('tool_start', { id: tcId, name: 'generate_mockup', args: forceArgs });
-        toolCallRecords.push({ id: tcId, name: 'generate_mockup', status: 'running', args: forceArgs, startedAt });
+        toolCallRecords.push({
+          id: tcId,
+          name: 'generate_mockup',
+          status: 'running',
+          args: forceArgs,
+          startedAt,
+        });
 
         const result = await executeChatTool('generate_mockup', forceArgs, {
           userId: req.userId || '',
@@ -779,16 +841,29 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
 
         const resultStr = typeof result === 'string' ? result : JSON.stringify(result);
         enrichedContext += `\n\n[Tool: generate_mockup] Result:\n${resultStr.slice(0, 3000)}`;
-        send('tool_end', { id: tcId, name: 'generate_mockup', duration_ms: Date.now() - new Date(startedAt).getTime() });
-        const idx = toolCallRecords.findIndex(t => t.id === tcId);
-        if (idx >= 0) { toolCallRecords[idx].status = 'done'; toolCallRecords[idx].endedAt = new Date().toISOString(); toolCallRecords[idx].summary = resultStr.slice(0, 200); }
+        send('tool_end', {
+          id: tcId,
+          name: 'generate_mockup',
+          duration_ms: Date.now() - new Date(startedAt).getTime(),
+        });
+        const idx = toolCallRecords.findIndex((t) => t.id === tcId);
+        if (idx >= 0) {
+          toolCallRecords[idx].status = 'done';
+          toolCallRecords[idx].endedAt = new Date().toISOString();
+          toolCallRecords[idx].summary = resultStr.slice(0, 200);
+        }
       } catch (forceErr) {
-        console.error('[Plugin:Stream] Forced generate_mockup failed:', (forceErr as Error).message);
+        console.error(
+          '[Plugin:Stream] Forced generate_mockup failed:',
+          (forceErr as Error).message
+        );
       }
     }
 
     // Extract imageUrl from pre-pass mockup result (if any)
-    const mockupRecord = toolCallRecords.find(t => t.name === 'generate_mockup' && t.status === 'done');
+    const mockupRecord = toolCallRecords.find(
+      (t) => t.name === 'generate_mockup' && t.status === 'done'
+    );
     let generatedImageUrl: string | undefined;
     if (mockupRecord?.summary) {
       const imgMatch = mockupRecord.summary.match(/"imageUrl"\s*:\s*"([^"]+)"/);
@@ -802,8 +877,10 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     // If mockup was generated, skip Phase 2 LLM and return result directly
     if (generatedImageUrl) {
       const aspectMap: Record<string, { w: number; h: number }> = {
-        '1:1': { w: 1024, h: 1024 }, '16:9': { w: 1280, h: 720 },
-        '9:16': { w: 720, h: 1280 }, '4:5': { w: 800, h: 1000 },
+        '1:1': { w: 1024, h: 1024 },
+        '16:9': { w: 1280, h: 720 },
+        '9:16': { w: 720, h: 1280 },
+        '4:5': { w: 800, h: 1000 },
       };
       const detectedAspect = mockupRecord?.args?.aspectRatio || '1:1';
       const dims = aspectMap[detectedAspect] || aspectMap['1:1'];
@@ -811,12 +888,24 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       // When generateImage flag is on, return image in chat only (no canvas frame)
       // When generate_mockup was called by LLM decision (not generateImage flag), apply to canvas
       const mockupOps = generateImage
-        ? [
-            { type: 'MESSAGE', content: `Imagem gerada com sucesso!`, imageUrl: generatedImageUrl },
-          ]
+        ? [{ type: 'MESSAGE', content: `Imagem gerada com sucesso!`, imageUrl: generatedImageUrl }]
         : [
-            { type: 'CREATE_FRAME', ref: 'mockup_frame', props: { name: `Mockup — ${command.slice(0, 40)}`, width: dims.w, height: dims.h, fills: [{ type: 'SOLID', color: '#000000', opacity: 0 }] } },
-            { type: 'SET_IMAGE_FILL', ref: 'mockup_frame', imageUrl: generatedImageUrl, scaleMode: 'FILL' },
+            {
+              type: 'CREATE_FRAME',
+              ref: 'mockup_frame',
+              props: {
+                name: `Mockup — ${command.slice(0, 40)}`,
+                width: dims.w,
+                height: dims.h,
+                fills: [{ type: 'SOLID', color: '#000000', opacity: 0 }],
+              },
+            },
+            {
+              type: 'SET_IMAGE_FILL',
+              ref: 'mockup_frame',
+              imageUrl: generatedImageUrl,
+              scaleMode: 'FILL',
+            },
             { type: 'MESSAGE', content: `Mockup gerado e aplicado no canvas.` },
           ];
 
@@ -833,28 +922,48 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       };
       toolCallRecords.push(genToolCall);
 
-      let sessionContext: { messageCount: number; tokenEstimate: number; contextLimit: number } | undefined;
+      let sessionContext:
+        | { messageCount: number; tokenEstimate: number; contextLimit: number }
+        | undefined;
       if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
         try {
           const db = getDb();
           const newMessages = [
             { role: 'user', content: command, timestamp: new Date() },
-            { role: 'assistant', content: `Generated mockup`, operations: mockupOps, toolCalls: toolCallRecords, timestamp: new Date() },
+            {
+              role: 'assistant',
+              content: `Generated mockup`,
+              operations: mockupOps,
+              toolCalls: toolCallRecords,
+              timestamp: new Date(),
+            },
           ];
-          await db.collection('plugin_sessions').updateOne(
-            { _id: sessionId } as any,
-            { $push: { messages: { $each: newMessages } } as any },
-          );
-          const updated = await db.collection<any>('plugin_sessions').findOne({ _id: sessionId } as any);
+          await db
+            .collection('plugin_sessions')
+            .updateOne({ _id: sessionId } as any, {
+              $push: { messages: { $each: newMessages } } as any,
+            });
+          const updated = await db
+            .collection<any>('plugin_sessions')
+            .findOne({ _id: sessionId } as any);
           const msgs = updated?.messages || [];
-          const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
-          sessionContext = { messageCount: msgs.length, tokenEstimate: Math.ceil(totalChars / 4), contextLimit: 80000 };
+          const totalChars = msgs.reduce(
+            (sum: number, m: any) => sum + (m.content?.length || 0),
+            0
+          );
+          sessionContext = {
+            messageCount: msgs.length,
+            tokenEstimate: Math.ceil(totalChars / 4),
+            contextLimit: 80000,
+          };
         } catch {}
       }
 
       send('done', {
         operations: mockupOps,
-        message: generateImage ? 'Imagem gerada com sucesso!' : 'Mockup gerado e aplicado no canvas.',
+        message: generateImage
+          ? 'Imagem gerada com sucesso!'
+          : 'Mockup gerado e aplicado no canvas.',
         provider: 'pre-pass',
         durationMs: Date.now() - streamStartMs,
         toolCalls: toolCallRecords,
@@ -865,7 +974,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       res.end();
 
       if (req.userId && !isByok) {
-        deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
+        deductCredit(req.userId).catch((e) => console.error('[Plugin] Credit deduction error:', e));
       }
       return;
     }
@@ -880,7 +989,9 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     if (useBrand) {
       if (brandGuidelineId && !brandGuideline) {
         try {
-          const savedGuideline = await prisma.brandGuideline.findUnique({ where: { id: brandGuidelineId } });
+          const savedGuideline = await prisma.brandGuideline.findUnique({
+            where: { id: brandGuidelineId },
+          });
           if (savedGuideline) {
             brandGuideline = {
               id: savedGuideline.id,
@@ -901,19 +1012,34 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
         try {
           const brandResult = await resolveBrandGuideline(fileId, req.userId, brandGuidelineId);
           if (brandResult.guideline) brandGuideline = brandResult.guideline;
-          else if (brandResult.needsUserChoice) brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
+          else if (brandResult.needsUserChoice)
+            brandChoiceContext = buildGuidelineChoiceContext(brandResult.availableGuidelines);
         } catch {}
       }
     }
 
-    const effectiveBrandFonts = brandFonts || (brandGuideline?.typography ? {
-      primary: (brandGuideline.typography as any[]).find(t => t.role === 'primary' || t.role === 'heading'),
-      secondary: (brandGuideline.typography as any[]).find(t => t.role === 'secondary' || t.role === 'body'),
-    } : undefined);
+    const effectiveBrandFonts =
+      brandFonts ||
+      (brandGuideline?.typography
+        ? {
+            primary: (brandGuideline.typography as any[]).find(
+              (t) => t.role === 'primary' || t.role === 'heading'
+            ),
+            secondary: (brandGuideline.typography as any[]).find(
+              (t) => t.role === 'secondary' || t.role === 'body'
+            ),
+          }
+        : undefined);
 
-    const effectiveBrandColors = selectedBrandColors || (brandGuideline?.colors ?
-      (brandGuideline.colors as any[]).map(c => ({ name: c.name, value: c.hex, role: c.role })) :
-      undefined);
+    const effectiveBrandColors =
+      selectedBrandColors ||
+      (brandGuideline?.colors
+        ? (brandGuideline.colors as any[]).map((c) => ({
+            name: c.name,
+            value: c.hex,
+            role: c.role,
+          }))
+        : undefined);
 
     // Template + component scanning
     let templateContext = '';
@@ -925,14 +1051,16 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       } catch {}
       try {
         const agentComponents = await scanAgentComponents(fileId);
-        if (agentComponents.length > 0) agentComponentsContext = buildComponentsContext(agentComponents);
+        if (agentComponents.length > 0)
+          agentComponentsContext = buildComponentsContext(agentComponents);
       } catch {}
     }
 
     const tokenRegistry = buildTokenRegistry(brandGuideline || null, designSystem || null);
-    const enforcedTokenPrompt = (tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0)
-      ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
-      : '';
+    const enforcedTokenPrompt =
+      tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0
+        ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
+        : '';
 
     // Collect session errors for feedback loop
     const previousErrors = getSessionErrors(sessionId);
@@ -942,7 +1070,8 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     if (brandGuideline?.knowledgeFiles?.length && brandGuideline.id && req.userId) {
       try {
         const { knowledgeService } = await import('../services/knowledgeService.js');
-        brandKnowledgeContext = await knowledgeService.getContext(command, req.userId, brandGuideline.id) || undefined;
+        brandKnowledgeContext =
+          (await knowledgeService.getContext(command, req.userId, brandGuideline.id)) || undefined;
       } catch (e) {
         console.warn('[plugin] Knowledge RAG failed, skipping:', (e as Error).message);
       }
@@ -951,12 +1080,23 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     // Build prompt (all contexts flow through assembler)
     const assembled = buildSystemPrompt(
       {
-        command, selectedElements, scanPage: !!scanPage,
-        selectedLogo, brandLogos, selectedBrandFont,
-        brandFonts: effectiveBrandFonts, selectedBrandColors: effectiveBrandColors,
-        availableComponents, availableColorVariables, availableFontVariables, availableLayers,
-        attachments, mentions, designSystem: designSystem || null,
-        brandGuideline: brandGuideline || undefined, thinkMode,
+        command,
+        selectedElements,
+        scanPage: !!scanPage,
+        selectedLogo,
+        brandLogos,
+        selectedBrandFont,
+        brandFonts: effectiveBrandFonts,
+        selectedBrandColors: effectiveBrandColors,
+        availableComponents,
+        availableColorVariables,
+        availableFontVariables,
+        availableLayers,
+        attachments,
+        mentions,
+        designSystem: designSystem || null,
+        brandGuideline: brandGuideline || undefined,
+        thinkMode,
       },
       {
         chatHistory: streamChatHistory,
@@ -966,21 +1106,29 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
         enforcedTokens: enforcedTokenPrompt || undefined,
         brandChoiceContext: brandChoiceContext || undefined,
         brandKnowledgeContext,
-      },
+      }
     );
 
     // LLM pre-pass: refine intent when keyword confidence < 0.65
     if (assembled.intent.confidence < 0.65 && selectedElements.length > 0) {
       try {
-        const selectionNames = selectedElements.slice(0, 5).map((n: any) => n.name || n.type || 'unknown');
+        const selectionNames = selectedElements
+          .slice(0, 5)
+          .map((n: any) => n.name || n.type || 'unknown');
         const enrichedIntent = await refineIntentWithLLM(
           assembled.intent,
           command,
           selectionNames,
-          (sys, usr) => quickTextCall(sys, usr),
+          (sys, usr) => quickTextCall(sys, usr)
         );
         if (enrichedIntent.llmRefined) {
-          console.log(`[Plugin] LLM pre-pass refined intent: ${assembled.intent.intent} → ${enrichedIntent.intent} (confidence ${assembled.intent.confidence.toFixed(2)} → ${enrichedIntent.confidence.toFixed(2)})`);
+          console.log(
+            `[Plugin] LLM pre-pass refined intent: ${assembled.intent.intent} → ${
+              enrichedIntent.intent
+            } (confidence ${assembled.intent.confidence.toFixed(
+              2
+            )} → ${enrichedIntent.confidence.toFixed(2)})`
+          );
           // If intent changed to clone and we have a source frame, inject clone-first hint
           if (enrichedIntent.intent === 'clone' && enrichedIntent.sourceFrame) {
             assembled.intent = enrichedIntent;
@@ -1003,7 +1151,10 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     }
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
-    const contextSize = (selectedElements?.length || 0) + (availableComponents?.length || 0) + (availableLayers?.length || 0);
+    const contextSize =
+      (selectedElements?.length || 0) +
+      (availableComponents?.length || 0) +
+      (availableLayers?.length || 0);
     const provider = chooseProvider(command, contextSize);
 
     const generationStart = Date.now();
@@ -1016,9 +1167,11 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
         maxTokens: 8192,
         apiKey: userAnthropicKey || undefined,
         attachments: attachments || [],
-        onStatus: fileId ? (message: string) => {
-          pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
-        } : undefined,
+        onStatus: fileId
+          ? (message: string) => {
+              pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+            }
+          : undefined,
       });
       operations = result.operations;
       usage = result.usage;
@@ -1029,12 +1182,27 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
     const durationMs = Date.now() - generationStart;
 
     // Validate operations
-    operations = operations.filter(op => op && op.type && (
-      op.nodeId || op.props || op.componentKey || op.nodeIds || op.fills ||
-      op.strokes || op.effects || op.layoutMode || op.variableId || op.styleId ||
-      op.content || op.name || op.width != null || op.opacity != null ||
-      op.cornerRadius != null || op.x != null
-    ));
+    operations = operations.filter(
+      (op) =>
+        op &&
+        op.type &&
+        (op.nodeId ||
+          op.props ||
+          op.componentKey ||
+          op.nodeIds ||
+          op.fills ||
+          op.strokes ||
+          op.effects ||
+          op.layoutMode ||
+          op.variableId ||
+          op.styleId ||
+          op.content ||
+          op.name ||
+          op.width != null ||
+          op.opacity != null ||
+          op.cornerRadius != null ||
+          op.x != null)
+    );
 
     if (tokenRegistry.colors.size > 0 || tokenRegistry.spacing.size > 0) {
       const tokenValidation = validateOperations(operations, tokenRegistry);
@@ -1071,24 +1239,37 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
       args: { command: command.slice(0, 120) },
       startedAt: new Date(generationStart).toISOString(),
       endedAt: new Date().toISOString(),
-      summary: `${validOps.length} operation${validOps.length !== 1 ? 's' : ''} via ${provider.name}`,
+      summary: `${validOps.length} operation${validOps.length !== 1 ? 's' : ''} via ${
+        provider.name
+      }`,
     };
     toolCallRecords.push(genToolCall);
 
     // Save to session and compute context info
-    let sessionContext: { messageCount: number; tokenEstimate: number; contextLimit: number } | undefined;
+    let sessionContext:
+      | { messageCount: number; tokenEstimate: number; contextLimit: number }
+      | undefined;
     if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
         const newMessages = [
           { role: 'user', content: command, timestamp: new Date() },
-          { role: 'assistant', content: `Generated ${validOps.length} operations`, operations: validOps, toolCalls: toolCallRecords, timestamp: new Date() },
+          {
+            role: 'assistant',
+            content: `Generated ${validOps.length} operations`,
+            operations: validOps,
+            toolCalls: toolCallRecords,
+            timestamp: new Date(),
+          },
         ];
-        await db.collection('plugin_sessions').updateOne(
-          { _id: sessionId } as any,
-          { $push: { messages: { $each: newMessages } } as any },
-        );
-        const updated = await db.collection<any>('plugin_sessions').findOne({ _id: sessionId } as any);
+        await db
+          .collection('plugin_sessions')
+          .updateOne({ _id: sessionId } as any, {
+            $push: { messages: { $each: newMessages } } as any,
+          });
+        const updated = await db
+          .collection<any>('plugin_sessions')
+          .findOne({ _id: sessionId } as any);
         const msgs = updated?.messages || [];
         const totalChars = msgs.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0);
         sessionContext = {
@@ -1113,7 +1294,7 @@ ${generateImage ? `\nIMPORTANT: The user has IMAGE mode enabled. You MUST call g
 
     // Non-blocking credit deduction
     if (req.userId && !isByok && validOps.length > 0) {
-      deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
+      deductCredit(req.userId).catch((e) => console.error('[Plugin] Credit deduction error:', e));
     }
   } catch (error: any) {
     console.error('[Plugin:Stream] Error:', error);
@@ -1215,18 +1396,36 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
 
     // Cache check for plugin context
     const contextHash = hashObject({ command, fileId, brandGuidelineId, designSystem });
-    const pluginCacheKey = CacheKey.pluginContext(fileId || 'public', brandGuidelineId || 'none', contextHash);
+    const pluginCacheKey = CacheKey.pluginContext(
+      fileId || 'public',
+      brandGuidelineId || 'none',
+      contextHash
+    );
     const cachedContext = await redisClient.get(pluginCacheKey).catch(() => null);
 
     // ═══ BRANDED SOCIAL POSTS: Resolve effective brand context ═══
-    const effectiveBrandFonts = brandFonts || (brandGuideline?.typography ? {
-      primary: (brandGuideline.typography as any[]).find(t => t.role === 'primary' || t.role === 'heading'),
-      secondary: (brandGuideline.typography as any[]).find(t => t.role === 'secondary' || t.role === 'body'),
-    } : undefined);
+    const effectiveBrandFonts =
+      brandFonts ||
+      (brandGuideline?.typography
+        ? {
+            primary: (brandGuideline.typography as any[]).find(
+              (t) => t.role === 'primary' || t.role === 'heading'
+            ),
+            secondary: (brandGuideline.typography as any[]).find(
+              (t) => t.role === 'secondary' || t.role === 'body'
+            ),
+          }
+        : undefined);
 
-    const effectiveBrandColors = selectedBrandColors || (brandGuideline?.colors ? 
-      (brandGuideline.colors as any[]).map(c => ({ name: c.name, value: c.hex, role: c.role })) : 
-      undefined);
+    const effectiveBrandColors =
+      selectedBrandColors ||
+      (brandGuideline?.colors
+        ? (brandGuideline.colors as any[]).map((c) => ({
+            name: c.name,
+            value: c.hex,
+            role: c.role,
+          }))
+        : undefined);
 
     // ═══ BRANDED SOCIAL POSTS: Scan templates ═══
     let templateContext = '';
@@ -1236,7 +1435,10 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         templateContext = buildTemplateContext(templates);
         if (templates.length > 0) {
           console.log(`[Plugin] Found ${templates.length} templates in file`);
-          console.log(`[Plugin] Template IDs:`, templates.map(t => ({ id: t.id, name: t.name })));
+          console.log(
+            `[Plugin] Template IDs:`,
+            templates.map((t) => ({ id: t.id, name: t.name }))
+          );
           console.log(`[Plugin] Template context preview:`, templateContext.slice(0, 500));
         }
       } catch (templateError) {
@@ -1269,7 +1471,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           { _id: sessionId },
           {
             $set: { updatedAt: new Date(), fileId },
-            $setOnInsert: { createdAt: new Date(), messages: [], context: {} }
+            $setOnInsert: { createdAt: new Date(), messages: [], context: {} },
           },
           { upsert: true, returnDocument: 'after' }
         );
@@ -1309,15 +1511,13 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     const provider = chooseProvider(command, contextSize);
 
     // Build token registry from available sources (MongoDB priority, Figma fallback)
-    const tokenRegistry = buildTokenRegistry(
-      brandGuideline || null,
-      designSystem || null
-    );
+    const tokenRegistry = buildTokenRegistry(brandGuideline || null, designSystem || null);
 
     // Get enforced prompt with pre-calculated RGB values
-    const enforcedTokenPrompt = (tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0)
-      ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
-      : '';
+    const enforcedTokenPrompt =
+      tokenRegistry.colors.size > 0 || tokenRegistry.typography.size > 0
+        ? '\n' + buildEnforcedPrompt(tokenRegistry) + '\n'
+        : '';
 
     const prevErrors = getSessionErrors(sessionId);
 
@@ -1325,7 +1525,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     if (brandGuideline?.knowledgeFiles?.length && brandGuideline.id && req.userId) {
       try {
         const { knowledgeService } = await import('../services/knowledgeService.js');
-        brandKnowledgeCtx2 = await knowledgeService.getContext(command, req.userId, brandGuideline.id) || undefined;
+        brandKnowledgeCtx2 =
+          (await knowledgeService.getContext(command, req.userId, brandGuideline.id)) || undefined;
       } catch {}
     }
 
@@ -1357,11 +1558,15 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         enforcedTokens: enforcedTokenPrompt || undefined,
         brandChoiceContext: brandChoiceContext || undefined,
         brandKnowledgeContext: brandKnowledgeCtx2,
-      },
+      }
     );
     let systemPrompt = assembled.system;
     const promptMeta = assembled;
-    console.log(`[Plugin] Prompt: ${assembled.tokenEstimate} tokens, intent: ${assembled.intent.intent}, format: ${assembled.intent.format}, modules: [${assembled.modules.join(', ')}]`);
+    console.log(
+      `[Plugin] Prompt: ${assembled.tokenEstimate} tokens, intent: ${
+        assembled.intent.intent
+      }, format: ${assembled.intent.format}, modules: [${assembled.modules.join(', ')}]`
+    );
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
 
@@ -1375,7 +1580,9 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const isRetry = attempt > 0;
       const currentPrompt = isRetry
-        ? systemPrompt + '\n\n' + buildRetryFeedback(
+        ? systemPrompt +
+          '\n\n' +
+          buildRetryFeedback(
             operations
               .filter((op: any) => !operationValidator.validate(op).valid)
               .map((op: any) => `${op.type}: ${operationValidator.validate(op).errors.join(', ')}`)
@@ -1393,14 +1600,17 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           // Agent status callback — broadcasts search progress to plugin UI via WebSocket
           onStatus: fileId
             ? (message: string) => {
-              pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
-            }
+                pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+              }
             : undefined,
         });
         operations = result.operations;
         usage = result.usage;
 
-        console.log(`[Plugin] LLM generated ${operations.length} operations${isRetry ? ' (retry)' : ''}:`, operations.map((o: any) => o.type));
+        console.log(
+          `[Plugin] LLM generated ${operations.length} operations${isRetry ? ' (retry)' : ''}:`,
+          operations.map((o: any) => o.type)
+        );
 
         // Debug: Show parent refs to diagnose hierarchy issues
         const hierarchy = operations.map((o: any, i: number) => {
@@ -1418,7 +1628,9 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
           const preValidation = operationValidator.validateBatch(operations);
           const invalidRatio = preValidation.invalid.length / operations.length;
           if (invalidRatio > 0.5) {
-            console.log(`[Plugin] V2 retry triggered: ${Math.round(invalidRatio * 100)}% invalid operations`);
+            console.log(
+              `[Plugin] V2 retry triggered: ${Math.round(invalidRatio * 100)}% invalid operations`
+            );
             continue; // Retry
           }
         }
@@ -1461,7 +1673,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       const tokenValidation = validateOperations(operations, tokenRegistry);
       if (!tokenValidation.isValid && tokenValidation.corrections.length > 0) {
         console.log(`[Plugin] Token corrections applied: ${tokenValidation.corrections.length}`);
-        tokenValidation.corrections.forEach(c => {
+        tokenValidation.corrections.forEach((c) => {
           console.log(`  ${c.field}: ${c.original} -> ${c.corrected} (${c.tokenUsed})`);
         });
         // Add notification message
@@ -1474,7 +1686,9 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     }
 
     console.log(
-      `[Plugin API] [${provider.name}] Generated ${operations.length} op(s) for: "${command.substring(0, 60)}"`
+      `[Plugin API] [${provider.name}] Generated ${
+        operations.length
+      } op(s) for: "${command.substring(0, 60)}"`
     );
     // Log each operation so we can see what the LLM actually returned
     operations.forEach((op, i) => {
@@ -1487,14 +1701,21 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     });
 
     // Save to session if available (FASE 3)
-    let sessionContextRest: { messageCount: number; tokenEstimate: number; contextLimit: number } | undefined;
+    let sessionContextRest:
+      | { messageCount: number; tokenEstimate: number; contextLimit: number }
+      | undefined;
     if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
         const collection = db.collection<any>('plugin_sessions');
         const newMessages = [
           { role: 'user', content: command, timestamp: new Date() },
-          { role: 'assistant', content: `Generated ${operations.length} operations`, operations, timestamp: new Date() }
+          {
+            role: 'assistant',
+            content: `Generated ${operations.length} operations`,
+            operations,
+            timestamp: new Date(),
+          },
         ];
         await collection.updateOne(
           { _id: sessionId },
@@ -1521,13 +1742,14 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         console.warn(`  ✗ ${op.type}: ${errors.join(', ')}`);
       });
       // Capture for session feedback loop
-      pushSessionErrors(sessionId, validation.invalid.map(({ op, errors }) => `${op.type}: ${errors.join(', ')}`));
+      pushSessionErrors(
+        sessionId,
+        validation.invalid.map(({ op, errors }) => `${op.type}: ${errors.join(', ')}`)
+      );
     }
 
     const validOps = validation.valid;
-    const warnings = validation.invalid.map(({ op, errors }) =>
-      `${op.type}: ${errors.join(', ')}`
-    );
+    const warnings = validation.invalid.map(({ op, errors }) => `${op.type}: ${errors.join(', ')}`);
 
     // Return validated operations to apply
     const toolCallRecord = {
@@ -1537,13 +1759,17 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       args: { command: command.slice(0, 120) },
       startedAt: toolCallStartedAt,
       endedAt: new Date().toISOString(),
-      summary: `${validOps.length} operation${validOps.length !== 1 ? 's' : ''} via ${provider.name}${warnings.length > 0 ? ` (${warnings.length} filtered)` : ''}`,
+      summary: `${validOps.length} operation${validOps.length !== 1 ? 's' : ''} via ${
+        provider.name
+      }${warnings.length > 0 ? ` (${warnings.length} filtered)` : ''}`,
     };
 
     const responseData = {
       success: true,
       operations: validOps,
-      message: `Generated ${validOps.length} operation(s)${warnings.length > 0 ? ` (${warnings.length} filtered)` : ''}`,
+      message: `Generated ${validOps.length} operation(s)${
+        warnings.length > 0 ? ` (${warnings.length} filtered)` : ''
+      }`,
       provider: provider.name,
       warnings: warnings.length > 0 ? warnings : undefined,
       usage: usage || undefined,
@@ -1553,11 +1779,9 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     };
 
     // Cache plugin context for 1 hour
-    await redisClient.setex(
-      pluginCacheKey,
-      CACHE_TTL.PLUGIN_CTX,
-      JSON.stringify(responseData)
-    ).catch(() => null);
+    await redisClient
+      .setex(pluginCacheKey, CACHE_TTL.PLUGIN_CTX, JSON.stringify(responseData))
+      .catch(() => null);
     console.log(`[Cache] SET plugin:${fileId?.slice(0, 8)}:${brandGuidelineId?.slice(0, 8)} (1h)`);
 
     res.json(responseData);
@@ -1565,7 +1789,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     // Deduct credit after successful response (non-blocking, only for authenticated non-BYOK users)
     const isByokUser = !!(userApiKey || userAnthropicKey);
     if (req.userId && !isByokUser && validOps.length > 0) {
-      deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
+      deductCredit(req.userId).catch((e) => console.error('[Plugin] Credit deduction error:', e));
     }
   } catch (error: any) {
     console.error('[Plugin API] Route error:', error);
@@ -1615,7 +1839,7 @@ router.get('/auth/status', optionalAuth, async (req: AuthRequest, res: Response)
       totalCredits,
       canGenerate: hasActiveSubscription
         ? totalCredits > 0
-        : (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0),
+        : freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0,
     });
   } catch (error: any) {
     console.error('[Plugin] Auth status error:', error.message);
@@ -1659,21 +1883,21 @@ router.get('/proxy-image', proxyRateLimiter, async (req: Request, res: Response)
     }
 
     // Domain allowlist for security
-    if (!ALLOWED_IMAGE_DOMAINS.some(d => parsed.hostname.endsWith(d))) {
+    if (!ALLOWED_IMAGE_DOMAINS.some((d) => parsed.hostname.endsWith(d))) {
       return res.status(403).json({
         error: 'Domain not allowed',
-        allowed: ALLOWED_IMAGE_DOMAINS
+        allowed: ALLOWED_IMAGE_DOMAINS,
       });
     }
 
     // Fetch image
     const response = await fetch(imageUrl, {
-      headers: { 'User-Agent': 'VisantCopilot/1.0' }
+      headers: { 'User-Agent': 'VisantCopilot/1.0' },
     });
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: `Upstream returned ${response.status}`
+        error: `Upstream returned ${response.status}`,
       });
     }
 
@@ -1736,244 +1960,279 @@ import {
  * Analyzes an image and generates a Figma plugin prompt
  * Admin only
  */
-router.post('/image-to-prompt', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const { image, hint, saveToLib, name } = req.body;
+router.post(
+  '/image-to-prompt',
+  imageAnalysisLimiter,
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { image, hint, saveToLib, name } = req.body;
 
-    // Validate image input
-    const validation = validateImageInput(image);
-    if (!validation.valid) {
-      return res.status(400).json({ error: validation.error });
-    }
+      // Validate image input
+      const validation = validateImageInput(image);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
 
-    // Detect component type from hint
-    const componentType = hint ? detectComponentType(hint) : undefined;
-    const typeKey = componentType || 'general';
+      // Detect component type from hint
+      const componentType = hint ? detectComponentType(hint) : undefined;
+      const typeKey = componentType || 'general';
 
-    // Get learned context from MongoDB feedback
-    const learningContext = await buildLearningContext(typeKey);
+      // Get learned context from MongoDB feedback
+      const learningContext = await buildLearningContext(typeKey);
 
-    // Get similar prompts from library for better context
-    const libraryContext = await buildLibraryContext(componentType);
+      // Get similar prompts from library for better context
+      const libraryContext = await buildLibraryContext(componentType);
 
-    // Combine contexts
-    const contexts = [learningContext, libraryContext].filter(Boolean) as string[];
+      // Combine contexts
+      const contexts = [learningContext, libraryContext].filter(Boolean) as string[];
 
-    // Build system prompt with component-specific rules + learnings + library examples
-    const systemPrompt = buildImageToPromptSystem(componentType, contexts);
+      // Build system prompt with component-specific rules + learnings + library examples
+      const systemPrompt = buildImageToPromptSystem(componentType, contexts);
 
-    // Use Gemini Flash for fast vision analysis
-    const result = await generateText(
-      systemPrompt,
-      IMAGE_ANALYSIS_USER_PROMPT,
-      [{ mimeType: image.mimeType || 'image/png', data: image.base64 }]
-    );
+      // Use Gemini Flash for fast vision analysis
+      const result = await generateText(systemPrompt, IMAGE_ANALYSIS_USER_PROMPT, [
+        { mimeType: image.mimeType || 'image/png', data: image.base64 },
+      ]);
 
-    // Generate a feedback ID for tracking
-    const feedbackId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      // Generate a feedback ID for tracking
+      const feedbackId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-    const generatedPrompt = result.text;
-    let promptId: string | undefined;
+      const generatedPrompt = result.text;
+      let promptId: string | undefined;
 
-    // Save to library if requested
-    if (saveToLib && name) {
-      const { publish } = req.body;
-      promptId = await saveToLibrary({
-        name,
+      // Save to library if requested
+      if (saveToLib && name) {
+        const { publish } = req.body;
+        promptId = await saveToLibrary({
+          name,
+          prompt: generatedPrompt,
+          category: 'figma-prompts',
+          componentType: typeKey,
+          tags: ['figma-plugin', typeKey],
+          userId: req.userId,
+          isPublic: !!publish, // Admin can publish immediately
+        });
+      }
+
+      res.json({
+        success: true,
         prompt: generatedPrompt,
-        category: 'figma-prompts',
+        feedbackId,
+        promptId,
         componentType: typeKey,
-        tags: ['figma-plugin', typeKey],
-        userId: req.userId,
-        isPublic: !!publish, // Admin can publish immediately
+        usage: result.usage || null,
       });
+    } catch (error: any) {
+      console.error('[ImageToPrompt] Error:', error.message);
+      res.status(500).json({ error: 'Failed to analyze image', details: error.message });
     }
-
-    res.json({
-      success: true,
-      prompt: generatedPrompt,
-      feedbackId,
-      promptId,
-      componentType: typeKey,
-      usage: result.usage || null
-    });
-
-  } catch (error: any) {
-    console.error('[ImageToPrompt] Error:', error.message);
-    res.status(500).json({ error: 'Failed to analyze image', details: error.message });
   }
-});
+);
 
 /**
  * POST /api/plugin/image-to-prompt/feedback
  * Submit feedback to improve prompt generation (persisted to MongoDB)
  * Admin only
  */
-router.post('/image-to-prompt/feedback', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const { feedbackId, success, componentType, improvement, generatedPrompt } = req.body;
+router.post(
+  '/image-to-prompt/feedback',
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { feedbackId, success, componentType, improvement, generatedPrompt } = req.body;
 
-    if (!feedbackId) {
-      return res.status(400).json({ error: 'feedbackId required' });
+      if (!feedbackId) {
+        return res.status(400).json({ error: 'feedbackId required' });
+      }
+
+      // Persist to MongoDB
+      await saveFeedback({
+        feedbackId,
+        componentType: componentType || 'general',
+        success: !!success,
+        improvement: improvement || undefined,
+        generatedPrompt: generatedPrompt || undefined,
+      });
+
+      res.json({ success: true, message: 'Feedback saved' });
+    } catch (error: any) {
+      console.error('[ImageToPrompt] Feedback error:', error.message);
+      res.status(500).json({ error: 'Failed to record feedback' });
     }
-
-    // Persist to MongoDB
-    await saveFeedback({
-      feedbackId,
-      componentType: componentType || 'general',
-      success: !!success,
-      improvement: improvement || undefined,
-      generatedPrompt: generatedPrompt || undefined,
-    });
-
-    res.json({ success: true, message: 'Feedback saved' });
-
-  } catch (error: any) {
-    console.error('[ImageToPrompt] Feedback error:', error.message);
-    res.status(500).json({ error: 'Failed to record feedback' });
   }
-});
+);
 
 /**
  * GET /api/plugin/image-to-prompt/stats
  * Get feedback statistics
  * Admin only
  */
-router.get('/image-to-prompt/stats', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const stats = await getFeedbackStats();
-    res.json({ success: true, stats });
-  } catch (error: any) {
-    console.error('[ImageToPrompt] Stats error:', error.message);
-    res.status(500).json({ error: 'Failed to get stats' });
+router.get(
+  '/image-to-prompt/stats',
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const stats = await getFeedbackStats();
+      res.json({ success: true, stats });
+    } catch (error: any) {
+      console.error('[ImageToPrompt] Stats error:', error.message);
+      res.status(500).json({ error: 'Failed to get stats' });
+    }
   }
-});
+);
 
 /**
  * POST /api/plugin/ui-to-image-prompt
  * Analyzes UI screenshot → generates prompt for image generation models
  * Admin only
  */
-router.post('/ui-to-image-prompt', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const { image, compact, saveToLib, name } = req.body;
+router.post(
+  '/ui-to-image-prompt',
+  imageAnalysisLimiter,
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { image, compact, saveToLib, name } = req.body;
 
-    // Validate image input
-    const validation = validateImageInput(image);
-    if (!validation.valid) {
-      return res.status(400).json({ error: validation.error });
-    }
+      // Validate image input
+      const validation = validateImageInput(image);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
 
-    // Use compact version for minimal tokens
-    const systemPrompt = compact ? UI_DESCRIBE_COMPACT : UI_DESCRIBE_SYSTEM;
-    const userPrompt = compact ? 'Gere o prompt.' : UI_DESCRIBE_USER;
+      // Use compact version for minimal tokens
+      const systemPrompt = compact ? UI_DESCRIBE_COMPACT : UI_DESCRIBE_SYSTEM;
+      const userPrompt = compact ? 'Gere o prompt.' : UI_DESCRIBE_USER;
 
-    const result = await generateText(
-      systemPrompt,
-      userPrompt,
-      [{ mimeType: image.mimeType || 'image/png', data: image.base64 }]
-    );
+      const result = await generateText(systemPrompt, userPrompt, [
+        { mimeType: image.mimeType || 'image/png', data: image.base64 },
+      ]);
 
-    const generatedPrompt = result.text.trim();
-    let promptId: string | undefined;
+      const generatedPrompt = result.text.trim();
+      let promptId: string | undefined;
 
-    // Save to library if requested
-    if (saveToLib && name) {
-      const { publish } = req.body;
-      promptId = await saveToLibrary({
-        name,
+      // Save to library if requested
+      if (saveToLib && name) {
+        const { publish } = req.body;
+        promptId = await saveToLibrary({
+          name,
+          prompt: generatedPrompt,
+          category: 'ui-prompts',
+          tags: ['image-gen', 'ui-screenshot'],
+          userId: req.userId,
+          isPublic: !!publish, // Admin can publish immediately
+        });
+      }
+
+      res.json({
+        success: true,
         prompt: generatedPrompt,
-        category: 'ui-prompts',
-        tags: ['image-gen', 'ui-screenshot'],
-        userId: req.userId,
-        isPublic: !!publish, // Admin can publish immediately
+        promptId,
+        usage: result.usage || null,
       });
+    } catch (error: any) {
+      console.error('[UItoImagePrompt] Error:', error.message);
+      res.status(500).json({ error: 'Failed to analyze UI', details: error.message });
     }
-
-    res.json({
-      success: true,
-      prompt: generatedPrompt,
-      promptId,
-      usage: result.usage || null
-    });
-
-  } catch (error: any) {
-    console.error('[UItoImagePrompt] Error:', error.message);
-    res.status(500).json({ error: 'Failed to analyze UI', details: error.message });
   }
-});
+);
 
 /**
  * GET /api/plugin/prompt-library
  * Get user's saved prompts from library
  * Admin only
  */
-router.get('/prompt-library', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const { category } = req.query;
-    const prompts = await getUserPrompts(req.userId!, category as string);
-    res.json({ success: true, prompts });
-  } catch (error: any) {
-    console.error('[PromptLibrary] Error:', error.message);
-    res.status(500).json({ error: 'Failed to get prompts' });
+router.get(
+  '/prompt-library',
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { category } = req.query;
+      const prompts = await getUserPrompts(req.userId!, category as string);
+      res.json({ success: true, prompts });
+    } catch (error: any) {
+      console.error('[PromptLibrary] Error:', error.message);
+      res.status(500).json({ error: 'Failed to get prompts' });
+    }
   }
-});
+);
 
 /**
  * GET /api/plugin/prompt-library/similar
  * Find similar prompts for inspiration
  * Admin only
  */
-router.get('/prompt-library/similar', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const { componentType, tags } = req.query;
-    const tagArray = typeof tags === 'string' ? tags.split(',') : undefined;
-    const prompts = await findSimilar(componentType as string, tagArray, 10);
-    res.json({ success: true, prompts });
-  } catch (error: any) {
-    console.error('[PromptLibrary] Error:', error.message);
-    res.status(500).json({ error: 'Failed to find similar prompts' });
+router.get(
+  '/prompt-library/similar',
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { componentType, tags } = req.query;
+      const tagArray = typeof tags === 'string' ? tags.split(',') : undefined;
+      const prompts = await findSimilar(componentType as string, tagArray, 10);
+      res.json({ success: true, prompts });
+    } catch (error: any) {
+      console.error('[PromptLibrary] Error:', error.message);
+      res.status(500).json({ error: 'Failed to find similar prompts' });
+    }
   }
-});
+);
 
 /**
  * POST /api/plugin/prompt-library/:id/use
  * Mark prompt as used (increments usage count)
  * Admin only
  */
-router.post('/prompt-library/:id/use', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const promptId = req.params.id;
-    if (!isSafeId(promptId, 50)) {
-      return res.status(400).json({ error: 'Invalid prompt ID' });
+router.post(
+  '/prompt-library/:id/use',
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const promptId = req.params.id;
+      if (!isSafeId(promptId, 50)) {
+        return res.status(400).json({ error: 'Invalid prompt ID' });
+      }
+      await incrementUsage(promptId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('[PromptLibrary] Error:', error.message);
+      res.status(500).json({ error: 'Failed to update usage' });
     }
-    await incrementUsage(promptId);
-    res.json({ success: true });
-  } catch (error: any) {
-    console.error('[PromptLibrary] Error:', error.message);
-    res.status(500).json({ error: 'Failed to update usage' });
   }
-});
+);
 
 /**
  * POST /api/plugin/prompt-library/:id/rate
  * Rate a prompt (success/failure affects ranking)
  * Admin only
  */
-router.post('/prompt-library/:id/rate', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const promptId = req.params.id;
-    if (!isSafeId(promptId, 50)) {
-      return res.status(400).json({ error: 'Invalid prompt ID' });
+router.post(
+  '/prompt-library/:id/rate',
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const promptId = req.params.id;
+      if (!isSafeId(promptId, 50)) {
+        return res.status(400).json({ error: 'Invalid prompt ID' });
+      }
+      const { success } = req.body;
+      await updateRating(promptId, !!success);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('[PromptLibrary] Error:', error.message);
+      res.status(500).json({ error: 'Failed to update rating' });
     }
-    const { success } = req.body;
-    await updateRating(promptId, !!success);
-    res.json({ success: true });
-  } catch (error: any) {
-    console.error('[PromptLibrary] Error:', error.message);
-    res.status(500).json({ error: 'Failed to update rating' });
   }
-});
+);
 
 // ============ Smart Image Analyzer (Unified Endpoint) ============
 
@@ -1984,165 +2243,197 @@ router.post('/prompt-library/:id/rate', authenticate, requireAdmin, async (req: 
  * - mode: 'image-gen' (default) → generates image generation prompt
  * Admin only
  */
-router.post('/smart-analyze', imageAnalysisLimiter, authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const { image, mode = 'image-gen', whiteLabel = false, params, refinements, currentPrompt, availableComponents, brandGuideline } = req.body;
-    const saveToLib = req.body.saveToLib === true || req.body.saveToLib === 'true';
-    const publish = req.body.publish === true || req.body.publish === 'true';
+router.post(
+  '/smart-analyze',
+  imageAnalysisLimiter,
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const {
+        image,
+        mode = 'image-gen',
+        whiteLabel = false,
+        params,
+        refinements,
+        currentPrompt,
+        availableComponents,
+        brandGuideline,
+      } = req.body;
+      const saveToLib = req.body.saveToLib === true || req.body.saveToLib === 'true';
+      const publish = req.body.publish === true || req.body.publish === 'true';
 
-    // Validate image input
-    const validation = validateImageInput(image);
-    if (!validation.valid) {
-      return res.status(400).json({ error: validation.error });
-    }
-
-    const imageData = [{ mimeType: image.mimeType || 'image/png', data: image.base64 }];
-
-    // White label instruction to append when enabled
-    const whiteLabelSuffix = whiteLabel ? WHITE_LABEL_INSTRUCTION : '';
-
-    // Build parameter-based instructions
-    let paramInstructions = '';
-    if (params) {
-      if (mode === 'figma-plugin') {
-        if (params.useAutoLayout === false) paramInstructions += '\n- NÃO use auto-layout neste componente.';
-        if (params.useSemanticNaming) paramInstructions += '\n- Use nomes de camadas extremamente descritivos e semânticos em inglês.';
-        if (params.useTokens) paramInstructions += '\n- Priorize o uso de variáveis e tokens de cores/tipografia disponíveis no workspace.';
-        if (params.selectedFont) paramInstructions += `\n- Utilize a fonte "${params.selectedFont}" para todos os elementos de texto.`;
-      } else {
-        if (params.intensity === 'literal') paramInstructions += '\n- Seja extremamente literal: descreva apenas o que está visível, sem interpretações artísticas.';
-        else if (params.intensity === 'creative') paramInstructions += '\n- Seja criativo: adicione elementos que melhorem a estética, iluminação dramática e detalhes que complementem o mood.';
-
-        if (params.visualStyle && params.visualStyle !== 'auto') paramInstructions += `\n- Estilo visual desejado: ${params.visualStyle}.`;
-        if (params.aspectRatio) paramInstructions += `\n- Proporção alvo (Aspect Ratio): ${params.aspectRatio}.`;
-        if (params.selectedFont) paramInstructions += `\n- Sugira o uso da fonte "${params.selectedFont}" se houver texto na imagem.`;
+      // Validate image input
+      const validation = validateImageInput(image);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
       }
-    }
 
-    // Refinement Logic: If refinements are provided, we ask the AI to REWRITE the prompt
-    let systemBase = mode === 'figma-plugin' 
-      ? getFigmaOperationsSystem({ 
-          availableComponents, 
-          brandContext: brandGuideline?.guidelines?.voice 
-        }) 
-      : SMART_ANALYZER_SYSTEM;
-    let userBase = mode === 'figma-plugin' ? FIGMA_OPERATIONS_USER : SMART_ANALYZER_USER;
+      const imageData = [{ mimeType: image.mimeType || 'image/png', data: image.base64 }];
 
-    if (refinements && Array.isArray(refinements) && refinements.length > 0) {
-      const safeCurrentPrompt = sanitizeForPrompt(currentPrompt, 3000);
-      const safeRefinements = sanitizePromptArray(refinements, 500).join(', ');
-      systemBase += `\n\nREFINAMENTO DE PROMPT:
+      // White label instruction to append when enabled
+      const whiteLabelSuffix = whiteLabel ? WHITE_LABEL_INSTRUCTION : '';
+
+      // Build parameter-based instructions
+      let paramInstructions = '';
+      if (params) {
+        if (mode === 'figma-plugin') {
+          if (params.useAutoLayout === false)
+            paramInstructions += '\n- NÃO use auto-layout neste componente.';
+          if (params.useSemanticNaming)
+            paramInstructions +=
+              '\n- Use nomes de camadas extremamente descritivos e semânticos em inglês.';
+          if (params.useTokens)
+            paramInstructions +=
+              '\n- Priorize o uso de variáveis e tokens de cores/tipografia disponíveis no workspace.';
+          if (params.selectedFont)
+            paramInstructions += `\n- Utilize a fonte "${params.selectedFont}" para todos os elementos de texto.`;
+        } else {
+          if (params.intensity === 'literal')
+            paramInstructions +=
+              '\n- Seja extremamente literal: descreva apenas o que está visível, sem interpretações artísticas.';
+          else if (params.intensity === 'creative')
+            paramInstructions +=
+              '\n- Seja criativo: adicione elementos que melhorem a estética, iluminação dramática e detalhes que complementem o mood.';
+
+          if (params.visualStyle && params.visualStyle !== 'auto')
+            paramInstructions += `\n- Estilo visual desejado: ${params.visualStyle}.`;
+          if (params.aspectRatio)
+            paramInstructions += `\n- Proporção alvo (Aspect Ratio): ${params.aspectRatio}.`;
+          if (params.selectedFont)
+            paramInstructions += `\n- Sugira o uso da fonte "${params.selectedFont}" se houver texto na imagem.`;
+        }
+      }
+
+      // Refinement Logic: If refinements are provided, we ask the AI to REWRITE the prompt
+      let systemBase =
+        mode === 'figma-plugin'
+          ? getFigmaOperationsSystem({
+              availableComponents,
+              brandContext: brandGuideline?.guidelines?.voice,
+            })
+          : SMART_ANALYZER_SYSTEM;
+      let userBase = mode === 'figma-plugin' ? FIGMA_OPERATIONS_USER : SMART_ANALYZER_USER;
+
+      if (refinements && Array.isArray(refinements) && refinements.length > 0) {
+        const safeCurrentPrompt = sanitizeForPrompt(currentPrompt, 3000);
+        const safeRefinements = sanitizePromptArray(refinements, 500).join(', ');
+        systemBase += `\n\nREFINAMENTO DE PROMPT:
       - O usuário deseja alterar o prompt gerado anteriormente.
       - Prompt Original: "${safeCurrentPrompt}"
       - Novas instruções/mudanças desejadas: ${safeRefinements}
       - Sua tarefa é REESCREVER o prompt (ou operações) incorporando essas mudanças de forma fluida e profissional.
       - Mantenha a consistência com a imagem original, mas priorize as novas instruções.`;
 
-      userBase = `Com base na imagem e no prompt original "${safeCurrentPrompt}", gere uma nova versão do prompt incorporando: ${safeRefinements}.`;
-    }
+        userBase = `Com base na imagem e no prompt original "${safeCurrentPrompt}", gere uma nova versão do prompt incorporando: ${safeRefinements}.`;
+      }
 
-    // MODE: Figma Plugin Operations
-    if (mode === 'figma-plugin') {
-      const result = await generateText(
-        systemBase + whiteLabelSuffix + (paramInstructions ? `\n\nREGRAS ADICIONAIS DE CUSTOMIZAÇÃO:${paramInstructions}` : ''),
+      // MODE: Figma Plugin Operations
+      if (mode === 'figma-plugin') {
+        const result = await generateText(
+          systemBase +
+            whiteLabelSuffix +
+            (paramInstructions ? `\n\nREGRAS ADICIONAIS DE CUSTOMIZAÇÃO:${paramInstructions}` : ''),
+          userBase,
+          imageData
+        );
+
+        const parsed = parseFigmaOperationsResponse(result.text);
+
+        if (!parsed) {
+          return res.status(500).json({
+            error: 'Failed to parse Figma operations',
+            raw: result.text,
+          });
+        }
+
+        const feedbackId = `figma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+        let promptId: string | undefined;
+        if (saveToLib) {
+          promptId = await saveToLibrary({
+            name: parsed.name,
+            prompt: JSON.stringify(parsed.operations, null, 2),
+            category: 'figma-prompts',
+            componentType: parsed.category,
+            tags: ['figma-plugin', 'operations', parsed.category],
+            userId: req.userId,
+            isPublic: !!publish,
+          });
+        }
+
+        return res.json({
+          success: true,
+          mode: 'figma-plugin',
+          name: parsed.name,
+          category: parsed.category,
+          operations: parsed.operations,
+          tokens: parsed.tokens,
+          feedbackId,
+          promptId,
+          usage: result.usage || null,
+        });
+      }
+
+      // MODE: Image Generation Prompt (default)
+      const analysisResult = await generateText(
+        systemBase +
+          whiteLabelSuffix +
+          (paramInstructions ? `\n\nREGRAS ADICIONAIS DE CUSTOMIZAÇÃO:${paramInstructions}` : ''),
         userBase,
         imageData
       );
 
-      const parsed = parseFigmaOperationsResponse(result.text);
+      const parsed = parseAnalyzerResponse(analysisResult.text);
 
       if (!parsed) {
         return res.status(500).json({
-          error: 'Failed to parse Figma operations',
-          raw: result.text
+          error: 'Failed to parse image analysis',
+          raw: analysisResult.text,
         });
       }
 
-      const feedbackId = `figma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const { category, confidence, tags, prompt, name } = parsed;
+
+      // Determine library category based on detected type
+      const isUIType = category === 'ui-screenshot' || category === 'figma-design';
+      const libraryCategory = isUIType ? 'figma-prompts' : category;
+
+      const feedbackId = `smart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
       let promptId: string | undefined;
       if (saveToLib) {
         promptId = await saveToLibrary({
-          name: parsed.name,
-          prompt: JSON.stringify(parsed.operations, null, 2),
-          category: 'figma-prompts',
-          componentType: parsed.category,
-          tags: ['figma-plugin', 'operations', parsed.category],
+          name,
+          prompt,
+          category: libraryCategory,
+          componentType: category,
+          tags: [...tags, category],
           userId: req.userId,
           isPublic: !!publish,
         });
       }
 
-      return res.json({
+      res.json({
         success: true,
-        mode: 'figma-plugin',
-        name: parsed.name,
-        category: parsed.category,
-        operations: parsed.operations,
-        tokens: parsed.tokens,
-        feedbackId,
-        promptId,
-        usage: result.usage || null,
-      });
-    }
-
-    // MODE: Image Generation Prompt (default)
-    const analysisResult = await generateText(
-      systemBase + whiteLabelSuffix + (paramInstructions ? `\n\nREGRAS ADICIONAIS DE CUSTOMIZAÇÃO:${paramInstructions}` : ''),
-      userBase,
-      imageData
-    );
-
-    const parsed = parseAnalyzerResponse(analysisResult.text);
-
-    if (!parsed) {
-      return res.status(500).json({
-        error: 'Failed to parse image analysis',
-        raw: analysisResult.text
-      });
-    }
-
-    const { category, confidence, tags, prompt, name } = parsed;
-
-    // Determine library category based on detected type
-    const isUIType = category === 'ui-screenshot' || category === 'figma-design';
-    const libraryCategory = isUIType ? 'figma-prompts' : category;
-
-    const feedbackId = `smart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
-    let promptId: string | undefined;
-    if (saveToLib) {
-      promptId = await saveToLibrary({
+        mode: 'image-gen',
+        category,
+        confidence,
+        tags,
         name,
         prompt,
-        category: libraryCategory,
-        componentType: category,
-        tags: [...tags, category],
-        userId: req.userId,
-        isPublic: !!publish,
+        promptType: isUIType ? 'figma-plugin' : 'image-generation',
+        feedbackId,
+        promptId,
+        libraryCategory,
+        usage: analysisResult.usage || null,
       });
+    } catch (error: any) {
+      console.error('[SmartAnalyze] Error:', error.message);
+      res.status(500).json({ error: 'Failed to analyze image', details: error.message });
     }
-
-    res.json({
-      success: true,
-      mode: 'image-gen',
-      category,
-      confidence,
-      tags,
-      name,
-      prompt,
-      promptType: isUIType ? 'figma-plugin' : 'image-generation',
-      feedbackId,
-      promptId,
-      libraryCategory,
-      usage: analysisResult.usage || null,
-    });
-
-  } catch (error: any) {
-    console.error('[SmartAnalyze] Error:', error.message);
-    res.status(500).json({ error: 'Failed to analyze image', details: error.message });
   }
-});
+);
 
 /**
  * GET /api/plugin/smart-analyze/categories
@@ -2162,43 +2453,50 @@ router.get('/smart-analyze/categories', (req: Request, res: Response) => {
  * Publish a prompt to the community library
  * Admin only
  */
-router.post('/smart-analyze/publish', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const { name, prompt, category, tags } = req.body;
+router.post(
+  '/smart-analyze/publish',
+  authenticate,
+  requireAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { name, prompt, category, tags } = req.body;
 
-    // Validate inputs
-    const validName = ensureString(name, 200);
-    const validPrompt = ensureString(prompt, 100000);
-    const validCategory = ensureString(category, 50);
+      // Validate inputs
+      const validName = ensureString(name, 200);
+      const validPrompt = ensureString(prompt, 100000);
+      const validCategory = ensureString(category, 50);
 
-    if (!validName || !validPrompt || !validCategory) {
-      return res.status(400).json({ error: 'Name, prompt, and category are required' });
+      if (!validName || !validPrompt || !validCategory) {
+        return res.status(400).json({ error: 'Name, prompt, and category are required' });
+      }
+
+      // Validate tags
+      const validTags = Array.isArray(tags)
+        ? tags
+            .slice(0, 20)
+            .map((t) => ensureString(t, 50))
+            .filter((t): t is string => t !== null)
+        : [];
+
+      const promptId = await saveToLibrary({
+        name: validName,
+        prompt: validPrompt,
+        category: validCategory,
+        tags: validTags,
+        userId: req.userId,
+        isPublic: true,
+      });
+
+      res.json({
+        success: true,
+        promptId,
+        message: 'Published to community!',
+      });
+    } catch (error: any) {
+      console.error('[SmartAnalyze:Publish] Error:', error.message);
+      res.status(500).json({ error: 'Failed to publish', details: error.message });
     }
-
-    // Validate tags
-    const validTags = Array.isArray(tags)
-      ? tags.slice(0, 20).map(t => ensureString(t, 50)).filter((t): t is string => t !== null)
-      : [];
-
-    const promptId = await saveToLibrary({
-      name: validName,
-      prompt: validPrompt,
-      category: validCategory,
-      tags: validTags,
-      userId: req.userId,
-      isPublic: true,
-    });
-
-    res.json({
-      success: true,
-      promptId,
-      message: 'Published to community!',
-    });
-
-  } catch (error: any) {
-    console.error('[SmartAnalyze:Publish] Error:', error.message);
-    res.status(500).json({ error: 'Failed to publish', details: error.message });
   }
-});
+);
 
 export default router;

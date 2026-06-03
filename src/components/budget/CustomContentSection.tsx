@@ -17,10 +17,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const updateField = <K extends keyof CustomContent>(
-    field: K,
-    value: CustomContent[K]
-  ) => {
+  const updateField = <K extends keyof CustomContent>(field: K, value: CustomContent[K]) => {
     onChange({ ...customContent, [field]: value });
   };
 
@@ -33,9 +30,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
   };
 
   const removeProjectDetailSection = (index: number) => {
-    const newSections = (customContent.projectDetailSections || []).filter(
-      (_, i) => i !== index
-    );
+    const newSections = (customContent.projectDetailSections || []).filter((_, i) => i !== index);
     updateField('projectDetailSections', newSections);
   };
 
@@ -51,10 +46,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
 
   const addParagraph = (sectionIndex: number) => {
     const sections = [...(customContent.projectDetailSections || [])];
-    sections[sectionIndex].paragraphs = [
-      ...sections[sectionIndex].paragraphs,
-      '',
-    ];
+    sections[sectionIndex].paragraphs = [...sections[sectionIndex].paragraphs, ''];
     updateField('projectDetailSections', sections);
   };
 
@@ -66,21 +58,14 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
     updateField('projectDetailSections', sections);
   };
 
-  const updateParagraph = (
-    sectionIndex: number,
-    paragraphIndex: number,
-    value: string
-  ) => {
+  const updateParagraph = (sectionIndex: number, paragraphIndex: number, value: string) => {
     const sections = [...(customContent.projectDetailSections || [])];
     sections[sectionIndex].paragraphs[paragraphIndex] = value;
     updateField('projectDetailSections', sections);
   };
 
   const addInfoBox = () => {
-    const newBoxes = [
-      ...(customContent.infoBoxes || []),
-      { title: '', content: '' },
-    ];
+    const newBoxes = [...(customContent.infoBoxes || []), { title: '', content: '' }];
     updateField('infoBoxes', newBoxes);
   };
 
@@ -89,11 +74,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
     updateField('infoBoxes', newBoxes);
   };
 
-  const updateInfoBox = (
-    index: number,
-    field: 'title' | 'content',
-    value: string
-  ) => {
+  const updateInfoBox = (index: number, field: 'title' | 'content', value: string) => {
     const boxes = [...(customContent.infoBoxes || [])];
     boxes[index] = { ...boxes[index], [field]: value };
     updateField('infoBoxes', boxes);
@@ -107,7 +88,8 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <h3 className="text-lg font-semibold text-neutral-200 font-mono">
             {t('budget.projectDetailSections') || 'Seções de Descrição do Projeto'}
           </h3>
-          <Button variant="brand"
+          <Button
+            variant="brand"
             onClick={addProjectDetailSection}
             className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
           >
@@ -146,7 +128,8 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                         <label className="block text-xs text-neutral-400 font-mono">
                           {t('budget.paragraphs') || 'Parágrafos'}
                         </label>
-                        <Button variant="ghost"
+                        <Button
+                          variant="ghost"
                           onClick={() => addParagraph(sectionIndex)}
                           className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded text-brand-cyan font-mono text-xs transition-all duration-300 flex items-center gap-1"
                         >
@@ -166,7 +149,8 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                             className="flex-1"
                           />
                           {section.paragraphs.length > 1 && (
-                            <Button variant="ghost"
+                            <Button
+                              variant="ghost"
                               onClick={() => removeParagraph(sectionIndex, paragraphIndex)}
                               className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors h-fit"
                             >
@@ -177,7 +161,8 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                       ))}
                     </div>
                   </div>
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     onClick={() => removeProjectDetailSection(sectionIndex)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                     title={t('budget.removeSection') || 'Remover seção'}
@@ -197,7 +182,8 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <h3 className="text-lg font-semibold text-neutral-200 font-mono">
             {t('budget.infoBoxes') || 'Caixas de Informação'}
           </h3>
-          <Button variant="brand"
+          <Button
+            variant="brand"
             onClick={addInfoBox}
             className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
           >
@@ -236,12 +222,15 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                       <FormTextarea
                         value={box.content}
                         onChange={(e) => updateInfoBox(index, 'content', e.target.value)}
-                        placeholder={t('budget.placeholders.infoBoxContent') || 'Conteúdo da caixa...'}
+                        placeholder={
+                          t('budget.placeholders.infoBoxContent') || 'Conteúdo da caixa...'
+                        }
                         rows={4}
                       />
                     </div>
                   </div>
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     onClick={() => removeInfoBox(index)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                     title={t('budget.removeInfoBox') || 'Remover caixa'}
@@ -257,4 +246,3 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
     </div>
   );
 };
-

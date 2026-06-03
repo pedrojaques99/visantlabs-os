@@ -32,8 +32,10 @@ router.post('/', apiRateLimiter, async (req, res) => {
     if (existing) {
       // Send newsletter welcome email even if already in waitlist (resend functionality)
       try {
-        const { sendNewsletterWelcomeEmail, isEmailConfigured } = await import('../services/emailService.js');
-        
+        const { sendNewsletterWelcomeEmail, isEmailConfigured } = await import(
+          '../services/emailService.js'
+        );
+
         if (isEmailConfigured()) {
           await sendNewsletterWelcomeEmail({
             email: normalizedEmail,
@@ -59,8 +61,10 @@ router.post('/', apiRateLimiter, async (req, res) => {
 
     // Send newsletter welcome email
     try {
-      const { sendNewsletterWelcomeEmail, isEmailConfigured } = await import('../services/emailService.js');
-      
+      const { sendNewsletterWelcomeEmail, isEmailConfigured } = await import(
+        '../services/emailService.js'
+      );
+
       if (isEmailConfigured()) {
         await sendNewsletterWelcomeEmail({
           email: normalizedEmail,
@@ -107,9 +111,3 @@ router.get('/', apiRateLimiter, async (req, res) => {
 });
 
 export default router;
-
-
-
-
-
-

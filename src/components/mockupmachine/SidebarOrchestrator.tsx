@@ -88,10 +88,10 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     hasGenerated,
     designType,
     brandingComplete: selectedBrandingTags.length > 0,
-    categoriesComplete: selectedTags.length > 0
+    categoriesComplete: selectedTags.length > 0,
   });
 
-  const isOutputsLoading = isLoading.some(v => v);
+  const isOutputsLoading = isLoading.some((v) => v);
 
   // --- Compact Sidebar (Essentialist / Intelligent) ---
   if (isCollapsed && hasAnalyzed) {
@@ -99,9 +99,9 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
       <aside
         id="sidebar-compact"
         className={cn(
-          "relative flex-shrink-0 bg-neutral-950/80 backdrop-blur-3xl border-r border-neutral-800",
-          "h-full w-16 hidden lg:flex flex-col items-center py-8 gap-8 animate-in slide-in-from-left duration-300",
-          isSurpriseMeMode && "border-brand-cyan/20 ring-1 ring-brand-cyan/5"
+          'relative flex-shrink-0 bg-neutral-950/80 backdrop-blur-3xl border-r border-neutral-800',
+          'h-full w-16 hidden lg:flex flex-col items-center py-8 gap-8 animate-in slide-in-from-left duration-300',
+          isSurpriseMeMode && 'border-brand-cyan/20 ring-1 ring-brand-cyan/5'
         )}
       >
         {/* Thumb Reference */}
@@ -126,14 +126,17 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             onClick={() => onSurpriseMe(true)}
             disabled={isGeneratingPrompt || isOutputsLoading}
             className={cn(
-              "w-11 h-11 rounded-2xl flex items-center justify-center transition-all group relative",
+              'w-11 h-11 rounded-2xl flex items-center justify-center transition-all group relative',
               isSurpriseMeMode
-                ? "bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]"
-                : "text-neutral-500 hover:text-white border border-transparent hover:bg-white/5"
+                ? 'bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
+                : 'text-neutral-500 hover:text-white border border-transparent hover:bg-white/5'
             )}
             title="Surprise Me"
           >
-            <Dices size={20} className={cn("transition-transform", isGeneratingPrompt && "animate-spin")} />
+            <Dices
+              size={20}
+              className={cn('transition-transform', isGeneratingPrompt && 'animate-spin')}
+            />
           </button>
 
           {/* Generate Icon (Core Action) */}
@@ -141,19 +144,19 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             onClick={onGenerateClick}
             disabled={isOutputsLoading}
             className={cn(
-              "w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative group overflow-visible",
+              'w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative group overflow-visible',
               isOutputsLoading
-                ? "bg-neutral-800 text-neutral-600 border border-neutral-800"
+                ? 'bg-neutral-800 text-neutral-600 border border-neutral-800'
                 : isPromptReady
-                  ? "bg-brand-cyan text-black hover:scale-110 active:scale-95 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.25)] ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black"
-                  : "bg-neutral-900 text-neutral-500 hover:text-white border border-neutral-800 hover:bg-neutral-800"
+                ? 'bg-brand-cyan text-black hover:scale-110 active:scale-95 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.25)] ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black'
+                : 'bg-neutral-900 text-neutral-500 hover:text-white border border-neutral-800 hover:bg-neutral-800'
             )}
             title="Generate Outputs"
           >
             {isOutputsLoading ? (
               <div className="w-2 h-2 rounded-full bg-brand-cyan animate-ping" />
             ) : (
-              <Pickaxe size={22} className={cn(isPromptReady ? "fill-current" : "")} />
+              <Pickaxe size={22} className={cn(isPromptReady ? 'fill-current' : '')} />
             )}
 
             {/* Visual state indicator */}
@@ -181,30 +184,32 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         ref={sidebarRef}
         id="sidebar"
         className={cn(
-          "relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-300 custom-scrollbar",
-          "max-h-auto",
-          "p-3 sm:p-4 md:p-6 lg:p-8",
-          "w-full", // Base width
-          !hasAnalyzed ? [
-            "rounded-md",
-            isSurpriseMeMode
-              ? "border border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pool-border-glow"
-              : "border-none shadow-none",
-            "max-w-4xl mx-auto", // Full width for Step 1
-            "min-w-0"
-          ] : [
-            "max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl", // Sidebar panel state for Step 2
-            "h-full px-4 lg:px-6 py-10",
-            isSurpriseMeMode
-              ? "border-l border-brand-cyan/70 border-dashed shadow-[-10px_0_30px_rgba(0,210,255,0.05)]"
-              : "",
-            "lg:w-auto"
-          ]
+          'relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-300 custom-scrollbar',
+          'max-h-auto',
+          'p-3 sm:p-4 md:p-6 lg:p-8',
+          'w-full', // Base width
+          !hasAnalyzed
+            ? [
+                'rounded-md',
+                isSurpriseMeMode
+                  ? 'border border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pool-border-glow'
+                  : 'border-none shadow-none',
+                'max-w-4xl mx-auto', // Full width for Step 1
+                'min-w-0',
+              ]
+            : [
+                'max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl', // Sidebar panel state for Step 2
+                'h-full px-4 lg:px-6 py-10',
+                isSurpriseMeMode
+                  ? 'border-l border-brand-cyan/70 border-dashed shadow-[-10px_0_30px_rgba(0,210,255,0.05)]'
+                  : '',
+                'lg:w-auto',
+              ]
         )}
         style={{
           paddingBottom: '20px',
           scrollbarGutter: 'stable',
-          ...(hasAnalyzed && isLargeScreen ? { width: `${sidebarWidth}px` } : {})
+          ...(hasAnalyzed && isLargeScreen ? { width: `${sidebarWidth}px` } : {}),
         }}
       >
         {hasAnalyzed && (
@@ -227,41 +232,39 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                 onClose={onCloseMobile}
               />
             </div>
+          ) : mode === 'essential' ? (
+            <EssentialSidebar
+              onSurpriseMe={onSurpriseMe}
+              onGenerateSmartPrompt={onGenerateSmartPrompt}
+              onGenerateOutputs={onGenerateClick}
+              onSwitchToExpert={() => setMode('expert')}
+              isGeneratingPrompt={isGeneratingPrompt}
+              isGeneratingOutputs={isOutputsLoading}
+              isDiceAnimating={false}
+              isSurpriseMeActive={isSurpriseMeMode}
+              authenticationRequiredMessage={authenticationRequiredMessage}
+              generateOutputsButtonRef={generateOutputsButtonRef}
+              isPromptReady={isPromptReady}
+            />
           ) : (
-            mode === 'essential' ? (
-              <EssentialSidebar
-                onSurpriseMe={onSurpriseMe}
-                onGenerateSmartPrompt={onGenerateSmartPrompt}
-                onGenerateOutputs={onGenerateClick}
-                onSwitchToExpert={() => setMode('expert')}
-                isGeneratingPrompt={isGeneratingPrompt}
-                isGeneratingOutputs={isOutputsLoading}
-                isDiceAnimating={false}
-                isSurpriseMeActive={isSurpriseMeMode}
-                authenticationRequiredMessage={authenticationRequiredMessage}
-                generateOutputsButtonRef={generateOutputsButtonRef}
-                isPromptReady={isPromptReady}
-              />
-            ) : (
-              <SidebarGenerationConfig
-                onGenerateClick={onGenerateClick}
-                onRegenerate={onRegenerate}
-                onSurpriseMe={onSurpriseMe}
-                handleSurpriseMe={onSurpriseMe}
-                onSuggestPrompts={onSuggestPrompts}
-                onGenerateSmartPrompt={onGenerateSmartPrompt}
-                onSimplify={onSimplify}
-                onGenerateSuggestion={onGenerateSuggestion}
-                generateOutputsButtonRef={generateOutputsButtonRef}
-                onStartOver={onStartOver}
-                onReplaceImage={onReplaceImage}
-                onReferenceImagesChange={onReferenceImagesChange}
-                authenticationRequiredMessage={authenticationRequiredMessage}
-                isPromptReady={isPromptReady}
-                sidebarWidth={sidebarWidth}
-                onSwitchToEssential={() => setMode('essential')}
-              />
-            )
+            <SidebarGenerationConfig
+              onGenerateClick={onGenerateClick}
+              onRegenerate={onRegenerate}
+              onSurpriseMe={onSurpriseMe}
+              handleSurpriseMe={onSurpriseMe}
+              onSuggestPrompts={onSuggestPrompts}
+              onGenerateSmartPrompt={onGenerateSmartPrompt}
+              onSimplify={onSimplify}
+              onGenerateSuggestion={onGenerateSuggestion}
+              generateOutputsButtonRef={generateOutputsButtonRef}
+              onStartOver={onStartOver}
+              onReplaceImage={onReplaceImage}
+              onReferenceImagesChange={onReferenceImagesChange}
+              authenticationRequiredMessage={authenticationRequiredMessage}
+              isPromptReady={isPromptReady}
+              sidebarWidth={sidebarWidth}
+              onSwitchToEssential={() => setMode('essential')}
+            />
           )}
         </div>
       </aside>

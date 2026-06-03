@@ -4,15 +4,9 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "module": "ESNext",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -21,26 +15,12 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@server/*": [
-        "./server/*"
-      ],
-      "@shared/*": [
-        "./shared/*"
-      ]
+      "@/*": ["./src/*"],
+      "@server/*": ["./server/*"],
+      "@shared/*": ["./shared/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "tmp",
-    "**/*.example.ts",
-    "plugin",
-    "cli"
-  ]
+  "exclude": ["node_modules", "dist", "build", "tmp", "**/*.example.ts", "plugin", "cli"]
 }

@@ -10,9 +10,12 @@ interface Props {
   onCheatsheet: () => void;
 }
 
-const Btn: React.FC<{ title: string; onClick: () => void; active?: boolean; children: React.ReactNode }> = ({
-  title, onClick, active, children,
-}) => (
+const Btn: React.FC<{
+  title: string;
+  onClick: () => void;
+  active?: boolean;
+  children: React.ReactNode;
+}> = ({ title, onClick, active, children }) => (
   <button
     type="button"
     onClick={onClick}
@@ -28,7 +31,11 @@ const Btn: React.FC<{ title: string; onClick: () => void; active?: boolean; chil
 );
 
 export const CameraControls: React.FC<Props> = ({
-  scale, onZoomIn, onZoomOut, onZoomReset, onCheatsheet,
+  scale,
+  onZoomIn,
+  onZoomOut,
+  onZoomReset,
+  onCheatsheet,
 }) => {
   const gridEnabled = useCreativeStore((s) => s.gridEnabled);
   const setGridEnabled = useCreativeStore((s) => s.setGridEnabled);

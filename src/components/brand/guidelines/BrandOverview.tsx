@@ -21,14 +21,29 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
   const rawManifesto = g.strategy?.manifesto;
   const manifesto: BrandManifesto | null =
     typeof rawManifesto === 'string'
-      ? rawManifesto.trim() ? { full: rawManifesto } : null
+      ? rawManifesto.trim()
+        ? { full: rawManifesto }
+        : null
       : rawManifesto && (rawManifesto.full || rawManifesto.provocation || rawManifesto.promise)
-        ? rawManifesto
-        : null;
+      ? rawManifesto
+      : null;
 
-  const primaryLogo = logos.find(l => l.variant === 'primary') || logos.find(l => l.variant === 'icon') || logos[0];
-  const headlineFont = typography.find(t => (t.role || '').toLowerCase().includes('head') || (t.role || '').toLowerCase().includes('display')) || typography[0];
-  const bodyFont = typography.find(t => (t.role || '').toLowerCase().includes('body') || (t.role || '').toLowerCase().includes('paragraph')) || typography[1];
+  const primaryLogo =
+    logos.find((l) => l.variant === 'primary') ||
+    logos.find((l) => l.variant === 'icon') ||
+    logos[0];
+  const headlineFont =
+    typography.find(
+      (t) =>
+        (t.role || '').toLowerCase().includes('head') ||
+        (t.role || '').toLowerCase().includes('display')
+    ) || typography[0];
+  const bodyFont =
+    typography.find(
+      (t) =>
+        (t.role || '').toLowerCase().includes('body') ||
+        (t.role || '').toLowerCase().includes('paragraph')
+    ) || typography[1];
 
   const socialLinks = [
     identity?.website && { icon: Globe, label: 'Website', url: identity.website },
@@ -42,7 +57,9 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
   if (isEmpty) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
-        <p className="text-sm text-neutral-600">Start by filling in your brand identity and visual system.</p>
+        <p className="text-sm text-neutral-600">
+          Start by filling in your brand identity and visual system.
+        </p>
       </div>
     );
   }
@@ -64,7 +81,9 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
             <p className="text-base text-neutral-400">{identity?.tagline || g.tagline}</p>
           )}
           {identity?.description && (
-            <p className="text-sm text-neutral-500 leading-relaxed max-w-2xl">{identity.description}</p>
+            <p className="text-sm text-neutral-500 leading-relaxed max-w-2xl">
+              {identity.description}
+            </p>
           )}
           {socialLinks.length > 0 && (
             <div className="flex items-center gap-3 pt-1">
@@ -99,7 +118,9 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
               {manifesto.provocation && (
                 <div className="space-y-1">
                   <span className="text-[11px] font-medium text-neutral-600">Provocation</span>
-                  <p className="text-base leading-relaxed text-neutral-300">{manifesto.provocation}</p>
+                  <p className="text-base leading-relaxed text-neutral-300">
+                    {manifesto.provocation}
+                  </p>
                 </div>
               )}
               {manifesto.tension && (
@@ -120,30 +141,35 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
       )}
 
       {/* ── Core Message ── */}
-      {coreMessage && (coreMessage.product || coreMessage.differential || coreMessage.emotionalBond) && (
-        <GlassPanel intensity="subtle" padding="md">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {coreMessage.product && (
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-medium text-neutral-600">Product</span>
-                <p className="text-sm text-neutral-300 leading-relaxed">{coreMessage.product}</p>
-              </div>
-            )}
-            {coreMessage.differential && (
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-medium text-neutral-600">Differential</span>
-                <p className="text-sm text-neutral-300 leading-relaxed">{coreMessage.differential}</p>
-              </div>
-            )}
-            {coreMessage.emotionalBond && (
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-medium text-neutral-600">Emotional Bond</span>
-                <p className="text-sm text-neutral-300 leading-relaxed">{coreMessage.emotionalBond}</p>
-              </div>
-            )}
-          </div>
-        </GlassPanel>
-      )}
+      {coreMessage &&
+        (coreMessage.product || coreMessage.differential || coreMessage.emotionalBond) && (
+          <GlassPanel intensity="subtle" padding="md">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {coreMessage.product && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-medium text-neutral-600">Product</span>
+                  <p className="text-sm text-neutral-300 leading-relaxed">{coreMessage.product}</p>
+                </div>
+              )}
+              {coreMessage.differential && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-medium text-neutral-600">Differential</span>
+                  <p className="text-sm text-neutral-300 leading-relaxed">
+                    {coreMessage.differential}
+                  </p>
+                </div>
+              )}
+              {coreMessage.emotionalBond && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-medium text-neutral-600">Emotional Bond</span>
+                  <p className="text-sm text-neutral-300 leading-relaxed">
+                    {coreMessage.emotionalBond}
+                  </p>
+                </div>
+              )}
+            </div>
+          </GlassPanel>
+        )}
 
       {/* ── Pillars ── */}
       {pillars.length > 0 && (
@@ -183,7 +209,10 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
               <span className="text-xs font-medium text-neutral-500">Tone of Voice</span>
               <div className="flex flex-wrap gap-2">
                 {voiceValues.slice(0, 4).map((v, i) => (
-                  <span key={i} className="text-xs text-neutral-400 px-2.5 py-1 rounded-md border border-white/[0.06] bg-white/[0.02]">
+                  <span
+                    key={i}
+                    className="text-xs text-neutral-400 px-2.5 py-1 rounded-md border border-white/[0.06] bg-white/[0.02]"
+                  >
                     {v.title}
                   </span>
                 ))}
@@ -213,7 +242,9 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                   </div>
                 ))}
                 {colors.length > 8 && (
-                  <span className="text-[11px] text-neutral-600 self-center">+{colors.length - 8}</span>
+                  <span className="text-[11px] text-neutral-600 self-center">
+                    +{colors.length - 8}
+                  </span>
                 )}
               </div>
             </div>
@@ -225,7 +256,10 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
               <div className="space-y-3">
                 {headlineFont && (
                   <div>
-                    <p className="text-lg text-neutral-200" style={{ fontFamily: headlineFont.family }}>
+                    <p
+                      className="text-lg text-neutral-200"
+                      style={{ fontFamily: headlineFont.family }}
+                    >
                       {headlineFont.family}
                     </p>
                     <p className="text-[11px] text-neutral-600">{headlineFont.role}</p>
@@ -233,7 +267,10 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                 )}
                 {bodyFont && bodyFont !== headlineFont && (
                   <div>
-                    <p className="text-base text-neutral-300" style={{ fontFamily: bodyFont.family }}>
+                    <p
+                      className="text-base text-neutral-300"
+                      style={{ fontFamily: bodyFont.family }}
+                    >
                       {bodyFont.family}
                     </p>
                     <p className="text-[11px] text-neutral-600">{bodyFont.role}</p>

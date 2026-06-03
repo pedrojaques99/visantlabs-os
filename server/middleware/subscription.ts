@@ -14,13 +14,13 @@ const renewCreditsIfNeeded = async (user: any, db: any) => {
   if (creditsResetDate && now >= creditsResetDate) {
     const monthlyCredits = user.monthlyCredits ?? FREE_MONTHLY_CREDITS;
     const creditsUsed = user?.creditsUsed || 0;
-    
+
     // creditsUsed now tracks ALL credits used (both earned and monthly)
     // When resetting, we only reset creditsUsed to 0
     // totalCreditsEarned is not affected (it was already deducted when used)
-    
+
     // Calculate next reset date (30 days from now for free users, or use subscriptionEndDate)
-    const nextResetDate = user.subscriptionEndDate 
+    const nextResetDate = user.subscriptionEndDate
       ? new Date(user.subscriptionEndDate)
       : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
@@ -51,7 +51,7 @@ const migrateToCreditsSystem = async (user: any, db: any) => {
   if (user.freeGenerationsUsed && user.freeGenerationsUsed > 0 && !user.creditsResetDate) {
     const monthlyCredits = user.monthlyCredits ?? FREE_MONTHLY_CREDITS;
     const creditsUsed = Math.min(user.freeGenerationsUsed, monthlyCredits);
-    
+
     // Set initial credits reset date (30 days from now for free users)
     const creditsResetDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
@@ -94,7 +94,7 @@ export const checkSubscription = async (
 ) => {
   const startTime = Date.now();
   const userId = req.userId!;
-  
+
   console.log('[checkSubscription] Starting subscription check', {
     userId,
     timestamp: new Date().toISOString(),
@@ -107,7 +107,7 @@ export const checkSubscription = async (
     const db = getDb();
 
     let user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    
+
     if (!user) {
       console.error('[checkSubscription] User not found', { userId });
       return res.status(404).json({ error: 'User not found' });
@@ -139,11 +139,13 @@ export const checkSubscription = async (
 
     const subscriptionStatus = user?.subscriptionStatus || 'free';
     const hasActiveSubscription = subscriptionStatus === 'active';
-    
+
     // Get credits information
     const monthlyCredits = user?.monthlyCredits ?? FREE_MONTHLY_CREDITS;
     let creditsUsed = user?.creditsUsed || 0;
-    let creditsResetDate: Date | undefined = user?.creditsResetDate ? new Date(user.creditsResetDate) : undefined;
+    let creditsResetDate: Date | undefined = user?.creditsResetDate
+      ? new Date(user.creditsResetDate)
+      : undefined;
 
     // Renew credits if reset date has passed
     const renewalResult = await renewCreditsIfNeeded(user, db);
@@ -157,9 +159,10 @@ export const checkSubscription = async (
     const creditsRemaining = Math.max(0, monthlyCredits - creditsUsed);
     const freeGenerationsUsed = user?.freeGenerationsUsed || 0;
     // Use ?? to handle null/undefined, but keep 0 as valid value
-    const totalCreditsEarned = (user?.totalCreditsEarned !== null && user?.totalCreditsEarned !== undefined) 
-      ? user?.totalCreditsEarned 
-      : 0;
+    const totalCreditsEarned =
+      user?.totalCreditsEarned !== null && user?.totalCreditsEarned !== undefined
+        ? user?.totalCreditsEarned
+        : 0;
     const totalCredits = totalCreditsEarned + creditsRemaining;
 
     // Check if user can generate
@@ -170,12 +173,12 @@ export const checkSubscription = async (
     const hasManualCredits = totalCreditsEarned > 0;
     const hasMonthlyCredits = creditsRemaining > 0;
     const hasAnyCredits = hasManualCredits || hasMonthlyCredits;
-    
+
     // Free users with earned credits can always generate (regardless of freeGenerationsUsed)
     // Otherwise, free users need free generations remaining AND any credits
-    const canGenerate = hasActiveSubscription 
+    const canGenerate = hasActiveSubscription
       ? hasAnyCredits
-      : (hasManualCredits || (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && hasAnyCredits));
+      : hasManualCredits || (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && hasAnyCredits);
 
     const decisionDetails = {
       userId,
@@ -201,20 +204,20 @@ export const checkSubscription = async (
     if (!canGenerate) {
       console.error('[checkSubscription] ❌ BLOCKED - User cannot generate', {
         ...decisionDetails,
-        reason: hasActiveSubscription 
+        reason: hasActiveSubscription
           ? 'No credits available (active subscription)'
-          : hasManualCredits 
-            ? 'Should not happen - hasManualCredits is true but canGenerate is false'
-            : freeGenerationsUsed >= FREE_GENERATIONS_LIMIT
-              ? 'Free generations limit reached and no manual credits'
-              : !hasAnyCredits
-                ? 'No credits available (neither manual nor monthly)'
-                : 'Unknown reason',
+          : hasManualCredits
+          ? 'Should not happen - hasManualCredits is true but canGenerate is false'
+          : freeGenerationsUsed >= FREE_GENERATIONS_LIMIT
+          ? 'Free generations limit reached and no manual credits'
+          : !hasAnyCredits
+          ? 'No credits available (neither manual nor monthly)'
+          : 'Unknown reason',
       });
-      
+
       return res.status(403).json({
         error: 'Subscription required',
-        message: hasActiveSubscription 
+        message: hasActiveSubscription
           ? 'You have used all your credits. Credits will renew on your next billing cycle.'
           : 'You have used all free generations. Please subscribe to continue.',
         freeGenerationsUsed,
@@ -254,10 +257,9 @@ export const checkSubscription = async (
       name: error?.name,
       duration: `${Date.now() - startTime}ms`,
     });
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to check subscription status',
       details: process.env.NODE_ENV === 'development' ? error?.message : undefined,
     });
   }
 };
-

@@ -193,4 +193,3 @@ const matrixDitherShaderDefinition: ShaderDefinition = {
 
 // Register the shader
 registerShader('matrixDither', matrixDitherShaderDefinition);
-

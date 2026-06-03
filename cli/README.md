@@ -5,9 +5,9 @@ CLI oficial do [Visant Labs](https://visantlabs.com) — conecte qualquer agente
 ```
       _    __ _________ ___    _   __ ______
      | |  / //  _/ ___//   |  / | / //_  __/
-     | | / / / / \__ \/ /| | /  |/ /  / /   
-     | |/ /_/ / ___/ / ___ |/ /|  /  / /    
-     |___//___//____/_/  |_/_/ |_/  /_/     
+     | | / / / / \__ \/ /| | /  |/ /  / /
+     | |/ /_/ / ___/ / ___ |/ /|  /  / /
+     |___//___//____/_/  |_/_/ |_/  /_/
 
       visant® // labs // cli // brazil
 ```
@@ -75,25 +75,25 @@ visant mcp status
 
 ## Ferramentas MCP disponíveis após setup
 
-| Ferramenta | Descrição |
-|---|---|
-| `document_extract` | Extrai texto + brand tokens de um PDF (algoritmo + Gemini) |
-| `get_brand_guideline` | Dados completos de uma marca (cores, tipografia, voz, estratégia) |
-| `list_brand_guidelines` | Lista todas as marcas da conta |
-| `generate_mockup` | Geração de imagem com AI (OpenAI / Gemini / Seedream) |
-| `batch_generate_mockups` | Até 20 mockups em paralelo |
-| `create_creative_plan` | Plano de layout para peça de marketing |
-| `generate_persona` | Persona de audiência detalhada |
-| `generate_archetype` | Arquétipos de marca |
-| `generate_naming` | Sugestões de nome para marca/produto |
-| `get_brand_design_system` | Design system pronto para geração de código |
-| `create_ad_campaign` | Campanha de anúncios completa com AI |
-| + 24 mais | … |
+| Ferramenta                | Descrição                                                         |
+| ------------------------- | ----------------------------------------------------------------- |
+| `document_extract`        | Extrai texto + brand tokens de um PDF (algoritmo + Gemini)        |
+| `get_brand_guideline`     | Dados completos de uma marca (cores, tipografia, voz, estratégia) |
+| `list_brand_guidelines`   | Lista todas as marcas da conta                                    |
+| `generate_mockup`         | Geração de imagem com AI (OpenAI / Gemini / Seedream)             |
+| `batch_generate_mockups`  | Até 20 mockups em paralelo                                        |
+| `create_creative_plan`    | Plano de layout para peça de marketing                            |
+| `generate_persona`        | Persona de audiência detalhada                                    |
+| `generate_archetype`      | Arquétipos de marca                                               |
+| `generate_naming`         | Sugestões de nome para marca/produto                              |
+| `get_brand_design_system` | Design system pronto para geração de código                       |
+| `create_ad_campaign`      | Campanha de anúncios completa com AI                              |
+| + 24 mais                 | …                                                                 |
 
 ## Variáveis de ambiente
 
-| Variável | Padrão | Descrição |
-|---|---|---|
+| Variável         | Padrão                           | Descrição                            |
+| ---------------- | -------------------------------- | ------------------------------------ |
 | `VISANT_API_URL` | `https://api.visantlabs.com/api` | URL da API (override para dev local) |
 
 ## Desenvolvimento local

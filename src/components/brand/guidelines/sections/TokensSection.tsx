@@ -17,17 +17,22 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
   const [isValid, setIsValid] = useState(true);
 
   // Reset json buffer when guideline changes (different brand)
-  useEffect(() => { setJson(JSON.stringify(guideline.tokens || {}, null, 2)); }, [guideline.id]);
+  useEffect(() => {
+    setJson(JSON.stringify(guideline.tokens || {}, null, 2));
+  }, [guideline.id]);
 
-  const persist = useCallback((value: string) => {
-    try {
-      const tokens = JSON.parse(value);
-      setIsValid(true);
-      onUpdate({ tokens });
-    } catch {
-      setIsValid(false);
-    }
-  }, [onUpdate]);
+  const persist = useCallback(
+    (value: string) => {
+      try {
+        const tokens = JSON.parse(value);
+        setIsValid(true);
+        onUpdate({ tokens });
+      } catch {
+        setIsValid(false);
+      }
+    },
+    [onUpdate]
+  );
 
   const tokens = guideline.tokens || {};
 
@@ -42,7 +47,9 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
                 <MicroTitle className="text-neutral-600">Spacing</MicroTitle>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5">
                   {Object.entries(tokens.spacing).map(([k, v]) => (
-                    <span key={k} className="text-[10px] font-mono text-neutral-500"><span className="text-neutral-600">{k}:</span> {String(v)}</span>
+                    <span key={k} className="text-[10px] font-mono text-neutral-500">
+                      <span className="text-neutral-600">{k}:</span> {String(v)}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -52,7 +59,9 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
                 <MicroTitle className="text-neutral-600">Radius</MicroTitle>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5">
                   {Object.entries(tokens.radius).map(([k, v]) => (
-                    <span key={k} className="text-[10px] font-mono text-neutral-500"><span className="text-neutral-600">{k}:</span> {String(v)}</span>
+                    <span key={k} className="text-[10px] font-mono text-neutral-500">
+                      <span className="text-neutral-600">{k}:</span> {String(v)}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -61,8 +70,13 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
         )}
         <Textarea
           value={json}
-          onChange={(e) => { setJson(e.target.value); persist(e.target.value); }}
-          className={`border-neutral-800 text-[10px] font-mono min-h-[120px] resize-none placeholder:text-neutral-700 ${!isValid ? 'border-destructive/30' : ''}`}
+          onChange={(e) => {
+            setJson(e.target.value);
+            persist(e.target.value);
+          }}
+          className={`border-neutral-800 text-[10px] font-mono min-h-[120px] resize-none placeholder:text-neutral-700 ${
+            !isValid ? 'border-destructive/30' : ''
+          }`}
           placeholder={'{"spacing": {"s": "4px"}, "radius": {"m": "10px"}}'}
         />
         {!isValid && <p className="text-[10px] text-destructive font-mono">Invalid JSON</p>}

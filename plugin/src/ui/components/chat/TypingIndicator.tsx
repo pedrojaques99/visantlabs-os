@@ -3,17 +3,20 @@ import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import { usePluginStore } from '../../store';
 
 export function TypingIndicator() {
-  const status = usePluginStore(s => s.generatingStatus);
-  const chatHistory = usePluginStore(s => s.chatHistory);
+  const status = usePluginStore((s) => s.generatingStatus);
+  const chatHistory = usePluginStore((s) => s.chatHistory);
   const [elapsed, setElapsed] = useState(0);
 
   const lastMsg = chatHistory[chatHistory.length - 1];
-  const isMockupRunning = lastMsg?.toolCalls?.some(
-    tc => tc.name === 'generate_mockup' && tc.status === 'running'
-  ) ?? false;
+  const isMockupRunning =
+    lastMsg?.toolCalls?.some((tc) => tc.name === 'generate_mockup' && tc.status === 'running') ??
+    false;
 
   useEffect(() => {
-    if (!isMockupRunning) { setElapsed(0); return; }
+    if (!isMockupRunning) {
+      setElapsed(0);
+      return;
+    }
     const start = Date.now();
     const iv = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
     return () => clearInterval(iv);

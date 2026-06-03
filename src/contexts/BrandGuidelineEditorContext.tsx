@@ -1,11 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { useBrandGuidelineDraft } from '@/hooks/useBrandGuidelineDraft';
-import {
-  useStorage,
-  useMutation,
-  useHistory,
-} from '@/config/liveblocks';
+import { useStorage, useMutation, useHistory } from '@/config/liveblocks';
 import { LiveObject } from '@liveblocks/client';
 
 export interface BrandGuidelineEditorCtx {
@@ -23,7 +19,8 @@ const BrandGuidelineEditorContext = createContext<BrandGuidelineEditorCtx | null
 
 export function useBrandGuidelineEditor(): BrandGuidelineEditorCtx {
   const ctx = useContext(BrandGuidelineEditorContext);
-  if (!ctx) throw new Error('useBrandGuidelineEditor must be used inside BrandGuidelineEditorProvider');
+  if (!ctx)
+    throw new Error('useBrandGuidelineEditor must be used inside BrandGuidelineEditorProvider');
   return ctx;
 }
 
@@ -49,12 +46,17 @@ export const LiveblocksEditorProvider: React.FC<LiveblocksEditorProviderProps> =
   const onSaveRef = useRef(onSave);
   onSaveRef.current = onSave;
 
-  const handleLiveUpdate = useCallback((state: { draft: BrandGuideline; canUndo: boolean; canRedo: boolean }) => {
-    setLiveState(state);
-  }, []);
+  const handleLiveUpdate = useCallback(
+    (state: { draft: BrandGuideline; canUndo: boolean; canRedo: boolean }) => {
+      setLiveState(state);
+    },
+    []
+  );
 
   const liveMutation = useMutation(({ storage }, patch: Partial<BrandGuideline>) => {
-    const liveGuideline = storage.get('guideline') as import('@liveblocks/client').LiveObject<Record<string, any>> | undefined;
+    const liveGuideline = storage.get('guideline') as
+      | import('@liveblocks/client').LiveObject<Record<string, any>>
+      | undefined;
     if (liveGuideline) {
       Object.entries(patch).forEach(([key, value]) => {
         liveGuideline.set(key, value as any);
@@ -63,10 +65,13 @@ export const LiveblocksEditorProvider: React.FC<LiveblocksEditorProviderProps> =
     onSaveRef.current(patch);
   }, []);
 
-  const updateDraft = useCallback((patch: Partial<BrandGuideline>) => {
-    if (!liveState) return;
-    liveMutation(patch);
-  }, [liveState, liveMutation]);
+  const updateDraft = useCallback(
+    (patch: Partial<BrandGuideline>) => {
+      if (!liveState) return;
+      liveMutation(patch);
+    },
+    [liveState, liveMutation]
+  );
 
   const { undo, redo } = useHistory();
 
@@ -99,12 +104,37 @@ const LiveblocksStorageSyncer: React.FC<{
   const { canUndo, canRedo } = useHistory();
 
   const syncStorage = useMutation(({ storage }, g: BrandGuideline) => {
-    const liveGuideline = storage.get('guideline') as import('@liveblocks/client').LiveObject<Record<string, any>> | undefined;
+    const liveGuideline = storage.get('guideline') as
+      | import('@liveblocks/client').LiveObject<Record<string, any>>
+      | undefined;
     if (!liveGuideline) return;
-    const fields = ['identity','logos','colors','typography','tags','media','tokens','guidelines',
-      'strategy','gradients','shadows','motion','borders','validation','activeSections','orderedBlocks',
-      'extraction','folder','isPublic','publicSlug','figmaFileUrl','figmaFileKey',
-      'knowledgeFiles','colorThemes','figmaSyncedAt'] as const;
+    const fields = [
+      'identity',
+      'logos',
+      'colors',
+      'typography',
+      'tags',
+      'media',
+      'tokens',
+      'guidelines',
+      'strategy',
+      'gradients',
+      'shadows',
+      'motion',
+      'borders',
+      'validation',
+      'activeSections',
+      'orderedBlocks',
+      'extraction',
+      'folder',
+      'isPublic',
+      'publicSlug',
+      'figmaFileUrl',
+      'figmaFileKey',
+      'knowledgeFiles',
+      'colorThemes',
+      'figmaSyncedAt',
+    ] as const;
     for (const key of fields) {
       const incoming = (g as any)[key] ?? null;
       const current = liveGuideline.get(key);
@@ -118,7 +148,10 @@ const LiveblocksStorageSyncer: React.FC<{
   const storageReady = storedGuideline !== null;
   useEffect(() => {
     if (!storageReady) return;
-    const updatedAt = typeof guideline.updatedAt === 'string' ? guideline.updatedAt : (guideline.updatedAt as any)?.toString() ?? '';
+    const updatedAt =
+      typeof guideline.updatedAt === 'string'
+        ? guideline.updatedAt
+        : (guideline.updatedAt as any)?.toString() ?? '';
     const key = `${guideline.id}:${updatedAt}`;
     if (syncedKey.current !== key) {
       syncedKey.current = key;
@@ -135,7 +168,8 @@ const LiveblocksStorageSyncer: React.FC<{
     for (const [key, value] of Object.entries(storedGuideline)) {
       if (value === null || value === undefined) continue;
       if (Array.isArray(value) && value.length === 0) continue;
-      if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0) continue;
+      if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0)
+        continue;
       (merged as any)[key] = value;
     }
     onUpdate({ draft: merged as BrandGuideline, canUndo: isCanUndo, canRedo: isCanRedo });

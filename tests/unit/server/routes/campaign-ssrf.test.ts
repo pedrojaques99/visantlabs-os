@@ -25,7 +25,9 @@ vi.mock('../../../../server/lib/redis.js', () => ({
 }));
 
 vi.mock('openai', () => ({
-  default: class { chat = { completions: { create: vi.fn() } }; },
+  default: class {
+    chat = { completions: { create: vi.fn() } };
+  },
 }));
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -36,20 +38,29 @@ describe('validateExternalUrl called for productImageUrl', () => {
   });
 
   it('rejects localhost URL (SSRF)', () => {
-    mockValidateExternalUrl.mockReturnValue({ valid: false, error: 'Loopback address not allowed' });
+    mockValidateExternalUrl.mockReturnValue({
+      valid: false,
+      error: 'Loopback address not allowed',
+    });
     const result = mockValidateExternalUrl('http://127.0.0.1/secret');
     expect(result.valid).toBe(false);
     expect(result.error).toMatch(/loopback/i);
   });
 
   it('rejects AWS metadata endpoint (SSRF)', () => {
-    mockValidateExternalUrl.mockReturnValue({ valid: false, error: 'Link-local address not allowed' });
+    mockValidateExternalUrl.mockReturnValue({
+      valid: false,
+      error: 'Link-local address not allowed',
+    });
     const result = mockValidateExternalUrl('http://169.254.169.254/latest/meta-data/iam/');
     expect(result.valid).toBe(false);
   });
 
   it('rejects GCP metadata endpoint (SSRF)', () => {
-    mockValidateExternalUrl.mockReturnValue({ valid: false, error: 'Internal hostname not allowed' });
+    mockValidateExternalUrl.mockReturnValue({
+      valid: false,
+      error: 'Internal hostname not allowed',
+    });
     const result = mockValidateExternalUrl('http://metadata.google.internal/computeMetadata/v1/');
     expect(result.valid).toBe(false);
   });
@@ -61,7 +72,10 @@ describe('validateExternalUrl called for productImageUrl', () => {
   });
 
   it('accepts a valid public HTTPS URL', () => {
-    mockValidateExternalUrl.mockReturnValue({ valid: true, url: 'https://images.unsplash.com/photo.jpg' });
+    mockValidateExternalUrl.mockReturnValue({
+      valid: true,
+      url: 'https://images.unsplash.com/photo.jpg',
+    });
     const result = mockValidateExternalUrl('https://images.unsplash.com/photo.jpg');
     expect(result.valid).toBe(true);
     expect(result.url).toBe('https://images.unsplash.com/photo.jpg');
@@ -86,7 +100,7 @@ describe('campaign input validation logic', () => {
   it('filters invalid formats and falls back to defaults', () => {
     const validFormats = ['square', 'story', 'banner', 'portrait'];
     const input = ['square', 'invalid-format', 'hacked'];
-    const safe = input.filter(f => validFormats.includes(f));
+    const safe = input.filter((f) => validFormats.includes(f));
     const result = safe.length === 0 ? ['square', 'story'] : safe;
     expect(result).toEqual(['square']);
   });
@@ -94,7 +108,7 @@ describe('campaign input validation logic', () => {
   it('falls back to ["square","story"] when all formats invalid', () => {
     const validFormats = ['square', 'story', 'banner', 'portrait'];
     const input = ['hacked', 'bad'];
-    const safe = input.filter(f => validFormats.includes(f));
+    const safe = input.filter((f) => validFormats.includes(f));
     const result = safe.length === 0 ? ['square', 'story'] : safe;
     expect(result).toEqual(['square', 'story']);
   });

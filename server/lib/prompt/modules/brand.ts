@@ -35,10 +35,14 @@ export function buildBrandStrategyContext(strategy?: BrandStrategyInput): string
     parts.push(`CORE MESSAGE: ${cm.product} + ${cm.differential} + ${cm.emotionalBond}`);
   }
   if (strategy.pillars?.length) {
-    parts.push(`PILLARS: ${strategy.pillars.map(p => p.value).join(' | ')}`);
+    parts.push(`PILLARS: ${strategy.pillars.map((p) => p.value).join(' | ')}`);
   }
   if (strategy.archetypes?.length) {
-    parts.push(`ARCHETYPES: ${strategy.archetypes.map(a => `${a.name}${a.role === 'primary' ? ' [1º]' : ''}`).join(', ')}`);
+    parts.push(
+      `ARCHETYPES: ${strategy.archetypes
+        .map((a) => `${a.name}${a.role === 'primary' ? ' [1º]' : ''}`)
+        .join(', ')}`
+    );
   }
   if (strategy.manifesto) {
     const m = strategy.manifesto;
@@ -51,13 +55,17 @@ export function buildBrandStrategyContext(strategy?: BrandStrategyInput): string
     }
   }
   if (strategy.voiceValues?.length) {
-    parts.push(`VOICE: ${strategy.voiceValues.map(v => v.title).join(' | ')}`);
+    parts.push(`VOICE: ${strategy.voiceValues.map((v) => v.title).join(' | ')}`);
   }
   if (strategy.personas?.length) {
     const p = strategy.personas[0];
     const pains = p.painPoints?.slice(0, 2).join(', ') || '';
     const desires = p.desires?.slice(0, 2).join(', ') || '';
-    parts.push(`PRIMARY PERSONA: ${p.name}${pains ? ` — pains: ${pains}` : ''}${desires ? ` — desires: ${desires}` : ''}`);
+    parts.push(
+      `PRIMARY PERSONA: ${p.name}${pains ? ` — pains: ${pains}` : ''}${
+        desires ? ` — desires: ${desires}` : ''
+      }`
+    );
   }
   if (strategy.positioning?.length) {
     parts.push(`POSITIONING: ${strategy.positioning.join(' | ')}`);
@@ -94,22 +102,27 @@ export function buildCompactBrandContext(
   tokens?: BrandContextInput['tokens'],
   voice?: string,
   dos?: string[],
-  donts?: string[],
+  donts?: string[]
 ): string {
   const parts: string[] = ['BRAND:'];
 
   if (colors?.length) {
-    const colorList = colors.slice(0, 6).map(c => {
-      const role = c.role ? ` (${c.role})` : '';
-      return `${c.name}${role}:${c.value}`;
-    }).join(', ');
+    const colorList = colors
+      .slice(0, 6)
+      .map((c) => {
+        const role = c.role ? ` (${c.role})` : '';
+        return `${c.name}${role}:${c.value}`;
+      })
+      .join(', ');
     parts.push(`Cores: ${colorList}`);
   }
 
   if (fonts?.primary || fonts?.secondary) {
     const renderFont = (label: string, f: any) => {
       if (!f?.family) return '';
-      const styles = f.availableStyles?.length ? f.availableStyles.join(', ') : f.style || 'Regular';
+      const styles = f.availableStyles?.length
+        ? f.availableStyles.join(', ')
+        : f.style || 'Regular';
       return `${label}: "${f.family}" (${styles})`;
     };
     const fontParts = [
@@ -121,20 +134,32 @@ export function buildCompactBrandContext(
 
   if (logos?.light || logos?.dark) {
     const logoList = [
-      logos.light ? `Light: "${logos.light.name}"${logos.light.key ? ` (key:"${logos.light.key}")` : ''}` : '',
-      logos.dark ? `Dark: "${logos.dark.name}"${logos.dark.key ? ` (key:"${logos.dark.key}")` : ''}` : '',
-    ].filter(Boolean).join(', ');
+      logos.light
+        ? `Light: "${logos.light.name}"${logos.light.key ? ` (key:"${logos.light.key}")` : ''}`
+        : '',
+      logos.dark
+        ? `Dark: "${logos.dark.name}"${logos.dark.key ? ` (key:"${logos.dark.key}")` : ''}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(', ');
     parts.push(`Logos (use CREATE_COMPONENT_INSTANCE com key): ${logoList}`);
   }
 
   if (tokens) {
     const tokenParts: string[] = [];
     if (tokens.spacing && Object.keys(tokens.spacing).length) {
-      const top3 = Object.entries(tokens.spacing).slice(0, 4).map(([k, v]) => `${k}:${v}px`).join(', ');
+      const top3 = Object.entries(tokens.spacing)
+        .slice(0, 4)
+        .map(([k, v]) => `${k}:${v}px`)
+        .join(', ');
       tokenParts.push(`spacing(${top3})`);
     }
     if (tokens.radius && Object.keys(tokens.radius).length) {
-      const top3 = Object.entries(tokens.radius).slice(0, 4).map(([k, v]) => `${k}:${v}px`).join(', ');
+      const top3 = Object.entries(tokens.radius)
+        .slice(0, 4)
+        .map(([k, v]) => `${k}:${v}px`)
+        .join(', ');
       tokenParts.push(`radius(${top3})`);
     }
     if (tokenParts.length) parts.push(`Tokens: ${tokenParts.join(' | ')}`);

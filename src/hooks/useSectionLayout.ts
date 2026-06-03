@@ -98,7 +98,7 @@ export const useSectionLayout = ({
         !areLayoutsEqual(initialLayoutRef.current, initialLayout))
     ) {
       // Só atualizar se o layout atual é diferente do initialLayout
-      setLayout(prevLayout => {
+      setLayout((prevLayout) => {
         if (!areLayoutsEqual(prevLayout, initialLayout)) {
           initialLayoutRef.current = initialLayout;
           return initialLayout;
@@ -125,10 +125,16 @@ export const useSectionLayout = ({
   }, [layout]);
 
   const moveSection = useCallback(
-    (stepNumber: number, targetColumnIndex: number, targetOrder: number, fullWidth?: boolean, span?: number) => {
+    (
+      stepNumber: number,
+      targetColumnIndex: number,
+      targetOrder: number,
+      fullWidth?: boolean,
+      span?: number
+    ) => {
       // Mark as internal change before updating layout
       isInternalChangeRef.current = true;
-      setLayout(prevLayout => {
+      setLayout((prevLayout) => {
         const newLayout = moveSectionHelper(
           prevLayout,
           stepNumber,
@@ -147,14 +153,8 @@ export const useSectionLayout = ({
     (stepNumber: number, height?: number, width?: number, span?: number) => {
       // Mark as internal change before updating layout
       isInternalChangeRef.current = true;
-      setLayout(prevLayout => {
-        const newLayout = resizeSectionHelper(
-          prevLayout,
-          stepNumber,
-          height,
-          width,
-          span
-        );
+      setLayout((prevLayout) => {
+        const newLayout = resizeSectionHelper(prevLayout, stepNumber, height, width, span);
         return newLayout;
       });
     },
@@ -164,13 +164,13 @@ export const useSectionLayout = ({
   const addColumn = useCallback(() => {
     // Mark as internal change before updating layout
     isInternalChangeRef.current = true;
-    setLayout(prevLayout => addColumnHelper(prevLayout));
+    setLayout((prevLayout) => addColumnHelper(prevLayout));
   }, []);
 
   const removeColumn = useCallback(() => {
     // Mark as internal change before updating layout
     isInternalChangeRef.current = true;
-    setLayout(prevLayout => removeColumnHelper(prevLayout));
+    setLayout((prevLayout) => removeColumnHelper(prevLayout));
   }, []);
 
   const resetLayout = useCallback(() => {
@@ -181,7 +181,7 @@ export const useSectionLayout = ({
 
   const getSectionPosition = useCallback(
     (stepNumber: number): SectionPosition | undefined => {
-      return layout.sections.find(s => s.stepNumber === stepNumber);
+      return layout.sections.find((s) => s.stepNumber === stepNumber);
     },
     [layout]
   );
@@ -191,28 +191,22 @@ export const useSectionLayout = ({
     const result: Record<number, SectionPosition[]> = {};
     for (let i = 0; i < layout.columns; i++) {
       result[i] = layout.sections
-        .filter(s => s.columnIndex === i)
+        .filter((s) => s.columnIndex === i)
         .sort((a, b) => a.order - b.order);
     }
     return result;
   }, [layout]);
 
-  const toggleFullWidth = useCallback(
-    (stepNumber: number, makeFullWidth: boolean) => {
-      isInternalChangeRef.current = true;
-      setLayout(prevLayout => toggleFullWidthHelper(prevLayout, stepNumber, makeFullWidth));
-    },
-    []
-  );
+  const toggleFullWidth = useCallback((stepNumber: number, makeFullWidth: boolean) => {
+    isInternalChangeRef.current = true;
+    setLayout((prevLayout) => toggleFullWidthHelper(prevLayout, stepNumber, makeFullWidth));
+  }, []);
 
-  const setColumnCount = useCallback(
-    (columns: number) => {
-      // Mark as internal change before updating layout
-      isInternalChangeRef.current = true;
-      setLayout(prevLayout => setColumnCountHelper(prevLayout, columns));
-    },
-    []
-  );
+  const setColumnCount = useCallback((columns: number) => {
+    // Mark as internal change before updating layout
+    isInternalChangeRef.current = true;
+    setLayout((prevLayout) => setColumnCountHelper(prevLayout, columns));
+  }, []);
 
   return {
     layout,
@@ -228,4 +222,3 @@ export const useSectionLayout = ({
     setColumnCount,
   };
 };
-

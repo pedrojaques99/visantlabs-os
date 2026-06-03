@@ -9,7 +9,8 @@ interface Props {
 }
 
 export function MultiOutputPanel({ config, prompts, onChange, disabled }: Props) {
-  const isSinglePrompt = config.behavior === 'model-comparison' || config.behavior === 'prompt-expander';
+  const isSinglePrompt =
+    config.behavior === 'model-comparison' || config.behavior === 'prompt-expander';
 
   return (
     <div className="space-y-2">
@@ -25,7 +26,7 @@ export function MultiOutputPanel({ config, prompts, onChange, disabled }: Props)
           )}
           <textarea
             value={prompt}
-            onChange={e => onChange(i, e.target.value)}
+            onChange={(e) => onChange(i, e.target.value)}
             disabled={disabled}
             placeholder={isSinglePrompt ? 'Prompt...' : `Prompt ${i + 1}...`}
             rows={2}

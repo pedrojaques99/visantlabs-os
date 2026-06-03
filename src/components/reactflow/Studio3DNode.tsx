@@ -17,12 +17,28 @@ import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
 import { toast } from 'sonner';
 
 const SceneCanvas = React.lazy(() =>
-  import('@/components/3d-studio/SceneCanvas').then(m => ({ default: m.SceneCanvas }))
+  import('@/components/3d-studio/SceneCanvas').then((m) => ({ default: m.SceneCanvas }))
 );
 
-const MATERIAL_OPTIONS = ['default', 'plastic', 'metal', 'glass', 'chrome', 'gold', 'copper', 'ceramic', 'rubber', 'holographic'] as const;
+const MATERIAL_OPTIONS = [
+  'default',
+  'plastic',
+  'metal',
+  'glass',
+  'chrome',
+  'gold',
+  'copper',
+  'ceramic',
+  'rubber',
+  'holographic',
+] as const;
 
-const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ data, selected, id, dragging }) => {
+const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
+  data,
+  selected,
+  id,
+  dragging,
+}) => {
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const isLoading = data.isLoading || false;
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64);
@@ -56,19 +72,30 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
     const width = data.imageWidth as number;
     const height = data.imageHeight as number;
     if (width && height) {
-      let tw = width, th = height;
-      if (tw > 1200) { const r = 1200 / tw; tw = 1200; th = th * r; }
+      let tw = width,
+        th = height;
+      if (tw > 1200) {
+        const r = 1200 / tw;
+        tw = 1200;
+        th = th * r;
+      }
       fitToContent(id, Math.round(tw), Math.round(th), data.onResize);
     }
   }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
 
-  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    handleResizeWithDebounce(id, params.width, 'auto');
-  }, [id, handleResizeWithDebounce]);
+  const handleResize = useCallback(
+    (_: any, params: { width: number; height: number }) => {
+      handleResizeWithDebounce(id, params.width, 'auto');
+    },
+    [id, handleResizeWithDebounce]
+  );
 
-  const updateSetting = useCallback((key: string, value: any) => {
-    if (data.onUpdateData) data.onUpdateData(id, { [key]: value });
-  }, [data.onUpdateData, id]);
+  const updateSetting = useCallback(
+    (key: string, value: any) => {
+      if (data.onUpdateData) data.onUpdateData(id, { [key]: value });
+    },
+    [data.onUpdateData, id]
+  );
 
   // Open the fullscreen 3D editor modal
   const openEditor = useCallback(() => {
@@ -217,7 +244,10 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
                 onLoad={(e) => {
                   const img = e.target as HTMLImageElement;
                   if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                    data.onUpdateData?.(id, { imageWidth: img.naturalWidth, imageHeight: img.naturalHeight });
+                    data.onUpdateData?.(id, {
+                      imageWidth: img.naturalWidth,
+                      imageHeight: img.naturalHeight,
+                    });
                   }
                 }}
               />
@@ -231,22 +261,40 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
               </div>
             )}
 
-            <div className={cn(
-              "absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10",
-              selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            )}>
-              <NodeButton variant="ghost" size="xs" onClick={(e) => { e.stopPropagation(); openEditor(); }}>
+            <div
+              className={cn(
+                'absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10',
+                selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              )}
+            >
+              <NodeButton
+                variant="ghost"
+                size="xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEditor();
+                }}
+              >
                 <Pencil size={14} />
               </NodeButton>
               {data.onViewFullscreen && (
-                <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                  e.stopPropagation();
-                  data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
-                }}>
+                <NodeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
+                  }}
+                >
                   <Maximize2 size={14} />
                 </NodeButton>
               )}
-              <NodeButton variant="ghost" size="xs" onClick={handleDownload} aria-label="Download render">
+              <NodeButton
+                variant="ghost"
+                size="xs"
+                onClick={handleDownload}
+                aria-label="Download render"
+              >
                 <Download size={14} />
               </NodeButton>
             </div>
@@ -264,7 +312,9 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
                   onClick={() => updateSetting('material', m)}
                   className={cn(
                     'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-all',
-                    material === m ? 'bg-white/10 text-white border-white/20' : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
+                    material === m
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
                   )}
                 >
                   {m}
@@ -296,7 +346,9 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
         <div className="fixed inset-0 z-[9999] bg-neutral-950 flex flex-col">
           {/* Modal header */}
           <div className="h-10 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 shrink-0">
-            <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-widest">3D Studio — Node Editor</span>
+            <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-widest">
+              3D Studio — Node Editor
+            </span>
             <button
               onClick={closeEditor}
               className="px-3 py-1 bg-white hover:bg-neutral-200 text-black text-[11px] font-medium rounded transition-colors"
@@ -306,11 +358,15 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({ da
           </div>
           {/* Scene */}
           <div className="flex-1 relative">
-            <Suspense fallback={
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">Loading 3D engine...</span>
-              </div>
-            }>
+            <Suspense
+              fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">
+                    Loading 3D engine...
+                  </span>
+                </div>
+              }
+            >
               <SceneCanvas onCanvasReady={handleCanvasReady} onSceneReady={handleSceneReady} />
             </Suspense>
           </div>

@@ -21,13 +21,16 @@ for (const file of envFiles) {
     try {
       const content = readFileSync(filePath, 'utf-8');
       const lines = content.split('\n');
-      
+
       for (const line of lines) {
         const trimmed = line.trim();
         if (trimmed && !trimmed.startsWith('#')) {
           const [key, ...valueParts] = trimmed.split('=');
           if (key && valueParts.length > 0) {
-            const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
+            const value = valueParts
+              .join('=')
+              .trim()
+              .replace(/^["']|["']$/g, '');
             envContent[key.trim()] = value;
           }
         }
@@ -41,37 +44,37 @@ for (const file of envFiles) {
 // Check required Stripe variables
 const stripeVars = {
   // Backend variables (server-side)
-  'STRIPE_SECRET_KEY': {
+  STRIPE_SECRET_KEY: {
     required: true,
     pattern: /^sk_(test_|live_)/,
     example: 'sk_test_51AbCdEf...',
-    description: 'Secret key do Stripe (backend)'
+    description: 'Secret key do Stripe (backend)',
   },
-  'STRIPE_PRICE_ID_USD': {
+  STRIPE_PRICE_ID_USD: {
     required: true,
     pattern: /^price_/,
     example: 'price_1234567890abcdef',
-    description: 'Price ID para USD'
+    description: 'Price ID para USD',
   },
-  'STRIPE_PRICE_ID_BRL': {
+  STRIPE_PRICE_ID_BRL: {
     required: false,
     pattern: /^price_/,
     example: 'price_1234567890abcdef',
-    description: 'Price ID para BRL (opcional)'
+    description: 'Price ID para BRL (opcional)',
   },
-  'STRIPE_WEBHOOK_SECRET': {
+  STRIPE_WEBHOOK_SECRET: {
     required: false,
     pattern: /^whsec_/,
     example: 'whsec_1234567890abcdef',
-    description: 'Webhook secret (opcional, necessário para webhooks)'
+    description: 'Webhook secret (opcional, necessário para webhooks)',
   },
   // Frontend variables (client-side)
-  'VITE_STRIPE_PUBLISHABLE_KEY': {
+  VITE_STRIPE_PUBLISHABLE_KEY: {
     required: true,
     pattern: /^pk_(test_|live_)/,
     example: 'pk_test_51AbCdEf...',
-    description: 'Publishable key do Stripe (frontend)'
-  }
+    description: 'Publishable key do Stripe (frontend)',
+  },
 };
 
 console.log('📋 Verificando variáveis de ambiente:\n');
@@ -83,9 +86,9 @@ let hasWarnings = false;
 console.log('🔒 Variáveis do Backend (server-side):\n');
 for (const [varName, config] of Object.entries(stripeVars)) {
   if (varName.startsWith('VITE_')) continue; // Skip frontend vars for now
-  
+
   const value = envContent[varName];
-  
+
   if (!value) {
     if (config.required) {
       console.log(`❌ ${varName}: NÃO DEFINIDA`);
@@ -171,4 +174,3 @@ if (hasErrors) {
   console.log('✅ TUDO OK! Configuração do Stripe está completa');
 }
 console.log('='.repeat(60) + '\n');
-

@@ -3,7 +3,12 @@
 import type { Operation } from './pluginBridge.js';
 import type { TokenRegistry, RGB } from './tokenRegistry.js';
 import { rgbToHex } from './tokenRegistry.js';
-import { findClosestColor, findClosestNumber, colorInPalette, numberInTokens } from './tokenMatcher.js';
+import {
+  findClosestColor,
+  findClosestNumber,
+  colorInPalette,
+  numberInTokens,
+} from './tokenMatcher.js';
 
 export interface Correction {
   operationIndex: number;
@@ -120,7 +125,13 @@ function validateProps(
   }
 
   // Validate spacing fields
-  const spacingFields = ['itemSpacing', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'];
+  const spacingFields = [
+    'itemSpacing',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+  ];
   for (const field of spacingFields) {
     if (typeof props[field] === 'number' && registry.spacing.size > 0) {
       const validated = validateNumber(props[field], registry.spacing, field);
@@ -140,7 +151,10 @@ function validateProps(
 
   // Validate fontSize against typography tokens
   if (typeof props.fontSize === 'number' && registry.typography.size > 0) {
-    const sizes = new Map<string, { name: string; value: number; source: 'mongodb' | 'figma-json' }>();
+    const sizes = new Map<
+      string,
+      { name: string; value: number; source: 'mongodb' | 'figma-json' }
+    >();
     for (const [name, token] of registry.typography) {
       if (token.value?.size) {
         sizes.set(name, { name, value: token.value.size, source: token.source });
@@ -220,6 +234,6 @@ function validateNumber(
  */
 export function formatCorrections(corrections: Correction[]): string {
   return corrections
-    .map(c => `- ${c.field}: ${c.original} -> ${c.corrected} (${c.tokenUsed})`)
+    .map((c) => `- ${c.field}: ${c.original} -> ${c.corrected} (${c.tokenUsed})`)
     .join('\n');
 }

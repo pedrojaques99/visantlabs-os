@@ -201,7 +201,7 @@ export const SCENE_PRESETS: Record<string, ScenePreset> = {
     environment: 'studio',
     envMapIntensity: 1.8,
   },
-  'Y2K': {
+  Y2K: {
     label: 'Y2K',
     material: 'y2kGloss',
     color: '#ff3399',
@@ -869,352 +869,371 @@ const INITIAL_STATE = {
 
 export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
   persist(
-  temporal(
-    (set, get, api) => ({
-      ...createShaderSlice(set as any, get as any, api as any),
-      ...INITIAL_STATE,
+    temporal(
+      (set, get, api) => ({
+        ...createShaderSlice(set as any, get as any, api as any),
+        ...INITIAL_STATE,
 
-      setSvgData: (svg: string, fileName?: string) =>
-        set({ svgData: svg, fileName: fileName || '', inputMode: 'svg' }),
-      setText: (text) => set({ text }),
-      setFont: (font) => set({ font }),
-      setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
-      setModelUrl: (url, fileName) =>
-        set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
-      setTracePreset: (preset: import('@/services/svgPipeline').TracePreset) => {
-        if (preset !== 'custom') {
-          import('@/services/svgPipeline').then(({ TRACE_PRESETS }) => {
-            const p = TRACE_PRESETS[preset as keyof typeof TRACE_PRESETS];
-            if (p) {
-              set({
-                tracePreset: preset,
-                traceTurdSize: p.defaults.turdSize,
-                traceOptTolerance: p.defaults.optTolerance,
-                traceThreshold: p.defaults.threshold,
-                traceAlphaMax: p.defaults.alphaMax,
-              });
-            }
+        setSvgData: (svg: string, fileName?: string) =>
+          set({ svgData: svg, fileName: fileName || '', inputMode: 'svg' }),
+        setText: (text) => set({ text }),
+        setFont: (font) => set({ font }),
+        setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
+        setModelUrl: (url, fileName) =>
+          set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
+        setTracePreset: (preset: import('@/services/svgPipeline').TracePreset) => {
+          if (preset !== 'custom') {
+            import('@/services/svgPipeline').then(({ TRACE_PRESETS }) => {
+              const p = TRACE_PRESETS[preset as keyof typeof TRACE_PRESETS];
+              if (p) {
+                set({
+                  tracePreset: preset,
+                  traceTurdSize: p.defaults.turdSize,
+                  traceOptTolerance: p.defaults.optTolerance,
+                  traceThreshold: p.defaults.threshold,
+                  traceAlphaMax: p.defaults.alphaMax,
+                });
+              }
+            });
+          } else {
+            set({ tracePreset: preset });
+          }
+        },
+        setTraceTurdSize: (traceTurdSize) =>
+          set({
+            traceTurdSize,
+            tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset,
+          }),
+        setTraceOptTolerance: (traceOptTolerance) =>
+          set({
+            traceOptTolerance,
+            tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset,
+          }),
+        setTraceThreshold: (traceThreshold) =>
+          set({
+            traceThreshold,
+            tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset,
+          }),
+        setTraceAlphaMax: (traceAlphaMax) =>
+          set({
+            traceAlphaMax,
+            tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset,
+          }),
+        setShapeColor: (shapeColor) => set({ shapeColor }),
+        setShapeType: (shapeType) => set({ shapeType }),
+
+        setDepth: (depth) => set({ depth }),
+        setObjectScale: (objectScale) => set({ objectScale }),
+        setRenderQuality: (renderQuality) => set({ renderQuality }),
+        setFov: (fov) => set({ fov }),
+        setHdriBackground: (hdriBackground) => set({ hdriBackground }),
+        setHdriBlur: (hdriBlur) => set({ hdriBlur }),
+        setHdriIntensity: (hdriIntensity) => set({ hdriIntensity }),
+        setHdriRotation: (hdriRotation) => set({ hdriRotation }),
+        setFogEnabled: (fogEnabled) => set({ fogEnabled }),
+        setFogColor: (fogColor) => set({ fogColor }),
+        setFogNear: (fogNear) => set({ fogNear }),
+        setFogFar: (fogFar) => set({ fogFar }),
+        setSmoothness: (smoothness) => set({ smoothness }),
+        setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
+        setBevelThickness: (bevelThickness) => set({ bevelThickness }),
+        setBevelSize: (bevelSize) => set({ bevelSize }),
+        setCoinRadius: (coinRadius) => set({ coinRadius }),
+        setBadgeWidth: (badgeWidth) => set({ badgeWidth }),
+        setBadgeHeight: (badgeHeight) => set({ badgeHeight }),
+        setBadgeRadius: (badgeRadius) => set({ badgeRadius }),
+        setStampRadius: (stampRadius) => set({ stampRadius }),
+        setStampTeeth: (stampTeeth) => set({ stampTeeth }),
+        setStampToothDepth: (stampToothDepth) => set({ stampToothDepth }),
+        setShieldWidth: (shieldWidth) => set({ shieldWidth }),
+        setShieldHeight: (shieldHeight) => set({ shieldHeight }),
+        setHexRadius: (hexRadius) => set({ hexRadius }),
+        setChainLinks: (chainLinks) => set({ chainLinks }),
+        setChainScale: (chainScale) => set({ chainScale }),
+        setBailSize: (bailSize) => set({ bailSize }),
+        setBailOffset: (bailOffset) => set({ bailOffset }),
+        setChainOffset: (chainOffset) => set({ chainOffset }),
+        setChainColor: (chainColor) => set({ chainColor }),
+        setShowChain: (showChain) => set({ showChain }),
+        setReliefDepth: (reliefDepth) => set({ reliefDepth }),
+        setMaterial: (material) => {
+          const preset = materialPresets[material];
+          const presetDef = MATERIAL_PRESETS.find((m) => m.id === material);
+          const updates: Partial<Studio3DState> = { material };
+          if (presetDef?.color) updates.color = presetDef.color;
+          if (preset) {
+            updates.metalness = preset.metalness;
+            updates.roughness = preset.roughness;
+            updates.opacity = preset.opacity;
+          }
+          set(updates);
+        },
+        setColor: (color) => set({ color }),
+        setMetalness: (metalness) => set({ metalness }),
+        setRoughness: (roughness) => set({ roughness }),
+        setOpacity: (opacity) => set({ opacity }),
+        setBlendMode: (blendMode) => set({ blendMode }),
+        setWireframe: (wireframe) => set({ wireframe }),
+        setTexture: (texture) => set({ texture }),
+        setTextureRepeat: (textureRepeat) => set({ textureRepeat }),
+        setTextureRotation: (textureRotation) => set({ textureRotation }),
+        setTextureOpacity: (textureOpacity) => set({ textureOpacity }),
+        setLightPosition: (lightPosition) => set({ lightPosition }),
+        setLightIntensity: (lightIntensity) => set({ lightIntensity }),
+        setAmbientIntensity: (ambientIntensity) => set({ ambientIntensity }),
+        setFillLightIntensity: (fillLightIntensity) => set({ fillLightIntensity }),
+        setFillLightPosition: (fillLightPosition) => set({ fillLightPosition }),
+        setBounceLightIntensity: (bounceLightIntensity) => set({ bounceLightIntensity }),
+        setBounceLightPosition: (bounceLightPosition) => set({ bounceLightPosition }),
+        setPointLightIntensity: (pointLightIntensity) => set({ pointLightIntensity }),
+        setPointLightPosition: (pointLightPosition) => set({ pointLightPosition }),
+        setShadow: (shadow) => set({ shadow }),
+        setShadowQuality: (shadowQuality) => set({ shadowQuality }),
+        setShowGrid: (showGrid) => set({ showGrid }),
+        setGroundPlane: (groundPlane) => set({ groundPlane }),
+        setGroundReflection: (groundReflection) => set({ groundReflection }),
+        applyLightingPreset: (name) => {
+          const preset = LIGHTING_PRESETS[name];
+          if (!preset) return;
+          set(preset.values);
+        },
+        setEnvironment: (environment) => set({ environment, customHdriUrl: '' }),
+        setCustomHdriUrl: (customHdriUrl) => set({ customHdriUrl, environment: '' }),
+        setBackground: (background) => set({ background }),
+        setBgType: (bgType) => set({ bgType }),
+        setBgGradient: (g) => set((s) => ({ bgGradient: { ...s.bgGradient, ...g } })),
+        setBackgroundImageUrl: (backgroundImageUrl: string) => set({ backgroundImageUrl }),
+        setTransparentBg: (transparentBg) => set({ transparentBg }),
+        setToneMapping: (toneMapping) => set({ toneMapping }),
+        setToneMappingExposure: (toneMappingExposure) => set({ toneMappingExposure }),
+        setEffectsBypass: (effectsBypass) => set({ effectsBypass }),
+        setBloomEnabled: (bloomEnabled) => set({ bloomEnabled }),
+        setBloomIntensity: (bloomIntensity) => set({ bloomIntensity }),
+        setBloomThreshold: (bloomThreshold) => set({ bloomThreshold }),
+        setDofEnabled: (dofEnabled) => set({ dofEnabled }),
+        setDofFocusDistance: (dofFocusDistance) => set({ dofFocusDistance }),
+        setDofBokehScale: (dofBokehScale) => set({ dofBokehScale }),
+        setVignetteEnabled: (vignetteEnabled) => set({ vignetteEnabled }),
+        setVignetteIntensity: (vignetteIntensity) => set({ vignetteIntensity }),
+        setSsaoEnabled: (ssaoEnabled) => set({ ssaoEnabled }),
+        setSsaoIntensity: (ssaoIntensity) => set({ ssaoIntensity }),
+        setChromaticAberrationEnabled: (chromaticAberrationEnabled) =>
+          set({ chromaticAberrationEnabled }),
+        setChromaticAberrationOffset: (chromaticAberrationOffset) =>
+          set({ chromaticAberrationOffset }),
+        setNoiseEnabled: (noiseEnabled) => set({ noiseEnabled }),
+        setNoiseOpacity: (noiseOpacity) => set({ noiseOpacity }),
+        setColorGradingEnabled: (colorGradingEnabled) => set({ colorGradingEnabled }),
+        setCgBrightness: (cgBrightness) => set({ cgBrightness }),
+        setCgContrast: (cgContrast) => set({ cgContrast }),
+        setCgHue: (cgHue) => set({ cgHue }),
+        setCgSaturation: (cgSaturation) => set({ cgSaturation }),
+        setEnvMapIntensity: (envMapIntensity) => set({ envMapIntensity }),
+        setFresnelColor: (fresnelColor) => set({ fresnelColor }),
+        setFresnelStrength: (fresnelStrength) => set({ fresnelStrength }),
+        setNormalMapUrl: (normalMapUrl) => set({ normalMapUrl }),
+        setRoughnessMapUrl: (roughnessMapUrl) => set({ roughnessMapUrl }),
+        setMetalnessMapUrl: (metalnessMapUrl) => set({ metalnessMapUrl }),
+        setOrthographic: (orthographic) => set({ orthographic }),
+        setAnimate: (animate) => set({ animate }),
+        setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
+        setAnimateReverse: (animateReverse) => set({ animateReverse }),
+        setAnimateEasing: (animateEasing) => set({ animateEasing }),
+        setPhysicsCount: (physicsCount) => set({ physicsCount }),
+        setPhysicsGravity: (physicsGravity) => set({ physicsGravity }),
+        setPhysicsBounciness: (physicsBounciness) => set({ physicsBounciness }),
+        setPhysicsFriction: (physicsFriction) => set({ physicsFriction }),
+        setPhysicsSize: (physicsSize) => set({ physicsSize }),
+        setRotationX: (rotationX) => set({ rotationX }),
+        setRotationY: (rotationY) => set({ rotationY }),
+        setZoom: (zoom) => set({ zoom }),
+        setExportFormat: (exportFormat) => {
+          const patch: Record<string, any> = { exportFormat };
+          if (
+            (exportFormat === 'webm' || exportFormat === 'turntable') &&
+            get().animate !== 'none'
+          ) {
+            const loopPeriod = Math.round(((2 * Math.PI) / get().animateSpeed) * 2) / 2;
+            patch.videoDuration = Math.min(Math.max(loopPeriod, 1), 10);
+          }
+          if (exportFormat === 'turntable') {
+            patch.videoDuration = 4;
+          }
+          set(patch as any);
+        },
+        setAspectRatio: (aspectRatio) => set({ aspectRatio }),
+        setExportResolution: (exportResolution) => set({ exportResolution }),
+        setVideoDuration: (videoDuration) => set({ videoDuration }),
+        setVideoFps: (videoFps) => set({ videoFps }),
+        setIsExporting: (isExporting) => set({ isExporting, exportProgress: isExporting ? 0 : 0 }),
+        setExportProgress: (exportProgress) => set({ exportProgress }),
+        setPanelVisible: (panelVisible) => set({ panelVisible }),
+        setActiveTab: (activeTab) => set({ activeTab }),
+        setShowStats: (showStats) => set({ showStats }),
+        setIsLoading: (isLoading) => set({ isLoading }),
+        setSceneName: (_sceneName) => set({ _sceneName }),
+        setLastSavedAt: (_lastSavedAt) => set({ _lastSavedAt }),
+
+        applyScenePreset: (name) => {
+          const preset = SCENE_PRESETS[name];
+          if (!preset) return;
+          set({
+            material: preset.material,
+            color: preset.color,
+            roughness: preset.roughness,
+            metalness: preset.metalness,
+            animate: preset.animate,
+            background: preset.background,
+            lightIntensity: preset.lightIntensity,
+            ambientIntensity: preset.ambientIntensity,
+            environment: preset.environment,
+            customHdriUrl: '',
+            envMapIntensity: preset.envMapIntensity ?? 1,
+            fresnelColor: preset.fresnelColor ?? '',
+            fresnelStrength: preset.fresnelStrength ?? 0,
+            bloomEnabled: preset.bloomEnabled ?? false,
+            bloomIntensity: preset.bloomIntensity ?? 1,
+            bloomThreshold: preset.bloomThreshold ?? 0.9,
           });
-        } else {
-          set({ tracePreset: preset });
-        }
-      },
-      setTraceTurdSize: (traceTurdSize) => set({ traceTurdSize, tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset }),
-      setTraceOptTolerance: (traceOptTolerance) => set({ traceOptTolerance, tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset }),
-      setTraceThreshold: (traceThreshold) => set({ traceThreshold, tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset }),
-      setTraceAlphaMax: (traceAlphaMax) => set({ traceAlphaMax, tracePreset: 'custom' as import('@/services/svgPipeline').TracePreset }),
-      setShapeColor: (shapeColor) => set({ shapeColor }),
-      setShapeType: (shapeType) => set({ shapeType }),
+        },
 
-      setDepth: (depth) => set({ depth }),
-      setObjectScale: (objectScale) => set({ objectScale }),
-      setRenderQuality: (renderQuality) => set({ renderQuality }),
-      setFov: (fov) => set({ fov }),
-      setHdriBackground: (hdriBackground) => set({ hdriBackground }),
-      setHdriBlur: (hdriBlur) => set({ hdriBlur }),
-      setHdriIntensity: (hdriIntensity) => set({ hdriIntensity }),
-      setHdriRotation: (hdriRotation) => set({ hdriRotation }),
-      setFogEnabled: (fogEnabled) => set({ fogEnabled }),
-      setFogColor: (fogColor) => set({ fogColor }),
-      setFogNear: (fogNear) => set({ fogNear }),
-      setFogFar: (fogFar) => set({ fogFar }),
-      setSmoothness: (smoothness) => set({ smoothness }),
-      setBevelEnabled: (bevelEnabled) => set({ bevelEnabled }),
-      setBevelThickness: (bevelThickness) => set({ bevelThickness }),
-      setBevelSize: (bevelSize) => set({ bevelSize }),
-      setCoinRadius: (coinRadius) => set({ coinRadius }),
-      setBadgeWidth: (badgeWidth) => set({ badgeWidth }),
-      setBadgeHeight: (badgeHeight) => set({ badgeHeight }),
-      setBadgeRadius: (badgeRadius) => set({ badgeRadius }),
-      setStampRadius: (stampRadius) => set({ stampRadius }),
-      setStampTeeth: (stampTeeth) => set({ stampTeeth }),
-      setStampToothDepth: (stampToothDepth) => set({ stampToothDepth }),
-      setShieldWidth: (shieldWidth) => set({ shieldWidth }),
-      setShieldHeight: (shieldHeight) => set({ shieldHeight }),
-      setHexRadius: (hexRadius) => set({ hexRadius }),
-      setChainLinks: (chainLinks) => set({ chainLinks }),
-      setChainScale: (chainScale) => set({ chainScale }),
-      setBailSize: (bailSize) => set({ bailSize }),
-      setBailOffset: (bailOffset) => set({ bailOffset }),
-      setChainOffset: (chainOffset) => set({ chainOffset }),
-      setChainColor: (chainColor) => set({ chainColor }),
-      setShowChain: (showChain) => set({ showChain }),
-      setReliefDepth: (reliefDepth) => set({ reliefDepth }),
-      setMaterial: (material) => {
-        const preset = materialPresets[material];
-        const presetDef = MATERIAL_PRESETS.find((m) => m.id === material);
-        const updates: Partial<Studio3DState> = { material };
-        if (presetDef?.color) updates.color = presetDef.color;
-        if (preset) {
-          updates.metalness = preset.metalness;
-          updates.roughness = preset.roughness;
-          updates.opacity = preset.opacity;
-        }
-        set(updates);
-      },
-      setColor: (color) => set({ color }),
-      setMetalness: (metalness) => set({ metalness }),
-      setRoughness: (roughness) => set({ roughness }),
-      setOpacity: (opacity) => set({ opacity }),
-      setBlendMode: (blendMode) => set({ blendMode }),
-      setWireframe: (wireframe) => set({ wireframe }),
-      setTexture: (texture) => set({ texture }),
-      setTextureRepeat: (textureRepeat) => set({ textureRepeat }),
-      setTextureRotation: (textureRotation) => set({ textureRotation }),
-      setTextureOpacity: (textureOpacity) => set({ textureOpacity }),
-      setLightPosition: (lightPosition) => set({ lightPosition }),
-      setLightIntensity: (lightIntensity) => set({ lightIntensity }),
-      setAmbientIntensity: (ambientIntensity) => set({ ambientIntensity }),
-      setFillLightIntensity: (fillLightIntensity) => set({ fillLightIntensity }),
-      setFillLightPosition: (fillLightPosition) => set({ fillLightPosition }),
-      setBounceLightIntensity: (bounceLightIntensity) => set({ bounceLightIntensity }),
-      setBounceLightPosition: (bounceLightPosition) => set({ bounceLightPosition }),
-      setPointLightIntensity: (pointLightIntensity) => set({ pointLightIntensity }),
-      setPointLightPosition: (pointLightPosition) => set({ pointLightPosition }),
-      setShadow: (shadow) => set({ shadow }),
-      setShadowQuality: (shadowQuality) => set({ shadowQuality }),
-      setShowGrid: (showGrid) => set({ showGrid }),
-      setGroundPlane: (groundPlane) => set({ groundPlane }),
-      setGroundReflection: (groundReflection) => set({ groundReflection }),
-      applyLightingPreset: (name) => {
-        const preset = LIGHTING_PRESETS[name];
-        if (!preset) return;
-        set(preset.values);
-      },
-      setEnvironment: (environment) => set({ environment, customHdriUrl: '' }),
-      setCustomHdriUrl: (customHdriUrl) => set({ customHdriUrl, environment: '' }),
-      setBackground: (background) => set({ background }),
-      setBgType: (bgType) => set({ bgType }),
-      setBgGradient: (g) => set((s) => ({ bgGradient: { ...s.bgGradient, ...g } })),
-      setBackgroundImageUrl: (backgroundImageUrl: string) => set({ backgroundImageUrl }),
-      setTransparentBg: (transparentBg) => set({ transparentBg }),
-      setToneMapping: (toneMapping) => set({ toneMapping }),
-      setToneMappingExposure: (toneMappingExposure) => set({ toneMappingExposure }),
-      setEffectsBypass: (effectsBypass) => set({ effectsBypass }),
-      setBloomEnabled: (bloomEnabled) => set({ bloomEnabled }),
-      setBloomIntensity: (bloomIntensity) => set({ bloomIntensity }),
-      setBloomThreshold: (bloomThreshold) => set({ bloomThreshold }),
-      setDofEnabled: (dofEnabled) => set({ dofEnabled }),
-      setDofFocusDistance: (dofFocusDistance) => set({ dofFocusDistance }),
-      setDofBokehScale: (dofBokehScale) => set({ dofBokehScale }),
-      setVignetteEnabled: (vignetteEnabled) => set({ vignetteEnabled }),
-      setVignetteIntensity: (vignetteIntensity) => set({ vignetteIntensity }),
-      setSsaoEnabled: (ssaoEnabled) => set({ ssaoEnabled }),
-      setSsaoIntensity: (ssaoIntensity) => set({ ssaoIntensity }),
-      setChromaticAberrationEnabled: (chromaticAberrationEnabled) =>
-        set({ chromaticAberrationEnabled }),
-      setChromaticAberrationOffset: (chromaticAberrationOffset) =>
-        set({ chromaticAberrationOffset }),
-      setNoiseEnabled: (noiseEnabled) => set({ noiseEnabled }),
-      setNoiseOpacity: (noiseOpacity) => set({ noiseOpacity }),
-      setColorGradingEnabled: (colorGradingEnabled) => set({ colorGradingEnabled }),
-      setCgBrightness: (cgBrightness) => set({ cgBrightness }),
-      setCgContrast: (cgContrast) => set({ cgContrast }),
-      setCgHue: (cgHue) => set({ cgHue }),
-      setCgSaturation: (cgSaturation) => set({ cgSaturation }),
-      setEnvMapIntensity: (envMapIntensity) => set({ envMapIntensity }),
-      setFresnelColor: (fresnelColor) => set({ fresnelColor }),
-      setFresnelStrength: (fresnelStrength) => set({ fresnelStrength }),
-      setNormalMapUrl: (normalMapUrl) => set({ normalMapUrl }),
-      setRoughnessMapUrl: (roughnessMapUrl) => set({ roughnessMapUrl }),
-      setMetalnessMapUrl: (metalnessMapUrl) => set({ metalnessMapUrl }),
-      setOrthographic: (orthographic) => set({ orthographic }),
-      setAnimate: (animate) => set({ animate }),
-      setAnimateSpeed: (animateSpeed) => set({ animateSpeed }),
-      setAnimateReverse: (animateReverse) => set({ animateReverse }),
-      setAnimateEasing: (animateEasing) => set({ animateEasing }),
-      setPhysicsCount: (physicsCount) => set({ physicsCount }),
-      setPhysicsGravity: (physicsGravity) => set({ physicsGravity }),
-      setPhysicsBounciness: (physicsBounciness) => set({ physicsBounciness }),
-      setPhysicsFriction: (physicsFriction) => set({ physicsFriction }),
-      setPhysicsSize: (physicsSize) => set({ physicsSize }),
-      setRotationX: (rotationX) => set({ rotationX }),
-      setRotationY: (rotationY) => set({ rotationY }),
-      setZoom: (zoom) => set({ zoom }),
-      setExportFormat: (exportFormat) => {
-        const patch: Record<string, any> = { exportFormat };
-        if ((exportFormat === 'webm' || exportFormat === 'turntable') && get().animate !== 'none') {
-          const loopPeriod = Math.round(((2 * Math.PI) / get().animateSpeed) * 2) / 2;
-          patch.videoDuration = Math.min(Math.max(loopPeriod, 1), 10);
-        }
-        if (exportFormat === 'turntable') {
-          patch.videoDuration = 4;
-        }
-        set(patch as any);
-      },
-      setAspectRatio: (aspectRatio) => set({ aspectRatio }),
-      setExportResolution: (exportResolution) => set({ exportResolution }),
-      setVideoDuration: (videoDuration) => set({ videoDuration }),
-      setVideoFps: (videoFps) => set({ videoFps }),
-      setIsExporting: (isExporting) => set({ isExporting, exportProgress: isExporting ? 0 : 0 }),
-      setExportProgress: (exportProgress) => set({ exportProgress }),
-      setPanelVisible: (panelVisible) => set({ panelVisible }),
-      setActiveTab: (activeTab) => set({ activeTab }),
-      setShowStats: (showStats) => set({ showStats }),
-      setIsLoading: (isLoading) => set({ isLoading }),
-      setSceneName: (_sceneName) => set({ _sceneName }),
-      setLastSavedAt: (_lastSavedAt) => set({ _lastSavedAt }),
+        applyConfig: (config) => {
+          const allowed = new Set(Object.keys(INITIAL_STATE));
+          const patch: Record<string, any> = { resetKey: Date.now() };
+          for (const [k, v] of Object.entries(config)) {
+            if (allowed.has(k) && v !== undefined) patch[k] = v;
+          }
+          set(patch as any);
+        },
 
-      applyScenePreset: (name) => {
-        const preset = SCENE_PRESETS[name];
-        if (!preset) return;
-        set({
-          material: preset.material,
-          color: preset.color,
-          roughness: preset.roughness,
-          metalness: preset.metalness,
-          animate: preset.animate,
-          background: preset.background,
-          lightIntensity: preset.lightIntensity,
-          ambientIntensity: preset.ambientIntensity,
-          environment: preset.environment,
-          customHdriUrl: '',
-          envMapIntensity: preset.envMapIntensity ?? 1,
-          fresnelColor: preset.fresnelColor ?? '',
-          fresnelStrength: preset.fresnelStrength ?? 0,
-          bloomEnabled: preset.bloomEnabled ?? false,
-          bloomIntensity: preset.bloomIntensity ?? 1,
-          bloomThreshold: preset.bloomThreshold ?? 0.9,
-        });
-      },
+        resetScene: () => {
+          const { _cameraControlsRef } = get();
+          set({
+            ...INITIAL_STATE,
+            _cameraControlsRef,
+            resetKey: Date.now(),
+            shaderEnabled: false,
+            shaderType: 'halftone' as any,
+            shaderValues: {},
+          });
+        },
 
-      applyConfig: (config) => {
-        const allowed = new Set(Object.keys(INITIAL_STATE));
-        const patch: Record<string, any> = { resetKey: Date.now() };
-        for (const [k, v] of Object.entries(config)) {
-          if (allowed.has(k) && v !== undefined) patch[k] = v;
-        }
-        set(patch as any);
-      },
+        randomize: () => {
+          const r = (min: number, max: number, step = 0.01) => {
+            const steps = Math.round((max - min) / step);
+            return Math.round((min + Math.random() * steps * step) * 100) / 100;
+          };
+          const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+          const randHex = () =>
+            '#' +
+            Math.floor(Math.random() * 0xffffff)
+              .toString(16)
+              .padStart(6, '0');
+          const materials: MaterialPreset[] = MATERIAL_PRESETS.map((m) => m.id);
+          const animations: AnimationType[] = [
+            'none',
+            'spin',
+            'float',
+            'pulse',
+            'wobble',
+            'spinFloat',
+            'swing',
+          ];
+          const envIds = ENVIRONMENT_PRESETS.map((e) => e.id);
+          const toneMaps = TONE_MAPPING_OPTIONS.map((t) => t.id) as ToneMappingType[];
+          const bgTypes = ['solid', 'linear', 'radial'] as const;
 
-      resetScene: () => {
-        const { _cameraControlsRef } = get();
-        set({
-          ...INITIAL_STATE,
-          _cameraControlsRef,
-          resetKey: Date.now(),
-          shaderEnabled: false,
-          shaderType: 'halftone' as any,
-          shaderValues: {},
-        });
-      },
-
-      randomize: () => {
-        const r = (min: number, max: number, step = 0.01) => {
-          const steps = Math.round((max - min) / step);
-          return Math.round((min + Math.random() * steps * step) * 100) / 100;
-        };
-        const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-        const randHex = () =>
-          '#' +
-          Math.floor(Math.random() * 0xffffff)
-            .toString(16)
-            .padStart(6, '0');
-        const materials: MaterialPreset[] = MATERIAL_PRESETS.map((m) => m.id);
-        const animations: AnimationType[] = [
-          'none',
-          'spin',
-          'float',
-          'pulse',
-          'wobble',
-          'spinFloat',
-          'swing',
-        ];
-        const envIds = ENVIRONMENT_PRESETS.map((e) => e.id);
-        const toneMaps = TONE_MAPPING_OPTIONS.map((t) => t.id) as ToneMappingType[];
-        const bgTypes = ['solid', 'linear', 'radial'] as const;
-
-        set({
-          material: pick(materials),
-          color: randHex(),
-          depth: r(0.1, 3, 0.1),
-          objectScale: r(0.5, 2, 0.1),
-          fov: pick([35, 50, 65, 75]),
-          smoothness: r(0, 1, 0.1),
-          bevelEnabled: Math.random() > 0.3,
-          bevelThickness: r(0.1, 2, 0.1),
-          bevelSize: r(0.1, 2, 0.1),
-          metalness: r(0, 1, 0.05),
-          roughness: r(0, 1, 0.05),
-          opacity: r(0.5, 1, 0.05),
-          lightIntensity: r(0.5, 3, 0.1),
-          ambientIntensity: r(0.1, 2, 0.1),
-          environment: pick(envIds),
-          background: randHex(),
-          bgType: pick([...bgTypes]),
-          bgGradient: { color1: randHex(), color2: randHex(), angle: r(0, 360, 15) },
-          animate: pick(animations),
-          animateSpeed: r(0.3, 3, 0.1),
-          toneMapping: pick(toneMaps),
-          toneMappingExposure: r(0.5, 2.5, 0.1),
-          bloomEnabled: Math.random() > 0.6,
-          bloomIntensity: r(0.5, 3, 0.1),
-          bloomThreshold: r(0.3, 1, 0.05),
-          vignetteEnabled: Math.random() > 0.7,
-          vignetteIntensity: r(0.2, 0.8, 0.05),
-          ssaoEnabled: Math.random() > 0.5,
-          ssaoIntensity: r(0.2, 1.5, 0.1),
-          chromaticAberrationEnabled: Math.random() > 0.8,
-          chromaticAberrationOffset: r(0.001, 0.008, 0.001),
-          noiseEnabled: Math.random() > 0.7,
-          noiseOpacity: r(0.05, 0.25, 0.01),
-          shadow: Math.random() > 0.4,
-          groundPlane: Math.random() > 0.5,
-          envMapIntensity: r(0.5, 3.5, 0.1),
-          fresnelStrength: Math.random() > 0.6 ? r(0.2, 0.8, 0.05) : 0,
-          fresnelColor: randHex(),
-        });
-      },
-    }),
+          set({
+            material: pick(materials),
+            color: randHex(),
+            depth: r(0.1, 3, 0.1),
+            objectScale: r(0.5, 2, 0.1),
+            fov: pick([35, 50, 65, 75]),
+            smoothness: r(0, 1, 0.1),
+            bevelEnabled: Math.random() > 0.3,
+            bevelThickness: r(0.1, 2, 0.1),
+            bevelSize: r(0.1, 2, 0.1),
+            metalness: r(0, 1, 0.05),
+            roughness: r(0, 1, 0.05),
+            opacity: r(0.5, 1, 0.05),
+            lightIntensity: r(0.5, 3, 0.1),
+            ambientIntensity: r(0.1, 2, 0.1),
+            environment: pick(envIds),
+            background: randHex(),
+            bgType: pick([...bgTypes]),
+            bgGradient: { color1: randHex(), color2: randHex(), angle: r(0, 360, 15) },
+            animate: pick(animations),
+            animateSpeed: r(0.3, 3, 0.1),
+            toneMapping: pick(toneMaps),
+            toneMappingExposure: r(0.5, 2.5, 0.1),
+            bloomEnabled: Math.random() > 0.6,
+            bloomIntensity: r(0.5, 3, 0.1),
+            bloomThreshold: r(0.3, 1, 0.05),
+            vignetteEnabled: Math.random() > 0.7,
+            vignetteIntensity: r(0.2, 0.8, 0.05),
+            ssaoEnabled: Math.random() > 0.5,
+            ssaoIntensity: r(0.2, 1.5, 0.1),
+            chromaticAberrationEnabled: Math.random() > 0.8,
+            chromaticAberrationOffset: r(0.001, 0.008, 0.001),
+            noiseEnabled: Math.random() > 0.7,
+            noiseOpacity: r(0.05, 0.25, 0.01),
+            shadow: Math.random() > 0.4,
+            groundPlane: Math.random() > 0.5,
+            envMapIntensity: r(0.5, 3.5, 0.1),
+            fresnelStrength: Math.random() > 0.6 ? r(0.2, 0.8, 0.05) : 0,
+            fresnelColor: randHex(),
+          });
+        },
+      }),
+      {
+        partialize: (state) => {
+          const {
+            _cameraControlsRef,
+            _cameraInfo,
+            _sceneName,
+            _lastSavedAt,
+            panelVisible,
+            activeTab,
+            isLoading,
+            isExporting,
+            exportProgress,
+            resetKey,
+            showStats,
+            ...tracked
+          } = state;
+          return tracked;
+        },
+        limit: 50,
+        handleSet: (handleSet) => {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          return (state) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => handleSet(state), 300);
+          };
+        },
+      }
+    ),
     {
+      name: 'vsn-studio3d-session',
+      version: 1,
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => {
         const {
           _cameraControlsRef,
           _cameraInfo,
-          _sceneName,
-          _lastSavedAt,
-          panelVisible,
-          activeTab,
           isLoading,
           isExporting,
           exportProgress,
           resetKey,
           showStats,
-          ...tracked
-        } = state;
-        return tracked;
-      },
-      limit: 50,
-      handleSet: (handleSet) => {
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        return (state) => {
-          clearTimeout(timer);
-          timer = setTimeout(() => handleSet(state), 300);
-        };
+          modelUrl,
+          customHdriUrl,
+          backgroundImageUrl,
+          ...rest
+        } = state as any;
+        return rest;
       },
     }
-  ),
-  {
-    name: 'vsn-studio3d-session',
-    version: 1,
-    storage: createJSONStorage(() => sessionStorage),
-    partialize: (state) => {
-      const {
-        _cameraControlsRef,
-        _cameraInfo,
-        isLoading,
-        isExporting,
-        exportProgress,
-        resetKey,
-        showStats,
-        modelUrl,
-        customHdriUrl,
-        backgroundImageUrl,
-        ...rest
-      } = state as any;
-      return rest;
-    },
-  }
   )
 );
 
@@ -1365,7 +1384,11 @@ export interface PublicScene {
   user?: { name: string | null; avatar: string | null };
 }
 
-export async function getPublicScenes(opts?: { limit?: number; cursor?: string; tag?: string }): Promise<{ scenes: PublicScene[]; nextCursor: string | null }> {
+export async function getPublicScenes(opts?: {
+  limit?: number;
+  cursor?: string;
+  tag?: string;
+}): Promise<{ scenes: PublicScene[]; nextCursor: string | null }> {
   try {
     const params = new URLSearchParams();
     if (opts?.limit) params.set('limit', String(opts.limit));

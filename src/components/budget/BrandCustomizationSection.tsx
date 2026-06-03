@@ -75,7 +75,10 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
     // Validate file size
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      toast.error(t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }) || `Image size must be less than ${MAX_IMAGE_SIZE_MB}MB`);
+      toast.error(
+        t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }) ||
+          `Image size must be less than ${MAX_IMAGE_SIZE_MB}MB`
+      );
       return;
     }
 
@@ -121,7 +124,9 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
 
   // Calcular cor de texto baseado no contraste
   const textColor = brandBackgroundColor
-    ? getContrastColor(brandBackgroundColor) === 'white' ? 'text-white' : 'text-black'
+    ? getContrastColor(brandBackgroundColor) === 'white'
+      ? 'text-white'
+      : 'text-black'
     : 'text-neutral-200';
 
   return (
@@ -165,7 +170,9 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               alt="Brand logo"
               className="max-h-32 max-w-48 object-contain rounded-md border border-neutral-800"
             />
-            <Button variant="destructive" type="button"
+            <Button
+              variant="destructive"
+              type="button"
               onClick={handleRemoveLogo}
               className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 rounded-md text-white transition-colors"
             >
@@ -216,7 +223,9 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
             className="flex-1"
           />
           {brandBackgroundColor && (
-            <Button variant="ghost" type="button"
+            <Button
+              variant="ghost"
+              type="button"
               onClick={() => onBrandBackgroundColorChange(undefined)}
               className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-xl text-red-400 font-mono text-sm transition-colors"
             >
@@ -246,7 +255,9 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
             className="flex-1"
           />
           {brandAccentColor && (
-            <Button variant="ghost" type="button"
+            <Button
+              variant="ghost"
+              type="button"
               onClick={() => onBrandAccentColorChange(undefined)}
               className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-xl text-red-400 font-mono text-sm transition-colors"
             >
@@ -255,7 +266,6 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
           )}
         </div>
       </div>
-
     </div>
   );
 };

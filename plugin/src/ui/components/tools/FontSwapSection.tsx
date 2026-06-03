@@ -16,7 +16,9 @@ function loadGoogleFont(family: string) {
   loadedFonts.add(family);
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}&display=swap&text=${encodeURIComponent(family)}`;
+  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
+    family
+  )}&display=swap&text=${encodeURIComponent(family)}`;
   document.head.appendChild(link);
 }
 
@@ -39,7 +41,7 @@ function FontFamilyPicker({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const filtered = search
-    ? families.filter(f => f.toLowerCase().includes(search.toLowerCase()))
+    ? families.filter((f) => f.toLowerCase().includes(search.toLowerCase()))
     : families;
 
   useEffect(() => {
@@ -47,8 +49,10 @@ function FontFamilyPicker({
     const handler = (e: MouseEvent) => {
       const target = e.target as Node;
       if (
-        containerRef.current && !containerRef.current.contains(target) &&
-        dropdownRef.current && !dropdownRef.current.contains(target)
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target)
       ) {
         setOpen(false);
         setSearch('');
@@ -98,60 +102,69 @@ function FontFamilyPicker({
         <ChevronDown size={10} className="shrink-0 text-muted-foreground" />
       </button>
 
-      {open && createPortal(
-        <div
-          ref={dropdownRef}
-          className="fixed bg-card border border-border rounded-md shadow-xl overflow-hidden"
-          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, zIndex: 9999 }}
-        >
-          <div className="flex items-center gap-1 px-1.5 py-1 border-b border-border/50">
-            <Search size={10} className="text-muted-foreground shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar fonte…"
-              className="flex-1 bg-transparent text-[10px] text-foreground outline-none placeholder:text-muted-foreground/50"
-            />
-          </div>
+      {open &&
+        createPortal(
           <div
-            ref={listRef}
-            className="max-h-[300px] overflow-y-auto"
-            onScroll={() => {
-              if (!listRef.current) return;
-              const { scrollTop, clientHeight } = listRef.current;
-              const itemHeight = 28;
-              const startIdx = Math.floor(scrollTop / itemHeight);
-              const endIdx = Math.min(startIdx + Math.ceil(clientHeight / itemHeight) + 2, filtered.length);
-              for (let i = startIdx; i < endIdx; i++) {
-                loadGoogleFont(filtered[i]);
-              }
+            ref={dropdownRef}
+            className="fixed bg-card border border-border rounded-md shadow-xl overflow-hidden"
+            style={{
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              zIndex: 9999,
             }}
           >
-            {filtered.length === 0 ? (
-              <div className="text-[10px] text-muted-foreground text-center py-3">
-                Nenhuma fonte
-              </div>
-            ) : (
-              filtered.map(f => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => handleSelect(f)}
-                  className={`w-full text-left px-2 py-1 text-[11px] hover:bg-accent/60 transition-colors truncate ${
-                    f === value ? 'bg-accent text-accent-foreground' : 'text-foreground'
-                  }`}
-                  style={{ fontFamily: `"${f}", sans-serif`, height: 28 }}
-                >
-                  {f}
-                </button>
-              ))
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+            <div className="flex items-center gap-1 px-1.5 py-1 border-b border-border/50">
+              <Search size={10} className="text-muted-foreground shrink-0" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar fonte…"
+                className="flex-1 bg-transparent text-[10px] text-foreground outline-none placeholder:text-muted-foreground/50"
+              />
+            </div>
+            <div
+              ref={listRef}
+              className="max-h-[300px] overflow-y-auto"
+              onScroll={() => {
+                if (!listRef.current) return;
+                const { scrollTop, clientHeight } = listRef.current;
+                const itemHeight = 28;
+                const startIdx = Math.floor(scrollTop / itemHeight);
+                const endIdx = Math.min(
+                  startIdx + Math.ceil(clientHeight / itemHeight) + 2,
+                  filtered.length
+                );
+                for (let i = startIdx; i < endIdx; i++) {
+                  loadGoogleFont(filtered[i]);
+                }
+              }}
+            >
+              {filtered.length === 0 ? (
+                <div className="text-[10px] text-muted-foreground text-center py-3">
+                  Nenhuma fonte
+                </div>
+              ) : (
+                filtered.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => handleSelect(f)}
+                    className={`w-full text-left px-2 py-1 text-[11px] hover:bg-accent/60 transition-colors truncate ${
+                      f === value ? 'bg-accent text-accent-foreground' : 'text-foreground'
+                    }`}
+                    style={{ fontFamily: `"${f}", sans-serif`, height: 28 }}
+                  >
+                    {f}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
@@ -165,7 +178,7 @@ interface SwapTarget {
 
 export function FontSwapSection() {
   const client = useClient();
-  const showToast = usePluginStore(s => s.showToast);
+  const showToast = usePluginStore((s) => s.showToast);
 
   const [groups, setGroups] = useState<FontGroup[]>([]);
   const [families, setFamilies] = useState<string[]>([]);
@@ -184,7 +197,7 @@ export function FontSwapSection() {
         client.request('variables.getFontFamilies', {}),
       ]);
       setGroups((fontResult as any).groups ?? []);
-      setFamilies(familyResult as any ?? []);
+      setFamilies((familyResult as any) ?? []);
       setTargets({});
     } catch {
       showToast('Selecione camadas com texto', 'error');
@@ -193,25 +206,36 @@ export function FontSwapSection() {
     }
   }, [client, showToast]);
 
-  useEffect(() => { scan(); }, []);
+  useEffect(() => {
+    scan();
+  }, []);
 
-  const loadStyles = useCallback(async (family: string) => {
-    if (stylesCache[family]) return stylesCache[family];
-    const { styles } = await client.request('text.getStyles', { family });
-    setStylesCache(prev => ({ ...prev, [family]: styles }));
-    return styles;
-  }, [client, stylesCache]);
+  const loadStyles = useCallback(
+    async (family: string) => {
+      if (stylesCache[family]) return stylesCache[family];
+      const { styles } = await client.request('text.getStyles', { family });
+      setStylesCache((prev) => ({ ...prev, [family]: styles }));
+      return styles;
+    },
+    [client, stylesCache]
+  );
 
-  const handleFamilyChange = useCallback(async (groupKey: string, family: string) => {
-    const styles = await loadStyles(family);
-    setTargets(prev => ({
-      ...prev,
-      [groupKey]: { family, style: styles.includes('Regular') ? 'Regular' : styles[0] ?? 'Regular' },
-    }));
-  }, [loadStyles]);
+  const handleFamilyChange = useCallback(
+    async (groupKey: string, family: string) => {
+      const styles = await loadStyles(family);
+      setTargets((prev) => ({
+        ...prev,
+        [groupKey]: {
+          family,
+          style: styles.includes('Regular') ? 'Regular' : styles[0] ?? 'Regular',
+        },
+      }));
+    },
+    [loadStyles]
+  );
 
   const handleStyleChange = useCallback((groupKey: string, style: string) => {
-    setTargets(prev => ({
+    setTargets((prev) => ({
       ...prev,
       [groupKey]: { ...prev[groupKey], style },
     }));
@@ -224,7 +248,7 @@ export function FontSwapSection() {
     setResult(null);
     try {
       const swaps = Object.entries(targets).map(([key, target]) => {
-        const group = groups.find(g => g.key === key)!;
+        const group = groups.find((g) => g.key === key)!;
         return {
           nodeIds: group.nodeIds,
           oldFamily: group.family,
@@ -269,12 +293,15 @@ export function FontSwapSection() {
     <div className="space-y-3">
       {/* Font groups */}
       <div className="space-y-2">
-        {groups.map(group => {
+        {groups.map((group) => {
           const target = targets[group.key];
           const availableStyles = target ? stylesCache[target.family] ?? [] : [];
 
           return (
-            <div key={group.key} className="rounded-md border border-border/50 bg-background/40 p-2 space-y-1.5">
+            <div
+              key={group.key}
+              className="rounded-md border border-border/50 bg-background/40 p-2 space-y-1.5"
+            >
               {/* Current font */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -294,16 +321,18 @@ export function FontSwapSection() {
                 <FontFamilyPicker
                   families={families}
                   value={target?.family ?? ''}
-                  onChange={family => handleFamilyChange(group.key, family)}
+                  onChange={(family) => handleFamilyChange(group.key, family)}
                 />
                 {target && availableStyles.length > 0 && (
                   <select
                     value={target.style}
-                    onChange={e => handleStyleChange(group.key, e.target.value)}
+                    onChange={(e) => handleStyleChange(group.key, e.target.value)}
                     className="w-24 h-6 text-[10px] bg-card border border-border rounded px-1.5 text-foreground focus:outline-none focus:ring-1 focus:ring-brand-cyan/30"
                   >
-                    {availableStyles.map(s => (
-                      <option key={s} value={s}>{s}</option>
+                    {availableStyles.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
                     ))}
                   </select>
                 )}
@@ -323,7 +352,13 @@ export function FontSwapSection() {
 
       {/* Actions */}
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1 h-7 text-[10px]" onClick={scan} disabled={swapping}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 h-7 text-[10px]"
+          onClick={scan}
+          disabled={swapping}
+        >
           <RefreshCw size={10} className="mr-1.5" /> Re-scan
         </Button>
         <Button
@@ -333,7 +368,11 @@ export function FontSwapSection() {
           disabled={!swapsReady || swapping}
           onClick={applySwaps}
         >
-          {swapping ? <GlitchLoader size={12} className="mr-1.5" /> : <Check size={10} className="mr-1.5" />}
+          {swapping ? (
+            <GlitchLoader size={12} className="mr-1.5" />
+          ) : (
+            <Check size={10} className="mr-1.5" />
+          )}
           {swapping ? 'Aplicando…' : 'Aplicar Swap'}
         </Button>
       </div>

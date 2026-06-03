@@ -1,12 +1,19 @@
 import type { LuminancePreset, LuminancePresetType } from '../types/luminancePresets.js';
 import { LUMINANCE_PRESETS } from '../types/luminancePresets.js';
 
-import { getPresetsByType, getPresetsByTypeSync, getPresetByIdSync, fetchAllOfficialPresets } from './unifiedPresetService';
+import {
+  getPresetsByType,
+  getPresetsByTypeSync,
+  getPresetByIdSync,
+  fetchAllOfficialPresets,
+} from './unifiedPresetService';
 
 /**
  * Get a specific luminance preset by ID (synchronous, uses cache)
  */
-export function getLuminancePreset(presetId: LuminancePresetType | string): LuminancePreset | undefined {
+export function getLuminancePreset(
+  presetId: LuminancePresetType | string
+): LuminancePreset | undefined {
   return getPresetByIdSync('luminance', presetId);
 }
 
@@ -20,9 +27,11 @@ export function getAllLuminancePresets(): LuminancePreset[] {
 /**
  * Get a specific luminance preset by ID (async, loads from MongoDB)
  */
-export async function getLuminancePresetAsync(presetId: LuminancePresetType | string): Promise<LuminancePreset | undefined> {
+export async function getLuminancePresetAsync(
+  presetId: LuminancePresetType | string
+): Promise<LuminancePreset | undefined> {
   const presets = await getPresetsByType('luminance');
-  return presets.find(preset => preset.id === presetId);
+  return presets.find((preset) => preset.id === presetId);
 }
 
 /**
@@ -44,22 +53,5 @@ export const luminancePresetsService = {
   getAll: getAllLuminancePresets,
   getByIdAsync: getLuminancePresetAsync,
   getAllAsync: getAllLuminancePresetsAsync,
-  initialize: initializeLuminancePresets
+  initialize: initializeLuminancePresets,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

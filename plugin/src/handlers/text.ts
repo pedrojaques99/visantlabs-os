@@ -53,7 +53,9 @@ export async function scanFontsInSelection(): Promise<{ groups: FontGroup[] }> {
   return { groups: [...map.values()].sort((a, b) => b.count - a.count) };
 }
 
-export async function swapFonts(params: { swaps: FontSwapEntry[] }): Promise<{ swapped: number; failed: string[] }> {
+export async function swapFonts(params: {
+  swaps: FontSwapEntry[];
+}): Promise<{ swapped: number; failed: string[] }> {
   let swapped = 0;
   const failed: string[] = [];
 
@@ -75,13 +77,22 @@ export async function swapFonts(params: { swaps: FontSwapEntry[] }): Promise<{ s
           const rangeFonts = textNode.getRangeAllFontNames(0, len);
           for (const f of rangeFonts) await figma.loadFontAsync(f);
 
-          for (let i = 0; i < len;) {
+          for (let i = 0; i < len; ) {
             const segFont = textNode.getRangeFontName(i, i + 1);
-            if (typeof segFont !== 'symbol' && segFont.family === swap.oldFamily && segFont.style === swap.oldStyle) {
+            if (
+              typeof segFont !== 'symbol' &&
+              segFont.family === swap.oldFamily &&
+              segFont.style === swap.oldStyle
+            ) {
               let end = i + 1;
               while (end < len) {
                 const next = textNode.getRangeFontName(end, end + 1);
-                if (typeof next === 'symbol' || next.family !== swap.oldFamily || next.style !== swap.oldStyle) break;
+                if (
+                  typeof next === 'symbol' ||
+                  next.family !== swap.oldFamily ||
+                  next.style !== swap.oldStyle
+                )
+                  break;
                 end++;
               }
               textNode.setRangeFontName(i, end, newFont);
@@ -107,10 +118,12 @@ export async function swapFonts(params: { swaps: FontSwapEntry[] }): Promise<{ s
   return { swapped, failed };
 }
 
-export async function getStylesForFamily(params: { family: string }): Promise<{ styles: string[] }> {
+export async function getStylesForFamily(params: {
+  family: string;
+}): Promise<{ styles: string[] }> {
   const fonts = await figma.listAvailableFontsAsync();
   const styles = fonts
-    .filter(f => f.fontName.family === params.family)
-    .map(f => f.fontName.style);
+    .filter((f) => f.fontName.family === params.family)
+    .map((f) => f.fontName.style);
   return { styles: [...new Set(styles)].sort() };
 }

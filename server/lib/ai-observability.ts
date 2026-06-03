@@ -56,12 +56,12 @@ const providerStats: Record<string, { calls: number; tokens: number }> = {};
 
 // Cost per 1M tokens (estimates)
 const COST_PER_1M: Record<string, { input: number; output: number }> = {
-  [GEMINI_MODELS.PRO_3_1]: { input: 1.25, output: 5.00 },
-  [GEMINI_MODELS.FLASH_3]: { input: 0.10, output: 0.40 },
-  [GEMINI_MODELS.FLASH_3_LITE]: { input: 0.05, output: 0.20 },
-  [GEMINI_MODELS.FLASH_2_5]: { input: 0.15, output: 0.60 },
-  'claude-3-5-sonnet': { input: 3.00, output: 15.00 },
-  'claude-3-opus': { input: 15.00, output: 75.00 },
+  [GEMINI_MODELS.PRO_3_1]: { input: 1.25, output: 5.0 },
+  [GEMINI_MODELS.FLASH_3]: { input: 0.1, output: 0.4 },
+  [GEMINI_MODELS.FLASH_3_LITE]: { input: 0.05, output: 0.2 },
+  [GEMINI_MODELS.FLASH_2_5]: { input: 0.15, output: 0.6 },
+  'claude-3-5-sonnet': { input: 3.0, output: 15.0 },
+  'claude-3-opus': { input: 15.0, output: 75.0 },
 };
 
 // ═══════════════════════════════════════════
@@ -166,7 +166,9 @@ function logTrace(trace: AITrace): void {
     // Human readable for dev
     const status = trace.error ? '❌' : trace.cached ? '📦' : '✅';
     console.log(
-      `[AI] ${status} ${trace.provider}/${trace.model || '?'} | ${trace.operation} | ${trace.duration}ms | ${log.tokens} tokens | $${log.cost || '0'}`
+      `[AI] ${status} ${trace.provider}/${trace.model || '?'} | ${trace.operation} | ${
+        trace.duration
+      }ms | ${log.tokens} tokens | $${log.cost || '0'}`
     );
   }
 }
@@ -205,7 +207,7 @@ export function resetMetrics(): void {
   totalTokens = 0;
   totalLatency = 0;
   totalErrors = 0;
-  Object.keys(providerStats).forEach(k => delete providerStats[k]);
+  Object.keys(providerStats).forEach((k) => delete providerStats[k]);
 }
 
 // ═══════════════════════════════════════════

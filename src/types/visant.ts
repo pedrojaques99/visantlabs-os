@@ -61,36 +61,3 @@ export interface VisantTemplate {
   updatedAt?: string;
   createdBy?: string;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

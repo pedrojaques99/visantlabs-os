@@ -132,17 +132,8 @@ export function richBrandGuideline(): BrandGuideline {
   return mockBrandGuideline({
     guidelines: {
       voice: 'Premium, sophisticated, detail-oriented',
-      dos: [
-        'Emphasize craftsmanship',
-        'Use rich imagery',
-        'Tell stories',
-        'Celebrate quality',
-      ],
-      donts: [
-        'Cut corners',
-        'Use generic stock photos',
-        'Over-explain features',
-      ],
+      dos: ['Emphasize craftsmanship', 'Use rich imagery', 'Tell stories', 'Celebrate quality'],
+      donts: ['Cut corners', 'Use generic stock photos', 'Over-explain features'],
       imagery: 'High-quality, editorial-style photography with natural lighting',
     },
     tokens: {

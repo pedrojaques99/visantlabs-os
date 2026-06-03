@@ -18,7 +18,10 @@ const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gi
 const MAX_IMAGE_SIZE_MB = 10; // Maximum image size in MB
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
-export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onProceedWithoutImage }) => {
+export const ImageUploader: React.FC<ImageUploaderProps> = ({
+  onImageUpload,
+  onProceedWithoutImage,
+}) => {
   const { t } = useTranslation();
   const { isAuthenticated, isCheckingAuth } = useLayout(); // Usar estado de autenticação do contexto centralizado
   const [isDragging, setIsDragging] = useState(false);
@@ -34,97 +37,112 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<'upload' | null>(null);
 
-  const processFile = useCallback(async (file: File | Blob | null) => {
-    if (!file) return;
+  const processFile = useCallback(
+    async (file: File | Blob | null) => {
+      if (!file) return;
 
-    // Check authentication using context state first
-    setIsVerifyingAuth(true);
+      // Check authentication using context state first
+      setIsVerifyingAuth(true);
 
-    // If still checking auth, verify with cache
-    if (isCheckingAuth || isAuthenticated === null) {
-      try {
-        const user = await authService.verifyToken(); // Use verifyToken with cache
-        if (!user) {
+      // If still checking auth, verify with cache
+      if (isCheckingAuth || isAuthenticated === null) {
+        try {
+          const user = await authService.verifyToken(); // Use verifyToken with cache
+          if (!user) {
+            setPendingAction('upload');
+            setShowAuthModal(true);
+            setIsVerifyingAuth(false);
+            return;
+          }
+        } catch (error) {
           setPendingAction('upload');
           setShowAuthModal(true);
           setIsVerifyingAuth(false);
           return;
         }
-      } catch (error) {
+      }
+
+      // Use context state - if not authenticated, show modal
+      if (isAuthenticated === false) {
         setPendingAction('upload');
         setShowAuthModal(true);
         setIsVerifyingAuth(false);
         return;
       }
-    }
 
-    // Use context state - if not authenticated, show modal
-    if (isAuthenticated === false) {
-      setPendingAction('upload');
-      setShowAuthModal(true);
+      // isAuthenticated === true, safe to process
       setIsVerifyingAuth(false);
-      return;
-    }
 
-    // isAuthenticated === true, safe to process
-    setIsVerifyingAuth(false);
+      // Check file type
+      if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
+        setError(t('upload.unsupportedFileType'));
+        return;
+      }
 
-    // Check file type
-    if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
-      setError(t('upload.unsupportedFileType'));
-      return;
-    }
+      // Check file size
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        setError(t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }));
+        return;
+      }
 
-    // Check file size
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      setError(t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }));
-      return;
-    }
-
-    setIsProcessing(true);
-    setError(null);
-    try {
-      const imageData = await fileToBase64(file);
-      onImageUpload(imageData);
-    } catch (err) {
-      setError(t('upload.couldNotProcess'));
-      console.error(err);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [onImageUpload, t, isAuthenticated, isCheckingAuth]);
+      setIsProcessing(true);
+      setError(null);
+      try {
+        const imageData = await fileToBase64(file);
+        onImageUpload(imageData);
+      } catch (err) {
+        setError(t('upload.couldNotProcess'));
+        console.error(err);
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [onImageUpload, t, isAuthenticated, isCheckingAuth]
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) processFile(file);
   };
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) processFile(file);
-  }, [processFile]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLLabelElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) processFile(file);
+    },
+    [processFile]
+  );
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => e.preventDefault();
-  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => { e.preventDefault(); setIsDragging(false); };
+  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
 
-  const handlePaste = useCallback(async (event: ClipboardEvent) => {
-    const items = event.clipboardData?.items;
-    if (!items) return;
-    for (const item of items) {
-      if (item.type.includes("image")) {
-        const blob = item.getAsFile();
-        if (blob) {
-          await processFile(blob);
-          break;
+  const handlePaste = useCallback(
+    async (event: ClipboardEvent) => {
+      const items = event.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.includes('image')) {
+          const blob = item.getAsFile();
+          if (blob) {
+            await processFile(blob);
+            break;
+          }
         }
       }
-    }
-  }, [processFile]);
+    },
+    [processFile]
+  );
 
   // Listen for authentication changes from context and execute pending actions
   useEffect(() => {
@@ -151,8 +169,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         data-tutorial-target="upload-image"
-        className={`relative block w-full p-4 bg-neutral-950/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${isDragging ? 'border-dashed border-2 border-neutral-600 bg-neutral-800/30 shadow-2xl shadow-black/10' : 'border-neutral-800 hover:border-neutral-800/20 hover:text-neutral-300'
-          } ${isProcessing ? 'cursor-wait' : ''}`}
+        className={`relative block w-full p-4 bg-neutral-950/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${
+          isDragging
+            ? 'border-dashed border-2 border-neutral-600 bg-neutral-800/30 shadow-2xl shadow-black/10'
+            : 'border-neutral-800 hover:border-neutral-800/20 hover:text-neutral-300'
+        } ${isProcessing ? 'cursor-wait' : ''}`}
       >
         <input
           id="file-upload"
@@ -163,14 +184,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
           disabled={isProcessing || isCheckingAuth || isVerifyingAuth}
         />
         <div className="flex items-center justify-center gap-4">
-          {(isCheckingAuth || isVerifyingAuth) && (
-            <GlitchLoader size={24} color="currentColor" />
-          )}
+          {(isCheckingAuth || isVerifyingAuth) && <GlitchLoader size={24} color="currentColor" />}
           {isProcessing && !isCheckingAuth && !isVerifyingAuth && (
             <>
               <GlitchLoader size={24} color="currentColor" />
               <div className="text-left min-w-0">
-                <p className="text-md font-semibold text-neutral-400">{t('upload.processingImage')}</p>
+                <p className="text-md font-semibold text-neutral-400">
+                  {t('upload.processingImage')}
+                </p>
                 <p className="text-xs font-mono  text-neutral-500">{t('upload.pleaseWait')}</p>
               </div>
             </>
@@ -179,17 +200,26 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
             <>
               <UploadCloud size={32} className="text-neutral-400 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
-                <p className="text-md font-semibold text-neutral-300">{t('upload.dropImageHere')}</p>
+                <p className="text-md font-semibold text-neutral-300">
+                  {t('upload.dropImageHere')}
+                </p>
                 <p className="text-xs font-mono  text-neutral-500">{t('upload.releaseToUpload')}</p>
               </div>
             </>
           )}
           {!isProcessing && !isCheckingAuth && !isVerifyingAuth && !isDragging && (
             <>
-              <UploadCloud size={32} className="text-neutral-600 group-hover:text-neutral-400 transition-colors flex-shrink-0" />
+              <UploadCloud
+                size={32}
+                className="text-neutral-600 group-hover:text-neutral-400 transition-colors flex-shrink-0"
+              />
               <div className="text-left min-w-0">
-                <p className="text-md font-semibold text-neutral-400">{t('upload.clickToUpload')}</p>
-                <p className="text-xs font-mono  text-neutral-500">{t('upload.supportedFormats')}</p>
+                <p className="text-md font-semibold text-neutral-400">
+                  {t('upload.clickToUpload')}
+                </p>
+                <p className="text-xs font-mono  text-neutral-500">
+                  {t('upload.supportedFormats')}
+                </p>
               </div>
             </>
           )}

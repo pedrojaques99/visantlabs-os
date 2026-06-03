@@ -81,10 +81,11 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
 
     return (
       <div
-        className={`border rounded-xl p-4 ${hoverColorClass} transition-colors ${theme === 'dark'
-          ? 'bg-neutral-950/70 border-neutral-800/60'
-          : 'bg-neutral-100 border-neutral-300'
-          }`}
+        className={`border rounded-xl p-4 ${hoverColorClass} transition-colors ${
+          theme === 'dark'
+            ? 'bg-neutral-950/70 border-neutral-800/60'
+            : 'bg-neutral-100 border-neutral-300'
+        }`}
       >
         <h4 className={`font-semibold ${colorClass} mb-3 font-manrope text-base`}>{title}</h4>
         <div className="space-y-2">
@@ -96,33 +97,43 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
                     value={item}
                     onChange={(e) => handleItemChange(category, index, e.target.value)}
                     placeholder="Digite o item..."
-                    className={`bg-transparent font-manrope text-sm min-h-[60px] pr-8 flex-1 ${theme === 'dark'
-                      ? 'border-neutral-700/50 text-neutral-300'
-                      : 'border-neutral-400/50 text-neutral-800'
-                      }`}
+                    className={`bg-transparent font-manrope text-sm min-h-[60px] pr-8 flex-1 ${
+                      theme === 'dark'
+                        ? 'border-neutral-700/50 text-neutral-300'
+                        : 'border-neutral-400/50 text-neutral-800'
+                    }`}
                   />
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     onClick={() => handleRemoveItem(category, index)}
-                    className={`p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start mt-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                      }`}
+                    className={`p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start mt-2 ${
+                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                    }`}
                     title="Remover item"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
-                <div className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-                  }`}>{item}</div>
+                <div
+                  className={`text-sm font-manrope leading-relaxed ${
+                    theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
+                  }`}
+                >
+                  {item}
+                </div>
               )}
             </div>
           ))}
           {isEditing && onContentChange && (
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={() => handleAddItem(category)}
-              className={`flex items-center gap-2 px-3 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${theme === 'dark'
-                ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-400'
-                : 'bg-neutral-200 border-neutral-300 text-neutral-700'
-                }`}
+              className={`flex items-center gap-2 px-3 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${
+                theme === 'dark'
+                  ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-400'
+                  : 'bg-neutral-200 border-neutral-300 text-neutral-700'
+              }`}
             >
               <Plus className="h-3 w-3" />
               Adicionar
@@ -162,4 +173,3 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
     </div>
   );
 };
-

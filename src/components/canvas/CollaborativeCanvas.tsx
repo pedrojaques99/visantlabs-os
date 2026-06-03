@@ -14,7 +14,9 @@ export interface CollaborativeCanvasProps {
   // Core React Flow state
   nodes: Node<FlowNodeData>[];
   edges: Edge[];
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
   setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
 
   // Event handlers
@@ -69,7 +71,10 @@ export interface CollaborativeCanvasProps {
   onUpdateDrawingText?: (id: string, text: string) => void;
   onStopEditingText?: () => void;
   onCreateTextDrawing?: (position: { x: number; y: number }) => void;
-  onUpdateDrawingBounds?: (id: string, bounds: { x: number; y: number; width: number; height: number }) => void;
+  onUpdateDrawingBounds?: (
+    id: string,
+    bounds: { x: number; y: number; width: number; height: number }
+  ) => void;
   onMoveDrawings?: (ids: Set<string>, delta: { x: number; y: number }) => void;
   onInteractionEnd?: () => void;
   shapePreview?: {
@@ -137,7 +142,9 @@ export const CollaborativeCanvas: React.FC<CollaborativeCanvasProps> = ({
   shapePreview = null,
 }) => {
   const { t } = useTranslation();
-  const [reactFlowInstance, setReactFlowInstanceLocal] = React.useState<ReactFlowInstance | null>(null);
+  const [reactFlowInstance, setReactFlowInstanceLocal] = React.useState<ReactFlowInstance | null>(
+    null
+  );
 
   // Get settings from context instead of props
   const {
@@ -154,10 +161,7 @@ export const CollaborativeCanvas: React.FC<CollaborativeCanvasProps> = ({
   } = useCanvasHeader();
 
   // Use collaboration hook with presence tracking
-  const {
-    others,
-    createPresenceEnhancedHandlers,
-  } = useCanvasCollaboration({
+  const { others, createPresenceEnhancedHandlers } = useCanvasCollaboration({
     projectId,
     isCollaborative,
     nodes,
@@ -169,13 +173,8 @@ export const CollaborativeCanvas: React.FC<CollaborativeCanvasProps> = ({
 
   // Create presence-enhanced handlers
   const presenceHandlers = useMemo(
-    () => createPresenceEnhancedHandlers(
-      nodes,
-      handleNodesChange,
-      onNodeDragStart,
-      onNodeDragStop,
-      t
-    ),
+    () =>
+      createPresenceEnhancedHandlers(nodes, handleNodesChange, onNodeDragStart, onNodeDragStop, t),
     [nodes, handleNodesChange, onNodeDragStart, onNodeDragStop, t, createPresenceEnhancedHandlers]
   );
 
@@ -193,11 +192,7 @@ export const CollaborativeCanvas: React.FC<CollaborativeCanvasProps> = ({
 
   return (
     <>
-      <SEO
-        title={t('canvas.seoTitle')}
-        description={t('canvas.seoDescription')}
-        noindex={true}
-      />
+      <SEO title={t('canvas.seoTitle')} description={t('canvas.seoDescription')} noindex={true} />
       <CanvasFlow
         nodes={nodes}
         edges={edges}

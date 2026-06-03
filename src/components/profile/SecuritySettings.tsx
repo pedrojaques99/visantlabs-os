@@ -15,7 +15,9 @@ interface SecuritySettingsProps {
   totpEnabled?: boolean;
 }
 
-export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ totpEnabled: initialTotpEnabled = false }) => {
+export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
+  totpEnabled: initialTotpEnabled = false,
+}) => {
   // Sessions
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
@@ -47,7 +49,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ totpEnabled:
   const handleRevokeSession = async (sessionId: string) => {
     try {
       await sessionService.revokeSession(sessionId);
-      setSessions(prev => prev.filter(s => s.id !== sessionId));
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
       toast.success('Sessao revogada');
     } catch {
       toast.error('Erro ao revogar sessao');
@@ -124,7 +126,12 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ totpEnabled:
                 placeholder="Codigo para desativar"
                 className="max-w-[200px] font-mono"
               />
-              <Button variant="outline" size="sm" onClick={handleDisable2FA} disabled={!disableCode}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDisable2FA}
+                disabled={!disableCode}
+              >
                 Desativar 2FA
               </Button>
             </div>
@@ -136,7 +143,9 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ totpEnabled:
             </p>
             <div className="grid grid-cols-2 gap-2 p-3 bg-neutral-950/50 rounded-lg border border-neutral-800/50">
               {backupCodes.map((code) => (
-                <span key={code} className="text-xs font-mono text-neutral-300">{code}</span>
+                <span key={code} className="text-xs font-mono text-neutral-300">
+                  {code}
+                </span>
               ))}
             </div>
             <Button
@@ -161,7 +170,9 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ totpEnabled:
             </p>
             <div className="p-3 bg-white rounded-lg inline-block">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(setupData.otpauthUrl)}`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                  setupData.otpauthUrl
+                )}`}
                 alt="QR Code 2FA"
                 className="w-[200px] h-[200px]"
               />
@@ -177,7 +188,12 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ totpEnabled:
                 maxLength={6}
                 className="max-w-[180px] font-mono"
               />
-              <Button variant="brand" size="sm" onClick={handleEnable2FA} disabled={verifyCode.length < 6}>
+              <Button
+                variant="brand"
+                size="sm"
+                onClick={handleEnable2FA}
+                disabled={verifyCode.length < 6}
+              >
                 Verificar e ativar
               </Button>
             </div>
@@ -190,7 +206,13 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ totpEnabled:
             <p className="text-xs text-neutral-500 font-mono mb-3">
               Adicione uma camada extra de seguranca usando um app autenticador.
             </p>
-            <Button variant="outline" size="sm" onClick={handleSetup2FA} disabled={isSettingUp} className="gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSetup2FA}
+              disabled={isSettingUp}
+              className="gap-1"
+            >
               <QrCode size={14} /> {isSettingUp ? 'Configurando...' : 'Configurar 2FA'}
             </Button>
           </div>
@@ -212,7 +234,10 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ totpEnabled:
         ) : (
           <div className="space-y-2">
             {sessions.map((session) => (
-              <div key={session.id} className="flex items-center justify-between p-3 bg-neutral-900/50 rounded-lg border border-neutral-800/50">
+              <div
+                key={session.id}
+                className="flex items-center justify-between p-3 bg-neutral-900/50 rounded-lg border border-neutral-800/50"
+              >
                 <div className="space-y-0.5">
                   <p className="text-xs font-mono text-neutral-300">
                     {parseUserAgent(session.userAgent)}

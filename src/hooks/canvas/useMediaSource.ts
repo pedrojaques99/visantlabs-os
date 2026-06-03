@@ -22,7 +22,7 @@ import type {
   EditNodeData,
   UpscaleNodeData,
   MockupNodeData,
-  PromptNodeData
+  PromptNodeData,
 } from '@/types/reactFlow';
 
 export interface MediaSource {
@@ -59,9 +59,7 @@ function extractMediaFromNode(
   const formatBase64 = (base64: string | undefined, type: 'image' | 'video'): string | null => {
     if (!base64) return null;
     if (base64.startsWith('data:')) return base64;
-    return type === 'video'
-      ? `data:video/mp4;base64,${base64}`
-      : `data:image/png;base64,${base64}`;
+    return type === 'video' ? `data:video/mp4;base64,${base64}` : `data:image/png;base64,${base64}`;
   };
 
   switch (nodeType) {
@@ -69,7 +67,7 @@ function extractMediaFromNode(
       const data = sourceData as PromptNodeData;
       return {
         url: data.resultImageUrl || formatBase64(data.resultImageBase64, 'image'),
-        isVideo: false
+        isVideo: false,
       };
     }
 
@@ -77,7 +75,7 @@ function extractMediaFromNode(
       const data = sourceData as MockupNodeData;
       return {
         url: data.resultImageUrl || formatBase64(data.resultImageBase64, 'image'),
-        isVideo: false
+        isVideo: false,
       };
     }
 
@@ -85,7 +83,7 @@ function extractMediaFromNode(
       const data = sourceData as MergeNodeData;
       return {
         url: data.resultImageUrl || formatBase64(data.resultImageBase64, 'image'),
-        isVideo: false
+        isVideo: false,
       };
     }
 
@@ -93,7 +91,7 @@ function extractMediaFromNode(
       const data = sourceData as EditNodeData;
       return {
         url: data.resultImageUrl || formatBase64(data.resultImageBase64, 'image'),
-        isVideo: false
+        isVideo: false,
       };
     }
 
@@ -101,7 +99,7 @@ function extractMediaFromNode(
       const data = sourceData as UpscaleNodeData;
       return {
         url: data.resultImageUrl || formatBase64(data.resultImageBase64, 'image'),
-        isVideo: false
+        isVideo: false,
       };
     }
 
@@ -110,19 +108,25 @@ function extractMediaFromNode(
       const videoUrl = data.resultVideoUrl || formatBase64(data.resultVideoBase64, 'video');
       return {
         url: videoUrl,
-        isVideo: !!videoUrl
+        isVideo: !!videoUrl,
       };
     }
 
     case 'videoInput': {
       const data = sourceData as VideoInputNodeData;
       let videoUrl = data.uploadedVideoUrl || data.uploadedVideo;
-      if (videoUrl && typeof videoUrl === 'string' && !videoUrl.startsWith('data:') && !videoUrl.startsWith('http') && !videoUrl.startsWith('blob:')) {
+      if (
+        videoUrl &&
+        typeof videoUrl === 'string' &&
+        !videoUrl.startsWith('data:') &&
+        !videoUrl.startsWith('http') &&
+        !videoUrl.startsWith('blob:')
+      ) {
         videoUrl = `data:video/mp4;base64,${videoUrl}`;
       }
       return {
         url: videoUrl || null,
-        isVideo: !!videoUrl
+        isVideo: !!videoUrl,
       };
     }
 
@@ -135,7 +139,7 @@ function extractMediaFromNode(
       }
       return {
         url: data.resultImageUrl || formatBase64(data.resultImageBase64, 'image'),
-        isVideo: false
+        isVideo: false,
       };
     }
 
@@ -155,18 +159,19 @@ export function useMediaSource({
   nodeId,
   nodes,
   edges,
-  ownResult
+  ownResult,
 }: UseMediaSourceParams): MediaSource {
   return useMemo(() => {
     // PRIORITY 1: Own result takes precedence
     if (ownResult) {
       // Check for video first
       if (ownResult.videoUrl || ownResult.videoBase64) {
-        const videoUrl = ownResult.videoUrl ||
+        const videoUrl =
+          ownResult.videoUrl ||
           (ownResult.videoBase64
-            ? (ownResult.videoBase64.startsWith('data:')
+            ? ownResult.videoBase64.startsWith('data:')
               ? ownResult.videoBase64
-              : `data:video/mp4;base64,${ownResult.videoBase64}`)
+              : `data:video/mp4;base64,${ownResult.videoBase64}`
             : null);
 
         if (videoUrl) {
@@ -174,18 +179,19 @@ export function useMediaSource({
             url: videoUrl,
             isVideo: true,
             sourceNodeId: nodeId,
-            sourceNodeType: 'self'
+            sourceNodeType: 'self',
           };
         }
       }
 
       // Check for image
       if (ownResult.imageUrl || ownResult.imageBase64) {
-        const imageUrl = ownResult.imageUrl ||
+        const imageUrl =
+          ownResult.imageUrl ||
           (ownResult.imageBase64
-            ? (ownResult.imageBase64.startsWith('data:')
+            ? ownResult.imageBase64.startsWith('data:')
               ? ownResult.imageBase64
-              : `data:image/png;base64,${ownResult.imageBase64}`)
+              : `data:image/png;base64,${ownResult.imageBase64}`
             : null);
 
         if (imageUrl) {
@@ -193,30 +199,30 @@ export function useMediaSource({
             url: imageUrl,
             isVideo: false,
             sourceNodeId: nodeId,
-            sourceNodeType: 'self'
+            sourceNodeType: 'self',
           };
         }
       }
     }
 
     // PRIORITY 2: Connected source node
-    const incomingEdge = edges.find(e => e.target === nodeId);
+    const incomingEdge = edges.find((e) => e.target === nodeId);
     if (!incomingEdge) {
       return {
         url: null,
         isVideo: false,
         sourceNodeId: null,
-        sourceNodeType: null
+        sourceNodeType: null,
       };
     }
 
-    const sourceNode = nodes.find(n => n.id === incomingEdge.source);
+    const sourceNode = nodes.find((n) => n.id === incomingEdge.source);
     if (!sourceNode) {
       return {
         url: null,
         isVideo: false,
         sourceNodeId: null,
-        sourceNodeType: null
+        sourceNodeType: null,
       };
     }
 
@@ -226,7 +232,7 @@ export function useMediaSource({
       url: media.url,
       isVideo: media.isVideo,
       sourceNodeId: sourceNode.id,
-      sourceNodeType: (sourceNode.data.type as string) || null
+      sourceNodeType: (sourceNode.data.type as string) || null,
     };
   }, [nodeId, nodes, edges, ownResult]);
 }

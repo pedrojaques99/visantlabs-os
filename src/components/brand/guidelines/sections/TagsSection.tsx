@@ -29,13 +29,22 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
   const addRef = useRef<HTMLInputElement>(null);
   const catRef = useRef<HTMLInputElement>(null);
 
-  const persist = useCallback((next: Tags) => {
-    onUpdate({ tags: next });
-  }, [onUpdate]);
+  const persist = useCallback(
+    (next: Tags) => {
+      onUpdate({ tags: next });
+    },
+    [onUpdate]
+  );
 
-  useEffect(() => { if (editing) editRef.current?.focus(); }, [editing]);
-  useEffect(() => { if (addingTo) addRef.current?.focus(); }, [addingTo]);
-  useEffect(() => { if (addingCat) catRef.current?.focus(); }, [addingCat]);
+  useEffect(() => {
+    if (editing) editRef.current?.focus();
+  }, [editing]);
+  useEffect(() => {
+    if (addingTo) addRef.current?.focus();
+  }, [addingTo]);
+  useEffect(() => {
+    if (addingCat) catRef.current?.focus();
+  }, [addingCat]);
 
   const startEdit = (cat: string, idx: number) => {
     setEditing({ cat, idx });
@@ -48,7 +57,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
     const trimmed = editValue.trim();
     const next = { ...tags };
     if (trimmed) {
-      next[cat] = next[cat].map((v, i) => i === idx ? trimmed : v);
+      next[cat] = next[cat].map((v, i) => (i === idx ? trimmed : v));
     } else {
       next[cat] = next[cat].filter((_, i) => i !== idx);
       if (!next[cat].length) delete next[cat];
@@ -93,14 +102,22 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
       title="Tags"
       span={span as any}
       actions={
-        <Button variant="ghost" size="icon" className="h-5 w-5 text-neutral-500 hover:text-white" onClick={() => setAddingCat(true)} aria-label="Add category">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5 text-neutral-500 hover:text-white"
+          onClick={() => setAddingCat(true)}
+          aria-label="Add category"
+        >
           <Plus size={11} />
         </Button>
       }
     >
       <div className="space-y-3 py-1">
         {categories.length === 0 && !addingCat && (
-          <p className="text-[11px] text-neutral-700 py-1">No tags yet. Click + to add a category.</p>
+          <p className="text-[11px] text-neutral-700 py-1">
+            No tags yet. Click + to add a category.
+          </p>
         )}
 
         {categories.map((cat) => (
@@ -121,7 +138,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
             </div>
 
             <div className="flex flex-wrap gap-1.5 items-center">
-              {(tags[cat] || []).map((val, idx) => (
+              {(tags[cat] || []).map((val, idx) =>
                 editing?.cat === cat && editing?.idx === idx ? (
                   <input
                     key={idx}
@@ -145,7 +162,10 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                   >
                     {val}
                     <button
-                      onClick={(e) => { e.stopPropagation(); deleteTag(cat, idx); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteTag(cat, idx);
+                      }}
                       className="text-neutral-700 hover:text-destructive opacity-0 group-hover/tag:opacity-100 transition-all ml-0.5"
                       aria-label="Remove tag"
                     >
@@ -153,7 +173,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                     </button>
                   </span>
                 )
-              ))}
+              )}
 
               {/* Inline add input for this category */}
               {addingTo === cat ? (
@@ -164,7 +184,10 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                   onBlur={commitAdd}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') commitAdd();
-                    if (e.key === 'Escape') { setAddingTo(null); setAddValue(''); }
+                    if (e.key === 'Escape') {
+                      setAddingTo(null);
+                      setAddValue('');
+                    }
                   }}
                   placeholder="Nova tag..."
                   className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:border-white/30 w-24"
@@ -192,7 +215,10 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
               onBlur={commitCat}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') commitCat();
-                if (e.key === 'Escape') { setAddingCat(false); setCatValue(''); }
+                if (e.key === 'Escape') {
+                  setAddingCat(false);
+                  setCatValue('');
+                }
               }}
               placeholder="nova_categoria"
               className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-400 font-mono placeholder:text-neutral-700 focus:outline-none focus:border-white/30 w-36"

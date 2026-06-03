@@ -1,10 +1,33 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Image as ImageIcon, Camera, Palette, FileText, Target, Dna, Upload, FileText as FileTextIcon, MessageSquare, ChevronLeft, ChevronRight, Layers, Diamond, Building2, Plus, Grid3x3, Pickaxe, X, Compass, Blocks, Brush, Box } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  Camera,
+  Palette,
+  FileText,
+  Target,
+  Dna,
+  Upload,
+  FileText as FileTextIcon,
+  MessageSquare,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  Diamond,
+  Building2,
+  Plus,
+  Grid3x3,
+  Pickaxe,
+  X,
+  Compass,
+  Blocks,
+  Brush,
+  Box,
+} from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface CanvasToolbarProps {
   onAddMerge: () => void;
@@ -123,22 +146,30 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   // Organize tools by category
   const tools: ToolItem[] = [
     // Core tools
-    ...(onAddPrompt ? [{
-      id: 'prompt',
-      icon: <Pickaxe className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.prompt'),
-      tooltip: t('canvasToolbar.addPromptNode'),
-      onClick: onAddPrompt,
-      category: 'core' as const,
-    }] : []),
-    ...(onAddDirector ? [{
-      id: 'director',
-      icon: <Compass className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.director') || 'Director',
-      tooltip: t('canvasToolbar.addDirectorNode') || 'Add Director Node',
-      onClick: onAddDirector,
-      category: 'core' as const,
-    }] : []),
+    ...(onAddPrompt
+      ? [
+          {
+            id: 'prompt',
+            icon: <Pickaxe className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.prompt'),
+            tooltip: t('canvasToolbar.addPromptNode'),
+            onClick: onAddPrompt,
+            category: 'core' as const,
+          },
+        ]
+      : []),
+    ...(onAddDirector
+      ? [
+          {
+            id: 'director',
+            icon: <Compass className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.director') || 'Director',
+            tooltip: t('canvasToolbar.addDirectorNode') || 'Add Director Node',
+            onClick: onAddDirector,
+            category: 'core' as const,
+          },
+        ]
+      : []),
     {
       id: 'mockup',
       icon: <ImageIcon className="w-4 h-4" />,
@@ -147,22 +178,30 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       onClick: onAddMockup,
       category: 'core' as const,
     },
-    ...(experimentalMode && onAddChat ? [{
-      id: 'chat',
-      icon: <MessageSquare className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.chat') || 'Chat',
-      tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
-      onClick: onAddChat,
-      category: 'core' as const,
-    }] : []),
-    ...(onAddNodeBuilder ? [{
-      id: 'nodeBuilder',
-      icon: <Blocks className="w-4 h-4" />,
-      label: 'Node Builder',
-      tooltip: 'Build a custom AI node',
-      onClick: onAddNodeBuilder,
-      category: 'core' as const,
-    }] : []),
+    ...(experimentalMode && onAddChat
+      ? [
+          {
+            id: 'chat',
+            icon: <MessageSquare className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.chat') || 'Chat',
+            tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
+            onClick: onAddChat,
+            category: 'core' as const,
+          },
+        ]
+      : []),
+    ...(onAddNodeBuilder
+      ? [
+          {
+            id: 'nodeBuilder',
+            icon: <Blocks className="w-4 h-4" />,
+            label: 'Node Builder',
+            tooltip: 'Build a custom AI node',
+            onClick: onAddNodeBuilder,
+            category: 'core' as const,
+          },
+        ]
+      : []),
     {
       id: 'edit',
       icon: <FileText className="w-4 h-4" />,
@@ -172,22 +211,30 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       category: 'core' as const,
     },
     // Merge & Upscale — were missing
-    ...(onAddMerge ? [{
-      id: 'merge',
-      icon: <Layers className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.merge') || 'Merge',
-      tooltip: t('canvasToolbar.addMergeNode') || 'Add Merge Node',
-      onClick: onAddMerge,
-      category: 'composition' as const,
-    }] : []),
-    ...(onAddUpscale ? [{
-      id: 'upscale',
-      icon: <Diamond className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.upscale') || 'Upscale',
-      tooltip: t('canvasToolbar.addUpscaleNode') || 'Add Upscale Node',
-      onClick: onAddUpscale,
-      category: 'composition' as const,
-    }] : []),
+    ...(onAddMerge
+      ? [
+          {
+            id: 'merge',
+            icon: <Layers className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.merge') || 'Merge',
+            tooltip: t('canvasToolbar.addMergeNode') || 'Add Merge Node',
+            onClick: onAddMerge,
+            category: 'composition' as const,
+          },
+        ]
+      : []),
+    ...(onAddUpscale
+      ? [
+          {
+            id: 'upscale',
+            icon: <Diamond className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.upscale') || 'Upscale',
+            tooltip: t('canvasToolbar.addUpscaleNode') || 'Add Upscale Node',
+            onClick: onAddUpscale,
+            category: 'composition' as const,
+          },
+        ]
+      : []),
     {
       id: 'angle',
       icon: <Camera className="w-4 h-4" />,
@@ -196,63 +243,91 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       onClick: onAddAngle,
       category: 'composition' as const,
     },
-    ...(onAddAmbience ? [{
-      id: 'ambience',
-      icon: <Target className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.ambience') || 'Ambience',
-      tooltip: t('canvasToolbar.addAmbienceNode') || 'Add Ambience Node',
-      onClick: onAddAmbience,
-      category: 'composition' as const,
-    }] : []),
-    ...(onAddLuminance ? [{
-      id: 'luminance',
-      icon: <Grid3x3 className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.luminance') || 'Luminance',
-      tooltip: t('canvasToolbar.addLuminanceNode') || 'Add Luminance Node',
-      onClick: onAddLuminance,
-      category: 'composition' as const,
-    }] : []),
-    ...(onAddTexture ? [{
-      id: 'texture',
-      icon: <Dna className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.texture') || 'Texture',
-      tooltip: t('canvasToolbar.addTextureNode') || 'Add Texture Node',
-      onClick: onAddTexture,
-      category: 'composition' as const,
-    }] : []),
+    ...(onAddAmbience
+      ? [
+          {
+            id: 'ambience',
+            icon: <Target className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.ambience') || 'Ambience',
+            tooltip: t('canvasToolbar.addAmbienceNode') || 'Add Ambience Node',
+            onClick: onAddAmbience,
+            category: 'composition' as const,
+          },
+        ]
+      : []),
+    ...(onAddLuminance
+      ? [
+          {
+            id: 'luminance',
+            icon: <Grid3x3 className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.luminance') || 'Luminance',
+            tooltip: t('canvasToolbar.addLuminanceNode') || 'Add Luminance Node',
+            onClick: onAddLuminance,
+            category: 'composition' as const,
+          },
+        ]
+      : []),
+    ...(onAddTexture
+      ? [
+          {
+            id: 'texture',
+            icon: <Dna className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.texture') || 'Texture',
+            tooltip: t('canvasToolbar.addTextureNode') || 'Add Texture Node',
+            onClick: onAddTexture,
+            category: 'composition' as const,
+          },
+        ]
+      : []),
     // Branding tools
-    ...(onAddBrandBatch ? [{
-      id: 'brandBatch',
-      icon: <Layers className="w-4 h-4" />,
-      label: 'Brand Batch',
-      tooltip: 'Batch generate with branding applied to all connected images',
-      onClick: onAddBrandBatch,
-      category: 'branding' as const,
-    }] : []),
-    ...(onAddColorExtractor ? [{
-      id: 'colorExtractor',
-      icon: <Building2 className="w-4 h-4" />,
-      label: 'Color Extract',
-      tooltip: 'Add Color Extractor Node',
-      onClick: onAddColorExtractor,
-      category: 'branding' as const,
-    }] : []),
-    ...(onAddBrandCore ? [{
-      id: 'brandCore',
-      icon: <Diamond className="w-4 h-4" />,
-      label: 'Brand Core',
-      tooltip: 'Add Brand Core Node',
-      onClick: onAddBrandCore,
-      category: 'branding' as const,
-    }] : []),
-    ...(onAddStrategy ? [{
-      id: 'strategy',
-      icon: <Compass className="w-4 h-4" />,
-      label: 'Strategy',
-      tooltip: 'Add Strategy Node',
-      onClick: onAddStrategy,
-      category: 'branding' as const,
-    }] : []),
+    ...(onAddBrandBatch
+      ? [
+          {
+            id: 'brandBatch',
+            icon: <Layers className="w-4 h-4" />,
+            label: 'Brand Batch',
+            tooltip: 'Batch generate with branding applied to all connected images',
+            onClick: onAddBrandBatch,
+            category: 'branding' as const,
+          },
+        ]
+      : []),
+    ...(onAddColorExtractor
+      ? [
+          {
+            id: 'colorExtractor',
+            icon: <Building2 className="w-4 h-4" />,
+            label: 'Color Extract',
+            tooltip: 'Add Color Extractor Node',
+            onClick: onAddColorExtractor,
+            category: 'branding' as const,
+          },
+        ]
+      : []),
+    ...(onAddBrandCore
+      ? [
+          {
+            id: 'brandCore',
+            icon: <Diamond className="w-4 h-4" />,
+            label: 'Brand Core',
+            tooltip: 'Add Brand Core Node',
+            onClick: onAddBrandCore,
+            category: 'branding' as const,
+          },
+        ]
+      : []),
+    ...(onAddStrategy
+      ? [
+          {
+            id: 'strategy',
+            icon: <Compass className="w-4 h-4" />,
+            label: 'Strategy',
+            tooltip: 'Add Strategy Node',
+            onClick: onAddStrategy,
+            category: 'branding' as const,
+          },
+        ]
+      : []),
     {
       id: 'brandkit',
       icon: <Palette className="w-4 h-4" />,
@@ -261,59 +336,83 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       onClick: onAddBrandKit,
       category: 'branding' as const,
     },
-    ...(onAddLogo ? [{
-      id: 'logo',
-      icon: <Upload className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.logo'),
-      tooltip: t('canvasToolbar.addLogoNode'),
-      onClick: onAddLogo,
-      category: 'branding' as const,
-    }] : []),
-    ...(onAddPDF ? [{
-      id: 'pdf',
-      icon: <FileTextIcon className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.pdf'),
-      tooltip: t('canvasToolbar.addPdfNode'),
-      onClick: onAddPDF,
-      category: 'branding' as const,
-    }] : []),
-    ...(onAddShader ? [{
-      id: 'shader',
-      icon: <Brush className="w-4 h-4" />,
-      label: 'Shader',
-      tooltip: 'Add Shader Node',
-      onClick: onAddShader,
-      category: 'composition' as const,
-    }] : []),
-    ...(onAddTextureFilter ? [{
-      id: 'textureFilter',
-      icon: <Layers className="w-4 h-4" />,
-      label: 'Texture',
-      tooltip: 'Add Texture Filter Node',
-      onClick: onAddTextureFilter,
-      category: 'composition' as const,
-    }] : []),
-    ...(onAddStudio3D ? [{
-      id: 'studio3d',
-      icon: <Box className="w-4 h-4" />,
-      label: '3D',
-      tooltip: 'Add 3D Studio Node',
-      onClick: onAddStudio3D,
-      category: 'composition' as const,
-    }] : []),
-    ...(onAddChat && !experimentalMode ? [{
-      id: 'chat',
-      icon: <MessageSquare className="w-4 h-4" />,
-      label: 'Chat',
-      tooltip: 'Add Chat Node',
-      onClick: onAddChat,
-      category: 'core' as const,
-    }] : []),
+    ...(onAddLogo
+      ? [
+          {
+            id: 'logo',
+            icon: <Upload className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.logo'),
+            tooltip: t('canvasToolbar.addLogoNode'),
+            onClick: onAddLogo,
+            category: 'branding' as const,
+          },
+        ]
+      : []),
+    ...(onAddPDF
+      ? [
+          {
+            id: 'pdf',
+            icon: <FileTextIcon className="w-4 h-4" />,
+            label: t('canvasToolbar.labels.pdf'),
+            tooltip: t('canvasToolbar.addPdfNode'),
+            onClick: onAddPDF,
+            category: 'branding' as const,
+          },
+        ]
+      : []),
+    ...(onAddShader
+      ? [
+          {
+            id: 'shader',
+            icon: <Brush className="w-4 h-4" />,
+            label: 'Shader',
+            tooltip: 'Add Shader Node',
+            onClick: onAddShader,
+            category: 'composition' as const,
+          },
+        ]
+      : []),
+    ...(onAddTextureFilter
+      ? [
+          {
+            id: 'textureFilter',
+            icon: <Layers className="w-4 h-4" />,
+            label: 'Texture',
+            tooltip: 'Add Texture Filter Node',
+            onClick: onAddTextureFilter,
+            category: 'composition' as const,
+          },
+        ]
+      : []),
+    ...(onAddStudio3D
+      ? [
+          {
+            id: 'studio3d',
+            icon: <Box className="w-4 h-4" />,
+            label: '3D',
+            tooltip: 'Add 3D Studio Node',
+            onClick: onAddStudio3D,
+            category: 'composition' as const,
+          },
+        ]
+      : []),
+    ...(onAddChat && !experimentalMode
+      ? [
+          {
+            id: 'chat',
+            icon: <MessageSquare className="w-4 h-4" />,
+            label: 'Chat',
+            tooltip: 'Add Chat Node',
+            onClick: onAddChat,
+            category: 'core' as const,
+          },
+        ]
+      : []),
   ];
 
-  const coreTools = tools.filter(t => t.category === 'core');
-  const compositionTools = tools.filter(t => t.category === 'composition');
-  const brandingTools = tools.filter(t => t.category === 'branding');
+  const coreTools = tools.filter((t) => t.category === 'core');
+  const compositionTools = tools.filter((t) => t.category === 'composition');
+  const brandingTools = tools.filter((t) => t.category === 'branding');
 
   const COLLAPSED_WIDTH = 56;
   const EXPANDED_WIDTH = 200;
@@ -321,13 +420,13 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   // Determine position based on variant and position prop
   const getPositionClasses = () => {
     if (variant === 'standalone') {
-      return "fixed left-4 top-[65px]";
+      return 'fixed left-4 top-[65px]';
     }
     if (position === 'left') {
-      return "fixed left-4 top-[65px]";
+      return 'fixed left-4 top-[65px]';
     }
     // Default to left side for stacked variant
-    return "relative";
+    return 'relative';
   };
 
   const handleDragStart = (e: React.DragEvent, toolId: string) => {
@@ -342,27 +441,29 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     if (isCollapsed) {
       return (
         <Tooltip content={tool.tooltip} position="right">
-          <Button variant="ghost" draggable
+          <Button
+            variant="ghost"
+            draggable
             onDragStart={(e) => handleDragStart(e, tool.id)}
             onClick={tool.onClick}
             className={cn(
-              "w-10 h-10 flex items-center justify-center",
-              "backdrop-blur-md",
-              "border rounded-md",
-              "transition-colors duration-150",
-              "cursor-grab active:cursor-grabbing",
+              'w-10 h-10 flex items-center justify-center',
+              'backdrop-blur-md',
+              'border rounded-md',
+              'transition-colors duration-150',
+              'cursor-grab active:cursor-grabbing',
               isActive
-                ? "border-[brand-cyan] bg-brand-cyan/10"
+                ? 'border-[brand-cyan] bg-brand-cyan/10'
                 : isLight
-                  ? "border-neutral-300/40 hover:border-neutral-500/40 hover:bg-neutral-200/50"
-                  : "border-neutral-800/40 hover:border-neutral-600/40 hover:bg-neutral-800/50"
+                ? 'border-neutral-300/40 hover:border-neutral-500/40 hover:bg-neutral-200/50'
+                : 'border-neutral-800/40 hover:border-neutral-600/40 hover:bg-neutral-800/50'
             )}
             style={{
               backgroundColor: isActive
                 ? undefined
                 : isLight
-                  ? 'rgba(255, 255, 255, 0.3)'
-                  : 'rgba(0, 0, 0, 0.3)',
+                ? 'rgba(255, 255, 255, 0.3)'
+                : 'rgba(0, 0, 0, 0.3)',
               color: isActive ? 'var(--brand-cyan)' : textColors.muted,
             }}
             onMouseEnter={(e) => {
@@ -385,27 +486,29 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
 
     return (
       <Tooltip content={tool.tooltip} position="right">
-        <Button variant="ghost" draggable
+        <Button
+          variant="ghost"
+          draggable
           onDragStart={(e) => handleDragStart(e, tool.id)}
           onClick={tool.onClick}
           className={cn(
-            "w-full px-2 py-1.5",
-            "backdrop-blur-md",
-            "border rounded-md",
-            "transition-colors duration-150",
-            "flex items-center gap-2 cursor-grab active:cursor-grabbing",
+            'w-full px-2 py-1.5',
+            'backdrop-blur-md',
+            'border rounded-md',
+            'transition-colors duration-150',
+            'flex items-center gap-2 cursor-grab active:cursor-grabbing',
             isActive
-              ? "border-[brand-cyan] bg-brand-cyan/10"
+              ? 'border-[brand-cyan] bg-brand-cyan/10'
               : isLight
-                ? "border-neutral-300/40 hover:border-neutral-500/40 hover:bg-neutral-200/50"
-                : "border-neutral-800/40 hover:border-neutral-600/40 hover:bg-neutral-800/50"
+              ? 'border-neutral-300/40 hover:border-neutral-500/40 hover:bg-neutral-200/50'
+              : 'border-neutral-800/40 hover:border-neutral-600/40 hover:bg-neutral-800/50'
           )}
           style={{
             backgroundColor: isActive
               ? undefined
               : isLight
-                ? 'rgba(255, 255, 255, 0.3)'
-                : 'rgba(0, 0, 0, 0.3)',
+              ? 'rgba(255, 255, 255, 0.3)'
+              : 'rgba(0, 0, 0, 0.3)',
             color: isActive ? 'var(--brand-cyan)' : textColors.muted,
           }}
           onMouseEnter={(e) => {
@@ -422,9 +525,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           }}
           aria-label={tool.label}
         >
-          <span className="flex-shrink-0">
-            {tool.icon}
-          </span>
+          <span className="flex-shrink-0">{tool.icon}</span>
           <span
             className="text-xs font-medium whitespace-nowrap flex-1 text-left tracking-wide"
             style={{ color: 'inherit' }}
@@ -436,13 +537,17 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     );
   };
 
-  const Section: React.FC<{ title: string; tools: ToolItem[]; icon: React.ReactNode }> = ({ title, tools, icon }) => {
+  const Section: React.FC<{ title: string; tools: ToolItem[]; icon: React.ReactNode }> = ({
+    title,
+    tools,
+    icon,
+  }) => {
     if (tools.length === 0) return null;
 
     if (isCollapsed) {
       return (
         <div className="flex flex-col gap-1.5">
-          {tools.map(tool => (
+          {tools.map((tool) => (
             <ToolButton key={tool.id} tool={tool} />
           ))}
         </div>
@@ -453,15 +558,12 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       <div className="space-y-1">
         <div className="flex items-center gap-1.5 px-1 py-1">
           <span style={{ color: textColors.subtle }}>{icon}</span>
-          <span
-            className="text-xs font-semibold uppercase "
-            style={{ color: textColors.subtle }}
-          >
+          <span className="text-xs font-semibold uppercase " style={{ color: textColors.subtle }}>
             {title}
           </span>
         </div>
         <div className="flex flex-col gap-1">
-          {tools.map(tool => (
+          {tools.map((tool) => (
             <ToolButton key={tool.id} tool={tool} />
           ))}
         </div>
@@ -479,12 +581,12 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       ref={toolbarRef}
       className={cn(
         getPositionClasses(),
-        "z-40",
-        "backdrop-blur-md border",
-        isLight ? "border-neutral-300/50" : "border-neutral-800/50",
-        "rounded-md shadow-2xl",
-        "transition-all duration-300 ease-out",
-        "flex flex-col",
+        'z-40',
+        'backdrop-blur-md border',
+        isLight ? 'border-neutral-300/50' : 'border-neutral-800/50',
+        'rounded-md shadow-2xl',
+        'transition-all duration-300 ease-out',
+        'flex flex-col'
       )}
       style={{
         width: `${EXPANDED_WIDTH}px`,
@@ -499,8 +601,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         {/* Header with Toggle and Close Button */}
         <div
           className={cn(
-            "flex items-center justify-between border-b relative bg-transparent rounded-t-2xl",
-            isLight ? "border-neutral-300/30" : "border-neutral-800/30"
+            'flex items-center justify-between border-b relative bg-transparent rounded-t-2xl',
+            isLight ? 'border-neutral-300/30' : 'border-neutral-800/30'
           )}
           style={{ color: textColors.primary }}
         >
@@ -516,46 +618,46 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             {/* Toggle Toolbar Button */}
             {onToggleToolbar && (
               <Tooltip
-                content={isCollapsed
-                  ? (t('canvasToolbar.expandToolbar') || 'Expand Toolbar')
-                  : (t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar')
+                content={
+                  isCollapsed
+                    ? t('canvasToolbar.expandToolbar') || 'Expand Toolbar'
+                    : t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar'
                 }
                 position="bottom"
               >
-                <Button variant="ghost" onClick={onToggleToolbar}
+                <Button
+                  variant="ghost"
+                  onClick={onToggleToolbar}
                   className={cn(
-                    "p-2 transition-colors h-full",
-                    isLight
-                      ? "hover:bg-neutral-200/50"
-                      : "hover:bg-neutral-800/50"
+                    'p-2 transition-colors h-full',
+                    isLight ? 'hover:bg-neutral-200/50' : 'hover:bg-neutral-800/50'
                   )}
                   style={{ color: textColors.muted }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = textColors.primary)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = textColors.muted)}
                   aria-label={isCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}
                 >
                   <ChevronLeft
                     size={14}
-                    className={cn(
-                      "transition-transform duration-150",
-                      isCollapsed && "rotate-180"
-                    )}
+                    className={cn('transition-transform duration-150', isCollapsed && 'rotate-180')}
                   />
                 </Button>
               </Tooltip>
             )}
             {/* Close Button */}
             {onClose && (
-              <Button variant="ghost" onClick={onClose}
+              <Button
+                variant="ghost"
+                onClick={onClose}
                 className={cn(
-                  "p-2 border-l transition-colors h-full rounded-tr-2xl",
+                  'p-2 border-l transition-colors h-full rounded-tr-2xl',
                   isLight
-                    ? "border-neutral-300/50 hover:bg-neutral-200/50"
-                    : "border-neutral-800/50 hover:bg-neutral-800/50"
+                    ? 'border-neutral-300/50 hover:bg-neutral-200/50'
+                    : 'border-neutral-800/50 hover:bg-neutral-800/50'
                 )}
                 style={{ color: textColors.muted }}
-                onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
-                onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
+                onMouseEnter={(e) => (e.currentTarget.style.color = textColors.primary)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = textColors.muted)}
               >
                 <X size={14} />
               </Button>
@@ -566,7 +668,6 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
           <div className="flex flex-col p-2 gap-2">
-
             {/* Core Tools */}
             {coreTools.length > 0 && (
               <Section

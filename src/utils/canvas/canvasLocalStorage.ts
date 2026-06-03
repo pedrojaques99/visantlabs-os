@@ -19,9 +19,13 @@ function removeLargeBase64FromNodes(nodes: Node<FlowNodeData>[]): Node<FlowNodeD
       if (nodeData.resultImageUrl) {
         cleanedData.resultImageBase64 = undefined;
       }
-    } else if (nodeData.type === 'upscale' || nodeData.type === 'merge' ||
-      nodeData.type === 'edit' || nodeData.type === 'mockup' ||
-      nodeData.type === 'prompt') {
+    } else if (
+      nodeData.type === 'upscale' ||
+      nodeData.type === 'merge' ||
+      nodeData.type === 'edit' ||
+      nodeData.type === 'mockup' ||
+      nodeData.type === 'prompt'
+    ) {
       if (nodeData.resultImageBase64 && nodeData.resultImageUrl) {
         cleanedData.resultImageBase64 = undefined;
       }
@@ -76,10 +80,18 @@ export function saveCanvasToLocalStorage(
           source: edge.source,
           target: edge.target,
         };
-        if (edge.sourceHandle !== undefined && edge.sourceHandle !== null && edge.sourceHandle !== 'null') {
+        if (
+          edge.sourceHandle !== undefined &&
+          edge.sourceHandle !== null &&
+          edge.sourceHandle !== 'null'
+        ) {
           edgeData.sourceHandle = edge.sourceHandle;
         }
-        if (edge.targetHandle !== undefined && edge.targetHandle !== null && edge.targetHandle !== 'null') {
+        if (
+          edge.targetHandle !== undefined &&
+          edge.targetHandle !== null &&
+          edge.targetHandle !== 'null'
+        ) {
           edgeData.targetHandle = edge.targetHandle;
         }
         return edgeData;
@@ -129,7 +141,7 @@ export function loadCanvasFromLocalStorage(
     return {
       nodes: (state.nodes || []) as Node<FlowNodeData>[],
       edges: (state.edges || []) as Edge[],
-      drawings: state.drawings !== undefined ? (state.drawings || []) : undefined,
+      drawings: state.drawings !== undefined ? state.drawings || [] : undefined,
       projectName: state.projectName,
     };
   } catch (error) {
@@ -149,9 +161,3 @@ export function clearCanvasFromLocalStorage(canvasId: string): void {
     console.error('Failed to clear canvas from localStorage:', error);
   }
 }
-
-
-
-
-
-

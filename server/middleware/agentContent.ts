@@ -17,7 +17,7 @@ const AI_USER_AGENTS = [
  */
 export function detectAgent(req: Request, res: Response, next: NextFunction) {
   const userAgent = req.headers['user-agent'] || '';
-  const isAgent = AI_USER_AGENTS.some(bot => userAgent.includes(bot));
+  const isAgent = AI_USER_AGENTS.some((bot) => userAgent.includes(bot));
 
   res.locals.isAgent = isAgent;
 
@@ -48,7 +48,10 @@ export function cleanHtmlForAgent(html: string): string {
   cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '');
 
   // Remove decorative attributes
-  cleaned = cleaned.replace(/\s(class|style|onclick|onload|data-testid|data-analytics|aria-hidden)="[^"]*"/gi, '');
+  cleaned = cleaned.replace(
+    /\s(class|style|onclick|onload|data-testid|data-analytics|aria-hidden)="[^"]*"/gi,
+    ''
+  );
 
   // Remove tracking pixels
   cleaned = cleaned.replace(/<img[^>]*width=["']1["'][^>]*>/gi, '');

@@ -1,10 +1,10 @@
 /**
  * Branding Configuration
- * 
+ *
  * This file centralizes all branding-related content that may need to be
  * customized when forking this project. Edit these values to personalize
  * your instance of the application.
- * 
+ *
  * For more sensitive values (like private group links), use environment
  * variables instead (see env.example).
  */
@@ -47,7 +47,9 @@ export const branding = {
 /**
  * Get YouTube thumbnail URL
  */
-export const getYoutubeThumbnail = (quality: 'maxresdefault' | 'hqdefault' | 'mqdefault' = 'maxresdefault'): string => {
+export const getYoutubeThumbnail = (
+  quality: 'maxresdefault' | 'hqdefault' | 'mqdefault' = 'maxresdefault'
+): string => {
   if (!branding.tutorialVideo.enabled || !branding.tutorialVideo.youtubeId) {
     return '';
   }
@@ -70,5 +72,3 @@ export const getYoutubeVideoUrl = (): string => {
 export const getGithubUrl = (): string => {
   return branding.github.url;
 };
-
-

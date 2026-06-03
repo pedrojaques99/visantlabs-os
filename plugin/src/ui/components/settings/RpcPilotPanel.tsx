@@ -16,7 +16,9 @@ export function RpcPilotPanel() {
   const [err, setErr] = useState('');
 
   async function run() {
-    setState('loading'); setOut(''); setErr('');
+    setState('loading');
+    setOut('');
+    setErr('');
     try {
       const { text } = await client.request('ai.chat', { prompt });
       setOut(text);
@@ -34,8 +36,9 @@ export function RpcPilotPanel() {
         RPC Pilot — ai.chat (brand-aware)
       </h3>
       <p className="text-xs text-gray-400">
-        Envelope tipado → <code className="text-cyan-300">/api/rpc</code>. Se houver brand ativa,
-        o server injeta o contexto antes do LLM. Sem <code>postMessage</code> cru, sem <code>fetch</code>.
+        Envelope tipado → <code className="text-cyan-300">/api/rpc</code>. Se houver brand ativa, o
+        server injeta o contexto antes do LLM. Sem <code>postMessage</code> cru, sem{' '}
+        <code>fetch</code>.
       </p>
 
       <textarea
@@ -46,7 +49,11 @@ export function RpcPilotPanel() {
       />
 
       <Button size="sm" onClick={run} disabled={state === 'loading'}>
-        {state === 'loading' ? <Loader2 size={12} className="animate-spin mr-1" /> : <Cpu size={12} className="mr-1" />}
+        {state === 'loading' ? (
+          <Loader2 size={12} className="animate-spin mr-1" />
+        ) : (
+          <Cpu size={12} className="mr-1" />
+        )}
         Run ai.chat
       </Button>
 

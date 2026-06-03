@@ -12,7 +12,7 @@ function resolveAccess(
   guidelineUserId: string,
   canEdit: string[],
   canView: string[],
-  requestingUserId: string,
+  requestingUserId: string
 ): 'FULL_ACCESS' | 'READ_ACCESS' | 'DENIED' {
   const isOwner = guidelineUserId === requestingUserId;
   const hasEdit = isOwner || canEdit.includes(requestingUserId);
@@ -67,7 +67,7 @@ interface Collaborator {
 }
 
 function sectionCollaborators(section: string, collaborators: Collaborator[]) {
-  return collaborators.filter(c => c.presence?.activeSection === section);
+  return collaborators.filter((c) => c.presence?.activeSection === section);
 }
 
 describe('sectionCollaborators', () => {
@@ -88,11 +88,11 @@ describe('sectionCollaborators', () => {
 
   it('excludes users with null presence', () => {
     const result = sectionCollaborators('colors', collaborators);
-    expect(result.every(c => c.presence !== null)).toBe(true);
+    expect(result.every((c) => c.presence !== null)).toBe(true);
   });
 
   it('returns correct connectionIds', () => {
-    const ids = sectionCollaborators('colors', collaborators).map(c => c.connectionId);
+    const ids = sectionCollaborators('colors', collaborators).map((c) => c.connectionId);
     expect(ids).toEqual([1, 3]);
   });
 });

@@ -118,8 +118,22 @@ describe('CampaignJob', () => {
       totalCount: 2,
       completedCount: 2,
       results: [
-        { index: 0, adAngle: 'benefit-led', format: 'square', prompt: 'p1', status: 'done', imageUrl: 'https://r2.example.com/1.png' },
-        { index: 1, adAngle: 'urgency',     format: 'story',  prompt: 'p2', status: 'error', error: 'API timeout' },
+        {
+          index: 0,
+          adAngle: 'benefit-led',
+          format: 'square',
+          prompt: 'p1',
+          status: 'done',
+          imageUrl: 'https://r2.example.com/1.png',
+        },
+        {
+          index: 1,
+          adAngle: 'urgency',
+          format: 'story',
+          prompt: 'p2',
+          status: 'error',
+          error: 'API timeout',
+        },
       ],
     };
     const parsed: CampaignJob = JSON.parse(JSON.stringify(job));
@@ -171,14 +185,12 @@ describe('BatchRunner parallel worker pattern', () => {
       while (queue.length > 0) {
         const i = queue.shift();
         if (i === undefined) break;
-        await new Promise(r => setTimeout(r, 1)); // simulate async work
+        await new Promise((r) => setTimeout(r, 1)); // simulate async work
         processed.push(i);
       }
     };
 
-    await Promise.allSettled(
-      Array.from({ length: CONCURRENCY }, worker)
-    );
+    await Promise.allSettled(Array.from({ length: CONCURRENCY }, worker));
 
     expect(processed).toHaveLength(5);
     expect(processed.sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4]);
@@ -219,8 +231,8 @@ describe('BatchRunner parallel worker pattern', () => {
 
     await Promise.allSettled(Array.from({ length: 2 }, worker));
     expect(results).toHaveLength(4);
-    expect(results.find(r => r.i === 1)?.ok).toBe(false);
-    expect(results.filter(r => r.ok)).toHaveLength(3);
+    expect(results.find((r) => r.i === 1)?.ok).toBe(false);
+    expect(results.filter((r) => r.ok)).toHaveLength(3);
   });
 });
 

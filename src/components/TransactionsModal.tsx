@@ -4,9 +4,9 @@ import { X, CreditCard } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { subscriptionService, type TransactionRecord } from '../services/subscriptionService';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button'
-import { MicroTitle } from '@/components/ui/MicroTitle'
-import { formatDateTime } from '@/utils/localeUtils'
+import { Button } from '@/components/ui/button';
+import { MicroTitle } from '@/components/ui/MicroTitle';
+import { formatDateTime } from '@/utils/localeUtils';
 
 interface TransactionsModalProps {
   isOpen: boolean;
@@ -118,7 +118,8 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
               {t('transactions.subtitle')}
             </h2>
           </div>
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={onClose}
             className="p-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60 transition-colors"
             aria-label="Close"
@@ -159,9 +160,10 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-neutral-100">
-                            {transaction.description || (transaction.type === 'purchase'
-                              ? t('transactions.type.purchase')
-                              : t('transactions.type.subscription'))}
+                            {transaction.description ||
+                              (transaction.type === 'purchase'
+                                ? t('transactions.type.purchase')
+                                : t('transactions.type.subscription'))}
                           </p>
                           <p className="text-xs text-neutral-500 font-mono">
                             {formatDate(transaction.createdAt)}
@@ -196,4 +198,3 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
     </div>
   );
 };
-

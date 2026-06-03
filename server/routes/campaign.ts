@@ -46,22 +46,25 @@ const MAX_CONCURRENCY = 4;
 const MAX_COUNT = 20;
 
 const AD_ANGLES = [
-  { angle: 'benefit-led',   description: 'Primary benefit and transformation outcome' },
-  { angle: 'social-proof',  description: 'Community trust, testimonials, and validation signals' },
-  { angle: 'urgency',       description: 'Scarcity, limited time, or fear of missing out' },
-  { angle: 'lifestyle',     description: 'Aspirational scene with product integrated naturally' },
-  { angle: 'pain-agitate',  description: 'Problem agitation followed by the solution reveal' },
-  { angle: 'transformation',description: 'Before/after identity shift journey' },
-  { angle: 'curiosity',     description: 'Pattern interrupt with surprising or counter-intuitive hook' },
-  { angle: 'authority',     description: 'Science-backed, expert-endorsed credibility' },
-  { angle: 'comparison',    description: 'Differentiation vs alternatives with clear superiority' },
-  { angle: 'story',         description: 'Narrative micro-story arc with emotional resolution' },
+  { angle: 'benefit-led', description: 'Primary benefit and transformation outcome' },
+  { angle: 'social-proof', description: 'Community trust, testimonials, and validation signals' },
+  { angle: 'urgency', description: 'Scarcity, limited time, or fear of missing out' },
+  { angle: 'lifestyle', description: 'Aspirational scene with product integrated naturally' },
+  { angle: 'pain-agitate', description: 'Problem agitation followed by the solution reveal' },
+  { angle: 'transformation', description: 'Before/after identity shift journey' },
+  {
+    angle: 'curiosity',
+    description: 'Pattern interrupt with surprising or counter-intuitive hook',
+  },
+  { angle: 'authority', description: 'Science-backed, expert-endorsed credibility' },
+  { angle: 'comparison', description: 'Differentiation vs alternatives with clear superiority' },
+  { angle: 'story', description: 'Narrative micro-story arc with emotional resolution' },
 ] as const;
 
 const FORMAT_DIMENSIONS: Record<string, string> = {
-  square:   '1:1 square — Instagram/Facebook feed',
-  story:    '9:16 vertical — Instagram/TikTok stories and reels',
-  banner:   '16:9 landscape — YouTube/display advertising',
+  square: '1:1 square — Instagram/Facebook feed',
+  story: '9:16 vertical — Instagram/TikTok stories and reels',
+  banner: '16:9 landscape — YouTube/display advertising',
   portrait: '4:5 portrait — Instagram feed optimized for engagement',
 };
 
@@ -92,10 +95,10 @@ async function planPrompts(params: {
     ? [
         `Brand: ${brandContext.brand.name}`,
         brandContext.colors.length
-          ? `Colors: ${brandContext.colors.map(c => `${c.name} ${c.hex}`).join(', ')}`
+          ? `Colors: ${brandContext.colors.map((c) => `${c.name} ${c.hex}`).join(', ')}`
           : null,
         brandContext.typography.length
-          ? `Typography: ${brandContext.typography.map(t => `${t.role}: ${t.family}`).join(', ')}`
+          ? `Typography: ${brandContext.typography.map((t) => `${t.role}: ${t.family}`).join(', ')}`
           : null,
         brandContext.voice?.tone ? `Voice/Tone: ${brandContext.voice.tone}` : null,
         brandContext.voice?.dos?.length ? `Dos: ${brandContext.voice.dos.join(', ')}` : null,
@@ -114,9 +117,7 @@ async function planPrompts(params: {
     format: formats[i % formats.length],
   }));
 
-  const angleGuide = anglesPool
-    .map(a => `- ${a.angle}: ${a.description}`)
-    .join('\n');
+  const angleGuide = anglesPool.map((a) => `- ${a.angle}: ${a.description}`).join('\n');
 
   const formatGuide = Object.entries(FORMAT_DIMENSIONS)
     .map(([k, v]) => `- ${k}: ${v}`)
@@ -149,7 +150,10 @@ Each prompt must be 80-150 words. No explanations — only the JSON.`;
       { role: 'system', content: systemPrompt },
       {
         role: 'user',
-        content: `Campaign brief: ${sanitizeForPrompt(brief, 2000)}\n\nGenerate ${count} prompts for these pairs:\n${JSON.stringify(planned, null, 2)}`,
+        content: `Campaign brief: ${sanitizeForPrompt(
+          brief,
+          2000
+        )}\n\nGenerate ${count} prompts for these pairs:\n${JSON.stringify(planned, null, 2)}`,
       },
     ],
     response_format: { type: 'json_object' },
@@ -157,7 +161,9 @@ Each prompt must be 80-150 words. No explanations — only the JSON.`;
   });
 
   const content = response.choices[0]?.message?.content ?? '{"results":[]}';
-  const parsed = JSON.parse(content) as { results?: Array<{ adAngle: string; format: string; prompt: string }> };
+  const parsed = JSON.parse(content) as {
+    results?: Array<{ adAngle: string; format: string; prompt: string }>;
+  };
   return (parsed.results ?? []).slice(0, count);
 }
 
@@ -209,7 +215,7 @@ async function generateOneImage(params: {
       undefined,
       undefined,
       undefined,
-      apiKey,
+      apiKey
     );
   }
 
@@ -329,7 +335,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
   }
 
   const validFormats = ['square', 'story', 'banner', 'portrait'];
-  const safeFormats = (Array.isArray(formats) ? formats : [formats]).filter(f =>
+  const safeFormats = (Array.isArray(formats) ? formats : [formats]).filter((f) =>
     validFormats.includes(f)
   );
   if (safeFormats.length === 0) safeFormats.push('square', 'story');
@@ -338,7 +344,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 
   // Charge credits upfront: 1 credit for GPT-4o planning + per-image credits
   const perImageCredits = getCreditsRequired(model, '1K');
-  const totalCredits = 1 + (perImageCredits * safeCount);
+  const totalCredits = 1 + perImageCredits * safeCount;
   const chargeResult = await chargeCredits(req.userId!, totalCredits);
 
   const job: CampaignJob = {
@@ -351,7 +357,13 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
   };
 
   await saveJob(job);
-  res.status(202).json({ jobId: job.jobId, totalCount: safeCount, creditsCharged: chargeResult.creditsDeducted });
+  res
+    .status(202)
+    .json({
+      jobId: job.jobId,
+      totalCount: safeCount,
+      creditsCharged: chargeResult.creditsDeducted,
+    });
 
   // Run async — do not await (fire-and-forget with full error capture inside runCampaign)
   runCampaign({
@@ -362,7 +374,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     formats: safeFormats,
     model,
     userId: req.userId,
-  }).catch(err => {
+  }).catch((err) => {
     console.error('[campaign] Unhandled error in runCampaign:', err);
   });
 });

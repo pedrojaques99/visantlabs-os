@@ -26,19 +26,30 @@ export function ProfileTab() {
   };
 
   const handleSaveApiKey = async () => {
-    window.parent.postMessage({ pluginMessage: { type: 'SAVE_API_KEY', key: apiKey } }, 'https://www.figma.com');
+    window.parent.postMessage(
+      { pluginMessage: { type: 'SAVE_API_KEY', key: apiKey } },
+      'https://www.figma.com'
+    );
   };
 
   return (
     <div className="space-y-4">
       {/* Account Info */}
-      <BrandSection title="Conta & Acesso" icon={User} badge={isAuthenticated ? "Logado" : "Visitante"}>
+      <BrandSection
+        title="Conta & Acesso"
+        icon={User}
+        badge={isAuthenticated ? 'Logado' : 'Visitante'}
+      >
         {isAuthenticated ? (
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-3 bg-neutral-900/40 border border-white/5 rounded-xl">
               <div className="h-10 w-10 rounded-full bg-brand-cyan/20 border border-brand-cyan/30 flex items-center justify-center overflow-hidden">
                 {userInfo?.photoUrl ? (
-                  <img src={userInfo.photoUrl} alt="Avatar" className="h-full w-full object-cover" />
+                  <img
+                    src={userInfo.photoUrl}
+                    alt="Avatar"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <User size={20} className="text-brand-cyan" />
                 )}
@@ -53,11 +64,11 @@ export function ProfileTab() {
                 </div>
               </div>
             </div>
-            
-            <Button 
-              onClick={logout} 
-              variant="outline" 
-              size="sm" 
+
+            <Button
+              onClick={logout}
+              variant="outline"
+              size="sm"
               className="w-full text-[10px] h-8 font-bold uppercase tracking-widest border-white/5 hover:bg-red-500/10 hover:text-red-400 hover:border-red-400/20"
             >
               <LogOut size={12} className="mr-2" />
@@ -99,7 +110,9 @@ export function ProfileTab() {
 
             <div className="flex items-center gap-2 py-1">
               <div className="flex-1 h-px bg-white/5" />
-              <span className="text-[8px] uppercase tracking-widest text-neutral-600 font-bold">ou</span>
+              <span className="text-[8px] uppercase tracking-widest text-neutral-600 font-bold">
+                ou
+              </span>
               <div className="flex-1 h-px bg-white/5" />
             </div>
 
@@ -140,7 +153,9 @@ export function ProfileTab() {
       <BrandSection title="Settings & API" icon={Cpu}>
         <div className="space-y-3">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">Visant API Key (Dev)</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+              Visant API Key (Dev)
+            </label>
             <div className="flex gap-2">
               <Input
                 type="password"
@@ -149,12 +164,17 @@ export function ProfileTab() {
                 onChange={(e) => setApiKey(e.target.value)}
                 className="text-[10px] h-8 bg-neutral-950/50 border-white/5 font-mono flex-1"
               />
-              <Button onClick={handleSaveApiKey} variant="outline" size="sm" className="h-8 px-3 border-white/5">
+              <Button
+                onClick={handleSaveApiKey}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 border-white/5"
+              >
                 Save
               </Button>
             </div>
           </div>
-          
+
           <div className="p-3 bg-brand-cyan/5 border border-brand-cyan/10 rounded-lg flex items-center gap-2">
             <ShieldCheck size={14} className="text-brand-cyan" />
             <p className="text-[9px] text-brand-cyan/80 leading-tight">
@@ -166,7 +186,9 @@ export function ProfileTab() {
 
       {/* About */}
       <div className="p-4 border border-white/5 rounded-xl bg-neutral-950/20 flex flex-col items-center gap-1">
-        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-600">Visant Copilot</div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-600">
+          Visant Copilot
+        </div>
         <div className="text-[9px] font-mono text-neutral-700">VERSION 4.3.0 ALPHA</div>
       </div>
     </div>

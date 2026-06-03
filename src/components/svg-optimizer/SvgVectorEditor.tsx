@@ -2,8 +2,16 @@ import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { cn } from '@/lib/utils';
 import { analyzeSvg, type Point, type Segment } from '@/components/grid-machine/SvgAnalyzer';
 import {
-  MousePointer2, Eraser, Lasso, Undo2, Trash2,
-  ZoomIn, ZoomOut, RotateCcw, Spline, Circle,
+  MousePointer2,
+  Eraser,
+  Lasso,
+  Undo2,
+  Trash2,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Spline,
+  Circle,
 } from 'lucide-react';
 
 type Tool = 'select' | 'eraser' | 'lasso';
@@ -43,7 +51,8 @@ function parseSvgElements(svgString: string): {
     viewBox = { x: p[0], y: p[1], width: p[2], height: p[3] };
   } else {
     viewBox = {
-      x: 0, y: 0,
+      x: 0,
+      y: 0,
       width: parseFloat(svgEl.getAttribute('width') || '100'),
       height: parseFloat(svgEl.getAttribute('height') || '100'),
     };
@@ -66,10 +75,13 @@ function extractElementInfo(el: SVGElement, index: number): SvgElementInfo | nul
   const result = analyzeSvg(wrapper);
   if (result.points.length === 0 && result.segments.length === 0) return null;
 
-  const anchors = result.points.filter(p => p.type === 'anchor');
-  const handles = result.points.filter(p => p.type === 'handle');
+  const anchors = result.points.filter((p) => p.type === 'anchor');
+  const handles = result.points.filter((p) => p.type === 'handle');
 
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
   for (const p of anchors) {
     minX = Math.min(minX, p.x);
     minY = Math.min(minY, p.y);
@@ -89,7 +101,11 @@ function extractElementInfo(el: SVGElement, index: number): SvgElementInfo | nul
   };
 }
 
-function reconstructSvg(doc: Document, allElements: SvgElementInfo[], deletedIndices: Set<number>): string {
+function reconstructSvg(
+  doc: Document,
+  allElements: SvgElementInfo[],
+  deletedIndices: Set<number>
+): string {
   const clone = doc.cloneNode(true) as Document;
   const svgEl = clone.querySelector('svg');
   if (!svgEl) return '';
@@ -108,7 +124,7 @@ function reconstructSvg(doc: Document, allElements: SvgElementInfo[], deletedInd
   while (changed) {
     changed = false;
     const groups = svgEl.querySelectorAll('g');
-    groups.forEach(g => {
+    groups.forEach((g) => {
       if (g.children.length === 0 && g.textContent?.trim() === '') {
         g.parentNode?.removeChild(g);
         changed = true;
@@ -123,16 +139,25 @@ function reconstructSvg(doc: Document, allElements: SvgElementInfo[], deletedInd
 function pointInPolygon(x: number, y: number, polygon: { x: number; y: number }[]): boolean {
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].x, yi = polygon[i].y;
-    const xj = polygon[j].x, yj = polygon[j].y;
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+    const xi = polygon[i].x,
+      yi = polygon[i].y;
+    const xj = polygon[j].x,
+      yj = polygon[j].y;
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
       inside = !inside;
     }
   }
   return inside;
 }
 
-function pointToSegDist(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+function pointToSegDist(
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+): number {
   const dx = x2 - x1;
   const dy = y2 - y1;
   const lenSq = dx * dx + dy * dy;
@@ -177,18 +202,18 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
   const { elements, viewBox, doc } = useMemo(() => parseSvgElements(svgString), [svgString]);
 
   const visibleElements = useMemo(
-    () => elements.filter(el => !deletedIndices.has(el.index)),
-    [elements, deletedIndices],
+    () => elements.filter((el) => !deletedIndices.has(el.index)),
+    [elements, deletedIndices]
   );
 
   const totalAnchors = useMemo(
     () => visibleElements.reduce((sum, el) => sum + el.anchors.length, 0),
-    [visibleElements],
+    [visibleElements]
   );
 
   const totalSegments = useMemo(
     () => visibleElements.reduce((sum, el) => sum + el.segments.length, 0),
-    [visibleElements],
+    [visibleElements]
   );
 
   const getTransform = useCallback(() => {
@@ -207,10 +232,13 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     return { offsetX, offsetY, totalScale };
   }, [viewBox, zoom, panX, panY]);
 
-  const screenToSvg = useCallback((sx: number, sy: number) => {
-    const { offsetX, offsetY, totalScale } = getTransform();
-    return { x: (sx - offsetX) / totalScale, y: (sy - offsetY) / totalScale };
-  }, [getTransform]);
+  const screenToSvg = useCallback(
+    (sx: number, sy: number) => {
+      const { offsetX, offsetY, totalScale } = getTransform();
+      return { x: (sx - offsetX) / totalScale, y: (sy - offsetY) / totalScale };
+    },
+    [getTransform]
+  );
 
   // --- Drawing ---
   const draw = useCallback(() => {
@@ -260,7 +288,14 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
           ctx.moveTo(seg.from.x, seg.from.y);
           if (seg.type === 'curve' && seg.handles) {
             if (seg.handles.length === 2) {
-              ctx.bezierCurveTo(seg.handles[0].x, seg.handles[0].y, seg.handles[1].x, seg.handles[1].y, seg.to.x, seg.to.y);
+              ctx.bezierCurveTo(
+                seg.handles[0].x,
+                seg.handles[0].y,
+                seg.handles[1].x,
+                seg.handles[1].y,
+                seg.to.x,
+                seg.to.y
+              );
             } else if (seg.handles.length === 1) {
               ctx.quadraticCurveTo(seg.handles[0].x, seg.handles[0].y, seg.to.x, seg.to.y);
             }
@@ -310,7 +345,12 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
         ctx.strokeStyle = 'rgba(0,212,255,0.3)';
         ctx.lineWidth = 1 / totalScale;
         ctx.setLineDash([4 / totalScale, 4 / totalScale]);
-        ctx.strokeRect(el.bbox.x - 2 / totalScale, el.bbox.y - 2 / totalScale, el.bbox.w + 4 / totalScale, el.bbox.h + 4 / totalScale);
+        ctx.strokeRect(
+          el.bbox.x - 2 / totalScale,
+          el.bbox.y - 2 / totalScale,
+          el.bbox.w + 4 / totalScale,
+          el.bbox.h + 4 / totalScale
+        );
         ctx.setLineDash([]);
       }
     }
@@ -349,10 +389,33 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.font = '10px ui-monospace, monospace';
     ctx.fillText(
-      `${visibleElements.length} elements · ${totalAnchors} anchors · ${totalSegments} segments · ${Math.round(zoom * 100)}%`,
-      8, rect.height - 8,
+      `${
+        visibleElements.length
+      } elements · ${totalAnchors} anchors · ${totalSegments} segments · ${Math.round(
+        zoom * 100
+      )}%`,
+      8,
+      rect.height - 8
     );
-  }, [visibleElements, selectedIndices, showAnchors, showHandles, showOutline, viewBox, zoom, panX, panY, lassoPoints, isDrawingLasso, tool, isErasing, getTransform, screenToSvg, totalAnchors, totalSegments]);
+  }, [
+    visibleElements,
+    selectedIndices,
+    showAnchors,
+    showHandles,
+    showOutline,
+    viewBox,
+    zoom,
+    panX,
+    panY,
+    lassoPoints,
+    isDrawingLasso,
+    tool,
+    isErasing,
+    getTransform,
+    screenToSvg,
+    totalAnchors,
+    totalSegments,
+  ]);
 
   useEffect(() => {
     draw();
@@ -362,35 +425,41 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
   }, [draw]);
 
   // --- Hit testing ---
-  const hitTestElement = useCallback((svgX: number, svgY: number, radius: number): SvgElementInfo | null => {
-    const rSq = radius * radius;
-    for (let i = visibleElements.length - 1; i >= 0; i--) {
-      const el = visibleElements[i];
-      for (const p of el.anchors) {
-        if ((p.x - svgX) ** 2 + (p.y - svgY) ** 2 < rSq) return el;
+  const hitTestElement = useCallback(
+    (svgX: number, svgY: number, radius: number): SvgElementInfo | null => {
+      const rSq = radius * radius;
+      for (let i = visibleElements.length - 1; i >= 0; i--) {
+        const el = visibleElements[i];
+        for (const p of el.anchors) {
+          if ((p.x - svgX) ** 2 + (p.y - svgY) ** 2 < rSq) return el;
+        }
+        for (const seg of el.segments) {
+          const dist = pointToSegDist(svgX, svgY, seg.from.x, seg.from.y, seg.to.x, seg.to.y);
+          if (dist < radius) return el;
+        }
       }
-      for (const seg of el.segments) {
-        const dist = pointToSegDist(svgX, svgY, seg.from.x, seg.from.y, seg.to.x, seg.to.y);
-        if (dist < radius) return el;
-      }
-    }
-    return null;
-  }, [visibleElements]);
+      return null;
+    },
+    [visibleElements]
+  );
 
   // --- Deletion ---
-  const deleteElements = useCallback((indices: Set<number>) => {
-    if (indices.size === 0) return;
-    setUndoStack(prev => [...prev, new Set(deletedIndices)]);
-    setDeletedIndices(prev => {
-      const next = new Set(prev);
-      indices.forEach(i => next.add(i));
-      return next;
-    });
-    setSelectedIndices(new Set());
-  }, [deletedIndices]);
+  const deleteElements = useCallback(
+    (indices: Set<number>) => {
+      if (indices.size === 0) return;
+      setUndoStack((prev) => [...prev, new Set(deletedIndices)]);
+      setDeletedIndices((prev) => {
+        const next = new Set(prev);
+        indices.forEach((i) => next.add(i));
+        return next;
+      });
+      setSelectedIndices(new Set());
+    },
+    [deletedIndices]
+  );
 
   const undo = useCallback(() => {
-    setUndoStack(prev => {
+    setUndoStack((prev) => {
       if (prev.length === 0) return prev;
       const stack = [...prev];
       const last = stack.pop()!;
@@ -414,70 +483,85 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }, []);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    const pos = getMousePos(e);
-    lastMouse.current = pos;
-
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
-      isPanning.current = true;
-      e.preventDefault();
-      return;
-    }
-
-    if (e.button !== 0) return;
-
-    const { totalScale } = getTransform();
-    const svgPos = screenToSvg(pos.x, pos.y);
-    const hitRadius = 8 / totalScale;
-
-    if (tool === 'select') {
-      const hit = hitTestElement(svgPos.x, svgPos.y, hitRadius);
-      if (hit) {
-        setSelectedIndices(prev => {
-          const next = new Set(e.shiftKey ? prev : new Set<number>());
-          if (next.has(hit.index)) next.delete(hit.index);
-          else next.add(hit.index);
-          return next;
-        });
-      } else if (!e.shiftKey) {
-        setSelectedIndices(new Set());
-      }
-    } else if (tool === 'eraser') {
-      setIsErasing(true);
-      const hit = hitTestElement(svgPos.x, svgPos.y, 12 / totalScale);
-      if (hit) deleteElements(new Set([hit.index]));
-    } else if (tool === 'lasso') {
-      setIsDrawingLasso(true);
-      setLassoPoints([svgPos]);
-    }
-  }, [tool, getMousePos, getTransform, screenToSvg, hitTestElement, deleteElements]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const pos = getMousePos(e);
-
-    if (isPanning.current) {
-      const dx = pos.x - lastMouse.current.x;
-      const dy = pos.y - lastMouse.current.y;
-      setPanX(prev => prev + dx);
-      setPanY(prev => prev + dy);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      const pos = getMousePos(e);
       lastMouse.current = pos;
-      return;
-    }
 
-    lastMouse.current = pos;
+      if (e.button === 1 || (e.button === 0 && e.altKey)) {
+        isPanning.current = true;
+        e.preventDefault();
+        return;
+      }
 
-    if (tool === 'eraser' && isErasing) {
+      if (e.button !== 0) return;
+
       const { totalScale } = getTransform();
       const svgPos = screenToSvg(pos.x, pos.y);
-      const hit = hitTestElement(svgPos.x, svgPos.y, 12 / totalScale);
-      if (hit) deleteElements(new Set([hit.index]));
-    }
+      const hitRadius = 8 / totalScale;
 
-    if (tool === 'lasso' && isDrawingLasso) {
-      const svgPos = screenToSvg(pos.x, pos.y);
-      setLassoPoints(prev => [...prev, svgPos]);
-    }
-  }, [tool, isErasing, isDrawingLasso, getMousePos, getTransform, screenToSvg, hitTestElement, deleteElements]);
+      if (tool === 'select') {
+        const hit = hitTestElement(svgPos.x, svgPos.y, hitRadius);
+        if (hit) {
+          setSelectedIndices((prev) => {
+            const next = new Set(e.shiftKey ? prev : new Set<number>());
+            if (next.has(hit.index)) next.delete(hit.index);
+            else next.add(hit.index);
+            return next;
+          });
+        } else if (!e.shiftKey) {
+          setSelectedIndices(new Set());
+        }
+      } else if (tool === 'eraser') {
+        setIsErasing(true);
+        const hit = hitTestElement(svgPos.x, svgPos.y, 12 / totalScale);
+        if (hit) deleteElements(new Set([hit.index]));
+      } else if (tool === 'lasso') {
+        setIsDrawingLasso(true);
+        setLassoPoints([svgPos]);
+      }
+    },
+    [tool, getMousePos, getTransform, screenToSvg, hitTestElement, deleteElements]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const pos = getMousePos(e);
+
+      if (isPanning.current) {
+        const dx = pos.x - lastMouse.current.x;
+        const dy = pos.y - lastMouse.current.y;
+        setPanX((prev) => prev + dx);
+        setPanY((prev) => prev + dy);
+        lastMouse.current = pos;
+        return;
+      }
+
+      lastMouse.current = pos;
+
+      if (tool === 'eraser' && isErasing) {
+        const { totalScale } = getTransform();
+        const svgPos = screenToSvg(pos.x, pos.y);
+        const hit = hitTestElement(svgPos.x, svgPos.y, 12 / totalScale);
+        if (hit) deleteElements(new Set([hit.index]));
+      }
+
+      if (tool === 'lasso' && isDrawingLasso) {
+        const svgPos = screenToSvg(pos.x, pos.y);
+        setLassoPoints((prev) => [...prev, svgPos]);
+      }
+    },
+    [
+      tool,
+      isErasing,
+      isDrawingLasso,
+      getMousePos,
+      getTransform,
+      screenToSvg,
+      hitTestElement,
+      deleteElements,
+    ]
+  );
 
   const handleMouseUp = useCallback(() => {
     isPanning.current = false;
@@ -509,7 +593,7 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const factor = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(prev => Math.max(0.1, Math.min(20, prev * factor)));
+    setZoom((prev) => Math.max(0.1, Math.min(20, prev * factor)));
   }, []);
 
   // Keyboard — only when editor container is focused
@@ -530,7 +614,7 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
-        setSelectedIndices(new Set(visibleElements.map(el => el.index)));
+        setSelectedIndices(new Set(visibleElements.map((el) => el.index)));
       }
       if (e.key === 'Escape') {
         setSelectedIndices(new Set());
@@ -547,10 +631,20 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     return () => el.removeEventListener('keydown', handler);
   }, [selectedIndices, visibleElements, deleteElements, undo]);
 
-  const cursorClass = tool === 'eraser' ? 'cursor-crosshair' : tool === 'lasso' ? 'cursor-crosshair' : 'cursor-default';
+  const cursorClass =
+    tool === 'eraser'
+      ? 'cursor-crosshair'
+      : tool === 'lasso'
+      ? 'cursor-crosshair'
+      : 'cursor-default';
 
   return (
-    <div ref={editorRef} tabIndex={0} className={cn('flex flex-col h-full outline-none', className)} onFocus={() => {}}>
+    <div
+      ref={editorRef}
+      tabIndex={0}
+      className={cn('flex flex-col h-full outline-none', className)}
+      onFocus={() => {}}
+    >
       {/* Toolbar */}
       <div className="flex items-center gap-1 p-2 border-b border-neutral-800 flex-wrap">
         <ToolBtn active={tool === 'select'} onClick={() => setTool('select')} title="Select (V)">
@@ -591,14 +685,23 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
 
         <div className="w-px h-4 bg-neutral-800 mx-1" />
 
-        <ToolBtn onClick={() => setZoom(z => Math.max(0.1, z * 0.8))} title="Zoom out">
+        <ToolBtn onClick={() => setZoom((z) => Math.max(0.1, z * 0.8))} title="Zoom out">
           <ZoomOut size={12} />
         </ToolBtn>
-        <span className="text-[9px] font-mono text-neutral-500 w-8 text-center">{Math.round(zoom * 100)}%</span>
-        <ToolBtn onClick={() => setZoom(z => Math.min(20, z * 1.25))} title="Zoom in">
+        <span className="text-[9px] font-mono text-neutral-500 w-8 text-center">
+          {Math.round(zoom * 100)}%
+        </span>
+        <ToolBtn onClick={() => setZoom((z) => Math.min(20, z * 1.25))} title="Zoom in">
           <ZoomIn size={12} />
         </ToolBtn>
-        <ToolBtn onClick={() => { setZoom(1); setPanX(0); setPanY(0); }} title="Reset view">
+        <ToolBtn
+          onClick={() => {
+            setZoom(1);
+            setPanX(0);
+            setPanY(0);
+          }}
+          title="Reset view"
+        >
           <RotateCcw size={10} />
         </ToolBtn>
 
@@ -624,7 +727,10 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onContextMenu={e => { e.preventDefault(); undo(); }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          undo();
+        }}
       >
         <canvas ref={canvasRef} className="w-full h-full" />
       </div>
@@ -637,7 +743,10 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
           </span>
           <div className="flex-1" />
           <button
-            onClick={() => { setDeletedIndices(new Set()); setUndoStack([]); }}
+            onClick={() => {
+              setDeletedIndices(new Set());
+              setUndoStack([]);
+            }}
             className="text-[10px] font-mono text-neutral-500 hover:text-neutral-300 uppercase tracking-wider px-2 py-1"
           >
             Discard
@@ -671,7 +780,7 @@ const ToolBtn: React.FC<{
       active && !danger && 'bg-brand-cyan/20 text-brand-cyan',
       danger && 'hover:text-red-400',
       !active && !danger && 'hover:bg-neutral-800 hover:text-neutral-300',
-      disabled && 'opacity-30 pointer-events-none',
+      disabled && 'opacity-30 pointer-events-none'
     )}
   >
     {children}

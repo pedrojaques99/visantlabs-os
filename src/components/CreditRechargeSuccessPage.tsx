@@ -7,7 +7,7 @@ import { subscriptionService } from '../services/subscriptionService';
 import { authService } from '../services/authService';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { GridDotsBackground } from './ui/GridDotsBackground';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { trackPurchase } from '@/utils/analytics';
 
 // Hook para animação de contador
@@ -33,7 +33,9 @@ const useCountAnimation = (targetValue: number, duration: number = 800) => {
 
       // Easing function (easeOutCubic)
       const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-      const currentValue = Math.round(startValueRef.current + (targetValue - startValueRef.current) * easeOutCubic);
+      const currentValue = Math.round(
+        startValueRef.current + (targetValue - startValueRef.current) * easeOutCubic
+      );
 
       setDisplayValue(currentValue);
 
@@ -111,27 +113,27 @@ export const CreditRechargeSuccessPage: React.FC = () => {
                 const status = await subscriptionService.getSubscriptionStatus();
                 const currentCredits = status.totalCreditsEarned ?? 0;
 
-                  // If credits increased, payment was successful
-                  if (currentCredits > startingCredits) {
-                    const added = currentCredits - startingCredits;
-                    console.log('✅ Credits updated successfully:', {
-                      initial: startingCredits,
-                      updated: currentCredits,
-                      added: added,
-                    });
-                    
-                    // Track Purchase in Himetrica
-                    trackPurchase({
-                      product_id: `recharge_${added}_credits`,
-                      price: 0, // In this page we don't have the price, but we track the event
-                      credits: added
-                    });
+                // If credits increased, payment was successful
+                if (currentCredits > startingCredits) {
+                  const added = currentCredits - startingCredits;
+                  console.log('✅ Credits updated successfully:', {
+                    initial: startingCredits,
+                    updated: currentCredits,
+                    added: added,
+                  });
 
-                    if (pollCreditsInterval) clearInterval(pollCreditsInterval);
-                    setSubscriptionStatus(status);
-                    setIsVerifyingCredits(false);
-                    return;
-                  }
+                  // Track Purchase in Himetrica
+                  trackPurchase({
+                    product_id: `recharge_${added}_credits`,
+                    price: 0, // In this page we don't have the price, but we track the event
+                    credits: added,
+                  });
+
+                  if (pollCreditsInterval) clearInterval(pollCreditsInterval);
+                  setSubscriptionStatus(status);
+                  setIsVerifyingCredits(false);
+                  return;
+                }
 
                 // If we've polled max times, stop polling
                 if (pollCount >= maxPolls) {
@@ -187,13 +189,15 @@ export const CreditRechargeSuccessPage: React.FC = () => {
   const creditsConfirmed = !isVerifyingCredits && subscriptionStatus !== null;
 
   // Animated values - only animate when credits are confirmed
-  const animatedCreditsPurchased = useCountAnimation(creditsConfirmed && creditsPurchased ? creditsPurchased : 0, 1000);
+  const animatedCreditsPurchased = useCountAnimation(
+    creditsConfirmed && creditsPurchased ? creditsPurchased : 0,
+    1000
+  );
   const animatedTotalCredits = useCountAnimation(creditsConfirmed ? totalCredits : 0, 1200);
 
   return (
     <div className="min-h-screen bg-black text-neutral-300 pt-12 md:pt-14 relative">
-      <div className="fixed inset-0 z-0">
-      </div>
+      <div className="fixed inset-0 z-0"></div>
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-20 relative z-10">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
@@ -281,7 +285,9 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         )}
 
         <div className="text-center">
-          <Button variant="brand" onClick={handleGetStarted}
+          <Button
+            variant="brand"
+            onClick={handleGetStarted}
             className="inline-flex items-center gap-2 px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-colors"
           >
             <span>{t('creditRechargeSuccess.getStarted')}</span>
@@ -290,12 +296,9 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-neutral-500 text-xs font-mono">
-            {t('creditRechargeSuccess.support')}
-          </p>
+          <p className="text-neutral-500 text-xs font-mono">{t('creditRechargeSuccess.support')}</p>
         </div>
       </div>
     </div>
   );
 };
-

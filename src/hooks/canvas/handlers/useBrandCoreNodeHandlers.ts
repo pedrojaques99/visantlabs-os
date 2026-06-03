@@ -6,12 +6,21 @@ import { extractBrandIdentity } from '@/services/brandIdentityService';
 import { canvasApi } from '@/services/canvasApi';
 import { detectMimeType } from '@/services/reactFlowService';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
-import { consolidateStrategies, consolidateStrategiesToText, generateVisualPrompt, extractVisualStrategyText } from '@/services/brandPromptService';
+import {
+  consolidateStrategies,
+  consolidateStrategiesToText,
+  generateVisualPrompt,
+  extractVisualStrategyText,
+} from '@/services/brandPromptService';
 import { toast } from 'sonner';
 
 interface UseBrandCoreNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
-  updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void;
+  updateNodeData: <T extends FlowNodeData>(
+    nodeId: string,
+    newData: Partial<T>,
+    nodeType?: string
+  ) => void;
   canvasId?: string;
   saveImmediately?: () => Promise<void>;
 }
@@ -22,119 +31,153 @@ export const useBrandCoreNodeHandlers = ({
   canvasId,
   saveImmediately,
 }: UseBrandCoreNodeHandlersParams) => {
+  const handleBrandCoreAnalyze = useCallback(
+    async (
+      nodeId: string,
+      logoBase64: string,
+      identityBase64: string,
+      identityType: 'pdf' | 'png' = 'pdf'
+    ) => {
+      const node = nodesRef.current.find((n) => n.id === nodeId);
+      if (!node || node.type !== 'brandCore') return;
 
-  const handleBrandCoreAnalyze = useCallback(async (
-    nodeId: string,
-    logoBase64: string,
-    identityBase64: string,
-    identityType: 'pdf' | 'png' = 'pdf'
-  ) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'brandCore') return;
+      const brandCoreData = node.data as BrandCoreData;
+      trackCanvasEvent('generation_started', 'brandCore');
+      updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: true }, 'brandCore');
 
-    const brandCoreData = node.data as BrandCoreData;
-    trackCanvasEvent('generation_started', 'brandCore');
-    updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: true }, 'brandCore');
+      try {
+        const logoImage: UploadedImage = {
+          base64: logoBase64,
+          mimeType: detectMimeType(logoBase64) || 'image/png',
+        };
 
-    try {
-      const logoImage: UploadedImage = {
-        base64: logoBase64,
-        mimeType: detectMimeType(logoBase64) || 'image/png',
-      };
+        let strategyText: string | undefined;
+        if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
+          const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
+          strategyText = consolidateStrategiesToText(consolidated);
+        }
 
-      let strategyText: string | undefined;
-      if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
-        const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
-        strategyText = consolidateStrategiesToText(consolidated);
+        const brandIdentity = await extractBrandIdentity(
+          logoImage,
+          identityBase64,
+          identityType,
+          strategyText
+        );
+
+        updateNodeData<BrandCoreData>(nodeId, { brandIdentity, isAnalyzing: false }, 'brandCore');
+        if (saveImmediately) setTimeout(() => saveImmediately(), 100);
+        trackCanvasEvent('generation_completed', 'brandCore');
+        toast.success('Brand identity analyzed successfully', { duration: 2000 });
+      } catch (error: any) {
+        trackCanvasEvent('generation_failed', 'brandCore', undefined, { error: error?.message });
+        console.error('Error analyzing brand identity:', error);
+        toast.error(error?.message || 'Failed to analyze brand identity', { duration: 5000 });
+        updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: false }, 'brandCore');
       }
+    },
+    [nodesRef, updateNodeData, saveImmediately]
+  );
 
-      const brandIdentity = await extractBrandIdentity(logoImage, identityBase64, identityType, strategyText);
-
-      updateNodeData<BrandCoreData>(nodeId, { brandIdentity, isAnalyzing: false }, 'brandCore');
-      if (saveImmediately) setTimeout(() => saveImmediately(), 100);
-      trackCanvasEvent('generation_completed', 'brandCore');
-      toast.success('Brand identity analyzed successfully', { duration: 2000 });
-    } catch (error: any) {
-      trackCanvasEvent('generation_failed', 'brandCore', undefined, { error: error?.message });
-      console.error('Error analyzing brand identity:', error);
-      toast.error(error?.message || 'Failed to analyze brand identity', { duration: 5000 });
+  const handleBrandCoreCancelAnalyze = useCallback(
+    (nodeId: string) => {
       updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: false }, 'brandCore');
-    }
-  }, [nodesRef, updateNodeData, saveImmediately]);
+      toast.info('Analysis cancelled', { duration: 2000 });
+    },
+    [updateNodeData]
+  );
 
-  const handleBrandCoreCancelAnalyze = useCallback((nodeId: string) => {
-    updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: false }, 'brandCore');
-    toast.info('Analysis cancelled', { duration: 2000 });
-  }, [updateNodeData]);
+  const handleBrandCoreGenerateVisualPrompts = useCallback(
+    async (nodeId: string) => {
+      const node = nodesRef.current.find((n) => n.id === nodeId);
+      if (!node || node.type !== 'brandCore') return;
 
-  const handleBrandCoreGenerateVisualPrompts = useCallback(async (nodeId: string) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'brandCore') return;
-
-    const brandCoreData = node.data as any;
-    if (!brandCoreData.brandIdentity) {
-      toast.error('Brand identity required. Connect logo and identity first.', { duration: 3000 });
-      return;
-    }
-
-    updateNodeData<BrandCoreData>(nodeId, { isGeneratingPrompts: true }, 'brandCore');
-
-    try {
-      let visualStrategyText: string | undefined;
-      if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
-        const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
-        visualStrategyText = extractVisualStrategyText(consolidated);
+      const brandCoreData = node.data as any;
+      if (!brandCoreData.brandIdentity) {
+        toast.error('Brand identity required. Connect logo and identity first.', {
+          duration: 3000,
+        });
+        return;
       }
 
-      const visualPrompts = await generateVisualPrompt(brandCoreData.brandIdentity, { visualStrategyText });
+      updateNodeData<BrandCoreData>(nodeId, { isGeneratingPrompts: true }, 'brandCore');
 
-      updateNodeData<BrandCoreData>(nodeId, { visualPrompts, isGeneratingPrompts: false }, 'brandCore');
-      if (saveImmediately) setTimeout(() => saveImmediately(), 100);
-    } catch (error: any) {
-      console.error('Error generating visual prompts:', error);
-      toast.error(error?.message || 'Failed to generate visual prompts', { duration: 5000 });
-      updateNodeData<BrandCoreData>(nodeId, { isGeneratingPrompts: false }, 'brandCore');
-    }
-  }, [nodesRef, updateNodeData, saveImmediately]);
+      try {
+        let visualStrategyText: string | undefined;
+        if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
+          const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
+          visualStrategyText = extractVisualStrategyText(consolidated);
+        }
 
-  const handleBrandCoreGenerateStrategicPrompts = useCallback(async (nodeId: string) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'brandCore') return;
+        const visualPrompts = await generateVisualPrompt(brandCoreData.brandIdentity, {
+          visualStrategyText,
+        });
 
-    const brandCoreData = node.data as any;
-    if (!brandCoreData.connectedStrategies?.length) return;
+        updateNodeData<BrandCoreData>(
+          nodeId,
+          { visualPrompts, isGeneratingPrompts: false },
+          'brandCore'
+        );
+        if (saveImmediately) setTimeout(() => saveImmediately(), 100);
+      } catch (error: any) {
+        console.error('Error generating visual prompts:', error);
+        toast.error(error?.message || 'Failed to generate visual prompts', { duration: 5000 });
+        updateNodeData<BrandCoreData>(nodeId, { isGeneratingPrompts: false }, 'brandCore');
+      }
+    },
+    [nodesRef, updateNodeData, saveImmediately]
+  );
 
-    try {
-      const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
+  const handleBrandCoreGenerateStrategicPrompts = useCallback(
+    async (nodeId: string) => {
+      const node = nodesRef.current.find((n) => n.id === nodeId);
+      if (!node || node.type !== 'brandCore') return;
 
-      updateNodeData<BrandCoreData>(nodeId, { strategicPrompts: { consolidated } }, 'brandCore');
-      if (saveImmediately) setTimeout(() => saveImmediately(), 100);
-    } catch (error: any) {
-      console.error('Error consolidating strategies:', error);
-      toast.error(error?.message || 'Failed to consolidate strategies', { duration: 5000 });
-    }
-  }, [nodesRef, updateNodeData, saveImmediately]);
+      const brandCoreData = node.data as any;
+      if (!brandCoreData.connectedStrategies?.length) return;
 
-  const handleBrandCoreDataUpdate = useCallback((nodeId: string, newData: Partial<BrandCoreData>) => {
-    updateNodeData<BrandCoreData>(nodeId, newData, 'brandCore');
-  }, [updateNodeData]);
+      try {
+        const consolidated = consolidateStrategies(brandCoreData.connectedStrategies);
 
-  const handleBrandCoreUploadPdfToR2 = useCallback(async (nodeId: string, pdfBase64: string): Promise<string> => {
-    if (!canvasId) throw new Error('Canvas ID is required to upload PDF to R2');
+        updateNodeData<BrandCoreData>(nodeId, { strategicPrompts: { consolidated } }, 'brandCore');
+        if (saveImmediately) setTimeout(() => saveImmediately(), 100);
+      } catch (error: any) {
+        console.error('Error consolidating strategies:', error);
+        toast.error(error?.message || 'Failed to consolidate strategies', { duration: 5000 });
+      }
+    },
+    [nodesRef, updateNodeData, saveImmediately]
+  );
 
-    try {
-      const pdfUrl = await canvasApi.uploadPdfToR2(pdfBase64, canvasId, nodeId);
-      updateNodeData<BrandCoreData>(nodeId, {
-        uploadedIdentityUrl: pdfUrl,
-        uploadedIdentity: undefined,
-        uploadedIdentityType: 'pdf',
-      }, 'brandCore');
-      return pdfUrl;
-    } catch (error: any) {
-      console.error('Error uploading PDF to R2:', error);
-      throw error;
-    }
-  }, [canvasId, updateNodeData]);
+  const handleBrandCoreDataUpdate = useCallback(
+    (nodeId: string, newData: Partial<BrandCoreData>) => {
+      updateNodeData<BrandCoreData>(nodeId, newData, 'brandCore');
+    },
+    [updateNodeData]
+  );
+
+  const handleBrandCoreUploadPdfToR2 = useCallback(
+    async (nodeId: string, pdfBase64: string): Promise<string> => {
+      if (!canvasId) throw new Error('Canvas ID is required to upload PDF to R2');
+
+      try {
+        const pdfUrl = await canvasApi.uploadPdfToR2(pdfBase64, canvasId, nodeId);
+        updateNodeData<BrandCoreData>(
+          nodeId,
+          {
+            uploadedIdentityUrl: pdfUrl,
+            uploadedIdentity: undefined,
+            uploadedIdentityType: 'pdf',
+          },
+          'brandCore'
+        );
+        return pdfUrl;
+      } catch (error: any) {
+        console.error('Error uploading PDF to R2:', error);
+        throw error;
+      }
+    },
+    [canvasId, updateNodeData]
+  );
 
   return {
     handleBrandCoreAnalyze,

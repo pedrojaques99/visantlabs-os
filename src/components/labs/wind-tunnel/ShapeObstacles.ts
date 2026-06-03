@@ -21,8 +21,8 @@ export function rasterizeShapeToObstacles(p: ShapeParams): boolean[] {
   const cy = N / 2 + (p.offsetY ?? 0) * N;
   const minDim = Math.min(p.canvasWidth, p.canvasHeight);
   const rPixels = minDim * 0.15 * scale;
-  const rx = rPixels / p.canvasWidth * N;
-  const ry = rPixels / p.canvasHeight * N;
+  const rx = (rPixels / p.canvasWidth) * N;
+  const ry = (rPixels / p.canvasHeight) * N;
 
   for (let j = 1; j <= N; j++) {
     for (let i = 1; i <= N; i++) {
@@ -45,7 +45,7 @@ export function rasterizeShapeToObstacles(p: ShapeParams): boolean[] {
           const base = rx * 1.6;
           const ty = y + h * 0.4;
           if (ty >= 0 && ty <= h) {
-            const halfW = base * (1 - ty / h) / 2;
+            const halfW = (base * (1 - ty / h)) / 2;
             inside = Math.abs(x) <= halfW;
           }
           break;
@@ -54,9 +54,15 @@ export function rasterizeShapeToObstacles(p: ShapeParams): boolean[] {
           const chord = rx * 3;
           const nx = (x + chord * 0.4) / chord;
           if (nx >= 0 && nx <= 1) {
-            const thickness = 0.12 * ry * 3 * (
-              2.98 * Math.sqrt(nx) - 1.32 * nx - 3.286 * nx * nx + 2.441 * nx * nx * nx - 0.815 * nx * nx * nx * nx
-            );
+            const thickness =
+              0.12 *
+              ry *
+              3 *
+              (2.98 * Math.sqrt(nx) -
+                1.32 * nx -
+                3.286 * nx * nx +
+                2.441 * nx * nx * nx -
+                0.815 * nx * nx * nx * nx);
             inside = Math.abs(y) <= thickness;
           }
           break;
@@ -73,9 +79,9 @@ export function rasterizeShapeToObstacles(p: ShapeParams): boolean[] {
       if (obs[IX(i, j, N)])
         for (let dj = -1; dj <= 1; dj++)
           for (let di = -1; di <= 1; di++) {
-            const ni = i + di, nj = j + dj;
-            if (ni >= 1 && ni <= N && nj >= 1 && nj <= N)
-              dilated[IX(ni, nj, N)] = true;
+            const ni = i + di,
+              nj = j + dj;
+            if (ni >= 1 && ni <= N && nj >= 1 && nj <= N) dilated[IX(ni, nj, N)] = true;
           }
 
   return dilated;

@@ -3,6 +3,7 @@
 ## Critical Issues Found
 
 ### 1. **Variable Collections Async API Issue (Line 871)**
+
 **Severity**: HIGH
 **Location**: `CREATE_VARIABLE` operation, line 871
 
@@ -13,15 +14,18 @@ let collection = figma.variables.getLocalVariableCollections?.().find(...)
 // CORRECT - No await needed, it's a sync function
 let collection = figma.variables.getLocalVariableCollections?.().find(...)
 ```
+
 **Issue**: The code treats `getLocalVariableCollections` as if it might be async, but it's actually a synchronous function.
 
 ---
 
 ### 2. **Redundant loadAllPagesAsync Calls**
+
 **Severity**: MEDIUM
 **Location**: Lines 174-181, 365, 996
 
 The code has multiple calls to `loadAllPagesAsync()`:
+
 - Line 996: In `getComponentsInCurrentFile()`
 - Line 365: In `CREATE_COMPONENT_INSTANCE` (via `ensurePagesLoaded()`)
 
@@ -30,6 +34,7 @@ The code has multiple calls to `loadAllPagesAsync()`:
 ---
 
 ### 3. **insertChild() Method Issue (Line 833)**
+
 **Severity**: HIGH
 **Location**: `REORDER_CHILD` operation, line 833
 
@@ -41,6 +46,7 @@ parentFrame.insertChild(op.index, node);
 **Issue**: According to Figma API, `insertChild()` requires the node to already be a child. For reordering existing nodes, the proper approach is to remove and re-add.
 
 **Fix**:
+
 ```typescript
 // First remove from current parent
 node.parent?.children.includes(node) && node.remove();
@@ -51,6 +57,7 @@ parentFrame.insertChild(op.index, node);
 ---
 
 ### 4. **Clone Operation Error Handling (Line 813)**
+
 **Severity**: MEDIUM
 **Location**: `CLONE_NODE` operation
 
@@ -65,6 +72,7 @@ const cloned = sourceNode.clone();
 ---
 
 ### 5. **Font Loading Validation Missing (Line 315)**
+
 **Severity**: MEDIUM
 **Location**: `CREATE_TEXT` operation
 
@@ -80,6 +88,7 @@ try {
 ---
 
 ### 6. **Boolean Operation Index Validation (Line 926)**
+
 **Severity**: MEDIUM
 **Location**: `BOOLEAN_OPERATION` operation
 
@@ -92,6 +101,7 @@ const result = figma.booleanOperation(nodes, op.operation as BooleanOperationOp,
 ---
 
 ### 7. **Async Function Type Check Redundancy (Line 1046)**
+
 **Severity**: LOW
 **Location**: `getColorVariablesFromFile()`, line 1046
 
@@ -104,6 +114,7 @@ if (figma.variables && typeof figma.variables.getLocalVariablesAsync === 'functi
 ---
 
 ### 8. **Session Cache Not Per-Session (Line 174-181)**
+
 **Severity**: MEDIUM
 **Location**: `pagesLoaded` global variable
 
@@ -123,6 +134,7 @@ async function ensurePagesLoaded() {
 ---
 
 ### 9. **Missing Error Boundary in applyOperations (Line 940)**
+
 **Severity**: MEDIUM
 **Location**: Main operation loop
 
@@ -137,6 +149,7 @@ async function ensurePagesLoaded() {
 ---
 
 ### 10. **Variable Import Without Type Safety (Line 1089)**
+
 **Severity**: MEDIUM
 **Location**: `getColorVariablesFromFile()`, line 1089
 
@@ -150,16 +163,15 @@ const imported = await figma.variables.importVariableByKeyAsync(libVar.key);
 
 ## Summary of Fixes
 
-| Issue | Type | Priority | Line | Fix |
-|-------|------|----------|------|-----|
-| Variable collection API | API Misuse | HIGH | 871 | Remove async treatment |
-| Duplicate loadAllPages | Perf | MEDIUM | 996 | Use cache only |
-| insertChild reordering | API Misuse | HIGH | 833 | Add remove first |
-| Clone no error handle | Error Handling | MEDIUM | 813 | Add try-catch |
-| Font validation | Validation | MEDIUM | 315 | Check availability |
-| Boolean op index | Validation | MEDIUM | 926 | Validate index |
-| Type check redundancy | Code Quality | LOW | 1046 | Remove redundant check |
-| Session cache | Logic | MEDIUM | 174 | Reset per batch |
-| Error handling | Control Flow | MEDIUM | 940 | Consider stopping batch |
-| Variable type safety | Type Safety | MEDIUM | 1089 | Add validation |
-
+| Issue                   | Type           | Priority | Line | Fix                     |
+| ----------------------- | -------------- | -------- | ---- | ----------------------- |
+| Variable collection API | API Misuse     | HIGH     | 871  | Remove async treatment  |
+| Duplicate loadAllPages  | Perf           | MEDIUM   | 996  | Use cache only          |
+| insertChild reordering  | API Misuse     | HIGH     | 833  | Add remove first        |
+| Clone no error handle   | Error Handling | MEDIUM   | 813  | Add try-catch           |
+| Font validation         | Validation     | MEDIUM   | 315  | Check availability      |
+| Boolean op index        | Validation     | MEDIUM   | 926  | Validate index          |
+| Type check redundancy   | Code Quality   | LOW      | 1046 | Remove redundant check  |
+| Session cache           | Logic          | MEDIUM   | 174  | Reset per batch         |
+| Error handling          | Control Flow   | MEDIUM   | 940  | Consider stopping batch |
+| Variable type safety    | Type Safety    | MEDIUM   | 1089 | Add validation          |

@@ -11,10 +11,31 @@
  */
 
 import {
-  FileText, Compass, Image as ImageIcon, Palette, Type, Tag,
-  Layers, FileText as EditorialIcon, ShieldCheck, ImageIcon as MediaIcon,
-  Link, BookOpen, Blend, Layers2, Zap, Frame, MessageCircle, User,
-  Diamond, MessageSquare, LayoutTemplate, SwatchBook, Shield, Search, Shapes,
+  FileText,
+  Compass,
+  Image as ImageIcon,
+  Palette,
+  Type,
+  Tag,
+  Layers,
+  FileText as EditorialIcon,
+  ShieldCheck,
+  ImageIcon as MediaIcon,
+  Link,
+  BookOpen,
+  Blend,
+  Layers2,
+  Zap,
+  Frame,
+  MessageCircle,
+  User,
+  Diamond,
+  MessageSquare,
+  LayoutTemplate,
+  SwatchBook,
+  Shield,
+  Search,
+  Shapes,
 } from 'lucide-react';
 
 export interface SectionMeta {
@@ -25,33 +46,33 @@ export interface SectionMeta {
 }
 
 export const SECTIONS_MANIFEST: SectionMeta[] = [
-  { id: 'identity',      label: 'Identity',       icon: FileText,      defaultSpan: 'full' },
-  { id: 'strategy',      label: 'Strategy',        icon: Compass,       defaultSpan: 'full' },
-  { id: 'logos',         label: 'Logos',            icon: ImageIcon,     defaultSpan: '1'    },
-  { id: 'colors',        label: 'Colors',           icon: Palette,       defaultSpan: '1'    },
-  { id: 'typography',    label: 'Typography',       icon: Type,          defaultSpan: 'full' },
-  { id: 'tags',          label: 'Tags',             icon: Tag,           defaultSpan: '1'    },
-  { id: 'tokens',        label: 'Design Tokens',    icon: Layers,        defaultSpan: '1'    },
-  { id: 'editorial',     label: 'Editorial',        icon: EditorialIcon, defaultSpan: 'full' },
-  { id: 'media',         label: 'Media Kit',        icon: MediaIcon,     defaultSpan: 'full' },
-  { id: 'accessibility', label: 'Accessibility',    icon: ShieldCheck,   defaultSpan: '1'    },
-  { id: 'knowledge',     label: 'Knowledge',        icon: BookOpen,      defaultSpan: 'full' },
-  { id: 'figma',         label: 'Figma',            icon: Link,          defaultSpan: '1'    },
-  { id: 'gradients',     label: 'Gradients',        icon: Blend,         defaultSpan: '1'    },
-  { id: 'shadows',       label: 'Shadows',          icon: Layers2,       defaultSpan: '1'    },
-  { id: 'motion',        label: 'Motion',           icon: Zap,           defaultSpan: '1'    },
-  { id: 'borders',       label: 'Borders',          icon: Frame,         defaultSpan: '1'    },
-  { id: 'colorThemes',   label: 'Color Themes',     icon: SwatchBook,    defaultSpan: 'full' },
-  { id: 'manifesto',         label: 'Manifesto',         icon: BookOpen,       defaultSpan: 'full' },
-  { id: 'archetypes',        label: 'Archetypes',        icon: Diamond,        defaultSpan: '1'    },
-  { id: 'mensagem_central',  label: 'Mensagem Central',  icon: MessageSquare,  defaultSpan: '1'    },
-  { id: 'pillars',           label: 'Pilares',           icon: Shield,         defaultSpan: '1'    },
-  { id: 'market_research',   label: 'Pesquisa de Mercado', icon: Search,       defaultSpan: 'full' },
-  { id: 'voice',             label: 'Tone of Voice',     icon: MessageCircle,  defaultSpan: '1'    },
-  { id: 'personas',          label: 'Personas',          icon: User,           defaultSpan: 'full' },
-  { id: 'graphic_system',    label: 'Sistema Gráfico',   icon: Shapes,         defaultSpan: 'full' },
-  { id: 'preview',           label: 'Preview',            icon: LayoutTemplate, defaultSpan: 'full' },
-  { id: 'design-system-output', label: 'Design System Output', icon: Layers,     defaultSpan: 'full' },
+  { id: 'identity', label: 'Identity', icon: FileText, defaultSpan: 'full' },
+  { id: 'strategy', label: 'Strategy', icon: Compass, defaultSpan: 'full' },
+  { id: 'logos', label: 'Logos', icon: ImageIcon, defaultSpan: '1' },
+  { id: 'colors', label: 'Colors', icon: Palette, defaultSpan: '1' },
+  { id: 'typography', label: 'Typography', icon: Type, defaultSpan: 'full' },
+  { id: 'tags', label: 'Tags', icon: Tag, defaultSpan: '1' },
+  { id: 'tokens', label: 'Design Tokens', icon: Layers, defaultSpan: '1' },
+  { id: 'editorial', label: 'Editorial', icon: EditorialIcon, defaultSpan: 'full' },
+  { id: 'media', label: 'Media Kit', icon: MediaIcon, defaultSpan: 'full' },
+  { id: 'accessibility', label: 'Accessibility', icon: ShieldCheck, defaultSpan: '1' },
+  { id: 'knowledge', label: 'Knowledge', icon: BookOpen, defaultSpan: 'full' },
+  { id: 'figma', label: 'Figma', icon: Link, defaultSpan: '1' },
+  { id: 'gradients', label: 'Gradients', icon: Blend, defaultSpan: '1' },
+  { id: 'shadows', label: 'Shadows', icon: Layers2, defaultSpan: '1' },
+  { id: 'motion', label: 'Motion', icon: Zap, defaultSpan: '1' },
+  { id: 'borders', label: 'Borders', icon: Frame, defaultSpan: '1' },
+  { id: 'colorThemes', label: 'Color Themes', icon: SwatchBook, defaultSpan: 'full' },
+  { id: 'manifesto', label: 'Manifesto', icon: BookOpen, defaultSpan: 'full' },
+  { id: 'archetypes', label: 'Archetypes', icon: Diamond, defaultSpan: '1' },
+  { id: 'mensagem_central', label: 'Mensagem Central', icon: MessageSquare, defaultSpan: '1' },
+  { id: 'pillars', label: 'Pilares', icon: Shield, defaultSpan: '1' },
+  { id: 'market_research', label: 'Pesquisa de Mercado', icon: Search, defaultSpan: 'full' },
+  { id: 'voice', label: 'Tone of Voice', icon: MessageCircle, defaultSpan: '1' },
+  { id: 'personas', label: 'Personas', icon: User, defaultSpan: 'full' },
+  { id: 'graphic_system', label: 'Sistema Gráfico', icon: Shapes, defaultSpan: 'full' },
+  { id: 'preview', label: 'Preview', icon: LayoutTemplate, defaultSpan: 'full' },
+  { id: 'design-system-output', label: 'Design System Output', icon: Layers, defaultSpan: 'full' },
 ];
 
 /**
@@ -59,46 +80,87 @@ export const SECTIONS_MANIFEST: SectionMeta[] = [
  * explicitly adds them via the + button in the tab bar.
  */
 export const OPTIONAL_SECTIONS = new Set([
-  'tokens', 'gradients', 'shadows', 'motion', 'borders',
-  'accessibility', 'knowledge', 'figma', 'tags', 'media',
+  'tokens',
+  'gradients',
+  'shadows',
+  'motion',
+  'borders',
+  'accessibility',
+  'knowledge',
+  'figma',
+  'tags',
+  'media',
 ]);
 
 /** Returns true if the section has relevant data in the guideline */
 export function sectionHasData(id: string, g: import('@/lib/figma-types').BrandGuideline): boolean {
   switch (id) {
-    case 'colors':       return (g.colors?.length ?? 0) > 0;
-    case 'typography':   return (g.typography?.length ?? 0) > 0;
-    case 'logos':        return (g.logos?.length ?? 0) > 0;
-    case 'media':        return (g.media?.length ?? 0) > 0;
-    case 'strategy':     return !!(g.strategy?.manifesto || (g.strategy?.archetypes?.length ?? 0) > 0);
-    case 'voice':        return (g.strategy?.voiceValues?.length ?? 0) > 0;
-    case 'personas':     return (g.strategy?.personas?.length ?? 0) > 0;
-    case 'editorial':    return !!(g.guidelines?.voice || (g.guidelines?.dos?.length ?? 0) > 0);
-    case 'tags':         return Object.keys(g.tags || {}).length > 0;
-    case 'tokens':       return !!(g.tokens?.spacing || g.tokens?.radius);
-    case 'gradients':    return (g.gradients?.length ?? 0) > 0;
-    case 'shadows':      return (g.shadows?.length ?? 0) > 0;
-    case 'motion':       return !!(g.motion?.easing || g.motion?.philosophy);
-    case 'borders':      return (g.borders?.length ?? 0) > 0;
-    case 'colorThemes':  return (g.colorThemes?.length ?? 0) > 0;
-    case 'accessibility':return !!(g.guidelines?.accessibility);
-    case 'knowledge':    return (g.knowledgeFiles?.length ?? 0) > 0;
-    case 'figma':        return !!(g.figmaFileUrl);
-    case 'pillars':      return (g.strategy?.pillars?.length ?? 0) > 0;
-    case 'market_research': return !!(g.strategy?.marketResearch?.competitors?.length || g.strategy?.marketResearch?.gaps?.length || g.strategy?.marketResearch?.opportunities?.length);
-    case 'graphic_system':  return !!(g.strategy?.graphicSystem?.patterns?.length || g.strategy?.graphicSystem?.grafisms?.length || g.strategy?.graphicSystem?.imageRules?.length || g.strategy?.graphicSystem?.editorialGrid);
-    case 'design-system-output': return (g.colors?.length ?? 0) > 0 || (g.typography?.length ?? 0) > 0 || !!(g.tokens?.spacing);
-    default:             return true;
+    case 'colors':
+      return (g.colors?.length ?? 0) > 0;
+    case 'typography':
+      return (g.typography?.length ?? 0) > 0;
+    case 'logos':
+      return (g.logos?.length ?? 0) > 0;
+    case 'media':
+      return (g.media?.length ?? 0) > 0;
+    case 'strategy':
+      return !!(g.strategy?.manifesto || (g.strategy?.archetypes?.length ?? 0) > 0);
+    case 'voice':
+      return (g.strategy?.voiceValues?.length ?? 0) > 0;
+    case 'personas':
+      return (g.strategy?.personas?.length ?? 0) > 0;
+    case 'editorial':
+      return !!(g.guidelines?.voice || (g.guidelines?.dos?.length ?? 0) > 0);
+    case 'tags':
+      return Object.keys(g.tags || {}).length > 0;
+    case 'tokens':
+      return !!(g.tokens?.spacing || g.tokens?.radius);
+    case 'gradients':
+      return (g.gradients?.length ?? 0) > 0;
+    case 'shadows':
+      return (g.shadows?.length ?? 0) > 0;
+    case 'motion':
+      return !!(g.motion?.easing || g.motion?.philosophy);
+    case 'borders':
+      return (g.borders?.length ?? 0) > 0;
+    case 'colorThemes':
+      return (g.colorThemes?.length ?? 0) > 0;
+    case 'accessibility':
+      return !!g.guidelines?.accessibility;
+    case 'knowledge':
+      return (g.knowledgeFiles?.length ?? 0) > 0;
+    case 'figma':
+      return !!g.figmaFileUrl;
+    case 'pillars':
+      return (g.strategy?.pillars?.length ?? 0) > 0;
+    case 'market_research':
+      return !!(
+        g.strategy?.marketResearch?.competitors?.length ||
+        g.strategy?.marketResearch?.gaps?.length ||
+        g.strategy?.marketResearch?.opportunities?.length
+      );
+    case 'graphic_system':
+      return !!(
+        g.strategy?.graphicSystem?.patterns?.length ||
+        g.strategy?.graphicSystem?.grafisms?.length ||
+        g.strategy?.graphicSystem?.imageRules?.length ||
+        g.strategy?.graphicSystem?.editorialGrid
+      );
+    case 'design-system-output':
+      return (g.colors?.length ?? 0) > 0 || (g.typography?.length ?? 0) > 0 || !!g.tokens?.spacing;
+    default:
+      return true;
   }
 }
 
 /** Derived: ordered list of section ids — used as DEFAULT_BLOCKS in GuidelineDetail */
-export const DEFAULT_SECTION_IDS = SECTIONS_MANIFEST.map(s => s.id);
+export const DEFAULT_SECTION_IDS = SECTIONS_MANIFEST.map((s) => s.id);
 
 /** Derived: lookup map for O(1) access by id */
-export const SECTION_BY_ID = Object.fromEntries(
-  SECTIONS_MANIFEST.map(s => [s.id, s])
-) as Record<string, SectionMeta>;
+export const SECTION_BY_ID = Object.fromEntries(SECTIONS_MANIFEST.map((s) => [s.id, s])) as Record<
+  string,
+  SectionMeta
+>;
 
 export interface SectionTab {
   id: string;
@@ -121,7 +183,15 @@ export const SECTION_TABS: SectionTab[] = [
   {
     id: 'estrategia',
     label: 'Estratégia',
-    sections: ['mensagem_central', 'pillars', 'manifesto', 'archetypes', 'voice', 'personas', 'market_research'],
+    sections: [
+      'mensagem_central',
+      'pillars',
+      'manifesto',
+      'archetypes',
+      'voice',
+      'personas',
+      'market_research',
+    ],
   },
   {
     id: 'logotipo',
@@ -131,7 +201,17 @@ export const SECTION_TABS: SectionTab[] = [
   {
     id: 'identidade',
     label: 'Identidade Visual',
-    sections: ['colors', 'colorThemes', 'typography', 'graphic_system', 'tokens', 'gradients', 'shadows', 'borders', 'motion'],
+    sections: [
+      'colors',
+      'colorThemes',
+      'typography',
+      'graphic_system',
+      'tokens',
+      'gradients',
+      'shadows',
+      'borders',
+      'motion',
+    ],
   },
   {
     id: 'diretrizes',

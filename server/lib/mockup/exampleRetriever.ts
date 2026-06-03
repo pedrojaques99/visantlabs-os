@@ -68,15 +68,17 @@ export const exampleRetriever = {
 
       return (matches || [])
         .filter((m: any) => m?.metadata)
-        .map((m: any): SimilarExample => ({
-          score: m.score ?? 0,
-          prompt: m.metadata.prompt ?? '',
-          brandBrief: m.metadata.brandBrief ?? undefined,
-          brandGuidelineId: m.metadata.brandGuidelineId ?? undefined,
-          vibeId: m.metadata.vibeId ?? undefined,
-          imageUrl: m.metadata.imageUrl ?? undefined,
-          tags: (m.metadata.brandingTags ?? []) as string[],
-        }));
+        .map(
+          (m: any): SimilarExample => ({
+            score: m.score ?? 0,
+            prompt: m.metadata.prompt ?? '',
+            brandBrief: m.metadata.brandBrief ?? undefined,
+            brandGuidelineId: m.metadata.brandGuidelineId ?? undefined,
+            vibeId: m.metadata.vibeId ?? undefined,
+            imageUrl: m.metadata.imageUrl ?? undefined,
+            tags: (m.metadata.brandingTags ?? []) as string[],
+          })
+        );
     } catch (err) {
       // Degradação graciosa — geração segue sem RAG.
       console.warn('[exampleRetriever] findSimilar failed, degrading:', err);

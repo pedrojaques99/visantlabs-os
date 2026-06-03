@@ -75,7 +75,7 @@ export const VIDEO_MODEL_IDS = {
   KLING_V1: 'kling-v1',
 } as const;
 
-export type VideoModelId = typeof VIDEO_MODEL_IDS[keyof typeof VIDEO_MODEL_IDS];
+export type VideoModelId = (typeof VIDEO_MODEL_IDS)[keyof typeof VIDEO_MODEL_IDS];
 
 // ── Ordered list for UI display ────────────────────────────────────────────────
 export const VIDEO_MODEL_LIST: VideoModelId[] = [
@@ -466,15 +466,15 @@ export function getVideoProvider(model: string): VideoProvider {
 
 /** Build Select options for model picker */
 export function buildModelOptions(token = '') {
-  return VIDEO_MODEL_LIST.map(id => {
+  return VIDEO_MODEL_LIST.map((id) => {
     const cfg = VIDEO_MODEL_CONFIG[id];
-    const icon = cfg.providerDomain ? (
-      {
-        type: 'logo',
-        domain: cfg.providerDomain,
-        token,
-      }
-    ) : undefined;
+    const icon = cfg.providerDomain
+      ? {
+          type: 'logo',
+          domain: cfg.providerDomain,
+          token,
+        }
+      : undefined;
     return {
       value: id,
       label: cfg.label,
@@ -488,7 +488,7 @@ export function buildModelOptions(token = '') {
 export function getDurationOptions(model: string): Array<{ value: string; label: string }> {
   const cfg = getVideoModelConfig(model);
   if (!cfg) return [{ value: '5s', label: '5s' }];
-  return cfg.durations.map(d => ({ value: d, label: `${d}${isVeoModel(model) ? '' : 's'}` }));
+  return cfg.durations.map((d) => ({ value: d, label: `${d}${isVeoModel(model) ? '' : 's'}` }));
 }
 
 /** Filter mode options for a given model */
@@ -502,5 +502,5 @@ export function getModeOptions(model: string): Array<{ value: string; label: str
     pro: 'Pro',
     '4k': '4K Native',
   };
-  return cfg.modes.map(m => ({ value: m, label: labels[m] ?? m }));
+  return cfg.modes.map((m) => ({ value: m, label: labels[m] ?? m }));
 }

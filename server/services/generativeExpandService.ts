@@ -79,7 +79,8 @@ async function fetchImageAsBase64(imageUrl: string): Promise<{ base64: string; m
     const res = await fetch(imageUrl, { signal: controller.signal });
     if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length > MAX_IMAGE_BYTES) throw new Error(`Image too large (${(buf.length / 1024 / 1024).toFixed(1)} MB).`);
+    if (buf.length > MAX_IMAGE_BYTES)
+      throw new Error(`Image too large (${(buf.length / 1024 / 1024).toFixed(1)} MB).`);
     const mimeType = res.headers.get('content-type') || 'image/png';
     return { base64: buf.toString('base64'), mimeType };
   } finally {
@@ -90,11 +91,11 @@ async function fetchImageAsBase64(imageUrl: string): Promise<{ base64: string; m
 // ── Anchor resolution ──
 
 const DIRECTION_ANCHORS: Record<ExpandDirection, ExpandAnchor> = {
-  up:    { x: 0.5, y: 1 },
-  down:  { x: 0.5, y: 0 },
-  left:  { x: 1,   y: 0.5 },
-  right: { x: 0,   y: 0.5 },
-  all:   { x: 0.5, y: 0.5 },
+  up: { x: 0.5, y: 1 },
+  down: { x: 0.5, y: 0 },
+  left: { x: 1, y: 0.5 },
+  right: { x: 0, y: 0.5 },
+  all: { x: 0.5, y: 0.5 },
 };
 
 function resolveAnchor(direction?: ExpandDirection, anchor?: ExpandAnchor): ExpandAnchor {
@@ -105,9 +106,10 @@ function resolveAnchor(direction?: ExpandDirection, anchor?: ExpandAnchor): Expa
 // ── Prompt engineering ──
 
 function buildExpandPrompt(direction: ExpandDirection | undefined, userPrompt?: string): string {
-  const directionHint = direction && direction !== 'all'
-    ? `The image is being expanded ${direction}ward.`
-    : 'The image is being expanded outward in all directions.';
+  const directionHint =
+    direction && direction !== 'all'
+      ? `The image is being expanded ${direction}ward.`
+      : 'The image is being expanded outward in all directions.';
 
   const base = [
     'Seamlessly extend this image beyond its current boundaries.',
@@ -127,7 +129,7 @@ function buildExpandPrompt(direction: ExpandDirection | undefined, userPrompt?: 
 
 export async function generativeExpand(
   req: GenerativeExpandRequest,
-  userId: string,
+  userId: string
 ): Promise<GenerativeExpandResult> {
   const { base64, mimeType } = await fetchImageAsBase64(req.imageUrl);
 
@@ -196,8 +198,14 @@ export async function generativeExpand(
   const imageFile = base64ToFile(compositedBase64, 'image/png', 'image.png');
   const maskFile = base64ToFile(maskBase64, 'image/png', 'mask.png');
 
-  const size = (await import('../../src/constants/openaiModels.js')).resolveOpenAISize(req.resolution || '1K', req.targetAspectRatio);
-  const quality = (await import('../../src/constants/openaiModels.js')).OPENAI_QUALITY_MAP[req.resolution || '1K'] ?? 'medium';
+  const size = (await import('../../src/constants/openaiModels.js')).resolveOpenAISize(
+    req.resolution || '1K',
+    req.targetAspectRatio
+  );
+  const quality =
+    (await import('../../src/constants/openaiModels.js')).OPENAI_QUALITY_MAP[
+      req.resolution || '1K'
+    ] ?? 'medium';
 
   const response = await client.images.edit({
     model: 'gpt-image-2',

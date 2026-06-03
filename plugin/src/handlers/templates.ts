@@ -28,11 +28,11 @@ interface TextLayerInfo {
  * Get templates (frames with [Template] prefix)
  */
 export function getTemplates(requestId?: string) {
-  const templates = figma.currentPage.findAll(node =>
-    node.type === 'FRAME' && node.name.startsWith('[Template]')
+  const templates = figma.currentPage.findAll(
+    (node) => node.type === 'FRAME' && node.name.startsWith('[Template]')
   ) as FrameNode[];
 
-  const result: TemplateInfo[] = templates.map(t => {
+  const result: TemplateInfo[] = templates.map((t) => {
     // Find all text nodes in template
     const textLayers: TextLayerInfo[] = [];
     const findTextNodes = (node: SceneNode) => {

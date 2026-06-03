@@ -6,19 +6,24 @@ import { createCanvasProject } from '../../factories/canvasProject.js';
 
 // Mock R2 Service
 vi.mock('../../../server/services/r2Service.js', () => ({
-  uploadCanvasImage: vi.fn((base64) => Promise.resolve(`https://fake-r2-url.com/${base64.substring(0, 10)}.png`)),
+  uploadCanvasImage: vi.fn((base64) =>
+    Promise.resolve(`https://fake-r2-url.com/${base64.substring(0, 10)}.png`)
+  ),
   uploadCanvasPdf: vi.fn(() => Promise.resolve('https://fake-r2-url.com/file.pdf')),
   uploadCanvasVideo: vi.fn(() => Promise.resolve('https://fake-r2-url.com/video.mp4')),
   isR2Configured: vi.fn().mockReturnValue(true),
-  generateCanvasImageUploadUrl: vi.fn().mockResolvedValue({ presignedUrl: 'https://presigned.url', finalUrl: 'https://final.url' }),
-  generateCanvasVideoUploadUrl: vi.fn().mockResolvedValue({ presignedUrl: 'https://presigned.url', finalUrl: 'https://final.url' }),
-  deleteImage: vi.fn().mockResolvedValue(true)
+  generateCanvasImageUploadUrl: vi
+    .fn()
+    .mockResolvedValue({ presignedUrl: 'https://presigned.url', finalUrl: 'https://final.url' }),
+  generateCanvasVideoUploadUrl: vi
+    .fn()
+    .mockResolvedValue({ presignedUrl: 'https://presigned.url', finalUrl: 'https://final.url' }),
+  deleteImage: vi.fn().mockResolvedValue(true),
 }));
 
 const bearer = (token: string) => `Bearer ${token}`;
 
 describe('Canvas Routes Integration', () => {
-
   describe('POST /api/canvas', () => {
     it('creates a new canvas project with R2 auto-upload', async () => {
       const { user } = await createUser();
@@ -30,17 +35,19 @@ describe('Canvas Routes Integration', () => {
         .set('Authorization', bearer(token))
         .send({
           name: 'R2 Test Project',
-          nodes: [{ 
-            id: 'node-1', 
-            type: 'image', 
-            data: { 
-              mockup: { 
-                imageBase64: 'data:image/png;base64,mock',
-                base64Timestamp: Date.now() 
-              } 
-            } 
-          }],
-          edges: []
+          nodes: [
+            {
+              id: 'node-1',
+              type: 'image',
+              data: {
+                mockup: {
+                  imageBase64: 'data:image/png;base64,mock',
+                  base64Timestamp: Date.now(),
+                },
+              },
+            },
+          ],
+          edges: [],
         });
 
       if (res.status !== 200) console.log('POST /api/canvas Error:', res.body);
@@ -58,9 +65,7 @@ describe('Canvas Routes Integration', () => {
       const token = signTestToken({ userId: user.id, email: user.email });
 
       const agent = await request();
-      const res = await agent
-        .get(`/api/canvas/${project.id}`)
-        .set('Authorization', bearer(token));
+      const res = await agent.get(`/api/canvas/${project.id}`).set('Authorization', bearer(token));
 
       expect(res.status).toBe(200);
     });
@@ -72,9 +77,7 @@ describe('Canvas Routes Integration', () => {
       const token = signTestToken({ userId: other.id, email: other.email });
 
       const agent = await request();
-      const res = await agent
-        .get(`/api/canvas/${project.id}`)
-        .set('Authorization', bearer(token));
+      const res = await agent.get(`/api/canvas/${project.id}`).set('Authorization', bearer(token));
 
       expect(res.status).toBe(403);
     });
@@ -82,17 +85,15 @@ describe('Canvas Routes Integration', () => {
     it('allows access to users in canView list', async () => {
       const { user: owner } = await createUser();
       const { user: viewer } = await createUser();
-      const project = await createCanvasProject({ 
-        userId: owner.id, 
-        isCollaborative: true, 
-        canView: [viewer.id] 
+      const project = await createCanvasProject({
+        userId: owner.id,
+        isCollaborative: true,
+        canView: [viewer.id],
       });
       const token = signTestToken({ userId: viewer.id, email: viewer.email });
 
       const agent = await request();
-      const res = await agent
-        .get(`/api/canvas/${project.id}`)
-        .set('Authorization', bearer(token));
+      const res = await agent.get(`/api/canvas/${project.id}`).set('Authorization', bearer(token));
 
       expect(res.status).toBe(200);
     });
@@ -115,23 +116,23 @@ describe('Canvas Routes Integration', () => {
     });
 
     it('denies update to non-owners even if in canEdit (Current Implementation Limit)', async () => {
-        // As seen in canvas.ts line 1035, updates are restricted by userId: req.userId
-        const { user: owner } = await createUser();
-        const { user: editor } = await createUser();
-        const project = await createCanvasProject({ 
-            userId: owner.id, 
-            isCollaborative: true, 
-            canEdit: [editor.id] 
-        });
-        const token = signTestToken({ userId: editor.id, email: editor.email });
-  
-        const agent = await request();
-        const res = await agent
-          .put(`/api/canvas/${project.id}`)
-          .set('Authorization', bearer(token))
-          .send({ name: 'Hacker Update' });
-  
-        expect(res.status).toBe(404);
+      // As seen in canvas.ts line 1035, updates are restricted by userId: req.userId
+      const { user: owner } = await createUser();
+      const { user: editor } = await createUser();
+      const project = await createCanvasProject({
+        userId: owner.id,
+        isCollaborative: true,
+        canEdit: [editor.id],
+      });
+      const token = signTestToken({ userId: editor.id, email: editor.email });
+
+      const agent = await request();
+      const res = await agent
+        .put(`/api/canvas/${project.id}`)
+        .set('Authorization', bearer(token))
+        .send({ name: 'Hacker Update' });
+
+      expect(res.status).toBe(404);
     });
   });
 
@@ -143,7 +144,7 @@ describe('Canvas Routes Integration', () => {
       const token = signTestToken({ userId: user.id, email: user.email });
 
       const agent = await request();
-      
+
       // Share with friend using email
       const shareRes = await agent
         .post(`/api/canvas/${project.id}/share`)
@@ -159,17 +160,17 @@ describe('Canvas Routes Integration', () => {
       const unshareRes = await agent
         .delete(`/api/canvas/${project.id}/share`)
         .set('Authorization', bearer(token));
-      
+
       expect(unshareRes.status).toBe(200);
     });
 
     it('allows public access via shared/:shareId', async () => {
       const { user } = await createUser();
       const shareId = 'public-link-123';
-      const project = await createCanvasProject({ 
-        userId: user.id, 
+      const project = await createCanvasProject({
+        userId: user.id,
         shareId: shareId,
-        nodes: [{ id: '1', type: 'image', data: { text: 'Public Content' } }]
+        nodes: [{ id: '1', type: 'image', data: { text: 'Public Content' } }],
       });
 
       const agent = await request();
@@ -183,25 +184,25 @@ describe('Canvas Routes Integration', () => {
   describe('Base64 Auto-Cleanup', () => {
     it('cleans expired base64 images on GET', async () => {
       const { user } = await createUser();
-      const yesterday = Date.now() - (8 * 24 * 60 * 60 * 1000); // 8 days ago (limit is 7)
-      
-      const project = await createCanvasProject({ 
+      const yesterday = Date.now() - 8 * 24 * 60 * 60 * 1000; // 8 days ago (limit is 7)
+
+      const project = await createCanvasProject({
         userId: user.id,
-        nodes: [{
-          id: 'expired-1',
-          type: 'merge',
-          data: {
-            resultImageBase64: 'data:image/png;base64,too-old',
-            resultImageBase64Timestamp: yesterday
-          }
-        }] as any
+        nodes: [
+          {
+            id: 'expired-1',
+            type: 'merge',
+            data: {
+              resultImageBase64: 'data:image/png;base64,too-old',
+              resultImageBase64Timestamp: yesterday,
+            },
+          },
+        ] as any,
       });
 
       const token = signTestToken({ userId: user.id, email: user.email });
       const agent = await request();
-      const res = await agent
-        .get(`/api/canvas/${project.id}`)
-        .set('Authorization', bearer(token));
+      const res = await agent.get(`/api/canvas/${project.id}`).set('Authorization', bearer(token));
 
       expect(res.status).toBe(200);
       expect(res.body.project.nodes[0].data.resultImageBase64).toBeUndefined();

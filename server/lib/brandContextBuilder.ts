@@ -31,12 +31,34 @@ export type BrandContextSection =
 export const BRAND_SECTION_PRESETS = {
   visual: ['identity', 'colors', 'typography', 'tokens', 'themes'] as BrandContextSection[],
   copy: ['identity', 'voice', 'strategy'] as BrandContextSection[],
-  full: ['identity', 'colors', 'typography', 'voice', 'strategy', 'tokens', 'logos', 'media', 'tags', 'themes', 'knowledge'] as BrandContextSection[],
-  imageGen: ['identity', 'colors', 'typography', 'voice', 'strategy', 'themes'] as BrandContextSection[],
+  full: [
+    'identity',
+    'colors',
+    'typography',
+    'voice',
+    'strategy',
+    'tokens',
+    'logos',
+    'media',
+    'tags',
+    'themes',
+    'knowledge',
+  ] as BrandContextSection[],
+  imageGen: [
+    'identity',
+    'colors',
+    'typography',
+    'voice',
+    'strategy',
+    'themes',
+  ] as BrandContextSection[],
   minimal: ['identity', 'colors', 'typography'] as BrandContextSection[],
 };
 
-function shouldInclude(sections: BrandContextSection[] | undefined, section: BrandContextSection): boolean {
+function shouldInclude(
+  sections: BrandContextSection[] | undefined,
+  section: BrandContextSection
+): boolean {
   return !sections || sections.includes(section);
 }
 
@@ -87,14 +109,34 @@ export interface BrandContextJSON {
     values?: Array<{ title: string; description: string; example: string }>;
   };
   strategy?: {
-    manifesto?: string | { provocation?: string; tension?: string; promise?: string; full?: string };
+    manifesto?:
+      | string
+      | { provocation?: string; tension?: string; promise?: string; full?: string };
     positioning?: string[];
     coreMessage?: { product: string; differential: string; emotionalBond: string };
     pillars?: Array<{ value: string; description: string }>;
     archetypes?: Array<{ name: string; role?: string; description: string; examples?: string[] }>;
-    personas?: Array<{ name: string; age?: number; occupation?: string; traits?: string[]; bio?: string; desires?: string[]; painPoints?: string[] }>;
-    marketResearch?: { competitors?: string[]; gaps?: string[]; opportunities?: string[]; notes?: string };
-    graphicSystem?: { patterns?: string[]; grafisms?: string[]; imageRules?: string[]; editorialGrid?: string };
+    personas?: Array<{
+      name: string;
+      age?: number;
+      occupation?: string;
+      traits?: string[];
+      bio?: string;
+      desires?: string[];
+      painPoints?: string[];
+    }>;
+    marketResearch?: {
+      competitors?: string[];
+      gaps?: string[];
+      opportunities?: string[];
+      notes?: string;
+    };
+    graphicSystem?: {
+      patterns?: string[];
+      grafisms?: string[];
+      imageRules?: string[];
+      editorialGrid?: string;
+    };
   };
   tokens?: {
     spacing?: Record<string, number>;
@@ -114,7 +156,10 @@ export interface BrandContextJSON {
  * @param bg - The BrandGuideline object
  * @returns Structured JSON object for LLM context
  */
-export function buildBrandContextJSON(bg: BrandGuideline, sections?: BrandContextSection[]): BrandContextJSON {
+export function buildBrandContextJSON(
+  bg: BrandGuideline,
+  sections?: BrandContextSection[]
+): BrandContextJSON {
   const s = (section: BrandContextSection) => shouldInclude(sections, section);
 
   return {
@@ -124,63 +169,86 @@ export function buildBrandContextJSON(bg: BrandGuideline, sections?: BrandContex
       website: s('identity') ? bg.identity?.website : undefined,
       description: s('identity') ? bg.identity?.description : undefined,
     },
-    colors: s('colors') ? (bg.colors || []).map(c => ({
-      name: c.name,
-      hex: c.hex,
-      rgb: hexToRgb(c.hex) || { r: 0, g: 0, b: 0 },
-      role: c.role,
-    })) : [],
-    typography: s('typography') ? (bg.typography || []).map((t: any) => ({
-      role: t.role || t.name || 'body',
-      family: t.family || t.fontFamily || '',
-      style: t.style || t.fontStyle,
-      size: t.size || t.fontSize,
-      lineHeight: t.lineHeight,
-    })).filter((t: any) => t.family) : [],
-    voice: s('voice') && (bg.guidelines || bg.strategy?.voiceValues) ? {
-      tone: bg.guidelines?.voice,
-      dos: bg.guidelines?.dos,
-      donts: bg.guidelines?.donts,
-      imagery: bg.guidelines?.imagery,
-      accessibility: bg.guidelines?.accessibility,
-      values: bg.strategy?.voiceValues,
-    } : undefined,
-    strategy: s('strategy') && bg.strategy ? {
-      manifesto: bg.strategy.manifesto,
-      positioning: bg.strategy.positioning,
-      coreMessage: bg.strategy.coreMessage,
-      pillars: bg.strategy.pillars,
-      archetypes: bg.strategy.archetypes?.map(a => ({
-        name: a.name,
-        role: a.role,
-        description: a.description,
-        examples: a.examples,
-      })),
-      personas: bg.strategy.personas?.map(p => ({
-        name: p.name,
-        age: p.age,
-        occupation: p.occupation,
-        traits: p.traits,
-        bio: p.bio,
-        desires: p.desires,
-        painPoints: p.painPoints,
-      })),
-      marketResearch: bg.strategy.marketResearch,
-      graphicSystem: bg.strategy.graphicSystem,
-    } : undefined,
-    tokens: s('tokens') && bg.tokens ? {
-      spacing: bg.tokens.spacing as Record<string, number>,
-      radius: bg.tokens.radius as Record<string, number>,
-      shadows: bg.tokens.shadows,
-      components: bg.tokens.components,
-    } : undefined,
-    colorThemes: s('themes') && bg.colorThemes?.length
-      ? bg.colorThemes.map(t => ({ name: t.name, bg: t.bg, text: t.text, primary: t.primary, accent: t.accent }))
-      : undefined,
+    colors: s('colors')
+      ? (bg.colors || []).map((c) => ({
+          name: c.name,
+          hex: c.hex,
+          rgb: hexToRgb(c.hex) || { r: 0, g: 0, b: 0 },
+          role: c.role,
+        }))
+      : [],
+    typography: s('typography')
+      ? (bg.typography || [])
+          .map((t: any) => ({
+            role: t.role || t.name || 'body',
+            family: t.family || t.fontFamily || '',
+            style: t.style || t.fontStyle,
+            size: t.size || t.fontSize,
+            lineHeight: t.lineHeight,
+          }))
+          .filter((t: any) => t.family)
+      : [],
+    voice:
+      s('voice') && (bg.guidelines || bg.strategy?.voiceValues)
+        ? {
+            tone: bg.guidelines?.voice,
+            dos: bg.guidelines?.dos,
+            donts: bg.guidelines?.donts,
+            imagery: bg.guidelines?.imagery,
+            accessibility: bg.guidelines?.accessibility,
+            values: bg.strategy?.voiceValues,
+          }
+        : undefined,
+    strategy:
+      s('strategy') && bg.strategy
+        ? {
+            manifesto: bg.strategy.manifesto,
+            positioning: bg.strategy.positioning,
+            coreMessage: bg.strategy.coreMessage,
+            pillars: bg.strategy.pillars,
+            archetypes: bg.strategy.archetypes?.map((a) => ({
+              name: a.name,
+              role: a.role,
+              description: a.description,
+              examples: a.examples,
+            })),
+            personas: bg.strategy.personas?.map((p) => ({
+              name: p.name,
+              age: p.age,
+              occupation: p.occupation,
+              traits: p.traits,
+              bio: p.bio,
+              desires: p.desires,
+              painPoints: p.painPoints,
+            })),
+            marketResearch: bg.strategy.marketResearch,
+            graphicSystem: bg.strategy.graphicSystem,
+          }
+        : undefined,
+    tokens:
+      s('tokens') && bg.tokens
+        ? {
+            spacing: bg.tokens.spacing as Record<string, number>,
+            radius: bg.tokens.radius as Record<string, number>,
+            shadows: bg.tokens.shadows,
+            components: bg.tokens.components,
+          }
+        : undefined,
+    colorThemes:
+      s('themes') && bg.colorThemes?.length
+        ? bg.colorThemes.map((t) => ({
+            name: t.name,
+            bg: t.bg,
+            text: t.text,
+            primary: t.primary,
+            accent: t.accent,
+          }))
+        : undefined,
     tags: s('tags') ? bg.tags : undefined,
-    knowledge: s('knowledge') && bg.knowledgeFiles?.length
-      ? bg.knowledgeFiles.map((f: any) => ({ fileName: f.fileName, source: f.source }))
-      : undefined,
+    knowledge:
+      s('knowledge') && bg.knowledgeFiles?.length
+        ? bg.knowledgeFiles.map((f: any) => ({ fileName: f.fileName, source: f.source }))
+        : undefined,
   };
 }
 
@@ -201,7 +269,10 @@ const BRAND_INSTRUCTIONS = `INSTRUCTIONS:
  * Build JSON string context for system prompt injection.
  * Wraps buildBrandContextJSON in a descriptive format.
  */
-export function buildBrandContextJSONString(bg: BrandGuideline, sections?: BrandContextSection[]): string {
+export function buildBrandContextJSONString(
+  bg: BrandGuideline,
+  sections?: BrandContextSection[]
+): string {
   const json = buildBrandContextJSON(bg, sections);
   return `<brand_context>
 ${JSON.stringify(json, null, 2)}
@@ -301,7 +372,8 @@ export function buildBrandContext(
     if (bg.guidelines.dos?.length) lines.push(`DO: ${bg.guidelines.dos.join(' | ')}`);
     if (bg.guidelines.donts?.length) lines.push(`AVOID: ${bg.guidelines.donts.join(' | ')}`);
     if (bg.guidelines.imagery) lines.push(`IMAGERY: ${bg.guidelines.imagery}`);
-    if (!compact && bg.guidelines.accessibility) lines.push(`ACCESSIBILITY: ${bg.guidelines.accessibility}`);
+    if (!compact && bg.guidelines.accessibility)
+      lines.push(`ACCESSIBILITY: ${bg.guidelines.accessibility}`);
     lines.push('');
   }
 
@@ -309,7 +381,9 @@ export function buildBrandContext(
   if (s('strategy') && !compact && bg.strategy) {
     if (bg.strategy.coreMessage) {
       const cm = bg.strategy.coreMessage;
-      lines.push(`CORE MESSAGE: Product: ${cm.product} | Differential: ${cm.differential} | Emotional Bond: ${cm.emotionalBond}`);
+      lines.push(
+        `CORE MESSAGE: Product: ${cm.product} | Differential: ${cm.differential} | Emotional Bond: ${cm.emotionalBond}`
+      );
     } else if (bg.strategy.positioning?.length) {
       lines.push(`POSITIONING: ${bg.strategy.positioning.join(' | ')}`);
     }
@@ -410,14 +484,23 @@ export function buildBrandContext(
 
   // Design tokens
   if (s('tokens') && bg.tokens?.spacing) {
-    lines.push(`SPACING: ${Object.entries(bg.tokens.spacing).map(([k, v]) => `${k}=${v}`).join(' ')}`);
+    lines.push(
+      `SPACING: ${Object.entries(bg.tokens.spacing)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(' ')}`
+    );
   }
   if (s('tokens') && bg.tokens?.radius) {
-    lines.push(`RADIUS: ${Object.entries(bg.tokens.radius).map(([k, v]) => `${k}=${v}`).join(' ')}`);
+    lines.push(
+      `RADIUS: ${Object.entries(bg.tokens.radius)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(' ')}`
+    );
   }
   if (s('tokens') && !compact && bg.tokens?.shadows) {
-    const shadowEntries = Object.entries(bg.tokens.shadows).map(([k, v]: [string, any]) =>
-      `${k}=(x:${v.x} y:${v.y} blur:${v.blur} color:${v.color} opacity:${v.opacity})`
+    const shadowEntries = Object.entries(bg.tokens.shadows).map(
+      ([k, v]: [string, any]) =>
+        `${k}=(x:${v.x} y:${v.y} blur:${v.blur} color:${v.color} opacity:${v.opacity})`
     );
     if (shadowEntries.length) lines.push(`SHADOWS: ${shadowEntries.join(' | ')}`);
   }
@@ -470,7 +553,9 @@ export function buildEnforcedPrompt(registry: TokenRegistry): string {
     lines.push('CORES (use em fills/strokes - valores RGB 0-1):');
     for (const [name, token] of registry.colors) {
       if (token.rgb) {
-        const rgb = `{ r: ${token.rgb.r.toFixed(3)}, g: ${token.rgb.g.toFixed(3)}, b: ${token.rgb.b.toFixed(3)} }`;
+        const rgb = `{ r: ${token.rgb.r.toFixed(3)}, g: ${token.rgb.g.toFixed(
+          3
+        )}, b: ${token.rgb.b.toFixed(3)} }`;
         const usage = token.usage ? ` <- ${token.usage}` : '';
         lines.push(`  ${name}: ${rgb}${usage}`);
       }
@@ -492,7 +577,9 @@ export function buildEnforcedPrompt(registry: TokenRegistry): string {
 
   // Spacing
   if (registry.spacing.size > 0) {
-    const values = Array.from(registry.spacing.values()).map(t => t.value).sort((a: number, b: number) => a - b);
+    const values = Array.from(registry.spacing.values())
+      .map((t) => t.value)
+      .sort((a: number, b: number) => a - b);
     lines.push(`SPACING (itemSpacing, padding): ${values.join(' | ')}`);
     lines.push('');
   }
@@ -534,7 +621,11 @@ export function buildEnforcedPrompt(registry: TokenRegistry): string {
       lines.push('    "height": 40,');
       lines.push('    "layoutMode": "HORIZONTAL",');
       lines.push('    "paddingLeft": 16, "paddingRight": 16,');
-      lines.push(`    "fills": [{ "type": "SOLID", "color": { "r": ${primaryColor.rgb.r.toFixed(3)}, "g": ${primaryColor.rgb.g.toFixed(3)}, "b": ${primaryColor.rgb.b.toFixed(3)} } }],`);
+      lines.push(
+        `    "fills": [{ "type": "SOLID", "color": { "r": ${primaryColor.rgb.r.toFixed(
+          3
+        )}, "g": ${primaryColor.rgb.g.toFixed(3)}, "b": ${primaryColor.rgb.b.toFixed(3)} } }],`
+      );
       lines.push('    "cornerRadius": 8');
       lines.push('  }');
       lines.push('}');
@@ -574,11 +665,7 @@ export async function buildBrandContextCached(
   const result = originalBuildBrandContext(bg, options);
 
   try {
-    await redisClient.setex(
-      cacheKey,
-      CACHE_TTL.BRAND_CTX,
-      result
-    );
+    await redisClient.setex(cacheKey, CACHE_TTL.BRAND_CTX, result);
     console.log(`[Cache] SET context:${bg.id!.slice(0, 8)} (24h)`);
   } catch (err) {
     console.warn(`[Cache] Redis SET failed:`, (err as Error).message);

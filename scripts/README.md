@@ -17,6 +17,7 @@ node scripts/analyze-components.js --json
 ### Output
 
 The script generates:
+
 - **Markdown report**: `scripts/reports/component-usage.md`
 - **JSON export** (with `--json`): `scripts/reports/component-usage.json`
 
@@ -59,29 +60,38 @@ ls -lah scripts/reports/component-usage-*.json
 ## 💡 Best Practices
 
 ### 1. **Core Components** (Very Frequent)
+
 These are your design system. Keep them:
+
 - Clean and well-documented
 - Backwards compatible
 - Thoroughly tested
 
 ### 2. **Reusable Components** (Frequent)
+
 These are workhorse components:
+
 - Review for consolidation
 - Document usage patterns
 - Consider extracting variations as separate components
 
 ### 3. **Moderate Components**
+
 These have specific use cases:
+
 - Good candidates for internal component libraries
 - Document why they exist
 
 ### 4. **Rarely Used**
+
 Consider:
+
 - Consolidation with similar components
 - Moving to specialized libraries
 - Documenting the specific use case
 
 ### 5. **Orphaned Components**
+
 - ❌ Delete immediately (after confirming no dynamic imports)
 - Don't leave dead code in the repo
 
@@ -90,7 +100,9 @@ Consider:
 ## 🛠️ Recommendations from Latest Run
 
 ### Top 7 Core Components
+
 These drive your design system:
+
 1. **button** (167 uses) - Universal button component
 2. **input** (79 uses) - Text input field
 3. **GlitchLoader** (74 uses) - Loading state indicator
@@ -100,7 +112,9 @@ These drive your design system:
 7. **GridDotsBackground** (32 uses) - Background pattern
 
 ### 21 Orphaned Components
+
 Safe to delete:
+
 - `club-hero3d.tsx`
 - `BrandingStep.tsx`
 - `PosicionamentoSection.tsx`
@@ -109,6 +123,7 @@ Safe to delete:
 - _...and 16 more_
 
 ### 189 Rarely Used Components
+
 Consider consolidation opportunities for better maintainability.
 
 ---
@@ -116,11 +131,13 @@ Consider consolidation opportunities for better maintainability.
 ## 📈 Metrics to Track
 
 Run the analyzer monthly and compare:
+
 - Are orphaned components being eliminated?
 - Are rarely-used components decreasing?
 - Is your design system maturing (more frequent components)?
 
 Good trend:
+
 ```
 Month 1: Orphaned: 21  Rarely: 189  Frequent: 15
 Month 2: Orphaned: 5   Rarely: 165  Frequent: 18

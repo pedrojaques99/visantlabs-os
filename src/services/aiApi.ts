@@ -120,18 +120,32 @@ export const aiApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ baseImage, instructions, userContext }),
     });
-    if (import.meta.env.DEV) console.log('[dev] aiApi.analyzeSetup: fetch end', ((Date.now() - t0) / 1000).toFixed(2) + 's', 'ok=', response.ok, 'status=', response.status);
+    if (import.meta.env.DEV)
+      console.log(
+        '[dev] aiApi.analyzeSetup: fetch end',
+        ((Date.now() - t0) / 1000).toFixed(2) + 's',
+        'ok=',
+        response.ok,
+        'status=',
+        response.status
+      );
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      const msg = body?.error || (response.status === 500 ? 'Internal server error' : 'Failed to analyze setup');
+      const msg =
+        body?.error ||
+        (response.status === 500 ? 'Internal server error' : 'Failed to analyze setup');
       const e = new Error(msg) as Error & { status?: number };
       e.status = response.status;
       throw e;
     }
 
     const data = await response.json();
-    if (import.meta.env.DEV) console.log('[dev] aiApi.analyzeSetup: parse done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+    if (import.meta.env.DEV)
+      console.log(
+        '[dev] aiApi.analyzeSetup: parse done',
+        ((Date.now() - t0) / 1000).toFixed(2) + 's'
+      );
     return data;
   },
 
@@ -183,7 +197,9 @@ export const aiApi = {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to generate smart prompt' }));
+      const error = await response
+        .json()
+        .catch(() => ({ error: 'Failed to generate smart prompt' }));
       throw new Error(error.error || 'Failed to generate smart prompt');
     }
 
@@ -271,7 +287,9 @@ export const aiApi = {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to generate Figma operations' }));
+      const error = await response
+        .json()
+        .catch(() => ({ error: 'Failed to generate Figma operations' }));
       throw new Error(error.error || 'Failed to generate Figma operations');
     }
 
@@ -302,5 +320,3 @@ export const aiApi = {
     return response.json();
   },
 };
-
-

@@ -28,7 +28,10 @@ export interface PipelineAsset {
 const TTL = CACHE_TTL.ASSET_PIPELINE;
 
 export const assetPipeline = {
-  async enqueue(userId: string, asset: Omit<PipelineAsset, 'id' | 'userId' | 'enqueuedAt'>): Promise<PipelineAsset> {
+  async enqueue(
+    userId: string,
+    asset: Omit<PipelineAsset, 'id' | 'userId' | 'enqueuedAt'>
+  ): Promise<PipelineAsset> {
     const full: PipelineAsset = {
       ...asset,
       id: randomUUID(),
@@ -47,8 +50,11 @@ export const assetPipeline = {
     return items
       .reverse()
       .map((raw) => {
-        try { return JSON.parse(raw) as PipelineAsset; }
-        catch { return null; }
+        try {
+          return JSON.parse(raw) as PipelineAsset;
+        } catch {
+          return null;
+        }
       })
       .filter((a): a is PipelineAsset => a !== null);
   },
@@ -63,7 +69,9 @@ export const assetPipeline = {
           await redisClient.lrem(key, 1, raw);
           return;
         }
-      } catch { /* skip malformed */ }
+      } catch {
+        /* skip malformed */
+      }
     }
   },
 

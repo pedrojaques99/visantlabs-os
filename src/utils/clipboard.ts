@@ -81,14 +81,16 @@ async function convertToPngBlob(blob: Blob): Promise<Blob> {
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((result) => {
       URL.revokeObjectURL(objectUrl);
-      if (result) { resolve(result); } else { reject(new Error('PNG conversion failed')); }
+      if (result) {
+        resolve(result);
+      } else {
+        reject(new Error('PNG conversion failed'));
+      }
     }, 'image/png');
   });
 }
 
-export async function copyImageAsPng(
-  url: string
-): Promise<{ success: boolean; error?: string }> {
+export async function copyImageAsPng(url: string): Promise<{ success: boolean; error?: string }> {
   try {
     let blob = await fetchImageAsBlob(url);
 
@@ -100,9 +102,7 @@ export async function copyImageAsPng(
       throw new Error('Clipboard API not supported');
     }
 
-    await navigator.clipboard.write([
-      new ClipboardItem({ 'image/png': blob }),
-    ]);
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
 
     return { success: true };
   } catch (error: any) {
@@ -122,15 +122,11 @@ export async function copyImageOriginal(
     }
 
     try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ [blob.type]: blob }),
-      ]);
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
     } catch {
       // Most browsers only support image/png in ClipboardItem — fallback
       const pngBlob = await convertToPngBlob(blob);
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': pngBlob }),
-      ]);
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
     }
 
     return { success: true };
@@ -145,7 +141,9 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(text);
       return true;
-    } catch { /* fallback below */ }
+    } catch {
+      /* fallback below */
+    }
   }
   const ta = document.createElement('textarea');
   ta.value = text;

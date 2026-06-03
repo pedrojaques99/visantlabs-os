@@ -1,14 +1,14 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
-export type FormTextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>
+export type FormTextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
   ({ className, ...props }, ref) => {
     return (
       <textarea
         className={cn(
-          "w-full px-4 py-3 bg-neutral-950/70 border border-neutral-800/20 rounded-md text-neutral-200 font-mono text-sm focus:outline-none focus:border-neutral-600 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500 resize-y min-h-[80px]",
+          'w-full px-4 py-3 bg-neutral-950/70 border border-neutral-800/20 rounded-md text-neutral-200 font-mono text-sm focus:outline-none focus:border-neutral-600 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500 resize-y min-h-[80px]',
           className
         )}
         style={{
@@ -18,10 +18,9 @@ const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
         ref={ref}
         {...props}
       />
-    )
+    );
   }
-)
-FormTextarea.displayName = "FormTextarea"
+);
+FormTextarea.displayName = 'FormTextarea';
 
-export { FormTextarea }
-
+export { FormTextarea };

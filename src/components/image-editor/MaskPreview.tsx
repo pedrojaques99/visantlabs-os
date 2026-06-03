@@ -9,7 +9,10 @@ interface Props {
   panOffset: { x: number; y: number };
   drawPreview: {
     type: 'rect' | 'circle';
-    x: number; y: number; w: number; h: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
   } | null;
 }
 
@@ -41,7 +44,10 @@ export const MaskPreview: React.FC<Props> = ({
           h: op.ry * 2,
         });
       } else if (op.type === 'brush') {
-        let minX = 1, minY = 1, maxX = 0, maxY = 0;
+        let minX = 1,
+          minY = 1,
+          maxX = 0,
+          maxY = 0;
         for (const [px, py] of op.points) {
           minX = Math.min(minX, px - op.size);
           minY = Math.min(minY, py - op.size);

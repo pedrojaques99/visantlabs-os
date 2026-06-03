@@ -59,12 +59,26 @@ async function checkPresetIdExists(id: string): Promise<boolean> {
 }
 
 // Helper to normalize and validate category/presetType
-function normalizeCategoryAndPresetType(body: any): { category: string; presetType?: string; error?: string } {
+function normalizeCategoryAndPresetType(body: any): {
+  category: string;
+  presetType?: string;
+  error?: string;
+} {
   const { category, presetType } = body;
 
   // Se tem category, usar ela
   if (category) {
-    const validCategories = ['3d', 'presets', 'aesthetics', 'themes', 'mockup', 'angle', 'texture', 'ambience', 'luminance'];
+    const validCategories = [
+      '3d',
+      'presets',
+      'aesthetics',
+      'themes',
+      'mockup',
+      'angle',
+      'texture',
+      'ambience',
+      'luminance',
+    ];
     if (!validCategories.includes(category)) {
       return { category: '', error: 'Invalid category' };
     }
@@ -78,7 +92,10 @@ function normalizeCategoryAndPresetType(body: any): { category: string; presetTy
     if (category === 'presets') {
       const validPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
       if (!presetType || !validPresetTypes.includes(presetType)) {
-        return { category: '', error: 'presetType is required and must be valid when category is "presets"' };
+        return {
+          category: '',
+          error: 'presetType is required and must be valid when category is "presets"',
+        };
       }
       return { category, presetType };
     }
@@ -117,7 +134,20 @@ function migratePresetIfNeeded(preset: any): any {
 // Create community preset
 router.post('/presets', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
-    const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, difficulty, context, useCase, examples } = req.body;
+    const {
+      id,
+      name,
+      description,
+      prompt,
+      referenceImageUrl,
+      aspectRatio,
+      model,
+      tags,
+      difficulty,
+      context,
+      useCase,
+      examples,
+    } = req.body;
 
     if (!isSafeId(id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -142,17 +172,22 @@ router.post('/presets', apiRateLimiter, authenticate, async (req: AuthRequest, r
 
     // Normalize tags - ensure it's an array of strings
     const normalizedTags = Array.isArray(tags)
-      ? tags.filter(tag => typeof tag === 'string' && tag.trim().length > 0).map(tag => tag.trim())
+      ? tags
+          .filter((tag) => typeof tag === 'string' && tag.trim().length > 0)
+          .map((tag) => tag.trim())
       : [];
 
     // Normalize examples
     const normalizedExamples = Array.isArray(examples)
-      ? examples.filter(ex => typeof ex === 'string' && ex.trim().length > 0).map(ex => ex.trim())
+      ? examples
+          .filter((ex) => typeof ex === 'string' && ex.trim().length > 0)
+          .map((ex) => ex.trim())
       : undefined;
 
     // Determinar se precisa de referenceImageUrl
-    const needsReferenceImage = (categoryData.category === 'presets' && categoryData.presetType === 'mockup')
-      || (categoryData.category !== 'presets' && referenceImageUrl);
+    const needsReferenceImage =
+      (categoryData.category === 'presets' && categoryData.presetType === 'mockup') ||
+      (categoryData.category !== 'presets' && referenceImageUrl);
 
     const refUrl = referenceImageUrl != null ? ensureString(referenceImageUrl, 2000) : null;
     const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
@@ -241,9 +276,7 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
       // Ignore auth errors - endpoint works without auth
     }
 
-    const presets = await db.collection('community_presets')
-      .find({ isApproved: true })
-      .toArray();
+    const presets = await db.collection('community_presets').find({ isApproved: true }).toArray();
 
     // Get likes data if user is authenticated
     const presetIds = presets.map((p: any) => p.id);
@@ -252,9 +285,9 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
     // Migrar presets legados e agrupar por category
     const grouped: Record<string, any[]> = {
       '3d': [],
-      'presets': [],
-      'aesthetics': [],
-      'themes': [],
+      presets: [],
+      aesthetics: [],
+      themes: [],
       // AI-generated prompts
       'ui-prompts': [],
       'figma-prompts': [],
@@ -290,21 +323,18 @@ router.get('/presets/public', apiRateLimiter, async (req, res) => {
     });
 
     // Cache result for 7 days
-    await redisClient.setex(
-      cacheKey,
-      CACHE_TTL.PRESET_SEARCH,
-      JSON.stringify(grouped)
-    );
+    await redisClient.setex(cacheKey, CACHE_TTL.PRESET_SEARCH, JSON.stringify(grouped));
     console.log('[Cache] SET preset:all:public (7d)');
 
     return res.json(grouped);
   } catch (error) {
-    if (process.env.NODE_ENV === 'production') console.error('Failed to load community presets:', error);
+    if (process.env.NODE_ENV === 'production')
+      console.error('Failed to load community presets:', error);
     return res.json({
       '3d': [],
-      'presets': [],
-      'aesthetics': [],
-      'themes': [],
+      presets: [],
+      aesthetics: [],
+      themes: [],
       'ui-prompts': [],
       'figma-prompts': [],
       // Compatibilidade
@@ -342,16 +372,21 @@ router.get('/stats', apiRateLimiter, async (req, res) => {
 });
 
 // Helper function to get likes data for presets
-async function getPresetsLikesData(db: any, presetIds: string[], userId?: string): Promise<Map<string, { likesCount: number; isLikedByUser: boolean }>> {
+async function getPresetsLikesData(
+  db: any,
+  presetIds: string[],
+  userId?: string
+): Promise<Map<string, { likesCount: number; isLikedByUser: boolean }>> {
   const likesMap = new Map<string, { likesCount: number; isLikedByUser: boolean }>();
 
   // Get all likes for these presets
-  const likes = await db.collection('community_preset_likes')
+  const likes = await db
+    .collection('community_preset_likes')
     .find({ presetId: { $in: presetIds } })
     .toArray();
 
   // Initialize map with zero likes
-  presetIds.forEach(presetId => {
+  presetIds.forEach((presetId) => {
     likesMap.set(presetId, { likesCount: 0, isLikedByUser: false });
   });
 
@@ -381,7 +416,8 @@ router.get('/presets/my', apiRateLimiter, authenticate, async (req: AuthRequest,
       filter.type = req.query.type;
     }
 
-    const presets = await db.collection('community_presets')
+    const presets = await db
+      .collection('community_presets')
       .find(filter)
       .sort({ createdAt: -1 })
       .toArray();
@@ -418,7 +454,21 @@ router.put('/presets/:id', apiRateLimiter, authenticate, async (req: AuthRequest
     await connectToMongoDB();
     const db = getDb();
 
-    const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags, category, presetType, difficulty, context, useCase, examples } = req.body;
+    const {
+      name,
+      description,
+      prompt,
+      referenceImageUrl,
+      aspectRatio,
+      model,
+      tags,
+      category,
+      presetType,
+      difficulty,
+      context,
+      useCase,
+      examples,
+    } = req.body;
 
     const preset = await db.collection('community_presets').findOne({ id: presetId });
 
@@ -431,18 +481,24 @@ router.put('/presets/:id', apiRateLimiter, authenticate, async (req: AuthRequest
     }
 
     // Normalize tags - ensure it's an array of strings
-    const normalizedTags = tags !== undefined
-      ? (Array.isArray(tags)
-        ? tags.filter(tag => typeof tag === 'string' && tag.trim().length > 0).map(tag => tag.trim())
-        : [])
-      : undefined;
+    const normalizedTags =
+      tags !== undefined
+        ? Array.isArray(tags)
+          ? tags
+              .filter((tag) => typeof tag === 'string' && tag.trim().length > 0)
+              .map((tag) => tag.trim())
+          : []
+        : undefined;
 
     // Normalize examples
-    const normalizedExamples = examples !== undefined
-      ? (Array.isArray(examples)
-        ? examples.filter(ex => typeof ex === 'string' && ex.trim().length > 0).map(ex => ex.trim())
-        : [])
-      : undefined;
+    const normalizedExamples =
+      examples !== undefined
+        ? Array.isArray(examples)
+          ? examples
+              .filter((ex) => typeof ex === 'string' && ex.trim().length > 0)
+              .map((ex) => ex.trim())
+          : []
+        : undefined;
 
     // Build update object
     const update: any = {
@@ -451,7 +507,10 @@ router.put('/presets/:id', apiRateLimiter, authenticate, async (req: AuthRequest
 
     // Validar category/presetType se fornecidos
     if (category !== undefined || presetType !== undefined) {
-      const categoryData = normalizeCategoryAndPresetType({ category: category || preset?.category, presetType: presetType || preset?.presetType });
+      const categoryData = normalizeCategoryAndPresetType({
+        category: category || preset?.category,
+        presetType: presetType || preset?.presetType,
+      });
       if (categoryData.error) {
         return res.status(400).json({ error: categoryData.error });
       }
@@ -473,11 +532,13 @@ router.put('/presets/:id', apiRateLimiter, authenticate, async (req: AuthRequest
       update.tags = normalizedTags.length > 0 ? normalizedTags : undefined;
     }
 
-    const currentCategory = category || preset.category || (preset.presetType ? 'presets' : undefined);
+    const currentCategory =
+      category || preset.category || (preset.presetType ? 'presets' : undefined);
     const currentPresetType = presetType || preset.presetType;
     const refUrl = referenceImageUrl !== undefined ? ensureString(referenceImageUrl, 2000) : null;
-    const needsReferenceImage = (currentCategory === 'presets' && currentPresetType === 'mockup')
-      || (currentCategory && currentCategory !== 'presets' && refUrl);
+    const needsReferenceImage =
+      (currentCategory === 'presets' && currentPresetType === 'mockup') ||
+      (currentCategory && currentCategory !== 'presets' && refUrl);
 
     if (needsReferenceImage && refUrl != null) {
       update.referenceImageUrl = refUrl;
@@ -493,10 +554,7 @@ router.put('/presets/:id', apiRateLimiter, authenticate, async (req: AuthRequest
       update.examples = normalizedExamples.length > 0 ? normalizedExamples : undefined;
     }
 
-    await db.collection('community_presets').updateOne(
-      { id: presetId },
-      { $set: update }
-    );
+    await db.collection('community_presets').updateOne({ id: presetId }, { $set: update });
 
     const updated = await db.collection('community_presets').findOne({ id: presetId });
 
@@ -556,10 +614,9 @@ router.post('/presets/:id/like', apiRateLimiter, authenticate, async (req: AuthR
 
     // Create index for likes collection if it doesn't exist
     try {
-      await db.collection('community_preset_likes').createIndex(
-        { presetId: 1, userId: 1 },
-        { unique: true }
-      );
+      await db
+        .collection('community_preset_likes')
+        .createIndex({ presetId: 1, userId: 1 }, { unique: true });
     } catch (e) {
       // Index might already exist, ignore
     }
@@ -603,7 +660,9 @@ router.post('/presets/:id/like', apiRateLimiter, authenticate, async (req: AuthR
         const presetId = req.params.id;
         const userId = new ObjectId(req.userId!);
         await db.collection('community_preset_likes').deleteOne({ presetId, userId });
-        const likesCount = await db.collection('community_preset_likes').countDocuments({ presetId });
+        const likesCount = await db
+          .collection('community_preset_likes')
+          .countDocuments({ presetId });
         return res.json({ likesCount, isLikedByUser: false });
       } catch (deleteError) {
         return res.status(500).json({ error: 'Failed to toggle like' });
@@ -614,101 +673,121 @@ router.post('/presets/:id/like', apiRateLimiter, authenticate, async (req: AuthR
 });
 
 // Upload generic preset reference image to R2 (for new presets or updates)
-router.post('/upload-image', authenticate, uploadImageRateLimiter, async (req: AuthRequest, res) => {
-  try {
-    const { base64Image, id } = req.body;
+router.post(
+  '/upload-image',
+  authenticate,
+  uploadImageRateLimiter,
+  async (req: AuthRequest, res) => {
+    try {
+      const { base64Image, id } = req.body;
 
-    if (!base64Image) {
-      return res.status(400).json({ error: 'base64Image is required' });
-    }
-    if (id != null && !isSafeId(id)) {
-      return res.status(400).json({ error: 'Invalid preset ID format' });
-    }
+      if (!base64Image) {
+        return res.status(400).json({ error: 'base64Image is required' });
+      }
+      if (id != null && !isSafeId(id)) {
+        return res.status(400).json({ error: 'Invalid preset ID format' });
+      }
 
-    // Use provided ID or generate a temporary one if creating a new preset
-    const presetId = id || `temp-${Date.now()}`;
+      // Use provided ID or generate a temporary one if creating a new preset
+      const presetId = id || `temp-${Date.now()}`;
 
-    const r2Service = await import('../../src/services/r2Service.js');
+      const r2Service = await import('../../src/services/r2Service.js');
 
-    if (!r2Service.isR2Configured()) {
+      if (!r2Service.isR2Configured()) {
+        return res.status(500).json({
+          error: 'R2 storage is not configured',
+          details:
+            'R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL must be set.',
+        });
+      }
+
+      const imageUrl = await r2Service.uploadMockupPresetReference(base64Image, presetId);
+
+      return res.json({ url: imageUrl });
+    } catch (error: any) {
+      console.error('Failed to upload preset reference image:', error);
       return res.status(500).json({
-        error: 'R2 storage is not configured',
-        details: 'R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL must be set.'
+        error: 'Failed to upload image',
+        details: error.message || 'Unknown error',
       });
     }
-
-    const imageUrl = await r2Service.uploadMockupPresetReference(base64Image, presetId);
-
-    return res.json({ url: imageUrl });
-  } catch (error: any) {
-    console.error('Failed to upload preset reference image:', error);
-    return res.status(500).json({
-      error: 'Failed to upload image',
-      details: error.message || 'Unknown error'
-    });
   }
-});
+);
 
 // Upload preset reference image to R2 (for mockup presets)
-router.post('/presets/:id/upload-image', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const presetId = req.params.id;
-    if (!isSafeId(presetId)) {
-      return res.status(400).json({ error: 'Invalid preset ID format' });
-    }
-    const { base64Image } = req.body;
+router.post(
+  '/presets/:id/upload-image',
+  uploadImageRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const presetId = req.params.id;
+      if (!isSafeId(presetId)) {
+        return res.status(400).json({ error: 'Invalid preset ID format' });
+      }
+      const { base64Image } = req.body;
 
-    if (!base64Image) {
-      return res.status(400).json({ error: 'base64Image is required' });
-    }
+      if (!base64Image) {
+        return res.status(400).json({ error: 'base64Image is required' });
+      }
 
-    await connectToMongoDB();
-    const db = getDb();
-    const preset = await db.collection('community_presets').findOne({ id: presetId });
+      await connectToMongoDB();
+      const db = getDb();
+      const preset = await db.collection('community_presets').findOne({ id: presetId });
 
-    if (!preset) {
-      return res.status(404).json({ error: 'Preset not found' });
-    }
+      if (!preset) {
+        return res.status(404).json({ error: 'Preset not found' });
+      }
 
-    if (preset.userId.toString() !== req.userId) {
-      return res.status(403).json({ error: 'You can only upload images for your own presets' });
-    }
+      if (preset.userId.toString() !== req.userId) {
+        return res.status(403).json({ error: 'You can only upload images for your own presets' });
+      }
 
-    // Verificar se pode ter referenceImageUrl
-    const migrated = migratePresetIfNeeded(preset);
-    const canHaveImage = (migrated.category === 'presets' && migrated.presetType === 'mockup')
-      || (migrated.category && migrated.category !== 'presets');
+      // Verificar se pode ter referenceImageUrl
+      const migrated = migratePresetIfNeeded(preset);
+      const canHaveImage =
+        (migrated.category === 'presets' && migrated.presetType === 'mockup') ||
+        (migrated.category && migrated.category !== 'presets');
 
-    if (!canHaveImage) {
-      return res.status(400).json({ error: 'Reference images are only supported for mockup presets or non-preset categories' });
-    }
+      if (!canHaveImage) {
+        return res
+          .status(400)
+          .json({
+            error:
+              'Reference images are only supported for mockup presets or non-preset categories',
+          });
+      }
 
-    const r2Service = await import('../../src/services/r2Service.js');
+      const r2Service = await import('../../src/services/r2Service.js');
 
-    if (!r2Service.isR2Configured()) {
+      if (!r2Service.isR2Configured()) {
+        return res.status(500).json({
+          error: 'R2 storage is not configured',
+          details:
+            'R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL must be set.',
+        });
+      }
+
+      const imageUrl = await r2Service.uploadMockupPresetReference(base64Image, presetId);
+
+      // Update preset with image URL
+      await db
+        .collection('community_presets')
+        .updateOne(
+          { id: presetId },
+          { $set: { referenceImageUrl: imageUrl, updatedAt: new Date().toISOString() } }
+        );
+
+      return res.json({ url: imageUrl });
+    } catch (error: any) {
+      console.error('Failed to upload preset reference image:', error);
       return res.status(500).json({
-        error: 'R2 storage is not configured',
-        details: 'R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL must be set.'
+        error: 'Failed to upload image',
+        details: error.message || 'Unknown error',
       });
     }
-
-    const imageUrl = await r2Service.uploadMockupPresetReference(base64Image, presetId);
-
-    // Update preset with image URL
-    await db.collection('community_presets').updateOne(
-      { id: presetId },
-      { $set: { referenceImageUrl: imageUrl, updatedAt: new Date().toISOString() } }
-    );
-
-    return res.json({ url: imageUrl });
-  } catch (error: any) {
-    console.error('Failed to upload preset reference image:', error);
-    return res.status(500).json({
-      error: 'Failed to upload image',
-      details: error.message || 'Unknown error'
-    });
   }
-});
+);
 
 router.get('/references/smart', apiRateLimiter, async (req, res) => {
   try {
@@ -722,16 +801,19 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
     if (brandGuidelineId && typeof brandGuidelineId === 'string') {
       try {
         const { prisma } = await import('../db/prisma.js');
-        const guideline = await prisma.brandGuideline.findUnique({ where: { id: brandGuidelineId } });
+        const guideline = await prisma.brandGuideline.findUnique({
+          where: { id: brandGuidelineId },
+        });
 
         if (guideline) {
           const { distillBrandGuideline } = await import('../lib/mockup/brandDistiller.js');
           const brief = distillBrandGuideline(guideline as any);
 
           if (brief?.promptText) {
-            const queryText = query && typeof query === 'string'
-              ? `${brief.promptText} ${query}`
-              : brief.promptText;
+            const queryText =
+              query && typeof query === 'string'
+                ? `${brief.promptText} ${query}`
+                : brief.promptText;
 
             const { getMultimodalEmbedding } = await import('../services/geminiService.js');
             const { embedding } = await getMultimodalEmbedding([{ text: queryText }]);
@@ -743,10 +825,22 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
             });
 
             if (matches?.length) {
-              const pineconeIds = matches.map((m: any) => m.metadata?.title || m.id).filter(Boolean);
-              const mongoRefs = await db.collection('community_presets')
+              const pineconeIds = matches
+                .map((m: any) => m.metadata?.title || m.id)
+                .filter(Boolean);
+              const mongoRefs = await db
+                .collection('community_presets')
                 .find({ category: 'reference', isAdminCurated: true })
-                .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1, tags: 1 })
+                .project({
+                  _id: 0,
+                  id: 1,
+                  name: 1,
+                  description: 1,
+                  referenceImageUrl: 1,
+                  dimensions: 1,
+                  prompt: 1,
+                  tags: 1,
+                })
                 .toArray();
 
               const refMap = new Map(mongoRefs.map((r: any) => [r.id, r]));
@@ -773,7 +867,10 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
           }
         }
       } catch (embeddingErr) {
-        console.warn('[references/smart] Embedding path failed, falling back to MongoDB:', embeddingErr);
+        console.warn(
+          '[references/smart] Embedding path failed, falling back to MongoDB:',
+          embeddingErr
+        );
       }
     }
 
@@ -787,11 +884,21 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
       ];
     }
 
-    const refs = await db.collection('community_presets')
+    const refs = await db
+      .collection('community_presets')
       .find(filter)
       .sort({ createdAt: -1 })
       .limit(maxLimit)
-      .project({ _id: 0, id: 1, name: 1, description: 1, referenceImageUrl: 1, dimensions: 1, prompt: 1, tags: 1 })
+      .project({
+        _id: 0,
+        id: 1,
+        name: 1,
+        description: 1,
+        referenceImageUrl: 1,
+        dimensions: 1,
+        prompt: 1,
+        tags: 1,
+      })
       .toArray();
 
     return res.json(refs.map((r: any) => ({ ...r, relevanceScore: 0 })));
@@ -802,5 +909,3 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
 });
 
 export default router;
-
-

@@ -19,15 +19,18 @@ export function useBrushPainting({
   const cursorPosRef = useRef({ x: 0, y: 0 });
   const cursorElRef = useRef<HTMLDivElement | null>(null);
 
-  const screenToImage = useCallback((clientX: number, clientY: number) => {
-    const el = containerRef.current;
-    if (!el) return { x: 0, y: 0 };
-    const rect = el.getBoundingClientRect();
-    return {
-      x: (clientX - rect.left - panOffset.x) / zoom,
-      y: (clientY - rect.top - panOffset.y) / zoom,
-    };
-  }, [containerRef, zoom, panOffset]);
+  const screenToImage = useCallback(
+    (clientX: number, clientY: number) => {
+      const el = containerRef.current;
+      if (!el) return { x: 0, y: 0 };
+      const rect = el.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left - panOffset.x) / zoom,
+        y: (clientY - rect.top - panOffset.y) / zoom,
+      };
+    },
+    [containerRef, zoom, panOffset]
+  );
 
   const updateCursor = useCallback((e: PointerEvent) => {
     cursorPosRef.current = { x: e.clientX, y: e.clientY };

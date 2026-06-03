@@ -1,6 +1,6 @@
 /**
  * usePDFNodeHandlers
- * 
+ *
  * Handlers para gerenciar operações de node de PDF
  */
 
@@ -9,15 +9,20 @@ import type { PDFNodeData, FlowNodeData } from '@/types/reactFlow';
 import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 
 interface UsePDFNodeHandlersParams {
-  updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void;
+  updateNodeData: <T extends FlowNodeData>(
+    nodeId: string,
+    newData: Partial<T>,
+    nodeType?: string
+  ) => void;
 }
 
-export const usePDFNodeHandlers = ({
-  updateNodeData,
-}: UsePDFNodeHandlersParams) => {
-  const handlePDFNodeUpload = useCallback((nodeId: string, pdfBase64: string) => {
-    updateNodeData<PDFNodeData>(nodeId, { pdfBase64 }, 'pdf');
-  }, [updateNodeData]);
+export const usePDFNodeHandlers = ({ updateNodeData }: UsePDFNodeHandlersParams) => {
+  const handlePDFNodeUpload = useCallback(
+    (nodeId: string, pdfBase64: string) => {
+      updateNodeData<PDFNodeData>(nodeId, { pdfBase64 }, 'pdf');
+    },
+    [updateNodeData]
+  );
 
   const handlePDFNodeDataUpdate = useNodeDataUpdateHandler<PDFNodeData>(updateNodeData, 'pdf');
 
@@ -26,13 +31,3 @@ export const usePDFNodeHandlers = ({
     handlePDFNodeDataUpdate,
   };
 };
-
-
-
-
-
-
-
-
-
-

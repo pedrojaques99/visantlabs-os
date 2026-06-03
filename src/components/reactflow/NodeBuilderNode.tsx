@@ -1,7 +1,22 @@
 import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 import { type NodeProps } from '@xyflow/react';
-import { Blocks, Diamond, CheckCircle2, RotateCcw, Send, Grid3x3, GitBranch, Zap, MessageSquare, Plus, ChevronRight, Brain, Cpu, Layers } from 'lucide-react';
+import {
+  Blocks,
+  Diamond,
+  CheckCircle2,
+  RotateCcw,
+  Send,
+  Grid3x3,
+  GitBranch,
+  Zap,
+  MessageSquare,
+  Plus,
+  ChevronRight,
+  Brain,
+  Cpu,
+  Layers,
+} from 'lucide-react';
 
 const PROCESSING_STEPS = [
   { icon: Brain, label: 'ANALYZING INTENT...' },
@@ -26,8 +41,8 @@ const CATEGORIES = [
     hints: [
       'Create 4 unique product concepts',
       'Generate a realistic logo variation',
-      'Expand prompt into 4 artistic styles'
-    ]
+      'Expand prompt into 4 artistic styles',
+    ],
   },
   {
     id: 'trans',
@@ -37,8 +52,8 @@ const CATEGORIES = [
     hints: [
       'Apply a futuristic VHS glitch',
       'Convert to 8-bit dithered art',
-      'Upscale to 4K with sharpening'
-    ]
+      'Upscale to 4K with sharpening',
+    ],
   },
   {
     id: 'matrix',
@@ -48,8 +63,8 @@ const CATEGORIES = [
     hints: [
       'Compare 4 different AI models',
       'Generate 3 camera angles',
-      'Create 4 mockup placements'
-    ]
+      'Create 4 mockup placements',
+    ],
   },
   {
     id: 'pipe',
@@ -59,8 +74,8 @@ const CATEGORIES = [
     hints: [
       'Generate → Analyze → Refine loop',
       'Custom 3-step image pipeline',
-      'Auto-branch based on brightness'
-    ]
+      'Auto-branch based on brightness',
+    ],
   },
 ];
 
@@ -79,8 +94,11 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
   const messagesEndRef = useAutoScrollToBottom<HTMLDivElement>([messages.length, isLoading]);
 
   useEffect(() => {
-    if (!isLoading) { setProcessingStep(0); return; }
-    const id = setInterval(() => setProcessingStep(s => (s + 1) % PROCESSING_STEPS.length), 1200);
+    if (!isLoading) {
+      setProcessingStep(0);
+      return;
+    }
+    const id = setInterval(() => setProcessingStep((s) => (s + 1) % PROCESSING_STEPS.length), 1200);
     return () => clearInterval(id);
   }, [isLoading]);
 
@@ -121,7 +139,11 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
   };
 
   return (
-    <NodeContainer selected={selected} dragging={dragging} className="min-w-[400px] max-w-[440px] !bg-neutral-950/90 border-brand-cyan/20">
+    <NodeContainer
+      selected={selected}
+      dragging={dragging}
+      className="min-w-[400px] max-w-[440px] !bg-neutral-950/90 border-brand-cyan/20"
+    >
       {/* Header */}
       <div className="flex items-center justify-between node-margin-lg border-b border-neutral-800 pb-3">
         <div className="flex items-center gap-3">
@@ -129,7 +151,9 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <Blocks size={18} className="text-brand-cyan" />
           </div>
           <div>
-            <h3 className="text-[12px] font-bold node-text-primary font-mono tracking-wider">NODE ARCHITECT</h3>
+            <h3 className="text-[12px] font-bold node-text-primary font-mono tracking-wider">
+              NODE ARCHITECT
+            </h3>
             <p className="text-[10px] text-neutral-500 font-mono flex items-center gap-1">
               {isLoading ? PROCESSING_STEPS[processingStep].label : 'READY TO CONSTRUCT'}
               {isLoading && <span className="w-1 h-1 bg-brand-cyan rounded-full" />}
@@ -165,28 +189,36 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                       isActive
                         ? 'bg-brand-cyan/10 border-brand-cyan/30 shadow-[0_0_12px_rgba(0,195,255,0.08)]'
                         : isPast
-                          ? 'bg-neutral-900/30 border-neutral-800 opacity-40'
-                          : 'bg-transparent border-transparent opacity-20'
+                        ? 'bg-neutral-900/30 border-neutral-800 opacity-40'
+                        : 'bg-transparent border-transparent opacity-20'
                     )}
                   >
                     <StepIcon
                       size={13}
                       className={cn(
                         'shrink-0 transition-colors duration-300',
-                        isActive ? 'text-brand-cyan' : isPast ? 'text-neutral-500' : 'text-neutral-700'
+                        isActive
+                          ? 'text-brand-cyan'
+                          : isPast
+                          ? 'text-neutral-500'
+                          : 'text-neutral-700'
                       )}
                     />
                     <span
                       className={cn(
                         'text-[10px] font-mono tracking-widest transition-colors duration-300',
-                        isActive ? 'text-brand-cyan' : isPast ? 'text-neutral-500' : 'text-neutral-700'
+                        isActive
+                          ? 'text-brand-cyan'
+                          : isPast
+                          ? 'text-neutral-500'
+                          : 'text-neutral-700'
                       )}
                     >
                       {step.label}
                     </span>
                     {isActive && (
                       <span className="ml-auto flex gap-0.5">
-                        {[0, 1, 2].map(d => (
+                        {[0, 1, 2].map((d) => (
                           <span
                             key={d}
                             className="w-1 h-1 rounded-full bg-brand-cyan animate-bounce"
@@ -218,7 +250,9 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                       <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
                         <cat.icon size={16} style={{ color: cat.color }} />
                       </div>
-                      <span className="text-[11px] font-medium text-neutral-300 font-mono tracking-tight">{cat.name}</span>
+                      <span className="text-[11px] font-medium text-neutral-300 font-mono tracking-tight">
+                        {cat.name}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -226,8 +260,11 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             ) : (
               <div className="space-y-3 animate-in fade-in slide-in-from-left-2 duration-300">
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-[11px] font-mono font-bold uppercase tracking-widest" style={{ color: CATEGORIES.find(c => c.id === activeCategory)?.color }}>
-                    {CATEGORIES.find(c => c.id === activeCategory)?.name} Presets
+                  <p
+                    className="text-[11px] font-mono font-bold uppercase tracking-widest"
+                    style={{ color: CATEGORIES.find((c) => c.id === activeCategory)?.color }}
+                  >
+                    {CATEGORIES.find((c) => c.id === activeCategory)?.name} Presets
                   </p>
                   <button
                     onClick={() => setActiveCategory(null)}
@@ -237,7 +274,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                   </button>
                 </div>
                 <div className="space-y-1.5">
-                  {CATEGORIES.find(c => c.id === activeCategory)?.hints.map((hint, i) => (
+                  {CATEGORIES.find((c) => c.id === activeCategory)?.hints.map((hint, i) => (
                     <button
                       key={i}
                       onClick={() => {
@@ -246,8 +283,13 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                       }}
                       className="nodrag nopan w-full flex items-center justify-between p-2 rounded-md bg-neutral-900/30 border-node border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900 transition-all group group"
                     >
-                      <span className="text-[10px] font-mono text-neutral-400 group-hover:text-brand-cyan transition-colors truncate">"{hint}"</span>
-                      <Plus size={10} className="text-neutral-600 group-hover:text-brand-cyan shrink-0" />
+                      <span className="text-[10px] font-mono text-neutral-400 group-hover:text-brand-cyan transition-colors truncate">
+                        "{hint}"
+                      </span>
+                      <Plus
+                        size={10}
+                        className="text-neutral-600 group-hover:text-brand-cyan shrink-0"
+                      />
                     </button>
                   ))}
                 </div>
@@ -257,16 +299,21 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
         ) : (
           <div className="node-margin max-h-[300px] overflow-y-auto space-y-3 pr-1 scrollbar-thin">
             {messages.map((msg, i) => (
-              <div key={i} className={cn(
-                'flex flex-col gap-1',
-                msg.role === 'user' ? 'items-end ml-8' : 'items-start mr-8'
-              )}>
-                <div className={cn(
-                  'rounded-2xl px-3 py-2 text-[11px] font-mono leading-relaxed border-node shadow-sm',
-                  msg.role === 'user'
-                    ? 'bg-neutral-900 border-neutral-800 text-neutral-200 rounded-tr-none'
-                    : 'bg-brand-cyan/5 border-neutral-800 text-brand-cyan/90 rounded-tl-none'
-                )}>
+              <div
+                key={i}
+                className={cn(
+                  'flex flex-col gap-1',
+                  msg.role === 'user' ? 'items-end ml-8' : 'items-start mr-8'
+                )}
+              >
+                <div
+                  className={cn(
+                    'rounded-2xl px-3 py-2 text-[11px] font-mono leading-relaxed border-node shadow-sm',
+                    msg.role === 'user'
+                      ? 'bg-neutral-900 border-neutral-800 text-neutral-200 rounded-tr-none'
+                      : 'bg-brand-cyan/5 border-neutral-800 text-brand-cyan/90 rounded-tl-none'
+                  )}
+                >
                   {msg.content}
                 </div>
               </div>
@@ -278,8 +325,12 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                   {PROCESSING_STEPS[processingStep].label}
                 </span>
                 <span className="ml-auto flex gap-0.5">
-                  {[0, 1, 2].map(d => (
-                    <span key={d} className="w-1 h-1 rounded-full bg-brand-cyan/50 animate-bounce" style={{ animationDelay: `${d * 150}ms` }} />
+                  {[0, 1, 2].map((d) => (
+                    <span
+                      key={d}
+                      className="w-1 h-1 rounded-full bg-brand-cyan/50 animate-bounce"
+                      style={{ animationDelay: `${d * 150}ms` }}
+                    />
                   ))}
                 </span>
               </div>
@@ -292,16 +343,22 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Result / Success Area */}
       {pendingDefinition && !isLoading && (
         <div className="node-margin pt-2 animate-in zoom-in-95 duration-300">
-          <div className={cn(
-            'flex flex-col gap-3 p-4 rounded-2xl border-node bg-brand-cyan/[0.03] border-brand-cyan/30 shadow-[0_0_20px_rgba(0,195,255,0.05)]'
-          )}>
+          <div
+            className={cn(
+              'flex flex-col gap-3 p-4 rounded-2xl border-node bg-brand-cyan/[0.03] border-brand-cyan/30 shadow-[0_0_20px_rgba(0,195,255,0.05)]'
+            )}
+          >
             <div className="flex items-start gap-3">
               <div className="p-2.5 rounded-md bg-brand-cyan/10 border-node border-neutral-800">
                 <Zap size={20} className="text-brand-cyan" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-bold text-brand-cyan font-mono uppercase tracking-tight">{pendingDefinition.name}</p>
-                <p className="text-[10px] text-brand-cyan/60 font-mono leading-tight mt-0.5">{pendingDefinition.description}</p>
+                <p className="text-[12px] font-bold text-brand-cyan font-mono uppercase tracking-tight">
+                  {pendingDefinition.name}
+                </p>
+                <p className="text-[10px] text-brand-cyan/60 font-mono leading-tight mt-0.5">
+                  {pendingDefinition.description}
+                </p>
               </div>
             </div>
 
@@ -320,11 +377,17 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
 
       {/* Input Area */}
       <div className="node-margin mt-auto">
-        <div className={cn(
-          "relative flex items-end gap-2 p-2 rounded-2xl border-node bg-black/40 transition-all duration-300",
-          isLoading || !!pendingDefinition ? "opacity-50 pointer-events-none" : "hover:border-neutral-700",
-          selected ? "border-brand-cyan/40 shadow-[0_0_15px_rgba(0,195,255,0.05)]" : "border-white/10"
-        )}>
+        <div
+          className={cn(
+            'relative flex items-end gap-2 p-2 rounded-2xl border-node bg-black/40 transition-all duration-300',
+            isLoading || !!pendingDefinition
+              ? 'opacity-50 pointer-events-none'
+              : 'hover:border-neutral-700',
+            selected
+              ? 'border-brand-cyan/40 shadow-[0_0_15px_rgba(0,195,255,0.05)]'
+              : 'border-white/10'
+          )}
+        >
           <textarea
             ref={textareaRef}
             value={input}

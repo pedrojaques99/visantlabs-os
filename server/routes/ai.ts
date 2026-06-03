@@ -42,238 +42,259 @@ const router = express.Router();
  * POST /api/ai/improve-prompt
  * Improve a text prompt using AI
  */
-router.post('/improve-prompt', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { prompt } = req.body;
-
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      return res.status(400).json({ error: 'Prompt is required' });
-    }
-
-    // 🟢 CACHE CHECK
-    const hash = hashQuery(prompt);
-    const cacheKey = CacheKey.aiText('improve', req.userId!, hash);
-    const cached = await redisClient.get(cacheKey).catch(() => null);
-    if (cached) {
-      console.log(`[Cache] HIT ai:improve:${hash.slice(0, 8)}`);
-      return res.json({ ...JSON.parse(cached), fromCache: true });
-    }
-
-    // Try to use user's API key first, fallback to system key
-    let userApiKey: string | undefined;
+router.post(
+  '/improve-prompt',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
     try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch (error) {
-      // User doesn't have API key, will use system key
-    }
+      const { prompt } = req.body;
 
-    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
-    const result = await improvePrompt(prompt, userApiKey);
-
-    // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
-
-    // Track usage asynchronously
-    (async () => {
-      try {
-        await connectToMongoDB();
-        const db = getDb();
-        const usageRecord = createUsageRecord(
-          req.userId!,
-          0, // images
-          GEMINI_MODELS.TEXT,
-          false, // hasInputImage
-          prompt.length,
-          undefined, // resolution
-          'branding', // feature
-          'system',
-          result.inputTokens,
-          result.outputTokens
-        );
-        (usageRecord as any).type = 'branding';
-
-        await db.collection('usage_records').insertOne(usageRecord);
-
-        // Track total tokens for user stats
-        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
-        if (totalTokens > 0) {
-          await incrementUserGenerations(req.userId!, 0, totalTokens);
-        }
-      } catch (err) {
-        console.error('Error tracking usage for improve-prompt:', err);
+      if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+        return res.status(400).json({ error: 'Prompt is required' });
       }
-    })();
 
-    res.json({ improvedPrompt: result.improvedPrompt });
-  } catch (error: any) {
-    console.error('Error improving prompt:', error);
-    next(error);
+      // 🟢 CACHE CHECK
+      const hash = hashQuery(prompt);
+      const cacheKey = CacheKey.aiText('improve', req.userId!, hash);
+      const cached = await redisClient.get(cacheKey).catch(() => null);
+      if (cached) {
+        console.log(`[Cache] HIT ai:improve:${hash.slice(0, 8)}`);
+        return res.json({ ...JSON.parse(cached), fromCache: true });
+      }
+
+      // Try to use user's API key first, fallback to system key
+      let userApiKey: string | undefined;
+      try {
+        userApiKey = await getGeminiApiKey(req.userId!);
+      } catch (error) {
+        // User doesn't have API key, will use system key
+      }
+
+      await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
+      const result = await improvePrompt(prompt, userApiKey);
+
+      // 💾 CACHE SET
+      await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
+
+      // Track usage asynchronously
+      (async () => {
+        try {
+          await connectToMongoDB();
+          const db = getDb();
+          const usageRecord = createUsageRecord(
+            req.userId!,
+            0, // images
+            GEMINI_MODELS.TEXT,
+            false, // hasInputImage
+            prompt.length,
+            undefined, // resolution
+            'branding', // feature
+            'system',
+            result.inputTokens,
+            result.outputTokens
+          );
+          (usageRecord as any).type = 'branding';
+
+          await db.collection('usage_records').insertOne(usageRecord);
+
+          // Track total tokens for user stats
+          const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+          if (totalTokens > 0) {
+            await incrementUserGenerations(req.userId!, 0, totalTokens);
+          }
+        } catch (err) {
+          console.error('Error tracking usage for improve-prompt:', err);
+        }
+      })();
+
+      res.json({ improvedPrompt: result.improvedPrompt });
+    } catch (error: any) {
+      console.error('Error improving prompt:', error);
+      next(error);
+    }
   }
-});
+);
 
 /**
  * POST /api/ai/describe-image
  * Generate a description of an image
  */
-router.post('/describe-image', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { image } = req.body;
-
-    if (!image) {
-      return res.status(400).json({ error: 'Image is required' });
-    }
-
-    // Normalize image input - can be base64 string or UploadedImage object
-    let imageInput: UploadedImage | string;
-    if (typeof image === 'string') {
-      imageInput = image;
-    } else if ((image.base64 || image.url) && image.mimeType) {
-      imageInput = image as UploadedImage;
-    } else {
-      return res.status(400).json({ error: 'Invalid image format' });
-    }
-
-    // 🟢 CACHE CHECK
-    const imageHash = hashQuery(typeof imageInput === 'string' ? imageInput : (imageInput as any).base64 || (imageInput as any).url);
-    const cacheKey = CacheKey.aiText('describe', req.userId!, imageHash);
-    const cached = await redisClient.get(cacheKey).catch(() => null);
-    if (cached) {
-      console.log(`[Cache] HIT ai:describe:${imageHash.slice(0, 8)}`);
-      return res.json({ ...JSON.parse(cached), fromCache: true });
-    }
-
-    // Try to use user's API key first, fallback to system key
-    let userApiKey: string | undefined;
+router.post(
+  '/describe-image',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
     try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch (error) {
-      // User doesn't have API key, will use system key
-    }
+      const { image } = req.body;
 
-    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
-    const result = await describeImage(imageInput, userApiKey);
-
-    // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.AI_IMAGE_ANALYSIS, JSON.stringify(result)).catch(() => {});
-
-    // Track usage asynchronously
-    (async () => {
-      try {
-        await connectToMongoDB();
-        const db = getDb();
-        const usageRecord = createUsageRecord(
-          req.userId!,
-          0, // images
-          GEMINI_MODELS.TEXT,
-          true, // hasInputImage
-          0, // promptLength
-          undefined, // resolution
-          'branding', // feature
-          'system',
-          result.inputTokens,
-          result.outputTokens
-        );
-        (usageRecord as any).type = 'branding';
-
-        await db.collection('usage_records').insertOne(usageRecord);
-
-        // Track total tokens for user stats
-        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
-        if (totalTokens > 0) {
-          await incrementUserGenerations(req.userId!, 0, totalTokens);
-        }
-      } catch (err) {
-        console.error('Error tracking usage for describe-image:', err);
+      if (!image) {
+        return res.status(400).json({ error: 'Image is required' });
       }
-    })();
 
-    res.json({
-      description: result.description,
-      title: result.title,
-    });
-  } catch (error: any) {
-    console.error('Error describing image:', error);
-    next(error);
+      // Normalize image input - can be base64 string or UploadedImage object
+      let imageInput: UploadedImage | string;
+      if (typeof image === 'string') {
+        imageInput = image;
+      } else if ((image.base64 || image.url) && image.mimeType) {
+        imageInput = image as UploadedImage;
+      } else {
+        return res.status(400).json({ error: 'Invalid image format' });
+      }
+
+      // 🟢 CACHE CHECK
+      const imageHash = hashQuery(
+        typeof imageInput === 'string'
+          ? imageInput
+          : (imageInput as any).base64 || (imageInput as any).url
+      );
+      const cacheKey = CacheKey.aiText('describe', req.userId!, imageHash);
+      const cached = await redisClient.get(cacheKey).catch(() => null);
+      if (cached) {
+        console.log(`[Cache] HIT ai:describe:${imageHash.slice(0, 8)}`);
+        return res.json({ ...JSON.parse(cached), fromCache: true });
+      }
+
+      // Try to use user's API key first, fallback to system key
+      let userApiKey: string | undefined;
+      try {
+        userApiKey = await getGeminiApiKey(req.userId!);
+      } catch (error) {
+        // User doesn't have API key, will use system key
+      }
+
+      await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
+      const result = await describeImage(imageInput, userApiKey);
+
+      // 💾 CACHE SET
+      await redisClient
+        .setex(cacheKey, CACHE_TTL.AI_IMAGE_ANALYSIS, JSON.stringify(result))
+        .catch(() => {});
+
+      // Track usage asynchronously
+      (async () => {
+        try {
+          await connectToMongoDB();
+          const db = getDb();
+          const usageRecord = createUsageRecord(
+            req.userId!,
+            0, // images
+            GEMINI_MODELS.TEXT,
+            true, // hasInputImage
+            0, // promptLength
+            undefined, // resolution
+            'branding', // feature
+            'system',
+            result.inputTokens,
+            result.outputTokens
+          );
+          (usageRecord as any).type = 'branding';
+
+          await db.collection('usage_records').insertOne(usageRecord);
+
+          // Track total tokens for user stats
+          const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+          if (totalTokens > 0) {
+            await incrementUserGenerations(req.userId!, 0, totalTokens);
+          }
+        } catch (err) {
+          console.error('Error tracking usage for describe-image:', err);
+        }
+      })();
+
+      res.json({
+        description: result.description,
+        title: result.title,
+      });
+    } catch (error: any) {
+      console.error('Error describing image:', error);
+      next(error);
+    }
   }
-});
+);
 
 /**
  * POST /api/ai/suggest-categories
  * Suggest mockup categories based on an image and branding tags
  */
-router.post('/suggest-categories', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { baseImage, brandingTags } = req.body;
-
-    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
-      return res.status(400).json({ error: 'Base image is required' });
-    }
-
-    if (!Array.isArray(brandingTags)) {
-      return res.status(400).json({ error: 'Branding tags must be an array' });
-    }
-
-    // 🟢 CACHE CHECK
-    const hash = hashObject({ baseImage, brandingTags });
-    const cacheKey = CacheKey.aiText('categories', req.userId!, hash);
-    const cached = await redisClient.get(cacheKey).catch(() => null);
-    if (cached) {
-      console.log(`[Cache] HIT ai:categories:${hash.slice(0, 8)}`);
-      return res.json({ ...JSON.parse(cached), fromCache: true });
-    }
-
-    // Try to use user's API key first, fallback to system key
-    let userApiKey: string | undefined;
+router.post(
+  '/suggest-categories',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
     try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch (error) {
-      // User doesn't have API key, will use system key
-    }
+      const { baseImage, brandingTags } = req.body;
 
-    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
-    const result = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
-
-    // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
-
-    // Track usage asynchronously
-    (async () => {
-      try {
-        await connectToMongoDB();
-        const db = getDb();
-        const usageRecord = createUsageRecord(
-          req.userId!,
-          0, // images
-          GEMINI_MODELS.TEXT,
-          true, // hasInputImage
-          0, // promptLength
-          undefined, // resolution
-          'branding', // feature
-          'system',
-          result.inputTokens,
-          result.outputTokens
-        );
-        // Add specific type for admin stats
-        (usageRecord as any).type = 'branding';
-
-        await db.collection('usage_records').insertOne(usageRecord);
-
-        // Track total tokens for user stats
-        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
-        if (totalTokens > 0) {
-          await incrementUserGenerations(req.userId!, 0, totalTokens);
-        }
-      } catch (err) {
-        console.error('Error tracking usage for suggest-categories:', err);
+      if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
+        return res.status(400).json({ error: 'Base image is required' });
       }
-    })();
 
-    res.json({ categories: result.categories });
-  } catch (error: any) {
-    console.error('Error suggesting categories:', error);
-    next(error);
+      if (!Array.isArray(brandingTags)) {
+        return res.status(400).json({ error: 'Branding tags must be an array' });
+      }
+
+      // 🟢 CACHE CHECK
+      const hash = hashObject({ baseImage, brandingTags });
+      const cacheKey = CacheKey.aiText('categories', req.userId!, hash);
+      const cached = await redisClient.get(cacheKey).catch(() => null);
+      if (cached) {
+        console.log(`[Cache] HIT ai:categories:${hash.slice(0, 8)}`);
+        return res.json({ ...JSON.parse(cached), fromCache: true });
+      }
+
+      // Try to use user's API key first, fallback to system key
+      let userApiKey: string | undefined;
+      try {
+        userApiKey = await getGeminiApiKey(req.userId!);
+      } catch (error) {
+        // User doesn't have API key, will use system key
+      }
+
+      await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
+      const result = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
+
+      // 💾 CACHE SET
+      await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
+
+      // Track usage asynchronously
+      (async () => {
+        try {
+          await connectToMongoDB();
+          const db = getDb();
+          const usageRecord = createUsageRecord(
+            req.userId!,
+            0, // images
+            GEMINI_MODELS.TEXT,
+            true, // hasInputImage
+            0, // promptLength
+            undefined, // resolution
+            'branding', // feature
+            'system',
+            result.inputTokens,
+            result.outputTokens
+          );
+          // Add specific type for admin stats
+          (usageRecord as any).type = 'branding';
+
+          await db.collection('usage_records').insertOne(usageRecord);
+
+          // Track total tokens for user stats
+          const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+          if (totalTokens > 0) {
+            await incrementUserGenerations(req.userId!, 0, totalTokens);
+          }
+        } catch (err) {
+          console.error('Error tracking usage for suggest-categories:', err);
+        }
+      })();
+
+      res.json({ categories: result.categories });
+    } catch (error: any) {
+      console.error('Error suggesting categories:', error);
+      next(error);
+    }
   }
-});
+);
 
 // Stricter rate limiter for refine-suggestions (1 request per 2 seconds)
 const refineSuggestionsLimiter = rateLimit({
@@ -289,98 +310,106 @@ const refineSuggestionsLimiter = rateLimit({
  * Lightweight endpoint to refine tag suggestions based on current selections.
  * Uses text-only model for efficiency (no image re-processing).
  */
-router.post('/refine-suggestions', refineSuggestionsLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { imageDescription, selectedTags, changedCategory } = req.body;
-
-    // Validate selectedTags structure
-    if (!selectedTags || typeof selectedTags !== 'object') {
-      return res.status(400).json({ error: 'selectedTags is required' });
-    }
-
-    if (!changedCategory || typeof changedCategory !== 'string') {
-      return res.status(400).json({ error: 'changedCategory is required' });
-    }
-
-    // 🟢 CACHE CHECK
-    const hash = hashObject({ imageDescription, selectedTags, changedCategory });
-    const cacheKey = CacheKey.aiText('refine', req.userId!, hash);
-    const cached = await redisClient.get(cacheKey).catch(() => null);
-    if (cached) {
-      console.log(`[Cache] HIT ai:refine:${hash.slice(0, 8)}`);
-      return res.json({ ...JSON.parse(cached), fromCache: true });
-    }
-
-    // Get user's API key if available
-    let userApiKey: string | undefined;
+router.post(
+  '/refine-suggestions',
+  refineSuggestionsLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
     try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch {
-      // Will use system key
-    }
+      const { imageDescription, selectedTags, changedCategory } = req.body;
 
-    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
-    const availableTags = await getAllAvailableTags();
-
-    const result = await refineSuggestions({
-      imageDescription,
-      selectedTags: {
-        categories: selectedTags.categories || [],
-        location: selectedTags.location || [],
-        angle: selectedTags.angle || [],
-        lighting: selectedTags.lighting || [],
-        effects: selectedTags.effects || [],
-        material: selectedTags.material || [],
-      },
-      changedCategory,
-      availableTags,
-    }, userApiKey);
-
-    // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
-
-    // Track usage asynchronously (lightweight tracking)
-    (async () => {
-      try {
-        await connectToMongoDB();
-        const db = getDb();
-        const usageRecord = createUsageRecord(
-          req.userId!,
-          0,
-          GEMINI_MODELS.TEXT,
-          false, // no image
-          100, // estimated prompt length
-          undefined,
-          'branding',
-          'system',
-          result.inputTokens,
-          result.outputTokens
-        );
-        (usageRecord as any).type = 'refine-suggestions';
-        await db.collection('usage_records').insertOne(usageRecord);
-
-        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
-        if (totalTokens > 0) {
-          await incrementUserGenerations(req.userId!, 0, totalTokens);
-        }
-      } catch (err) {
-        console.error('Error tracking usage for refine-suggestions:', err);
+      // Validate selectedTags structure
+      if (!selectedTags || typeof selectedTags !== 'object') {
+        return res.status(400).json({ error: 'selectedTags is required' });
       }
-    })();
 
-    res.json({
-      categories: result.categories,
-      locations: result.locations,
-      angles: result.angles,
-      lighting: result.lighting,
-      effects: result.effects,
-      materials: result.materials,
-    });
-  } catch (error: any) {
-    console.error('Error refining suggestions:', error);
-    next(error);
+      if (!changedCategory || typeof changedCategory !== 'string') {
+        return res.status(400).json({ error: 'changedCategory is required' });
+      }
+
+      // 🟢 CACHE CHECK
+      const hash = hashObject({ imageDescription, selectedTags, changedCategory });
+      const cacheKey = CacheKey.aiText('refine', req.userId!, hash);
+      const cached = await redisClient.get(cacheKey).catch(() => null);
+      if (cached) {
+        console.log(`[Cache] HIT ai:refine:${hash.slice(0, 8)}`);
+        return res.json({ ...JSON.parse(cached), fromCache: true });
+      }
+
+      // Get user's API key if available
+      let userApiKey: string | undefined;
+      try {
+        userApiKey = await getGeminiApiKey(req.userId!);
+      } catch {
+        // Will use system key
+      }
+
+      await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
+      const availableTags = await getAllAvailableTags();
+
+      const result = await refineSuggestions(
+        {
+          imageDescription,
+          selectedTags: {
+            categories: selectedTags.categories || [],
+            location: selectedTags.location || [],
+            angle: selectedTags.angle || [],
+            lighting: selectedTags.lighting || [],
+            effects: selectedTags.effects || [],
+            material: selectedTags.material || [],
+          },
+          changedCategory,
+          availableTags,
+        },
+        userApiKey
+      );
+
+      // 💾 CACHE SET
+      await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
+
+      // Track usage asynchronously (lightweight tracking)
+      (async () => {
+        try {
+          await connectToMongoDB();
+          const db = getDb();
+          const usageRecord = createUsageRecord(
+            req.userId!,
+            0,
+            GEMINI_MODELS.TEXT,
+            false, // no image
+            100, // estimated prompt length
+            undefined,
+            'branding',
+            'system',
+            result.inputTokens,
+            result.outputTokens
+          );
+          (usageRecord as any).type = 'refine-suggestions';
+          await db.collection('usage_records').insertOne(usageRecord);
+
+          const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+          if (totalTokens > 0) {
+            await incrementUserGenerations(req.userId!, 0, totalTokens);
+          }
+        } catch (err) {
+          console.error('Error tracking usage for refine-suggestions:', err);
+        }
+      })();
+
+      res.json({
+        categories: result.categories,
+        locations: result.locations,
+        angles: result.angles,
+        lighting: result.lighting,
+        effects: result.effects,
+        materials: result.materials,
+      });
+    } catch (error: any) {
+      console.error('Error refining suggestions:', error);
+      next(error);
+    }
   }
-});
+);
 
 /**
  * POST /api/ai/analyze-setup
@@ -418,7 +447,11 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
       getAllAvailableTags(),
     ]);
     userApiKey = apiKeyResult;
-    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: getGeminiApiKey + getAllAvailableTags done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+    if (process.env.NODE_ENV === 'development')
+      console.log(
+        '[dev] analyze-setup: getGeminiApiKey + getAllAvailableTags done',
+        ((Date.now() - t0) / 1000).toFixed(2) + 's'
+      );
 
     // Load brand guideline context if provided (reusing pattern from mockups.ts)
     let enrichedUserContext = userContext;
@@ -458,7 +491,8 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
     }
 
     await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
-    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: calling analyzeMockupSetup');
+    if (process.env.NODE_ENV === 'development')
+      console.log('[dev] analyze-setup: calling analyzeMockupSetup');
     const result = await analyzeMockupSetup(
       baseImage as UploadedImage,
       userApiKey,
@@ -466,7 +500,11 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
       instructions,
       enrichedUserContext
     );
-    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: analyzeMockupSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+    if (process.env.NODE_ENV === 'development')
+      console.log(
+        '[dev] analyze-setup: analyzeMockupSetup done',
+        ((Date.now() - t0) / 1000).toFixed(2) + 's'
+      );
 
     // Track usage asynchronously
     (async () => {
@@ -503,10 +541,12 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
     // 💾 CACHE SET
     await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
 
-    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: res.json', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+    if (process.env.NODE_ENV === 'development')
+      console.log('[dev] analyze-setup: res.json', ((Date.now() - t0) / 1000).toFixed(2) + 's');
     res.json(result);
   } catch (error: any) {
-    const msg = (typeof error?.message === 'string' ? error.message : null) || 'Internal server error';
+    const msg =
+      (typeof error?.message === 'string' ? error.message : null) || 'Internal server error';
     if (process.env.NODE_ENV === 'development') {
       console.error('[analyze-setup]', msg, error?.stack || '');
     } else {
@@ -524,206 +564,236 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
  * POST /api/ai/generate-smart-prompt
  * Generate a smart prompt based on user selections
  */
-router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const {
-      baseImage,
-      designType,
-      brandingTags,
-      categoryTags,
-      locationTags,
-      angleTags,
-      lightingTags,
-      effectTags,
-      materialTags,
-      selectedColors,
-      aspectRatio,
-      generateText,
-      withHuman,
-      enhanceTexture,
-      removeText,
-      negativePrompt,
-      additionalPrompt,
-      instructions,
-      brandGuidelineId,
-      vibeId,
-      learnFromHistory,
-      detectedLanguage,
-    } = req.body;
-
-    if (!designType) {
-      return res.status(400).json({ error: 'Design type is required' });
-    }
-
-    // 🟢 CACHE CHECK
-    const hash = hashObject({
-      designType, brandingTags, categoryTags, locationTags, angleTags, lightingTags,
-      effectTags, materialTags, selectedColors, aspectRatio, generateText, withHuman,
-      enhanceTexture, removeText, negativePrompt, additionalPrompt, instructions,
-      brandGuidelineId, vibeId, learnFromHistory, detectedLanguage,
-    });
-    const cacheKey = CacheKey.aiText('smartprompt', req.userId!, hash);
-    const cached = await redisClient.get(cacheKey).catch(() => null);
-    if (cached) {
-      console.log(`[Cache] HIT ai:smartprompt:${hash.slice(0, 8)}`);
-      return res.json({ ...JSON.parse(cached), fromCache: true });
-    }
-
-    // Try to use user's API key first, fallback to system key
-    let userApiKey: string | undefined;
+router.post(
+  '/generate-smart-prompt',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
     try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch (error) {
-      // User doesn't have API key, will use system key
-    }
+      const {
+        baseImage,
+        designType,
+        brandingTags,
+        categoryTags,
+        locationTags,
+        angleTags,
+        lightingTags,
+        effectTags,
+        materialTags,
+        selectedColors,
+        aspectRatio,
+        generateText,
+        withHuman,
+        enhanceTexture,
+        removeText,
+        negativePrompt,
+        additionalPrompt,
+        instructions,
+        brandGuidelineId,
+        vibeId,
+        learnFromHistory,
+        detectedLanguage,
+      } = req.body;
 
-    // Fetch brand guideline if id provided (ownership-checked)
-    let brandGuideline: any = null;
-    if (brandGuidelineId && typeof brandGuidelineId === 'string') {
-      try {
-        const bg = await prisma.brandGuideline.findFirst({
-          where: { id: brandGuidelineId, userId: req.userId! },
-        });
-        if (bg) {
-          brandGuideline = {
-            id: bg.id,
-            identity: bg.identity as any,
-            logos: bg.logos as any,
-            colors: bg.colors as any,
-            typography: bg.typography as any,
-            tags: bg.tags as any,
-            media: bg.media as any,
-            tokens: bg.tokens as any,
-            guidelines: bg.guidelines as any,
-            strategy: (bg as any).strategy,
-          };
-        }
-      } catch (err) {
-        console.warn('[generate-smart-prompt] failed to load brand guideline:', err);
+      if (!designType) {
+        return res.status(400).json({ error: 'Design type is required' });
       }
-    }
 
-    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
-    const result = await generateSmartPrompt({
-      baseImage: baseImage || null,
-      designType,
-      brandingTags: brandingTags || [],
-      categoryTags: categoryTags || [],
-      locationTags: locationTags || [],
-      angleTags: angleTags || [],
-      lightingTags: lightingTags || [],
-      effectTags: effectTags || [],
-      materialTags: materialTags || [],
-      selectedColors: selectedColors || [],
-      aspectRatio: aspectRatio || '16:9',
-      generateText: generateText || false,
-      withHuman: withHuman || false,
-      enhanceTexture: enhanceTexture || false,
-      removeText: removeText || false,
-      negativePrompt: negativePrompt || '',
-      additionalPrompt: additionalPrompt || '',
-      instructions: instructions || '',
-      brandGuideline,
-      userId: req.userId,
-      vibeId: typeof vibeId === 'string' ? vibeId : undefined,
-      learnFromHistory: learnFromHistory !== false,
-      detectedLanguage: typeof detectedLanguage === 'string' ? detectedLanguage : undefined,
-    }, userApiKey);
-
-    // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
-
-    // Track total tokens
-    (async () => {
-      try {
-        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
-        if (totalTokens > 0) {
-          await incrementUserGenerations(req.userId!, 0, totalTokens);
-        }
-      } catch (err) {
-        console.error('Error tracking tokens for smart prompt:', err);
+      // 🟢 CACHE CHECK
+      const hash = hashObject({
+        designType,
+        brandingTags,
+        categoryTags,
+        locationTags,
+        angleTags,
+        lightingTags,
+        effectTags,
+        materialTags,
+        selectedColors,
+        aspectRatio,
+        generateText,
+        withHuman,
+        enhanceTexture,
+        removeText,
+        negativePrompt,
+        additionalPrompt,
+        instructions,
+        brandGuidelineId,
+        vibeId,
+        learnFromHistory,
+        detectedLanguage,
+      });
+      const cacheKey = CacheKey.aiText('smartprompt', req.userId!, hash);
+      const cached = await redisClient.get(cacheKey).catch(() => null);
+      if (cached) {
+        console.log(`[Cache] HIT ai:smartprompt:${hash.slice(0, 8)}`);
+        return res.json({ ...JSON.parse(cached), fromCache: true });
       }
-    })();
 
-    res.json(result);
-  } catch (error: any) {
-    console.error('Error generating smart prompt:', error);
-    next(error);
+      // Try to use user's API key first, fallback to system key
+      let userApiKey: string | undefined;
+      try {
+        userApiKey = await getGeminiApiKey(req.userId!);
+      } catch (error) {
+        // User doesn't have API key, will use system key
+      }
+
+      // Fetch brand guideline if id provided (ownership-checked)
+      let brandGuideline: any = null;
+      if (brandGuidelineId && typeof brandGuidelineId === 'string') {
+        try {
+          const bg = await prisma.brandGuideline.findFirst({
+            where: { id: brandGuidelineId, userId: req.userId! },
+          });
+          if (bg) {
+            brandGuideline = {
+              id: bg.id,
+              identity: bg.identity as any,
+              logos: bg.logos as any,
+              colors: bg.colors as any,
+              typography: bg.typography as any,
+              tags: bg.tags as any,
+              media: bg.media as any,
+              tokens: bg.tokens as any,
+              guidelines: bg.guidelines as any,
+              strategy: (bg as any).strategy,
+            };
+          }
+        } catch (err) {
+          console.warn('[generate-smart-prompt] failed to load brand guideline:', err);
+        }
+      }
+
+      await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
+      const result = await generateSmartPrompt(
+        {
+          baseImage: baseImage || null,
+          designType,
+          brandingTags: brandingTags || [],
+          categoryTags: categoryTags || [],
+          locationTags: locationTags || [],
+          angleTags: angleTags || [],
+          lightingTags: lightingTags || [],
+          effectTags: effectTags || [],
+          materialTags: materialTags || [],
+          selectedColors: selectedColors || [],
+          aspectRatio: aspectRatio || '16:9',
+          generateText: generateText || false,
+          withHuman: withHuman || false,
+          enhanceTexture: enhanceTexture || false,
+          removeText: removeText || false,
+          negativePrompt: negativePrompt || '',
+          additionalPrompt: additionalPrompt || '',
+          instructions: instructions || '',
+          brandGuideline,
+          userId: req.userId,
+          vibeId: typeof vibeId === 'string' ? vibeId : undefined,
+          learnFromHistory: learnFromHistory !== false,
+          detectedLanguage: typeof detectedLanguage === 'string' ? detectedLanguage : undefined,
+        },
+        userApiKey
+      );
+
+      // 💾 CACHE SET
+      await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
+
+      // Track total tokens
+      (async () => {
+        try {
+          const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+          if (totalTokens > 0) {
+            await incrementUserGenerations(req.userId!, 0, totalTokens);
+          }
+        } catch (err) {
+          console.error('Error tracking tokens for smart prompt:', err);
+        }
+      })();
+
+      res.json(result);
+    } catch (error: any) {
+      console.error('Error generating smart prompt:', error);
+      next(error);
+    }
   }
-});
+);
 
 /**
  * POST /api/ai/suggest-prompt-variations
  * Generate variations of a prompt
  */
-router.post('/suggest-prompt-variations', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { prompt } = req.body;
-
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      return res.status(400).json({ error: 'Prompt is required' });
-    }
-
-    // 🟢 CACHE CHECK
-    const hash = hashQuery(prompt);
-    const cacheKey = CacheKey.aiText('variations', req.userId!, hash);
-    const cached = await redisClient.get(cacheKey).catch(() => null);
-    if (cached) {
-      console.log(`[Cache] HIT ai:variations:${hash.slice(0, 8)}`);
-      return res.json({ ...JSON.parse(cached), fromCache: true });
-    }
-
-    // Try to use user's API key first, fallback to system key
-    let userApiKey: string | undefined;
+router.post(
+  '/suggest-prompt-variations',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
     try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch (error) {
-      // User doesn't have API key, will use system key
-    }
+      const { prompt } = req.body;
 
-    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
-    const result = await suggestPromptVariations(prompt, userApiKey);
-
-    // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
-
-    // Track usage asynchronously
-    (async () => {
-      try {
-        await connectToMongoDB();
-        const db = getDb();
-        const usageRecord = createUsageRecord(
-          req.userId!,
-          0, // images
-          GEMINI_MODELS.TEXT,
-          false, // hasInputImage
-          prompt.length,
-          undefined, // resolution
-          'branding', // feature
-          'system',
-          result.inputTokens,
-          result.outputTokens
-        );
-        (usageRecord as any).type = 'branding';
-
-        await db.collection('usage_records').insertOne(usageRecord);
-
-        // Track total tokens for user stats
-        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
-        if (totalTokens > 0) {
-          await incrementUserGenerations(req.userId!, 0, totalTokens);
-        }
-      } catch (err) {
-        console.error('Error tracking usage for suggest-prompt-variations:', err);
+      if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+        return res.status(400).json({ error: 'Prompt is required' });
       }
-    })();
 
-    res.json({ variations: result.variations });
-  } catch (error: any) {
-    console.error('Error suggesting prompt variations:', error);
-    next(error);
+      // 🟢 CACHE CHECK
+      const hash = hashQuery(prompt);
+      const cacheKey = CacheKey.aiText('variations', req.userId!, hash);
+      const cached = await redisClient.get(cacheKey).catch(() => null);
+      if (cached) {
+        console.log(`[Cache] HIT ai:variations:${hash.slice(0, 8)}`);
+        return res.json({ ...JSON.parse(cached), fromCache: true });
+      }
+
+      // Try to use user's API key first, fallback to system key
+      let userApiKey: string | undefined;
+      try {
+        userApiKey = await getGeminiApiKey(req.userId!);
+      } catch (error) {
+        // User doesn't have API key, will use system key
+      }
+
+      await chargeCredits(req.userId!, 1, { isUserApiKey: !!userApiKey });
+      const result = await suggestPromptVariations(prompt, userApiKey);
+
+      // 💾 CACHE SET
+      await redisClient.setex(cacheKey, CACHE_TTL.AI_TEXT, JSON.stringify(result)).catch(() => {});
+
+      // Track usage asynchronously
+      (async () => {
+        try {
+          await connectToMongoDB();
+          const db = getDb();
+          const usageRecord = createUsageRecord(
+            req.userId!,
+            0, // images
+            GEMINI_MODELS.TEXT,
+            false, // hasInputImage
+            prompt.length,
+            undefined, // resolution
+            'branding', // feature
+            'system',
+            result.inputTokens,
+            result.outputTokens
+          );
+          (usageRecord as any).type = 'branding';
+
+          await db.collection('usage_records').insertOne(usageRecord);
+
+          // Track total tokens for user stats
+          const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+          if (totalTokens > 0) {
+            await incrementUserGenerations(req.userId!, 0, totalTokens);
+          }
+        } catch (err) {
+          console.error('Error tracking usage for suggest-prompt-variations:', err);
+        }
+      })();
+
+      res.json({ variations: result.variations });
+    } catch (error: any) {
+      console.error('Error suggesting prompt variations:', error);
+      next(error);
+    }
   }
-});
+);
 
 /**
  * POST /api/ai/change-object
@@ -769,7 +839,9 @@ router.post('/change-object', apiRateLimiter, authenticate, async (req: AuthRequ
     );
 
     // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.AI_IMAGE_GEN, JSON.stringify({ imageBase64 })).catch(() => {});
+    await redisClient
+      .setex(cacheKey, CACHE_TTL.AI_IMAGE_GEN, JSON.stringify({ imageBase64 }))
+      .catch(() => {});
 
     // Track total generations
     (async () => {
@@ -831,7 +903,9 @@ router.post('/apply-theme', apiRateLimiter, authenticate, async (req: AuthReques
     );
 
     // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.AI_IMAGE_GEN, JSON.stringify({ imageBase64 })).catch(() => {});
+    await redisClient
+      .setex(cacheKey, CACHE_TTL.AI_IMAGE_GEN, JSON.stringify({ imageBase64 }))
+      .catch(() => {});
 
     // Track total generations
     (async () => {
@@ -907,11 +981,12 @@ router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRe
 
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const { GENERIC_SYSTEM_PROMPT } = await import('../services/geminiService.js');
-    const apiKey = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+    const apiKey =
+      userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
     const genAI = new GoogleGenerativeAI(apiKey.trim());
-    const model = genAI.getGenerativeModel({ 
+    const model = genAI.getGenerativeModel({
       model: GEMINI_MODELS.TEXT,
-      systemInstruction: fullSystemPrompt || GENERIC_SYSTEM_PROMPT
+      systemInstruction: fullSystemPrompt || GENERIC_SYSTEM_PROMPT,
     });
 
     // Build content
@@ -956,11 +1031,12 @@ router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRe
         console.error('Error tracking usage for stream:', err);
       }
     })();
-
   } catch (error: any) {
     console.error('Error in streaming generation:', error);
     // Send error as SSE event
-    res.write(`data: ${JSON.stringify({ error: error.message || 'Stream failed', done: true })}\n\n`);
+    res.write(
+      `data: ${JSON.stringify({ error: error.message || 'Stream failed', done: true })}\n\n`
+    );
     res.end();
   }
 });
@@ -994,7 +1070,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
 
   try {
     const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
-    const apiKey = userOwnKey || await getGeminiApiKey(req.userId!);
+    const apiKey = userOwnKey || (await getGeminiApiKey(req.userId!));
     if (!apiKey) throw new Error('Gemini API key not configured');
     await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey });
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
@@ -1008,7 +1084,9 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
     }
 
     const styleHint = style ? `Style preference: ${sanitizeForPrompt(style, 200)}.` : '';
-    const prompt = `${brandContext ? `Brand context:\n${brandContext}\n\n` : ''}You are a professional brand naming strategist.
+    const prompt = `${
+      brandContext ? `Brand context:\n${brandContext}\n\n` : ''
+    }You are a professional brand naming strategist.
 Generate exactly ${count} creative and memorable name suggestions for the following brief.
 ${styleHint}
 Brief: ${sanitizeForPrompt(brief, 2000)}
@@ -1039,7 +1117,7 @@ router.post('/extract-colors', apiRateLimiter, authenticate, async (req: AuthReq
 
   try {
     const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
-    const apiKey = userOwnKey || await getGeminiApiKey(req.userId!);
+    const apiKey = userOwnKey || (await getGeminiApiKey(req.userId!));
     if (!apiKey) throw new Error('Gemini API key not configured');
     await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey });
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
@@ -1076,7 +1154,8 @@ Order colors from most dominant to least dominant. Extract between 4 and 10 colo
 
     const text = result.response.text().trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return res.status(500).json({ error: 'Failed to parse color extraction response' });
+    if (!jsonMatch)
+      return res.status(500).json({ error: 'Failed to parse color extraction response' });
     res.json(JSON.parse(jsonMatch[0]));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -1109,19 +1188,19 @@ router.post('/riso-enhance', apiRateLimiter, authenticate, async (req: AuthReque
     const { resolveImageBase64 } = await import('../services/geminiService.js');
     const { GoogleGenAI, Modality } = await import('@google/genai');
 
-    const apiKey = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+    const apiKey =
+      userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
     const genAI = new GoogleGenAI({ apiKey: apiKey.trim() });
 
     const base64Data = await resolveImageBase64(image as UploadedImage);
 
     const response = await genAI.models.generateContent({
       model: GEMINI_MODELS.IMAGE_FLASH,
-      contents: [{
-        parts: [
-          { inlineData: { data: base64Data, mimeType: image.mimeType } },
-          { text: prompt },
-        ],
-      }],
+      contents: [
+        {
+          parts: [{ inlineData: { data: base64Data, mimeType: image.mimeType } }, { text: prompt }],
+        },
+      ],
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
       },
@@ -1153,4 +1232,3 @@ router.post('/riso-enhance', apiRateLimiter, authenticate, async (req: AuthReque
 });
 
 export default router;
-

@@ -35,10 +35,10 @@ interface LintReport {
 }
 
 interface BrandContext {
-  colors: string[];                 // hex list, from state.selectedColors
-  fontFamilies: string[];           // from state.typography
-  spacing?: number[];               // token values
-  radius?: number[];                // token values
+  colors: string[]; // hex list, from state.selectedColors
+  fontFamilies: string[]; // from state.typography
+  spacing?: number[]; // token values
+  radius?: number[]; // token values
 }
 
 // ── Color math ──────────────────────────────────────────────────────────────
@@ -99,7 +99,10 @@ function nearestPalette(color: RGB, palette: RGB[]): RGB | null {
 }
 
 function rgbToHex(c: RGB): string {
-  const to = (v: number) => Math.round(v * 255).toString(16).padStart(2, '0');
+  const to = (v: number) =>
+    Math.round(v * 255)
+      .toString(16)
+      .padStart(2, '0');
   return `#${to(c.r)}${to(c.g)}${to(c.b)}`.toUpperCase();
 }
 
@@ -110,9 +113,9 @@ function resolveBackground(node: SceneNode): RGB {
   while (current && current.type !== 'PAGE' && current.type !== 'DOCUMENT') {
     if ('fills' in current && Array.isArray((current as any).fills)) {
       const fills = (current as any).fills as Paint[];
-      const solid = fills.find(
-        (f) => f.type === 'SOLID' && f.visible !== false
-      ) as SolidPaint | undefined;
+      const solid = fills.find((f) => f.type === 'SOLID' && f.visible !== false) as
+        | SolidPaint
+        | undefined;
       if (solid) return solid.color;
     }
     current = (current as any).parent;
@@ -239,9 +242,9 @@ function scanNode(
     // Contrast check
     const fills = node.fills;
     if (Array.isArray(fills)) {
-      const textFill = fills.find(
-        (f) => f.type === 'SOLID' && f.visible !== false
-      ) as SolidPaint | undefined;
+      const textFill = fills.find((f) => f.type === 'SOLID' && f.visible !== false) as
+        | SolidPaint
+        | undefined;
       if (textFill) {
         const bg = resolveBackground(node);
         const ratio = contrastRatio(textFill.color, bg);
@@ -291,9 +294,7 @@ export async function lintBrandAdherence(brand: BrandContext) {
     return;
   }
 
-  const palette: RGB[] = (brand.colors || [])
-    .map(hexToRgb)
-    .filter((c): c is RGB => c !== null);
+  const palette: RGB[] = (brand.colors || []).map(hexToRgb).filter((c): c is RGB => c !== null);
 
   const fontFamilies = new Set<string>((brand.fontFamilies || []).filter(Boolean));
   const spacing = new Set<number>((brand.spacing || []).filter((v) => typeof v === 'number'));
@@ -450,9 +451,9 @@ async function fixNode(node: SceneNode, ctx: FixContext) {
     // Contrast fix — flip text to black or white based on bg luminance
     const fills = node.fills;
     if (Array.isArray(fills)) {
-      const textFill = fills.find(
-        (f) => f.type === 'SOLID' && f.visible !== false
-      ) as SolidPaint | undefined;
+      const textFill = fills.find((f) => f.type === 'SOLID' && f.visible !== false) as
+        | SolidPaint
+        | undefined;
       if (textFill) {
         const bg = resolveBackground(node);
         const ratio = contrastRatio(textFill.color, bg);
@@ -460,9 +461,8 @@ async function fixNode(node: SceneNode, ctx: FixContext) {
         const minRatio = fontSize >= 18 ? 3.0 : 4.5;
         if (ratio < minRatio) {
           const bgLum = rgbLuminance(bg);
-          const flipped: RGB = bgLum < 0.5
-            ? { r: 0.98, g: 0.98, b: 0.98 }
-            : { r: 0.05, g: 0.05, b: 0.05 };
+          const flipped: RGB =
+            bgLum < 0.5 ? { r: 0.98, g: 0.98, b: 0.98 } : { r: 0.05, g: 0.05, b: 0.05 };
           // Prefer a palette color if one meets the ratio — keeps the brand feel
           let chosen = flipped;
           for (const p of ctx.palette) {
@@ -492,9 +492,7 @@ export async function fixBrandIssues(brand: BrandContext) {
     return;
   }
 
-  const palette: RGB[] = (brand.colors || [])
-    .map(hexToRgb)
-    .filter((c): c is RGB => c !== null);
+  const palette: RGB[] = (brand.colors || []).map(hexToRgb).filter((c): c is RGB => c !== null);
 
   const ctx: FixContext = {
     palette,

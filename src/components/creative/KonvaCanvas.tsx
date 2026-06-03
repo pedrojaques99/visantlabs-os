@@ -14,11 +14,7 @@ import { intersectingLayerIds } from './lib/marqueeIntersect';
 import { CreativeContextMenu } from './CreativeContextMenu';
 import { CameraControls } from './CameraControls';
 import { SelectionHud } from './SelectionHud';
-import {
-  buildLogoLayerData,
-  buildShapeLayerData,
-  buildTextLayerData,
-} from './lib/layerDefaults';
+import { buildLogoLayerData, buildShapeLayerData, buildTextLayerData } from './lib/layerDefaults';
 import {
   GRID_LINE_COLOR,
   GUIDE_COLOR,
@@ -99,13 +95,18 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
 
     // Smart guides — drag/transform snap to layer + canvas edges/centers,
     // plus optional grid snap (single source of truth: useCreativeStore.gridEnabled/gridSize)
-    const { guides, onDragMove, onTransform, clear: clearGuides, setDraggingIds } =
-      useSmartGuides({
-        stageWidth: width,
-        stageHeight: height,
-        shapeRefs,
-        gridSize: gridEnabled ? gridSize : 0,
-      });
+    const {
+      guides,
+      onDragMove,
+      onTransform,
+      clear: clearGuides,
+      setDraggingIds,
+    } = useSmartGuides({
+      stageWidth: width,
+      stageHeight: height,
+      shapeRefs,
+      gridSize: gridEnabled ? gridSize : 0,
+    });
 
     // Resize is proportional by default; Ctrl/Cmd held = free distortion (side
     // anchors enabled, ratio unlocked). Mirrors Figma's Shift-to-toggle but
@@ -161,9 +162,12 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
     }, []);
 
     // Cancel any in-flight rAF on unmount to avoid setState after unmount.
-    useEffect(() => () => {
-      if (marqueeRafRef.current !== null) cancelAnimationFrame(marqueeRafRef.current);
-    }, []);
+    useEffect(
+      () => () => {
+        if (marqueeRafRef.current !== null) cancelAnimationFrame(marqueeRafRef.current);
+      },
+      []
+    );
 
     // Drag-drop handler — defaults centralized in lib/layerDefaults.ts
     const handleDrop = (e: React.DragEvent) => {
@@ -389,37 +393,39 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
             {renderOverlay()}
 
             {/* Layer dispatch — type-routed to Konva*Layer components */}
-            {layers.filter((l) => l.visible).map((layer) => {
-              const common = {
-                canvasWidth: width,
-                canvasHeight: height,
-                isSelected: selectedLayerIds.includes(layer.id),
-                registerNode,
-                onSelect: handleSelect,
-                onDragStart: handleDragStart,
-                onSmartDragMove: onDragMove,
-                onSmartTransform: onTransform,
-                onSmartClear: clearGuides,
-              };
-              if (layer.data.type === 'text') {
-                return (
-                  <KonvaTextLayer
-                    key={layer.id}
-                    layer={layer as any}
-                    accentColor={accentColor}
-                    {...common}
-                  />
-                );
-              }
-              if (layer.data.type === 'logo') {
-                return <KonvaLogoLayer key={layer.id} layer={layer as any} {...common} />;
-              }
-              if (layer.data.type === 'shape') {
-                return <KonvaShapeLayer key={layer.id} layer={layer as any} {...common} />;
-              }
-              // 'group' — out of scope for this phase; skip render
-              return null;
-            })}
+            {layers
+              .filter((l) => l.visible)
+              .map((layer) => {
+                const common = {
+                  canvasWidth: width,
+                  canvasHeight: height,
+                  isSelected: selectedLayerIds.includes(layer.id),
+                  registerNode,
+                  onSelect: handleSelect,
+                  onDragStart: handleDragStart,
+                  onSmartDragMove: onDragMove,
+                  onSmartTransform: onTransform,
+                  onSmartClear: clearGuides,
+                };
+                if (layer.data.type === 'text') {
+                  return (
+                    <KonvaTextLayer
+                      key={layer.id}
+                      layer={layer as any}
+                      accentColor={accentColor}
+                      {...common}
+                    />
+                  );
+                }
+                if (layer.data.type === 'logo') {
+                  return <KonvaLogoLayer key={layer.id} layer={layer as any} {...common} />;
+                }
+                if (layer.data.type === 'shape') {
+                  return <KonvaShapeLayer key={layer.id} layer={layer as any} {...common} />;
+                }
+                // 'group' — out of scope for this phase; skip render
+                return null;
+              })}
 
             {/* Transformer — LAST child of Layer (RESEARCH Pitfall 3) */}
             <Transformer
@@ -428,9 +434,14 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
               enabledAnchors={
                 allowDistort
                   ? [
-                      'top-left', 'top-center', 'top-right',
-                      'middle-left', 'middle-right',
-                      'bottom-left', 'bottom-center', 'bottom-right',
+                      'top-left',
+                      'top-center',
+                      'top-right',
+                      'middle-left',
+                      'middle-right',
+                      'bottom-left',
+                      'bottom-center',
+                      'bottom-right',
                     ]
                   : ['top-left', 'top-right', 'bottom-left', 'bottom-right']
               }

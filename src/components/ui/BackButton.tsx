@@ -10,12 +10,7 @@ interface BackButtonProps {
   to?: string; // Path to navigate to (typically the previous page in breadcrumb)
 }
 
-export const BackButton: React.FC<BackButtonProps> = ({
-  onClick,
-  className = '',
-  label,
-  to,
-}) => {
+export const BackButton: React.FC<BackButtonProps> = ({ onClick, className = '', label, to }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -39,4 +34,3 @@ export const BackButton: React.FC<BackButtonProps> = ({
     </button>
   );
 };
-

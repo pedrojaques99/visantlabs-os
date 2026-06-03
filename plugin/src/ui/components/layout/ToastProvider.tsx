@@ -27,8 +27,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             toastType === 'error'
               ? 'bg-destructive'
               : toastType === 'success'
-                ? 'bg-green-600'
-                : 'bg-blue-600'
+              ? 'bg-green-600'
+              : 'bg-blue-600'
           }`}
         >
           <Icon size={14} className="shrink-0 mt-0.5" />

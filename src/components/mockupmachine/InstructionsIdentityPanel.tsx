@@ -8,8 +8,8 @@ import { useMockupTags } from '@/hooks/useMockupTags';
 import { BrandingSection } from '../branding/BrandingSection';
 import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 export const InstructionsIdentityPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -28,11 +28,8 @@ export const InstructionsIdentityPanel: React.FC = () => {
     setInstructions,
   } = useMockup();
 
-  const {
-    handleBrandingTagToggle,
-    handleAddCustomBrandingTag,
-    availableBrandingTags,
-  } = useMockupTags();
+  const { handleBrandingTagToggle, handleAddCustomBrandingTag, availableBrandingTags } =
+    useMockupTags();
 
   const displayBrandingTags = useMemo(
     () => [...new Set([...availableBrandingTags, ...ctxSelectedBrandingTags])],
@@ -47,10 +44,9 @@ export const InstructionsIdentityPanel: React.FC = () => {
   }, []);
 
   return (
-    <GlassPanel
-      className="group overflow-hidden"
-    >
-      <Button variant="ghost"
+    <GlassPanel className="group overflow-hidden">
+      <Button
+        variant="ghost"
         onClick={() => setIsInstructionsExpanded(!isInstructionsExpanded)}
         className={cn(
           'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
@@ -66,25 +62,24 @@ export const InstructionsIdentityPanel: React.FC = () => {
             <MicroTitle as="span">
               {t('mockup.instructions')} / {t('mockup.identity')}
             </MicroTitle>
-            {!isInstructionsExpanded &&
-              (instructions || ctxSelectedBrandingTags.length > 0) && (
-                <span className="text-[10px] font-mono truncate max-w-[200px]">
-                  {instructions && (
-                    <span className="text-brand-cyan">
-                      {instructions.substring(0, 30)}
-                      {instructions.length > 30 ? '...' : ''}
-                    </span>
-                  )}
-                  {instructions && ctxSelectedBrandingTags.length > 0 && (
-                    <span className="text-neutral-500"> · </span>
-                  )}
-                  {ctxSelectedBrandingTags.length > 0 && (
-                    <span className="text-neutral-500">
-                      {ctxSelectedBrandingTags.length} {t('mockup.identity')}
-                    </span>
-                  )}
-                </span>
-              )}
+            {!isInstructionsExpanded && (instructions || ctxSelectedBrandingTags.length > 0) && (
+              <span className="text-[10px] font-mono truncate max-w-[200px]">
+                {instructions && (
+                  <span className="text-brand-cyan">
+                    {instructions.substring(0, 30)}
+                    {instructions.length > 30 ? '...' : ''}
+                  </span>
+                )}
+                {instructions && ctxSelectedBrandingTags.length > 0 && (
+                  <span className="text-neutral-500"> · </span>
+                )}
+                {ctxSelectedBrandingTags.length > 0 && (
+                  <span className="text-neutral-500">
+                    {ctxSelectedBrandingTags.length} {t('mockup.identity')}
+                  </span>
+                )}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -100,14 +95,11 @@ export const InstructionsIdentityPanel: React.FC = () => {
         <div className="p-3 pt-2 animate-fade-in space-y-3">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <MicroTitle as="span">
-                {t('mockup.instructions')}
-              </MicroTitle>
-              <Button variant="ghost"
+              <MicroTitle as="span">{t('mockup.instructions')}</MicroTitle>
+              <Button
+                variant="ghost"
                 type="button"
-                onClick={() =>
-                  setIsInstructionsTextareaVisible(!isInstructionsTextareaVisible)
-                }
+                onClick={() => setIsInstructionsTextareaVisible(!isInstructionsTextareaVisible)}
                 className={cn(
                   'p-1 rounded-md transition-colors',
                   theme === 'dark'
@@ -156,11 +148,10 @@ export const InstructionsIdentityPanel: React.FC = () => {
                   size={12}
                   className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
                 />
-                <MicroTitle as="span">
-                  {t('mockup.identity')}
-                </MicroTitle>
+                <MicroTitle as="span">{t('mockup.identity')}</MicroTitle>
               </div>
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -199,4 +190,3 @@ export const InstructionsIdentityPanel: React.FC = () => {
     </GlassPanel>
   );
 };
-

@@ -6,7 +6,10 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { Users } from 'lucide-react';
 import { LiveObject } from '@liveblocks/client';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { LiveblocksEditorProvider, LocalEditorProvider } from '@/contexts/BrandGuidelineEditorContext';
+import {
+  LiveblocksEditorProvider,
+  LocalEditorProvider,
+} from '@/contexts/BrandGuidelineEditorContext';
 
 // ─── Section presence dot ─────────────────────────────────────────────────────
 
@@ -74,9 +77,7 @@ export const BrandCollaboratorAvatars: React.FC = () => {
           </div>
         )}
       </div>
-      <span className="text-[10px] font-mono text-neutral-600">
-        {collaboratorCount} online
-      </span>
+      <span className="text-[10px] font-mono text-neutral-600">{collaboratorCount} online</span>
     </div>
   );
 };

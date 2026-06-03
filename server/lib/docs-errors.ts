@@ -54,12 +54,7 @@ export class ValidationError extends DocumentationError {
  */
 export class NotFoundError extends DocumentationError {
   constructor(resource: string) {
-    super(
-      'NOT_FOUND',
-      404,
-      `${resource} not found`,
-      { resource }
-    );
+    super('NOT_FOUND', 404, `${resource} not found`, { resource });
     this.name = 'NotFoundError';
     Object.setPrototypeOf(this, NotFoundError.prototype);
   }

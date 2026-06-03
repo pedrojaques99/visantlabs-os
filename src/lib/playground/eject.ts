@@ -26,17 +26,20 @@ body {
 
 const COMPONENT_MAP: Record<string, string> = {
   PageShell: 'div className="p-6"',
-  GlassPanel: 'div className="bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-4"',
+  GlassPanel:
+    'div className="bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-4"',
   Stack: 'div className="flex flex-col gap-4"',
   Grid: 'div className="grid grid-cols-2 gap-4"',
   Card: 'div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4"',
   Heading: 'h2 className="font-semibold text-neutral-100"',
   Text: 'span className="text-sm text-neutral-300"',
   MicroTitle: 'span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500"',
-  Button: 'button className="px-4 py-2 rounded-lg bg-cyan-500 text-neutral-900 font-medium text-sm hover:bg-cyan-400 transition-colors"',
+  Button:
+    'button className="px-4 py-2 rounded-lg bg-cyan-500 text-neutral-900 font-medium text-sm hover:bg-cyan-400 transition-colors"',
   Badge: 'span className="px-2 py-0.5 text-[10px] rounded-full bg-neutral-800 text-neutral-300"',
   Separator: 'hr className="border-neutral-800"',
-  Metric: 'div className="bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-4"',
+  Metric:
+    'div className="bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-4"',
 };
 
 function propsToString(props: Record<string, unknown>): string {
@@ -67,10 +70,22 @@ function elementToJsx(spec: Spec, key: string, indent: number): string {
 
   if (el.type === 'Metric') {
     return `${pad}<div className="bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-4">
-${pad}  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">${props.label || ''}</span>
+${pad}  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">${
+      props.label || ''
+    }</span>
 ${pad}  <div className="flex items-baseline gap-2 mt-1">
 ${pad}    <span className="text-2xl font-semibold text-neutral-100">${props.value || ''}</span>
-${pad}    ${props.change ? `<span className="text-xs font-mono ${props.trend === 'up' ? 'text-green-400' : props.trend === 'down' ? 'text-red-400' : 'text-neutral-400'}">${props.change}</span>` : ''}
+${pad}    ${
+      props.change
+        ? `<span className="text-xs font-mono ${
+            props.trend === 'up'
+              ? 'text-green-400'
+              : props.trend === 'down'
+              ? 'text-red-400'
+              : 'text-neutral-400'
+          }">${props.change}</span>`
+        : ''
+    }
 ${pad}  </div>
 ${pad}</div>`;
   }
@@ -78,7 +93,7 @@ ${pad}</div>`;
   if (el.type === 'Stack') {
     const dir = props.direction === 'horizontal' ? 'flex-row' : 'flex-col';
     const gap = props.gap ? `gap-${props.gap}` : 'gap-4';
-    const childrenJsx = children.map(c => elementToJsx(spec, c, indent + 1)).join('\n');
+    const childrenJsx = children.map((c) => elementToJsx(spec, c, indent + 1)).join('\n');
     return `${pad}<div className="flex ${dir} ${gap}">
 ${childrenJsx}
 ${pad}</div>`;
@@ -87,7 +102,7 @@ ${pad}</div>`;
   if (el.type === 'Grid') {
     const cols = props.cols || 2;
     const gap = props.gap ? `gap-${props.gap}` : 'gap-4';
-    const childrenJsx = children.map(c => elementToJsx(spec, c, indent + 1)).join('\n');
+    const childrenJsx = children.map((c) => elementToJsx(spec, c, indent + 1)).join('\n');
     return `${pad}<div className="grid grid-cols-${cols} ${gap}">
 ${childrenJsx}
 ${pad}</div>`;
@@ -95,7 +110,7 @@ ${pad}</div>`;
 
   const mapped = COMPONENT_MAP[el.type];
   if (!mapped) {
-    const childrenJsx = children.map(c => elementToJsx(spec, c, indent + 1)).join('\n');
+    const childrenJsx = children.map((c) => elementToJsx(spec, c, indent + 1)).join('\n');
     return `${pad}<div data-type="${el.type}">
 ${childrenJsx}${textContent ? `\n${pad}  ${textContent}` : ''}
 ${pad}</div>`;
@@ -110,7 +125,7 @@ ${pad}</div>`;
     return `${pad}<${tag} ${allProps} />`;
   }
 
-  const childrenJsx = children.map(c => elementToJsx(spec, c, indent + 1)).join('\n');
+  const childrenJsx = children.map((c) => elementToJsx(spec, c, indent + 1)).join('\n');
   const inner = textContent
     ? `${textContent}${childrenJsx ? '\n' + childrenJsx : ''}`
     : childrenJsx;
@@ -141,6 +156,6 @@ ${jsx}
 }
 
 export const SANDPACK_DEPS = {
-  'react': '^19.0.0',
+  react: '^19.0.0',
   'react-dom': '^19.0.0',
 };

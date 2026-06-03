@@ -161,7 +161,10 @@ export const CameraTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Light Positions */}
-      <ToolPanelDisclosure label={t('studio3d.panels.lightPositions')} badge={<span className="text-[9px] font-mono text-neutral-600">4 lights</span>}>
+      <ToolPanelDisclosure
+        label={t('studio3d.panels.lightPositions')}
+        badge={<span className="text-[9px] font-mono text-neutral-600">4 lights</span>}
+      >
         <LightPositionSliders
           label="Key Position"
           position={store.lightPosition}
@@ -222,7 +225,11 @@ export const CameraTab: React.FC = React.memo(() => {
       {/* Environment / HDRI — flattened to single disclosure */}
       <ToolPanelDisclosure
         label="HDRI"
-        badge={<span className="text-[9px] font-mono text-neutral-500">{store.customHdriUrl ? 'custom' : store.environment}</span>}
+        badge={
+          <span className="text-[9px] font-mono text-neutral-500">
+            {store.customHdriUrl ? 'custom' : store.environment}
+          </span>
+        }
       >
         <ToolPanelGrid cols={3}>
           {ENVIRONMENT_PRESETS.map((env) => (
@@ -254,9 +261,7 @@ export const CameraTab: React.FC = React.memo(() => {
               const maxSizeMB = 50;
               if (file.size > maxSizeMB * 1024 * 1024) {
                 toast.error(
-                  `HDRI too large (${(file.size / 1024 / 1024).toFixed(
-                    0
-                  )}MB). Max ${maxSizeMB}MB.`
+                  `HDRI too large (${(file.size / 1024 / 1024).toFixed(0)}MB). Max ${maxSizeMB}MB.`
                 );
                 e.target.value = '';
                 return;
@@ -330,7 +335,11 @@ export const CameraTab: React.FC = React.memo(() => {
           ))}
         </ToolPanelGrid>
         {store.bgType === 'solid' ? (
-          <ExpandableColorPicker color={store.background} onChange={store.setBackground} label="Background color" />
+          <ExpandableColorPicker
+            color={store.background}
+            onChange={store.setBackground}
+            label="Background color"
+          />
         ) : (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -428,7 +437,11 @@ export const CameraTab: React.FC = React.memo(() => {
         </ToolPanelRow>
         {store.fogEnabled && (
           <>
-            <ExpandableColorPicker color={store.fogColor} onChange={store.setFogColor} label="Fog color" />
+            <ExpandableColorPicker
+              color={store.fogColor}
+              onChange={store.setFogColor}
+              label="Fog color"
+            />
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput
                 label="Near"

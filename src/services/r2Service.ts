@@ -1,4 +1,10 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command, HeadObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+  HeadObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { prisma } from '../../server/db/prisma.js';
 
@@ -55,7 +61,13 @@ async function checkStorageLimitIfNeeded(
     return;
   }
 
-  const storageCheck = await checkStorageLimit(userId, fileSizeBytes, subscriptionTier, isAdmin, customLimitBytes);
+  const storageCheck = await checkStorageLimit(
+    userId,
+    fileSizeBytes,
+    subscriptionTier,
+    isAdmin,
+    customLimitBytes
+  );
   if (!storageCheck.allowed) {
     throw new StorageLimitExceededError(storageCheck.used, storageCheck.limit, fileSizeBytes);
   }
@@ -135,9 +147,21 @@ export async function uploadImage(
       console.error('  - Bucket:', bucketName);
       console.error('  - Key:', key);
       console.error('  - Endpoint:', `https://${accountId}.r2.cloudflarestorage.com`);
-      console.error('  - Account ID length:', accountId.length, accountId.length < 20 ? '⚠️ WARNING: Too short!' : '');
-      console.error('  - Access Key ID length:', accessKeyId.length, accessKeyId.length < 16 ? '⚠️ WARNING: Too short!' : '');
-      console.error('  - Secret Access Key length:', secretAccessKey.length, secretAccessKey.length < 16 ? '⚠️ WARNING: Too short!' : '');
+      console.error(
+        '  - Account ID length:',
+        accountId.length,
+        accountId.length < 20 ? '⚠️ WARNING: Too short!' : ''
+      );
+      console.error(
+        '  - Access Key ID length:',
+        accessKeyId.length,
+        accessKeyId.length < 16 ? '⚠️ WARNING: Too short!' : ''
+      );
+      console.error(
+        '  - Secret Access Key length:',
+        secretAccessKey.length,
+        secretAccessKey.length < 16 ? '⚠️ WARNING: Too short!' : ''
+      );
       console.error('  - Account ID prefix:', accountId.substring(0, 8) + '...');
       console.error('  - Access Key ID prefix:', accessKeyId.substring(0, 8) + '...');
       console.error('  - Error Code:', error.Code || error.code || 'N/A');
@@ -154,13 +178,13 @@ export async function uploadImage(
       ];
 
       console.error('\nTroubleshooting Tips:');
-      troubleshootingTips.forEach(tip => console.error('  ', tip));
+      troubleshootingTips.forEach((tip) => console.error('  ', tip));
 
       throw new Error(
         `Failed to upload image to R2: Signature mismatch. ` +
-        `Please verify your R2 credentials are correct. ` +
-        `Make sure you're using Account API Token credentials (Access Key ID + Secret Access Key), ` +
-        `and that there are no extra spaces. Error: ${error.message || error}`
+          `Please verify your R2 credentials are correct. ` +
+          `Make sure you're using Account API Token credentials (Access Key ID + Secret Access Key), ` +
+          `and that there are no extra spaces. Error: ${error.message || error}`
       );
     }
 
@@ -237,7 +261,15 @@ export async function deleteImage(imageUrl: string): Promise<void> {
         userId = keyParts[0];
       } else {
         // Prefix/userId/ format - check if first part is a known prefix
-        const prefixes = ['canvas', 'profiles', 'budgets', 'brands', 'gifts', 'users', 'pdf-presets'];
+        const prefixes = [
+          'canvas',
+          'profiles',
+          'budgets',
+          'brands',
+          'gifts',
+          'users',
+          'pdf-presets',
+        ];
         if (prefixes.includes(keyParts[0]) && keyParts.length > 1) {
           userId = keyParts[1];
         } else {
@@ -579,13 +611,7 @@ export function isR2Configured(): boolean {
   const bucketName = process.env.R2_BUCKET_NAME?.trim();
   const publicUrl = process.env.R2_PUBLIC_URL?.trim();
 
-  const configured = !!(
-    accountId &&
-    accessKeyId &&
-    secretAccessKey &&
-    bucketName &&
-    publicUrl
-  );
+  const configured = !!(accountId && accessKeyId && secretAccessKey && bucketName && publicUrl);
 
   if (!configured) {
     console.warn('R2 not fully configured:', {
@@ -666,7 +692,7 @@ export async function generateCanvasImageUploadUrl(
 /**
  * Generate presigned URL for direct mockup image upload to R2
  * This allows large images to bypass Vercel's 4.5MB limit by uploading directly to R2
- * 
+ *
  * @param userId - User ID
  * @param contentType - Content type (default: image/png)
  * @param expiresIn - URL expiration time in seconds (default: 3600 = 1 hour)
@@ -724,7 +750,7 @@ export async function generateMockupImageUploadUrl(
 /**
  * Generate presigned URL for direct video upload to R2
  * This allows videos to bypass Vercel's 4.5MB limit by uploading directly to R2
- * 
+ *
  * @param userId - User ID
  * @param canvasId - Canvas project ID
  * @param nodeId - Node ID (optional, will be used in filename if provided)
@@ -1035,10 +1061,10 @@ export async function uploadCanvasPdf(
 
 /**
  * Upload canvas video to R2 storage
- * 
+ *
  * IMPORTANT: This function uploads videos WITHOUT ANY COMPRESSION.
  * Videos are stored with their original quality preserved for designers.
- * 
+ *
  * @param videoBase64 - Base64 encoded video string (with or without data URL prefix)
  * @param userId - User ID
  * @param canvasId - Canvas project ID
@@ -1147,19 +1173,16 @@ const STORAGE_LIMIT_ADMIN = Number.MAX_SAFE_INTEGER; // No limit for admins
  * Custom error for storage limit exceeded
  */
 export class StorageLimitExceededError extends Error {
-  constructor(
-    public used: number,
-    public limit: number,
-    public fileSize: number
-  ) {
+  constructor(public used: number, public limit: number, public fileSize: number) {
     const usedMB = (used / 1024 / 1024).toFixed(2);
     const limitMB = (limit / 1024 / 1024).toFixed(2);
     const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
     const limitGB = (limit / 1024 / 1024 / 1024).toFixed(2);
 
-    const message = limit >= 1024 * 1024 * 1024
-      ? `Storage limit exceeded. You are using ${usedMB} MB of ${limitGB} GB. This file (${fileSizeMB} MB) would exceed your limit.`
-      : `Storage limit exceeded. You are using ${usedMB} MB of ${limitMB} MB. This file (${fileSizeMB} MB) would exceed your limit.`;
+    const message =
+      limit >= 1024 * 1024 * 1024
+        ? `Storage limit exceeded. You are using ${usedMB} MB of ${limitGB} GB. This file (${fileSizeMB} MB) would exceed your limit.`
+        : `Storage limit exceeded. You are using ${usedMB} MB of ${limitMB} MB. This file (${fileSizeMB} MB) would exceed your limit.`;
 
     super(message);
     this.name = 'StorageLimitExceededError';
@@ -1288,13 +1311,13 @@ export async function syncUserStorage(userId: string): Promise<number> {
 /**
  * Calculate total storage used by a user in R2
  * Lists all objects with user prefixes and sums their sizes
- * 
+ *
  * NOTE: This is an expensive operation. Use getUserStorageUsed() for normal checks.
  * This function should only be used for:
  * - Initial sync when migrating to storage counter
  * - Periodic sync jobs to fix discrepancies
  * - Admin tools
- * 
+ *
  * @param userId - User ID
  * @returns Total storage used in bytes
  */
@@ -1414,7 +1437,6 @@ export async function checkStorageLimit(
   };
 }
 
-
 /**
  * Upload temporary image to R2 storage
  * These images should be cleaned up periodically (e.g. every hour)
@@ -1422,10 +1444,7 @@ export async function checkStorageLimit(
  * @param userId - User ID
  * @returns Public URL of the uploaded image
  */
-export async function uploadTemporaryImage(
-  base64Image: string,
-  userId: string
-): Promise<string> {
+export async function uploadTemporaryImage(base64Image: string, userId: string): Promise<string> {
   const bucketName = process.env.R2_BUCKET_NAME;
   if (!bucketName) {
     throw new Error('R2_BUCKET_NAME environment variable is not set.');
@@ -1459,7 +1478,7 @@ export async function uploadTemporaryImage(
         Body: buffer,
         ContentType: 'image/png',
         // Start with 1 hour cache control since it's temporary
-        CacheControl: 'max-age=3600'
+        CacheControl: 'max-age=3600',
       })
     );
 
@@ -1513,7 +1532,7 @@ export async function generateTemporaryImageUploadUrl(
       Bucket: bucketName,
       Key: key,
       ContentType: contentType,
-      CacheControl: 'max-age=3600'
+      CacheControl: 'max-age=3600',
     });
 
     const presignedUrl = await getSignedUrl(client, command, { expiresIn });

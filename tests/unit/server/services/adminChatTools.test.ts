@@ -27,7 +27,11 @@ describe('executeAdminChatTool', () => {
   it('calls /api/mockups/generate with an ABSOLUTE URL (not relative)', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({ imageUrl: 'https://cdn.test/x.png', creditsDeducted: 1, creditsRemaining: 10 }),
+      json: async () => ({
+        imageUrl: 'https://cdn.test/x.png',
+        creditsDeducted: 1,
+        creditsRemaining: 10,
+      }),
     } as any);
 
     await executeAdminChatTool(

@@ -24,7 +24,10 @@ declare global {
  */
 export function requestContext(req: Request, res: Response, next: NextFunction): void {
   const inbound = req.headers['x-request-id'];
-  const reqId = typeof inbound === 'string' && inbound.length > 0 && inbound.length <= 128 ? inbound : randomUUID();
+  const reqId =
+    typeof inbound === 'string' && inbound.length > 0 && inbound.length <= 128
+      ? inbound
+      : randomUUID();
 
   req.reqId = reqId;
   req.log = withRequestId(reqId);

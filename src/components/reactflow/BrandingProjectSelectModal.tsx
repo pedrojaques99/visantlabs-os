@@ -4,9 +4,9 @@ import { X, FolderOpen, Plus } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { formatDateShort } from '@/utils/localeUtils'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { formatDateShort } from '@/utils/localeUtils';
 
 interface BrandingProject {
   _id?: string;
@@ -65,7 +65,9 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
     } catch (error: any) {
       console.error('Failed to load branding projects:', error);
       if (error?.status !== 401) {
-        toast.error(t('canvasNodes.brandingProjectSelectModal.failedToLoadProjects'), { duration: 3000 });
+        toast.error(t('canvasNodes.brandingProjectSelectModal.failedToLoadProjects'), {
+          duration: 3000,
+        });
       }
     } finally {
       setIsLoading(false);
@@ -111,8 +113,13 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/60">
-          <h2 className="text-lg font-semibold text-neutral-200 font-mono">{t('canvasNodes.brandingProjectSelectModal.selectBrandingProject') || 'Select Branding Project'}</h2>
-          <Button variant="ghost" onClick={onClose}
+          <h2 className="text-lg font-semibold text-neutral-200 font-mono">
+            {t('canvasNodes.brandingProjectSelectModal.selectBrandingProject') ||
+              'Select Branding Project'}
+          </h2>
+          <Button
+            variant="ghost"
+            onClick={onClose}
             className="p-1.5 rounded hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-colors"
           >
             <X size={18} />
@@ -137,13 +144,18 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <GlitchLoader size={20} color="brand-cyan" />
-                <span className="ml-2 text-sm text-neutral-400">{t('canvasNodes.brandingProjectSelectModal.loadingProjects') || 'Loading projects...'}</span>
+                <span className="ml-2 text-sm text-neutral-400">
+                  {t('canvasNodes.brandingProjectSelectModal.loadingProjects') ||
+                    'Loading projects...'}
+                </span>
               </div>
             ) : filteredProjects.length > 0 ? (
               filteredProjects.map((project) => {
                 const projectId = project._id || (project as any).id;
                 return (
-                  <Button variant="ghost" key={projectId}
+                  <Button
+                    variant="ghost"
+                    key={projectId}
                     onClick={() => handleSelectProject(project)}
                     className="w-full px-4 py-3 text-left border-node rounded-md transition-all bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-neutral-700 hover:bg-neutral-800/50 group"
                   >
@@ -151,7 +163,9 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                       <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm text-neutral-200 truncate">
-                          {project.name || (t('canvasNodes.brandingProjectSelectModal.untitled') || 'Untitled')}
+                          {project.name ||
+                            t('canvasNodes.brandingProjectSelectModal.untitled') ||
+                            'Untitled'}
                         </div>
                         {project.prompt && (
                           <div className="text-xs text-neutral-500 mt-1 line-clamp-2">
@@ -171,7 +185,11 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
             ) : (
               <div className="col-span-full text-center py-8">
                 <p className="text-sm text-neutral-500 font-mono">
-                  {searchQuery ? (t('canvasNodes.brandingProjectSelectModal.noProjectsFoundMatchingSearch') || 'No projects found matching your search') : (t('canvasNodes.brandingProjectSelectModal.noProjectsFound') || 'No projects found')}
+                  {searchQuery
+                    ? t('canvasNodes.brandingProjectSelectModal.noProjectsFoundMatchingSearch') ||
+                      'No projects found matching your search'
+                    : t('canvasNodes.brandingProjectSelectModal.noProjectsFound') ||
+                      'No projects found'}
                 </p>
               </div>
             )}
@@ -180,13 +198,17 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
 
         {/* Footer */}
         <div className="p-4 border-t border-neutral-800/60 flex gap-2">
-          <Button variant="brand" onClick={handleCreateNew}
+          <Button
+            variant="brand"
+            onClick={handleCreateNew}
             className="flex-1 px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
           >
             <Plus size={16} />
             {t('canvasNodes.brandingProjectSelectModal.createNewProject') || 'Create New Project'}
           </Button>
-          <Button variant="ghost" onClick={onClose}
+          <Button
+            variant="ghost"
+            onClick={onClose}
             className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 rounded-md text-sm font-mono transition-colors"
           >
             {t('common.cancel') || 'Cancel'}
@@ -196,4 +218,3 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
     </div>
   );
 };
-

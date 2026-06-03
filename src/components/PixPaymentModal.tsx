@@ -7,9 +7,9 @@ import { formatPixCode, copyPixToClipboard, formatExpirationTime } from '@/utils
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradientBackground } from './ui/LinearGradientBackground';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { MicroTitle } from '@/components/ui/MicroTitle'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import type { TimerRef } from '@/types/types';
 
 interface PixPaymentModalProps {
@@ -124,7 +124,11 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
     // Use AbacatePay for PIX payments
     try {
       console.log('🔄 Creating PIX payment with AbacatePay...');
-      const response = await abacatepayService.createPayment(credits, currency, taxId.replace(/\D/g, ''));
+      const response = await abacatepayService.createPayment(
+        credits,
+        currency,
+        taxId.replace(/\D/g, '')
+      );
       const session = response.billId || response.sessionId;
       const paymentStatus = (response.status || 'pending') as string;
       const statusUpper = paymentStatus.toUpperCase();
@@ -136,7 +140,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
         setIsLoading(false);
         setError(
           t('pix.paymentExpired') ||
-          'O pagamento PIX retornou como expirado ou inválido. Tente novamente ou use outro método de pagamento.'
+            'O pagamento PIX retornou como expirado ou inválido. Tente novamente ou use outro método de pagamento.'
         );
         return;
       }
@@ -177,12 +181,15 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
         // Qualquer outro status inesperado, mostrar erro genérico
         setError(
           t('pix.paymentError') ||
-          'Não foi possível criar um pagamento PIX válido. Por favor, tente novamente mais tarde ou use outro método.'
+            'Não foi possível criar um pagamento PIX válido. Por favor, tente novamente mais tarde ou use outro método.'
         );
       }
     } catch (error: any) {
       console.error('❌ AbacatePay payment creation failed:', error);
-      setError(t('pix.paymentError') || 'Não foi possível criar o pagamento PIX. Por favor, tente novamente mais tarde ou use outro método de pagamento.');
+      setError(
+        t('pix.paymentError') ||
+          'Não foi possível criar o pagamento PIX. Por favor, tente novamente mais tarde ou use outro método de pagamento.'
+      );
       setIsLoading(false);
     }
   };
@@ -208,7 +215,11 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
         if (normalizedStatus === 'paid' || normalizedStatus === 'confirmed') {
           handlePaymentSuccess();
-        } else if (normalizedStatus === 'expired' || normalizedStatus === 'canceled' || normalizedStatus === 'not_found') {
+        } else if (
+          normalizedStatus === 'expired' ||
+          normalizedStatus === 'canceled' ||
+          normalizedStatus === 'not_found'
+        ) {
           // Stop polling for expired, canceled, or not found payments
           if (pollingRef.current) {
             clearInterval(pollingRef.current);
@@ -218,7 +229,11 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
       } catch (err: any) {
         console.error('Error polling payment status:', err);
         // If billing not found or other critical error, stop polling
-        if (err.message && (err.message.includes('not found') || err.message.includes('Failed to get payment status'))) {
+        if (
+          err.message &&
+          (err.message.includes('not found') ||
+            err.message.includes('Failed to get payment status'))
+        ) {
           setStatus('expired');
           if (pollingRef.current) {
             clearInterval(pollingRef.current);
@@ -256,7 +271,6 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
       setTimeout(() => setCopied(false), 2000);
     }
   };
-
 
   // Handle escape key for QR code modal
   useEffect(() => {
@@ -299,7 +313,9 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-md p-4">
       <div className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative max-h-[90vh] overflow-y-auto">
-        <Button variant="ghost" onClick={onClose}
+        <Button
+          variant="ghost"
+          onClick={onClose}
           className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10 p-1"
           aria-label={t('common.close') || 'Fechar'}
         >
@@ -309,7 +325,10 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
         <div className="space-y-6">
           <div className="text-center">
             <div className="flex flex-col items-center justify-center gap-2 mb-4">
-              <QrCode size={32} className="text-brand-cyan/60 drop-shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 20%)]" />
+              <QrCode
+                size={32}
+                className="text-brand-cyan/60 drop-shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 20%)]"
+              />
               <h2 className="text-2xl font-bold tracking-tight text-neutral-100">
                 {t('pix.title') || 'Pagar com PIX'}
               </h2>
@@ -321,13 +340,11 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
               <MicroTitle className="text-neutral-500 uppercase tracking-widest">
                 {t('pix.credits') || 'CRÉDITOS'}
               </MicroTitle>
-              
+
               <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
                 <span>REPASSE_TRANSPARENTE</span>
                 <span className="w-1 h-1 bg-neutral-800 rounded-full" />
-                <span className="text-brand-cyan/40">
-                  $0.067 Google + $0.013 Visant
-                </span>
+                <span className="text-brand-cyan/40">$0.067 Google + $0.013 Visant</span>
               </div>
             </div>
           </div>
@@ -372,7 +389,9 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     {t('pix.taxIdRequired') || 'Necessário para processar o pagamento PIX'}
                   </p>
                 </div>
-                <Button variant="brand" type="submit"
+                <Button
+                  variant="brand"
+                  type="submit"
                   className="w-full px-4 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20"
                 >
                   {t('pix.continue') || 'Continuar'}
@@ -405,14 +424,26 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                         className="flex-1 px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20 flex items-center justify-center gap-2"
                       >
                         {t('pix.openPaymentLink') || 'Abrir link de pagamento'}
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
                         </svg>
                       </a>
 
                       {/* QR Code Icon Button */}
                       {(qrCode || pixCode) && (
-                        <Button variant="ghost" onClick={() => setShowQrCodeModal(true)}
+                        <Button
+                          variant="ghost"
+                          onClick={() => setShowQrCodeModal(true)}
                           className="p-3 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
                           title={t('pix.showQrCode') || 'Mostrar QR Code'}
                           aria-label={t('pix.showQrCode') || 'Mostrar QR Code'}
@@ -424,7 +455,9 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                   ) : (
                     /* If no payment URL but we have QR code, show QR code button directly */
                     (qrCode || pixCode) && (
-                      <Button variant="ghost" onClick={() => setShowQrCodeModal(true)}
+                      <Button
+                        variant="ghost"
+                        onClick={() => setShowQrCodeModal(true)}
                         className="w-full px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20 flex items-center justify-center gap-2"
                         title={t('pix.showQrCode') || 'Mostrar QR Code'}
                       >
@@ -449,7 +482,9 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
               }}
             >
               <div className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative">
-                <Button variant="ghost" onClick={() => setShowQrCodeModal(false)}
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowQrCodeModal(false)}
                   className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10"
                   aria-label={t('common.close') || 'Fechar'}
                 >
@@ -481,7 +516,9 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                   {/* PIX Code - Copy Button */}
                   {pixCode && (
                     <div className="w-full flex justify-center">
-                      <Button variant="brand" onClick={handleCopyCode}
+                      <Button
+                        variant="brand"
+                        onClick={handleCopyCode}
                         className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
                         title={t('pix.copy') || 'Copiar código PIX'}
                         aria-label={t('pix.copy') || 'Copiar código PIX'}
@@ -531,10 +568,18 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       {t('pix.instructions') || 'Como pagar:'}
                     </p>
                     <ol className="list-decimal list-inside space-y-2 ml-2">
-                      <li className="leading-relaxed">{t('pix.step1') || 'Abra o app do seu banco'}</li>
-                      <li className="leading-relaxed">{t('pix.step2') || 'Escaneie o QR Code ou copie o código PIX'}</li>
-                      <li className="leading-relaxed">{t('pix.step3') || 'Confirme o pagamento no app'}</li>
-                      <li className="leading-relaxed">{t('pix.step4') || 'Aguarde a confirmação automática'}</li>
+                      <li className="leading-relaxed">
+                        {t('pix.step1') || 'Abra o app do seu banco'}
+                      </li>
+                      <li className="leading-relaxed">
+                        {t('pix.step2') || 'Escaneie o QR Code ou copie o código PIX'}
+                      </li>
+                      <li className="leading-relaxed">
+                        {t('pix.step3') || 'Confirme o pagamento no app'}
+                      </li>
+                      <li className="leading-relaxed">
+                        {t('pix.step4') || 'Aguarde a confirmação automática'}
+                      </li>
                     </ol>
                   </div>
                 </div>
@@ -546,4 +591,3 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
     </div>
   );
 };
-

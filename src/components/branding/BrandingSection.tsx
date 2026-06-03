@@ -24,7 +24,6 @@ interface BrandingSectionProps {
   onSetIsEditingCustom?: (value: boolean) => void;
 }
 
-
 export const BrandingSection: React.FC<BrandingSectionProps> = ({
   tags,
   selectedTags,
@@ -37,7 +36,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
   hasAnalyzed = false,
   hideTitle = false,
   isEditingCustom = false,
-  onSetIsEditingCustom
+  onSetIsEditingCustom,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -104,8 +103,8 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
 
   // Logic: Sort suggested tags first, then others
   const sortedTags = React.useMemo(() => {
-    const suggested = tags.filter(t => suggestedTags.includes(t));
-    const others = tags.filter(t => !suggestedTags.includes(t));
+    const suggested = tags.filter((t) => suggestedTags.includes(t));
+    const others = tags.filter((t) => !suggestedTags.includes(t));
     // Also prioritize selected tags if desired, but user asked for "Suggested"
     // Usually selected tags are already "interesting".
     // Let's stick to Suggested -> Others.
@@ -121,20 +120,30 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
   return (
     <section id="branding-section" className={isComplete || hasAnalyzed ? 'pb-0' : ''}>
       {!hideTitle && (
-        <h2 className={cn(sectionTitleClass(theme === 'dark'), (isComplete || hasAnalyzed) ? 'mb-1' : 'mb-3', 'transition-all duration-300')}>
+        <h2
+          className={cn(
+            sectionTitleClass(theme === 'dark'),
+            isComplete || hasAnalyzed ? 'mb-1' : 'mb-3',
+            'transition-all duration-300'
+          )}
+        >
           {t('mockup.branding')}
         </h2>
       )}
       {!isComplete && !hasAnalyzed && (
-        <p className={`text-xs mb-3 font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.brandingComment')}</p>
+        <p
+          className={`text-xs mb-3 font-mono ${
+            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+          }`}
+        >
+          {t('mockup.brandingComment')}
+        </p>
       )}
       <div>
         <div
-          className={cn(
-            "flex flex-wrap gap-2 cursor-pointer transition-all duration-300 relative"
-          )}
+          className={cn('flex flex-wrap gap-2 cursor-pointer transition-all duration-300 relative')}
         >
-          {tagsToDisplay.map(tag => {
+          {tagsToDisplay.map((tag) => {
             const isSelected = selectedTags.includes(tag);
             const isSuggested = suggestedTags.includes(tag);
             const limitReached = selectedTags.length >= 3;
@@ -146,19 +155,19 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                 onClick={hasAnalyzed ? undefined : () => onTagToggle(tag)}
                 variant="outline"
                 className={cn(
-                  "text-xs font-medium transition-all duration-200",
-                  !hasAnalyzed && "cursor-pointer",
+                  'text-xs font-medium transition-all duration-200',
+                  !hasAnalyzed && 'cursor-pointer',
                   isSelected
                     ? theme === 'dark'
                       ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                       : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                     : theme === 'dark'
-                      ? isSuggested
-                        ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/30 hover:border-brand-cyan/50 hover:text-white'
-                        : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                      : isSuggested
-                        ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
-                        : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900',
+                    ? isSuggested
+                      ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/30 hover:border-brand-cyan/50 hover:text-white'
+                      : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                    : isSuggested
+                    ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
+                    : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900',
                   isDisabled && 'opacity-100 cursor-not-allowed'
                 )}
               >
@@ -178,7 +187,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               onBlur={handleBlur}
               placeholder={t('mockup.customStylePlaceholder')}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
+                'px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono',
                 theme === 'dark'
                   ? 'bg-brand-cyan/20 text-brand-cyan'
                   : 'bg-brand-cyan/20 text-neutral-800'
@@ -186,11 +195,8 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               autoFocus
             />
           )}
-
         </div>
       </div>
     </section>
   );
 };
-
-

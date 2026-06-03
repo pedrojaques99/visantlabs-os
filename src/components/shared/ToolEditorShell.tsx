@@ -77,7 +77,9 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
-  useEffect(() => { document.title = documentTitle; }, [documentTitle]);
+  useEffect(() => {
+    document.title = documentTitle;
+  }, [documentTitle]);
 
   useHotkeys('r', () => setConfirmReset(true), { enableOnFormTags: false });
 
@@ -87,10 +89,13 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
     toast.success('Settings reset');
   }, [onReset]);
 
-  const canvasPadding = useMemo(() => ({
-    paddingRight: !isMobile && panelVisible ? controlsPanelWidth + 16 : 0,
-    paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
-  }), [isMobile, panelVisible, controlsPanelWidth, mobileSheetOpen]);
+  const canvasPadding = useMemo(
+    () => ({
+      paddingRight: !isMobile && panelVisible ? controlsPanelWidth + 16 : 0,
+      paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
+    }),
+    [isMobile, panelVisible, controlsPanelWidth, mobileSheetOpen]
+  );
 
   const defaultCanvasClassName = hideTopBar
     ? 'absolute inset-0 transition-all duration-300'
@@ -119,9 +124,7 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
         style={canvasPadding}
         {...dragProps}
       >
-        <CanvasErrorBoundary>
-          {children}
-        </CanvasErrorBoundary>
+        <CanvasErrorBoundary>{children}</CanvasErrorBoundary>
         <DropOverlay visible={isDragOver} message={dropMessage || 'Drop file here'} />
       </div>
 
@@ -132,7 +135,11 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
       )}
 
       {isMobile && (
-        <AppShellMobileSheet open={mobileSheetOpen} onToggle={() => setMobileSheetOpen(!mobileSheetOpen)} label={mobileSheetLabel || title}>
+        <AppShellMobileSheet
+          open={mobileSheetOpen}
+          onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}
+          label={mobileSheetLabel || title}
+        >
           {controlsPanel}
         </AppShellMobileSheet>
       )}

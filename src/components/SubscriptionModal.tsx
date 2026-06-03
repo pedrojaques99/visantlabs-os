@@ -11,7 +11,11 @@ interface SubscriptionModalProps {
   onBuyCredits?: () => void;
 }
 
-export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, onBuyCredits }) => {
+export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
+  isOpen,
+  onClose,
+  onBuyCredits,
+}) => {
   useScrollLock(isOpen);
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
@@ -106,4 +110,3 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
   // Modal is hidden - redirect happens in useEffect
   return null;
 };
-

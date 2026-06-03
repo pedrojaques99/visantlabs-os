@@ -18,10 +18,27 @@ const MAX_CONCURRENT_UPLOADS = 2;
 
 function seekToTime(video: HTMLVideoElement, time: number): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (Math.abs(video.currentTime - time) < 0.001) { resolve(); return; }
+    if (Math.abs(video.currentTime - time) < 0.001) {
+      resolve();
+      return;
+    }
     const timeout = setTimeout(() => reject(new Error('Seek timeout')), 5000);
-    video.addEventListener('seeked', () => { clearTimeout(timeout); resolve(); }, { once: true });
-    video.addEventListener('error', () => { clearTimeout(timeout); reject(new Error('Seek failed')); }, { once: true });
+    video.addEventListener(
+      'seeked',
+      () => {
+        clearTimeout(timeout);
+        resolve();
+      },
+      { once: true }
+    );
+    video.addEventListener(
+      'error',
+      () => {
+        clearTimeout(timeout);
+        reject(new Error('Seek failed'));
+      },
+      { once: true }
+    );
     video.currentTime = time;
   });
 }
@@ -29,9 +46,10 @@ function seekToTime(video: HTMLVideoElement, time: number): Promise<void> {
 async function canvasToArrayBuffer(canvas: HTMLCanvasElement): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (b) => (b ? b.arrayBuffer().then(resolve, reject) : reject(new Error('Canvas capture failed'))),
+      (b) =>
+        b ? b.arrayBuffer().then(resolve, reject) : reject(new Error('Canvas capture failed')),
       'image/jpeg',
-      FRAME_QUALITY,
+      FRAME_QUALITY
     );
   });
 }
@@ -74,7 +92,7 @@ export async function exportVideoServerSide({
 
       const time = Math.min(i * frameInterval, duration - 0.001);
       await seekToTime(video, time);
-      await new Promise(r => requestAnimationFrame(r));
+      await new Promise((r) => requestAnimationFrame(r));
       await renderFrame(video);
 
       const buf = await canvasToArrayBuffer(canvas);
@@ -86,7 +104,10 @@ export async function exportVideoServerSide({
           await Promise.race(uploadQueue);
           // Remove settled promises
           for (let j = uploadQueue.length - 1; j >= 0; j--) {
-            const settled = await Promise.race([uploadQueue[j].then(() => true), Promise.resolve(false)]);
+            const settled = await Promise.race([
+              uploadQueue[j].then(() => true),
+              Promise.resolve(false),
+            ]);
             if (settled) uploadQueue.splice(j, 1);
           }
         }
@@ -131,7 +152,7 @@ async function sendFrameBatch(
   jobId: string,
   frames: ArrayBuffer[],
   startIndex: number,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<void> {
   let totalSize = 0;
   for (const f of frames) totalSize += 4 + f.byteLength;

@@ -1,4 +1,11 @@
-import type { BrandGuideline, BrandGuidelineGradient, BrandGuidelineShadow, BrandGuidelineBorder, BrandGuidelineMotion, BrandColorTheme } from '@/lib/figma-types';
+import type {
+  BrandGuideline,
+  BrandGuidelineGradient,
+  BrandGuidelineShadow,
+  BrandGuidelineBorder,
+  BrandGuidelineMotion,
+  BrandColorTheme,
+} from '@/lib/figma-types';
 import { extractBrandTheme, type BrandTheme } from '@/components/brand/BrandReadOnlyView';
 
 export interface MockTokens {
@@ -51,7 +58,7 @@ export function gradientToCSS(g: BrandGuidelineGradient): string {
   const stops = g.stops
     .slice()
     .sort((a, b) => a.position - b.position)
-    .map(s => `${s.color} ${s.position}%`)
+    .map((s) => `${s.color} ${s.position}%`)
     .join(', ');
   if (g.type === 'radial') return `radial-gradient(circle, ${stops})`;
   return `linear-gradient(${g.angle}deg, ${stops})`;
@@ -78,27 +85,39 @@ export function buildMockTokens(g: BrandGuideline | null | undefined): MockToken
   const colors = g?.colors || [];
 
   const findRole = (...roles: string[]) =>
-    colors.find(c => roles.some(r => c.role?.toUpperCase() === r || c.name?.toUpperCase() === r));
+    colors.find((c) =>
+      roles.some((r) => c.role?.toUpperCase() === r || c.name?.toUpperCase() === r)
+    );
   const findMatch = (...keywords: string[]) =>
-    colors.find(c => keywords.some(k => c.name?.toLowerCase().includes(k) || c.role?.toLowerCase().includes(k)));
+    colors.find((c) =>
+      keywords.some((k) => c.name?.toLowerCase().includes(k) || c.role?.toLowerCase().includes(k))
+    );
 
   const primary = findRole('PRIMARY') || findMatch('primary', 'main') || colors[0];
   const secondary = findRole('SECONDARY') || findMatch('secondary') || colors[1];
   const accent = findRole('ACCENT') || findMatch('accent', 'highlight') || colors[2] || primary;
 
   const findFontByRole = (...roles: string[]) =>
-    g?.typography?.find(t =>
-      roles.some(r => t.role?.toLowerCase().includes(r.toLowerCase()))
-    );
-  const heading = findFontByRole('heading', 'display', 'title', 'primary', 'h1', 'h2') || g?.typography?.[0];
-  const body = findFontByRole('body', 'text', 'paragraph', 'secondary', 'caption') || g?.typography?.[1] || heading;
+    g?.typography?.find((t) => roles.some((r) => t.role?.toLowerCase().includes(r.toLowerCase())));
+  const heading =
+    findFontByRole('heading', 'display', 'title', 'primary', 'h1', 'h2') || g?.typography?.[0];
+  const body =
+    findFontByRole('body', 'text', 'paragraph', 'secondary', 'caption') ||
+    g?.typography?.[1] ||
+    heading;
 
-
-  const findLogo = (variant: string) => g?.logos?.find(l => l.variant === variant);
+  const findLogo = (variant: string) => g?.logos?.find((l) => l.variant === variant);
   const primaryLogo = findLogo('primary') || g?.logos?.[0];
 
   const rawManifesto = g?.strategy?.manifesto;
-  const manifestoText = typeof rawManifesto === 'string' ? rawManifesto : (rawManifesto?.full || [rawManifesto?.provocation, rawManifesto?.tension, rawManifesto?.promise].filter(Boolean).join('\n') || '');
+  const manifestoText =
+    typeof rawManifesto === 'string'
+      ? rawManifesto
+      : rawManifesto?.full ||
+        [rawManifesto?.provocation, rawManifesto?.tension, rawManifesto?.promise]
+          .filter(Boolean)
+          .join('\n') ||
+        '';
   const manifestoFirstLine = manifestoText?.split('\n').filter(Boolean)[0];
 
   const fontStack = (family?: string, fb = FALLBACK.heading) =>
@@ -119,7 +138,7 @@ export function buildMockTokens(g: BrandGuideline | null | undefined): MockToken
     primaryColor: primary?.hex || theme.accent || FALLBACK.primary,
     secondaryColor: secondary?.hex || theme.text || FALLBACK.secondary,
     accentColor: accent?.hex || theme.accent || FALLBACK.accent,
-    palette: colors.map(c => ({ hex: c.hex, name: c.name, role: c.role })),
+    palette: colors.map((c) => ({ hex: c.hex, name: c.name, role: c.role })),
     gradients: g?.gradients || [],
     shadows: g?.shadows || [],
     borders: g?.borders || [],
@@ -130,7 +149,12 @@ export function buildMockTokens(g: BrandGuideline | null | undefined): MockToken
 }
 
 function categorizeMedia(media: BrandGuideline['media']): MockTokens['mediaByCategory'] {
-  const result = { background: [] as string[], graphic: [] as string[], stock: [] as string[], product: [] as string[] };
+  const result = {
+    background: [] as string[],
+    graphic: [] as string[],
+    stock: [] as string[],
+    product: [] as string[],
+  };
   for (const m of media || []) {
     if (m.type !== 'image') continue;
     const cat = m.category;

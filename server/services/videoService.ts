@@ -1,16 +1,21 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
 
 const getAI = (): GoogleGenAI => {
   if (!ai) {
-    const apiKey = (process.env.VITE_GEMINI_API_KEY || process.env.VITE_API_KEY || process.env.GEMINI_API_KEY || '').trim();
+    const apiKey = (
+      process.env.VITE_GEMINI_API_KEY ||
+      process.env.VITE_API_KEY ||
+      process.env.GEMINI_API_KEY ||
+      ''
+    ).trim();
 
     if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
       throw new Error(
-        "GEMINI_API_KEY não encontrada. " +
-        "Configure GEMINI_API_KEY no arquivo .env para usar geração de vídeos."
+        'GEMINI_API_KEY não encontrada. ' +
+          'Configure GEMINI_API_KEY no arquivo .env para usar geração de vídeos.'
       );
     }
 
@@ -52,16 +57,8 @@ const DEFAULT_RETRIES: Record<string, number> = {
   'veo-2': 3,
 };
 
-const withRetry = async <T>(
-  apiCall: () => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> => {
-  const {
-    maxRetries,
-    timeout,
-    onRetry,
-    model = 'veo-3.1-generate-preview'
-  } = options;
+const withRetry = async <T>(apiCall: () => Promise<T>, options: RetryOptions = {}): Promise<T> => {
+  const { maxRetries, timeout, onRetry, model = 'veo-3.1-generate-preview' } = options;
 
   const effectiveMaxRetries = maxRetries ?? DEFAULT_RETRIES[model] ?? 3;
   const effectiveTimeout = timeout ?? DEFAULT_TIMEOUTS[model] ?? 300000;
@@ -79,17 +76,19 @@ const withRetry = async <T>(
 
   while (attempt < effectiveMaxRetries) {
     try {
-      const result = await Promise.race([
-        apiCall(),
-        createTimeoutPromise()
-      ]);
+      const result = await Promise.race([apiCall(), createTimeoutPromise()]);
       return result;
     } catch (error: any) {
       if (error?.message?.includes('timeout')) {
-        throw new Error(`Request timed out after ${Math.round((Date.now() - startTime) / 1000)}s. The model may be experiencing high load. Please try again later.`);
+        throw new Error(
+          `Request timed out after ${Math.round(
+            (Date.now() - startTime) / 1000
+          )}s. The model may be experiencing high load. Please try again later.`
+        );
       }
 
-      const statusCode = error?.status ||
+      const statusCode =
+        error?.status ||
         error?.statusCode ||
         error?.response?.status ||
         error?.response?.statusCode ||
@@ -101,7 +100,8 @@ const withRetry = async <T>(
       const errorString = JSON.stringify(errorResponse).toLowerCase();
 
       // Don't retry on 404 (model not found) - these are permanent errors
-      const is404 = statusCode === 404 ||
+      const is404 =
+        statusCode === 404 ||
         errorMessage.includes('404') ||
         errorMessage.toLowerCase().includes('not found') ||
         errorDetails.includes('404') ||
@@ -110,10 +110,13 @@ const withRetry = async <T>(
         errorString.includes('not found');
 
       if (is404) {
-        throw new Error(`Model not found (404). Please check the model name and ensure it's available in your region.`);
+        throw new Error(
+          `Model not found (404). Please check the model name and ensure it's available in your region.`
+        );
       }
 
-      const isRateLimit = statusCode === 429 ||
+      const isRateLimit =
+        statusCode === 429 ||
         errorMessage.includes('429') ||
         errorMessage.toLowerCase().includes('too many requests') ||
         errorDetails.includes('429') ||
@@ -122,10 +125,11 @@ const withRetry = async <T>(
         errorString.includes('too many requests');
 
       if (isRateLimit) {
-        throw new RateLimitError("Rate limit exceeded. Please wait before making more requests.");
+        throw new RateLimitError('Rate limit exceeded. Please wait before making more requests.');
       }
 
-      const is503 = statusCode === 503 ||
+      const is503 =
+        statusCode === 503 ||
         errorMessage.includes('503') ||
         errorMessage.toLowerCase().includes('service unavailable') ||
         errorMessage.toLowerCase().includes('model is overloaded') ||
@@ -137,7 +141,7 @@ const withRetry = async <T>(
         attempt++;
 
         if (attempt >= effectiveMaxRetries) {
-          throw new ModelOverloadedError("Model is currently overloaded. Please try again later.");
+          throw new ModelOverloadedError('Model is currently overloaded. Please try again later.');
         }
 
         const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
@@ -145,7 +149,7 @@ const withRetry = async <T>(
           onRetry(attempt, effectiveMaxRetries, delay);
         }
 
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
 
@@ -160,11 +164,11 @@ const withRetry = async <T>(
         onRetry(attempt, effectiveMaxRetries, delay);
       }
 
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
-  throw new Error("Max retries exceeded");
+  throw new Error('Max retries exceeded');
 };
 
 export interface GenerateVideoParams {
@@ -188,9 +192,7 @@ export interface GenerateVideoParams {
  * @param params - Parameters for video generation
  * @returns Base64 string of the generated video
  */
-export const generateVideo = async (
-  params: GenerateVideoParams
-): Promise<string> => {
+export const generateVideo = async (params: GenerateVideoParams): Promise<string> => {
   const {
     prompt,
     imageBase64,
@@ -214,304 +216,333 @@ export const generateVideo = async (
     console.warn(`Model "${model}" is not available, using "veo-3.1-generate-preview" instead`);
   }
 
-  return withRetry(async () => {
-    try {
-      // Prepare the request parameters
-      const requestParams: any = {
-        model: normalizedModel,
-        prompt: prompt,
-      };
-
-      if (typeof seed === 'number' && seed >= 0) {
-        requestParams.seed = seed;
-      }
-      if (aspectRatio) {
-        requestParams.aspectRatio = aspectRatio;
-      }
-      if (duration) {
-        requestParams.numberOfSeconds = parseInt(duration, 10) || undefined;
-      }
-      if (isLooping !== undefined) {
-        requestParams.loop = isLooping;
-      }
-
-      // Helper to process base64 string or URL into { mimeType, data }
-      const processBase64 = async (input: string) => {
-        if (input.startsWith('data:')) {
-          const match = input.match(/^data:([^;]+);base64,(.+)$/);
-          if (match) {
-            return { mimeType: match[1], data: match[2] };
-          }
-        }
-        if (input.startsWith('http://') || input.startsWith('https://')) {
-          const parsed = new URL(input);
-          if (parsed.protocol !== 'https:') throw new Error('Only HTTPS URLs are allowed');
-          const blocked = /^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.|169\.254\.|::1|\[::1\]|metadata\.google|169\.254\.169\.254)/i;
-          if (blocked.test(parsed.hostname)) throw new Error('Internal URLs are not allowed');
-          if (parsed.port && parsed.port !== '443') throw new Error('Non-standard ports are not allowed');
-          const resp = await fetch(input, { redirect: 'error' });
-          if (!resp.ok) throw new Error(`Failed to fetch image from URL: ${resp.status}`);
-          const buffer = Buffer.from(await resp.arrayBuffer());
-          const contentType = resp.headers.get('content-type') || imageMimeType;
-          return { mimeType: contentType.split(';')[0], data: buffer.toString('base64') };
-        }
-        return { mimeType: imageMimeType, data: input };
-      };
-
-      // Handle Inputs (Veo 3.1)
-      // The Veo API has specific prioritization for inputs:
-      // 1. video (for video-to-video editing or extension)
-      // 2. image (for image-to-video, often the start frame)
-
-      // Process video input if provided
-      if (inputVideo) {
-        const processed = await processBase64(inputVideo);
-        requestParams.video = {
-          videoBytes: processed.data,
-          mimeType: processed.mimeType
-        };
-      }
-
-      // Determine the primary image input. We prioritize:
-      // 1. startFrame (explicit starting point)
-      // 2. first reference image (style or content reference)
-      // 3. imageBase64 (legacy support)
-
-      let primaryImage: string | undefined = startFrame || (referenceImages && referenceImages.length > 0 ? referenceImages[0] : undefined) || imageBase64;
-
-      if (primaryImage) {
-        const processed = await processBase64(primaryImage);
-        requestParams.image = {
-          imageBytes: processed.data,
-          mimeType: processed.mimeType
-        };
-      }
-
-      if (endFrame) {
-        const processed = await processBase64(endFrame);
-        requestParams.end_image = {
-          imageBytes: processed.data,
-          mimeType: processed.mimeType
-        };
-      }
-
-      // Start video generation - returns an operation
-      let operation = await getAI().models.generateVideos(requestParams);
-
-      // Poll the operation status until the video is ready
-      const pollInterval = 10000; // 10 seconds
-      const maxPollTime = 300000; // 5 minutes max
-      const startPollTime = Date.now();
-      let pollCount = 0;
-
-      while (!operation.done) {
-        // Check timeout
-        if (Date.now() - startPollTime > maxPollTime) {
-          throw new Error("Video generation timed out after 5 minutes.");
-        }
-
-        // Wait before polling again
-        await new Promise((resolve) => setTimeout(resolve, pollInterval));
-        pollCount++;
-
-        // Get operation status
-        operation = await getAI().operations.getVideosOperation({
-          operation: operation,
-        });
-      }
-
-      // Check if operation completed with error
-      if (operation.error) {
-        throw new Error(`Video generation failed: ${operation.error.message || JSON.stringify(operation.error)}`);
-      }
-
-      // Check if we have a video in the response
-      if (!operation.response?.generatedVideos || operation.response.generatedVideos.length === 0) {
-        throw new Error("No video was generated in the response.");
-      }
-
-      const videoFile = operation.response.generatedVideos[0].video;
-      if (!videoFile) {
-        throw new Error("Video file not found in response.");
-      }
-
-
-      // Download the video file and convert to base64
-      // Google Cloud Storage URIs require authentication via API key
-      let videoData: ArrayBuffer | Blob | string | Uint8Array;
-
+  return withRetry(
+    async () => {
       try {
-        // Check if videoFile has URI - try to download with proper authentication
-        if (videoFile.uri) {
-          try {
-            // Check if URI is from Google (requires authentication)
-            // Whitelist of allowed Google Cloud Storage hostnames
-            const allowedGoogleHosts = [
-              'storage.googleapis.com',
-              'googleapis.com',
-            ];
-            
-            let isGoogleUri = false;
+        // Prepare the request parameters
+        const requestParams: any = {
+          model: normalizedModel,
+          prompt: prompt,
+        };
+
+        if (typeof seed === 'number' && seed >= 0) {
+          requestParams.seed = seed;
+        }
+        if (aspectRatio) {
+          requestParams.aspectRatio = aspectRatio;
+        }
+        if (duration) {
+          requestParams.numberOfSeconds = parseInt(duration, 10) || undefined;
+        }
+        if (isLooping !== undefined) {
+          requestParams.loop = isLooping;
+        }
+
+        // Helper to process base64 string or URL into { mimeType, data }
+        const processBase64 = async (input: string) => {
+          if (input.startsWith('data:')) {
+            const match = input.match(/^data:([^;]+);base64,(.+)$/);
+            if (match) {
+              return { mimeType: match[1], data: match[2] };
+            }
+          }
+          if (input.startsWith('http://') || input.startsWith('https://')) {
+            const parsed = new URL(input);
+            if (parsed.protocol !== 'https:') throw new Error('Only HTTPS URLs are allowed');
+            const blocked =
+              /^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.|169\.254\.|::1|\[::1\]|metadata\.google|169\.254\.169\.254)/i;
+            if (blocked.test(parsed.hostname)) throw new Error('Internal URLs are not allowed');
+            if (parsed.port && parsed.port !== '443')
+              throw new Error('Non-standard ports are not allowed');
+            const resp = await fetch(input, { redirect: 'error' });
+            if (!resp.ok) throw new Error(`Failed to fetch image from URL: ${resp.status}`);
+            const buffer = Buffer.from(await resp.arrayBuffer());
+            const contentType = resp.headers.get('content-type') || imageMimeType;
+            return { mimeType: contentType.split(';')[0], data: buffer.toString('base64') };
+          }
+          return { mimeType: imageMimeType, data: input };
+        };
+
+        // Handle Inputs (Veo 3.1)
+        // The Veo API has specific prioritization for inputs:
+        // 1. video (for video-to-video editing or extension)
+        // 2. image (for image-to-video, often the start frame)
+
+        // Process video input if provided
+        if (inputVideo) {
+          const processed = await processBase64(inputVideo);
+          requestParams.video = {
+            videoBytes: processed.data,
+            mimeType: processed.mimeType,
+          };
+        }
+
+        // Determine the primary image input. We prioritize:
+        // 1. startFrame (explicit starting point)
+        // 2. first reference image (style or content reference)
+        // 3. imageBase64 (legacy support)
+
+        let primaryImage: string | undefined =
+          startFrame ||
+          (referenceImages && referenceImages.length > 0 ? referenceImages[0] : undefined) ||
+          imageBase64;
+
+        if (primaryImage) {
+          const processed = await processBase64(primaryImage);
+          requestParams.image = {
+            imageBytes: processed.data,
+            mimeType: processed.mimeType,
+          };
+        }
+
+        if (endFrame) {
+          const processed = await processBase64(endFrame);
+          requestParams.end_image = {
+            imageBytes: processed.data,
+            mimeType: processed.mimeType,
+          };
+        }
+
+        // Start video generation - returns an operation
+        let operation = await getAI().models.generateVideos(requestParams);
+
+        // Poll the operation status until the video is ready
+        const pollInterval = 10000; // 10 seconds
+        const maxPollTime = 300000; // 5 minutes max
+        const startPollTime = Date.now();
+        let pollCount = 0;
+
+        while (!operation.done) {
+          // Check timeout
+          if (Date.now() - startPollTime > maxPollTime) {
+            throw new Error('Video generation timed out after 5 minutes.');
+          }
+
+          // Wait before polling again
+          await new Promise((resolve) => setTimeout(resolve, pollInterval));
+          pollCount++;
+
+          // Get operation status
+          operation = await getAI().operations.getVideosOperation({
+            operation: operation,
+          });
+        }
+
+        // Check if operation completed with error
+        if (operation.error) {
+          throw new Error(
+            `Video generation failed: ${operation.error.message || JSON.stringify(operation.error)}`
+          );
+        }
+
+        // Check if we have a video in the response
+        if (
+          !operation.response?.generatedVideos ||
+          operation.response.generatedVideos.length === 0
+        ) {
+          throw new Error('No video was generated in the response.');
+        }
+
+        const videoFile = operation.response.generatedVideos[0].video;
+        if (!videoFile) {
+          throw new Error('Video file not found in response.');
+        }
+
+        // Download the video file and convert to base64
+        // Google Cloud Storage URIs require authentication via API key
+        let videoData: ArrayBuffer | Blob | string | Uint8Array;
+
+        try {
+          // Check if videoFile has URI - try to download with proper authentication
+          if (videoFile.uri) {
             try {
-              const parsedUri = new URL(videoFile.uri);
-              isGoogleUri = allowedGoogleHosts.includes(parsedUri.hostname);
-            } catch {
-              // Invalid URL format - not a Google URI
-              isGoogleUri = false;
-            }
+              // Check if URI is from Google (requires authentication)
+              // Whitelist of allowed Google Cloud Storage hostnames
+              const allowedGoogleHosts = ['storage.googleapis.com', 'googleapis.com'];
 
-            // For Google URIs, use server proxy endpoint to handle authentication
-            if (isGoogleUri) {
+              let isGoogleUri = false;
               try {
-                const serverBase = process.env.BETTER_AUTH_URL || process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
-                const proxyUrl = `${serverBase}/api/images/video-proxy?url=${encodeURIComponent(videoFile.uri)}`;
-                const proxyResponse = await fetch(proxyUrl);
-
-                if (proxyResponse.ok) {
-                  const proxyData = await proxyResponse.json();
-                  if (proxyData.base64) {
-                    // Return as data URL
-                    return `data:${proxyData.mimeType || 'video/mp4'};base64,${proxyData.base64}`;
-                  }
-                } else {
-                  console.warn(`Proxy failed (${proxyResponse.status}), falling back to direct fetch`);
-                }
-              } catch (proxyError) {
-                console.warn('Proxy error, falling back to direct fetch:', proxyError);
+                const parsedUri = new URL(videoFile.uri);
+                isGoogleUri = allowedGoogleHosts.includes(parsedUri.hostname);
+              } catch {
+                // Invalid URL format - not a Google URI
+                isGoogleUri = false;
               }
-            }
 
-            // Try direct fetch with API key for Google URIs, or without for others
-            const headers: Record<string, string> = {};
-            if (isGoogleUri) {
-              const apiKey = (process.env.VITE_GEMINI_API_KEY || process.env.VITE_API_KEY || process.env.GEMINI_API_KEY || '').trim();
-              if (apiKey) {
-                headers['x-goog-api-key'] = apiKey;
-              }
-            }
-
-            const response = await fetch(videoFile.uri, {
-              headers,
-            });
-
-            if (response.ok) {
-              videoData = await response.arrayBuffer();
-            } else if (response.status === 403) {
-              // 403 means authentication failed - use server proxy or return URI
+              // For Google URIs, use server proxy endpoint to handle authentication
               if (isGoogleUri) {
-                // Already tried proxy, return URI for video element to try
-                console.warn('403 error: Video URI requires authentication. Returning URI.');
+                try {
+                  const serverBase =
+                    process.env.BETTER_AUTH_URL ||
+                    process.env.API_BASE_URL ||
+                    `http://localhost:${process.env.PORT || 3001}`;
+                  const proxyUrl = `${serverBase}/api/images/video-proxy?url=${encodeURIComponent(
+                    videoFile.uri
+                  )}`;
+                  const proxyResponse = await fetch(proxyUrl);
+
+                  if (proxyResponse.ok) {
+                    const proxyData = await proxyResponse.json();
+                    if (proxyData.base64) {
+                      // Return as data URL
+                      return `data:${proxyData.mimeType || 'video/mp4'};base64,${proxyData.base64}`;
+                    }
+                  } else {
+                    console.warn(
+                      `Proxy failed (${proxyResponse.status}), falling back to direct fetch`
+                    );
+                  }
+                } catch (proxyError) {
+                  console.warn('Proxy error, falling back to direct fetch:', proxyError);
+                }
               }
-              return videoFile.uri;
-            } else {
-              // Other error - try without auth (might be public)
-              const retryResponse = await fetch(videoFile.uri);
-              if (retryResponse.ok) {
-                videoData = await retryResponse.arrayBuffer();
-              } else {
-                // If both fail, return URI - OutputNode video element can try to load it
-                console.warn(`Failed to fetch video (${retryResponse.status}). Returning URI for video element.`);
+
+              // Try direct fetch with API key for Google URIs, or without for others
+              const headers: Record<string, string> = {};
+              if (isGoogleUri) {
+                const apiKey = (
+                  process.env.VITE_GEMINI_API_KEY ||
+                  process.env.VITE_API_KEY ||
+                  process.env.GEMINI_API_KEY ||
+                  ''
+                ).trim();
+                if (apiKey) {
+                  headers['x-goog-api-key'] = apiKey;
+                }
+              }
+
+              const response = await fetch(videoFile.uri, {
+                headers,
+              });
+
+              if (response.ok) {
+                videoData = await response.arrayBuffer();
+              } else if (response.status === 403) {
+                // 403 means authentication failed - use server proxy or return URI
+                if (isGoogleUri) {
+                  // Already tried proxy, return URI for video element to try
+                  console.warn('403 error: Video URI requires authentication. Returning URI.');
+                }
                 return videoFile.uri;
+              } else {
+                // Other error - try without auth (might be public)
+                const retryResponse = await fetch(videoFile.uri);
+                if (retryResponse.ok) {
+                  videoData = await retryResponse.arrayBuffer();
+                } else {
+                  // If both fail, return URI - OutputNode video element can try to load it
+                  console.warn(
+                    `Failed to fetch video (${retryResponse.status}). Returning URI for video element.`
+                  );
+                  return videoFile.uri;
+                }
               }
+            } catch (fetchError: any) {
+              // Network or other errors - return URI so video element can try
+              console.warn('Error fetching video, returning URI:', fetchError?.message);
+              return videoFile.uri;
             }
-          } catch (fetchError: any) {
-            // Network or other errors - return URI so video element can try
-            console.warn('Error fetching video, returning URI:', fetchError?.message);
+          } else if ((videoFile as any).imageBytes || (videoFile as any).data) {
+            // If video data is directly available in the response
+            videoData = (videoFile as any).imageBytes || (videoFile as any).data;
+          } else {
+            throw new Error('Video file format not supported - missing URI or direct data access');
+          }
+        } catch (downloadError: any) {
+          // If we have a URI, return it instead of throwing
+          if (videoFile.uri) {
+            console.warn('Video download error, returning URI:', downloadError?.message);
             return videoFile.uri;
           }
-        } else if ((videoFile as any).imageBytes || (videoFile as any).data) {
-          // If video data is directly available in the response
-          videoData = (videoFile as any).imageBytes || (videoFile as any).data;
-        } else {
-          throw new Error("Video file format not supported - missing URI or direct data access");
+          throw new Error(`Failed to download video: ${downloadError?.message || downloadError}`);
         }
-      } catch (downloadError: any) {
-        // If we have a URI, return it instead of throwing
-        if (videoFile.uri) {
-          console.warn('Video download error, returning URI:', downloadError?.message);
-          return videoFile.uri;
-        }
-        throw new Error(`Failed to download video: ${downloadError?.message || downloadError}`);
-      }
 
-      // Helper function to convert various formats to base64 (browser compatible)
-      const toBase64 = async (data: any): Promise<string> => {
-        if (typeof data === 'string') {
-          // If it's already a string, check if it's base64 or a URL
-          if (data.startsWith('data:') || data.startsWith('http')) {
+        // Helper function to convert various formats to base64 (browser compatible)
+        const toBase64 = async (data: any): Promise<string> => {
+          if (typeof data === 'string') {
+            // If it's already a string, check if it's base64 or a URL
+            if (data.startsWith('data:') || data.startsWith('http')) {
+              return data;
+            }
+            // Assume it's base64
             return data;
           }
-          // Assume it's base64
-          return data;
+
+          // Handle Blob
+          if (data instanceof Blob) {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64 = (reader.result as string).split(',')[1];
+                resolve(base64);
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(data);
+            });
+          }
+
+          // Handle ArrayBuffer or Uint8Array
+          if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
+            const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+            // Convert to base64 using browser-compatible method
+            const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join('');
+            return btoa(binary);
+          }
+
+          throw new Error('Unsupported video file format from API.');
+        };
+
+        // Convert to base64
+        const base64Result = await toBase64(videoData);
+
+        // If result is already a data URL or HTTP URL, return as-is
+        if (
+          base64Result.startsWith('data:') ||
+          base64Result.startsWith('http://') ||
+          base64Result.startsWith('https://')
+        ) {
+          return base64Result;
         }
 
-        // Handle Blob
-        if (data instanceof Blob) {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64 = (reader.result as string).split(',')[1];
-              resolve(base64);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(data);
-          });
+        // Otherwise, return as data URL format
+        // Note: Handler expects either URL (starts with http) or base64 string (without data: prefix)
+        // So we'll return just the base64 string, and handler will add data: prefix
+        const mimeType = videoFile.mimeType || 'video/mp4';
+        // Return full data URL - handler will detect it correctly
+        const result = `data:${mimeType};base64,${base64Result}`;
+        return result;
+      } catch (error: any) {
+        // If image parameter is not supported, try without it
+        if (imageBase64) {
+          const errorMessage = error?.message?.toLowerCase() || '';
+          const errorString = JSON.stringify(error?.response || {}).toLowerCase();
+
+          const isImageError =
+            errorMessage.includes('image') ||
+            errorMessage.includes('parameter') ||
+            errorMessage.includes('invalid') ||
+            errorString.includes('image') ||
+            errorString.includes('parameter');
+
+          if (isImageError) {
+            console.warn(
+              'Image input may not be supported for this model, retrying without image...'
+            );
+            // Retry without image - but don't use withRetry wrapper to avoid double retries
+            const { imageBase64: _, ...paramsWithoutImage } = params;
+            return generateVideo({
+              ...paramsWithoutImage,
+              imageBase64: undefined,
+            });
+          }
         }
 
-        // Handle ArrayBuffer or Uint8Array
-        if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
-          const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
-          // Convert to base64 using browser-compatible method
-          const binary = Array.from(bytes, byte => String.fromCharCode(byte)).join('');
-          return btoa(binary);
-        }
-
-        throw new Error("Unsupported video file format from API.");
-      };
-
-      // Convert to base64
-      const base64Result = await toBase64(videoData);
-
-      // If result is already a data URL or HTTP URL, return as-is
-      if (base64Result.startsWith('data:') || base64Result.startsWith('http://') || base64Result.startsWith('https://')) {
-        return base64Result;
+        throw error;
       }
-
-      // Otherwise, return as data URL format
-      // Note: Handler expects either URL (starts with http) or base64 string (without data: prefix)
-      // So we'll return just the base64 string, and handler will add data: prefix
-      const mimeType = videoFile.mimeType || 'video/mp4';
-      // Return full data URL - handler will detect it correctly
-      const result = `data:${mimeType};base64,${base64Result}`;
-      return result;
-    } catch (error: any) {
-      // If image parameter is not supported, try without it
-      if (imageBase64) {
-        const errorMessage = error?.message?.toLowerCase() || '';
-        const errorString = JSON.stringify(error?.response || {}).toLowerCase();
-
-        const isImageError = errorMessage.includes('image') ||
-          errorMessage.includes('parameter') ||
-          errorMessage.includes('invalid') ||
-          errorString.includes('image') ||
-          errorString.includes('parameter');
-
-        if (isImageError) {
-          console.warn('Image input may not be supported for this model, retrying without image...');
-          // Retry without image - but don't use withRetry wrapper to avoid double retries
-          const { imageBase64: _, ...paramsWithoutImage } = params;
-          return generateVideo({
-            ...paramsWithoutImage,
-            imageBase64: undefined,
-          });
-        }
-      }
-
-      throw error;
+    },
+    {
+      model: normalizedModel,
+      onRetry,
     }
-  }, {
-    model: normalizedModel,
-    onRetry
-  });
+  );
 };
-

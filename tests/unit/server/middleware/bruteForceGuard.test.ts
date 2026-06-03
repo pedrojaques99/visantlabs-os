@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
-import { bruteForceGuard, _resetBruteForceStore } from '../../../../server/middleware/bruteForceGuard.js';
+import {
+  bruteForceGuard,
+  _resetBruteForceStore,
+} from '../../../../server/middleware/bruteForceGuard.js';
 
 function run(mw: any, { ip, email, status }: { ip: string; email: string; status: number }) {
   return new Promise<{ blocked: boolean; retryAfter?: number }>((resolve) => {

@@ -11,4 +11,5 @@ export const REFERENCE_DIMENSIONS = {
 } as const;
 
 export type ReferenceDimensionKey = keyof typeof REFERENCE_DIMENSIONS;
-export type ReferenceDimensionValue<K extends ReferenceDimensionKey> = (typeof REFERENCE_DIMENSIONS)[K][number];
+export type ReferenceDimensionValue<K extends ReferenceDimensionKey> =
+  (typeof REFERENCE_DIMENSIONS)[K][number];

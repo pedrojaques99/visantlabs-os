@@ -69,9 +69,7 @@ describe('Accessibility anti-pattern scanner', () => {
   });
 
   it('no icon-only <Button> without aria-label in brand guidelines components', () => {
-    const targetFiles = allFiles.filter(
-      (f) => !EXCLUDE_ICON_ARIA.some((ex) => f.includes(ex))
-    );
+    const targetFiles = allFiles.filter((f) => !EXCLUDE_ICON_ARIA.some((ex) => f.includes(ex)));
     const violations: string[] = [];
 
     for (const file of targetFiles) {
@@ -139,16 +137,24 @@ describe('Accessibility anti-pattern scanner', () => {
           !line.includes('tabIndex')
         ) {
           // Exclude pure event-propagation stoppers (no real action, just wrapping children)
-          if (line.includes('e.stopPropagation()') && !line.includes('=>') ||
-              /onClick=\{[^}]*e\.stopPropagation\(\)[^}]*\}/.test(line) && !/onClick=\{[^}]*\(\) =>/.test(line)) {
+          if (
+            (line.includes('e.stopPropagation()') && !line.includes('=>')) ||
+            (/onClick=\{[^}]*e\.stopPropagation\(\)[^}]*\}/.test(line) &&
+              !/onClick=\{[^}]*\(\) =>/.test(line))
+          ) {
             return;
           }
           // Exclude modal backdrops (click-to-close on overlay — Escape key is the accessible alternative)
-          if (line.includes('e.target === e.currentTarget') || line.includes('inset-0') && line.includes('backdrop')) {
+          if (
+            line.includes('e.target === e.currentTarget') ||
+            (line.includes('inset-0') && line.includes('backdrop'))
+          ) {
             return;
           }
           violations.push(
-            `${file}:${i + 1} — div with onClick is not keyboard accessible (use <button> or add role+tabIndex)`
+            `${file}:${
+              i + 1
+            } — div with onClick is not keyboard accessible (use <button> or add role+tabIndex)`
           );
         }
       });
@@ -181,9 +187,11 @@ describe('Accessibility anti-pattern scanner', () => {
         if (
           line.includes("position: 'fixed'") ||
           line.includes('position:"fixed"') ||
-          line.includes("position: \"fixed\"")
+          line.includes('position: "fixed"')
         ) {
-          violations.push(`${file}:${i + 1} — inline position:fixed, use Tailwind "fixed" class instead`);
+          violations.push(
+            `${file}:${i + 1} — inline position:fixed, use Tailwind "fixed" class instead`
+          );
         }
       });
     }

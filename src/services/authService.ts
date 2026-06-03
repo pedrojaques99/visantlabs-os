@@ -93,7 +93,9 @@ class AuthService {
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
         console.error('Non-JSON response:', text.substring(0, 200));
-        throw new Error(`Backend retornou resposta inválida. Verifique se a URL da API está correta: ${API_BASE_URL}`);
+        throw new Error(
+          `Backend retornou resposta inválida. Verifique se a URL da API está correta: ${API_BASE_URL}`
+        );
       }
 
       if (!response.ok) {
@@ -108,18 +110,34 @@ class AuthService {
       console.error('getAuthUrl error:', error);
       // Handle JSON parse errors (when server returns HTML instead of JSON)
       if (error.message?.includes('JSON') || error.message?.includes('Unexpected token')) {
-        throw new Error(`Backend não está acessível em ${API_BASE_URL}. Verifique a configuração da URL da API.`);
+        throw new Error(
+          `Backend não está acessível em ${API_BASE_URL}. Verifique a configuração da URL da API.`
+        );
       }
       if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
-        throw new Error(`Não foi possível conectar ao backend em ${API_BASE_URL}. Verifique se o servidor está rodando e acessível.`);
+        throw new Error(
+          `Não foi possível conectar ao backend em ${API_BASE_URL}. Verifique se o servidor está rodando e acessível.`
+        );
       }
       throw error;
     }
   }
 
-  async signUp(email: string, password: string, name?: string, referralCode?: string, captchaToken?: string): Promise<{ token: string; user: User }> {
+  async signUp(
+    email: string,
+    password: string,
+    name?: string,
+    referralCode?: string,
+    captchaToken?: string
+  ): Promise<{ token: string; user: User }> {
     try {
-      const body: { email: string; password: string; name?: string; referralCode?: string; captchaToken?: string } = { email, password };
+      const body: {
+        email: string;
+        password: string;
+        name?: string;
+        referralCode?: string;
+        captchaToken?: string;
+      } = { email, password };
       if (name) body.name = name;
       if (referralCode) body.referralCode = referralCode;
       if (captchaToken) body.captchaToken = captchaToken;
@@ -176,21 +194,27 @@ class AuthService {
       return data;
     } catch (error: any) {
       // Handle Event objects (from script loading errors, etc.) vs Error objects
-      const isEventObject = error && typeof error === 'object' && 'type' in error && 'target' in error;
+      const isEventObject =
+        error && typeof error === 'object' && 'type' in error && 'target' in error;
 
       // Check if this is a BotID script loading error (404 on c.js with UUID pattern)
       const errorMessage = error?.message || String(error || '');
       const uuidPattern = /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i;
       const isBotId404Error =
         (errorMessage.includes('404') || errorMessage.includes('ERR_ABORTED')) &&
-        (errorMessage.includes('/c.js') || uuidPattern.test(errorMessage) ||
+        (errorMessage.includes('/c.js') ||
+          uuidPattern.test(errorMessage) ||
           errorMessage.match(uuidPattern)?.length >= 2);
 
       if (isEventObject || isBotId404Error) {
         // This is likely a script loading error from BotID or similar - suppress it
-        const target = isEventObject ? (error as Event).target as HTMLElement | null : null;
-        const scriptSrc = target && target.tagName === 'SCRIPT' ? (target as HTMLScriptElement).src : '';
-        console.debug('[authService] Suppressed BotID script loading error during signup:', scriptSrc || errorMessage || 'unknown script');
+        const target = isEventObject ? ((error as Event).target as HTMLElement | null) : null;
+        const scriptSrc =
+          target && target.tagName === 'SCRIPT' ? (target as HTMLScriptElement).src : '';
+        console.debug(
+          '[authService] Suppressed BotID script loading error during signup:',
+          scriptSrc || errorMessage || 'unknown script'
+        );
         // Don't throw error - BotID script loading failures shouldn't block auth
         // Return a user-friendly error instead
         throw new Error('Erro de conexão. Por favor, tente novamente.');
@@ -198,9 +222,7 @@ class AuthService {
 
       // Enhanced error logging with full context
       const isNetworkError =
-        error?.message?.includes('Failed to fetch') ||
-        error?.name === 'TypeError' ||
-        !error.status;
+        error?.message?.includes('Failed to fetch') || error?.name === 'TypeError' || !error.status;
 
       if (isNetworkError) {
         console.error('[authService] Signup network error:', {
@@ -276,21 +298,27 @@ class AuthService {
       return data;
     } catch (error: any) {
       // Handle Event objects (from script loading errors, etc.) vs Error objects
-      const isEventObject = error && typeof error === 'object' && 'type' in error && 'target' in error;
+      const isEventObject =
+        error && typeof error === 'object' && 'type' in error && 'target' in error;
 
       // Check if this is a BotID script loading error (404 on c.js with UUID pattern)
       const errorMessage = error?.message || String(error || '');
       const uuidPattern = /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i;
       const isBotId404Error =
         (errorMessage.includes('404') || errorMessage.includes('ERR_ABORTED')) &&
-        (errorMessage.includes('/c.js') || uuidPattern.test(errorMessage) ||
+        (errorMessage.includes('/c.js') ||
+          uuidPattern.test(errorMessage) ||
           errorMessage.match(uuidPattern)?.length >= 2);
 
       if (isEventObject || isBotId404Error) {
         // This is likely a script loading error from BotID or similar - suppress it
-        const target = isEventObject ? (error as Event).target as HTMLElement | null : null;
-        const scriptSrc = target && target.tagName === 'SCRIPT' ? (target as HTMLScriptElement).src : '';
-        console.debug('[authService] Suppressed BotID script loading error during signin:', scriptSrc || errorMessage || 'unknown script');
+        const target = isEventObject ? ((error as Event).target as HTMLElement | null) : null;
+        const scriptSrc =
+          target && target.tagName === 'SCRIPT' ? (target as HTMLScriptElement).src : '';
+        console.debug(
+          '[authService] Suppressed BotID script loading error during signin:',
+          scriptSrc || errorMessage || 'unknown script'
+        );
         // Don't throw error - BotID script loading failures shouldn't block auth
         // Return a user-friendly error instead
         throw new Error('Erro de conexão. Por favor, tente novamente.');
@@ -298,9 +326,7 @@ class AuthService {
 
       // Enhanced error logging with full context
       const isNetworkError =
-        error?.message?.includes('Failed to fetch') ||
-        error?.name === 'TypeError' ||
-        !error.status;
+        error?.message?.includes('Failed to fetch') || error?.name === 'TypeError' || !error.status;
 
       if (isNetworkError) {
         console.error('[authService] Signin network error:', {
@@ -389,11 +415,11 @@ class AuthService {
     if (timeSinceLastVerify < this.VERIFY_THROTTLE_MS) {
       // Aguarda o tempo restante do throttle mais um pequeno delay
       const waitTime = this.VERIFY_THROTTLE_MS - timeSinceLastVerify + 100;
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
 
     // Aguarda um micro delay adicional para garantir que verificações pendentes sejam concluídas
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Força nova verificação (ignorando throttle para garantir resultado atualizado)
     this.lastVerifyTime = Date.now();
@@ -437,13 +463,19 @@ class AuthService {
         if (this.retryCount < this.MAX_RETRIES) {
           this.retryCount++;
           const delay = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, this.retryCount - 1);
-          console.warn(`Token verification failed (${response.status}), retry ${this.retryCount}/${this.MAX_RETRIES} in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          console.warn(
+            `Token verification failed (${response.status}), retry ${this.retryCount}/${this.MAX_RETRIES} in ${delay}ms...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
           return this._performVerify();
         }
 
         // Esgotou retries - retorna cache se existir
-        console.warn('Token verification failed with status:', response.status, '- keeping token for retry');
+        console.warn(
+          'Token verification failed with status:',
+          response.status,
+          '- keeping token for retry'
+        );
         this.retryCount = 0;
         return this.lastValidResult;
       }
@@ -467,8 +499,10 @@ class AuthService {
       if (this.retryCount < this.MAX_RETRIES) {
         this.retryCount++;
         const delay = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, this.retryCount - 1);
-        console.warn(`Token verification network error, retry ${this.retryCount}/${this.MAX_RETRIES} in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        console.warn(
+          `Token verification network error, retry ${this.retryCount}/${this.MAX_RETRIES} in ${delay}ms...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
         return this._performVerify();
       }
 
@@ -527,7 +561,9 @@ class AuthService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to update profile' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to update profile' }));
         throw new Error(errorData.error || 'Failed to update profile');
       }
 
@@ -551,7 +587,9 @@ class AuthService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to send password reset email' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to send password reset email' }));
         throw new Error(errorData.error || 'Failed to send password reset email');
       }
 
@@ -575,7 +613,9 @@ class AuthService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to reset password' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to reset password' }));
         throw new Error(errorData.error || 'Failed to reset password');
       }
 
@@ -673,4 +713,3 @@ class AuthService {
 }
 
 export const authService = new AuthService();
-

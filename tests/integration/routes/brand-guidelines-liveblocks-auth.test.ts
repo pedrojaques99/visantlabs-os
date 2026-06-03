@@ -74,7 +74,9 @@ describe('POST /api/brand-guidelines/:id/liveblocks-auth', () => {
     const { user } = await seedUser();
     const { guideline } = await createBrandGuideline({ userId: user.id });
 
-    const res = await (await request()).post(`/api/brand-guidelines/${guideline.id}/liveblocks-auth`);
+    const res = await (
+      await request()
+    ).post(`/api/brand-guidelines/${guideline.id}/liveblocks-auth`);
     expect(res.status).toBe(401);
   });
 
@@ -131,13 +133,16 @@ describe('POST /api/brand-guidelines/:id/liveblocks-auth', () => {
       .set('Authorization', bearer(token));
 
     expect(res.status).toBe(200);
-    expect(mockPrepareSession).toHaveBeenCalledWith(user.id, expect.objectContaining({
-      userInfo: expect.objectContaining({ email: user.email }),
-    }));
+    expect(mockPrepareSession).toHaveBeenCalledWith(
+      user.id,
+      expect.objectContaining({
+        userInfo: expect.objectContaining({ email: user.email }),
+      })
+    );
     // FULL_ACCESS path: session.allow called with FULL_ACCESS permissions
     expect(mockAllow).toHaveBeenCalledWith(
       `brand-${guideline.id}`,
-      expect.arrayContaining(['room:write']),
+      expect.arrayContaining(['room:write'])
     );
   });
 
@@ -157,7 +162,7 @@ describe('POST /api/brand-guidelines/:id/liveblocks-auth', () => {
     expect(res.status).toBe(200);
     expect(mockAllow).toHaveBeenCalledWith(
       `brand-${guideline.id}`,
-      expect.arrayContaining(['room:write']),
+      expect.arrayContaining(['room:write'])
     );
   });
 
@@ -177,7 +182,7 @@ describe('POST /api/brand-guidelines/:id/liveblocks-auth', () => {
     expect(res.status).toBe(200);
     expect(mockAllow).toHaveBeenCalledWith(
       `brand-${guideline.id}`,
-      expect.arrayContaining(['room:read']),
+      expect.arrayContaining(['room:read'])
     );
     // Must NOT grant write access to a viewer
     const [, permissions] = mockAllow.mock.calls[0];
@@ -201,7 +206,7 @@ describe('POST /api/brand-guidelines/:id/liveblocks-auth', () => {
     expect(res.status).toBe(200);
     expect(mockAllow).toHaveBeenCalledWith(
       `brand-${guideline.id}`,
-      expect.arrayContaining(['room:write']),
+      expect.arrayContaining(['room:write'])
     );
   });
 

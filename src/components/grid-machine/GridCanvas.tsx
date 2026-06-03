@@ -13,7 +13,12 @@ export const GridCanvas = forwardRef<GridCanvasHandle>((_props, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isPanningRef = useRef(false);
   const lastMouseRef = useRef({ x: 0, y: 0 });
-  const allGridLinesRef = useRef<{ lines: GridLine[]; offsetX: number; offsetY: number; totalScale: number }>({ lines: [], offsetX: 0, offsetY: 0, totalScale: 1 });
+  const allGridLinesRef = useRef<{
+    lines: GridLine[];
+    offsetX: number;
+    offsetY: number;
+    totalScale: number;
+  }>({ lines: [], offsetX: 0, offsetY: 0, totalScale: 1 });
 
   const analysis = useGridMachineStore((s) => s.analysis);
   const svgContent = useGridMachineStore((s) => s.svgContent);
@@ -87,10 +92,16 @@ export const GridCanvas = forwardRef<GridCanvasHandle>((_props, ref) => {
       const startY = Math.floor(vb.y / step) * step;
       const endY = vb.y + vb.height;
       for (let x = startX; x <= endX; x += step) {
-        ctx.beginPath(); ctx.moveTo(x, vb.y); ctx.lineTo(x, endY); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, vb.y);
+        ctx.lineTo(x, endY);
+        ctx.stroke();
       }
       for (let y = startY; y <= endY; y += step) {
-        ctx.beginPath(); ctx.moveTo(vb.x, y); ctx.lineTo(endX, y); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(vb.x, y);
+        ctx.lineTo(endX, y);
+        ctx.stroke();
       }
     }
 
@@ -123,7 +134,32 @@ export const GridCanvas = forwardRef<GridCanvasHandle>((_props, ref) => {
     }
 
     ctx.restore();
-  }, [analysis, svgContent, zoom, panX, panY, showAnchors, showHandles, showHLines, showVLines, showDiagonals, showBaseGrid, showOutline, lineOpacity, pointSize, logoOpacity, lineColor, anchorColor, handleColor, bgMode, baseGridSpacing, hLineSpacing, vLineSpacing, diagonalSpacing, hiddenLines]);
+  }, [
+    analysis,
+    svgContent,
+    zoom,
+    panX,
+    panY,
+    showAnchors,
+    showHandles,
+    showHLines,
+    showVLines,
+    showDiagonals,
+    showBaseGrid,
+    showOutline,
+    lineOpacity,
+    pointSize,
+    logoOpacity,
+    lineColor,
+    anchorColor,
+    handleColor,
+    bgMode,
+    baseGridSpacing,
+    hLineSpacing,
+    vLineSpacing,
+    diagonalSpacing,
+    hiddenLines,
+  ]);
 
   useEffect(() => {
     draw();
@@ -132,36 +168,42 @@ export const GridCanvas = forwardRef<GridCanvasHandle>((_props, ref) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [draw]);
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(zoom * delta);
-  }, [zoom, setZoom]);
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      setZoom(zoom * delta);
+    },
+    [zoom, setZoom]
+  );
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (e.altKey || e.button !== 0) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const { lines, offsetX, offsetY, totalScale } = allGridLinesRef.current;
-    const hitRadius = 6;
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.altKey || e.button !== 0) return;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const { lines, offsetX, offsetY, totalScale } = allGridLinesRef.current;
+      const hitRadius = 6;
 
-    for (let i = 0; i < lines.length; i++) {
-      if (hiddenLines.has(i)) continue;
-      const l = lines[i];
-      const sx1 = l.x1 * totalScale + offsetX;
-      const sy1 = l.y1 * totalScale + offsetY;
-      const sx2 = l.x2 * totalScale + offsetX;
-      const sy2 = l.y2 * totalScale + offsetY;
-      const dist = pointToSegmentDist(mx, my, sx1, sy1, sx2, sy2);
-      if (dist < hitRadius) {
-        toggleHiddenLine(i);
-        return;
+      for (let i = 0; i < lines.length; i++) {
+        if (hiddenLines.has(i)) continue;
+        const l = lines[i];
+        const sx1 = l.x1 * totalScale + offsetX;
+        const sy1 = l.y1 * totalScale + offsetY;
+        const sx2 = l.x2 * totalScale + offsetX;
+        const sy2 = l.y2 * totalScale + offsetY;
+        const dist = pointToSegmentDist(mx, my, sx1, sy1, sx2, sy2);
+        if (dist < hitRadius) {
+          toggleHiddenLine(i);
+          return;
+        }
       }
-    }
-  }, [hiddenLines, toggleHiddenLine]);
+    },
+    [hiddenLines, toggleHiddenLine]
+  );
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
@@ -171,22 +213,28 @@ export const GridCanvas = forwardRef<GridCanvasHandle>((_props, ref) => {
     }
   }, []);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isPanningRef.current) return;
-    const dx = e.clientX - lastMouseRef.current.x;
-    const dy = e.clientY - lastMouseRef.current.y;
-    lastMouseRef.current = { x: e.clientX, y: e.clientY };
-    setPan(panX + dx, panY + dy);
-  }, [panX, panY, setPan]);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isPanningRef.current) return;
+      const dx = e.clientX - lastMouseRef.current.x;
+      const dy = e.clientY - lastMouseRef.current.y;
+      lastMouseRef.current = { x: e.clientX, y: e.clientY };
+      setPan(panX + dx, panY + dy);
+    },
+    [panX, panY, setPan]
+  );
 
   const handleMouseUp = useCallback(() => {
     isPanningRef.current = false;
   }, []);
 
-  const handleContextMenu = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    undoHideLine();
-  }, [undoHideLine]);
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      undoHideLine();
+    },
+    [undoHideLine]
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -215,7 +263,11 @@ export const GridCanvas = forwardRef<GridCanvasHandle>((_props, ref) => {
 
     const bgFill = bgMode === 'dark' ? '#0a0a0a' : '#f5f5f5';
     const parts: string[] = [];
-    parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${ox} ${oy} ${svgW} ${svgH}" width="${Math.round(svgW)}" height="${Math.round(svgH)}">`);
+    parts.push(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${ox} ${oy} ${svgW} ${svgH}" width="${Math.round(
+        svgW
+      )}" height="${Math.round(svgH)}">`
+    );
     parts.push(`<rect x="${ox}" y="${oy}" width="${svgW}" height="${svgH}" fill="${bgFill}"/>`);
 
     if (svgContent && logoOpacity > 0) {
@@ -226,34 +278,50 @@ export const GridCanvas = forwardRef<GridCanvasHandle>((_props, ref) => {
       const strokeColor = bgMode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
       for (const seg of analysis.segments) {
         if (seg.type === 'line') {
-          parts.push(`<line x1="${seg.from.x}" y1="${seg.from.y}" x2="${seg.to.x}" y2="${seg.to.y}" stroke="${strokeColor}" stroke-width="1" fill="none"/>`);
+          parts.push(
+            `<line x1="${seg.from.x}" y1="${seg.from.y}" x2="${seg.to.x}" y2="${seg.to.y}" stroke="${strokeColor}" stroke-width="1" fill="none"/>`
+          );
         }
       }
     }
 
-    const gridLines = generateGridLines(analysis.points, vb, { horizontal: showHLines, vertical: showVLines, diagonal: showDiagonals });
+    const gridLines = generateGridLines(analysis.points, vb, {
+      horizontal: showHLines,
+      vertical: showVLines,
+      diagonal: showDiagonals,
+    });
     for (const l of gridLines) {
-      parts.push(`<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}" stroke="${lineColor}" stroke-opacity="${lineOpacity}" stroke-width="0.5" stroke-dasharray="4 4"/>`);
+      parts.push(
+        `<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}" stroke="${lineColor}" stroke-opacity="${lineOpacity}" stroke-width="0.5" stroke-dasharray="4 4"/>`
+      );
     }
 
-    const anchors = analysis.points.filter(p => p.type === 'anchor');
+    const anchors = analysis.points.filter((p) => p.type === 'anchor');
     if (showAnchors) {
       const half = pointSize * 0.5;
       for (const p of anchors) {
-        parts.push(`<rect x="${p.x - half}" y="${p.y - half}" width="${pointSize}" height="${pointSize}" fill="${anchorColor}"/>`);
+        parts.push(
+          `<rect x="${p.x - half}" y="${
+            p.y - half
+          }" width="${pointSize}" height="${pointSize}" fill="${anchorColor}"/>`
+        );
       }
     }
 
     if (showHandles) {
-      const handlesArr = analysis.points.filter(p => p.type === 'handle');
+      const handlesArr = analysis.points.filter((p) => p.type === 'handle');
       const r = pointSize * 0.4;
       for (const p of handlesArr) {
-        parts.push(`<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="none" stroke="${handleColor}" stroke-width="0.5"/>`);
+        parts.push(
+          `<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="none" stroke="${handleColor}" stroke-width="0.5"/>`
+        );
       }
       for (const seg of analysis.segments) {
         if (seg.handles) {
           for (const h of seg.handles) {
-            parts.push(`<line x1="${seg.from.x}" y1="${seg.from.y}" x2="${h.x}" y2="${h.y}" stroke="${handleColor}" stroke-opacity="0.3" stroke-width="0.5"/>`);
+            parts.push(
+              `<line x1="${seg.from.x}" y1="${seg.from.y}" x2="${h.x}" y2="${h.y}" stroke="${handleColor}" stroke-opacity="0.3" stroke-width="0.5"/>`
+            );
           }
         }
       }
@@ -289,7 +357,13 @@ function extractSvgInner(svgString: string): string {
 
 const svgImageCache = new Map<string, HTMLImageElement>();
 
-function drawSvgLogo(ctx: CanvasRenderingContext2D, svgStr: string, vb: { x: number; y: number; width: number; height: number }, opacity: number, _scale: number) {
+function drawSvgLogo(
+  ctx: CanvasRenderingContext2D,
+  svgStr: string,
+  vb: { x: number; y: number; width: number; height: number },
+  opacity: number,
+  _scale: number
+) {
   let img = svgImageCache.get(svgStr);
   if (!img) {
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
@@ -309,7 +383,12 @@ function drawSvgLogo(ctx: CanvasRenderingContext2D, svgStr: string, vb: { x: num
   ctx.globalAlpha = 1;
 }
 
-function drawOutline(ctx: CanvasRenderingContext2D, segments: Segment[], totalScale: number, bgMode: string) {
+function drawOutline(
+  ctx: CanvasRenderingContext2D,
+  segments: Segment[],
+  totalScale: number,
+  bgMode: string
+) {
   ctx.strokeStyle = bgMode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
   ctx.lineWidth = 1 / totalScale;
   ctx.setLineDash([]);
@@ -319,7 +398,14 @@ function drawOutline(ctx: CanvasRenderingContext2D, segments: Segment[], totalSc
     ctx.moveTo(seg.from.x, seg.from.y);
     if (seg.type === 'curve' && seg.handles) {
       if (seg.handles.length === 2) {
-        ctx.bezierCurveTo(seg.handles[0].x, seg.handles[0].y, seg.handles[1].x, seg.handles[1].y, seg.to.x, seg.to.y);
+        ctx.bezierCurveTo(
+          seg.handles[0].x,
+          seg.handles[0].y,
+          seg.handles[1].x,
+          seg.handles[1].y,
+          seg.to.x,
+          seg.to.y
+        );
       } else if (seg.handles.length === 1) {
         ctx.quadraticCurveTo(seg.handles[0].x, seg.handles[0].y, seg.to.x, seg.to.y);
       }
@@ -330,7 +416,13 @@ function drawOutline(ctx: CanvasRenderingContext2D, segments: Segment[], totalSc
   }
 }
 
-function drawGridLines(ctx: CanvasRenderingContext2D, lines: GridLine[], color: string, opacity: number, totalScale: number) {
+function drawGridLines(
+  ctx: CanvasRenderingContext2D,
+  lines: GridLine[],
+  color: string,
+  opacity: number,
+  totalScale: number
+) {
   ctx.strokeStyle = color;
   ctx.globalAlpha = opacity;
   ctx.lineWidth = 0.5 / totalScale;
@@ -347,9 +439,15 @@ function drawGridLines(ctx: CanvasRenderingContext2D, lines: GridLine[], color: 
   ctx.setLineDash([]);
 }
 
-function drawAnchors(ctx: CanvasRenderingContext2D, points: Point[], color: string, size: number, totalScale: number) {
-  const anchors = points.filter(p => p.type === 'anchor');
-  const half = (size / 2) / totalScale;
+function drawAnchors(
+  ctx: CanvasRenderingContext2D,
+  points: Point[],
+  color: string,
+  size: number,
+  totalScale: number
+) {
+  const anchors = points.filter((p) => p.type === 'anchor');
+  const half = size / 2 / totalScale;
   ctx.fillStyle = color;
 
   for (const p of anchors) {
@@ -357,7 +455,14 @@ function drawAnchors(ctx: CanvasRenderingContext2D, points: Point[], color: stri
   }
 }
 
-function pointToSegmentDist(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+function pointToSegmentDist(
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+): number {
   const dx = x2 - x1;
   const dy = y2 - y1;
   const lenSq = dx * dx + dy * dy;
@@ -366,8 +471,15 @@ function pointToSegmentDist(px: number, py: number, x1: number, y1: number, x2: 
   return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
 }
 
-function drawHandles(ctx: CanvasRenderingContext2D, points: Point[], segments: Segment[], color: string, size: number, totalScale: number) {
-  const handlesArr = points.filter(p => p.type === 'handle');
+function drawHandles(
+  ctx: CanvasRenderingContext2D,
+  points: Point[],
+  segments: Segment[],
+  color: string,
+  size: number,
+  totalScale: number
+) {
+  const handlesArr = points.filter((p) => p.type === 'handle');
   const r = (size * 0.4) / totalScale;
 
   ctx.strokeStyle = color;

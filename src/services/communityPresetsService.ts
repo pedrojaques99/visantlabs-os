@@ -30,7 +30,7 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
       }
 
       const response = await fetch(`${API_BASE}/community/presets/public`, {
-        headers
+        headers,
       });
 
       if (response.ok) {
@@ -38,9 +38,9 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
         // Migrar presets legados e estruturar por categoria
         return {
           '3d': (data['3d'] || []).map(migrateLegacyPreset),
-          'presets': (data['presets'] || []).map(migrateLegacyPreset),
-          'aesthetics': (data['aesthetics'] || []).map(migrateLegacyPreset),
-          'themes': (data['themes'] || []).map(migrateLegacyPreset),
+          presets: (data['presets'] || []).map(migrateLegacyPreset),
+          aesthetics: (data['aesthetics'] || []).map(migrateLegacyPreset),
+          themes: (data['themes'] || []).map(migrateLegacyPreset),
           // AI-generated prompts
           'ui-prompts': (data['ui-prompts'] || []).map(migrateLegacyPreset),
           'figma-prompts': (data['figma-prompts'] || []).map(migrateLegacyPreset),
@@ -60,10 +60,18 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
 
     // Return empty fallback on error or non-ok response
     return {
-      '3d': [], 'presets': [], 'aesthetics': [], 'themes': [],
-      'ui-prompts': [], 'figma-prompts': [],
+      '3d': [],
+      presets: [],
+      aesthetics: [],
+      themes: [],
+      'ui-prompts': [],
+      'figma-prompts': [],
       // Compatibilidade
-      mockup: [], angle: [], texture: [], ambience: [], luminance: []
+      mockup: [],
+      angle: [],
+      texture: [],
+      ambience: [],
+      luminance: [],
     };
   })();
 
@@ -73,7 +81,9 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
 /**
  * Get community presets by type (legacy - mantém compatibilidade)
  */
-export async function getCommunityPresetsByType(presetType: 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance'): Promise<any[]> {
+export async function getCommunityPresetsByType(
+  presetType: 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance'
+): Promise<any[]> {
   const presets = await loadPresetsFromAPI();
   return presets[presetType] || [];
 }
@@ -134,7 +144,11 @@ export async function initializeCommunityPresets(): Promise<void> {
 /**
  * Get global community stats
  */
-export async function getCommunityStats(): Promise<{ totalUsers: number; totalPresets: number; totalBlankMockups: number }> {
+export async function getCommunityStats(): Promise<{
+  totalUsers: number;
+  totalPresets: number;
+  totalBlankMockups: number;
+}> {
   try {
     const response = await fetch(`${API_BASE}/community/stats`);
     if (response.ok) {
@@ -145,5 +159,3 @@ export async function getCommunityStats(): Promise<{ totalUsers: number; totalPr
   }
   return { totalUsers: 0, totalPresets: 0, totalBlankMockups: 0 };
 }
-
-

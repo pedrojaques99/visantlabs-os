@@ -6,7 +6,16 @@
 
 import type { OpenAPISpec, MCPSpec, PricingData } from '../hooks/useDocsData';
 
-type TabId = 'overview' | 'api' | 'mcp' | 'plugin' | 'figma-nodes' | 'canvas-api' | 'brand-guidelines' | 'agents' | 'pricing';
+type TabId =
+  | 'overview'
+  | 'api'
+  | 'mcp'
+  | 'plugin'
+  | 'figma-nodes'
+  | 'canvas-api'
+  | 'brand-guidelines'
+  | 'agents'
+  | 'pricing';
 
 export function generateTabMarkdown(
   tab: TabId,
@@ -16,16 +25,25 @@ export function generateTabMarkdown(
   pricingData?: PricingData | null
 ): string {
   switch (tab) {
-    case 'canvas-api':      return generateCanvasApiMarkdown();
-    case 'mcp':             return generateMcpMarkdown(mcpSpec);
-    case 'api':             return generateRestApiMarkdown(openApiSpec);
-    case 'figma-nodes':     return generateFigmaNodesMarkdown();
-    case 'brand-guidelines':return generateBrandGuidelinesMarkdown();
-    case 'agents':          return generateAgentsMarkdown(platformMcpSpec);
-    case 'plugin':          return generatePluginMarkdown();
-    case 'pricing':         return generatePricingMarkdown(pricingData);
+    case 'canvas-api':
+      return generateCanvasApiMarkdown();
+    case 'mcp':
+      return generateMcpMarkdown(mcpSpec);
+    case 'api':
+      return generateRestApiMarkdown(openApiSpec);
+    case 'figma-nodes':
+      return generateFigmaNodesMarkdown();
+    case 'brand-guidelines':
+      return generateBrandGuidelinesMarkdown();
+    case 'agents':
+      return generateAgentsMarkdown(platformMcpSpec);
+    case 'plugin':
+      return generatePluginMarkdown();
+    case 'pricing':
+      return generatePricingMarkdown(pricingData);
     case 'overview':
-    default:                return generateOverviewMarkdown();
+    default:
+      return generateOverviewMarkdown();
   }
 }
 
@@ -185,11 +203,14 @@ function generateAgentsMarkdown(platformMcpSpec?: MCPSpec | null): string {
   const tools = platformMcpSpec?.tools ?? [];
   const toolCount = tools.length;
 
-  const toolTable = tools.length > 0
-    ? ['| Tool | Description | Cost |', '|------|-------------|------|',
-       ...tools.map(t => `| \`${t.name}\` | ${t.description} | ${t['x-cost'] ?? 'free'} |`)
-      ].join('\n')
-    : '_Tool list not loaded — fetch /api/docs/platform/mcp.json_';
+  const toolTable =
+    tools.length > 0
+      ? [
+          '| Tool | Description | Cost |',
+          '|------|-------------|------|',
+          ...tools.map((t) => `| \`${t.name}\` | ${t.description} | ${t['x-cost'] ?? 'free'} |`),
+        ].join('\n')
+      : '_Tool list not loaded — fetch /api/docs/platform/mcp.json_';
 
   return [
     '# AI Agent Integration Guide',
@@ -369,7 +390,7 @@ function generateMcpMarkdown(mcpSpec: MCPSpec | null): string {
     '',
   ];
 
-  mcpSpec.tools.forEach(tool => {
+  mcpSpec.tools.forEach((tool) => {
     lines.push(`### ${tool.name}`);
     lines.push('');
     lines.push(tool.description);
@@ -383,7 +404,9 @@ function generateMcpMarkdown(mcpSpec: MCPSpec | null): string {
       lines.push('|------|------|----------|-------------|');
       props.forEach(([name, prop]: [string, any]) => {
         const req = tool.inputSchema.required?.includes(name) ? 'yes' : 'no';
-        lines.push(`| \`${name}\` | ${prop.type || 'string'} | ${req} | ${prop.description || '-'} |`);
+        lines.push(
+          `| \`${name}\` | ${prop.type || 'string'} | ${req} | ${prop.description || '-'} |`
+        );
       });
       lines.push('');
     }
@@ -428,7 +451,11 @@ function generateRestApiMarkdown(openApiSpec: OpenAPISpec | null): string {
         lines.push('| name | in | type | description |');
         lines.push('|------|----|------|-------------|');
         details.parameters.forEach((p: any) => {
-          lines.push(`| \`${p.name}\` | ${p.in} | ${p.schema?.type || 'string'} | ${p.schema?.description || '-'} |`);
+          lines.push(
+            `| \`${p.name}\` | ${p.in} | ${p.schema?.type || 'string'} | ${
+              p.schema?.description || '-'
+            } |`
+          );
         });
       }
       lines.push('');
@@ -446,38 +473,54 @@ function generatePricingMarkdown(pricingData?: PricingData | null): string {
 
   // Credit cost breakdown
   lines.push('## Credit Costs by Model & Resolution', '');
-  lines.push('| Model | Resolution | Google Price (USD) | Visant Overhead | Total Cost | Credits |');
-  lines.push('|-------|------------|--------------------|-----------------|------------|---------|');
+  lines.push(
+    '| Model | Resolution | Google Price (USD) | Visant Overhead | Total Cost | Credits |'
+  );
+  lines.push(
+    '|-------|------------|--------------------|-----------------|------------|---------|'
+  );
 
-  const imageCosts = creditCosts.filter(t => t.category === 'image');
+  const imageCosts = creditCosts.filter((t) => t.category === 'image');
   const imageTotalOverhead = infraCosts
-    ? (infraCosts.IMAGE_PROCESSING ?? 0) + (infraCosts.IMAGE_CDN ?? 0) + (infraCosts.IMAGE_API_OVERHEAD ?? 0)
+    ? (infraCosts.IMAGE_PROCESSING ?? 0) +
+      (infraCosts.IMAGE_CDN ?? 0) +
+      (infraCosts.IMAGE_API_OVERHEAD ?? 0)
     : 0.013;
 
-  imageCosts.forEach(t => {
+  imageCosts.forEach((t) => {
     const total = t.googlePriceUSD + imageTotalOverhead;
-    lines.push(`| ${t.model} | ${t.resolution} | $${t.googlePriceUSD.toFixed(3)} | $${imageTotalOverhead.toFixed(3)} | **$${total.toFixed(3)}** | ${t.creditsRequired} |`);
+    lines.push(
+      `| ${t.model} | ${t.resolution} | $${t.googlePriceUSD.toFixed(
+        3
+      )} | $${imageTotalOverhead.toFixed(3)} | **$${total.toFixed(3)}** | ${t.creditsRequired} |`
+    );
   });
   lines.push('');
 
   // Video costs
-  const videoCosts = creditCosts.filter(t => t.category === 'video');
+  const videoCosts = creditCosts.filter((t) => t.category === 'video');
   if (videoCosts.length > 0) {
     lines.push('## Video Generation', '');
     lines.push('| Model | Resolution | Cost per 8s | Credits |');
     lines.push('|-------|------------|-------------|---------|');
-    videoCosts.forEach(t => {
-      lines.push(`| ${t.model} | ${t.resolution} | $${t.googlePriceUSD.toFixed(2)} | ${t.creditsRequired} |`);
+    videoCosts.forEach((t) => {
+      lines.push(
+        `| ${t.model} | ${t.resolution} | $${t.googlePriceUSD.toFixed(2)} | ${t.creditsRequired} |`
+      );
     });
     lines.push('');
   }
 
   // Other costs
-  const otherCosts = creditCosts.filter(t => t.category !== 'image' && t.category !== 'video');
+  const otherCosts = creditCosts.filter((t) => t.category !== 'image' && t.category !== 'video');
   if (otherCosts.length > 0) {
     lines.push('## Other Operations', '');
-    otherCosts.forEach(t => {
-      lines.push(`- **${t.model}** (${t.resolution}): ${t.creditsRequired} credit${t.creditsRequired > 1 ? 's' : ''}`);
+    otherCosts.forEach((t) => {
+      lines.push(
+        `- **${t.model}** (${t.resolution}): ${t.creditsRequired} credit${
+          t.creditsRequired > 1 ? 's' : ''
+        }`
+      );
     });
     lines.push('');
   }
@@ -485,19 +528,44 @@ function generatePricingMarkdown(pricingData?: PricingData | null): string {
   // Infrastructure breakdown
   if (infraCosts) {
     lines.push('## Infrastructure Overhead (per image)', '');
-    if (infraCosts.IMAGE_PROCESSING) lines.push(`- **Image processing** — Resizing, optimization, format conversion ($${infraCosts.IMAGE_PROCESSING.toFixed(3)})`);
-    if (infraCosts.IMAGE_CDN) lines.push(`- **CDN delivery** — Cloudflare R2 storage + global delivery ($${infraCosts.IMAGE_CDN.toFixed(3)})`);
-    if (infraCosts.IMAGE_API_OVERHEAD) lines.push(`- **API overhead** — Rate limiting, auth, monitoring ($${infraCosts.IMAGE_API_OVERHEAD.toFixed(3)})`);
+    if (infraCosts.IMAGE_PROCESSING)
+      lines.push(
+        `- **Image processing** — Resizing, optimization, format conversion ($${infraCosts.IMAGE_PROCESSING.toFixed(
+          3
+        )})`
+      );
+    if (infraCosts.IMAGE_CDN)
+      lines.push(
+        `- **CDN delivery** — Cloudflare R2 storage + global delivery ($${infraCosts.IMAGE_CDN.toFixed(
+          3
+        )})`
+      );
+    if (infraCosts.IMAGE_API_OVERHEAD)
+      lines.push(
+        `- **API overhead** — Rate limiting, auth, monitoring ($${infraCosts.IMAGE_API_OVERHEAD.toFixed(
+          3
+        )})`
+      );
     lines.push('');
   }
 
   // Credit packages
   if (creditPackages?.length > 0) {
     lines.push('## Credit Packages', '');
-    lines.push('| Credits | Price (BRL) | Price (USD) | Per Credit | ~HD Images | ~4K Images | ~Fast Videos |');
-    lines.push('|---------|-------------|-------------|------------|-----------|-----------|-------------|');
-    creditPackages.forEach(pkg => {
-      lines.push(`| ${pkg.credits} | R$${pkg.priceBRL.toFixed(2)} | $${pkg.priceUSD.toFixed(2)} | $${pkg.pricePerCreditUSD.toFixed(3)} | ~${pkg.imagesHD} | ~${pkg.images4K} | ~${pkg.videosFast} |`);
+    lines.push(
+      '| Credits | Price (BRL) | Price (USD) | Per Credit | ~HD Images | ~4K Images | ~Fast Videos |'
+    );
+    lines.push(
+      '|---------|-------------|-------------|------------|-----------|-----------|-------------|'
+    );
+    creditPackages.forEach((pkg) => {
+      lines.push(
+        `| ${pkg.credits} | R$${pkg.priceBRL.toFixed(2)} | $${pkg.priceUSD.toFixed(
+          2
+        )} | $${pkg.pricePerCreditUSD.toFixed(3)} | ~${pkg.imagesHD} | ~${pkg.images4K} | ~${
+          pkg.videosFast
+        } |`
+      );
     });
   }
 

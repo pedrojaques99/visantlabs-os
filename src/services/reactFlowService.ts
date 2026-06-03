@@ -1,10 +1,15 @@
 import { getCreditsRequired, getVideoCreditsRequired } from '../utils/creditCalculator.js';
-import type { GeminiModel, SeedreamModel, ImageProvider, Resolution, UploadedImage } from '../types/types.js';
+import type {
+  GeminiModel,
+  SeedreamModel,
+  ImageProvider,
+  Resolution,
+  UploadedImage,
+} from '../types/types.js';
 import { toast } from 'sonner';
 import { mockupApi } from './mockupApi';
 import { subscriptionService } from './subscriptionService';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
-
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
@@ -25,18 +30,15 @@ const API_BASE_URL = getApiBaseUrl();
  */
 const isR2Url = (url: string): boolean => {
   // Whitelist of allowed R2 hostnames
-  const allowedR2Hosts = [
-    'r2.dev',
-    'r2.cloudflarestorage.com',
-  ];
-  
+  const allowedR2Hosts = ['r2.dev', 'r2.cloudflarestorage.com'];
+
   try {
     const parsedUrl = new URL(url);
     const hostname = parsedUrl.hostname.toLowerCase();
-    
+
     // Check if hostname ends with allowed R2 domains (supports subdomains like pub-xxxxx.r2.dev)
-    return allowedR2Hosts.some(allowedHost => 
-      hostname === allowedHost || hostname.endsWith('.' + allowedHost)
+    return allowedR2Hosts.some(
+      (allowedHost) => hostname === allowedHost || hostname.endsWith('.' + allowedHost)
     );
   } catch {
     // Invalid URL format - not an R2 URL
@@ -57,7 +59,9 @@ const urlToBase64 = async (url: string): Promise<string> => {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Proxy failed: ${response.status} ${response.statusText}`);
+          throw new Error(
+            errorData.error || `Proxy failed: ${response.status} ${response.statusText}`
+          );
         }
 
         const data = await response.json();
@@ -123,9 +127,15 @@ const urlToBase64 = async (url: string): Promise<string> => {
       error: error instanceof Error ? error.message : String(error),
     });
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error(`Failed to fetch image from URL. This may be due to CORS restrictions or network issues. URL: ${url}`);
+      throw new Error(
+        `Failed to fetch image from URL. This may be due to CORS restrictions or network issues. URL: ${url}`
+      );
     }
-    throw new Error(`Failed to convert image URL to base64: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to convert image URL to base64: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`
+    );
   }
 };
 
@@ -134,7 +144,10 @@ const urlToBase64 = async (url: string): Promise<string> => {
  * @param image - Image URL or base64 string
  * @param base64Fallback - Optional base64 fallback to use if image is a URL (avoids fetch)
  */
-export const normalizeImageToBase64 = async (image: string, base64Fallback?: string): Promise<string> => {
+export const normalizeImageToBase64 = async (
+  image: string,
+  base64Fallback?: string
+): Promise<string> => {
   if (!image || typeof image !== 'string') {
     throw new Error('Invalid image: must be a non-empty string');
   }
@@ -247,7 +260,9 @@ export const combineImages = async (
         };
       } catch (error) {
         console.error('Error normalizing image:', error);
-        throw new Error(`Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(
+          `Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
     })
   );
@@ -269,18 +284,19 @@ export const combineImages = async (
       promptText: combinePrompt,
       baseImage: {
         base64: baseImage.base64,
-        mimeType: baseImage.mimeType
+        mimeType: baseImage.mimeType,
       },
       model,
       resolution,
-      referenceImages: additionalReferences.length > 0
-        ? additionalReferences.map(img => ({
-          base64: img.base64,
-          mimeType: img.mimeType
-        }))
-        : undefined,
+      referenceImages:
+        additionalReferences.length > 0
+          ? additionalReferences.map((img) => ({
+              base64: img.base64,
+              mimeType: img.mimeType,
+            }))
+          : undefined,
       imagesCount: 1,
-      feature: 'canvas' // Combine operations are part of canvas workflow
+      feature: 'canvas', // Combine operations are part of canvas workflow
     });
 
     return result.imageBase64 || result.imageUrl || '';
@@ -321,12 +337,12 @@ export const editImage = async (
         promptText: prompt,
         baseImage: {
           base64,
-          mimeType
+          mimeType,
         },
         model,
         resolution,
         imagesCount: 1,
-        feature: 'canvas' // Edit operations are part of canvas workflow
+        feature: 'canvas', // Edit operations are part of canvas workflow
       });
 
       return result.imageBase64 || result.imageUrl || '';
@@ -336,7 +352,9 @@ export const editImage = async (
     }
   } catch (error: any) {
     console.error('Error normalizing image for edit:', error);
-    throw new Error(`Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 };
 
@@ -375,12 +393,12 @@ export const upscaleImage = async (
         promptText: upscalePrompt,
         baseImage: {
           base64: baseImage.base64,
-          mimeType: baseImage.mimeType
+          mimeType: baseImage.mimeType,
         },
         model,
         resolution: targetResolution,
         imagesCount: 1,
-        feature: 'canvas' // Upscale operations are part of canvas workflow
+        feature: 'canvas', // Upscale operations are part of canvas workflow
       });
 
       return result.imageBase64 || result.imageUrl || '';
@@ -390,7 +408,9 @@ export const upscaleImage = async (
     }
   } catch (error: any) {
     console.error('Error normalizing image for upscale:', error);
-    throw new Error(`Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 };
 
@@ -418,7 +438,9 @@ export const validateCredits = async (
 
     if (totalCredits < creditsNeeded) {
       toast.error(
-        `You need ${creditsNeeded} credit${creditsNeeded > 1 ? 's' : ''} but only have ${totalCredits} remaining.`
+        `You need ${creditsNeeded} credit${
+          creditsNeeded > 1 ? 's' : ''
+        } but only have ${totalCredits} remaining.`
       );
       return false;
     }
@@ -451,7 +473,9 @@ export const validateVideoCredits = async (model?: string): Promise<boolean> => 
 
     if (totalCredits < creditsNeeded) {
       toast.error(
-        `You need ${creditsNeeded} credit${creditsNeeded > 1 ? 's' : ''} but only have ${totalCredits} remaining.`
+        `You need ${creditsNeeded} credit${
+          creditsNeeded > 1 ? 's' : ''
+        } but only have ${totalCredits} remaining.`
       );
       return false;
     }
@@ -463,4 +487,3 @@ export const validateVideoCredits = async (model?: string): Promise<boolean> => 
     return false;
   }
 };
-

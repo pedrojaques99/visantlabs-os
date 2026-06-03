@@ -144,7 +144,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
             >
               <InlineEditor
                 value="Orçamento"
-                onChange={() => { }}
+                onChange={() => {}}
                 editable={false}
                 style={{ fontSize: '18.010px', fontWeight: 'bold' }}
                 saveStatus={saveStatus}
@@ -300,7 +300,10 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                           value={deliverable.description}
                           onChange={(newDesc) => {
                             const updatedDeliverables = [...data.deliverables];
-                            updatedDeliverables[index] = { ...deliverable, description: String(newDesc) };
+                            updatedDeliverables[index] = {
+                              ...deliverable,
+                              description: String(newDesc),
+                            };
                             onDataChange?.({ deliverables: updatedDeliverables });
                           }}
                           editable={editable}
@@ -363,7 +366,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   lineHeight: '1.56',
                 }}
               >
-                Total Horas de Trabalho: <span style={{ fontWeight: '500' }}>
+                Total Horas de Trabalho:{' '}
+                <span style={{ fontWeight: '500' }}>
                   <InlineEditor
                     value={totalHours.toString()}
                     onChange={(newValue) => {
@@ -379,7 +383,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                     min={0}
                     style={{ fontSize: '15px', fontWeight: '500' }}
                     saveStatus={saveStatus}
-                  />h
+                  />
+                  h
                 </span>
               </p>
             </div>
@@ -399,7 +404,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                 textAlign: 'center',
               }}
             >
-              *<InlineEditor
+              *
+              <InlineEditor
                 value={data.observations}
                 onChange={(newObs) => onDataChange?.({ observations: String(newObs) })}
                 editable={editable}
@@ -425,7 +431,12 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
             {/* Signatures */}
             <div className="md:col-span-2">
               {signatures.length > 0 ? (
-                <div className={`signatures-grid grid gap-8 ${signatures.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`} style={signatures.length === 1 ? { maxWidth: '50%', margin: '0 auto' } : {}}>
+                <div
+                  className={`signatures-grid grid gap-8 ${
+                    signatures.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
+                  }`}
+                  style={signatures.length === 1 ? { maxWidth: '50%', margin: '0 auto' } : {}}
+                >
                   {signatures.map((sig: Signature, index: number) => (
                     <div key={index}>
                       <div className="mb-1" style={{ textAlign: 'center', marginBottom: '-40px' }}>
@@ -437,7 +448,12 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                             onDataChange?.({ signatures: updatedSignatures });
                           }}
                           editable={editable}
-                          style={{ fontSize: '30px', fontWeight: 'bold', fontFamily: "'Dancing Script', cursive", color: textColor }}
+                          style={{
+                            fontSize: '30px',
+                            fontWeight: 'bold',
+                            fontFamily: "'Dancing Script', cursive",
+                            color: textColor,
+                          }}
                           saveStatus={saveStatus}
                         />
                       </div>
@@ -606,7 +622,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                         min={0}
                         style={{ fontSize: '16px', textAlign: 'center' }}
                         saveStatus={saveStatus}
-                      />h
+                      />
+                      h
                     </span>
                     <span
                       style={{
@@ -634,7 +651,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                         min={0}
                         style={{ fontSize: '16px', textAlign: 'center' }}
                         saveStatus={saveStatus}
-                      />/h
+                      />
+                      /h
                     </span>
                   </div>
                 </div>
@@ -664,7 +682,13 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   TOTAL: R$<span style={{ fontSize: '22px' }}>{formatCurrency(finalTotal)}</span>
                 </p>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
-                  <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M5 12h14M12 5l7 7-7 7"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </div>
@@ -723,7 +747,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   fontWeight: 'bold',
                 }}
               >
-                PIX: <InlineEditor
+                PIX:{' '}
+                <InlineEditor
                   value={pixKey || '00000000000'}
                   onChange={(newKey) => {
                     onDataChange?.({
@@ -734,7 +759,13 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                     });
                   }}
                   editable={editable}
-                  style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', letterSpacing: '0.16px', fontFamily: "'Manrope', sans-serif" }}
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    letterSpacing: '0.16px',
+                    fontFamily: "'Manrope', sans-serif",
+                  }}
                   saveStatus={saveStatus}
                 />
               </p>
@@ -756,7 +787,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   <span> à vista no PIX! </span>
                   <span style={{ fontSize: '16px' }}>(</span>
                   <span style={{ fontSize: '10px' }}>R$</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{formatCurrency(finalWithDiscount)}</span>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                    {formatCurrency(finalWithDiscount)}
+                  </span>
                   <span style={{ fontSize: '16px' }}>)</span>
                 </p>
               )}
@@ -782,4 +815,3 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
     </div>
   );
 };
-

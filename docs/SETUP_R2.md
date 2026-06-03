@@ -109,28 +109,32 @@ For production, restrict `AllowedOrigins` to your domain.
 
 The application tracks storage usage per user:
 
-| Tier | Storage Limit |
-|------|--------------|
-| Free | 50 MB |
-| Pro | 500 MB |
-| Enterprise | Custom |
+| Tier       | Storage Limit |
+| ---------- | ------------- |
+| Free       | 50 MB         |
+| Pro        | 500 MB        |
+| Enterprise | Custom        |
 
 ## Troubleshooting
 
 **Error: "R2 not configured"**
+
 - Ensure all R2 environment variables are set
 - Restart the server
 
 **Error: "Access Denied"**
+
 - Verify API token has correct permissions
 - Check bucket name is correct
 
 **Images not loading**
+
 - Verify public access is enabled
 - Check `R2_PUBLIC_URL` is correct
 - Ensure CORS is configured
 
 **Upload fails**
+
 - Check file size limits
 - Verify user has available storage quota
 
@@ -143,4 +147,3 @@ Cloudflare R2 pricing:
 - **No egress fees** (unlike S3)
 
 See [Cloudflare R2 Pricing](https://developers.cloudflare.com/r2/pricing/) for details.
-

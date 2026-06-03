@@ -30,9 +30,8 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
   const filteredFields = useMemo(() => {
     if (!searchQuery.trim()) return fields;
     const query = searchQuery.toLowerCase();
-    return fields.filter(field =>
-      field.label.toLowerCase().includes(query) ||
-      field.id.toLowerCase().includes(query)
+    return fields.filter(
+      (field) => field.label.toLowerCase().includes(query) || field.id.toLowerCase().includes(query)
     );
   }, [fields, searchQuery]);
 
@@ -63,13 +62,13 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setSelectedIndex(prev => Math.min(prev + 1, filteredFields.length - 1));
+        setSelectedIndex((prev) => Math.min(prev + 1, filteredFields.length - 1));
         return;
       }
 
       if (event.key === 'ArrowUp') {
         event.preventDefault();
-        setSelectedIndex(prev => Math.max(prev - 1, 0));
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
         return;
       }
 
@@ -109,7 +108,8 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
         <span className="text-xs font-mono text-neutral-400">Adicionar campo</span>
-        <Button variant="ghost"
+        <Button
+          variant="ghost"
           onClick={onClose}
           className="p-1 text-neutral-500 hover:text-neutral-300 rounded transition-colors"
           aria-label="Fechar menu"
@@ -141,17 +141,19 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
           </div>
         ) : (
           filteredFields.map((field, index) => (
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               key={field.id}
               onClick={() => {
                 onSelect(field.id);
                 onClose();
               }}
               onMouseEnter={() => setSelectedIndex(index)}
-              className={`w-full px-3 py-2.5 text-left text-sm font-mono transition-colors border-b border-neutral-800/50 last:border-b-0 ${index === selectedIndex
-                ? 'bg-brand-cyan/20 text-brand-cyan'
-                : 'text-neutral-300 hover:bg-brand-cyan/10 hover:text-brand-cyan'
-                }`}
+              className={`w-full px-3 py-2.5 text-left text-sm font-mono transition-colors border-b border-neutral-800/50 last:border-b-0 ${
+                index === selectedIndex
+                  ? 'bg-brand-cyan/20 text-brand-cyan'
+                  : 'text-neutral-300 hover:bg-brand-cyan/10 hover:text-brand-cyan'
+              }`}
               role="menuitem"
               aria-label={`Adicionar campo ${field.label}`}
             >
@@ -163,4 +165,3 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
     </div>
   );
 };
-

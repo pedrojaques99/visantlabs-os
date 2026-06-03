@@ -77,7 +77,7 @@ export async function recordSession(userId: string, req: express.Request): Promi
 
     if (sessions.length > 0) {
       await prisma.session.deleteMany({
-        where: { id: { in: sessions.map(s => s.id) } },
+        where: { id: { in: sessions.map((s) => s.id) } },
       });
     }
   } catch (error) {

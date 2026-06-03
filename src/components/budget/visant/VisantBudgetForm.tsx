@@ -14,11 +14,7 @@ interface VisantBudgetFormProps {
   budgetId?: string;
 }
 
-export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
-  data,
-  onChange,
-  budgetId,
-}) => {
+export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChange, budgetId }) => {
   const { t } = useTranslation();
 
   const updateField = <K extends keyof BudgetData>(field: K, value: BudgetData[K]) => {
@@ -29,7 +25,9 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
     <div className="space-y-6 w-full h-full min-h-full">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h3 className="text-base sm:text-lg font-semibold text-neutral-200 font-mono">Informações Básicas</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-neutral-200 font-mono">
+          Informações Básicas
+        </h3>
 
         <div className="w-full">
           <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
@@ -88,9 +86,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
 
         {/* Cores - Grid 2x2 */}
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-3 font-mono">
-            Cores
-          </label>
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-3 font-mono">Cores</label>
           <div className="grid grid-cols-2 gap-4">
             {/* Cor de Fundo da Capa */}
             <div>
@@ -219,4 +215,3 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
     </div>
   );
 };
-

@@ -17,7 +17,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   {
     credits: 20,
     price: {
-      BRL: 9.90,
+      BRL: 9.9,
     },
     stripeProductId: 'prod_TSoYT6iN6okzqj',
     abacateProductId: 'prod_zdQYnPAABMH2uHGbyGRaxkG1',
@@ -30,7 +30,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   {
     credits: 100,
     price: {
-      BRL: 45.90,
+      BRL: 45.9,
     },
     stripeProductId: 'prod_TSoesFFm3kKj1E',
     abacateProductId: 'prod_MN0dSHSsA6KaMHxcB4YSHbxe',
@@ -42,7 +42,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   {
     credits: 500,
     price: {
-      BRL: 198.00,
+      BRL: 198.0,
     },
     stripeProductId: 'prod_TSoiFWVxxng27m',
     abacateProductId: 'prod_UZc3hQYhUUCetjXxm002pG6R',
@@ -54,7 +54,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
 ];
 
 export const getCreditPackageLink = (credits: number, currency: string): string => {
-  const package_ = CREDIT_PACKAGES.find(p => p.credits === credits);
+  const package_ = CREDIT_PACKAGES.find((p) => p.credits === credits);
   if (!package_ || !package_.paymentLinks) return '';
 
   // Try requested currency first, fallback to BRL if not available
@@ -66,11 +66,11 @@ export const getCreditPackageLink = (credits: number, currency: string): string 
 };
 
 export const getCreditPackage = (credits: number): CreditPackage | undefined => {
-  return CREDIT_PACKAGES.find(p => p.credits === credits);
+  return CREDIT_PACKAGES.find((p) => p.credits === credits);
 };
 
 export const getCreditPackagePrice = (credits: number, currency: string): number => {
-  const package_ = CREDIT_PACKAGES.find(p => p.credits === credits);
+  const package_ = CREDIT_PACKAGES.find((p) => p.credits === credits);
   if (!package_) return 0;
 
   // Try requested currency first, fallback to BRL if not available
@@ -117,7 +117,12 @@ export const getCreditsByAmount = (amountTotalInMinorUnits: number, currency?: s
   // If no exact match, try to find package with coupon (value <= package price)
   // Sort packages by price (highest to lowest) to correctly identify which package was purchased
   // Build list of all packages with their prices, prioritizing currency match
-  const allPackages: Array<{ package: CreditPackage; price: number; priceInMinorUnits: number; currency: string }> = [];
+  const allPackages: Array<{
+    package: CreditPackage;
+    price: number;
+    priceInMinorUnits: number;
+    currency: string;
+  }> = [];
 
   for (const creditPackage of CREDIT_PACKAGES) {
     for (const [priceCurrency, priceValue] of Object.entries(creditPackage.price)) {
@@ -159,7 +164,6 @@ export const getCreditsByAmount = (amountTotalInMinorUnits: number, currency?: s
 };
 
 export const getAbacateBillId = (credits: number): string | null => {
-  const package_ = CREDIT_PACKAGES.find(p => p.credits === credits);
+  const package_ = CREDIT_PACKAGES.find((p) => p.credits === credits);
   return package_?.abacateBillId || null;
 };
-

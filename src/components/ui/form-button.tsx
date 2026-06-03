@@ -1,40 +1,40 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
-import { GlitchLoader } from "./GlitchLoader"
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import { GlitchLoader } from './GlitchLoader';
 
 const formButtonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold font-mono transition-all duration-300 focus:outline-none focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none disabled:opacity-50 uppercase",
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold font-mono transition-all duration-300 focus:outline-none focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none disabled:opacity-50 uppercase',
   {
     variants: {
       variant: {
         primary:
-          "bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg shadow-[brand-cyan]/20 hover:scale-[1.02] active:scale-95",
+          'bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg shadow-[brand-cyan]/20 hover:scale-[1.02] active:scale-95',
         outline:
-          "border border-neutral-800 bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:border-neutral-700 hover:text-neutral-100 hover:scale-[1.02] active:scale-95",
+          'border border-neutral-800 bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:border-neutral-700 hover:text-neutral-100 hover:scale-[1.02] active:scale-95',
         ghost:
-          "bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:text-neutral-100 hover:scale-[1.02] active:scale-95",
+          'bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:text-neutral-100 hover:scale-[1.02] active:scale-95',
         destructive:
-          "bg-destructive/80 hover:bg-destructive text-white shadow-lg shadow-red-500/20 hover:scale-[1.02] active:scale-95",
+          'bg-destructive/80 hover:bg-destructive text-white shadow-lg shadow-red-500/20 hover:scale-[1.02] active:scale-95',
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3 text-xs",
-        lg: "h-12 px-8 text-base",
-        icon: "h-10 w-10",
+        default: 'h-10 px-4 py-2',
+        sm: 'h-9 px-3 text-xs',
+        lg: 'h-12 px-8 text-base',
+        icon: 'h-10 w-10',
       },
     },
     defaultVariants: {
-      variant: "primary",
-      size: "default",
+      variant: 'primary',
+      size: 'default',
     },
   }
-)
+);
 
 export type FormButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof formButtonVariants> & {
-    isLoading?: boolean
-  }
+    isLoading?: boolean;
+  };
 
 const FormButton = React.forwardRef<HTMLButtonElement, FormButtonProps>(
   ({ className, variant, size, isLoading, children, disabled, ...props }, ref) => {
@@ -49,10 +49,9 @@ const FormButton = React.forwardRef<HTMLButtonElement, FormButtonProps>(
         {isLoading && <GlitchLoader size={16} color="currentColor" />}
         {children}
       </button>
-    )
+    );
   }
-)
-FormButton.displayName = "FormButton"
+);
+FormButton.displayName = 'FormButton';
 
-export { FormButton, formButtonVariants }
-
+export { FormButton, formButtonVariants };

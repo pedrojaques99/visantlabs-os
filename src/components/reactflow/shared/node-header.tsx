@@ -1,37 +1,43 @@
-import * as React from "react"
-import { LucideIcon, ShieldCheck, LayoutGrid, Palette } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { NodeButton } from "./node-button"
-import { Tooltip } from "@/components/ui/Tooltip"
+import * as React from 'react';
+import { LucideIcon, ShieldCheck, LayoutGrid, Palette } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { NodeButton } from './node-button';
+import { Tooltip } from '@/components/ui/Tooltip';
 
 export interface NodeHeaderProps {
-  icon: LucideIcon
-  title: string
-  className?: string
-  isBrandActive?: boolean
-  selected?: boolean
+  icon: LucideIcon;
+  title: string;
+  className?: string;
+  isBrandActive?: boolean;
+  selected?: boolean;
   onToggleBrand?: (active: boolean) => void;
   onOpenMediaLibrary?: () => void;
   children?: React.ReactNode;
 }
 
 const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
-  ({ icon: Icon, title, className, isBrandActive, selected, onToggleBrand, onOpenMediaLibrary, children }, ref) => {
+  (
+    {
+      icon: Icon,
+      title,
+      className,
+      isBrandActive,
+      selected,
+      onToggleBrand,
+      onOpenMediaLibrary,
+      children,
+    },
+    ref
+  ) => {
     return (
-      <div
-        ref={ref}
-        className={cn(
-          "flex items-center justify-between node-margin-lg",
-          className
-        )}
-      >
+      <div ref={ref} className={cn('flex items-center justify-between node-margin-lg', className)}>
         <div className="flex items-center gap-4">
-          <Icon 
-            size={20} 
+          <Icon
+            size={20}
             className={cn(
-              "transition-colors duration-300",
-              selected ? "text-brand-cyan" : "text-neutral-500"
-            )} 
+              'transition-colors duration-300',
+              selected ? 'text-brand-cyan' : 'text-neutral-500'
+            )}
           />
           <h3 className="text-sm font-semibold node-text-primary font-mono uppercase">{title}</h3>
         </div>
@@ -49,14 +55,18 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                 onMouseDown={(e) => e.stopPropagation()}
                 className="h-7 w-7 p-0 flex items-center justify-center hover:bg-neutral-800/80"
               >
-                <LayoutGrid size={14} className="text-foreground" style={{ color: 'var(--foreground)' }} />
+                <LayoutGrid
+                  size={14}
+                  className="text-foreground"
+                  style={{ color: 'var(--foreground)' }}
+                />
               </NodeButton>
             </Tooltip>
           )}
 
           {onToggleBrand !== undefined && (
             <Tooltip
-              content={isBrandActive ? "Brand Core Active" : "Brand Core Inactive"}
+              content={isBrandActive ? 'Brand Core Active' : 'Brand Core Inactive'}
               position="top"
             >
               <button
@@ -66,10 +76,10 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-md border-node transition-all duration-300",
+                  'flex items-center justify-center w-8 h-8 rounded-md border-node transition-all duration-300',
                   isBrandActive
-                    ? "bg-foreground/20 border-neutral-600 text-foreground"
-                    : "bg-neutral-900/50 border-neutral-800 text-neutral-600 grayscale opacity-60 hover:opacity-100"
+                    ? 'bg-foreground/20 border-neutral-600 text-foreground'
+                    : 'bg-neutral-900/50 border-neutral-800 text-neutral-600 grayscale opacity-60 hover:opacity-100'
                 )}
               >
                 <Palette size={14} className={cn(isBrandActive)} />
@@ -80,9 +90,9 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
           {children}
         </div>
       </div>
-    )
+    );
   }
-)
-NodeHeader.displayName = "NodeHeader"
+);
+NodeHeader.displayName = 'NodeHeader';
 
-export { NodeHeader }
+export { NodeHeader };

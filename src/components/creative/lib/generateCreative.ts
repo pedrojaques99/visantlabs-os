@@ -2,10 +2,7 @@ import { mockupApi } from '@/services/mockupApi';
 import { canvasApi } from '@/services/canvasApi';
 import { authService } from '@/services/authService';
 import type { BrandGuideline } from '@/lib/figma-types';
-import {
-  getContrastColor,
-  getContrastRatioPublic,
-} from '@/utils/colorUtils';
+import { getContrastColor, getContrastRatioPublic } from '@/utils/colorUtils';
 import type {
   CreativeAIResponse,
   CreativeFormat,
@@ -93,8 +90,7 @@ export async function generateCreative({
     }
 
     backgroundUrl =
-      result.imageUrl ||
-      (await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`));
+      result.imageUrl || (await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`));
 
     if (!backgroundUrl) {
       throw new Error('Failed to upload background image to R2');
@@ -132,10 +128,7 @@ export async function generateCreative({
  *   light overlay → 'dark' or 'primary'
  * No overlay → 'primary' first, otherwise the first available.
  */
-function pickLogoForOverlay(
-  logos: BrandGuideline['logos'] = [],
-  overlay: CreativeOverlay | null
-) {
+function pickLogoForOverlay(logos: BrandGuideline['logos'] = [], overlay: CreativeOverlay | null) {
   if (!logos.length) return null;
   const find = (variant: string) => logos.find((l) => l.variant === variant);
 
@@ -152,10 +145,7 @@ function pickLogoForOverlay(
  * snap it to black or white — whichever wins. Pure-image backgrounds with no
  * overlay are left alone (we can't measure them client-side).
  */
-function ensureTextContrast(
-  layer: TextLayerData,
-  overlay: CreativeOverlay | null
-): TextLayerData {
+function ensureTextContrast(layer: TextLayerData, overlay: CreativeOverlay | null): TextLayerData {
   if (!overlay?.color) return layer;
   const ratio = getContrastRatioPublic(layer.color, overlay.color);
   if (ratio >= 4.5) return layer;

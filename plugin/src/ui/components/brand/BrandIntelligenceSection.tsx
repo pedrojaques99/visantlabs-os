@@ -36,7 +36,11 @@ export function BrandIntelligenceSection() {
             size="sm"
             className="w-full h-8 font-bold uppercase tracking-wider text-[10px]"
           >
-            {isImporting ? <GlitchLoader size={12} className="mr-2" /> : <RefreshCw size={12} className="mr-2" />}
+            {isImporting ? (
+              <GlitchLoader size={12} className="mr-2" />
+            ) : (
+              <RefreshCw size={12} className="mr-2" />
+            )}
             {isImporting ? 'Sincronizando...' : 'Smart Import from Figma'}
           </Button>
 
@@ -47,7 +51,11 @@ export function BrandIntelligenceSection() {
             size="sm"
             className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
           >
-            {isIngesting ? <GlitchLoader size={12} className="mr-2" /> : <FileText size={12} className="mr-2" />}
+            {isIngesting ? (
+              <GlitchLoader size={12} className="mr-2" />
+            ) : (
+              <FileText size={12} className="mr-2" />
+            )}
             {isIngesting ? 'Extracting strategy…' : 'Populate Strategy from Page'}
           </Button>
 
@@ -68,16 +76,28 @@ export function BrandIntelligenceSection() {
       </div>
 
       <p className="text-[9px] text-neutral-500 leading-tight px-1 italic">
-        * Smart Import detecta automaticamente tokens (primary/500, Heading/H1, Logo/Dark) no arquivo atual.
+        * Smart Import detecta automaticamente tokens (primary/500, Heading/H1, Logo/Dark) no
+        arquivo atual.
       </p>
 
       {references.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">Visual References</h4>
+          <h4 className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+            Visual References
+          </h4>
           <div className="grid grid-cols-2 gap-2">
             {references.map((ref: any, idx: number) => (
-              <div key={idx} className="border border-white/5 rounded-lg overflow-hidden bg-neutral-950/40">
-                {ref.url && <img src={ref.url} alt={ref.label || 'Reference'} className="w-full h-16 object-cover opacity-60 hover:opacity-100 transition-opacity" />}
+              <div
+                key={idx}
+                className="border border-white/5 rounded-lg overflow-hidden bg-neutral-950/40"
+              >
+                {ref.url && (
+                  <img
+                    src={ref.url}
+                    alt={ref.label || 'Reference'}
+                    className="w-full h-16 object-cover opacity-60 hover:opacity-100 transition-opacity"
+                  />
+                )}
                 <p className="text-[9px] p-2 text-neutral-500 font-mono">{ref.label}</p>
               </div>
             ))}

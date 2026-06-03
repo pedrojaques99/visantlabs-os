@@ -5,7 +5,7 @@ import { Upload, FileText, ArrowRight, Save } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 
 interface PdfUploadRequiredProps {
   budgetId?: string;
@@ -52,7 +52,9 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
     // Validate file size
     if (file.size > MAX_PDF_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      toast.error(`O arquivo PDF deve ter menos de ${MAX_PDF_SIZE_MB}MB (tamanho atual: ${fileSizeMB}MB)`);
+      toast.error(
+        `O arquivo PDF deve ter menos de ${MAX_PDF_SIZE_MB}MB (tamanho atual: ${fileSizeMB}MB)`
+      );
       return;
     }
 
@@ -135,7 +137,6 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
     setPendingPdfBase64(null);
   };
 
-
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 flex items-center justify-center">
       <div className="max-w-2xl w-full px-4">
@@ -144,9 +145,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
             <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-cyan/20 rounded-md mb-4">
               <FileText className="h-10 w-10 text-brand-cyan" />
             </div>
-            <h2 className="text-2xl font-bold text-neutral-200 mb-2 font-mono">
-              Layout Custom
-            </h2>
+            <h2 className="text-2xl font-bold text-neutral-200 mb-2 font-mono">Layout Custom</h2>
             <p className="text-sm text-neutral-400 font-mono">
               Faça upload do seu PDF customizado para começar
             </p>
@@ -177,7 +176,9 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   autoFocus
                 />
                 <div className="flex gap-2">
-                  <Button variant="brand" onClick={handleSavePreset}
+                  <Button
+                    variant="brand"
+                    onClick={handleSavePreset}
                     disabled={isSavingPreset || !presetName.trim()}
                     className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 text-brand-cyan"
                   >
@@ -237,9 +238,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
               </div>
 
               <div className="bg-neutral-900/50 border border-neutral-800 rounded-md p-4">
-                <p className="text-xs text-neutral-500 font-mono mb-2">
-                  Requisitos:
-                </p>
+                <p className="text-xs text-neutral-500 font-mono mb-2">Requisitos:</p>
                 <ul className="text-xs text-neutral-400 font-mono space-y-1 list-disc list-inside">
                   <li>Formato: PDF</li>
                   <li>Tamanho máximo: {MAX_PDF_SIZE_MB}MB</li>
@@ -253,4 +252,3 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
     </div>
   );
 };
-

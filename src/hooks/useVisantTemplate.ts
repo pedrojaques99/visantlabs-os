@@ -28,9 +28,3 @@ export const useVisantTemplate = () => {
 
   return { activeTemplate, isLoading, error };
 };
-
-
-
-
-
-

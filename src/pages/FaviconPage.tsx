@@ -28,7 +28,7 @@ async function generateIcons(
   sourceUrl: string,
   backgroundColor: string,
   borderRadius: number,
-  padding: number,
+  padding: number
 ): Promise<GeneratedIcon[]> {
   const img = await loadImage(sourceUrl, null);
   const results: GeneratedIcon[] = [];
@@ -43,7 +43,7 @@ async function generateIcons(
     if (backgroundColor !== 'transparent') {
       ctx.fillStyle = backgroundColor;
       if (borderRadius > 0) {
-        const r = (borderRadius / 100) * size / 2;
+        const r = ((borderRadius / 100) * size) / 2;
         ctx.beginPath();
         ctx.roundRect(0, 0, size, size, r);
         ctx.fill();
@@ -53,7 +53,7 @@ async function generateIcons(
       }
     } else if (borderRadius > 0) {
       // Clip even for transparent bg
-      const r = (borderRadius / 100) * size / 2;
+      const r = ((borderRadius / 100) * size) / 2;
       ctx.beginPath();
       ctx.roundRect(0, 0, size, size, r);
       ctx.clip();
@@ -68,7 +68,7 @@ async function generateIcons(
     ctx.drawImage(img, sx, sy, srcSize, srcSize, pad, pad, drawSize, drawSize);
 
     const blob = await new Promise<Blob>((resolve) =>
-      canvas.toBlob((b) => resolve(b!), 'image/png'),
+      canvas.toBlob((b) => resolve(b!), 'image/png')
     );
     results.push({ size, blob, url: URL.createObjectURL(blob) });
   }
@@ -93,7 +93,7 @@ function buildManifestSnippet(): string {
       ],
     },
     null,
-    2,
+    2
   );
 }
 
@@ -128,7 +128,7 @@ export const FaviconPage: React.FC = () => {
       if (sourceUrl) URL.revokeObjectURL(sourceUrl);
       setSource(URL.createObjectURL(file), file.name);
     },
-    [sourceUrl, setSource],
+    [sourceUrl, setSource]
   );
 
   const handleInputChange = useCallback(
@@ -137,7 +137,7 @@ export const FaviconPage: React.FC = () => {
       if (file) handleFile(file);
       if (e.target) e.target.value = '';
     },
-    [handleFile],
+    [handleFile]
   );
 
   const handleDrop = useCallback(
@@ -147,7 +147,7 @@ export const FaviconPage: React.FC = () => {
       const file = e.dataTransfer.files?.[0];
       if (file) handleFile(file);
     },
-    [handleFile],
+    [handleFile]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -173,7 +173,16 @@ export const FaviconPage: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [sourceUrl, backgroundColor, borderRadius, padding, isGenerating, generatedIcons, setGeneratedIcons, setIsGenerating]);
+  }, [
+    sourceUrl,
+    backgroundColor,
+    borderRadius,
+    padding,
+    isGenerating,
+    generatedIcons,
+    setGeneratedIcons,
+    setIsGenerating,
+  ]);
 
   const handleDownloadZip = useCallback(async () => {
     if (!generatedIcons.length) return;
@@ -214,19 +223,16 @@ export const FaviconPage: React.FC = () => {
     toast.success('ZIP downloaded');
   }, [generatedIcons]);
 
-  const handleCopySnippet = useCallback(
-    async (key: string, text: string) => {
-      const ok = await copyToClipboard(text);
-      if (ok) {
-        setCopiedSnippet(key);
-        toast.success('Copied to clipboard');
-        setTimeout(() => setCopiedSnippet(null), 2000);
-      } else {
-        toast.error('Copy failed');
-      }
-    },
-    [],
-  );
+  const handleCopySnippet = useCallback(async (key: string, text: string) => {
+    const ok = await copyToClipboard(text);
+    if (ok) {
+      setCopiedSnippet(key);
+      toast.success('Copied to clipboard');
+      setTimeout(() => setCopiedSnippet(null), 2000);
+    } else {
+      toast.error('Copy failed');
+    }
+  }, []);
 
   const handleReset = useCallback(() => {
     generatedIcons.forEach((icon) => {
@@ -244,224 +250,227 @@ export const FaviconPage: React.FC = () => {
       title="Favicon Generator"
       onReset={handleReset}
       showReset={!!sourceUrl}
-      dragDrop={{ onDrop: handleDrop, onDragOver: handleDragOver, onDragLeave: handleDragLeave, isDragOver }}
+      dragDrop={{
+        onDrop: handleDrop,
+        onDragOver: handleDragOver,
+        onDragLeave: handleDragLeave,
+        isDragOver,
+      }}
     >
-        {/* Upload zone */}
-        {!sourceUrl ? (
-          <label
-            className={cn(
-              'flex flex-col items-center justify-center gap-3 w-full h-48 rounded-xl border-2 border-dashed cursor-pointer transition-all',
-              isDragOver
-                ? 'border-brand-cyan bg-brand-cyan/5'
-                : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40',
-            )}
-          >
-            <Upload size={24} className="text-neutral-500" />
-            <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
-              Drop image or click to upload
-            </span>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/svg+xml"
-              className="hidden"
-              onChange={handleInputChange}
-            />
-          </label>
-        ) : (
-          <div className="space-y-6">
-            {/* Source preview + controls */}
-            <div className="flex flex-wrap items-start gap-4">
-              {/* Source preview */}
-              <div className="flex flex-col items-center gap-1.5">
-                <div
-                  className="w-20 h-20 rounded-lg border border-neutral-800 overflow-hidden flex items-center justify-center"
-                  style={{
-                    background: 'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 10px 10px',
-                  }}
+      {/* Upload zone */}
+      {!sourceUrl ? (
+        <label
+          className={cn(
+            'flex flex-col items-center justify-center gap-3 w-full h-48 rounded-xl border-2 border-dashed cursor-pointer transition-all',
+            isDragOver
+              ? 'border-brand-cyan bg-brand-cyan/5'
+              : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
+          )}
+        >
+          <Upload size={24} className="text-neutral-500" />
+          <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+            Drop image or click to upload
+          </span>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={handleInputChange}
+          />
+        </label>
+      ) : (
+        <div className="space-y-6">
+          {/* Source preview + controls */}
+          <div className="flex flex-wrap items-start gap-4">
+            {/* Source preview */}
+            <div className="flex flex-col items-center gap-1.5">
+              <div
+                className="w-20 h-20 rounded-lg border border-neutral-800 overflow-hidden flex items-center justify-center"
+                style={{
+                  background: 'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 10px 10px',
+                }}
+              >
+                <img src={sourceUrl} alt={fileName} className="w-full h-full object-contain" />
+              </div>
+              <span className="text-[10px] font-mono text-neutral-500 truncate max-w-[80px]">
+                {fileName}
+              </span>
+            </div>
+
+            {/* Controls */}
+            <div className="flex-1 min-w-[240px] space-y-3">
+              {/* Background color */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
+                  BG Color
+                </span>
+                <button
+                  onClick={() => setBackgroundColor(isTransparentBg ? '#ffffff' : 'transparent')}
+                  className={cn(
+                    'px-2 py-0.5 rounded text-[10px] font-mono transition-all border',
+                    isTransparentBg
+                      ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40'
+                      : 'bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-600'
+                  )}
                 >
-                  <img src={sourceUrl} alt={fileName} className="w-full h-full object-contain" />
-                </div>
-                <span className="text-[10px] font-mono text-neutral-500 truncate max-w-[80px]">
-                  {fileName}
+                  None
+                </button>
+                {!isTransparentBg && (
+                  <Input
+                    type="text"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    className="h-6 w-24 text-[10px] font-mono bg-neutral-900 border-neutral-800"
+                    placeholder="#ffffff"
+                  />
+                )}
+                {!isTransparentBg && (
+                  <input
+                    type="color"
+                    value={backgroundColor.startsWith('#') ? backgroundColor : '#ffffff'}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    className="w-6 h-6 rounded cursor-pointer border border-neutral-700 bg-transparent"
+                  />
+                )}
+              </div>
+
+              {/* Border radius */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
+                  Radius
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  step="1"
+                  value={borderRadius}
+                  onChange={(e) => setBorderRadius(parseInt(e.target.value))}
+                  className="flex-1 h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+                />
+                <span className="text-[10px] font-mono text-neutral-500 w-8 text-right">
+                  {borderRadius}%
                 </span>
               </div>
 
-              {/* Controls */}
-              <div className="flex-1 min-w-[240px] space-y-3">
-                {/* Background color */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
-                    BG Color
-                  </span>
-                  <button
-                    onClick={() => setBackgroundColor(isTransparentBg ? '#ffffff' : 'transparent')}
-                    className={cn(
-                      'px-2 py-0.5 rounded text-[10px] font-mono transition-all border',
-                      isTransparentBg
-                        ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40'
-                        : 'bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-600',
-                    )}
-                  >
-                    None
-                  </button>
-                  {!isTransparentBg && (
-                    <Input
-                      type="text"
-                      value={backgroundColor}
-                      onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="h-6 w-24 text-[10px] font-mono bg-neutral-900 border-neutral-800"
-                      placeholder="#ffffff"
-                    />
-                  )}
-                  {!isTransparentBg && (
-                    <input
-                      type="color"
-                      value={backgroundColor.startsWith('#') ? backgroundColor : '#ffffff'}
-                      onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="w-6 h-6 rounded cursor-pointer border border-neutral-700 bg-transparent"
-                    />
-                  )}
-                </div>
-
-                {/* Border radius */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
-                    Radius
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="1"
-                    value={borderRadius}
-                    onChange={(e) => setBorderRadius(parseInt(e.target.value))}
-                    className="flex-1 h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                  />
-                  <span className="text-[10px] font-mono text-neutral-500 w-8 text-right">
-                    {borderRadius}%
-                  </span>
-                </div>
-
-                {/* Padding */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
-                    Padding
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="20"
-                    step="1"
-                    value={padding}
-                    onChange={(e) => setPadding(parseInt(e.target.value))}
-                    className="flex-1 h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                  />
-                  <span className="text-[10px] font-mono text-neutral-500 w-8 text-right">
-                    {padding}%
-                  </span>
-                </div>
+              {/* Padding */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
+                  Padding
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value={padding}
+                  onChange={(e) => setPadding(parseInt(e.target.value))}
+                  className="flex-1 h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+                />
+                <span className="text-[10px] font-mono text-neutral-500 w-8 text-right">
+                  {padding}%
+                </span>
               </div>
             </div>
-
-            {/* Generate button */}
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-            >
-              {isGenerating ? (
-                <GlitchLoader size={14} color="currentColor" />
-              ) : (
-                <ImageIcon size={14} />
-              )}
-              <span className="ml-2">
-                {isGenerating ? 'Generating...' : 'Generate Icons'}
-              </span>
-            </Button>
-
-            {/* Generated icons grid */}
-            {generatedIcons.length > 0 && (
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {generatedIcons.map((icon) => (
-                    <div
-                      key={icon.size}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-neutral-800 bg-neutral-950/40"
-                    >
-                      <div
-                        className="w-16 h-16 rounded flex items-center justify-center overflow-hidden"
-                        style={{
-                          background:
-                            'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 8px 8px',
-                        }}
-                      >
-                        <img
-                          src={icon.url}
-                          alt={`${icon.size}x${icon.size}`}
-                          className="max-w-full max-h-full object-contain"
-                          style={{
-                            imageRendering: icon.size <= 32 ? 'pixelated' : 'auto',
-                          }}
-                        />
-                      </div>
-                      <span className="text-[10px] font-mono text-neutral-300">
-                        {icon.size}x{icon.size}
-                      </span>
-                      <span className="text-[9px] font-mono text-neutral-600 uppercase">
-                        {SIZE_LABELS[icon.size] || ''}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Code snippets */}
-                <div className="space-y-3">
-                  <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                    HTML Tags
-                  </h2>
-                  <div className="relative">
-                    <pre className="p-3 rounded-lg border border-neutral-800 bg-neutral-950/60 text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre">
-                      {buildHtmlSnippet()}
-                    </pre>
-                    <button
-                      onClick={() => handleCopySnippet('html', buildHtmlSnippet())}
-                      className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors"
-                      title="Copy"
-                    >
-                      {copiedSnippet === 'html' ? <Check size={12} /> : <Copy size={12} />}
-                    </button>
-                  </div>
-
-                  <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                    Web Manifest
-                  </h2>
-                  <div className="relative">
-                    <pre className="p-3 rounded-lg border border-neutral-800 bg-neutral-950/60 text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre">
-                      {buildManifestSnippet()}
-                    </pre>
-                    <button
-                      onClick={() => handleCopySnippet('manifest', buildManifestSnippet())}
-                      className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors"
-                      title="Copy"
-                    >
-                      {copiedSnippet === 'manifest' ? <Check size={12} /> : <Copy size={12} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Download ZIP */}
-                <Button
-                  onClick={handleDownloadZip}
-                  className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                >
-                  <Download size={14} />
-                  <span className="ml-2">Download ZIP</span>
-                </Button>
-              </>
-            )}
           </div>
-        )}
+
+          {/* Generate button */}
+          <Button
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+          >
+            {isGenerating ? (
+              <GlitchLoader size={14} color="currentColor" />
+            ) : (
+              <ImageIcon size={14} />
+            )}
+            <span className="ml-2">{isGenerating ? 'Generating...' : 'Generate Icons'}</span>
+          </Button>
+
+          {/* Generated icons grid */}
+          {generatedIcons.length > 0 && (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {generatedIcons.map((icon) => (
+                  <div
+                    key={icon.size}
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-neutral-800 bg-neutral-950/40"
+                  >
+                    <div
+                      className="w-16 h-16 rounded flex items-center justify-center overflow-hidden"
+                      style={{
+                        background:
+                          'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 8px 8px',
+                      }}
+                    >
+                      <img
+                        src={icon.url}
+                        alt={`${icon.size}x${icon.size}`}
+                        className="max-w-full max-h-full object-contain"
+                        style={{
+                          imageRendering: icon.size <= 32 ? 'pixelated' : 'auto',
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono text-neutral-300">
+                      {icon.size}x{icon.size}
+                    </span>
+                    <span className="text-[9px] font-mono text-neutral-600 uppercase">
+                      {SIZE_LABELS[icon.size] || ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Code snippets */}
+              <div className="space-y-3">
+                <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                  HTML Tags
+                </h2>
+                <div className="relative">
+                  <pre className="p-3 rounded-lg border border-neutral-800 bg-neutral-950/60 text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre">
+                    {buildHtmlSnippet()}
+                  </pre>
+                  <button
+                    onClick={() => handleCopySnippet('html', buildHtmlSnippet())}
+                    className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors"
+                    title="Copy"
+                  >
+                    {copiedSnippet === 'html' ? <Check size={12} /> : <Copy size={12} />}
+                  </button>
+                </div>
+
+                <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                  Web Manifest
+                </h2>
+                <div className="relative">
+                  <pre className="p-3 rounded-lg border border-neutral-800 bg-neutral-950/60 text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre">
+                    {buildManifestSnippet()}
+                  </pre>
+                  <button
+                    onClick={() => handleCopySnippet('manifest', buildManifestSnippet())}
+                    className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors"
+                    title="Copy"
+                  >
+                    {copiedSnippet === 'manifest' ? <Check size={12} /> : <Copy size={12} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Download ZIP */}
+              <Button
+                onClick={handleDownloadZip}
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+              >
+                <Download size={14} />
+                <span className="ml-2">Download ZIP</span>
+              </Button>
+            </>
+          )}
+        </div>
+      )}
     </MiniToolShell>
   );
 };

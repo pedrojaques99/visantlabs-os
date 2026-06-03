@@ -22,25 +22,28 @@ export const AiFieldButton: React.FC<AiFieldButtonProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const handleClick = useCallback(async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (loading || disabled) return;
-    setLoading(true);
-    try {
-      const result = await brandGuidelineApi.aiPopulate(guideline.id!, [section]);
-      if (result.patch && Object.keys(result.patch).length > 0) {
-        onResult(result.patch);
-        toast.success('Conteúdo gerado');
-      } else {
-        toast.info('Nenhum conteúdo gerado');
+  const handleClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (loading || disabled) return;
+      setLoading(true);
+      try {
+        const result = await brandGuidelineApi.aiPopulate(guideline.id!, [section]);
+        if (result.patch && Object.keys(result.patch).length > 0) {
+          onResult(result.patch);
+          toast.success('Conteúdo gerado');
+        } else {
+          toast.info('Nenhum conteúdo gerado');
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Erro ao gerar');
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao gerar');
-    } finally {
-      setLoading(false);
-    }
-  }, [guideline.id, section, onResult, loading, disabled]);
+    },
+    [guideline.id, section, onResult, loading, disabled]
+  );
 
   return (
     <button
@@ -52,7 +55,7 @@ export const AiFieldButton: React.FC<AiFieldButtonProps> = ({
         'border border-amber-500/30 bg-amber-500/10 text-amber-400',
         'hover:bg-amber-500/20 hover:border-amber-500/50',
         'disabled:opacity-30 disabled:cursor-not-allowed',
-        className,
+        className
       )}
     >
       {loading ? (

@@ -6,25 +6,34 @@ import type { CommunityPrompt, PromptCategory } from '../types/communityPrompts'
 import { Button } from '@/components/ui/button';
 import { useGlitchCopy } from '@/hooks/useGlitchCopy';
 import {
-  LayoutGrid, Box, Settings, Palette, Diamond,
-  Image as ImageIcon, Camera, Layers, MapPin, Sun,
+  LayoutGrid,
+  Box,
+  Settings,
+  Palette,
+  Diamond,
+  Image as ImageIcon,
+  Camera,
+  Layers,
+  MapPin,
+  Sun,
 } from 'lucide-react';
 import { Clipboard as ClipboardIcon } from 'lucide-react';
 
-export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> = {
-  'all':           { icon: LayoutGrid,  color: 'text-neutral-400',  label: 'All'          },
-  '3d':            { icon: Box,         color: 'text-purple-400',   label: '3D'           },
-  'presets':       { icon: Settings,    color: 'text-blue-400',     label: 'Presets'      },
-  'aesthetics':    { icon: Palette,     color: 'text-pink-400',     label: 'Aesthetics'   },
-  'themes':        { icon: Diamond,     color: 'text-amber-400',    label: 'Themes'       },
-  'mockup':        { icon: ImageIcon,   color: 'text-blue-400',     label: 'Mockup'       },
-  'angle':         { icon: Camera,      color: 'text-cyan-400',     label: 'Angle'        },
-  'texture':       { icon: Layers,      color: 'text-green-400',    label: 'Texture'      },
-  'ambience':      { icon: MapPin,      color: 'text-orange-400',   label: 'Ambience'     },
-  'luminance':     { icon: Sun,         color: 'text-yellow-400',   label: 'Luminance'    },
-  'ui-prompts':    { icon: ImageIcon,   color: 'text-purple-400',   label: 'UI Prompts'   },
-  'figma-prompts': { icon: ClipboardIcon, color: 'text-pink-400',  label: 'Figma Prompts'},
-};
+export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> =
+  {
+    all: { icon: LayoutGrid, color: 'text-neutral-400', label: 'All' },
+    '3d': { icon: Box, color: 'text-purple-400', label: '3D' },
+    presets: { icon: Settings, color: 'text-blue-400', label: 'Presets' },
+    aesthetics: { icon: Palette, color: 'text-pink-400', label: 'Aesthetics' },
+    themes: { icon: Diamond, color: 'text-amber-400', label: 'Themes' },
+    mockup: { icon: ImageIcon, color: 'text-blue-400', label: 'Mockup' },
+    angle: { icon: Camera, color: 'text-cyan-400', label: 'Angle' },
+    texture: { icon: Layers, color: 'text-green-400', label: 'Texture' },
+    ambience: { icon: MapPin, color: 'text-orange-400', label: 'Ambience' },
+    luminance: { icon: Sun, color: 'text-yellow-400', label: 'Luminance' },
+    'ui-prompts': { icon: ImageIcon, color: 'text-purple-400', label: 'UI Prompts' },
+    'figma-prompts': { icon: ClipboardIcon, color: 'text-pink-400', label: 'Figma Prompts' },
+  };
 
 interface PresetCardProps {
   preset: CommunityPrompt;
@@ -83,7 +92,9 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             loading="lazy"
             decoding="async"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -94,10 +105,11 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         {/* Selection badge */}
         {selected && (
           <div className="absolute top-2 right-2 w-5 h-5 bg-white rounded flex items-center justify-center shadow-sm z-10">
-            {selectionIndex !== undefined
-              ? <span className="text-[10px] font-mono font-bold text-black">{selectionIndex}</span>
-              : <Check size={10} className="text-black" strokeWidth={3} />
-            }
+            {selectionIndex !== undefined ? (
+              <span className="text-[10px] font-mono font-bold text-black">{selectionIndex}</span>
+            ) : (
+              <Check size={10} className="text-black" strokeWidth={3} />
+            )}
           </div>
         )}
 
@@ -105,15 +117,25 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         <div className="absolute inset-x-0 bottom-0 p-2 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             aria-label="Copy prompt"
-            onClick={(e) => { e.stopPropagation(); handleCopy('Copied', 'Failed'); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopy('Copied', 'Failed');
+            }}
             className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-white transition-colors"
           >
-            {isCopying ? <span className="text-[10px] font-mono">{glitchText}</span> : <Clipboard size={12} />}
+            {isCopying ? (
+              <span className="text-[10px] font-mono">{glitchText}</span>
+            ) : (
+              <Clipboard size={12} />
+            )}
           </button>
           {isAuthenticated && onDuplicate && (
             <button
               aria-label="Duplicate"
-              onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate();
+              }}
               className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-white transition-colors"
             >
               {canEdit ? <Download size={12} /> : <Copy size={12} />}
@@ -122,7 +144,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           {(isOwner || canEdit) && onEdit && (
             <button
               aria-label={t('common.edit')}
-              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
               className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-white transition-colors"
             >
               <Edit2 size={12} />
@@ -131,7 +156,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           {canEdit && onDelete && (
             <button
               aria-label={t('common.delete')}
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
               className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-destructive transition-colors"
             >
               <Trash2 size={12} />
@@ -144,16 +172,23 @@ export const PresetCard: React.FC<PresetCardProps> = ({
       <div className="flex flex-col gap-2 p-3 flex-1">
         {/* Title + like */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className={cn(
-            'text-xs font-semibold font-mono leading-snug line-clamp-1',
-            selected ? 'text-white' : 'text-neutral-200'
-          )}>
+          <h3
+            className={cn(
+              'text-xs font-semibold font-mono leading-snug line-clamp-1',
+              selected ? 'text-white' : 'text-neutral-200'
+            )}
+          >
             {migrated.name}
           </h3>
           {isAuthenticated && onToggleLike && (
             <button
-              aria-label={isLiked ? t('communityPresets.actions.unlike') : t('communityPresets.actions.like')}
-              onClick={(e) => { e.stopPropagation(); onToggleLike(); }}
+              aria-label={
+                isLiked ? t('communityPresets.actions.unlike') : t('communityPresets.actions.like')
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleLike();
+              }}
               className="flex items-center gap-1 shrink-0 text-neutral-600 hover:text-neutral-300 transition-colors"
             >
               <Heart size={11} className={isLiked ? 'fill-current text-neutral-400' : ''} />
@@ -169,16 +204,26 @@ export const PresetCard: React.FC<PresetCardProps> = ({
 
         {/* Footer chips */}
         <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
-          <span className={cn('text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border', config.color,
-            'bg-white/[0.03] border-neutral-800')}>
+          <span
+            className={cn(
+              'text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border',
+              config.color,
+              'bg-white/[0.03] border-neutral-800'
+            )}
+          >
             {config.label}
           </span>
           {migrated.difficulty && (
-            <span className={cn(
-              'text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800',
-              migrated.difficulty === 'beginner' ? 'text-green-500' :
-              migrated.difficulty === 'intermediate' ? 'text-yellow-500' : 'text-destructive'
-            )}>
+            <span
+              className={cn(
+                'text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800',
+                migrated.difficulty === 'beginner'
+                  ? 'text-green-500'
+                  : migrated.difficulty === 'intermediate'
+                  ? 'text-yellow-500'
+                  : 'text-destructive'
+              )}
+            >
               {migrated.difficulty.slice(0, 3)}
             </span>
           )}
@@ -186,7 +231,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             {migrated.aspectRatio}
           </span>
           {migrated.tags?.slice(0, 2).map((tag) => (
-            <span key={tag} className="text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800">
+            <span
+              key={tag}
+              className="text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800"
+            >
               #{tag}
             </span>
           ))}

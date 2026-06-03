@@ -71,10 +71,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
   };
 
   const handleAddPalette = () => {
-    const newPalettes = [
-      ...localPalettes,
-      { name: '', colors: ['#000000'], psychology: '' },
-    ];
+    const newPalettes = [...localPalettes, { name: '', colors: ['#000000'], psychology: '' }];
     updatePalettes(newPalettes);
   };
 
@@ -89,15 +86,19 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
         {localPalettes.map((palette, index) => (
           <div
             key={index}
-            className={`border rounded-xl p-5 hover:border-[brand-cyan]/50 transition-colors relative ${theme === 'dark'
-              ? 'border-neutral-800/60 bg-neutral-950/70'
-              : 'border-neutral-300 bg-neutral-100'
-              }`}
+            className={`border rounded-xl p-5 hover:border-[brand-cyan]/50 transition-colors relative ${
+              theme === 'dark'
+                ? 'border-neutral-800/60 bg-neutral-950/70'
+                : 'border-neutral-300 bg-neutral-100'
+            }`}
           >
             {isEditing && onContentChange && (
-              <Button variant="ghost" onClick={() => handleRemovePalette(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
+              <Button
+                variant="ghost"
+                onClick={() => handleRemovePalette(index)}
+                className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                }`}
                 title="Remover paleta"
               >
                 <X className="h-4 w-4" />
@@ -110,14 +111,18 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 value={palette.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
                 placeholder="Nome da paleta"
-                className={`font-semibold mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-[brand-cyan] focus:outline-none pb-1 w-full ${theme === 'dark'
-                  ? 'text-neutral-200 border-neutral-700/50'
-                  : 'text-neutral-800 border-neutral-400/50'
-                  }`}
+                className={`font-semibold mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-[brand-cyan] focus:outline-none pb-1 w-full ${
+                  theme === 'dark'
+                    ? 'text-neutral-200 border-neutral-700/50'
+                    : 'text-neutral-800 border-neutral-400/50'
+                }`}
               />
             ) : (
-              <h4 className={`font-semibold mb-4 font-manrope text-lg ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                }`}>
+              <h4
+                className={`font-semibold mb-4 font-manrope text-lg ${
+                  theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
+                }`}
+              >
                 {palette.name}
               </h4>
             )}
@@ -140,14 +145,18 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                         value={color.toUpperCase()}
                         onChange={(e) => handleColorChange(index, colorIndex, e.target.value)}
                         placeholder="#000000"
-                        className={`text-xs font-mono font-medium bg-transparent border rounded px-1 w-full text-center ${theme === 'dark'
-                          ? 'text-neutral-500 border-neutral-700/50'
-                          : 'text-neutral-600 border-neutral-400/50'
-                          }`}
+                        className={`text-xs font-mono font-medium bg-transparent border rounded px-1 w-full text-center ${
+                          theme === 'dark'
+                            ? 'text-neutral-500 border-neutral-700/50'
+                            : 'text-neutral-600 border-neutral-400/50'
+                        }`}
                       />
-                      <Button variant="ghost" onClick={() => handleRemoveColor(index, colorIndex)}
-                        className={`w-full p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 text-xs ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                          }`}
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleRemoveColor(index, colorIndex)}
+                        className={`w-full p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 text-xs ${
+                          theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                        }`}
                         title="Remover cor"
                       >
                         <X className="h-3 w-3 mx-auto" />
@@ -155,19 +164,27 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                     </div>
                   ) : (
                     <>
-                      <Button variant="ghost" type="button"
+                      <Button
+                        variant="ghost"
+                        type="button"
                         onClick={() => {
                           if (typeof window !== 'undefined') {
-                            window.dispatchEvent(new CustomEvent('mockup:paletteColorSelected', { detail: color }));
+                            window.dispatchEvent(
+                              new CustomEvent('mockup:paletteColorSelected', { detail: color })
+                            );
                           }
                         }}
-                        className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-[brand-cyan]/20 mb-2 ${theme === 'dark' ? 'border-neutral-800/60' : 'border-neutral-300'
-                          }`}
+                        className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-[brand-cyan]/20 mb-2 ${
+                          theme === 'dark' ? 'border-neutral-800/60' : 'border-neutral-300'
+                        }`}
                         style={{ backgroundColor: color }}
                         title={color}
                       />
-                      <span className={`text-xs font-mono font-medium ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                        }`}>
+                      <span
+                        className={`text-xs font-mono font-medium ${
+                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+                        }`}
+                      >
                         {color.toUpperCase()}
                       </span>
                     </>
@@ -175,11 +192,14 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 </div>
               ))}
               {isEditing && onContentChange && (
-                <Button variant="ghost" onClick={() => handleAddColor(index)}
-                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                    ? 'border-neutral-700/50 text-neutral-400'
-                    : 'border-neutral-400/50 text-neutral-500'
-                    }`}
+                <Button
+                  variant="ghost"
+                  onClick={() => handleAddColor(index)}
+                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-[brand-cyan]/50 hover:text-brand-cyan ${
+                    theme === 'dark'
+                      ? 'border-neutral-700/50 text-neutral-400'
+                      : 'border-neutral-400/50 text-neutral-500'
+                  }`}
                   title="Adicionar cor"
                 >
                   <Plus className="h-4 w-4" />
@@ -188,21 +208,28 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
             </div>
 
             {/* Descrição da paleta */}
-            <div className={`pt-2 border-t ${theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-300'
-              }`}>
+            <div
+              className={`pt-2 border-t ${
+                theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-300'
+              }`}
+            >
               {isEditing && onContentChange ? (
                 <Textarea
                   value={palette.psychology}
                   onChange={(e) => handlePsychologyChange(index, e.target.value)}
                   placeholder="Descrição da psicologia da paleta..."
-                  className={`bg-transparent font-manrope text-sm min-h-[80px] ${theme === 'dark'
-                    ? 'border-neutral-700/50 text-neutral-400'
-                    : 'border-neutral-400/50 text-neutral-600'
-                    }`}
+                  className={`bg-transparent font-manrope text-sm min-h-[80px] ${
+                    theme === 'dark'
+                      ? 'border-neutral-700/50 text-neutral-400'
+                      : 'border-neutral-400/50 text-neutral-600'
+                  }`}
                 />
               ) : (
-                <p className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}>
+                <p
+                  className={`text-sm font-manrope leading-relaxed ${
+                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+                  }`}
+                >
                   {palette.psychology}
                 </p>
               )}
@@ -212,27 +239,33 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
       </div>
       {/* Open color picker in Mockup Machine refine section */}
       {!isEditing && (
-        <Button variant="ghost" type="button"
+        <Button
+          variant="ghost"
+          type="button"
           onClick={() => {
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new CustomEvent('mockup:openColorPicker'));
             }
           }}
-          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-mono transition-colors ${theme === 'dark'
-            ? 'border-neutral-700/60 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan'
-            : 'border-neutral-400/60 text-neutral-600 hover:border-brand-cyan/60 hover:text-brand-cyan'
-            }`}
+          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-mono transition-colors ${
+            theme === 'dark'
+              ? 'border-neutral-700/60 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan'
+              : 'border-neutral-400/60 text-neutral-600 hover:border-brand-cyan/60 hover:text-brand-cyan'
+          }`}
         >
           <span className="w-2 h-2 rounded-full bg-brand-cyan/60" />
           <span>Color Picker</span>
         </Button>
       )}
       {isEditing && onContentChange && (
-        <Button variant="ghost" onClick={handleAddPalette}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-            ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
-            : 'bg-neutral-100 border-neutral-300 text-neutral-800'
-            }`}
+        <Button
+          variant="ghost"
+          onClick={handleAddPalette}
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
+            theme === 'dark'
+              ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
+              : 'bg-neutral-100 border-neutral-300 text-neutral-800'
+          }`}
         >
           <Plus className="h-4 w-4" />
           Adicionar paleta
@@ -241,4 +274,3 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
     </div>
   );
 };
-

@@ -13,12 +13,20 @@ router.use(authenticate);
 router.post('/send', async (req: AuthRequest, res) => {
   const { source, imageUrl, imageBase64, mimeType, label } = req.body;
   if (!source || !VALID_SOURCES.has(source)) {
-    return res.status(400).json({ error: 'valid source required (canvas|mockupmachine|extractor|creative)' });
+    return res
+      .status(400)
+      .json({ error: 'valid source required (canvas|mockupmachine|extractor|creative)' });
   }
   if (!imageUrl && !imageBase64) {
     return res.status(400).json({ error: 'imageUrl or imageBase64 required' });
   }
-  const asset = await assetPipeline.enqueue(req.userId!, { source, imageUrl, imageBase64, mimeType, label });
+  const asset = await assetPipeline.enqueue(req.userId!, {
+    source,
+    imageUrl,
+    imageBase64,
+    mimeType,
+    label,
+  });
   res.json({ asset });
 });
 

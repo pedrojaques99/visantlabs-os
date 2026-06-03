@@ -1,9 +1,9 @@
 /**
  * useImmediateR2Upload
- * 
+ *
  * Hook dedicado para upload imediato de imagens/vídeos base64 para R2
  * Monitora nodes e detecta base64 sem URL correspondente, fazendo upload automático
- * 
+ *
  * Princípios:
  * - Separação de responsabilidades (lógica isolada)
  * - Performance (evita loops, usa refs)
@@ -17,14 +17,16 @@ import { canvasApi } from '@/services/canvasApi';
 import {
   detectNodesNeedingUpload,
   extractBase64,
-  type NodeUploadInfo
+  type NodeUploadInfo,
 } from './utils/r2UploadHelpers';
 
 interface UseImmediateR2UploadParams {
   nodes: Node<FlowNodeData>[];
   canvasId: string | undefined;
   isAuthenticated: boolean;
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
   handlersRef: React.MutableRefObject<any>;
   onStorageLimitError?: (usedMB: string, limitMB: string) => void;
 }
@@ -83,7 +85,9 @@ export const useImmediateR2Upload = ({
 async function performUpload(
   uploadInfo: NodeUploadInfo,
   canvasId: string,
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   handlersRef: React.MutableRefObject<any>,
   onStorageLimitError?: (usedMB: string, limitMB: string) => void
 ): Promise<void> {
@@ -97,7 +101,9 @@ async function performUpload(
           await handlersRef.current.handleUploadImage(nodeId, base64Data);
         } else {
           // Fallback para upload direto - preservar tamanho original
-          const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, { skipCompression: true });
+          const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, {
+            skipCompression: true,
+          });
           updateImageNodeMockup(setNodes, nodeId, imageUrl);
         }
         break;
@@ -109,7 +115,9 @@ async function performUpload(
           await handlersRef.current.handleLogoNodeUpload(nodeId, base64Data);
         } else {
           // Fallback para upload direto - preservar tamanho original
-          const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, { skipCompression: true });
+          const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, {
+            skipCompression: true,
+          });
           updateLogoNode(setNodes, nodeId, imageUrl);
         }
         break;
@@ -117,7 +125,9 @@ async function performUpload(
 
       case 'brand-logo': {
         // BrandNode logoBase64 - preservar tamanho original
-        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, `${nodeId}-logo`, { skipCompression: true });
+        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, `${nodeId}-logo`, {
+          skipCompression: true,
+        });
         updateBrandNodeLogo(setNodes, nodeId, imageUrl);
         break;
       }
@@ -131,14 +141,21 @@ async function performUpload(
 
       case 'result-image': {
         // Nodes com resultImageBase64 (merge, edit, upscale, mockup, prompt, output, shader, etc.) - preservar tamanho original
-        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, { skipCompression: true });
+        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, {
+          skipCompression: true,
+        });
         updateResultImageNode(setNodes, nodeId, imageUrl);
         break;
       }
 
       case 'edit-uploaded': {
         // EditNode uploadedImage.base64 - preservar tamanho original
-        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, `${nodeId}-uploaded`, { skipCompression: true });
+        const imageUrl = await canvasApi.uploadImageToR2(
+          base64Data,
+          canvasId,
+          `${nodeId}-uploaded`,
+          { skipCompression: true }
+        );
         updateEditNodeUploadedImage(setNodes, nodeId, imageUrl);
         break;
       }
@@ -186,7 +203,9 @@ async function performUpload(
  */
 
 function updateImageNodeMockup(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   imageUrl: string
 ): void {
@@ -212,7 +231,9 @@ function updateImageNodeMockup(
 }
 
 function updateLogoNode(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   imageUrl: string
 ): void {
@@ -235,7 +256,9 @@ function updateLogoNode(
 }
 
 function updateBrandNodeLogo(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   imageUrl: string
 ): void {
@@ -258,7 +281,9 @@ function updateBrandNodeLogo(
 }
 
 function updatePDFNode(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   pdfUrl: string
 ): void {
@@ -281,7 +306,9 @@ function updatePDFNode(
 }
 
 function updateResultImageNode(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   imageUrl: string
 ): void {
@@ -317,7 +344,9 @@ function updateResultImageNode(
 }
 
 function updateEditNodeUploadedImage(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   imageUrl: string
 ): void {
@@ -343,7 +372,9 @@ function updateEditNodeUploadedImage(
 }
 
 function updateVideoInputNode(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   videoUrl: string,
   videoBase64: string
@@ -368,7 +399,9 @@ function updateVideoInputNode(
 }
 
 function updateVideoNode(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   videoUrl: string
 ): void {
@@ -391,7 +424,9 @@ function updateVideoNode(
 }
 
 function updateOutputNodeVideo(
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void,
   nodeId: string,
   videoUrl: string
 ): void {
@@ -412,4 +447,3 @@ function updateOutputNodeVideo(
     })
   );
 }
-

@@ -1,5 +1,17 @@
 import React, { useState, useCallback } from 'react';
-import { Bot, User, Copy, Check, FileText, ThumbsUp, ThumbsDown, Wrench, AlertCircle, ChevronDown, Pencil } from 'lucide-react';
+import {
+  Bot,
+  User,
+  Copy,
+  Check,
+  FileText,
+  ThumbsUp,
+  ThumbsDown,
+  Wrench,
+  AlertCircle,
+  ChevronDown,
+  Pencil,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 import { Button } from '@/components/ui/button';
@@ -7,11 +19,13 @@ import { toast } from 'sonner';
 import { ActionDetector } from './ActionDetector';
 import { parseActionsFromResponse, type DetectedAction } from '@/services/chatService';
 import { FlowNodeType } from '@/types/reactFlow';
-import { useGenerationFeedback, type UseGenerationFeedbackParams } from '@/hooks/useGenerationFeedback';
+import {
+  useGenerationFeedback,
+  type UseGenerationFeedbackParams,
+} from '@/hooks/useGenerationFeedback';
 import { FullScreenViewer } from '../../FullScreenViewer';
 
-
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { copyToClipboard } from '@/utils/clipboard';
 export interface ChatMessageProps {
   id?: string;
@@ -19,11 +33,21 @@ export interface ChatMessageProps {
   content: string;
   nodeId?: string;
   onAddPrompt?: (nodeId: string, prompt: string) => void;
-  onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
+  onCreateNode?: (
+    chatNodeId: string,
+    nodeType: FlowNodeType,
+    initialData?: any,
+    connectToChat?: boolean
+  ) => string | undefined;
   t: any;
   showAvatar?: boolean;
-  attachments?: Array<{ type: 'image' | 'pdf'; dataUrl: string; name: string; }>;
-  creativeProjects?: Array<{ creativeProjectId: string; imageUrl: string; editUrl: string; prompt: string }>;
+  attachments?: Array<{ type: 'image' | 'pdf'; dataUrl: string; name: string }>;
+  creativeProjects?: Array<{
+    creativeProjectId: string;
+    imageUrl: string;
+    editUrl: string;
+    prompt: string;
+  }>;
   toolCalls?: Array<{
     id: string;
     name: string;
@@ -77,11 +101,7 @@ const CreativeProjectCard: React.FC<{
           asChild
           className="shrink-0 text-brand-cyan/70 hover:text-brand-cyan hover:bg-brand-cyan/10 font-mono"
         >
-          <a
-            href={project.editUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={project.editUrl} target="_blank" rel="noopener noreferrer">
             <Pencil size={10} className="mr-1" />
             EDITAR
           </a>
@@ -118,31 +138,38 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     context: {
       prompt: content.substring(0, 500),
       imageUrl: creativeProjects?.[0]?.imageUrl,
-      extra: { hasAttachments: !!attachments?.length }
-    }
+      extra: { hasAttachments: !!attachments?.length },
+    },
   });
-  
-  const handleCopy = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await copyToClipboard(content);
-      setIsCopied(true);
-      toast.success(t('canvasNodes.chatNode.messageCopied') || 'Copiado!');
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      toast.error(t('canvasNodes.chatNode.copyFailed') || 'Erro ao copiar');
-    }
-  }, [content, t]);
+
+  const handleCopy = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      try {
+        await copyToClipboard(content);
+        setIsCopied(true);
+        toast.success(t('canvasNodes.chatNode.messageCopied') || 'Copiado!');
+        setTimeout(() => setIsCopied(false), 2000);
+      } catch (err) {
+        toast.error(t('canvasNodes.chatNode.copyFailed') || 'Erro ao copiar');
+      }
+    },
+    [content, t]
+  );
 
   const actions = isAssistant ? parseActionsFromResponse(content) : [];
 
   return (
-    <div className={cn("flex gap-3 w-full", !isAssistant ? "flex-row-reverse" : "flex-row")}>
+    <div className={cn('flex gap-3 w-full', !isAssistant ? 'flex-row-reverse' : 'flex-row')}>
       {showAvatar && (
-        <div className={cn(
-          "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm border",
-          !isAssistant ? "bg-neutral-800 border-neutral-800" : "bg-neutral-900 border-brand-cyan/20"
-        )}>
+        <div
+          className={cn(
+            'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm border',
+            !isAssistant
+              ? 'bg-neutral-800 border-neutral-800'
+              : 'bg-neutral-900 border-brand-cyan/20'
+          )}
+        >
           {!isAssistant ? (
             <User size={16} className="text-neutral-400" />
           ) : (
@@ -150,13 +177,15 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           )}
         </div>
       )}
-      
-      <div className={cn(
-        "max-w-[85%] md:max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed relative group transition-all border",
-        !isAssistant 
-          ? "bg-brand-cyan/10 border-brand-cyan/20 text-neutral-100" 
-          : "bg-white/5 border-neutral-800 text-neutral-300"
-      )}>
+
+      <div
+        className={cn(
+          'max-w-[85%] md:max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed relative group transition-all border',
+          !isAssistant
+            ? 'bg-brand-cyan/10 border-brand-cyan/20 text-neutral-100'
+            : 'bg-white/5 border-neutral-800 text-neutral-300'
+        )}
+      >
         {/* Copy Button */}
         <Button
           variant="ghost"
@@ -168,11 +197,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         </Button>
 
         <div className="select-text whitespace-pre-wrap">
-          {isAssistant ? (
-            <MarkdownRenderer content={content} />
-          ) : (
-             <p>{content}</p>
-          )}
+          {isAssistant ? <MarkdownRenderer content={content} /> : <p>{content}</p>}
         </div>
 
         {/* Attachments */}
@@ -194,7 +219,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                       <span className="truncate">{attachment.name}</span>
                     </div>
                   )}
-                  <p className="text-xs text-neutral-500 mt-1 group-hover:text-neutral-400">{attachment.name}</p>
+                  <p className="text-xs text-neutral-500 mt-1 group-hover:text-neutral-400">
+                    {attachment.name}
+                  </p>
                 </div>
               ))}
             </div>
@@ -213,9 +240,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
               const durationMs = hasDuration
                 ? new Date(call.endedAt!).getTime() - new Date(call.startedAt!).getTime()
                 : null;
-              const durationLabel = durationMs != null
-                ? durationMs >= 1000 ? `${(durationMs / 1000).toFixed(1)}s` : `${durationMs}ms`
-                : null;
+              const durationLabel =
+                durationMs != null
+                  ? durationMs >= 1000
+                    ? `${(durationMs / 1000).toFixed(1)}s`
+                    : `${durationMs}ms`
+                  : null;
               const hasDetail = !isRunning && call.args && Object.keys(call.args).length > 0;
 
               return (
@@ -232,7 +262,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                         : isExpanded
                         ? 'bg-white/5 border-white/10 text-neutral-300'
                         : 'bg-white/[0.03] border-neutral-800 text-neutral-400',
-                      hasDetail && !isRunning && 'hover:bg-white/5 hover:border-white/10 cursor-pointer'
+                      hasDetail &&
+                        !isRunning &&
+                        'hover:bg-white/5 hover:border-white/10 cursor-pointer'
                     )}
                   >
                     {isRunning ? (
@@ -249,10 +281,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                       <span className="text-[10px] opacity-40 shrink-0">{durationLabel}</span>
                     )}
                     <span className="text-[10px] opacity-60 shrink-0 ml-1">
-                      {isError ? (call.errorMessage || 'falhou').slice(0, 40) : call.summary || call.status}
+                      {isError
+                        ? (call.errorMessage || 'falhou').slice(0, 40)
+                        : call.summary || call.status}
                     </span>
                     {hasDetail && !isRunning && (
-                      <ChevronDown size={11} className={cn('shrink-0 opacity-40 transition-transform', isExpanded && 'rotate-180')} />
+                      <ChevronDown
+                        size={11}
+                        className={cn(
+                          'shrink-0 opacity-40 transition-transform',
+                          isExpanded && 'rotate-180'
+                        )}
+                      />
                     )}
                   </button>
 
@@ -265,13 +305,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                           )}
                           {call.args.proposals?.length > 0 && (
                             <div className="space-y-1">
-                              <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest">Variações</p>
+                              <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest">
+                                Variações
+                              </p>
                               {call.args.proposals.map((p: any, i: number) => (
                                 <div key={i} className="flex items-start gap-2">
                                   <span className="text-neutral-600 shrink-0">{i + 1}.</span>
                                   <div>
                                     <span className="text-neutral-300 font-medium">{p.title}</span>
-                                    {p.aspectRatio && <span className="text-neutral-600 ml-2">{p.aspectRatio}</span>}
+                                    {p.aspectRatio && (
+                                      <span className="text-neutral-600 ml-2">{p.aspectRatio}</span>
+                                    )}
                                   </div>
                                 </div>
                               ))}
@@ -279,9 +323,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                           )}
                           {call.args.questions?.length > 0 && (
                             <div className="space-y-0.5">
-                              <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest">Perguntas feitas</p>
+                              <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest">
+                                Perguntas feitas
+                              </p>
                               {call.args.questions.map((q: string, i: number) => (
-                                <p key={i} className="text-neutral-500">— {q}</p>
+                                <p key={i} className="text-neutral-500">
+                                  — {q}
+                                </p>
                               ))}
                             </div>
                           )}
@@ -289,7 +337,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                       )}
                       {call.name === 'update_session_memory' && (
                         <div className="space-y-1">
-                          {(['brands', 'clients', 'decisions', 'references'] as const).map(key =>
+                          {(['brands', 'clients', 'decisions', 'references'] as const).map((key) =>
                             call.args[key] ? (
                               <div key={key} className="flex gap-2">
                                 <span className="text-neutral-600 capitalize shrink-0">{key}:</span>
@@ -301,15 +349,23 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                       )}
                       {call.name === 'generate_or_update_mockup' && (
                         <div className="space-y-1">
-                          {call.args.prompt && <p className="text-neutral-400 line-clamp-3">{call.args.prompt}</p>}
+                          {call.args.prompt && (
+                            <p className="text-neutral-400 line-clamp-3">{call.args.prompt}</p>
+                          )}
                           <div className="flex gap-3 text-neutral-600">
-                            {call.args.model && <span>model: {call.args.model.split('/').pop()}</span>}
+                            {call.args.model && (
+                              <span>model: {call.args.model.split('/').pop()}</span>
+                            )}
                             {call.args.aspectRatio && <span>ratio: {call.args.aspectRatio}</span>}
                             {call.args.textMode && <span>texto: {call.args.textMode}</span>}
                           </div>
                         </div>
                       )}
-                      {!['propose_creative_plan', 'update_session_memory', 'generate_or_update_mockup'].includes(call.name) && (
+                      {![
+                        'propose_creative_plan',
+                        'update_session_memory',
+                        'generate_or_update_mockup',
+                      ].includes(call.name) && (
                         <pre className="text-neutral-500 whitespace-pre-wrap break-all text-[10px]">
                           {JSON.stringify(call.args, null, 2).slice(0, 400)}
                         </pre>
@@ -326,9 +382,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         {creativeProjects && creativeProjects.length > 0 && (
           <div className="mt-5 pt-5 border-t border-white/10 space-y-6">
             {creativeProjects.map((proj, idx) => (
-              <CreativeProjectCard 
-                key={idx} 
-                project={proj} 
+              <CreativeProjectCard
+                key={idx}
+                project={proj}
                 onViewImage={(url) => setViewerImage(url)}
               />
             ))}

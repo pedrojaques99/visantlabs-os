@@ -23,7 +23,13 @@ function getFontWeight(node: TextNode): number {
   return 400;
 }
 
-function collectTexts(node: BaseNode, entries: TextEntry[], frame: string, section: string, includeHidden: boolean) {
+function collectTexts(
+  node: BaseNode,
+  entries: TextEntry[],
+  frame: string,
+  section: string,
+  includeHidden: boolean
+) {
   if (!includeHidden && 'visible' in node && !node.visible) return;
 
   if (node.type === 'TEXT') {
@@ -69,7 +75,9 @@ function formatEntry(entry: TextEntry, maxFontSize: number): string {
   return `${entry.characters}\n`;
 }
 
-export async function exportTextToMarkdown(opts: { includeHidden?: boolean }): Promise<{ markdown: string; filename: string }> {
+export async function exportTextToMarkdown(opts: {
+  includeHidden?: boolean;
+}): Promise<{ markdown: string; filename: string }> {
   const includeHidden = opts.includeHidden ?? false;
   const entries: TextEntry[] = [];
   const page = figma.currentPage;

@@ -7,12 +7,11 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 /**
  * Brand Intelligence Engine
- * 
- * Provides sophisticated analysis of brand visual assets to generate 
+ *
+ * Provides sophisticated analysis of brand visual assets to generate
  * design principles, layout tips, and reference documentation.
  */
 export class BrandIntelligenceService {
-  
   /**
    * Analyzes an image (screenshot of a design) against brand guidelines
    * to extract "Visual References" and "Design Principles".
@@ -28,9 +27,7 @@ export class BrandIntelligenceService {
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT });
 
     // Remove data:image/...;base64, prefix if present
-    const base64Data = imageData.includes('base64,') 
-      ? imageData.split('base64,')[1] 
-      : imageData;
+    const base64Data = imageData.includes('base64,') ? imageData.split('base64,')[1] : imageData;
 
     const prompt = `
       Você é um Diretor de Arte Sênior e Especialista em Brand Design.
@@ -73,7 +70,10 @@ export class BrandIntelligenceService {
       ]);
 
       const response = await result.response;
-      const text = response.text().replace(/```json|```/g, '').trim();
+      const text = response
+        .text()
+        .replace(/```json|```/g, '')
+        .trim();
       return JSON.parse(text);
     } catch (error) {
       console.error('[Brand Intelligence] Analysis failed:', error);
@@ -86,7 +86,10 @@ export class BrandIntelligenceService {
    */
   async generateDesignTips(brandContext: BrandGuideline) {
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.PRO_2_0 });
-    const ctx = buildBrandContext(brandContext, { sections: BRAND_SECTION_PRESETS.visual, compact: true });
+    const ctx = buildBrandContext(brandContext, {
+      sections: BRAND_SECTION_PRESETS.visual,
+      compact: true,
+    });
 
     const prompt = `
       Gere 5 dicas de design "sexy" e profissionais para esta marca.
@@ -114,7 +117,10 @@ export class BrandIntelligenceService {
   async adaptOperationsToBrand(operations: any[], brandGuideline: any) {
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.PRO_2_0 });
 
-    const ctx = buildBrandContext(brandGuideline, { sections: BRAND_SECTION_PRESETS.visual, compact: true });
+    const ctx = buildBrandContext(brandGuideline, {
+      sections: BRAND_SECTION_PRESETS.visual,
+      compact: true,
+    });
 
     const prompt = `
       Você é um Design Engineer especialista em Figma e Brand Systems.
@@ -141,8 +147,11 @@ export class BrandIntelligenceService {
 
     try {
       const result = await model.generateContent(prompt);
-      const text = result.response.text().replace(/```json|```/g, '').trim();
-      
+      const text = result.response
+        .text()
+        .replace(/```json|```/g, '')
+        .trim();
+
       // Attempt to find JSON array if AI adds conversational text
       const match = text.match(/\[[\s\S]*\]/);
       return JSON.parse(match ? match[0] : text);

@@ -32,7 +32,7 @@ export async function generateSocialFrames(brandColors: BrandColor[]) {
   const ops: any[] = [];
   const sizes = [
     { name: '16:9', w: 1280, h: 720, id: 'wide' },
-    { name: '1:1', w: 1080, h: 1080, id: 'post' }
+    { name: '1:1', w: 1080, h: 1080, id: 'post' },
   ];
 
   const pivot = selection[0];
@@ -70,8 +70,8 @@ export async function generateSocialFrames(brandColors: BrandColor[]) {
             primaryAxisSizingMode: 'FIXED',
             counterAxisSizingMode: 'FIXED',
             primaryAxisAlignItems: 'CENTER',
-            counterAxisAlignItems: 'CENTER'
-          }
+            counterAxisAlignItems: 'CENTER',
+          },
         });
 
         const srcW = 'width' in sourceNode ? sourceNode.width : 100;
@@ -90,13 +90,13 @@ export async function generateSocialFrames(brandColors: BrandColor[]) {
           ref: logoRef,
           sourceNodeId: sourceNode.id,
           parentRef: frameRef,
-          overrides: { name: 'Logo Clone', width: srcW * scale, height: srcH * scale }
+          overrides: { name: 'Logo Clone', width: srcW * scale, height: srcH * scale },
         });
 
         ops.push({
           type: 'RECOLOR_NODE',
           ref: logoRef,
-          props: { fills: [{ type: 'SOLID', color: getContrastColor(hex) }] }
+          props: { fills: [{ type: 'SOLID', color: getContrastColor(hex) }] },
         });
       });
 
@@ -122,8 +122,8 @@ export async function generateSocialFrames(brandColors: BrandColor[]) {
             primaryAxisSizingMode: 'FIXED',
             counterAxisSizingMode: 'FIXED',
             primaryAxisAlignItems: 'CENTER',
-            counterAxisAlignItems: 'CENTER'
-          }
+            counterAxisAlignItems: 'CENTER',
+          },
         });
 
         const srcW = 'width' in sourceNode ? sourceNode.width : 100;
@@ -142,13 +142,13 @@ export async function generateSocialFrames(brandColors: BrandColor[]) {
           ref: logoRef,
           sourceNodeId: sourceNode.id,
           parentRef: frameRef,
-          overrides: { name: 'Logo Clone', width: srcW * scale, height: srcH * scale }
+          overrides: { name: 'Logo Clone', width: srcW * scale, height: srcH * scale },
         });
 
         ops.push({
           type: 'RECOLOR_NODE',
           ref: logoRef,
-          props: { fills: [{ type: 'SOLID', color: hex, variableId: color.variableId }] }
+          props: { fills: [{ type: 'SOLID', color: hex, variableId: color.variableId }] },
         });
       });
 
@@ -158,5 +158,7 @@ export async function generateSocialFrames(brandColors: BrandColor[]) {
   });
 
   await applyOperations(ops);
-  figma.notify(`Social frames criados: ${ops.filter((o) => o.type === 'CREATE_FRAME').length} frames`);
+  figma.notify(
+    `Social frames criados: ${ops.filter((o) => o.type === 'CREATE_FRAME').length} frames`
+  );
 }

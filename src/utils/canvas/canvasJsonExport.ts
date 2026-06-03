@@ -85,9 +85,7 @@ function cleanNodeData(data: unknown, depth = 0): unknown {
   if (typeof data !== 'object') return data;
 
   if (Array.isArray(data)) {
-    return data
-      .map((item) => cleanNodeData(item, depth + 1))
-      .filter((item) => item !== undefined);
+    return data.map((item) => cleanNodeData(item, depth + 1)).filter((item) => item !== undefined);
   }
 
   const cleaned: Record<string, unknown> = {};

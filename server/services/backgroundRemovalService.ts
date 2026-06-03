@@ -25,7 +25,8 @@ async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
   if (imageUrl.startsWith('data:')) {
     const b64 = imageUrl.split(',')[1];
     const buf = Buffer.from(b64, 'base64');
-    if (buf.length > MAX_IMAGE_BYTES) throw new Error(`Image too large (${(buf.length / 1024 / 1024).toFixed(1)} MB).`);
+    if (buf.length > MAX_IMAGE_BYTES)
+      throw new Error(`Image too large (${(buf.length / 1024 / 1024).toFixed(1)} MB).`);
     return buf;
   }
 
@@ -35,7 +36,8 @@ async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
     const res = await fetch(imageUrl, { signal: controller.signal });
     if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length > MAX_IMAGE_BYTES) throw new Error(`Image too large (${(buf.length / 1024 / 1024).toFixed(1)} MB).`);
+    if (buf.length > MAX_IMAGE_BYTES)
+      throw new Error(`Image too large (${(buf.length / 1024 / 1024).toFixed(1)} MB).`);
     return buf;
   } finally {
     clearTimeout(timer);
@@ -71,7 +73,7 @@ export interface RemoveBackgroundResult {
 
 export async function removeBackgroundFromImage(
   req: RemoveBackgroundRequest,
-  userId: string,
+  userId: string
 ): Promise<RemoveBackgroundResult> {
   const imageBuf = await fetchImageBuffer(req.imageUrl);
   const format = req.outputFormat || 'png';

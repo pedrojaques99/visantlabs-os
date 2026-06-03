@@ -1,6 +1,6 @@
 /**
  * r2UploadHelpers
- * 
+ *
  * Funções auxiliares para detecção e gerenciamento de uploads R2
  * Centraliza lógica de detecção de base64 que precisa de upload
  */
@@ -15,22 +15,22 @@ import type {
   EditNodeData,
   VideoInputNodeData,
   VideoNodeData,
-  OutputNodeData
+  OutputNodeData,
 } from '@/types/reactFlow';
 
 /**
  * Tipos de upload que podem ser necessários
  */
 export type UploadType =
-  | 'image-mockup'        // ImageNode.mockup.imageBase64
-  | 'logo'                // LogoNode.logoBase64
-  | 'brand-logo'          // BrandNode.logoBase64
-  | 'pdf'                 // PDFNode.pdfBase64
-  | 'result-image'        // Qualquer node com resultImageBase64
-  | 'edit-uploaded'       // EditNode.uploadedImage.base64
-  | 'video-input'         // VideoInputNode.uploadedVideo (base64)
-  | 'video-result'        // VideoNode.resultVideoBase64
-  | 'output-video';       // OutputNode.resultVideoBase64 (vídeo)
+  | 'image-mockup' // ImageNode.mockup.imageBase64
+  | 'logo' // LogoNode.logoBase64
+  | 'brand-logo' // BrandNode.logoBase64
+  | 'pdf' // PDFNode.pdfBase64
+  | 'result-image' // Qualquer node com resultImageBase64
+  | 'edit-uploaded' // EditNode.uploadedImage.base64
+  | 'video-input' // VideoInputNode.uploadedVideo (base64)
+  | 'video-result' // VideoNode.resultVideoBase64
+  | 'output-video'; // OutputNode.resultVideoBase64 (vídeo)
 
 /**
  * Informação sobre um node que precisa de upload
@@ -122,9 +122,7 @@ export function extractBase64(data: string): string {
  * Detecta nodes que precisam de upload para R2
  * Retorna array de informações sobre nodes que têm base64 sem URL correspondente
  */
-export function detectNodesNeedingUpload(
-  nodes: Node<FlowNodeData>[]
-): NodeUploadInfo[] {
+export function detectNodesNeedingUpload(nodes: Node<FlowNodeData>[]): NodeUploadInfo[] {
   const nodesNeedingUpload: NodeUploadInfo[] = [];
 
   nodes.forEach((node) => {
@@ -240,7 +238,8 @@ export function detectNodesNeedingUpload(
       const outputData = data as OutputNodeData;
       if (outputData.resultVideoBase64 && !outputData.resultVideoUrl) {
         // Verificar se é vídeo (não imagem)
-        const isVideo = outputData.resultVideoBase64.startsWith('data:video/') ||
+        const isVideo =
+          outputData.resultVideoBase64.startsWith('data:video/') ||
           outputData.resultVideoBase64.includes('video');
         if (isVideo) {
           nodesNeedingUpload.push({
@@ -341,4 +340,3 @@ export function collectR2UrlsForDeletion(
 
   return urls;
 }
-

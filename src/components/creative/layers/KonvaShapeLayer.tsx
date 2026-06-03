@@ -109,15 +109,17 @@ const KonvaShapeLayerImpl: React.FC<Props> = ({
   );
 };
 
-export const KonvaShapeLayer = React.memo(KonvaShapeLayerImpl, (prev, next) =>
-  prev.layer === next.layer &&
-  prev.isSelected === next.isSelected &&
-  prev.canvasWidth === next.canvasWidth &&
-  prev.canvasHeight === next.canvasHeight &&
-  prev.registerNode === next.registerNode &&
-  prev.onSelect === next.onSelect &&
-  prev.onDragStart === next.onDragStart &&
-  prev.onSmartDragMove === next.onSmartDragMove &&
-  prev.onSmartTransform === next.onSmartTransform &&
-  prev.onSmartClear === next.onSmartClear
+export const KonvaShapeLayer = React.memo(
+  KonvaShapeLayerImpl,
+  (prev, next) =>
+    prev.layer === next.layer &&
+    prev.isSelected === next.isSelected &&
+    prev.canvasWidth === next.canvasWidth &&
+    prev.canvasHeight === next.canvasHeight &&
+    prev.registerNode === next.registerNode &&
+    prev.onSelect === next.onSelect &&
+    prev.onDragStart === next.onDragStart &&
+    prev.onSmartDragMove === next.onSmartDragMove &&
+    prev.onSmartTransform === next.onSmartTransform &&
+    prev.onSmartClear === next.onSmartClear
 );

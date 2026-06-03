@@ -4,7 +4,6 @@
 import type { GeminiModel, Resolution } from '../types/types';
 import { GEMINI_MODELS } from '../constants/geminiModels.js';
 
-
 /**
  * Pricing constants (in USD)
  * Source: https://ai.google.dev/gemini-api/docs/pricing
@@ -14,21 +13,21 @@ export const PRICING = {
     // Gemini 2.5 Flash (HD) - fixed resolution ~1K
     GEMINI_2_5: 0.039, // gemini-2.5-flash-image
     // Gemini 3.1 Flash (NB2) - variable resolution
-    NB2_512: 0.045,    // gemini-3.1-flash-image-preview 512px
-    NB2_1K: 0.067,     // gemini-3.1-flash-image-preview 1K (official: $0.067)
-    NB2_2K: 0.101,     // gemini-3.1-flash-image-preview 2K (official: $0.101)
-    NB2_4K: 0.151,     // gemini-3.1-flash-image-preview 4K (official: $0.151)
+    NB2_512: 0.045, // gemini-3.1-flash-image-preview 512px
+    NB2_1K: 0.067, // gemini-3.1-flash-image-preview 1K (official: $0.067)
+    NB2_2K: 0.101, // gemini-3.1-flash-image-preview 2K (official: $0.101)
+    NB2_4K: 0.151, // gemini-3.1-flash-image-preview 4K (official: $0.151)
     // Gemini 3 Pro - variable resolution (official: 1K/2K same price)
-    GEMINI_1K: 0.134,  // gemini-3-pro-image-preview with 1K resolution (official: $0.134)
-    GEMINI_2K: 0.134,  // gemini-3-pro-image-preview with 2K resolution (official: $0.134 - same as 1K)
-    GEMINI_4K: 0.24,   // gemini-3-pro-image-preview with 4K resolution (official: $0.24)
+    GEMINI_1K: 0.134, // gemini-3-pro-image-preview with 1K resolution (official: $0.134)
+    GEMINI_2K: 0.134, // gemini-3-pro-image-preview with 2K resolution (official: $0.134 - same as 1K)
+    GEMINI_4K: 0.24, // gemini-3-pro-image-preview with 4K resolution (official: $0.24)
   },
   VIDEO: {
     // Veo 3.1 pricing per second (official docs)
-    VEO_STANDARD_PER_SEC: 0.40,  // veo-3.1-generate-preview (720p/1080p)
-    VEO_FAST_PER_SEC: 0.15,      // veo-3.1-fast-generate-preview (720p/1080p)
-    VEO_STANDARD_4K_PER_SEC: 0.60, // veo-3.1-generate-preview (4K)
-    VEO_FAST_4K_PER_SEC: 0.35,     // veo-3.1-fast-generate-preview (4K)
+    VEO_STANDARD_PER_SEC: 0.4, // veo-3.1-generate-preview (720p/1080p)
+    VEO_FAST_PER_SEC: 0.15, // veo-3.1-fast-generate-preview (720p/1080p)
+    VEO_STANDARD_4K_PER_SEC: 0.6, // veo-3.1-generate-preview (4K)
+    VEO_FAST_4K_PER_SEC: 0.35, // veo-3.1-fast-generate-preview (4K)
     // Default duration for credit calculations (typical Veo output)
     DEFAULT_DURATION_SEC: 8,
   },
@@ -152,12 +151,3 @@ export function isHighResolution(resolution: string | undefined | null): boolean
   const resLower = resolution.toLowerCase();
   return resLower.includes('2k') || resLower.includes('4k') || resLower.includes('8k');
 }
-
-
-
-
-
-
-
-
-

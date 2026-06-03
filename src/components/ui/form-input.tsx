@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
-export type FormInputProps = React.InputHTMLAttributes<HTMLInputElement>
+export type FormInputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
   ({ className, type, ...props }, ref) => {
@@ -10,8 +10,8 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
         <input
           type={type}
           className={cn(
-            "w-full px-4 py-3 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 font-mono text-sm focus:outline-none focus:border-neutral-600 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500",
-            type === 'color' && "color-picker-square",
+            'w-full px-4 py-3 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 font-mono text-sm focus:outline-none focus:border-neutral-600 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500',
+            type === 'color' && 'color-picker-square',
             className
           )}
           ref={ref}
@@ -49,14 +49,9 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
           `}</style>
         )}
       </>
-    )
+    );
   }
-)
-FormInput.displayName = "FormInput"
+);
+FormInput.displayName = 'FormInput';
 
-export { FormInput }
-
-
-
-
-
+export { FormInput };

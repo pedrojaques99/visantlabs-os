@@ -13,8 +13,8 @@ import { fileToBase64 } from '@/utils/fileUtils';
  * Returns null when no eligible files are present.
  */
 export async function buildBrandIngestPayload(files: File[]): Promise<BrandIngestPayload | null> {
-  const pdf = files.find(f => f.type === 'application/pdf');
-  const images = files.filter(f => f.type.startsWith('image/'));
+  const pdf = files.find((f) => f.type === 'application/pdf');
+  const images = files.filter((f) => f.type.startsWith('image/'));
   if (!pdf && !images.length) return null;
 
   const payload: BrandIngestPayload = {
@@ -23,10 +23,12 @@ export async function buildBrandIngestPayload(files: File[]): Promise<BrandInges
   };
   if (pdf) payload.data = await pdfToBase64(pdf);
   if (images.length) {
-    payload.images = await Promise.all(images.map(async (f) => {
-      const r = await fileToBase64(f);
-      return `data:${r.mimeType};base64,${r.base64}`;
-    }));
+    payload.images = await Promise.all(
+      images.map(async (f) => {
+        const r = await fileToBase64(f);
+        return `data:${r.mimeType};base64,${r.base64}`;
+      })
+    );
   }
   return payload;
 }
@@ -43,42 +45,51 @@ export async function buildBrandIngestPayload(files: File[]): Promise<BrandInges
 export function useBrandImport(brandId: string | undefined) {
   const mutation = useIngestGuideline();
 
-  const importFiles = useCallback(async (files: File[]) => {
-    if (!brandId) {
-      toast.error('Selecione uma marca antes de importar arquivos');
-      return;
-    }
-    if (!files.length) return;
-
-    try {
-      const payload = await buildBrandIngestPayload(files);
-      if (!payload) {
-        toast.error('Apenas PDF ou imagens são aceitos');
+  const importFiles = useCallback(
+    async (files: File[]) => {
+      if (!brandId) {
+        toast.error('Selecione uma marca antes de importar arquivos');
         return;
       }
-      toast.info('Extraindo marca — pode levar alguns segundos...');
-      await mutation.mutateAsync({ id: brandId, payload });
-    } catch (err: any) {
-      toast.error(`Falha na extração: ${err?.message || 'erro'}`);
-    }
-  }, [brandId, mutation]);
+      if (!files.length) return;
 
-  const importUrl = useCallback(async (url: string) => {
-    const trimmed = url.trim();
-    if (!brandId || !trimmed) return;
-    try {
-      toast.info('Extraindo marca a partir da URL...');
-      await mutation.mutateAsync({ id: brandId, payload: { source: 'url', url: trimmed } });
-    } catch (err: any) {
-      toast.error(`Falha na extração: ${err?.message || 'erro'}`);
-    }
-  }, [brandId, mutation]);
+      try {
+        const payload = await buildBrandIngestPayload(files);
+        if (!payload) {
+          toast.error('Apenas PDF ou imagens são aceitos');
+          return;
+        }
+        toast.info('Extraindo marca — pode levar alguns segundos...');
+        await mutation.mutateAsync({ id: brandId, payload });
+      } catch (err: any) {
+        toast.error(`Falha na extração: ${err?.message || 'erro'}`);
+      }
+    },
+    [brandId, mutation]
+  );
+
+  const importUrl = useCallback(
+    async (url: string) => {
+      const trimmed = url.trim();
+      if (!brandId || !trimmed) return;
+      try {
+        toast.info('Extraindo marca a partir da URL...');
+        await mutation.mutateAsync({ id: brandId, payload: { source: 'url', url: trimmed } });
+      } catch (err: any) {
+        toast.error(`Falha na extração: ${err?.message || 'erro'}`);
+      }
+    },
+    [brandId, mutation]
+  );
 
   /** Escape hatch for callers that already built the payload (rare). */
-  const importData = useCallback(async (payload: BrandIngestPayload) => {
-    if (!brandId) return;
-    await mutation.mutateAsync({ id: brandId, payload });
-  }, [brandId, mutation]);
+  const importData = useCallback(
+    async (payload: BrandIngestPayload) => {
+      if (!brandId) return;
+      await mutation.mutateAsync({ id: brandId, payload });
+    },
+    [brandId, mutation]
+  );
 
   return {
     importFiles,

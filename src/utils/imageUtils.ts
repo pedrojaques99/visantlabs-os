@@ -12,12 +12,7 @@ export type SafeUrl = string;
  * List of dangerous protocols that should never be allowed
  * These can execute code or access sensitive resources
  */
-const DANGEROUS_PROTOCOLS = [
-  'javascript:',
-  'vbscript:',
-  'data:text/',
-  'data:application/',
-];
+const DANGEROUS_PROTOCOLS = ['javascript:', 'vbscript:', 'data:text/', 'data:application/'];
 
 /**
  * List of safe protocols for image URLs
@@ -28,7 +23,7 @@ const SAFE_PROTOCOLS = ['http:', 'https:', 'blob:'];
  * Validates if a URL is safe to use in an img tag src attribute.
  * Prevents XSS by blocking javascript: URIs and other non-standard protocols.
  * Allows: http:, https:, blob:, relative paths, and data:image/.
- * 
+ *
  * @param url - The URL to validate
  * @returns true if safe, false otherwise
  */
@@ -55,7 +50,9 @@ export function isSafeUrl(url: string): boolean {
   // Handle data: URIs - only allow images
   if (normalizedForProtocolCheck.startsWith('data:')) {
     // Strict check: must be data:image/ with valid MIME type
-    const dataMatch = normalizedForProtocolCheck.match(/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml|bmp|ico)/);
+    const dataMatch = normalizedForProtocolCheck.match(
+      /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml|bmp|ico)/
+    );
     return dataMatch !== null;
   }
 
@@ -76,7 +73,7 @@ export function isSafeUrl(url: string): boolean {
   // For absolute URLs, parse and validate protocol
   try {
     const parsed = new URL(trimmedUrl);
-    
+
     // Only allow safe protocols
     if (!SAFE_PROTOCOLS.includes(parsed.protocol)) {
       return false;
@@ -121,7 +118,7 @@ export function getImageUrl(mockup: Mockup): string {
     }
 
     // If it's a data URL, return as-is (validated by isSafeUrl in the first check if it was valid)
-    // If we are here, it means isSafeUrl(url) failed. 
+    // If we are here, it means isSafeUrl(url) failed.
     // If it was a DATA URL that failed isSafeUrl, it might be non-image data, so we skip it.
 
     // If relative URL in server context, return as-is (will need to be handled by client)
@@ -153,23 +150,35 @@ export function getImageUrl(mockup: Mockup): string {
  */
 
 export function isImageFromR2(mockup: Mockup): boolean {
-  return !!(mockup.imageUrl && typeof mockup.imageUrl === 'string' && mockup.imageUrl.length > 0 && isSafeUrl(mockup.imageUrl));
+  return !!(
+    mockup.imageUrl &&
+    typeof mockup.imageUrl === 'string' &&
+    mockup.imageUrl.length > 0 &&
+    isSafeUrl(mockup.imageUrl)
+  );
 }
 
 /**
  * Downloads an image from a URL by creating a temporary link element.
  * Handles both blob downloads (via fetch) and direct link fallbacks.
- * 
+ *
  * @param imageUrl - The URL of the image to download
  * @param filenamePrefix - The prefix for the downloaded filename
  */
-export async function downloadImage(imageUrl: string, filenamePrefix: string = 'image'): Promise<void> {
+export async function downloadImage(
+  imageUrl: string,
+  filenamePrefix: string = 'image'
+): Promise<void> {
   if (!imageUrl) return;
 
   const getExtension = (mimeOrUrl: string): string => {
     const map: Record<string, string> = {
-      'video/mp4': '.mp4', 'video/webm': '.webm', 'image/jpeg': '.jpg',
-      'image/webp': '.webp', 'image/gif': '.gif', 'image/png': '.png',
+      'video/mp4': '.mp4',
+      'video/webm': '.webm',
+      'image/jpeg': '.jpg',
+      'image/webp': '.webp',
+      'image/gif': '.gif',
+      'image/png': '.png',
     };
     for (const [mime, ext] of Object.entries(map)) {
       if (mimeOrUrl.includes(mime)) return ext;
@@ -202,7 +211,10 @@ export async function downloadImage(imageUrl: string, filenamePrefix: string = '
   }
 }
 
-export function loadImage(src: string, crossOrigin: string | null = 'anonymous'): Promise<HTMLImageElement> {
+export function loadImage(
+  src: string,
+  crossOrigin: string | null = 'anonymous'
+): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     if (crossOrigin) img.crossOrigin = crossOrigin;
@@ -211,5 +223,3 @@ export function loadImage(src: string, crossOrigin: string | null = 'anonymous')
     img.src = src;
   });
 }
-
-

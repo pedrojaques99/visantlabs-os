@@ -12,7 +12,8 @@ export const SEEDANCE_VIDEO_MODELS = {
   V1_0_LITE: 'seedance-1-0-lite' as const,
 } as const;
 
-export type SeedanceVideoModelId = typeof SEEDANCE_VIDEO_MODELS[keyof typeof SEEDANCE_VIDEO_MODELS];
+export type SeedanceVideoModelId =
+  (typeof SEEDANCE_VIDEO_MODELS)[keyof typeof SEEDANCE_VIDEO_MODELS];
 
 // ── Ordered list for UI display ────────────────────────────────────────────────
 export const SEEDANCE_VIDEO_MODEL_LIST: SeedanceVideoModelId[] = [

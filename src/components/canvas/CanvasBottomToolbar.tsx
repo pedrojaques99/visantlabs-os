@@ -70,22 +70,28 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
     return '#0a0a0a';
   }, [backgroundColor, isLight]);
 
-  const handleToolClick = useCallback((tool: CanvasTool) => {
-    if (tool === activeTool && tool === 'draw') {
-      onToggleDrawing?.();
-    } else {
-      onToolChange(tool);
-      if (tool === 'draw') {
+  const handleToolClick = useCallback(
+    (tool: CanvasTool) => {
+      if (tool === activeTool && tool === 'draw') {
         onToggleDrawing?.();
+      } else {
+        onToolChange(tool);
+        if (tool === 'draw') {
+          onToggleDrawing?.();
+        }
       }
-    }
-  }, [activeTool, onToolChange, onToggleDrawing]);
+    },
+    [activeTool, onToolChange, onToggleDrawing]
+  );
 
-  const handleShapeSelect = useCallback((type: 'rectangle' | 'circle' | 'line' | 'arrow') => {
-    onShapeTypeChange?.(type);
-    onToolChange('shapes');
-    setShowColorPicker(false);
-  }, [onShapeTypeChange, onToolChange]);
+  const handleShapeSelect = useCallback(
+    (type: 'rectangle' | 'circle' | 'line' | 'arrow') => {
+      onShapeTypeChange?.(type);
+      onToolChange('shapes');
+      setShowColorPicker(false);
+    },
+    [onShapeTypeChange, onToolChange]
+  );
 
   const closeMenus = useCallback(() => {
     setShowColorPicker(false);
@@ -180,9 +186,9 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
   const allColors = [
     colorPalette.primary.brand,
     colorPalette.primary.black,
-    ...colorPalette.basic.map(c => c.color),
-    ...colorPalette.secondary.map(c => c.color),
-    ...colorPalette.neutrals.map(c => c.color),
+    ...colorPalette.basic.map((c) => c.color),
+    ...colorPalette.secondary.map((c) => c.color),
+    ...colorPalette.neutrals.map((c) => c.color),
   ];
 
   const tools = [
@@ -258,11 +264,14 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)]" ref={toolbarRef}>
+    <div
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)]"
+      ref={toolbarRef}
+    >
       <div
         className={cn(
-          "flex items-center gap-1 backdrop-blur-xl border rounded-xl px-2 py-1.5 shadow-lg",
-          isLight ? "border-neutral-300/50" : "border-neutral-800/50"
+          'flex items-center gap-1 backdrop-blur-xl border rounded-xl px-2 py-1.5 shadow-lg',
+          isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
         )}
         style={{
           backgroundColor: isLight ? `${toolbarBg}ee` : `${toolbarBg}dd`,
@@ -276,7 +285,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
           return (
             <div key={tool.id} className="relative">
               <Tooltip content={tool.tooltip} position="top">
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     if (tool.id === 'color') {
                       setShowColorPicker(!showColorPicker);
@@ -295,8 +305,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                     isActive
                       ? 'bg-brand-cyan/20'
                       : isLight
-                        ? 'hover:bg-neutral-200/50'
-                        : 'hover:bg-neutral-800/50'
+                      ? 'hover:bg-neutral-200/50'
+                      : 'hover:bg-neutral-800/50'
                   )}
                   style={{
                     color: isActive ? 'var(--brand-cyan)' : textColors.muted,
@@ -326,18 +336,21 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
               {tool.id === 'type' && activeTool === 'type' && showFontPicker && (
                 <div
                   className={cn(
-                    "absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[180px]",
-                    isLight ? "border-neutral-300/50" : "border-neutral-800/50"
+                    'absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[180px]',
+                    isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
                   )}
                   style={{
                     backgroundColor: isLight ? `${toolbarBg}ff` : `${toolbarBg}ff`,
                     color: textColors.primary,
                   }}
                 >
-                  <div className="text-xs mb-2 px-1" style={{ color: textColors.muted }}>Font Family</div>
+                  <div className="text-xs mb-2 px-1" style={{ color: textColors.muted }}>
+                    Font Family
+                  </div>
                   <div className="space-y-1">
                     {availableFonts.map((font) => (
-                      <Button variant="ghost"
+                      <Button
+                        variant="ghost"
                         key={font.value}
                         onClick={() => {
                           onFontFamilyChange?.(font.value);
@@ -345,17 +358,16 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         }}
                         className={cn(
                           'w-full text-left px-3 py-2 rounded-md border transition-colors',
-                          isLight
-                            ? 'hover:bg-neutral-200/50'
-                            : 'hover:bg-neutral-800/50',
+                          isLight ? 'hover:bg-neutral-200/50' : 'hover:bg-neutral-800/50',
                           fontFamily === font.value
                             ? 'border-brand-cyan bg-brand-cyan/10'
                             : isLight
-                              ? 'border-neutral-300'
-                              : 'border-neutral-700'
+                            ? 'border-neutral-300'
+                            : 'border-neutral-700'
                         )}
                         style={{
-                          color: fontFamily === font.value ? 'var(--brand-cyan)' : textColors.primary,
+                          color:
+                            fontFamily === font.value ? 'var(--brand-cyan)' : textColors.primary,
                           ...getFontPreviewStyle(font.value),
                         }}
                       >
@@ -369,8 +381,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
               {tool.id === 'color' && showColorPicker && (
                 <div
                   className={cn(
-                    "absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[200px]",
-                    isLight ? "border-neutral-300/50" : "border-neutral-800/50"
+                    'absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[200px]',
+                    isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
                   )}
                   style={{
                     backgroundColor: isLight ? `${toolbarBg}ff` : `${toolbarBg}ff`,
@@ -379,7 +391,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                 >
                   {/* Primeira linha: Cor principal (grande) + Preto */}
                   <div className="flex gap-2 mb-2">
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       onClick={() => {
                         onColorChange?.(colorPalette.primary.brand);
                         setShowColorPicker(false);
@@ -389,8 +402,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         strokeColor === colorPalette.primary.brand
                           ? 'border-brand-cyan'
                           : isLight
-                            ? 'border-neutral-300 hover:border-neutral-400'
-                            : 'border-neutral-700 hover:border-neutral-600'
+                          ? 'border-neutral-300 hover:border-neutral-400'
+                          : 'border-neutral-700 hover:border-neutral-600'
                       )}
                       style={{ backgroundColor: colorPalette.primary.brand }}
                       aria-label="Brand cyan"
@@ -401,7 +414,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         </div>
                       )}
                     </Button>
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       onClick={() => {
                         onColorChange?.(colorPalette.primary.black);
                         setShowColorPicker(false);
@@ -411,8 +425,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         strokeColor === colorPalette.primary.black
                           ? 'border-brand-cyan'
                           : isLight
-                            ? 'border-neutral-300 hover:border-neutral-400'
-                            : 'border-neutral-700 hover:border-neutral-600'
+                          ? 'border-neutral-300 hover:border-neutral-400'
+                          : 'border-neutral-700 hover:border-neutral-600'
                       )}
                       style={{ backgroundColor: colorPalette.primary.black }}
                       aria-label="Black"
@@ -422,7 +436,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   {/* Segunda linha: Cores básicas */}
                   <div className="flex gap-1.5 mb-2">
                     {colorPalette.basic.map((item) => (
-                      <Button variant="ghost"
+                      <Button
+                        variant="ghost"
                         key={item.color}
                         onClick={() => {
                           onColorChange?.(item.color);
@@ -433,8 +448,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           strokeColor === item.color
                             ? 'border-brand-cyan'
                             : isLight
-                              ? 'border-neutral-300 hover:border-neutral-400'
-                              : 'border-neutral-700 hover:border-neutral-600'
+                            ? 'border-neutral-300 hover:border-neutral-400'
+                            : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -445,7 +460,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   {/* Terceira linha: Cores secundárias */}
                   <div className="flex gap-1.5 mb-2">
                     {colorPalette.secondary.map((item) => (
-                      <Button variant="ghost"
+                      <Button
+                        variant="ghost"
                         key={item.color}
                         onClick={() => {
                           onColorChange?.(item.color);
@@ -456,8 +472,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           strokeColor === item.color
                             ? 'border-brand-cyan'
                             : isLight
-                              ? 'border-neutral-300 hover:border-neutral-400'
-                              : 'border-neutral-700 hover:border-neutral-600'
+                            ? 'border-neutral-300 hover:border-neutral-400'
+                            : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -468,7 +484,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   {/* Quarta linha: Cores neutras */}
                   <div className="flex gap-1.5 mb-3">
                     {colorPalette.neutrals.map((item) => (
-                      <Button variant="ghost"
+                      <Button
+                        variant="ghost"
                         key={item.color}
                         onClick={() => {
                           onColorChange?.(item.color);
@@ -479,8 +496,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           strokeColor === item.color
                             ? 'border-brand-cyan'
                             : isLight
-                              ? 'border-neutral-300 hover:border-neutral-400'
-                              : 'border-neutral-700 hover:border-neutral-600'
+                            ? 'border-neutral-300 hover:border-neutral-400'
+                            : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -492,27 +509,33 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   {!allColors.includes(strokeColor) && (
                     <div
                       className={cn(
-                        "mb-3 pb-3 border-b",
-                        isLight ? "border-neutral-300/50" : "border-neutral-800/50"
+                        'mb-3 pb-3 border-b',
+                        isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
                       )}
                     >
-                      <div className="text-xs mb-1.5 px-1" style={{ color: textColors.muted }}>Current Color</div>
+                      <div className="text-xs mb-1.5 px-1" style={{ color: textColors.muted }}>
+                        Current Color
+                      </div>
                       <div className="flex items-center gap-2">
                         <div
                           className={cn(
-                            "w-8 h-8 rounded-md border",
-                            isLight ? "border-neutral-300" : "border-neutral-700"
+                            'w-8 h-8 rounded-md border',
+                            isLight ? 'border-neutral-300' : 'border-neutral-700'
                           )}
                           style={{ backgroundColor: strokeColor }}
                         />
-                        <div className="flex-1 text-xs" style={{ color: textColors.primary }}>{strokeColor.toUpperCase()}</div>
+                        <div className="flex-1 text-xs" style={{ color: textColors.primary }}>
+                          {strokeColor.toUpperCase()}
+                        </div>
                       </div>
                     </div>
                   )}
 
                   {/* Seletor de cor customizado */}
                   <div className="space-y-1.5">
-                    <div className="text-xs px-1" style={{ color: textColors.muted }}>Custom Color</div>
+                    <div className="text-xs px-1" style={{ color: textColors.muted }}>
+                      Custom Color
+                    </div>
                     <HexColorPicker
                       color={strokeColor.startsWith('#') ? strokeColor : '#00d9ff'}
                       onChange={(color) => onColorChange?.(color)}
@@ -532,7 +555,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
 
           return (
             <Tooltip key={shapeTool.id} content={shapeTool.tooltip} position="top">
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 onClick={() => handleShapeSelect(shapeTool.id)}
                 className={cn(
                   'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
@@ -540,8 +564,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   isActive
                     ? 'bg-brand-cyan/20'
                     : isLight
-                      ? 'hover:bg-neutral-200/50'
-                      : 'hover:bg-neutral-800/50'
+                    ? 'hover:bg-neutral-200/50'
+                    : 'hover:bg-neutral-800/50'
                 )}
                 style={{
                   color: isActive ? 'var(--brand-cyan)' : textColors.muted,
@@ -568,13 +592,15 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
         {onToggleToolbar && (
           <div className="relative ml-1 pl-1 border-l border-neutral-800/50">
             <Tooltip
-              content={isToolbarCollapsed
-                ? (t('canvasToolbar.expandToolbar') || 'Expand Toolbar')
-                : (t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar')
+              content={
+                isToolbarCollapsed
+                  ? t('canvasToolbar.expandToolbar') || 'Expand Toolbar'
+                  : t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar'
               }
               position="top"
             >
-              <Button variant="brand"
+              <Button
+                variant="brand"
                 onClick={onToggleToolbar}
                 className={cn(
                   'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
@@ -616,4 +642,3 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
     </div>
   );
 };
-

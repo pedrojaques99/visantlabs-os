@@ -147,13 +147,16 @@ export function generateDiff(
 /**
  * Format version list item for API response
  */
-export function formatVersionListItem(version: {
-  versionNumber: number;
-  changeNote: string | null;
-  changedFields: string[];
-  createdAt: Date;
-  createdBy: string | null;
-}, isCurrentVersion: boolean) {
+export function formatVersionListItem(
+  version: {
+    versionNumber: number;
+    changeNote: string | null;
+    changedFields: string[];
+    createdAt: Date;
+    createdBy: string | null;
+  },
+  isCurrentVersion: boolean
+) {
   return {
     versionNumber: version.versionNumber,
     changeNote: version.changeNote,

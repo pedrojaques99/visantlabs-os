@@ -4,8 +4,23 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Check, Cpu, Cloud, BarChart, ShoppingBag, Zap, Activity, Scale, HardHat, Coffee,
-  Gem, Scissors, Palette, Leaf, Factory, ChevronRight, Trophy
+  Check,
+  Cpu,
+  Cloud,
+  BarChart,
+  ShoppingBag,
+  Zap,
+  Activity,
+  Scale,
+  HardHat,
+  Coffee,
+  Gem,
+  Scissors,
+  Palette,
+  Leaf,
+  Factory,
+  ChevronRight,
+  Trophy,
 } from 'lucide-react';
 
 interface VibeGridProps {
@@ -16,8 +31,21 @@ interface VibeGridProps {
 }
 
 const ICON_MAP: Record<string, any> = {
-  Cpu, Cloud, BarChart, ShoppingBag, Zap, Activity, Scale, HardHat, Coffee,
-  Gem, Scissors, Palette, Leaf, Factory, Trophy
+  Cpu,
+  Cloud,
+  BarChart,
+  ShoppingBag,
+  Zap,
+  Activity,
+  Scale,
+  HardHat,
+  Coffee,
+  Gem,
+  Scissors,
+  Palette,
+  Leaf,
+  Factory,
+  Trophy,
 };
 
 export const VibeGrid: React.FC<VibeGridProps> = ({
@@ -48,26 +76,30 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                 key={seg.id}
                 onClick={() => onSelectSegment(seg.id as VibeSegment)}
                 className={cn(
-                  "relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-all duration-300 group overflow-hidden border",
+                  'relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-all duration-300 group overflow-hidden border',
                   isSelected
-                    ? "bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]"
-                    : "bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80"
+                    ? 'bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]'
+                    : 'bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80'
                 )}
               >
                 {/* Icon Container */}
-                <div className={cn(
-                  "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
-                  isSelected
-                    ? "bg-brand-cyan text-black shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.3)]"
-                    : "bg-neutral-800/50 text-neutral-500 group-hover:text-neutral-300 group-hover:bg-neutral-800"
-                )}>
+                <div
+                  className={cn(
+                    'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
+                    isSelected
+                      ? 'bg-brand-cyan text-black shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.3)]'
+                      : 'bg-neutral-800/50 text-neutral-500 group-hover:text-neutral-300 group-hover:bg-neutral-800'
+                  )}
+                >
                   <Icon size={16} strokeWidth={isSelected ? 2.5 : 2} />
                 </div>
 
-                <span className={cn(
-                  "text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight",
-                  isSelected ? "text-brand-cyan" : "text-neutral-500 group-hover:text-neutral-300"
-                )}>
+                <span
+                  className={cn(
+                    'text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
+                    isSelected ? 'text-brand-cyan' : 'text-neutral-500 group-hover:text-neutral-300'
+                  )}
+                >
                   {seg.name}
                 </span>
 
@@ -101,27 +133,31 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                 onClick={() => onSelectStyle(style.id as VibeStyle)}
                 disabled={!selectedSegment}
                 className={cn(
-                  "relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-all duration-300 group overflow-hidden border",
-                  !selectedSegment && "opacity-20 cursor-not-allowed grayscale",
+                  'relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-all duration-300 group overflow-hidden border',
+                  !selectedSegment && 'opacity-20 cursor-not-allowed grayscale',
                   isSelected
-                    ? "bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]"
-                    : "bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80"
+                    ? 'bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]'
+                    : 'bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80'
                 )}
               >
                 {/* Icon Container */}
-                <div className={cn(
-                  "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
-                  isSelected
-                    ? "bg-brand-cyan text-black shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.3)]"
-                    : "bg-neutral-800/50 text-neutral-500 group-hover:text-neutral-300 group-hover:bg-neutral-800"
-                )}>
+                <div
+                  className={cn(
+                    'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
+                    isSelected
+                      ? 'bg-brand-cyan text-black shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.3)]'
+                      : 'bg-neutral-800/50 text-neutral-500 group-hover:text-neutral-300 group-hover:bg-neutral-800'
+                  )}
+                >
                   <Icon size={16} strokeWidth={isSelected ? 2.5 : 2} />
                 </div>
 
-                <span className={cn(
-                  "text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight",
-                  isSelected ? "text-brand-cyan" : "text-neutral-500 group-hover:text-neutral-300"
-                )}>
+                <span
+                  className={cn(
+                    'text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
+                    isSelected ? 'text-brand-cyan' : 'text-neutral-500 group-hover:text-neutral-300'
+                  )}
+                >
                   {style.name}
                 </span>
 

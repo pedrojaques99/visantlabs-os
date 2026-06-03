@@ -6,16 +6,34 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Plus, FileText, RefreshCw, Settings, Search, MoreVertical,
-  Copy, Trash2, X, Folder, FolderOpen, Zap, Eye,
+  Plus,
+  FileText,
+  RefreshCw,
+  Settings,
+  Search,
+  MoreVertical,
+  Copy,
+  Trash2,
+  X,
+  Folder,
+  FolderOpen,
+  Zap,
+  Eye,
 } from 'lucide-react';
 import { creativeProjectApi } from '@/services/creativeProjectApi';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { useDuplicateGuideline, useDeleteGuideline, useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
+import {
+  useDuplicateGuideline,
+  useDeleteGuideline,
+  useUpdateGuideline,
+} from '@/hooks/queries/useBrandGuidelines';
 interface GuidelinesSidebarProps {
   guidelines: BrandGuideline[];
   selectedId: string | null;
@@ -24,7 +42,10 @@ interface GuidelinesSidebarProps {
 }
 
 export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
-  guidelines, selectedId, onSelect, onCreate,
+  guidelines,
+  selectedId,
+  onSelect,
+  onCreate,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -45,20 +66,26 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
   const folders = useMemo(() => {
     const s = new Set<string>();
-    guidelines.forEach(g => { if (g.folder) s.add(g.folder); });
+    guidelines.forEach((g) => {
+      if (g.folder) s.add(g.folder);
+    });
     return Array.from(s).sort();
   }, [guidelines]);
 
-  const filtered = useMemo(() => guidelines.filter(g => {
-    if (selectedFolder && g.folder !== selectedFolder) return false;
-    if (searchQuery.trim()) {
-      const term = searchQuery.toLowerCase();
-      const name = (g.identity?.name || g.name || '').toLowerCase();
-      const folder = (g.folder || '').toLowerCase();
-      if (!name.includes(term) && !folder.includes(term)) return false;
-    }
-    return true;
-  }), [guidelines, searchQuery, selectedFolder]);
+  const filtered = useMemo(
+    () =>
+      guidelines.filter((g) => {
+        if (selectedFolder && g.folder !== selectedFolder) return false;
+        if (searchQuery.trim()) {
+          const term = searchQuery.toLowerCase();
+          const name = (g.identity?.name || g.name || '').toLowerCase();
+          const folder = (g.folder || '').toLowerCase();
+          if (!name.includes(term) && !folder.includes(term)) return false;
+        }
+        return true;
+      }),
+    [guidelines, searchQuery, selectedFolder]
+  );
 
   const handleDuplicate = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -84,9 +111,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
   return (
     <div className="flex flex-col h-full bg-transparent p-4 lg:p-6 space-y-6 min-h-0 overflow-y-auto custom-scrollbar">
       <div className="flex-1 space-y-4">
-        <h2 className="text-[11px] font-semibold text-neutral-500 px-1">
-          Design Systems
-        </h2>
+        <h2 className="text-[11px] font-semibold text-neutral-500 px-1">Design Systems</h2>
 
         {/* Search */}
         <div className="relative px-1">
@@ -99,7 +124,10 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             className="h-8 pl-8 pr-8 text-xs bg-white/[0.03] border-neutral-800 placeholder:text-neutral-600"
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors">
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors"
+            >
               <X size={12} />
             </button>
           )}
@@ -110,20 +138,30 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           <div className="flex flex-wrap gap-1.5 px-1">
             <button
               onClick={() => setSelectedFolder(null)}
-              className={cn("flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all",
-                selectedFolder === null ? "bg-white/5 text-neutral-200 border border-white/10" : "bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300"
+              className={cn(
+                'flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all',
+                selectedFolder === null
+                  ? 'bg-white/5 text-neutral-200 border border-white/10'
+                  : 'bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300'
               )}
             >
-              <FolderOpen size={10} />All
+              <FolderOpen size={10} />
+              All
             </button>
-            {folders.map(folder => (
-              <button key={folder} onClick={() => setSelectedFolder(folder)}
-                className={cn("flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all truncate max-w-[120px]",
-                  selectedFolder === folder ? "bg-white/5 text-neutral-200 border border-white/10" : "bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300"
+            {folders.map((folder) => (
+              <button
+                key={folder}
+                onClick={() => setSelectedFolder(folder)}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all truncate max-w-[120px]',
+                  selectedFolder === folder
+                    ? 'bg-white/5 text-neutral-200 border border-white/10'
+                    : 'bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300'
                 )}
                 title={folder}
               >
-                <Folder size={10} />{folder}
+                <Folder size={10} />
+                {folder}
               </button>
             ))}
           </div>
@@ -133,53 +171,74 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
         <div className="flex flex-col gap-0.5">
           {filtered.map((g) => {
             const brandName = g.identity?.name || g.name || 'Untitled';
-            
-            // Improved avatar selection algorithm
-            const brandLogo = g.logos?.find(l => {
-              const v = (l.variant || '').toLowerCase();
-              return v === 'icon' || v === 'symbol' || v === 'mark' || v === 'avatar' || v === 'favicon';
-            }) || g.logos?.find(l => (l.variant || '').toLowerCase() === 'primary') || g.logos?.[0];
 
-            const initials = brandName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            // Improved avatar selection algorithm
+            const brandLogo =
+              g.logos?.find((l) => {
+                const v = (l.variant || '').toLowerCase();
+                return (
+                  v === 'icon' ||
+                  v === 'symbol' ||
+                  v === 'mark' ||
+                  v === 'avatar' ||
+                  v === 'favicon'
+                );
+              }) ||
+              g.logos?.find((l) => (l.variant || '').toLowerCase() === 'primary') ||
+              g.logos?.[0];
+
+            const initials = brandName
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .substring(0, 2)
+              .toUpperCase();
 
             return (
               <button
                 key={g.id}
                 onClick={() => onSelect(g)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-xs border group/item",
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-xs border group/item',
                   selectedId === g.id
-                    ? "text-neutral-200 bg-white/5 border-white/10"
-                    : "text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]"
+                    ? 'text-neutral-200 bg-white/5 border-white/10'
+                    : 'text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]'
                 )}
               >
-                <div className={cn(
-                  "w-5 h-5 rounded-md overflow-hidden border flex items-center justify-center shrink-0 transition-all",
-                  selectedId === g.id ? "border-white/20 bg-white/5" : "border-neutral-800 bg-neutral-950/50"
-                )}>
+                <div
+                  className={cn(
+                    'w-5 h-5 rounded-md overflow-hidden border flex items-center justify-center shrink-0 transition-all',
+                    selectedId === g.id
+                      ? 'border-white/20 bg-white/5'
+                      : 'border-neutral-800 bg-neutral-950/50'
+                  )}
+                >
                   {brandLogo?.url ? (
-                    <img 
-                      src={brandLogo.url} 
-                      alt="" 
-                      className="w-full h-full object-cover opacity-60 group-hover/item:opacity-100 transition-opacity" 
+                    <img
+                      src={brandLogo.url}
+                      alt=""
+                      className="w-full h-full object-cover opacity-60 group-hover/item:opacity-100 transition-opacity"
                     />
                   ) : (
                     <span className="text-[10px] font-bold opacity-30">{initials}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <span className="truncate block font-medium">
-                    {brandName}
-                  </span>
+                  <span className="truncate block font-medium">{brandName}</span>
                   <div className="flex items-center gap-2 mt-0.5">
                     {g.folder && (
                       <span className="text-[10px] text-neutral-600 flex items-center gap-1">
-                        <Folder size={8} />{g.folder}
+                        <Folder size={8} />
+                        {g.folder}
                       </span>
                     )}
                     {(g as any).isPublic && (g as any).publicViews > 0 && (
-                      <span className="text-[10px] text-neutral-600 flex items-center gap-0.5" title="Public page views">
-                        <Eye size={8} />{(g as any).publicViews}
+                      <span
+                        className="text-[10px] text-neutral-600 flex items-center gap-0.5"
+                        title="Public page views"
+                      >
+                        <Eye size={8} />
+                        {(g as any).publicViews}
                       </span>
                     )}
                   </div>
@@ -197,14 +256,28 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                       </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="min-w-[120px]">
-                      <DropdownMenuItem onClick={(e) => handleSetFolder(g.id!, g.folder, e as any)} className="text-xs gap-2">
-                        <Folder size={12} />{g.folder ? 'Change Folder' : 'Set Folder'}
+                      <DropdownMenuItem
+                        onClick={(e) => handleSetFolder(g.id!, g.folder, e as any)}
+                        className="text-xs gap-2"
+                      >
+                        <Folder size={12} />
+                        {g.folder ? 'Change Folder' : 'Set Folder'}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => handleDuplicate(g.id!, e as any)} className="text-xs gap-2" disabled={duplicateMutation.isPending}>
-                        <Copy size={12} />Duplicate
+                      <DropdownMenuItem
+                        onClick={(e) => handleDuplicate(g.id!, e as any)}
+                        className="text-xs gap-2"
+                        disabled={duplicateMutation.isPending}
+                      >
+                        <Copy size={12} />
+                        Duplicate
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => handleDelete(g.id!, e as any)} className="text-xs gap-2 text-destructive focus:text-destructive" disabled={deleteMutation.isPending}>
-                        <Trash2 size={12} />Delete
+                      <DropdownMenuItem
+                        onClick={(e) => handleDelete(g.id!, e as any)}
+                        className="text-xs gap-2 text-destructive focus:text-destructive"
+                        disabled={deleteMutation.isPending}
+                      >
+                        <Trash2 size={12} />
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -216,7 +289,12 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           {filtered.length === 0 && searchQuery && (
             <div className="px-3 py-6 text-center">
               <p className="text-[11px] text-neutral-600">No results for "{searchQuery}"</p>
-              <button onClick={() => setSearchQuery('')} className="mt-2 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">Clear</button>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="mt-2 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+              >
+                Clear
+              </button>
             </div>
           )}
 
@@ -224,7 +302,8 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             onClick={onCreate}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 border border-dashed border-neutral-800 text-xs hover:border-white/10 hover:text-neutral-400 transition-all mt-1"
           >
-            <Plus size={12} /><span>New Design System</span>
+            <Plus size={12} />
+            <span>New Design System</span>
           </button>
         </div>
       </div>
@@ -234,12 +313,15 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
         <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">
           <div className="flex items-center justify-between px-1">
             <p className="text-[11px] font-medium text-neutral-600">Recent</p>
-            <Link to={`/create?brandId=${selectedId}`} className="text-[11px] text-neutral-700 hover:text-neutral-400 transition-colors">
+            <Link
+              to={`/create?brandId=${selectedId}`}
+              className="text-[11px] text-neutral-700 hover:text-neutral-400 transition-colors"
+            >
               + New
             </Link>
           </div>
           <div className="grid grid-cols-4 gap-1">
-            {recentProjects.map(p => (
+            {recentProjects.map((p) => (
               <Link key={p.id} to={`/create?project=${p.id}`} title={p.name}>
                 <div className="aspect-square rounded overflow-hidden border border-neutral-800 bg-neutral-900/60 hover:border-white/15 transition-colors">
                   {p.thumbnailUrl ? (
@@ -261,15 +343,20 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           <p className="text-[11px] font-medium text-neutral-700">Sync from Branding Machine</p>
           <Button
             variant="subtle"
-            onClick={() => { toast.info("Select a project from Branding Machine to sync."); navigate('/branding-machine'); }}
+            onClick={() => {
+              toast.info('Select a project from Branding Machine to sync.');
+              navigate('/branding-machine');
+            }}
             className="w-full h-8 text-xs gap-2"
           >
-            <RefreshCw size={11} />Sync Project
+            <RefreshCw size={11} />
+            Sync Project
           </Button>
         </div>
         <div className="px-1 border-t border-white/[0.03] pt-3">
           <div className="flex items-center gap-2 text-[11px] text-neutral-600 px-1">
-            <Settings size={11} className="opacity-60" />Settings
+            <Settings size={11} className="opacity-60" />
+            Settings
           </div>
         </div>
       </div>

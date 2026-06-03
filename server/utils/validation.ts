@@ -13,7 +13,8 @@ import { ObjectId } from 'mongodb';
  * Uses possessive quantifiers pattern to prevent catastrophic backtracking
  * Max email length: 254 characters (RFC 5321)
  */
-const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+const EMAIL_REGEX =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 /**
  * Validates email format using ReDoS-resistant regex
@@ -22,14 +23,14 @@ const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-
  */
 export function isValidEmail(email: string): boolean {
   if (!email || typeof email !== 'string') return false;
-  
+
   // RFC 5321 max email length
   if (email.length > 254) return false;
-  
+
   // Local part max length is 64 characters
   const atIndex = email.indexOf('@');
   if (atIndex > 64) return false;
-  
+
   return EMAIL_REGEX.test(email);
 }
 
@@ -41,10 +42,10 @@ export function isValidEmail(email: string): boolean {
  */
 export function isValidObjectId(id: string): boolean {
   if (!id || typeof id !== 'string') return false;
-  
+
   // ObjectId is exactly 24 hex characters
   if (!/^[a-fA-F0-9]{24}$/.test(id)) return false;
-  
+
   // Verify it's a valid ObjectId that round-trips correctly
   try {
     return ObjectId.isValid(id) && new ObjectId(id).toString() === id;
@@ -95,15 +96,15 @@ export function sanitizeMongoQuery<T extends Record<string, unknown>>(obj: T): P
     } else if (typeof value === 'object' && !Array.isArray(value)) {
       // Check if nested object contains any $ operators
       const nestedObj = value as Record<string, unknown>;
-      const hasOperators = Object.keys(nestedObj).some(k => k.startsWith('$'));
-      
+      const hasOperators = Object.keys(nestedObj).some((k) => k.startsWith('$'));
+
       if (!hasOperators) {
         sanitized[key] = sanitizeMongoQuery(nestedObj);
       }
       // Skip objects with operators entirely
     } else if (Array.isArray(value)) {
       // For arrays, sanitize each element if it's an object
-      sanitized[key] = value.map(item => {
+      sanitized[key] = value.map((item) => {
         if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
           return sanitizeMongoQuery(item as Record<string, unknown>);
         }
@@ -128,7 +129,7 @@ export function sanitizeMongoQuery<T extends Record<string, unknown>>(obj: T): P
 export function sanitizeLogValue(value: unknown, maxLength = 200): string {
   if (value === null) return 'null';
   if (value === undefined) return 'undefined';
-  
+
   if (typeof value === 'string') {
     // Remove potential sensitive data patterns
     let sanitized = value
@@ -136,19 +137,19 @@ export function sanitizeLogValue(value: unknown, maxLength = 200): string {
       .replace(/token['":\s]*['"]?[^'"}\s,]+/gi, 'token:[REDACTED]')
       .replace(/api[_-]?key['":\s]*['"]?[^'"}\s,]+/gi, 'apiKey:[REDACTED]')
       .replace(/secret['":\s]*['"]?[^'"}\s,]+/gi, 'secret:[REDACTED]');
-    
+
     // Truncate long strings
     if (sanitized.length > maxLength) {
       sanitized = sanitized.substring(0, maxLength) + '...[truncated]';
     }
-    
+
     return sanitized;
   }
-  
+
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
   }
-  
+
   if (typeof value === 'object') {
     try {
       const str = JSON.stringify(value);
@@ -160,7 +161,7 @@ export function sanitizeLogValue(value: unknown, maxLength = 200): string {
       return '[Object]';
     }
   }
-  
+
   return String(value);
 }
 
@@ -171,17 +172,21 @@ export function sanitizeLogValue(value: unknown, maxLength = 200): string {
  * @param max - Maximum allowed value (default Number.MAX_SAFE_INTEGER)
  * @returns true if valid positive integer
  */
-export function isValidPositiveInt(value: unknown, min = 1, max = Number.MAX_SAFE_INTEGER): boolean {
+export function isValidPositiveInt(
+  value: unknown,
+  min = 1,
+  max = Number.MAX_SAFE_INTEGER
+): boolean {
   if (typeof value === 'string') {
     const parsed = parseInt(value, 10);
     if (isNaN(parsed)) return false;
     return Number.isInteger(parsed) && parsed >= min && parsed <= max;
   }
-  
+
   if (typeof value === 'number') {
     return Number.isInteger(value) && value >= min && value <= max;
   }
-  
+
   return false;
 }
 
@@ -196,13 +201,13 @@ export function pickAllowedFields<T extends Record<string, unknown>>(
   allowedFields: (keyof T)[]
 ): Partial<T> {
   const result: Partial<T> = {};
-  
+
   for (const field of allowedFields) {
     if (field in obj) {
       result[field] = obj[field];
     }
   }
-  
+
   return result;
 }
 
@@ -230,7 +235,18 @@ export function ensureOptionalBoolean(val: unknown): boolean | undefined {
 }
 
 /** Allowed aspect ratio values for presets */
-export const VALID_ASPECT_RATIOS = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'] as const;
+export const VALID_ASPECT_RATIOS = [
+  '9:16',
+  '21:9',
+  '2:3',
+  '3:2',
+  '3:4',
+  '4:3',
+  '4:5',
+  '5:4',
+  '16:9',
+  '1:1',
+] as const;
 
 /**
  * Validates aspect ratio is in the allowed whitelist

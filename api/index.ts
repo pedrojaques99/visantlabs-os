@@ -54,98 +54,101 @@ app.set('trust proxy', 1); // Trust first proxy (Vercel)
 
 // CORS configuration - whitelist allowed origins
 const getAllowedOrigins = (): string[] => {
-    const frontendUrl = process.env.FRONTEND_URL || '';
-    const origins: string[] = [];
-    
-    // Parse FRONTEND_URL which may contain comma-separated values
-    if (frontendUrl) {
-        frontendUrl.split(',').forEach(url => {
-            const trimmed = url.trim();
-            if (trimmed) {
-                origins.push(trimmed);
-                // Also allow with/without trailing slash
-                origins.push(trimmed.replace(/\/$/, ''));
-            }
-        });
-    }
-    
-    // Production origins (fallback)
-    origins.push('https://www.visantlabs.com');
-    origins.push('https://visantlabs.com');
-    origins.push('https://visantlabs-os.vercel.app');
-    
-    // Development origins
-    if (isDev) {
-        origins.push('http://localhost:3000');
-        origins.push('http://localhost:3001');
-        origins.push('http://localhost:5173');
-        origins.push('http://127.0.0.1:3000');
-        origins.push('http://127.0.0.1:5173');
-    }
-    
-    return [...new Set(origins)]; // Remove duplicates
+  const frontendUrl = process.env.FRONTEND_URL || '';
+  const origins: string[] = [];
+
+  // Parse FRONTEND_URL which may contain comma-separated values
+  if (frontendUrl) {
+    frontendUrl.split(',').forEach((url) => {
+      const trimmed = url.trim();
+      if (trimmed) {
+        origins.push(trimmed);
+        // Also allow with/without trailing slash
+        origins.push(trimmed.replace(/\/$/, ''));
+      }
+    });
+  }
+
+  // Production origins (fallback)
+  origins.push('https://www.visantlabs.com');
+  origins.push('https://visantlabs.com');
+  origins.push('https://visantlabs-os.vercel.app');
+
+  // Development origins
+  if (isDev) {
+    origins.push('http://localhost:3000');
+    origins.push('http://localhost:3001');
+    origins.push('http://localhost:5173');
+    origins.push('http://127.0.0.1:3000');
+    origins.push('http://127.0.0.1:5173');
+  }
+
+  return [...new Set(origins)]; // Remove duplicates
 };
 
-app.use(cors({
+app.use(
+  cors({
     origin: (origin, callback) => {
-        const allowedOrigins = getAllowedOrigins();
-        
-        // Allow requests with no origin (like mobile apps, curl, or Postman)
-        // In production, you may want to be stricter
-        if (!origin) {
-            return callback(null, true);
-        }
-        
-        if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            // Log blocked origin for debugging
-            console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
-            // Still allow in case of misconfiguration to avoid breaking the app
-            // In strict mode, you would use: callback(new Error('Not allowed by CORS'));
-            callback(null, true);
-        }
+      const allowedOrigins = getAllowedOrigins();
+
+      // Allow requests with no origin (like mobile apps, curl, or Postman)
+      // In production, you may want to be stricter
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        // Log blocked origin for debugging
+        console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
+        // Still allow in case of misconfiguration to avoid breaking the app
+        // In strict mode, you would use: callback(new Error('Not allowed by CORS'));
+        callback(null, true);
+      }
     },
     credentials: true,
-}));
+  })
+);
 
 // Middleware to normalize routes - remove /api prefix if present (BEFORE body parsing)
 app.use((req, res, next) => {
-    const originalUrl = req.url;
+  const originalUrl = req.url;
 
-    // Remove /api prefix if present (Vercel routes /api/* to this handler)
-    // Note: req.path is read-only, so we only modify req.url
-    if (req.url) {
-        if (req.url.startsWith('/api/')) {
-            req.url = req.url.replace(/^\/api/, '');
-        } else if (req.url.startsWith('/api')) {
-            req.url = req.url.replace(/^\/api/, '') || '/';
-        }
+  // Remove /api prefix if present (Vercel routes /api/* to this handler)
+  // Note: req.path is read-only, so we only modify req.url
+  if (req.url) {
+    if (req.url.startsWith('/api/')) {
+      req.url = req.url.replace(/^\/api/, '');
+    } else if (req.url.startsWith('/api')) {
+      req.url = req.url.replace(/^\/api/, '') || '/';
     }
+  }
 
-    // Also update req.originalUrl if needed
-    if (req.originalUrl && req.originalUrl.startsWith('/api/')) {
-        req.originalUrl = req.originalUrl.replace(/^\/api/, '');
-    }
+  // Also update req.originalUrl if needed
+  if (req.originalUrl && req.originalUrl.startsWith('/api/')) {
+    req.originalUrl = req.originalUrl.replace(/^\/api/, '');
+  }
 
-    if (originalUrl !== req.url && isDev) {
-        console.log(`[Route Normalization] ${req.method} ${originalUrl} -> ${req.url}`);
-    }
+  if (originalUrl !== req.url && isDev) {
+    console.log(`[Route Normalization] ${req.method} ${originalUrl} -> ${req.url}`);
+  }
 
-    next();
+  next();
 });
 
 // IMPORTANT: Skip body parsing for webhook routes - they should be handled by dedicated handler
 // But if they somehow reach here, we need to preserve raw body
 app.use((req, res, next) => {
-    const isWebhook = req.url?.includes('/payments/webhook');
-    if (isWebhook && req.method === 'POST') {
-        // Don't parse body for webhooks - preserve as raw
-        // This should not happen if vercel.json routing is correct
-        if (isDev) console.warn('⚠️ Webhook request reached Express middleware - should use dedicated handler');
-        return next();
-    }
-    next();
+  const isWebhook = req.url?.includes('/payments/webhook');
+  if (isWebhook && req.method === 'POST') {
+    // Don't parse body for webhooks - preserve as raw
+    // This should not happen if vercel.json routing is correct
+    if (isDev)
+      console.warn('⚠️ Webhook request reached Express middleware - should use dedicated handler');
+    return next();
+  }
+  next();
 });
 
 // IMPORTANT: Stripe webhook needs raw body (Buffer), so we handle it BEFORE json parser
@@ -155,29 +158,31 @@ app.use('/payments/webhook', express.raw({ type: 'application/json' }));
 // JSON parser for all other routes (AFTER webhook handler)
 // Only parse JSON if it's NOT a webhook request
 app.use((req, res, next) => {
-    const isWebhook = req.url?.includes('/payments/webhook');
-    if (isWebhook && req.method === 'POST') {
-        // Skip JSON parsing for webhooks
-        return next();
-    }
-    express.json({ limit: '50mb' })(req, res, next);
+  const isWebhook = req.url?.includes('/payments/webhook');
+  if (isWebhook && req.method === 'POST') {
+    // Skip JSON parsing for webhooks
+    return next();
+  }
+  express.json({ limit: '50mb' })(req, res, next);
 });
 
 app.use((req, res, next) => {
-    const isWebhook = req.url?.includes('/payments/webhook');
-    if (isWebhook && req.method === 'POST') {
-        // Skip URL encoding for webhooks
-        return next();
-    }
-    express.urlencoded({ extended: true, limit: '50mb' })(req, res, next);
+  const isWebhook = req.url?.includes('/payments/webhook');
+  if (isWebhook && req.method === 'POST') {
+    // Skip URL encoding for webhooks
+    return next();
+  }
+  express.urlencoded({ extended: true, limit: '50mb' })(req, res, next);
 });
 
 // Debug middleware to log all incoming requests (before routes)
 app.use((req, res, next) => {
-    if (req.url?.includes('/video') && isDev) {
-        console.log(`[VIDEO REQUEST] ${req.method} ${req.url} | path: ${req.path} | originalUrl: ${req.originalUrl}`);
-    }
-    next();
+  if (req.url?.includes('/video') && isDev) {
+    console.log(
+      `[VIDEO REQUEST] ${req.method} ${req.url} | path: ${req.path} | originalUrl: ${req.originalUrl}`
+    );
+  }
+  next();
 });
 
 // Routes (no /api prefix needed in Vercel)
@@ -225,7 +230,7 @@ const healthCheckLimiter = rateLimit({
 });
 
 app.get('/health', healthCheckLimiter, (req, res) => {
-    res.json({ status: 'ok', message: 'Server is running' });
+  res.json({ status: 'ok', message: 'Server is running' });
 });
 
 // MCP: discovery (no auth)
@@ -245,7 +250,11 @@ app.get('/mcp', (_req, res) => {
 app.post('/mcp', async (req: AuthRequest, res) => {
   const authed = await authenticateApiKey(req);
   if (!authed) {
-    res.status(401).json({ error: 'Unauthorized — provide a valid visant_sk_ token in Authorization: Bearer header' });
+    res
+      .status(401)
+      .json({
+        error: 'Unauthorized — provide a valid visant_sk_ token in Authorization: Bearer header',
+      });
     return;
   }
 
@@ -282,70 +291,73 @@ app.use(errorHandler);
 // MongoDB connection (reused across invocations)
 let mongoConnectionPromise: Promise<void> | null = null;
 const ensureMongoConnection = async () => {
-    if (!mongoConnectionPromise) {
-        mongoConnectionPromise = (async () => {
-            try {
-                await connectToMongoDB();
-            } catch (error) {
-                console.error('Failed to connect to MongoDB:', error);
-                mongoConnectionPromise = null;
-                throw error;
-            }
-        })();
-    }
-    return mongoConnectionPromise;
+  if (!mongoConnectionPromise) {
+    mongoConnectionPromise = (async () => {
+      try {
+        await connectToMongoDB();
+      } catch (error) {
+        console.error('Failed to connect to MongoDB:', error);
+        mongoConnectionPromise = null;
+        throw error;
+      }
+    })();
+  }
+  return mongoConnectionPromise;
 };
 
 // Vercel serverless function handler
 export default async (req: any, res: any) => {
-    try {
-        // Log incoming request for debugging
-        const incomingUrl = req.url || req.path || '';
-        if (incomingUrl.includes('/video') && isDev) {
-            console.log(`[Vercel Handler] Incoming request: ${req.method} ${incomingUrl}`);
-            console.log(`[Vercel Handler] req.url: ${req.url}, req.path: ${req.path}, req.originalUrl: ${req.originalUrl}`);
-        }
-
-        // IMPORTANT: For Stripe webhooks, DO NOT process through Express
-        // The dedicated handler at api/payments/webhook.ts should handle it directly
-        // Check if this is a webhook request
-        const url = req.url || req.path || '';
-        const isWebhookRequest = url.includes('/payments/webhook');
-
-        if (isWebhookRequest && req.method === 'POST') {
-            // This should not happen - the dedicated handler should catch it first
-            // But if it does, we need to preserve the raw body
-            if (isDev) {
-                console.log('⚠️ Webhook request reached api/index.ts - this should not happen');
-                console.log('   URL:', url);
-                console.log('   Body type:', typeof req.body);
-                console.log('   Body is Buffer:', Buffer.isBuffer(req.body));
-            }
-
-            // If body is already parsed, we can't recover the raw body
-            // Return error to indicate the issue
-            if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
-                if (isDev) console.error('❌ Body was already parsed as JSON - cannot verify signature');
-                return res.status(400).json({
-                    error: 'Webhook Error: Body was parsed before signature verification. Raw body required.',
-                    hint: 'The webhook should be handled by api/payments/webhook.ts directly, not through api/index.ts'
-                });
-            }
-
-            // If we somehow get here with raw body, try to pass it through
-            // But ideally this should not happen
-            if (isDev) console.warn('⚠️ Webhook request in api/index.ts - attempting to preserve raw body');
-        }
-
-        await ensureMongoConnection();
-        app(req, res);
-    } catch (error: any) {
-        console.error('Handler error:', error);
-        if (!res.headersSent) {
-            res.status(500).json({
-                error: 'Internal server error',
-                message: error.message || 'A server error has occurred'
-            });
-        }
+  try {
+    // Log incoming request for debugging
+    const incomingUrl = req.url || req.path || '';
+    if (incomingUrl.includes('/video') && isDev) {
+      console.log(`[Vercel Handler] Incoming request: ${req.method} ${incomingUrl}`);
+      console.log(
+        `[Vercel Handler] req.url: ${req.url}, req.path: ${req.path}, req.originalUrl: ${req.originalUrl}`
+      );
     }
+
+    // IMPORTANT: For Stripe webhooks, DO NOT process through Express
+    // The dedicated handler at api/payments/webhook.ts should handle it directly
+    // Check if this is a webhook request
+    const url = req.url || req.path || '';
+    const isWebhookRequest = url.includes('/payments/webhook');
+
+    if (isWebhookRequest && req.method === 'POST') {
+      // This should not happen - the dedicated handler should catch it first
+      // But if it does, we need to preserve the raw body
+      if (isDev) {
+        console.log('⚠️ Webhook request reached api/index.ts - this should not happen');
+        console.log('   URL:', url);
+        console.log('   Body type:', typeof req.body);
+        console.log('   Body is Buffer:', Buffer.isBuffer(req.body));
+      }
+
+      // If body is already parsed, we can't recover the raw body
+      // Return error to indicate the issue
+      if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+        if (isDev) console.error('❌ Body was already parsed as JSON - cannot verify signature');
+        return res.status(400).json({
+          error: 'Webhook Error: Body was parsed before signature verification. Raw body required.',
+          hint: 'The webhook should be handled by api/payments/webhook.ts directly, not through api/index.ts',
+        });
+      }
+
+      // If we somehow get here with raw body, try to pass it through
+      // But ideally this should not happen
+      if (isDev)
+        console.warn('⚠️ Webhook request in api/index.ts - attempting to preserve raw body');
+    }
+
+    await ensureMongoConnection();
+    app(req, res);
+  } catch (error: any) {
+    console.error('Handler error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: error.message || 'A server error has occurred',
+      });
+    }
+  }
 };

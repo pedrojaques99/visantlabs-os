@@ -78,9 +78,7 @@ export const FigmaTokenSetup: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Figma size={18} className="text-[#F24E1E]" />
-          <h3 className="text-lg font-bold font-manrope text-neutral-200">
-            Figma Integration
-          </h3>
+          <h3 className="text-lg font-bold font-manrope text-neutral-200">Figma Integration</h3>
         </div>
         {isConnected && (
           <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full flex items-center gap-1.5">
@@ -91,7 +89,8 @@ export const FigmaTokenSetup: React.FC = () => {
       </div>
 
       <p className="text-xs text-neutral-500 font-mono leading-relaxed">
-        Conecte sua conta do Figma usando um Personal Access Token para permitir a importação direta de cores e tipografia.
+        Conecte sua conta do Figma usando um Personal Access Token para permitir a importação direta
+        de cores e tipografia.
       </p>
 
       {!isConnected ? (
@@ -137,9 +136,7 @@ export const FigmaTokenSetup: React.FC = () => {
               <p className="text-sm font-bold text-neutral-200">
                 {figmaUser ? `@${figmaUser.handle}` : 'Conta Vinculada'}
               </p>
-              <p className="text-[10px] text-neutral-500 font-mono">
-                API REST Ativa
-              </p>
+              <p className="text-[10px] text-neutral-500 font-mono">API REST Ativa</p>
             </div>
           </div>
           <Button

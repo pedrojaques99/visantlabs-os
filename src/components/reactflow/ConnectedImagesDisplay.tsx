@@ -28,13 +28,8 @@ export const ConnectedImagesDisplay: React.FC<ConnectedImagesDisplayProps> = ({
   // Filter out undefined, null, and empty strings
   const validImages = images.filter(
     (img): img is string =>
-      img !== undefined &&
-      img !== null &&
-      typeof img === 'string' &&
-      img.trim().length > 0
+      img !== undefined && img !== null && typeof img === 'string' && img.trim().length > 0
   );
-
-
 
   if (validImages.length === 0) {
     return null;
@@ -64,11 +59,12 @@ export const ConnectedImagesDisplay: React.FC<ConnectedImagesDisplayProps> = ({
         ))}
         {validImages.length > maxThumbnails && (
           <div className="w-20 h-20 flex items-center justify-center bg-neutral-900/50 border-node border-neutral-700/30 rounded">
-            <span className="text-xs font-mono text-neutral-500">+{validImages.length - maxThumbnails}</span>
+            <span className="text-xs font-mono text-neutral-500">
+              +{validImages.length - maxThumbnails}
+            </span>
           </div>
         )}
       </div>
     </div>
   );
 };
-

@@ -12,21 +12,37 @@ interface GraphicSystemSectionProps {
 }
 
 const toLines = (arr?: string[]) => (arr || []).join('\n');
-const fromLines = (text: string) => text.split('\n').map(s => s.trim()).filter(Boolean);
+const fromLines = (text: string) =>
+  text
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
 
-export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({ guideline, onUpdate, span }) => {
+export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({
+  guideline,
+  onUpdate,
+  span,
+}) => {
   const gs = guideline.strategy?.graphicSystem || {};
 
-  const persist = useCallback((next: BrandGraphicSystem) => {
-    onUpdate({ strategy: { ...guideline.strategy, graphicSystem: next } });
-  }, [onUpdate, guideline.strategy]);
+  const persist = useCallback(
+    (next: BrandGraphicSystem) => {
+      onUpdate({ strategy: { ...guideline.strategy, graphicSystem: next } });
+    },
+    [onUpdate, guideline.strategy]
+  );
 
   const update = (patch: Partial<BrandGraphicSystem>) => {
     persist({ ...gs, ...patch });
   };
 
   return (
-    <SectionBlock id="graphic_system" icon={<Shapes size={14} />} title="Sistema Gráfico" span={span as any}>
+    <SectionBlock
+      id="graphic_system"
+      icon={<Shapes size={14} />}
+      title="Sistema Gráfico"
+      span={span as any}
+    >
       <div className="space-y-4 py-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
@@ -35,7 +51,7 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({ guid
               value={toLines(gs.patterns)}
               onChange={(e) => update({ patterns: fromLines(e.target.value) })}
               className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
-              placeholder={"Lines de quadra\nPatterns orbitais\nTexturas geométricas"}
+              placeholder={'Lines de quadra\nPatterns orbitais\nTexturas geométricas'}
             />
           </div>
           <div className="space-y-1">
@@ -44,7 +60,7 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({ guid
               value={toLines(gs.grafisms)}
               onChange={(e) => update({ grafisms: fromLines(e.target.value) })}
               className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
-              placeholder={"Elipses sobrepostas\nFormas com DNA da marca"}
+              placeholder={'Elipses sobrepostas\nFormas com DNA da marca'}
             />
           </div>
           <div className="space-y-1">
@@ -53,7 +69,9 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({ guid
               value={toLines(gs.imageRules)}
               onChange={(e) => update({ imageRules: fromLines(e.target.value) })}
               className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
-              placeholder={"Fotografia sempre com filtro quente\nCortes em diagonal\nSem fundos brancos puros"}
+              placeholder={
+                'Fotografia sempre com filtro quente\nCortes em diagonal\nSem fundos brancos puros'
+              }
             />
           </div>
           <div className="space-y-1">

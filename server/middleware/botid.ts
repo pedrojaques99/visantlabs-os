@@ -9,11 +9,7 @@ export interface BotIdRequest extends Request {
  * BotID middleware to protect routes from bots
  * This middleware verifies that requests are from legitimate users, not bots
  */
-export const verifyBotId = async (
-  req: BotIdRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const verifyBotId = async (req: BotIdRequest, res: Response, next: NextFunction) => {
   try {
     // Skip bot verification for webhook endpoints (they come from external services)
     if (req.path.includes('/webhook')) {
@@ -22,7 +18,7 @@ export const verifyBotId = async (
 
     // Skip BotID verification in localhost/development environment
     // This allows login to work smoothly during development
-    const isLocalhost = 
+    const isLocalhost =
       req.hostname === 'localhost' ||
       req.hostname === '127.0.0.1' ||
       req.hostname === '0.0.0.0' ||
@@ -46,15 +42,15 @@ export const verifyBotId = async (
         method: req.method,
         ip: req.ip,
       });
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Access denied',
-        code: 'BOT_DETECTED'
+        code: 'BOT_DETECTED',
       });
     }
 
     // Mark request as verified
     req.botIdVerified = true;
-    
+
     console.log('[botid] ✅ Request verified as legitimate', {
       path: req.path,
       method: req.method,
@@ -68,12 +64,10 @@ export const verifyBotId = async (
       path: req.path,
       method: req.method,
     });
-    
+
     // In production, you might want to fail closed instead
     // For now, we'll allow the request to proceed
     req.botIdVerified = true; // Mark as verified to allow request
     next();
   }
 };
-
-

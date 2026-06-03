@@ -98,19 +98,23 @@ npm run check-abacatepay
 ## Troubleshooting
 
 **Error: "AbacatePay not configured"**
+
 - Ensure `ABACATEPAY_API_KEY` is set
 - Restart the server
 
 **Error: "SDK returned error with undefined"**
+
 - Verify API key is valid and active
 - Check if account has billing permissions
 - Ensure product IDs exist (if using)
 
 **PIX code not generated**
+
 - Check AbacatePay dashboard for errors
 - Verify the amount is within limits
 
 **Payment not credited**
+
 - Check webhook is receiving events
 - Verify webhook secret is correct
 - Check server logs for errors
@@ -120,6 +124,7 @@ npm run check-abacatepay
 When creating PIX payments with customer data:
 
 All fields are required if providing customer info:
+
 - `name`: Customer full name
 - `email`: Customer email
 - `taxId`: CPF or CNPJ (numbers only)
@@ -139,4 +144,3 @@ AbacatePay charges per transaction:
 2. Replace sandbox keys with production keys
 3. Update webhook endpoints
 4. Test with a real PIX payment (refund immediately)
-

@@ -1,5 +1,11 @@
-import { GoogleGenAI, Modality, Type } from "@google/genai";
-import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types/types.js';
+import { GoogleGenAI, Modality, Type } from '@google/genai';
+import type {
+  UploadedImage,
+  AspectRatio,
+  DesignType,
+  GeminiModel,
+  Resolution,
+} from '../types/types.js';
 import { buildGeminiPromptInstructionsTemplate } from '../utils/mockupPromptFormat.js';
 import { GEMINI_MODELS, isAdvancedModel, getMaxRefImages } from '../constants/geminiModels.js';
 
@@ -32,18 +38,22 @@ const getAI = (apiKey?: string): GoogleGenAI => {
     return undefined;
   };
 
-  const storedKey = getEnvVar('VITE_GEMINI_API_KEY') || getEnvVar('VITE_API_KEY') || getEnvVar('GEMINI_API_KEY') || '';
+  const storedKey =
+    getEnvVar('VITE_GEMINI_API_KEY') ||
+    getEnvVar('VITE_API_KEY') ||
+    getEnvVar('GEMINI_API_KEY') ||
+    '';
   const currentKey = storedKey.trim();
 
   // Otherwise use cached instance or create from environment
   if (!ai || currentApiKey !== currentKey) {
-
     // Debug apenas no navegador (sem expor partes da chave)
     if (typeof window !== 'undefined') {
       const hasKey = currentKey && currentKey !== 'undefined' && currentKey.length > 0;
       if (hasKey) {
         // Verificar se é um placeholder
-        const isPlaceholder = currentKey.toLowerCase().includes('placeholder') ||
+        const isPlaceholder =
+          currentKey.toLowerCase().includes('placeholder') ||
           currentKey.toLowerCase().includes('example') ||
           currentKey.toLowerCase().includes('your-');
 
@@ -54,16 +64,20 @@ const getAI = (apiKey?: string): GoogleGenAI => {
         }
         // SECURITY: Don't log any part of the API key
       } else {
-        console.warn('⚠️  GEMINI_API_KEY não encontrada. Funcionalidades de IA estarão desabilitadas.');
-        console.warn('   Configure GEMINI_API_KEY no .env para habilitar geração de imagens com IA.');
+        console.warn(
+          '⚠️  GEMINI_API_KEY não encontrada. Funcionalidades de IA estarão desabilitadas.'
+        );
+        console.warn(
+          '   Configure GEMINI_API_KEY no .env para habilitar geração de imagens com IA.'
+        );
       }
     }
 
     if (!currentKey || currentKey === 'undefined' || currentKey.length === 0) {
       throw new Error(
-        "GEMINI_API_KEY não encontrada. " +
-        "Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. " +
-        "Veja docs/SETUP_LLM.md para mais informações."
+        'GEMINI_API_KEY não encontrada. ' +
+          'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. ' +
+          'Veja docs/SETUP_LLM.md para mais informações.'
       );
     }
 
@@ -117,16 +131,8 @@ const DEFAULT_RETRIES = {
   [GEMINI_MODELS.TEXT]: 5, // Fewer retries for text models
 };
 
-const withRetry = async <T>(
-  apiCall: () => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> => {
-  const {
-    maxRetries,
-    timeout,
-    onRetry,
-    model = GEMINI_MODELS.FLASH
-  } = options;
+const withRetry = async <T>(apiCall: () => Promise<T>, options: RetryOptions = {}): Promise<T> => {
+  const { maxRetries, timeout, onRetry, model = GEMINI_MODELS.FLASH } = options;
 
   const effectiveMaxRetries = maxRetries ?? (DEFAULT_RETRIES as Record<string, number>)[model] ?? 5;
   const effectiveTimeout = timeout ?? (DEFAULT_TIMEOUTS as Record<string, number>)[model] ?? 120000;
@@ -148,19 +154,21 @@ const withRetry = async <T>(
   while (attempt < effectiveMaxRetries) {
     try {
       // Race between API call and timeout
-      const result = await Promise.race([
-        apiCall(),
-        createTimeoutPromise()
-      ]);
+      const result = await Promise.race([apiCall(), createTimeoutPromise()]);
       return result;
     } catch (error: any) {
       // Check if timeout occurred
       if (error?.message?.includes('timeout')) {
-        throw new Error(`Request timed out after ${Math.round((Date.now() - startTime) / 1000)}s. The model may be experiencing high load. Please try again later.`);
+        throw new Error(
+          `Request timed out after ${Math.round(
+            (Date.now() - startTime) / 1000
+          )}s. The model may be experiencing high load. Please try again later.`
+        );
       }
 
       // Check for rate limit errors (429) - don't retry these
-      const statusCode = error?.status ||
+      const statusCode =
+        error?.status ||
         error?.statusCode ||
         error?.response?.status ||
         error?.response?.statusCode ||
@@ -172,7 +180,8 @@ const withRetry = async <T>(
       const errorString = JSON.stringify(errorResponse).toLowerCase();
 
       // Check for 429 in multiple places
-      const isRateLimit = statusCode === 429 ||
+      const isRateLimit =
+        statusCode === 429 ||
         errorMessage.includes('429') ||
         errorMessage.toLowerCase().includes('too many requests') ||
         errorDetails.includes('429') ||
@@ -181,11 +190,12 @@ const withRetry = async <T>(
         errorString.includes('too many requests');
 
       if (isRateLimit) {
-        throw new RateLimitError("Rate limit exceeded. Please wait before making more requests.");
+        throw new RateLimitError('Rate limit exceeded. Please wait before making more requests.');
       }
 
       // Check for 503 (Service Unavailable) or "model overloaded" errors
-      const is503 = statusCode === 503 ||
+      const is503 =
+        statusCode === 503 ||
         errorMessage.includes('503') ||
         errorMessage.toLowerCase().includes('service unavailable') ||
         errorMessage.toLowerCase().includes('model is overloaded') ||
@@ -196,13 +206,12 @@ const withRetry = async <T>(
       if (is503) {
         attempt++;
 
-
         if (attempt >= effectiveMaxRetries) {
           // After all retries failed, throw ModelOverloadedError with helpful message
           throw new ModelOverloadedError(
             `The model is currently overloaded and unable to process your request after ${effectiveMaxRetries} attempts. ` +
-            `This is a temporary issue with the AI service. Please try again in a few minutes. ` +
-            `Your credits have not been deducted.`
+              `This is a temporary issue with the AI service. Please try again in a few minutes. ` +
+              `Your credits have not been deducted.`
           );
         }
 
@@ -214,7 +223,9 @@ const withRetry = async <T>(
         const timeElapsed = Math.round((Date.now() - startTime) / 1000);
         console.warn(
           `API call failed with 503 (Model overloaded), retrying... ` +
-          `(Attempt ${attempt}/${effectiveMaxRetries}, waited ${timeElapsed}s so far, next retry in ${Math.round(delay / 1000)}s)`
+            `(Attempt ${attempt}/${effectiveMaxRetries}, waited ${timeElapsed}s so far, next retry in ${Math.round(
+              delay / 1000
+            )}s)`
         );
 
         // Notify callback if provided (for UI feedback)
@@ -222,7 +233,7 @@ const withRetry = async <T>(
           onRetry(attempt, effectiveMaxRetries, delay);
         }
 
-        await new Promise(res => setTimeout(res, delay));
+        await new Promise((res) => setTimeout(res, delay));
         continue;
       }
 
@@ -230,9 +241,8 @@ const withRetry = async <T>(
       throw error;
     }
   }
-  throw new Error("API call failed after multiple retries.");
+  throw new Error('API call failed after multiple retries.');
 };
-
 
 export const generateMockup = async (
   promptText: string,
@@ -244,99 +254,101 @@ export const generateMockup = async (
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
   apiKey?: string
 ): Promise<string> => {
-  return withRetry(async () => {
-    const parts: any[] = [];
+  return withRetry(
+    async () => {
+      const parts: any[] = [];
 
-    // Add main base image if provided
-    if (baseImage) {
-      // Validate base64 is not empty
-      if (!baseImage.base64 || baseImage.base64.trim().length === 0) {
-        throw new Error('Base image data is empty');
-      }
-      // Validate mimeType
-      if (!baseImage.mimeType || baseImage.mimeType.trim().length === 0) {
-        throw new Error('Base image MIME type is missing');
-      }
-      parts.push({
-        inlineData: {
-          data: baseImage.base64,
-          mimeType: baseImage.mimeType,
-        },
-      });
-    }
-
-    // Add reference images
-    // Nano Banana (Flash): up to 1 reference image (total 2 images)
-    // Nano Banana 2 (3.1 Flash): up to 14 reference images
-    // Nano Banana Pro (3 Pro): up to 3 reference images (total 4 images)
-    if (referenceImages && referenceImages.length > 0) {
-      const maxReferenceImages = getMaxRefImages(model);
-      const imagesToAdd = referenceImages.slice(0, maxReferenceImages);
-
-      imagesToAdd.forEach((img) => {
+      // Add main base image if provided
+      if (baseImage) {
+        // Validate base64 is not empty
+        if (!baseImage.base64 || baseImage.base64.trim().length === 0) {
+          throw new Error('Base image data is empty');
+        }
+        // Validate mimeType
+        if (!baseImage.mimeType || baseImage.mimeType.trim().length === 0) {
+          throw new Error('Base image MIME type is missing');
+        }
         parts.push({
           inlineData: {
-            data: img.base64,
-            mimeType: img.mimeType,
+            data: baseImage.base64,
+            mimeType: baseImage.mimeType,
           },
         });
+      }
+
+      // Add reference images
+      // Nano Banana (Flash): up to 1 reference image (total 2 images)
+      // Nano Banana 2 (3.1 Flash): up to 14 reference images
+      // Nano Banana Pro (3 Pro): up to 3 reference images (total 4 images)
+      if (referenceImages && referenceImages.length > 0) {
+        const maxReferenceImages = getMaxRefImages(model);
+        const imagesToAdd = referenceImages.slice(0, maxReferenceImages);
+
+        imagesToAdd.forEach((img) => {
+          parts.push({
+            inlineData: {
+              data: img.base64,
+              mimeType: img.mimeType,
+            },
+          });
+        });
+      }
+
+      // Validate prompt is not empty
+      if (!promptText || promptText.trim().length === 0) {
+        throw new Error('Prompt text is required');
+      }
+
+      parts.push({ text: promptText });
+
+      const config: any = {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      };
+
+      // Configure resolution / aspect ratio for image models
+      if (isAdvancedModel(model)) {
+        // Nano Banana 2 / Pro: use imageConfig API
+        config.imageConfig = {} as any;
+        if (aspectRatio) {
+          config.imageConfig.aspectRatio = aspectRatio;
+        }
+        if (resolution) {
+          config.imageConfig.imageSize = resolution;
+        }
+      }
+
+      const response = await getAI(apiKey).models.generateContent({
+        model: model,
+        contents: {
+          parts: parts,
+        },
+        config: config,
       });
-    }
 
-    // Validate prompt is not empty
-    if (!promptText || promptText.trim().length === 0) {
-      throw new Error('Prompt text is required');
-    }
-
-    parts.push({ text: promptText });
-
-    const config: any = {
-      responseModalities: [Modality.TEXT, Modality.IMAGE],
-    };
-
-    // Configure resolution / aspect ratio for image models
-    if (isAdvancedModel(model)) {
-      // Nano Banana 2 / Pro: use imageConfig API
-      config.imageConfig = {} as any;
-      if (aspectRatio) {
-        config.imageConfig.aspectRatio = aspectRatio;
+      let textResponse = '';
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData?.data) {
+          return part.inlineData.data;
+        }
+        if (part.text) {
+          textResponse += part.text + ' ';
+        }
       }
-      if (resolution) {
-        config.imageConfig.imageSize = resolution;
+
+      // Model responded with text instead of image - throw friendly error
+      const trimmedResponse = textResponse.trim();
+      if (trimmedResponse) {
+        throw new ModelResponseTextError(trimmedResponse);
       }
+
+      throw new Error('No image was generated in the response.');
+    },
+    {
+      model,
+      onRetry,
     }
-
-    const response = await getAI(apiKey).models.generateContent({
-      model: model,
-      contents: {
-        parts: parts,
-      },
-      config: config,
-    });
-
-    let textResponse = '';
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData?.data) {
-        return part.inlineData.data;
-      }
-      if (part.text) {
-        textResponse += part.text + ' ';
-      }
-    }
-
-    // Model responded with text instead of image - throw friendly error
-    const trimmedResponse = textResponse.trim();
-    if (trimmedResponse) {
-      throw new ModelResponseTextError(trimmedResponse);
-    }
-
-    throw new Error("No image was generated in the response.");
-  }, {
-    model,
-    onRetry
-  });
+  );
 };
-
 
 export interface SuggestedCategoriesResult {
   categories: string[];
@@ -349,50 +361,55 @@ export const suggestCategories = async (
   brandingTags: string[],
   apiKey?: string
 ): Promise<SuggestedCategoriesResult> => {
-  return withRetry(async () => {
-    const prompt = `Analyze the provided image and the branding style: ${brandingTags.join(', ')}. 
+  return withRetry(
+    async () => {
+      const prompt = `Analyze the provided image and the branding style: ${brandingTags.join(
+        ', '
+      )}. 
     Based on this, suggest a list of 5 to 10 highly relevant professional mockup categories where this design would look best.
     Return ONLY a comma-separated list of suggested categories (e.g., T-Shirt, Mug, Poster, Business Card). Do not include any other text or explanation.`;
 
-    const response = await getAI(apiKey).models.generateContent({
-      model: GEMINI_MODELS.TEXT,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: baseImage.base64,
-              mimeType: baseImage.mimeType,
+      const response = await getAI(apiKey).models.generateContent({
+        model: GEMINI_MODELS.TEXT,
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                data: baseImage.base64,
+                mimeType: baseImage.mimeType,
+              },
             },
-          },
-          {
-            text: prompt,
-          },
-        ],
-      },
-    });
+            {
+              text: prompt,
+            },
+          ],
+        },
+      });
 
-    const suggestionsText = (response.text ?? '').trim();
+      const suggestionsText = (response.text ?? '').trim();
 
-    // Extract usage metadata
-    const usageMetadata = (response as any).usageMetadata;
-    const inputTokens = usageMetadata?.promptTokenCount;
-    const outputTokens = usageMetadata?.candidatesTokenCount;
+      // Extract usage metadata
+      const usageMetadata = (response as any).usageMetadata;
+      const inputTokens = usageMetadata?.promptTokenCount;
+      const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    if (!suggestionsText) {
-      return { categories: [], inputTokens, outputTokens };
+      if (!suggestionsText) {
+        return { categories: [], inputTokens, outputTokens };
+      }
+
+      // Clean up response: remove potential markdown/quotes and split
+      const categories = suggestionsText
+        .replace(/['"`]/g, '')
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+
+      return { categories, inputTokens, outputTokens };
+    },
+    {
+      model: GEMINI_MODELS.TEXT,
     }
-
-    // Clean up response: remove potential markdown/quotes and split
-    const categories = suggestionsText
-      .replace(/['"`]/g, '')
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0);
-
-    return { categories, inputTokens, outputTokens };
-  }, {
-    model: GEMINI_MODELS.TEXT
-  });
+  );
 };
 
 export interface AnalyzeMockupSetupResult {
@@ -420,19 +437,24 @@ export const analyzeMockupSetup = async (
     materials: string[];
   }
 ): Promise<AnalyzeMockupSetupResult> => {
-  return withRetry(async () => {
-    const promptToGemini = `Você é um especialista em mockup e fotografia.
+  return withRetry(
+    async () => {
+      const promptToGemini = `Você é um especialista em mockup e fotografia.
 Analise esta imagem base e sugira as melhores tags para cada categoria para criar um mockup perfeito.
 Se disponível, escolha preferencialmente entre as tags existentes.
 
-${availableTags ? `Tags existentes por categoria:
+${
+  availableTags
+    ? `Tags existentes por categoria:
 - Branding/Estilo: ${availableTags.branding.join(', ')}
 - Categorias de Mockup: ${availableTags.categories.join(', ')}
 - Locais/Ambientes: ${availableTags.locations.join(', ')}
 - Ângulos: ${availableTags.angles.join(', ')}
 - Iluminação: ${availableTags.lighting.join(', ')}
 - Efeitos: ${availableTags.effects.join(', ')}
-- Materiais/Texturas: ${availableTags.materials.join(', ')}` : ''}
+- Materiais/Texturas: ${availableTags.materials.join(', ')}`
+    : ''
+}
 
 Sugira:
 1. Pelo menos 4 tags de "branding" que descrevam o estilo visual.
@@ -454,86 +476,88 @@ Retorne em formato JSON JSON:
   "materials": [...]
 }`;
 
-    const response = await getAI(userApiKey).models.generateContent({
-      model: GEMINI_MODELS.TEXT,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: baseImage.base64,
-              mimeType: baseImage.mimeType,
+      const response = await getAI(userApiKey).models.generateContent({
+        model: GEMINI_MODELS.TEXT,
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                data: baseImage.base64,
+                mimeType: baseImage.mimeType,
+              },
+            },
+            { text: promptToGemini },
+          ],
+        },
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              branding: { type: Type.ARRAY, items: { type: Type.STRING } },
+              categories: { type: Type.ARRAY, items: { type: Type.STRING } },
+              locations: { type: Type.ARRAY, items: { type: Type.STRING } },
+              angles: { type: Type.ARRAY, items: { type: Type.STRING } },
+              lighting: { type: Type.ARRAY, items: { type: Type.STRING } },
+              effects: { type: Type.ARRAY, items: { type: Type.STRING } },
+              materials: { type: Type.ARRAY, items: { type: Type.STRING } },
             },
           },
-          { text: promptToGemini },
-        ],
-      },
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            branding: { type: Type.ARRAY, items: { type: Type.STRING } },
-            categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-            locations: { type: Type.ARRAY, items: { type: Type.STRING } },
-            angles: { type: Type.ARRAY, items: { type: Type.STRING } },
-            lighting: { type: Type.ARRAY, items: { type: Type.STRING } },
-            effects: { type: Type.ARRAY, items: { type: Type.STRING } },
-            materials: { type: Type.ARRAY, items: { type: Type.STRING } },
-          },
         },
-      },
-    });
+      });
 
-    // Extract usage metadata
-    const usageMetadata = (response as any).usageMetadata;
-    const inputTokens = usageMetadata?.promptTokenCount;
-    const outputTokens = usageMetadata?.candidatesTokenCount;
+      // Extract usage metadata
+      const usageMetadata = (response as any).usageMetadata;
+      const inputTokens = usageMetadata?.promptTokenCount;
+      const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    const jsonString = (response.text ?? '').trim();
-    if (!jsonString) {
-      return {
-        branding: [],
-        categories: [],
-        locations: [],
-        angles: [],
-        lighting: [],
-        effects: [],
-        materials: [],
-        inputTokens,
-        outputTokens,
-      };
+      const jsonString = (response.text ?? '').trim();
+      if (!jsonString) {
+        return {
+          branding: [],
+          categories: [],
+          locations: [],
+          angles: [],
+          lighting: [],
+          effects: [],
+          materials: [],
+          inputTokens,
+          outputTokens,
+        };
+      }
+
+      try {
+        const result = JSON.parse(jsonString);
+        return {
+          branding: result.branding || [],
+          categories: result.categories || [],
+          locations: result.locations || [],
+          angles: result.angles || [],
+          lighting: result.lighting || [],
+          effects: result.effects || [],
+          materials: result.materials || [],
+          inputTokens,
+          outputTokens,
+        };
+      } catch (e) {
+        console.error('Failed to parse mockup setup analysis JSON:', e);
+        return {
+          branding: [],
+          categories: [],
+          locations: [],
+          angles: [],
+          lighting: [],
+          effects: [],
+          materials: [],
+          inputTokens,
+          outputTokens,
+        };
+      }
+    },
+    {
+      model: GEMINI_MODELS.TEXT,
     }
-
-    try {
-      const result = JSON.parse(jsonString);
-      return {
-        branding: result.branding || [],
-        categories: result.categories || [],
-        locations: result.locations || [],
-        angles: result.angles || [],
-        lighting: result.lighting || [],
-        effects: result.effects || [],
-        materials: result.materials || [],
-        inputTokens,
-        outputTokens,
-      };
-    } catch (e) {
-      console.error("Failed to parse mockup setup analysis JSON:", e);
-      return {
-        branding: [],
-        categories: [],
-        locations: [],
-        angles: [],
-        lighting: [],
-        effects: [],
-        materials: [],
-        inputTokens,
-        outputTokens,
-      };
-    }
-  }, {
-    model: GEMINI_MODELS.TEXT
-  });
+  );
 };
 
 interface SmartPromptParams {
@@ -561,68 +585,77 @@ interface SmartPromptResult {
   outputTokens?: number;
 }
 
-export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: string): Promise<SmartPromptResult> => {
-  return withRetry(async () => {
-    const isBlankMockup = params.designType === 'blank';
+export const generateSmartPrompt = async (
+  params: SmartPromptParams,
+  apiKey?: string
+): Promise<SmartPromptResult> => {
+  return withRetry(
+    async () => {
+      const isBlankMockup = params.designType === 'blank';
 
-    // Use shared function to build instructions template
-    const instructionsTemplate = buildGeminiPromptInstructionsTemplate({
-      designType: params.designType,
-      isBlankMockup,
-      withHuman: params.withHuman,
-      enhanceTexture: params.enhanceTexture,
-      removeText: params.removeText,
-      locationTags: params.locationTags,
-    });
-
-    // Replace placeholders with actual values
-    const promptToGemini = instructionsTemplate
-      .replace('[BRANDING_TAGS]', params.brandingTags.join(', ') || 'Not specified')
-      .replace('[CATEGORY_TAGS]', params.categoryTags.join(', '))
-      .replace('[COLORS]', params.selectedColors.join(', ') || 'Not specified')
-      .replace('[LOCATION_TAGS]', params.locationTags.join(', ') || 'Not specified')
-      .replace('[ANGLE_TAGS]', params.angleTags.join(', ') || 'Not specified')
-      .replace('[LIGHTING_TAGS]', params.lightingTags.join(', ') || 'Not specified')
-      .replace('[EFFECT_TAGS]', params.effectTags.join(', ') || 'Not specified')
-      .replace('[GENERATE_TEXT]', isBlankMockup ? 'No (Blank Mockup)' : (params.generateText ? 'Yes' : 'No'))
-      .replace('[REMOVE_TEXT]', isBlankMockup ? 'No' : (params.removeText ? 'Yes' : 'No'))
-      .replace('[WITH_HUMAN]', params.withHuman ? 'Yes' : 'No')
-      .replace('[ADDITIONAL_PROMPT]', params.additionalPrompt || 'Not specified')
-      .replace('[ASPECT_RATIO]', params.aspectRatio)
-      .replace('[NEGATIVE_PROMPT]', params.negativePrompt || 'Not specified');
-
-    const parts = [];
-    if (!isBlankMockup && params.baseImage) {
-      parts.push({
-        inlineData: {
-          data: params.baseImage.base64,
-          mimeType: params.baseImage.mimeType,
-        },
+      // Use shared function to build instructions template
+      const instructionsTemplate = buildGeminiPromptInstructionsTemplate({
+        designType: params.designType,
+        isBlankMockup,
+        withHuman: params.withHuman,
+        enhanceTexture: params.enhanceTexture,
+        removeText: params.removeText,
+        locationTags: params.locationTags,
       });
-    }
-    parts.push({ text: promptToGemini });
 
-    const response = await getAI(apiKey).models.generateContent({
+      // Replace placeholders with actual values
+      const promptToGemini = instructionsTemplate
+        .replace('[BRANDING_TAGS]', params.brandingTags.join(', ') || 'Not specified')
+        .replace('[CATEGORY_TAGS]', params.categoryTags.join(', '))
+        .replace('[COLORS]', params.selectedColors.join(', ') || 'Not specified')
+        .replace('[LOCATION_TAGS]', params.locationTags.join(', ') || 'Not specified')
+        .replace('[ANGLE_TAGS]', params.angleTags.join(', ') || 'Not specified')
+        .replace('[LIGHTING_TAGS]', params.lightingTags.join(', ') || 'Not specified')
+        .replace('[EFFECT_TAGS]', params.effectTags.join(', ') || 'Not specified')
+        .replace(
+          '[GENERATE_TEXT]',
+          isBlankMockup ? 'No (Blank Mockup)' : params.generateText ? 'Yes' : 'No'
+        )
+        .replace('[REMOVE_TEXT]', isBlankMockup ? 'No' : params.removeText ? 'Yes' : 'No')
+        .replace('[WITH_HUMAN]', params.withHuman ? 'Yes' : 'No')
+        .replace('[ADDITIONAL_PROMPT]', params.additionalPrompt || 'Not specified')
+        .replace('[ASPECT_RATIO]', params.aspectRatio)
+        .replace('[NEGATIVE_PROMPT]', params.negativePrompt || 'Not specified');
+
+      const parts = [];
+      if (!isBlankMockup && params.baseImage) {
+        parts.push({
+          inlineData: {
+            data: params.baseImage.base64,
+            mimeType: params.baseImage.mimeType,
+          },
+        });
+      }
+      parts.push({ text: promptToGemini });
+
+      const response = await getAI(apiKey).models.generateContent({
+        model: GEMINI_MODELS.TEXT,
+        contents: { parts },
+      });
+
+      // Extract usage metadata if available
+      const usageMetadata = (response as any).usageMetadata;
+      const inputTokens = usageMetadata?.promptTokenCount;
+      const outputTokens = usageMetadata?.candidatesTokenCount;
+
+      const prompt = (response.text ?? '').trim();
+
+      // Return object with prompt and tokens for tracking
+      return {
+        prompt,
+        inputTokens,
+        outputTokens,
+      };
+    },
+    {
       model: GEMINI_MODELS.TEXT,
-      contents: { parts },
-    });
-
-    // Extract usage metadata if available
-    const usageMetadata = (response as any).usageMetadata;
-    const inputTokens = usageMetadata?.promptTokenCount;
-    const outputTokens = usageMetadata?.candidatesTokenCount;
-
-    const prompt = (response.text ?? '').trim();
-
-    // Return object with prompt and tokens for tracking
-    return {
-      prompt,
-      inputTokens,
-      outputTokens,
-    };
-  }, {
-    model: GEMINI_MODELS.TEXT
-  });
+    }
+  );
 };
 
 export interface GenerateMergePromptResult {
@@ -631,13 +664,16 @@ export interface GenerateMergePromptResult {
   outputTokens?: number;
 }
 
-export const generateMergePrompt = async (images: UploadedImage[]): Promise<GenerateMergePromptResult> => {
-  return withRetry(async () => {
-    if (images.length < 2) {
-      throw new Error('At least 2 images are required to generate a merge prompt');
-    }
+export const generateMergePrompt = async (
+  images: UploadedImage[]
+): Promise<GenerateMergePromptResult> => {
+  return withRetry(
+    async () => {
+      if (images.length < 2) {
+        throw new Error('At least 2 images are required to generate a merge prompt');
+      }
 
-    const promptToGemini = `You are an expert AI prompt engineer. Your task is to analyze the provided images and generate a clear, effective prompt for merging/combining them into a single cohesive image.
+      const promptToGemini = `You are an expert AI prompt engineer. Your task is to analyze the provided images and generate a clear, effective prompt for merging/combining them into a single cohesive image.
 
 **INSTRUCTIONS:**
 1. Analyze each image provided (there are ${images.length} images total).
@@ -653,38 +689,40 @@ export const generateMergePrompt = async (images: UploadedImage[]): Promise<Gene
 
 **Your output must be ONLY the generated prompt text, without any additional explanation or formatting.**`;
 
-    const parts: any[] = [];
+      const parts: any[] = [];
 
-    // Add all images
-    images.forEach((img) => {
-      parts.push({
-        inlineData: {
-          data: img.base64,
-          mimeType: img.mimeType,
-        },
+      // Add all images
+      images.forEach((img) => {
+        parts.push({
+          inlineData: {
+            data: img.base64,
+            mimeType: img.mimeType,
+          },
+        });
       });
-    });
 
-    parts.push({ text: promptToGemini });
+      parts.push({ text: promptToGemini });
 
-    const response = await getAI().models.generateContent({
+      const response = await getAI().models.generateContent({
+        model: GEMINI_MODELS.TEXT,
+        contents: { parts },
+      });
+
+      // Extract usage metadata
+      const usageMetadata = (response as any).usageMetadata;
+      const inputTokens = usageMetadata?.promptTokenCount;
+      const outputTokens = usageMetadata?.candidatesTokenCount;
+
+      return {
+        prompt: (response.text ?? '').trim(),
+        inputTokens,
+        outputTokens,
+      };
+    },
+    {
       model: GEMINI_MODELS.TEXT,
-      contents: { parts },
-    });
-
-    // Extract usage metadata
-    const usageMetadata = (response as any).usageMetadata;
-    const inputTokens = usageMetadata?.promptTokenCount;
-    const outputTokens = usageMetadata?.candidatesTokenCount;
-
-    return {
-      prompt: (response.text ?? '').trim(),
-      inputTokens,
-      outputTokens,
-    };
-  }, {
-    model: GEMINI_MODELS.TEXT
-  });
+    }
+  );
 };
 
 export interface ImprovedPromptResult {
@@ -693,13 +731,17 @@ export interface ImprovedPromptResult {
   outputTokens?: number;
 }
 
-export const improvePrompt = async (basePrompt: string, apiKey?: string): Promise<ImprovedPromptResult> => {
-  return withRetry(async () => {
-    if (!basePrompt || basePrompt.trim().length === 0) {
-      throw new Error('O prompt não pode estar vazio');
-    }
+export const improvePrompt = async (
+  basePrompt: string,
+  apiKey?: string
+): Promise<ImprovedPromptResult> => {
+  return withRetry(
+    async () => {
+      if (!basePrompt || basePrompt.trim().length === 0) {
+        throw new Error('O prompt não pode estar vazio');
+      }
 
-    const promptToGemini = `Melhore este prompt de texto de forma objetiva e concisa. Enriqueça apenas onde necessário, sem redundância ou decoração desnecessária. Mantenha o tom e estilo original.
+      const promptToGemini = `Melhore este prompt de texto de forma objetiva e concisa. Enriqueça apenas onde necessário, sem redundância ou decoração desnecessária. Mantenha o tom e estilo original.
 
 Original: "${basePrompt}"
 
@@ -712,29 +754,31 @@ Regras:
 
 Retorne APENAS o texto melhorado, sem explicações.`;
 
-    const response = await getAI(apiKey).models.generateContent({
+      const response = await getAI(apiKey).models.generateContent({
+        model: GEMINI_MODELS.TEXT,
+        contents: { parts: [{ text: promptToGemini }] },
+      });
+
+      // Extract usage metadata
+      const usageMetadata = (response as any).usageMetadata;
+      const inputTokens = usageMetadata?.promptTokenCount;
+      const outputTokens = usageMetadata?.candidatesTokenCount;
+
+      const improvedPrompt = (response.text ?? '').trim();
+      if (!improvedPrompt) {
+        throw new Error('Nenhum prompt melhorado foi gerado na resposta.');
+      }
+
+      return {
+        improvedPrompt,
+        inputTokens,
+        outputTokens,
+      };
+    },
+    {
       model: GEMINI_MODELS.TEXT,
-      contents: { parts: [{ text: promptToGemini }] },
-    });
-
-    // Extract usage metadata
-    const usageMetadata = (response as any).usageMetadata;
-    const inputTokens = usageMetadata?.promptTokenCount;
-    const outputTokens = usageMetadata?.candidatesTokenCount;
-
-    const improvedPrompt = (response.text ?? '').trim();
-    if (!improvedPrompt) {
-      throw new Error('Nenhum prompt melhorado foi gerado na resposta.');
     }
-
-    return {
-      improvedPrompt,
-      inputTokens,
-      outputTokens,
-    };
-  }, {
-    model: GEMINI_MODELS.TEXT
-  });
+  );
 };
 
 export interface PromptVariationsResult {
@@ -743,9 +787,13 @@ export interface PromptVariationsResult {
   outputTokens?: number;
 }
 
-export const suggestPromptVariations = async (basePrompt: string, apiKey?: string): Promise<PromptVariationsResult> => {
-  return withRetry(async () => {
-    const promptToGemini = `Você é um engenheiro de prompts especializado. Sua tarefa é criar três variações diversas, criativas e eficazes de um prompt para gerador de imagens IA.
+export const suggestPromptVariations = async (
+  basePrompt: string,
+  apiKey?: string
+): Promise<PromptVariationsResult> => {
+  return withRetry(
+    async () => {
+      const promptToGemini = `Você é um engenheiro de prompts especializado. Sua tarefa é criar três variações diversas, criativas e eficazes de um prompt para gerador de imagens IA.
 
     **Prompt Base:**
     "${basePrompt}"
@@ -759,47 +807,49 @@ export const suggestPromptVariations = async (basePrompt: string, apiKey?: strin
 
     Sua saída deve ser APENAS o objeto JSON.`;
 
-    const response = await getAI(apiKey).models.generateContent({
-      model: GEMINI_MODELS.TEXT,
-      contents: { parts: [{ text: promptToGemini }] },
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            suggestions: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.STRING,
+      const response = await getAI(apiKey).models.generateContent({
+        model: GEMINI_MODELS.TEXT,
+        contents: { parts: [{ text: promptToGemini }] },
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              suggestions: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.STRING,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    // Extract usage metadata
-    const usageMetadata = (response as any).usageMetadata;
-    const inputTokens = usageMetadata?.promptTokenCount;
-    const outputTokens = usageMetadata?.candidatesTokenCount;
+      // Extract usage metadata
+      const usageMetadata = (response as any).usageMetadata;
+      const inputTokens = usageMetadata?.promptTokenCount;
+      const outputTokens = usageMetadata?.candidatesTokenCount;
 
-    const jsonString = (response.text ?? '').trim();
-    if (!jsonString) return { variations: [], inputTokens, outputTokens };
+      const jsonString = (response.text ?? '').trim();
+      if (!jsonString) return { variations: [], inputTokens, outputTokens };
 
-    try {
-      const result = JSON.parse(jsonString);
-      return {
-        variations: result.suggestions || [],
-        inputTokens,
-        outputTokens,
-      };
-    } catch (e) {
-      console.error("Failed to parse prompt suggestions JSON:", e);
-      return { variations: [], inputTokens, outputTokens };
+      try {
+        const result = JSON.parse(jsonString);
+        return {
+          variations: result.suggestions || [],
+          inputTokens,
+          outputTokens,
+        };
+      } catch (e) {
+        console.error('Failed to parse prompt suggestions JSON:', e);
+        return { variations: [], inputTokens, outputTokens };
+      }
+    },
+    {
+      model: GEMINI_MODELS.TEXT,
     }
-  }, {
-    model: GEMINI_MODELS.TEXT
-  });
+  );
 };
 
 export const changeObjectInMockup = async (
@@ -810,47 +860,50 @@ export const changeObjectInMockup = async (
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
   apiKey?: string
 ): Promise<string> => {
-  return withRetry(async () => {
-    const prompt = `Keep the same background, environment, lighting, and camera angle, but replace the main object in the image with ${newObject}. The new object should be placed in the same position and orientation as the original object, maintaining the same perspective and composition. The environment, background, and all other elements should remain exactly the same.`;
+  return withRetry(
+    async () => {
+      const prompt = `Keep the same background, environment, lighting, and camera angle, but replace the main object in the image with ${newObject}. The new object should be placed in the same position and orientation as the original object, maintaining the same perspective and composition. The environment, background, and all other elements should remain exactly the same.`;
 
-    const parts: any[] = [
-      {
-        inlineData: {
-          data: baseImage.base64,
-          mimeType: baseImage.mimeType,
+      const parts: any[] = [
+        {
+          inlineData: {
+            data: baseImage.base64,
+            mimeType: baseImage.mimeType,
+          },
         },
-      },
-      { text: prompt },
-    ];
+        { text: prompt },
+      ];
 
-    const config: any = {
-      responseModalities: [Modality.TEXT, Modality.IMAGE],
-    };
+      const config: any = {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      };
 
-    // Configure resolution for advanced models
-    if (isAdvancedModel(model) && resolution) {
-      config.imageConfig = { imageSize: resolution };
-    }
-
-    const response = await getAI().models.generateContent({
-      model: model,
-      contents: {
-        parts: parts,
-      },
-      config: config,
-    });
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData?.data) {
-        return part.inlineData.data;
+      // Configure resolution for advanced models
+      if (isAdvancedModel(model) && resolution) {
+        config.imageConfig = { imageSize: resolution };
       }
-    }
 
-    throw new Error("No image was generated in the response.");
-  }, {
-    model,
-    onRetry
-  });
+      const response = await getAI().models.generateContent({
+        model: model,
+        contents: {
+          parts: parts,
+        },
+        config: config,
+      });
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData?.data) {
+          return part.inlineData.data;
+        }
+      }
+
+      throw new Error('No image was generated in the response.');
+    },
+    {
+      model,
+      onRetry,
+    }
+  );
 };
 
 export const applyThemeToMockup = async (
@@ -861,48 +914,51 @@ export const applyThemeToMockup = async (
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
   apiKey?: string
 ): Promise<string> => {
-  return withRetry(async () => {
-    const themesText = themes.join(', ');
-    const prompt = `Apply ${themesText} theme to the scene while keeping the same composition, camera angle, and main object. Transform the background, lighting, colors, and environmental elements to reflect the ${themesText} theme, but maintain the exact same perspective, object placement, and overall structure of the original image.`;
+  return withRetry(
+    async () => {
+      const themesText = themes.join(', ');
+      const prompt = `Apply ${themesText} theme to the scene while keeping the same composition, camera angle, and main object. Transform the background, lighting, colors, and environmental elements to reflect the ${themesText} theme, but maintain the exact same perspective, object placement, and overall structure of the original image.`;
 
-    const parts: any[] = [
-      {
-        inlineData: {
-          data: baseImage.base64,
-          mimeType: baseImage.mimeType,
+      const parts: any[] = [
+        {
+          inlineData: {
+            data: baseImage.base64,
+            mimeType: baseImage.mimeType,
+          },
         },
-      },
-      { text: prompt },
-    ];
+        { text: prompt },
+      ];
 
-    const config: any = {
-      responseModalities: [Modality.TEXT, Modality.IMAGE],
-    };
+      const config: any = {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      };
 
-    // Configure resolution for advanced models
-    if (isAdvancedModel(model) && resolution) {
-      config.imageConfig = { imageSize: resolution };
-    }
-
-    const response = await getAI().models.generateContent({
-      model: model,
-      contents: {
-        parts: parts,
-      },
-      config: config,
-    });
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData?.data) {
-        return part.inlineData.data;
+      // Configure resolution for advanced models
+      if (isAdvancedModel(model) && resolution) {
+        config.imageConfig = { imageSize: resolution };
       }
-    }
 
-    throw new Error("No image was generated in the response.");
-  }, {
-    model,
-    onRetry
-  });
+      const response = await getAI().models.generateContent({
+        model: model,
+        contents: {
+          parts: parts,
+        },
+        config: config,
+      });
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData?.data) {
+          return part.inlineData.data;
+        }
+      }
+
+      throw new Error('No image was generated in the response.');
+    },
+    {
+      model,
+      onRetry,
+    }
+  );
 };
 
 export interface DescribeImageResult {
@@ -916,32 +972,33 @@ export const describeImage = async (
   image: UploadedImage | string,
   apiKey?: string
 ): Promise<DescribeImageResult> => {
-  return withRetry(async () => {
-    // Normalize image input
-    let imageBase64: string;
-    let mimeType: string;
+  return withRetry(
+    async () => {
+      // Normalize image input
+      let imageBase64: string;
+      let mimeType: string;
 
-    if (typeof image === 'string') {
-      // If it's a base64 string, try to extract mimeType from data URL or default to png
-      if (image.startsWith('data:')) {
-        const match = image.match(/data:([^;]+);base64,(.+)/);
-        if (match) {
-          mimeType = match[1];
-          imageBase64 = match[2];
+      if (typeof image === 'string') {
+        // If it's a base64 string, try to extract mimeType from data URL or default to png
+        if (image.startsWith('data:')) {
+          const match = image.match(/data:([^;]+);base64,(.+)/);
+          if (match) {
+            mimeType = match[1];
+            imageBase64 = match[2];
+          } else {
+            imageBase64 = image;
+            mimeType = 'image/png';
+          }
         } else {
           imageBase64 = image;
           mimeType = 'image/png';
         }
       } else {
-        imageBase64 = image;
-        mimeType = 'image/png';
+        imageBase64 = image.base64 ?? '';
+        mimeType = image.mimeType;
       }
-    } else {
-      imageBase64 = image.base64 ?? '';
-      mimeType = image.mimeType;
-    }
 
-    const prompt = `Analise esta imagem em detalhes.
+      const prompt = `Analise esta imagem em detalhes.
 Forneça:
 1. Uma descrição visual clara e objetiva adequada para uso em prompts de geração de imagens IA (em inglês).
 2. Um título curto e descritivo para a imagem (em português).
@@ -952,58 +1009,60 @@ Retorne em formato JSON:
   "title": "Um título descritivo"
 }`;
 
-    const parts: any[] = [
-      {
-        inlineData: {
-          data: imageBase64,
-          mimeType: mimeType,
-        },
-      },
-      { text: prompt },
-    ];
-
-    const response = await getAI(apiKey).models.generateContent({
-      model: GEMINI_MODELS.TEXT,
-      contents: { parts },
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            description: { type: Type.STRING },
-            title: { type: Type.STRING },
+      const parts: any[] = [
+        {
+          inlineData: {
+            data: imageBase64,
+            mimeType: mimeType,
           },
         },
-      },
-    });
+        { text: prompt },
+      ];
 
-    // Extract usage metadata
-    const usageMetadata = (response as any).usageMetadata;
-    const inputTokens = usageMetadata?.promptTokenCount;
-    const outputTokens = usageMetadata?.candidatesTokenCount;
+      const response = await getAI(apiKey).models.generateContent({
+        model: GEMINI_MODELS.TEXT,
+        contents: { parts },
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              description: { type: Type.STRING },
+              title: { type: Type.STRING },
+            },
+          },
+        },
+      });
 
-    const jsonString = (response.text ?? '').trim();
-    if (!jsonString) {
-      throw new Error('No description was generated in the response.');
+      // Extract usage metadata
+      const usageMetadata = (response as any).usageMetadata;
+      const inputTokens = usageMetadata?.promptTokenCount;
+      const outputTokens = usageMetadata?.candidatesTokenCount;
+
+      const jsonString = (response.text ?? '').trim();
+      if (!jsonString) {
+        throw new Error('No description was generated in the response.');
+      }
+
+      try {
+        const result = JSON.parse(jsonString);
+        return {
+          description: result.description || '',
+          title: result.title || '',
+          inputTokens,
+          outputTokens,
+        };
+      } catch (e) {
+        console.error('Failed to parse image description JSON:', e);
+        return {
+          description: (response.text ?? '').trim(),
+          inputTokens,
+          outputTokens,
+        };
+      }
+    },
+    {
+      model: GEMINI_MODELS.TEXT,
     }
-
-    try {
-      const result = JSON.parse(jsonString);
-      return {
-        description: result.description || '',
-        title: result.title || '',
-        inputTokens,
-        outputTokens,
-      };
-    } catch (e) {
-      console.error("Failed to parse image description JSON:", e);
-      return {
-        description: (response.text ?? '').trim(),
-        inputTokens,
-        outputTokens,
-      };
-    }
-  }, {
-    model: GEMINI_MODELS.TEXT
-  });
+  );
 };

@@ -12,22 +12,22 @@ const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
  */
 export const getProxiedUrl = (url: string | undefined | null): string => {
   if (!url) return '';
-  
+
   // If it's already a base64 or relative URL, return as is
   if (url.startsWith('data:') || url.startsWith('/') || url.startsWith('blob:')) {
     return url;
   }
-  
+
   // Proxy R2 URLs and other problematic external domains
   const isR2 = url.includes('r2.dev') || url.includes('pub-');
   const isExternal = !url.includes(window.location.hostname);
-  
+
   if (isR2 || isExternal) {
     // If it's already proxied, don't double proxy
     if (url.includes('/api/images/proxy')) return url;
-    
+
     return `${API_BASE_URL}/images/stream?url=${encodeURIComponent(url)}`;
   }
-  
+
   return url;
 };

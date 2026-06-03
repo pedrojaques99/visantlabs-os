@@ -17,7 +17,10 @@ export const ToolEditorStatusBar: React.FC<ToolEditorStatusBarProps> = ({ items,
     {items.map((item, i) => (
       <React.Fragment key={i}>
         {i > 0 && <span>•</span>}
-        <span className={item.color || undefined} style={item.truncate ? { maxWidth: 120 } : undefined}>
+        <span
+          className={item.color || undefined}
+          style={item.truncate ? { maxWidth: 120 } : undefined}
+        >
           {item.label}
         </span>
       </React.Fragment>

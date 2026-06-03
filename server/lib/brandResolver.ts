@@ -71,7 +71,7 @@ export async function resolveBrandGuideline(
     take: 10,
   });
 
-  const availableGuidelines = userGuidelines.map(g => ({
+  const availableGuidelines = userGuidelines.map((g) => ({
     id: g.id,
     name: (g.identity as any)?.name || 'Unnamed Brand',
   }));

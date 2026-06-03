@@ -1,5 +1,9 @@
 import type { BrandingData } from '../types/types.js';
-import { parseMarketResearch, categorizeMarketSection, type ParsedSection } from './brandingParsers.js';
+import {
+  parseMarketResearch,
+  categorizeMarketSection,
+  type ParsedSection,
+} from './brandingParsers.js';
 // Helper to clean and normalize string content
 export const cleanMarketResearchText = (text: string): string => {
   if (!text) return '';
@@ -68,13 +72,17 @@ export const getStepContent = (stepNumber: number, data: BrandingData) => {
       return data.archetypes;
     // Visant v2 steps
     case 101:
-      return data.centralMessage ? { centralMessage: data.centralMessage, pillars: data.pillars } : null;
+      return data.centralMessage
+        ? { centralMessage: data.centralMessage, pillars: data.pillars }
+        : null;
     case 102:
       return data.marketResearchV2;
     case 103:
       return data.personaV2;
     case 104:
-      return data.archetypesV2 ? { archetypes: data.archetypesV2, toneOfVoice: data.toneOfVoice } : null;
+      return data.archetypesV2
+        ? { archetypes: data.archetypesV2, toneOfVoice: data.toneOfVoice }
+        : null;
     case 105:
       return data.manifesto;
     case 106:
@@ -103,31 +111,55 @@ export const hasStepContent = (stepNumber: number, data: BrandingData): boolean 
 
 export const getSectionEmoji = (stepNumber: number): string => {
   switch (stepNumber) {
-    case 1: return '📊'; // Mercado e Nicho
-    case 2: return '👥'; // Público Alvo
-    case 3: return '🎯'; // Posicionamento
-    case 4: return '💡'; // Insights
-    case 5: return '🏢'; // Competitors
-    case 6: return '🎨'; // References
-    case 7: return '⚖️'; // SWOT Analysis
-    case 8: return '🎨'; // Color Palettes
-    case 9: return '🎨'; // Visual Elements
-    case 10: return '👤'; // Persona
-    case 11: return '💡'; // Mockup Ideas
-    case 12: return '🖼️'; // Moodboard
-    case 13: return '🎭'; // Arquétipos
+    case 1:
+      return '📊'; // Mercado e Nicho
+    case 2:
+      return '👥'; // Público Alvo
+    case 3:
+      return '🎯'; // Posicionamento
+    case 4:
+      return '💡'; // Insights
+    case 5:
+      return '🏢'; // Competitors
+    case 6:
+      return '🎨'; // References
+    case 7:
+      return '⚖️'; // SWOT Analysis
+    case 8:
+      return '🎨'; // Color Palettes
+    case 9:
+      return '🎨'; // Visual Elements
+    case 10:
+      return '👤'; // Persona
+    case 11:
+      return '💡'; // Mockup Ideas
+    case 12:
+      return '🖼️'; // Moodboard
+    case 13:
+      return '🎭'; // Arquétipos
     // Visant v2
-    case 101: return '🎯';
-    case 102: return '📊';
-    case 103: return '👤';
-    case 104: return '🎭';
-    case 105: return '📜';
-    case 106: return '⚖️';
-    case 107: return '🎨';
-    case 108: return '✏️';
-    case 109: return '🔷';
-    case 110: return '💎';
-    default: return '📝';
+    case 101:
+      return '🎯';
+    case 102:
+      return '📊';
+    case 103:
+      return '👤';
+    case 104:
+      return '🎭';
+    case 105:
+      return '📜';
+    case 106:
+      return '⚖️';
+    case 107:
+      return '🎨';
+    case 108:
+      return '✏️';
+    case 109:
+      return '🔷';
+    case 110:
+      return '💎';
+    default:
+      return '📝';
   }
 };
 
@@ -172,16 +204,26 @@ export const getStepDependencies = (stepNumber: number): number[] => {
     case 12: // Moodboard - no dependencies
       return [];
     // Visant v2 dependencies
-    case 101: return [];
-    case 102: return [101];
-    case 103: return [101, 102];
-    case 104: return [101, 102, 103];
-    case 105: return [101, 102, 103, 104];
-    case 106: return [101, 102, 103];
-    case 107: return [101, 102, 103, 104, 105];
-    case 108: return [101, 102, 103, 104, 105];
-    case 109: return [105, 107, 108];
-    case 110: return [101, 102, 103, 104, 105, 107, 108];
+    case 101:
+      return [];
+    case 102:
+      return [101];
+    case 103:
+      return [101, 102];
+    case 104:
+      return [101, 102, 103];
+    case 105:
+      return [101, 102, 103, 104];
+    case 106:
+      return [101, 102, 103];
+    case 107:
+      return [101, 102, 103, 104, 105];
+    case 108:
+      return [101, 102, 103, 104, 105];
+    case 109:
+      return [105, 107, 108];
+    case 110:
+      return [101, 102, 103, 104, 105, 107, 108];
     default:
       return [];
   }
@@ -191,7 +233,7 @@ export const getDependencyStepTitle = (
   stepNumber: number,
   steps: Array<{ id: number; title: string }>
 ): string => {
-  const step = steps.find(s => s.id === stepNumber);
+  const step = steps.find((s) => s.id === stepNumber);
   return step?.title || `Step ${stepNumber}`;
 };
 
@@ -220,8 +262,8 @@ export const migrateMarketResearch = (data: BrandingData): BrandingData => {
   const grouped: Record<string, string[]> = {
     'mercado-nicho': [],
     'publico-alvo': [],
-    'posicionamento': [],
-    'insights': [],
+    posicionamento: [],
+    insights: [],
   };
 
   parsed.forEach((section: ParsedSection) => {
@@ -230,7 +272,7 @@ export const migrateMarketResearch = (data: BrandingData): BrandingData => {
     // Combine subsections and items into text
     const parts: string[] = [];
 
-    section.subsections.forEach(sub => {
+    section.subsections.forEach((sub) => {
       if (sub.title) {
         parts.push(`**${sub.title}**:`);
       }
@@ -255,7 +297,6 @@ export const migrateMarketResearch = (data: BrandingData): BrandingData => {
   return migrated;
 };
 
-
 export const extractTextFromContent = (content: any): string => {
   if (!content) return '';
 
@@ -264,22 +305,29 @@ export const extractTextFromContent = (content: any): string => {
   }
 
   if (Array.isArray(content)) {
-    return content.map(item => {
-      if (typeof item === 'string') return item;
-      if (typeof item === 'object' && item !== null) {
-        return Object.entries(item)
-          .map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)
-          .join('\n');
-      }
-      return String(item);
-    }).join('\n');
+    return content
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object' && item !== null) {
+          return Object.entries(item)
+            .map(
+              ([key, value]) =>
+                `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`
+            )
+            .join('\n');
+        }
+        return String(item);
+      })
+      .join('\n');
   }
 
   if (typeof content === 'object' && content !== null) {
     return Object.entries(content)
       .map(([key, value]) => {
         if (Array.isArray(value)) {
-          return `${key}:\n${value.map(v => `  - ${typeof v === 'string' ? v : JSON.stringify(v)}`).join('\n')}`;
+          return `${key}:\n${value
+            .map((v) => `  - ${typeof v === 'string' ? v : JSON.stringify(v)}`)
+            .join('\n')}`;
         }
         if (typeof value === 'object' && value !== null) {
           return `${key}:\n${JSON.stringify(value, null, 2)}`;
@@ -291,4 +339,3 @@ export const extractTextFromContent = (content: any): string => {
 
   return String(content);
 };
-

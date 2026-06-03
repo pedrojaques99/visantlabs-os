@@ -84,10 +84,10 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
 Use Stripe's test card numbers:
 
-| Card | Number |
-|------|--------|
-| Success | 4242 4242 4242 4242 |
-| Decline | 4000 0000 0000 0002 |
+| Card          | Number              |
+| ------------- | ------------------- |
+| Success       | 4242 4242 4242 4242 |
+| Decline       | 4000 0000 0000 0002 |
 | Auth required | 4000 0025 0000 3155 |
 
 Use any future expiry date and any 3-digit CVC.
@@ -102,15 +102,17 @@ Use any future expiry date and any 3-digit CVC.
 ## Troubleshooting
 
 **Error: "No such price"**
+
 - Verify the price ID exists in your Stripe account
 - Check if you're using test/live keys consistently
 
 **Webhook failures**
+
 - Check the webhook signing secret
 - Verify the endpoint URL is accessible
 - Check server logs for errors
 
 **Payment not processed**
+
 - Verify webhook events are being received
 - Check the `transactions` collection in MongoDB
-

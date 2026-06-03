@@ -21,7 +21,10 @@ interface DrawingLayerProps {
   onStartEditingText?: (id: string) => void;
   onUpdateDrawingText?: (id: string, text: string) => void;
   onStopEditingText?: () => void;
-  onUpdateDrawingBounds?: (id: string, bounds: { x: number; y: number; width: number; height: number }) => void;
+  onUpdateDrawingBounds?: (
+    id: string,
+    bounds: { x: number; y: number; width: number; height: number }
+  ) => void;
   onMoveDrawings?: (ids: Set<string>, delta: { x: number; y: number }) => void;
   onInteractionEnd?: () => void;
   reactFlowInstance?: any;
@@ -77,45 +80,59 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
 
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
   const [resizingId, setResizingId] = React.useState<string | null>(null);
-  const [resizeStart, setResizeStart] = React.useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [resizeStart, setResizeStart] = React.useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [resizeHandle, setResizeHandle] = React.useState<string | null>(null);
   const [lastFlowPos, setLastFlowPos] = React.useState<{ x: number; y: number } | null>(null);
 
   // Drag handlers for text
-  const handleDrawingMouseDown = React.useCallback((e: React.MouseEvent, drawing: DrawingStroke) => {
-    if (editingDrawingId === drawing.id) return; // Don't drag while editing
+  const handleDrawingMouseDown = React.useCallback(
+    (e: React.MouseEvent, drawing: DrawingStroke) => {
+      if (editingDrawingId === drawing.id) return; // Don't drag while editing
 
-    e.stopPropagation();
-    const target = e.target as HTMLElement;
-    if (target.closest('.resize-handle')) return; // Don't start drag on resize handle
+      e.stopPropagation();
+      const target = e.target as HTMLElement;
+      if (target.closest('.resize-handle')) return; // Don't start drag on resize handle
 
-    // If not already selected, select only this one (standard behavior)
-    // If already selected, we will drag all selected items
-    if (!selectedDrawingIds.has(drawing.id)) {
-      onDrawingClick(drawing.id);
-    }
+      // If not already selected, select only this one (standard behavior)
+      // If already selected, we will drag all selected items
+      if (!selectedDrawingIds.has(drawing.id)) {
+        onDrawingClick(drawing.id);
+      }
 
-    const flowPos = reactFlowInstance?.screenToFlowPosition({
-      x: e.clientX,
-      y: e.clientY,
-    }) || { x: (e.clientX - viewport.x) / viewport.zoom, y: (e.clientY - viewport.y) / viewport.zoom };
+      const flowPos = reactFlowInstance?.screenToFlowPosition({
+        x: e.clientX,
+        y: e.clientY,
+      }) || {
+        x: (e.clientX - viewport.x) / viewport.zoom,
+        y: (e.clientY - viewport.y) / viewport.zoom,
+      };
 
-    setDraggingId(drawing.id);
-    setLastFlowPos(flowPos);
-  }, [editingDrawingId, viewport, selectedDrawingIds, onDrawingClick, reactFlowInstance]);
+      setDraggingId(drawing.id);
+      setLastFlowPos(flowPos);
+    },
+    [editingDrawingId, viewport, selectedDrawingIds, onDrawingClick, reactFlowInstance]
+  );
 
   // Resize handlers
-  const handleResizeMouseDown = React.useCallback((e: React.MouseEvent, drawing: DrawingStroke, handle: string) => {
-    e.stopPropagation();
-    setResizingId(drawing.id);
-    setResizeHandle(handle);
-    setResizeStart({
-      x: drawing.bounds.x,
-      y: drawing.bounds.y,
-      width: drawing.bounds.width,
-      height: drawing.bounds.height,
-    });
-  }, []);
+  const handleResizeMouseDown = React.useCallback(
+    (e: React.MouseEvent, drawing: DrawingStroke, handle: string) => {
+      e.stopPropagation();
+      setResizingId(drawing.id);
+      setResizeHandle(handle);
+      setResizeStart({
+        x: drawing.bounds.x,
+        y: drawing.bounds.y,
+        width: drawing.bounds.width,
+        height: drawing.bounds.height,
+      });
+    },
+    []
+  );
 
   // Global mouse move handler
   React.useEffect(() => {
@@ -125,17 +142,20 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
       const flowPos = reactFlowInstance?.screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,
-      }) || { x: (e.clientX - viewport.x) / viewport.zoom, y: (e.clientY - viewport.y) / viewport.zoom };
+      }) || {
+        x: (e.clientX - viewport.x) / viewport.zoom,
+        y: (e.clientY - viewport.y) / viewport.zoom,
+      };
 
       if (draggingId && lastFlowPos && onMoveDrawings) {
         const delta = {
           x: flowPos.x - lastFlowPos.x,
-          y: flowPos.y - lastFlowPos.y
+          y: flowPos.y - lastFlowPos.y,
         };
         onMoveDrawings(selectedDrawingIds, delta);
         setLastFlowPos(flowPos);
       } else if (resizingId && resizeStart && resizeHandle && onUpdateDrawingBounds) {
-        const drawing = drawings.find(d => d.id === resizingId);
+        const drawing = drawings.find((d) => d.id === resizingId);
         if (!drawing) return;
 
         let newBounds = { ...resizeStart };
@@ -185,7 +205,19 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [draggingId, lastFlowPos, resizingId, resizeStart, resizeHandle, drawings, reactFlowInstance, onUpdateDrawingBounds, onMoveDrawings, selectedDrawingIds, onInteractionEnd]);
+  }, [
+    draggingId,
+    lastFlowPos,
+    resizingId,
+    resizeStart,
+    resizeHandle,
+    drawings,
+    reactFlowInstance,
+    onUpdateDrawingBounds,
+    onMoveDrawings,
+    selectedDrawingIds,
+    onInteractionEnd,
+  ]);
 
   return (
     <svg
@@ -195,9 +227,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
         height: '100%',
       }}
     >
-      <g
-        transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}
-      >
+      <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}>
         {/* Saved drawings (viewport-culled for performance) */}
         {visibleDrawings.map((drawing) => {
           if (drawing.type === 'freehand' && drawing.pathData) {
@@ -218,9 +248,7 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     onDrawingClick(drawing.id);
                   }}
                   style={{
-                    filter: selectedDrawingIds.has(drawing.id)
-                      ? CANVAS_SELECTION.glow
-                      : 'none',
+                    filter: selectedDrawingIds.has(drawing.id) ? CANVAS_SELECTION.glow : 'none',
                   }}
                 />
                 {/* Selection indicator */}
@@ -266,7 +294,12 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     }
                   }}
                 >
-                  <div className="drawing-text-editor" role="textbox" tabIndex={0} aria-label="Drawing text editor">
+                  <div
+                    className="drawing-text-editor"
+                    role="textbox"
+                    tabIndex={0}
+                    aria-label="Drawing text editor"
+                  >
                     <DrawingTextRenderer
                       text={drawing.text || ''}
                       textColor={drawing.textColor || drawing.color}
@@ -323,7 +356,8 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                           strokeWidth={1.5}
                           className="resize-handle pointer-events-auto cursor-nwse-resize"
                           style={{
-                            cursor: handle === 'nw' || handle === 'se' ? 'nwse-resize' : 'nesw-resize',
+                            cursor:
+                              handle === 'nw' || handle === 'se' ? 'nwse-resize' : 'nesw-resize',
                           }}
                           onMouseDown={(e) => {
                             e.stopPropagation();
@@ -396,62 +430,72 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                     }}
                   />
                 )}
-                {drawing.shapeType === 'arrow' && (() => {
-                  // Use exact coordinates if available, otherwise fallback to bounds
-                  const startX = drawing.arrowStartX !== undefined ? drawing.arrowStartX : drawing.bounds.x;
-                  const startY = drawing.arrowStartY !== undefined ? drawing.arrowStartY : drawing.bounds.y + height / 2;
-                  const endX = drawing.arrowEndX !== undefined ? drawing.arrowEndX : drawing.bounds.x + width - 10;
-                  const endY = drawing.arrowEndY !== undefined ? drawing.arrowEndY : drawing.bounds.y + height / 2;
+                {drawing.shapeType === 'arrow' &&
+                  (() => {
+                    // Use exact coordinates if available, otherwise fallback to bounds
+                    const startX =
+                      drawing.arrowStartX !== undefined ? drawing.arrowStartX : drawing.bounds.x;
+                    const startY =
+                      drawing.arrowStartY !== undefined
+                        ? drawing.arrowStartY
+                        : drawing.bounds.y + height / 2;
+                    const endX =
+                      drawing.arrowEndX !== undefined
+                        ? drawing.arrowEndX
+                        : drawing.bounds.x + width - 10;
+                    const endY =
+                      drawing.arrowEndY !== undefined
+                        ? drawing.arrowEndY
+                        : drawing.bounds.y + height / 2;
 
-                  // Calculate arrow length and adjust end point to account for arrowhead
-                  const dx = endX - startX;
-                  const dy = endY - startY;
-                  const length = Math.sqrt(dx * dx + dy * dy);
-                  const arrowHeadSize = 10;
+                    // Calculate arrow length and adjust end point to account for arrowhead
+                    const dx = endX - startX;
+                    const dy = endY - startY;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    const arrowHeadSize = 10;
 
-                  // Adjust end point to account for arrowhead size
-                  const adjustedEndX = length > arrowHeadSize
-                    ? startX + (dx / length) * (length - arrowHeadSize)
-                    : startX;
-                  const adjustedEndY = length > arrowHeadSize
-                    ? startY + (dy / length) * (length - arrowHeadSize)
-                    : startY;
+                    // Adjust end point to account for arrowhead size
+                    const adjustedEndX =
+                      length > arrowHeadSize
+                        ? startX + (dx / length) * (length - arrowHeadSize)
+                        : startX;
+                    const adjustedEndY =
+                      length > arrowHeadSize
+                        ? startY + (dy / length) * (length - arrowHeadSize)
+                        : startY;
 
-                  return (
-                    <g>
-                      <defs>
-                        <marker
-                          id={`arrowhead-layer-${drawing.id}`}
-                          markerWidth="10"
-                          markerHeight="10"
-                          refX="9"
-                          refY="3"
-                          orient="auto"
-                        >
-                          <polygon
-                            points="0 0, 10 3, 0 6"
-                            fill={shapeStrokeColor}
-                          />
-                        </marker>
-                      </defs>
-                      <line
-                        x1={startX}
-                        y1={startY}
-                        x2={adjustedEndX}
-                        y2={adjustedEndY}
-                        stroke={shapeStrokeColor}
-                        strokeWidth={shapeStrokeWidth}
-                        markerEnd={`url(#arrowhead-layer-${drawing.id})`}
-                        className="pointer-events-auto cursor-pointer"
-                        onMouseDown={(e) => handleDrawingMouseDown(e, drawing)}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDrawingClick(drawing.id);
-                        }}
-                      />
-                    </g>
-                  );
-                })()}
+                    return (
+                      <g>
+                        <defs>
+                          <marker
+                            id={`arrowhead-layer-${drawing.id}`}
+                            markerWidth="10"
+                            markerHeight="10"
+                            refX="9"
+                            refY="3"
+                            orient="auto"
+                          >
+                            <polygon points="0 0, 10 3, 0 6" fill={shapeStrokeColor} />
+                          </marker>
+                        </defs>
+                        <line
+                          x1={startX}
+                          y1={startY}
+                          x2={adjustedEndX}
+                          y2={adjustedEndY}
+                          stroke={shapeStrokeColor}
+                          strokeWidth={shapeStrokeWidth}
+                          markerEnd={`url(#arrowhead-layer-${drawing.id})`}
+                          className="pointer-events-auto cursor-pointer"
+                          onMouseDown={(e) => handleDrawingMouseDown(e, drawing)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDrawingClick(drawing.id);
+                          }}
+                        />
+                      </g>
+                    );
+                  })()}
                 {selectedDrawingIds.has(drawing.id) && (
                   <rect
                     x={drawing.bounds.x - 5}
@@ -485,161 +529,165 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
         )}
 
         {/* Shape preview during creation */}
-        {isDrawing && drawingType === 'shape' && shapePreview && shapePreview.startPosition && shapePreview.currentPosition && (
-          <g>
-            {(() => {
-              const startX = shapePreview.startPosition.x;
-              const startY = shapePreview.startPosition.y;
-              const currentX = shapePreview.currentPosition.x;
-              const currentY = shapePreview.currentPosition.y;
+        {isDrawing &&
+          drawingType === 'shape' &&
+          shapePreview &&
+          shapePreview.startPosition &&
+          shapePreview.currentPosition && (
+            <g>
+              {(() => {
+                const startX = shapePreview.startPosition.x;
+                const startY = shapePreview.startPosition.y;
+                const currentX = shapePreview.currentPosition.x;
+                const currentY = shapePreview.currentPosition.y;
 
-              const width = Math.abs(currentX - startX);
-              const height = Math.abs(currentY - startY);
-              const minSize = 20;
+                const width = Math.abs(currentX - startX);
+                const height = Math.abs(currentY - startY);
+                const minSize = 20;
 
-              // Only show preview if size is meaningful
-              if (width < minSize && height < minSize) return null;
+                // Only show preview if size is meaningful
+                if (width < minSize && height < minSize) return null;
 
-              const shapeX = Math.min(startX, currentX);
-              const shapeY = Math.min(startY, currentY);
-              const finalWidth = Math.max(width, minSize);
-              const finalHeight = Math.max(height, minSize);
+                const shapeX = Math.min(startX, currentX);
+                const shapeY = Math.min(startY, currentY);
+                const finalWidth = Math.max(width, minSize);
+                const finalHeight = Math.max(height, minSize);
 
-              const fillColor = shapePreview.shapeColor || strokeColor;
-              const shapeStrokeColor = shapePreview.shapeStrokeColor || strokeColor;
-              const shapeStrokeWidth = shapePreview.shapeStrokeWidth || strokeSize;
-              const fill = shapePreview.shapeFill !== false;
-              const shapeType = shapePreview.shapeType || 'rectangle';
+                const fillColor = shapePreview.shapeColor || strokeColor;
+                const shapeStrokeColor = shapePreview.shapeStrokeColor || strokeColor;
+                const shapeStrokeWidth = shapePreview.shapeStrokeWidth || strokeSize;
+                const fill = shapePreview.shapeFill !== false;
+                const shapeType = shapePreview.shapeType || 'rectangle';
 
-              return (
-                <>
-                  {/* Render shape preview */}
-                  {shapeType === 'rectangle' && (
-                    <rect
-                      x={shapeX}
-                      y={shapeY}
-                      width={finalWidth}
-                      height={finalHeight}
-                      fill={fill ? fillColor : 'none'}
-                      stroke={shapeStrokeColor}
-                      strokeWidth={shapeStrokeWidth}
-                      rx={4}
-                      className="pointer-events-none"
-                      opacity={0.7}
-                      style={{ willChange: 'x, y, width, height' }}
-                    />
-                  )}
-                  {shapeType === 'circle' && (
-                    <circle
-                      cx={shapeX + finalWidth / 2}
-                      cy={shapeY + finalHeight / 2}
-                      r={Math.min(finalWidth, finalHeight) / 2}
-                      fill={fill ? fillColor : 'none'}
-                      stroke={shapeStrokeColor}
-                      strokeWidth={shapeStrokeWidth}
-                      className="pointer-events-none"
-                      opacity={0.7}
-                      style={{ willChange: 'cx, cy, r' }}
-                    />
-                  )}
-                  {shapeType === 'line' && (
-                    <line
-                      x1={shapeX}
-                      y1={shapeY + finalHeight / 2}
-                      x2={shapeX + finalWidth}
-                      y2={shapeY + finalHeight / 2}
-                      stroke={shapeStrokeColor}
-                      strokeWidth={shapeStrokeWidth}
-                      className="pointer-events-none"
-                      opacity={0.7}
-                      style={{ willChange: 'x1, y1, x2, y2' }}
-                    />
-                  )}
-                  {shapeType === 'arrow' && (() => {
-                    // Use exact coordinates for arrow preview
-                    const arrowStartX = startX;
-                    const arrowStartY = startY;
-                    const arrowEndX = currentX;
-                    const arrowEndY = currentY;
-
-                    // Calculate arrow length and adjust end point to account for arrowhead
-                    const dx = arrowEndX - arrowStartX;
-                    const dy = arrowEndY - arrowStartY;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const arrowHeadSize = 10;
-
-                    // Adjust end point to account for arrowhead size
-                    const adjustedEndX = length > arrowHeadSize
-                      ? arrowStartX + (dx / length) * (length - arrowHeadSize)
-                      : arrowStartX;
-                    const adjustedEndY = length > arrowHeadSize
-                      ? arrowStartY + (dy / length) * (length - arrowHeadSize)
-                      : arrowStartY;
-
-                    return (
-                      <g>
-                        <defs>
-                          <marker
-                            id="arrowhead-preview"
-                            markerWidth="10"
-                            markerHeight="10"
-                            refX="9"
-                            refY="3"
-                            orient="auto"
-                          >
-                            <polygon
-                              points="0 0, 10 3, 0 6"
-                              fill={shapeStrokeColor}
-                            />
-                          </marker>
-                        </defs>
-                        <line
-                          x1={arrowStartX}
-                          y1={arrowStartY}
-                          x2={adjustedEndX}
-                          y2={adjustedEndY}
-                          stroke={shapeStrokeColor}
-                          strokeWidth={shapeStrokeWidth}
-                          markerEnd="url(#arrowhead-preview)"
-                          className="pointer-events-none"
-                          opacity={0.7}
-                          style={{ willChange: 'x1, y1, x2, y2' }}
-                        />
-                      </g>
-                    );
-                  })()}
-
-                  {/* Dimensions label - only for non-arrow shapes to reduce lag */}
-                  {shapeType !== 'arrow' && (
-                    <g>
+                return (
+                  <>
+                    {/* Render shape preview */}
+                    {shapeType === 'rectangle' && (
                       <rect
-                        x={shapeX + finalWidth / 2 - 30}
-                        y={shapeY - 25}
-                        width={60}
-                        height={20}
-                        fill="rgba(0, 0, 0, 0.7)"
+                        x={shapeX}
+                        y={shapeY}
+                        width={finalWidth}
+                        height={finalHeight}
+                        fill={fill ? fillColor : 'none'}
+                        stroke={shapeStrokeColor}
+                        strokeWidth={shapeStrokeWidth}
                         rx={4}
                         className="pointer-events-none"
+                        opacity={0.7}
+                        style={{ willChange: 'x, y, width, height' }}
                       />
-                      <text
-                        x={shapeX + finalWidth / 2}
-                        y={shapeY - 12}
-                        textAnchor="middle"
-                        fill={CANVAS_SELECTION.label}
-                        fontSize="11"
-                        fontFamily="Manrope, sans-serif"
-                        fontWeight="600"
+                    )}
+                    {shapeType === 'circle' && (
+                      <circle
+                        cx={shapeX + finalWidth / 2}
+                        cy={shapeY + finalHeight / 2}
+                        r={Math.min(finalWidth, finalHeight) / 2}
+                        fill={fill ? fillColor : 'none'}
+                        stroke={shapeStrokeColor}
+                        strokeWidth={shapeStrokeWidth}
                         className="pointer-events-none"
-                      >
-                        {Math.round(finalWidth)} × {Math.round(finalHeight)}
-                      </text>
-                    </g>
-                  )}
-                </>
-              );
-            })()}
-          </g>
-        )}
+                        opacity={0.7}
+                        style={{ willChange: 'cx, cy, r' }}
+                      />
+                    )}
+                    {shapeType === 'line' && (
+                      <line
+                        x1={shapeX}
+                        y1={shapeY + finalHeight / 2}
+                        x2={shapeX + finalWidth}
+                        y2={shapeY + finalHeight / 2}
+                        stroke={shapeStrokeColor}
+                        strokeWidth={shapeStrokeWidth}
+                        className="pointer-events-none"
+                        opacity={0.7}
+                        style={{ willChange: 'x1, y1, x2, y2' }}
+                      />
+                    )}
+                    {shapeType === 'arrow' &&
+                      (() => {
+                        // Use exact coordinates for arrow preview
+                        const arrowStartX = startX;
+                        const arrowStartY = startY;
+                        const arrowEndX = currentX;
+                        const arrowEndY = currentY;
+
+                        // Calculate arrow length and adjust end point to account for arrowhead
+                        const dx = arrowEndX - arrowStartX;
+                        const dy = arrowEndY - arrowStartY;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        const arrowHeadSize = 10;
+
+                        // Adjust end point to account for arrowhead size
+                        const adjustedEndX =
+                          length > arrowHeadSize
+                            ? arrowStartX + (dx / length) * (length - arrowHeadSize)
+                            : arrowStartX;
+                        const adjustedEndY =
+                          length > arrowHeadSize
+                            ? arrowStartY + (dy / length) * (length - arrowHeadSize)
+                            : arrowStartY;
+
+                        return (
+                          <g>
+                            <defs>
+                              <marker
+                                id="arrowhead-preview"
+                                markerWidth="10"
+                                markerHeight="10"
+                                refX="9"
+                                refY="3"
+                                orient="auto"
+                              >
+                                <polygon points="0 0, 10 3, 0 6" fill={shapeStrokeColor} />
+                              </marker>
+                            </defs>
+                            <line
+                              x1={arrowStartX}
+                              y1={arrowStartY}
+                              x2={adjustedEndX}
+                              y2={adjustedEndY}
+                              stroke={shapeStrokeColor}
+                              strokeWidth={shapeStrokeWidth}
+                              markerEnd="url(#arrowhead-preview)"
+                              className="pointer-events-none"
+                              opacity={0.7}
+                              style={{ willChange: 'x1, y1, x2, y2' }}
+                            />
+                          </g>
+                        );
+                      })()}
+
+                    {/* Dimensions label - only for non-arrow shapes to reduce lag */}
+                    {shapeType !== 'arrow' && (
+                      <g>
+                        <rect
+                          x={shapeX + finalWidth / 2 - 30}
+                          y={shapeY - 25}
+                          width={60}
+                          height={20}
+                          fill="rgba(0, 0, 0, 0.7)"
+                          rx={4}
+                          className="pointer-events-none"
+                        />
+                        <text
+                          x={shapeX + finalWidth / 2}
+                          y={shapeY - 12}
+                          textAnchor="middle"
+                          fill={CANVAS_SELECTION.label}
+                          fontSize="11"
+                          fontFamily="Manrope, sans-serif"
+                          fontWeight="600"
+                          className="pointer-events-none"
+                        >
+                          {Math.round(finalWidth)} × {Math.round(finalHeight)}
+                        </text>
+                      </g>
+                    )}
+                  </>
+                );
+              })()}
+            </g>
+          )}
 
         {/* Selection box */}
         {selectionBox && (
@@ -659,4 +707,3 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
     </svg>
   );
 };
-

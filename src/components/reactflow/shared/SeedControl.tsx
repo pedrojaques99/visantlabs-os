@@ -41,19 +41,22 @@ export const SeedControl: React.FC<SeedControlProps> = ({
     onSeedChange(newSeed);
   }, [onSeedChange]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, ''); // Only digits
-    setLocalSeed(val);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value.replace(/\D/g, ''); // Only digits
+      setLocalSeed(val);
 
-    if (val === '') {
-      onSeedChange(undefined);
-    } else {
-      const num = parseInt(val, 10);
-      if (num >= 0 && num <= 2_147_483_647) {
-        onSeedChange(num);
+      if (val === '') {
+        onSeedChange(undefined);
+      } else {
+        const num = parseInt(val, 10);
+        if (num >= 0 && num <= 2_147_483_647) {
+          onSeedChange(num);
+        }
       }
-    }
-  }, [onSeedChange]);
+    },
+    [onSeedChange]
+  );
 
   const handleCopy = useCallback(() => {
     if (seed !== undefined) {
@@ -87,10 +90,10 @@ export const SeedControl: React.FC<SeedControlProps> = ({
           placeholder={seedLocked ? '—' : 'Random'}
           disabled={disabled}
           className={cn(
-            "flex-1 min-w-0 h-7 px-2 rounded-md text-xs font-mono bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-300",
-            "placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors",
-            "nodrag nopan",
-            disabled && "opacity-50 cursor-not-allowed"
+            'flex-1 min-w-0 h-7 px-2 rounded-md text-xs font-mono bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-300',
+            'placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors',
+            'nodrag nopan',
+            disabled && 'opacity-50 cursor-not-allowed'
           )}
         />
 
@@ -101,11 +104,11 @@ export const SeedControl: React.FC<SeedControlProps> = ({
             onClick={handleRandomize}
             disabled={disabled}
             className={cn(
-              "shrink-0 h-7 w-7 flex items-center justify-center rounded-md",
-              "bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500",
-              "hover:text-neutral-300 hover:border-neutral-600 transition-colors",
-              "nodrag nopan",
-              disabled && "opacity-50 cursor-not-allowed"
+              'shrink-0 h-7 w-7 flex items-center justify-center rounded-md',
+              'bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500',
+              'hover:text-neutral-300 hover:border-neutral-600 transition-colors',
+              'nodrag nopan',
+              disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
             <Dices size={13} />
@@ -113,17 +116,21 @@ export const SeedControl: React.FC<SeedControlProps> = ({
         </Tooltip>
 
         {/* Lock Toggle */}
-        <Tooltip content={seedLocked ? "Unlock seed (randomize each generation)" : "Lock seed (keep same seed)"}>
+        <Tooltip
+          content={
+            seedLocked ? 'Unlock seed (randomize each generation)' : 'Lock seed (keep same seed)'
+          }
+        >
           <button
             type="button"
             onClick={toggleLock}
             disabled={disabled}
             className={cn(
-              "shrink-0 h-7 w-7 flex items-center justify-center rounded-md transition-colors nodrag nopan",
+              'shrink-0 h-7 w-7 flex items-center justify-center rounded-md transition-colors nodrag nopan',
               seedLocked
-                ? "bg-foreground/10 border-node border-neutral-800 text-foreground"
-                : "bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500 hover:text-neutral-300 hover:border-neutral-600",
-              disabled && "opacity-50 cursor-not-allowed"
+                ? 'bg-foreground/10 border-node border-neutral-800 text-foreground'
+                : 'bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500 hover:text-neutral-300 hover:border-neutral-600',
+              disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
             {seedLocked ? <Lock size={13} /> : <LockOpen size={13} />}
@@ -138,11 +145,11 @@ export const SeedControl: React.FC<SeedControlProps> = ({
               onClick={handleCopy}
               disabled={disabled}
               className={cn(
-                "shrink-0 h-7 w-7 flex items-center justify-center rounded-md",
-                "bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500",
-                "hover:text-neutral-300 hover:border-neutral-600 transition-colors",
-                "nodrag nopan",
-                disabled && "opacity-50 cursor-not-allowed"
+                'shrink-0 h-7 w-7 flex items-center justify-center rounded-md',
+                'bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500',
+                'hover:text-neutral-300 hover:border-neutral-600 transition-colors',
+                'nodrag nopan',
+                disabled && 'opacity-50 cursor-not-allowed'
               )}
             >
               <Copy size={13} />

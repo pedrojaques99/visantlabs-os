@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogBody } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogBody,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,7 +62,11 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleThumbnailUpload = async (img: { base64?: string; url?: string; mimeType: string }) => {
+  const handleThumbnailUpload = async (img: {
+    base64?: string;
+    url?: string;
+    mimeType: string;
+  }) => {
     const base64 = img.base64 || img.url;
     if (!base64) return;
     setIsUploading(true);
@@ -71,7 +83,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
       });
       if (!res.ok) throw new Error('Upload failed');
       const data = await res.json();
-      setFormData(prev => ({ ...prev, thumbnail: data.url }));
+      setFormData((prev) => ({ ...prev, thumbnail: data.url }));
       toast.success('Thumbnail uploaded');
     } catch {
       toast.error('Failed to upload thumbnail');
@@ -275,7 +287,9 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   id="displayOrder"
                   type="number"
                   value={formData.displayOrder ?? 0}
-                  onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })
+                  }
                   className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
                   placeholder="0"
                 />
@@ -286,7 +300,11 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
               <Label>App Image / Thumbnail</Label>
               {formData.thumbnail && (
                 <div className="relative aspect-video rounded-md overflow-hidden border border-white/10 mb-2">
-                  <img src={formData.thumbnail} alt="App thumbnail" className="w-full h-full object-cover" />
+                  <img
+                    src={formData.thumbnail}
+                    alt="App thumbnail"
+                    className="w-full h-full object-cover"
+                  />
                   <button
                     onClick={() => setFormData({ ...formData, thumbnail: '' })}
                     className="absolute top-1 right-1 bg-black/60 px-2 py-0.5 rounded-full text-destructive hover:bg-black/80 transition-colors"
@@ -305,7 +323,12 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
         </DialogBody>
 
         <DialogFooter className="border-t border-neutral-800 px-10 py-8">
-          <Button variant="ghost" onClick={onClose} disabled={isSaving} className="text-neutral-500 hover:text-white font-mono text-xs">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={isSaving}
+            className="text-neutral-500 hover:text-white font-mono text-xs"
+          >
             CANCEL
           </Button>
           <Button

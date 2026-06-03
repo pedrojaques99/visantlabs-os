@@ -152,4 +152,3 @@ Mockup suggestions must include: strategic rationale, camera angle/perspective, 
  * Default system prompt (built from sections)
  */
 export const DEFAULT_SYSTEM_PROMPT = buildSystemPrompt();
-

@@ -4,10 +4,15 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { Pencil, X, Save, Maximize2, Minus } from 'lucide-react';
 import {
-  Dialog, DialogContent, DialogHeader, DialogBody, DialogTitle, DialogDescription,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 /** Context provided by GuidelineDetail — lets any SectionBlock hide itself without prop drilling */
 export const SectionHideContext = createContext<((id: string) => void) | null>(null);
 
@@ -29,22 +34,32 @@ interface SectionBlockProps {
 }
 
 export const SectionBlock: React.FC<SectionBlockProps> = ({
-  id, title, icon, children,
-  span = 'full', rowSpan = '1',
-  isEditing, isSaving, onEdit, onSave, onCancel,
-  actions, className, expandedContent,
+  id,
+  title,
+  icon,
+  children,
+  span = 'full',
+  rowSpan = '1',
+  isEditing,
+  isSaving,
+  onEdit,
+  onSave,
+  onCancel,
+  actions,
+  className,
+  expandedContent,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hideSection = useContext(SectionHideContext);
 
   const spanClasses = {
-    '1': "lg:col-span-4",
-    '2': "lg:col-span-6",
-    '4': "lg:col-span-4",
-    '6': "lg:col-span-6",
-    '8': "lg:col-span-8",
-    '12': "lg:col-span-12",
-    'full': "lg:col-span-12",
+    '1': 'lg:col-span-4',
+    '2': 'lg:col-span-6',
+    '4': 'lg:col-span-4',
+    '6': 'lg:col-span-6',
+    '8': 'lg:col-span-8',
+    '12': 'lg:col-span-12',
+    full: 'lg:col-span-12',
   };
 
   return (
@@ -52,9 +67,9 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
       <div
         id={id}
         className={cn(
-          "group flex flex-col gap-2 p-1 transition-all duration-300 col-span-full",
-          spanClasses[span] || "lg:col-span-12",
-          rowSpan === '2' && "lg:row-span-2",
+          'group flex flex-col gap-2 p-1 transition-all duration-300 col-span-full',
+          spanClasses[span] || 'lg:col-span-12',
+          rowSpan === '2' && 'lg:row-span-2',
           className
         )}
       >
@@ -80,23 +95,36 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
               </Button>
             ) : null}
             {expandedContent && (
-              <Button variant="action" size="icon-sm" aria-label="Expand" onClick={() => setIsExpanded(true)}>
+              <Button
+                variant="action"
+                size="icon-sm"
+                aria-label="Expand"
+                onClick={() => setIsExpanded(true)}
+              >
                 <Maximize2 size={12} />
               </Button>
             )}
             {actions}
             {hideSection && (
-              <Button variant="action" size="icon-sm" className="text-neutral-700" aria-label="Hide section" onClick={() => hideSection(id)}>
+              <Button
+                variant="action"
+                size="icon-sm"
+                className="text-neutral-700"
+                aria-label="Hide section"
+                onClick={() => hideSection(id)}
+              >
                 <Minus size={11} />
               </Button>
             )}
           </div>
         </div>
 
-        <GlassPanel padding="sm" intensity="default" className="flex-1 flex flex-col transition-all duration-200">
-          <div className="flex-1 flex flex-col h-full w-full">
-            {children}
-          </div>
+        <GlassPanel
+          padding="sm"
+          intensity="default"
+          className="flex-1 flex flex-col transition-all duration-200"
+        >
+          <div className="flex-1 flex flex-col h-full w-full">{children}</div>
         </GlassPanel>
       </div>
 

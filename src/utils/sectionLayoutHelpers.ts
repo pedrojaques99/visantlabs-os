@@ -23,7 +23,7 @@ export const getSectionPosition = (
   layout: SectionLayout,
   stepNumber: number
 ): SectionPosition | undefined => {
-  return layout.sections.find(s => s.stepNumber === stepNumber);
+  return layout.sections.find((s) => s.stepNumber === stepNumber);
 };
 
 /**
@@ -34,31 +34,26 @@ export const getSectionsInColumn = (
   columnIndex: number
 ): SectionPosition[] => {
   return layout.sections
-    .filter(s => s.columnIndex === columnIndex)
+    .filter((s) => s.columnIndex === columnIndex)
     .sort((a, b) => a.order - b.order);
 };
 
 /**
  * Obtém todas as sections full-width em ordem
  */
-export const getFullWidthSections = (
-  layout: SectionLayout
-): SectionPosition[] => {
+export const getFullWidthSections = (layout: SectionLayout): SectionPosition[] => {
   return layout.sections
-    .filter(s => s.fullWidth === true || s.columnIndex === -1)
+    .filter((s) => s.fullWidth === true || s.columnIndex === -1)
     .sort((a, b) => a.order - b.order);
 };
 
 /**
  * Calcula a próxima ordem disponível em uma coluna
  */
-export const getNextOrderInColumn = (
-  layout: SectionLayout,
-  columnIndex: number
-): number => {
+export const getNextOrderInColumn = (layout: SectionLayout, columnIndex: number): number => {
   const sectionsInColumn = getSectionsInColumn(layout, columnIndex);
   if (sectionsInColumn.length === 0) return 0;
-  return Math.max(...sectionsInColumn.map(s => s.order)) + 1;
+  return Math.max(...sectionsInColumn.map((s) => s.order)) + 1;
 };
 
 /**
@@ -74,9 +69,7 @@ export const reorderSectionsInColumn = (
     order: index,
   }));
 
-  const otherSections = layout.sections.filter(
-    s => s.columnIndex !== columnIndex
-  );
+  const otherSections = layout.sections.filter((s) => s.columnIndex !== columnIndex);
 
   return {
     ...layout,
@@ -96,9 +89,7 @@ export const moveSection = (
   span?: number
 ): SectionLayout => {
   // Remove a section da posição atual
-  const otherSections = layout.sections.filter(
-    s => s.stepNumber !== stepNumber
-  );
+  const otherSections = layout.sections.filter((s) => s.stepNumber !== stepNumber);
 
   const isFullWidth = fullWidth === true || targetColumnIndex === -1;
 
@@ -107,11 +98,11 @@ export const moveSection = (
     // Atualiza as ordens das sections full-width que estão após a posição de destino
     const fullWidthSections = getFullWidthSections({ ...layout, sections: otherSections });
     const sectionsAfter = fullWidthSections
-      .filter(s => s.order >= targetOrder)
-      .map(s => ({ ...s, order: s.order + 1 }));
+      .filter((s) => s.order >= targetOrder)
+      .map((s) => ({ ...s, order: s.order + 1 }));
 
     const unaffectedSections = otherSections.filter(
-      s => !(s.fullWidth === true || s.columnIndex === -1) || s.order < targetOrder
+      (s) => !(s.fullWidth === true || s.columnIndex === -1) || s.order < targetOrder
     );
 
     // Adiciona a section full-width na nova posição
@@ -132,12 +123,12 @@ export const moveSection = (
   // Comportamento normal para colunas
   // Atualiza as ordens das sections na coluna de destino que estão após a posição de destino
   const sectionsInTargetColumn = otherSections
-    .filter(s => s.columnIndex === targetColumnIndex && s.order >= targetOrder)
-    .map(s => ({ ...s, order: s.order + 1 }));
+    .filter((s) => s.columnIndex === targetColumnIndex && s.order >= targetOrder)
+    .map((s) => ({ ...s, order: s.order + 1 }));
 
   // Mantém as sections que não precisam ser movidas
   const unaffectedSections = otherSections.filter(
-    s => !(s.columnIndex === targetColumnIndex && s.order >= targetOrder)
+    (s) => !(s.columnIndex === targetColumnIndex && s.order >= targetOrder)
   );
 
   // Adiciona a section na nova posição
@@ -155,7 +146,7 @@ export const moveSection = (
   };
 
   // Reorganiza a coluna de origem
-  const sourceSection = layout.sections.find(s => s.stepNumber === stepNumber);
+  const sourceSection = layout.sections.find((s) => s.stepNumber === stepNumber);
   if (sourceSection && sourceSection.columnIndex !== targetColumnIndex) {
     const sourceIsFullWidth = sourceSection.fullWidth === true || sourceSection.columnIndex === -1;
     if (sourceIsFullWidth) {
@@ -174,9 +165,7 @@ export const moveSection = (
 /**
  * Reorganiza as ordens de todas as sections full-width
  */
-export const reorderFullWidthSections = (
-  layout: SectionLayout
-): SectionLayout => {
+export const reorderFullWidthSections = (layout: SectionLayout): SectionLayout => {
   const fullWidthSections = getFullWidthSections(layout);
   const reordered = fullWidthSections.map((section, index) => ({
     ...section,
@@ -184,7 +173,7 @@ export const reorderFullWidthSections = (
   }));
 
   const otherSections = layout.sections.filter(
-    s => !(s.fullWidth === true || s.columnIndex === -1)
+    (s) => !(s.fullWidth === true || s.columnIndex === -1)
   );
 
   return {
@@ -205,7 +194,7 @@ export const resizeSection = (
 ): SectionLayout => {
   return {
     ...layout,
-    sections: layout.sections.map(section =>
+    sections: layout.sections.map((section) =>
       section.stepNumber === stepNumber
         ? { ...section, height, width, span: span !== undefined ? span : section.span }
         : section
@@ -221,19 +210,19 @@ export const toggleFullWidth = (
   stepNumber: number,
   makeFullWidth: boolean
 ): SectionLayout => {
-  const section = layout.sections.find(s => s.stepNumber === stepNumber);
+  const section = layout.sections.find((s) => s.stepNumber === stepNumber);
   if (!section) return layout;
 
   if (makeFullWidth) {
     // Mover para full-width
-    const otherSections = layout.sections.filter(s => s.stepNumber !== stepNumber);
+    const otherSections = layout.sections.filter((s) => s.stepNumber !== stepNumber);
     const fullWidthSections = getFullWidthSections({ ...layout, sections: otherSections });
     const nextOrder = fullWidthSections.length;
 
     return {
       ...layout,
       sections: [
-        ...otherSections.filter(s => !(s.fullWidth === true || s.columnIndex === -1)),
+        ...otherSections.filter((s) => !(s.fullWidth === true || s.columnIndex === -1)),
         ...fullWidthSections,
         {
           ...section,
@@ -246,14 +235,14 @@ export const toggleFullWidth = (
     };
   } else {
     // Retornar para primeira coluna
-    const otherSections = layout.sections.filter(s => s.stepNumber !== stepNumber);
+    const otherSections = layout.sections.filter((s) => s.stepNumber !== stepNumber);
     const firstColumnSections = getSectionsInColumn({ ...layout, sections: otherSections }, 0);
     const nextOrder = firstColumnSections.length;
 
     return {
       ...layout,
       sections: [
-        ...otherSections.filter(s => s.columnIndex !== 0),
+        ...otherSections.filter((s) => s.columnIndex !== 0),
         ...firstColumnSections,
         {
           ...section,
@@ -289,7 +278,7 @@ export const removeColumn = (layout: SectionLayout): SectionLayout => {
 
   // Move todas as sections da coluna removida para a coluna anterior
   let updatedLayout = layout;
-  sectionsToMove.forEach(section => {
+  sectionsToMove.forEach((section) => {
     const nextOrder = getNextOrderInColumn(updatedLayout, targetColumnIndex - 1);
     updatedLayout = moveSection(
       updatedLayout,
@@ -308,10 +297,7 @@ export const removeColumn = (layout: SectionLayout): SectionLayout => {
 /**
  * Define o número de colunas e redistribui as sections
  */
-export const setColumnCount = (
-  layout: SectionLayout,
-  targetColumns: number
-): SectionLayout => {
+export const setColumnCount = (layout: SectionLayout, targetColumns: number): SectionLayout => {
   // Validar range (1-3)
   const clampedColumns = Math.max(1, Math.min(3, targetColumns));
   if (clampedColumns === layout.columns) return layout;
@@ -319,14 +305,14 @@ export const setColumnCount = (
   // Separar sections full-width das normais
   const fullWidthSections = getFullWidthSections(layout);
   const normalSections = layout.sections.filter(
-    s => !(s.fullWidth === true || s.columnIndex === -1)
+    (s) => !(s.fullWidth === true || s.columnIndex === -1)
   );
 
   // Se está aumentando colunas
   if (clampedColumns > layout.columns) {
     // Apenas atualizar o número de colunas, sections permanecem nas mesmas posições
     // Atualizar span das sections full-width para o novo número de colunas
-    const updatedFullWidthSections = fullWidthSections.map(section => ({
+    const updatedFullWidthSections = fullWidthSections.map((section) => ({
       ...section,
       span: clampedColumns,
     }));
@@ -342,7 +328,7 @@ export const setColumnCount = (
   const sectionsToRedistribute: SectionPosition[] = [];
   const sectionsToKeep: SectionPosition[] = [];
 
-  normalSections.forEach(section => {
+  normalSections.forEach((section) => {
     if (section.columnIndex < clampedColumns) {
       // Manter na mesma coluna
       sectionsToKeep.push(section);
@@ -362,12 +348,11 @@ export const setColumnCount = (
   // Redistribuir para as colunas restantes de forma circular
   const redistributedSections = sectionsToRedistribute.map((section, index) => {
     const targetColumn = index % clampedColumns;
-    const sectionsInTargetColumn = sectionsToKeep.filter(
-      s => s.columnIndex === targetColumn
-    );
-    const maxOrder = sectionsInTargetColumn.length > 0
-      ? Math.max(...sectionsInTargetColumn.map(s => s.order))
-      : -1;
+    const sectionsInTargetColumn = sectionsToKeep.filter((s) => s.columnIndex === targetColumn);
+    const maxOrder =
+      sectionsInTargetColumn.length > 0
+        ? Math.max(...sectionsInTargetColumn.map((s) => s.order))
+        : -1;
 
     return {
       ...section,
@@ -377,7 +362,7 @@ export const setColumnCount = (
   });
 
   // Atualizar span das sections full-width para o novo número de colunas
-  const updatedFullWidthSections = fullWidthSections.map(section => ({
+  const updatedFullWidthSections = fullWidthSections.map((section) => ({
     ...section,
     span: clampedColumns,
   }));
@@ -406,11 +391,8 @@ export const resetLayout = (stepIds: number[]): SectionLayout => {
 /**
  * Verifica se um layout é válido (todas as sections estão presentes)
  */
-export const isLayoutValid = (
-  layout: SectionLayout,
-  stepIds: number[]
-): boolean => {
-  const layoutStepNumbers = new Set(layout.sections.map(s => s.stepNumber));
+export const isLayoutValid = (layout: SectionLayout, stepIds: number[]): boolean => {
+  const layoutStepNumbers = new Set(layout.sections.map((s) => s.stepNumber));
   const requiredStepNumbers = new Set(stepIds);
 
   // Todas as sections devem estar no layout
@@ -436,4 +418,3 @@ export const isLayoutValid = (
 
   return true;
 };
-

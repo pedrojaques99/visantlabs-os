@@ -87,6 +87,7 @@ Cursor supports Streamable HTTP natively:
 Or use the Cursor UI: **Settings → MCP → Add Server → URL** and paste `https://api.visantlabs.com/api/mcp`.
 
 For clients without OAuth support, use API key in headers:
+
 ```json
 {
   "mcpServers": {
@@ -131,24 +132,24 @@ Uses `~/.visant/credentials.json` for auth (created by `visant login`).
 
 ## OAuth Endpoints
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/.well-known/oauth-authorization-server` | GET | OAuth server metadata (RFC 8414) |
-| `/.well-known/oauth-protected-resource` | GET | Resource server metadata (RFC 9728) |
-| `/oauth/register` | POST | Dynamic Client Registration (RFC 7591) |
-| `/oauth/authorize` | GET | Authorization + consent page |
-| `/oauth/authorize` | POST | User approve/deny |
-| `/oauth/token` | POST | Token exchange (auth code + refresh) |
-| `/oauth/revoke` | POST | Token revocation (RFC 7009) |
+| Endpoint                                  | Method | Purpose                                |
+| ----------------------------------------- | ------ | -------------------------------------- |
+| `/.well-known/oauth-authorization-server` | GET    | OAuth server metadata (RFC 8414)       |
+| `/.well-known/oauth-protected-resource`   | GET    | Resource server metadata (RFC 9728)    |
+| `/oauth/register`                         | POST   | Dynamic Client Registration (RFC 7591) |
+| `/oauth/authorize`                        | GET    | Authorization + consent page           |
+| `/oauth/authorize`                        | POST   | User approve/deny                      |
+| `/oauth/token`                            | POST   | Token exchange (auth code + refresh)   |
+| `/oauth/revoke`                           | POST   | Token revocation (RFC 7009)            |
 
 ---
 
 ## Scopes
 
-| Scope | Description | Tool pattern |
-|-------|-------------|-------------|
-| `read` | List and get resources | `list-*`, `get-*` |
-| `write` | Create, update, delete | `create-*`, `update-*`, `delete-*` |
+| Scope      | Description            | Tool pattern                         |
+| ---------- | ---------------------- | ------------------------------------ |
+| `read`     | List and get resources | `list-*`, `get-*`                    |
+| `write`    | Create, update, delete | `create-*`, `update-*`, `delete-*`   |
 | `generate` | AI generation features | `generate-*`, `improve-*`, `batch-*` |
 
 Default OAuth consent grants all three scopes.
@@ -175,43 +176,43 @@ curl -X POST https://api.visantlabs.com/api/mcp \
 
 ## Available Tools (40+)
 
-| Tool | Scope | Description |
-|------|-------|-------------|
-| `list_brand_guidelines` | read | List all brands |
-| `get_brand_guideline` | read | Full brand data |
-| `update_brand_guideline` | write | Patch brand fields |
-| `validate_brand_section` | write | Mark section approved/needs_work |
-| `get_brand_design_system` | read | LLM-ready design tokens |
-| `get_brand_insights` | read | Learned preferences from edit history |
-| `create_creative_plan` | generate | Layout plan for marketing assets |
-| `generate_mockup` | generate | Text-to-image / img2img |
-| `batch_generate_mockups` | generate | Up to 20 mockups in parallel |
-| `create_ad_campaign` | generate | Full campaign from product image |
-| `get_campaign_results` | read | Poll campaign progress |
-| `improve_prompt` | generate | Refine image generation prompt |
-| `generate_smart_prompt` | generate | Prompt from structured inputs |
-| `suggest_prompt_variations` | generate | Prompt variations |
-| `extract_prompt_from_image` | generate | Reverse-engineer prompt from image |
-| `extract_colors` | generate | Color palette from image |
-| `generate_naming` | generate | Brand/product name suggestions |
-| `generate_persona` | generate | Audience persona |
-| `generate_archetype` | generate | Brand archetype analysis |
-| `generate_color_palettes` | generate | AI color palettes |
-| `generate_moodboard` | generate | Moodboard direction |
-| `generate_market_research` | generate | Market benchmarking |
-| `generate_swot` | generate | SWOT analysis |
-| `generate_concept_ideas` | generate | Mockup scenario ideas |
-| `document_extract` | generate | PDF to markdown + brand tokens |
-| `list_mockups` | read | List user mockups |
-| `get_mockup` | read | Get mockup by ID |
-| `delete_mockup` | write | Delete a mockup |
-| `list_canvas_projects` | read | List canvas projects |
-| `create_canvas_project` | write | Create canvas project |
-| `update_canvas_project` | write | Update canvas project |
-| `delete_canvas_project` | write | Delete canvas project |
-| `list_creative_events` | read | Creative edit event stream |
-| `get_creative_metrics` | read | Aggregate creative metrics |
-| `list_public_mockups` | read | Public mockup templates |
+| Tool                        | Scope    | Description                           |
+| --------------------------- | -------- | ------------------------------------- |
+| `list_brand_guidelines`     | read     | List all brands                       |
+| `get_brand_guideline`       | read     | Full brand data                       |
+| `update_brand_guideline`    | write    | Patch brand fields                    |
+| `validate_brand_section`    | write    | Mark section approved/needs_work      |
+| `get_brand_design_system`   | read     | LLM-ready design tokens               |
+| `get_brand_insights`        | read     | Learned preferences from edit history |
+| `create_creative_plan`      | generate | Layout plan for marketing assets      |
+| `generate_mockup`           | generate | Text-to-image / img2img               |
+| `batch_generate_mockups`    | generate | Up to 20 mockups in parallel          |
+| `create_ad_campaign`        | generate | Full campaign from product image      |
+| `get_campaign_results`      | read     | Poll campaign progress                |
+| `improve_prompt`            | generate | Refine image generation prompt        |
+| `generate_smart_prompt`     | generate | Prompt from structured inputs         |
+| `suggest_prompt_variations` | generate | Prompt variations                     |
+| `extract_prompt_from_image` | generate | Reverse-engineer prompt from image    |
+| `extract_colors`            | generate | Color palette from image              |
+| `generate_naming`           | generate | Brand/product name suggestions        |
+| `generate_persona`          | generate | Audience persona                      |
+| `generate_archetype`        | generate | Brand archetype analysis              |
+| `generate_color_palettes`   | generate | AI color palettes                     |
+| `generate_moodboard`        | generate | Moodboard direction                   |
+| `generate_market_research`  | generate | Market benchmarking                   |
+| `generate_swot`             | generate | SWOT analysis                         |
+| `generate_concept_ideas`    | generate | Mockup scenario ideas                 |
+| `document_extract`          | generate | PDF to markdown + brand tokens        |
+| `list_mockups`              | read     | List user mockups                     |
+| `get_mockup`                | read     | Get mockup by ID                      |
+| `delete_mockup`             | write    | Delete a mockup                       |
+| `list_canvas_projects`      | read     | List canvas projects                  |
+| `create_canvas_project`     | write    | Create canvas project                 |
+| `update_canvas_project`     | write    | Update canvas project                 |
+| `delete_canvas_project`     | write    | Delete canvas project                 |
+| `list_creative_events`      | read     | Creative edit event stream            |
+| `get_creative_metrics`      | read     | Aggregate creative metrics            |
+| `list_public_mockups`       | read     | Public mockup templates               |
 
 ---
 

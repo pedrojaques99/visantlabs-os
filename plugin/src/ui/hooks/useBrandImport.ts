@@ -7,7 +7,7 @@ import {
   detectLogoSlots,
   mergeImportIntoBrand,
   type LogoCandidate,
-  type MergeOptions
+  type MergeOptions,
 } from '../lib/brandImportHeuristics';
 
 /**
@@ -66,12 +66,19 @@ export function useBrandImport() {
       usePluginStore.setState({
         selectedColors: merged.colors,
         typography: merged.typography,
-        logos: merged.logos
+        logos: merged.logos,
       });
 
-      const hits = merged.colors.size + merged.typography.filter((t) => t.fontFamily).length + merged.logos.filter((l) => l.src).length;
+      const hits =
+        merged.colors.size +
+        merged.typography.filter((t) => t.fontFamily).length +
+        merged.logos.filter((l) => l.src).length;
       store.showToast(
-        hits > 0 ? `Imported ${merged.colors.size} colors, ${merged.logos.filter((l) => l.src).length} logos, ${merged.typography.filter((t) => t.fontFamily).length} fonts` : 'Nothing matched — check naming (e.g. "primary", "logo/dark")',
+        hits > 0
+          ? `Imported ${merged.colors.size} colors, ${
+              merged.logos.filter((l) => l.src).length
+            } logos, ${merged.typography.filter((t) => t.fontFamily).length} fonts`
+          : 'Nothing matched — check naming (e.g. "primary", "logo/dark")',
         hits > 0 ? 'success' : 'warning'
       );
 

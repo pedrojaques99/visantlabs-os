@@ -50,7 +50,7 @@ describe('Redis Cache', () => {
     await redisClient.setex(key, 1, 'expires soon');
 
     // Wait for expiration
-    await new Promise(resolve => setTimeout(resolve, 1100));
+    await new Promise((resolve) => setTimeout(resolve, 1100));
 
     const expired = await redisClient.get(key);
     expect(expired).toBeNull();

@@ -73,7 +73,7 @@ export const getUserLocale = (): CurrencyInfo => {
 export const getStoredLocale = (): Locale | null => {
   if (typeof window === 'undefined') return null;
   const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-  return (stored === 'en-US' || stored === 'pt-BR') ? stored : null;
+  return stored === 'en-US' || stored === 'pt-BR' ? stored : null;
 };
 
 export const setStoredLocale = (locale: Locale): void => {
@@ -82,7 +82,7 @@ export const setStoredLocale = (locale: Locale): void => {
 };
 
 export const getCurrentLocale = (): Locale => {
-  return getStoredLocale() || getUserLocale().locale as Locale;
+  return getStoredLocale() || (getUserLocale().locale as Locale);
 };
 
 export const getTranslations = (locale?: Locale): TranslationKeys => {
@@ -90,7 +90,11 @@ export const getTranslations = (locale?: Locale): TranslationKeys => {
   return TRANSLATIONS[currentLocale] || TRANSLATIONS['en-US'];
 };
 
-export const translate = (key: string, locale?: Locale, params?: Record<string, string | number>): string => {
+export const translate = (
+  key: string,
+  locale?: Locale,
+  params?: Record<string, string | number>
+): string => {
   const translations = getTranslations(locale);
 
   // Navigate through nested keys (e.g., "common.loading")
@@ -205,28 +209,28 @@ export const formatPrice = (amount: number, currency: string, locale: string): s
 const TAG_TRANSLATION_MAP: Record<string, string> = {
   // Category tags
   'Business Card': 'tags.businessCard',
-  'Letterhead': 'tags.letterhead',
+  Letterhead: 'tags.letterhead',
   'Book Cover': 'tags.bookCover',
   'Magazine Cover': 'tags.magazineCover',
-  'Poster': 'tags.poster',
-  'Flyer': 'tags.flyer',
+  Poster: 'tags.poster',
+  Flyer: 'tags.flyer',
   'Box Packaging': 'tags.boxPackaging',
   'Bag Packaging': 'tags.bagPackaging',
   'Pouch Packaging': 'tags.pouchPackaging',
   'Bottle Label': 'tags.bottleLabel',
   'Can Label': 'tags.canLabel',
   'T-shirt': 'tags.tshirt',
-  'Hoodie': 'tags.hoodie',
-  'Cap': 'tags.cap',
-  'Hat': 'tags.hat',
+  Hoodie: 'tags.hoodie',
+  Cap: 'tags.cap',
+  Hat: 'tags.hat',
   'Tote Bag': 'tags.toteBag',
   'Phone Screen': 'tags.phoneScreen',
   'Laptop Screen': 'tags.laptopScreen',
   'Website UI': 'tags.websiteUI',
-  'Billboard': 'tags.billboard',
-  'Signage': 'tags.signage',
-  'Mug': 'tags.mug',
-  'Cup': 'tags.cup',
+  Billboard: 'tags.billboard',
+  Signage: 'tags.signage',
+  Mug: 'tags.mug',
+  Cup: 'tags.cup',
   'Wall Art': 'tags.wallArt',
   'Framed Art': 'tags.framedArt',
   'Thick card paper': 'tags.thickCardPaper',
@@ -236,46 +240,46 @@ const TAG_TRANSLATION_MAP: Record<string, string> = {
   'Device screen': 'tags.deviceScreen',
 
   // Branding tags
-  'Agriculture': 'tags.branding.agriculture',
-  'Casual': 'tags.branding.casual',
-  'Corporate': 'tags.branding.corporate',
-  'Creative': 'tags.branding.creative',
+  Agriculture: 'tags.branding.agriculture',
+  Casual: 'tags.branding.casual',
+  Corporate: 'tags.branding.corporate',
+  Creative: 'tags.branding.creative',
   'Crypto/Web3': 'tags.branding.cryptoWeb3',
   'Eco-friendly': 'tags.branding.ecofriendly',
-  'Energetic': 'tags.branding.energetic',
-  'Exclusive': 'tags.branding.exclusive',
-  'Fashion': 'tags.branding.fashion',
-  'Feminine': 'tags.branding.feminine',
-  'Food': 'tags.branding.food',
-  'Friendly': 'tags.branding.friendly',
-  'Handmade': 'tags.branding.handmade',
+  Energetic: 'tags.branding.energetic',
+  Exclusive: 'tags.branding.exclusive',
+  Fashion: 'tags.branding.fashion',
+  Feminine: 'tags.branding.feminine',
+  Food: 'tags.branding.food',
+  Friendly: 'tags.branding.friendly',
+  Handmade: 'tags.branding.handmade',
   'Health & Wellness': 'tags.branding.healthWellness',
-  'Industrial': 'tags.branding.industrial',
+  Industrial: 'tags.branding.industrial',
   'Kids & Baby': 'tags.branding.kidsBaby',
-  'Luxury': 'tags.branding.luxury',
-  'Minimalist': 'tags.branding.minimalist',
-  'Modern': 'tags.branding.modern',
-  'Playful': 'tags.branding.playful',
-  'Sport': 'tags.branding.sport',
-  'Tech': 'tags.branding.tech',
+  Luxury: 'tags.branding.luxury',
+  Minimalist: 'tags.branding.minimalist',
+  Modern: 'tags.branding.modern',
+  Playful: 'tags.branding.playful',
+  Sport: 'tags.branding.sport',
+  Tech: 'tags.branding.tech',
   'Travel & Hospitality': 'tags.branding.travelHospitality',
-  'Vintage': 'tags.branding.vintage',
-  'Elegant': 'tags.branding.elegant',
+  Vintage: 'tags.branding.vintage',
+  Elegant: 'tags.branding.elegant',
 
   // Location tags
-  'Tokyo': 'tags.location.tokyo',
+  Tokyo: 'tags.location.tokyo',
   'New York': 'tags.location.newYork',
-  'Brazil': 'tags.location.brazil',
-  'Paris': 'tags.location.paris',
-  'London': 'tags.location.london',
-  'Nordic': 'tags.location.nordic',
+  Brazil: 'tags.location.brazil',
+  Paris: 'tags.location.paris',
+  London: 'tags.location.london',
+  Nordic: 'tags.location.nordic',
   'California Coast': 'tags.location.californiaCoast',
   'Minimalist Studio': 'tags.location.minimalistStudio',
   'Nature landscape': 'tags.location.natureLandscape',
   'Urban City': 'tags.location.urbanCity',
-  'Workspace': 'tags.location.workspace',
+  Workspace: 'tags.location.workspace',
   'Grass/Lawn': 'tags.location.grassLawn',
-  'Concrete': 'tags.location.concrete',
+  Concrete: 'tags.location.concrete',
   'Wooden Slat Wall': 'tags.location.woodenSlatWall',
   'Wooden Table': 'tags.location.woodenTable',
   'Glass Environment': 'tags.location.glassEnvironment',
@@ -293,22 +297,22 @@ const TAG_TRANSLATION_MAP: Record<string, string> = {
   'Studio Lighting': 'tags.lighting.studioLighting',
   'Golden Hour': 'tags.lighting.goldenHour',
   'Blue Hour': 'tags.lighting.blueHour',
-  'Overcast': 'tags.lighting.overcast',
+  Overcast: 'tags.lighting.overcast',
   'Direct Sunlight': 'tags.lighting.directSunlight',
   'Night Scene': 'tags.lighting.nightScene',
-  'Cinematic': 'tags.lighting.cinematic',
+  Cinematic: 'tags.lighting.cinematic',
   'Shadow overlay': 'tags.lighting.shadowOverlay',
 
   // Effect tags
-  'Bokeh': 'tags.effect.bokeh',
+  Bokeh: 'tags.effect.bokeh',
   'Motion Blur': 'tags.effect.motionBlur',
   'Vintage Film': 'tags.effect.vintageFilm',
-  'Monochrome': 'tags.effect.monochrome',
+  Monochrome: 'tags.effect.monochrome',
   'Long Exposure': 'tags.effect.longExposure',
   'Lens Flare': 'tags.effect.lensFlare',
   'High Contrast': 'tags.effect.highContrast',
   'Fish-eye lens': 'tags.effect.fisheyeLens',
-  'Halftone': 'tags.effect.halftone',
+  Halftone: 'tags.effect.halftone',
 };
 
 /**

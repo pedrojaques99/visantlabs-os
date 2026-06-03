@@ -51,7 +51,7 @@ const clean = (s: string | null | undefined, max = 120): string | null => {
  * "tem brand" vs "não tem brand" com uma única checagem.
  */
 export function distillBrandGuideline(
-  guideline: BrandGuideline | null | undefined,
+  guideline: BrandGuideline | null | undefined
 ): BrandBrief | null {
   if (!guideline) return null;
 
@@ -59,10 +59,10 @@ export function distillBrandGuideline(
 
   // Arquétipos: prioriza o marcado como 'primary', fallback pros dois primeiros.
   const archetypesRaw = guideline.strategy?.archetypes ?? [];
-  const primary = archetypesRaw.find(a => a.role === 'primary');
+  const primary = archetypesRaw.find((a) => a.role === 'primary');
   const archetypes = [
     ...(primary ? [primary.name] : []),
-    ...archetypesRaw.filter(a => a !== primary).map(a => a.name),
+    ...archetypesRaw.filter((a) => a !== primary).map((a) => a.name),
   ]
     .filter(Boolean)
     .slice(0, 2);
@@ -77,15 +77,13 @@ export function distillBrandGuideline(
     const bn = bi === -1 ? 99 : bi;
     return an - bn;
   });
-  const palette = take(sortedColors, 4).map(c =>
-    c.name ? `${c.hex} (${c.name})` : c.hex,
-  );
+  const palette = take(sortedColors, 4).map((c) => (c.name ? `${c.hex} (${c.name})` : c.hex));
 
   // Tipografia: máx 2 famílias únicas, prioriza heading/body.
   const typoRaw = guideline.typography ?? [];
-  const headings = typoRaw.filter(t => (t.role ?? '').toLowerCase() === 'heading');
-  const body = typoRaw.filter(t => (t.role ?? '').toLowerCase() === 'body');
-  const typographyFamilies = [...new Set([...headings, ...body, ...typoRaw].map(t => t.family))]
+  const headings = typoRaw.filter((t) => (t.role ?? '').toLowerCase() === 'heading');
+  const body = typoRaw.filter((t) => (t.role ?? '').toLowerCase() === 'body');
+  const typographyFamilies = [...new Set([...headings, ...body, ...typoRaw].map((t) => t.family))]
     .filter(Boolean)
     .slice(0, 2);
 
@@ -96,10 +94,10 @@ export function distillBrandGuideline(
     null;
 
   const dos = take(guideline.guidelines?.dos, 3)
-    .map(d => clean(d, 80))
+    .map((d) => clean(d, 80))
     .filter((x): x is string => !!x);
   const donts = take(guideline.guidelines?.donts, 3)
-    .map(d => clean(d, 80))
+    .map((d) => clean(d, 80))
     .filter((x): x is string => !!x);
 
   const imagery = clean(guideline.guidelines?.imagery, 140);
@@ -109,8 +107,7 @@ export function distillBrandGuideline(
   lines.push(`Brand: ${name}.`);
   if (archetypes.length) lines.push(`Archetype: ${archetypes.join(' + ')}.`);
   if (palette.length) lines.push(`Ambient palette: ${palette.join(', ')}.`);
-  if (typographyFamilies.length)
-    lines.push(`Typography signal: ${typographyFamilies.join(', ')}.`);
+  if (typographyFamilies.length) lines.push(`Typography signal: ${typographyFamilies.join(', ')}.`);
   if (voice) lines.push(`Voice: ${voice}.`);
   if (imagery) lines.push(`Imagery rule: ${imagery}.`);
   if (dos.length) lines.push(`DO: ${dos.join('; ')}.`);

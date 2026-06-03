@@ -73,7 +73,9 @@ function detectAndParse(raw: string): { format: InputFormat; hex: string } | nul
   }
 
   // CMYK
-  const cmykMatch = s.match(/^(?:cmyk\s*\(\s*)?(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)?$/i);
+  const cmykMatch = s.match(
+    /^(?:cmyk\s*\(\s*)?(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)?$/i
+  );
   if (cmykMatch) {
     const [c, m, y, k] = [+cmykMatch[1], +cmykMatch[2], +cmykMatch[3], +cmykMatch[4]];
     if (c <= 100 && m <= 100 && y <= 100 && k <= 100) {

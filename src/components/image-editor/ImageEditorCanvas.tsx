@@ -13,11 +13,7 @@ interface Props {
   imageHeight: number;
 }
 
-export const ImageEditorCanvas: React.FC<Props> = ({
-  imageUrl,
-  imageWidth,
-  imageHeight,
-}) => {
+export const ImageEditorCanvas: React.FC<Props> = ({ imageUrl, imageWidth, imageHeight }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -47,7 +43,10 @@ export const ImageEditorCanvas: React.FC<Props> = ({
   const brushPointsRef = useRef<number[][]>([]);
   const [drawPreview, setDrawPreview] = useState<{
     type: 'rect' | 'circle';
-    x: number; y: number; w: number; h: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
   } | null>(null);
 
   // Load image
@@ -105,87 +104,102 @@ export const ImageEditorCanvas: React.FC<Props> = ({
   }, [imageLoaded, zoom, panOffset, imageWidth, imageHeight, maskOperations]);
 
   // Render mask overlay (all mask operations + live stroke)
-  const renderMaskOverlay = useCallback((livePoints?: number[][]) => {
-    const overlay = maskDisplayCanvasRef.current;
-    const container = containerRef.current;
-    if (!overlay || !container) return;
+  const renderMaskOverlay = useCallback(
+    (livePoints?: number[][]) => {
+      const overlay = maskDisplayCanvasRef.current;
+      const container = containerRef.current;
+      if (!overlay || !container) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    overlay.width = container.clientWidth * dpr;
-    overlay.height = container.clientHeight * dpr;
-    overlay.style.width = `${container.clientWidth}px`;
-    overlay.style.height = `${container.clientHeight}px`;
+      const dpr = window.devicePixelRatio || 1;
+      overlay.width = container.clientWidth * dpr;
+      overlay.height = container.clientHeight * dpr;
+      overlay.style.width = `${container.clientWidth}px`;
+      overlay.style.height = `${container.clientHeight}px`;
 
-    const ctx = overlay.getContext('2d')!;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, container.clientWidth, container.clientHeight);
+      const ctx = overlay.getContext('2d')!;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, container.clientWidth, container.clientHeight);
 
-    ctx.save();
-    ctx.translate(panOffset.x, panOffset.y);
-    ctx.scale(zoom, zoom);
+      ctx.save();
+      ctx.translate(panOffset.x, panOffset.y);
+      ctx.scale(zoom, zoom);
 
-    const ops = useImageEditorStore.getState().maskOperations;
+      const ops = useImageEditorStore.getState().maskOperations;
 
-    const drawOp = (op: MaskOperation, fillStyle: string) => {
-      if (op.type === 'eraser') {
-        ctx.globalCompositeOperation = 'destination-out';
-      } else {
-        ctx.globalCompositeOperation = 'source-over';
-      }
-      ctx.fillStyle = fillStyle;
-
-      switch (op.type) {
-        case 'rect':
-          ctx.fillRect(
-            op.x * imageWidth, op.y * imageHeight,
-            op.w * imageWidth, op.h * imageHeight,
-          );
-          break;
-        case 'circle':
-          ctx.beginPath();
-          ctx.ellipse(
-            op.cx * imageWidth, op.cy * imageHeight,
-            op.rx * imageWidth, op.ry * imageHeight,
-            0, 0, Math.PI * 2,
-          );
-          ctx.fill();
-          break;
-        case 'brush':
-        case 'eraser': {
-          const absPoints = op.points.map(([x, y]) => [x * imageWidth, y * imageHeight]);
-          const strokeSize = op.size * imageWidth;
-          const stroke = getStroke(absPoints, {
-            size: strokeSize, thinning: 0, smoothing: 0.5, streamline: 0.5,
-          });
-          const pathData = getSvgPathFromStroke(stroke);
-          const path = new Path2D(pathData);
-          ctx.fill(path);
-          break;
+      const drawOp = (op: MaskOperation, fillStyle: string) => {
+        if (op.type === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
         }
+        ctx.fillStyle = fillStyle;
+
+        switch (op.type) {
+          case 'rect':
+            ctx.fillRect(
+              op.x * imageWidth,
+              op.y * imageHeight,
+              op.w * imageWidth,
+              op.h * imageHeight
+            );
+            break;
+          case 'circle':
+            ctx.beginPath();
+            ctx.ellipse(
+              op.cx * imageWidth,
+              op.cy * imageHeight,
+              op.rx * imageWidth,
+              op.ry * imageHeight,
+              0,
+              0,
+              Math.PI * 2
+            );
+            ctx.fill();
+            break;
+          case 'brush':
+          case 'eraser': {
+            const absPoints = op.points.map(([x, y]) => [x * imageWidth, y * imageHeight]);
+            const strokeSize = op.size * imageWidth;
+            const stroke = getStroke(absPoints, {
+              size: strokeSize,
+              thinning: 0,
+              smoothing: 0.5,
+              streamline: 0.5,
+            });
+            const pathData = getSvgPathFromStroke(stroke);
+            const path = new Path2D(pathData);
+            ctx.fill(path);
+            break;
+          }
+        }
+      };
+
+      // Draw all existing mask operations
+      for (const op of ops) {
+        drawOp(op, 'rgba(82, 221, 235, 0.35)');
       }
-    };
 
-    // Draw all existing mask operations
-    for (const op of ops) {
-      drawOp(op, 'rgba(82, 221, 235, 0.35)');
-    }
+      // Draw live stroke in progress
+      if (livePoints && livePoints.length > 1) {
+        ctx.globalCompositeOperation = activeTool === 'eraser' ? 'destination-out' : 'source-over';
+        ctx.fillStyle = 'rgba(82, 221, 235, 0.35)';
+        const currentBrushSize = useImageEditorStore.getState().brushSize;
+        const stroke = getStroke(livePoints, {
+          size: currentBrushSize,
+          thinning: 0,
+          smoothing: 0.5,
+          streamline: 0.5,
+        });
+        const pathData = getSvgPathFromStroke(stroke);
+        const path = new Path2D(pathData);
+        ctx.fill(path);
+      }
 
-    // Draw live stroke in progress
-    if (livePoints && livePoints.length > 1) {
-      ctx.globalCompositeOperation = activeTool === 'eraser' ? 'destination-out' : 'source-over';
-      ctx.fillStyle = 'rgba(82, 221, 235, 0.35)';
-      const currentBrushSize = useImageEditorStore.getState().brushSize;
-      const stroke = getStroke(livePoints, {
-        size: currentBrushSize, thinning: 0, smoothing: 0.5, streamline: 0.5,
-      });
-      const pathData = getSvgPathFromStroke(stroke);
-      const path = new Path2D(pathData);
-      ctx.fill(path);
-    }
-
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.restore();
-  }, [zoom, panOffset, imageWidth, imageHeight, activeTool]);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.restore();
+    },
+    [zoom, panOffset, imageWidth, imageHeight, activeTool]
+  );
 
   // Re-render mask overlay when maskOperations change
   useEffect(() => {
@@ -193,72 +207,84 @@ export const ImageEditorCanvas: React.FC<Props> = ({
   }, [maskOperations, renderMaskOverlay]);
 
   // Mouse → image coordinates
-  const screenToImage = useCallback((clientX: number, clientY: number) => {
-    const container = containerRef.current;
-    if (!container) return { x: 0, y: 0 };
-    const rect = container.getBoundingClientRect();
-    return {
-      x: (clientX - rect.left - panOffset.x) / zoom,
-      y: (clientY - rect.top - panOffset.y) / zoom,
-    };
-  }, [zoom, panOffset]);
+  const screenToImage = useCallback(
+    (clientX: number, clientY: number) => {
+      const container = containerRef.current;
+      if (!container) return { x: 0, y: 0 };
+      const rect = container.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left - panOffset.x) / zoom,
+        y: (clientY - rect.top - panOffset.y) / zoom,
+      };
+    },
+    [zoom, panOffset]
+  );
 
   // Wheel zoom
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const container = containerRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const newZoom = Math.max(0.1, Math.min(5, zoom * delta));
-    const scale = newZoom / zoom;
-    setPanOffset({
-      x: mx - (mx - panOffset.x) * scale,
-      y: my - (my - panOffset.y) * scale,
-    });
-    setZoom(newZoom);
-  }, [zoom, panOffset, setZoom, setPanOffset]);
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const newZoom = Math.max(0.1, Math.min(5, zoom * delta));
+      const scale = newZoom / zoom;
+      setPanOffset({
+        x: mx - (mx - panOffset.x) * scale,
+        y: my - (my - panOffset.y) * scale,
+      });
+      setZoom(newZoom);
+    },
+    [zoom, panOffset, setZoom, setPanOffset]
+  );
 
   // Pointer events for mask drawing
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (activeAction !== 'inpaint') return;
-    if (e.button !== 0) return;
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (activeAction !== 'inpaint') return;
+      if (e.button !== 0) return;
 
-    const pos = screenToImage(e.clientX, e.clientY);
-    isDrawingRef.current = true;
-    drawStartRef.current = pos;
+      const pos = screenToImage(e.clientX, e.clientY);
+      isDrawingRef.current = true;
+      drawStartRef.current = pos;
 
-    if (activeTool === 'brush' || activeTool === 'eraser') {
-      brushPointsRef.current = [[pos.x, pos.y]];
-    }
-  }, [activeAction, activeTool, screenToImage]);
+      if (activeTool === 'brush' || activeTool === 'eraser') {
+        brushPointsRef.current = [[pos.x, pos.y]];
+      }
+    },
+    [activeAction, activeTool, screenToImage]
+  );
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    // Always update cursor position for custom brush cursor
-    setCursorPos({ x: e.clientX, y: e.clientY });
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      // Always update cursor position for custom brush cursor
+      setCursorPos({ x: e.clientX, y: e.clientY });
 
-    if (!isDrawingRef.current || activeAction !== 'inpaint') return;
+      if (!isDrawingRef.current || activeAction !== 'inpaint') return;
 
-    const pos = screenToImage(e.clientX, e.clientY);
-    const start = drawStartRef.current!;
+      const pos = screenToImage(e.clientX, e.clientY);
+      const start = drawStartRef.current!;
 
-    if (activeTool === 'rect' || activeTool === 'circle') {
-      const x = Math.min(start.x, pos.x);
-      const y = Math.min(start.y, pos.y);
-      const w = Math.abs(pos.x - start.x);
-      const h = Math.abs(pos.y - start.y);
-      setDrawPreview({ type: activeTool, x, y, w, h });
-    } else if (activeTool === 'brush' || activeTool === 'eraser') {
-      brushPointsRef.current.push([pos.x, pos.y]);
-      liveStrokeRef.current = [...brushPointsRef.current];
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        renderMaskOverlay(liveStrokeRef.current);
-      });
-    }
-  }, [activeAction, activeTool, screenToImage, renderMaskOverlay]);
+      if (activeTool === 'rect' || activeTool === 'circle') {
+        const x = Math.min(start.x, pos.x);
+        const y = Math.min(start.y, pos.y);
+        const w = Math.abs(pos.x - start.x);
+        const h = Math.abs(pos.y - start.y);
+        setDrawPreview({ type: activeTool, x, y, w, h });
+      } else if (activeTool === 'brush' || activeTool === 'eraser') {
+        brushPointsRef.current.push([pos.x, pos.y]);
+        liveStrokeRef.current = [...brushPointsRef.current];
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(() => {
+          renderMaskOverlay(liveStrokeRef.current);
+        });
+      }
+    },
+    [activeAction, activeTool, screenToImage, renderMaskOverlay]
+  );
 
   const handlePointerUp = useCallback(() => {
     if (!isDrawingRef.current) return;
@@ -269,7 +295,10 @@ export const ImageEditorCanvas: React.FC<Props> = ({
 
     const MIN_SIZE_RATIO = 0.01;
     if (activeTool === 'rect' && drawPreview) {
-      if (drawPreview.w > imageWidth * MIN_SIZE_RATIO && drawPreview.h > imageHeight * MIN_SIZE_RATIO) {
+      if (
+        drawPreview.w > imageWidth * MIN_SIZE_RATIO &&
+        drawPreview.h > imageHeight * MIN_SIZE_RATIO
+      ) {
         addMaskOperation({
           type: 'rect',
           x: drawPreview.x / imageWidth,
@@ -281,13 +310,16 @@ export const ImageEditorCanvas: React.FC<Props> = ({
         toast.info('Selection too small — try a larger area', { duration: 2000 });
       }
     } else if (activeTool === 'circle' && drawPreview) {
-      if (drawPreview.w > imageWidth * MIN_SIZE_RATIO && drawPreview.h > imageHeight * MIN_SIZE_RATIO) {
+      if (
+        drawPreview.w > imageWidth * MIN_SIZE_RATIO &&
+        drawPreview.h > imageHeight * MIN_SIZE_RATIO
+      ) {
         addMaskOperation({
           type: 'circle',
           cx: (drawPreview.x + drawPreview.w / 2) / imageWidth,
           cy: (drawPreview.y + drawPreview.h / 2) / imageHeight,
-          rx: (drawPreview.w / 2) / imageWidth,
-          ry: (drawPreview.h / 2) / imageHeight,
+          rx: drawPreview.w / 2 / imageWidth,
+          ry: drawPreview.h / 2 / imageHeight,
         });
       } else {
         toast.info('Selection too small — try a larger area', { duration: 2000 });
@@ -310,7 +342,15 @@ export const ImageEditorCanvas: React.FC<Props> = ({
     cancelAnimationFrame(rafRef.current);
     // Re-render overlay with finalized mask operations (no live stroke)
     renderMaskOverlay();
-  }, [activeTool, drawPreview, imageWidth, imageHeight, brushSize, addMaskOperation, renderMaskOverlay]);
+  }, [
+    activeTool,
+    drawPreview,
+    imageWidth,
+    imageHeight,
+    brushSize,
+    addMaskOperation,
+    renderMaskOverlay,
+  ]);
 
   // Cursor style
   const getCursor = () => {
@@ -336,10 +376,7 @@ export const ImageEditorCanvas: React.FC<Props> = ({
       />
 
       {/* Mask display overlay canvas */}
-      <canvas
-        ref={maskDisplayCanvasRef}
-        className="absolute inset-0 pointer-events-none"
-      />
+      <canvas ref={maskDisplayCanvasRef} className="absolute inset-0 pointer-events-none" />
 
       {/* Mask preview overlay */}
       <MaskPreview
@@ -367,9 +404,8 @@ export const ImageEditorCanvas: React.FC<Props> = ({
             height: brushSize * zoom,
             left: cursorPos.x,
             top: cursorPos.y,
-            borderColor: activeTool === 'eraser'
-              ? 'rgba(255, 100, 100, 0.6)'
-              : IMAGE_EDITOR.brush.cursorColor,
+            borderColor:
+              activeTool === 'eraser' ? 'rgba(255, 100, 100, 0.6)' : IMAGE_EDITOR.brush.cursorColor,
             transform: 'translate(-50%, -50%)',
           }}
         />

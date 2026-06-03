@@ -23,17 +23,18 @@ const getSiteUrl = (): string => {
 };
 
 const defaultTitle = 'Visant Labs® | Tools for Designers';
-const defaultDescription = 'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.';
+const defaultDescription =
+  'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.';
 
 /**
  * Default Open Graph Image
- * 
+ *
  * Place your OG image in the public/ folder (recommended: 1200x630px)
  * Examples:
  * - /og-image.png
- * - /og-image.jpg  
+ * - /og-image.jpg
  * - /images/og-default.png
- * 
+ *
  * To use a custom image per page, pass the `image` prop to the SEO component:
  * <SEO image="/custom-page-image.png" ... />
  */
@@ -182,9 +183,19 @@ export const SEO: React.FC<SEOProps> = ({
         },
       },
     ]);
-
-  }, [fullTitle, finalDescription, keywords, imageUrl, finalUrl, type, noindex, currentLocale, location.pathname, location.search, siteUrl]);
+  }, [
+    fullTitle,
+    finalDescription,
+    keywords,
+    imageUrl,
+    finalUrl,
+    type,
+    noindex,
+    currentLocale,
+    location.pathname,
+    location.search,
+    siteUrl,
+  ]);
 
   return null;
 };
-

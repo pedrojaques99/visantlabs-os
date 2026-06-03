@@ -10,9 +10,9 @@ import type { FlowNodeData } from '@/types/reactFlow';
 
 // Unified token format that normalizes both BrandIdentity and BrandGuideline
 export interface BrandTokens {
-  colors: string[];    // hex codes
-  fonts: string[];     // font families
-  keywords: string[];  // style keywords
+  colors: string[]; // hex codes
+  fonts: string[]; // font families
+  keywords: string[]; // style keywords
   tone: string | null;
   voice: string | null;
   dos: string[];
@@ -38,10 +38,9 @@ export function tokensFromBrandIdentity(brand: BrandIdentity): BrandTokens {
     ...brand.colors.accent,
   ].filter(Boolean);
 
-  const fonts = [
-    brand.typography.primary,
-    brand.typography.secondary,
-  ].filter((f): f is string => Boolean(f));
+  const fonts = [brand.typography.primary, brand.typography.secondary].filter((f): f is string =>
+    Boolean(f)
+  );
 
   const keywords = brand.visualElements ?? [];
 
@@ -122,7 +121,7 @@ export function getBrandContextForNode(
   nodeId: string,
   nodes: Node<FlowNodeData>[],
   edges: Edge[],
-  linkedGuideline: BrandGuideline | null | undefined,
+  linkedGuideline: BrandGuideline | null | undefined
 ): { source: BrandContextSource; tokens: BrandTokens | null } {
   // Priority: edge-connected BrandNode wins
   const brandIdentity = getConnectedBrandIdentity(nodeId, nodes, edges);
@@ -148,7 +147,7 @@ export function buildPromptWithBrandContext(
   nodeId: string,
   nodes: Node<FlowNodeData>[],
   edges: Edge[],
-  linkedGuideline: BrandGuideline | null | undefined,
+  linkedGuideline: BrandGuideline | null | undefined
 ): string | undefined {
   const { tokens } = getBrandContextForNode(nodeId, nodes, edges, linkedGuideline);
   return tokens ? buildEnhancement(basePrompt, tokens) : undefined;
@@ -179,7 +178,7 @@ export function useBrandContext(nodeId: string): BrandContextResult {
       if (!tokens) return prompt;
       return buildEnhancement(prompt, tokens);
     },
-    [tokens],
+    [tokens]
   );
 
   return { source, tokens, buildPromptEnhancement };

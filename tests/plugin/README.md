@@ -30,16 +30,19 @@ npm test -- --coverage
 ## Test Categories
 
 ### Unit Tests
+
 - Store actions (Zustand)
 - Hook logic (useAuth, useMentions, etc)
 - Utilities (parsing, formatting)
 
 ### Integration Tests
+
 - API calls (auth, brand sync, Gemini)
 - Message flow (UI ↔ Sandbox)
 - State synchronization
 
 ### E2E Tests
+
 - Full plugin flow in Figma
 - User interactions
 - Real API calls

@@ -3,20 +3,19 @@ This document describes the input and output parameters for the image generation
 
 **Image** ** generation capabilities by model**
 
-* **seedream\-4.5==^new^==** **、seedream\-4.0**
-   * Generate multiple image in sequence \- i.e., a batch of related images generated based on your input; set **sequential_image_generation** to `auto`
-      * Generate a batch of related images based on your input of **++multiple reference images (2\-14) +++ **  ++ text prompt++ (the total number of input and output images ≤ 15).
-      * Generate a batch of related images (up to 14) from a ++single reference image + text prompt++.
-      * Generate a batch of related images (up to 15) from text ++prompt++.
-   * Generate a single image (set **sequential_image_generation** to `disabled` **)** .
-      * Generate a single image from **++multiple reference images (2\-14) ++ **  +++ text prompt++.
-      * Generate a single image from ++a single reference image + text prompt++.
-      * Generate a single image from ++text prompt++.
-* **seedream\-3.0\-t2i**
-   * Generate a single image from ++a text prompt++.
-* **seededit\-3.0\-i2i**
-   * Generate a single image from ++a single reference image+text prompt++.
-
+- **seedream\-4.5==^new^==** **、seedream\-4.0**
+  - Generate multiple image in sequence \- i.e., a batch of related images generated based on your input; set **sequential_image_generation** to `auto`
+    - Generate a batch of related images based on your input of **++multiple reference images (2\-14) +++ ** ++ text prompt++ (the total number of input and output images ≤ 15).
+    - Generate a batch of related images (up to 14) from a ++single reference image + text prompt++.
+    - Generate a batch of related images (up to 15) from text ++prompt++.
+  - Generate a single image (set **sequential_image_generation** to `disabled` **)** .
+    - Generate a single image from **++multiple reference images (2\-14) ++ ** +++ text prompt++.
+    - Generate a single image from ++a single reference image + text prompt++.
+    - Generate a single image from ++text prompt++.
+- **seedream\-3.0\-t2i**
+  - Generate a single image from ++a text prompt++.
+- **seededit\-3.0\-i2i**
+  - Generate a single image from ++a single reference image+text prompt++.
 
 ```mixin-react
 return (<Tabs>
@@ -27,23 +26,22 @@ return (<Tabs>
 `}></RenderMd></Tabs.TabPane></Tabs>);
 ```
 
-
 ---
 
-
 <span id="7thx2dVa"></span>
+
 ## Request parameters
+
 <span id="BFVUvDi6"></span>
+
 ### Request body
 
 ---
-
 
 **model** `string` %%require%%
 The model ID used for image generation: [Model ID](https://docs.byteplus.com/en/docs/ModelArk/1330310#image-generation) or [inference endpoint](https://docs.byteplus.com/en/docs/ModelArk/1099522) (Endpoint ID).
 
 ---
-
 
 **prompt ** `string` %%require%%
 The text prompt used for image generation. (Prompt guide: [Seedream 4.0-4.5](https://docs.byteplus.com/en/docs/ModelArk/1829186), [Seedream 3.0](https://docs.byteplus.com/en/docs/ModelArk/1795150))
@@ -51,33 +49,30 @@ We recommend keeping the prompt under **600 English words**. Excessively long pr
 
 ---
 
+**image** `string/array`
 
-**image** `string/array` 
 > Seededit\-3.0\-t2i does not support this parameter.
 
 Provide the image to edit as a Base64 string or an accessible URL. **Seedream\-4.5 and ** **seedream\-4.0** support inputting a single image or multiple images ([see the multi-image blending example](https://docs.byteplus.com/en/docs/ModelArk/1824121#multi-image-blending-multi-image-input-single-image-output)), while **seededit\-3.0\-i2i** only supports single\-image input.
 
-* Image URL: Ensure that the image URL is accessible.
-* Base64 encoding: The format must be `data:image/<image format>;base64,<Base64 encoding>`. Note that `<image format>` must be in lowercase, e.g., `data:image/png;base64,<base64_image>`.
+- Image URL: Ensure that the image URL is accessible.
+- Base64 encoding: The format must be `data:image/<image format>;base64,<Base64 encoding>`. Note that `<image format>` must be in lowercase, e.g., `data:image/png;base64,<base64_image>`.
 
 :::tip Description
 
-* Input Images must meet the following requirements:
-   * Image format: JPEG, PNG (The seedream\-4.5 and seedream\-4.0 model also support WEBP、BMP、TIFF and GIF formats**==^new^==**)
-   * Aspect ratio (width/height): 
-      * Between [1/16, 16] (for seedream\-4.5 and seedream\-4.0)
-      * Between [1/3, 3] (for seededit\-3.0\-i2i and seededit\-3.0\-t2i)
-   * Width and height (px): \> 14
-   * Size: Up to 10 MB
-   * Total pixels: No more than `6000x6000=36000000` (The total pixel limit applies to the **product of the single image’s width and height**, rather than to either dimension individually.)
-* Seedream\-4.5 and seedream\-4.0 support uploading a maximum of 14 reference images.
+- Input Images must meet the following requirements:
+  - Image format: JPEG, PNG (The seedream\-4.5 and seedream\-4.0 model also support WEBP、BMP、TIFF and GIF formats**==^new^==**)
+  - Aspect ratio (width/height):
+    - Between [1/16, 16] (for seedream\-4.5 and seedream\-4.0)
+    - Between [1/3, 3] (for seededit\-3.0\-i2i and seededit\-3.0\-t2i)
+  - Width and height (px): \> 14
+  - Size: Up to 10 MB
+  - Total pixels: No more than `6000x6000=36000000` (The total pixel limit applies to the **product of the single image’s width and height**, rather than to either dimension individually.)
+- Seedream\-4.5 and seedream\-4.0 support uploading a maximum of 14 reference images.
 
+## :::
 
-:::
----
-
-
-**size** `String`  
+**size** `String`
 
 ```mixin-react
 return (<Tabs>
@@ -87,7 +82,7 @@ return (<Tabs>
    * Optional values: \`2K\`, \`4K\`
 * Method 2 | Specify the width and height of the generated image in pixels:
    * Default value: \`2048x2048\`
-   * Total pixels range: [\`2560x1440=3,686,400\`, \`4096x4096=16,777,216\`] 
+   * Total pixels range: [\`2560x1440=3,686,400\`, \`4096x4096=16,777,216\`]
    * Aspect ratio range: [1/16, 16]
 
 :::tip Description
@@ -121,7 +116,7 @@ Recommended width and height:
    * Optional values: \`1K\`, \`2K\`, \`4K\`
 * Method 2 | Specify the width and height of the generated image in pixels:
    * Default value: \`2048x2048\`
-   * Total pixels range: [\`1280x720=921,600\`, \`4096x4096=16,777,216\`] 
+   * Total pixels range: [\`1280x720=921,600\`, \`4096x4096=16,777,216\`]
    * Aspect ratio range: [1/16, 16]
 
 :::tip Description
@@ -168,7 +163,7 @@ Recommended width and height:
 |21:9 |\`1512x648\` |
 
 `}></RenderMd></Tabs.TabPane>
-<Tabs.TabPane title="seededit-3.0-i2i" key="icUtzktnqP"><RenderMd content={`Specify the width and height of the generated image in pixels. **Only support adaptive for now.** 
+<Tabs.TabPane title="seededit-3.0-i2i" key="icUtzktnqP"><RenderMd content={`Specify the width and height of the generated image in pixels. **Only support adaptive for now.**
 
 * adaptive: Compare your input image's dimensions with those in the table below and select the closest match for the output image. Specifically, the system selects the **first** available aspect ratio with the **smallest difference** from that of the original image.
 * Preset width and height in pixels
@@ -233,24 +228,22 @@ Recommended width and height:
 `}></RenderMd></Tabs.TabPane></Tabs>);
 ```
 
-
 ---
 
-
 **seed** `integer` `Default: -1`
+
 > Only seedream\-3.0\-t2i and seededit\-3.0\-i2i support this parameter.
 
 A random seed that controls the randomness of the generated content. The value range is [\-1, 2147483647].
 Warning
 
-* For the same request, the model will produce different results when using different seed values. For example, leaving the seed unspecified, setting it to \-1 (meaning use a random number), or manually changing the seed will all lead to different outputs.
-* When the same seed is used for the same request, the model will generate similar results, but exact duplication is not guaranteed.
-
+- For the same request, the model will produce different results when using different seed values. For example, leaving the seed unspecified, setting it to \-1 (meaning use a random number), or manually changing the seed will all lead to different outputs.
+- When the same seed is used for the same request, the model will generate similar results, but exact duplication is not guaranteed.
 
 ---
 
+**sequential_image_generation** `string` `Default: disabled`
 
-**sequential_image_generation** `string`  `Default: disabled`
 > This parameter is only supported on seedream\-4.5 and seedream\-4.0 | See[ batch image output](https://docs.byteplus.com/en/docs/ModelArk/1824121#batch-image-output) for an example.
 
 Whether to disable the batch generation feature.
@@ -259,14 +252,13 @@ Batch image generation: a batch of thematically related images generated based o
 :::
 Valid values:
 
-* `auto`: The model automatically determines whether to return multiple images and the number of returned images based on the user's prompt.
-* `disabled`: Only one image is generated.
-
+- `auto`: The model automatically determines whether to return multiple images and the number of returned images based on the user's prompt.
+- `disabled`: Only one image is generated.
 
 ---
 
+**sequential_image_generation_options ** `object`
 
-**sequential_image_generation_options ** `object` 
 > Only seedream\-4.5 and seedream\-4.0 support this parameter.
 
 Configuration for the batch image generation feature; Only effective when **sequential_image_generation** is set to `auto`.
@@ -275,11 +267,10 @@ Attributes
 
 ---
 
-
-sequential_image_generation_options.**max_images** ** ** `integer` `Default: 15`
+sequential_image_generation_options.**max_images** \*\* \*\* `integer` `Default: 15`
 Specifies the maximum number of images to generate in this request.
 
-* Value range: [1, 15]
+- Value range: [1, 15]
 
 :::tip Description
 The actual number of generated images is determined jointly by **max_images ** and the number of input reference images. **Number of input reference images + Number of generated images ≤ 15**.
@@ -288,99 +279,93 @@ The actual number of generated images is determined jointly by **max_images ** a
 
 ---
 
+**stream** `boolean` `Default: false`
 
-**stream**  `boolean` `Default: false`
 > Only seedream\-4.5 and seedream\-4.0 support this parameter | See [Streaming Output ](https://docs.byteplus.com/en/docs/ModelArk/1824121#streaming-output)for an example.
 
 Whether to enable streaming output mode.
 
-* `false`: All output images are returned at once.
-* `true`: Each output image is returned immediately after generated. Applicable for both single and batch image generation.
-
+- `false`: All output images are returned at once.
+- `true`: Each output image is returned immediately after generated. Applicable for both single and batch image generation.
 
 ---
 
-
 **guidance_scale** `float`
+
 > Default value for seedream\-3.0\-t2i: 2.5
 > Default value for seededit\-3.0\-i2i: 5.5
 > Seedream\-4.5 and seedream\-4.0 are not supported.
 
 This parameter controls how closely the generated image follows the prompt, affecting the model’s degree of creative freedom. A higher value reduces freedom and increases adherence to the prompt.
-Valid values: [`1`, `10`] 
+Valid values: [`1`, `10`]
 
 ---
-
 
 **response_format** `string` `Default: url`
 Specifies how the generated images are returned.
 The generated image is in JPEG and can be returned in the following two ways:
 
-* `url`: Returns a download link for the image. **The link is valid for 24 hours after the image is generated.** 
-* `b64_json`: Returns the image data in JSON as a Base64\-encoded string.
-
+- `url`: Returns a download link for the image. **The link is valid for 24 hours after the image is generated.**
+- `b64_json`: Returns the image data in JSON as a Base64\-encoded string.
 
 ---
 
-
-**watermark**  `boolean` `Default: true`
+**watermark** `boolean` `Default: true`
 Adds a watermark to the generated image.
 
-* `false`: No watermark.
-* `true`: Adds a "AI generated" watermark on the bottom\-right corner of the image.
-
+- `false`: No watermark.
+- `true`: Adds a "AI generated" watermark on the bottom\-right corner of the image.
 
 ---
 
+**optimize_prompt_options==^new^==** \*\* \*\* `object`
 
-**optimize_prompt_options==^new^==** ** ** `object` 
 > Only seedream\-4.5 (only supports `standard` mode) and seedream\-4.0 support this parameter.
 
 Configuration for prompt optimization feature.
 
 optimize_prompt_options.**mode ** `string` `Default: standard`
-Set the mode for the prompt optimization feature. 
+Set the mode for the prompt optimization feature.
 
-* `standard`：Higher quality, longer generation time.
-* `fast`：Faster but at a more average quality.
-
+- `standard`：Higher quality, longer generation time.
+- `fast`：Faster but at a more average quality.
 
 ---
-
 
 &nbsp;
 <span id="7P96iLnc"></span>
+
 ## Response parameters
+
 <span id="Hrya4y9k"></span>
+
 ### Streaming response parameters
+
 See [Streaming Response](https://docs.byteplus.com/en/docs/ModelArk/1824137).
 &nbsp;
 <span id="1AxnwQZN"></span>
+
 ### Non\-streaming response parameters
 
 ---
-
 
 **model** `String`
 The model ID used for image generation (`model name-version`).
 
 ---
 
-
 **created** `integer`
 The Unix timestamp in seconds of the creation time of the request.
 
 ---
-
 
 **data** `array`
 Information of the output images.
 :::tip Description
 When generating a batch of images with the seedream\-4.5 and seedream\-4.0 model, if an image fails to generate：
 
-* If the failure is due to the rejection by content filter: The next generation task will still be requested, other image generation tasks in the same request will not be affected.
-* If the failure is due to an internal service error (500): The next picture generation task will not be requested.
-
+- If the failure is due to the rejection by content filter: The next generation task will still be requested, other image generation tasks in the same request will not be affected.
+- If the failure is due to an internal service error (500): The next picture generation task will not be requested.
 
 :::
 Possible type
@@ -393,21 +378,18 @@ The URL of the image, returned when **response_format** is specified as `url`. T
 
 ---
 
-
 data.**b64_json** `string`
 The Base64 information of the image; returned when **response_format** is specified as `b64_json`.
 
 ---
 
-
 data.**size** `string`
+
 > Only seedream\-4.5 and seedream\-4.0 support this parameter.
 
 The width and height of the image in pixels, in the format `<width>x<height>`, such as `2048×2048`.
 
-
 ---
-
 
 Error message `object`
 Error message for a failed image generation.
@@ -420,21 +402,15 @@ Attributes
 
 ---
 
-
 data.error.**code**
 The error code for a failed image generation. See [Error Codes](https://docs.byteplus.com/en/docs/ModelArk/1299023).
 
 ---
 
-
 data.error.**message**
 Error message for a failed image generation.
 
-
-
-
 ---
-
 
 **usage** `Object`
 Usage information for the current request.
@@ -443,13 +419,11 @@ Attributes
 
 ---
 
-
 usage.**generated_images ** `integer`
 The number of images successfully generated by the model, excluding failed generations.
 **Note**: Billing is based on the number of successfully generated images.
 
 ---
-
 
 usage.**output_tokens** `integer`
 The number of tokens consumed for the images generated by the model.
@@ -457,28 +431,23 @@ The calculation logic is to calculate `sum(image width*image height)/256` and th
 
 ---
 
-
 usage.**total_tokens** `integer`
 The total number of tokens consumed by this request.
 This value is the same as **output_tokens ** as input tokens are currently not calculated.
 
-**error**  `object`
+**error** `object`
 The error message for this request, if any.
 
 Attributes
 
 ---
 
-
-error.**code** `String` 
+error.**code** `String`
 See [Error Codes](https://docs.byteplus.com/en/docs/ModelArk/1299023).
 
 ---
-
 
 error.**message** `String`
 Error message
 
 &nbsp;
-
-

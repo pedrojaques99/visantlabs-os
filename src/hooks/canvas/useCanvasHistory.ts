@@ -17,7 +17,7 @@ export const removeFunctions = (obj: any): any => {
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(removeFunctions).filter(item => item !== undefined);
+    return obj.map(removeFunctions).filter((item) => item !== undefined);
   }
 
   if (typeof obj === 'object') {
@@ -129,20 +129,19 @@ export const useCanvasHistory = (
     });
   }, [nodes.length, edges.length, drawings?.length]);
 
-  const addToHistory = useCallback((
-    newNodes: Node<FlowNodeData>[],
-    newEdges: Edge[],
-    newDrawings?: DrawingStroke[]
-  ) => {
-    dispatch({
-      type: 'ADD',
-      entry: {
-        nodes: deepClone(newNodes),
-        edges: deepClone(newEdges),
-        drawings: newDrawings ? deepClone(newDrawings) : undefined,
-      },
-    });
-  }, []);
+  const addToHistory = useCallback(
+    (newNodes: Node<FlowNodeData>[], newEdges: Edge[], newDrawings?: DrawingStroke[]) => {
+      dispatch({
+        type: 'ADD',
+        entry: {
+          nodes: deepClone(newNodes),
+          edges: deepClone(newEdges),
+          drawings: newDrawings ? deepClone(newDrawings) : undefined,
+        },
+      });
+    },
+    []
+  );
 
   const handleUndo = useCallback(() => {
     if (state.index <= 0) {

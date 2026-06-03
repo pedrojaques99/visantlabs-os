@@ -13,8 +13,7 @@ export async function withIdentityViewport<T>(
 ): Promise<T> {
   const prevScale = { x: stage.scaleX(), y: stage.scaleY() };
   const prevPos = { x: stage.x(), y: stage.y() };
-  const isIdentity =
-    prevScale.x === 1 && prevScale.y === 1 && prevPos.x === 0 && prevPos.y === 0;
+  const isIdentity = prevScale.x === 1 && prevScale.y === 1 && prevPos.x === 0 && prevPos.y === 0;
 
   if (!isIdentity) {
     stage.scale({ x: 1, y: 1 });

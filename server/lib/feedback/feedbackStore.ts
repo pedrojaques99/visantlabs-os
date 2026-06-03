@@ -15,17 +15,12 @@
 import { connectToMongoDB, getDb } from '../../db/mongodb.js';
 import { vectorService } from '../../services/vectorService.js';
 import { getMultimodalEmbedding } from '../../services/geminiService.js';
-import type {
-  GenerationFeedback,
-  FeedbackFeature,
-  FeedbackContext,
-} from './types.js';
+import type { GenerationFeedback, FeedbackFeature, FeedbackContext } from './types.js';
 
 const COLLECTION = 'generation_feedback';
 
 /** Namespace Pinecone por feature — mantém retrieval isolado por domínio. */
-const pineconeNamespace = (feature: FeedbackFeature): string =>
-  `${feature}-examples`;
+const pineconeNamespace = (feature: FeedbackFeature): string => `${feature}-examples`;
 
 /**
  * Monta o texto canônico que vira embedding. Inclui brand brief, tags,
@@ -51,9 +46,7 @@ function buildEmbeddingText(ctx: FeedbackContext): string {
  * Serializa context pra metadata Pinecone — aceita só strings/numbers/bools/
  * arrays de strings. Aninhados viram JSON.
  */
-function buildPineconeMetadata(
-  feedback: GenerationFeedback,
-): Record<string, any> {
+function buildPineconeMetadata(feedback: GenerationFeedback): Record<string, any> {
   const { context } = feedback;
   return {
     generationId: feedback.generationId,
@@ -135,7 +128,7 @@ export const feedbackStore = {
   async listRecent(
     userId: string,
     feature?: FeedbackFeature,
-    limit = 20,
+    limit = 20
   ): Promise<GenerationFeedback[]> {
     await connectToMongoDB();
     const db = getDb();
@@ -158,9 +151,7 @@ export const feedbackStore = {
     await connectToMongoDB();
     const db = getDb();
 
-    const doc = await db
-      .collection(COLLECTION)
-      .findOne({ generationId, userId });
+    const doc = await db.collection(COLLECTION).findOne({ generationId, userId });
     if (!doc) return false;
 
     await db.collection(COLLECTION).deleteOne({ generationId, userId });

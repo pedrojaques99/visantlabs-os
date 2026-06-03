@@ -17,7 +17,10 @@ export async function loadFont(family: string, style: string = 'Regular'): Promi
   }
 }
 
-export async function loadFontVariants(family: string, styles: string[] = ['Regular', 'Bold', 'Semi Bold']): Promise<void> {
+export async function loadFontVariants(
+  family: string,
+  styles: string[] = ['Regular', 'Bold', 'Semi Bold']
+): Promise<void> {
   for (const style of styles) {
     try {
       await figma.loadFontAsync({ family, style });

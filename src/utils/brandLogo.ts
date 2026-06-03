@@ -5,9 +5,9 @@
  */
 
 type BrandLike = {
-    id?: string;
-    identity?: { name?: string; logoUrl?: string } | null;
-    logos?: Array<{ url: string; variant?: string; label?: string } | null | undefined> | null;
+  id?: string;
+  identity?: { name?: string; logoUrl?: string } | null;
+  logos?: Array<{ url: string; variant?: string; label?: string } | null | undefined> | null;
 };
 
 export type LogoPreference = 'avatar' | 'primary';
@@ -19,27 +19,27 @@ export type LogoPreference = 'avatar' | 'primary';
  * Falls back to `identity.logoUrl` if no logos array entries match.
  */
 export function getBrandLogoUrl(
-    brand: BrandLike | null | undefined,
-    preference: LogoPreference = 'avatar'
+  brand: BrandLike | null | undefined,
+  preference: LogoPreference = 'avatar'
 ): string | undefined {
-    if (!brand) return undefined;
-    const logos = (brand.logos || []).filter(Boolean) as Array<{ url: string; variant?: string }>;
+  if (!brand) return undefined;
+  const logos = (brand.logos || []).filter(Boolean) as Array<{ url: string; variant?: string }>;
 
-    const find = (v: string) => logos.find(l => l.variant === v)?.url;
+  const find = (v: string) => logos.find((l) => l.variant === v)?.url;
 
-    if (preference === 'primary') {
-        return find('primary') || find('icon') || logos[0]?.url || brand.identity?.logoUrl || undefined;
-    }
-    return find('icon') || find('primary') || logos[0]?.url || brand.identity?.logoUrl || undefined;
+  if (preference === 'primary') {
+    return find('primary') || find('icon') || logos[0]?.url || brand.identity?.logoUrl || undefined;
+  }
+  return find('icon') || find('primary') || logos[0]?.url || brand.identity?.logoUrl || undefined;
 }
 
 /** First letter of brand name (for avatar fallback). */
 export function getBrandInitial(brand: BrandLike | null | undefined): string {
-    const name = brand?.identity?.name || brand?.id || '?';
-    return name.charAt(0).toUpperCase();
+  const name = brand?.identity?.name || brand?.id || '?';
+  return name.charAt(0).toUpperCase();
 }
 
 /** Safe display name. */
 export function getBrandName(brand: BrandLike | null | undefined, fallback = 'Marca'): string {
-    return brand?.identity?.name || brand?.id || fallback;
+  return brand?.identity?.name || brand?.id || fallback;
 }

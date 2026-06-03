@@ -1,7 +1,16 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Button } from '@/components/ui/button';
-import { BookOpen, FileText, Image as ImageIcon, Link2, Type, Trash2, Upload, Plus } from 'lucide-react';
+import {
+  BookOpen,
+  FileText,
+  Image as ImageIcon,
+  Link2,
+  Type,
+  Trash2,
+  Upload,
+  Plus,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { brandGuidelineApi, type BrandKnowledgeFile } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -21,10 +30,14 @@ const SOURCE_COLORS: Record<string, { bg: string; text: string; border: string }
 const sourceIcon = (source: BrandKnowledgeFile['source'], size = 14) => {
   const color = SOURCE_COLORS[source]?.text || 'text-neutral-400';
   switch (source) {
-    case 'pdf': return <FileText size={size} className={color} />;
-    case 'image': return <ImageIcon size={size} className={color} />;
-    case 'url': return <Link2 size={size} className={color} />;
-    case 'text': return <Type size={size} className={color} />;
+    case 'pdf':
+      return <FileText size={size} className={color} />;
+    case 'image':
+      return <ImageIcon size={size} className={color} />;
+    case 'url':
+      return <Link2 size={size} className={color} />;
+    case 'text':
+      return <Type size={size} className={color} />;
   }
 };
 
@@ -76,31 +89,40 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [guideline.id]);
 
-  const handleUpload = useCallback(async (fileList: File[]) => {
-    if (!guideline.id || uploading || fileList.length === 0) return;
-    setUploading(true);
-    try {
-      for (const file of fileList) {
-        const base64 = await fileToBase64(file);
-        const ext = file.name.split('.').pop()?.toLowerCase() || '';
-        const source = ext === 'pdf' ? 'pdf' : 'image';
-        const result = await brandGuidelineApi.uploadKnowledge(guideline.id, {
-          source,
-          data: base64,
-          filename: file.name,
-        });
-        setFiles(prev => [result, ...prev]);
+  const handleUpload = useCallback(
+    async (fileList: File[]) => {
+      if (!guideline.id || uploading || fileList.length === 0) return;
+      setUploading(true);
+      try {
+        for (const file of fileList) {
+          const base64 = await fileToBase64(file);
+          const ext = file.name.split('.').pop()?.toLowerCase() || '';
+          const source = ext === 'pdf' ? 'pdf' : 'image';
+          const result = await brandGuidelineApi.uploadKnowledge(guideline.id, {
+            source,
+            data: base64,
+            filename: file.name,
+          });
+          setFiles((prev) => [result, ...prev]);
+        }
+        toast.success(
+          `${fileList.length} arquivo${fileList.length > 1 ? 's' : ''} enviado${
+            fileList.length > 1 ? 's' : ''
+          }`
+        );
+      } catch (err: any) {
+        toast.error(err?.message || 'Falha ao enviar arquivo');
+      } finally {
+        setUploading(false);
       }
-      toast.success(`${fileList.length} arquivo${fileList.length > 1 ? 's' : ''} enviado${fileList.length > 1 ? 's' : ''}`);
-    } catch (err: any) {
-      toast.error(err?.message || 'Falha ao enviar arquivo');
-    } finally {
-      setUploading(false);
-    }
-  }, [guideline.id, uploading]);
+    },
+    [guideline.id, uploading]
+  );
 
   const handleDelete = async (file: BrandKnowledgeFile) => {
     if (!guideline.id) return;
@@ -108,7 +130,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
     setDeletingId(file.id);
     try {
       await brandGuidelineApi.deleteKnowledge(guideline.id, file.id);
-      setFiles(prev => prev.filter(f => f.id !== file.id));
+      setFiles((prev) => prev.filter((f) => f.id !== file.id));
       toast.success('Arquivo removido');
     } catch (err: any) {
       toast.error(err?.message || 'Falha ao remover arquivo');
@@ -143,13 +165,13 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
     e.preventDefault();
     dragCounter.current = 0;
     setDragging(false);
-    const dropped = Array.from(e.dataTransfer.files).filter(f =>
+    const dropped = Array.from(e.dataTransfer.files).filter((f) =>
       /\.(pdf|png|jpe?g|webp)$/i.test(f.name)
     );
     if (dropped.length) handleUpload(dropped);
   };
 
-  const maxVectors = Math.max(1, ...files.map(f => f.vectorIds.length));
+  const maxVectors = Math.max(1, ...files.map((f) => f.vectorIds.length));
 
   return (
     <SectionBlock
@@ -185,9 +207,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
 
       <div
         className={`min-h-[100px] rounded-xl transition-all ${
-          dragging
-            ? 'ring-2 ring-blue-500/40 bg-blue-500/5 border-blue-500/30'
-            : ''
+          dragging ? 'ring-2 ring-blue-500/40 bg-blue-500/5 border-blue-500/30' : ''
         }`}
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}
@@ -212,17 +232,19 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
               <p className="text-xs text-neutral-300 font-medium">
                 Arraste arquivos ou clique para enviar
               </p>
-              <p className="text-[10px] text-neutral-500 font-mono mt-1">
-                PDF, PNG, JPG, WEBP
-              </p>
+              <p className="text-[10px] text-neutral-500 font-mono mt-1">PDF, PNG, JPG, WEBP</p>
             </div>
             <p className="text-[10px] text-neutral-600 max-w-[220px] text-center leading-relaxed">
-              Arquivos alimentam o motor de geração IA da marca — quanto mais contexto, melhor o output.
+              Arquivos alimentam o motor de geração IA da marca — quanto mais contexto, melhor o
+              output.
             </p>
           </button>
         ) : (
           /* File cards grid */
-          <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+          <div
+            className="grid gap-2"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}
+          >
             {files.map((file) => {
               const colors = SOURCE_COLORS[file.source] || SOURCE_COLORS.text;
               const barWidth = Math.max(10, (file.vectorIds.length / maxVectors) * 100);
@@ -235,10 +257,14 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
                   {/* Header: icon + source badge */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className={`w-7 h-7 rounded-lg ${colors.bg} border ${colors.border} flex items-center justify-center shrink-0`}>
+                      <div
+                        className={`w-7 h-7 rounded-lg ${colors.bg} border ${colors.border} flex items-center justify-center shrink-0`}
+                      >
                         {sourceIcon(file.source, 13)}
                       </div>
-                      <span className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} ${colors.border} border`}>
+                      <span
+                        className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} ${colors.border} border`}
+                      >
                         {file.source}
                       </span>
                     </div>

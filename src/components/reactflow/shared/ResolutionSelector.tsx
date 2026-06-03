@@ -35,7 +35,7 @@ function renderResolutionButton(
 
   const handleClick = () => {
     if (disabled) return;
-    
+
     // Auto-switch model logic (Gemini only)
     if (!isOpenAIImageModel(model)) {
       if (res === '512px') {
@@ -44,12 +44,13 @@ function renderResolutionButton(
         if (onModelChange) onModelChange(GEMINI_MODELS.PRO);
       }
     }
-    
+
     onChange(res);
   };
 
   return (
-    <NodeButton variant="ghost"
+    <NodeButton
+      variant="ghost"
       key={res}
       onClick={handleClick}
       disabled={disabled}
@@ -78,13 +79,14 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
   model,
   disabled = false,
   compact = false,
-  allowVideo = false
+  allowVideo = false,
 }) => {
   const isVideo = String(model).startsWith('veo-');
   const openaiConfig = isOpenAIImageModel(model) ? getOpenAIImageModelConfig(model) : undefined;
-  const resolutions = (isVideo && allowVideo)
-    ? VIDEO_RESOLUTIONS
-    : openaiConfig
+  const resolutions =
+    isVideo && allowVideo
+      ? VIDEO_RESOLUTIONS
+      : openaiConfig
       ? openaiConfig.supportedResolutions
       : IMAGE_RESOLUTIONS;
 
@@ -106,7 +108,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
           onChange={(v) => onChange(v as Resolution)}
           options={resolutions.map((res) => ({
             value: res,
-            label: `${res} (${getCreditsRequired(model, res)} credits)`
+            label: `${res} (${getCreditsRequired(model, res)} credits)`,
           }))}
           placeholder="Select resolution"
           disabled={disabled}

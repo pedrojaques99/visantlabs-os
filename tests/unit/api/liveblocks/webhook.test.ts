@@ -105,11 +105,15 @@ describe('validateEvent', () => {
   });
 
   it('returns error when type is missing', () => {
-    expect(validateEvent({ roomId: 'canvas-abc', timestamp: 1 })).toContain('missing required fields');
+    expect(validateEvent({ roomId: 'canvas-abc', timestamp: 1 })).toContain(
+      'missing required fields'
+    );
   });
 
   it('returns error when roomId is missing', () => {
-    expect(validateEvent({ type: 'roomCreated', timestamp: 1 })).toContain('missing required fields');
+    expect(validateEvent({ type: 'roomCreated', timestamp: 1 })).toContain(
+      'missing required fields'
+    );
   });
 
   it('returns error when both type and roomId are missing', () => {
@@ -145,13 +149,21 @@ describe('extractProjectId', () => {
 
 describe('webhook event types — handled vs unhandled', () => {
   const KNOWN_TYPES = [
-    'roomCreated', 'roomDeleted',
-    'userEntered', 'userLeft',
-    'storageUpdated', 'ydocUpdated',
-    'commentCreated', 'commentEdited', 'commentDeleted',
-    'commentReactionAdded', 'commentReactionRemoved',
-    'threadCreated', 'threadDeleted',
-    'threadMarkedAsResolved', 'threadMarkedAsUnresolved',
+    'roomCreated',
+    'roomDeleted',
+    'userEntered',
+    'userLeft',
+    'storageUpdated',
+    'ydocUpdated',
+    'commentCreated',
+    'commentEdited',
+    'commentDeleted',
+    'commentReactionAdded',
+    'commentReactionRemoved',
+    'threadCreated',
+    'threadDeleted',
+    'threadMarkedAsResolved',
+    'threadMarkedAsUnresolved',
     'threadMetadataUpdated',
     'notification',
   ];
@@ -162,7 +174,7 @@ describe('webhook event types — handled vs unhandled', () => {
   });
 
   it('each event type is a non-empty string', () => {
-    KNOWN_TYPES.forEach(type => {
+    KNOWN_TYPES.forEach((type) => {
       expect(typeof type).toBe('string');
       expect(type.length).toBeGreaterThan(0);
     });

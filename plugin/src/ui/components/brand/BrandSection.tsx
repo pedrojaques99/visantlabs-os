@@ -12,18 +12,28 @@ interface BrandSectionProps {
   defaultOpen?: boolean;
 }
 
-export function BrandSection({ title, icon: Icon, children, className, badge, collapsible = false, defaultOpen = true }: BrandSectionProps) {
+export function BrandSection({
+  title,
+  icon: Icon,
+  children,
+  className,
+  badge,
+  collapsible = false,
+  defaultOpen = true,
+}: BrandSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className={cn(
-      "bg-neutral-900/40 border border-white/5 rounded-xl flex flex-col relative z-20 backdrop-blur-sm overflow-hidden transition-all duration-300",
-      className
-    )}>
-      <div 
+    <div
+      className={cn(
+        'bg-neutral-900/40 border border-white/5 rounded-xl flex flex-col relative z-20 backdrop-blur-sm overflow-hidden transition-all duration-300',
+        className
+      )}
+    >
+      <div
         className={cn(
-          "px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02]",
-          collapsible && "cursor-pointer hover:bg-white/[0.05]"
+          'px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02]',
+          collapsible && 'cursor-pointer hover:bg-white/[0.05]'
         )}
         onClick={() => collapsible && setIsOpen(!isOpen)}
       >
@@ -40,24 +50,24 @@ export function BrandSection({ title, icon: Icon, children, className, badge, co
             </span>
           )}
           {collapsible && (
-            <ChevronDown 
-              size={14} 
+            <ChevronDown
+              size={14}
               className={cn(
-                "text-neutral-600 transition-transform duration-300",
-                isOpen && "rotate-180"
-              )} 
+                'text-neutral-600 transition-transform duration-300',
+                isOpen && 'rotate-180'
+              )}
             />
           )}
         </div>
       </div>
-      
-      <div className={cn(
-        "transition-all duration-300 ease-in-out",
-        !isOpen ? "max-h-0 opacity-0 pointer-events-none" : "max-h-[2000px] opacity-100"
-      )}>
-        <div className="p-4">
-          {children}
-        </div>
+
+      <div
+        className={cn(
+          'transition-all duration-300 ease-in-out',
+          !isOpen ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[2000px] opacity-100'
+        )}
+      >
+        <div className="p-4">{children}</div>
       </div>
     </div>
   );

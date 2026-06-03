@@ -17,7 +17,7 @@ const verifyHCaptcha = async (token: string): Promise<boolean> => {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `response=${encodeURIComponent(token)}&secret=${encodeURIComponent(secret)}`,
     });
-    const data = await resp.json() as { success: boolean };
+    const data = (await resp.json()) as { success: boolean };
     return data.success === true;
   } catch {
     return false;
@@ -25,7 +25,13 @@ const verifyHCaptcha = async (token: string): Promise<boolean> => {
 };
 import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
-import { signupSchema, signinSchema, forgotPasswordSchema, resetPasswordSchema, formatZodError } from '../utils/schemas.js';
+import {
+  signupSchema,
+  signinSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  formatZodError,
+} from '../utils/schemas.js';
 import { isValidEmail } from '../utils/validation.js';
 import { bruteForceGuard } from '../middleware/bruteForceGuard.js';
 import crypto from 'crypto';
@@ -38,9 +44,11 @@ const getFrontendUrl = () => {
   return primaryUrl.replace(/\/+$/, '');
 };
 
-
 // In-memory store for plugin OAuth sessions (sessionId → { token, createdAt })
-const pluginOAuthSessions = new Map<string, { token?: string; error?: string; createdAt: number }>();
+const pluginOAuthSessions = new Map<
+  string,
+  { token?: string; error?: string; createdAt: number }
+>();
 const PLUGIN_SESSION_TTL = 5 * 60 * 1000; // 5 minutes
 
 function cleanExpiredSessions() {
@@ -413,9 +421,9 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
     const stateStr = state as string | undefined;
     const referralCode = stateStr?.startsWith('ref:')
       ? stateStr.substring(4)
-      : (stateStr && !stateStr.startsWith('plugin:') && !stateStr.startsWith('link:'))
-        ? stateStr
-        : undefined;
+      : stateStr && !stateStr.startsWith('plugin:') && !stateStr.startsWith('link:')
+      ? stateStr
+      : undefined;
 
     // Find or create user
     let user = await prisma.user.findUnique({
@@ -468,11 +476,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
 
     // Generate JWT token
     const userId = user.id;
-    const token = jwt.sign(
-      { userId, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ userId, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
     // Plugin OAuth: store token for polling and show success page
     if (typeof state === 'string' && (state as string).startsWith('plugin:')) {
@@ -492,7 +496,10 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
   } catch (error) {
     console.error('OAuth callback error:', error);
 
-    if (typeof (req.query.state as string) === 'string' && (req.query.state as string).startsWith('plugin:')) {
+    if (
+      typeof (req.query.state as string) === 'string' &&
+      (req.query.state as string).startsWith('plugin:')
+    ) {
       const sessionId = (req.query.state as string).substring(7);
       const session = pluginOAuthSessions.get(sessionId);
       if (session) session.error = 'oauth_failed';
@@ -523,74 +530,83 @@ router.get('/google/poll/:sessionId', oauthRateLimiter, (req, res) => {
 });
 
 // Google OAuth callback for linking account
-router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const { code, state } = req.query;
-    const userId = req.userId!;
+router.get(
+  '/google/link-callback',
+  oauthRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const { code, state } = req.query;
+      const userId = req.userId!;
 
-    if (!code) {
-      return res.redirect(`${getFrontendUrl()}/profile?error=no_code`);
+      if (!code) {
+        return res.redirect(`${getFrontendUrl()}/profile?error=no_code`);
+      }
+
+      // Verify state matches current user
+      if (
+        !state ||
+        !(state as string).startsWith('link:') ||
+        (state as string).substring(5) !== userId
+      ) {
+        return res.redirect(`${getFrontendUrl()}/profile?error=invalid_state`);
+      }
+
+      const { tokens } = await client.getToken(code as string);
+      client.setCredentials(tokens);
+
+      const ticket = await client.verifyIdToken({
+        idToken: tokens.id_token!,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email || !payload.sub) {
+        return res.redirect(`${getFrontendUrl()}/profile?error=invalid_token`);
+      }
+
+      // Check if this Google account is already linked to another user
+      const existingUserWithGoogle = await prisma.user.findFirst({
+        where: { googleId: payload.sub },
+      });
+
+      if (existingUserWithGoogle && existingUserWithGoogle.id !== userId) {
+        return res.redirect(`${getFrontendUrl()}/profile?error=google_already_linked`);
+      }
+
+      // Get current user
+      const currentUser = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!currentUser) {
+        return res.redirect(`${getFrontendUrl()}/profile?error=user_not_found`);
+      }
+
+      // Check if email matches (security: ensure Google email matches user email)
+      if (payload.email.toLowerCase() !== currentUser.email.toLowerCase()) {
+        return res.redirect(`${getFrontendUrl()}/profile?error=email_mismatch`);
+      }
+
+      // Link Google account to user
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          googleId: payload.sub,
+          // Update name and picture if not set or if Google has better data
+          name: currentUser.name || payload.name || null,
+          picture: currentUser.picture || payload.picture || null,
+        },
+      });
+
+      // Redirect back to profile with success
+      res.redirect(`${getFrontendUrl()}/profile?google_linked=true`);
+    } catch (error) {
+      console.error('OAuth link callback error:', error);
+      res.redirect(`${getFrontendUrl()}/profile?error=link_failed`);
     }
-
-    // Verify state matches current user
-    if (!state || !(state as string).startsWith('link:') || (state as string).substring(5) !== userId) {
-      return res.redirect(`${getFrontendUrl()}/profile?error=invalid_state`);
-    }
-
-    const { tokens } = await client.getToken(code as string);
-    client.setCredentials(tokens);
-
-    const ticket = await client.verifyIdToken({
-      idToken: tokens.id_token!,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    if (!payload || !payload.email || !payload.sub) {
-      return res.redirect(`${getFrontendUrl()}/profile?error=invalid_token`);
-    }
-
-    // Check if this Google account is already linked to another user
-    const existingUserWithGoogle = await prisma.user.findFirst({
-      where: { googleId: payload.sub },
-    });
-
-    if (existingUserWithGoogle && existingUserWithGoogle.id !== userId) {
-      return res.redirect(`${getFrontendUrl()}/profile?error=google_already_linked`);
-    }
-
-    // Get current user
-    const currentUser = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!currentUser) {
-      return res.redirect(`${getFrontendUrl()}/profile?error=user_not_found`);
-    }
-
-    // Check if email matches (security: ensure Google email matches user email)
-    if (payload.email.toLowerCase() !== currentUser.email.toLowerCase()) {
-      return res.redirect(`${getFrontendUrl()}/profile?error=email_mismatch`);
-    }
-
-    // Link Google account to user
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        googleId: payload.sub,
-        // Update name and picture if not set or if Google has better data
-        name: currentUser.name || payload.name || null,
-        picture: currentUser.picture || payload.picture || null,
-      },
-    });
-
-    // Redirect back to profile with success
-    res.redirect(`${getFrontendUrl()}/profile?google_linked=true`);
-  } catch (error) {
-    console.error('OAuth link callback error:', error);
-    res.redirect(`${getFrontendUrl()}/profile?error=link_failed`);
   }
-});
+);
 
 // Verify token
 router.get('/verify', verifyRateLimiter, async (req, res) => {
@@ -627,10 +643,9 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
 
       // Convert user ID to ObjectId and query MongoDB directly
       const userIdObjectId = new ObjectId(user.id);
-      const userDoc = await db.collection('users').findOne(
-        { _id: userIdObjectId },
-        { projection: { isAdmin: 1, userCategory: 1 } }
-      );
+      const userDoc = await db
+        .collection('users')
+        .findOne({ _id: userIdObjectId }, { projection: { isAdmin: 1, userCategory: 1 } });
 
       if (userDoc) {
         // Use explicit checks so we don't accidentally overwrite with null/undefined
@@ -643,7 +658,10 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
       }
     } catch (mongoError) {
       // If Mongo lookup fails (e.g., invalid ObjectId), we'll fall back to Prisma below.
-      console.error('Mongo lookup failed in /auth/verify, falling back to Prisma user flags:', mongoError);
+      console.error(
+        'Mongo lookup failed in /auth/verify, falling back to Prisma user flags:',
+        mongoError
+      );
     }
 
     // Fallback to Prisma flags when Mongo didn't give us values
@@ -654,7 +672,11 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
         isAdmin = true;
       }
 
-      if (!userCategory && typeof userWithFlags.userCategory === 'string' && userWithFlags.userCategory.trim() !== '') {
+      if (
+        !userCategory &&
+        typeof userWithFlags.userCategory === 'string' &&
+        userWithFlags.userCategory.trim() !== ''
+      ) {
         userCategory = userWithFlags.userCategory;
       }
     }
@@ -783,7 +805,9 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
 
     // Send verification email (replaces welcome email)
     try {
-      const { sendVerificationEmail, isEmailConfigured } = await import('../services/emailService.js');
+      const { sendVerificationEmail, isEmailConfigured } = await import(
+        '../services/emailService.js'
+      );
 
       if (isEmailConfigured()) {
         await sendVerificationEmail({
@@ -800,11 +824,7 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
 
     // Generate JWT token
     const userId = user.id;
-    const token = jwt.sign(
-      { userId, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ userId, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
     // Record session
     recordSession(userId, req).catch(() => {});
@@ -842,7 +862,7 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
       // Unique constraint violation (email already exists)
       return res.status(400).json({
         error: 'User with this email already exists',
-        message: 'Este email já está cadastrado. Tente fazer login ou use outro email.'
+        message: 'Este email já está cadastrado. Tente fazer login ou use outro email.',
       });
     }
 
@@ -850,14 +870,17 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
       // Other Prisma errors
       return res.status(500).json({
         error: 'Database error',
-        message: errorInfo.userMessage || 'Erro ao criar conta. Tente novamente mais tarde.'
+        message: errorInfo.userMessage || 'Erro ao criar conta. Tente novamente mais tarde.',
       });
     }
 
     // Generic error response
     res.status(500).json({
       error: 'Failed to create account',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Erro ao criar conta. Tente novamente mais tarde.'
+      message:
+        process.env.NODE_ENV === 'development'
+          ? error.message
+          : 'Erro ao criar conta. Tente novamente mais tarde.',
     });
   }
 });
@@ -882,7 +905,7 @@ router.post('/signin', signinRateLimiter, signinBackoff, async (req, res) => {
     // Check if user has a password (might be OAuth-only user)
     if (!user.password) {
       return res.status(401).json({
-        error: 'This account was created with Google. Please sign in with Google instead.'
+        error: 'This account was created with Google. Please sign in with Google instead.',
       });
     }
 
@@ -894,11 +917,7 @@ router.post('/signin', signinRateLimiter, signinBackoff, async (req, res) => {
 
     // Generate JWT token
     const userId = user.id;
-    const token = jwt.sign(
-      { userId, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ userId, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
     // Record session
     recordSession(userId, req).catch(() => {});
@@ -927,14 +946,17 @@ router.post('/signin', signinRateLimiter, signinBackoff, async (req, res) => {
     if (error?.code?.startsWith('P')) {
       return res.status(500).json({
         error: 'Database error',
-        message: errorInfo.userMessage || 'Erro ao fazer login. Tente novamente mais tarde.'
+        message: errorInfo.userMessage || 'Erro ao fazer login. Tente novamente mais tarde.',
       });
     }
 
     // Generic error response
     res.status(500).json({
       error: 'Failed to sign in',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Erro ao fazer login. Tente novamente mais tarde.'
+      message:
+        process.env.NODE_ENV === 'development'
+          ? error.message
+          : 'Erro ao fazer login. Tente novamente mais tarde.',
     });
   }
 });
@@ -982,7 +1004,9 @@ router.post('/forgot-password', passwordResetRateLimiter, forgotBackoff, async (
 
       // Send email
       try {
-        const { sendPasswordResetEmail, isEmailConfigured } = await import('../services/emailService.js');
+        const { sendPasswordResetEmail, isEmailConfigured } = await import(
+          '../services/emailService.js'
+        );
 
         if (!isEmailConfigured()) {
           console.warn('Email service not configured. Password reset email not sent.');
@@ -1012,7 +1036,10 @@ router.post('/forgot-password', passwordResetRateLimiter, forgotBackoff, async (
     console.error('Forgot password error:', error);
     res.status(500).json({
       error: 'Failed to process password reset request',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Erro ao processar solicitação. Tente novamente mais tarde.',
+      message:
+        process.env.NODE_ENV === 'development'
+          ? error.message
+          : 'Erro ao processar solicitação. Tente novamente mais tarde.',
     });
   }
 });
@@ -1077,58 +1104,66 @@ router.post('/reset-password', passwordResetRateLimiter, async (req, res) => {
     console.error('Reset password error:', error);
     res.status(500).json({
       error: 'Failed to reset password',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Erro ao redefinir senha. Tente novamente mais tarde.',
+      message:
+        process.env.NODE_ENV === 'development'
+          ? error.message
+          : 'Erro ao redefinir senha. Tente novamente mais tarde.',
     });
   }
 });
 
 // Upload profile picture
-router.post('/profile/picture', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const { imageBase64 } = req.body;
-    const userId = req.userId!;
+router.post(
+  '/profile/picture',
+  uploadImageRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const { imageBase64 } = req.body;
+      const userId = req.userId!;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
 
-    if (!imageBase64) {
-      return res.status(400).json({ error: 'Image is required' });
-    }
+      if (!imageBase64) {
+        return res.status(400).json({ error: 'Image is required' });
+      }
 
-    // Upload to R2
-    const r2Service = await import('../../src/services/r2Service.js');
+      // Upload to R2
+      const r2Service = await import('../../src/services/r2Service.js');
 
-    if (!r2Service.isR2Configured()) {
-      return res.status(500).json({
-        error: 'R2 storage is not configured',
-        details: 'Please configure R2 environment variables.'
+      if (!r2Service.isR2Configured()) {
+        return res.status(500).json({
+          error: 'R2 storage is not configured',
+          details: 'Please configure R2 environment variables.',
+        });
+      }
+
+      const imageUrl = await r2Service.uploadProfilePicture(imageBase64, userId);
+
+      // Update user profile with new picture URL
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { picture: imageUrl },
       });
+
+      res.json({
+        picture: imageUrl,
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          picture: updatedUser.picture,
+          username: updatedUser.username,
+        },
+      });
+    } catch (error: any) {
+      console.error('Profile picture upload error:', error);
+      res.status(500).json({ error: 'Failed to upload profile picture', message: error.message });
     }
-
-    const imageUrl = await r2Service.uploadProfilePicture(imageBase64, userId);
-
-    // Update user profile with new picture URL
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: { picture: imageUrl },
-    });
-
-    res.json({
-      picture: imageUrl,
-      user: {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        name: updatedUser.name,
-        picture: updatedUser.picture,
-        username: updatedUser.username,
-      },
-    });
-  } catch (error: any) {
-    console.error('Profile picture upload error:', error);
-    res.status(500).json({ error: 'Failed to upload profile picture', message: error.message });
   }
-});
+);
 
 // Update user profile
 router.put('/profile', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
@@ -1236,44 +1271,51 @@ router.post('/verify-email', verifyRateLimiter, async (req, res) => {
 });
 
 // Resend verification email
-router.post('/resend-verification', verifyRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId;
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+router.post(
+  '/resend-verification',
+  verifyRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId;
+      const user = await prisma.user.findUnique({ where: { id: userId } });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (user.emailVerified) {
+        return res.status(400).json({ error: 'Email already verified' });
+      }
+
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { verificationToken, verificationExpires },
+      });
+
+      const { sendVerificationEmail, isEmailConfigured } = await import(
+        '../services/emailService.js'
+      );
+      if (!isEmailConfigured()) {
+        return res.status(500).json({ error: 'Email service not configured' });
+      }
+
+      await sendVerificationEmail({
+        email: user.email,
+        name: user.name || undefined,
+        verificationToken,
+      });
+
+      res.json({ message: 'Verification email sent' });
+    } catch (error: any) {
+      console.error('Resend verification error:', error);
+      res.status(500).json({ error: 'Failed to resend verification email' });
     }
-
-    if (user.emailVerified) {
-      return res.status(400).json({ error: 'Email already verified' });
-    }
-
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { verificationToken, verificationExpires },
-    });
-
-    const { sendVerificationEmail, isEmailConfigured } = await import('../services/emailService.js');
-    if (!isEmailConfigured()) {
-      return res.status(500).json({ error: 'Email service not configured' });
-    }
-
-    await sendVerificationEmail({
-      email: user.email,
-      name: user.name || undefined,
-      verificationToken,
-    });
-
-    res.json({ message: 'Verification email sent' });
-  } catch (error: any) {
-    console.error('Resend verification error:', error);
-    res.status(500).json({ error: 'Failed to resend verification email' });
   }
-});
+);
 
 // Complete onboarding
 router.post('/complete-onboarding', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
@@ -1355,4 +1397,3 @@ router.delete('/account', apiRateLimiter, authenticate, async (req: AuthRequest,
 });
 
 export default router;
-

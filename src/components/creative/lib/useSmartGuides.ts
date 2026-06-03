@@ -20,7 +20,12 @@ interface NodeBounds {
   horizontal: { start: number; center: number; end: number };
 }
 
-const getNodeBounds = (rect: { x: number; y: number; width: number; height: number }): NodeBounds => ({
+const getNodeBounds = (rect: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}): NodeBounds => ({
   vertical: { start: rect.x, center: rect.x + rect.width / 2, end: rect.x + rect.width },
   horizontal: { start: rect.y, center: rect.y + rect.height / 2, end: rect.y + rect.height },
 });
@@ -48,7 +53,10 @@ const getOtherNodeGuides = (others: Konva.Node[]) => {
   return { vertical, horizontal };
 };
 
-const findClosest = (axisGuides: number[], itemBounds: { start: number; center: number; end: number }): SnapEdge | null => {
+const findClosest = (
+  axisGuides: number[],
+  itemBounds: { start: number; center: number; end: number }
+): SnapEdge | null => {
   let best: SnapEdge | null = null;
   for (const guide of axisGuides) {
     for (const snap of ['start', 'center', 'end'] as const) {
@@ -75,7 +83,12 @@ interface UseSmartGuidesArgs {
  * - onDragMove: pass to draggable nodes — snaps node position and pushes guides
  * - clear: call on dragEnd / transformEnd to hide guides
  */
-export function useSmartGuides({ stageWidth, stageHeight, shapeRefs, gridSize }: UseSmartGuidesArgs) {
+export function useSmartGuides({
+  stageWidth,
+  stageHeight,
+  shapeRefs,
+  gridSize,
+}: UseSmartGuidesArgs) {
   const [guides, setGuides] = useState<GuideLine[]>([]);
   const draggingIdsRef = useRef<Set<string>>(new Set());
 
@@ -98,7 +111,11 @@ export function useSmartGuides({ stageWidth, stageHeight, shapeRefs, gridSize }:
 
       // Bounds in stage-inner (logical) coords — matches stage.width()/height()
       // and other-node bounds even when the user has zoomed/panned the viewport.
-      const rect = node.getClientRect({ skipShadow: true, skipStroke: true, relativeTo: node.getStage() ?? undefined });
+      const rect = node.getClientRect({
+        skipShadow: true,
+        skipStroke: true,
+        relativeTo: node.getStage() ?? undefined,
+      });
       const bounds = getNodeBounds(rect);
 
       const closestV = findClosest(allV, bounds.vertical);

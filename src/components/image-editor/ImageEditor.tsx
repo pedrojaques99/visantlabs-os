@@ -62,15 +62,18 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     }
   }, [resultUrl]);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape' && !isGenerating) {
-      onClose();
-    }
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-      e.preventDefault();
-      useImageEditorStore.getState().undoMask();
-    }
-  }, [onClose, isGenerating]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isGenerating) {
+        onClose();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        useImageEditorStore.getState().undoMask();
+      }
+    },
+    [onClose, isGenerating]
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -79,17 +82,13 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, []);
 
   const content = (
-    <div
-      className={cn(
-        'fixed inset-0 z-[9999] flex flex-col',
-        IMAGE_EDITOR.canvas.bg,
-        className,
-      )}
-    >
+    <div className={cn('fixed inset-0 z-[9999] flex flex-col', IMAGE_EDITOR.canvas.bg, className)}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
         <div className="flex items-center gap-2">

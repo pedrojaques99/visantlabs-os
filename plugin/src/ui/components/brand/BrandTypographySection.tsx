@@ -10,7 +10,8 @@ import { useBrandSync } from '../../hooks/useBrandSync';
 type TypoSlot = 'primary' | 'secondary';
 
 export function BrandTypographySection() {
-  const { typography, updateTypography, designTokens, selectedFont, linkedGuideline } = usePluginStore();
+  const { typography, updateTypography, designTokens, selectedFont, linkedGuideline } =
+    usePluginStore();
   const { updateBrandGuideline } = useBrandSync();
   const { send } = useFigmaMessages();
   const [targetSlot, setTargetSlot] = useState<TypoSlot>('primary');
@@ -21,7 +22,9 @@ export function BrandTypographySection() {
 
   const fontFamilies = useMemo(() => {
     const families = figmaStyles.map((f: any) => f.family).filter(Boolean);
-    const fromFamilies = Array.isArray((designTokens as any)?.families) ? (designTokens as any).families : [];
+    const fromFamilies = Array.isArray((designTokens as any)?.families)
+      ? (designTokens as any).families
+      : [];
     return Array.from(new Set<string>([...families, ...fromFamilies])).sort();
   }, [designTokens, figmaStyles]);
 
@@ -40,9 +43,11 @@ export function BrandTypographySection() {
 
   const syncToDatabase = (slot: TypoSlot, data: any) => {
     if (linkedGuideline) {
-      const current = typography.find(t => t.name === slot);
+      const current = typography.find((t) => t.name === slot);
       const updated = { ...current, ...data };
-      updateBrandGuideline(linkedGuideline, { typography: typography.map(t => t.name === slot ? updated : t) as any });
+      updateBrandGuideline(linkedGuideline, {
+        typography: typography.map((t) => (t.name === slot ? updated : t)) as any,
+      });
     }
   };
 
@@ -58,7 +63,7 @@ export function BrandTypographySection() {
         fontFamily: style.family,
         fontStyle: style.style,
         fontSize: style.fontSize,
-        lineHeight: style.lineHeight
+        lineHeight: style.lineHeight,
       };
       updateTypography(slot, data);
       syncToDatabase(slot, data);
@@ -83,11 +88,16 @@ export function BrandTypographySection() {
 
       <div className="space-y-6">
         {typography.map((typo) => (
-          <div key={typo.name} className="space-y-3 p-3 bg-neutral-950/30 rounded-xl border border-white/5">
+          <div
+            key={typo.name}
+            className="space-y-3 p-3 bg-neutral-950/30 rounded-xl border border-white/5"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Type size={12} className="text-brand-cyan" />
-                <label className="text-[10px] font-bold uppercase tracking-widest text-white">{typo.name}</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-white">
+                  {typo.name}
+                </label>
               </div>
               <Button
                 variant="ghost"
@@ -101,9 +111,14 @@ export function BrandTypographySection() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600">Pick Figma Style</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600">
+                Pick Figma Style
+              </label>
               <Select
-                options={figmaStyles.map((f: any) => ({ value: f.id, label: `${f.name} (${f.family} ${f.style || ''})` }))}
+                options={figmaStyles.map((f: any) => ({
+                  value: f.id,
+                  label: `${f.name} (${f.family} ${f.style || ''})`,
+                }))}
                 value=""
                 onChange={(val) => handleStyleSelect(typo.name as TypoSlot, val as string)}
                 placeholder="Choose text style..."
@@ -113,9 +128,11 @@ export function BrandTypographySection() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">Family</label>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+                  Family
+                </label>
                 <Select
-                  options={fontFamilies.map(f => ({ value: f, label: f }))}
+                  options={fontFamilies.map((f) => ({ value: f, label: f }))}
                   value={typo.fontFamily || ''}
                   onChange={(val) => {
                     updateTypography(typo.name as TypoSlot, { fontFamily: val });
@@ -125,7 +142,9 @@ export function BrandTypographySection() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">Weight / Style</label>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+                  Weight / Style
+                </label>
                 <Input
                   placeholder="Regular, Bold..."
                   value={typo.fontStyle || ''}
@@ -140,7 +159,9 @@ export function BrandTypographySection() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">Size (px)</label>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+                  Size (px)
+                </label>
                 <Input
                   type="number"
                   placeholder="16"
@@ -154,7 +175,9 @@ export function BrandTypographySection() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">Line (px)</label>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+                  Line (px)
+                </label>
                 <Input
                   type="number"
                   placeholder="Auto"

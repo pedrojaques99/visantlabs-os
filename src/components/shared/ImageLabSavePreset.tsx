@@ -20,7 +20,11 @@ interface SavedPreset {
 const CACHE_KEY = 'imagelab-saved-presets';
 
 function getCached(): SavedPreset[] {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '[]'); } catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
+  } catch {
+    return [];
+  }
 }
 
 function headers(): Record<string, string> {
@@ -56,7 +60,8 @@ function applyPreset(preset: SavedPreset) {
   } else if (mode === 'shaders') {
     const store = useShaderLabStore.getState();
     if (settings.shaderType) store.setShaderType(settings.shaderType);
-    if (settings.values) Object.entries(settings.values).forEach(([k, v]) => store.setShaderValue(k, v as number));
+    if (settings.values)
+      Object.entries(settings.values).forEach(([k, v]) => store.setShaderValue(k, v as number));
   }
 }
 
@@ -68,23 +73,35 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
   const mode = useImageLabStore((s) => s.mode);
 
   const fetchPresets = useCallback(async () => {
-    if (!authService.getToken()) { setPresets(getCached()); return; }
+    if (!authService.getToken()) {
+      setPresets(getCached());
+      return;
+    }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/community/presets/my?type=imagelab`, { headers: headers() });
+      const res = await fetch(`${API_BASE}/community/presets/my?type=imagelab`, {
+        headers: headers(),
+      });
       if (res.ok) {
         const data = await res.json();
         const list = (data.presets || data || []).map((p: any) => ({
-          id: p._id || p.id, name: p.name, data: p.data,
+          id: p._id || p.id,
+          name: p.name,
+          data: p.data,
         }));
         setPresets(list);
         localStorage.setItem(CACHE_KEY, JSON.stringify(list));
       } else setPresets(getCached());
-    } catch { setPresets(getCached()); }
-    finally { setLoading(false); }
+    } catch {
+      setPresets(getCached());
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { fetchPresets(); }, [fetchPresets]);
+  useEffect(() => {
+    fetchPresets();
+  }, [fetchPresets]);
 
   const handleSave = useCallback(async () => {
     if (!name.trim()) return;
@@ -93,11 +110,23 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
       const res = await fetch(`${API_BASE}/community/presets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers() },
-        body: JSON.stringify({ name: name.trim(), type: 'imagelab', data: { mode, settings, layers } }),
+        body: JSON.stringify({
+          name: name.trim(),
+          type: 'imagelab',
+          data: { mode, settings, layers },
+        }),
       });
-      if (res.ok) { toast.success('Preset saved'); setName(''); fetchPresets(); }
-      else { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to save'); }
-    } catch { toast.error('Failed to save preset'); }
+      if (res.ok) {
+        toast.success('Preset saved');
+        setName('');
+        fetchPresets();
+      } else {
+        const e = await res.json().catch(() => ({}));
+        toast.error(e.error || 'Failed to save');
+      }
+    } catch {
+      toast.error('Failed to save preset');
+    }
   }, [name, mode, fetchPresets]);
 
   const handleDelete = useCallback(async (id: string) => {
@@ -105,7 +134,9 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
       await fetch(`${API_BASE}/community/presets/${id}`, { method: 'DELETE', headers: headers() });
       setPresets((p) => p.filter((x) => x.id !== id));
       toast.success('Preset deleted');
-    } catch { toast.error('Failed to delete'); }
+    } catch {
+      toast.error('Failed to delete');
+    }
   }, []);
 
   return (
@@ -119,10 +150,13 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
           placeholder="Save preset..."
           aria-label="Preset name"
           className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20"
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave();
+          }}
         />
         <Button
-          variant="outline" size="sm"
+          variant="outline"
+          size="sm"
           className="h-7 px-2 text-[10px]"
           disabled={!name.trim()}
           aria-label="Save preset"
@@ -134,7 +168,9 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
 
       {/* Empty state hint */}
       {presets.length === 0 && !loading && (
-        <p className="text-[9px] text-neutral-600 text-center py-0.5">Name your settings and save for quick recall</p>
+        <p className="text-[9px] text-neutral-600 text-center py-0.5">
+          Name your settings and save for quick recall
+        </p>
       )}
 
       {/* Saved presets toggle + list */}
@@ -144,7 +180,10 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
             onClick={() => setExpanded(!expanded)}
             className="flex items-center gap-1.5 w-full text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors"
           >
-            <ChevronDown size={10} className={cn('transition-transform', expanded && 'rotate-180')} />
+            <ChevronDown
+              size={10}
+              className={cn('transition-transform', expanded && 'rotate-180')}
+            />
             <span className="font-mono uppercase tracking-wider">
               My presets{!loading && ` (${presets.length})`}
             </span>
@@ -156,17 +195,24 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
               {presets.map((p) => (
                 <div key={p.id} className="flex items-center gap-1 group">
                   <button
-                    onClick={() => { applyPreset(p); toast.success(`Loaded "${p.name}"`); }}
+                    onClick={() => {
+                      applyPreset(p);
+                      toast.success(`Loaded "${p.name}"`);
+                    }}
                     className="flex-1 flex items-center gap-1.5 text-left px-1.5 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors min-w-0"
                   >
                     <span className="truncate">{p.name}</span>
-                    <span className={cn(
-                      'text-[7px] font-mono uppercase shrink-0',
-                      p.data.mode === 'halftone' && 'text-cyan-600',
-                      p.data.mode === 'texture' && 'text-purple-600',
-                      p.data.mode === 'riso' && 'text-amber-600',
-                      p.data.mode === 'shaders' && 'text-emerald-600',
-                    )}>{p.data.mode}</span>
+                    <span
+                      className={cn(
+                        'text-[7px] font-mono uppercase shrink-0',
+                        p.data.mode === 'halftone' && 'text-cyan-600',
+                        p.data.mode === 'texture' && 'text-purple-600',
+                        p.data.mode === 'riso' && 'text-amber-600',
+                        p.data.mode === 'shaders' && 'text-emerald-600'
+                      )}
+                    >
+                      {p.data.mode}
+                    </span>
                   </button>
                   <button
                     onClick={() => handleDelete(p.id)}

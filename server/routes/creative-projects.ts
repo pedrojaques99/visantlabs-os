@@ -77,7 +77,9 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     const result = { projects: projects.map((p) => ({ ...p, _id: p.id })) };
 
     // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.CREATIVE_PROJECTS, JSON.stringify(result)).catch(() => {});
+    await redisClient
+      .setex(cacheKey, CACHE_TTL.CREATIVE_PROJECTS, JSON.stringify(result))
+      .catch(() => {});
 
     res.json(result);
   } catch (err: any) {
@@ -107,7 +109,9 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     const result = { project: mapId(project) };
 
     // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.CREATIVE_PROJECTS, JSON.stringify(result)).catch(() => {});
+    await redisClient
+      .setex(cacheKey, CACHE_TTL.CREATIVE_PROJECTS, JSON.stringify(result))
+      .catch(() => {});
 
     res.json(result);
   } catch (err: any) {

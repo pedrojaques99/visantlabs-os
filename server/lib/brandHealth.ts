@@ -30,8 +30,8 @@ export interface BrandHealthRecommendation {
 }
 
 export interface BrandHealthReport {
-  score: number;            // 0..100, LLM-judged coherence score
-  summary: string;          // 1-2 sentences
+  score: number; // 0..100, LLM-judged coherence score
+  summary: string; // 1-2 sentences
   insights: BrandHealthInsight[];
   recommendations: BrandHealthRecommendation[];
   model: string;
@@ -84,7 +84,9 @@ export async function runBrandHealth(
   return {
     score: clampInt(parsed.score, 0, 100),
     summary: String(parsed.summary || '').slice(0, 400),
-    insights: Array.isArray(parsed.insights) ? parsed.insights.slice(0, 12).map(normalizeInsight) : [],
+    insights: Array.isArray(parsed.insights)
+      ? parsed.insights.slice(0, 12).map(normalizeInsight)
+      : [],
     recommendations: Array.isArray(parsed.recommendations)
       ? parsed.recommendations.slice(0, 8).map(normalizeRecommendation)
       : [],
@@ -110,7 +112,11 @@ function parseJsonReport(raw: string): any {
     // Fallback: extract first {...} block
     const m = cleaned.match(/\{[\s\S]*\}/);
     if (m) {
-      try { return JSON.parse(m[0]); } catch { return {}; }
+      try {
+        return JSON.parse(m[0]);
+      } catch {
+        return {};
+      }
     }
     return {};
   }
@@ -124,7 +130,9 @@ function clampInt(v: any, min: number, max: number): number {
 
 function normalizeInsight(i: any): BrandHealthInsight {
   const level = ['pass', 'warn', 'fail'].includes(i?.level) ? i.level : 'warn';
-  const category = ['identity', 'visual', 'strategy', 'voice', 'tokens', 'coherence'].includes(i?.category)
+  const category = ['identity', 'visual', 'strategy', 'voice', 'tokens', 'coherence'].includes(
+    i?.category
+  )
     ? i.category
     : 'coherence';
   return {

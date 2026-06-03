@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { PluginStore, ChatMessage, SelectionDetail, ColorEntry, Component, DesignTokens } from './types';
+import type {
+  PluginStore,
+  ChatMessage,
+  SelectionDetail,
+  ColorEntry,
+  Component,
+  DesignTokens,
+} from './types';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 export const usePluginStore = create<PluginStore>()(
@@ -13,11 +20,11 @@ export const usePluginStore = create<PluginStore>()(
     logos: [
       { name: 'light', src: undefined, loaded: false },
       { name: 'dark', src: undefined, loaded: false },
-      { name: 'accent', src: undefined, loaded: false }
+      { name: 'accent', src: undefined, loaded: false },
     ],
     typography: [
       { name: 'primary', fontFamily: undefined },
-      { name: 'secondary', fontFamily: undefined }
+      { name: 'secondary', fontFamily: undefined },
     ],
     selectedColors: new Map(),
 
@@ -27,12 +34,14 @@ export const usePluginStore = create<PluginStore>()(
 
     // Chat
     chatHistory: [],
-    sessionId: crypto.randomUUID?.() ?? ([1e7] as any + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c: string) =>
-      (
-        Number(c) ^
-        (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))
-      ).toString(16)
-    ),
+    sessionId:
+      crypto.randomUUID?.() ??
+      (([1e7] as any) + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c: string) =>
+        (
+          Number(c) ^
+          (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))
+        ).toString(16)
+      ),
     sessionContext: null,
     pendingAttachments: [],
     thinkMode: false,
@@ -42,7 +51,9 @@ export const usePluginStore = create<PluginStore>()(
     mode: 'simple',
 
     // Server
-    serverUrl: (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) || 'https://api.visantlabs.com',
+    serverUrl:
+      (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) ||
+      'https://api.visantlabs.com',
 
     // Auth
     authToken: null,
@@ -107,7 +118,8 @@ export const usePluginStore = create<PluginStore>()(
     clearChatHistory: () => {
       set((state) => {
         state.chatHistory = [];
-        state.sessionId = (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+        state.sessionId =
+          crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         state.sessionContext = null;
       });
       scheduleChatPersist();
@@ -196,43 +208,65 @@ export const usePluginStore = create<PluginStore>()(
       }),
 
     setUserInfo: (user) =>
-      set((state) => { state.userInfo = user; }),
+      set((state) => {
+        state.userInfo = user;
+      }),
 
     setMentionElements: (elements) =>
-      set((state) => { state.mentionElements = elements; }),
+      set((state) => {
+        state.mentionElements = elements;
+      }),
 
     setApiKey: (key) =>
-      set((state) => { state.apiKey = key; }),
+      set((state) => {
+        state.apiKey = key;
+      }),
 
     setAnthropicApiKey: (key) =>
-      set((state) => { state.anthropicApiKey = key; }),
+      set((state) => {
+        state.anthropicApiKey = key;
+      }),
 
     setExtractSyncData: (data) =>
-      set((state) => { state.extractSyncData = data; }),
+      set((state) => {
+        state.extractSyncData = data;
+      }),
 
     setExportedImage: (data) =>
-      set((state) => { state.exportedImage = data; }),
+      set((state) => {
+        state.exportedImage = data;
+      }),
 
     setIsGenerating: (generating) =>
-      set((state) => { state.isGenerating = generating; }),
+      set((state) => {
+        state.isGenerating = generating;
+      }),
 
     setGeneratingStatus: (status) =>
-      set((state) => { state.generatingStatus = status; }),
+      set((state) => {
+        state.generatingStatus = status;
+      }),
 
     setMatrixColors: (colors) =>
-      set((state) => { state.matrixColors = colors; }),
+      set((state) => {
+        state.matrixColors = colors;
+      }),
 
     toggleMatrixColor: (id) =>
       set((state) => {
-        const c = state.matrixColors.find(c => c.id === id);
+        const c = state.matrixColors.find((c) => c.id === id);
         if (c) c.selected = !c.selected;
       }),
 
     addMatrixColor: (color) =>
-      set((state) => { state.matrixColors.push({ ...color, selected: true }); }),
+      set((state) => {
+        state.matrixColors.push({ ...color, selected: true });
+      }),
 
     toggleDevMode: () =>
-      set((state) => { state.devMode = !state.devMode; })
+      set((state) => {
+        state.devMode = !state.devMode;
+      }),
   }))
 );
 
@@ -254,8 +288,34 @@ function scheduleChatPersist() {
   persistTimer = setTimeout(() => {
     if (!_client) return;
     const { chatHistory, sessionId } = usePluginStore.getState();
-    const toSave = chatHistory.slice(-50).map(({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError, metadata }) => ({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError, metadata }));
-    _client.request('storage.set', { key: CHAT_STORAGE_KEY, value: JSON.stringify(toSave) }).catch(() => {});
+    const toSave = chatHistory
+      .slice(-50)
+      .map(
+        ({
+          id,
+          role,
+          content,
+          timestamp,
+          operations,
+          toolCalls,
+          summaryItems,
+          isError,
+          metadata,
+        }) => ({
+          id,
+          role,
+          content,
+          timestamp,
+          operations,
+          toolCalls,
+          summaryItems,
+          isError,
+          metadata,
+        })
+      );
+    _client
+      .request('storage.set', { key: CHAT_STORAGE_KEY, value: JSON.stringify(toSave) })
+      .catch(() => {});
     _client.request('storage.set', { key: SESSION_ID_KEY, value: sessionId }).catch(() => {});
   }, 1500);
 }
@@ -284,15 +344,17 @@ export async function loadChatHistory(client: RpcClient) {
       fetch(`${serverUrl}/api/plugin/session/${sid}/messages`, {
         headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
       })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
           if (data?.sessionContext) {
             usePluginStore.setState({ sessionContext: data.sessionContext });
           }
         })
         .catch(() => {});
     }
-  } catch { /* first run, no history */ }
+  } catch {
+    /* first run, no history */
+  }
 }
 
 export type { PluginStore } from './types';

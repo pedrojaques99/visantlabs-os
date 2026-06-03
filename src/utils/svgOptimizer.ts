@@ -29,12 +29,7 @@ const EDITOR_XMLNS = [
 ];
 
 /** Editor-specific attribute prefixes */
-const EDITOR_ATTR_PREFIXES = [
-  'inkscape:',
-  'sodipodi:',
-  'sketch:',
-  'data-name',
-];
+const EDITOR_ATTR_PREFIXES = ['inkscape:', 'sodipodi:', 'sketch:', 'data-name'];
 
 /**
  * Lightweight regex-based SVG optimizer.
@@ -42,7 +37,7 @@ const EDITOR_ATTR_PREFIXES = [
  */
 export function optimizeSvg(
   svgString: string,
-  options?: Partial<SvgOptimizeOptions>,
+  options?: Partial<SvgOptimizeOptions>
 ): { optimized: string; originalSize: number; optimizedSize: number; savings: number } {
   const opts: SvgOptimizeOptions = { ...DEFAULT_OPTIONS, ...options };
   const originalSize = new Blob([svgString]).size;
@@ -105,7 +100,7 @@ export function optimizeSvg(
   if (opts.removeHiddenElements) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(svg, 'image/svg+xml');
-    doc.querySelectorAll('[display="none"], [visibility="hidden"]').forEach(el => el.remove());
+    doc.querySelectorAll('[display="none"], [visibility="hidden"]').forEach((el) => el.remove());
     svg = new XMLSerializer().serializeToString(doc.documentElement);
   }
 
@@ -139,7 +134,10 @@ export function optimizeSvg(
 
 function prettifySvg(svg: string): string {
   // First collapse to single line
-  let s = svg.replace(/\s{2,}/g, ' ').replace(/>\s+</g, '><').trim();
+  let s = svg
+    .replace(/\s{2,}/g, ' ')
+    .replace(/>\s+</g, '><')
+    .trim();
 
   // Split on tags
   const tokens = s.replace(/></g, '>\n<').split('\n');

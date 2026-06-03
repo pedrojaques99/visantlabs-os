@@ -30,15 +30,15 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
       if (planName) {
         // Find price based on plan name (heuristic)
         const priceMap: Record<string, number> = {
-          'Pro': 9.99,
-          'Vision': 19.99,
-          'Pro Anual': 99.90,
-          'Vision Anual': 199.90,
+          Pro: 9.99,
+          Vision: 19.99,
+          'Pro Anual': 99.9,
+          'Vision Anual': 199.9,
         };
         trackPurchase({
           product_id: planName.toLowerCase().replace(/\s+/g, '_'),
           price: priceMap[planName] || 0,
-          credits: planCredits
+          credits: planCredits,
         });
         trackedRef.current = true;
       } else {
@@ -50,7 +50,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
               trackPurchase({
                 product_id: `credits_${pendingPurchase.credits}`,
                 price: pendingPurchase.price || 0,
-                credits: pendingPurchase.credits
+                credits: pendingPurchase.credits,
               });
               trackedRef.current = true;
             }
@@ -124,7 +124,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
         if (Date.now() - pendingPurchase.timestamp < 3600000) {
           setPurchasedCredits(pendingPurchase.credits);
           // Optional: Clear it so it doesn't persist forever, but maybe keep for refresh?
-          // localStorage.removeItem('credit_purchase_pending'); 
+          // localStorage.removeItem('credit_purchase_pending');
         }
       }
     } catch (e) {
@@ -135,11 +135,13 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
   const creditsUsagePercent =
     subscriptionStatus?.monthlyCredits && subscriptionStatus.monthlyCredits > 0
       ? Math.min(
-        subscriptionStatus.totalCredits && subscriptionStatus.totalCredits > 0
-          ? ((subscriptionStatus.monthlyCredits - (subscriptionStatus.creditsRemaining || 0)) / subscriptionStatus.monthlyCredits) * 100
-          : 0,
-        100
-      )
+          subscriptionStatus.totalCredits && subscriptionStatus.totalCredits > 0
+            ? ((subscriptionStatus.monthlyCredits - (subscriptionStatus.creditsRemaining || 0)) /
+                subscriptionStatus.monthlyCredits) *
+                100
+            : 0,
+          100
+        )
       : 0;
   const creditsUsageStyle = {
     '--progress': `${creditsUsagePercent}%`,
@@ -152,8 +154,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-      <div className="fixed inset-0 z-0">
-      </div>
+      <div className="fixed inset-0 z-0"></div>
       <div className="max-w-2xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
@@ -175,10 +176,16 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
             <div className="flex items-center justify-center gap-2 mt-4">
               <GlitchLoader size={20} color="brand-cyan" />
             </div>
-          ) : (subscriptionStatus?.hasActiveSubscription || planName || purchasedCredits) ? (
+          ) : subscriptionStatus?.hasActiveSubscription || planName || purchasedCredits ? (
             <div className="mt-6 inline-block bg-brand-cyan/10 border border-brand-cyan/30 rounded-md px-4 py-2">
               <p className="text-brand-cyan font-mono text-sm">
-                {t('thankYou.subscriptionActive', { plan: planName || (purchasedCredits ? `${purchasedCredits} Credits` : t('subscriptionStatus.premium')) })}
+                {t('thankYou.subscriptionActive', {
+                  plan:
+                    planName ||
+                    (purchasedCredits
+                      ? `${purchasedCredits} Credits`
+                      : t('subscriptionStatus.premium')),
+                })}
               </p>
             </div>
           ) : null}
@@ -198,8 +205,14 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
                 <CheckCircle size={18} className="text-brand-cyan mt-0.5 flex-shrink-0" />
                 <span>
                   {t('thankYou.benefit1', {
-                    credits: planCredits || purchasedCredits || subscriptionStatus?.monthlyCredits || 100,
-                    interval: interval ? t(`common.${interval}`) : ((planCredits || purchasedCredits) && (planCredits || purchasedCredits)! > 500 ? t('common.year') : t('common.month'))
+                    credits:
+                      planCredits || purchasedCredits || subscriptionStatus?.monthlyCredits || 100,
+                    interval: interval
+                      ? t(`common.${interval}`)
+                      : (planCredits || purchasedCredits) &&
+                        (planCredits || purchasedCredits)! > 500
+                      ? t('common.year')
+                      : t('common.month'),
                   })}
                 </span>
               </li>
@@ -257,12 +270,9 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-neutral-500 text-xs font-mono">
-            {t('thankYou.support')}
-          </p>
+          <p className="text-neutral-500 text-xs font-mono">{t('thankYou.support')}</p>
         </div>
       </div>
     </div>
   );
 };
-

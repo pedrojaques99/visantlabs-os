@@ -56,7 +56,7 @@ export async function createUser(overrides: Partial<UserSeed> = {}) {
     const { ObjectId } = await import('mongodb');
     await connectToMongoDB();
     const db = getDb();
-    
+
     // Check if user already exists in Mongo (shouldn't happen with faker emails)
     const existing = await db.collection('users').findOne({ email: seed.email });
     if (!existing) {

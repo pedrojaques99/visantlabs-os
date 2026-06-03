@@ -27,14 +27,14 @@ frontend only, and all `/api/*` traffic goes to `https://api.visantlabs.com`.
 
 ## 2. Build & Start Configuration
 
-| Setting           | Value                          |
-| ----------------- | ------------------------------ |
-| Build Pack        | Dockerfile                     |
-| Dockerfile path   | `./Dockerfile`                 |
-| Port              | `3001`                         |
-| Health check path | `/api/health`                  |
-| Domain            | `api.visantlabs.com`           |
-| HTTPS             | Enabled (Let's Encrypt)        |
+| Setting           | Value                   |
+| ----------------- | ----------------------- |
+| Build Pack        | Dockerfile              |
+| Dockerfile path   | `./Dockerfile`          |
+| Port              | `3001`                  |
+| Health check path | `/api/health`           |
+| Domain            | `api.visantlabs.com`    |
+| HTTPS             | Enabled (Let's Encrypt) |
 
 If you prefer to skip the Dockerfile and use Nixpacks / Node directly:
 
@@ -49,14 +49,14 @@ If you prefer to skip the Dockerfile and use Nixpacks / Node directly:
 Set every variable from `VPS.env.example` in the Coolify **Environment Variables**
 panel. Key values to update for production:
 
-| Variable              | Production value                                          |
-| --------------------- | --------------------------------------------------------- |
-| `NODE_ENV`            | `production`                                             |
-| `PORT`                | `3001`                                                   |
-| `FRONTEND_URL`        | `https://visantlabs.com,https://www.visantlabs.com`      |
-| `GOOGLE_REDIRECT_URI` | `https://api.visantlabs.com/api/auth/google/callback`    |
-| `BETTER_AUTH_URL`     | `https://api.visantlabs.com/`                            |
-| `REDIS_URL`           | Redis URL on VPS (e.g. `redis://localhost:6379`)          |
+| Variable              | Production value                                      |
+| --------------------- | ----------------------------------------------------- |
+| `NODE_ENV`            | `production`                                          |
+| `PORT`                | `3001`                                                |
+| `FRONTEND_URL`        | `https://visantlabs.com,https://www.visantlabs.com`   |
+| `GOOGLE_REDIRECT_URI` | `https://api.visantlabs.com/api/auth/google/callback` |
+| `BETTER_AUTH_URL`     | `https://api.visantlabs.com/`                         |
+| `REDIS_URL`           | Redis URL on VPS (e.g. `redis://localhost:6379`)      |
 
 All other variables (API keys, secrets, DB URIs) should match your current
 `.env` values. Never commit actual secrets.
@@ -94,9 +94,9 @@ The Google OAuth redirect URI must point to the VPS API:
 
 In your Vercel project dashboard, add this environment variable:
 
-| Key             | Value                        |
-| --------------- | ---------------------------- |
-| `VITE_API_URL`  | `https://api.visantlabs.com` |
+| Key            | Value                        |
+| -------------- | ---------------------------- |
+| `VITE_API_URL` | `https://api.visantlabs.com` |
 
 This tells the React frontend where to send API requests. Redeploy Vercel after
 setting the variable.
@@ -107,11 +107,11 @@ setting the variable.
 
 Any external service sending webhooks must now point to the VPS:
 
-| Service    | New webhook URL                                            |
-| ---------- | ---------------------------------------------------------- |
-| Stripe     | `https://api.visantlabs.com/api/payments/webhook`         |
-| Resend     | `https://api.visantlabs.com/api/resend/webhook`           |
-| Liveblocks | `https://api.visantlabs.com/api/liveblocks/webhook`       |
+| Service    | New webhook URL                                     |
+| ---------- | --------------------------------------------------- |
+| Stripe     | `https://api.visantlabs.com/api/payments/webhook`   |
+| Resend     | `https://api.visantlabs.com/api/resend/webhook`     |
+| Liveblocks | `https://api.visantlabs.com/api/liveblocks/webhook` |
 
 ---
 

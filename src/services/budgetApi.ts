@@ -78,9 +78,11 @@ export const budgetApi = {
       const data = await response.json();
       return Array.isArray(data.budgets) ? data.budgets : [];
     } catch (error: any) {
-      if (error?.message?.includes('Failed to fetch') ||
+      if (
+        error?.message?.includes('Failed to fetch') ||
         error?.message?.includes('NetworkError') ||
-        error?.name === 'TypeError') {
+        error?.name === 'TypeError'
+      ) {
         console.error('Network error fetching budgets:', error);
         return [];
       }
@@ -120,9 +122,7 @@ export const budgetApi = {
   },
 
   async save(data: BudgetData, projectId?: string, name?: string): Promise<BudgetProject> {
-    const url = projectId
-      ? `${API_BASE_URL}/budget/${projectId}`
-      : `${API_BASE_URL}/budget`;
+    const url = projectId ? `${API_BASE_URL}/budget/${projectId}` : `${API_BASE_URL}/budget`;
 
     const method = projectId ? 'PUT' : 'POST';
 
@@ -460,4 +460,3 @@ export const budgetApi = {
     }
   },
 };
-

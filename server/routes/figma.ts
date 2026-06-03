@@ -57,7 +57,9 @@ router.post('/generate', apiRateLimiter, authenticate, async (req: AuthRequest, 
     const result = await generateFigmaOperations(prompt.trim(), context, userApiKey);
 
     // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.FIGMA_GEN, JSON.stringify({ operations: result.operations })).catch(() => {});
+    await redisClient
+      .setex(cacheKey, CACHE_TTL.FIGMA_GEN, JSON.stringify({ operations: result.operations }))
+      .catch(() => {});
 
     (async () => {
       try {

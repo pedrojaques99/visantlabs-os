@@ -12,12 +12,22 @@ const DEFAULTS: BgRemovalOptions = {
   feather: 2,
 };
 
-function colorDistance(r1: number, g1: number, b1: number, r2: number, g2: number, b2: number): number {
+function colorDistance(
+  r1: number,
+  g1: number,
+  b1: number,
+  r2: number,
+  g2: number,
+  b2: number
+): number {
   return Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2);
 }
 
 function sampleRegion(data: Uint8ClampedArray, w: number, sx: number, sy: number, size: number) {
-  let r = 0, g = 0, b = 0, count = 0;
+  let r = 0,
+    g = 0,
+    b = 0,
+    count = 0;
   for (let y = sy; y < sy + size && y >= 0; y++) {
     for (let x = sx; x < sx + size && x >= 0; x++) {
       const i = (y * w + x) * 4;
@@ -33,7 +43,7 @@ function sampleRegion(data: Uint8ClampedArray, w: number, sx: number, sy: number
 export async function removeBackgroundSimple(
   imageUrl: string,
   options?: Partial<BgRemovalOptions>,
-  onProgress?: ProgressCallback,
+  onProgress?: ProgressCallback
 ): Promise<string> {
   const opts = { ...DEFAULTS, ...options };
   const maxDist = (opts.threshold / 100) * 441.67;
@@ -99,7 +109,7 @@ export async function removeBackgroundSimple(
  */
 function cropToRegion(
   sourceCanvas: HTMLCanvasElement,
-  region: { x: number; y: number; w: number; h: number },
+  region: { x: number; y: number; w: number; h: number }
 ): HTMLCanvasElement {
   const { width, height } = sourceCanvas;
   const pad = 0.05;
@@ -126,7 +136,7 @@ export interface FocusRegion {
 export async function removeBackgroundAI(
   imageUrl: string,
   onProgress?: ProgressCallback,
-  focusRegion?: FocusRegion | null,
+  focusRegion?: FocusRegion | null
 ): Promise<string> {
   onProgress?.('Loading AI model', 0.05);
 
@@ -146,7 +156,7 @@ export async function removeBackgroundAI(
 
     const cropped = cropToRegion(full, focusRegion);
     sourceBlob = await new Promise<Blob>((res, rej) =>
-      cropped.toBlob((b) => (b ? res(b) : rej(new Error('Canvas toBlob failed'))), 'image/png'),
+      cropped.toBlob((b) => (b ? res(b) : rej(new Error('Canvas toBlob failed'))), 'image/png')
     );
     onProgress?.('Focus region cropped', 0.15);
   } else {

@@ -90,7 +90,11 @@ export async function processNodesForR2Upload(
           // resultImageBase64 -> resultImageUrl
           if (editData.resultImageBase64 && isBase64Image(editData.resultImageBase64)) {
             try {
-              const imageUrl = await canvasApi.uploadImageToR2(editData.resultImageBase64, canvasId, `${nodeId}-result`);
+              const imageUrl = await canvasApi.uploadImageToR2(
+                editData.resultImageBase64,
+                canvasId,
+                `${nodeId}-result`
+              );
               processedEditData.resultImageUrl = imageUrl;
               processedEditData.resultImageBase64 = undefined;
               uploadedCount++;
@@ -107,7 +111,11 @@ export async function processNodesForR2Upload(
           // uploadedImage.base64 -> uploadedImage.url
           if (editData.uploadedImage?.base64 && isBase64Image(editData.uploadedImage.base64)) {
             try {
-              const imageUrl = await canvasApi.uploadImageToR2(editData.uploadedImage.base64, canvasId, `${nodeId}-uploaded`);
+              const imageUrl = await canvasApi.uploadImageToR2(
+                editData.uploadedImage.base64,
+                canvasId,
+                `${nodeId}-uploaded`
+              );
               processedEditData.uploadedImage = {
                 ...editData.uploadedImage,
                 url: imageUrl,
@@ -127,7 +135,11 @@ export async function processNodesForR2Upload(
           // referenceImage.base64 -> referenceImage.url
           if (editData.referenceImage?.base64 && isBase64Image(editData.referenceImage.base64)) {
             try {
-              const imageUrl = await canvasApi.uploadImageToR2(editData.referenceImage.base64, canvasId, `${nodeId}-reference`);
+              const imageUrl = await canvasApi.uploadImageToR2(
+                editData.referenceImage.base64,
+                canvasId,
+                `${nodeId}-reference`
+              );
               processedEditData.referenceImage = {
                 ...editData.referenceImage,
                 url: imageUrl,
@@ -137,7 +149,10 @@ export async function processNodesForR2Upload(
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
             } catch (uploadError: any) {
-              console.error(`Failed to upload referenceImage for edit node ${nodeId}:`, uploadError);
+              console.error(
+                `Failed to upload referenceImage for edit node ${nodeId}:`,
+                uploadError
+              );
               failedCount++;
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
@@ -150,7 +165,11 @@ export async function processNodesForR2Upload(
               editData.referenceImages.map(async (refImage: any, index: number) => {
                 if (refImage?.base64 && isBase64Image(refImage.base64)) {
                   try {
-                    const imageUrl = await canvasApi.uploadImageToR2(refImage.base64, canvasId, `${nodeId}-ref-${index}`);
+                    const imageUrl = await canvasApi.uploadImageToR2(
+                      refImage.base64,
+                      canvasId,
+                      `${nodeId}-ref-${index}`
+                    );
                     processedIndex++;
                     onProgress?.(processedIndex, totalImages);
                     uploadedCount++;
@@ -160,7 +179,10 @@ export async function processNodesForR2Upload(
                       base64: undefined,
                     };
                   } catch (uploadError: any) {
-                    console.error(`Failed to upload referenceImage[${index}] for edit node ${nodeId}:`, uploadError);
+                    console.error(
+                      `Failed to upload referenceImage[${index}] for edit node ${nodeId}:`,
+                      uploadError
+                    );
                     failedCount++;
                     processedIndex++;
                     onProgress?.(processedIndex, totalImages);
@@ -191,7 +213,10 @@ export async function processNodesForR2Upload(
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
             } catch (uploadError: any) {
-              console.error(`Failed to upload result image for upscale node ${nodeId}:`, uploadError);
+              console.error(
+                `Failed to upload result image for upscale node ${nodeId}:`,
+                uploadError
+              );
               failedCount++;
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
@@ -214,7 +239,10 @@ export async function processNodesForR2Upload(
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
             } catch (uploadError: any) {
-              console.error(`Failed to upload result image for mockup node ${nodeId}:`, uploadError);
+              console.error(
+                `Failed to upload result image for mockup node ${nodeId}:`,
+                uploadError
+              );
               failedCount++;
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
@@ -237,7 +265,10 @@ export async function processNodesForR2Upload(
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
             } catch (uploadError: any) {
-              console.error(`Failed to upload result image for prompt node ${nodeId}:`, uploadError);
+              console.error(
+                `Failed to upload result image for prompt node ${nodeId}:`,
+                uploadError
+              );
               failedCount++;
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
@@ -260,7 +291,10 @@ export async function processNodesForR2Upload(
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
             } catch (uploadError: any) {
-              console.error(`Failed to upload result image for output node ${nodeId}:`, uploadError);
+              console.error(
+                `Failed to upload result image for output node ${nodeId}:`,
+                uploadError
+              );
               failedCount++;
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
@@ -306,7 +340,10 @@ export async function processNodesForR2Upload(
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
             } catch (uploadError: any) {
-              console.error(`Failed to upload result image for shader node ${nodeId}:`, uploadError);
+              console.error(
+                `Failed to upload result image for shader node ${nodeId}:`,
+                uploadError
+              );
               failedCount++;
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
@@ -321,7 +358,11 @@ export async function processNodesForR2Upload(
 
           if (brandData.logoBase64 && isBase64Image(brandData.logoBase64)) {
             try {
-              const imageUrl = await canvasApi.uploadImageToR2(brandData.logoBase64, canvasId, `${nodeId}-logo`);
+              const imageUrl = await canvasApi.uploadImageToR2(
+                brandData.logoBase64,
+                canvasId,
+                `${nodeId}-logo`
+              );
               processedBrandData.logoImage = imageUrl;
               processedBrandData.logoBase64 = undefined;
               uploadedCount++;
@@ -337,7 +378,11 @@ export async function processNodesForR2Upload(
 
           if (brandData.identityPdfBase64) {
             try {
-              const pdfUrl = await canvasApi.uploadPdfToR2(brandData.identityPdfBase64, canvasId, `${nodeId}-identity`);
+              const pdfUrl = await canvasApi.uploadPdfToR2(
+                brandData.identityPdfBase64,
+                canvasId,
+                `${nodeId}-identity`
+              );
               processedBrandData.identityPdfUrl = pdfUrl;
               processedBrandData.identityPdfBase64 = undefined;
               uploadedCount++;
@@ -353,14 +398,21 @@ export async function processNodesForR2Upload(
 
           if (brandData.identityImageBase64 && isBase64Image(brandData.identityImageBase64)) {
             try {
-              const imageUrl = await canvasApi.uploadImageToR2(brandData.identityImageBase64, canvasId, `${nodeId}-identity-image`);
+              const imageUrl = await canvasApi.uploadImageToR2(
+                brandData.identityImageBase64,
+                canvasId,
+                `${nodeId}-identity-image`
+              );
               processedBrandData.identityImageUrl = imageUrl;
               processedBrandData.identityImageBase64 = undefined;
               uploadedCount++;
               processedIndex++;
               onProgress?.(processedIndex, totalImages);
             } catch (uploadError: any) {
-              console.error(`Failed to upload identity image for brand node ${nodeId}:`, uploadError);
+              console.error(
+                `Failed to upload identity image for brand node ${nodeId}:`,
+                uploadError
+              );
               failedCount++;
               processedIndex++;
               onProgress?.(processedIndex, totalImages);

@@ -23,7 +23,7 @@ function wrapText(
   x: number,
   y: number,
   maxWidth: number,
-  lineHeight: number,
+  lineHeight: number
 ) {
   const words = text.split(' ');
   let line = '';
@@ -47,9 +47,7 @@ function wrapText(
   ctx.fillText(line.trim(), x, lineY);
 }
 
-async function renderOgImage(
-  state: ReturnType<typeof useOgImageStore.getState>,
-): Promise<string> {
+async function renderOgImage(state: ReturnType<typeof useOgImageStore.getState>): Promise<string> {
   const canvas = document.createElement('canvas');
   canvas.width = OG_WIDTH;
   canvas.height = OG_HEIGHT;
@@ -209,29 +207,53 @@ export const OgImagePage: React.FC = () => {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const state = useOgImageStore.getState();
-      renderOgImage(state).then(setPreviewUrl).catch(() => {});
+      renderOgImage(state)
+        .then(setPreviewUrl)
+        .catch(() => {});
     }, 300);
     return () => clearTimeout(debounceRef.current);
-  }, [template, title, subtitle, authorName, logoUrl, backgroundImageUrl, backgroundColor, accentColor, textColor]);
+  }, [
+    template,
+    title,
+    subtitle,
+    authorName,
+    logoUrl,
+    backgroundImageUrl,
+    backgroundColor,
+    accentColor,
+    textColor,
+  ]);
 
   // File uploads
-  const handleLogoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const error = validateFile(file, 'image');
-    if (error) { toast.error(error); return; }
-    setLogoUrl(URL.createObjectURL(file));
-    e.target.value = '';
-  }, [setLogoUrl]);
+  const handleLogoUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const error = validateFile(file, 'image');
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      setLogoUrl(URL.createObjectURL(file));
+      e.target.value = '';
+    },
+    [setLogoUrl]
+  );
 
-  const handleBgUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const error = validateFile(file, 'image');
-    if (error) { toast.error(error); return; }
-    setBackgroundImageUrl(URL.createObjectURL(file));
-    e.target.value = '';
-  }, [setBackgroundImageUrl]);
+  const handleBgUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const error = validateFile(file, 'image');
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      setBackgroundImageUrl(URL.createObjectURL(file));
+      e.target.value = '';
+    },
+    [setBackgroundImageUrl]
+  );
 
   // Actions
   const handleDownload = useCallback(async () => {
@@ -263,109 +285,149 @@ export const OgImagePage: React.FC = () => {
   }, []);
 
   return (
-    <MiniToolShell
-      icon={Image}
-      title="OG Image Generator"
-      maxWidth="5xl"
-      onReset={reset}
-    >
-        {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-          {/* Preview */}
-          <div className="relative rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950/40">
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="OG Image Preview"
-                className="w-full h-auto"
-                style={{ aspectRatio: `${width}/${height}` }}
-              />
-            ) : (
-              <div
-                className="w-full flex items-center justify-center text-neutral-600 text-xs font-mono"
-                style={{ aspectRatio: `${width}/${height}` }}
-              >
-                Preview
-              </div>
-            )}
-            <span className="absolute bottom-2 right-2 text-[10px] font-mono text-neutral-500 bg-neutral-950/80 px-2 py-0.5 rounded">
-              {width} x {height}
+    <MiniToolShell icon={Image} title="OG Image Generator" maxWidth="5xl" onReset={reset}>
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        {/* Preview */}
+        <div className="relative rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950/40">
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt="OG Image Preview"
+              className="w-full h-auto"
+              style={{ aspectRatio: `${width}/${height}` }}
+            />
+          ) : (
+            <div
+              className="w-full flex items-center justify-center text-neutral-600 text-xs font-mono"
+              style={{ aspectRatio: `${width}/${height}` }}
+            >
+              Preview
+            </div>
+          )}
+          <span className="absolute bottom-2 right-2 text-[10px] font-mono text-neutral-500 bg-neutral-950/80 px-2 py-0.5 rounded">
+            {width} x {height}
+          </span>
+        </div>
+
+        {/* Controls */}
+        <div className="space-y-4">
+          {/* Template selector */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+              Template
             </span>
+            <div className="flex gap-2">
+              {TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  onClick={() => setTemplate(tpl.id)}
+                  className="flex flex-col items-center gap-1 group"
+                  title={tpl.label}
+                >
+                  <TemplateThumbnail id={tpl.id} active={template === tpl.id} />
+                  <span
+                    className={cn(
+                      'text-[9px] font-mono uppercase tracking-wider',
+                      template === tpl.id
+                        ? 'text-brand-cyan'
+                        : 'text-neutral-600 group-hover:text-neutral-400'
+                    )}
+                  >
+                    {tpl.label}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Controls */}
-          <div className="space-y-4">
-            {/* Template selector */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Template</span>
-              <div className="flex gap-2">
-                {TEMPLATES.map((tpl) => (
-                  <button
-                    key={tpl.id}
-                    onClick={() => setTemplate(tpl.id)}
-                    className="flex flex-col items-center gap-1 group"
-                    title={tpl.label}
-                  >
-                    <TemplateThumbnail id={tpl.id} active={template === tpl.id} />
-                    <span
-                      className={cn(
-                        'text-[9px] font-mono uppercase tracking-wider',
-                        template === tpl.id ? 'text-brand-cyan' : 'text-neutral-600 group-hover:text-neutral-400',
-                      )}
-                    >
-                      {tpl.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Title */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+              Title
+            </span>
+            <textarea
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Your blog post title"
+              rows={2}
+              className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/40 resize-none"
+            />
+          </div>
 
-            {/* Title */}
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Title</span>
-              <textarea
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Your blog post title"
-                rows={2}
-                className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/40 resize-none"
-              />
-            </div>
+          {/* Subtitle */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+              Subtitle
+            </span>
+            <Input
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              placeholder="A brief description"
+              className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-brand-cyan/40"
+            />
+          </div>
 
-            {/* Subtitle */}
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Subtitle</span>
-              <Input
-                value={subtitle}
-                onChange={(e) => setSubtitle(e.target.value)}
-                placeholder="A brief description"
-                className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-brand-cyan/40"
-              />
-            </div>
+          {/* Author */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+              Author
+            </span>
+            <Input
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              placeholder="Author name"
+              className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-brand-cyan/40"
+            />
+          </div>
 
-            {/* Author */}
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Author</span>
-              <Input
-                value={authorName}
-                onChange={(e) => setAuthorName(e.target.value)}
-                placeholder="Author name"
-                className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-brand-cyan/40"
-              />
+          {/* Logo upload */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+              Logo
+            </span>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
+                <Upload size={10} />
+                Upload
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLogoUpload}
+                />
+              </label>
+              {logoUrl && (
+                <button
+                  onClick={() => setLogoUrl('')}
+                  className="text-neutral-600 hover:text-neutral-300 transition-colors"
+                >
+                  <X size={12} />
+                </button>
+              )}
             </div>
+          </div>
 
-            {/* Logo upload */}
+          {/* Background image upload (photo template only) */}
+          {template === 'photo' && (
             <div className="space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Logo</span>
+              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+                Background Image
+              </span>
               <div className="flex items-center gap-2">
                 <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
                   <Upload size={10} />
                   Upload
-                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleBgUpload}
+                  />
                 </label>
-                {logoUrl && (
+                {backgroundImageUrl && (
                   <button
-                    onClick={() => setLogoUrl('')}
+                    onClick={() => setBackgroundImageUrl('')}
                     className="text-neutral-600 hover:text-neutral-300 transition-colors"
                   >
                     <X size={12} />
@@ -373,71 +435,52 @@ export const OgImagePage: React.FC = () => {
                 )}
               </div>
             </div>
+          )}
 
-            {/* Background image upload (photo template only) */}
-            {template === 'photo' && (
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Background Image</span>
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
-                    <Upload size={10} />
-                    Upload
-                    <input type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
-                  </label>
-                  {backgroundImageUrl && (
-                    <button
-                      onClick={() => setBackgroundImageUrl('')}
-                      className="text-neutral-600 hover:text-neutral-300 transition-colors"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Colors */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Colors</span>
-              <div className="flex gap-3">
-                <ColorInput label="BG" value={backgroundColor} onChange={setBackgroundColor} />
-                <ColorInput label="Accent" value={accentColor} onChange={setAccentColor} />
-                <ColorInput label="Text" value={textColor} onChange={setTextColor} />
-              </div>
+          {/* Colors */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+              Colors
+            </span>
+            <div className="flex gap-3">
+              <ColorInput label="BG" value={backgroundColor} onChange={setBackgroundColor} />
+              <ColorInput label="Accent" value={accentColor} onChange={setAccentColor} />
+              <ColorInput label="Text" value={textColor} onChange={setTextColor} />
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="flex flex-col gap-2 pt-2">
+          {/* Actions */}
+          <div className="flex flex-col gap-2 pt-2">
+            <Button
+              onClick={handleDownload}
+              disabled={!previewUrl}
+              className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+            >
+              <Download size={14} />
+              <span className="ml-2">Download PNG</span>
+            </Button>
+            <div className="flex gap-2">
               <Button
-                onClick={handleDownload}
+                onClick={handleCopy}
                 disabled={!previewUrl}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                variant="outline"
+                className="flex-1 font-mono text-xs uppercase tracking-widest border-neutral-700"
               >
-                <Download size={14} />
-                <span className="ml-2">Download PNG</span>
+                <Copy size={14} />
+                <span className="ml-2">Copy</span>
               </Button>
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleCopy}
-                  disabled={!previewUrl}
-                  variant="outline"
-                  className="flex-1 font-mono text-xs uppercase tracking-widest border-neutral-700"
-                >
-                  <Copy size={14} />
-                  <span className="ml-2">Copy</span>
-                </Button>
-                <Button
-                  onClick={handleCopyMeta}
-                  variant="outline"
-                  className="flex-1 font-mono text-xs uppercase tracking-widest border-neutral-700"
-                >
-                  <Code size={14} />
-                  <span className="ml-2">Meta Tags</span>
-                </Button>
-              </div>
+              <Button
+                onClick={handleCopyMeta}
+                variant="outline"
+                className="flex-1 font-mono text-xs uppercase tracking-widest border-neutral-700"
+              >
+                <Code size={14} />
+                <span className="ml-2">Meta Tags</span>
+              </Button>
             </div>
           </div>
         </div>
+      </div>
     </MiniToolShell>
   );
 };

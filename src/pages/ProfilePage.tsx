@@ -14,11 +14,18 @@ import { useLayout } from '@/hooks/useLayout';
 import { toast } from 'sonner';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import { BackButton } from "../components/ui/BackButton";
-import { Button } from "../components/ui/button";
+import { BackButton } from '../components/ui/BackButton';
+import { Button } from '../components/ui/button';
 import { ApiSettings } from '../components/profile/ApiSettings';
 import { SecuritySettings } from '../components/profile/SecuritySettings';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { ProfileOverview } from '../components/profile/ProfileOverview';
 import { UsageHistory } from '../components/profile/UsageHistory';
@@ -86,7 +93,6 @@ export const ProfilePage: React.FC = () => {
           // Load additional data
           loadSubscriptionStatus();
           loadReferralStats();
-
         } catch (err: any) {
           console.error('Failed to load user data:', err);
           setError(t('common.loadError') || 'Failed to load profile data');
@@ -140,7 +146,7 @@ export const ProfilePage: React.FC = () => {
   const handleRefreshUserData = () => {
     loadSubscriptionStatus();
     loadReferralStats();
-    authService.verifyToken().then(u => {
+    authService.verifyToken().then((u) => {
       if (u) {
         setUser(u);
         setAvatarUrl(u.picture || '');
@@ -190,7 +196,8 @@ export const ProfilePage: React.FC = () => {
             body: JSON.stringify({ imageBase64: base64String }),
           });
 
-          if (!response.ok) throw new Error(t('common.pictureUploadError') || 'Failed to upload picture');
+          if (!response.ok)
+            throw new Error(t('common.pictureUploadError') || 'Failed to upload picture');
 
           const data = await response.json();
           setAvatarUrl(data.picture);
@@ -219,13 +226,20 @@ export const ProfilePage: React.FC = () => {
 
   if (!user || isAuthenticated === false) {
     return (
-      <PageShell pageId="profile-auth-error" width="5xl" title={t('common.notAuthenticated') || 'Acesso Restrito'}>
+      <PageShell
+        pageId="profile-auth-error"
+        width="5xl"
+        title={t('common.notAuthenticated') || 'Acesso Restrito'}
+      >
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <p className="text-destructive font-mono mb-4">
               {t('common.notAuthenticated') || 'Please sign in to view your profile'}
             </p>
-            <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
+            <BackButton
+              className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0"
+              to="/"
+            />
           </div>
         </div>
       </PageShell>
@@ -241,84 +255,89 @@ export const ProfilePage: React.FC = () => {
       title={t('common.profile') || 'Perfil'}
       description={t('common.subtitle') || 'Gerencie sua conta e assinatura'}
       microTitle="User // Account"
-      breadcrumb={[
-        { label: t('apps.home'), to: '/' },
-        { label: t('common.profile') || 'Profile' }
-      ]}
+      breadcrumb={[{ label: t('apps.home'), to: '/' }, { label: t('common.profile') || 'Profile' }]}
     >
       <div className="space-y-6">
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
+            <X size={16} />
+            {error}
+          </div>
+        )}
 
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
-              <X size={16} />
-              {error}
-            </div>
-          )}
-
-          <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-            <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-              <CardContent className="p-2">
-                <TabsList className="bg-transparent border-0 w-full justify-start overflow-x-auto">
-                  <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6">
-                    {t('common.tabs.overview') || 'Dashboard'}
-                  </TabsTrigger>
-                  <TabsTrigger value="history" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6">
-                    {t('common.tabs.history') || 'Histórico'}
-                  </TabsTrigger>
-                  <TabsTrigger value="configuration" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6">
-                    {t('common.tabs.configuration') || 'Configurações'}
-                  </TabsTrigger>
-                </TabsList>
-              </CardContent>
-            </Card>
-
-            <TabsContent value="overview">
-              <ProfileOverview
-                user={user}
-                subscriptionStatus={subscriptionStatus}
-                referralStats={referralStats}
-                isLoadingReferral={isLoadingReferral}
-                onRefreshUserData={handleRefreshUserData}
-                onManageSubscription={handleManageSubscription}
-                onBuyCredits={() => setIsCreditPackagesModalOpen(true)}
-                onViewTransactions={() => setIsTransactionsModalOpen(true)}
-                onEditProfile={() => setIsEditProfileModalOpen(true)}
-                isUploadingPicture={isUploadingPicture}
-                onFileUpload={handleFileUpload}
-                avatarUrl={avatarUrl}
-              />
-            </TabsContent>
-
-            <TabsContent value="history">
-              <UsageHistory isAuthenticated={true} />
-            </TabsContent>
-
-            <TabsContent value="configuration">
-              <ApiSettings />
-
-              <div className="mt-8">
-                <SecuritySettings totpEnabled={user?.totpEnabled} />
-              </div>
-
-              <div className="mt-8 p-4 border border-red-900/30 rounded-lg bg-red-950/10">
-                <h3 className="text-sm font-mono font-semibold text-red-400 mb-2 flex items-center gap-2">
-                  <Trash2 size={14} /> Zona de perigo
-                </h3>
-                <p className="text-xs text-neutral-500 font-mono mb-4">
-                  Ao excluir sua conta, seus dados serao anonimizados e a assinatura cancelada. Esta acao nao pode ser desfeita.
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  className="border-red-800/50 text-red-400 hover:bg-red-950/30 hover:text-red-300"
+        <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
+          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+            <CardContent className="p-2">
+              <TabsList className="bg-transparent border-0 w-full justify-start overflow-x-auto">
+                <TabsTrigger
+                  value="overview"
+                  className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6"
                 >
-                  Excluir minha conta
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+                  {t('common.tabs.overview') || 'Dashboard'}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6"
+                >
+                  {t('common.tabs.history') || 'Histórico'}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="configuration"
+                  className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6"
+                >
+                  {t('common.tabs.configuration') || 'Configurações'}
+                </TabsTrigger>
+              </TabsList>
+            </CardContent>
+          </Card>
 
+          <TabsContent value="overview">
+            <ProfileOverview
+              user={user}
+              subscriptionStatus={subscriptionStatus}
+              referralStats={referralStats}
+              isLoadingReferral={isLoadingReferral}
+              onRefreshUserData={handleRefreshUserData}
+              onManageSubscription={handleManageSubscription}
+              onBuyCredits={() => setIsCreditPackagesModalOpen(true)}
+              onViewTransactions={() => setIsTransactionsModalOpen(true)}
+              onEditProfile={() => setIsEditProfileModalOpen(true)}
+              isUploadingPicture={isUploadingPicture}
+              onFileUpload={handleFileUpload}
+              avatarUrl={avatarUrl}
+            />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <UsageHistory isAuthenticated={true} />
+          </TabsContent>
+
+          <TabsContent value="configuration">
+            <ApiSettings />
+
+            <div className="mt-8">
+              <SecuritySettings totpEnabled={user?.totpEnabled} />
+            </div>
+
+            <div className="mt-8 p-4 border border-red-900/30 rounded-lg bg-red-950/10">
+              <h3 className="text-sm font-mono font-semibold text-red-400 mb-2 flex items-center gap-2">
+                <Trash2 size={14} /> Zona de perigo
+              </h3>
+              <p className="text-xs text-neutral-500 font-mono mb-4">
+                Ao excluir sua conta, seus dados serao anonimizados e a assinatura cancelada. Esta
+                acao nao pode ser desfeita.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="border-red-800/50 text-red-400 hover:bg-red-950/30 hover:text-red-300"
+              >
+                Excluir minha conta
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <CreditPackagesModal
@@ -354,7 +373,13 @@ export const ProfilePage: React.FC = () => {
             className="font-mono"
           />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setIsDeleteDialogOpen(false); setDeleteConfirmText(''); }}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setDeleteConfirmText('');
+              }}
+            >
               Cancelar
             </Button>
             <Button

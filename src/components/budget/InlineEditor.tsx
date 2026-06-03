@@ -105,7 +105,11 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   };
 
   if (!editable) {
-    return <span className={className} style={style}>{value}</span>;
+    return (
+      <span className={className} style={style}>
+        {value}
+      </span>
+    );
   }
 
   if (isEditing) {
@@ -173,7 +177,9 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   return (
     <span
       onClick={handleClick}
-      className={`cursor-pointer group relative ${hasLineBreaks ? 'block' : 'inline-block'} ${className} transition-all hover:bg-brand-cyan/10 hover:rounded px-1 py-0.5`}
+      className={`cursor-pointer group relative ${
+        hasLineBreaks ? 'block' : 'inline-block'
+      } ${className} transition-all hover:bg-brand-cyan/10 hover:rounded px-1 py-0.5`}
       title="Click to edit"
       style={{
         ...style,
@@ -192,4 +198,3 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
     </span>
   );
 };
-

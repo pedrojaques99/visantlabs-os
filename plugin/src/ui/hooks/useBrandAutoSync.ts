@@ -27,7 +27,7 @@ export function useBrandAutoSync() {
           selectedColors: s.selectedColors,
           logos: s.logos,
           typography: s.typography,
-          designTokens: s.designTokens
+          designTokens: s.designTokens,
         });
         if (Object.keys(patch).length === 0) return;
         await updateBrandGuideline(id, patch as any);

@@ -10,7 +10,7 @@ export interface PremiumAccessResult {
 /**
  * Hook to check if user has premium access
  * Returns hasAccess: true if user is admin (including free admins), has active subscription, or is a tester
- * 
+ *
  * IMPORTANT: Admin users and testers have access regardless of their subscription status (free, premium, etc.)
  * This means admin users or testers with subscriptionStatus = 'free' will still have access.
  */
@@ -59,8 +59,3 @@ export const usePremiumAccess = (): PremiumAccessResult => {
 
   return { hasAccess, isLoading };
 };
-
-
-
-
-

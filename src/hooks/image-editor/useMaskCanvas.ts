@@ -15,76 +15,87 @@ export function useMaskCanvas(imageWidth: number, imageHeight: number) {
     return canvasRef.current;
   }, [imageWidth, imageHeight]);
 
-  const renderMask = useCallback((operations: MaskOperation[]) => {
-    const canvas = getCanvas();
-    const ctx = canvas.getContext('2d')!;
+  const renderMask = useCallback(
+    (operations: MaskOperation[]) => {
+      const canvas = getCanvas();
+      const ctx = canvas.getContext('2d')!;
 
-    ctx.clearRect(0, 0, imageWidth, imageHeight);
+      ctx.clearRect(0, 0, imageWidth, imageHeight);
 
-    for (const op of operations) {
-      if (op.type === 'eraser') {
-        ctx.globalCompositeOperation = 'destination-out';
-      } else {
-        ctx.globalCompositeOperation = 'source-over';
+      for (const op of operations) {
+        if (op.type === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#ffffff';
+
+        switch (op.type) {
+          case 'rect': {
+            ctx.fillRect(
+              op.x * imageWidth,
+              op.y * imageHeight,
+              op.w * imageWidth,
+              op.h * imageHeight
+            );
+            break;
+          }
+          case 'circle': {
+            ctx.beginPath();
+            ctx.ellipse(
+              op.cx * imageWidth,
+              op.cy * imageHeight,
+              op.rx * imageWidth,
+              op.ry * imageHeight,
+              0,
+              0,
+              Math.PI * 2
+            );
+            ctx.fill();
+            break;
+          }
+          case 'brush':
+          case 'eraser': {
+            const absPoints = op.points.map(([x, y]) => [x * imageWidth, y * imageHeight]);
+            const strokeSize = op.size * imageWidth;
+            const stroke = getStroke(absPoints, {
+              size: strokeSize,
+              thinning: 0,
+              smoothing: 0.5,
+              streamline: 0.5,
+            });
+            const pathData = getSvgPathFromStroke(stroke);
+            const path = new Path2D(pathData);
+            ctx.fill(path);
+            break;
+          }
+        }
       }
 
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#ffffff';
+      ctx.globalCompositeOperation = 'source-over';
+      return canvas;
+    },
+    [imageWidth, imageHeight, getCanvas]
+  );
 
-      switch (op.type) {
-        case 'rect': {
-          ctx.fillRect(
-            op.x * imageWidth,
-            op.y * imageHeight,
-            op.w * imageWidth,
-            op.h * imageHeight,
-          );
-          break;
-        }
-        case 'circle': {
-          ctx.beginPath();
-          ctx.ellipse(
-            op.cx * imageWidth,
-            op.cy * imageHeight,
-            op.rx * imageWidth,
-            op.ry * imageHeight,
-            0, 0, Math.PI * 2,
-          );
-          ctx.fill();
-          break;
-        }
-        case 'brush':
-        case 'eraser': {
-          const absPoints = op.points.map(([x, y]) => [x * imageWidth, y * imageHeight]);
-          const strokeSize = op.size * imageWidth;
-          const stroke = getStroke(absPoints, {
-            size: strokeSize,
-            thinning: 0,
-            smoothing: 0.5,
-            streamline: 0.5,
-          });
-          const pathData = getSvgPathFromStroke(stroke);
-          const path = new Path2D(pathData);
-          ctx.fill(path);
-          break;
-        }
-      }
-    }
-
-    ctx.globalCompositeOperation = 'source-over';
-    return canvas;
-  }, [imageWidth, imageHeight, getCanvas]);
-
-  const exportMaskBase64 = useCallback((operations: MaskOperation[]): string => {
-    const canvas = renderMask(operations);
-    const dataUrl = canvas.toDataURL('image/png');
-    return dataUrl.replace(/^data:image\/png;base64,/, '');
-  }, [renderMask]);
+  const exportMaskBase64 = useCallback(
+    (operations: MaskOperation[]): string => {
+      const canvas = renderMask(operations);
+      const dataUrl = canvas.toDataURL('image/png');
+      return dataUrl.replace(/^data:image\/png;base64,/, '');
+    },
+    [renderMask]
+  );
 
   const exportMaskRegion = useCallback((operations: MaskOperation[]) => {
     if (operations.length === 0) return null;
 
-    let minX = 1, minY = 1, maxX = 0, maxY = 0;
+    let minX = 1,
+      minY = 1,
+      maxX = 0,
+      maxY = 0;
     for (const op of operations) {
       if (op.type === 'eraser') continue;
       if (op.type === 'rect') {

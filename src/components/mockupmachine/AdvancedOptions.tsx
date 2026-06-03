@@ -1,5 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Plus, ChevronDown, ChevronUp, Dices, MapPin, Camera, Lightbulb, Diamond, Layers, XCircle, FilePlus } from 'lucide-react';
+import {
+  X,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  Dices,
+  MapPin,
+  Camera,
+  Lightbulb,
+  Diamond,
+  Layers,
+  XCircle,
+  FilePlus,
+} from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
@@ -8,9 +21,9 @@ import type { DesignType } from '@/types/types';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 interface AdvancedOptionsProps {
   selectedLocationTags: string[];
@@ -169,18 +182,20 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   };
 
   const hasSelection = selectedTags.length > 0;
-  const selectionSummary = selectedTags.length > 0
-    ? selectedTags.map(tag => translateTag(tag)).join(', ')
-    : '';
-  const poolTagsList = isSurpriseMeMode ? tags.filter(t => poolTags.includes(t)) : [];
-  const poolTagsSummary = poolTagsList.length > 0
-    ? poolTagsList.map(tag => translateTag(tag)).join(', ')
-    : '';
+  const selectionSummary =
+    selectedTags.length > 0 ? selectedTags.map((tag) => translateTag(tag)).join(', ') : '';
+  const poolTagsList = isSurpriseMeMode ? tags.filter((t) => poolTags.includes(t)) : [];
+  const poolTagsSummary =
+    poolTagsList.length > 0 ? poolTagsList.map((tag) => translateTag(tag)).join(', ') : '';
 
   return (
     <GlassPanel className="group overflow-hidden">
-      <Button variant="ghost" onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
+      <Button
+        variant="ghost"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+          theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
+        }`}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
@@ -191,7 +206,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             {!isExpanded && (hasSelection || poolTagsList.length > 0) && (
               <span className="text-[10px] font-mono truncate max-w-[200px]">
                 {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
-                {hasSelection && poolTagsList.length > 0 && <span className="text-neutral-500"> · </span>}
+                {hasSelection && poolTagsList.length > 0 && (
+                  <span className="text-neutral-500"> · </span>
+                )}
                 {poolTagsList.length > 0 && (
                   <span className="text-neutral-500">
                     {poolTagsSummary} {t('mockup.inPool')}
@@ -204,11 +221,13 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           {/* Clear selection button (only on hover when there are selected tags) */}
           {hasSelection && (
-            <Button variant="ghost" type="button"
+            <Button
+              variant="ghost"
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 // Clear all selected tags for this section
-                selectedTags.forEach(tag => onTagToggle(tag));
+                selectedTags.forEach((tag) => onTagToggle(tag));
               }}
               className="text-[10px] font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
             >
@@ -227,7 +246,11 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             <Plus size={14} />
           </div>
           {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
-          {isExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+          {isExpanded ? (
+            <ChevronUp size={16} className="text-neutral-500" />
+          ) : (
+            <ChevronDown size={16} className="text-neutral-500" />
+          )}
         </div>
       </Button>
 
@@ -253,10 +276,11 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
                 placeholder={isGenerating ? '' : t('mockup.customCategoryPlaceholder')}
-                className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
-                  ? 'bg-brand-cyan/10 text-brand-cyan'
-                  : 'bg-brand-cyan/5 text-neutral-800'
-                  }`}
+                className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
+                  theme === 'dark'
+                    ? 'bg-brand-cyan/10 text-brand-cyan'
+                    : 'bg-brand-cyan/5 text-neutral-800'
+                }`}
                 autoFocus
               />
             )}
@@ -283,7 +307,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 return 0;
               });
 
-              return sortedTags.map(tag => {
+              return sortedTags.map((tag) => {
                 const isSelected = selectedTags.includes(tag);
                 const isSuggested = suggestedTags.includes(tag);
                 const isInPool = isSurpriseMeMode && poolTags.includes(tag);
@@ -387,7 +411,6 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
 
   return (
     <div className="space-y-2 pt-4 animate-fade-in-down">
-
       <div id="location-section">
         <CollapsableTagSection
           title={t('mockup.location')}
@@ -402,7 +425,12 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           isSurpriseMeMode={isSurpriseMeMode}
           poolTags={locationPool}
           onPoolToggle={onLocationPoolToggle}
-          icon={<MapPin size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
+          icon={
+            <MapPin
+              size={14}
+              className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+            />
+          }
         />
       </div>
       <CollapsableTagSection
@@ -418,7 +446,12 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={anglePool}
         onPoolToggle={onAnglePoolToggle}
-        icon={<Camera size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
+        icon={
+          <Camera
+            size={14}
+            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+          />
+        }
       />
       <CollapsableTagSection
         title={t('mockup.lightingMood')}
@@ -433,7 +466,12 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={lightingPool}
         onPoolToggle={onLightingPoolToggle}
-        icon={<Lightbulb size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
+        icon={
+          <Lightbulb
+            size={14}
+            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+          />
+        }
       />
       <CollapsableTagSection
         title={t('mockup.visualEffects')}
@@ -448,7 +486,12 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={effectPool}
         onPoolToggle={onEffectPoolToggle}
-        icon={<Diamond size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
+        icon={
+          <Diamond
+            size={14}
+            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+          />
+        }
       />
       {designType === 'logo' && (
         <CollapsableTagSection
@@ -464,29 +507,47 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           isSurpriseMeMode={isSurpriseMeMode}
           poolTags={materialPool}
           onPoolToggle={onMaterialPoolToggle}
-          icon={<Layers size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
+          icon={
+            <Layers
+              size={14}
+              className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+            />
+          }
         />
       )}
 
       {/* Prompts Section */}
       <div className="space-y-2">
         <GlassPanel className="overflow-hidden">
-          <Button variant="ghost" onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
+          <Button
+            variant="ghost"
+            onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
+            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+              theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
+            }`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <XCircle size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+              <XCircle
+                size={14}
+                className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+              />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
                   <MicroTitle as="span">{t('mockup.negativePrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isNegativeExpanded && negativePrompt && (
-                  <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{negativePrompt}</span>
+                  <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">
+                    {negativePrompt}
+                  </span>
                 )}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {isNegativeExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+              {isNegativeExpanded ? (
+                <ChevronUp size={16} className="text-neutral-500" />
+              ) : (
+                <ChevronDown size={16} className="text-neutral-500" />
+              )}
             </div>
           </Button>
 
@@ -496,10 +557,11 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 value={negativePrompt}
                 onChange={onNegativePromptChange}
                 rows={2}
-                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${theme === 'dark'
-                  ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
-                  : 'bg-neutral-50 border-neutral-300 text-neutral-700'
-                  }`}
+                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${
+                  theme === 'dark'
+                    ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
+                    : 'bg-neutral-50 border-neutral-300 text-neutral-700'
+                }`}
                 placeholder={isGenerating ? '' : t('mockup.negativePromptPlaceholder')}
               />
             </div>
@@ -507,22 +569,35 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         </GlassPanel>
 
         <GlassPanel className="overflow-hidden">
-          <Button variant="ghost" onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
+          <Button
+            variant="ghost"
+            onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
+            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+              theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
+            }`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <FilePlus size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+              <FilePlus
+                size={14}
+                className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
+              />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
                   <MicroTitle as="span">{t('mockup.additionalPrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isAdditionalExpanded && additionalPrompt && (
-                  <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{additionalPrompt}</span>
+                  <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">
+                    {additionalPrompt}
+                  </span>
                 )}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {isAdditionalExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+              {isAdditionalExpanded ? (
+                <ChevronUp size={16} className="text-neutral-500" />
+              ) : (
+                <ChevronDown size={16} className="text-neutral-500" />
+              )}
             </div>
           </Button>
 
@@ -532,10 +607,11 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 value={additionalPrompt}
                 onChange={onAdditionalPromptChange}
                 rows={2}
-                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${theme === 'dark'
-                  ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
-                  : 'bg-neutral-50 border-neutral-300 text-neutral-700'
-                  }`}
+                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${
+                  theme === 'dark'
+                    ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
+                    : 'bg-neutral-50 border-neutral-300 text-neutral-700'
+                }`}
                 placeholder={isGenerating ? '' : t('mockup.additionalPromptPlaceholder')}
               />
             </div>

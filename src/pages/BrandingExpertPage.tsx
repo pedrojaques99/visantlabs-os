@@ -7,26 +7,28 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export const BrandingExpertPage: React.FC = () => {
-    const { t } = useTranslation();
-    const { theme } = useTheme();
-    const [searchParams] = useSearchParams();
-    const projectId = searchParams.get('projectId') || undefined;
+  const { t } = useTranslation();
+  const { theme } = useTheme();
+  const [searchParams] = useSearchParams();
+  const projectId = searchParams.get('projectId') || undefined;
 
-    return (
-        <div className={cn("h-screen w-full flex flex-col overflow-hidden", theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50')}>
-            <SEO 
-                title={t('branding.expert.especialista_em_branding_visant_la')}
-                description={t('branding.expert.converse_com_nosso_assistente_espe')}
-            />
-            
-            <div className="flex-1 w-full h-full flex flex-col pt-16 md:p-8 md:pt-20 lg:p-12 lg:pt-24 overflow-hidden">
-                <div className="flex-1 w-full max-w-6xl mx-auto h-full flex flex-col shadow-2xl md:rounded-2xl border border-neutral-800 bg-neutral-950/20 backdrop-blur-xl transition-all overflow-hidden">
-                    <BrandingExpertChat 
-                        mode="inline"
-                        projectId={projectId}
-                    />
-                </div>
-            </div>
+  return (
+    <div
+      className={cn(
+        'h-screen w-full flex flex-col overflow-hidden',
+        theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50'
+      )}
+    >
+      <SEO
+        title={t('branding.expert.especialista_em_branding_visant_la')}
+        description={t('branding.expert.converse_com_nosso_assistente_espe')}
+      />
+
+      <div className="flex-1 w-full h-full flex flex-col pt-16 md:p-8 md:pt-20 lg:p-12 lg:pt-24 overflow-hidden">
+        <div className="flex-1 w-full max-w-6xl mx-auto h-full flex flex-col shadow-2xl md:rounded-2xl border border-neutral-800 bg-neutral-950/20 backdrop-blur-xl transition-all overflow-hidden">
+          <BrandingExpertChat mode="inline" projectId={projectId} />
         </div>
-    );
+      </div>
+    </div>
+  );
 };

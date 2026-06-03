@@ -60,7 +60,7 @@ export const CreatePage: React.FC = () => {
   return (
     <PageShell
       pageId="creative-studio"
-      title={projectName || t('creative.studio.title') || "Creative Studio"}
+      title={projectName || t('creative.studio.title') || 'Creative Studio'}
       width="full"
       noBackground
       seoTitle={`${projectName || 'Creative Studio'} | Visant Studio`}
@@ -68,7 +68,7 @@ export const CreatePage: React.FC = () => {
       breadcrumb={[
         { label: t('apps.home') || 'Home', to: '/' },
         { label: 'Creative Projects', to: '/create/projects' },
-        { label: 'Creative Studio' }
+        { label: 'Creative Studio' },
       ]}
       hideHeader
       contentClassName="p-0"

@@ -28,10 +28,23 @@ redis.on('error', (err) => {
 // Safe proxy: returns no-op defaults when Redis is not connected, preventing
 // unhandled "Connection is closed" errors from crashing the server.
 const NOOP_DEFAULTS: Record<string, unknown> = {
-  lpush: 0, rpush: 0, lrange: [], lrem: 0, llen: 0,
-  get: null, set: 'OK', del: 0, expire: 0, exists: 0,
-  hget: null, hset: 0, hdel: 0, hgetall: null,
-  sadd: 0, smembers: [], srem: 0,
+  lpush: 0,
+  rpush: 0,
+  lrange: [],
+  lrem: 0,
+  llen: 0,
+  get: null,
+  set: 'OK',
+  del: 0,
+  expire: 0,
+  exists: 0,
+  hget: null,
+  hset: 0,
+  hdel: 0,
+  hgetall: null,
+  sadd: 0,
+  smembers: [],
+  srem: 0,
   ping: 'PONG',
 };
 

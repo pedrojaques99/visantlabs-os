@@ -138,7 +138,8 @@ router.get('/:identifier/mockups', publicProfileLimiter, async (req, res) => {
     const userObjectId = getUserObjectId(user.id);
 
     // Get only blank mockups (public)
-    const mockups = await db.collection('mockups')
+    const mockups = await db
+      .collection('mockups')
       .find({
         userId: userObjectId,
         designType: 'blank',
@@ -189,12 +190,13 @@ router.get('/:identifier/presets', publicProfileLimiter, async (req, res) => {
       });
       return res.status(500).json({
         error: 'Failed to load presets',
-        message: 'Invalid user ID format'
+        message: 'Invalid user ID format',
       });
     }
 
     // Get approved community presets
-    const presets = await db.collection('community_presets')
+    const presets = await db
+      .collection('community_presets')
       .find({
         userId: userObjectId,
         isApproved: true,
@@ -232,7 +234,7 @@ router.get('/:identifier/presets', publicProfileLimiter, async (req, res) => {
     });
     res.status(500).json({
       error: 'Failed to load presets',
-      message: error.message || 'An unexpected error occurred'
+      message: error.message || 'An unexpected error occurred',
     });
   }
 });
@@ -266,11 +268,11 @@ router.get('/:identifier/workflows', publicProfileLimiter, async (req, res) => {
     // Check if current user has liked
     const currentUserId = getUserIdFromToken(req.headers.authorization);
 
-    const formattedWorkflows = workflows.map(workflow => {
+    const formattedWorkflows = workflows.map((workflow) => {
       const { likes, ...rest } = workflow;
       return {
         ...rest,
-        isLikedByUser: currentUserId ? likes.some(like => like.userId === currentUserId) : false,
+        isLikedByUser: currentUserId ? likes.some((like) => like.userId === currentUserId) : false,
       };
     });
 
@@ -290,15 +292,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const {
-      username,
-      bio,
-      instagram,
-      youtube,
-      x,
-      website,
-      coverImageBase64,
-    } = req.body;
+    const { username, bio, instagram, youtube, x, website, coverImageBase64 } = req.body;
 
     // Get current user
     const currentUser = await prisma.user.findUnique({
@@ -322,7 +316,8 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         if (!usernameRegex.test(username)) {
           return res.status(400).json({
             error: 'Invalid username format',
-            details: 'Username must be 3-20 characters and contain only letters, numbers, underscores, and hyphens',
+            details:
+              'Username must be 3-20 characters and contain only letters, numbers, underscores, and hyphens',
           });
         }
 
@@ -406,7 +401,12 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         const subscriptionTier = user?.subscriptionTier || 'free';
         const isAdmin = user?.isAdmin || false;
 
-        const coverImageUrl = await r2Service.uploadCoverImage(coverImageBase64, userId, subscriptionTier, isAdmin);
+        const coverImageUrl = await r2Service.uploadCoverImage(
+          coverImageBase64,
+          userId,
+          subscriptionTier,
+          isAdmin
+        );
         updateData.coverImageUrl = coverImageUrl;
       } catch (uploadError: any) {
         console.error('Cover image upload error:', uploadError);
@@ -445,68 +445,74 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Save/Update Gemini API Key
-router.put('/settings/gemini-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId!;
+router.put(
+  '/settings/gemini-api-key',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId!;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
 
-    const { apiKey } = req.body;
+      const { apiKey } = req.body;
 
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
-      return res.status(400).json({ error: 'API key is required' });
-    }
+      if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+        return res.status(400).json({ error: 'API key is required' });
+      }
 
-    // Basic validation: Gemini API keys are typically long strings
-    // They should be at least 20 characters and contain alphanumeric characters
-    const trimmedKey = apiKey.trim();
-    if (trimmedKey.length < 20) {
-      return res.status(400).json({ error: 'Invalid API key format' });
-    }
+      // Basic validation: Gemini API keys are typically long strings
+      // They should be at least 20 characters and contain alphanumeric characters
+      const trimmedKey = apiKey.trim();
+      if (trimmedKey.length < 20) {
+        return res.status(400).json({ error: 'Invalid API key format' });
+      }
 
-    // Check if encryption is configured
-    if (!process.env.API_KEY_ENCRYPTION_KEY) {
-      return res.status(500).json({
-        error: 'API key encryption is not configured',
-        details: 'Please contact support or configure API_KEY_ENCRYPTION_KEY environment variable.'
+      // Check if encryption is configured
+      if (!process.env.API_KEY_ENCRYPTION_KEY) {
+        return res.status(500).json({
+          error: 'API key encryption is not configured',
+          details:
+            'Please contact support or configure API_KEY_ENCRYPTION_KEY environment variable.',
+        });
+      }
+
+      // Encrypt the API key
+      const { encryptApiKey } = await import('../utils/encryption.js');
+      const encryptedKey = encryptApiKey(trimmedKey);
+
+      // Update user with encrypted key
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          encryptedGeminiApiKey: encryptedKey,
+        },
       });
-    }
 
-    // Encrypt the API key
-    const { encryptApiKey } = await import('../utils/encryption.js');
-    const encryptedKey = encryptApiKey(trimmedKey);
+      res.json({
+        success: true,
+        message: 'API key saved successfully',
+      });
+    } catch (error: any) {
+      console.error('Failed to save API key:', error);
 
-    // Update user with encrypted key
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        encryptedGeminiApiKey: encryptedKey,
-      },
-    });
+      // Don't leak encryption errors to client
+      if (error.message.includes('encrypt') || error.message.includes('decrypt')) {
+        return res.status(500).json({
+          error: 'Failed to save API key',
+          message: 'An encryption error occurred. Please try again.',
+        });
+      }
 
-    res.json({
-      success: true,
-      message: 'API key saved successfully'
-    });
-  } catch (error: any) {
-    console.error('Failed to save API key:', error);
-
-    // Don't leak encryption errors to client
-    if (error.message.includes('encrypt') || error.message.includes('decrypt')) {
-      return res.status(500).json({
+      res.status(500).json({
         error: 'Failed to save API key',
-        message: 'An encryption error occurred. Please try again.'
+        message: error.message,
       });
     }
-
-    res.status(500).json({
-      error: 'Failed to save API key',
-      message: error.message
-    });
   }
-});
+);
 
 // Delete Gemini API Key
 router.delete('/settings/gemini-api-key', authenticate, async (req: AuthRequest, res) => {
@@ -527,100 +533,114 @@ router.delete('/settings/gemini-api-key', authenticate, async (req: AuthRequest,
 
     res.json({
       success: true,
-      message: 'API key deleted successfully'
+      message: 'API key deleted successfully',
     });
   } catch (error: any) {
     console.error('Failed to delete API key:', error);
     res.status(500).json({
       error: 'Failed to delete API key',
-      message: error.message
+      message: error.message,
     });
   }
 });
 
 // Check if user has API key (returns boolean only, not the key itself)
-router.get('/settings/gemini-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId!;
+router.get(
+  '/settings/gemini-api-key',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId!;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          encryptedGeminiApiKey: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json({
+        hasApiKey: !!user.encryptedGeminiApiKey,
+      });
+    } catch (error: any) {
+      console.error('Failed to check API key:', error);
+      res.status(500).json({
+        error: 'Failed to check API key',
+        message: error.message,
+      });
     }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        encryptedGeminiApiKey: true,
-      },
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({
-      hasApiKey: !!user.encryptedGeminiApiKey
-    });
-  } catch (error: any) {
-    console.error('Failed to check API key:', error);
-    res.status(500).json({
-      error: 'Failed to check API key',
-      message: error.message
-    });
   }
-});
+);
 
 // ═══ OPENAI API KEY ENDPOINTS ═══
 // SEC: keys stored AES-256-GCM encrypted; never returned to the client.
 
 // Save / update OpenAI API key
-router.put('/settings/openai-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId!;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+router.put(
+  '/settings/openai-api-key',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId!;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
 
-    const { apiKey } = req.body;
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
-      return res.status(400).json({ error: 'API key is required' });
-    }
+      const { apiKey } = req.body;
+      if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+        return res.status(400).json({ error: 'API key is required' });
+      }
 
-    const trimmedKey = apiKey.trim();
+      const trimmedKey = apiKey.trim();
 
-    // OpenAI keys start with "sk-" (legacy) or "sk-proj-" (project keys).
-    // Minimum realistic length: "sk-" (3) + 48 chars = 51.
-    if (!trimmedKey.startsWith('sk-') || trimmedKey.length < 40) {
-      return res.status(400).json({
-        error: 'Invalid OpenAI API key format',
-        message: 'OpenAI API keys must start with "sk-" and be at least 40 characters long.',
+      // OpenAI keys start with "sk-" (legacy) or "sk-proj-" (project keys).
+      // Minimum realistic length: "sk-" (3) + 48 chars = 51.
+      if (!trimmedKey.startsWith('sk-') || trimmedKey.length < 40) {
+        return res.status(400).json({
+          error: 'Invalid OpenAI API key format',
+          message: 'OpenAI API keys must start with "sk-" and be at least 40 characters long.',
+        });
+      }
+
+      // Reject keys that contain obviously leaked content (newlines, spaces mid-key)
+      if (/\s/.test(trimmedKey)) {
+        return res.status(400).json({ error: 'API key must not contain whitespace characters' });
+      }
+
+      if (!process.env.API_KEY_ENCRYPTION_KEY) {
+        return res
+          .status(500)
+          .json({ error: 'API key encryption is not configured. Contact support.' });
+      }
+
+      const { encryptApiKey } = await import('../utils/encryption.js');
+      const encryptedKey = encryptApiKey(trimmedKey);
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { encryptedOpenAiApiKey: encryptedKey },
       });
+
+      res.json({ success: true, message: 'OpenAI API key saved successfully' });
+    } catch (error: any) {
+      // Never leak encryption internals to the client
+      if (error.message?.includes('encrypt') || error.message?.includes('decrypt')) {
+        return res
+          .status(500)
+          .json({ error: 'Failed to save API key', message: 'An encryption error occurred.' });
+      }
+      res.status(500).json({ error: 'Failed to save API key', message: error.message });
     }
-
-    // Reject keys that contain obviously leaked content (newlines, spaces mid-key)
-    if (/\s/.test(trimmedKey)) {
-      return res.status(400).json({ error: 'API key must not contain whitespace characters' });
-    }
-
-    if (!process.env.API_KEY_ENCRYPTION_KEY) {
-      return res.status(500).json({ error: 'API key encryption is not configured. Contact support.' });
-    }
-
-    const { encryptApiKey } = await import('../utils/encryption.js');
-    const encryptedKey = encryptApiKey(trimmedKey);
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { encryptedOpenAiApiKey: encryptedKey },
-    });
-
-    res.json({ success: true, message: 'OpenAI API key saved successfully' });
-  } catch (error: any) {
-    // Never leak encryption internals to the client
-    if (error.message?.includes('encrypt') || error.message?.includes('decrypt')) {
-      return res.status(500).json({ error: 'Failed to save API key', message: 'An encryption error occurred.' });
-    }
-    res.status(500).json({ error: 'Failed to save API key', message: error.message });
   }
-});
+);
 
 // Delete OpenAI API key
 router.delete('/settings/openai-api-key', authenticate, async (req: AuthRequest, res) => {
@@ -640,23 +660,28 @@ router.delete('/settings/openai-api-key', authenticate, async (req: AuthRequest,
 });
 
 // Check if user has an OpenAI API key saved — returns boolean only, NEVER the key
-router.get('/settings/openai-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId!;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+router.get(
+  '/settings/openai-api-key',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId!;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { encryptedOpenAiApiKey: true },
-    });
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { encryptedOpenAiApiKey: true },
+      });
 
-    if (!user) return res.status(404).json({ error: 'User not found' });
+      if (!user) return res.status(404).json({ error: 'User not found' });
 
-    res.json({ hasApiKey: !!user.encryptedOpenAiApiKey });
-  } catch (error: any) {
-    res.status(500).json({ error: 'Failed to check API key', message: error.message });
+      res.json({ hasApiKey: !!user.encryptedOpenAiApiKey });
+    } catch (error: any) {
+      res.status(500).json({ error: 'Failed to check API key', message: error.message });
+    }
   }
-});
+);
 
 // ═══ FIGMA TOKEN ENDPOINTS ═══
 
@@ -769,7 +794,7 @@ router.get('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
     console.error('Failed to get canvas settings:', error);
     res.status(500).json({
       error: 'Failed to get canvas settings',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -789,7 +814,7 @@ router.put('/settings/canvas', apiRateLimiter, authenticate, async (req: AuthReq
     if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
       return res.status(400).json({
         error: 'Invalid settings format',
-        message: 'Settings must be a valid JSON object'
+        message: 'Settings must be a valid JSON object',
       });
     }
 
@@ -803,7 +828,7 @@ router.put('/settings/canvas', apiRateLimiter, authenticate, async (req: AuthReq
 
     res.json({
       success: true,
-      message: 'Canvas settings updated successfully'
+      message: 'Canvas settings updated successfully',
     });
   } catch (error: any) {
     console.error('[Canvas Settings] Failed to update:', error);
@@ -813,79 +838,86 @@ router.put('/settings/canvas', apiRateLimiter, authenticate, async (req: AuthReq
     if (error.code === 'P2025') {
       return res.status(404).json({
         error: 'User not found',
-        message: 'User does not exist'
+        message: 'User does not exist',
       });
     }
 
     res.status(500).json({
       error: 'Failed to update canvas settings',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
 
 // Save/Update Seedream API Key
-router.put('/settings/seedream-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId!;
+router.put(
+  '/settings/seedream-api-key',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId!;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
 
-    const { apiKey } = req.body;
+      const { apiKey } = req.body;
 
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
-      return res.status(400).json({ error: 'API key is required' });
-    }
+      if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+        return res.status(400).json({ error: 'API key is required' });
+      }
 
-    // Basic validation
-    const trimmedKey = apiKey.trim();
-    if (trimmedKey.length < 10) { // Seedream/BytePlus keys might be shorter or different format
-      return res.status(400).json({ error: 'Invalid API key format' });
-    }
+      // Basic validation
+      const trimmedKey = apiKey.trim();
+      if (trimmedKey.length < 10) {
+        // Seedream/BytePlus keys might be shorter or different format
+        return res.status(400).json({ error: 'Invalid API key format' });
+      }
 
-    // Check if encryption is configured
-    if (!process.env.API_KEY_ENCRYPTION_KEY) {
-      return res.status(500).json({
-        error: 'API key encryption is not configured',
-        details: 'Please contact support or configure API_KEY_ENCRYPTION_KEY environment variable.'
+      // Check if encryption is configured
+      if (!process.env.API_KEY_ENCRYPTION_KEY) {
+        return res.status(500).json({
+          error: 'API key encryption is not configured',
+          details:
+            'Please contact support or configure API_KEY_ENCRYPTION_KEY environment variable.',
+        });
+      }
+
+      // Encrypt the API key
+      const { encryptApiKey } = await import('../utils/encryption.js');
+      const encryptedKey = encryptApiKey(trimmedKey);
+
+      // Update user with encrypted key
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          encryptedSeedreamApiKey: encryptedKey,
+        },
       });
-    }
 
-    // Encrypt the API key
-    const { encryptApiKey } = await import('../utils/encryption.js');
-    const encryptedKey = encryptApiKey(trimmedKey);
+      res.json({
+        success: true,
+        message: 'API key saved successfully',
+      });
+    } catch (error: any) {
+      console.error('Failed to save Seedream API key:', error);
 
-    // Update user with encrypted key
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        encryptedSeedreamApiKey: encryptedKey,
-      },
-    });
+      // Don't leak encryption errors to client
+      if (error.message.includes('encrypt') || error.message.includes('decrypt')) {
+        return res.status(500).json({
+          error: 'Failed to save API key',
+          message: 'An encryption error occurred. Please try again.',
+        });
+      }
 
-    res.json({
-      success: true,
-      message: 'API key saved successfully'
-    });
-  } catch (error: any) {
-    console.error('Failed to save Seedream API key:', error);
-
-    // Don't leak encryption errors to client
-    if (error.message.includes('encrypt') || error.message.includes('decrypt')) {
-      return res.status(500).json({
+      res.status(500).json({
         error: 'Failed to save API key',
-        message: 'An encryption error occurred. Please try again.'
+        message: error.message,
       });
     }
-
-    res.status(500).json({
-      error: 'Failed to save API key',
-      message: error.message
-    });
   }
-});
+);
 
 // Delete Seedream API Key
 router.delete('/settings/seedream-api-key', authenticate, async (req: AuthRequest, res) => {
@@ -906,125 +938,140 @@ router.delete('/settings/seedream-api-key', authenticate, async (req: AuthReques
 
     res.json({
       success: true,
-      message: 'API key deleted successfully'
+      message: 'API key deleted successfully',
     });
   } catch (error: any) {
     console.error('Failed to delete Seedream API key:', error);
     res.status(500).json({
       error: 'Failed to delete API key',
-      message: error.message
+      message: error.message,
     });
   }
 });
 
 // Check if user has Seedream API key (returns boolean only)
-router.get('/settings/seedream-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId!;
+router.get(
+  '/settings/seedream-api-key',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId!;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          encryptedSeedreamApiKey: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json({
+        hasApiKey: !!user.encryptedSeedreamApiKey,
+      });
+    } catch (error: any) {
+      console.error('Failed to check Seedream API key:', error);
+      res.status(500).json({
+        error: 'Failed to check API key',
+        message: error.message,
+      });
     }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        encryptedSeedreamApiKey: true,
-      },
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({
-      hasApiKey: !!user.encryptedSeedreamApiKey
-    });
-  } catch (error: any) {
-    console.error('Failed to check Seedream API key:', error);
-    res.status(500).json({
-      error: 'Failed to check API key',
-      message: error.message
-    });
   }
-});
+);
 
 // ═══ LLM PREFERENCES (Gemini vs Ollama) ═══
 
-router.get('/settings/llm-preferences', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId!;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+router.get(
+  '/settings/llm-preferences',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId!;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { llmProvider: true, ollamaUrl: true, ollamaModel: true },
-    });
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { llmProvider: true, ollamaUrl: true, ollamaModel: true },
+      });
 
-    if (!user) return res.status(404).json({ error: 'User not found' });
+      if (!user) return res.status(404).json({ error: 'User not found' });
 
-    res.json({
-      llmProvider: user.llmProvider || 'gemini',
-      ollamaUrl: user.ollamaUrl || '',
-      ollamaModel: user.ollamaModel || '',
-    });
-  } catch (error: any) {
-    console.error('Failed to get LLM preferences:', error);
-    res.status(500).json({ error: 'Failed to load LLM preferences', message: error.message });
+      res.json({
+        llmProvider: user.llmProvider || 'gemini',
+        ollamaUrl: user.ollamaUrl || '',
+        ollamaModel: user.ollamaModel || '',
+      });
+    } catch (error: any) {
+      console.error('Failed to get LLM preferences:', error);
+      res.status(500).json({ error: 'Failed to load LLM preferences', message: error.message });
+    }
   }
-});
+);
 
-router.put('/settings/llm-preferences', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.userId!;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+router.put(
+  '/settings/llm-preferences',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.userId!;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
 
-    const { llmProvider, ollamaUrl, ollamaModel } = req.body ?? {};
+      const { llmProvider, ollamaUrl, ollamaModel } = req.body ?? {};
 
-    if (llmProvider !== undefined && llmProvider !== 'gemini' && llmProvider !== 'ollama') {
-      return res.status(400).json({ error: 'llmProvider must be "gemini" or "ollama"' });
-    }
-
-    const updateData: Record<string, any> = {};
-    if (llmProvider !== undefined) updateData.llmProvider = llmProvider;
-
-    if (ollamaUrl !== undefined) {
-      if (ollamaUrl === null || ollamaUrl === '') {
-        updateData.ollamaUrl = null;
-      } else if (typeof ollamaUrl !== 'string' || !/^https?:\/\/.+/.test(ollamaUrl)) {
-        return res.status(400).json({ error: 'Invalid Ollama URL format' });
-      } else {
-        updateData.ollamaUrl = ollamaUrl.trim();
+      if (llmProvider !== undefined && llmProvider !== 'gemini' && llmProvider !== 'ollama') {
+        return res.status(400).json({ error: 'llmProvider must be "gemini" or "ollama"' });
       }
-    }
 
-    if (ollamaModel !== undefined) {
-      if (ollamaModel === null || ollamaModel === '') {
-        updateData.ollamaModel = null;
-      } else if (typeof ollamaModel !== 'string' || ollamaModel.length > 100) {
-        return res.status(400).json({ error: 'Invalid Ollama model name' });
-      } else {
-        updateData.ollamaModel = ollamaModel.trim();
+      const updateData: Record<string, any> = {};
+      if (llmProvider !== undefined) updateData.llmProvider = llmProvider;
+
+      if (ollamaUrl !== undefined) {
+        if (ollamaUrl === null || ollamaUrl === '') {
+          updateData.ollamaUrl = null;
+        } else if (typeof ollamaUrl !== 'string' || !/^https?:\/\/.+/.test(ollamaUrl)) {
+          return res.status(400).json({ error: 'Invalid Ollama URL format' });
+        } else {
+          updateData.ollamaUrl = ollamaUrl.trim();
+        }
       }
+
+      if (ollamaModel !== undefined) {
+        if (ollamaModel === null || ollamaModel === '') {
+          updateData.ollamaModel = null;
+        } else if (typeof ollamaModel !== 'string' || ollamaModel.length > 100) {
+          return res.status(400).json({ error: 'Invalid Ollama model name' });
+        } else {
+          updateData.ollamaModel = ollamaModel.trim();
+        }
+      }
+
+      const updated = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: { llmProvider: true, ollamaUrl: true, ollamaModel: true },
+      });
+
+      res.json({
+        success: true,
+        llmProvider: updated.llmProvider || 'gemini',
+        ollamaUrl: updated.ollamaUrl || '',
+        ollamaModel: updated.ollamaModel || '',
+      });
+    } catch (error: any) {
+      console.error('Failed to update LLM preferences:', error);
+      res.status(500).json({ error: 'Failed to update LLM preferences', message: error.message });
     }
-
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      select: { llmProvider: true, ollamaUrl: true, ollamaModel: true },
-    });
-
-    res.json({
-      success: true,
-      llmProvider: updated.llmProvider || 'gemini',
-      ollamaUrl: updated.ollamaUrl || '',
-      ollamaModel: updated.ollamaModel || '',
-    });
-  } catch (error: any) {
-    console.error('Failed to update LLM preferences:', error);
-    res.status(500).json({ error: 'Failed to update LLM preferences', message: error.message });
   }
-});
+);
 
 // Get BYOK (Bring Your Own Key) status
 // Returns which API keys are configured and storage info
@@ -1058,7 +1105,7 @@ router.get('/settings/byok-status', apiRateLimiter, authenticate, async (req: Au
     const hasSeedreamKey = !!user.encryptedSeedreamApiKey;
     const hasOpenAiKey = !!user.encryptedOpenAiApiKey;
     const isByokActive = hasGeminiKey || hasSeedreamKey || hasOpenAiKey;
-    const hasStoragePlan = !!user.storageProductId || (user.subscriptionTier !== 'free');
+    const hasStoragePlan = !!user.storageProductId || user.subscriptionTier !== 'free';
 
     res.json({
       byok: {
@@ -1073,10 +1120,7 @@ router.get('/settings/byok-status', apiRateLimiter, authenticate, async (req: Au
         },
         seedream: {
           enabled: hasSeedreamKey,
-          benefits: [
-            'Access to Seedream models',
-            'Separate from Gemini quota',
-          ],
+          benefits: ['Access to Seedream models', 'Separate from Gemini quota'],
         },
         openai: {
           enabled: hasOpenAiKey,
@@ -1094,9 +1138,10 @@ router.get('/settings/byok-status', apiRateLimiter, authenticate, async (req: Au
         limitBytes: user.storageLimitBytes,
         usedBytes: user.storageUsedBytes,
       },
-      recommendation: !hasStoragePlan && isByokActive
-        ? 'You\'re using BYOK mode. Consider purchasing a storage plan for your generated files.'
-        : null,
+      recommendation:
+        !hasStoragePlan && isByokActive
+          ? "You're using BYOK mode. Consider purchasing a storage plan for your generated files."
+          : null,
     });
   } catch (error: any) {
     console.error('Failed to get BYOK status:', error);
@@ -1108,4 +1153,3 @@ router.get('/settings/byok-status', apiRateLimiter, authenticate, async (req: Au
 });
 
 export default router;
-

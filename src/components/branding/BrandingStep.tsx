@@ -31,7 +31,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
       return (
         <div className="flex items-center justify-center py-12">
           <GlitchLoader size={32} color="brand-cyan" />
-          <span className="ml-3 text-muted-foreground">{t('branding.generating')} {title}...</span>
+          <span className="ml-3 text-muted-foreground">
+            {t('branding.generating')} {title}...
+          </span>
         </div>
       );
     }
@@ -73,7 +75,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                 {listItems.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <span className="text-brand-cyan mt-1.5 flex-shrink-0">•</span>
-                    <span className="text-foreground normal-case leading-relaxed">{parseInlineMarkdown(item.trim())}</span>
+                    <span className="text-foreground normal-case leading-relaxed">
+                      {parseInlineMarkdown(item.trim())}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -91,7 +95,10 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             flushParagraph();
             flushList();
             elements.push(
-              <h4 key={elements.length} className="text-lg font-semibold text-foreground mb-3 mt-6 normal-case">
+              <h4
+                key={elements.length}
+                className="text-lg font-semibold text-foreground mb-3 mt-6 normal-case"
+              >
                 {parseInlineMarkdown(trimmed.substring(5))}
               </h4>
             );
@@ -99,7 +106,10 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             flushParagraph();
             flushList();
             elements.push(
-              <h3 key={elements.length} className="text-xl font-semibold text-foreground mb-4 mt-8 normal-case">
+              <h3
+                key={elements.length}
+                className="text-xl font-semibold text-foreground mb-4 mt-8 normal-case"
+              >
                 {parseInlineMarkdown(trimmed.substring(4))}
               </h3>
             );
@@ -107,7 +117,10 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             flushParagraph();
             flushList();
             elements.push(
-              <h2 key={elements.length} className="text-2xl font-bold text-foreground mb-4 mt-8 normal-case">
+              <h2
+                key={elements.length}
+                className="text-2xl font-bold text-foreground mb-4 mt-8 normal-case"
+              >
                 {parseInlineMarkdown(trimmed.substring(3))}
               </h2>
             );
@@ -115,16 +128,17 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             flushParagraph();
             flushList();
             elements.push(
-              <h1 key={elements.length} className="text-3xl font-bold text-foreground mb-4 mt-8 normal-case">
+              <h1
+                key={elements.length}
+                className="text-3xl font-bold text-foreground mb-4 mt-8 normal-case"
+              >
                 {parseInlineMarkdown(trimmed.substring(2))}
               </h1>
             );
           } else if (trimmed.startsWith('---')) {
             flushParagraph();
             flushList();
-            elements.push(
-              <hr key={elements.length} className="my-6 border-border/10" />
-            );
+            elements.push(<hr key={elements.length} className="my-6 border-border/10" />);
           } else if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
             flushParagraph();
             if (!inList) inList = true;
@@ -169,11 +183,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
         return parts.length > 0 ? parts : [text];
       };
 
-      return (
-        <div className="max-w-none space-y-2">
-          {parseMarkdown(content)}
-        </div>
-      );
+      return <div className="max-w-none space-y-2">{parseMarkdown(content)}</div>;
     }
 
     if (Array.isArray(content)) {
@@ -199,7 +209,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                 <h4 className="font-semibold text-green-400 mb-2">{t('branding.strengths')}</h4>
                 <ul className="space-y-1">
                   {content.strengths.map((item: string, index: number) => (
-                    <li key={index} className="text-sm text-foreground">• {item}</li>
+                    <li key={index} className="text-sm text-foreground">
+                      • {item}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -209,7 +221,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                 <h4 className="font-semibold text-red-400 mb-2">{t('branding.weaknesses')}</h4>
                 <ul className="space-y-1">
                   {content.weaknesses.map((item: string, index: number) => (
-                    <li key={index} className="text-sm text-foreground">• {item}</li>
+                    <li key={index} className="text-sm text-foreground">
+                      • {item}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -219,7 +233,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                 <h4 className="font-semibold text-blue-400 mb-2">{t('branding.opportunities')}</h4>
                 <ul className="space-y-1">
                   {content.opportunities.map((item: string, index: number) => (
-                    <li key={index} className="text-sm text-foreground">• {item}</li>
+                    <li key={index} className="text-sm text-foreground">
+                      • {item}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -229,7 +245,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                 <h4 className="font-semibold text-orange-400 mb-2">{t('branding.threats')}</h4>
                 <ul className="space-y-1">
                   {content.threats.map((item: string, index: number) => (
-                    <li key={index} className="text-sm text-foreground">• {item}</li>
+                    <li key={index} className="text-sm text-foreground">
+                      • {item}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -253,7 +271,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                 <h4 className="font-semibold mb-2">{t('branding.desires')}</h4>
                 <ul className="space-y-1">
                   {content.desires.map((item: string, index: number) => (
-                    <li key={index} className="text-sm text-foreground">• {item}</li>
+                    <li key={index} className="text-sm text-foreground">
+                      • {item}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -263,7 +283,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                 <h4 className="font-semibold mb-2">{t('branding.painPoints')}</h4>
                 <ul className="space-y-1">
                   {content.pains.map((item: string, index: number) => (
-                    <li key={index} className="text-sm text-foreground">• {item}</li>
+                    <li key={index} className="text-sm text-foreground">
+                      • {item}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -283,8 +305,13 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
               const palettePsychology = palette.psychology || '';
 
               return (
-                <div key={index} className="border border-border rounded-md p-4 bg-card/50 animate-fade-in">
-                  <h4 className="font-semibold mb-2 text-foreground normal-case">{String(paletteName)}</h4>
+                <div
+                  key={index}
+                  className="border border-border rounded-md p-4 bg-card/50 animate-fade-in"
+                >
+                  <h4 className="font-semibold mb-2 text-foreground normal-case">
+                    {String(paletteName)}
+                  </h4>
                   <div className="flex gap-2 mb-3">
                     {paletteColors.map((color: string, colorIndex: number) => (
                       <div
@@ -296,7 +323,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                     ))}
                   </div>
                   {palettePsychology && (
-                    <p className="text-sm text-muted-foreground normal-case">{String(palettePsychology)}</p>
+                    <p className="text-sm text-muted-foreground normal-case">
+                      {String(palettePsychology)}
+                    </p>
                   )}
                 </div>
               );
@@ -306,7 +335,12 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
       }
 
       // Handle single Color Palette object (not in array)
-      if (typeof content === 'object' && content !== null && !Array.isArray(content) && content.colors) {
+      if (
+        typeof content === 'object' &&
+        content !== null &&
+        !Array.isArray(content) &&
+        content.colors
+      ) {
         const palette = content as any;
         const paletteName = palette.name || 'Unnamed Palette';
         const paletteColors = Array.isArray(palette.colors) ? palette.colors : [];
@@ -314,7 +348,9 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
 
         return (
           <div className="border border-border rounded-md p-4 bg-card/50 animate-fade-in">
-            <h4 className="font-semibold mb-2 text-foreground normal-case">{String(paletteName)}</h4>
+            <h4 className="font-semibold mb-2 text-foreground normal-case">
+              {String(paletteName)}
+            </h4>
             <div className="flex gap-2 mb-3">
               {paletteColors.map((color: string, colorIndex: number) => (
                 <div
@@ -326,18 +362,16 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
               ))}
             </div>
             {palettePsychology && (
-              <p className="text-sm text-muted-foreground normal-case">{String(palettePsychology)}</p>
+              <p className="text-sm text-muted-foreground normal-case">
+                {String(palettePsychology)}
+              </p>
             )}
           </div>
         );
       }
     }
 
-    return (
-      <div className="text-muted-foreground">
-        {JSON.stringify(content, null, 2)}
-      </div>
-    );
+    return <div className="text-muted-foreground">{JSON.stringify(content, null, 2)}</div>;
   };
 
   return (
@@ -351,30 +385,23 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Coins className="h-4 w-4" />
               <span>
-                {creditsRequired} {creditsRequired === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
+                {creditsRequired}{' '}
+                {creditsRequired === 1
+                  ? t('mockup.creditUnitSingular')
+                  : t('mockup.creditUnitPlural')}
               </span>
             </div>
           </div>
 
-          <div className="min-h-[200px]">
-            {renderContent()}
-          </div>
+          <div className="min-h-[200px]">{renderContent()}</div>
 
           {!isGenerating && content && (
             <div className="flex gap-3 pt-4 border-t border-border">
-              <FormButton
-                onClick={onRegenerate}
-                variant="outline"
-                className="flex-1"
-              >
+              <FormButton onClick={onRegenerate} variant="outline" className="flex-1">
                 <RefreshCw className="h-4 w-4" />
                 {t('branding.regenerate')}
               </FormButton>
-              <FormButton
-                onClick={onApprove}
-                variant="primary"
-                className="flex-1"
-              >
+              <FormButton onClick={onApprove} variant="primary" className="flex-1">
                 <CheckCircle2 className="h-4 w-4" />
                 {t('branding.approveContinue')}
               </FormButton>
@@ -385,4 +412,3 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
     </Card>
   );
 };
-

@@ -19,9 +19,9 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         return module;
       } catch (error: any) {
         lastError = error;
-        
+
         // Check if it's a chunk load error or MIME type error
-        const isChunkError = 
+        const isChunkError =
           error?.message?.includes('Failed to fetch dynamically imported module') ||
           error?.message?.includes('Loading chunk') ||
           error?.message?.includes('Loading CSS chunk') ||
@@ -35,31 +35,31 @@ export function lazyWithRetry<T extends ComponentType<any>>(
           throw error;
         }
 
-        // If it's a MIME type error (server returned HTML instead of JS), 
+        // If it's a MIME type error (server returned HTML instead of JS),
         // it's likely a routing/auth issue - don't retry indefinitely
-        const isMimeTypeError = 
+        const isMimeTypeError =
           error?.message?.includes('Expected a JavaScript-or-Wasm module script') ||
           error?.message?.includes('MIME type');
 
         if (isMimeTypeError && attempt === 0) {
           // First attempt with MIME error - wait a bit longer and clear cache
-          console.warn('[lazyWithRetry] MIME type error detected - server may be returning HTML instead of JS');
-          
+          console.warn(
+            '[lazyWithRetry] MIME type error detected - server may be returning HTML instead of JS'
+          );
+
           // Clear all caches
           if (typeof window !== 'undefined' && 'caches' in window) {
             try {
               const cacheNames = await caches.keys();
-              await Promise.all(
-                cacheNames.map(name => caches.delete(name))
-              );
+              await Promise.all(cacheNames.map((name) => caches.delete(name)));
             } catch (e) {
               // Ignore cache clearing errors
             }
           }
-          
+
           // Force reload if we're getting HTML instead of JS (likely routing issue)
           // Wait a bit longer for potential auth/routing to resolve
-          await new Promise(resolve => setTimeout(resolve, retryDelay * 2));
+          await new Promise((resolve) => setTimeout(resolve, retryDelay * 2));
         }
 
         // If it's the last attempt, throw the error
@@ -68,8 +68,8 @@ export function lazyWithRetry<T extends ComponentType<any>>(
           if (isMimeTypeError) {
             const enhancedError = new Error(
               'Failed to load module: Server returned HTML instead of JavaScript. ' +
-              'This may indicate a routing or authentication issue. ' +
-              'Please refresh the page or check your network connection.'
+                'This may indicate a routing or authentication issue. ' +
+                'Please refresh the page or check your network connection.'
             );
             enhancedError.name = error?.name || 'ChunkLoadError';
             throw enhancedError;
@@ -79,15 +79,13 @@ export function lazyWithRetry<T extends ComponentType<any>>(
 
         // Wait before retrying with exponential backoff
         const delay = retryDelay * Math.pow(2, attempt);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
 
         // Try to clear cache and reload chunk
         if (typeof window !== 'undefined' && 'caches' in window) {
           try {
             const cacheNames = await caches.keys();
-            await Promise.all(
-              cacheNames.map(name => caches.delete(name))
-            );
+            await Promise.all(cacheNames.map((name) => caches.delete(name)));
           } catch (e) {
             // Ignore cache clearing errors
           }
@@ -98,8 +96,3 @@ export function lazyWithRetry<T extends ComponentType<any>>(
     throw lastError || new Error('Failed to load chunk after retries');
   });
 }
-
-
-
-
-

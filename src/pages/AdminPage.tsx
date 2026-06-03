@@ -1,18 +1,87 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database, DollarSign, Palette, Type, ShoppingCart, History, RotateCcw, X, ThumbsUp, ThumbsDown, BarChart2, ChevronRight, MessageSquare } from 'lucide-react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, LineChart, Line, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import {
+  ShieldCheck,
+  RefreshCw,
+  Users,
+  Settings,
+  ChevronUp,
+  ChevronDown,
+  Search,
+  TrendingUp,
+  TrendingDown,
+  User,
+  Image,
+  CreditCard,
+  HardDrive,
+  UserPlus,
+  Link2,
+  Database,
+  DollarSign,
+  Palette,
+  Type,
+  ShoppingCart,
+  History,
+  RotateCcw,
+  X,
+  ThumbsUp,
+  ThumbsDown,
+  BarChart2,
+  ChevronRight,
+  MessageSquare,
+} from 'lucide-react';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Cell,
+  LineChart,
+  Line,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts';
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
-import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
+import {
+  BreadcrumbWithBack,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../components/ui/BreadcrumbWithBack';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/table';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '../components/ui/card';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../components/ui/chart"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '../components/ui/chart';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '../services/authService';
@@ -28,7 +97,6 @@ import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { formatDate } from '@/utils/localeUtils';
 import { AdminReferenceLibrary } from '../components/admin/AdminReferenceLibrary';
-
 
 interface AdminUser {
   id: string;
@@ -79,7 +147,12 @@ interface GenerationStats {
   byFeature: {
     mockupmachine: { images: number; videos: number; textSteps: number; promptGenerations: number };
     canvas: { images: number; videos: number; textSteps: number; promptGenerations: number };
-    brandingmachine: { images: number; videos: number; textSteps: number; promptGenerations: number };
+    brandingmachine: {
+      images: number;
+      videos: number;
+      textSteps: number;
+      promptGenerations: number;
+    };
     'prompt-generation': { total: number; inputTokens: number; outputTokens: number };
   };
 }
@@ -314,7 +387,12 @@ export const AdminPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [historyRecords, setHistoryRecords] = useState<any[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-  const [historyPagination, setHistoryPagination] = useState({ total: 0, limit: 50, offset: 0, hasMore: false });
+  const [historyPagination, setHistoryPagination] = useState({
+    total: 0,
+    limit: 50,
+    offset: 0,
+    hasMore: false,
+  });
 
   const fetchUserHistory = async (userId: string, offset = 0) => {
     const token = authService.getToken();
@@ -323,7 +401,7 @@ export const AdminPage: React.FC = () => {
     setIsHistoryLoading(true);
     try {
       const response = await fetch(`/api/admin/users/${userId}/history?limit=50&offset=${offset}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch history');
       const result = await response.json();
@@ -331,7 +409,7 @@ export const AdminPage: React.FC = () => {
       if (offset === 0) {
         setHistoryRecords(result.records);
       } else {
-        setHistoryRecords(prev => [...prev, ...result.records]);
+        setHistoryRecords((prev) => [...prev, ...result.records]);
       }
       setHistoryPagination(result.pagination);
     } catch (err) {
@@ -406,7 +484,7 @@ export const AdminPage: React.FC = () => {
 
       const body = {
         ...user,
-        [field]: value
+        [field]: value,
       };
 
       const response = await fetch(`${ADMIN_API}/${user.id}`, {
@@ -428,7 +506,6 @@ export const AdminPage: React.FC = () => {
       // For simplicity/consistency, let's refetch or update the specific row in data
       // Refetching is safer to ensure sync
       handleFetch();
-
     } catch (error) {
       console.error('Error updating user:', error);
       toast.error(t('admin.saveError') || 'Failed to update user');
@@ -541,12 +618,12 @@ export const AdminPage: React.FC = () => {
     const sortedDates = Object.keys(usersByDate).sort();
     let cumulative = 0;
 
-    return sortedDates.map(date => {
+    return sortedDates.map((date) => {
       cumulative += usersByDate[date];
       return {
         date,
         users: cumulative,
-        newUsers: usersByDate[date]
+        newUsers: usersByDate[date],
       };
     });
   }, [data]);
@@ -559,15 +636,17 @@ export const AdminPage: React.FC = () => {
       model: model.replace('gemini-', '').replace('-image', '').replace('-preview', ''), // Simplify name
       count: stats.total,
       type: 'Imagem',
-      fill: "#52ddeb"
+      fill: '#52ddeb',
     }));
 
-    const videoStats = data.generationStats.videos ? Object.entries(data.generationStats.videos.byModel).map(([model, count]) => ({
-      model: model,
-      count: count,
-      type: 'Vídeo',
-      fill: "#52ddeb"
-    })) : [];
+    const videoStats = data.generationStats.videos
+      ? Object.entries(data.generationStats.videos.byModel).map(([model, count]) => ({
+          model: model,
+          count: count,
+          type: 'Vídeo',
+          fill: '#52ddeb',
+        }))
+      : [];
 
     return [...imageStats, ...videoStats].sort((a, b) => b.count - a.count);
   }, [data]);
@@ -582,8 +661,8 @@ export const AdminPage: React.FC = () => {
   const uniqueModels = useMemo(() => {
     if (!data?.generationsTimeSeries) return [];
     const models = new Set<string>();
-    data.generationsTimeSeries.forEach(item => {
-      Object.keys(item).forEach(key => {
+    data.generationsTimeSeries.forEach((item) => {
+      Object.keys(item).forEach((key) => {
         if (key !== 'date') models.add(key);
       });
     });
@@ -594,22 +673,22 @@ export const AdminPage: React.FC = () => {
   const modelChartConfig = useMemo(() => {
     const config: ChartConfig = {};
     const colors = [
-      "hsl(var(--chart-1))",
-      "hsl(var(--chart-2))",
-      "hsl(var(--chart-3))",
-      "hsl(var(--chart-4))",
-      "hsl(var(--chart-5))",
-      "#52ddeb", // brand-cyan
-      "#22c55e", // green-500
-      "#f97316", // orange-500
-      "#a855f7", // purple-500
-      "#ec4899", // pink-500
+      'hsl(var(--chart-1))',
+      'hsl(var(--chart-2))',
+      'hsl(var(--chart-3))',
+      'hsl(var(--chart-4))',
+      'hsl(var(--chart-5))',
+      '#52ddeb', // brand-cyan
+      '#22c55e', // green-500
+      '#f97316', // orange-500
+      '#a855f7', // purple-500
+      '#ec4899', // pink-500
     ];
 
     uniqueModels.forEach((model, index) => {
       config[model] = {
         label: model.replace('gemini-', '').replace('-image', '').replace('-preview', ''),
-        color: colors[index % colors.length]
+        color: colors[index % colors.length],
       };
     });
 
@@ -619,27 +698,27 @@ export const AdminPage: React.FC = () => {
   // Chart Config
   const chartConfig = {
     users: {
-      label: "Total Users",
-      color: "hsl(var(--chart-1))",
+      label: 'Total Users',
+      color: 'hsl(var(--chart-1))',
     },
     newUsers: {
-      label: "New Users",
-      color: "hsl(var(--chart-2))",
+      label: 'New Users',
+      color: 'hsl(var(--chart-2))',
     },
     count: {
-      label: "Generations",
-      color: "hsl(var(--chart-1))",
+      label: 'Generations',
+      color: 'hsl(var(--chart-1))',
     },
     revenue: {
-      label: "Revenue (BRL)",
-      color: "#22c55e", // green-500
+      label: 'Revenue (BRL)',
+      color: '#22c55e', // green-500
     },
     cost: {
-      label: "Cost (USD)",
-      color: "#f97316", // orange-500
+      label: 'Cost (USD)',
+      color: '#f97316', // orange-500
     },
-    ...modelChartConfig
-  } satisfies ChartConfig
+    ...modelChartConfig,
+  } satisfies ChartConfig;
 
   const userLookup = useMemo(() => {
     if (!data) return {};
@@ -660,7 +739,7 @@ export const AdminPage: React.FC = () => {
       };
     }
 
-    const costs = data.costTimeSeries.map(item => item.cost);
+    const costs = data.costTimeSeries.map((item) => item.cost);
     const averageCost = costs.reduce((a, b) => a + b, 0) / costs.length;
     const maxCost = Math.max(...costs, 0);
     const last7Days = data.costTimeSeries.slice(-7);
@@ -697,7 +776,7 @@ export const AdminPage: React.FC = () => {
     const profitUSD = effectiveRevenueUSD - costUSD;
 
     // Calculate profit in BRL: use BRL revenue directly, or convert USD profit
-    const profitBRL = revenueBRL - (costUSD * 6);
+    const profitBRL = revenueBRL - costUSD * 6;
 
     return {
       profitUSD,
@@ -706,229 +785,304 @@ export const AdminPage: React.FC = () => {
     };
   }, [data]);
 
-  const columns = useMemo<ColumnDef<AdminUser>[]>(() => [
-    {
-      accessorKey: 'name',
-      header: t('common.user'),
-      cell: ({ row }) => (
-        <DataTableEditableCell
-          row={row}
-          field="name"
-          className="font-medium text-neutral-200"
-          placeholder={t('admin.noName')}
-          onSave={handleSaveUser}
-        />
-      ),
-      size: 150,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'email',
-      header: 'Email',
-      cell: ({ row }) => <span className="text-xs text-neutral-500 font-mono select-all">{row.original.email}</span>,
-      size: 200,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'subscriptionTier',
-      header: t('admin.subscription'),
-      cell: ({ row }) => (
-        <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 font-mono w-fit">
-          {row.original.subscriptionTier}
-        </Badge>
-      ),
-      size: 120,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'subscriptionStatus',
-      header: 'Status',
-      cell: ({ row }) => <span className="text-xs text-neutral-500 font-mono capitalize">{row.original.subscriptionStatus}</span>,
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'monthlyCredits',
-      header: t('admin.monthly'),
-      cell: ({ row }) => <span className="text-xs font-mono">{row.original.monthlyCredits ?? 0}</span>,
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'creditsUsed',
-      header: t('admin.used'),
-      cell: ({ row }) => <span className="text-xs font-mono">{row.original.creditsUsed ?? 0}</span>,
-      size: 80,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'creditsRemaining',
-      header: t('admin.remaining'),
-      cell: ({ row }) => <span className="text-xs font-mono text-brand-cyan">{row.original.creditsRemaining}</span>,
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'manualCredits',
-      header: t('admin.manual'),
-      cell: ({ row }) => <span className="text-xs font-mono">{row.original.manualCredits}</span>,
-      size: 80,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'referralCount',
-      header: t('admin.referrals'),
-      cell: ({ row }) => <span className="text-xs font-mono">{row.original.referralCount ?? 0}</span>,
-      size: 80,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'referralCode',
-      header: t('admin.code'),
-      cell: ({ row }) => <span className="text-xs font-mono select-all">{row.original.referralCode || '—'}</span>,
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      id: 'referredBy',
-      accessorKey: 'referredBy',
-      header: t('admin.referredBy'),
-      cell: ({ row }) => (
-        <span className="text-[11px] text-neutral-500 truncate max-w-[150px] inline-block" title={row.original.referredBy || ''}>
-          {row.original.referredBy
-            ? (userLookup[row.original.referredBy]?.name || userLookup[row.original.referredBy]?.email || t('admin.unknown'))
-            : t('admin.directOrigin')}
-        </span>
-      ),
-      size: 150,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'mockupCount',
-      header: 'Mockups',
-      cell: ({ row }) => <span className="font-mono">{row.original.mockupCount}</span>,
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'transactionCount',
-      header: t('admin.transactions'),
-      cell: ({ row }) => <span className="font-mono">{row.original.transactionCount}</span>,
-      size: 120,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'totalSpentBRL',
-      header: 'BRL',
-      cell: ({ row }) => (
-        <span className={cn("text-xs font-mono", row.original.totalSpentBRL > 0 ? "text-green-500" : "text-neutral-500")}>
-          {row.original.totalSpentBRL > 0 ? formatCurrency(row.original.totalSpentBRL, 'BRL') : '—'}
-        </span>
-      ),
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'totalSpentUSD',
-      header: 'USD',
-      cell: ({ row }) => (
-        <span className={cn("text-xs font-mono", row.original.totalSpentUSD > 0 ? "text-green-400" : "text-neutral-500")}>
-          {row.original.totalSpentUSD > 0 ? formatCurrency(row.original.totalSpentUSD, 'USD') : '—'}
-        </span>
-      ),
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'apiCostUSD',
-      header: t('admin.apiCostColumn'),
-      cell: ({ row }) => (
-        <div className="text-xs font-mono">
-          {row.original.apiCostUSD > 0 ? (
-            <>
-              <p className="text-neutral-300">$ {row.original.apiCostUSD.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              <p className="text-neutral-400 text-[10px]">{(row.original.apiCostUSD * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-            </>
-          ) : (
-            <p className="text-neutral-500">—</p>
-          )}
-        </div>
-      ),
-      size: 130,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'createdAt',
-      header: t('admin.createdAt'),
-      cell: ({ row }) => <span className="text-xs font-mono text-neutral-400 text-center block">{formatDate(row.original.createdAt)}</span>,
-      size: 120,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'totalGenerations',
-      header: 'Imagens',
-      cell: ({ row }) => <span className="font-mono text-brand-cyan text-center block">{row.original.totalGenerations ?? 0}</span>,
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      accessorKey: 'totalTokensUsed',
-      header: 'Tokens',
-      cell: ({ row }) => <span className="text-[10px] font-mono text-neutral-400 text-center block">{(row.original.totalTokensUsed ?? 0).toLocaleString()}</span>,
-      size: 100,
-      enableSorting: true,
-    },
-    {
-      id: 'byok',
-      header: 'BYOK',
-      cell: ({ row }) => {
-        const b = row.original.byok;
-        if (!b) return <span className="text-neutral-600 text-xs">—</span>;
-        const active = [b.gemini && 'G', b.seedream && 'SD', b.openai && 'OAI'].filter(Boolean);
-        if (!active.length) return <span className="text-neutral-600 text-xs">—</span>;
-        return (
-          <div className="flex gap-1 flex-wrap">
-            {b.gemini   && <span className="px-1 py-px rounded text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">G</span>}
-            {b.seedream && <span className="px-1 py-px rounded text-[10px] font-bold bg-orange-500/15 text-orange-400 border border-orange-500/30">SD</span>}
-            {b.openai   && <span className="px-1 py-px rounded text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/30">OAI</span>}
-          </div>
-        );
+  const columns = useMemo<ColumnDef<AdminUser>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: t('common.user'),
+        cell: ({ row }) => (
+          <DataTableEditableCell
+            row={row}
+            field="name"
+            className="font-medium text-neutral-200"
+            placeholder={t('admin.noName')}
+            onSave={handleSaveUser}
+          />
+        ),
+        size: 150,
+        enableSorting: true,
       },
-      size: 90,
-    },
-    {
-      id: 'actions',
-      header: 'Histórico',
-      cell: ({ row }) => (
-        <div className="flex justify-center">
-          <Button
+      {
+        accessorKey: 'email',
+        header: 'Email',
+        cell: ({ row }) => (
+          <span className="text-xs text-neutral-500 font-mono select-all">
+            {row.original.email}
+          </span>
+        ),
+        size: 200,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'subscriptionTier',
+        header: t('admin.subscription'),
+        cell: ({ row }) => (
+          <Badge
             variant="outline"
-            size="sm"
-            className="h-8 border-neutral-800 hover:bg-neutral-800 text-[10px] font-mono"
-            onClick={() => handleViewHistory(row.original)}
+            className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 font-mono w-fit"
           >
-            <History className="h-3 w-3 mr-1" />
-            LOG
-          </Button>
-        </div>
-      ),
-      size: 100,
-    },
-  ], [t, userLookup, handleViewHistory]);
+            {row.original.subscriptionTier}
+          </Badge>
+        ),
+        size: 120,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'subscriptionStatus',
+        header: 'Status',
+        cell: ({ row }) => (
+          <span className="text-xs text-neutral-500 font-mono capitalize">
+            {row.original.subscriptionStatus}
+          </span>
+        ),
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'monthlyCredits',
+        header: t('admin.monthly'),
+        cell: ({ row }) => (
+          <span className="text-xs font-mono">{row.original.monthlyCredits ?? 0}</span>
+        ),
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'creditsUsed',
+        header: t('admin.used'),
+        cell: ({ row }) => (
+          <span className="text-xs font-mono">{row.original.creditsUsed ?? 0}</span>
+        ),
+        size: 80,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'creditsRemaining',
+        header: t('admin.remaining'),
+        cell: ({ row }) => (
+          <span className="text-xs font-mono text-brand-cyan">{row.original.creditsRemaining}</span>
+        ),
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'manualCredits',
+        header: t('admin.manual'),
+        cell: ({ row }) => <span className="text-xs font-mono">{row.original.manualCredits}</span>,
+        size: 80,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'referralCount',
+        header: t('admin.referrals'),
+        cell: ({ row }) => (
+          <span className="text-xs font-mono">{row.original.referralCount ?? 0}</span>
+        ),
+        size: 80,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'referralCode',
+        header: t('admin.code'),
+        cell: ({ row }) => (
+          <span className="text-xs font-mono select-all">{row.original.referralCode || '—'}</span>
+        ),
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        id: 'referredBy',
+        accessorKey: 'referredBy',
+        header: t('admin.referredBy'),
+        cell: ({ row }) => (
+          <span
+            className="text-[11px] text-neutral-500 truncate max-w-[150px] inline-block"
+            title={row.original.referredBy || ''}
+          >
+            {row.original.referredBy
+              ? userLookup[row.original.referredBy]?.name ||
+                userLookup[row.original.referredBy]?.email ||
+                t('admin.unknown')
+              : t('admin.directOrigin')}
+          </span>
+        ),
+        size: 150,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'mockupCount',
+        header: 'Mockups',
+        cell: ({ row }) => <span className="font-mono">{row.original.mockupCount}</span>,
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'transactionCount',
+        header: t('admin.transactions'),
+        cell: ({ row }) => <span className="font-mono">{row.original.transactionCount}</span>,
+        size: 120,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'totalSpentBRL',
+        header: 'BRL',
+        cell: ({ row }) => (
+          <span
+            className={cn(
+              'text-xs font-mono',
+              row.original.totalSpentBRL > 0 ? 'text-green-500' : 'text-neutral-500'
+            )}
+          >
+            {row.original.totalSpentBRL > 0
+              ? formatCurrency(row.original.totalSpentBRL, 'BRL')
+              : '—'}
+          </span>
+        ),
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'totalSpentUSD',
+        header: 'USD',
+        cell: ({ row }) => (
+          <span
+            className={cn(
+              'text-xs font-mono',
+              row.original.totalSpentUSD > 0 ? 'text-green-400' : 'text-neutral-500'
+            )}
+          >
+            {row.original.totalSpentUSD > 0
+              ? formatCurrency(row.original.totalSpentUSD, 'USD')
+              : '—'}
+          </span>
+        ),
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'apiCostUSD',
+        header: t('admin.apiCostColumn'),
+        cell: ({ row }) => (
+          <div className="text-xs font-mono">
+            {row.original.apiCostUSD > 0 ? (
+              <>
+                <p className="text-neutral-300">
+                  ${' '}
+                  {row.original.apiCostUSD.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </p>
+                <p className="text-neutral-400 text-[10px]">
+                  {(row.original.apiCostUSD * 6).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </p>
+              </>
+            ) : (
+              <p className="text-neutral-500">—</p>
+            )}
+          </div>
+        ),
+        size: 130,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'createdAt',
+        header: t('admin.createdAt'),
+        cell: ({ row }) => (
+          <span className="text-xs font-mono text-neutral-400 text-center block">
+            {formatDate(row.original.createdAt)}
+          </span>
+        ),
+        size: 120,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'totalGenerations',
+        header: 'Imagens',
+        cell: ({ row }) => (
+          <span className="font-mono text-brand-cyan text-center block">
+            {row.original.totalGenerations ?? 0}
+          </span>
+        ),
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'totalTokensUsed',
+        header: 'Tokens',
+        cell: ({ row }) => (
+          <span className="text-[10px] font-mono text-neutral-400 text-center block">
+            {(row.original.totalTokensUsed ?? 0).toLocaleString()}
+          </span>
+        ),
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        id: 'byok',
+        header: 'BYOK',
+        cell: ({ row }) => {
+          const b = row.original.byok;
+          if (!b) return <span className="text-neutral-600 text-xs">—</span>;
+          const active = [b.gemini && 'G', b.seedream && 'SD', b.openai && 'OAI'].filter(Boolean);
+          if (!active.length) return <span className="text-neutral-600 text-xs">—</span>;
+          return (
+            <div className="flex gap-1 flex-wrap">
+              {b.gemini && (
+                <span className="px-1 py-px rounded text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                  G
+                </span>
+              )}
+              {b.seedream && (
+                <span className="px-1 py-px rounded text-[10px] font-bold bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                  SD
+                </span>
+              )}
+              {b.openai && (
+                <span className="px-1 py-px rounded text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/30">
+                  OAI
+                </span>
+              )}
+            </div>
+          );
+        },
+        size: 90,
+      },
+      {
+        id: 'actions',
+        header: 'Histórico',
+        cell: ({ row }) => (
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 border-neutral-800 hover:bg-neutral-800 text-[10px] font-mono"
+              onClick={() => handleViewHistory(row.original)}
+            >
+              <History className="h-3 w-3 mr-1" />
+              LOG
+            </Button>
+          </div>
+        ),
+        size: 100,
+      },
+    ],
+    [t, userLookup, handleViewHistory]
+  );
 
   return (
     <>
-      <SEO
-        title={t('admin.title')}
-        description={t('admin.description')}
-        noindex={true}
-      />
+      <SEO title={t('admin.title')} description={t('admin.description')} noindex={true} />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0">
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
           {/* Skeleton Loading States */}
-          {(isCheckingAuth || (isUserAuthenticated && isAdmin === null) || (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
+          {(isCheckingAuth ||
+            (isUserAuthenticated && isAdmin === null) ||
+            (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
             <AdminDashboardSkeleton />
           )}
 
@@ -938,10 +1092,10 @@ export const AdminPage: React.FC = () => {
               <CardContent className="p-6 md:p-8 space-y-4 text-center">
                 {isUserAuthenticated === false ? (
                   <>
-                    <p className="text-neutral-400 font-mono mb-4">
-                      {t('admin.loginRequired')}
-                    </p>
-                    <Button variant="ghost" onClick={() => navigate('/')}
+                    <p className="text-neutral-400 font-mono mb-4">{t('admin.loginRequired')}</p>
+                    <Button
+                      variant="ghost"
+                      onClick={() => navigate('/')}
                       className="bg-brand-cyan/80 hover:bg-brand-cyan text-black"
                     >
                       {t('admin.doLogin')}
@@ -949,9 +1103,7 @@ export const AdminPage: React.FC = () => {
                   </>
                 ) : isAdmin === false ? (
                   <>
-                    <p className="text-neutral-400 font-mono mb-4">
-                      {t('admin.accessDeniedFull')}
-                    </p>
+                    <p className="text-neutral-400 font-mono mb-4">{t('admin.accessDeniedFull')}</p>
                     {error && (
                       <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono">
                         {error}
@@ -1029,41 +1181,71 @@ export const AdminPage: React.FC = () => {
                   {/* Navbar abas | Botão atualizar (somente icon) */}
                   <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
                     <TabsList className="bg-neutral-900/50 border border-white/10 p-1 h-auto flex-wrap">
-                      <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="overview"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         {t('admin.dashboard')}
                       </TabsTrigger>
                       {data.generationStats && (
-                        <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                        <TabsTrigger
+                          value="generations"
+                          className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                        >
                           {t('admin.generations')}
                         </TabsTrigger>
                       )}
-                      <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="users"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         {t('admin.users')}
                       </TabsTrigger>
-                      <TabsTrigger value="financial" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="financial"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         {t('admin.financial')}
                       </TabsTrigger>
-                      <TabsTrigger value="presets" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="presets"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('common.presets')}
                       </TabsTrigger>
-                      <TabsTrigger value="products" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="products"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.products.title') || 'Produtos'}
                       </TabsTrigger>
-                      <TabsTrigger value="admin-chat" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="admin-chat"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         <MessageSquare className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         Chat Estratégico
                       </TabsTrigger>
-                      <TabsTrigger value="design-system" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="design-system"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         <Palette className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.designSystem')}
                       </TabsTrigger>
-                      <TabsTrigger value="feedback-rag" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="feedback-rag"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         <BarChart2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         Feedback & RAG
                       </TabsTrigger>
-                      <TabsTrigger value="references" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger
+                        value="references"
+                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      >
                         <Image className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         Reference Library
                       </TabsTrigger>
@@ -1082,8 +1264,10 @@ export const AdminPage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <TabsContent value="overview" className={`space-y-6 ${activeTab === 'overview' ? 'admin-tab-enter' : ''}`}>
-
+              <TabsContent
+                value="overview"
+                className={`space-y-6 ${activeTab === 'overview' ? 'admin-tab-enter' : ''}`}
+              >
                 {/* KPI Grid - Top Level Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                   {/* Total Users */}
@@ -1102,8 +1286,12 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                           {data.totalUsers}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.totalUsers')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.registeredInSystem')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.totalUsers')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.registeredInSystem')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1118,10 +1306,20 @@ export const AdminPage: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
+                          {
+                            data.users.filter(
+                              (u) =>
+                                u.subscriptionStatus === 'active' ||
+                                u.subscriptionStatus === 'trialing'
+                            ).length
+                          }
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.activeSubscriptions')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.recurringPlans')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.activeSubscriptions')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.recurringPlans')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1138,8 +1336,12 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                           {totalTransactions}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.transactions')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.completedTransactions')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.transactions')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.completedTransactions')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1158,15 +1360,21 @@ export const AdminPage: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                          {data.users.filter(u => {
-                            const createdAt = new Date(u.createdAt);
-                            const thirtyDaysAgo = new Date();
-                            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                            return createdAt >= thirtyDaysAgo;
-                          }).length}
+                          {
+                            data.users.filter((u) => {
+                              const createdAt = new Date(u.createdAt);
+                              const thirtyDaysAgo = new Date();
+                              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                              return createdAt >= thirtyDaysAgo;
+                            }).length
+                          }
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.novos_usurios')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.ltimos_30_dias')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.novos_usurios')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.ltimos_30_dias')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1186,8 +1394,12 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.totalMockupsGenerated}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.mockupsCreated')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalMockupsGenerated')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.mockupsCreated')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.totalMockupsGenerated')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1204,8 +1416,12 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.totalCreditsUsed}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.creditsDistributed')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalCreditsAssigned')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.creditsDistributed')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.totalCreditsAssigned')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1220,10 +1436,14 @@ export const AdminPage: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {data.totalStorageUsed !== undefined ? formatBytes(data.totalStorageUsed) : '—'}
+                          {data.totalStorageUsed !== undefined
+                            ? formatBytes(data.totalStorageUsed)
+                            : '—'}
                         </p>
                         <p className="text-sm text-neutral-500 font-mono">{t('admin.storage')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalDiskUsage')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.totalDiskUsage')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1233,7 +1453,9 @@ export const AdminPage: React.FC = () => {
                 <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardHeader>
                     <CardTitle className="text-neutral-300">{t('admin.userGrowth')}</CardTitle>
-                    <CardDescription className="text-neutral-500">{t('admin.newUsersLast30Days')}</CardDescription>
+                    <CardDescription className="text-neutral-500">
+                      {t('admin.newUsersLast30Days')}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-[300px] w-full">
@@ -1246,7 +1468,11 @@ export const AdminPage: React.FC = () => {
                             right: 12,
                           }}
                         >
-                          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#3b3b3bff" />
+                          <CartesianGrid
+                            vertical={false}
+                            strokeDasharray="3 3"
+                            stroke="#3b3b3bff"
+                          />
                           <XAxis
                             dataKey="date"
                             tickLine={false}
@@ -1254,11 +1480,11 @@ export const AdminPage: React.FC = () => {
                             tickMargin={8}
                             minTickGap={32}
                             tickFormatter={(value) => {
-                              const date = new Date(value)
-                              return date.toLocaleDateString("pt-BR", {
-                                month: "short",
-                                day: "numeric",
-                              })
+                              const date = new Date(value);
+                              return date.toLocaleDateString('pt-BR', {
+                                month: 'short',
+                                day: 'numeric',
+                              });
                             }}
                           />
                           <ChartTooltip
@@ -1278,11 +1504,13 @@ export const AdminPage: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
-
               </TabsContent>
 
               {data.generationStats && (
-                <TabsContent value="generations" className={`space-y-6 ${activeTab === 'generations' ? 'admin-tab-enter' : ''}`}>
+                <TabsContent
+                  value="generations"
+                  className={`space-y-6 ${activeTab === 'generations' ? 'admin-tab-enter' : ''}`}
+                >
                   {/* Summary KPIs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
@@ -1294,10 +1522,15 @@ export const AdminPage: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                            {Object.values(data.generationStats.imagesByModel).reduce((sum, stats) => sum + stats.total, 0)}
+                            {Object.values(data.generationStats.imagesByModel).reduce(
+                              (sum, stats) => sum + stats.total,
+                              0
+                            )}
                           </p>
                           <p className="text-sm text-neutral-500 font-mono">{t('admin.images')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.total_gerado')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">
+                            {t('admin.total_gerado')}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1314,7 +1547,9 @@ export const AdminPage: React.FC = () => {
                             {data.generationStats.videos.total}
                           </p>
                           <p className="text-sm text-neutral-500 font-mono">{t('admin.videos')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.total_gerado_2')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">
+                            {t('admin.total_gerado_2')}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1330,8 +1565,12 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.generationStats.textTokens.totalSteps}
                           </p>
-                          <p className="text-sm text-neutral-500 font-mono">{t('admin.passos_de_texto')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.processamento_de_ia')}</p>
+                          <p className="text-sm text-neutral-500 font-mono">
+                            {t('admin.passos_de_texto')}
+                          </p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">
+                            {t('admin.processamento_de_ia')}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1345,10 +1584,17 @@ export const AdminPage: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                            {(data.generationStats.textTokens.inputTokens + data.generationStats.textTokens.outputTokens).toLocaleString()}
+                            {(
+                              data.generationStats.textTokens.inputTokens +
+                              data.generationStats.textTokens.outputTokens
+                            ).toLocaleString()}
                           </p>
-                          <p className="text-sm text-neutral-500 font-mono">{t('admin.total_tokens')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.input_output')}</p>
+                          <p className="text-sm text-neutral-500 font-mono">
+                            {t('admin.total_tokens')}
+                          </p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">
+                            {t('admin.input_output')}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1357,43 +1603,74 @@ export const AdminPage: React.FC = () => {
                   {/* By Feature - Enhanced Grid */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-neutral-300 font-mono">{t('admin.byFeature')}</h3>
+                      <h3 className="text-lg font-semibold text-neutral-300 font-mono">
+                        {t('admin.byFeature')}
+                      </h3>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                       {(['mockupmachine', 'canvas', 'brandingmachine'] as const).map((feature) => {
                         const stats = data.generationStats.byFeature[feature];
-                        const total = stats.images + stats.videos + stats.textSteps + stats.promptGenerations;
+                        const total =
+                          stats.images + stats.videos + stats.textSteps + stats.promptGenerations;
                         return (
-                          <Card key={feature} className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                          <Card
+                            key={feature}
+                            className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+                          >
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  {feature === 'mockupmachine' ? <Image className="h-6 w-6 text-brand-cyan" /> :
-                                    feature === 'brandingmachine' ? <Type className="h-6 w-6 text-brand-cyan" /> :
-                                      <Palette className="h-6 w-6 text-brand-cyan" />}
+                                  {feature === 'mockupmachine' ? (
+                                    <Image className="h-6 w-6 text-brand-cyan" />
+                                  ) : feature === 'brandingmachine' ? (
+                                    <Type className="h-6 w-6 text-brand-cyan" />
+                                  ) : (
+                                    <Palette className="h-6 w-6 text-brand-cyan" />
+                                  )}
                                 </div>
-                                <Badge variant="outline" className="text-[10px] bg-neutral-950/70 border-[brand-cyan]/30 text-brand-cyan">
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] bg-neutral-950/70 border-[brand-cyan]/30 text-brand-cyan"
+                                >
                                   {total} total
                                 </Badge>
                               </div>
                               <div className="mb-4">
-                                <p className="text-sm font-semibold text-brand-cyan font-mono mb-4 uppercase">{feature}</p>
+                                <p className="text-sm font-semibold text-brand-cyan font-mono mb-4 uppercase">
+                                  {feature}
+                                </p>
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-neutral-400 font-mono">{t('admin.images')}</span>
-                                    <span className="text-sm font-bold text-brand-cyan font-mono">{stats.images}</span>
+                                    <span className="text-xs text-neutral-400 font-mono">
+                                      {t('admin.images')}
+                                    </span>
+                                    <span className="text-sm font-bold text-brand-cyan font-mono">
+                                      {stats.images}
+                                    </span>
                                   </div>
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-neutral-400 font-mono">{t('admin.videos')}</span>
-                                    <span className="text-sm font-bold text-brand-cyan font-mono">{stats.videos}</span>
+                                    <span className="text-xs text-neutral-400 font-mono">
+                                      {t('admin.videos')}
+                                    </span>
+                                    <span className="text-sm font-bold text-brand-cyan font-mono">
+                                      {stats.videos}
+                                    </span>
                                   </div>
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-neutral-400 font-mono">{t('admin.textSteps')}</span>
-                                    <span className="text-sm font-bold text-brand-cyan font-mono">{stats.textSteps}</span>
+                                    <span className="text-xs text-neutral-400 font-mono">
+                                      {t('admin.textSteps')}
+                                    </span>
+                                    <span className="text-sm font-bold text-brand-cyan font-mono">
+                                      {stats.textSteps}
+                                    </span>
                                   </div>
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-neutral-400 font-mono">{t('admin.promptsGenerated')}</span>
-                                    <span className="text-sm font-bold text-brand-cyan font-mono">{stats.promptGenerations}</span>
+                                    <span className="text-xs text-neutral-400 font-mono">
+                                      {t('admin.promptsGenerated')}
+                                    </span>
+                                    <span className="text-sm font-bold text-brand-cyan font-mono">
+                                      {stats.promptGenerations}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1427,10 +1704,7 @@ export const AdminPage: React.FC = () => {
                               axisLine={false}
                               tickFormatter={(value) => value.slice(0, 15)}
                             />
-                            <ChartTooltip
-                              cursor={false}
-                              content={<ChartTooltipContent />}
-                            />
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                             <Bar dataKey="count" radius={[8, 8, 0, 0]}>
                               {modelUsageData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -1457,26 +1731,46 @@ export const AdminPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {Object.entries(data.generationStats.imagesByModel).map(([model, stats]) => (
-                            <Card key={model} className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
-                              <CardContent className="p-4">
-                                <p className="text-xs font-semibold text-brand-cyan font-mono mb-2 truncate" title={model}>{model}</p>
-                                <p className="text-2xl font-bold text-neutral-300 font-mono mb-3">{stats.total}</p>
-                                {Object.keys(stats.byResolution).length > 0 && (
-                                  <div className="mt-3 pt-3 border-t border-white/10">
-                                    <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">{t('admin.resolues')}</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {Object.entries(stats.byResolution).map(([resolution, count]) => (
-                                        <Badge key={resolution} variant="outline" className="text-[10px] px-1.5 py-0.5 h-5 bg-neutral-950/70 border-neutral-700/50 text-neutral-400">
-                                          {resolution}: {count}
-                                        </Badge>
-                                      ))}
+                          {Object.entries(data.generationStats.imagesByModel).map(
+                            ([model, stats]) => (
+                              <Card
+                                key={model}
+                                className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all"
+                              >
+                                <CardContent className="p-4">
+                                  <p
+                                    className="text-xs font-semibold text-brand-cyan font-mono mb-2 truncate"
+                                    title={model}
+                                  >
+                                    {model}
+                                  </p>
+                                  <p className="text-2xl font-bold text-neutral-300 font-mono mb-3">
+                                    {stats.total}
+                                  </p>
+                                  {Object.keys(stats.byResolution).length > 0 && (
+                                    <div className="mt-3 pt-3 border-t border-white/10">
+                                      <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">
+                                        {t('admin.resolues')}
+                                      </p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {Object.entries(stats.byResolution).map(
+                                          ([resolution, count]) => (
+                                            <Badge
+                                              key={resolution}
+                                              variant="outline"
+                                              className="text-[10px] px-1.5 py-0.5 h-5 bg-neutral-950/70 border-neutral-700/50 text-neutral-400"
+                                            >
+                                              {resolution}: {count}
+                                            </Badge>
+                                          )
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          ))}
+                                  )}
+                                </CardContent>
+                              </Card>
+                            )
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -1494,18 +1788,30 @@ export const AdminPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="mb-4">
-                          <p className="text-3xl font-bold text-neutral-300 font-mono mb-2">{data.generationStats.videos.total}</p>
-                          <p className="text-sm text-neutral-500 font-mono">{t('admin.totalVideos')}</p>
+                          <p className="text-3xl font-bold text-neutral-300 font-mono mb-2">
+                            {data.generationStats.videos.total}
+                          </p>
+                          <p className="text-sm text-neutral-500 font-mono">
+                            {t('admin.totalVideos')}
+                          </p>
                         </div>
                         {Object.keys(data.generationStats.videos.byModel).length > 0 && (
                           <div className="mt-4 pt-4 border-t border-white/10">
-                            <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">{t('admin.byModel')}:</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
+                              {t('admin.byModel')}:
+                            </p>
                             <div className="flex flex-wrap gap-2">
-                              {Object.entries(data.generationStats.videos.byModel).map(([model, count]) => (
-                                <Badge key={model} variant="outline" className="text-xs bg-neutral-950/10 border-neutral-700/50 text-neutral-300 px-3 py-1">
-                                  {model}: {count}
-                                </Badge>
-                              ))}
+                              {Object.entries(data.generationStats.videos.byModel).map(
+                                ([model, count]) => (
+                                  <Badge
+                                    key={model}
+                                    variant="outline"
+                                    className="text-xs bg-neutral-950/10 border-neutral-700/50 text-neutral-300 px-3 py-1"
+                                  >
+                                    {model}: {count}
+                                  </Badge>
+                                )
+                              )}
                             </div>
                           </div>
                         )}
@@ -1529,31 +1835,45 @@ export const AdminPage: React.FC = () => {
                         {/* Branding Steps */}
                         <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.brandingSteps')}</p>
-                            <p className="text-2xl font-bold text-neutral-300 font-mono">{data.generationStats.textTokens.totalSteps}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">
+                              {t('admin.brandingSteps')}
+                            </p>
+                            <p className="text-2xl font-bold text-neutral-300 font-mono">
+                              {data.generationStats.textTokens.totalSteps}
+                            </p>
                           </CardContent>
                         </Card>
 
                         {/* Input Tokens */}
                         <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.inputTokens')}</p>
-                            <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.textTokens.inputTokens.toLocaleString()}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">
+                              {t('admin.inputTokens')}
+                            </p>
+                            <p className="text-2xl font-bold text-brand-cyan font-mono">
+                              {data.generationStats.textTokens.inputTokens.toLocaleString()}
+                            </p>
                           </CardContent>
                         </Card>
 
                         {/* Output Tokens */}
                         <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.outputTokens')}</p>
-                            <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.textTokens.outputTokens.toLocaleString()}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">
+                              {t('admin.outputTokens')}
+                            </p>
+                            <p className="text-2xl font-bold text-brand-cyan font-mono">
+                              {data.generationStats.textTokens.outputTokens.toLocaleString()}
+                            </p>
                           </CardContent>
                         </Card>
 
                         {/* Analysis Cost */}
                         <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.analysisCost')}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">
+                              {t('admin.analysisCost')}
+                            </p>
                             <p className="text-2xl font-bold text-green-400 font-mono">
                               ${(data.generationStats.textTokens.totalCost || 0).toFixed(4)}
                             </p>
@@ -1563,16 +1883,26 @@ export const AdminPage: React.FC = () => {
                         {/* Prompt Gen Total */}
                         <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.promptGenTotal')}</p>
-                            <p className="text-2xl font-bold text-neutral-300 font-mono">{data.generationStats.byFeature['prompt-generation'].total}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">
+                              {t('admin.promptGenTotal')}
+                            </p>
+                            <p className="text-2xl font-bold text-neutral-300 font-mono">
+                              {data.generationStats.byFeature['prompt-generation'].total}
+                            </p>
                           </CardContent>
                         </Card>
 
                         {/* Prompt Input Tokens */}
                         <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.promptInput')}</p>
-                            <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.byFeature['prompt-generation'].inputTokens.toLocaleString()}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">
+                              {t('admin.promptInput')}
+                            </p>
+                            <p className="text-2xl font-bold text-brand-cyan font-mono">
+                              {data.generationStats.byFeature[
+                                'prompt-generation'
+                              ].inputTokens.toLocaleString()}
+                            </p>
                           </CardContent>
                         </Card>
                       </div>
@@ -1594,17 +1924,32 @@ export const AdminPage: React.FC = () => {
                       {canvasEventsLoading ? (
                         <div className="flex items-center justify-center py-12">
                           <RefreshCw className="h-5 w-5 animate-spin text-brand-cyan" />
-                          <span className="ml-2 text-neutral-500 font-mono text-sm">{t('admin.carregando_analytics')}</span>
+                          <span className="ml-2 text-neutral-500 font-mono text-sm">
+                            {t('admin.carregando_analytics')}
+                          </span>
                         </div>
                       ) : canvasEventStats ? (
                         <div className="space-y-6">
                           {/* Event type KPIs */}
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {canvasEventStats.byEvent.map((e) => (
-                              <Card key={e.event} className="bg-neutral-900/50 border border-white/10 rounded-md">
+                              <Card
+                                key={e.event}
+                                className="bg-neutral-900/50 border border-white/10 rounded-md"
+                              >
                                 <CardContent className="p-4">
-                                  <p className="text-xs text-neutral-500 font-mono mb-2">{e.event.replace(/_/g, ' ')}</p>
-                                  <p className={`text-2xl font-bold font-mono ${e.event === 'generation_failed' ? 'text-destructive' : e.event === 'generation_completed' ? 'text-green-400' : 'text-brand-cyan'}`}>
+                                  <p className="text-xs text-neutral-500 font-mono mb-2">
+                                    {e.event.replace(/_/g, ' ')}
+                                  </p>
+                                  <p
+                                    className={`text-2xl font-bold font-mono ${
+                                      e.event === 'generation_failed'
+                                        ? 'text-destructive'
+                                        : e.event === 'generation_completed'
+                                        ? 'text-green-400'
+                                        : 'text-brand-cyan'
+                                    }`}
+                                  >
                                     {e.count.toLocaleString()}
                                   </p>
                                 </CardContent>
@@ -1615,22 +1960,33 @@ export const AdminPage: React.FC = () => {
                           {/* Node type ranking */}
                           {canvasEventStats.byNodeType.length > 0 && (
                             <div>
-                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">{t('admin.ranking_de_nodes')}</p>
+                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
+                                {t('admin.ranking_de_nodes')}
+                              </p>
                               <div className="space-y-2">
                                 {canvasEventStats.byNodeType.map((n, i) => {
                                   const maxCount = canvasEventStats.byNodeType[0]?.count || 1;
                                   const pct = Math.round((n.count / maxCount) * 100);
                                   return (
                                     <div key={n.nodeType} className="flex items-center gap-3">
-                                      <span className="text-xs text-neutral-500 font-mono w-5 text-right">{i + 1}.</span>
-                                      <span className="text-sm text-neutral-300 font-mono w-28 truncate" title={n.nodeType}>{n.nodeType}</span>
+                                      <span className="text-xs text-neutral-500 font-mono w-5 text-right">
+                                        {i + 1}.
+                                      </span>
+                                      <span
+                                        className="text-sm text-neutral-300 font-mono w-28 truncate"
+                                        title={n.nodeType}
+                                      >
+                                        {n.nodeType}
+                                      </span>
                                       <div className="flex-1 h-6 bg-neutral-800/50 rounded-md overflow-hidden">
                                         <div
                                           className="h-full bg-brand-cyan/30 rounded-md transition-all duration-500"
                                           style={{ width: `${pct}%` }}
                                         />
                                       </div>
-                                      <span className="text-sm font-bold text-brand-cyan font-mono w-16 text-right">{n.count}</span>
+                                      <span className="text-sm font-bold text-brand-cyan font-mono w-16 text-right">
+                                        {n.count}
+                                      </span>
                                     </div>
                                   );
                                 })}
@@ -1641,11 +1997,20 @@ export const AdminPage: React.FC = () => {
                           {/* Daily timeline */}
                           {canvasEventStats.timeline.length > 0 && (
                             <div>
-                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">{t('admin.eventos_por_dia')}</p>
+                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
+                                {t('admin.eventos_por_dia')}
+                              </p>
                               <div className="h-[200px] w-full">
-                                <ChartContainer config={{ events: { label: 'Eventos', color: '#52ddeb' } }} className="aspect-auto h-full w-full">
+                                <ChartContainer
+                                  config={{ events: { label: 'Eventos', color: '#52ddeb' } }}
+                                  className="aspect-auto h-full w-full"
+                                >
                                   <AreaChart data={canvasEventStats.timeline}>
-                                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                                    <CartesianGrid
+                                      vertical={false}
+                                      strokeDasharray="3 3"
+                                      stroke="#333"
+                                    />
                                     <XAxis
                                       dataKey="date"
                                       tickLine={false}
@@ -1670,7 +2035,9 @@ export const AdminPage: React.FC = () => {
                         </div>
                       ) : (
                         <div className="text-center py-8">
-                          <p className="text-neutral-500 font-mono text-sm">{t('admin.sem_dados_de_canvas_events_ainda')}</p>
+                          <p className="text-neutral-500 font-mono text-sm">
+                            {t('admin.sem_dados_de_canvas_events_ainda')}
+                          </p>
                           <button
                             onClick={() => fetchCanvasEventStats()}
                             className="mt-3 text-brand-cyan hover:underline text-sm font-mono"
@@ -1684,7 +2051,10 @@ export const AdminPage: React.FC = () => {
                 </TabsContent>
               )}
 
-              <TabsContent value="users" className={`space-y-6 ${activeTab === 'users' ? 'admin-tab-enter' : ''}`}>
+              <TabsContent
+                value="users"
+                className={`space-y-6 ${activeTab === 'users' ? 'admin-tab-enter' : ''}`}
+              >
                 {/* Summary Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                   <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
@@ -1698,8 +2068,12 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                           {data.users.length}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.totalUsers')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.registeredInSystem')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.totalUsers')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.registeredInSystem')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1713,10 +2087,20 @@ export const AdminPage: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
+                          {
+                            data.users.filter(
+                              (u) =>
+                                u.subscriptionStatus === 'active' ||
+                                u.subscriptionStatus === 'trialing'
+                            ).length
+                          }
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.activeSubscriptions')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.usersWithActivePlan')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.activeSubscriptions')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.usersWithActivePlan')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1732,8 +2116,12 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {totals.monthlyCredits + totals.manualCredits}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.creditsDistributed')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalCreditsAssigned')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.creditsDistributed')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.totalCreditsAssigned')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1749,8 +2137,12 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.mockupsCreated')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalMockupsGenerated')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.mockupsCreated')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.totalMockupsGenerated')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1774,8 +2166,12 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.referralStats.totalReferralCount}
                           </p>
-                          <p className="text-sm text-neutral-500 font-mono">{t('admin.referrals')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalInvitesSent')}</p>
+                          <p className="text-sm text-neutral-500 font-mono">
+                            {t('admin.referrals')}
+                          </p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">
+                            {t('admin.totalInvitesSent')}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1791,8 +2187,12 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                             {data.referralStats.totalReferredUsers}
                           </p>
-                          <p className="text-sm text-neutral-500 font-mono">{t('admin.referredUsers')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.newAccountsViaInvite')}</p>
+                          <p className="text-sm text-neutral-500 font-mono">
+                            {t('admin.referredUsers')}
+                          </p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">
+                            {t('admin.newAccountsViaInvite')}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1808,8 +2208,12 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                             {data.referralStats.usersWithReferralCode}
                           </p>
-                          <p className="text-sm text-neutral-500 font-mono">{t('admin.activeLinks')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.referralCodesInUse')}</p>
+                          <p className="text-sm text-neutral-500 font-mono">
+                            {t('admin.activeLinks')}
+                          </p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">
+                            {t('admin.referralCodesInUse')}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1832,7 +2236,10 @@ export const AdminPage: React.FC = () => {
               </TabsContent>
 
               {/* Financial Tab */}
-              <TabsContent value="financial" className={`space-y-6 ${activeTab === 'financial' ? 'admin-tab-enter' : ''}`}>
+              <TabsContent
+                value="financial"
+                className={`space-y-6 ${activeTab === 'financial' ? 'admin-tab-enter' : ''}`}
+              >
                 {/* Financial Overview - Revenue, Cost, Profit */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   {/* Revenue Total Card */}
@@ -1850,8 +2257,12 @@ export const AdminPage: React.FC = () => {
                         <p className="text-sm font-semibold text-green-400 mb-2 font-mono">
                           {formatCurrency(data.totalRevenueUSD, 'USD')}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.totalRevenue')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.completedTransactions')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.totalRevenue')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.completedTransactions')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1863,19 +2274,33 @@ export const AdminPage: React.FC = () => {
                         <div className="p-3 bg-orange-500/10 rounded-md">
                           <Database className="h-6 w-6 text-orange-500" />
                         </div>
-                        <Badge variant="outline" className="text-[10px] bg-neutral-950/70 border-orange-500/30 text-orange-500">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] bg-neutral-950/70 border-orange-500/30 text-orange-500"
+                        >
                           {t('admin.estimated')}
                         </Badge>
                       </div>
                       <div>
                         <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                          {(data.totalApiCostUSD * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                          {(data.totalApiCostUSD * 6).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          })}
                         </p>
                         <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                          $ {data.totalApiCostUSD.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ${' '}
+                          {data.totalApiCostUSD.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.estimatedCost')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.basedOnUsage')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.estimatedCost')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.basedOnUsage')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1884,22 +2309,59 @@ export const AdminPage: React.FC = () => {
                   <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`p-3 rounded-md ${profitStats.isPositive ? 'bg-blue-500/10' : 'bg-destructive/10'}`}>
-                          <TrendingUp className={`h-6 w-6 ${profitStats.isPositive ? 'text-blue-500' : 'text-destructive'}`} />
+                        <div
+                          className={`p-3 rounded-md ${
+                            profitStats.isPositive ? 'bg-blue-500/10' : 'bg-destructive/10'
+                          }`}
+                        >
+                          <TrendingUp
+                            className={`h-6 w-6 ${
+                              profitStats.isPositive ? 'text-blue-500' : 'text-destructive'
+                            }`}
+                          />
                         </div>
-                        <Badge variant="outline" className={`text-[10px] bg-neutral-950/70 ${profitStats.isPositive ? 'border-blue-500/30 text-blue-500' : 'border-destructive/30 text-destructive'}`}>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] bg-neutral-950/70 ${
+                            profitStats.isPositive
+                              ? 'border-blue-500/30 text-blue-500'
+                              : 'border-destructive/30 text-destructive'
+                          }`}
+                        >
                           {profitStats.isPositive ? 'POSITIVO' : 'NEGATIVO'}
                         </Badge>
                       </div>
                       <div>
-                        <p className={`text-3xl font-bold mb-1 font-mono ${profitStats.isPositive ? 'text-blue-500' : 'text-destructive'}`}>
-                          {profitStats.isPositive ? '+' : ''}{profitStats.profitBRL.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        <p
+                          className={`text-3xl font-bold mb-1 font-mono ${
+                            profitStats.isPositive ? 'text-blue-500' : 'text-destructive'
+                          }`}
+                        >
+                          {profitStats.isPositive ? '+' : ''}
+                          {profitStats.profitBRL.toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          })}
                         </p>
-                        <p className={`text-sm font-semibold mb-2 font-mono ${profitStats.isPositive ? 'text-blue-400' : 'text-destructive'}`}>
-                          {profitStats.isPositive ? '+' : ''}{profitStats.profitUSD.toLocaleString('pt-BR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <p
+                          className={`text-sm font-semibold mb-2 font-mono ${
+                            profitStats.isPositive ? 'text-blue-400' : 'text-destructive'
+                          }`}
+                        >
+                          {profitStats.isPositive ? '+' : ''}
+                          {profitStats.profitUSD.toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'USD',
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.totalProfit')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.revenueMinusCost')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">
+                          {t('admin.totalProfit')}
+                        </p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">
+                          {t('admin.revenueMinusCost')}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1921,7 +2383,10 @@ export const AdminPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="h-[250px] w-full">
-                          <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
+                          <ChartContainer
+                            config={chartConfig}
+                            className="aspect-auto h-full w-full"
+                          >
                             <AreaChart
                               accessibilityLayer
                               data={data.revenueTimeSeries}
@@ -1935,11 +2400,11 @@ export const AdminPage: React.FC = () => {
                                 tickMargin={8}
                                 minTickGap={32}
                                 tickFormatter={(value) => {
-                                  const date = new Date(value)
-                                  return date.toLocaleDateString("pt-BR", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })
+                                  const date = new Date(value);
+                                  return date.toLocaleDateString('pt-BR', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                  });
                                 }}
                               />
                               <ChartTooltip
@@ -1949,7 +2414,10 @@ export const AdminPage: React.FC = () => {
                                     indicator="dot"
                                     formatter={(value, name) => {
                                       if (name === 'cumulativeBRL') {
-                                        return [formatCurrency(value as number, 'BRL'), 'Total BRL'];
+                                        return [
+                                          formatCurrency(value as number, 'BRL'),
+                                          'Total BRL',
+                                        ];
                                       }
                                       return [value, name];
                                     }}
@@ -1985,7 +2453,10 @@ export const AdminPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="h-[250px] w-full">
-                          <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
+                          <ChartContainer
+                            config={chartConfig}
+                            className="aspect-auto h-full w-full"
+                          >
                             <AreaChart
                               accessibilityLayer
                               data={data.costTimeSeries}
@@ -1999,11 +2470,11 @@ export const AdminPage: React.FC = () => {
                                 tickMargin={8}
                                 minTickGap={32}
                                 tickFormatter={(value) => {
-                                  const date = new Date(value)
-                                  return date.toLocaleDateString("pt-BR", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })
+                                  const date = new Date(value);
+                                  return date.toLocaleDateString('pt-BR', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                  });
                                 }}
                               />
                               <ChartTooltip
@@ -2013,8 +2484,14 @@ export const AdminPage: React.FC = () => {
                                     indicator="dot"
                                     formatter={(value, name) => {
                                       if (name === 'cumulative') {
-                                        const brl = ((value as number) * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                                        const usd = (value as number).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                        const brl = ((value as number) * 6).toLocaleString(
+                                          'pt-BR',
+                                          { style: 'currency', currency: 'BRL' }
+                                        );
+                                        const usd = (value as number).toLocaleString('pt-BR', {
+                                          minimumFractionDigits: 2,
+                                          maximumFractionDigits: 2,
+                                        });
                                         return [`${brl} ($ ${usd})`, 'Total'];
                                       }
                                       return [value, name];
@@ -2052,13 +2529,24 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                              {(dailyCostStats.averageCost * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              {(dailyCostStats.averageCost * 6).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
                             </p>
                             <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                              $ {dailyCostStats.averageCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${' '}
+                              {dailyCostStats.averageCost.toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </p>
-                            <p className="text-sm text-neutral-500 font-mono">{t('admin.averageDailyCost')}</p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.dailyCost')}</p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.averageDailyCost')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.dailyCost')}
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
@@ -2072,13 +2560,24 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                              {(dailyCostStats.maxCost * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              {(dailyCostStats.maxCost * 6).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
                             </p>
                             <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                              $ {dailyCostStats.maxCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${' '}
+                              {dailyCostStats.maxCost.toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </p>
-                            <p className="text-sm text-neutral-500 font-mono">{t('admin.maxDailyCost')}</p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.dailyCost')}</p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.maxDailyCost')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.dailyCost')}
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
@@ -2092,13 +2591,24 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                              {(dailyCostStats.last7DaysCost * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              {(dailyCostStats.last7DaysCost * 6).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
                             </p>
                             <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                              $ {dailyCostStats.last7DaysCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${' '}
+                              {dailyCostStats.last7DaysCost.toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </p>
-                            <p className="text-sm text-neutral-500 font-mono">{t('admin.last7DaysCost')}</p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.dailyCost')}</p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.last7DaysCost')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.dailyCost')}
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
@@ -2112,13 +2622,24 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                              {(dailyCostStats.last30DaysCost * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              {(dailyCostStats.last30DaysCost * 6).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
                             </p>
                             <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                              $ {dailyCostStats.last30DaysCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${' '}
+                              {dailyCostStats.last30DaysCost.toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </p>
-                            <p className="text-sm text-neutral-500 font-mono">{t('admin.last30DaysCost')}</p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.dailyCost')}</p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.last30DaysCost')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.dailyCost')}
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
@@ -2137,7 +2658,10 @@ export const AdminPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="h-[300px] w-full">
-                          <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
+                          <ChartContainer
+                            config={chartConfig}
+                            className="aspect-auto h-full w-full"
+                          >
                             <BarChart
                               accessibilityLayer
                               data={data.costTimeSeries}
@@ -2151,11 +2675,11 @@ export const AdminPage: React.FC = () => {
                                 tickMargin={8}
                                 minTickGap={32}
                                 tickFormatter={(value) => {
-                                  const date = new Date(value)
-                                  return date.toLocaleDateString("pt-BR", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })
+                                  const date = new Date(value);
+                                  return date.toLocaleDateString('pt-BR', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                  });
                                 }}
                               />
                               <ChartTooltip
@@ -2165,8 +2689,14 @@ export const AdminPage: React.FC = () => {
                                     indicator="line"
                                     formatter={(value, name) => {
                                       if (name === 'cost') {
-                                        const brl = ((value as number) * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                                        const usd = (value as number).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                        const brl = ((value as number) * 6).toLocaleString(
+                                          'pt-BR',
+                                          { style: 'currency', currency: 'BRL' }
+                                        );
+                                        const usd = (value as number).toLocaleString('pt-BR', {
+                                          minimumFractionDigits: 2,
+                                          maximumFractionDigits: 2,
+                                        });
                                         return [`${brl} ($ ${usd})`, t('admin.dailyCost')];
                                       }
                                       return [value, name];
@@ -2185,7 +2715,10 @@ export const AdminPage: React.FC = () => {
               </TabsContent>
 
               {/* ── Feedback & RAG ─────────────────────────────────────── */}
-              <TabsContent value="feedback-rag" className={`space-y-6 ${activeTab === 'feedback-rag' ? 'admin-tab-enter' : ''}`}>
+              <TabsContent
+                value="feedback-rag"
+                className={`space-y-6 ${activeTab === 'feedback-rag' ? 'admin-tab-enter' : ''}`}
+              >
                 {/* Feature filter + refresh row */}
                 <div className="flex items-center gap-3 flex-wrap">
                   <select
@@ -2196,8 +2729,20 @@ export const AdminPage: React.FC = () => {
                     }}
                     className="bg-neutral-900 border border-neutral-800 text-neutral-200 text-xs font-mono rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
                   >
-                    {['all', 'mockup', 'branding', 'canvas', 'creative', 'brand-intelligence', 'node-builder', 'chat', 'image-gen'].map(f => (
-                      <option key={f} value={f}>{f === 'all' ? 'All Features' : f}</option>
+                    {[
+                      'all',
+                      'mockup',
+                      'branding',
+                      'canvas',
+                      'creative',
+                      'brand-intelligence',
+                      'node-builder',
+                      'chat',
+                      'image-gen',
+                    ].map((f) => (
+                      <option key={f} value={f}>
+                        {f === 'all' ? 'All Features' : f}
+                      </option>
                     ))}
                   </select>
                   <Button
@@ -2221,30 +2766,54 @@ export const AdminPage: React.FC = () => {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.approval_rate')}</p>
-                          <p className="text-4xl font-bold text-brand-cyan">{feedbackStats.overall.approvalRate.toFixed(1)}%</p>
-                          <p className="text-xs text-neutral-500 mt-1">{feedbackStats.overall.total} total ratings (30d)</p>
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
+                            {t('admin.approval_rate')}
+                          </p>
+                          <p className="text-4xl font-bold text-brand-cyan">
+                            {feedbackStats.overall.approvalRate.toFixed(1)}%
+                          </p>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            {feedbackStats.overall.total} total ratings (30d)
+                          </p>
                         </CardContent>
                       </Card>
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">Thumbs Up</p>
-                          <p className="text-4xl font-bold text-green-400">{feedbackStats.overall.up}</p>
-                          <p className="text-xs text-neutral-500 mt-1">{t('admin.vectorizationeligible')}</p>
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
+                            Thumbs Up
+                          </p>
+                          <p className="text-4xl font-bold text-green-400">
+                            {feedbackStats.overall.up}
+                          </p>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            {t('admin.vectorizationeligible')}
+                          </p>
                         </CardContent>
                       </Card>
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.thumbs_down')}</p>
-                          <p className="text-4xl font-bold text-destructive">{feedbackStats.overall.down}</p>
-                          <p className="text-xs text-neutral-500 mt-1">{t('admin.mongoonly_review_below')}</p>
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
+                            {t('admin.thumbs_down')}
+                          </p>
+                          <p className="text-4xl font-bold text-destructive">
+                            {feedbackStats.overall.down}
+                          </p>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            {t('admin.mongoonly_review_below')}
+                          </p>
                         </CardContent>
                       </Card>
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">{t('admin.vectorized_proxy')}</p>
-                          <p className="text-4xl font-bold text-purple-400">{feedbackStats.vectorizedCount}</p>
-                          <p className="text-xs text-neutral-500 mt-1">{t('admin.uprated_docs_in_window')}</p>
+                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
+                            {t('admin.vectorized_proxy')}
+                          </p>
+                          <p className="text-4xl font-bold text-purple-400">
+                            {feedbackStats.vectorizedCount}
+                          </p>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            {t('admin.uprated_docs_in_window')}
+                          </p>
                         </CardContent>
                       </Card>
                     </div>
@@ -2253,18 +2822,51 @@ export const AdminPage: React.FC = () => {
                     {feedbackStats.timeSeries.length > 0 && (
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.daily_feedback_30d')}</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">
+                            {t('admin.daily_feedback_30d')}
+                          </CardTitle>
                         </CardHeader>
                         <CardContent>
                           <ResponsiveContainer width="100%" height={220}>
-                            <LineChart data={feedbackStats.timeSeries} margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
+                            <LineChart
+                              data={feedbackStats.timeSeries}
+                              margin={{ top: 4, right: 16, bottom: 4, left: 0 }}
+                            >
                               <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
-                              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#737373', fontFamily: 'monospace' }} tickFormatter={v => v.slice(5)} />
-                              <YAxis tick={{ fontSize: 10, fill: '#737373' }} allowDecimals={false} />
-                              <Tooltip contentStyle={{ background: '#171717', border: '1px solid #404040', borderRadius: 8 }} labelStyle={{ color: '#a3a3a3', fontSize: 11 }} />
+                              <XAxis
+                                dataKey="date"
+                                tick={{ fontSize: 10, fill: '#737373', fontFamily: 'monospace' }}
+                                tickFormatter={(v) => v.slice(5)}
+                              />
+                              <YAxis
+                                tick={{ fontSize: 10, fill: '#737373' }}
+                                allowDecimals={false}
+                              />
+                              <Tooltip
+                                contentStyle={{
+                                  background: '#171717',
+                                  border: '1px solid #404040',
+                                  borderRadius: 8,
+                                }}
+                                labelStyle={{ color: '#a3a3a3', fontSize: 11 }}
+                              />
                               <Legend wrapperStyle={{ fontSize: 11 }} />
-                              <Line type="monotone" dataKey="up" stroke="#22d3ee" strokeWidth={2} dot={false} name="Up" />
-                              <Line type="monotone" dataKey="down" stroke="#f87171" strokeWidth={2} dot={false} name="Down" />
+                              <Line
+                                type="monotone"
+                                dataKey="up"
+                                stroke="#22d3ee"
+                                strokeWidth={2}
+                                dot={false}
+                                name="Up"
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="down"
+                                stroke="#f87171"
+                                strokeWidth={2}
+                                dot={false}
+                                name="Down"
+                              />
                             </LineChart>
                           </ResponsiveContainer>
                         </CardContent>
@@ -2275,28 +2877,69 @@ export const AdminPage: React.FC = () => {
                     {feedbackStats.featureStats.length > 0 && (
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.feature_breakdown')}</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">
+                            {t('admin.feature_breakdown')}
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           <Table>
                             <TableHeader>
                               <TableRow className="border-neutral-800 hover:bg-transparent">
-                                <TableHead><MicroTitle as="span" className="uppercase">Feature</MicroTitle></TableHead>
-                                <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down')}</MicroTitle></TableHead>
-                                <TableHead><MicroTitle as="span" className="uppercase">Total</MicroTitle></TableHead>
-                                <TableHead><MicroTitle as="span" className="uppercase">{t('admin.approval')}</MicroTitle></TableHead>
+                                <TableHead>
+                                  <MicroTitle as="span" className="uppercase">
+                                    Feature
+                                  </MicroTitle>
+                                </TableHead>
+                                <TableHead>
+                                  <MicroTitle as="span" className="uppercase">
+                                    Up
+                                  </MicroTitle>
+                                </TableHead>
+                                <TableHead>
+                                  <MicroTitle as="span" className="uppercase">
+                                    {t('admin.down')}
+                                  </MicroTitle>
+                                </TableHead>
+                                <TableHead>
+                                  <MicroTitle as="span" className="uppercase">
+                                    Total
+                                  </MicroTitle>
+                                </TableHead>
+                                <TableHead>
+                                  <MicroTitle as="span" className="uppercase">
+                                    {t('admin.approval')}
+                                  </MicroTitle>
+                                </TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {feedbackStats.featureStats.map((row: any) => (
-                                <TableRow key={row.feature} className="border-white/10 hover:bg-white/5">
-                                  <TableCell className="font-mono text-xs text-neutral-200">{row.feature}</TableCell>
-                                  <TableCell className="text-green-400 text-xs font-mono">{row.up}</TableCell>
-                                  <TableCell className="text-destructive text-xs font-mono">{row.down}</TableCell>
-                                  <TableCell className="text-xs font-mono text-neutral-400">{row.total}</TableCell>
+                                <TableRow
+                                  key={row.feature}
+                                  className="border-white/10 hover:bg-white/5"
+                                >
+                                  <TableCell className="font-mono text-xs text-neutral-200">
+                                    {row.feature}
+                                  </TableCell>
+                                  <TableCell className="text-green-400 text-xs font-mono">
+                                    {row.up}
+                                  </TableCell>
+                                  <TableCell className="text-destructive text-xs font-mono">
+                                    {row.down}
+                                  </TableCell>
+                                  <TableCell className="text-xs font-mono text-neutral-400">
+                                    {row.total}
+                                  </TableCell>
                                   <TableCell>
-                                    <Badge className={`text-xs font-mono ${row.approvalRate >= 70 ? 'bg-emerald-900/40 text-green-400 border-emerald-800' : row.approvalRate >= 40 ? 'bg-yellow-900/40 text-yellow-400 border-yellow-800' : 'bg-red-900/40 text-destructive border-red-800'}`}>
+                                    <Badge
+                                      className={`text-xs font-mono ${
+                                        row.approvalRate >= 70
+                                          ? 'bg-emerald-900/40 text-green-400 border-emerald-800'
+                                          : row.approvalRate >= 40
+                                          ? 'bg-yellow-900/40 text-yellow-400 border-yellow-800'
+                                          : 'bg-red-900/40 text-destructive border-red-800'
+                                      }`}
+                                    >
                                       {row.approvalRate.toFixed(1)}%
                                     </Badge>
                                   </TableCell>
@@ -2313,28 +2956,59 @@ export const AdminPage: React.FC = () => {
                       {/* Models */}
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_models_by_approval')}</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">
+                            {t('admin.top_models_by_approval')}
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           {feedbackStats.modelStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_data_yet_min_5_ratings_required')}</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">
+                              {t('admin.no_data_yet_min_5_ratings_required')}
+                            </p>
                           ) : (
                             <Table>
                               <TableHeader>
                                 <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead><MicroTitle as="span" className="uppercase">Model</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down_2')}</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      Model
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      Up
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      {t('admin.down_2')}
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      %
+                                    </MicroTitle>
+                                  </TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {feedbackStats.modelStats.map((r: any) => (
-                                  <TableRow key={r.model} className="border-white/10 hover:bg-white/5">
-                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.model}</TableCell>
-                                    <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
-                                    <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
-                                    <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
+                                  <TableRow
+                                    key={r.model}
+                                    className="border-white/10 hover:bg-white/5"
+                                  >
+                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
+                                      {r.model}
+                                    </TableCell>
+                                    <TableCell className="text-green-400 text-xs font-mono">
+                                      {r.up}
+                                    </TableCell>
+                                    <TableCell className="text-destructive text-xs font-mono">
+                                      {r.down}
+                                    </TableCell>
+                                    <TableCell className="text-xs font-mono text-brand-cyan">
+                                      {r.approvalRate?.toFixed(1)}%
+                                    </TableCell>
                                   </TableRow>
                                 ))}
                               </TableBody>
@@ -2346,28 +3020,59 @@ export const AdminPage: React.FC = () => {
                       {/* Design Types */}
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_design_types')}</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">
+                            {t('admin.top_design_types')}
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           {feedbackStats.designTypeStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_data_yet_min_5_ratings_required_2')}</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">
+                              {t('admin.no_data_yet_min_5_ratings_required_2')}
+                            </p>
                           ) : (
                             <Table>
                               <TableHeader>
                                 <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead><MicroTitle as="span" className="uppercase">Type</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down_3')}</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      Type
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      Up
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      {t('admin.down_3')}
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      %
+                                    </MicroTitle>
+                                  </TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {feedbackStats.designTypeStats.map((r: any) => (
-                                  <TableRow key={r.designType} className="border-white/10 hover:bg-white/5">
-                                    <TableCell className="font-mono text-xs text-neutral-300">{r.designType}</TableCell>
-                                    <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
-                                    <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
-                                    <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
+                                  <TableRow
+                                    key={r.designType}
+                                    className="border-white/10 hover:bg-white/5"
+                                  >
+                                    <TableCell className="font-mono text-xs text-neutral-300">
+                                      {r.designType}
+                                    </TableCell>
+                                    <TableCell className="text-green-400 text-xs font-mono">
+                                      {r.up}
+                                    </TableCell>
+                                    <TableCell className="text-destructive text-xs font-mono">
+                                      {r.down}
+                                    </TableCell>
+                                    <TableCell className="text-xs font-mono text-brand-cyan">
+                                      {r.approvalRate?.toFixed(1)}%
+                                    </TableCell>
                                   </TableRow>
                                 ))}
                               </TableBody>
@@ -2379,28 +3084,59 @@ export const AdminPage: React.FC = () => {
                       {/* Vibes */}
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_vibes')}</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">
+                            {t('admin.top_vibes')}
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           {feedbackStats.vibeStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_data_yet_min_5_ratings_required_3')}</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">
+                              {t('admin.no_data_yet_min_5_ratings_required_3')}
+                            </p>
                           ) : (
                             <Table>
                               <TableHeader>
                                 <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.vibe')}</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down_4')}</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">%</MicroTitle></TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      {t('admin.vibe')}
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      Up
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      {t('admin.down_4')}
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      %
+                                    </MicroTitle>
+                                  </TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {feedbackStats.vibeStats.map((r: any) => (
-                                  <TableRow key={r.vibeId} className="border-white/10 hover:bg-white/5">
-                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.vibeId}</TableCell>
-                                    <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
-                                    <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
-                                    <TableCell className="text-xs font-mono text-brand-cyan">{r.approvalRate?.toFixed(1)}%</TableCell>
+                                  <TableRow
+                                    key={r.vibeId}
+                                    className="border-white/10 hover:bg-white/5"
+                                  >
+                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
+                                      {r.vibeId}
+                                    </TableCell>
+                                    <TableCell className="text-green-400 text-xs font-mono">
+                                      {r.up}
+                                    </TableCell>
+                                    <TableCell className="text-destructive text-xs font-mono">
+                                      {r.down}
+                                    </TableCell>
+                                    <TableCell className="text-xs font-mono text-brand-cyan">
+                                      {r.approvalRate?.toFixed(1)}%
+                                    </TableCell>
                                   </TableRow>
                                 ))}
                               </TableBody>
@@ -2412,28 +3148,59 @@ export const AdminPage: React.FC = () => {
                       {/* Brand Guidelines */}
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.top_brand_guidelines')}</CardTitle>
+                          <CardTitle className="text-sm font-mono text-neutral-300">
+                            {t('admin.top_brand_guidelines')}
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                           {feedbackStats.brandGuidelineStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_data_yet')}</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">
+                              {t('admin.no_data_yet')}
+                            </p>
                           ) : (
                             <Table>
                               <TableHeader>
                                 <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.guideline_id')}</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Up</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">{t('admin.down_5')}</MicroTitle></TableHead>
-                                  <TableHead><MicroTitle as="span" className="uppercase">Total</MicroTitle></TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      {t('admin.guideline_id')}
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      Up
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      {t('admin.down_5')}
+                                    </MicroTitle>
+                                  </TableHead>
+                                  <TableHead>
+                                    <MicroTitle as="span" className="uppercase">
+                                      Total
+                                    </MicroTitle>
+                                  </TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {feedbackStats.brandGuidelineStats.map((r: any) => (
-                                  <TableRow key={r.brandGuidelineId} className="border-white/10 hover:bg-white/5">
-                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">{r.brandGuidelineId}</TableCell>
-                                    <TableCell className="text-green-400 text-xs font-mono">{r.up}</TableCell>
-                                    <TableCell className="text-destructive text-xs font-mono">{r.down}</TableCell>
-                                    <TableCell className="text-xs font-mono text-neutral-400">{r.total}</TableCell>
+                                  <TableRow
+                                    key={r.brandGuidelineId}
+                                    className="border-white/10 hover:bg-white/5"
+                                  >
+                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
+                                      {r.brandGuidelineId}
+                                    </TableCell>
+                                    <TableCell className="text-green-400 text-xs font-mono">
+                                      {r.up}
+                                    </TableCell>
+                                    <TableCell className="text-destructive text-xs font-mono">
+                                      {r.down}
+                                    </TableCell>
+                                    <TableCell className="text-xs font-mono text-neutral-400">
+                                      {r.total}
+                                    </TableCell>
                                   </TableRow>
                                 ))}
                               </TableBody>
@@ -2448,21 +3215,37 @@ export const AdminPage: React.FC = () => {
                       {/* Tags mais utilizadas */}
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.tags_mais_utilizadas')}</CardTitle>
-                          <CardDescription className="text-xs text-neutral-500">{t('admin.top_20_by_usage_count')}</CardDescription>
+                          <CardTitle className="text-sm font-mono text-neutral-300">
+                            {t('admin.tags_mais_utilizadas')}
+                          </CardTitle>
+                          <CardDescription className="text-xs text-neutral-500">
+                            {t('admin.top_20_by_usage_count')}
+                          </CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="flex flex-wrap gap-2">
                             {feedbackStats.tagsMostUsed.length === 0 ? (
-                              <p className="text-xs text-neutral-500 font-mono">{t('admin.no_tag_data_yet')}</p>
-                            ) : feedbackStats.tagsMostUsed.map((t: any, i: number) => (
-                              <div key={i} className="flex items-center gap-1">
-                                <Badge className={`text-xs font-mono gap-1 ${t.category === 'branding' ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30' : t.category === 'category' ? 'bg-purple-900/30 text-purple-300 border-purple-800/50' : 'bg-amber-900/30 text-amber-300 border-amber-800/50'}`}>
-                                  {t.tag}
-                                  <span className="opacity-60">×{t.count}</span>
-                                </Badge>
-                              </div>
-                            ))}
+                              <p className="text-xs text-neutral-500 font-mono">
+                                {t('admin.no_tag_data_yet')}
+                              </p>
+                            ) : (
+                              feedbackStats.tagsMostUsed.map((t: any, i: number) => (
+                                <div key={i} className="flex items-center gap-1">
+                                  <Badge
+                                    className={`text-xs font-mono gap-1 ${
+                                      t.category === 'branding'
+                                        ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                                        : t.category === 'category'
+                                        ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
+                                        : 'bg-amber-900/30 text-amber-300 border-amber-800/50'
+                                    }`}
+                                  >
+                                    {t.tag}
+                                    <span className="opacity-60">×{t.count}</span>
+                                  </Badge>
+                                </div>
+                              ))
+                            )}
                           </div>
                         </CardContent>
                       </Card>
@@ -2470,21 +3253,39 @@ export const AdminPage: React.FC = () => {
                       {/* Tags mais votadas */}
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-mono text-neutral-300">{t('admin.tags_mais_votadas')}</CardTitle>
-                          <CardDescription className="text-xs text-neutral-500">{t('admin.top_20_by_approval_rate_min_3_ratings')}</CardDescription>
+                          <CardTitle className="text-sm font-mono text-neutral-300">
+                            {t('admin.tags_mais_votadas')}
+                          </CardTitle>
+                          <CardDescription className="text-xs text-neutral-500">
+                            {t('admin.top_20_by_approval_rate_min_3_ratings')}
+                          </CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="flex flex-wrap gap-2">
                             {feedbackStats.tagsMostUpvoted.length === 0 ? (
-                              <p className="text-xs text-neutral-500 font-mono">{t('admin.no_data_yet_min_3_ratings_required')}</p>
-                            ) : feedbackStats.tagsMostUpvoted.map((t: any, i: number) => (
-                              <div key={i} className="flex items-center gap-1">
-                                <Badge className={`text-xs font-mono gap-1 ${t.category === 'branding' ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30' : t.category === 'category' ? 'bg-purple-900/30 text-purple-300 border-purple-800/50' : 'bg-amber-900/30 text-amber-300 border-amber-800/50'}`}>
-                                  {t.tag}
-                                  <span className="opacity-60">{t.approvalRate.toFixed(0)}% ({t.up}↑{t.down}↓)</span>
-                                </Badge>
-                              </div>
-                            ))}
+                              <p className="text-xs text-neutral-500 font-mono">
+                                {t('admin.no_data_yet_min_3_ratings_required')}
+                              </p>
+                            ) : (
+                              feedbackStats.tagsMostUpvoted.map((t: any, i: number) => (
+                                <div key={i} className="flex items-center gap-1">
+                                  <Badge
+                                    className={`text-xs font-mono gap-1 ${
+                                      t.category === 'branding'
+                                        ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                                        : t.category === 'category'
+                                        ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
+                                        : 'bg-amber-900/30 text-amber-300 border-amber-800/50'
+                                    }`}
+                                  >
+                                    {t.tag}
+                                    <span className="opacity-60">
+                                      {t.approvalRate.toFixed(0)}% ({t.up}↑{t.down}↓)
+                                    </span>
+                                  </Badge>
+                                </div>
+                              ))
+                            )}
                           </div>
                         </CardContent>
                       </Card>
@@ -2492,43 +3293,94 @@ export const AdminPage: React.FC = () => {
 
                     {/* Recent downvotes */}
                     <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                      <CardHeader className="pb-2 cursor-pointer" onClick={() => setDownvotesExpanded(e => !e)}>
+                      <CardHeader
+                        className="pb-2 cursor-pointer"
+                        onClick={() => setDownvotesExpanded((e) => !e)}
+                      >
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm font-mono text-neutral-300 flex items-center gap-2">
                             <ThumbsDown className="h-4 w-4 text-destructive" />
                             Recent Thumbs Down (last 20) — manual curation queue
                           </CardTitle>
-                          <ChevronRight className={`h-4 w-4 text-neutral-500 transition-transform ${downvotesExpanded ? 'rotate-90' : ''}`} />
+                          <ChevronRight
+                            className={`h-4 w-4 text-neutral-500 transition-transform ${
+                              downvotesExpanded ? 'rotate-90' : ''
+                            }`}
+                          />
                         </div>
                       </CardHeader>
                       {downvotesExpanded && (
                         <CardContent className="p-0">
                           {feedbackStats.recentDownvotes.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">{t('admin.no_downvotes_in_this_window')}</p>
+                            <p className="text-xs text-neutral-500 font-mono p-4">
+                              {t('admin.no_downvotes_in_this_window')}
+                            </p>
                           ) : (
                             <div className="overflow-x-auto">
                               <Table>
                                 <TableHeader>
                                   <TableRow className="border-neutral-800 hover:bg-transparent">
-                                    <TableHead><MicroTitle as="span" className="uppercase">Prompt</MicroTitle></TableHead>
-                                    <TableHead><MicroTitle as="span" className="uppercase">Feature</MicroTitle></TableHead>
-                                    <TableHead><MicroTitle as="span" className="uppercase">Model</MicroTitle></TableHead>
-                                    <TableHead><MicroTitle as="span" className="uppercase">Tags</MicroTitle></TableHead>
-                                    <TableHead><MicroTitle as="span" className="uppercase">Date</MicroTitle></TableHead>
+                                    <TableHead>
+                                      <MicroTitle as="span" className="uppercase">
+                                        Prompt
+                                      </MicroTitle>
+                                    </TableHead>
+                                    <TableHead>
+                                      <MicroTitle as="span" className="uppercase">
+                                        Feature
+                                      </MicroTitle>
+                                    </TableHead>
+                                    <TableHead>
+                                      <MicroTitle as="span" className="uppercase">
+                                        Model
+                                      </MicroTitle>
+                                    </TableHead>
+                                    <TableHead>
+                                      <MicroTitle as="span" className="uppercase">
+                                        Tags
+                                      </MicroTitle>
+                                    </TableHead>
+                                    <TableHead>
+                                      <MicroTitle as="span" className="uppercase">
+                                        Date
+                                      </MicroTitle>
+                                    </TableHead>
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                   {feedbackStats.recentDownvotes.map((r: any, i: number) => (
-                                    <TableRow key={r.generationId || i} className="border-white/10 hover:bg-white/5">
+                                    <TableRow
+                                      key={r.generationId || i}
+                                      className="border-white/10 hover:bg-white/5"
+                                    >
                                       <TableCell className="font-mono text-xs text-neutral-400 max-w-[200px]">
-                                        <span title={r.prompt}>{r.prompt ? r.prompt.slice(0, 80) + (r.prompt.length > 80 ? '…' : '') : '—'}</span>
+                                        <span title={r.prompt}>
+                                          {r.prompt
+                                            ? r.prompt.slice(0, 80) +
+                                              (r.prompt.length > 80 ? '…' : '')
+                                            : '—'}
+                                        </span>
                                       </TableCell>
-                                      <TableCell className="text-xs font-mono text-neutral-300">{r.feature}</TableCell>
-                                      <TableCell className="text-xs font-mono text-neutral-400 max-w-[100px] truncate">{r.model || '—'}</TableCell>
+                                      <TableCell className="text-xs font-mono text-neutral-300">
+                                        {r.feature}
+                                      </TableCell>
+                                      <TableCell className="text-xs font-mono text-neutral-400 max-w-[100px] truncate">
+                                        {r.model || '—'}
+                                      </TableCell>
                                       <TableCell className="text-xs">
-                                        {r.tags ? Object.entries(r.tags).flatMap(([, arr]: any) => arr || []).slice(0, 3).map((tag: string, j: number) => (
-                                          <Badge key={j} className="mr-1 text-[10px] bg-neutral-800 text-neutral-400 border-neutral-700">{tag}</Badge>
-                                        )) : '—'}
+                                        {r.tags
+                                          ? Object.entries(r.tags)
+                                              .flatMap(([, arr]: any) => arr || [])
+                                              .slice(0, 3)
+                                              .map((tag: string, j: number) => (
+                                                <Badge
+                                                  key={j}
+                                                  className="mr-1 text-[10px] bg-neutral-800 text-neutral-400 border-neutral-700"
+                                                >
+                                                  {tag}
+                                                </Badge>
+                                              ))
+                                          : '—'}
                                       </TableCell>
                                       <TableCell className="text-xs font-mono text-neutral-500">
                                         {r.createdAt ? formatDate(r.createdAt) : '—'}
@@ -2546,15 +3398,24 @@ export const AdminPage: React.FC = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 gap-3 text-neutral-500">
                     <BarChart2 className="h-10 w-10" />
-                    <p className="font-mono text-sm">{t('admin.click_refresh_to_load_feedback_analytics')}</p>
-                    <Button size="sm" onClick={() => fetchFeedbackStats(feedbackFeatureFilter)} className="bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/20">
+                    <p className="font-mono text-sm">
+                      {t('admin.click_refresh_to_load_feedback_analytics')}
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => fetchFeedbackStats(feedbackFeatureFilter)}
+                      className="bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/20"
+                    >
                       Load Stats
                     </Button>
                   </div>
                 )}
               </TabsContent>
 
-              <TabsContent value="references" className={`space-y-6 ${activeTab === 'references' ? 'admin-tab-enter' : ''}`}>
+              <TabsContent
+                value="references"
+                className={`space-y-6 ${activeTab === 'references' ? 'admin-tab-enter' : ''}`}
+              >
                 <AdminReferenceLibrary />
               </TabsContent>
             </Tabs>
@@ -2591,23 +3452,51 @@ export const AdminPage: React.FC = () => {
               {isHistoryLoading && historyRecords.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
                   <RotateCcw className="h-8 w-8 text-brand-cyan animate-spin" />
-                  <p className="text-neutral-500 font-mono text-sm">{t('admin.carregando_registros')}</p>
+                  <p className="text-neutral-500 font-mono text-sm">
+                    {t('admin.carregando_registros')}
+                  </p>
                 </div>
               ) : historyRecords.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-neutral-500">
-                  <p className="font-mono text-sm">{t('admin.nenhum_registro_encontrado_para_este_usu')}</p>
+                  <p className="font-mono text-sm">
+                    {t('admin.nenhum_registro_encontrado_para_este_usu')}
+                  </p>
                 </div>
               ) : (
                 <div className="p-4">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-neutral-800 hover:bg-transparent">
-                        <TableHead><MicroTitle as="span" className="uppercase">{t('admin.data')}</MicroTitle></TableHead>
-                        <TableHead><MicroTitle as="span" className="uppercase">Feature</MicroTitle></TableHead>
-                        <TableHead><MicroTitle as="span" className="uppercase">{t('admin.modelo')}</MicroTitle></TableHead>
-                        <TableHead><MicroTitle as="span" className="uppercase">{t('admin.tipo')}</MicroTitle></TableHead>
-                        <TableHead><MicroTitle as="span" className="uppercase">{t('admin.stats')}</MicroTitle></TableHead>
-                        <TableHead className="text-right"><MicroTitle as="span" className="uppercase">{t('admin.crditos')}</MicroTitle></TableHead>
+                        <TableHead>
+                          <MicroTitle as="span" className="uppercase">
+                            {t('admin.data')}
+                          </MicroTitle>
+                        </TableHead>
+                        <TableHead>
+                          <MicroTitle as="span" className="uppercase">
+                            Feature
+                          </MicroTitle>
+                        </TableHead>
+                        <TableHead>
+                          <MicroTitle as="span" className="uppercase">
+                            {t('admin.modelo')}
+                          </MicroTitle>
+                        </TableHead>
+                        <TableHead>
+                          <MicroTitle as="span" className="uppercase">
+                            {t('admin.tipo')}
+                          </MicroTitle>
+                        </TableHead>
+                        <TableHead>
+                          <MicroTitle as="span" className="uppercase">
+                            {t('admin.stats')}
+                          </MicroTitle>
+                        </TableHead>
+                        <TableHead className="text-right">
+                          <MicroTitle as="span" className="uppercase">
+                            {t('admin.crditos')}
+                          </MicroTitle>
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -2619,29 +3508,42 @@ export const AdminPage: React.FC = () => {
                               month: '2-digit',
                               year: '2-digit',
                               hour: '2-digit',
-                              minute: '2-digit'
+                              minute: '2-digit',
                             })}
                           </TableCell>
                           <TableCell className="py-3">
-                            <Badge variant="outline" className="text-[10px] bg-neutral-800/50 border-neutral-700/50 text-neutral-400 capitalize">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] bg-neutral-800/50 border-neutral-700/50 text-neutral-400 capitalize"
+                            >
                               {record.feature}
                             </Badge>
                           </TableCell>
                           <TableCell className="py-3">
-                            <span className="text-[11px] font-mono text-neutral-300">{record.model || '—'}</span>
+                            <span className="text-[11px] font-mono text-neutral-300">
+                              {record.model || '—'}
+                            </span>
                           </TableCell>
                           <TableCell className="py-3">
-                            <Badge variant="outline" className={cn(
-                              "text-[10px] border-none",
-                              record.imagesGenerated > 0 ? "bg-brand-cyan/20 text-brand-cyan" : "bg-purple-500/20 text-purple-400"
-                            )}>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'text-[10px] border-none',
+                                record.imagesGenerated > 0
+                                  ? 'bg-brand-cyan/20 text-brand-cyan'
+                                  : 'bg-purple-500/20 text-purple-400'
+                              )}
+                            >
                               {record.imagesGenerated > 0 ? 'Imagem' : 'Texto/Branding'}
                             </Badge>
                           </TableCell>
                           <TableCell className="py-3">
                             <div className="flex flex-col gap-0.5">
                               {record.imagesGenerated > 0 && (
-                                <span className="text-[10px] font-mono text-neutral-300">{record.imagesGenerated} img {record.resolution && `(${record.resolution})`}</span>
+                                <span className="text-[10px] font-mono text-neutral-300">
+                                  {record.imagesGenerated} img{' '}
+                                  {record.resolution && `(${record.resolution})`}
+                                </span>
                               )}
                               {(record.inputTokens > 0 || record.outputTokens > 0) && (
                                 <span className="text-[10px] font-mono text-neutral-500">
@@ -2651,10 +3553,12 @@ export const AdminPage: React.FC = () => {
                             </div>
                           </TableCell>
                           <TableCell className="py-3 text-right">
-                            <span className={cn(
-                              "text-[11px] font-mono font-bold",
-                              record.creditsDeducted > 0 ? "text-brand-cyan" : "text-neutral-600"
-                            )}>
+                            <span
+                              className={cn(
+                                'text-[11px] font-mono font-bold',
+                                record.creditsDeducted > 0 ? 'text-brand-cyan' : 'text-neutral-600'
+                              )}
+                            >
                               {record.creditsDeducted > 0 ? `-${record.creditsDeducted}` : '0'}
                             </span>
                           </TableCell>
@@ -2668,7 +3572,12 @@ export const AdminPage: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => fetchUserHistory(selectedUser!.id, historyPagination.offset + historyPagination.limit)}
+                        onClick={() =>
+                          fetchUserHistory(
+                            selectedUser!.id,
+                            historyPagination.offset + historyPagination.limit
+                          )
+                        }
                         disabled={isHistoryLoading}
                         className="bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700"
                       >
@@ -2694,4 +3603,3 @@ export const AdminPage: React.FC = () => {
 };
 
 export default AdminPage;
-

@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from 'react';
 import {
   ColumnDef,
   ColumnSizingState,
@@ -11,15 +11,15 @@ import {
   useReactTable,
   VisibilityState,
   ColumnOrderState,
-} from "@tanstack/react-table"
+} from '@tanstack/react-table';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, GripVertical } from "lucide-react"
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, GripVertical } from 'lucide-react';
 
 // Drag and drop imports
 import {
@@ -32,14 +32,14 @@ import {
   type DragEndEvent,
   useSensor,
   useSensors,
-} from "@dnd-kit/core"
+} from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   horizontalListSortingStrategy,
   useSortable,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import {
   Table,
@@ -48,38 +48,31 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { SearchBar } from "@/components/ui/SearchBar"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/table';
+import { SearchBar } from '@/components/ui/SearchBar';
+import { cn } from '@/lib/utils';
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  className?: string
-  searchKey?: string
-  searchPlaceholder?: string
-  title?: string
-  icon?: React.ReactNode
-  initialColumnVisibility?: VisibilityState
-  initialColumnOrder?: string[]
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  className?: string;
+  searchKey?: string;
+  searchPlaceholder?: string;
+  title?: string;
+  icon?: React.ReactNode;
+  initialColumnVisibility?: VisibilityState;
+  initialColumnOrder?: string[];
 }
 
 // Draggable Header Component
 interface DraggableHeaderProps {
-  header: any
+  header: any;
 }
 
 function DraggableHeader({ header }: DraggableHeaderProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: header.column.id,
-  })
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Translate.toString(transform),
@@ -88,14 +81,10 @@ function DraggableHeader({ header }: DraggableHeaderProps) {
     opacity: isDragging ? 0.8 : 1,
     zIndex: isDragging ? 100 : 0,
     position: 'relative',
-  }
+  };
 
   return (
-    <TableHead
-      ref={setNodeRef}
-      style={style}
-      className="relative group p-0"
-    >
+    <TableHead ref={setNodeRef} style={style} className="relative group p-0">
       <div className="flex h-full items-center">
         {/* Drag Handle */}
         <div
@@ -108,8 +97,9 @@ function DraggableHeader({ header }: DraggableHeaderProps) {
 
         <div
           className={cn(
-            "px-2 py-2 flex items-center gap-2 h-full flex-1 min-w-0",
-            header.column.getCanSort() && "cursor-pointer select-none hover:text-neutral-200 transition-colors"
+            'px-2 py-2 flex items-center gap-2 h-full flex-1 min-w-0',
+            header.column.getCanSort() &&
+              'cursor-pointer select-none hover:text-neutral-200 transition-colors'
           )}
           onClick={header.column.getToggleSortingHandler()}
         >
@@ -117,10 +107,7 @@ function DraggableHeader({ header }: DraggableHeaderProps) {
             <div className="flex-1 truncate">
               {header.isPlaceholder
                 ? null
-                : flexRender(
-                  header.column.columnDef.header,
-                  header.getContext()
-                )}
+                : flexRender(header.column.columnDef.header, header.getContext())}
             </div>
             {header.column.getCanSort() && (
               <div className="w-4 h-4 flex-shrink-0">
@@ -128,8 +115,8 @@ function DraggableHeader({ header }: DraggableHeaderProps) {
                   asc: <ArrowUp className="h-3 w-3" />,
                   desc: <ArrowDown className="h-3 w-3" />,
                 }[header.column.getIsSorted() as string] ?? (
-                    <ArrowUpDown className="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity" />
-                  )}
+                  <ArrowUpDown className="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity" />
+                )}
               </div>
             )}
           </div>
@@ -142,13 +129,13 @@ function DraggableHeader({ header }: DraggableHeaderProps) {
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
           className={cn(
-            "absolute right-0 top-0 h-full w-1 cursor-col-resize bg-neutral-700/50 opacity-0 group-hover:opacity-100 transition-opacity z-10",
-            header.column.getIsResizing() && "bg-neutral-400 opacity-100 w-0.5"
+            'absolute right-0 top-0 h-full w-1 cursor-col-resize bg-neutral-700/50 opacity-0 group-hover:opacity-100 transition-opacity z-10',
+            header.column.getIsResizing() && 'bg-neutral-400 opacity-100 w-0.5'
           )}
         />
       )}
     </TableHead>
-  )
+  );
 }
 
 export function DataTable<TData, TValue>({
@@ -162,13 +149,14 @@ export function DataTable<TData, TValue>({
   initialColumnVisibility = {},
   initialColumnOrder = [],
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({})
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialColumnVisibility)
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>(initialColumnVisibility);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
-    initialColumnOrder.length > 0 ? initialColumnOrder : columns.map(c => c.id as string)
-  )
+    initialColumnOrder.length > 0 ? initialColumnOrder : columns.map((c) => c.id as string)
+  );
 
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -179,12 +167,12 @@ export function DataTable<TData, TValue>({
         distance: 8,
       },
     })
-  )
+  );
 
   const table = useReactTable({
     data,
     columns,
-    columnResizeMode: "onChange",
+    columnResizeMode: 'onChange',
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
@@ -204,16 +192,16 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       columnOrder,
     },
-  })
+  });
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
+    const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setColumnOrder((columnOrder) => {
-        const oldIndex = columnOrder.indexOf(active.id as string)
-        const newIndex = columnOrder.indexOf(over.id as string)
-        return arrayMove(columnOrder, oldIndex, newIndex)
-      })
+        const oldIndex = columnOrder.indexOf(active.id as string);
+        const newIndex = columnOrder.indexOf(over.id as string);
+        return arrayMove(columnOrder, oldIndex, newIndex);
+      });
     }
   }
 
@@ -230,11 +218,9 @@ export function DataTable<TData, TValue>({
           {searchKey && (
             <div className="w-full md:w-auto md:min-w-[300px]">
               <SearchBar
-                placeholder={searchPlaceholder || "Search..."}
-                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-                onChange={(value) =>
-                  table.getColumn(searchKey)?.setFilterValue(value)
-                }
+                placeholder={searchPlaceholder || 'Search...'}
+                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
+                onChange={(value) => table.getColumn(searchKey)?.setFilterValue(value)}
                 iconSize={16}
                 className="bg-neutral-950/70 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500  focus:border-neutral-600"
                 containerClassName="w-full"
@@ -243,7 +229,10 @@ export function DataTable<TData, TValue>({
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto bg-neutral-950/70 border-neutral-800/50 text-neutral-300">
+              <Button
+                variant="outline"
+                className="ml-auto bg-neutral-950/70 border-neutral-800/50 text-neutral-300"
+              >
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -261,26 +250,22 @@ export function DataTable<TData, TValue>({
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
-                  )
+                  );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      <div className={cn("rounded-md border border-neutral-800/50 overflow-x-auto", className)}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
+      <div className={cn('rounded-md border border-neutral-800/50 overflow-x-auto', className)}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <Table style={{ width: table.getTotalSize(), minWidth: '100%', tableLayout: 'fixed' }}>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="hover:bg-transparent border-neutral-800/50">
-                  <SortableContext
-                    items={columnOrder}
-                    strategy={horizontalListSortingStrategy}
-                  >
+                <TableRow
+                  key={headerGroup.id}
+                  className="hover:bg-transparent border-neutral-800/50"
+                >
+                  <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
                     {headerGroup.headers.map((header) => (
                       <DraggableHeader key={header.id} header={header} />
                     ))}
@@ -293,7 +278,7 @@ export function DataTable<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
+                    data-state={row.getIsSelected() && 'selected'}
                     className="border-neutral-800/30 hover:bg-neutral-950/20 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -311,7 +296,10 @@ export function DataTable<TData, TValue>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center text-neutral-500 font-mono">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-neutral-500 font-mono"
+                  >
                     No results.
                   </TableCell>
                 </TableRow>
@@ -321,6 +309,5 @@ export function DataTable<TData, TValue>({
         </DndContext>
       </div>
     </div>
-  )
+  );
 }
-

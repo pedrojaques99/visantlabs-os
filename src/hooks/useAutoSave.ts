@@ -17,7 +17,7 @@ interface UseAutoSaveProps<T> {
  * Returns reactive `status` + `lastSavedAt` for UI indicators, plus
  * `saveImmediately` to bypass the debounce (e.g. on blur or unmount).
  */
-export const useAutoSave = <T,>({
+export const useAutoSave = <T>({
   data,
   onSave,
   debounceMs = 2000,
@@ -32,34 +32,37 @@ export const useAutoSave = <T,>({
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
 
   // Save function with error handling
-  const performSave = useCallback(async (dataToSave: T) => {
-    if (isSavingRef.current) {
-      if (savePromiseRef.current) {
-        await savePromiseRef.current;
+  const performSave = useCallback(
+    async (dataToSave: T) => {
+      if (isSavingRef.current) {
+        if (savePromiseRef.current) {
+          await savePromiseRef.current;
+        }
+        return;
       }
-      return;
-    }
 
-    isSavingRef.current = true;
-    setStatus('saving');
+      isSavingRef.current = true;
+      setStatus('saving');
 
-    try {
-      const savePromise = onSave(dataToSave);
-      savePromiseRef.current = savePromise;
+      try {
+        const savePromise = onSave(dataToSave);
+        savePromiseRef.current = savePromise;
 
-      await savePromise;
+        await savePromise;
 
-      lastSavedDataRef.current = JSON.stringify(dataToSave);
-      setLastSavedAt(Date.now());
-      setStatus('saved');
-    } catch (error) {
-      console.error('Auto-save failed:', error);
-      setStatus('error');
-    } finally {
-      isSavingRef.current = false;
-      savePromiseRef.current = null;
-    }
-  }, [onSave]);
+        lastSavedDataRef.current = JSON.stringify(dataToSave);
+        setLastSavedAt(Date.now());
+        setStatus('saved');
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+        setStatus('error');
+      } finally {
+        isSavingRef.current = false;
+        savePromiseRef.current = null;
+      }
+    },
+    [onSave]
+  );
 
   // Clear timeout on unmount
   useEffect(() => {
@@ -120,13 +123,3 @@ export const useAutoSave = <T,>({
     isSaving: status === 'saving',
   };
 };
-
-
-
-
-
-
-
-
-
-

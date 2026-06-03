@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Copy, Check, ThumbsUp, ThumbsDown, Image as ImageIcon } from 'lucide-react';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { copyToClipboard } from '@/utils/clipboard';
 interface GenerationResult {
   prompt: string;
@@ -75,8 +75,8 @@ export function ImageToPrompt() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image: { base64: image, mimeType: 'image/png' },
-          hint: hint || undefined
-        })
+          hint: hint || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -84,7 +84,7 @@ export function ImageToPrompt() {
         setResult({
           prompt: data.prompt,
           feedbackId: data.feedbackId,
-          componentType: data.componentType
+          componentType: data.componentType,
         });
       } else {
         throw new Error(data.error);
@@ -123,8 +123,8 @@ export function ImageToPrompt() {
           success,
           componentType: result.componentType,
           improvement: improvement || undefined,
-          generatedPrompt: result.prompt // Include prompt for context
-        })
+          generatedPrompt: result.prompt, // Include prompt for context
+        }),
       });
       setFeedbackSent(success ? 'positive' : 'negative');
     } catch (error) {
@@ -160,11 +160,7 @@ export function ImageToPrompt() {
           />
 
           {imagePreview ? (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="max-h-64 mx-auto rounded-lg"
-            />
+            <img src={imagePreview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
           ) : (
             <div className="py-8">
               <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
@@ -185,11 +181,7 @@ export function ImageToPrompt() {
         />
 
         {/* Generate Button */}
-        <Button
-          onClick={generatePrompt}
-          disabled={!image || loading}
-          className="w-full"
-        >
+        <Button onClick={generatePrompt} disabled={!image || loading} className="w-full">
           {loading ? (
             <>
               <GlitchLoader size={14} className="h-4 w-4 mr-2" />
@@ -204,9 +196,7 @@ export function ImageToPrompt() {
         {result && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">
-                Prompt gerado ({result.componentType})
-              </span>
+              <span className="text-sm font-medium">Prompt gerado ({result.componentType})</span>
               <Button variant="ghost" size="sm" onClick={copyPrompt}>
                 {copied ? (
                   <Check className="h-4 w-4 text-green-500" />
@@ -216,11 +206,7 @@ export function ImageToPrompt() {
               </Button>
             </div>
 
-            <Textarea
-              value={result.prompt}
-              readOnly
-              className="min-h-[200px] font-mono text-xs"
-            />
+            <Textarea value={result.prompt} readOnly className="min-h-[200px] font-mono text-xs" />
 
             {/* Feedback */}
             <div className="flex items-center gap-2 justify-end">

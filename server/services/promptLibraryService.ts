@@ -66,7 +66,7 @@ export async function saveToLibrary(options: SavePromptOptions): Promise<string>
   // Validate tags (max 20 tags, each max 50 chars)
   const validTags = (options.tags || [])
     .slice(0, 20)
-    .map(t => ensureString(t, 50))
+    .map((t) => ensureString(t, 50))
     .filter((t): t is string => t !== null);
 
   const db = await getDb();
@@ -139,10 +139,7 @@ export async function findSimilar(
 /**
  * Get top prompts by category for inspiration
  */
-export async function getTopPrompts(
-  category: string,
-  limit: number = 10
-): Promise<PromptEntry[]> {
+export async function getTopPrompts(category: string, limit: number = 10): Promise<PromptEntry[]> {
   const db = await getDb();
   const collection = db.collection('community_presets');
 
@@ -182,10 +179,7 @@ export async function incrementUsage(promptId: string): Promise<void> {
 /**
  * Update rating based on feedback
  */
-export async function updateRating(
-  promptId: string,
-  success: boolean
-): Promise<void> {
+export async function updateRating(promptId: string, success: boolean): Promise<void> {
   if (!isSafeId(promptId, 50)) {
     throw new Error('Invalid prompt ID');
   }
@@ -210,10 +204,7 @@ export async function updateRating(
 /**
  * Get user's saved prompts
  */
-export async function getUserPrompts(
-  userId: string,
-  category?: string
-): Promise<PromptEntry[]> {
+export async function getUserPrompts(userId: string, category?: string): Promise<PromptEntry[]> {
   const db = await getDb();
   const collection = db.collection('community_presets');
 
@@ -226,11 +217,7 @@ export async function getUserPrompts(
     query.category = category;
   }
 
-  const results = await collection
-    .find(query)
-    .sort({ createdAt: -1 })
-    .limit(50)
-    .toArray();
+  const results = await collection.find(query).sort({ createdAt: -1 }).limit(50).toArray();
 
   return results as unknown as PromptEntry[];
 }

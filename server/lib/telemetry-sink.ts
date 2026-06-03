@@ -116,7 +116,9 @@ export function getTelemetrySink(): TelemetrySink {
       break;
     case 'remote':
       if (!env.TELEMETRY_REMOTE_URL) {
-        logger.error('TELEMETRY_SINK=remote but TELEMETRY_REMOTE_URL is unset — falling back to noop');
+        logger.error(
+          'TELEMETRY_SINK=remote but TELEMETRY_REMOTE_URL is unset — falling back to noop'
+        );
         cached = new NoopSink();
       } else {
         cached = new RemoteSink(env.TELEMETRY_REMOTE_URL);

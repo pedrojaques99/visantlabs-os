@@ -1,23 +1,23 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { FormLabel, FormLabelProps } from "./form-label"
-import { X, Check } from "lucide-react"
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { FormLabel, FormLabelProps } from './form-label';
+import { X, Check } from 'lucide-react';
 
 export interface FormFieldProps {
-  label?: string
-  labelProps?: FormLabelProps
-  error?: string
-  success?: string
-  hint?: string
-  required?: boolean
-  children: React.ReactNode
-  className?: string
+  label?: string;
+  labelProps?: FormLabelProps;
+  error?: string;
+  success?: string;
+  hint?: string;
+  required?: boolean;
+  children: React.ReactNode;
+  className?: string;
 }
 
 const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
   ({ label, labelProps, error, success, hint, required, children, className }, ref) => {
     return (
-      <div ref={ref} className={cn("space-y-2", className)}>
+      <div ref={ref} className={cn('space-y-2', className)}>
         {label && (
           <FormLabel {...labelProps}>
             {label}
@@ -37,14 +37,11 @@ const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
             {success}
           </div>
         )}
-        {hint && !error && !success && (
-          <p className="text-xs text-neutral-500 font-mono">{hint}</p>
-        )}
+        {hint && !error && !success && <p className="text-xs text-neutral-500 font-mono">{hint}</p>}
       </div>
-    )
+    );
   }
-)
-FormField.displayName = "FormField"
+);
+FormField.displayName = 'FormField';
 
-export { FormField }
-
+export { FormField };

@@ -2,14 +2,14 @@ export type CreativeFormat = '1:1' | '9:16' | '16:9' | '4:5';
 
 export interface TextLayerData {
   type: 'text';
-  content: string;        // supports <accent>word</accent>
+  content: string; // supports <accent>word</accent>
   role: 'headline' | 'subheadline' | 'body' | 'custom';
-  position: { x: number; y: number };  // 0-1 normalized (top-left origin)
-  size: { w: number; h: number };      // 0-1 normalized
+  position: { x: number; y: number }; // 0-1 normalized (top-left origin)
+  size: { w: number; h: number }; // 0-1 normalized
   align: 'left' | 'center' | 'right';
-  fontSize: number;       // px at preview resolution
-  fontFamily: string;     // resolved family name
-  color: string;          // hex
+  fontSize: number; // px at preview resolution
+  fontFamily: string; // resolved family name
+  color: string; // hex
   bold: boolean;
   italic?: boolean;
   underline?: boolean;
@@ -52,9 +52,9 @@ export interface LogoLayerData {
    * cache() + filter on the node. Renderer maps these to Konva.Filters.*.
    */
   filters?: {
-    brightness?: number;  // -1 .. 1
-    contrast?: number;    // -100 .. 100
-    blur?: number;        // 0 .. 40 (px)
+    brightness?: number; // -1 .. 1
+    contrast?: number; // -100 .. 100
+    blur?: number; // 0 .. 40 (px)
     grayscale?: boolean;
   };
   /** Optional crop window in 0-1 of source image dimensions. */
@@ -64,7 +64,7 @@ export interface LogoLayerData {
 export interface ShapeLayerData {
   type: 'shape';
   shape: 'rect';
-  color: string;          // hex
+  color: string; // hex
   position: { x: number; y: number };
   size: { w: number; h: number };
   /** Rotation in degrees, default 0 */
@@ -90,7 +90,7 @@ export interface ShapeLayerData {
 
 export interface GroupLayerData {
   type: 'group';
-  children: string[];      // IDs of child layers
+  children: string[]; // IDs of child layers
   position: { x: number; y: number };
   size: { w: number; h: number };
 }

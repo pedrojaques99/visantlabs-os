@@ -15,7 +15,10 @@ describe('API keys lifecycle', () => {
     const token = signTestToken({ userId: user.id, email: user.email });
     const agent = await request();
 
-    const create = await agent.post('/api/apiKeys/create').set('Authorization', bearer(token)).send({ name: 'test-key' });
+    const create = await agent
+      .post('/api/apiKeys/create')
+      .set('Authorization', bearer(token))
+      .send({ name: 'test-key' });
     if (create.status === 404) return; // route mount path may differ — fail soft
     expect([200, 201]).toContain(create.status);
 
@@ -37,7 +40,9 @@ describe('JWT token expiration', () => {
     const { user } = await createUser();
     const token = signTestToken({ userId: user.id, email: user.email }, '-1s');
     const agent = await request();
-    const res = await agent.get('/api/payments/subscription-status').set('Authorization', bearer(token));
+    const res = await agent
+      .get('/api/payments/subscription-status')
+      .set('Authorization', bearer(token));
     expect([401, 403]).toContain(res.status);
   });
 

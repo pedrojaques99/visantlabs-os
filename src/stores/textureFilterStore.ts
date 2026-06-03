@@ -2,7 +2,14 @@ import { create } from 'zustand';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 import { getProceduralTexture } from '@/utils/proceduralTextures';
 
-export type TextureBlendMode = 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'hard-light' | 'color-burn' | 'color-dodge';
+export type TextureBlendMode =
+  | 'multiply'
+  | 'screen'
+  | 'overlay'
+  | 'soft-light'
+  | 'hard-light'
+  | 'color-burn'
+  | 'color-dodge';
 
 export const BLEND_MODES: { id: TextureBlendMode; label: string }[] = [
   { id: 'multiply', label: 'Multiply' },
@@ -34,14 +41,63 @@ export const TEXTURE_PRESETS: TexturePreset[] = [
 ];
 
 export const FILTER_PRESETS: Record<string, Partial<TextureFilterSettings>> = {
-  'Subtle': { opacity: 0.15, scale: 1.0, blendMode: 'soft-light', tileMode: true, tileGapX: 0, tileGapY: 0 },
-  'Bold': { opacity: 0.8, scale: 1.2, blendMode: 'multiply', tileMode: true, tileGapX: 0, tileGapY: 0 },
-  'Screen Glow': { opacity: 0.5, scale: 1.0, blendMode: 'screen', tileMode: true, tileGapX: 0, tileGapY: 0 },
-  'Overlay': { opacity: 0.6, scale: 0.8, blendMode: 'overlay', tileMode: true, tileGapX: 10, tileGapY: 10 },
-  'Burn': { opacity: 0.4, scale: 1.5, blendMode: 'color-burn', tileMode: true, tileGapX: 0, tileGapY: 0 },
-  'Spaced': { opacity: 0.7, scale: 0.5, blendMode: 'multiply', tileMode: true, tileGapX: 40, tileGapY: 40 },
-  'Single': { opacity: 1.0, scale: 2.0, blendMode: 'multiply', tileMode: false },
-  'Mask Cut': { opacity: 1.0, scale: 1.0, blendMode: 'multiply', maskMode: true, maskInvert: false, tileMode: true },
+  Subtle: {
+    opacity: 0.15,
+    scale: 1.0,
+    blendMode: 'soft-light',
+    tileMode: true,
+    tileGapX: 0,
+    tileGapY: 0,
+  },
+  Bold: {
+    opacity: 0.8,
+    scale: 1.2,
+    blendMode: 'multiply',
+    tileMode: true,
+    tileGapX: 0,
+    tileGapY: 0,
+  },
+  'Screen Glow': {
+    opacity: 0.5,
+    scale: 1.0,
+    blendMode: 'screen',
+    tileMode: true,
+    tileGapX: 0,
+    tileGapY: 0,
+  },
+  Overlay: {
+    opacity: 0.6,
+    scale: 0.8,
+    blendMode: 'overlay',
+    tileMode: true,
+    tileGapX: 10,
+    tileGapY: 10,
+  },
+  Burn: {
+    opacity: 0.4,
+    scale: 1.5,
+    blendMode: 'color-burn',
+    tileMode: true,
+    tileGapX: 0,
+    tileGapY: 0,
+  },
+  Spaced: {
+    opacity: 0.7,
+    scale: 0.5,
+    blendMode: 'multiply',
+    tileMode: true,
+    tileGapX: 40,
+    tileGapY: 40,
+  },
+  Single: { opacity: 1.0, scale: 2.0, blendMode: 'multiply', tileMode: false },
+  'Mask Cut': {
+    opacity: 1.0,
+    scale: 1.0,
+    blendMode: 'multiply',
+    maskMode: true,
+    maskInvert: false,
+    tileMode: true,
+  },
 };
 
 export interface TextureFilterSettings {
@@ -103,7 +159,10 @@ interface TextureFilterState extends TextureFilterSettings {
   setTexture: (src: string, name: string) => void;
   setPanelVisible: (v: boolean) => void;
   setIsExporting: (v: boolean) => void;
-  updateSetting: <K extends keyof TextureFilterSettings>(key: K, value: TextureFilterSettings[K]) => void;
+  updateSetting: <K extends keyof TextureFilterSettings>(
+    key: K,
+    value: TextureFilterSettings[K]
+  ) => void;
   applyPreset: (preset: TexturePreset) => void;
   resetSettings: () => void;
   getSettings: () => TextureFilterSettings;
@@ -120,89 +179,96 @@ interface TextureFilterState extends TextureFilterSettings {
 let _tfPendingSnap: TextureFilterSettings | null = null;
 let _tfDebounceTimer: ReturnType<typeof setTimeout> | undefined;
 
-export const useTextureFilterStore = create<TextureFilterState & ShaderSlice>()((set, get, api) => ({
-  ...createShaderSlice(set as any, get as any, api as any),
-  ...TEXTURE_FILTER_DEFAULTS,
-  imageUrl: '',
-  fileName: '',
-  textureSrc: TEXTURE_PRESETS[0].src,
-  textureName: TEXTURE_PRESETS[0].name,
-  panelVisible: true,
-  isExporting: false,
-  mediaType: 'image',
+export const useTextureFilterStore = create<TextureFilterState & ShaderSlice>()(
+  (set, get, api) => ({
+    ...createShaderSlice(set as any, get as any, api as any),
+    ...TEXTURE_FILTER_DEFAULTS,
+    imageUrl: '',
+    fileName: '',
+    textureSrc: TEXTURE_PRESETS[0].src,
+    textureName: TEXTURE_PRESETS[0].name,
+    panelVisible: true,
+    isExporting: false,
+    mediaType: 'image',
 
-  zoom: 1,
-  panX: 0,
-  panY: 0,
+    zoom: 1,
+    panX: 0,
+    panY: 0,
 
-  settingsHistory: [],
-  historyIndex: -1,
+    settingsHistory: [],
+    historyIndex: -1,
 
-  setImageUrl: (imageUrl, fileName, type) => set({ imageUrl, fileName, mediaType: type || 'image' }),
-  setTexture: (textureSrc, textureName) => set({ textureSrc, textureName }),
-  setPanelVisible: (panelVisible) => set({ panelVisible }),
-  setIsExporting: (isExporting) => set({ isExporting }),
+    setImageUrl: (imageUrl, fileName, type) =>
+      set({ imageUrl, fileName, mediaType: type || 'image' }),
+    setTexture: (textureSrc, textureName) => set({ textureSrc, textureName }),
+    setPanelVisible: (panelVisible) => set({ panelVisible }),
+    setIsExporting: (isExporting) => set({ isExporting }),
 
-  updateSetting: (key, value) => {
-    get().debouncedPushHistory();
-    set({ [key]: value });
-  },
+    updateSetting: (key, value) => {
+      get().debouncedPushHistory();
+      set({ [key]: value });
+    },
 
-  applyPreset: (preset) => {
-    const src = preset.src === '__procedural__'
-      ? getProceduralTexture(preset.name) || preset.src
-      : preset.src;
-    set({ textureSrc: src, textureName: preset.name });
-  },
+    applyPreset: (preset) => {
+      const src =
+        preset.src === '__procedural__'
+          ? getProceduralTexture(preset.name) || preset.src
+          : preset.src;
+      set({ textureSrc: src, textureName: preset.name });
+    },
 
-  resetSettings: () => set({ ...TEXTURE_FILTER_DEFAULTS, settingsHistory: [], historyIndex: -1 }),
+    resetSettings: () => set({ ...TEXTURE_FILTER_DEFAULTS, settingsHistory: [], historyIndex: -1 }),
 
-  getSettings: () => {
-    const state = get();
-    const settings: TextureFilterSettings = { ...TEXTURE_FILTER_DEFAULTS };
-    for (const key of Object.keys(TEXTURE_FILTER_DEFAULTS) as (keyof TextureFilterSettings)[]) {
-      (settings as any)[key] = state[key];
-    }
-    return settings;
-  },
-
-  setZoom: (z) => set({ zoom: Math.max(0.1, Math.min(10, z)) }),
-  setPan: (panX, panY) => set({ panX, panY }),
-
-  pushHistory: () => set((s) => {
-    const snap = snapshotSettings(s.getSettings());
-    const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
-    const history = [...trimmed, snap].slice(-MAX_HISTORY);
-    return { settingsHistory: history, historyIndex: history.length - 1 };
-  }),
-
-  debouncedPushHistory: () => {
-    if (!_tfPendingSnap) {
-      _tfPendingSnap = snapshotSettings(get().getSettings());
-    }
-    clearTimeout(_tfDebounceTimer);
-    _tfDebounceTimer = setTimeout(() => {
-      if (_tfPendingSnap) {
-        set((s) => {
-          const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
-          const history = [...trimmed, _tfPendingSnap!].slice(-MAX_HISTORY);
-          _tfPendingSnap = null;
-          return { settingsHistory: history, historyIndex: history.length - 1 };
-        });
+    getSettings: () => {
+      const state = get();
+      const settings: TextureFilterSettings = { ...TEXTURE_FILTER_DEFAULTS };
+      for (const key of Object.keys(TEXTURE_FILTER_DEFAULTS) as (keyof TextureFilterSettings)[]) {
+        (settings as any)[key] = state[key];
       }
-    }, HISTORY_DEBOUNCE_MS);
-  },
+      return settings;
+    },
 
-  undo: () => set((s) => {
-    if (s.historyIndex < 0) return {};
-    const snap = s.settingsHistory[s.historyIndex];
-    return { ...snap, historyIndex: s.historyIndex - 1 };
-  }),
+    setZoom: (z) => set({ zoom: Math.max(0.1, Math.min(10, z)) }),
+    setPan: (panX, panY) => set({ panX, panY }),
 
-  redo: () => set((s) => {
-    if (s.historyIndex >= s.settingsHistory.length - 1) return {};
-    const nextIndex = s.historyIndex + 1;
-    const snap = s.settingsHistory[nextIndex];
-    return { ...snap, historyIndex: nextIndex };
-  }),
-}));
+    pushHistory: () =>
+      set((s) => {
+        const snap = snapshotSettings(s.getSettings());
+        const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
+        const history = [...trimmed, snap].slice(-MAX_HISTORY);
+        return { settingsHistory: history, historyIndex: history.length - 1 };
+      }),
+
+    debouncedPushHistory: () => {
+      if (!_tfPendingSnap) {
+        _tfPendingSnap = snapshotSettings(get().getSettings());
+      }
+      clearTimeout(_tfDebounceTimer);
+      _tfDebounceTimer = setTimeout(() => {
+        if (_tfPendingSnap) {
+          set((s) => {
+            const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
+            const history = [...trimmed, _tfPendingSnap!].slice(-MAX_HISTORY);
+            _tfPendingSnap = null;
+            return { settingsHistory: history, historyIndex: history.length - 1 };
+          });
+        }
+      }, HISTORY_DEBOUNCE_MS);
+    },
+
+    undo: () =>
+      set((s) => {
+        if (s.historyIndex < 0) return {};
+        const snap = s.settingsHistory[s.historyIndex];
+        return { ...snap, historyIndex: s.historyIndex - 1 };
+      }),
+
+    redo: () =>
+      set((s) => {
+        if (s.historyIndex >= s.settingsHistory.length - 1) return {};
+        const nextIndex = s.historyIndex + 1;
+        const snap = s.settingsHistory[nextIndex];
+        return { ...snap, historyIndex: nextIndex };
+      }),
+  })
+);

@@ -6,7 +6,13 @@
  */
 import type { HalftoneSettings } from './types.js';
 
-interface DotData { cx: number; cy: number; r: number; color: string; opacity: number }
+interface DotData {
+  cx: number;
+  cy: number;
+  r: number;
+  color: string;
+  opacity: number;
+}
 
 function hexToRgb(hex: string): [number, number, number] {
   return [
@@ -32,8 +38,12 @@ function hash(x: number, y: number): number {
 }
 
 function samplePixel(
-  pixels: Uint8ClampedArray | Buffer, w: number, h: number,
-  u: number, v: number, settings: HalftoneSettings,
+  pixels: Uint8ClampedArray | Buffer,
+  w: number,
+  h: number,
+  u: number,
+  v: number,
+  settings: HalftoneSettings
 ): [number, number, number] {
   const x = Math.min(Math.max(Math.round(u * (w - 1)), 0), w - 1);
   const y = Math.min(Math.max(Math.round(v * (h - 1)), 0), h - 1);
@@ -47,21 +57,54 @@ function samplePixel(
   return [r, g, b];
 }
 
-interface ChannelConfig { cmykIndex: number; angle: number; ink: string; alpha: number; show: boolean }
+interface ChannelConfig {
+  cmykIndex: number;
+  angle: number;
+  ink: string;
+  alpha: number;
+  show: boolean;
+}
 
 export function generateHalftoneSvg(
-  pixels: Uint8ClampedArray | Buffer, width: number, height: number,
-  settings: HalftoneSettings,
+  pixels: Uint8ClampedArray | Buffer,
+  width: number,
+  height: number,
+  settings: HalftoneSettings
 ): string {
-  const w = width, h = height;
+  const w = width,
+    h = height;
   const freq = settings.frequency;
   const cellSize = Math.max(w, h) / freq;
 
   const channels: ChannelConfig[] = [
-    { cmykIndex: 0, angle: settings.cyanAngle, ink: settings.cyanInk, alpha: settings.cyanAlpha, show: settings.showCyan },
-    { cmykIndex: 1, angle: settings.magentaAngle, ink: settings.magentaInk, alpha: settings.magentaAlpha, show: settings.showMagenta },
-    { cmykIndex: 2, angle: settings.yellowAngle, ink: settings.yellowInk, alpha: settings.yellowAlpha, show: settings.showYellow },
-    { cmykIndex: 3, angle: settings.blackAngle, ink: settings.blackInk, alpha: settings.blackAlpha, show: settings.showBlack },
+    {
+      cmykIndex: 0,
+      angle: settings.cyanAngle,
+      ink: settings.cyanInk,
+      alpha: settings.cyanAlpha,
+      show: settings.showCyan,
+    },
+    {
+      cmykIndex: 1,
+      angle: settings.magentaAngle,
+      ink: settings.magentaInk,
+      alpha: settings.magentaAlpha,
+      show: settings.showMagenta,
+    },
+    {
+      cmykIndex: 2,
+      angle: settings.yellowAngle,
+      ink: settings.yellowInk,
+      alpha: settings.yellowAlpha,
+      show: settings.showYellow,
+    },
+    {
+      cmykIndex: 3,
+      angle: settings.blackAngle,
+      ink: settings.blackInk,
+      alpha: settings.blackAlpha,
+      show: settings.showBlack,
+    },
   ];
 
   const dots: DotData[] = [];
@@ -87,7 +130,8 @@ export function generateHalftoneSvg(
         const px = cos * gx - sin * gy + offsetX;
         const py = sin * gx + cos * gy + offsetY;
         if (px < -cellSize || px > w + cellSize || py < -cellSize || py > h + cellSize) continue;
-        const u = px / w, v = py / h;
+        const u = px / w,
+          v = py / h;
         if (u < 0 || u > 1 || v < 0 || v > 1) continue;
 
         const [r, g, b] = samplePixel(pixels, w, h, u, v, settings);
@@ -109,7 +153,8 @@ export function generateHalftoneSvg(
     }
   }
 
-  const blendMode = settings.blendMode === 0 ? 'multiply' : settings.blendMode === 1 ? 'screen' : 'normal';
+  const blendMode =
+    settings.blendMode === 0 ? 'multiply' : settings.blendMode === 1 ? 'screen' : 'normal';
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">`,
   ];

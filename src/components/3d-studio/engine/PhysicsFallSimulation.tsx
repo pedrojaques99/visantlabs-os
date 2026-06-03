@@ -132,11 +132,16 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
   const logoBevelSize = isCoinShape ? 0.06 : bevelSize;
   const logoSmoothness = isCoinShape ? Math.max(smoothness, 6) : smoothness;
 
-  const { geometries, center, baseScale, loading, progress } = useExtrudedGeometry(svgString, logoDepth, logoSmoothness, {
-    bevelEnabled: logoBevelEnabled,
-    bevelThickness: logoBevelThickness,
-    bevelSize: logoBevelSize,
-  });
+  const { geometries, center, baseScale, loading, progress } = useExtrudedGeometry(
+    svgString,
+    logoDepth,
+    logoSmoothness,
+    {
+      bevelEnabled: logoBevelEnabled,
+      bevelThickness: logoBevelThickness,
+      bevelSize: logoBevelSize,
+    }
+  );
 
   const uniformsRef = useRef<{ uTextureOpacity: { value: number } }>({
     uTextureOpacity: { value: textureOpacity },
@@ -183,16 +188,17 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
       scaledWidth = size.x * baseScale;
       scaledHeight = size.y * baseScale;
     }
-    
+
     const initialSpacingY = Math.max(2.5, scaledHeight * physicsSize * 1.3);
-    
+
     // Staggered waterfall cascade spawning with true randomized parameters
     for (let i = 0; i < physicsCount; i++) {
       const xRange = viewport.width * 0.85;
       // High horizontal randomness
       const xOffset = (Math.random() - 0.5) * xRange;
       // Staggered height to create beautiful continuous waterfall effect
-      const yOffset = viewport.height / 2 + 1.0 + i * (initialSpacingY * 0.6) + (Math.random() - 0.5) * 1.5;
+      const yOffset =
+        viewport.height / 2 + 1.0 + i * (initialSpacingY * 0.6) + (Math.random() - 0.5) * 1.5;
       const zOffset = (Math.random() - 0.5) * 0.15;
 
       bodies.push({
@@ -213,7 +219,17 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
       });
     }
     bodiesRef.current = bodies;
-  }, [physicsCount, physicsSize, baseScale, geometries, viewport.width, viewport.height, resetKey, shapeType, coinRadiusProp]);
+  }, [
+    physicsCount,
+    physicsSize,
+    baseScale,
+    geometries,
+    viewport.width,
+    viewport.height,
+    resetKey,
+    shapeType,
+    coinRadiusProp,
+  ]);
 
   // Keep references to group meshes to update their positions imperatively for 60fps performance!
   const groupsRef = useRef<(THREE.Group | null)[]>([]);
@@ -242,8 +258,12 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
     const aspect = scaledWidth / (scaledHeight || 1.0);
     const isCoin = shapeType === 'coin';
     const numSpheres = isCoin ? 1 : Math.max(1, Math.min(5, Math.round(aspect * 1.5)));
-    const baseSphereRadius = isCoin ? (coinRadiusProp * physicsSize) : ((scaledHeight * physicsSize) / 2.0);
-    const baseHalfLen = isCoin ? 0 : Math.max(0, (scaledWidth * physicsSize) / 2.0 - baseSphereRadius);
+    const baseSphereRadius = isCoin
+      ? coinRadiusProp * physicsSize
+      : (scaledHeight * physicsSize) / 2.0;
+    const baseHalfLen = isCoin
+      ? 0
+      : Math.max(0, (scaledWidth * physicsSize) / 2.0 - baseSphereRadius);
 
     // Compute normalized local offsets for sub-spheres (scaled by individual body sizeScale in loop)
     const normalizedOffsets: number[] = [];
@@ -303,13 +323,13 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
             b.vy = Math.max(b.vy, -b.vy * physicsBounciness);
             // Translate slide friction to rotation torque
             b.vrz += -b.vx * physicsFriction * 0.08 * (lX || 1.0);
-            b.vx *= (1.0 - physicsFriction);
-            b.vz *= (1.0 - physicsFriction);
+            b.vx *= 1.0 - physicsFriction;
+            b.vz *= 1.0 - physicsFriction;
           }
 
           // Ceiling
           if (sy + sphereRadius > top) {
-            const overlap = (sy + sphereRadius) - top;
+            const overlap = sy + sphereRadius - top;
             b.y -= overlap;
             b.vy = Math.min(b.vy, -b.vy * physicsBounciness);
           }
@@ -324,7 +344,7 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
 
           // Right wall
           if (sx + sphereRadius > right) {
-            const overlap = (sx + sphereRadius) - right;
+            const overlap = sx + sphereRadius - right;
             b.x -= overlap;
             b.vx = Math.min(b.vx, -b.vx * physicsBounciness);
             b.vrz += b.vy * physicsFriction * 0.08;
@@ -384,8 +404,8 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
                 b2.y += ny * overlap * ratio2;
 
                 // Rotational torque: offset from center creates rotation
-                const torque1 = (lX1 * (cos1 * ny - sin1 * nx)) * overlap * 0.2 * ratio1;
-                const torque2 = (lX2 * (cos2 * ny - sin2 * nx)) * overlap * 0.2 * ratio2;
+                const torque1 = lX1 * (cos1 * ny - sin1 * nx) * overlap * 0.2 * ratio1;
+                const torque2 = lX2 * (cos2 * ny - sin2 * nx) * overlap * 0.2 * ratio2;
 
                 b1.rz -= torque1 * (1.0 - physicsFriction);
                 b2.rz += torque2 * (1.0 - physicsFriction);
@@ -403,7 +423,7 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
                 // Elastic collision response
                 if (velAlongNormal < 0) {
                   const impulse = -(1.0 + physicsBounciness) * velAlongNormal;
-                  
+
                   b1.vx -= nx * impulse * ratio1;
                   b1.vy -= ny * impulse * ratio1;
                   b2.vx += nx * impulse * ratio2;
@@ -455,23 +475,83 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
               color={baseColor}
               map={texture ?? undefined}
               metalness={isGold ? 1.0 : materialSettings.metalness}
-              roughness={isGold ? 0.12 : (wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness)}
-              transmission={materialSettings.transmission !== undefined ? materialSettings.transmission : transmissionAmount}
-              thickness={materialSettings.thickness !== undefined ? materialSettings.thickness : (wantsTransparency ? 2.5 : 0)}
-              ior={isGold ? 2.5 : (materialSettings.ior !== undefined ? materialSettings.ior : (wantsTransparency ? 1.5 : 1.45))}
+              roughness={
+                isGold
+                  ? 0.12
+                  : wantsTransparency
+                  ? Math.max(0.02, materialSettings.roughness * 0.3)
+                  : materialSettings.roughness
+              }
+              transmission={
+                materialSettings.transmission !== undefined
+                  ? materialSettings.transmission
+                  : transmissionAmount
+              }
+              thickness={
+                materialSettings.thickness !== undefined
+                  ? materialSettings.thickness
+                  : wantsTransparency
+                  ? 2.5
+                  : 0
+              }
+              ior={
+                isGold
+                  ? 2.5
+                  : materialSettings.ior !== undefined
+                  ? materialSettings.ior
+                  : wantsTransparency
+                  ? 1.5
+                  : 1.45
+              }
               opacity={1}
               transparent={false}
               wireframe={materialSettings.wireframe}
               emissive={emissiveColor}
               emissiveIntensity={emissiveIntensity}
-              clearcoat={isGold ? 1.0 : (materialSettings.clearcoat !== undefined ? materialSettings.clearcoat : (wantsTransparency ? 1 : preset.clearcoat ?? 0))}
-              clearcoatRoughness={isGold ? 0.03 : (materialSettings.clearcoatRoughness !== undefined ? materialSettings.clearcoatRoughness : 0.05)}
+              clearcoat={
+                isGold
+                  ? 1.0
+                  : materialSettings.clearcoat !== undefined
+                  ? materialSettings.clearcoat
+                  : wantsTransparency
+                  ? 1
+                  : preset.clearcoat ?? 0
+              }
+              clearcoatRoughness={
+                isGold
+                  ? 0.03
+                  : materialSettings.clearcoatRoughness !== undefined
+                  ? materialSettings.clearcoatRoughness
+                  : 0.05
+              }
               sheen={materialSettings.sheen !== undefined ? materialSettings.sheen : 0}
-              sheenRoughness={materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0}
-              sheenColor={materialSettings.sheenColor !== undefined ? materialSettings.sheenColor : '#000000'}
-              iridescence={isGold ? 0.35 : (materialSettings.iridescence !== undefined ? materialSettings.iridescence : 0)}
-              iridescenceIOR={isGold ? 1.6 : (materialSettings.iridescenceIOR !== undefined ? materialSettings.iridescenceIOR : 1.3)}
-              reflectivity={isGold ? 0.95 : (materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5)}
+              sheenRoughness={
+                materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0
+              }
+              sheenColor={
+                materialSettings.sheenColor !== undefined ? materialSettings.sheenColor : '#000000'
+              }
+              iridescence={
+                isGold
+                  ? 0.35
+                  : materialSettings.iridescence !== undefined
+                  ? materialSettings.iridescence
+                  : 0
+              }
+              iridescenceIOR={
+                isGold
+                  ? 1.6
+                  : materialSettings.iridescenceIOR !== undefined
+                  ? materialSettings.iridescenceIOR
+                  : 1.3
+              }
+              reflectivity={
+                isGold
+                  ? 0.95
+                  : materialSettings.reflectivity !== undefined
+                  ? materialSettings.reflectivity
+                  : 0.5
+              }
               side={THREE.DoubleSide}
               envMapIntensity={isGold ? 2.2 : 1.2}
               onBeforeCompile={handleBeforeCompile}
@@ -520,7 +600,11 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
 
               {/* High-relief embossed logo back face */}
               <group
-                scale={[-baseScale * 0.75, -baseScale * 0.75, baseScale * (reliefDepth / logoDepth)]}
+                scale={[
+                  -baseScale * 0.75,
+                  -baseScale * 0.75,
+                  baseScale * (reliefDepth / logoDepth),
+                ]}
                 position={[0, 0, -cylinderHeight / 2 - 0.01]}
                 rotation={[0, Math.PI, 0]}
               >
@@ -544,12 +628,17 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
             ref={(el) => {
               groupsRef.current[idx] = el;
             }}
-            scale={[baseScale * physicsSize * sizeScale, -baseScale * physicsSize * sizeScale, baseScale * physicsSize * sizeScale]}
+            scale={[
+              baseScale * physicsSize * sizeScale,
+              -baseScale * physicsSize * sizeScale,
+              baseScale * physicsSize * sizeScale,
+            ]}
           >
             {geometries.map((geometry, i) => {
               const preset = materialPresets[materialSettings.preset] ?? materialPresets.default;
               const isGoldPreset = materialSettings.preset === 'gold';
-              const wantsTransparency = materialSettings.transparent || materialSettings.opacity < 1;
+              const wantsTransparency =
+                materialSettings.transparent || materialSettings.opacity < 1;
               const baseColor = isGoldPreset ? '#d4a017' : color;
               const isEmissive = materialSettings.preset === 'emissive';
               const emissiveColor = isEmissive ? color : '#000000';
@@ -558,7 +647,9 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
 
               return (
                 <mesh
-                  key={`${i}-${texture ? 'tex' : 'notex'}-${materialSettings.preset}-${wantsTransparency}`}
+                  key={`${i}-${texture ? 'tex' : 'notex'}-${
+                    materialSettings.preset
+                  }-${wantsTransparency}`}
                   geometry={geometry}
                   position={[-center.x, -center.y, -center.z]}
                 >
@@ -566,23 +657,71 @@ export const PhysicsFallSimulation: React.FC<PhysicsFallSimulationProps> = ({
                     color={baseColor}
                     map={texture ?? undefined}
                     metalness={materialSettings.metalness}
-                    roughness={wantsTransparency ? Math.max(0.02, materialSettings.roughness * 0.3) : materialSettings.roughness}
-                    transmission={materialSettings.transmission !== undefined ? materialSettings.transmission : transmissionAmount}
-                    thickness={materialSettings.thickness !== undefined ? materialSettings.thickness : (wantsTransparency ? 2.5 : 0)}
-                    ior={materialSettings.ior !== undefined ? materialSettings.ior : (wantsTransparency ? 1.5 : 1.45)}
+                    roughness={
+                      wantsTransparency
+                        ? Math.max(0.02, materialSettings.roughness * 0.3)
+                        : materialSettings.roughness
+                    }
+                    transmission={
+                      materialSettings.transmission !== undefined
+                        ? materialSettings.transmission
+                        : transmissionAmount
+                    }
+                    thickness={
+                      materialSettings.thickness !== undefined
+                        ? materialSettings.thickness
+                        : wantsTransparency
+                        ? 2.5
+                        : 0
+                    }
+                    ior={
+                      materialSettings.ior !== undefined
+                        ? materialSettings.ior
+                        : wantsTransparency
+                        ? 1.5
+                        : 1.45
+                    }
                     opacity={1}
                     transparent={false}
                     wireframe={materialSettings.wireframe}
                     emissive={emissiveColor}
                     emissiveIntensity={emissiveIntensity}
-                    clearcoat={materialSettings.clearcoat !== undefined ? materialSettings.clearcoat : (wantsTransparency ? 1 : preset.clearcoat ?? 0)}
-                    clearcoatRoughness={materialSettings.clearcoatRoughness !== undefined ? materialSettings.clearcoatRoughness : 0.05}
+                    clearcoat={
+                      materialSettings.clearcoat !== undefined
+                        ? materialSettings.clearcoat
+                        : wantsTransparency
+                        ? 1
+                        : preset.clearcoat ?? 0
+                    }
+                    clearcoatRoughness={
+                      materialSettings.clearcoatRoughness !== undefined
+                        ? materialSettings.clearcoatRoughness
+                        : 0.05
+                    }
                     sheen={materialSettings.sheen !== undefined ? materialSettings.sheen : 0}
-                    sheenRoughness={materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0}
-                    sheenColor={materialSettings.sheenColor !== undefined ? materialSettings.sheenColor : '#000000'}
-                    iridescence={materialSettings.iridescence !== undefined ? materialSettings.iridescence : 0}
-                    iridescenceIOR={materialSettings.iridescenceIOR !== undefined ? materialSettings.iridescenceIOR : 1.3}
-                    reflectivity={materialSettings.reflectivity !== undefined ? materialSettings.reflectivity : 0.5}
+                    sheenRoughness={
+                      materialSettings.sheenRoughness !== undefined
+                        ? materialSettings.sheenRoughness
+                        : 0
+                    }
+                    sheenColor={
+                      materialSettings.sheenColor !== undefined
+                        ? materialSettings.sheenColor
+                        : '#000000'
+                    }
+                    iridescence={
+                      materialSettings.iridescence !== undefined ? materialSettings.iridescence : 0
+                    }
+                    iridescenceIOR={
+                      materialSettings.iridescenceIOR !== undefined
+                        ? materialSettings.iridescenceIOR
+                        : 1.3
+                    }
+                    reflectivity={
+                      materialSettings.reflectivity !== undefined
+                        ? materialSettings.reflectivity
+                        : 0.5
+                    }
                     side={THREE.FrontSide}
                     envMapIntensity={1.0}
                     onBeforeCompile={handleBeforeCompile}

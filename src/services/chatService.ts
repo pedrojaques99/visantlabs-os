@@ -1,9 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
 import type { StrategyNodeData } from '../types/reactFlow';
 import { validateMessage, validateContext } from './chatValidators';
 import { buildSystemPrompt } from './promptTemplates';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
-
 
 // ============================================================================
 // Types & Interfaces
@@ -56,15 +55,19 @@ const getAI = (apiKey?: string): GoogleGenAI => {
     return undefined;
   };
 
-  const storedKey = getEnvVar('VITE_GEMINI_API_KEY') || getEnvVar('VITE_API_KEY') || getEnvVar('GEMINI_API_KEY') || '';
+  const storedKey =
+    getEnvVar('VITE_GEMINI_API_KEY') ||
+    getEnvVar('VITE_API_KEY') ||
+    getEnvVar('GEMINI_API_KEY') ||
+    '';
   const currentKey = storedKey.trim();
 
   // Otherwise use cached instance or create from environment
   if (!ai || currentApiKey !== currentKey) {
     if (!currentKey || currentKey === 'undefined' || currentKey.length === 0) {
       throw new Error(
-        "GEMINI_API_KEY não encontrada. " +
-        "Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA."
+        'GEMINI_API_KEY não encontrada. ' +
+          'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA.'
       );
     }
 
@@ -81,7 +84,8 @@ const getAI = (apiKey?: string): GoogleGenAI => {
 // Regex to detect action suggestions in AI responses
 // Captures: type, title, and full description (including multi-line prompts)
 // Uses [\s\S] to match any character including newlines, stops at next ACTION or end of string
-export const ACTION_PATTERN = /\*\*\[ACTION:(prompt|mockup|strategy|text)\]\*\*\s*([^:\n]+?):\s*([\s\S]+?)(?=\n\*\*\[ACTION:|$)/g;
+export const ACTION_PATTERN =
+  /\*\*\[ACTION:(prompt|mockup|strategy|text)\]\*\*\s*([^:\n]+?):\s*([\s\S]+?)(?=\n\*\*\[ACTION:|$)/g;
 
 export interface DetectedAction {
   type: 'prompt' | 'mockup' | 'strategy' | 'text';
@@ -97,7 +101,7 @@ export function parseActionsFromResponse(content: string): DetectedAction[] {
   const actions: DetectedAction[] = [];
   const regex = new RegExp(ACTION_PATTERN.source, 'gs');
   let match;
-  
+
   while ((match = regex.exec(content)) !== null) {
     const [, type, title, description] = match;
     actions.push({
@@ -107,7 +111,7 @@ export function parseActionsFromResponse(content: string): DetectedAction[] {
       fullPrompt: `${title.trim()}: ${description.trim()}`,
     });
   }
-  
+
   return actions;
 }
 
@@ -115,7 +119,14 @@ export function parseActionsFromResponse(content: string): DetectedAction[] {
 // Canvas Command Detection
 // ============================================================================
 
-export type CanvasNodeCommandType = 'prompt' | 'mockup' | 'text' | 'strategy' | 'merge' | 'image' | 'video';
+export type CanvasNodeCommandType =
+  | 'prompt'
+  | 'mockup'
+  | 'text'
+  | 'strategy'
+  | 'merge'
+  | 'image'
+  | 'video';
 
 export interface CanvasCommand {
   action: 'create' | 'remove-connected' | 'clear-chat' | 'generate-campaign';
@@ -179,21 +190,32 @@ export function parseCanvasCommand(message: string): CanvasCommand | null {
   }
 
   // REMOVE CONNECTED: "remove/remova/apague os nodes conectados"
-  if (/\b(?:remov[ae]r?|apag(?:ue|ar?)|delet[ei]?)\b.{0,30}\b(?:conect|connect|linked|ligad)/i.test(msg)) {
+  if (
+    /\b(?:remov[ae]r?|apag(?:ue|ar?)|delet[ei]?)\b.{0,30}\b(?:conect|connect|linked|ligad)/i.test(
+      msg
+    )
+  ) {
     return { action: 'remove-connected' };
   }
 
   // CLEAR CHAT: "limpa/limpe/clear o histórico/chat"
-  if (/\b(?:limpa[r]?|limpe|clear|apaga[r]?|apague)\b.{0,30}\b(?:hist[oó]rico|chat|mensagens|messages|conversa)\b/i.test(msg)) {
+  if (
+    /\b(?:limpa[r]?|limpe|clear|apaga[r]?|apague)\b.{0,30}\b(?:hist[oó]rico|chat|mensagens|messages|conversa)\b/i.test(
+      msg
+    )
+  ) {
     return { action: 'clear-chat' };
   }
 
   // GENERATE CAMPAIGN: "gera/cria/generate N ads/anuncios [para/for] <brief>"
-  const campaignRe = /\b(?:ger[ae]r?|cri[ae]r?|generate|creat[ei]?)\b\s+(\d+)?\s*(?:ads?|anúncios?|anuncios?|criativos?|creatives?)\b(.*)?/i;
+  const campaignRe =
+    /\b(?:ger[ae]r?|cri[ae]r?|generate|creat[ei]?)\b\s+(\d+)?\s*(?:ads?|anúncios?|anuncios?|criativos?|creatives?)\b(.*)?/i;
   const campaignMatch = campaignRe.exec(msg);
   if (campaignMatch) {
     const count = campaignMatch[1] ? parseInt(campaignMatch[1], 10) : 10;
-    const briefRaw = (campaignMatch[2] || '').replace(/\b(?:para|for|sobre|about|de|with|com)\b/i, '').trim();
+    const briefRaw = (campaignMatch[2] || '')
+      .replace(/\b(?:para|for|sobre|about|de|with|com)\b/i, '')
+      .trim();
     const formats: string[] = [];
     if (/story|stories|reel/i.test(msg)) formats.push('story');
     if (/banner|landscape|horizontal/i.test(msg)) formats.push('banner');
@@ -245,12 +267,13 @@ function formatStrategyData(strategyData?: StrategyNodeData['strategyData']): st
     const arch = strategyData.archetypes;
     parts.push('\nArchetypes:');
     if (arch.primary) parts.push(`Primary: ${arch.primary.title} - ${arch.primary.description}`);
-    if (arch.secondary) parts.push(`Secondary: ${arch.secondary.title} - ${arch.secondary.description}`);
+    if (arch.secondary)
+      parts.push(`Secondary: ${arch.secondary.title} - ${arch.secondary.description}`);
   }
 
   if (strategyData.colorPalettes?.length) {
     parts.push('\nColor Palettes:');
-    strategyData.colorPalettes.forEach(p => {
+    strategyData.colorPalettes.forEach((p) => {
       parts.push(`${p.name}: ${p.colors.join(', ')} - ${p.psychology}`);
     });
   }
@@ -287,7 +310,7 @@ async function processImage(source: string): Promise<{ data: string; mimeType: s
           const mimeType = header.split(':')[1].split(';')[0];
           resolve({
             data: data,
-            mimeType: mimeType
+            mimeType: mimeType,
           });
         };
         reader.onerror = reject;
@@ -305,17 +328,19 @@ async function processImage(source: string): Promise<{ data: string; mimeType: s
     // Handle raw Base64 (assume PNG if no mime type provided, though unlikely in this app's context)
     return {
       data: source,
-      mimeType: 'image/png'
+      mimeType: 'image/png',
     };
   } catch (error) {
     console.error('Error processing image:', error);
-    throw new Error('Failed to process image. Please ensure the image URL is accessible and valid.');
+    throw new Error(
+      'Failed to process image. Please ensure the image URL is accessible and valid.'
+    );
   }
 }
 
 /**
  * Send chat message to Gemini API
- * 
+ *
  * @param messages - Conversation history
  * @param context - Optional context (images, text, strategy)
  * @param apiKey - Optional API key (user's own key)
@@ -362,12 +387,12 @@ export async function sendChatMessage(
     if (context?.images && context.images.length > 0) {
       const imagePromises = context.images.map(processImage);
       const results = await Promise.all(imagePromises);
-      results.forEach(img => {
+      results.forEach((img) => {
         processedImages.push({
           inlineData: {
             data: img.data,
-            mimeType: img.mimeType
-          }
+            mimeType: img.mimeType,
+          },
         });
       });
     }
@@ -430,11 +455,13 @@ export async function sendChatMessage(
 
     // Verify no images were generated (safety check)
     const hasImages = response.candidates?.[0]?.content?.parts?.some(
-      part => part.inlineData !== undefined
+      (part) => part.inlineData !== undefined
     );
 
     if (hasImages) {
-      console.warn('[ChatService] Received image data when text-only was expected. Ignoring images.');
+      console.warn(
+        '[ChatService] Received image data when text-only was expected. Ignoring images.'
+      );
     }
 
     return textResponse;
@@ -449,4 +476,3 @@ export async function sendChatMessage(
     throw new Error('Failed to send chat message. Please try again.');
   }
 }
-

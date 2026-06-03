@@ -1,10 +1,34 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Globe, Diamond, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen, Figma, Github, Workflow } from 'lucide-react';
+import {
+  Globe,
+  Diamond,
+  TrendingUp,
+  Plus,
+  Image as ImageIcon,
+  Camera,
+  Layers,
+  MapPin,
+  Sun,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  Box,
+  Settings,
+  Palette,
+  FolderOpen,
+  Figma,
+  Github,
+  Workflow,
+} from 'lucide-react';
 import { PageShell } from '../components/ui/PageShell';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
-import { getAllCommunityPresets, getCommunityStats, clearCommunityPresetsCache } from '../services/communityPresetsService';
+import {
+  getAllCommunityPresets,
+  getCommunityStats,
+  clearCommunityPresetsCache,
+} from '../services/communityPresetsService';
 import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
 import { getGithubUrl } from '../config/branding';
@@ -21,7 +45,7 @@ import { toast } from 'sonner';
 import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 
 // --- Components ---
@@ -44,7 +68,18 @@ const BackgroundGlow = () => (
   </div>
 );
 
-type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes' | 'ui-prompts' | 'figma-prompts';
+type PresetType =
+  | 'mockup'
+  | 'angle'
+  | 'texture'
+  | 'ambience'
+  | 'luminance'
+  | '3d'
+  | 'presets'
+  | 'aesthetics'
+  | 'themes'
+  | 'ui-prompts'
+  | 'figma-prompts';
 
 interface PresetStats {
   mockup: number;
@@ -140,13 +175,12 @@ export const CommunityPage: React.FC = () => {
 
       // Create a new project from this workflow
       // Ensure nodes/edges are properly typed/formatted if needed
-      const newProject = await canvasApi.save(
-        workflow.name,
-        workflow.nodes,
-        workflow.edges
-      );
+      const newProject = await canvasApi.save(workflow.name, workflow.nodes, workflow.edges);
 
-      toast.success(t('workflows.messages.loaded', { name: workflow.name }) || `Workflow loaded: ${workflow.name}`);
+      toast.success(
+        t('workflows.messages.loaded', { name: workflow.name }) ||
+          `Workflow loaded: ${workflow.name}`
+      );
       navigate(`/canvas/${newProject._id}`);
     } catch (error) {
       console.error('Failed to load workflow:', error);
@@ -161,7 +195,7 @@ export const CommunityPage: React.FC = () => {
         const [allPresets, publicMockups, globalStats] = await Promise.all([
           getAllCommunityPresets(),
           mockupApi.getAllPublic().catch(() => []),
-          getCommunityStats()
+          getCommunityStats(),
         ]);
 
         // Store all presets for each category (remove duplicates by id)
@@ -189,7 +223,10 @@ export const CommunityPage: React.FC = () => {
           'figma-prompts': allPresets['figma-prompts']?.length || 0,
           total: 0,
         };
-        newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+        newStats.total = Object.values(newStats).reduce(
+          (sum, val) => sum + (typeof val === 'number' ? val : 0),
+          0
+        );
         setStats(newStats);
         setGlobalCommunityStats(globalStats);
 
@@ -263,92 +300,170 @@ export const CommunityPage: React.FC = () => {
     loadWorkflows();
   }, []);
 
-  const presetTypes: Array<{ type: PresetType; icon: React.ComponentType<{ size?: number; className?: string }>; label: string; count: number; presets: any[] }> = [
-    { type: 'mockup', icon: ImageIcon, label: t('communityPresets.tabs.mockup'), count: stats.mockup, presets: categoryPresets.mockup },
-    { type: 'angle', icon: Camera, label: t('communityPresets.tabs.angle'), count: stats.angle, presets: categoryPresets.angle },
-    { type: 'texture', icon: Layers, label: t('communityPresets.tabs.texture'), count: stats.texture, presets: categoryPresets.texture },
-    { type: 'ambience', icon: MapPin, label: t('communityPresets.tabs.ambience'), count: stats.ambience, presets: categoryPresets.ambience },
-    { type: 'luminance', icon: Sun, label: t('communityPresets.tabs.luminance'), count: stats.luminance, presets: categoryPresets.luminance },
-    { type: '3d', icon: Box, label: t('communityPresets.categories.3d'), count: stats['3d'], presets: categoryPresets['3d'] },
-    { type: 'presets', icon: Settings, label: t('common.presets'), count: stats.presets, presets: categoryPresets.presets },
-    { type: 'aesthetics', icon: Palette, label: t('communityPresets.categories.aesthetics'), count: stats.aesthetics, presets: categoryPresets.aesthetics },
-    { type: 'themes', icon: Diamond, label: t('communityPresets.categories.themes'), count: stats.themes, presets: categoryPresets.themes },
+  const presetTypes: Array<{
+    type: PresetType;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    label: string;
+    count: number;
+    presets: any[];
+  }> = [
+    {
+      type: 'mockup',
+      icon: ImageIcon,
+      label: t('communityPresets.tabs.mockup'),
+      count: stats.mockup,
+      presets: categoryPresets.mockup,
+    },
+    {
+      type: 'angle',
+      icon: Camera,
+      label: t('communityPresets.tabs.angle'),
+      count: stats.angle,
+      presets: categoryPresets.angle,
+    },
+    {
+      type: 'texture',
+      icon: Layers,
+      label: t('communityPresets.tabs.texture'),
+      count: stats.texture,
+      presets: categoryPresets.texture,
+    },
+    {
+      type: 'ambience',
+      icon: MapPin,
+      label: t('communityPresets.tabs.ambience'),
+      count: stats.ambience,
+      presets: categoryPresets.ambience,
+    },
+    {
+      type: 'luminance',
+      icon: Sun,
+      label: t('communityPresets.tabs.luminance'),
+      count: stats.luminance,
+      presets: categoryPresets.luminance,
+    },
+    {
+      type: '3d',
+      icon: Box,
+      label: t('communityPresets.categories.3d'),
+      count: stats['3d'],
+      presets: categoryPresets['3d'],
+    },
+    {
+      type: 'presets',
+      icon: Settings,
+      label: t('common.presets'),
+      count: stats.presets,
+      presets: categoryPresets.presets,
+    },
+    {
+      type: 'aesthetics',
+      icon: Palette,
+      label: t('communityPresets.categories.aesthetics'),
+      count: stats.aesthetics,
+      presets: categoryPresets.aesthetics,
+    },
+    {
+      type: 'themes',
+      icon: Diamond,
+      label: t('communityPresets.categories.themes'),
+      count: stats.themes,
+      presets: categoryPresets.themes,
+    },
     // AI-generated prompts
-    { type: 'ui-prompts', icon: Diamond, label: 'UI Prompts', count: stats['ui-prompts'], presets: categoryPresets['ui-prompts'] },
-    { type: 'figma-prompts', icon: Figma, label: 'Figma Prompts', count: stats['figma-prompts'], presets: categoryPresets['figma-prompts'] },
+    {
+      type: 'ui-prompts',
+      icon: Diamond,
+      label: 'UI Prompts',
+      count: stats['ui-prompts'],
+      presets: categoryPresets['ui-prompts'],
+    },
+    {
+      type: 'figma-prompts',
+      icon: Figma,
+      label: 'Figma Prompts',
+      count: stats['figma-prompts'],
+      presets: categoryPresets['figma-prompts'],
+    },
   ];
 
   const isAuthenticated = isUserAuthenticated === true;
 
-  const handleSavePreset = useCallback(async (data: any) => {
-    const token = authService.getToken();
-    if (!token) {
-      throw new Error(t('communityPresets.errors.mustBeAuthenticatedToCreate'));
-    }
-
-    const COMMUNITY_API = '/api/community/presets';
-    const presetId = data.id;
-
-    try {
-      const body: any = {
-        presetType: data.presetType,
-        id: presetId,
-        name: data.name,
-        description: data.description,
-        prompt: data.prompt,
-        aspectRatio: data.aspectRatio,
-        tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
-      };
-
-      if (data.presetType === 'mockup' && data.referenceImageUrl !== undefined) {
-        body.referenceImageUrl = data.referenceImageUrl;
+  const handleSavePreset = useCallback(
+    async (data: any) => {
+      const token = authService.getToken();
+      if (!token) {
+        throw new Error(t('communityPresets.errors.mustBeAuthenticatedToCreate'));
       }
 
-      const response = await fetch(COMMUNITY_API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
+      const COMMUNITY_API = '/api/community/presets';
+      const presetId = data.id;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || t('communityPresets.errors.failedToCreate'));
+      try {
+        const body: any = {
+          presetType: data.presetType,
+          id: presetId,
+          name: data.name,
+          description: data.description,
+          prompt: data.prompt,
+          aspectRatio: data.aspectRatio,
+          tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
+        };
+
+        if (data.presetType === 'mockup' && data.referenceImageUrl !== undefined) {
+          body.referenceImageUrl = data.referenceImageUrl;
+        }
+
+        const response = await fetch(COMMUNITY_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || t('communityPresets.errors.failedToCreate'));
+        }
+
+        clearCommunityPresetsCache();
+        toast.success(t('communityPresets.messages.presetCreated'));
+
+        // Reload stats after creating preset
+        const [allPresets, globalStats] = await Promise.all([
+          getAllCommunityPresets(),
+          getCommunityStats(),
+        ]);
+
+        const newStats: PresetStats = {
+          mockup: allPresets.mockup?.length || 0,
+          angle: allPresets.angle?.length || 0,
+          texture: allPresets.texture?.length || 0,
+          ambience: allPresets.ambience?.length || 0,
+          luminance: allPresets.luminance?.length || 0,
+          '3d': allPresets['3d']?.length || 0,
+          presets: allPresets.presets?.length || 0,
+          aesthetics: allPresets.aesthetics?.length || 0,
+          themes: allPresets.themes?.length || 0,
+          'ui-prompts': allPresets['ui-prompts']?.length || 0,
+          'figma-prompts': allPresets['figma-prompts']?.length || 0,
+          total: 0,
+        };
+        newStats.total = Object.values(newStats).reduce(
+          (sum, val) => sum + (typeof val === 'number' ? val : 0),
+          0
+        );
+        setStats(newStats);
+        setGlobalCommunityStats(globalStats);
+      } catch (saveError: any) {
+        console.error('Save error:', saveError);
+        throw saveError;
       }
-
-      clearCommunityPresetsCache();
-      toast.success(t('communityPresets.messages.presetCreated'));
-
-      // Reload stats after creating preset
-      const [allPresets, globalStats] = await Promise.all([
-        getAllCommunityPresets(),
-        getCommunityStats()
-      ]);
-
-      const newStats: PresetStats = {
-        mockup: allPresets.mockup?.length || 0,
-        angle: allPresets.angle?.length || 0,
-        texture: allPresets.texture?.length || 0,
-        ambience: allPresets.ambience?.length || 0,
-        luminance: allPresets.luminance?.length || 0,
-        '3d': allPresets['3d']?.length || 0,
-        presets: allPresets.presets?.length || 0,
-        aesthetics: allPresets.aesthetics?.length || 0,
-        themes: allPresets.themes?.length || 0,
-        'ui-prompts': allPresets['ui-prompts']?.length || 0,
-        'figma-prompts': allPresets['figma-prompts']?.length || 0,
-        total: 0,
-      };
-      newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
-      setStats(newStats);
-      setGlobalCommunityStats(globalStats);
-    } catch (saveError: any) {
-      console.error('Save error:', saveError);
-      throw saveError;
-    }
-  }, [t]);
+    },
+    [t]
+  );
 
   return (
     <PageShell
@@ -358,25 +473,16 @@ export const CommunityPage: React.FC = () => {
       title={t('communityPresets.title')}
       microTitle="Systems // Community"
       description={t('communityPresets.subtitle')}
-      breadcrumb={[
-        { label: t('apps.home'), to: '/' },
-        { label: t('communityPresets.title') }
-      ]}
+      breadcrumb={[{ label: t('apps.home'), to: '/' }, { label: t('communityPresets.title') }]}
       hideHeader // We're using a custom hero section instead of the default header
     >
-
       <div className="relative z-10">
-
         {/* Hero Section */}
         <div className="relative mb-16 min-h-[550px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
           {/* 3D Object - Repositioned for better balance */}
           <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
-              <ClubLogo3D
-                isMobile={isMobile}
-                color="#0f0f0f"
-                starColor="#52ddeb"
-              />
+              <ClubLogo3D isMobile={isMobile} color="#0f0f0f" starColor="#52ddeb" />
             </Suspense>
           </div>
 
@@ -439,7 +545,9 @@ export const CommunityPage: React.FC = () => {
                     className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
                   >
                     <Globe size={18} className="text-neutral-400" />
-                    <span className="font-manrope font-semibold">{t('community.explorar_galeria')}</span>
+                    <span className="font-manrope font-semibold">
+                      {t('community.explorar_galeria')}
+                    </span>
                   </Button>
 
                   <Button
@@ -459,33 +567,75 @@ export const CommunityPage: React.FC = () => {
                 transition={{ delay: 0.4 }}
                 className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-16 max-w-xl"
               >
-                <GlassPanel padding="sm" className="bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group">
+                <GlassPanel
+                  padding="sm"
+                  className="bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group"
+                >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.membros')}</span>
-                    <TrendingUp size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                      {t('community.membros')}
+                    </span>
+                    <TrendingUp
+                      size={14}
+                      className="text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                    />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
-                    {isLoading ? '...' : (globalCommunityStats.totalUsers === 0 ? '1' : <CountUp value={globalCommunityStats.totalUsers} />)}
+                    {isLoading ? (
+                      '...'
+                    ) : globalCommunityStats.totalUsers === 0 ? (
+                      '1'
+                    ) : (
+                      <CountUp value={globalCommunityStats.totalUsers} />
+                    )}
                   </p>
                 </GlassPanel>
 
-                <GlassPanel padding="sm" className="bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group">
+                <GlassPanel
+                  padding="sm"
+                  className="bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group"
+                >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.criaes')}</span>
-                    <Diamond size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                      {t('community.criaes')}
+                    </span>
+                    <Diamond
+                      size={14}
+                      className="text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                    />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
-                    {isLoading ? '...' : (globalCommunityStats.totalPresets === 0 ? '!' : <CountUp value={globalCommunityStats.totalPresets} />)}
+                    {isLoading ? (
+                      '...'
+                    ) : globalCommunityStats.totalPresets === 0 ? (
+                      '!'
+                    ) : (
+                      <CountUp value={globalCommunityStats.totalPresets} />
+                    )}
                   </p>
                 </GlassPanel>
 
-                <GlassPanel padding="sm" className="hidden sm:flex bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group">
+                <GlassPanel
+                  padding="sm"
+                  className="hidden sm:flex bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group"
+                >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">{t('community.publicado')}</span>
-                    <ImageIcon size={14} className="text-neutral-700 group-hover:text-neutral-400 transition-colors" />
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                      {t('community.publicado')}
+                    </span>
+                    <ImageIcon
+                      size={14}
+                      className="text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                    />
                   </div>
                   <p className="text-3xl font-bold text-white font-mono tracking-tighter">
-                    {isLoading ? '...' : (globalCommunityStats.totalBlankMockups === 0 ? '+' : <CountUp value={globalCommunityStats.totalBlankMockups} />)}
+                    {isLoading ? (
+                      '...'
+                    ) : globalCommunityStats.totalBlankMockups === 0 ? (
+                      '+'
+                    ) : (
+                      <CountUp value={globalCommunityStats.totalBlankMockups} />
+                    )}
                   </p>
                 </GlassPanel>
               </motion.div>
@@ -505,8 +655,12 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1">
-                  <MicroTitle className="text-neutral-500 tracking-[0.1em]">{t('community.curadoria')}</MicroTitle>
-                  <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">{t('community.explorar_por_categoria')}</h2>
+                  <MicroTitle className="text-neutral-500 tracking-[0.1em]">
+                    {t('community.curadoria')}
+                  </MicroTitle>
+                  <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">
+                    {t('community.explorar_por_categoria')}
+                  </h2>
                 </div>
                 <Link
                   to="/community/presets"
@@ -530,13 +684,18 @@ export const CommunityPage: React.FC = () => {
 
                     <div className="flex items-center justify-between mb-6">
                       <div className="p-3 bg-white/5 rounded-xl group-hover:bg-white/5 group-hover:scale-110 transition-all duration-300">
-                        <category.icon size={24} className="text-neutral-400 group-hover:text-neutral-200 transition-colors" />
+                        <category.icon
+                          size={24}
+                          className="text-neutral-400 group-hover:text-neutral-200 transition-colors"
+                        />
                       </div>
                       <div className="flex flex-col items-end">
                         <span className="text-2xl font-bold font-mono text-white whitespace-nowrap group-hover:text-neutral-200 transition-colors">
                           <CountUp value={category.count} />
                         </span>
-                        <span className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">Presets</span>
+                        <span className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">
+                          Presets
+                        </span>
                       </div>
                     </div>
 
@@ -563,7 +722,9 @@ export const CommunityPage: React.FC = () => {
                           </div>
                         ))
                       ) : (
-                        <p className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest text-left">{t('community.vazio')}</p>
+                        <p className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest text-left">
+                          {t('community.vazio')}
+                        </p>
                       )}
                     </div>
                   </GlassPanel>
@@ -575,9 +736,12 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white font-manrope">{t('community.workflows_da_comunidade')}</h2>
+                  <h2 className="text-2xl font-bold text-white font-manrope">
+                    {t('community.workflows_da_comunidade')}
+                  </h2>
                   <p className="text-neutral-500 font-mono text-sm max-w-lg mt-2">
-                    Workflows completos criados pela comunidade. Salve, compartilhe e reutilize estruturas de canvas inteiras.
+                    Workflows completos criados pela comunidade. Salve, compartilhe e reutilize
+                    estruturas de canvas inteiras.
                   </p>
                 </div>
                 <Link
@@ -592,7 +756,10 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="bg-neutral-900/20 border border-white/10 rounded-md p-6">
+                    <div
+                      key={i}
+                      className="bg-neutral-900/20 border border-white/10 rounded-md p-6"
+                    >
                       <div className="aspect-video bg-neutral-900 rounded-md mb-4" />
                       <div className="h-4 bg-neutral-900 rounded mb-2" />
                       <div className="h-3 bg-neutral-900 rounded w-2/3" />
@@ -600,7 +767,10 @@ export const CommunityPage: React.FC = () => {
                   ))
                 ) : workflows.length > 0 ? (
                   workflows.slice(0, 8).map((workflow) => {
-                    const categoryConfig = WORKFLOW_CATEGORY_CONFIG[workflow.category as keyof typeof WORKFLOW_CATEGORY_CONFIG] || WORKFLOW_CATEGORY_CONFIG.general;
+                    const categoryConfig =
+                      WORKFLOW_CATEGORY_CONFIG[
+                        workflow.category as keyof typeof WORKFLOW_CATEGORY_CONFIG
+                      ] || WORKFLOW_CATEGORY_CONFIG.general;
                     const CategoryIcon = categoryConfig.icon;
 
                     return (
@@ -636,8 +806,12 @@ export const CommunityPage: React.FC = () => {
                           <span
                             className={cn(
                               'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
-                              categoryConfig.color.replace('text-', 'bg-').replace('-400', '-500/20'),
-                              categoryConfig.color.replace('text-', 'border-').replace('-400', '-500/30'),
+                              categoryConfig.color
+                                .replace('text-', 'bg-')
+                                .replace('-400', '-500/20'),
+                              categoryConfig.color
+                                .replace('text-', 'border-')
+                                .replace('-400', '-500/30'),
                               categoryConfig.color
                             )}
                           >
@@ -673,11 +847,16 @@ export const CommunityPage: React.FC = () => {
 
               {workflows.length > 8 && (
                 <div className="flex justify-center mt-8">
-                  <Button variant="ghost" onClick={() => setShowWorkflowLibrary(true)}
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowWorkflowLibrary(true)}
                     className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-white/10 rounded-full transition-all text-sm font-mono group"
                   >
                     Ver todos os workflows
-                    <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight
+                      size={16}
+                      className="group-hover:translate-x-0.5 transition-transform"
+                    />
                   </Button>
                 </div>
               )}
@@ -687,7 +866,9 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-bold text-white font-manrope">{t('community.galeria_da_comunidade')}</h2>
+                  <h2 className="text-3xl font-bold text-white font-manrope">
+                    {t('community.galeria_da_comunidade')}
+                  </h2>
                   <p className="text-neutral-500 font-mono text-sm max-w-lg">
                     Inspirado pelas criações enviadas pelos nossos usuários em tempo real.
                   </p>
@@ -704,7 +885,10 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-neutral-900 rounded-md border border-white/10" />
+                    <div
+                      key={i}
+                      className="aspect-square bg-neutral-900 rounded-md border border-white/10"
+                    />
                   ))
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
@@ -725,13 +909,17 @@ export const CommunityPage: React.FC = () => {
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 p-4 flex flex-col justify-end">
-                          <MicroTitle as="p" className="text-neutral-500 mb-1">Prompt</MicroTitle>
+                          <MicroTitle as="p" className="text-neutral-500 mb-1">
+                            Prompt
+                          </MicroTitle>
                           <p className="text-xs text-white font-mono line-clamp-2 mb-2">
                             {mockup.prompt}
                           </p>
                           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                             <Plus size={10} className="text-neutral-500" />
-                            <span className="text-[10px] text-neutral-400 font-mono uppercase">{t('community.usar_como_referncia')}</span>
+                            <span className="text-[10px] text-neutral-400 font-mono uppercase">
+                              {t('community.usar_como_referncia')}
+                            </span>
                           </div>
                         </div>
                       </Link>
@@ -755,16 +943,26 @@ export const CommunityPage: React.FC = () => {
 
               {allPublicMockups.length > 10 && (
                 <div className="flex justify-center mt-8">
-                  <Button variant="ghost" onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
+                  <Button
+                    variant="ghost"
+                    onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
                     className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-white/10 rounded-full transition-all text-sm font-mono group"
                   >
                     {isGalleryExpanded ? (
                       <>
-                        Ver menos <ChevronUp size={16} className="group-hover:-translate-y-0.5 transition-transform" />
+                        Ver menos{' '}
+                        <ChevronUp
+                          size={16}
+                          className="group-hover:-translate-y-0.5 transition-transform"
+                        />
                       </>
                     ) : (
                       <>
-                        Ver mais <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
+                        Ver mais{' '}
+                        <ChevronDown
+                          size={16}
+                          className="group-hover:translate-y-0.5 transition-transform"
+                        />
                       </>
                     )}
                   </Button>
@@ -780,13 +978,16 @@ export const CommunityPage: React.FC = () => {
                   <div className="max-w-xl space-y-4 text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-3 text-neutral-400">
                       <Github size={24} />
-                      <MicroTitle as="span" className="font-semibold text-neutral-400">Open Source</MicroTitle>
+                      <MicroTitle as="span" className="font-semibold text-neutral-400">
+                        Open Source
+                      </MicroTitle>
                     </div>
                     <h2 className="text-3xl md:text-4xl font-bold text-white font-manrope leading-tight">
                       Vamos crescer junto
                     </h2>
                     <p className="text-neutral-400 font-mono text-sm md:text-base leading-relaxed">
-                      Visant Labs é movido pela paixão e colaboração. Acesse nosso repositório no GitHub para contribuir, relatar bugs ou dar uma estrela.
+                      Visant Labs é movido pela paixão e colaboração. Acesse nosso repositório no
+                      GitHub para contribuir, relatar bugs ou dar uma estrela.
                     </p>
                   </div>
                   <div className="flex flex-col items-center gap-4">
@@ -797,12 +998,15 @@ export const CommunityPage: React.FC = () => {
                       className="group flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-md transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-white/10"
                     >
                       <Github size={22} className="group-hover:rotate-12 transition-transform" />
-                      <span className="font-mono uppercase tracking-widest">{t('community.ver_repositrio')}</span>
-                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                      <span className="font-mono uppercase tracking-widest">
+                        {t('community.ver_repositrio')}
+                      </span>
+                      <ArrowRight
+                        size={18}
+                        className="group-hover:translate-x-1 transition-transform"
+                      />
                     </a>
-                    <MicroTitle as="p">
-                      v1.0.0-alpha • MIT License
-                    </MicroTitle>
+                    <MicroTitle as="p">v1.0.0-alpha • MIT License</MicroTitle>
                   </div>
                 </div>
               </GlassPanel>
@@ -832,5 +1036,3 @@ export const CommunityPage: React.FC = () => {
 };
 
 export default CommunityPage;
-
-

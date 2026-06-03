@@ -12,22 +12,33 @@ import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUti
 
 interface UseStudio3DNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
-  updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void;
-  updateNodeLoadingState: <T extends FlowNodeData>(nodeId: string, isLoading: boolean, nodeType?: string) => void;
+  updateNodeData: <T extends FlowNodeData>(
+    nodeId: string,
+    newData: Partial<T>,
+    nodeType?: string
+  ) => void;
+  updateNodeLoadingState: <T extends FlowNodeData>(
+    nodeId: string,
+    isLoading: boolean,
+    nodeType?: string
+  ) => void;
   canvasId?: string;
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
 }
 
-export const useStudio3DNodeHandlers = ({
-  updateNodeData,
-}: UseStudio3DNodeHandlersParams) => {
+export const useStudio3DNodeHandlers = ({ updateNodeData }: UseStudio3DNodeHandlersParams) => {
   const handleStudio3DApply = useCallback(async (_nodeId: string) => {
     // Rendering is handled by the node component's modal editor.
     // The snapshot is taken on modal close and saved via onUpdateData.
     // This handler exists for API consistency but is a no-op.
   }, []);
 
-  const handleStudio3DNodeDataUpdate = useNodeDataUpdateHandler<Studio3DNodeData>(updateNodeData, 'studio3d');
+  const handleStudio3DNodeDataUpdate = useNodeDataUpdateHandler<Studio3DNodeData>(
+    updateNodeData,
+    'studio3d'
+  );
 
   return { handleStudio3DApply, handleStudio3DNodeDataUpdate };
 };

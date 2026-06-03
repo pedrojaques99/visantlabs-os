@@ -29,10 +29,12 @@ export async function authenticateApiKey(req: AuthRequest): Promise<boolean> {
   if (!user) return false;
 
   // Update lastUsed (fire and forget)
-  prisma.apiKey.update({
-    where: { id: apiKey.id },
-    data: { lastUsed: new Date() },
-  }).catch(() => {});
+  prisma.apiKey
+    .update({
+      where: { id: apiKey.id },
+      data: { lastUsed: new Date() },
+    })
+    .catch(() => {});
 
   req.userId = user.id;
   req.userEmail = user.email;

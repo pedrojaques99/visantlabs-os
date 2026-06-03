@@ -51,7 +51,10 @@ export async function stopTestMongo(): Promise<void> {
  */
 export async function resetDb(): Promise<void> {
   const { prisma } = await import('../../server/db/prisma.js');
-  const collections = (await (prisma as any).$runCommandRaw({ listCollections: 1, nameOnly: true })) as {
+  const collections = (await (prisma as any).$runCommandRaw({
+    listCollections: 1,
+    nameOnly: true,
+  })) as {
     cursor?: { firstBatch?: Array<{ name: string }> };
   };
   const names = collections.cursor?.firstBatch?.map((c) => c.name) ?? [];

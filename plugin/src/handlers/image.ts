@@ -52,11 +52,13 @@ export async function pasteGeneratedImage(
     const imageHash = figma.createImage(bytes).hash;
 
     // Set the fill
-    rectangle.fills = [{
-      type: 'IMAGE',
-      scaleMode: 'FILL',
-      imageHash: imageHash as string,
-    } as any];
+    rectangle.fills = [
+      {
+        type: 'IMAGE',
+        scaleMode: 'FILL',
+        imageHash: imageHash as string,
+      } as any,
+    ];
 
     // Select and zoom
     page.selection = [frame];
@@ -65,13 +67,13 @@ export async function pasteGeneratedImage(
     postToUI({
       type: 'IMAGE_PASTED',
       message: 'Imagem colada no canvas!',
-      nodeId: frame.id
+      nodeId: frame.id,
     });
   } catch (error) {
     console.error('[PasteImage] Error:', error);
     postToUI({
       type: 'IMAGE_PASTE_ERROR',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }

@@ -38,10 +38,7 @@ export const setTextSelection = (
 /**
  * Insert text at the current cursor position
  */
-export const insertText = (
-  textarea: HTMLTextAreaElement,
-  textToInsert: string
-): void => {
+export const insertText = (textarea: HTMLTextAreaElement, textToInsert: string): void => {
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
   const value = textarea.value;
@@ -189,4 +186,3 @@ export const normalizeColor = (color: string): string => {
   // For now, just return as-is if it doesn't match hex pattern
   return cleanColor;
 };
-

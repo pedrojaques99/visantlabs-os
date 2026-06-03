@@ -56,7 +56,11 @@ async function chatWithOllama(
   }
   for (const h of history.slice(-20)) {
     const role = h.role === 'model' ? 'assistant' : h.role;
-    const content = h.parts?.map((p: any) => p.text).filter(Boolean).join('\n') || '';
+    const content =
+      h.parts
+        ?.map((p: any) => p.text)
+        .filter(Boolean)
+        .join('\n') || '';
     if (content) messages.push({ role, content });
   }
   messages.push({ role: 'user', content: query.substring(0, 4000) });

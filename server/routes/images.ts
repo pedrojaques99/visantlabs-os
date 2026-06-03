@@ -3,7 +3,12 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
-import { validateExternalUrl, getErrorMessage, safeFetch, SSRFValidationError } from '../utils/securityValidation.js';
+import {
+  validateExternalUrl,
+  getErrorMessage,
+  safeFetch,
+  SSRFValidationError,
+} from '../utils/securityValidation.js';
 import { rateLimit } from 'express-rate-limit';
 import { LRUCache } from 'lru-cache';
 import { uploadImage, isR2Configured } from '../services/r2Service.js';
@@ -68,7 +73,9 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
     const serperKey = process.env.SERPER_API_KEY;
 
     if (!serperKey) {
-      return res.status(500).json({ error: 'Search engine not configured (missing Serper API Key)' });
+      return res
+        .status(500)
+        .json({ error: 'Search engine not configured (missing Serper API Key)' });
     }
 
     if (!query || typeof query !== 'string') {
@@ -77,7 +84,7 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
 
     // Security: Sanitize query
     const safeQuery = query.trim().replace(/[<>"{}]/g, '');
-    
+
     // Construct final query based on mode
     let finalQuery = safeQuery;
     let tbs = '';
@@ -90,12 +97,12 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
     } else {
       // Query modifiers driven entirely by contentMode badge — no global negative operators
       const contentQueryMap: Record<string, string> = {
-        all:          '',
-        photo:        '-logo -text -clipart -illustration',
-        logo:         'logo transparent -background -photo',
+        all: '',
+        photo: '-logo -text -clipart -illustration',
+        logo: 'logo transparent -background -photo',
         illustration: 'illustration art -photo',
-        vector:       'vector svg filetype:svg -photo',
-        creative:     'banner creative ad',
+        vector: 'vector svg filetype:svg -photo',
+        creative: 'banner creative ad',
       };
 
       const contentSuffix = contentQueryMap[contentMode] || '';
@@ -110,23 +117,23 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
 
       // contentMode overrides manual type for tbs
       const tbsTypeMap: Record<string, string> = {
-        logo:         'itp:clipart',
+        logo: 'itp:clipart',
         illustration: 'itp:clipart',
-        vector:       'itp:lineart',
-        photo:        'itp:photo',
+        vector: 'itp:lineart',
+        photo: 'itp:photo',
       };
       if (tbsTypeMap[contentMode]) {
         filters.push(tbsTypeMap[contentMode]);
       } else {
         if (designerParams.type === 'transparent') filters.push('ic:trans');
-        if (designerParams.type === 'clipart')     filters.push('itp:clipart');
-        if (designerParams.type === 'lineart')     filters.push('itp:lineart');
-        if (designerParams.type === 'photo')       filters.push('itp:photo');
+        if (designerParams.type === 'clipart') filters.push('itp:clipart');
+        if (designerParams.type === 'lineart') filters.push('itp:lineart');
+        if (designerParams.type === 'photo') filters.push('itp:photo');
       }
 
       if (designerParams.aspect === 'square') filters.push('iar:s');
-      if (designerParams.aspect === 'wide')   filters.push('iar:w');
-      if (designerParams.aspect === 'tall')   filters.push('iar:t');
+      if (designerParams.aspect === 'wide') filters.push('iar:w');
+      if (designerParams.aspect === 'tall') filters.push('iar:t');
 
       if (filters.length > 0) tbs = filters.join(',');
     }
@@ -149,7 +156,13 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
     // Fall back to local LRU
     const lruCacheKey = `search-${userId}-${mode}-${finalQuery}-${limit}-${tbs}`;
     const lruCached = extractionCache.get(lruCacheKey);
-    if (lruCached) return res.json({ success: true, count: lruCached.length, images: lruCached, fromCache: true });
+    if (lruCached)
+      return res.json({
+        success: true,
+        count: lruCached.length,
+        images: lruCached,
+        fromCache: true,
+      });
 
     console.log(`🔍 [Serper] Searching: "${finalQuery}" (Mode: ${mode}, tbs: ${tbs})`);
 
@@ -164,7 +177,7 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
         num: limit,
         gl: 'br',
         hl: 'pt-br',
-        tbs: tbs || undefined
+        tbs: tbs || undefined,
       }),
     });
 
@@ -180,8 +193,12 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
     const results = rawImages
       .filter((img: any) => {
         // Skip video/reels
-        const isReel = img.imageUrl?.includes('/reels/') || img.link?.includes('/reels/') || img.title?.toLowerCase().includes('reel');
-        const isVideo = img.imageUrl?.includes('video') || img.title?.toLowerCase().includes('video');
+        const isReel =
+          img.imageUrl?.includes('/reels/') ||
+          img.link?.includes('/reels/') ||
+          img.title?.toLowerCase().includes('reel');
+        const isVideo =
+          img.imageUrl?.includes('video') || img.title?.toLowerCase().includes('video');
         if (isReel || isVideo) return false;
 
         const url = (img.imageUrl || '').toLowerCase();
@@ -190,18 +207,43 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
 
         // ========== ALWAYS: paid stock & watermark (never wanted) ==========
         const paidStockSites = [
-          'adobestock', 'stock.adobe', 'gettyimages', 'istock', 'pond5',
-          'shutterstock', 'alamy', 'dreamstime', 'depositphotos', 'fotolia',
-          '123rf', 'clipart.com', 'canstockphoto', 'stockvault'
+          'adobestock',
+          'stock.adobe',
+          'gettyimages',
+          'istock',
+          'pond5',
+          'shutterstock',
+          'alamy',
+          'dreamstime',
+          'depositphotos',
+          'fotolia',
+          '123rf',
+          'clipart.com',
+          'canstockphoto',
+          'stockvault',
         ];
-        if (paidStockSites.some(p => url.includes(p) || domain.includes(p))) return false;
+        if (paidStockSites.some((p) => url.includes(p) || domain.includes(p))) return false;
 
-        const watermarkKeywords = ['watermark', 'watermarked', 'tarja', '©', '®', 'all rights reserved'];
-        if (watermarkKeywords.some(k => title.includes(k))) return false;
+        const watermarkKeywords = [
+          'watermark',
+          'watermarked',
+          'tarja',
+          '©',
+          '®',
+          'all rights reserved',
+        ];
+        if (watermarkKeywords.some((k) => title.includes(k))) return false;
 
         // ========== LOW-QUALITY (always) ==========
-        const lowQualityPatterns = ['low res', 'low quality', 'pixelated', 'placeholder', 'no image', 'image not found'];
-        if (lowQualityPatterns.some(p => title.includes(p))) return false;
+        const lowQualityPatterns = [
+          'low res',
+          'low quality',
+          'pixelated',
+          'placeholder',
+          'no image',
+          'image not found',
+        ];
+        if (lowQualityPatterns.some((p) => title.includes(p))) return false;
 
         // ========== TEXT-OVERLAY / ARTICLE THUMBNAIL DETECTION ==========
         // 'creative' mode: user explicitly wants images with text — skip this filter
@@ -210,28 +252,80 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
         const looseTextFilter = contentMode === 'logo';
 
         if (!skipTextFilter) {
-          const rawTitle = (img.title || '');
+          const rawTitle = img.title || '';
 
           if (!looseTextFilter) {
             const sentenceWords = [
-              ' and ', ' the ', ' with ', ' for ', ' using ', ' how ', ' why ',
-              ' what ', ' when ', ' where ', ' vs ', ' versus ', ' or ', ' but ',
-              ' are ', ' is ', ' was ', ' were ', ' has ', ' have ', ' been ',
-              ' will ', ' can ', ' should ', ' would ', ' could ',
-              ' to ', ' of ', ' in ', ' on ', ' at ', ' by ', ' from ',
-              ' into ', ' about ', ' through ', ' between ', ' against ',
-              ' releasing ', ' released ', ' introducing ', ' launches ',
-              ' update ', ' review ', ' guide ', ' tutorial ', ' blog ',
-              ' post ', ' article ', ' read more', ' click here',
-              ' part ', ' episode ', ' chapter ', ' series ',
-              ' vs.', '...', ' — ', ' | ',
+              ' and ',
+              ' the ',
+              ' with ',
+              ' for ',
+              ' using ',
+              ' how ',
+              ' why ',
+              ' what ',
+              ' when ',
+              ' where ',
+              ' vs ',
+              ' versus ',
+              ' or ',
+              ' but ',
+              ' are ',
+              ' is ',
+              ' was ',
+              ' were ',
+              ' has ',
+              ' have ',
+              ' been ',
+              ' will ',
+              ' can ',
+              ' should ',
+              ' would ',
+              ' could ',
+              ' to ',
+              ' of ',
+              ' in ',
+              ' on ',
+              ' at ',
+              ' by ',
+              ' from ',
+              ' into ',
+              ' about ',
+              ' through ',
+              ' between ',
+              ' against ',
+              ' releasing ',
+              ' released ',
+              ' introducing ',
+              ' launches ',
+              ' update ',
+              ' review ',
+              ' guide ',
+              ' tutorial ',
+              ' blog ',
+              ' post ',
+              ' article ',
+              ' read more',
+              ' click here',
+              ' part ',
+              ' episode ',
+              ' chapter ',
+              ' series ',
+              ' vs.',
+              '...',
+              ' — ',
+              ' | ',
             ];
             const titleWords = rawTitle.trim().split(/\s+/);
-            const isSentenceLike = sentenceWords.some(w => ` ${title} `.includes(w));
+            const isSentenceLike = sentenceWords.some((w) => ` ${title} `.includes(w));
             const isTooManyWords = titleWords.length > 6;
             const hasPhrasepunct = /[,:]\s+\w/.test(rawTitle) || rawTitle.includes(' - ');
 
-            if ((isSentenceLike && isTooManyWords) || (isSentenceLike && hasPhrasepunct) || (hasPhrasepunct && isTooManyWords)) {
+            if (
+              (isSentenceLike && isTooManyWords) ||
+              (isSentenceLike && hasPhrasepunct) ||
+              (hasPhrasepunct && isTooManyWords)
+            ) {
               return false;
             }
           }
@@ -247,14 +341,16 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
         thumbnailUrl: img.thumbnailUrl,
         source: mode === 'instagram' ? 'Instagram' : 'Google Search',
         domain: img.domain,
-        link: img.link
+        link: img.link,
       }));
 
     // Perform sort by resolution (HD first)
-    results.sort((a: any, b: any) => (b.width * b.height) - (a.width * a.height));
+    results.sort((a: any, b: any) => b.width * b.height - a.width * a.height);
 
     // 💾 CACHE SET (Redis + local LRU)
-    await redisClient.setex(redisCacheKey, CACHE_TTL.IMAGE_SEARCH, JSON.stringify(results)).catch(() => {});
+    await redisClient
+      .setex(redisCacheKey, CACHE_TTL.IMAGE_SEARCH, JSON.stringify(results))
+      .catch(() => {});
     extractionCache.set(lruCacheKey, results);
 
     // Add to user session history
@@ -277,268 +373,299 @@ router.post('/search', authenticate, apiRateLimiter, async (req: Request, res: E
  * POST /api/images/extract-url
  * Body: { url: string, limit?: number }
  */
-router.post('/extract-url', authenticate, apiRateLimiter, async (req: Request, res: ExpressResponse) => {
-  try {
-    const { url, limit = 50 } = req.body;
+router.post(
+  '/extract-url',
+  authenticate,
+  apiRateLimiter,
+  async (req: Request, res: ExpressResponse) => {
+    try {
+      const { url, limit = 50 } = req.body;
 
-    if (!url) return res.status(400).json({ error: 'URL is required' });
+      if (!url) return res.status(400).json({ error: 'URL is required' });
 
-    // Security: Strict SSRF validation
-    const urlValidation = validateExternalUrl(url);
-    if (!urlValidation.valid) {
-      return res.status(400).json({ error: 'Invalid or forbidden URL', details: urlValidation.error });
-    }
-
-    const targetUrl = urlValidation.url!;
-    const userId = (req as any).userId || 'guest';
-    const cacheHash = hashQuery(targetUrl, String(limit));
-    const redisCacheKey = CacheKey.imageExtract(userId, cacheHash);
-
-    // 🟢 CACHE CHECK (Redis first, then local LRU)
-    const redisCache = await redisClient.get(redisCacheKey).catch(() => null);
-    if (redisCache) {
-      const cached = JSON.parse(redisCache);
-      return res.json({ success: true, count: cached.length, images: cached, fromCache: true });
-    }
-
-    const lruCacheKey = `url-${userId}-${targetUrl}-${limit}`;
-    const lruCached = extractionCache.get(lruCacheKey);
-    if (lruCached) return res.json({ success: true, count: lruCached.length, images: lruCached, fromCache: true });
-
-    console.log(`🌐 [Firecrawl] Extracting from: ${targetUrl}`);
-
-    // Call Firecrawl Scrape (Cheaper mode)
-    const firecrawlKey = process.env.FIRECRAWL_API_KEY;
-    if (!firecrawlKey) return res.status(500).json({ error: 'Scraping engine not configured' });
-
-    const response = await safeFetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: targetUrl,
-        formats: ['rawHtml', 'markdown'],
-        onlyMainContent: true
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Firecrawl error: ${response.statusText}`);
-    }
-
-    const content = await response.json();
-    const html = content.data?.rawHtml || '';
-
-    // Extract image URLs from multiple attributes (src, srcset, data-src, etc.)
-    const foundUrls = new Set<string>();
-    const resolveUrl = (raw: string): string | null => {
-      let src = raw.trim();
-      if (!src || src.startsWith('data:')) return null;
-      if (src.startsWith('//')) src = 'https:' + src;
-      else if (src.startsWith('/')) {
-        const urlObj = new URL(targetUrl);
-        src = `${urlObj.protocol}//${urlObj.host}${src}`;
+      // Security: Strict SSRF validation
+      const urlValidation = validateExternalUrl(url);
+      if (!urlValidation.valid) {
+        return res
+          .status(400)
+          .json({ error: 'Invalid or forbidden URL', details: urlValidation.error });
       }
-      if (src.startsWith('http') && !src.endsWith('.svg')) return src;
-      return null;
-    };
 
-    // 1. Standard src attribute
-    const srcRegex = /<img[^>]+src="([^">]+)"/g;
-    let match;
-    while ((match = srcRegex.exec(html)) !== null) {
-      const resolved = resolveUrl(match[1]);
-      if (resolved) foundUrls.add(resolved);
-    }
+      const targetUrl = urlValidation.url!;
+      const userId = (req as any).userId || 'guest';
+      const cacheHash = hashQuery(targetUrl, String(limit));
+      const redisCacheKey = CacheKey.imageExtract(userId, cacheHash);
 
-    // 2. Lazy-load attributes (data-src, data-original, data-hi-res)
-    const lazyRegex = /(?:data-src|data-original|data-hi-res|data-large-src)="([^">]+)"/g;
-    while ((match = lazyRegex.exec(html)) !== null) {
-      const resolved = resolveUrl(match[1]);
-      if (resolved) foundUrls.add(resolved);
-    }
-
-    // 3. srcset — pick the highest resolution candidate from each set
-    const srcsetRegex = /srcset="([^">]+)"/g;
-    while ((match = srcsetRegex.exec(html)) !== null) {
-      const candidates = match[1].split(',').map(c => c.trim());
-      let best = '';
-      let bestW = 0;
-      for (const candidate of candidates) {
-        const parts = candidate.split(/\s+/);
-        const url = parts[0];
-        const descriptor = parts[1] || '';
-        const w = parseInt(descriptor) || 0;
-        if (w > bestW || !best) { best = url; bestW = w; }
+      // 🟢 CACHE CHECK (Redis first, then local LRU)
+      const redisCache = await redisClient.get(redisCacheKey).catch(() => null);
+      if (redisCache) {
+        const cached = JSON.parse(redisCache);
+        return res.json({ success: true, count: cached.length, images: cached, fromCache: true });
       }
-      if (best) {
-        const resolved = resolveUrl(best);
+
+      const lruCacheKey = `url-${userId}-${targetUrl}-${limit}`;
+      const lruCached = extractionCache.get(lruCacheKey);
+      if (lruCached)
+        return res.json({
+          success: true,
+          count: lruCached.length,
+          images: lruCached,
+          fromCache: true,
+        });
+
+      console.log(`🌐 [Firecrawl] Extracting from: ${targetUrl}`);
+
+      // Call Firecrawl Scrape (Cheaper mode)
+      const firecrawlKey = process.env.FIRECRAWL_API_KEY;
+      if (!firecrawlKey) return res.status(500).json({ error: 'Scraping engine not configured' });
+
+      const response = await safeFetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${firecrawlKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: targetUrl,
+          formats: ['rawHtml', 'markdown'],
+          onlyMainContent: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Firecrawl error: ${response.statusText}`);
+      }
+
+      const content = await response.json();
+      const html = content.data?.rawHtml || '';
+
+      // Extract image URLs from multiple attributes (src, srcset, data-src, etc.)
+      const foundUrls = new Set<string>();
+      const resolveUrl = (raw: string): string | null => {
+        let src = raw.trim();
+        if (!src || src.startsWith('data:')) return null;
+        if (src.startsWith('//')) src = 'https:' + src;
+        else if (src.startsWith('/')) {
+          const urlObj = new URL(targetUrl);
+          src = `${urlObj.protocol}//${urlObj.host}${src}`;
+        }
+        if (src.startsWith('http') && !src.endsWith('.svg')) return src;
+        return null;
+      };
+
+      // 1. Standard src attribute
+      const srcRegex = /<img[^>]+src="([^">]+)"/g;
+      let match;
+      while ((match = srcRegex.exec(html)) !== null) {
+        const resolved = resolveUrl(match[1]);
         if (resolved) foundUrls.add(resolved);
       }
+
+      // 2. Lazy-load attributes (data-src, data-original, data-hi-res)
+      const lazyRegex = /(?:data-src|data-original|data-hi-res|data-large-src)="([^">]+)"/g;
+      while ((match = lazyRegex.exec(html)) !== null) {
+        const resolved = resolveUrl(match[1]);
+        if (resolved) foundUrls.add(resolved);
+      }
+
+      // 3. srcset — pick the highest resolution candidate from each set
+      const srcsetRegex = /srcset="([^">]+)"/g;
+      while ((match = srcsetRegex.exec(html)) !== null) {
+        const candidates = match[1].split(',').map((c) => c.trim());
+        let best = '';
+        let bestW = 0;
+        for (const candidate of candidates) {
+          const parts = candidate.split(/\s+/);
+          const url = parts[0];
+          const descriptor = parts[1] || '';
+          const w = parseInt(descriptor) || 0;
+          if (w > bestW || !best) {
+            best = url;
+            bestW = w;
+          }
+        }
+        if (best) {
+          const resolved = resolveUrl(best);
+          if (resolved) foundUrls.add(resolved);
+        }
+      }
+
+      // 4. Background images in style attributes (common in Behance modules)
+      const bgRegex = /background(?:-image)?:\s*url\(['"]?([^'")]+)['"]?\)/g;
+      while ((match = bgRegex.exec(html)) !== null) {
+        const resolved = resolveUrl(match[1]);
+        if (resolved) foundUrls.add(resolved);
+      }
+
+      // Filter out thumbnails/icons (URLs with common small-size indicators)
+      const filtered = Array.from(foundUrls).filter((url) => {
+        const lower = url.toLowerCase();
+        if (lower.includes('/50x50') || lower.includes('/100x100') || lower.includes('_thumb'))
+          return false;
+        if (lower.includes('avatar') || lower.includes('favicon') || lower.includes('icon'))
+          return false;
+        return true;
+      });
+
+      // Prioritize likely high-res URLs (larger size indicators in URL)
+      const sorted = filtered.sort((a, b) => {
+        const scoreUrl = (u: string) => {
+          if (u.includes('original') || u.includes('max_')) return 3;
+          if (u.includes('1400') || u.includes('1920') || u.includes('project_modules/max'))
+            return 2;
+          if (u.includes('disp') || u.includes('fs') || u.includes('source')) return 1;
+          return 0;
+        };
+        return scoreUrl(b) - scoreUrl(a);
+      });
+
+      const results = sorted.slice(0, limit).map((src) => ({
+        url: src,
+        title: 'Extracted Content',
+        width: 0,
+        height: 0,
+      }));
+
+      // 💾 CACHE SET (Redis + local LRU)
+      await redisClient
+        .setex(redisCacheKey, CACHE_TTL.IMAGE_SEARCH, JSON.stringify(results))
+        .catch(() => {});
+      extractionCache.set(lruCacheKey, results);
+      return res.json({ success: true, count: results.length, images: results });
+    } catch (error: any) {
+      console.error('Extraction error:', error);
+      res.status(500).json({ error: 'Failed to extract images from URL', message: error.message });
     }
-
-    // 4. Background images in style attributes (common in Behance modules)
-    const bgRegex = /background(?:-image)?:\s*url\(['"]?([^'")]+)['"]?\)/g;
-    while ((match = bgRegex.exec(html)) !== null) {
-      const resolved = resolveUrl(match[1]);
-      if (resolved) foundUrls.add(resolved);
-    }
-
-    // Filter out thumbnails/icons (URLs with common small-size indicators)
-    const filtered = Array.from(foundUrls).filter(url => {
-      const lower = url.toLowerCase();
-      if (lower.includes('/50x50') || lower.includes('/100x100') || lower.includes('_thumb')) return false;
-      if (lower.includes('avatar') || lower.includes('favicon') || lower.includes('icon')) return false;
-      return true;
-    });
-
-    // Prioritize likely high-res URLs (larger size indicators in URL)
-    const sorted = filtered.sort((a, b) => {
-      const scoreUrl = (u: string) => {
-        if (u.includes('original') || u.includes('max_')) return 3;
-        if (u.includes('1400') || u.includes('1920') || u.includes('project_modules/max')) return 2;
-        if (u.includes('disp') || u.includes('fs') || u.includes('source')) return 1;
-        return 0;
-      };
-      return scoreUrl(b) - scoreUrl(a);
-    });
-
-    const results = sorted.slice(0, limit).map(src => ({
-      url: src,
-      title: 'Extracted Content',
-      width: 0,
-      height: 0
-    }));
-
-    // 💾 CACHE SET (Redis + local LRU)
-    await redisClient.setex(redisCacheKey, CACHE_TTL.IMAGE_SEARCH, JSON.stringify(results)).catch(() => {});
-    extractionCache.set(lruCacheKey, results);
-    return res.json({ success: true, count: results.length, images: results });
-  } catch (error: any) {
-    console.error('Extraction error:', error);
-    res.status(500).json({ error: 'Failed to extract images from URL', message: error.message });
   }
-});
+);
 
 /**
  * Extract Images from PDF/Doc Page (Gemini Proxy)
  * POST /api/images/extract-doc
  * Body: { imageBase64: string, pageNumber: number }
  */
-router.post('/extract-doc', authenticate, apiRateLimiter, async (req: Request, res: ExpressResponse) => {
-  try {
-    const { imageBase64, pageNumber } = req.body;
+router.post(
+  '/extract-doc',
+  authenticate,
+  apiRateLimiter,
+  async (req: Request, res: ExpressResponse) => {
+    try {
+      const { imageBase64, pageNumber } = req.body;
 
-    if (!imageBase64) return res.status(400).json({ error: 'Page image is required' });
+      if (!imageBase64) return res.status(400).json({ error: 'Page image is required' });
 
-    // Use Docling-like prompt logic ported to server
-    const prompt = `Analyze this document page and identify all high-quality visual elements (images, charts, photos).
+      // Use Docling-like prompt logic ported to server
+      const prompt = `Analyze this document page and identify all high-quality visual elements (images, charts, photos).
     Rules:
     1. For each image, provide a name, brief description, and its bounding box.
     2. Bounding box must be [ymin, xmin, ymax, xmax] in 0-1000 scale.
     3. Return in JSON format.`;
 
-    const { GoogleGenAI } = await import('@google/genai');
-    const { GEMINI_MODELS } = await import('../../src/constants/geminiModels.js');
-    const apiKey = getGoogleApiKey();
-    if (!apiKey) throw new Error('AI API Key not configured');
+      const { GoogleGenAI } = await import('@google/genai');
+      const { GEMINI_MODELS } = await import('../../src/constants/geminiModels.js');
+      const apiKey = getGoogleApiKey();
+      if (!apiKey) throw new Error('AI API Key not configured');
 
-    await chargeCredits((req as unknown as AuthRequest).userId!, 1);
-    const genAI = new GoogleGenAI({ apiKey });
-    const result = await genAI.models.generateContent({
-      model: GEMINI_MODELS.IMAGE_NB2,
-      contents: [{
-        parts: [
-          { text: prompt },
-          { inlineData: { data: imageBase64, mimeType: "image/png" } }
-        ]
-      }]
-    });
+      await chargeCredits((req as unknown as AuthRequest).userId!, 1);
+      const genAI = new GoogleGenAI({ apiKey });
+      const result = await genAI.models.generateContent({
+        model: GEMINI_MODELS.IMAGE_NB2,
+        contents: [
+          {
+            parts: [{ text: prompt }, { inlineData: { data: imageBase64, mimeType: 'image/png' } }],
+          },
+        ],
+      });
 
-    // Extract text from response
-    let text = '';
-    for (const part of result.candidates?.[0]?.content?.parts || []) {
-      if (part.text) {
-        text += part.text;
+      // Extract text from response
+      let text = '';
+      for (const part of result.candidates?.[0]?.content?.parts || []) {
+        if (part.text) {
+          text += part.text;
+        }
       }
+
+      // Security: Basic JSON cleaning
+      const jsonMatch = text.match(/\{[\s\S]*\}/) || text.match(/\[[\s\S]*\]/);
+      const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+
+      return res.json({ success: true, pageNumber, data });
+    } catch (error: any) {
+      console.error('Doc extraction error:', error);
+      res.status(500).json({ error: 'AI failed to process document page' });
     }
-
-    // Security: Basic JSON cleaning
-    const jsonMatch = text.match(/\{[\s\S]*\}/) || text.match(/\[[\s\S]*\]/);
-    const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-
-    return res.json({ success: true, pageNumber, data });
-  } catch (error: any) {
-    console.error('Doc extraction error:', error);
-    res.status(500).json({ error: 'AI failed to process document page' });
   }
-});
+);
 
-router.post('/instagram-extract', authenticate, apiRateLimiter, async (req: Request, res: ExpressResponse) => {
-  // Set explicit long timeout for Firecrawl Agent (5 minutes)
-  req.setTimeout(300000);
-  
-  try {
-    const { username, limit = 40 } = req.body;
+router.post(
+  '/instagram-extract',
+  authenticate,
+  apiRateLimiter,
+  async (req: Request, res: ExpressResponse) => {
+    // Set explicit long timeout for Firecrawl Agent (5 minutes)
+    req.setTimeout(300000);
 
-    if (!username || typeof username !== 'string') {
-      return res.status(400).json({ error: 'Username is required' });
-    }
+    try {
+      const { username, limit = 40 } = req.body;
 
-    // Check cache first (per user session)
-    const userId = (req as any).userId || 'guest';
-    const cacheHash = hashQuery(username, String(limit));
-    const redisCacheKey = CacheKey.instagramExtract(userId, cacheHash);
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ error: 'Username is required' });
+      }
 
-    // Track session user
-    mediaSessionCache.trackQuery(userId, username, 'instagram');
+      // Check cache first (per user session)
+      const userId = (req as any).userId || 'guest';
+      const cacheHash = hashQuery(username, String(limit));
+      const redisCacheKey = CacheKey.instagramExtract(userId, cacheHash);
 
-    // 🟢 CACHE CHECK (Redis first, then local LRU)
-    const redisCache = await redisClient.get(redisCacheKey).catch(() => null);
-    if (redisCache) {
-      const cachedData = JSON.parse(redisCache);
-      console.log(`ℹ️ Returning cached Instagram extraction for: ${username}`);
-      return res.json({
-        success: true,
-        username,
-        count: cachedData.length,
-        images: cachedData,
-        fromCache: true
-      });
-    }
+      // Track session user
+      mediaSessionCache.trackQuery(userId, username, 'instagram');
 
-    const lruCacheKey = `${userId}-${username}-${limit}`;
-    const cachedData = instaCache.get(lruCacheKey);
-    if (cachedData) {
-      console.log(`ℹ️ Returning cached Instagram extraction for: ${username}`);
-      return res.json({
-        success: true,
-        username,
-        count: cachedData.length,
-        images: cachedData,
-        fromCache: true
-      });
-    }
+      // 🟢 CACHE CHECK (Redis first, then local LRU)
+      const redisCache = await redisClient.get(redisCacheKey).catch(() => null);
+      if (redisCache) {
+        const cachedData = JSON.parse(redisCache);
+        console.log(`ℹ️ Returning cached Instagram extraction for: ${username}`);
+        return res.json({
+          success: true,
+          username,
+          count: cachedData.length,
+          images: cachedData,
+          fromCache: true,
+        });
+      }
 
-    // Basic sanitization of username
-    const cleanUsername = username.replace(/[^a-zA-Z0-9._]/g, '');
-    const instagramUrl = `https://www.instagram.com/${cleanUsername}/`;
+      const lruCacheKey = `${userId}-${username}-${limit}`;
+      const cachedData = instaCache.get(lruCacheKey);
+      if (cachedData) {
+        console.log(`ℹ️ Returning cached Instagram extraction for: ${username}`);
+        return res.json({
+          success: true,
+          username,
+          count: cachedData.length,
+          images: cachedData,
+          fromCache: true,
+        });
+      }
 
-    console.log(`📸 Starting Instagram extraction for: ${cleanUsername} (limit: ${limit}) [Cache Session Mode]`);
+      // Basic sanitization of username
+      const cleanUsername = username.replace(/[^a-zA-Z0-9._]/g, '');
+      const instagramUrl = `https://www.instagram.com/${cleanUsername}/`;
 
-    // Ensure .firecrawl directory exists for temporary storage
-    const firecrawlDir = path.join(process.cwd(), '.firecrawl');
-    if (!fs.existsSync(firecrawlDir)) {
-      fs.mkdirSync(firecrawlDir, { recursive: true });
-    }
+      console.log(
+        `📸 Starting Instagram extraction for: ${cleanUsername} (limit: ${limit}) [Cache Session Mode]`
+      );
 
-    const outputFile = path.join(firecrawlDir, `insta-${cleanUsername}-${Date.now()}.json`);
-    
-    // Construct Firecrawl agent command
-    // Using spark-1-mini for speed and a focused prompt to avoid deep navigation
-    const prompt = `CRITICAL: Extract ONLY static image URLs from the Instagram profile grid of @${cleanUsername}.
+      // Ensure .firecrawl directory exists for temporary storage
+      const firecrawlDir = path.join(process.cwd(), '.firecrawl');
+      if (!fs.existsSync(firecrawlDir)) {
+        fs.mkdirSync(firecrawlDir, { recursive: true });
+      }
+
+      const outputFile = path.join(firecrawlDir, `insta-${cleanUsername}-${Date.now()}.json`);
+
+      // Construct Firecrawl agent command
+      // Using spark-1-mini for speed and a focused prompt to avoid deep navigation
+      const prompt = `CRITICAL: Extract ONLY static image URLs from the Instagram profile grid of @${cleanUsername}.
 
 STRICT REQUIREMENTS:
 1. Extract ONLY single PHOTO/IMAGE posts from the profile grid
@@ -557,135 +684,140 @@ RESPONSE FORMAT: Return ONLY valid JSON array:
 [{"url": "https://...", "caption": "..."}, ...]
 
 DO NOT include any text, markdown, or explanation. ONLY JSON.`;
-    const command = `firecrawl agent "${prompt}" --urls "${instagramUrl}" --model spark-1-mini --wait --pretty -o "${outputFile}"`;
+      const command = `firecrawl agent "${prompt}" --urls "${instagramUrl}" --model spark-1-mini --wait --pretty -o "${outputFile}"`;
 
-    console.log(`🚀 Executing: ${command}`);
+      console.log(`🚀 Executing: ${command}`);
 
-    try {
-      await execPromise(command);
-    } catch (execError: any) {
-      console.error('Firecrawl execution failed:', execError);
-      
-      // Check if it was a timeout or a specific error
-      const isTimeout = execError.message?.toLowerCase().includes('timeout') || execError.code === 'ETIMEDOUT';
-      
-      return res.status(500).json({ 
-        error: isTimeout ? 'Extraction timed out' : 'Scraping failed', 
-        details: execError.message,
-        help: 'Try again with a public profile or check if the profile exists.'
+      try {
+        await execPromise(command);
+      } catch (execError: any) {
+        console.error('Firecrawl execution failed:', execError);
+
+        // Check if it was a timeout or a specific error
+        const isTimeout =
+          execError.message?.toLowerCase().includes('timeout') || execError.code === 'ETIMEDOUT';
+
+        return res.status(500).json({
+          error: isTimeout ? 'Extraction timed out' : 'Scraping failed',
+          details: execError.message,
+          help: 'Try again with a public profile or check if the profile exists.',
+        });
+      }
+
+      // Read the results
+      if (!fs.existsSync(outputFile)) {
+        console.error(`❌ Output file not found: ${outputFile}`);
+        return res
+          .status(500)
+          .json({ error: 'Scraping finished but no output file was generated' });
+      }
+
+      const fileContent = fs.readFileSync(outputFile, 'utf8');
+
+      // Attempt to parse JSON (Firecrawl agent sometimes adds markdown blocks)
+      let data: any;
+      try {
+        // Basic cleaning in case the agent wrapped the JSON in markdown
+        const jsonMatch = fileContent.match(/\[\s*\{[\s\S]*\}\s*\]/);
+        const cleanJson = jsonMatch ? jsonMatch[0] : fileContent;
+        data = JSON.parse(cleanJson);
+      } catch (parseError) {
+        console.error('Failed to parse Firecrawl output:', parseError);
+        return res.status(500).json({ error: 'Failed to process extracted data' });
+      }
+
+      let extractedImages = Array.isArray(data) ? data : data.images || data.data || [];
+
+      if (!extractedImages || extractedImages.length === 0) {
+        return res.status(404).json({ error: 'No images found for this profile' });
+      }
+
+      // Debug: log all extracted URLs to identify patterns
+      console.log(`📊 Firecrawl extracted ${extractedImages.length} items for @${cleanUsername}:`);
+      extractedImages.slice(0, 5).forEach((item: any, idx: number) => {
+        console.log(`  [${idx}] URL: ${String(item.url || '').slice(0, 100)}`);
+        console.log(`      Caption: ${String(item.caption || '').slice(0, 80)}`);
+      });
+
+      // Filter out reels and videos (safety net in case Firecrawl included them)
+      const beforeFilter = extractedImages.length;
+      extractedImages = extractedImages.filter((item: any) => {
+        if (!item || typeof item !== 'object') return false;
+
+        const url = String(item.url || '').toLowerCase();
+        const caption = String(item.caption || '').toLowerCase();
+
+        // Exclude reels - multiple patterns
+        if (
+          url.includes('/reel') ||
+          url.includes('/reels/') ||
+          url.includes('/tv/') || // Instagram TV / Reels are under /tv/
+          caption.includes('reel') ||
+          caption.includes('video')
+        ) {
+          console.log(`  ❌ Filtered reel/tv: ${url.slice(0, 80)}`);
+          return false;
+        }
+
+        // Exclude videos (mp4, webm, video indicators in URL/caption)
+        if (
+          url.includes('video') ||
+          url.includes('.mp4') ||
+          url.includes('.webm') ||
+          url.includes('.mov') ||
+          url.includes('.m4v')
+        ) {
+          console.log(`  ❌ Filtered video file: ${url.slice(0, 80)}`);
+          return false;
+        }
+
+        return true;
+      });
+
+      console.log(`✅ After filter: ${beforeFilter} → ${extractedImages.length} items`);
+
+      // Map the results (no R2 upload as requested by user in previous session)
+      const results = extractedImages.slice(0, limit).map((item: any) => ({
+        url: item.url,
+        caption: item.caption || '',
+      }));
+
+      // 💾 CACHE SET (Redis + local LRU)
+      await redisClient
+        .setex(redisCacheKey, CACHE_TTL.INSTAGRAM, JSON.stringify(results))
+        .catch(() => {});
+      instaCache.set(lruCacheKey, results);
+
+      // Add to user session history
+      mediaSessionCache.addToHistory(userId, {
+        type: 'instagram',
+        query: cleanUsername,
+        mode: 'instagram',
+        resultCount: results.length,
+      });
+
+      // Clean up temp file
+      try {
+        fs.unlinkSync(outputFile);
+      } catch (err) {
+        // Ignore cleanup errors
+      }
+
+      return res.json({
+        success: true,
+        username: cleanUsername,
+        count: results.length,
+        images: results,
+      });
+    } catch (error: any) {
+      console.error('Error in Instagram extraction:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: error.message,
       });
     }
-
-    // Read the results
-    if (!fs.existsSync(outputFile)) {
-      console.error(`❌ Output file not found: ${outputFile}`);
-      return res.status(500).json({ error: 'Scraping finished but no output file was generated' });
-    }
-
-    const fileContent = fs.readFileSync(outputFile, 'utf8');
-    
-    // Attempt to parse JSON (Firecrawl agent sometimes adds markdown blocks)
-    let data: any;
-    try {
-      // Basic cleaning in case the agent wrapped the JSON in markdown
-      const jsonMatch = fileContent.match(/\[\s*\{[\s\S]*\}\s*\]/);
-      const cleanJson = jsonMatch ? jsonMatch[0] : fileContent;
-      data = JSON.parse(cleanJson);
-    } catch (parseError) {
-      console.error('Failed to parse Firecrawl output:', parseError);
-      return res.status(500).json({ error: 'Failed to process extracted data' });
-    }
-
-    let extractedImages = Array.isArray(data) ? data : (data.images || data.data || []);
-
-    if (!extractedImages || extractedImages.length === 0) {
-      return res.status(404).json({ error: 'No images found for this profile' });
-    }
-
-    // Debug: log all extracted URLs to identify patterns
-    console.log(`📊 Firecrawl extracted ${extractedImages.length} items for @${cleanUsername}:`);
-    extractedImages.slice(0, 5).forEach((item: any, idx: number) => {
-      console.log(`  [${idx}] URL: ${String(item.url || '').slice(0, 100)}`);
-      console.log(`      Caption: ${String(item.caption || '').slice(0, 80)}`);
-    });
-
-    // Filter out reels and videos (safety net in case Firecrawl included them)
-    const beforeFilter = extractedImages.length;
-    extractedImages = extractedImages.filter((item: any) => {
-      if (!item || typeof item !== 'object') return false;
-
-      const url = String(item.url || '').toLowerCase();
-      const caption = String(item.caption || '').toLowerCase();
-
-      // Exclude reels - multiple patterns
-      if (
-        url.includes('/reel') ||
-        url.includes('/reels/') ||
-        url.includes('/tv/') ||  // Instagram TV / Reels are under /tv/
-        caption.includes('reel') ||
-        caption.includes('video')
-      ) {
-        console.log(`  ❌ Filtered reel/tv: ${url.slice(0, 80)}`);
-        return false;
-      }
-
-      // Exclude videos (mp4, webm, video indicators in URL/caption)
-      if (
-        url.includes('video') ||
-        url.includes('.mp4') ||
-        url.includes('.webm') ||
-        url.includes('.mov') ||
-        url.includes('.m4v')
-      ) {
-        console.log(`  ❌ Filtered video file: ${url.slice(0, 80)}`);
-        return false;
-      }
-
-      return true;
-    });
-
-    console.log(`✅ After filter: ${beforeFilter} → ${extractedImages.length} items`);
-
-    // Map the results (no R2 upload as requested by user in previous session)
-    const results = extractedImages.slice(0, limit).map((item: any) => ({
-      url: item.url,
-      caption: item.caption || '',
-    }));
-
-    // 💾 CACHE SET (Redis + local LRU)
-    await redisClient.setex(redisCacheKey, CACHE_TTL.INSTAGRAM, JSON.stringify(results)).catch(() => {});
-    instaCache.set(lruCacheKey, results);
-
-    // Add to user session history
-    mediaSessionCache.addToHistory(userId, {
-      type: 'instagram',
-      query: cleanUsername,
-      mode: 'instagram',
-      resultCount: results.length,
-    });
-
-    // Clean up temp file
-    try {
-      fs.unlinkSync(outputFile);
-    } catch (err) {
-      // Ignore cleanup errors
-    }
-
-    return res.json({
-      success: true,
-      username: cleanUsername,
-      count: results.length,
-      images: results
-    });
-
-  } catch (error: any) {
-    console.error('Error in Instagram extraction:', error);
-    res.status(500).json({ 
-      error: 'Internal server error', 
-      message: error.message 
-    });
   }
-});
+);
 
 // Get API key for Google services
 const getGoogleApiKey = (): string | null => {
@@ -795,10 +927,7 @@ router.get('/video-proxy', apiRateLimiter, async (req: Request, res: ExpressResp
     const apiKey = getGoogleApiKey();
 
     // Whitelist of allowed Google Cloud Storage hostnames
-    const allowedGoogleHosts = [
-      'storage.googleapis.com',
-      'googleapis.com',
-    ];
+    const allowedGoogleHosts = ['storage.googleapis.com', 'googleapis.com'];
 
     const headers: Record<string, string> = {
       'User-Agent': 'VSN-Mockup-Machine/1.0',
@@ -872,7 +1001,6 @@ router.get('/video-proxy', apiRateLimiter, async (req: Request, res: ExpressResp
   }
 });
 
-
 /**
  * Proxy download endpoint to fetch images from external URLs and trigger a local download
  * GET /api/images/download?url=<encoded-url>&filename=<optional-name>
@@ -907,7 +1035,7 @@ router.get('/download', apiRateLimiter, async (req: Request, res: ExpressRespons
     // Get content type and set headers
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     const downloadName = filename || `download-${Date.now()}.${contentType.split('/')[1] || 'ext'}`;
-    
+
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -926,7 +1054,6 @@ router.get('/download', apiRateLimiter, async (req: Request, res: ExpressRespons
     } else {
       res.end();
     }
-
   } catch (error: unknown) {
     console.error('Error in image download proxy:', error);
     if (!res.headersSent) {
@@ -947,56 +1074,63 @@ router.get('/download', apiRateLimiter, async (req: Request, res: ExpressRespons
  *
  * GET /api/images/session?limit=20 (optional, default 20, max 100)
  */
-router.get('/session', authenticate, sessionReadLimiter, async (req: Request, res: ExpressResponse) => {
-  try {
-    const userId = (req as any).userId || 'guest';
-
-    // Validate and sanitize limit parameter
-    let limit = 20; // default
-    if (req.query.limit) {
-      const parsed = parseInt(String(req.query.limit));
-      if (!isNaN(parsed)) {
-        limit = Math.max(1, Math.min(parsed, 100)); // Clamp between 1-100
-      }
-    }
-
+router.get(
+  '/session',
+  authenticate,
+  sessionReadLimiter,
+  async (req: Request, res: ExpressResponse) => {
     try {
-      const session = mediaSessionCache.getSession(userId);
-      const history = mediaSessionCache.getHistory(userId, limit);
+      const userId = (req as any).userId || 'guest';
 
-      // Always return success with null session if not found (don't expose that user doesn't exist)
-      return res.json({
-        userId,
-        session: session ? {
-          lastActivity: session.lastActivity,
-          extractionModes: session.extractionModes,
-          recentQueries: session.recentQueries,
-          preferences: session.preferences,
-        } : null,
-        history,
+      // Validate and sanitize limit parameter
+      let limit = 20; // default
+      if (req.query.limit) {
+        const parsed = parseInt(String(req.query.limit));
+        if (!isNaN(parsed)) {
+          limit = Math.max(1, Math.min(parsed, 100)); // Clamp between 1-100
+        }
+      }
+
+      try {
+        const session = mediaSessionCache.getSession(userId);
+        const history = mediaSessionCache.getHistory(userId, limit);
+
+        // Always return success with null session if not found (don't expose that user doesn't exist)
+        return res.json({
+          userId,
+          session: session
+            ? {
+                lastActivity: session.lastActivity,
+                extractionModes: session.extractionModes,
+                recentQueries: session.recentQueries,
+                preferences: session.preferences,
+              }
+            : null,
+          history,
+        });
+      } catch (validationError: any) {
+        // Invalid user ID or other validation error
+        console.warn('Session validation error:', {
+          userId: String(userId).slice(0, 20),
+          error: validationError.message,
+        });
+        return res.status(400).json({
+          error: 'Invalid session request',
+          message: 'Invalid user ID format',
+        });
+      }
+    } catch (error: any) {
+      console.error('Error retrieving session:', {
+        message: getErrorMessage(error),
+        path: req.path,
       });
-    } catch (validationError: any) {
-      // Invalid user ID or other validation error
-      console.warn('Session validation error:', {
-        userId: String(userId).slice(0, 20),
-        error: validationError.message,
-      });
-      return res.status(400).json({
-        error: 'Invalid session request',
-        message: 'Invalid user ID format',
+      res.status(500).json({
+        error: 'Failed to retrieve session',
+        message: 'An error occurred while fetching session data',
       });
     }
-  } catch (error: any) {
-    console.error('Error retrieving session:', {
-      message: getErrorMessage(error),
-      path: req.path,
-    });
-    res.status(500).json({
-      error: 'Failed to retrieve session',
-      message: 'An error occurred while fetching session data',
-    });
   }
-});
+);
 
 /**
  * Upload a base64 image to R2 and return a public URL.
@@ -1017,7 +1151,9 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
 
     const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
     if (!allowedTypes.includes(contentType)) {
-      return res.status(400).json({ error: `Unsupported content type. Allowed: ${allowedTypes.join(', ')}` });
+      return res
+        .status(400)
+        .json({ error: `Unsupported content type. Allowed: ${allowedTypes.join(', ')}` });
     }
 
     const base64Data = data.replace(/^data:image\/\w+;base64,/, '');
@@ -1127,7 +1263,6 @@ router.get('/stream', apiRateLimiter, async (req: Request, res: ExpressResponse)
     } else {
       res.end();
     }
-
   } catch (error: unknown) {
     console.error('Error in image stream proxy:', error);
     if (!res.headersSent) {
@@ -1135,4 +1270,3 @@ router.get('/stream', apiRateLimiter, async (req: Request, res: ExpressResponse)
     }
   }
 });
-

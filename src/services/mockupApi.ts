@@ -131,9 +131,11 @@ export const mockupApi = {
       return Array.isArray(data) ? data : [];
     } catch (error: any) {
       // Handle network errors, timeouts, and connection failures gracefully
-      if (error?.message?.includes('Failed to fetch') ||
+      if (
+        error?.message?.includes('Failed to fetch') ||
         error?.message?.includes('NetworkError') ||
-        error?.name === 'TypeError') {
+        error?.name === 'TypeError'
+      ) {
         console.error('Network error fetching mockups:', error);
         // Return empty array to allow UI to load gracefully
         return [];
@@ -142,7 +144,9 @@ export const mockupApi = {
     }
   },
 
-  async getUploadUrl(contentType: string): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
+  async getUploadUrl(
+    contentType: string
+  ): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
     const response = await fetch(`${API_BASE_URL}/mockups/upload-url`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -152,7 +156,9 @@ export const mockupApi = {
     return response.json();
   },
 
-  async getTempUploadUrl(contentType: string): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
+  async getTempUploadUrl(
+    contentType: string
+  ): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
     const response = await fetch(`${API_BASE_URL}/mockups/upload-temp-url`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -257,11 +263,15 @@ export const mockupApi = {
       return response.json();
     } catch (error: any) {
       // Handle network errors
-      if (error?.message?.includes('Failed to fetch') ||
+      if (
+        error?.message?.includes('Failed to fetch') ||
         error?.message?.includes('NetworkError') ||
-        error?.name === 'TypeError') {
+        error?.name === 'TypeError'
+      ) {
         console.error('Network error saving mockup:', error);
-        throw new Error('Network error: Unable to connect to server. Please check your connection and try again.');
+        throw new Error(
+          'Network error: Unable to connect to server. Please check your connection and try again.'
+        );
       }
       throw error;
     }
@@ -298,7 +308,17 @@ export const mockupApi = {
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
     brandGuidelineId?: string; // Optional brand guideline ID for context injection
     seed?: number; // Optional seed for deterministic generation
-  }): Promise<{ imageBase64?: string; imageUrl?: string; requestId?: string; seed?: number; modelUsed?: string; creditsDeducted: number; creditsRemaining: number; isAdmin: boolean; generationId?: string }> {
+  }): Promise<{
+    imageBase64?: string;
+    imageUrl?: string;
+    requestId?: string;
+    seed?: number;
+    modelUsed?: string;
+    creditsDeducted: number;
+    creditsRemaining: number;
+    isAdmin: boolean;
+    generationId?: string;
+  }> {
     // Generate unique request ID for tracking
     const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -325,27 +345,33 @@ export const mockupApi = {
     // Check for existing in-flight request
     const existingRequest = inFlightRequests.get(requestKey);
     if (existingRequest) {
-      console.warn('[CREDIT] [mockupApi.generate] ⚠️ Duplicate request detected on CLIENT, reusing existing request', {
-        requestId,
-        model: params.model,
-        requestKey: requestKey.substring(0, 100),
-        note: 'This prevents duplicate HTTP calls, but backend lock is the final safeguard',
-      });
+      console.warn(
+        '[CREDIT] [mockupApi.generate] ⚠️ Duplicate request detected on CLIENT, reusing existing request',
+        {
+          requestId,
+          model: params.model,
+          requestKey: requestKey.substring(0, 100),
+          note: 'This prevents duplicate HTTP calls, but backend lock is the final safeguard',
+        }
+      );
       return existingRequest;
     }
 
     // Check for very recent duplicate (within 100ms) - prevents race conditions from rapid clicks
     const lastRequestTime = recentRequestTimestamps.get(requestKey);
-    if (lastRequestTime && (now - lastRequestTime) < 100) {
-      console.warn('[CREDIT] [mockupApi.generate] ⚠️ Very recent duplicate request detected (within 100ms), blocking to prevent race condition', {
-        requestId,
-        model: params.model,
-        requestKey: requestKey.substring(0, 100),
-        timeSinceLastRequest: now - lastRequestTime,
-        note: 'This prevents race conditions from rapid clicks or double-triggers',
-      });
+    if (lastRequestTime && now - lastRequestTime < 100) {
+      console.warn(
+        '[CREDIT] [mockupApi.generate] ⚠️ Very recent duplicate request detected (within 100ms), blocking to prevent race condition',
+        {
+          requestId,
+          model: params.model,
+          requestKey: requestKey.substring(0, 100),
+          timeSinceLastRequest: now - lastRequestTime,
+          note: 'This prevents race conditions from rapid clicks or double-triggers',
+        }
+      );
       // Wait a bit and check again for the existing request
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       const retryExistingRequest = inFlightRequests.get(requestKey);
       if (retryExistingRequest) {
         return retryExistingRequest;
@@ -364,10 +390,13 @@ export const mockupApi = {
       }
     }
 
-    console.log('[CREDIT] [mockupApi.generate] No duplicate found on client, proceeding with HTTP request', {
-      requestId,
-      requestKey: requestKey.substring(0, 100),
-    });
+    console.log(
+      '[CREDIT] [mockupApi.generate] No duplicate found on client, proceeding with HTTP request',
+      {
+        requestId,
+        requestKey: requestKey.substring(0, 100),
+      }
+    );
 
     // Check if user has their own API key and notify them
     try {
@@ -422,7 +451,10 @@ export const mockupApi = {
           console.log('[CREDIT] [mockupApi.generate] Image uploaded successfully:', finalUrl);
           return { url: finalUrl, mimeType: img.mimeType };
         } catch (error) {
-          console.error('[CREDIT] [mockupApi.generate] Error uploading image to R2, falling back to base64:', error);
+          console.error(
+            '[CREDIT] [mockupApi.generate] Error uploading image to R2, falling back to base64:',
+            error
+          );
           return img; // Fallback to base64 if upload fails
         }
       }
@@ -432,12 +464,12 @@ export const mockupApi = {
     // Prepare parameters, uploading images if necessary
     const processedParams = { ...params };
     if (params.baseImage) {
-      processedParams.baseImage = await uploadIfNecessary(params.baseImage) as any;
+      processedParams.baseImage = (await uploadIfNecessary(params.baseImage)) as any;
     }
     if (params.referenceImages && params.referenceImages.length > 0) {
-      processedParams.referenceImages = await Promise.all(
-        params.referenceImages.map(img => uploadIfNecessary(img))
-      ) as any;
+      processedParams.referenceImages = (await Promise.all(
+        params.referenceImages.map((img) => uploadIfNecessary(img))
+      )) as any;
     }
     // Create the request promise
     const requestPromise = (async () => {
@@ -468,8 +500,15 @@ export const mockupApi = {
           }
 
           // Handle 413 Payload Too Large errors specifically
-          if (response.status === 413 || errorMessage.includes('413') || errorMessage.includes('Payload Too Large') || errorMessage.includes('Request Entity Too Large') || errorMessage.includes('FUNCTION_PAYLOAD_TOO_LARGE')) {
-            errorMessage = 'Arquivo muito grande para processar. O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias.';
+          if (
+            response.status === 413 ||
+            errorMessage.includes('413') ||
+            errorMessage.includes('Payload Too Large') ||
+            errorMessage.includes('Request Entity Too Large') ||
+            errorMessage.includes('FUNCTION_PAYLOAD_TOO_LARGE')
+          ) {
+            errorMessage =
+              'Arquivo muito grande para processar. O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias.';
           }
 
           console.error('[CREDIT] [mockupApi.generate] ❌ Request failed', {
@@ -487,7 +526,8 @@ export const mockupApi = {
           const errorDataErrorLower = errorData?.error?.toLowerCase() || '';
           const errorTextLower = errorText.toLowerCase();
 
-          const isRateLimit = response.status === 429 ||
+          const isRateLimit =
+            response.status === 429 ||
             errorMessageLower.includes('rate limit exceeded') ||
             errorMessageLower.includes('rate limit') ||
             errorDataMessageLower.includes('rate limit exceeded') ||
@@ -499,7 +539,10 @@ export const mockupApi = {
 
           if (isRateLimit) {
             // Use the most descriptive error message available
-            const rateLimitMessage = errorData?.message || errorMessage || 'Rate limit exceeded. Please wait before making more requests.';
+            const rateLimitMessage =
+              errorData?.message ||
+              errorMessage ||
+              'Rate limit exceeded. Please wait before making more requests.';
             throw new RateLimitError(rateLimitMessage);
           }
 
@@ -508,7 +551,11 @@ export const mockupApi = {
           (error as any).errorData = errorData; // Attach full error data
 
           // Handle specific error types
-          if (response.status === 403 || errorMessage.includes('Insufficient credits') || errorMessage.includes('Subscription required')) {
+          if (
+            response.status === 403 ||
+            errorMessage.includes('Insufficient credits') ||
+            errorMessage.includes('Subscription required')
+          ) {
             (error as any).requiresSubscription = true;
           }
 
@@ -544,4 +591,3 @@ export const mockupApi = {
     return requestPromise;
   },
 };
-

@@ -39,7 +39,9 @@ class ReferralService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to get referral code' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to get referral code' }));
         throw new Error(errorData.error || 'Failed to get referral code');
       }
 
@@ -66,7 +68,9 @@ class ReferralService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to get referral stats' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to get referral stats' }));
         throw new Error(errorData.error || 'Failed to get referral stats');
       }
 
@@ -98,7 +102,9 @@ class ReferralService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to generate referral code' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to generate referral code' }));
         throw new Error(errorData.error || 'Failed to generate referral code');
       }
 
@@ -115,11 +121,11 @@ class ReferralService {
       return '';
     }
     // Use VITE_SITE_URL from environment, fallback to current origin
-    const siteUrl = (import.meta as any).env?.VITE_SITE_URL || 
-                    (typeof window !== 'undefined' ? window.location.origin : '');
+    const siteUrl =
+      (import.meta as any).env?.VITE_SITE_URL ||
+      (typeof window !== 'undefined' ? window.location.origin : '');
     return `${siteUrl}/?ref=${referralCode}`;
   }
 }
 
 export const referralService = new ReferralService();
-

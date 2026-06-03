@@ -6,7 +6,7 @@ import { mockupApi } from '@/services/mockupApi';
 import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 interface Props {
   canvasWidth: number;
   canvasHeight: number;
@@ -98,9 +98,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
       const base64 = result.imageBase64;
       const imageUrl =
         result.imageUrl ||
-        (base64
-          ? await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`)
-          : null);
+        (base64 ? await canvasApi.uploadImageToR2(`data:image/png;base64,${base64}`) : null);
 
       if (!imageUrl) throw new Error('Falha ao gerar imagem');
 
@@ -135,19 +133,19 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
   const selRect =
     isDragging && dragStart && dragCurrent
       ? {
-        left: Math.min(dragStart.x, dragCurrent.x) * canvasWidth,
-        top: Math.min(dragStart.y, dragCurrent.y) * canvasHeight,
-        width: Math.abs(dragCurrent.x - dragStart.x) * canvasWidth,
-        height: Math.abs(dragCurrent.y - dragStart.y) * canvasHeight,
-      }
+          left: Math.min(dragStart.x, dragCurrent.x) * canvasWidth,
+          top: Math.min(dragStart.y, dragCurrent.y) * canvasHeight,
+          width: Math.abs(dragCurrent.x - dragStart.x) * canvasWidth,
+          height: Math.abs(dragCurrent.y - dragStart.y) * canvasHeight,
+        }
       : lassoRegion
-        ? {
+      ? {
           left: lassoRegion.x * canvasWidth,
           top: lassoRegion.y * canvasHeight,
           width: lassoRegion.w * canvasWidth,
           height: lassoRegion.h * canvasHeight,
         }
-        : null;
+      : null;
 
   return (
     <>
@@ -212,14 +210,8 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
         <div
           className="absolute z-50 animate-in fade-in slide-in-from-bottom-2"
           style={{
-            left: Math.min(
-              selRect.left + selRect.width / 2 - 140,
-              canvasWidth - 290
-            ),
-            top: Math.min(
-              selRect.top + selRect.height + 12,
-              canvasHeight - 200
-            ),
+            left: Math.min(selRect.left + selRect.width / 2 - 140, canvasWidth - 290),
+            top: Math.min(selRect.top + selRect.height + 12, canvasHeight - 200),
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -247,25 +239,27 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                   onClick={() => setActionMode('layer')}
                   className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-all group"
                 >
-                  <Plus size={18} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
+                  <Plus
+                    size={18}
+                    className="text-neutral-400 group-hover:text-brand-cyan transition-colors"
+                  />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
                     Nova Layer
                   </span>
-                  <span className="text-[10px] text-neutral-600 text-center">
-                    Cria por cima
-                  </span>
+                  <span className="text-[10px] text-neutral-600 text-center">Cria por cima</span>
                 </button>
                 <button
                   onClick={() => setActionMode('edit')}
                   className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-all group"
                 >
-                  <Diamond size={18} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
+                  <Diamond
+                    size={18}
+                    className="text-neutral-400 group-hover:text-brand-cyan transition-colors"
+                  />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
                     Editar com IA
                   </span>
-                  <span className="text-[10px] text-neutral-600 text-center">
-                    Altera a área
-                  </span>
+                  <span className="text-[10px] text-neutral-600 text-center">Altera a área</span>
                 </button>
               </div>
             )}
@@ -289,9 +283,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   placeholder={
-                    actionMode === 'layer'
-                      ? 'O que criar nesta área?'
-                      : 'Como editar esta região?'
+                    actionMode === 'layer' ? 'O que criar nesta área?' : 'Como editar esta região?'
                   }
                   rows={2}
                   className="w-full bg-neutral-800/60 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"

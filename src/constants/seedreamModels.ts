@@ -14,7 +14,7 @@ export const SEEDREAM_MODELS = {
   SE_3_I2I: 'seededit-3.0-i2i' as const,
 } as const;
 
-export type SeedreamModelId = typeof SEEDREAM_MODELS[keyof typeof SEEDREAM_MODELS];
+export type SeedreamModelId = (typeof SEEDREAM_MODELS)[keyof typeof SEEDREAM_MODELS];
 
 // ── Ordered list for UI display ────────────────────────────────────────────────
 export const SEEDREAM_IMAGE_MODELS: SeedreamModelId[] = [
@@ -143,38 +143,38 @@ export interface SizePreset {
 
 /** Presets for seedream-5-0-lite (higher resolution range per docs) */
 export const SEEDREAM_5_LITE_SIZE_PRESETS: SizePreset[] = [
-  { ratio: '1:1',  size: '2048x2048' },
-  { ratio: '4:3',  size: '2304x1728' },
-  { ratio: '3:4',  size: '1728x2304' },
+  { ratio: '1:1', size: '2048x2048' },
+  { ratio: '4:3', size: '2304x1728' },
+  { ratio: '3:4', size: '1728x2304' },
   { ratio: '16:9', size: '2560x1440' },
   { ratio: '9:16', size: '1440x2560' },
-  { ratio: '3:2',  size: '2496x1664' },
-  { ratio: '2:3',  size: '1664x2496' },
+  { ratio: '3:2', size: '2496x1664' },
+  { ratio: '2:3', size: '1664x2496' },
   { ratio: '21:9', size: '3024x1296' },
 ];
 
 /** Presets for seedream-4.5 and seedream-4.0 (same pixel recommendations per docs) */
 export const SEEDREAM_4X_SIZE_PRESETS: SizePreset[] = [
-  { ratio: '1:1',  size: '2048x2048' },
-  { ratio: '4:3',  size: '2304x1728' },
-  { ratio: '3:4',  size: '1728x2304' },
+  { ratio: '1:1', size: '2048x2048' },
+  { ratio: '4:3', size: '2304x1728' },
+  { ratio: '3:4', size: '1728x2304' },
   { ratio: '16:9', size: '2560x1440' },
   { ratio: '9:16', size: '1440x2560' },
-  { ratio: '3:2',  size: '2496x1664' },
-  { ratio: '2:3',  size: '1664x2496' },
+  { ratio: '3:2', size: '2496x1664' },
+  { ratio: '2:3', size: '1664x2496' },
   { ratio: '21:9', size: '3024x1296' },
 ];
 
 /** Presets for seedream-3.0-t2i (lower res range) */
 export const SEEDREAM_3_T2I_SIZE_PRESETS: SizePreset[] = [
-  { ratio: '1:1',  size: '1024x1024' },
-  { ratio: '4:3',  size: '1152x864'  },
-  { ratio: '3:4',  size: '864x1152'  },
-  { ratio: '16:9', size: '1280x720'  },
-  { ratio: '9:16', size: '720x1280'  },
-  { ratio: '3:2',  size: '1248x832'  },
-  { ratio: '2:3',  size: '832x1248'  },
-  { ratio: '21:9', size: '1512x648'  },
+  { ratio: '1:1', size: '1024x1024' },
+  { ratio: '4:3', size: '1152x864' },
+  { ratio: '3:4', size: '864x1152' },
+  { ratio: '16:9', size: '1280x720' },
+  { ratio: '9:16', size: '720x1280' },
+  { ratio: '3:2', size: '1248x832' },
+  { ratio: '2:3', size: '832x1248' },
+  { ratio: '21:9', size: '1512x648' },
 ];
 
 /** Get size presets for a given model */
@@ -200,7 +200,7 @@ export function getSeedreamSizePresets(model: SeedreamModelId): SizePreset[] {
 export function resolveSeedreamSize(
   model: SeedreamModelId,
   resolution: Resolution,
-  aspectRatio?: AspectRatio,
+  aspectRatio?: AspectRatio
 ): string | 'adaptive' | undefined {
   const config = SEEDREAM_MODEL_CONFIG[model];
 
@@ -209,7 +209,7 @@ export function resolveSeedreamSize(
   // Method 2: exact pixel dimensions from aspect ratio
   if (aspectRatio) {
     const presets = getSeedreamSizePresets(model);
-    const match = presets.find(p => p.ratio === aspectRatio);
+    const match = presets.find((p) => p.ratio === aspectRatio);
     if (match) return match.size;
   }
 

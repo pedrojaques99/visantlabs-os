@@ -21,13 +21,16 @@ for (const file of envFiles) {
     try {
       const content = readFileSync(filePath, 'utf-8');
       const lines = content.split('\n');
-      
+
       for (const line of lines) {
         const trimmed = line.trim();
         if (trimmed && !trimmed.startsWith('#')) {
           const [key, ...valueParts] = trimmed.split('=');
           if (key && valueParts.length > 0) {
-            const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
+            const value = valueParts
+              .join('=')
+              .trim()
+              .replace(/^["']|["']$/g, '');
             envContent[key.trim()] = value;
           }
         }
@@ -40,17 +43,17 @@ for (const file of envFiles) {
 
 // Check required OAuth variables
 const requiredVars = {
-  'GOOGLE_CLIENT_ID': {
+  GOOGLE_CLIENT_ID: {
     required: true,
     pattern: /\.apps\.googleusercontent\.com$/,
-    example: '123456789-abc123def456.apps.googleusercontent.com'
+    example: '123456789-abc123def456.apps.googleusercontent.com',
   },
-  'GOOGLE_CLIENT_SECRET': {
+  GOOGLE_CLIENT_SECRET: {
     required: true,
     pattern: /^GOCSPX-/,
-    example: 'GOCSPX-abc123def456ghi789'
+    example: 'GOCSPX-abc123def456ghi789',
   },
-  'GOOGLE_REDIRECT_URI': {
+  GOOGLE_REDIRECT_URI: {
     required: true,
     pattern: /\/api\/auth\/google\/callback$/,
     example: 'http://localhost:3001/api/auth/google/callback',
@@ -59,13 +62,13 @@ const requiredVars = {
         return '⚠️  URI contém barra dupla (//) - remova a barra extra';
       }
       return null;
-    }
+    },
   },
-  'FRONTEND_URL': {
+  FRONTEND_URL: {
     required: true,
     pattern: /^https?:\/\//,
-    example: 'http://localhost:3000'
-  }
+    example: 'http://localhost:3000',
+  },
 };
 
 console.log('📋 Verificando variáveis de ambiente:\n');
@@ -75,7 +78,7 @@ let hasWarnings = false;
 
 for (const [varName, config] of Object.entries(requiredVars)) {
   const value = envContent[varName];
-  
+
   if (!value) {
     if (config.required) {
       console.log(`❌ ${varName}: NÃO DEFINIDA`);
@@ -165,7 +168,8 @@ if (hasErrors) {
   console.log('✅ Configuração básica está OK');
 } else {
   console.log('✅ TUDO OK! Configuração do OAuth está correta');
-  console.log('💡 Certifique-se de que o OAuth Consent Screen está configurado no Google Cloud Console');
+  console.log(
+    '💡 Certifique-se de que o OAuth Consent Screen está configurado no Google Cloud Console'
+  );
 }
 console.log('='.repeat(60) + '\n');
-

@@ -62,7 +62,9 @@ export async function deductCreditsAtomically(
       totalCredits: totalCreditsBefore,
       creditsToDeduct,
     });
-    throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${totalCreditsBefore}`);
+    throw new Error(
+      `Insufficient credits. Required: ${creditsToDeduct}, Available: ${totalCreditsBefore}`
+    );
   }
 
   const fromEarned = Math.min(totalCreditsEarnedBefore, creditsToDeduct);
@@ -84,14 +86,21 @@ export async function deductCreditsAtomically(
     {
       _id: new ObjectId(userId),
       ...(fromEarned > 0 ? { totalCreditsEarned: { $gte: fromEarned } } : {}),
-      ...(fromMonthly > 0 ? {
-        $expr: {
-          $gte: [
-            { $subtract: [{ $ifNull: ['$monthlyCredits', 20] }, { $ifNull: ['$creditsUsed', 0] }] },
-            fromMonthly
-          ]
-        }
-      } : {})
+      ...(fromMonthly > 0
+        ? {
+            $expr: {
+              $gte: [
+                {
+                  $subtract: [
+                    { $ifNull: ['$monthlyCredits', 20] },
+                    { $ifNull: ['$creditsUsed', 0] },
+                  ],
+                },
+                fromMonthly,
+              ],
+            },
+          }
+        : {}),
     },
     { $inc: updateOperation },
     { returnDocument: 'after' }
@@ -110,9 +119,13 @@ export async function deductCreditsAtomically(
     const currentTotal = currentTotalEarned + currentMonthlyRemaining;
 
     if (currentTotal < creditsToDeduct) {
-      throw new Error(`Insufficient credits. Required: ${creditsToDeduct}, Available: ${currentTotal}`);
+      throw new Error(
+        `Insufficient credits. Required: ${creditsToDeduct}, Available: ${currentTotal}`
+      );
     } else {
-      throw new Error(`System error: Failed to deduct credits. Please try again. Available: ${currentTotal}`);
+      throw new Error(
+        `System error: Failed to deduct credits. Please try again. Available: ${currentTotal}`
+      );
     }
   }
 
@@ -162,10 +175,7 @@ export async function refundCredits(
     }
 
     if (Object.keys(updateFields).length > 0) {
-      await db.collection('users').updateOne(
-        { _id: new ObjectId(userId) },
-        { $inc: updateFields }
-      );
+      await db.collection('users').updateOne({ _id: new ObjectId(userId) }, { $inc: updateFields });
     }
 
     console.log(`${LOG_PREFIX} [refundCredits] Refunded with source tracking`, {
@@ -195,10 +205,7 @@ export async function refundCredits(
       updateFields.creditsUsed = -creditsToReduceFromUsed;
     }
 
-    await db.collection('users').updateOne(
-      { _id: new ObjectId(userId) },
-      { $inc: updateFields }
-    );
+    await db.collection('users').updateOne({ _id: new ObjectId(userId) }, { $inc: updateFields });
 
     console.log(`${LOG_PREFIX} [refundCredits] Refunded (fallback)`, {
       userId,
@@ -239,12 +246,15 @@ export async function refundCreditsWithRetry(
         });
       } else {
         const delayMs = Math.pow(2, attempt - 1) * 1000;
-        console.warn(`${LOG_PREFIX} [refundCreditsWithRetry] Attempt ${attempt} failed, retrying in ${delayMs}ms`, {
-          userId,
-          creditsToRefund,
-          error: error.message,
-        });
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        console.warn(
+          `${LOG_PREFIX} [refundCreditsWithRetry] Attempt ${attempt} failed, retrying in ${delayMs}ms`,
+          {
+            userId,
+            creditsToRefund,
+            error: error.message,
+          }
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
   }
@@ -293,17 +303,35 @@ export async function chargeCredits(
 
   if (isAdmin) {
     console.log(`${LOG_PREFIX} Admin user — skipping deduction`, { userId });
-    return { charged: false, creditsDeducted: 0, deductionSource: noDeductionSource, user, reason: 'admin' };
+    return {
+      charged: false,
+      creditsDeducted: 0,
+      deductionSource: noDeductionSource,
+      user,
+      reason: 'admin',
+    };
   }
 
   if (isUserApiKey) {
     console.log(`${LOG_PREFIX} User API key — skipping deduction`, { userId });
-    return { charged: false, creditsDeducted: 0, deductionSource: noDeductionSource, user, reason: 'user-key' };
+    return {
+      charged: false,
+      creditsDeducted: 0,
+      deductionSource: noDeductionSource,
+      user,
+      reason: 'user-key',
+    };
   }
 
   if (isUnlimited || creditsToDeduct === 0) {
     console.log(`${LOG_PREFIX} Unlimited generation — skipping deduction`, { userId });
-    return { charged: false, creditsDeducted: 0, deductionSource: noDeductionSource, user, reason: 'unlimited' };
+    return {
+      charged: false,
+      creditsDeducted: 0,
+      deductionSource: noDeductionSource,
+      user,
+      reason: 'unlimited',
+    };
   }
 
   const result = await deductCreditsAtomically(userId, creditsToDeduct, requestId);

@@ -47,7 +47,7 @@ router.post('/partner-credits', partnerCreditsLimiter, async (req: Request, res:
     if (action === 'info') {
       return res.json({
         found: !!user,
-        currentCredits: user ? (user.totalCreditsEarned || 0) : 0,
+        currentCredits: user ? user.totalCreditsEarned || 0 : 0,
       });
     }
 
@@ -73,13 +73,16 @@ router.post('/partner-credits', partnerCreditsLimiter, async (req: Request, res:
       });
 
       if (existing) {
-        return res.json({ success: true, alreadyGranted: true, transactionId: existing._id.toString() });
+        return res.json({
+          success: true,
+          alreadyGranted: true,
+          transactionId: existing._id.toString(),
+        });
       }
 
-      await db.collection('users').updateOne(
-        { _id: user._id },
-        { $inc: { totalCreditsEarned: credits } }
-      );
+      await db
+        .collection('users')
+        .updateOne({ _id: user._id }, { $inc: { totalCreditsEarned: credits } });
 
       const txResult = await db.collection('transactions').insertOne({
         userId: user._id,
@@ -94,7 +97,9 @@ router.post('/partner-credits', partnerCreditsLimiter, async (req: Request, res:
         updatedAt: new Date(),
       });
 
-      console.log(`✅ Partner credits granted: ${credits} to ${email} from ${source} (ref: ${ref})`);
+      console.log(
+        `✅ Partner credits granted: ${credits} to ${email} from ${source} (ref: ${ref})`
+      );
 
       return res.json({
         success: true,

@@ -165,79 +165,85 @@ export const useCanvasDrawing = (
     setDrawingState((prev) => ({ ...prev, shapeStrokeColor: color }));
   }, []);
 
-  const startDrawing = useCallback((event: React.MouseEvent | React.TouchEvent) => {
-    if (!drawingState.isDrawingMode || !reactFlowInstance) return;
+  const startDrawing = useCallback(
+    (event: React.MouseEvent | React.TouchEvent) => {
+      if (!drawingState.isDrawingMode || !reactFlowInstance) return;
 
-    event.preventDefault();
-    event.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
 
-    const clientX = 'clientX' in event ? event.clientX : event.touches[0].clientX;
-    const clientY = 'clientY' in event ? event.clientY : event.touches[0].clientY;
+      const clientX = 'clientX' in event ? event.clientX : event.touches[0].clientX;
+      const clientY = 'clientY' in event ? event.clientY : event.touches[0].clientY;
 
-    const position = reactFlowInstance.screenToFlowPosition({
-      x: clientX,
-      y: clientY,
-    });
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: clientX,
+        y: clientY,
+      });
 
-    if (!position || isNaN(position.x) || isNaN(position.y)) {
-      return;
-    }
+      if (!position || isNaN(position.x) || isNaN(position.y)) {
+        return;
+      }
 
-    // Reset refs and state
-    strokePointsRef.current = [[position.x, position.y]];
-    lastPathDataUpdateRef.current = Date.now();
+      // Reset refs and state
+      strokePointsRef.current = [[position.x, position.y]];
+      lastPathDataUpdateRef.current = Date.now();
 
-    // Cancel any pending RAF
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = null;
-    }
+      // Cancel any pending RAF
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
 
-    setIsDrawing(true);
-    setStartPosition(position);
-    setCurrentPosition(position);
+      setIsDrawing(true);
+      setStartPosition(position);
+      setCurrentPosition(position);
 
-    if (drawingState.drawingType === 'freehand') {
-      setCurrentStroke([[position.x, position.y]]);
-    }
-  }, [drawingState.isDrawingMode, drawingState.drawingType, reactFlowInstance]);
+      if (drawingState.drawingType === 'freehand') {
+        setCurrentStroke([[position.x, position.y]]);
+      }
+    },
+    [drawingState.isDrawingMode, drawingState.drawingType, reactFlowInstance]
+  );
 
   // Optimized draw function with requestAnimationFrame throttling
-  const draw = useCallback((event: React.MouseEvent | React.TouchEvent) => {
-    if (!isDrawing || !reactFlowInstance || !drawingState.isDrawingMode) return;
+  const draw = useCallback(
+    (event: React.MouseEvent | React.TouchEvent) => {
+      if (!isDrawing || !reactFlowInstance || !drawingState.isDrawingMode) return;
 
-    event.preventDefault();
-    event.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
 
-    const clientX = 'clientX' in event ? event.clientX : event.touches[0].clientX;
-    const clientY = 'clientY' in event ? event.clientY : event.touches[0].clientY;
+      const clientX = 'clientX' in event ? event.clientX : event.touches[0].clientX;
+      const clientY = 'clientY' in event ? event.clientY : event.touches[0].clientY;
 
-    const position = reactFlowInstance.screenToFlowPosition({
-      x: clientX,
-      y: clientY,
-    });
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: clientX,
+        y: clientY,
+      });
 
-    if (!position || isNaN(position.x) || isNaN(position.y)) {
-      return;
-    }
-
-    // Always update current position for shape preview
-    setCurrentPosition(position);
-
-    if (drawingState.drawingType === 'freehand') {
-      // Accumulate points in ref for better performance
-      strokePointsRef.current.push([position.x, position.y]);
-
-      // Throttle state updates using requestAnimationFrame
-      if (rafIdRef.current === null) {
-        rafIdRef.current = requestAnimationFrame(() => {
-          // Update state with accumulated points
-          setCurrentStroke([...strokePointsRef.current]);
-          rafIdRef.current = null;
-        });
+      if (!position || isNaN(position.x) || isNaN(position.y)) {
+        return;
       }
-    }
-  }, [isDrawing, reactFlowInstance, drawingState.isDrawingMode, drawingState.drawingType]);
+
+      // Always update current position for shape preview
+      setCurrentPosition(position);
+
+      if (drawingState.drawingType === 'freehand') {
+        // Accumulate points in ref for better performance
+        strokePointsRef.current.push([position.x, position.y]);
+
+        // Throttle state updates using requestAnimationFrame
+        if (rafIdRef.current === null) {
+          rafIdRef.current = requestAnimationFrame(() => {
+            // Update state with accumulated points
+            setCurrentStroke([...strokePointsRef.current]);
+            rafIdRef.current = null;
+          });
+        }
+      }
+    },
+    [isDrawing, reactFlowInstance, drawingState.isDrawingMode, drawingState.drawingType]
+  );
 
   const stopDrawing = useCallback(() => {
     if (!isDrawing || !reactFlowInstance || !drawingState.isDrawingMode) return;
@@ -249,11 +255,12 @@ export const useCanvasDrawing = (
     }
 
     // Flush any remaining points from ref
-    const finalStroke = drawingState.drawingType === 'freehand'
-      ? strokePointsRef.current.length > 0
-        ? strokePointsRef.current
-        : currentStroke
-      : currentStroke;
+    const finalStroke =
+      drawingState.drawingType === 'freehand'
+        ? strokePointsRef.current.length > 0
+          ? strokePointsRef.current
+          : currentStroke
+        : currentStroke;
 
     setIsDrawing(false);
 
@@ -280,7 +287,7 @@ export const useCanvasDrawing = (
       if (drawingState.shapeType === 'arrow') {
         const distance = Math.sqrt(
           Math.pow(currentPosition.x - startPosition.x, 2) +
-          Math.pow(currentPosition.y - startPosition.y, 2)
+            Math.pow(currentPosition.y - startPosition.y, 2)
         );
         const minSize = 20;
 
@@ -364,14 +371,7 @@ export const useCanvasDrawing = (
     setStartPosition(null);
     setCurrentPosition(null);
     lastPathDataUpdateRef.current = 0;
-  }, [
-    isDrawing,
-    reactFlowInstance,
-    drawingState,
-    currentStroke,
-    startPosition,
-    currentPosition,
-  ]);
+  }, [isDrawing, reactFlowInstance, drawingState, currentStroke, startPosition, currentPosition]);
 
   const deleteDrawing = useCallback((id: string) => {
     setDrawings((prev) => prev.filter((d) => d.id !== id));
@@ -384,26 +384,20 @@ export const useCanvasDrawing = (
 
   // Update drawing bounds (for move and resize)
   const updateDrawingBounds = useCallback((id: string, bounds: DrawingBounds) => {
-    setDrawings((prev) =>
-      prev.map((d) =>
-        d.id === id
-          ? { ...d, bounds }
-          : d
-      )
-    );
+    setDrawings((prev) => prev.map((d) => (d.id === id ? { ...d, bounds } : d)));
   }, []);
 
   const moveDrawings = useCallback((ids: Set<string>, delta: { x: number; y: number }) => {
     setDrawings((prev) =>
       prev.map((d) =>
         ids.has(d.id)
-          ? { 
-              ...d, 
-              bounds: { 
-                ...d.bounds, 
-                x: d.bounds.x + delta.x, 
-                y: d.bounds.y + delta.y 
-              } 
+          ? {
+              ...d,
+              bounds: {
+                ...d.bounds,
+                x: d.bounds.x + delta.x,
+                y: d.bounds.y + delta.y,
+              },
             }
           : d
       )
@@ -424,29 +418,32 @@ export const useCanvasDrawing = (
   }, []);
 
   // Simple text creation (simplified type tool)
-  const createTextDrawing = useCallback((position: { x: number; y: number }) => {
-    if (!reactFlowInstance) return null;
+  const createTextDrawing = useCallback(
+    (position: { x: number; y: number }) => {
+      if (!reactFlowInstance) return null;
 
-    const newDrawing: DrawingStroke = {
-      id: `drawing-${Date.now()}-${Math.random()}`,
-      points: [],
-      pathData: '',
-      bounds: { x: position.x, y: position.y, width: 200, height: 60 },
-      color: drawingState.textColor,
-      size: drawingState.fontSize,
-      type: 'text',
-      text: '',
-      textColor: drawingState.textColor,
-      fontSize: drawingState.fontSize,
-      fontFamily: drawingState.fontFamily,
-    };
+      const newDrawing: DrawingStroke = {
+        id: `drawing-${Date.now()}-${Math.random()}`,
+        points: [],
+        pathData: '',
+        bounds: { x: position.x, y: position.y, width: 200, height: 60 },
+        color: drawingState.textColor,
+        size: drawingState.fontSize,
+        type: 'text',
+        text: '',
+        textColor: drawingState.textColor,
+        fontSize: drawingState.fontSize,
+        fontFamily: drawingState.fontFamily,
+      };
 
-    setDrawings((prev) => [...prev, newDrawing]);
-    setEditingDrawingId(newDrawing.id);
-    setSelectedDrawingIds(new Set([newDrawing.id]));
+      setDrawings((prev) => [...prev, newDrawing]);
+      setEditingDrawingId(newDrawing.id);
+      setSelectedDrawingIds(new Set([newDrawing.id]));
 
-    return newDrawing.id;
-  }, [reactFlowInstance, drawingState]);
+      return newDrawing.id;
+    },
+    [reactFlowInstance, drawingState]
+  );
 
   // Text editing handlers
   const startEditingText = useCallback((id: string) => {
@@ -456,11 +453,7 @@ export const useCanvasDrawing = (
 
   const updateDrawingText = useCallback((id: string, newText: string) => {
     setDrawings((prev) =>
-      prev.map((d) =>
-        d.id === id && d.type === 'text'
-          ? { ...d, text: newText }
-          : d
-      )
+      prev.map((d) => (d.id === id && d.type === 'text' ? { ...d, text: newText } : d))
     );
   }, []);
 
@@ -547,10 +540,11 @@ export const useCanvasDrawing = (
     const intersectingNodes = reactFlowInstance.getIntersectingNodes?.(bounds, true) || [];
     const intersectingNodeIds = new Set(intersectingNodes.map((n: any) => n.id));
 
-    const updateNodes = (nodes: any[]) => nodes.map(n => ({
-      ...n,
-      selected: intersectingNodeIds.has(n.id)
-    }));
+    const updateNodes = (nodes: any[]) =>
+      nodes.map((n) => ({
+        ...n,
+        selected: intersectingNodeIds.has(n.id),
+      }));
 
     if (setNodes) {
       setNodes(updateNodes);
@@ -612,4 +606,3 @@ export const useCanvasDrawing = (
     createTextDrawing,
   };
 };
-

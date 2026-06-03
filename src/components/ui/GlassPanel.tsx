@@ -9,19 +9,22 @@ export interface GlassPanelProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const intensityStyles = {
-  subtle: "bg-white/[0.02] border-white/[0.04]",
-  default: "bg-white/[0.03] border-white/[0.06]",
-  strong: "bg-white/[0.05] border-neutral-800",
+  subtle: 'bg-white/[0.02] border-white/[0.04]',
+  default: 'bg-white/[0.03] border-white/[0.06]',
+  strong: 'bg-white/[0.05] border-neutral-800',
 } as const;
 
 export const GlassPanel = React.forwardRef<HTMLDivElement, GlassPanelProps>(
-  ({ className, padding = 'none', intensity = 'default', children, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "div";
+  (
+    { className, padding = 'none', intensity = 'default', children, asChild = false, ...props },
+    ref
+  ) => {
+    const Comp = asChild ? Slot : 'div';
     return (
       <Comp
         ref={ref}
         className={cn(
-          "border rounded-lg flex flex-col relative z-20 transition-colors duration-300",
+          'border rounded-lg flex flex-col relative z-20 transition-colors duration-300',
           intensityStyles[intensity],
           {
             'p-0': padding === 'none',
@@ -35,7 +38,7 @@ export const GlassPanel = React.forwardRef<HTMLDivElement, GlassPanelProps>(
       >
         {children}
       </Comp>
-    )
+    );
   }
-)
-GlassPanel.displayName = "GlassPanel"
+);
+GlassPanel.displayName = 'GlassPanel';

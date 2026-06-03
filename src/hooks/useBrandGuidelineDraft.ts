@@ -62,8 +62,8 @@ export function useBrandGuidelineDraft({
 
   useEffect(() => {
     dispatch({ type: 'RESET', guideline });
-  // Reset when guideline changes from server (new ID or new updatedAt after external save)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Reset when guideline changes from server (new ID or new updatedAt after external save)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guideline.id, guideline.updatedAt]);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,27 +71,33 @@ export function useBrandGuidelineDraft({
   const onSaveRef = useRef(onSave);
   onSaveRef.current = onSave;
 
-  useEffect(() => () => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      if (pendingPatchRef.current) {
-        onSaveRef.current(pendingPatchRef.current);
-        pendingPatchRef.current = null;
+  useEffect(
+    () => () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        if (pendingPatchRef.current) {
+          onSaveRef.current(pendingPatchRef.current);
+          pendingPatchRef.current = null;
+        }
       }
-    }
-  }, []);
+    },
+    []
+  );
 
-  const updateDraft = useCallback((patch: Partial<BrandGuideline>) => {
-    dispatch({ type: 'PATCH', patch });
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    pendingPatchRef.current = patch;
-    setIsSaving(true);
-    debounceRef.current = setTimeout(() => {
-      onSaveRef.current(patch);
-      pendingPatchRef.current = null;
-      setIsSaving(false);
-    }, debounceMs);
-  }, [debounceMs]);
+  const updateDraft = useCallback(
+    (patch: Partial<BrandGuideline>) => {
+      dispatch({ type: 'PATCH', patch });
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      pendingPatchRef.current = patch;
+      setIsSaving(true);
+      debounceRef.current = setTimeout(() => {
+        onSaveRef.current(patch);
+        pendingPatchRef.current = null;
+        setIsSaving(false);
+      }, debounceMs);
+    },
+    [debounceMs]
+  );
 
   const undo = useCallback(() => dispatch({ type: 'UNDO' }), []);
   const redo = useCallback(() => dispatch({ type: 'REDO' }), []);

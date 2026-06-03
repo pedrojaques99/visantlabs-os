@@ -1,5 +1,14 @@
 import React from 'react';
-import { BarChart3, Users, Target, Lightbulb, TrendingUp, MapPin, Heart, ShoppingBag } from 'lucide-react';
+import {
+  BarChart3,
+  Users,
+  Target,
+  Lightbulb,
+  TrendingUp,
+  MapPin,
+  Heart,
+  ShoppingBag,
+} from 'lucide-react';
 
 export interface ParsedSection {
   title: string;
@@ -13,52 +22,86 @@ export type MarketCategory = 'mercado-nicho' | 'publico-alvo' | 'posicionamento'
 
 export const categorizeMarketSection = (title: string): MarketCategory => {
   const lowerTitle = title.toLowerCase();
-  
+
   // Mercado e Nicho
-  if (lowerTitle.includes('mercado') || lowerTitle.includes('market') || 
-      lowerTitle.includes('niche') || lowerTitle.includes('análise de mercado') || 
-      lowerTitle.includes('market analysis') || lowerTitle.includes('tamanho') ||
-      lowerTitle.includes('size') || lowerTitle.includes('crescimento') || 
-      lowerTitle.includes('growth')) {
+  if (
+    lowerTitle.includes('mercado') ||
+    lowerTitle.includes('market') ||
+    lowerTitle.includes('niche') ||
+    lowerTitle.includes('análise de mercado') ||
+    lowerTitle.includes('market analysis') ||
+    lowerTitle.includes('tamanho') ||
+    lowerTitle.includes('size') ||
+    lowerTitle.includes('crescimento') ||
+    lowerTitle.includes('growth')
+  ) {
     return 'mercado-nicho';
   }
-  
+
   // Público Alvo
-  if (lowerTitle.includes('público') || lowerTitle.includes('target') || 
-      lowerTitle.includes('audience') || lowerTitle.includes('demográfico') || 
-      lowerTitle.includes('demographic') || lowerTitle.includes('psicográfico') || 
-      lowerTitle.includes('psychographic') || lowerTitle.includes('comportamento') || 
-      lowerTitle.includes('behavior') || lowerTitle.includes('perfil') ||
-      lowerTitle.includes('profile')) {
+  if (
+    lowerTitle.includes('público') ||
+    lowerTitle.includes('target') ||
+    lowerTitle.includes('audience') ||
+    lowerTitle.includes('demográfico') ||
+    lowerTitle.includes('demographic') ||
+    lowerTitle.includes('psicográfico') ||
+    lowerTitle.includes('psychographic') ||
+    lowerTitle.includes('comportamento') ||
+    lowerTitle.includes('behavior') ||
+    lowerTitle.includes('perfil') ||
+    lowerTitle.includes('profile')
+  ) {
     return 'publico-alvo';
   }
-  
+
   // Posicionamento
-  if (lowerTitle.includes('posicionamento') || lowerTitle.includes('positioning') ||
-      lowerTitle.includes('diferenciação') || lowerTitle.includes('differentiation') ||
-      lowerTitle.includes('gap') || lowerTitle.includes('lacuna') ||
-      lowerTitle.includes('competitivo') || lowerTitle.includes('competitive')) {
+  if (
+    lowerTitle.includes('posicionamento') ||
+    lowerTitle.includes('positioning') ||
+    lowerTitle.includes('diferenciação') ||
+    lowerTitle.includes('differentiation') ||
+    lowerTitle.includes('gap') ||
+    lowerTitle.includes('lacuna') ||
+    lowerTitle.includes('competitivo') ||
+    lowerTitle.includes('competitive')
+  ) {
     return 'posicionamento';
   }
-  
+
   // Insights (oportunidades e tendências)
-  if (lowerTitle.includes('oportunidade') || lowerTitle.includes('opportunity') ||
-      lowerTitle.includes('tendência') || lowerTitle.includes('trend') ||
-      lowerTitle.includes('insight') || lowerTitle.includes('oportunidades') ||
-      lowerTitle.includes('opportunities')) {
+  if (
+    lowerTitle.includes('oportunidade') ||
+    lowerTitle.includes('opportunity') ||
+    lowerTitle.includes('tendência') ||
+    lowerTitle.includes('trend') ||
+    lowerTitle.includes('insight') ||
+    lowerTitle.includes('oportunidades') ||
+    lowerTitle.includes('opportunities')
+  ) {
     return 'insights';
   }
-  
+
   // Default: mercado-nicho
   return 'mercado-nicho';
 };
 
 export const getSectionInfo = (title: string): { icon: React.ReactNode; color: string } => {
   const lowerTitle = title.toLowerCase();
-  if (lowerTitle.includes('mercado') || lowerTitle.includes('market') || lowerTitle.includes('niche') || lowerTitle.includes('análise de mercado') || lowerTitle.includes('market analysis')) {
+  if (
+    lowerTitle.includes('mercado') ||
+    lowerTitle.includes('market') ||
+    lowerTitle.includes('niche') ||
+    lowerTitle.includes('análise de mercado') ||
+    lowerTitle.includes('market analysis')
+  ) {
     return { icon: <BarChart3 className="h-5 w-5" />, color: 'text-blue-400' };
   }
-  if (lowerTitle.includes('público') || lowerTitle.includes('target') || lowerTitle.includes('audience')) {
+  if (
+    lowerTitle.includes('público') ||
+    lowerTitle.includes('target') ||
+    lowerTitle.includes('audience')
+  ) {
     return { icon: <Users className="h-5 w-5" />, color: 'text-purple-400' };
   }
   if (lowerTitle.includes('posicionamento') || lowerTitle.includes('positioning')) {
@@ -95,20 +138,20 @@ const extractBoldTitle = (line: string): string | null => {
  */
 const isIntroductoryPhrase = (text: string): boolean => {
   if (!text || text.trim().length === 0) return false;
-  
+
   const lowerText = text.toLowerCase().trim();
-  
+
   // Padrões de frases introdutórias
   const introductoryPatterns = [
     /^(aqui está|here is|esta é|this is|segue|below is|following is|apresento|i present)/i,
   ];
-  
+
   // Verificar se começa com padrão introdutório e contém palavras-chave
-  const hasIntroductoryStart = introductoryPatterns.some(pattern => pattern.test(lowerText));
-  const hasIntroductoryKeywords = 
+  const hasIntroductoryStart = introductoryPatterns.some((pattern) => pattern.test(lowerText));
+  const hasIntroductoryKeywords =
     (lowerText.includes('análise') || lowerText.includes('analysis')) &&
     (lowerText.includes('marca') || lowerText.includes('brand') || lowerText.includes('descri'));
-  
+
   // Se começa com padrão introdutório e tem palavras-chave, e é uma linha curta, é introdutória
   return hasIntroductoryStart && hasIntroductoryKeywords && text.length < 100;
 };
@@ -119,9 +162,9 @@ const isIntroductoryPhrase = (text: string): boolean => {
  */
 export const removeIntroductoryPhrases = (text: string): string => {
   if (!text || !text.trim()) return text;
-  
+
   const lowerText = text.toLowerCase();
-  
+
   // Padrões de frases introdutórias em português
   const ptPatterns = [
     /^aqui está\s+(?:uma\s+)?(?:análise|análise de mercado|pesquisa|estudo|resumo|informação|dados?)[\s\S]*?:/i,
@@ -131,7 +174,7 @@ export const removeIntroductoryPhrases = (text: string): string => {
     /^a\s+seguir\s+(?:está|segue)\s+(?:uma\s+)?(?:análise|análise de mercado|pesquisa|estudo|resumo|informação|dados?)[\s\S]*?:/i,
     /^análise\s+de\s+mercado\s+(?:concisa|resumida|detalhada)?\s+para\s+(?:a\s+)?marca[\s\S]*?:/i,
   ];
-  
+
   // Padrões de frases introdutórias em inglês
   const enPatterns = [
     /^here is\s+(?:a\s+)?(?:analysis|market analysis|research|study|summary|information|data)[\s\S]*?:/i,
@@ -141,38 +184,43 @@ export const removeIntroductoryPhrases = (text: string): string => {
     /^i present\s+(?:a\s+)?(?:analysis|market analysis|research|study|summary|information|data)[\s\S]*?:/i,
     /^market analysis\s+(?:for|of)\s+(?:the\s+)?(?:brand|described brand)[\s\S]*?:/i,
   ];
-  
+
   let cleanedText = text;
-  
+
   // Remover padrões em português
   for (const pattern of ptPatterns) {
     cleanedText = cleanedText.replace(pattern, '').trim();
   }
-  
+
   // Remover padrões em inglês
   for (const pattern of enPatterns) {
     cleanedText = cleanedText.replace(pattern, '').trim();
   }
-  
+
   // Remover linhas que são apenas frases introdutórias (linhas inteiras)
   const lines = cleanedText.split('\n');
-  const filteredLines = lines.filter(line => {
+  const filteredLines = lines.filter((line) => {
     const trimmed = line.trim();
     if (!trimmed) return true; // Manter linhas vazias
-    
+
     const lowerLine = trimmed.toLowerCase();
-    
+
     // Verificar se a linha inteira é uma frase introdutória
-    const isIntroductory = 
-      /^(aqui está|here is|esta é|this is|segue|below is|following is|apresento|i present)/i.test(trimmed) &&
-      (lowerLine.includes('análise') || lowerLine.includes('analysis') || 
-       lowerLine.includes('pesquisa') || lowerLine.includes('research') ||
-       lowerLine.includes('marca') || lowerLine.includes('brand')) &&
+    const isIntroductory =
+      /^(aqui está|here is|esta é|this is|segue|below is|following is|apresento|i present)/i.test(
+        trimmed
+      ) &&
+      (lowerLine.includes('análise') ||
+        lowerLine.includes('analysis') ||
+        lowerLine.includes('pesquisa') ||
+        lowerLine.includes('research') ||
+        lowerLine.includes('marca') ||
+        lowerLine.includes('brand')) &&
       trimmed.length < 100; // Frases introdutórias geralmente são curtas
-    
+
     return !isIntroductory;
   });
-  
+
   return filteredLines.join('\n').trim();
 };
 
@@ -181,13 +229,13 @@ export const parseMarketResearch = (text: string): ParsedSection[] | null => {
   const cleanedText = removeIntroductoryPhrases(text);
   const lines = cleanedText.split('\n');
   const sections: ParsedSection[] = [];
-  
+
   let currentSection: ParsedSection | null = null;
   let currentSubsection: { title: string; content: string[] } | null = null;
 
   lines.forEach((line) => {
     const trimmed = line.trim();
-    
+
     if (trimmed.match(/^#{2,4}\s+/)) {
       if (currentSubsection && currentSection) {
         if (currentSubsection.content.length > 0) {
@@ -195,47 +243,48 @@ export const parseMarketResearch = (text: string): ParsedSection[] | null => {
         }
         currentSubsection = null;
       }
-      
+
       if (currentSection) {
         if (currentSection.subsections.length > 0 || currentSection.items.length > 0) {
           sections.push(currentSection);
         }
       }
-      
-      const title = trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, '').trim();
+
+      const title = trimmed
+        .replace(/^#+\s*/, '')
+        .replace(/\*\*/g, '')
+        .trim();
       const { icon, color } = getSectionInfo(title);
-      currentSection = { 
-        title, 
-        icon, 
-        color, 
+      currentSection = {
+        title,
+        icon,
+        color,
         subsections: [],
-        items: []
+        items: [],
       };
       currentSubsection = null;
-    } 
-    else if (trimmed) {
+    } else if (trimmed) {
       // Ignora linhas que são apenas pontuação ou vazias
       if (trimmed === ':' || trimmed === ';' || trimmed.length === 0) {
         return;
       }
-      
+
       const boldTitle = extractBoldTitle(trimmed);
-      
+
       if (boldTitle) {
         if (currentSubsection && currentSection) {
           if (currentSubsection.content.length > 0) {
             currentSection.subsections.push(currentSubsection);
           }
         }
-        
+
         const contentAfterTitle = trimmed.replace(/\*\*[^*]+?\*\*:?\s*/, '').trim();
         currentSubsection = { title: boldTitle, content: [] };
-        
+
         if (contentAfterTitle && contentAfterTitle !== boldTitle && contentAfterTitle !== ':') {
           currentSubsection.content.push(contentAfterTitle);
         }
-      } 
-      else if (trimmed.startsWith('-') || trimmed.startsWith('*') || trimmed.startsWith('•')) {
+      } else if (trimmed.startsWith('-') || trimmed.startsWith('*') || trimmed.startsWith('•')) {
         const item = trimmed.replace(/^[-*•]\s+/, '').trim();
         // Filtrar items que são apenas frases introdutórias
         if (item && !isIntroductoryPhrase(item)) {
@@ -250,7 +299,7 @@ export const parseMarketResearch = (text: string): ParsedSection[] | null => {
               icon,
               color,
               subsections: [],
-              items: [item]
+              items: [item],
             };
           }
         }
@@ -268,7 +317,7 @@ export const parseMarketResearch = (text: string): ParsedSection[] | null => {
               icon,
               color,
               subsections: [],
-              items: [trimmed]
+              items: [trimmed],
             };
           }
         }
@@ -297,10 +346,10 @@ export const parseMarketResearch = (text: string): ParsedSection[] | null => {
  */
 export const parseDemographics = (text: string): string[] => {
   if (!text || !text.trim()) return [];
-  
+
   const tags: string[] = [];
   const lowerText = text.toLowerCase();
-  
+
   // Extrair faixas etárias
   // Padrões: "35-60 anos", "entre 35 e 60 anos", "de 35 a 60 anos", "35 a 60"
   const agePatterns = [
@@ -308,8 +357,8 @@ export const parseDemographics = (text: string): string[] => {
     /(?:entre|de)\s+(\d+)\s+(?:e|a)\s+(\d+)\s*(?:anos|years?)?/gi,
     /(\d+)\s+(?:a|até)\s+(\d+)\s*(?:anos|years?)?/gi,
   ];
-  
-  agePatterns.forEach(pattern => {
+
+  agePatterns.forEach((pattern) => {
     const matches = text.matchAll(pattern);
     for (const match of matches) {
       const ageRange = match[0].replace(/\s+/g, ' ').trim();
@@ -318,42 +367,73 @@ export const parseDemographics = (text: string): string[] => {
       }
     }
   });
-  
+
   // Extrair localizações específicas conhecidas primeiro (mais preciso)
   const knownLocations = [
-    'Balneário Camboriú', 'Praia Brava', 'Litoral Catarinense',
-    'Santa Catarina', 'São Paulo', 'Rio de Janeiro', 'Minas Gerais',
-    'Rio Grande do Sul', 'Bahia', 'Pernambuco', 'Ceará', 'Paraná'
+    'Balneário Camboriú',
+    'Praia Brava',
+    'Litoral Catarinense',
+    'Santa Catarina',
+    'São Paulo',
+    'Rio de Janeiro',
+    'Minas Gerais',
+    'Rio Grande do Sul',
+    'Bahia',
+    'Pernambuco',
+    'Ceará',
+    'Paraná',
   ];
-  
-  knownLocations.forEach(location => {
+
+  knownLocations.forEach((location) => {
     if (text.includes(location) && !tags.includes(location)) {
       tags.push(location);
     }
   });
-  
+
   // Extrair outras localizações (cidades e regiões com nomes próprios)
   // Padrão: palavras que começam com maiúscula seguidas de outras palavras com maiúscula
-  const locationPattern = /\b([A-ZÁÉÍÓÚÂÊÔÇ][a-záéíóúâêôçãõ]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÇ][a-záéíóúâêôçãõ]+)+)\b/g;
+  const locationPattern =
+    /\b([A-ZÁÉÍÓÚÂÊÔÇ][a-záéíóúâêôçãõ]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÇ][a-záéíóúâêôçãõ]+)+)\b/g;
   const locationMatches = text.matchAll(locationPattern);
-  
-  const excludeWords = ['idade', 'anos', 'empresários', 'executivos', 'investidores', 
-    'predominantemente', 'localizados', 'outras', 'áreas', 'alto', 'valor', 'poder', 
-    'aquisitivo', 'estabelecidos', 'donos', 'negócios', 'lideres', 'líderes', 'mercado'];
-  
+
+  const excludeWords = [
+    'idade',
+    'anos',
+    'empresários',
+    'executivos',
+    'investidores',
+    'predominantemente',
+    'localizados',
+    'outras',
+    'áreas',
+    'alto',
+    'valor',
+    'poder',
+    'aquisitivo',
+    'estabelecidos',
+    'donos',
+    'negócios',
+    'lideres',
+    'líderes',
+    'mercado',
+  ];
+
   for (const match of locationMatches) {
     const location = match[1];
     const lowerLocation = location.toLowerCase();
-    
+
     // Verificar se não é uma palavra excluída e não está nas tags conhecidas
-    if (location && location.length > 3 && 
-        !excludeWords.some(word => lowerLocation.includes(word)) &&
-        !knownLocations.some(known => location.includes(known) || known.includes(location)) &&
-        !tags.includes(location)) {
+    if (
+      location &&
+      location.length > 3 &&
+      !excludeWords.some((word) => lowerLocation.includes(word)) &&
+      !knownLocations.some((known) => location.includes(known) || known.includes(location)) &&
+      !tags.includes(location)
+    ) {
       tags.push(location);
     }
   }
-  
+
   // Extrair profissões/cargos
   const professionKeywords = [
     { pattern: /\b(empresários?\s+estabelecidos?)\b/gi, tag: 'Empresários estabelecidos' },
@@ -366,45 +446,62 @@ export const parseDemographics = (text: string): string[] => {
     { pattern: /\b(gerentes?)\b/gi, tag: 'Gerentes' },
     { pattern: /\b(presidentes?)\b/gi, tag: 'Presidentes' },
   ];
-  
+
   professionKeywords.forEach(({ pattern, tag }) => {
     if (pattern.test(text) && !tags.includes(tag)) {
       tags.push(tag);
     }
   });
-  
+
   // Extrair informações socioeconômicas
   const socioeconomicPatterns = [
     { pattern: /\b(alto\s+poder\s+aquisitivo)\b/gi, tag: 'Alto poder aquisitivo' },
     { pattern: /\b(alto\s+valor)\b/gi, tag: 'Alto valor' },
     { pattern: /\b(renda\s+(?:alta|elevada))\b/gi, tag: 'Renda alta' },
   ];
-  
+
   socioeconomicPatterns.forEach(({ pattern, tag }) => {
     if (pattern.test(text) && !tags.includes(tag)) {
       tags.push(tag);
     }
   });
-  
+
   // Remover duplicatas e ordenar (localizações primeiro, depois profissões, depois outros)
   const uniqueTags = Array.from(new Set(tags));
-  
+
   // Ordenar: localizações primeiro, depois profissões, depois outros
   const sortedTags = uniqueTags.sort((a, b) => {
-    const locationKeywords = ['Balneário', 'Praia', 'Litoral', 'Catarinense', 'Paulista', 
-      'Carioca', 'Mineiro', 'Gaúcho', 'Baiano', 'Pernambucano', 'Ceará', 'Paraná', 
-      'Santa Catarina', 'Rio de Janeiro', 'São Paulo', 'Minas Gerais', 'Rio Grande do Sul', 
-      'Bahia', 'Pernambuco'];
-    const aIsLocation = locationKeywords.some(keyword => a.includes(keyword));
-    const bIsLocation = locationKeywords.some(keyword => b.includes(keyword));
-    
+    const locationKeywords = [
+      'Balneário',
+      'Praia',
+      'Litoral',
+      'Catarinense',
+      'Paulista',
+      'Carioca',
+      'Mineiro',
+      'Gaúcho',
+      'Baiano',
+      'Pernambucano',
+      'Ceará',
+      'Paraná',
+      'Santa Catarina',
+      'Rio de Janeiro',
+      'São Paulo',
+      'Minas Gerais',
+      'Rio Grande do Sul',
+      'Bahia',
+      'Pernambuco',
+    ];
+    const aIsLocation = locationKeywords.some((keyword) => a.includes(keyword));
+    const bIsLocation = locationKeywords.some((keyword) => b.includes(keyword));
+
     if (aIsLocation && !bIsLocation) return -1;
     if (!aIsLocation && bIsLocation) return 1;
-    
+
     // Se ambos são localizações ou ambos não são, ordenar alfabeticamente
     return a.localeCompare(b);
   });
-  
+
   return sortedTags;
 };
 
@@ -421,7 +518,11 @@ export interface PersonaInfo {
  * Extrai informações estruturadas da persona do texto de demografia
  * Identifica: nome, idade, profissão, tipo de decisor, setor e tags características
  */
-export const parsePersonaInfo = (demographics: string, desires?: string[], pains?: string[]): PersonaInfo => {
+export const parsePersonaInfo = (
+  demographics: string,
+  desires?: string[],
+  pains?: string[]
+): PersonaInfo => {
   if (!demographics || !demographics.trim()) {
     return {
       name: null,
@@ -455,8 +556,17 @@ export const parsePersonaInfo = (demographics: string, desires?: string[], pains
     if (match) {
       const potentialName = match[1];
       // Verificar se não é uma localização ou profissão comum
-      const excludeNames = ['Balneário', 'Praia', 'Litoral', 'Santa', 'São', 'Rio', 'Minas', 'Rio Grande'];
-      if (!excludeNames.some(ex => potentialName.includes(ex)) && potentialName.length > 3) {
+      const excludeNames = [
+        'Balneário',
+        'Praia',
+        'Litoral',
+        'Santa',
+        'São',
+        'Rio',
+        'Minas',
+        'Rio Grande',
+      ];
+      if (!excludeNames.some((ex) => potentialName.includes(ex)) && potentialName.length > 3) {
         result.name = potentialName;
         break;
       }
@@ -477,7 +587,10 @@ export const parsePersonaInfo = (demographics: string, desires?: string[], pains
 
   // Extrair profissão/cargo
   const professionPatterns = [
-    { pattern: /\b(diretor\s+(?:comercial|executivo|geral|financeiro|de\s+operações?))\b/gi, extract: (m: RegExpMatchArray) => m[0].charAt(0).toUpperCase() + m[0].slice(1).toLowerCase() },
+    {
+      pattern: /\b(diretor\s+(?:comercial|executivo|geral|financeiro|de\s+operações?))\b/gi,
+      extract: (m: RegExpMatchArray) => m[0].charAt(0).toUpperCase() + m[0].slice(1).toLowerCase(),
+    },
     { pattern: /\b(empresário\s+estabelecido)\b/gi, extract: () => 'Empresário estabelecido' },
     { pattern: /\b(executivo)\b/gi, extract: () => 'Executivo' },
     { pattern: /\b(investidor)\b/gi, extract: () => 'Investidor' },
@@ -547,4 +660,3 @@ export const parsePersonaInfo = (demographics: string, desires?: string[], pains
 
   return result;
 };
-

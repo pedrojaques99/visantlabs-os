@@ -5,7 +5,7 @@ import type { BatchRunnerNodeData, BatchResult } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { cn } from '@/lib/utils';
 
-import { GlitchLoader } from '@/components/ui/GlitchLoader'
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 const STATUS_ICON: Record<BatchResult['status'], React.ReactNode> = {
   pending: <Clock size={9} className="text-white/30" />,
   running: <GlitchLoader size={9} />,
@@ -23,7 +23,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
   const total = results.length;
   const done = results.filter((r) => r.status === 'done').length;
   const failed = results.filter((r) => r.status === 'error').length;
-  const progress = total > 0 ? Math.round((done + failed) / total * 100) : 0;
+  const progress = total > 0 ? Math.round(((done + failed) / total) * 100) : 0;
 
   const handleRun = useCallback(() => {
     nodeData.onRun?.(id);
@@ -46,13 +46,27 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
         type="target"
         position={Position.Left}
         id="data-in"
-        style={{ top: '35%', left: -6, width: 10, height: 10, background: 'var(--color-violet-400)', border: '2px solid var(--color-neutral-950)' }}
+        style={{
+          top: '35%',
+          left: -6,
+          width: 10,
+          height: 10,
+          background: 'var(--color-violet-400)',
+          border: '2px solid var(--color-neutral-950)',
+        }}
       />
       <Handle
         type="target"
         position={Position.Left}
         id="prompt-in"
-        style={{ top: '65%', left: -6, width: 10, height: 10, background: 'var(--color-blue-400)', border: '2px solid var(--color-neutral-950)' }}
+        style={{
+          top: '65%',
+          left: -6,
+          width: 10,
+          height: 10,
+          background: 'var(--color-blue-400)',
+          border: '2px solid var(--color-neutral-950)',
+        }}
       />
 
       {/* Header */}
@@ -61,13 +75,15 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
         <span className="text-[11px] font-semibold uppercase tracking-widest text-white/70">
           Batch Runner
         </span>
-        <span className={cn(
-          'ml-auto text-[10px] px-1.5 py-0.5 rounded font-medium',
-          status === 'idle' && 'text-white/30 bg-white/5',
-          status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
-          status === 'done' && 'text-green-400 bg-green-400/10',
-          status === 'cancelled' && 'text-orange-400 bg-orange-400/10',
-        )}>
+        <span
+          className={cn(
+            'ml-auto text-[10px] px-1.5 py-0.5 rounded font-medium',
+            status === 'idle' && 'text-white/30 bg-white/5',
+            status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
+            status === 'done' && 'text-green-400 bg-green-400/10',
+            status === 'cancelled' && 'text-orange-400 bg-orange-400/10'
+          )}
+        >
           {status}
         </span>
       </div>
@@ -76,10 +92,12 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       {status === 'idle' && total === 0 && (
         <div className="px-3 py-2 space-y-1">
           <p className="text-[10px] text-white/25">
-            <span className="text-purple-400">●</span> Connect a <span className="text-white/40">Data</span> node (rows)
+            <span className="text-purple-400">●</span> Connect a{' '}
+            <span className="text-white/40">Data</span> node (rows)
           </p>
           <p className="text-[10px] text-white/25">
-            <span className="text-blue-400">●</span> Connect a <span className="text-white/40">Prompt</span> node (template)
+            <span className="text-blue-400">●</span> Connect a{' '}
+            <span className="text-white/40">Prompt</span> node (template)
           </p>
         </div>
       )}
@@ -88,7 +106,9 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       {total > 0 && (
         <div className="px-3 pt-2 pb-1">
           <div className="flex justify-between text-[10px] text-white/40 mb-1">
-            <span>{done} done · {failed} failed · {total - done - failed} left</span>
+            <span>
+              {done} done · {failed} failed · {total - done - failed} left
+            </span>
             <span>{progress}%</span>
           </div>
           <div className="h-1 bg-white/10 rounded-full overflow-hidden">
@@ -120,7 +140,9 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
                 />
               )}
               {r.status === 'error' && r.error && (
-                <span className="text-[10px] text-destructive/70 truncate max-w-[80px]">{r.error}</span>
+                <span className="text-[10px] text-destructive/70 truncate max-w-[80px]">
+                  {r.error}
+                </span>
               )}
             </div>
           ))}

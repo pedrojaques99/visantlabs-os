@@ -1,5 +1,5 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 export interface CurrencyInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
@@ -91,7 +91,11 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
 
     const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
       // Ao focar, se o campo estiver vazio ou só tiver o símbolo, permite edição
-      if (displayValue === '' || displayValue === currencySymbol || displayValue === `${currencySymbol} `) {
+      if (
+        displayValue === '' ||
+        displayValue === currencySymbol ||
+        displayValue === `${currencySymbol} `
+      ) {
         setDisplayValue(`${currencySymbol} `);
       }
     };
@@ -100,7 +104,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       <input
         type="text"
         className={cn(
-          "w-full px-4 py-3 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 font-mono text-sm focus:outline-none focus:border-neutral-600 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500",
+          'w-full px-4 py-3 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 font-mono text-sm focus:outline-none focus:border-neutral-600 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500',
           className
         )}
         ref={ref}
@@ -110,10 +114,9 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
         onFocus={handleFocus}
         {...props}
       />
-    )
+    );
   }
-)
-CurrencyInput.displayName = "CurrencyInput"
+);
+CurrencyInput.displayName = 'CurrencyInput';
 
-export { CurrencyInput }
-
+export { CurrencyInput };

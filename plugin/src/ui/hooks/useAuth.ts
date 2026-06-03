@@ -4,7 +4,8 @@ import { useFigmaMessages } from './useFigmaMessages';
 import { apiUrl } from '../config';
 
 export function useAuth() {
-  const { authToken, authEmail, setAuthToken, setAuthEmail, updateCredits, showToast } = usePluginStore();
+  const { authToken, authEmail, setAuthToken, setAuthEmail, updateCredits, showToast } =
+    usePluginStore();
   const { send } = useFigmaMessages();
   const checkInFlightRef = useRef<Promise<boolean> | null>(null);
 
@@ -19,7 +20,7 @@ export function useAuth() {
         const response = await fetch(apiUrl('/auth/signin'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password }),
         });
 
         if (!response.ok) {
@@ -30,7 +31,9 @@ export function useAuth() {
               const err = await response.json();
               msg = err.error || err.message || msg;
             }
-          } catch { /* use default */ }
+          } catch {
+            /* use default */
+          }
           showToast(msg, 'error');
           return false;
         }
@@ -45,11 +48,14 @@ export function useAuth() {
 
         // Fetch credits in background — don't block login success
         fetch(apiUrl('/plugin/auth/status'), {
-          headers: { Authorization: `Bearer ${data.token}`, 'Content-Type': 'application/json' }
+          headers: { Authorization: `Bearer ${data.token}`, 'Content-Type': 'application/json' },
         })
-          .then(r => r.ok ? r.json() : null)
-          .then(status => {
-            if (typeof status?.creditsUsed === 'number' && typeof status?.monthlyCredits === 'number') {
+          .then((r) => (r.ok ? r.json() : null))
+          .then((status) => {
+            if (
+              typeof status?.creditsUsed === 'number' &&
+              typeof status?.monthlyCredits === 'number'
+            ) {
               updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
             }
           })
@@ -78,13 +84,20 @@ export function useAuth() {
       const { authUrl, sessionId } = await response.json();
       if (!authUrl || !sessionId) return;
 
-      window.parent.postMessage({ pluginMessage: { type: 'OPEN_EXTERNAL_URL', url: authUrl } }, 'https://www.figma.com');
+      window.parent.postMessage(
+        { pluginMessage: { type: 'OPEN_EXTERNAL_URL', url: authUrl } },
+        'https://www.figma.com'
+      );
       showToast('Faça login no navegador...', 'info');
 
       let attempts = 0;
       const poll = setInterval(async () => {
         attempts++;
-        if (attempts > 60) { clearInterval(poll); showToast('Login expirou', 'error'); return; }
+        if (attempts > 60) {
+          clearInterval(poll);
+          showToast('Login expirou', 'error');
+          return;
+        }
         try {
           const r = await fetch(apiUrl(`/auth/google/poll/${sessionId}`));
           const data = await r.json();
@@ -94,17 +107,26 @@ export function useAuth() {
             setAuthEmail(null);
             send({ type: 'SAVE_AUTH_TOKEN', token: data.token, rememberMe: true } as any);
             fetch(apiUrl('/plugin/auth/status'), {
-              headers: { Authorization: `Bearer ${data.token}`, 'Content-Type': 'application/json' }
-            }).then(r => r.ok ? r.json() : null).then(status => {
-              if (status?.email) setAuthEmail(status.email);
-              if (typeof status?.creditsUsed === 'number') updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
-            }).catch(() => {});
+              headers: {
+                Authorization: `Bearer ${data.token}`,
+                'Content-Type': 'application/json',
+              },
+            })
+              .then((r) => (r.ok ? r.json() : null))
+              .then((status) => {
+                if (status?.email) setAuthEmail(status.email);
+                if (typeof status?.creditsUsed === 'number')
+                  updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
+              })
+              .catch(() => {});
             showToast('Login realizado', 'success');
           } else if (data.status === 'error' || data.status === 'expired') {
             clearInterval(poll);
             showToast('Falha no login Google', 'error');
           }
-        } catch { /* retry */ }
+        } catch {
+          /* retry */
+        }
       }, 3000);
     } catch {
       showToast('Erro de conexão com OAuth', 'error');
@@ -119,7 +141,7 @@ export function useAuth() {
     // Tell sandbox to clear token
     send({
       type: 'SAVE_AUTH_TOKEN',
-      token: ''
+      token: '',
     } as any);
 
     showToast('Logged out', 'success');
@@ -134,8 +156,8 @@ export function useAuth() {
         const response = await fetch(apiUrl('/plugin/auth/status'), {
           headers: {
             Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         });
 
         if (response.ok) {
@@ -169,6 +191,6 @@ export function useAuth() {
     checkStatus,
     isAuthenticated: !!authToken,
     email: authEmail,
-    authToken
+    authToken,
   };
 }

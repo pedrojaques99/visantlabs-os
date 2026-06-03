@@ -29,7 +29,13 @@ const SECTION_OPTIONS = [
 ];
 
 function hex(r: number, g: number, b: number): string {
-  return '#' + [r, g, b].map(c => Math.round(c).toString(16).padStart(2, '0')).join('').toUpperCase();
+  return (
+    '#' +
+    [r, g, b]
+      .map((c) => Math.round(c).toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase()
+  );
 }
 
 function parseHex(h: string): { r: number; g: number; b: number } | null {
@@ -43,7 +49,7 @@ function parseHex(h: string): { r: number; g: number; b: number } | null {
 }
 
 function mergeColors(existing: ColorToken[], incoming: ColorToken[]): ColorToken[] {
-  const byId = new Map(existing.map(c => [c.id, c]));
+  const byId = new Map(existing.map((c) => [c.id, c]));
   for (const c of incoming) {
     if (!byId.has(c.id)) byId.set(c.id, c);
   }
@@ -77,27 +83,41 @@ export function BrandMatrixSection() {
   const [createSections, setCreateSections] = useState(true);
 
   // Auto-scan on mount (merge with existing selections)
-  useEffect(() => { send({ type: 'SCAN_PAINT_STYLES' } as any); }, [send]);
+  useEffect(() => {
+    send({ type: 'SCAN_PAINT_STYLES' } as any);
+  }, [send]);
 
-  const onMessage = useCallback((msg: any) => {
-    if (msg.type === 'PAINT_STYLES_RESULT') {
-      const incoming: ColorToken[] = (msg.tokens || []).map((t: any) => ({ ...t, selected: true }));
-      setMatrixColors(usePluginStore.getState().matrixColors.length === 0
-        ? incoming
-        : mergeColors(usePluginStore.getState().matrixColors, incoming));
-    }
-    if (msg.type === 'SMART_SCAN_RESULT') {
-      const items = (msg.items || []).filter((i: any) => i.category === 'logo' || i.category === 'component');
-      setAssets(items.map((i: any) => {
-        const n = i.name.toLowerCase();
-        let section = 'horizontal';
-        if (/\b(icon|icone|ícone)\b/.test(n)) section = 'icon';
-        else if (/\b(vertical|vert)\b/.test(n)) section = 'vertical';
-        else if (/\b(identidade|identity|visual|iv)\b/.test(n)) section = 'identity';
-        return { nodeId: i.id, nodeName: i.name, section };
-      }));
-    }
-  }, [setMatrixColors]);
+  const onMessage = useCallback(
+    (msg: any) => {
+      if (msg.type === 'PAINT_STYLES_RESULT') {
+        const incoming: ColorToken[] = (msg.tokens || []).map((t: any) => ({
+          ...t,
+          selected: true,
+        }));
+        setMatrixColors(
+          usePluginStore.getState().matrixColors.length === 0
+            ? incoming
+            : mergeColors(usePluginStore.getState().matrixColors, incoming)
+        );
+      }
+      if (msg.type === 'SMART_SCAN_RESULT') {
+        const items = (msg.items || []).filter(
+          (i: any) => i.category === 'logo' || i.category === 'component'
+        );
+        setAssets(
+          items.map((i: any) => {
+            const n = i.name.toLowerCase();
+            let section = 'horizontal';
+            if (/\b(icon|icone|ícone)\b/.test(n)) section = 'icon';
+            else if (/\b(vertical|vert)\b/.test(n)) section = 'vertical';
+            else if (/\b(identidade|identity|visual|iv)\b/.test(n)) section = 'identity';
+            return { nodeId: i.id, nodeName: i.name, section };
+          })
+        );
+      }
+    },
+    [setMatrixColors]
+  );
   useFigmaSubscribe(onMessage);
 
   const toggle = (id: string) => toggleMatrixColor(id);
@@ -109,14 +129,14 @@ export function BrandMatrixSection() {
     setShowCustom(false);
   };
 
-  const selected = colors.filter(c => c.selected);
+  const selected = colors.filter((c) => c.selected);
 
   return (
     <div className="space-y-3 bg-neutral-900/40 p-3 rounded-lg border border-border/60 shadow-sm">
       {/* Color palette — compact dots */}
       <div className="space-y-2">
         <div className="flex flex-wrap gap-1.5 items-center">
-          {colors.map(c => (
+          {colors.map((c) => (
             <button
               key={c.id}
               onClick={() => toggle(c.id)}
@@ -148,7 +168,13 @@ export function BrandMatrixSection() {
               className="flex-1 h-6 px-2 text-[10px] bg-neutral-900 border border-border/60 rounded focus:border-white/40 outline-none"
               autoFocus
             />
-            <Button variant="ghost" size="sm" className="h-6 px-2" onClick={addCustom} disabled={!parseHex(customHex)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2"
+              onClick={addCustom}
+              disabled={!parseHex(customHex)}
+            >
               <Plus size={10} />
             </Button>
           </div>
@@ -207,24 +233,41 @@ export function BrandMatrixSection() {
           <div className="space-y-2 pt-1 border-t border-border/30">
             {assets.length > 0 ? (
               <div className="space-y-1">
-                {assets.map(a => (
+                {assets.map((a) => (
                   <div key={a.nodeId} className="flex items-center gap-1.5 text-[10px] group">
-                    <span className="truncate flex-1 text-muted-foreground group-hover:text-white">{a.nodeName}</span>
+                    <span className="truncate flex-1 text-muted-foreground group-hover:text-white">
+                      {a.nodeName}
+                    </span>
                     <select
                       value={a.section}
-                      onChange={(e) => setAssets(p => p.map(x => x.nodeId === a.nodeId ? { ...x, section: e.target.value } : x))}
+                      onChange={(e) =>
+                        setAssets((p) =>
+                          p.map((x) =>
+                            x.nodeId === a.nodeId ? { ...x, section: e.target.value } : x
+                          )
+                        )
+                      }
                       className="h-5 text-[9px] bg-neutral-900 border border-border/40 rounded px-1"
                     >
-                      {SECTION_OPTIONS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                      {SECTION_OPTIONS.map((s) => (
+                        <option key={s.key} value={s.key}>
+                          {s.label}
+                        </option>
+                      ))}
                     </select>
-                    <button onClick={() => setAssets(p => p.filter(x => x.nodeId !== a.nodeId))} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400">
+                    <button
+                      onClick={() => setAssets((p) => p.filter((x) => x.nodeId !== a.nodeId))}
+                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400"
+                    >
                       <X size={10} />
                     </button>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-[9px] text-muted-foreground italic">Selecione elementos e clique novamente</p>
+              <p className="text-[9px] text-muted-foreground italic">
+                Selecione elementos e clique novamente
+              </p>
             )}
 
             <OpButton
@@ -233,7 +276,11 @@ export function BrandMatrixSection() {
               message={{
                 type: 'GENERATE_ASSETS',
                 colors: selected.map(({ id, name, r, g, b }) => ({ id, name, r, g, b })),
-                assets: assets.map(({ nodeId, nodeName, section }) => ({ nodeId, nodeName, section })),
+                assets: assets.map(({ nodeId, nodeName, section }) => ({
+                  nodeId,
+                  nodeName,
+                  section,
+                })),
                 createSections,
               }}
               responseTypes={['OPERATIONS_DONE']}

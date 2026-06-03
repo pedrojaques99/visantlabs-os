@@ -39,7 +39,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
   onGenerateOutputs,
   generateOutputsButtonRef,
   authenticationRequiredMessage,
-  isPromptReady = false
+  isPromptReady = false,
 }) => {
   const { t } = useTranslation();
   const { data: guidelines = [] } = useBrandGuidelines(true);
@@ -70,41 +70,53 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
     selectedBrandGuideline,
   } = useMockup();
 
-  const selectedBrandName = guidelines.find(g => g.id === selectedBrandGuideline)?.identity?.name;
+  const selectedBrandName = guidelines.find((g) => g.id === selectedBrandGuideline)?.identity?.name;
 
-  const {
-    selectedVibeSegment, setSelectedVibeSegment,
-    selectedVibeStyle, setSelectedVibeStyle
-  } = useMockup();
+  const { selectedVibeSegment, setSelectedVibeSegment, selectedVibeStyle, setSelectedVibeStyle } =
+    useMockup();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const updateTagsFromVibe = useCallback((segmentId: string | null, styleId: string | null) => {
-    if (!segmentId || !styleId) return;
+  const updateTagsFromVibe = useCallback(
+    (segmentId: string | null, styleId: string | null) => {
+      if (!segmentId || !styleId) return;
 
-    const config = getCombinedVibeConfig(segmentId as any, styleId as any);
+      const config = getCombinedVibeConfig(segmentId as any, styleId as any);
 
-    setSelectedLocationTags(config.locationTags);
-    setSelectedLightingTags(config.lightingTags);
-    setSelectedAngleTags(config.angleTags);
-    setSelectedEffectTags(config.effectTags);
-    setSelectedMaterialTags(config.materialTags);
-  }, [setSelectedTags, setSelectedLocationTags, setSelectedLightingTags, setSelectedAngleTags, setSelectedEffectTags, setSelectedMaterialTags]);
+      setSelectedLocationTags(config.locationTags);
+      setSelectedLightingTags(config.lightingTags);
+      setSelectedAngleTags(config.angleTags);
+      setSelectedEffectTags(config.effectTags);
+      setSelectedMaterialTags(config.materialTags);
+    },
+    [
+      setSelectedTags,
+      setSelectedLocationTags,
+      setSelectedLightingTags,
+      setSelectedAngleTags,
+      setSelectedEffectTags,
+      setSelectedMaterialTags,
+    ]
+  );
 
-  const handleSelectSegment = useCallback((segmentId: any) => {
-    setSelectedVibeSegment(segmentId);
-    if (selectedVibeStyle) {
-      updateTagsFromVibe(segmentId, selectedVibeStyle);
-    }
-  }, [selectedVibeStyle, setSelectedVibeSegment, updateTagsFromVibe]);
+  const handleSelectSegment = useCallback(
+    (segmentId: any) => {
+      setSelectedVibeSegment(segmentId);
+      if (selectedVibeStyle) {
+        updateTagsFromVibe(segmentId, selectedVibeStyle);
+      }
+    },
+    [selectedVibeStyle, setSelectedVibeSegment, updateTagsFromVibe]
+  );
 
-  const handleSelectStyle = useCallback((styleId: any) => {
-    setSelectedVibeStyle(styleId);
-    if (selectedVibeSegment) {
-      updateTagsFromVibe(selectedVibeSegment, styleId);
-    }
-  }, [selectedVibeSegment, setSelectedVibeStyle, updateTagsFromVibe]);
-
-
+  const handleSelectStyle = useCallback(
+    (styleId: any) => {
+      setSelectedVibeStyle(styleId);
+      if (selectedVibeSegment) {
+        updateTagsFromVibe(selectedVibeSegment, styleId);
+      }
+    },
+    [selectedVibeSegment, setSelectedVibeStyle, updateTagsFromVibe]
+  );
 
   const [showInstructions, setShowInstructions] = useState(!!instructions);
 
@@ -114,12 +126,16 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center shadow-inner">
-            <Gem size={14} className={cn("transition-colors", selectedBrandGuideline ? "text-brand-cyan" : "text-neutral-600")} />
+            <Gem
+              size={14}
+              className={cn(
+                'transition-colors',
+                selectedBrandGuideline ? 'text-brand-cyan' : 'text-neutral-600'
+              )}
+            />
           </div>
           {selectedBrandName && (
-            <MicroTitle className="text-neutral-400">
-              {selectedBrandName}
-            </MicroTitle>
+            <MicroTitle className="text-neutral-400">{selectedBrandName}</MicroTitle>
           )}
         </div>
         <BrandGuidelineSelector variant="minimal" />
@@ -158,29 +174,43 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
         <div className="flex items-center justify-between group/header">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
-              <Diamond size={16} className={cn("transition-colors", showInstructions ? "text-brand-cyan" : "text-neutral-600")} />
+              <Diamond
+                size={16}
+                className={cn(
+                  'transition-colors',
+                  showInstructions ? 'text-brand-cyan' : 'text-neutral-600'
+                )}
+              />
             </div>
-            <MicroTitle className={cn("transition-colors", showInstructions ? "text-neutral-200" : "text-neutral-500")}>
+            <MicroTitle
+              className={cn(
+                'transition-colors',
+                showInstructions ? 'text-neutral-200' : 'text-neutral-500'
+              )}
+            >
               {t('mockup.scenarioDetails') || 'DETALHES DO CENÁRIO'}
             </MicroTitle>
           </div>
           <button
             onClick={() => setShowInstructions(!showInstructions)}
             className={cn(
-               "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
-               showInstructions 
-                 ? "bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan" 
-                 : "bg-neutral-900 border border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:border-white/10"
+              'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
+              showInstructions
+                ? 'bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan'
+                : 'bg-neutral-900 border border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:border-white/10'
             )}
             title={showInstructions ? t('common.hide') : t('common.show')}
           >
-            <MessageSquareText size={14} className={cn("transition-transform duration-300", showInstructions && "scale-110")} />
+            <MessageSquareText
+              size={14}
+              className={cn('transition-transform duration-300', showInstructions && 'scale-110')}
+            />
           </button>
         </div>
-        
+
         <AnimatePresence>
           {showInstructions && (
-            <motion.div 
+            <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -190,7 +220,10 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
               <textarea
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                placeholder={t('mockup.scenarioPlaceholder') || 'Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...'}
+                placeholder={
+                  t('mockup.scenarioPlaceholder') ||
+                  'Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...'
+                }
                 className="w-full h-24 bg-neutral-950/40 border border-neutral-800 rounded-xl p-4 text-[11px] font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:bg-neutral-950/60 transition-all resize-none"
               />
             </motion.div>
@@ -234,7 +267,10 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-[0.1em] mx-auto group"
           >
-            <Settings2 size={12} className={cn("transition-transform duration-500", showAdvanced && "rotate-180")} />
+            <Settings2
+              size={12}
+              className={cn('transition-transform duration-500', showAdvanced && 'rotate-180')}
+            />
             {showAdvanced ? 'Recolher Ajustes' : 'Ajustes de Geração'}
           </button>
 
@@ -269,7 +305,9 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
                     uploadedImage={uploadedImage}
                     onGeneratePrompt={() => onGenerateSmartPrompt(autoGenerate)}
                     onGenerateOutputs={onGenerateOutputs}
-                    isGenerateDisabled={(!selectedVibeSegment || !selectedVibeStyle) && !isSurpriseMeActive}
+                    isGenerateDisabled={
+                      (!selectedVibeSegment || !selectedVibeStyle) && !isSurpriseMeActive
+                    }
                     isGeneratingOutputs={isGeneratingOutputs}
                     isPromptReady={isPromptReady}
                     variant="inline"
@@ -281,7 +319,6 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
           </AnimatePresence>
         </div>
       </section>
-
     </div>
   );
 };

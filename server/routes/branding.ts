@@ -37,353 +37,426 @@ const router = express.Router();
 
 // Generate content for a specific step
 // CRITICAL: Validate and deduct credits BEFORE generation to prevent abuse
-router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res) => {
-  const creditsToDeduct = 1;
-  const { step, prompt, previousData } = req.body;
-  let chargeResult: Awaited<ReturnType<typeof chargeCredits>> | undefined;
+router.post(
+  '/generate-step',
+  mockupRateLimiter,
+  authenticate,
+  checkSubscription,
+  async (req: SubscriptionRequest, res) => {
+    const creditsToDeduct = 1;
+    const { step, prompt, previousData } = req.body;
+    let chargeResult: Awaited<ReturnType<typeof chargeCredits>> | undefined;
 
-  try {
-
-    if (!step || !prompt) {
-      return res.status(400).json({ error: 'Step and prompt are required' });
-    }
-
-    chargeResult = await chargeCredits(req.userId!, creditsToDeduct, { requestId: randomUUID() });
-    const isAdmin = chargeResult.reason === 'admin';
-
-    // Fetch examples for RAG (Retrieval-Augmented Generation)
-    let examples: any[] = [];
     try {
-      // Use type assertion to work around TypeScript cache issue after Prisma regeneration
-      examples = await (prisma as any).brandingExample.findMany({
-        where: {
-          step: parseInt(step.toString()),
-          rating: 1, // Only positive examples
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        take: 5, // Limit to 5 most recent examples
-      });
-    } catch (e) {
-      console.error("Failed to fetch examples", e);
-      // Continue without examples if fetch fails
-    }
+      if (!step || !prompt) {
+        return res.status(400).json({ error: 'Step and prompt are required' });
+      }
 
-    const formattedExamples = examples.map(e =>
-      `Example for "${e.prompt}":\n${JSON.stringify(e.output, null, 2)}`
-    );
+      chargeResult = await chargeCredits(req.userId!, creditsToDeduct, { requestId: randomUUID() });
+      const isAdmin = chargeResult.reason === 'admin';
 
-    // Helper function to extract result and tokens from branding service responses
-    const extractResultAndTokens = (response: any): { result: any; inputTokens?: number; outputTokens?: number } => {
-      if (response && typeof response === 'object' && 'result' in response) {
-        return {
-          result: response.result,
-          inputTokens: response.inputTokens,
-          outputTokens: response.outputTokens,
-        };
+      // Fetch examples for RAG (Retrieval-Augmented Generation)
+      let examples: any[] = [];
+      try {
+        // Use type assertion to work around TypeScript cache issue after Prisma regeneration
+        examples = await (prisma as any).brandingExample.findMany({
+          where: {
+            step: parseInt(step.toString()),
+            rating: 1, // Only positive examples
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 5, // Limit to 5 most recent examples
+        });
+      } catch (e) {
+        console.error('Failed to fetch examples', e);
+        // Continue without examples if fetch fails
       }
-      return { result: response }; // Backward compatibility
-    };
 
-    let result: any;
-    let inputTokens: number | undefined;
-    let outputTokens: number | undefined;
-
-    switch (step) {
-      case 1: // Market Research - generates benchmarking as a single string
-        const marketResearchResponse = extractResultAndTokens(
-          await brandingService.generateMarketResearch(prompt, formattedExamples)
-        );
-        result = marketResearchResponse.result;
-        inputTokens = marketResearchResponse.inputTokens;
-        outputTokens = marketResearchResponse.outputTokens;
-        break;
-      case 2: // Público Alvo (deprecated - now part of step 1)
-      case 3: // Posicionamento (deprecated - now part of step 1)
-      case 4: // Insights (deprecated - now part of step 1)
-        // These steps are deprecated. Market research is now a single benchmarking paragraph.
-        // For backward compatibility, regenerate the full market research
-        const deprecatedResponse = extractResultAndTokens(
-          await brandingService.generateMarketResearch(prompt, formattedExamples)
-        );
-        result = deprecatedResponse.result;
-        inputTokens = deprecatedResponse.inputTokens;
-        outputTokens = deprecatedResponse.outputTokens;
-        break;
-      case 5: // Competitors
-        if (!previousData?.marketResearch && !previousData?.mercadoNicho) {
-          return res.status(400).json({ error: 'Market research is required for step 5' });
-        }
-        const competitorsResponse = extractResultAndTokens(
-          await brandingService.generateCompetitors(prompt, previousData, formattedExamples)
-        );
-        result = competitorsResponse.result;
-        inputTokens = competitorsResponse.inputTokens;
-        outputTokens = competitorsResponse.outputTokens;
-        break;
-      case 6: // References
-        if ((!previousData?.marketResearch && !previousData?.mercadoNicho) || !previousData?.competitors) {
-          return res.status(400).json({ error: 'Market research and competitors are required for step 6' });
-        }
-        const referencesResponse = extractResultAndTokens(
-          await brandingService.generateReferences(
-            prompt,
-            previousData,
-            previousData.competitors
-          )
-        );
-        result = referencesResponse.result;
-        inputTokens = referencesResponse.inputTokens;
-        outputTokens = referencesResponse.outputTokens;
-        break;
-      case 7: // SWOT
-        if ((!previousData?.marketResearch && !previousData?.mercadoNicho) || !previousData?.competitors) {
-          return res.status(400).json({ error: 'Market research and competitors are required for step 7' });
-        }
-        const swotResponse = extractResultAndTokens(
-          await brandingService.generateSWOT(
-            prompt,
-            previousData,
-            previousData.competitors
-          )
-        );
-        result = swotResponse.result;
-        inputTokens = swotResponse.inputTokens;
-        outputTokens = swotResponse.outputTokens;
-        break;
-      case 8: // Color Palettes
-        if (!previousData?.swot || !previousData?.references) {
-          return res.status(400).json({ error: 'SWOT and references are required for step 5' });
-        }
-        const colorPalettesResponse = extractResultAndTokens(
-          await brandingService.generateColorPalettes(
-            prompt,
-            previousData.swot,
-            previousData.references
-          )
-        );
-        result = colorPalettesResponse.result;
-        inputTokens = colorPalettesResponse.inputTokens;
-        outputTokens = colorPalettesResponse.outputTokens;
-        break;
-      case 9: // Visual Elements
-        if (!previousData?.colorPalettes) {
-          return res.status(400).json({ error: 'Color palettes are required for step 9' });
-        }
-        const visualElementsResponse = extractResultAndTokens(
-          await brandingService.generateVisualElements(
-            prompt,
-            previousData.colorPalettes
-          )
-        );
-        result = visualElementsResponse.result;
-        inputTokens = visualElementsResponse.inputTokens;
-        outputTokens = visualElementsResponse.outputTokens;
-        break;
-      case 10: // Persona
-        if (!previousData?.marketResearch && !previousData?.mercadoNicho) {
-          return res.status(400).json({ error: 'Market research is required for step 7' });
-        }
-        const personaResponse = extractResultAndTokens(
-          await brandingService.generatePersona(
-            prompt,
-            previousData
-          )
-        );
-        result = personaResponse.result;
-        inputTokens = personaResponse.inputTokens;
-        outputTokens = personaResponse.outputTokens;
-        break;
-      case 11: // Mockup Ideas
-        const mockupIdeasResponse = extractResultAndTokens(
-          await brandingService.generateMockupIdeas(prompt, previousData || { prompt }, formattedExamples)
-        );
-        result = mockupIdeasResponse.result;
-        inputTokens = mockupIdeasResponse.inputTokens;
-        outputTokens = mockupIdeasResponse.outputTokens;
-        break;
-      case 12: // Moodboard
-        const moodboardResponse = extractResultAndTokens(
-          await brandingService.generateMoodboard(prompt, previousData || { prompt })
-        );
-        result = moodboardResponse.result;
-        inputTokens = moodboardResponse.inputTokens;
-        outputTokens = moodboardResponse.outputTokens;
-        break;
-      case 13: // Archetypes
-        if (!previousData?.marketResearch && !previousData?.mercadoNicho) {
-          return res.status(400).json({ error: 'Market research is required for step 13' });
-        }
-        const archetypesResponse = extractResultAndTokens(
-          await brandingService.generateArchetypes(prompt, previousData, formattedExamples)
-        );
-        result = archetypesResponse.result;
-        inputTokens = archetypesResponse.inputTokens;
-        outputTokens = archetypesResponse.outputTokens;
-        break;
-      // ═══ Metodologia Visant v2 — Steps 101-110 ═══
-      case 101: { // Mensagem Central & Pilares
-        const r = await brandingServiceV2.generateCentralMessageAndPillars(prompt);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 102: { // Pesquisa de Mercado (3 camadas)
-        if (!previousData?.centralMessage) return res.status(400).json({ error: 'Step 101 (Mensagem Central) is required' });
-        const r = await brandingServiceV2.generateMarketResearchV2(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 103: { // Persona Visant
-        if (!previousData?.centralMessage || !previousData?.marketResearchV2) return res.status(400).json({ error: 'Steps 101-102 are required' });
-        const r = await brandingServiceV2.generatePersonaV2(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 104: { // Arquétipos & Tom de Voz
-        if (!previousData?.centralMessage || !previousData?.personaV2) return res.status(400).json({ error: 'Steps 101-103 are required' });
-        const r = await brandingServiceV2.generateArchetypesAndTone(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 105: { // Manifesto & Slogan
-        if (!previousData?.centralMessage || !previousData?.archetypesV2) return res.status(400).json({ error: 'Steps 101-104 are required' });
-        const r = await brandingServiceV2.generateManifesto(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 106: { // SWOT
-        if (!previousData?.centralMessage || !previousData?.marketResearchV2) return res.status(400).json({ error: 'Steps 101-102 are required' });
-        const r = await brandingServiceV2.generateSWOTV2(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 107: { // Paleta Cromática (cores nomeadas)
-        if (!previousData?.centralMessage || !previousData?.manifesto || !previousData?.archetypesV2) return res.status(400).json({ error: 'Steps 101-105 are required' });
-        const r = await brandingServiceV2.generateColorPaletteV2(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 108: { // Par Tipográfico
-        if (!previousData?.centralMessage || !previousData?.archetypesV2) return res.status(400).json({ error: 'Steps 101-104 are required' });
-        const r = await brandingServiceV2.generateTypography(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 109: { // Sistema Gráfico
-        if (!previousData?.manifesto || !previousData?.colorPaletteV2 || !previousData?.typography) return res.status(400).json({ error: 'Steps 105, 107, 108 are required' });
-        const r = await brandingServiceV2.generateGraphicSystem(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      case 110: { // Conceito de Logo
-        if (!previousData?.centralMessage || !previousData?.colorPaletteV2 || !previousData?.typography || !previousData?.archetypesV2 || !previousData?.manifesto) return res.status(400).json({ error: 'Steps 101-108 are required' });
-        const r = await brandingServiceV2.generateLogoConcept(prompt, previousData);
-        result = r.result; inputTokens = r.inputTokens; outputTokens = r.outputTokens;
-        break;
-      }
-      default:
-        return res.status(400).json({ error: 'Invalid step number' });
-    }
-
-    // Generation successful - create usage record for audit/logging
-    // Credits were already deducted before generation
-    // Use brandingService function to create usage record with tokens if available
-    try {
-      await brandingService.createBrandingUsageRecord(
-        req.userId!,
-        step,
-        prompt.length,
-        creditsToDeduct,
-        chargeResult!.user.subscriptionStatus || 'free',
-        chargeResult!.user.subscriptionStatus === 'active',
-        isAdmin,
-        inputTokens,
-        outputTokens
+      const formattedExamples = examples.map(
+        (e) => `Example for "${e.prompt}":\n${JSON.stringify(e.output, null, 2)}`
       );
 
-      // Track total tokens for user stats (regardless of credits)
-      // This runs in the background
-      (async () => {
-        try {
-          const totalTokens = (inputTokens || 0) + (outputTokens || 0);
-          if (totalTokens > 0) {
-            await incrementUserGenerations(req.userId!, 0, totalTokens);
-          }
-        } catch (err) {
-          console.error('[Stats Tracking] Error incrementing total tokens for branding:', err);
+      // Helper function to extract result and tokens from branding service responses
+      const extractResultAndTokens = (
+        response: any
+      ): { result: any; inputTokens?: number; outputTokens?: number } => {
+        if (response && typeof response === 'object' && 'result' in response) {
+          return {
+            result: response.result,
+            inputTokens: response.inputTokens,
+            outputTokens: response.outputTokens,
+          };
         }
-      })();
-    } catch (usageError: any) {
-      // WARNING: Failed to create usage record - this is an audit issue but generation succeeded
-      console.error('[AUDIT WARNING] [Usage Tracking] Failed to create usage record after successful generation:', {
-        severity: 'WARNING',
-        type: 'usage_record_creation_failure',
-        error: usageError.message,
-        errorStack: usageError.stack,
-        userId: req.userId,
-        stepNumber: step,
-        creditsDeducted: creditsToDeduct,
-        timestamp: new Date().toISOString(),
-        // Note: Credits were already deducted, but audit record is missing
-      });
+        return { result: response }; // Backward compatibility
+      };
 
-      // [ENHANCEMENT] Optional: Implement retry logic or queue for usage record creation
-      // Contributions welcome - see CONTRIBUTING.md
-    }
+      let result: any;
+      let inputTokens: number | undefined;
+      let outputTokens: number | undefined;
 
-    // Calculate credits remaining for response
-    const actualCreditsDeducted = isAdmin ? 0 : creditsToDeduct;
-    const monthlyCreditsRemaining = Math.max(0, (chargeResult!.user.monthlyCredits ?? 20) - (chargeResult!.user.creditsUsed ?? 0));
-    const totalCreditsRemaining = (chargeResult!.user.totalCreditsEarned ?? 0) + monthlyCreditsRemaining;
+      switch (step) {
+        case 1: // Market Research - generates benchmarking as a single string
+          const marketResearchResponse = extractResultAndTokens(
+            await brandingService.generateMarketResearch(prompt, formattedExamples)
+          );
+          result = marketResearchResponse.result;
+          inputTokens = marketResearchResponse.inputTokens;
+          outputTokens = marketResearchResponse.outputTokens;
+          break;
+        case 2: // Público Alvo (deprecated - now part of step 1)
+        case 3: // Posicionamento (deprecated - now part of step 1)
+        case 4: // Insights (deprecated - now part of step 1)
+          // These steps are deprecated. Market research is now a single benchmarking paragraph.
+          // For backward compatibility, regenerate the full market research
+          const deprecatedResponse = extractResultAndTokens(
+            await brandingService.generateMarketResearch(prompt, formattedExamples)
+          );
+          result = deprecatedResponse.result;
+          inputTokens = deprecatedResponse.inputTokens;
+          outputTokens = deprecatedResponse.outputTokens;
+          break;
+        case 5: // Competitors
+          if (!previousData?.marketResearch && !previousData?.mercadoNicho) {
+            return res.status(400).json({ error: 'Market research is required for step 5' });
+          }
+          const competitorsResponse = extractResultAndTokens(
+            await brandingService.generateCompetitors(prompt, previousData, formattedExamples)
+          );
+          result = competitorsResponse.result;
+          inputTokens = competitorsResponse.inputTokens;
+          outputTokens = competitorsResponse.outputTokens;
+          break;
+        case 6: // References
+          if (
+            (!previousData?.marketResearch && !previousData?.mercadoNicho) ||
+            !previousData?.competitors
+          ) {
+            return res
+              .status(400)
+              .json({ error: 'Market research and competitors are required for step 6' });
+          }
+          const referencesResponse = extractResultAndTokens(
+            await brandingService.generateReferences(prompt, previousData, previousData.competitors)
+          );
+          result = referencesResponse.result;
+          inputTokens = referencesResponse.inputTokens;
+          outputTokens = referencesResponse.outputTokens;
+          break;
+        case 7: // SWOT
+          if (
+            (!previousData?.marketResearch && !previousData?.mercadoNicho) ||
+            !previousData?.competitors
+          ) {
+            return res
+              .status(400)
+              .json({ error: 'Market research and competitors are required for step 7' });
+          }
+          const swotResponse = extractResultAndTokens(
+            await brandingService.generateSWOT(prompt, previousData, previousData.competitors)
+          );
+          result = swotResponse.result;
+          inputTokens = swotResponse.inputTokens;
+          outputTokens = swotResponse.outputTokens;
+          break;
+        case 8: // Color Palettes
+          if (!previousData?.swot || !previousData?.references) {
+            return res.status(400).json({ error: 'SWOT and references are required for step 5' });
+          }
+          const colorPalettesResponse = extractResultAndTokens(
+            await brandingService.generateColorPalettes(
+              prompt,
+              previousData.swot,
+              previousData.references
+            )
+          );
+          result = colorPalettesResponse.result;
+          inputTokens = colorPalettesResponse.inputTokens;
+          outputTokens = colorPalettesResponse.outputTokens;
+          break;
+        case 9: // Visual Elements
+          if (!previousData?.colorPalettes) {
+            return res.status(400).json({ error: 'Color palettes are required for step 9' });
+          }
+          const visualElementsResponse = extractResultAndTokens(
+            await brandingService.generateVisualElements(prompt, previousData.colorPalettes)
+          );
+          result = visualElementsResponse.result;
+          inputTokens = visualElementsResponse.inputTokens;
+          outputTokens = visualElementsResponse.outputTokens;
+          break;
+        case 10: // Persona
+          if (!previousData?.marketResearch && !previousData?.mercadoNicho) {
+            return res.status(400).json({ error: 'Market research is required for step 7' });
+          }
+          const personaResponse = extractResultAndTokens(
+            await brandingService.generatePersona(prompt, previousData)
+          );
+          result = personaResponse.result;
+          inputTokens = personaResponse.inputTokens;
+          outputTokens = personaResponse.outputTokens;
+          break;
+        case 11: // Mockup Ideas
+          const mockupIdeasResponse = extractResultAndTokens(
+            await brandingService.generateMockupIdeas(
+              prompt,
+              previousData || { prompt },
+              formattedExamples
+            )
+          );
+          result = mockupIdeasResponse.result;
+          inputTokens = mockupIdeasResponse.inputTokens;
+          outputTokens = mockupIdeasResponse.outputTokens;
+          break;
+        case 12: // Moodboard
+          const moodboardResponse = extractResultAndTokens(
+            await brandingService.generateMoodboard(prompt, previousData || { prompt })
+          );
+          result = moodboardResponse.result;
+          inputTokens = moodboardResponse.inputTokens;
+          outputTokens = moodboardResponse.outputTokens;
+          break;
+        case 13: // Archetypes
+          if (!previousData?.marketResearch && !previousData?.mercadoNicho) {
+            return res.status(400).json({ error: 'Market research is required for step 13' });
+          }
+          const archetypesResponse = extractResultAndTokens(
+            await brandingService.generateArchetypes(prompt, previousData, formattedExamples)
+          );
+          result = archetypesResponse.result;
+          inputTokens = archetypesResponse.inputTokens;
+          outputTokens = archetypesResponse.outputTokens;
+          break;
+        // ═══ Metodologia Visant v2 — Steps 101-110 ═══
+        case 101: {
+          // Mensagem Central & Pilares
+          const r = await brandingServiceV2.generateCentralMessageAndPillars(prompt);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 102: {
+          // Pesquisa de Mercado (3 camadas)
+          if (!previousData?.centralMessage)
+            return res.status(400).json({ error: 'Step 101 (Mensagem Central) is required' });
+          const r = await brandingServiceV2.generateMarketResearchV2(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 103: {
+          // Persona Visant
+          if (!previousData?.centralMessage || !previousData?.marketResearchV2)
+            return res.status(400).json({ error: 'Steps 101-102 are required' });
+          const r = await brandingServiceV2.generatePersonaV2(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 104: {
+          // Arquétipos & Tom de Voz
+          if (!previousData?.centralMessage || !previousData?.personaV2)
+            return res.status(400).json({ error: 'Steps 101-103 are required' });
+          const r = await brandingServiceV2.generateArchetypesAndTone(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 105: {
+          // Manifesto & Slogan
+          if (!previousData?.centralMessage || !previousData?.archetypesV2)
+            return res.status(400).json({ error: 'Steps 101-104 are required' });
+          const r = await brandingServiceV2.generateManifesto(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 106: {
+          // SWOT
+          if (!previousData?.centralMessage || !previousData?.marketResearchV2)
+            return res.status(400).json({ error: 'Steps 101-102 are required' });
+          const r = await brandingServiceV2.generateSWOTV2(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 107: {
+          // Paleta Cromática (cores nomeadas)
+          if (
+            !previousData?.centralMessage ||
+            !previousData?.manifesto ||
+            !previousData?.archetypesV2
+          )
+            return res.status(400).json({ error: 'Steps 101-105 are required' });
+          const r = await brandingServiceV2.generateColorPaletteV2(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 108: {
+          // Par Tipográfico
+          if (!previousData?.centralMessage || !previousData?.archetypesV2)
+            return res.status(400).json({ error: 'Steps 101-104 are required' });
+          const r = await brandingServiceV2.generateTypography(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 109: {
+          // Sistema Gráfico
+          if (
+            !previousData?.manifesto ||
+            !previousData?.colorPaletteV2 ||
+            !previousData?.typography
+          )
+            return res.status(400).json({ error: 'Steps 105, 107, 108 are required' });
+          const r = await brandingServiceV2.generateGraphicSystem(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        case 110: {
+          // Conceito de Logo
+          if (
+            !previousData?.centralMessage ||
+            !previousData?.colorPaletteV2 ||
+            !previousData?.typography ||
+            !previousData?.archetypesV2 ||
+            !previousData?.manifesto
+          )
+            return res.status(400).json({ error: 'Steps 101-108 are required' });
+          const r = await brandingServiceV2.generateLogoConcept(prompt, previousData);
+          result = r.result;
+          inputTokens = r.inputTokens;
+          outputTokens = r.outputTokens;
+          break;
+        }
+        default:
+          return res.status(400).json({ error: 'Invalid step number' });
+      }
 
-    res.json({
-      data: result,
-      creditsDeducted: actualCreditsDeducted,
-      creditsRemaining: totalCreditsRemaining,
-      isAdmin,
-      generationId: randomUUID(), // UUID for RAG feedback loop (👍/👎)
-    });
-  } catch (error: any) {
-    console.error('Error generating branding step:', error);
-
-    if (chargeResult && chargeResult.reason === 'charged') {
+      // Generation successful - create usage record for audit/logging
+      // Credits were already deducted before generation
+      // Use brandingService function to create usage record with tokens if available
       try {
-        await refundCreditsShared(req.userId!, creditsToDeduct, chargeResult.deductionSource);
-        console.log(`[Credit Refund] Refunded ${creditsToDeduct} credit(s) after failed generation`, {
-          userId: req.userId,
+        await brandingService.createBrandingUsageRecord(
+          req.userId!,
           step,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        });
-      } catch (refundError: any) {
-        // CRITICAL ALERT: Failed to refund credits - this is a critical audit issue
-        // Log with high severity for monitoring/alerting systems
-        console.error('[CRITICAL AUDIT] [Credit Refund] Failed to refund credits after generation failure:', {
-          severity: 'CRITICAL',
-          type: 'credit_refund_failure',
-          error: refundError.message,
-          errorStack: refundError.stack,
-          userId: req.userId,
-          step,
-          creditsToRefund: creditsToDeduct,
-          originalError: error.message,
-          originalErrorStack: error.stack,
-          timestamp: new Date().toISOString(),
-          requiresManualIntervention: true, // Flag for monitoring systems
-        });
+          prompt.length,
+          creditsToDeduct,
+          chargeResult!.user.subscriptionStatus || 'free',
+          chargeResult!.user.subscriptionStatus === 'active',
+          isAdmin,
+          inputTokens,
+          outputTokens
+        );
 
-        // [ENHANCEMENT] Optional: Integrate with monitoring/alerting system (Sentry, DataDog, etc.)
+        // Track total tokens for user stats (regardless of credits)
+        // This runs in the background
+        (async () => {
+          try {
+            const totalTokens = (inputTokens || 0) + (outputTokens || 0);
+            if (totalTokens > 0) {
+              await incrementUserGenerations(req.userId!, 0, totalTokens);
+            }
+          } catch (err) {
+            console.error('[Stats Tracking] Error incrementing total tokens for branding:', err);
+          }
+        })();
+      } catch (usageError: any) {
+        // WARNING: Failed to create usage record - this is an audit issue but generation succeeded
+        console.error(
+          '[AUDIT WARNING] [Usage Tracking] Failed to create usage record after successful generation:',
+          {
+            severity: 'WARNING',
+            type: 'usage_record_creation_failure',
+            error: usageError.message,
+            errorStack: usageError.stack,
+            userId: req.userId,
+            stepNumber: step,
+            creditsDeducted: creditsToDeduct,
+            timestamp: new Date().toISOString(),
+            // Note: Credits were already deducted, but audit record is missing
+          }
+        );
+
+        // [ENHANCEMENT] Optional: Implement retry logic or queue for usage record creation
         // Contributions welcome - see CONTRIBUTING.md
       }
-    }
 
-    res.status(500).json({
-      error: 'Failed to generate branding step',
-      message: error.message || 'An error occurred while generating content'
-    });
+      // Calculate credits remaining for response
+      const actualCreditsDeducted = isAdmin ? 0 : creditsToDeduct;
+      const monthlyCreditsRemaining = Math.max(
+        0,
+        (chargeResult!.user.monthlyCredits ?? 20) - (chargeResult!.user.creditsUsed ?? 0)
+      );
+      const totalCreditsRemaining =
+        (chargeResult!.user.totalCreditsEarned ?? 0) + monthlyCreditsRemaining;
+
+      res.json({
+        data: result,
+        creditsDeducted: actualCreditsDeducted,
+        creditsRemaining: totalCreditsRemaining,
+        isAdmin,
+        generationId: randomUUID(), // UUID for RAG feedback loop (👍/👎)
+      });
+    } catch (error: any) {
+      console.error('Error generating branding step:', error);
+
+      if (chargeResult && chargeResult.reason === 'charged') {
+        try {
+          await refundCreditsShared(req.userId!, creditsToDeduct, chargeResult.deductionSource);
+          console.log(
+            `[Credit Refund] Refunded ${creditsToDeduct} credit(s) after failed generation`,
+            {
+              userId: req.userId,
+              step,
+              error: error.message,
+              timestamp: new Date().toISOString(),
+            }
+          );
+        } catch (refundError: any) {
+          // CRITICAL ALERT: Failed to refund credits - this is a critical audit issue
+          // Log with high severity for monitoring/alerting systems
+          console.error(
+            '[CRITICAL AUDIT] [Credit Refund] Failed to refund credits after generation failure:',
+            {
+              severity: 'CRITICAL',
+              type: 'credit_refund_failure',
+              error: refundError.message,
+              errorStack: refundError.stack,
+              userId: req.userId,
+              step,
+              creditsToRefund: creditsToDeduct,
+              originalError: error.message,
+              originalErrorStack: error.stack,
+              timestamp: new Date().toISOString(),
+              requiresManualIntervention: true, // Flag for monitoring systems
+            }
+          );
+
+          // [ENHANCEMENT] Optional: Integrate with monitoring/alerting system (Sentry, DataDog, etc.)
+          // Contributions welcome - see CONTRIBUTING.md
+        }
+      }
+
+      res.status(500).json({
+        error: 'Failed to generate branding step',
+        message: error.message || 'An error occurred while generating content',
+      });
+    }
   }
-});
+);
 
 // Track branding step generation usage (called after successful generation)
 // Note: checkSubscription is NOT used here because generation already succeeded.
@@ -393,11 +466,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    const {
-      success,
-      stepNumber,
-      promptLength
-    } = req.body;
+    const { success, stepNumber, promptLength } = req.body;
 
     if (!stepNumber) {
       return res.status(400).json({ error: 'Step number is required' });
@@ -428,9 +497,14 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
       // Use real tokens if available, otherwise estimate
       const inputTokens = req.body.inputTokens;
       const outputTokens = req.body.outputTokens;
-      const estimatedInputTokens = inputTokens ?? (promptLength ? Math.ceil(promptLength / 4) : 500);
+      const estimatedInputTokens =
+        inputTokens ?? (promptLength ? Math.ceil(promptLength / 4) : 500);
       const estimatedOutputTokens = outputTokens ?? 1000; // Average response size
-      const cost = calculateTextGenerationCost(estimatedInputTokens, estimatedOutputTokens, GEMINI_MODELS.TEXT);
+      const cost = calculateTextGenerationCost(
+        estimatedInputTokens,
+        estimatedOutputTokens,
+        GEMINI_MODELS.TEXT
+      );
 
       // Create usage record for billing (even for admins, for tracking purposes)
       const usageRecord: any = {
@@ -460,10 +534,13 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
       await db.collection('usage_records').insertOne(usageRecord);
 
       if (isAdmin) {
-        console.log(`[Usage Tracking] Recorded branding usage for admin user ${userId} (no credits deducted):`, {
-          stepNumber,
-          timestamp: usageRecord.timestamp,
-        });
+        console.log(
+          `[Usage Tracking] Recorded branding usage for admin user ${userId} (no credits deducted):`,
+          {
+            stepNumber,
+            timestamp: usageRecord.timestamp,
+          }
+        );
       } else {
         console.log(`[Usage Tracking] Recorded branding usage for user ${userId}:`, {
           stepNumber,
@@ -506,10 +583,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
           updateData.$inc = { freeGenerationsUsed: 1 };
         }
 
-        await db.collection('users').updateOne(
-          { _id: new ObjectId(userId) },
-          updateData
-        );
+        await db.collection('users').updateOne({ _id: new ObjectId(userId) }, updateData);
       }
 
       // Calculate remaining credits for response
@@ -525,7 +599,10 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
         if (updatedUser) {
           responseCreditsUsed = updatedUser.creditsUsed ?? creditsUsed;
           responseTotalCreditsEarned = updatedUser.totalCreditsEarned ?? totalCreditsEarned;
-          responseMonthlyCreditsRemaining = Math.max(0, (updatedUser.monthlyCredits ?? monthlyCredits) - responseCreditsUsed);
+          responseMonthlyCreditsRemaining = Math.max(
+            0,
+            (updatedUser.monthlyCredits ?? monthlyCredits) - responseCreditsUsed
+          );
         }
       }
 
@@ -536,7 +613,11 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
         stepNumber,
         creditsDeducted: creditsToDeduct,
         cost,
-        freeGenerationsUsed: hasActiveSubscription ? freeGenerationsUsed : (isAdmin ? freeGenerationsUsed : freeGenerationsUsed + 1),
+        freeGenerationsUsed: hasActiveSubscription
+          ? freeGenerationsUsed
+          : isAdmin
+          ? freeGenerationsUsed
+          : freeGenerationsUsed + 1,
         creditsUsed: responseCreditsUsed,
         creditsRemaining: responseMonthlyCreditsRemaining,
         totalCreditsEarned: responseTotalCreditsEarned,
@@ -548,7 +629,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
       // Credits are only deducted when success: true
       res.json({
         message: 'Generation failed - credits not deducted',
-        creditsDeducted: 0
+        creditsDeducted: 0,
       });
     }
   } catch (error: any) {
@@ -631,13 +712,13 @@ router.post('/save', apiRateLimiter, authenticate, async (req: AuthRequest, res)
       project: {
         ...project,
         _id: project.id,
-      }
+      },
     });
   } catch (error: any) {
     console.error('Error saving branding project:', error);
     res.status(500).json({
       error: 'Failed to save branding project',
-      message: error.message || 'An error occurred while saving'
+      message: error.message || 'An error occurred while saving',
     });
   }
 });
@@ -667,13 +748,13 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       project: {
         ...project,
         _id: project.id,
-      }
+      },
     });
   } catch (error: any) {
     console.error('Error fetching branding project:', error);
     res.status(500).json({
       error: 'Failed to fetch branding project',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
@@ -699,14 +780,15 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
     res.json({
-      projects: projects.map(project => ({
+      projects: projects.map((project) => ({
         ...project,
         _id: project.id,
-      }))
+      })),
     });
   } catch (error: any) {
     // Check Prisma connection if error might be connection-related
-    const isConnectionError = error.code === 'P1001' ||
+    const isConnectionError =
+      error.code === 'P1001' ||
       error.message?.includes('connect') ||
       error.message?.includes('connection');
 
@@ -742,8 +824,8 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
           code: error.code,
           meta: error.meta,
           connectionIssue: isConnectionError ? connectionStatus : undefined,
-        }
-      })
+        },
+      }),
     });
   }
 });
@@ -777,10 +859,9 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
     console.error('Error deleting branding project:', error);
     res.status(500).json({
       error: 'Failed to delete branding project',
-      message: error.message || 'An error occurred'
+      message: error.message || 'An error occurred',
     });
   }
 });
 
 export default router;
-

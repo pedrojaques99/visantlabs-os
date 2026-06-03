@@ -33,85 +33,87 @@ interface ShaderControlsProps {
   hideToggle?: boolean;
 }
 
-export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(({
-  enabled,
-  shaderType,
-  values,
-  onEnabledChange,
-  onTypeChange,
-  onValueChange,
-  className,
-  hideToggle,
-}) => {
-  const def = SHADER_DEFINITIONS_MAP[shaderType];
+export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
+  ({
+    enabled,
+    shaderType,
+    values,
+    onEnabledChange,
+    onTypeChange,
+    onValueChange,
+    className,
+    hideToggle,
+  }) => {
+    const def = SHADER_DEFINITIONS_MAP[shaderType];
 
-  return (
-    <div className={cn('space-y-4', className)}>
-      {!hideToggle && (
-        <div className="flex items-center justify-between">
-          <MicroTitle>SHADER EFFECT</MicroTitle>
-          <Switch checked={enabled} onCheckedChange={onEnabledChange} />
-        </div>
-      )}
-
-      {!enabled ? null : (
-        <>
-          {/* Shader type selector */}
-          <div className="grid grid-cols-2 gap-1.5">
-            {SHADER_DEFINITIONS.map((d) => (
-              <button
-                key={d.id}
-                onClick={() => onTypeChange(d.id)}
-                className={cn(
-                  'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
-                  shaderType === d.id
-                    ? 'bg-white/10 text-white'
-                    : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                )}
-              >
-                {d.label}
-              </button>
-            ))}
+    return (
+      <div className={cn('space-y-4', className)}>
+        {!hideToggle && (
+          <div className="flex items-center justify-between">
+            <MicroTitle>SHADER EFFECT</MicroTitle>
+            <Switch checked={enabled} onCheckedChange={onEnabledChange} />
           </div>
+        )}
 
-          {/* Variant selector (e.g. halftone style) */}
-          {def?.variants && (
-            <ToolPanelDisclosure label={def.variants.label.toUpperCase()} defaultOpen>
-              <div className="grid grid-cols-3 gap-1.5">
-                {def.variants.options.map((o) => (
-                  <button
-                    key={o.value}
-                    onClick={() => onValueChange(def.variants!.key, o.value)}
-                    className={cn(
-                      'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
-                      (values[def.variants!.key] ?? def.variants!.defaultValue) === o.value
-                        ? 'bg-white/10 text-white'
-                        : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                    )}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
+        {!enabled ? null : (
+          <>
+            {/* Shader type selector */}
+            <div className="grid grid-cols-2 gap-1.5">
+              {SHADER_DEFINITIONS.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => onTypeChange(d.id)}
+                  className={cn(
+                    'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
+                    shaderType === d.id
+                      ? 'bg-white/10 text-white'
+                      : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                  )}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Variant selector (e.g. halftone style) */}
+            {def?.variants && (
+              <ToolPanelDisclosure label={def.variants.label.toUpperCase()} defaultOpen>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {def.variants.options.map((o) => (
+                    <button
+                      key={o.value}
+                      onClick={() => onValueChange(def.variants!.key, o.value)}
+                      className={cn(
+                        'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
+                        (values[def.variants!.key] ?? def.variants!.defaultValue) === o.value
+                          ? 'bg-white/10 text-white'
+                          : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                      )}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </ToolPanelDisclosure>
+            )}
+
+            {/* Parameters */}
+            <ToolPanelDisclosure label="Parameters" defaultOpen>
+              {def?.params.map((p) => (
+                <ParamControl
+                  key={p.key}
+                  param={p}
+                  value={values[p.key]}
+                  onChange={(v) => onValueChange(p.key, v)}
+                />
+              ))}
             </ToolPanelDisclosure>
-          )}
-
-          {/* Parameters */}
-          <ToolPanelDisclosure label="Parameters" defaultOpen>
-            {def?.params.map((p) => (
-              <ParamControl
-                key={p.key}
-                param={p}
-                value={values[p.key]}
-                onChange={(v) => onValueChange(p.key, v)}
-              />
-            ))}
-          </ToolPanelDisclosure>
-        </>
-      )}
-    </div>
-  );
-});
+          </>
+        )}
+      </div>
+    );
+  }
+);
 
 ShaderControls.displayName = 'ShaderControls';
 
@@ -165,7 +167,9 @@ const SelectParam: React.FC<{
   const current = value ?? param.defaultValue;
   return (
     <div>
-      <span className="text-[10px] text-neutral-500 uppercase tracking-wider block mb-1">{param.label}</span>
+      <span className="text-[10px] text-neutral-500 uppercase tracking-wider block mb-1">
+        {param.label}
+      </span>
       <div className="grid grid-cols-2 gap-1">
         {param.options.map((o) => (
           <button
@@ -205,7 +209,16 @@ const ToggleParam: React.FC<{
 ToggleParam.displayName = 'ToggleParam';
 
 function glToHex(rgb: [number, number, number]): string {
-  return '#' + rgb.map((c) => Math.round(c * 255).toString(16).padStart(2, '0')).join('');
+  return (
+    '#' +
+    rgb
+      .map((c) =>
+        Math.round(c * 255)
+          .toString(16)
+          .padStart(2, '0')
+      )
+      .join('')
+  );
 }
 
 function hexToGl(hex: string): [number, number, number] {
@@ -222,9 +235,12 @@ const ColorParam: React.FC<{
 }> = React.memo(({ param, value, onChange }) => {
   const rgb = (value ?? param.defaultValue) as [number, number, number];
   const hex = glToHex(rgb);
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(hexToGl(e.target.value));
-  }, [onChange]);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange(hexToGl(e.target.value));
+    },
+    [onChange]
+  );
 
   return (
     <div className="flex items-center justify-between">

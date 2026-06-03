@@ -15,7 +15,12 @@ const TYPE_LABELS: Record<string, string> = {
   variable: 'V',
 };
 
-export function MentionsDropdown({ isOpen, items, selectedIndex, onSelect }: MentionsDropdownProps) {
+export function MentionsDropdown({
+  isOpen,
+  items,
+  selectedIndex,
+  onSelect,
+}: MentionsDropdownProps) {
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,7 +41,9 @@ export function MentionsDropdown({ isOpen, items, selectedIndex, onSelect }: Men
           key={item.id}
           onClick={() => onSelect(item)}
           className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 ${
-            idx === selectedIndex ? 'bg-brand-cyan/10 text-brand-cyan' : 'hover:bg-muted text-foreground'
+            idx === selectedIndex
+              ? 'bg-brand-cyan/10 text-brand-cyan'
+              : 'hover:bg-muted text-foreground'
           }`}
         >
           <span className="font-mono text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">

@@ -58,10 +58,11 @@ export const PlaygroundGalleryPage: React.FC = () => {
   const filteredApps = useMemo(() => {
     if (!search.trim()) return miniApps;
     const q = search.toLowerCase();
-    return miniApps.filter(a =>
-      a.title.toLowerCase().includes(q) ||
-      a.description?.toLowerCase().includes(q) ||
-      a.tags?.some(t => t.toLowerCase().includes(q))
+    return miniApps.filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        a.description?.toLowerCase().includes(q) ||
+        a.tags?.some((t) => t.toLowerCase().includes(q))
     );
   }, [miniApps, search]);
 
@@ -93,7 +94,10 @@ export const PlaygroundGalleryPage: React.FC = () => {
               className="w-full pl-9 pr-8 py-2 text-xs bg-neutral-900/50 border border-neutral-800 rounded-lg text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/30"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
                 <X className="w-3.5 h-3.5 text-neutral-500 hover:text-neutral-300" />
               </button>
             )}
@@ -101,10 +105,11 @@ export const PlaygroundGalleryPage: React.FC = () => {
 
           {/* Category chips */}
           <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
-            {CATEGORIES.map(cat => {
-              const config: { icon: LucideIcon; color: string; label: string } = cat === 'all'
-                ? { icon: SlidersHorizontal, color: 'text-neutral-400', label: 'All' }
-                : MINIAPP_CATEGORY_CONFIG[cat];
+            {CATEGORIES.map((cat) => {
+              const config: { icon: LucideIcon; color: string; label: string } =
+                cat === 'all'
+                  ? { icon: SlidersHorizontal, color: 'text-neutral-400', label: 'All' }
+                  : MINIAPP_CATEGORY_CONFIG[cat];
               const Icon = config.icon;
               return (
                 <button
@@ -114,7 +119,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
                     'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all',
                     category === cat
                       ? 'bg-white/10 text-neutral-200 border border-white/20'
-                      : 'text-neutral-500 border border-transparent hover:text-neutral-300 hover:border-neutral-800',
+                      : 'text-neutral-500 border border-transparent hover:text-neutral-300 hover:border-neutral-800'
                   )}
                 >
                   <Icon className="w-3 h-3" />
@@ -130,8 +135,10 @@ export const PlaygroundGalleryPage: React.FC = () => {
             onChange={(e) => setSort(e.target.value as SortKey)}
             className="text-[11px] bg-neutral-900/50 border border-neutral-800 rounded-lg px-2.5 py-2 text-neutral-400 focus:outline-none"
           >
-            {SORT_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>
@@ -140,7 +147,10 @@ export const PlaygroundGalleryPage: React.FC = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-neutral-800 bg-neutral-900/30 overflow-hidden">
+              <div
+                key={i}
+                className="rounded-xl border border-neutral-800 bg-neutral-900/30 overflow-hidden"
+              >
                 <SkeletonLoader variant="rectangular" height="140px" />
                 <div className="p-3 space-y-2">
                   <SkeletonLoader variant="text" width="60%" />
@@ -153,13 +163,17 @@ export const PlaygroundGalleryPage: React.FC = () => {
           <EmptyState
             icon={Zap}
             title="No miniapps yet"
-            description={search ? 'Try a different search term' : 'Be the first to create and publish a miniapp!'}
+            description={
+              search
+                ? 'Try a different search term'
+                : 'Be the first to create and publish a miniapp!'
+            }
             actionLabel="Create MiniApp"
             onAction={() => navigate('/playground')}
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredApps.map(app => (
+            {filteredApps.map((app) => (
               <MiniAppCard
                 key={app.id}
                 miniApp={app}

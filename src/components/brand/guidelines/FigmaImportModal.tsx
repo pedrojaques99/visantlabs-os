@@ -79,7 +79,13 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-medium">
-                <div className={`p-1 rounded ${importColors ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-neutral-800 text-neutral-500'}`}>
+                <div
+                  className={`p-1 rounded ${
+                    importColors
+                      ? 'bg-brand-cyan/20 text-brand-cyan'
+                      : 'bg-neutral-800 text-neutral-500'
+                  }`}
+                >
                   <Palette size={14} />
                 </div>
                 <span>Cores ({previewData.colors.length})</span>
@@ -112,7 +118,13 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
           <div className="space-y-3 pt-2 border-t border-neutral-800/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-medium">
-                <div className={`p-1 rounded ${importTypography ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-neutral-800 text-neutral-500'}`}>
+                <div
+                  className={`p-1 rounded ${
+                    importTypography
+                      ? 'bg-brand-cyan/20 text-brand-cyan'
+                      : 'bg-neutral-800 text-neutral-500'
+                  }`}
+                >
                   <Type size={14} />
                 </div>
                 <span>Tipografia ({previewData.typography.length})</span>
@@ -147,7 +159,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
               </div>
               <span>Logos (selecione os componentes)</span>
             </div>
-            
+
             {previewData.components.length === 0 ? (
               <p className="text-xs text-neutral-500 italic p-3 text-center bg-neutral-950/30 rounded-xl border border-dashed border-neutral-800">
                 Nenhum componente encontrado no arquivo.
@@ -160,14 +172,20 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                     onClick={() => toggleLogo(comp.key)}
                     className={`
                       relative flex flex-col items-center p-3 rounded-xl border cursor-pointer transition-all gap-2
-                      ${selectedLogos.includes(comp.key)
-                        ? 'bg-brand-cyan/5 border-brand-cyan shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 10%)]'
-                        : 'bg-neutral-950/50 border-neutral-800 hover:border-neutral-700'}
+                      ${
+                        selectedLogos.includes(comp.key)
+                          ? 'bg-brand-cyan/5 border-brand-cyan shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 10%)]'
+                          : 'bg-neutral-950/50 border-neutral-800 hover:border-neutral-700'
+                      }
                     `}
                   >
                     {comp.thumbnailUrl ? (
                       <div className="w-full h-16 rounded bg-neutral-900 border border-neutral-800/50 flex items-center justify-center p-2 group-hover:bg-neutral-800 transition-colors">
-                         <img src={comp.thumbnailUrl} alt={comp.name} className="max-w-full max-h-full object-contain" />
+                        <img
+                          src={comp.thumbnailUrl}
+                          alt={comp.name}
+                          className="max-w-full max-h-full object-contain"
+                        />
                       </div>
                     ) : (
                       <div className="w-full h-16 rounded bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
@@ -200,7 +218,9 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
           </Button>
           <Button
             onClick={handleImport}
-            disabled={isImporting || (!importColors && !importTypography && selectedLogos.length === 0)}
+            disabled={
+              isImporting || (!importColors && !importTypography && selectedLogos.length === 0)
+            }
             className="bg-brand-cyan hover:bg-brand-cyan/90 text-black px-8 font-bold"
           >
             {isImporting ? <GlitchLoader size={16} /> : 'Importar'}

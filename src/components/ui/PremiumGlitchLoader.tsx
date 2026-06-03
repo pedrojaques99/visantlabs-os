@@ -1,12 +1,23 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react';
 
 const WORDS = [
-  'Criando', 'Desenhando', 'Esculpindo', 'Burilando',
-  'Arquitetando', 'Rabiscando', 'Refinando', 'Compondo',
-  'Moldando', 'Traçando', 'Prototipando', 'Lapidando',
-  'Sincronizando', 'Sintetizando', 'Conceituando'
+  'Criando',
+  'Desenhando',
+  'Esculpindo',
+  'Burilando',
+  'Arquitetando',
+  'Rabiscando',
+  'Refinando',
+  'Compondo',
+  'Moldando',
+  'Traçando',
+  'Prototipando',
+  'Lapidando',
+  'Sincronizando',
+  'Sintetizando',
+  'Conceituando',
 ];
 
 const GLITCH_CHARS = '*•□./-®';
@@ -21,7 +32,7 @@ interface PremiumGlitchLoaderProps {
 export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
   className = '',
   color = '#7e7e7eff',
-  steps = WORDS
+  steps = WORDS,
 }) => {
   const [glitch, setGlitch] = useState('****');
   const [word, setWord] = useState(steps[0]);
@@ -89,14 +100,20 @@ export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
       clearInterval(glitchInterval);
       clearInterval(dotsInterval);
       clearInterval(timerInterval);
-    }
+    };
   }, [steps]);
 
   return (
-    <div className={`flex items-center gap-3 font-mono text-[11px] font-bold uppercase ${className}`} style={{ color }}>
+    <div
+      className={`flex items-center gap-3 font-mono text-[11px] font-bold uppercase ${className}`}
+      style={{ color }}
+    >
       <span className="opacity-40">{glitch}</span>
-      <span className="min-w-[120px] text-white">{word}{dots}</span>
+      <span className="min-w-[120px] text-white">
+        {word}
+        {dots}
+      </span>
       <span className="ml-auto text-[10px] opacity-50 tabular-nums">{timer}</span>
     </div>
-  )
-}
+  );
+};

@@ -10,15 +10,27 @@ interface AccessibilitySectionProps {
   span?: string;
 }
 
-export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guideline, onUpdate, span }) => {
+export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({
+  guideline,
+  onUpdate,
+  span,
+}) => {
   const text = guideline.guidelines?.accessibility || '';
 
-  const persist = useCallback((value: string) => {
-    onUpdate({ guidelines: { ...guideline.guidelines, accessibility: value } });
-  }, [onUpdate, guideline.guidelines]);
+  const persist = useCallback(
+    (value: string) => {
+      onUpdate({ guidelines: { ...guideline.guidelines, accessibility: value } });
+    },
+    [onUpdate, guideline.guidelines]
+  );
 
   return (
-    <SectionBlock id="accessibility" span={span as any} icon={<ShieldCheck size={14} />} title="Accessibility">
+    <SectionBlock
+      id="accessibility"
+      span={span as any}
+      icon={<ShieldCheck size={14} />}
+      title="Accessibility"
+    >
       <Textarea
         value={text}
         onChange={(e) => persist(e.target.value)}

@@ -15,13 +15,15 @@ function formatToolCompact(t: FigmaTool): string {
  * Build compact tools reference grouped by category.
  * Only includes operations relevant to the given intent.
  */
-export function buildToolsReference(intent: 'create' | 'edit' | 'clone' | 'delete' | 'arrange' | 'full'): string {
+export function buildToolsReference(
+  intent: 'create' | 'edit' | 'clone' | 'delete' | 'arrange' | 'full'
+): string {
   const sections: string[] = ['═══ OPERAÇÕES DISPONÍVEIS ═══'];
 
-  const creation = FIGMA_TOOLS.filter(t => t.category === 'CREATION');
-  const edits = FIGMA_TOOLS.filter(t => t.category === 'EDIT');
-  const structure = FIGMA_TOOLS.filter(t => t.category === 'STRUCTURE');
-  const advanced = FIGMA_TOOLS.filter(t => t.category === 'ADVANCED');
+  const creation = FIGMA_TOOLS.filter((t) => t.category === 'CREATION');
+  const edits = FIGMA_TOOLS.filter((t) => t.category === 'EDIT');
+  const structure = FIGMA_TOOLS.filter((t) => t.category === 'STRUCTURE');
+  const advanced = FIGMA_TOOLS.filter((t) => t.category === 'ADVANCED');
 
   const needsCreate = intent === 'create' || intent === 'clone' || intent === 'full';
   const needsEdit = intent === 'edit' || intent === 'arrange' || intent === 'full';

@@ -35,15 +35,23 @@ const SECTION_LABELS: Record<string, string> = {
   'guidelines.dos': 'Boas Práticas',
   'guidelines.donts': 'Evitar',
   'guidelines.imagery': 'Imagens',
-  'tags': 'Tags',
+  tags: 'Tags',
   'identity.description': 'Descrição',
   'identity.tagline': 'Tagline',
 };
 
 const SECTION_GROUPS: Record<string, string[]> = {
-  'Estratégia': ['strategy.coreMessage', 'strategy.pillars', 'strategy.manifesto', 'strategy.archetypes', 'strategy.personas', 'strategy.voiceValues', 'strategy.positioning'],
-  'Diretrizes': ['guidelines.voice', 'guidelines.dos', 'guidelines.donts', 'guidelines.imagery'],
-  'Identidade': ['identity.description', 'identity.tagline', 'tags'],
+  Estratégia: [
+    'strategy.coreMessage',
+    'strategy.pillars',
+    'strategy.manifesto',
+    'strategy.archetypes',
+    'strategy.personas',
+    'strategy.voiceValues',
+    'strategy.positioning',
+  ],
+  Diretrizes: ['guidelines.voice', 'guidelines.dos', 'guidelines.donts', 'guidelines.imagery'],
+  Identidade: ['identity.description', 'identity.tagline', 'tags'],
 };
 
 function getEmptySections(g: BrandGuideline): string[] {
@@ -70,13 +78,16 @@ function getEmptySections(g: BrandGuideline): string[] {
 }
 
 function renderPreview(key: string, value: any): React.ReactNode {
-  if (typeof value === 'string') return <p className="text-[11px] text-neutral-300 whitespace-pre-wrap">{value}</p>;
+  if (typeof value === 'string')
+    return <p className="text-[11px] text-neutral-300 whitespace-pre-wrap">{value}</p>;
   if (Array.isArray(value)) {
     return (
       <ul className="space-y-1">
         {value.map((item, i) => (
           <li key={i} className="text-[11px] text-neutral-300">
-            {typeof item === 'string' ? `• ${item}` : `• ${item.value || item.name || item.title || JSON.stringify(item)}`}
+            {typeof item === 'string'
+              ? `• ${item}`
+              : `• ${item.value || item.name || item.title || JSON.stringify(item)}`}
           </li>
         ))}
       </ul>
@@ -88,7 +99,9 @@ function renderPreview(key: string, value: any): React.ReactNode {
         {Object.entries(value).map(([k, v]) => (
           <div key={k} className="text-[11px]">
             <span className="text-neutral-500 font-mono">{k}:</span>{' '}
-            <span className="text-neutral-300">{typeof v === 'string' ? v : JSON.stringify(v)}</span>
+            <span className="text-neutral-300">
+              {typeof v === 'string' ? v : JSON.stringify(v)}
+            </span>
           </div>
         ))}
       </div>
@@ -97,7 +110,12 @@ function renderPreview(key: string, value: any): React.ReactNode {
   return <p className="text-[11px] text-neutral-400">{JSON.stringify(value)}</p>;
 }
 
-export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, guideline, onSuccess }) => {
+export const BrandAiPopulateDialog: React.FC<Props> = ({
+  open,
+  onOpenChange,
+  guideline,
+  onSuccess,
+}) => {
   const emptySections = useMemo(() => getEmptySections(guideline), [guideline]);
   const [selected, setSelected] = useState<Set<string>>(new Set(emptySections));
   const [loading, setLoading] = useState(false);
@@ -107,7 +125,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
   const updateMutation = useUpdateGuideline();
 
   const toggleSection = useCallback((key: string) => {
-    setSelected(prev => {
+    setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -141,7 +159,11 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
     const filtered: Record<string, any> = {};
     for (const [top, val] of Object.entries(patch)) {
       if (excluded.has(top)) continue;
-      if (['strategy', 'guidelines', 'identity'].includes(top) && typeof val === 'object' && !Array.isArray(val)) {
+      if (
+        ['strategy', 'guidelines', 'identity'].includes(top) &&
+        typeof val === 'object' &&
+        !Array.isArray(val)
+      ) {
         const sub: Record<string, any> = {};
         for (const [k, v] of Object.entries(val)) {
           if (!excluded.has(`${top}.${k}`)) sub[k] = v;
@@ -155,7 +177,11 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
     // Deep merge with existing guideline data so PUT doesn't overwrite sibling fields
     const merged: Record<string, any> = {};
     for (const [top, val] of Object.entries(filtered)) {
-      if (['strategy', 'guidelines', 'identity'].includes(top) && typeof val === 'object' && !Array.isArray(val)) {
+      if (
+        ['strategy', 'guidelines', 'identity'].includes(top) &&
+        typeof val === 'object' &&
+        !Array.isArray(val)
+      ) {
         merged[top] = { ...(guideline as any)[top], ...val };
       } else {
         merged[top] = val;
@@ -174,7 +200,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
   }, [patch, excluded, guideline, updateMutation, onSuccess, onOpenChange]);
 
   const toggleExclude = useCallback((key: string) => {
-    setExcluded(prev => {
+    setExcluded((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -186,7 +212,11 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
     if (!patch) return [];
     const keys: string[] = [];
     for (const [top, val] of Object.entries(patch)) {
-      if (['strategy', 'guidelines', 'identity'].includes(top) && typeof val === 'object' && !Array.isArray(val)) {
+      if (
+        ['strategy', 'guidelines', 'identity'].includes(top) &&
+        typeof val === 'object' &&
+        !Array.isArray(val)
+      ) {
         for (const sub of Object.keys(val)) {
           keys.push(`${top}.${sub}`);
         }
@@ -249,13 +279,15 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
 
               <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
                 {Object.entries(SECTION_GROUPS).map(([group, keys]) => {
-                  const available = keys.filter(k => emptySections.includes(k));
+                  const available = keys.filter((k) => emptySections.includes(k));
                   if (available.length === 0) return null;
                   return (
                     <div key={group}>
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-2">{group}</p>
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-2">
+                        {group}
+                      </p>
                       <div className="space-y-1">
-                        {available.map(key => (
+                        {available.map((key) => (
                           <button
                             key={key}
                             onClick={() => toggleSection(key)}
@@ -266,10 +298,14 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
                                 : 'border-neutral-800 bg-white/[0.03] text-neutral-500 hover:text-neutral-300'
                             )}
                           >
-                            <div className={cn(
-                              'w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0',
-                              selected.has(key) ? 'border-amber-500 bg-amber-500' : 'border-neutral-600'
-                            )}>
+                            <div
+                              className={cn(
+                                'w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0',
+                                selected.has(key)
+                                  ? 'border-amber-500 bg-amber-500'
+                                  : 'border-neutral-600'
+                              )}
+                            >
                               {selected.has(key) && <Check size={9} className="text-black" />}
                             </div>
                             <span className="text-xs">{SECTION_LABELS[key] || key}</span>
@@ -306,7 +342,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
           {patch && !loading && (
             <>
               <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
-                {patchKeys.map(key => {
+                {patchKeys.map((key) => {
                   const [top, sub] = key.split('.');
                   const value = sub ? (patch as any)[top]?.[sub] : (patch as any)[top || key];
                   if (value === undefined) return null;
@@ -334,17 +370,15 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
                           onClick={() => toggleExclude(key)}
                           className={cn(
                             'text-[10px] font-mono uppercase tracking-widest transition-colors',
-                            isExcluded ? 'text-neutral-600 hover:text-green-400' : 'text-neutral-500 hover:text-destructive'
+                            isExcluded
+                              ? 'text-neutral-600 hover:text-green-400'
+                              : 'text-neutral-500 hover:text-destructive'
                           )}
                         >
                           {isExcluded ? 'incluir' : 'excluir'}
                         </button>
                       </div>
-                      {isExpanded && (
-                        <div className="mt-2 pl-5">
-                          {renderPreview(key, value)}
-                        </div>
-                      )}
+                      {isExpanded && <div className="mt-2 pl-5">{renderPreview(key, value)}</div>}
                     </div>
                   );
                 })}
@@ -360,7 +394,10 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
-                    onClick={() => { onOpenChange(false); setPatch(null); }}
+                    onClick={() => {
+                      onOpenChange(false);
+                      setPatch(null);
+                    }}
                     className="h-8 px-3 text-xs text-neutral-400"
                   >
                     Cancelar
@@ -371,7 +408,8 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({ open, onOpenChange, gui
                     className="h-8 px-4 gap-2 text-xs bg-green-500/20 border border-green-500/30 text-green-400 hover:bg-green-500/30"
                   >
                     <Check size={12} />
-                    Aplicar {patchKeys.length - excluded.size} campo{patchKeys.length - excluded.size !== 1 ? 's' : ''}
+                    Aplicar {patchKeys.length - excluded.size} campo
+                    {patchKeys.length - excluded.size !== 1 ? 's' : ''}
                   </Button>
                 </div>
               </div>

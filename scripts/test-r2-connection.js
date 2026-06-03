@@ -35,8 +35,10 @@ function loadEnv() {
       let value = trimmed.substring(equalIndex + 1).trim();
 
       // Remove aspas se existirem
-      if ((value.startsWith('"') && value.endsWith('"')) || 
-          (value.startsWith("'") && value.endsWith("'"))) {
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
         value = value.slice(1, -1);
       }
 
@@ -81,7 +83,11 @@ if (!/^[a-f0-9]{32}$/i.test(accountId)) {
 }
 
 console.log('📋 Configuração encontrada:');
-console.log(`   Account ID: ${accountId.substring(0, 8)}...${accountId.substring(accountId.length - 4)} (${accountId.length} chars)`);
+console.log(
+  `   Account ID: ${accountId.substring(0, 8)}...${accountId.substring(accountId.length - 4)} (${
+    accountId.length
+  } chars)`
+);
 console.log(`   Access Key ID: ${accessKeyId.substring(0, 8)}... (${accessKeyId.length} chars)`);
 console.log(`   Secret Access Key: ${'*'.repeat(8)}... (${secretAccessKey.length} chars)`);
 console.log(`   Bucket: ${bucketName}`);
@@ -105,17 +111,19 @@ async function testConnection() {
     console.log('🔍 Teste 1: Verificando acesso ao bucket...');
     // Tentar ListObjectsV2 primeiro (mais simples e informativo)
     const { ListObjectsV2Command } = await import('@aws-sdk/client-s3');
-    const result = await client.send(new ListObjectsV2Command({ 
-      Bucket: bucketName,
-      MaxKeys: 1, // Apenas verificar se conseguimos acessar
-    }));
+    const result = await client.send(
+      new ListObjectsV2Command({
+        Bucket: bucketName,
+        MaxKeys: 1, // Apenas verificar se conseguimos acessar
+      })
+    );
     console.log('   ✅ Bucket acessível!');
     console.log(`   📊 Objetos no bucket: ${result.KeyCount || 0}\n`);
   } catch (error) {
     console.error('   ❌ Erro ao acessar bucket:', error.message);
     console.error('   Tipo de erro:', error.name);
     console.error('   Código:', error.Code || error.code || 'N/A');
-    
+
     if (error.$metadata) {
       console.error('   Status HTTP:', error.$metadata.httpStatusCode || 'N/A');
       console.error('   Request ID:', error.$metadata.requestId || 'N/A');
@@ -128,15 +136,18 @@ async function testConnection() {
         console.error('   4. Access Key ID e Secret Access Key não correspondem ao mesmo token');
       }
     }
-    
+
     // Sempre mostrar stack em caso de UnknownError para debug
     if (error.name === 'UnknownError' || error.message?.includes('UnknownError')) {
       console.error('   Stack completo:', error.stack || 'N/A');
-      console.error('   Erro completo:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      console.error(
+        '   Erro completo:',
+        JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+      );
     } else if (error.stack && process.env.DEBUG) {
       console.error('   Stack:', error.stack);
     }
-    
+
     if (error.name === 'SignatureDoesNotMatch') {
       console.error('\n   💡 ERRO DE ASSINATURA DETECTADO!');
       console.error('   As credenciais estão incorretas. Verifique:');
@@ -146,7 +157,11 @@ async function testConnection() {
       console.error('   4. As credenciais foram copiadas corretamente?');
     } else if (error.name === 'NotFound' || error.Code === 'NoSuchBucket') {
       console.error(`   💡 Bucket "${bucketName}" não encontrado. Verifique o nome.`);
-    } else if (error.name === 'UnknownError' || error.message?.includes('ENOTFOUND') || error.message?.includes('ECONNREFUSED')) {
+    } else if (
+      error.name === 'UnknownError' ||
+      error.message?.includes('ENOTFOUND') ||
+      error.message?.includes('ECONNREFUSED')
+    ) {
       console.error('\n   💡 ERRO DE CONEXÃO DETECTADO!');
       console.error('   Problemas possíveis:');
       console.error('   1. Endpoint incorreto:', `https://${accountId}.r2.cloudflarestorage.com`);
@@ -154,7 +169,7 @@ async function testConnection() {
       console.error('   3. Problemas de rede/DNS');
       console.error('   4. Verifique se o Account ID está correto no Cloudflare Dashboard');
       console.error('   5. O Account ID deve ser hexadecimal de 32 caracteres');
-      
+
       // Tentar mostrar mais detalhes do erro
       if (error.cause) {
         console.error('   Causa:', error.cause);
@@ -170,33 +185,36 @@ async function testConnection() {
 async function testUpload() {
   try {
     console.log('🔍 Teste 2: Fazendo upload de teste...');
-    
+
     // Criar uma pequena imagem PNG de teste (1x1 pixel transparente)
-    const testImageBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    const testImageBase64 =
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
     const testBuffer = Buffer.from(testImageBase64, 'base64');
     const testKey = `test-${Date.now()}.png`;
-    
-    await client.send(new PutObjectCommand({
-      Bucket: bucketName,
-      Key: testKey,
-      Body: testBuffer,
-      ContentType: 'image/png',
-    }));
-    
+
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: testKey,
+        Body: testBuffer,
+        ContentType: 'image/png',
+      })
+    );
+
     console.log('   ✅ Upload realizado com sucesso!');
     console.log(`   📁 Arquivo: ${testKey}`);
     console.log(`   🔗 URL pública: ${publicUrl}/${testKey}\n`);
-    
+
     return testKey;
   } catch (error) {
     console.error('   ❌ Erro ao fazer upload:', error.message);
     console.error('   Tipo de erro:', error.name);
     console.error('   Código:', error.Code || error.code || 'N/A');
-    
+
     if (error.$metadata) {
       console.error('   Status HTTP:', error.$metadata.httpStatusCode || 'N/A');
     }
-    
+
     if (error.name === 'SignatureDoesNotMatch') {
       console.error('\n   💡 ERRO DE ASSINATURA DETECTADO!');
       console.error('   As credenciais estão incorretas. Verifique:');
@@ -219,14 +237,13 @@ async function runTests() {
   try {
     await testConnection();
     const testKey = await testUpload();
-    
+
     console.log('='.repeat(50));
     console.log('✅ TODOS OS TESTES PASSARAM!');
     console.log('='.repeat(50));
     console.log('\n🎉 Suas credenciais R2 estão funcionando corretamente!');
     console.log(`\n💡 Você pode excluir o arquivo de teste: ${testKey}`);
     console.log('   (Ele será sobrescrito naturalmente ou pode ser removido manualmente)');
-    
   } catch (error) {
     console.error('\n' + '='.repeat(50));
     console.error('❌ TESTES FALHARAM');
@@ -242,4 +259,3 @@ async function runTests() {
 }
 
 runTests();
-

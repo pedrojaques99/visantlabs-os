@@ -13,10 +13,7 @@ function estimateTokens(text: string): number {
  * Default budget is 80 000 tokens — well under Gemini's 1M context but
  * leaves room for system prompt + RAG context + the new user message.
  */
-export function formatGeminiHistory(
-  messages: ChatBaseMessage[],
-  maxTokens = 80_000,
-) {
+export function formatGeminiHistory(messages: ChatBaseMessage[], maxTokens = 80_000) {
   if (messages.length === 0) return [];
 
   // Always keep the 4 most recent (tail) regardless of size
@@ -35,7 +32,7 @@ export function formatGeminiHistory(
     budget -= tokens;
   }
 
-  return [...included, ...tail].map(m => ({
+  return [...included, ...tail].map((m) => ({
     role: m.role === 'user' ? 'user' : 'model',
     parts: [{ text: m.content }],
   }));

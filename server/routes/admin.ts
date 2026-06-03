@@ -5,8 +5,21 @@ import { ObjectId } from 'mongodb';
 import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
-import { calculateImageCost, calculateVideoCost, getImagePricing } from '../../src/utils/pricing.js';
-import { ensureOptionalBoolean, ensureString, isSafeId, isValidAspectRatio, isValidObjectId, isValidPositiveInt, sanitizeMongoQuery, VALID_ASPECT_RATIOS } from '../utils/validation.js';
+import {
+  calculateImageCost,
+  calculateVideoCost,
+  getImagePricing,
+} from '../../src/utils/pricing.js';
+import {
+  ensureOptionalBoolean,
+  ensureString,
+  isSafeId,
+  isValidAspectRatio,
+  isValidObjectId,
+  isValidPositiveInt,
+  sanitizeMongoQuery,
+  VALID_ASPECT_RATIOS,
+} from '../utils/validation.js';
 import { vectorService } from '../services/vectorService.js';
 
 const router = express.Router();
@@ -37,8 +50,8 @@ function normalizeTags(tags: any): string[] | undefined {
   if (tags === undefined || tags === null) return undefined;
   if (!Array.isArray(tags)) return undefined;
   const normalized = tags
-    .filter(tag => typeof tag === 'string' && tag.trim().length > 0)
-    .map(tag => tag.trim());
+    .filter((tag) => typeof tag === 'string' && tag.trim().length > 0)
+    .map((tag) => tag.trim());
   return normalized.length > 0 ? normalized : undefined;
 }
 
@@ -176,10 +189,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
 
         const [mockupCount, transactionCount, spendingByUser, userUsageAgg] = await Promise.all([
           db.collection('mockups').countDocuments({
-            $or: [
-              { userId: userIdString },
-              { userId: userIdObjectId },
-            ],
+            $or: [{ userId: userIdString }, { userId: userIdObjectId }],
           }),
           prisma.transaction.count({
             where: { userId: user.id },
@@ -188,26 +198,29 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
             by: ['currency'],
             where: {
               userId: user.id,
-              status: 'completed'
+              status: 'completed',
             },
-            _sum: { amount: true }
+            _sum: { amount: true },
           }),
           // Aggregate usage by model/resolution for correct cost calculation
-          db.collection('usage_records').aggregate([
-            { $match: { userId: userIdString } },
-            {
-              $group: {
-                _id: { model: '$model', resolution: '$resolution', type: '$type' },
-                totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-                totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
-                totalCost: { $sum: { $ifNull: ['$cost', 0] } }
-              }
-            }
-          ]).toArray(),
+          db
+            .collection('usage_records')
+            .aggregate([
+              { $match: { userId: userIdString } },
+              {
+                $group: {
+                  _id: { model: '$model', resolution: '$resolution', type: '$type' },
+                  totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+                  totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+                  totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+                },
+              },
+            ])
+            .toArray(),
         ]);
 
-        const totalSpentBRL = spendingByUser.find(s => s.currency === 'BRL')?._sum.amount || 0;
-        const totalSpentUSD = spendingByUser.find(s => s.currency === 'USD')?._sum.amount || 0;
+        const totalSpentBRL = spendingByUser.find((s) => s.currency === 'BRL')?._sum.amount || 0;
+        const totalSpentUSD = spendingByUser.find((s) => s.currency === 'USD')?._sum.amount || 0;
 
         // Calculate API cost using centralized pricing
         let apiCostUSD = 0;
@@ -260,10 +273,18 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
 
     // Calculate total statistics
     const totalCreditsUsed = formattedUsers.reduce((sum, user) => sum + (user.creditsUsed || 0), 0);
-    const totalStorageUsed = formattedUsers.reduce((sum, user) => sum + (user.storageUsedBytes || 0), 0);
-    const totalReferralCount = formattedUsers.reduce((sum, user) => sum + (user.referralCount || 0), 0);
+    const totalStorageUsed = formattedUsers.reduce(
+      (sum, user) => sum + (user.storageUsedBytes || 0),
+      0
+    );
+    const totalReferralCount = formattedUsers.reduce(
+      (sum, user) => sum + (user.referralCount || 0),
+      0
+    );
     const totalReferredUsers = formattedUsers.filter((user) => Boolean(user.referredBy)).length;
-    const usersWithReferralCode = formattedUsers.filter((user) => Boolean(user.referralCode)).length;
+    const usersWithReferralCode = formattedUsers.filter((user) =>
+      Boolean(user.referralCode)
+    ).length;
     const totalMockupsSaved = await db.collection('mockups').countDocuments({});
 
     // Calculate total mockups generated
@@ -273,42 +294,51 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
     try {
       // Use MongoDB aggregation for efficient calculation
       // Sum imagesGenerated field from all usage_records
-      const aggregationResult = await db.collection('usage_records').aggregate([
-        {
-          $group: {
-            _id: null,
-            totalImages: {
-              $sum: {
-                $ifNull: ['$imagesGenerated', 0] // Use imagesGenerated (correct field name from UsageRecord interface)
-              }
+      const aggregationResult = await db
+        .collection('usage_records')
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalImages: {
+                $sum: {
+                  $ifNull: ['$imagesGenerated', 0], // Use imagesGenerated (correct field name from UsageRecord interface)
+                },
+              },
+              localDevImages: {
+                $sum: {
+                  $cond: [
+                    { $ifNull: ['$isLocalDevelopment', false] },
+                    { $ifNull: ['$imagesGenerated', 0] },
+                    0,
+                  ],
+                },
+              },
+              recordCount: { $sum: 1 },
             },
-            localDevImages: {
-              $sum: {
-                $cond: [
-                  { $ifNull: ['$isLocalDevelopment', false] },
-                  { $ifNull: ['$imagesGenerated', 0] },
-                  0
-                ]
-              }
-            },
-            recordCount: { $sum: 1 }
-          }
-        }
-      ]).toArray();
+          },
+        ])
+        .toArray();
 
       if (aggregationResult.length > 0 && aggregationResult[0].totalImages > 0) {
         totalMockupsGenerated = aggregationResult[0].totalImages;
         localDevelopmentImages = aggregationResult[0].localDevImages || 0;
-        console.log(`[Admin] Total mockups from usage_records: ${totalMockupsGenerated} (from ${aggregationResult[0].recordCount} records)`);
+        console.log(
+          `[Admin] Total mockups from usage_records: ${totalMockupsGenerated} (from ${aggregationResult[0].recordCount} records)`
+        );
         if (localDevelopmentImages > 0) {
-          console.log(`[Admin] Local development images: ${localDevelopmentImages} (included in total)`);
+          console.log(
+            `[Admin] Local development images: ${localDevelopmentImages} (included in total)`
+          );
         }
       } else {
         // Collection exists but is empty or has no data, use creditsUsed as estimate
         // Most common: gemini-2.5-flash-image uses 1 credit per image
         // Conservative estimate: divide by 1.2 to account for some higher credit usage
         totalMockupsGenerated = totalCreditsUsed > 0 ? Math.round(totalCreditsUsed / 1.2) : 0;
-        console.log(`[Admin] usage_records empty or no data, using creditsUsed estimate: ${totalMockupsGenerated} (from ${totalCreditsUsed} credits)`);
+        console.log(
+          `[Admin] usage_records empty or no data, using creditsUsed estimate: ${totalMockupsGenerated} (from ${totalCreditsUsed} credits)`
+        );
       }
     } catch (error: any) {
       // If usage_records doesn't exist or fails, use creditsUsed as fallback estimate
@@ -316,95 +346,116 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
       // Most common: gemini-2.5-flash-image uses 1 credit per image
       // Conservative estimate: divide by 1.2 to account for some higher credit usage
       totalMockupsGenerated = totalCreditsUsed > 0 ? Math.round(totalCreditsUsed / 1.2) : 0;
-      console.log(`[Admin] Fallback calculation: ${totalMockupsGenerated} mockups from ${totalCreditsUsed} credits`);
+      console.log(
+        `[Admin] Fallback calculation: ${totalMockupsGenerated} mockups from ${totalCreditsUsed} credits`
+      );
     }
 
     // Ensure we have at least 0 (not negative or NaN)
     if (isNaN(totalMockupsGenerated) || totalMockupsGenerated < 0) {
-      console.warn(`[Admin] Invalid totalMockupsGenerated value: ${totalMockupsGenerated}, setting to 0`);
+      console.warn(
+        `[Admin] Invalid totalMockupsGenerated value: ${totalMockupsGenerated}, setting to 0`
+      );
       totalMockupsGenerated = 0;
     }
 
-    console.log(`[Admin] Final stats - Users: ${formattedUsers.length}, Mockups Generated: ${totalMockupsGenerated}${localDevelopmentImages > 0 ? ` (${localDevelopmentImages} from local dev)` : ''}, Mockups Saved: ${totalMockupsSaved}, Credits Used: ${totalCreditsUsed}`);
+    console.log(
+      `[Admin] Final stats - Users: ${
+        formattedUsers.length
+      }, Mockups Generated: ${totalMockupsGenerated}${
+        localDevelopmentImages > 0 ? ` (${localDevelopmentImages} from local dev)` : ''
+      }, Mockups Saved: ${totalMockupsSaved}, Credits Used: ${totalCreditsUsed}`
+    );
 
     // Calculate detailed generation statistics
-    const generationStats = await db.collection('usage_records').aggregate([
-      {
-        $facet: {
-          // Images by model
-          imagesByModel: [
-            { $match: { imagesGenerated: { $exists: true, $gt: 0 } } },
-            {
-              $group: {
-                _id: '$model',
-                total: { $sum: '$imagesGenerated' },
-                byResolution: {
-                  $push: {
-                    resolution: { $ifNull: ['$resolution', 'unknown'] },
-                    count: '$imagesGenerated'
-                  }
-                }
-              }
-            }
-          ],
-          // Videos
-          videos: [
-            { $match: { type: 'video' } },
-            {
-              $group: {
-                _id: null,
-                total: { $sum: { $ifNull: ['$videosGenerated', 1] } },
-                byModel: {
-                  $push: {
-                    model: { $ifNull: ['$model', 'unknown'] },
-                    count: { $ifNull: ['$videosGenerated', 1] }
-                  }
-                }
-              }
-            }
-          ],
-          // Text tokens (branding)
-          textTokens: [
-            { $match: { type: 'branding' } },
-            {
-              $group: {
-                _id: null,
-                totalSteps: { $sum: 1 },
-                totalPromptLength: { $sum: { $ifNull: ['$promptLength', 0] } },
-                estimatedTokens: { $sum: { $ceil: { $divide: [{ $ifNull: ['$promptLength', 0] }, 4] } } },
-                inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
-                outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
-                totalCost: { $sum: { $ifNull: ['$cost', 0] } }
-              }
-            }
-          ],
-          // Prompt generations
-          promptGenerations: [
-            { $match: { type: 'prompt-generation' } },
-            {
-              $group: {
-                _id: null,
-                total: { $sum: 1 },
-                inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
-                outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } }
-              }
-            }
-          ],
-          // By feature
-          byFeature: [
-            {
-              $group: {
-                _id: '$feature',
-                images: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-                videos: { $sum: { $cond: [{ $eq: ['$type', 'video'] }, { $ifNull: ['$videosGenerated', 1] }, 0] } },
-                textSteps: { $sum: { $cond: [{ $eq: ['$type', 'branding'] }, 1, 0] } },
-                promptGenerations: { $sum: { $cond: [{ $eq: ['$type', 'prompt-generation'] }, 1, 0] } }
-              }
-            }
-          ]
-        }
-      }
-    ]).toArray();
+    const generationStats = await db
+      .collection('usage_records')
+      .aggregate([
+        {
+          $facet: {
+            // Images by model
+            imagesByModel: [
+              { $match: { imagesGenerated: { $exists: true, $gt: 0 } } },
+              {
+                $group: {
+                  _id: '$model',
+                  total: { $sum: '$imagesGenerated' },
+                  byResolution: {
+                    $push: {
+                      resolution: { $ifNull: ['$resolution', 'unknown'] },
+                      count: '$imagesGenerated',
+                    },
+                  },
+                },
+              },
+            ],
+            // Videos
+            videos: [
+              { $match: { type: 'video' } },
+              {
+                $group: {
+                  _id: null,
+                  total: { $sum: { $ifNull: ['$videosGenerated', 1] } },
+                  byModel: {
+                    $push: {
+                      model: { $ifNull: ['$model', 'unknown'] },
+                      count: { $ifNull: ['$videosGenerated', 1] },
+                    },
+                  },
+                },
+              },
+            ],
+            // Text tokens (branding)
+            textTokens: [
+              { $match: { type: 'branding' } },
+              {
+                $group: {
+                  _id: null,
+                  totalSteps: { $sum: 1 },
+                  totalPromptLength: { $sum: { $ifNull: ['$promptLength', 0] } },
+                  estimatedTokens: {
+                    $sum: { $ceil: { $divide: [{ $ifNull: ['$promptLength', 0] }, 4] } },
+                  },
+                  inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
+                  outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
+                  totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+                },
+              },
+            ],
+            // Prompt generations
+            promptGenerations: [
+              { $match: { type: 'prompt-generation' } },
+              {
+                $group: {
+                  _id: null,
+                  total: { $sum: 1 },
+                  inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
+                  outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
+                },
+              },
+            ],
+            // By feature
+            byFeature: [
+              {
+                $group: {
+                  _id: '$feature',
+                  images: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+                  videos: {
+                    $sum: {
+                      $cond: [{ $eq: ['$type', 'video'] }, { $ifNull: ['$videosGenerated', 1] }, 0],
+                    },
+                  },
+                  textSteps: { $sum: { $cond: [{ $eq: ['$type', 'branding'] }, 1, 0] } },
+                  promptGenerations: {
+                    $sum: { $cond: [{ $eq: ['$type', 'prompt-generation'] }, 1, 0] },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ])
+      .toArray();
 
     // Process aggregation results
     const stats = generationStats[0] || {};
@@ -420,7 +471,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
       }
       imagesByModel[model] = {
         total: item.total || 0,
-        byResolution
+        byResolution,
       };
     }
 
@@ -439,14 +490,14 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
       totalPromptLength: 0,
       inputTokens: 0,
       outputTokens: 0,
-      totalCost: 0
+      totalCost: 0,
     };
 
     // Process prompt generations
     const promptGenerations = stats.promptGenerations?.[0] || {
       total: 0,
       inputTokens: 0,
-      outputTokens: 0
+      outputTokens: 0,
     };
 
     // Process by feature
@@ -454,7 +505,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
       mockupmachine: { images: 0, videos: 0, textSteps: 0, promptGenerations: 0 },
       canvas: { images: 0, videos: 0, textSteps: 0, promptGenerations: 0 },
       brandingmachine: { images: 0, videos: 0, textSteps: 0, promptGenerations: 0 },
-      'prompt-generation': { total: 0, inputTokens: 0, outputTokens: 0 }
+      'prompt-generation': { total: 0, inputTokens: 0, outputTokens: 0 },
     };
     for (const item of stats.byFeature || []) {
       const feature = item._id || 'unknown';
@@ -462,14 +513,14 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
         byFeature['prompt-generation'] = {
           total: item.promptGenerations || 0,
           inputTokens: 0,
-          outputTokens: 0
+          outputTokens: 0,
         };
       } else if (byFeature[feature]) {
         byFeature[feature] = {
           images: item.images || 0,
           videos: item.videos || 0,
           textSteps: item.textSteps || 0,
-          promptGenerations: item.promptGenerations || 0
+          promptGenerations: item.promptGenerations || 0,
         };
       }
     }
@@ -482,18 +533,18 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
     const globalRevenue = await prisma.transaction.groupBy({
       by: ['currency'],
       where: { status: 'completed' },
-      _sum: { amount: true }
+      _sum: { amount: true },
     });
 
-    const totalRevenueBRL = globalRevenue.find(r => r.currency === 'BRL')?._sum.amount || 0;
-    const totalRevenueUSD = globalRevenue.find(r => r.currency === 'USD')?._sum.amount || 0;
+    const totalRevenueBRL = globalRevenue.find((r) => r.currency === 'BRL')?._sum.amount || 0;
+    const totalRevenueUSD = globalRevenue.find((r) => r.currency === 'USD')?._sum.amount || 0;
 
     // Aggregate revenue time series (transactions by date)
     const revenueByDate = await prisma.transaction.groupBy({
       by: ['createdAt', 'currency'],
       where: { status: 'completed' },
       _sum: { amount: true },
-      orderBy: { createdAt: 'asc' }
+      orderBy: { createdAt: 'asc' },
     });
 
     // Process revenue time series - group by date and sum BRL + USD (converted to cents)
@@ -514,7 +565,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
     const sortedRevenueDates = Object.keys(revenueByDateMap).sort();
     let cumulativeBRL = 0;
     let cumulativeUSD = 0;
-    const revenueTimeSeries = sortedRevenueDates.map(date => {
+    const revenueTimeSeries = sortedRevenueDates.map((date) => {
       cumulativeBRL += revenueByDateMap[date].brl;
       cumulativeUSD += revenueByDateMap[date].usd;
       return {
@@ -522,21 +573,24 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
         revenueBRL: revenueByDateMap[date].brl,
         revenueUSD: revenueByDateMap[date].usd,
         cumulativeBRL,
-        cumulativeUSD
+        cumulativeUSD,
       };
     });
 
     // Aggregate global API cost with correct Gemini pricing
-    const globalUsageAgg = await db.collection('usage_records').aggregate([
-      {
-        $group: {
-          _id: { model: '$model', resolution: '$resolution', type: '$type' },
-          totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-          totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
-          totalCost: { $sum: { $ifNull: ['$cost', 0] } }
-        }
-      }
-    ]).toArray();
+    const globalUsageAgg = await db
+      .collection('usage_records')
+      .aggregate([
+        {
+          $group: {
+            _id: { model: '$model', resolution: '$resolution', type: '$type' },
+            totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+            totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+            totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+          },
+        },
+      ])
+      .toArray();
 
     // Calculate total API cost using centralized pricing
     let totalApiCostUSD = 0;
@@ -567,22 +621,25 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
     }
 
     // Aggregate cost time series (usage_records by date with cost calculation)
-    const costByDateAgg = await db.collection('usage_records').aggregate([
-      {
-        $group: {
-          _id: {
-            date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-            model: '$model',
-            resolution: '$resolution',
-            type: '$type'
+    const costByDateAgg = await db
+      .collection('usage_records')
+      .aggregate([
+        {
+          $group: {
+            _id: {
+              date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+              model: '$model',
+              resolution: '$resolution',
+              type: '$type',
+            },
+            totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+            totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+            totalCost: { $sum: { $ifNull: ['$cost', 0] } },
           },
-          totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-          totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
-          totalCost: { $sum: { $ifNull: ['$cost', 0] } }
-        }
-      },
-      { $sort: { '_id.date': 1 } }
-    ]).toArray();
+        },
+        { $sort: { '_id.date': 1 } },
+      ])
+      .toArray();
 
     // Calculate cost per date and generations per date/model
     const costByDateMap: Record<string, number> = {};
@@ -602,7 +659,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
         if (!generationsByDateMap[date]) {
           generationsByDateMap[date] = {};
         }
-        generationsByDateMap[date][model] = (generationsByDateMap[date][model] || 0) + totalGenerations;
+        generationsByDateMap[date][model] =
+          (generationsByDateMap[date][model] || 0) + totalGenerations;
       }
 
       // 2. Calculate Cost Map
@@ -632,12 +690,12 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
     // Convert to cumulative array for costs
     const sortedDates = Object.keys(costByDateMap).sort();
     let cumulativeCost = 0;
-    const costTimeSeries = sortedDates.map(date => {
+    const costTimeSeries = sortedDates.map((date) => {
       cumulativeCost += costByDateMap[date];
       return {
         date,
         cost: costByDateMap[date],
-        cumulative: cumulativeCost
+        cumulative: cumulativeCost,
       };
     });
 
@@ -646,7 +704,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
       .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
       .map(([date, models]) => ({
         date,
-        ...models
+        ...models,
       }));
 
     return res.json({
@@ -668,7 +726,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
         imagesByModel,
         videos: {
           total: videos.total || 0,
-          byModel: videosByModel
+          byModel: videosByModel,
         },
         textTokens: {
           totalSteps: textTokens.totalSteps || 0,
@@ -676,13 +734,13 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
           totalPromptLength: textTokens.totalPromptLength || 0,
           inputTokens: textTokens.inputTokens || 0,
           outputTokens: textTokens.outputTokens || 0,
-          totalCost: textTokens.totalCost || 0
+          totalCost: textTokens.totalCost || 0,
         },
-        byFeature
+        byFeature,
       },
       revenueTimeSeries,
       costTimeSeries,
-      generationsTimeSeries
+      generationsTimeSeries,
     });
   } catch (error) {
     console.error('Failed to load admin users:', error);
@@ -696,7 +754,16 @@ router.get('/presets/public', async (_req: Request, res: Response) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets, brandingPresets, effectPresets, categories] = await Promise.all([
+    const [
+      mockupPresets,
+      anglePresets,
+      texturePresets,
+      ambiencePresets,
+      luminancePresets,
+      brandingPresets,
+      effectPresets,
+      categories,
+    ] = await Promise.all([
       db.collection('mockup_presets').find({}).toArray(),
       db.collection('angle_presets').find({}).toArray(),
       db.collection('texture_presets').find({}).toArray(),
@@ -711,7 +778,9 @@ router.get('/presets/public', async (_req: Request, res: Response) => {
     const categoryMap = new Map(categories.map((c: any) => [c._id.toString(), c.name]));
     const mockupPresetsWithCategory = mockupPresets.map((p: any) => ({
       ...p,
-      mockupCategoryName: p.mockupCategoryId ? categoryMap.get(p.mockupCategoryId.toString()) : undefined
+      mockupCategoryName: p.mockupCategoryId
+        ? categoryMap.get(p.mockupCategoryId.toString())
+        : undefined,
     }));
 
     return res.json({
@@ -735,7 +804,16 @@ router.get('/presets', validateAdmin, async (_req: Request, res: Response) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets, brandingPresets, effectPresets, categories] = await Promise.all([
+    const [
+      mockupPresets,
+      anglePresets,
+      texturePresets,
+      ambiencePresets,
+      luminancePresets,
+      brandingPresets,
+      effectPresets,
+      categories,
+    ] = await Promise.all([
       db.collection('mockup_presets').find({}).toArray(),
       db.collection('angle_presets').find({}).toArray(),
       db.collection('texture_presets').find({}).toArray(),
@@ -750,7 +828,9 @@ router.get('/presets', validateAdmin, async (_req: Request, res: Response) => {
     const categoryMap = new Map(categories.map((c: any) => [c._id.toString(), c.name]));
     const mockupPresetsWithCategory = mockupPresets.map((p: any) => ({
       ...p,
-      mockupCategoryName: p.mockupCategoryId ? categoryMap.get(p.mockupCategoryId.toString()) : undefined
+      mockupCategoryName: p.mockupCategoryId
+        ? categoryMap.get(p.mockupCategoryId.toString())
+        : undefined,
     }));
 
     return res.json({
@@ -776,7 +856,9 @@ router.get('/presets/mockup/:id', validateAdmin, async (req: Request, res: Respo
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('mockup_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
+    const preset = await db
+      .collection('mockup_presets')
+      .findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -791,7 +873,17 @@ router.get('/presets/mockup/:id', validateAdmin, async (req: Request, res: Respo
 
 router.post('/presets/mockup', validateAdmin, async (req: Request, res: Response) => {
   try {
-    const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, mockupCategoryId } = req.body;
+    const {
+      id,
+      name,
+      description,
+      prompt,
+      referenceImageUrl,
+      aspectRatio,
+      model,
+      tags,
+      mockupCategoryId,
+    } = req.body;
 
     if (!isSafeId(id)) {
       return res.status(400).json({ error: 'Invalid preset ID format' });
@@ -804,11 +896,14 @@ router.post('/presets/mockup', validateAdmin, async (req: Request, res: Response
       return res.status(400).json({ error: 'Missing required fields' });
     }
     if (!isValidAspectRatio(arVal)) {
-      return res.status(400).json({ error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
+      return res
+        .status(400)
+        .json({ error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
     }
-    const refUrl = referenceImageUrl != null ? (ensureString(referenceImageUrl, 2000) ?? '') : '';
+    const refUrl = referenceImageUrl != null ? ensureString(referenceImageUrl, 2000) ?? '' : '';
     const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
-    const mcat = mockupCategoryId != null && isValidObjectId(mockupCategoryId) ? mockupCategoryId : undefined;
+    const mcat =
+      mockupCategoryId != null && isValidObjectId(mockupCategoryId) ? mockupCategoryId : undefined;
 
     await connectToMongoDB();
     const db = getDb();
@@ -915,23 +1010,37 @@ router.post('/presets/mockup/batch', validateAdmin, async (req: Request, res: Re
       seenIds.add(preset.id);
 
       if (!isValidAspectRatio(preset.aspectRatio)) {
-        errors.push({ index, id: preset.id, error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
+        errors.push({
+          index,
+          id: preset.id,
+          error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}`,
+        });
         continue;
       }
 
       // Validate model if provided
       if (preset.model && !validModels.includes(preset.model)) {
-        errors.push({ index, id: preset.id, error: `Invalid model. Must be one of: ${validModels.join(', ')}` });
+        errors.push({
+          index,
+          id: preset.id,
+          error: `Invalid model. Must be one of: ${validModels.join(', ')}`,
+        });
         continue;
       }
 
-      const mcat = preset.mockupCategoryId != null && isValidObjectId(preset.mockupCategoryId) ? preset.mockupCategoryId : undefined;
+      const mcat =
+        preset.mockupCategoryId != null && isValidObjectId(preset.mockupCategoryId)
+          ? preset.mockupCategoryId
+          : undefined;
       validPresets.push({
         id: preset.id,
         name: preset.name,
         description: preset.description,
         prompt: preset.prompt,
-        referenceImageUrl: typeof preset.referenceImageUrl === 'string' ? preset.referenceImageUrl.substring(0, 2000) : '',
+        referenceImageUrl:
+          typeof preset.referenceImageUrl === 'string'
+            ? preset.referenceImageUrl.substring(0, 2000)
+            : '',
         aspectRatio: preset.aspectRatio,
         model: preset.model || undefined,
         tags: normalizeTags(preset.tags),
@@ -943,12 +1052,15 @@ router.post('/presets/mockup/batch', validateAdmin, async (req: Request, res: Re
 
     // Check for existing IDs in database
     if (validPresets.length > 0) {
-      const idsToCheck = validPresets.map(p => p.id);
-      const existingPresets = await db.collection('mockup_presets').find({
-        id: { $in: idsToCheck }
-      }).toArray();
+      const idsToCheck = validPresets.map((p) => p.id);
+      const existingPresets = await db
+        .collection('mockup_presets')
+        .find({
+          id: { $in: idsToCheck },
+        })
+        .toArray();
 
-      const existingIds = new Set(existingPresets.map(p => p.id));
+      const existingIds = new Set(existingPresets.map((p) => p.id));
 
       // Remove presets with existing IDs from validPresets and add to errors
       const validPresetsFiltered: any[] = [];
@@ -957,7 +1069,11 @@ router.post('/presets/mockup/batch', validateAdmin, async (req: Request, res: Re
         const originalIndex = presets.findIndex((p: any) => p.id === preset.id) + 1;
 
         if (existingIds.has(preset.id)) {
-          errors.push({ index: originalIndex, id: preset.id, error: 'ID already exists in database' });
+          errors.push({
+            index: originalIndex,
+            id: preset.id,
+            error: 'ID already exists in database',
+          });
         } else {
           validPresetsFiltered.push(preset);
         }
@@ -974,7 +1090,9 @@ router.post('/presets/mockup/batch', validateAdmin, async (req: Request, res: Re
             // Index might already exist, ignore
           }
 
-          const result = await db.collection('mockup_presets').insertMany(validPresetsFiltered, { ordered: false });
+          const result = await db
+            .collection('mockup_presets')
+            .insertMany(validPresetsFiltered, { ordered: false });
           created = result.insertedCount;
         } catch (error: any) {
           // Handle partial insertions
@@ -986,7 +1104,11 @@ router.post('/presets/mockup/batch', validateAdmin, async (req: Request, res: Re
               for (const writeError of error.writeErrors) {
                 const failedId = validPresetsFiltered[writeError.index]?.id;
                 const originalIndex = presets.findIndex((p: any) => p.id === failedId) + 1;
-                errors.push({ index: originalIndex, id: failedId, error: 'ID already exists in database' });
+                errors.push({
+                  index: originalIndex,
+                  id: failedId,
+                  error: 'ID already exists in database',
+                });
               }
             }
           } else {
@@ -1011,7 +1133,9 @@ router.post('/presets/mockup/batch', validateAdmin, async (req: Request, res: Re
     }
   } catch (error: any) {
     console.error('Failed to create mockup presets batch:', error);
-    return res.status(500).json({ error: 'Failed to create presets batch', details: error.message });
+    return res
+      .status(500)
+      .json({ error: 'Failed to create presets batch', details: error.message });
   }
 });
 
@@ -1025,7 +1149,16 @@ router.put('/presets/mockup/:id', validateAdmin, async (req: Request, res: Respo
     await connectToMongoDB();
     const db = getDb();
 
-    const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags, mockupCategoryId } = req.body;
+    const {
+      name,
+      description,
+      prompt,
+      referenceImageUrl,
+      aspectRatio,
+      model,
+      tags,
+      mockupCategoryId,
+    } = req.body;
 
     const nameVal = ensureString(name, 500);
     const descVal = ensureString(description, 5000);
@@ -1035,11 +1168,14 @@ router.put('/presets/mockup/:id', validateAdmin, async (req: Request, res: Respo
       return res.status(400).json({ error: 'Missing required fields' });
     }
     if (!isValidAspectRatio(arVal)) {
-      return res.status(400).json({ error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
+      return res
+        .status(400)
+        .json({ error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
     }
-    const refUrl = referenceImageUrl != null ? (ensureString(referenceImageUrl, 2000) ?? '') : '';
+    const refUrl = referenceImageUrl != null ? ensureString(referenceImageUrl, 2000) ?? '' : '';
     const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
-    const mcat = mockupCategoryId != null && isValidObjectId(mockupCategoryId) ? mockupCategoryId : undefined;
+    const mcat =
+      mockupCategoryId != null && isValidObjectId(mockupCategoryId) ? mockupCategoryId : undefined;
 
     const update: any = {
       name: nameVal,
@@ -1056,11 +1192,13 @@ router.put('/presets/mockup/:id', validateAdmin, async (req: Request, res: Respo
       update.tags = normalizeTags(tags);
     }
 
-    const result = await db.collection('mockup_presets').findOneAndUpdate(
-      sanitizeMongoQuery({ id: req.params.id }),
-      { $set: update },
-      { returnDocument: 'after' }
-    );
+    const result = await db
+      .collection('mockup_presets')
+      .findOneAndUpdate(
+        sanitizeMongoQuery({ id: req.params.id }),
+        { $set: update },
+        { returnDocument: 'after' }
+      );
 
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1083,7 +1221,9 @@ router.delete('/presets/mockup/:id', validateAdmin, async (req: Request, res: Re
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('mockup_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
+    const result = await db
+      .collection('mockup_presets')
+      .deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1097,38 +1237,43 @@ router.delete('/presets/mockup/:id', validateAdmin, async (req: Request, res: Re
 });
 
 // Upload preset reference image to R2
-router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req: Request, res: Response) => {
-  try {
-    const presetId = req.params.id;
-    if (!isSafeId(presetId)) {
-      return res.status(400).json({ error: 'Invalid preset ID format' });
-    }
-    const { base64Image } = req.body;
+router.post(
+  '/presets/mockup/:id/upload-image',
+  validateAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const presetId = req.params.id;
+      if (!isSafeId(presetId)) {
+        return res.status(400).json({ error: 'Invalid preset ID format' });
+      }
+      const { base64Image } = req.body;
 
-    if (!base64Image) {
-      return res.status(400).json({ error: 'base64Image is required' });
-    }
+      if (!base64Image) {
+        return res.status(400).json({ error: 'base64Image is required' });
+      }
 
-    const r2Service = await import('../../src/services/r2Service.js');
+      const r2Service = await import('../../src/services/r2Service.js');
 
-    if (!r2Service.isR2Configured()) {
+      if (!r2Service.isR2Configured()) {
+        return res.status(500).json({
+          error: 'R2 storage is not configured',
+          details:
+            'R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL must be set.',
+        });
+      }
+
+      const imageUrl = await r2Service.uploadMockupPresetReference(base64Image, presetId);
+
+      return res.json({ url: imageUrl });
+    } catch (error: any) {
+      console.error('Failed to upload preset reference image:', error);
       return res.status(500).json({
-        error: 'R2 storage is not configured',
-        details: 'R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL must be set.'
+        error: 'Failed to upload image',
+        details: error.message || 'Unknown error',
       });
     }
-
-    const imageUrl = await r2Service.uploadMockupPresetReference(base64Image, presetId);
-
-    return res.json({ url: imageUrl });
-  } catch (error: any) {
-    console.error('Failed to upload preset reference image:', error);
-    return res.status(500).json({
-      error: 'Failed to upload image',
-      details: error.message || 'Unknown error'
-    });
   }
-});
+);
 
 // Angle Presets
 router.get('/presets/angle/:id', validateAdmin, async (req: Request, res: Response) => {
@@ -1138,7 +1283,9 @@ router.get('/presets/angle/:id', validateAdmin, async (req: Request, res: Respon
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('angle_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
+    const preset = await db
+      .collection('angle_presets')
+      .findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1232,11 +1379,13 @@ router.put('/presets/angle/:id', validateAdmin, async (req: Request, res: Respon
       update.tags = normalizeTags(tags);
     }
 
-    const result = await db.collection('angle_presets').findOneAndUpdate(
-      sanitizeMongoQuery({ id: req.params.id }),
-      { $set: update },
-      { returnDocument: 'after' }
-    );
+    const result = await db
+      .collection('angle_presets')
+      .findOneAndUpdate(
+        sanitizeMongoQuery({ id: req.params.id }),
+        { $set: update },
+        { returnDocument: 'after' }
+      );
 
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1259,7 +1408,9 @@ router.delete('/presets/angle/:id', validateAdmin, async (req: Request, res: Res
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('angle_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
+    const result = await db
+      .collection('angle_presets')
+      .deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1280,7 +1431,9 @@ router.get('/presets/texture/:id', validateAdmin, async (req: Request, res: Resp
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('texture_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
+    const preset = await db
+      .collection('texture_presets')
+      .findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1373,11 +1526,13 @@ router.put('/presets/texture/:id', validateAdmin, async (req: Request, res: Resp
       update.tags = normalizeTags(tags);
     }
 
-    const result = await db.collection('texture_presets').findOneAndUpdate(
-      sanitizeMongoQuery({ id: req.params.id }),
-      { $set: update },
-      { returnDocument: 'after' }
-    );
+    const result = await db
+      .collection('texture_presets')
+      .findOneAndUpdate(
+        sanitizeMongoQuery({ id: req.params.id }),
+        { $set: update },
+        { returnDocument: 'after' }
+      );
 
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1400,7 +1555,9 @@ router.delete('/presets/texture/:id', validateAdmin, async (req: Request, res: R
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('texture_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
+    const result = await db
+      .collection('texture_presets')
+      .deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1421,7 +1578,9 @@ router.get('/presets/ambience/:id', validateAdmin, async (req: Request, res: Res
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('ambience_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
+    const preset = await db
+      .collection('ambience_presets')
+      .findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1514,11 +1673,13 @@ router.put('/presets/ambience/:id', validateAdmin, async (req: Request, res: Res
       update.tags = normalizeTags(tags);
     }
 
-    const result = await db.collection('ambience_presets').findOneAndUpdate(
-      sanitizeMongoQuery({ id: req.params.id }),
-      { $set: update },
-      { returnDocument: 'after' }
-    );
+    const result = await db
+      .collection('ambience_presets')
+      .findOneAndUpdate(
+        sanitizeMongoQuery({ id: req.params.id }),
+        { $set: update },
+        { returnDocument: 'after' }
+      );
 
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1541,7 +1702,9 @@ router.delete('/presets/ambience/:id', validateAdmin, async (req: Request, res: 
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('ambience_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
+    const result = await db
+      .collection('ambience_presets')
+      .deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1562,7 +1725,9 @@ router.get('/presets/luminance/:id', validateAdmin, async (req: Request, res: Re
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('luminance_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
+    const preset = await db
+      .collection('luminance_presets')
+      .findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1653,11 +1818,13 @@ router.put('/presets/luminance/:id', validateAdmin, async (req: Request, res: Re
       update.tags = normalizeTags(tags);
     }
 
-    const result = await db.collection('luminance_presets').findOneAndUpdate(
-      sanitizeMongoQuery({ id: req.params.id }),
-      { $set: update },
-      { returnDocument: 'after' }
-    );
+    const result = await db
+      .collection('luminance_presets')
+      .findOneAndUpdate(
+        sanitizeMongoQuery({ id: req.params.id }),
+        { $set: update },
+        { returnDocument: 'after' }
+      );
 
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1678,7 +1845,9 @@ router.delete('/presets/luminance/:id', validateAdmin, async (req: Request, res:
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('luminance_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
+    const result = await db
+      .collection('luminance_presets')
+      .deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1700,7 +1869,9 @@ router.delete('/community-presets/:id', validateAdmin, async (req: Request, res:
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('community_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
+    const result = await db
+      .collection('community_presets')
+      .deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Community preset not found' });
@@ -1724,16 +1895,19 @@ router.put('/community-presets/:id/approve', validateAdmin, async (req: Request,
     const ab = ensureOptionalBoolean(req.body.isApproved);
     const isApprovedVal = ab === undefined ? true : ab;
 
-    const result = await db.collection('community_presets').updateOne(
-      sanitizeMongoQuery({ id: req.params.id }),
-      { $set: { isApproved: isApprovedVal, updatedAt: new Date().toISOString() } }
-    );
+    const result = await db
+      .collection('community_presets')
+      .updateOne(sanitizeMongoQuery({ id: req.params.id }), {
+        $set: { isApproved: isApprovedVal, updatedAt: new Date().toISOString() },
+      });
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Community preset not found' });
     }
 
-    const updated = await db.collection('community_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
+    const updated = await db
+      .collection('community_presets')
+      .findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     return res.json(updated);
   } catch (error) {
@@ -1787,7 +1961,10 @@ router.post('/products', validateAdmin, async (req: Request, res: Response) => {
         description,
         credits: credits ? parseInt(credits.toString(), 10) : 0,
         priceBRL: priceBRL ? parseFloat(priceBRL.toString()) : 0,
-        priceUSD: (priceUSD !== null && priceUSD !== undefined && priceUSD !== '') ? parseFloat(priceUSD.toString()) : null,
+        priceUSD:
+          priceUSD !== null && priceUSD !== undefined && priceUSD !== ''
+            ? parseFloat(priceUSD.toString())
+            : null,
         stripeProductId,
         abacateProductId,
         abacateBillId,
@@ -1833,18 +2010,56 @@ router.put('/products/:id', validateAdmin, async (req: Request, res: Response) =
     } = req.body;
 
     const data: Record<string, unknown> = {};
-    if (productId !== undefined) { const v = ensureString(productId, 200); if (v === null) return res.status(400).json({ error: 'Invalid productId' }); data.productId = v; }
-    if (type !== undefined) { const v = ensureString(type, 100); if (v === null) return res.status(400).json({ error: 'Invalid type' }); data.type = v; }
-    if (name !== undefined) { const v = ensureString(name, 500); if (v === null) return res.status(400).json({ error: 'Invalid name' }); data.name = v; }
-    if (description !== undefined) { const v = ensureString(description, 2000); if (v === null) return res.status(400).json({ error: 'Invalid description' }); data.description = v; }
+    if (productId !== undefined) {
+      const v = ensureString(productId, 200);
+      if (v === null) return res.status(400).json({ error: 'Invalid productId' });
+      data.productId = v;
+    }
+    if (type !== undefined) {
+      const v = ensureString(type, 100);
+      if (v === null) return res.status(400).json({ error: 'Invalid type' });
+      data.type = v;
+    }
+    if (name !== undefined) {
+      const v = ensureString(name, 500);
+      if (v === null) return res.status(400).json({ error: 'Invalid name' });
+      data.name = v;
+    }
+    if (description !== undefined) {
+      const v = ensureString(description, 2000);
+      if (v === null) return res.status(400).json({ error: 'Invalid description' });
+      data.description = v;
+    }
     if (credits !== undefined) data.credits = parseInt(String(credits), 10);
     if (priceBRL !== undefined) data.priceBRL = parseFloat(String(priceBRL));
-    if (priceUSD === null) data.priceUSD = null; else if (priceUSD !== undefined && priceUSD !== '') data.priceUSD = parseFloat(String(priceUSD));
-    if (stripeProductId !== undefined) { const v = ensureString(stripeProductId, 500); if (v === null) return res.status(400).json({ error: 'Invalid stripeProductId' }); data.stripeProductId = v; }
-    if (abacateProductId !== undefined) { const v = ensureString(abacateProductId, 500); if (v === null) return res.status(400).json({ error: 'Invalid abacateProductId' }); data.abacateProductId = v; }
-    if (abacateBillId !== undefined) { const v = ensureString(abacateBillId, 500); if (v === null) return res.status(400).json({ error: 'Invalid abacateBillId' }); data.abacateBillId = v; }
-    if (paymentLinkBRL !== undefined) { const v = ensureString(paymentLinkBRL, 1000); if (v === null) return res.status(400).json({ error: 'Invalid paymentLinkBRL' }); data.paymentLinkBRL = v; }
-    if (paymentLinkUSD !== undefined) { const v = ensureString(paymentLinkUSD, 1000); if (v === null) return res.status(400).json({ error: 'Invalid paymentLinkUSD' }); data.paymentLinkUSD = v; }
+    if (priceUSD === null) data.priceUSD = null;
+    else if (priceUSD !== undefined && priceUSD !== '')
+      data.priceUSD = parseFloat(String(priceUSD));
+    if (stripeProductId !== undefined) {
+      const v = ensureString(stripeProductId, 500);
+      if (v === null) return res.status(400).json({ error: 'Invalid stripeProductId' });
+      data.stripeProductId = v;
+    }
+    if (abacateProductId !== undefined) {
+      const v = ensureString(abacateProductId, 500);
+      if (v === null) return res.status(400).json({ error: 'Invalid abacateProductId' });
+      data.abacateProductId = v;
+    }
+    if (abacateBillId !== undefined) {
+      const v = ensureString(abacateBillId, 500);
+      if (v === null) return res.status(400).json({ error: 'Invalid abacateBillId' });
+      data.abacateBillId = v;
+    }
+    if (paymentLinkBRL !== undefined) {
+      const v = ensureString(paymentLinkBRL, 1000);
+      if (v === null) return res.status(400).json({ error: 'Invalid paymentLinkBRL' });
+      data.paymentLinkBRL = v;
+    }
+    if (paymentLinkUSD !== undefined) {
+      const v = ensureString(paymentLinkUSD, 1000);
+      if (v === null) return res.status(400).json({ error: 'Invalid paymentLinkUSD' });
+      data.paymentLinkUSD = v;
+    }
     if (metadata !== undefined) data.metadata = metadata;
     if (isActive !== undefined) data.isActive = isActive;
     if (displayOrder !== undefined) data.displayOrder = parseInt(String(displayOrder), 10);
@@ -1914,7 +2129,7 @@ router.post('/presets/branding', validateAdmin, async (req: Request, res: Respon
     // Create index if needed
     try {
       await db.collection('branding_presets').createIndex({ id: 1 }, { unique: true });
-    } catch (e) { }
+    } catch (e) {}
 
     return res.status(201).json(preset);
   } catch (error: any) {
@@ -1948,11 +2163,13 @@ router.put('/presets/branding/:id', validateAdmin, async (req: Request, res: Res
     if (m != null) updateData.model = m;
     if (tags !== undefined) updateData.tags = normalizeTags(tags);
 
-    const result = await db.collection('branding_presets').findOneAndUpdate(
-      sanitizeMongoQuery({ id: req.params.id }),
-      { $set: updateData },
-      { returnDocument: 'after' }
-    );
+    const result = await db
+      .collection('branding_presets')
+      .findOneAndUpdate(
+        sanitizeMongoQuery({ id: req.params.id }),
+        { $set: updateData },
+        { returnDocument: 'after' }
+      );
 
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1971,7 +2188,9 @@ router.delete('/presets/branding/:id', validateAdmin, async (req: Request, res: 
     }
     await connectToMongoDB();
     const db = getDb();
-    const result = await db.collection('branding_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
+    const result = await db
+      .collection('branding_presets')
+      .deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -2021,7 +2240,7 @@ router.post('/presets/effect', validateAdmin, async (req: Request, res: Response
     // Create index if needed
     try {
       await db.collection('effect_presets').createIndex({ id: 1 }, { unique: true });
-    } catch (e) { }
+    } catch (e) {}
 
     return res.status(201).json(preset);
   } catch (error: any) {
@@ -2055,11 +2274,13 @@ router.put('/presets/effect/:id', validateAdmin, async (req: Request, res: Respo
     if (m != null) updateData.model = m;
     if (tags !== undefined) updateData.tags = normalizeTags(tags);
 
-    const result = await db.collection('effect_presets').findOneAndUpdate(
-      sanitizeMongoQuery({ id: req.params.id }),
-      { $set: updateData },
-      { returnDocument: 'after' }
-    );
+    const result = await db
+      .collection('effect_presets')
+      .findOneAndUpdate(
+        sanitizeMongoQuery({ id: req.params.id }),
+        { $set: updateData },
+        { returnDocument: 'after' }
+      );
 
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -2078,7 +2299,9 @@ router.delete('/presets/effect/:id', validateAdmin, async (req: Request, res: Re
     }
     await connectToMongoDB();
     const db = getDb();
-    const result = await db.collection('effect_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
+    const result = await db
+      .collection('effect_presets')
+      .deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -2094,59 +2317,65 @@ router.delete('/presets/effect/:id', validateAdmin, async (req: Request, res: Re
  * GET /api/admin/users/:id/history
  * Get detailed usage history for a specific user
  */
-router.get('/users/:id/history', adminUsersLimiter, validateAdmin, async (req: AuthRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    if (!isValidObjectId(id)) {
-      return res.status(400).json({ error: 'Invalid user ID format' });
-    }
-    const limitRaw = parseInt(String(req.query.limit || 50), 10);
-    const limit = isValidPositiveInt(limitRaw, 1, 100) ? limitRaw : 50;
-    const offsetRaw = parseInt(String(req.query.offset || 0), 10);
-    const offset = Number.isInteger(offsetRaw) && offsetRaw >= 0 ? Math.min(offsetRaw, 10000) : 0;
-
-    await connectToMongoDB();
-    const db = getDb();
-
-    const [records, total] = await Promise.all([
-      db.collection('usage_records')
-        .find(sanitizeMongoQuery({ userId: id }))
-        .sort({ timestamp: -1 })
-        .skip(offset)
-        .limit(limit)
-        .toArray(),
-      db.collection('usage_records').countDocuments(sanitizeMongoQuery({ userId: id }))
-    ]);
-
-    const formattedRecords = records.map((record: any) => ({
-      id: record._id?.toString(),
-      timestamp: record.timestamp,
-      feature: record.feature || 'mockupmachine',
-      creditsDeducted: record.creditsDeducted || 0,
-      model: record.model,
-      resolution: record.resolution,
-      imagesGenerated: record.imagesGenerated || 0,
-      inputTokens: record.inputTokens || 0,
-      outputTokens: record.outputTokens || 0,
-      cost: record.cost || 0,
-      type: record.type,
-      imageUrl: record.imageUrl,
-    }));
-
-    res.json({
-      records: formattedRecords,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total
+router.get(
+  '/users/:id/history',
+  adminUsersLimiter,
+  validateAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid user ID format' });
       }
-    });
-  } catch (error: any) {
-    console.error('Error fetching user history for admin:', error);
-    res.status(500).json({ error: 'Failed to fetch user history' });
+      const limitRaw = parseInt(String(req.query.limit || 50), 10);
+      const limit = isValidPositiveInt(limitRaw, 1, 100) ? limitRaw : 50;
+      const offsetRaw = parseInt(String(req.query.offset || 0), 10);
+      const offset = Number.isInteger(offsetRaw) && offsetRaw >= 0 ? Math.min(offsetRaw, 10000) : 0;
+
+      await connectToMongoDB();
+      const db = getDb();
+
+      const [records, total] = await Promise.all([
+        db
+          .collection('usage_records')
+          .find(sanitizeMongoQuery({ userId: id }))
+          .sort({ timestamp: -1 })
+          .skip(offset)
+          .limit(limit)
+          .toArray(),
+        db.collection('usage_records').countDocuments(sanitizeMongoQuery({ userId: id })),
+      ]);
+
+      const formattedRecords = records.map((record: any) => ({
+        id: record._id?.toString(),
+        timestamp: record.timestamp,
+        feature: record.feature || 'mockupmachine',
+        creditsDeducted: record.creditsDeducted || 0,
+        model: record.model,
+        resolution: record.resolution,
+        imagesGenerated: record.imagesGenerated || 0,
+        inputTokens: record.inputTokens || 0,
+        outputTokens: record.outputTokens || 0,
+        cost: record.cost || 0,
+        type: record.type,
+        imageUrl: record.imageUrl,
+      }));
+
+      res.json({
+        records: formattedRecords,
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + limit < total,
+        },
+      });
+    } catch (error: any) {
+      console.error('Error fetching user history for admin:', error);
+      res.status(500).json({ error: 'Failed to fetch user history' });
+    }
   }
-});
+);
 
 /**
  * GET /api/admin/feedback/stats
@@ -2183,196 +2412,329 @@ router.get('/feedback/stats', validateAdmin, async (req: AuthRequest, res: Respo
       recentDownvotes,
     ] = await Promise.all([
       // 1. Totals per feature × rating
-      col.aggregate([
-        { $match: baseMatch },
-        { $group: { _id: { feature: '$feature', rating: '$rating' }, count: { $sum: 1 } } },
-        { $group: {
-          _id: '$_id.feature',
-          up: { $sum: { $cond: [{ $eq: ['$_id.rating', 'up'] }, '$count', 0] } },
-          down: { $sum: { $cond: [{ $eq: ['$_id.rating', 'down'] }, '$count', 0] } },
-        }},
-        { $project: {
-          feature: '$_id', up: 1, down: 1, _id: 0,
-          total: { $add: ['$up', '$down'] },
-          approvalRate: { $cond: [{ $gt: [{ $add: ['$up', '$down'] }, 0] },
-            { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, 0] },
-        }},
-        { $sort: { total: -1 } },
-      ]).toArray(),
+      col
+        .aggregate([
+          { $match: baseMatch },
+          { $group: { _id: { feature: '$feature', rating: '$rating' }, count: { $sum: 1 } } },
+          {
+            $group: {
+              _id: '$_id.feature',
+              up: { $sum: { $cond: [{ $eq: ['$_id.rating', 'up'] }, '$count', 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$_id.rating', 'down'] }, '$count', 0] } },
+            },
+          },
+          {
+            $project: {
+              feature: '$_id',
+              up: 1,
+              down: 1,
+              _id: 0,
+              total: { $add: ['$up', '$down'] },
+              approvalRate: {
+                $cond: [
+                  { $gt: [{ $add: ['$up', '$down'] }, 0] },
+                  { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] },
+                  0,
+                ],
+              },
+            },
+          },
+          { $sort: { total: -1 } },
+        ])
+        .toArray(),
 
       // 3. Time series daily
-      col.aggregate([
-        { $match: baseMatch },
-        { $group: {
-          _id: { date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, rating: '$rating' },
-          count: { $sum: 1 },
-        }},
-        { $group: {
-          _id: '$_id.date',
-          up: { $sum: { $cond: [{ $eq: ['$_id.rating', 'up'] }, '$count', 0] } },
-          down: { $sum: { $cond: [{ $eq: ['$_id.rating', 'down'] }, '$count', 0] } },
-        }},
-        { $project: { date: '$_id', up: 1, down: 1, _id: 0 } },
-        { $sort: { date: 1 } },
-      ]).toArray(),
+      col
+        .aggregate([
+          { $match: baseMatch },
+          {
+            $group: {
+              _id: {
+                date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                rating: '$rating',
+              },
+              count: { $sum: 1 },
+            },
+          },
+          {
+            $group: {
+              _id: '$_id.date',
+              up: { $sum: { $cond: [{ $eq: ['$_id.rating', 'up'] }, '$count', 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$_id.rating', 'down'] }, '$count', 0] } },
+            },
+          },
+          { $project: { date: '$_id', up: 1, down: 1, _id: 0 } },
+          { $sort: { date: 1 } },
+        ])
+        .toArray(),
 
       // 4. Top models by approval (min 5 ratings)
-      col.aggregate([
-        { $match: { ...baseMatch, 'context.model': { $exists: true, $ne: '' } } },
-        { $group: {
-          _id: '$context.model',
-          up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
-          down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
-        }},
-        { $project: {
-          model: '$_id', up: 1, down: 1, _id: 0,
-          total: { $add: ['$up', '$down'] },
-          approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 5] },
-            { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] },
-        }},
-        { $match: { approvalRate: { $ne: null } } },
-        { $sort: { approvalRate: -1 } },
-        { $limit: 10 },
-      ]).toArray(),
+      col
+        .aggregate([
+          { $match: { ...baseMatch, 'context.model': { $exists: true, $ne: '' } } },
+          {
+            $group: {
+              _id: '$context.model',
+              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+            },
+          },
+          {
+            $project: {
+              model: '$_id',
+              up: 1,
+              down: 1,
+              _id: 0,
+              total: { $add: ['$up', '$down'] },
+              approvalRate: {
+                $cond: [
+                  { $gte: [{ $add: ['$up', '$down'] }, 5] },
+                  { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] },
+                  null,
+                ],
+              },
+            },
+          },
+          { $match: { approvalRate: { $ne: null } } },
+          { $sort: { approvalRate: -1 } },
+          { $limit: 10 },
+        ])
+        .toArray(),
 
       // 5. Top design types by approval (min 5)
-      col.aggregate([
-        { $match: { ...baseMatch, 'context.designType': { $exists: true, $ne: '' } } },
-        { $group: {
-          _id: '$context.designType',
-          up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
-          down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
-        }},
-        { $project: {
-          designType: '$_id', up: 1, down: 1, _id: 0,
-          total: { $add: ['$up', '$down'] },
-          approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 5] },
-            { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] },
-        }},
-        { $match: { approvalRate: { $ne: null } } },
-        { $sort: { approvalRate: -1 } },
-        { $limit: 10 },
-      ]).toArray(),
+      col
+        .aggregate([
+          { $match: { ...baseMatch, 'context.designType': { $exists: true, $ne: '' } } },
+          {
+            $group: {
+              _id: '$context.designType',
+              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+            },
+          },
+          {
+            $project: {
+              designType: '$_id',
+              up: 1,
+              down: 1,
+              _id: 0,
+              total: { $add: ['$up', '$down'] },
+              approvalRate: {
+                $cond: [
+                  { $gte: [{ $add: ['$up', '$down'] }, 5] },
+                  { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] },
+                  null,
+                ],
+              },
+            },
+          },
+          { $match: { approvalRate: { $ne: null } } },
+          { $sort: { approvalRate: -1 } },
+          { $limit: 10 },
+        ])
+        .toArray(),
 
       // 6. Top vibes by approval (min 5)
-      col.aggregate([
-        { $match: { ...baseMatch, 'context.vibeId': { $exists: true, $ne: '' } } },
-        { $group: {
-          _id: '$context.vibeId',
-          up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
-          down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
-        }},
-        { $project: {
-          vibeId: '$_id', up: 1, down: 1, _id: 0,
-          total: { $add: ['$up', '$down'] },
-          approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 5] },
-            { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] },
-        }},
-        { $match: { approvalRate: { $ne: null } } },
-        { $sort: { approvalRate: -1 } },
-        { $limit: 10 },
-      ]).toArray(),
+      col
+        .aggregate([
+          { $match: { ...baseMatch, 'context.vibeId': { $exists: true, $ne: '' } } },
+          {
+            $group: {
+              _id: '$context.vibeId',
+              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+            },
+          },
+          {
+            $project: {
+              vibeId: '$_id',
+              up: 1,
+              down: 1,
+              _id: 0,
+              total: { $add: ['$up', '$down'] },
+              approvalRate: {
+                $cond: [
+                  { $gte: [{ $add: ['$up', '$down'] }, 5] },
+                  { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] },
+                  null,
+                ],
+              },
+            },
+          },
+          { $match: { approvalRate: { $ne: null } } },
+          { $sort: { approvalRate: -1 } },
+          { $limit: 10 },
+        ])
+        .toArray(),
 
       // 7. Top brand guidelines by approval
-      col.aggregate([
-        { $match: { ...baseMatch, 'context.brandGuidelineId': { $exists: true, $ne: '' } } },
-        { $group: {
-          _id: '$context.brandGuidelineId',
-          up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
-          down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
-        }},
-        { $project: { brandGuidelineId: '$_id', up: 1, down: 1, _id: 0, total: { $add: ['$up', '$down'] } } },
-        { $sort: { total: -1 } },
-        { $limit: 10 },
-      ]).toArray(),
+      col
+        .aggregate([
+          { $match: { ...baseMatch, 'context.brandGuidelineId': { $exists: true, $ne: '' } } },
+          {
+            $group: {
+              _id: '$context.brandGuidelineId',
+              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+            },
+          },
+          {
+            $project: {
+              brandGuidelineId: '$_id',
+              up: 1,
+              down: 1,
+              _id: 0,
+              total: { $add: ['$up', '$down'] },
+            },
+          },
+          { $sort: { total: -1 } },
+          { $limit: 10 },
+        ])
+        .toArray(),
 
       // 8. Tags most used (flatten branding/category/location)
-      col.aggregate([
-        { $match: baseMatch },
-        { $facet: {
-          branding: [
-            { $unwind: '$context.tags.branding' },
-            { $group: { _id: '$context.tags.branding', count: { $sum: 1 } } },
-            { $project: { tag: '$_id', category: { $literal: 'branding' }, count: 1, _id: 0 } },
-          ],
-          category: [
-            { $unwind: '$context.tags.category' },
-            { $group: { _id: '$context.tags.category', count: { $sum: 1 } } },
-            { $project: { tag: '$_id', category: { $literal: 'category' }, count: 1, _id: 0 } },
-          ],
-          location: [
-            { $unwind: '$context.tags.location' },
-            { $group: { _id: '$context.tags.location', count: { $sum: 1 } } },
-            { $project: { tag: '$_id', category: { $literal: 'location' }, count: 1, _id: 0 } },
-          ],
-        }},
-        { $project: { all: { $concatArrays: ['$branding', '$category', '$location'] } } },
-        { $unwind: '$all' },
-        { $replaceRoot: { newRoot: '$all' } },
-        { $sort: { count: -1 } },
-        { $limit: 20 },
-      ]).toArray(),
+      col
+        .aggregate([
+          { $match: baseMatch },
+          {
+            $facet: {
+              branding: [
+                { $unwind: '$context.tags.branding' },
+                { $group: { _id: '$context.tags.branding', count: { $sum: 1 } } },
+                { $project: { tag: '$_id', category: { $literal: 'branding' }, count: 1, _id: 0 } },
+              ],
+              category: [
+                { $unwind: '$context.tags.category' },
+                { $group: { _id: '$context.tags.category', count: { $sum: 1 } } },
+                { $project: { tag: '$_id', category: { $literal: 'category' }, count: 1, _id: 0 } },
+              ],
+              location: [
+                { $unwind: '$context.tags.location' },
+                { $group: { _id: '$context.tags.location', count: { $sum: 1 } } },
+                { $project: { tag: '$_id', category: { $literal: 'location' }, count: 1, _id: 0 } },
+              ],
+            },
+          },
+          { $project: { all: { $concatArrays: ['$branding', '$category', '$location'] } } },
+          { $unwind: '$all' },
+          { $replaceRoot: { newRoot: '$all' } },
+          { $sort: { count: -1 } },
+          { $limit: 20 },
+        ])
+        .toArray(),
 
       // 9. Tags most upvoted (ratio-based, min 3 ratings)
-      col.aggregate([
-        { $match: baseMatch },
-        { $facet: {
-          branding: [
-            { $unwind: '$context.tags.branding' },
-            { $group: {
-              _id: '$context.tags.branding',
-              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
-              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
-            }},
-            { $project: { tag: '$_id', category: { $literal: 'branding' }, up: 1, down: 1,
-              total: { $add: ['$up', '$down'] },
-              approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 3] },
-                { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] }, _id: 0 } },
-            { $match: { approvalRate: { $ne: null } } },
-          ],
-          category: [
-            { $unwind: '$context.tags.category' },
-            { $group: {
-              _id: '$context.tags.category',
-              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
-              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
-            }},
-            { $project: { tag: '$_id', category: { $literal: 'category' }, up: 1, down: 1,
-              total: { $add: ['$up', '$down'] },
-              approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 3] },
-                { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] }, _id: 0 } },
-            { $match: { approvalRate: { $ne: null } } },
-          ],
-          location: [
-            { $unwind: '$context.tags.location' },
-            { $group: {
-              _id: '$context.tags.location',
-              up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
-              down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
-            }},
-            { $project: { tag: '$_id', category: { $literal: 'location' }, up: 1, down: 1,
-              total: { $add: ['$up', '$down'] },
-              approvalRate: { $cond: [{ $gte: [{ $add: ['$up', '$down'] }, 3] },
-                { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] }, null] }, _id: 0 } },
-            { $match: { approvalRate: { $ne: null } } },
-          ],
-        }},
-        { $project: { all: { $concatArrays: ['$branding', '$category', '$location'] } } },
-        { $unwind: '$all' },
-        { $replaceRoot: { newRoot: '$all' } },
-        { $sort: { approvalRate: -1 } },
-        { $limit: 20 },
-      ]).toArray(),
+      col
+        .aggregate([
+          { $match: baseMatch },
+          {
+            $facet: {
+              branding: [
+                { $unwind: '$context.tags.branding' },
+                {
+                  $group: {
+                    _id: '$context.tags.branding',
+                    up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+                    down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+                  },
+                },
+                {
+                  $project: {
+                    tag: '$_id',
+                    category: { $literal: 'branding' },
+                    up: 1,
+                    down: 1,
+                    total: { $add: ['$up', '$down'] },
+                    approvalRate: {
+                      $cond: [
+                        { $gte: [{ $add: ['$up', '$down'] }, 3] },
+                        { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] },
+                        null,
+                      ],
+                    },
+                    _id: 0,
+                  },
+                },
+                { $match: { approvalRate: { $ne: null } } },
+              ],
+              category: [
+                { $unwind: '$context.tags.category' },
+                {
+                  $group: {
+                    _id: '$context.tags.category',
+                    up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+                    down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+                  },
+                },
+                {
+                  $project: {
+                    tag: '$_id',
+                    category: { $literal: 'category' },
+                    up: 1,
+                    down: 1,
+                    total: { $add: ['$up', '$down'] },
+                    approvalRate: {
+                      $cond: [
+                        { $gte: [{ $add: ['$up', '$down'] }, 3] },
+                        { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] },
+                        null,
+                      ],
+                    },
+                    _id: 0,
+                  },
+                },
+                { $match: { approvalRate: { $ne: null } } },
+              ],
+              location: [
+                { $unwind: '$context.tags.location' },
+                {
+                  $group: {
+                    _id: '$context.tags.location',
+                    up: { $sum: { $cond: [{ $eq: ['$rating', 'up'] }, 1, 0] } },
+                    down: { $sum: { $cond: [{ $eq: ['$rating', 'down'] }, 1, 0] } },
+                  },
+                },
+                {
+                  $project: {
+                    tag: '$_id',
+                    category: { $literal: 'location' },
+                    up: 1,
+                    down: 1,
+                    total: { $add: ['$up', '$down'] },
+                    approvalRate: {
+                      $cond: [
+                        { $gte: [{ $add: ['$up', '$down'] }, 3] },
+                        { $multiply: [{ $divide: ['$up', { $add: ['$up', '$down'] }] }, 100] },
+                        null,
+                      ],
+                    },
+                    _id: 0,
+                  },
+                },
+                { $match: { approvalRate: { $ne: null } } },
+              ],
+            },
+          },
+          { $project: { all: { $concatArrays: ['$branding', '$category', '$location'] } } },
+          { $unwind: '$all' },
+          { $replaceRoot: { newRoot: '$all' } },
+          { $sort: { approvalRate: -1 } },
+          { $limit: 20 },
+        ])
+        .toArray(),
 
       // 10. Vectorized count proxy (rating=up docs — Pinecone upsert is fire-and-forget)
       col.countDocuments({ ...baseMatch, rating: 'up' }),
 
       // 11. Recent thumbs-down sample (last 20)
-      col.find({ ...baseMatch, rating: 'down' })
+      col
+        .find({ ...baseMatch, rating: 'down' })
         .sort({ createdAt: -1 })
         .limit(20)
         .project({
-          generationId: 1, feature: 1, createdAt: 1,
+          generationId: 1,
+          feature: 1,
+          createdAt: 1,
           prompt: '$context.prompt',
           tags: '$context.tags',
           designType: '$context.designType',
@@ -2492,11 +2854,21 @@ router.get('/references', validateAdmin, async (req: Request, res: Response) => 
     const filter: any = { category: 'reference', isAdminCurated: true };
 
     // Dimension filters
-    const dimensionKeys = ['niche', 'aesthetic', 'vibe', 'lighting', 'texture', 'material', 'angle', 'color_mood', 'mockup_type'];
+    const dimensionKeys = [
+      'niche',
+      'aesthetic',
+      'vibe',
+      'lighting',
+      'texture',
+      'material',
+      'angle',
+      'color_mood',
+      'mockup_type',
+    ];
     for (const key of dimensionKeys) {
       const val = req.query[key];
       if (val && typeof val === 'string') {
-        filter[`dimensions.${key}`] = { $in: val.split(',').map(v => v.trim()) };
+        filter[`dimensions.${key}`] = { $in: val.split(',').map((v) => v.trim()) };
       }
     }
 
@@ -2508,7 +2880,13 @@ router.get('/references', validateAdmin, async (req: Request, res: Response) => 
     }
 
     const [refs, total] = await Promise.all([
-      db.collection('community_presets').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+      db
+        .collection('community_presets')
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
       db.collection('community_presets').countDocuments(filter),
     ]);
 
@@ -2527,12 +2905,18 @@ router.delete('/references/:id', validateAdmin, async (req: Request, res: Respon
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('community_presets').deleteOne({ id: req.params.id, category: 'reference' });
+    const result = await db
+      .collection('community_presets')
+      .deleteOne({ id: req.params.id, category: 'reference' });
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Reference not found' });
     }
 
-    try { await vectorService.delete(req.params.id); } catch { /* vector may not exist */ }
+    try {
+      await vectorService.delete(req.params.id);
+    } catch {
+      /* vector may not exist */
+    }
 
     return res.json({ success: true });
   } catch (error: any) {
@@ -2549,22 +2933,24 @@ router.put('/references/:id', validateAdmin, async (req: Request, res: Response)
     await connectToMongoDB();
     const db = getDb();
 
-    const existing = await db.collection('community_presets').findOne({ id: req.params.id, category: 'reference' });
+    const existing = await db
+      .collection('community_presets')
+      .findOne({ id: req.params.id, category: 'reference' });
     if (!existing) {
       return res.status(404).json({ error: 'Reference not found' });
     }
 
     const updates: any = { updatedAt: new Date() };
     if (req.body.name != null) updates.name = ensureString(req.body.name, 500);
-    if (req.body.description != null) updates.description = ensureString(req.body.description, 5000);
+    if (req.body.description != null)
+      updates.description = ensureString(req.body.description, 5000);
     if (req.body.prompt != null) updates.prompt = ensureString(req.body.prompt, 50000);
     if (req.body.dimensions != null) updates.dimensions = req.body.dimensions;
     if (req.body.tags != null) updates.tags = normalizeTags(req.body.tags);
 
-    await db.collection('community_presets').updateOne(
-      { id: req.params.id, category: 'reference' },
-      { $set: updates }
-    );
+    await db
+      .collection('community_presets')
+      .updateOne({ id: req.params.id, category: 'reference' }, { $set: updates });
 
     return res.json({ success: true, updated: { ...existing, ...updates } });
   } catch (error: any) {
@@ -2579,50 +2965,102 @@ router.get('/references/stats', validateAdmin, async (req: Request, res: Respons
     const db = getDb();
 
     const [totalRefs, byDimension, recentlyAdded, ingestCostAgg] = await Promise.all([
-      db.collection('community_presets').countDocuments({ category: 'reference', isAdminCurated: true }),
+      db
+        .collection('community_presets')
+        .countDocuments({ category: 'reference', isAdminCurated: true }),
 
       // Aggregate top values per dimension
-      db.collection('community_presets').aggregate([
-        { $match: { category: 'reference', isAdminCurated: true } },
-        {
-          $facet: {
-            niche: [{ $unwind: { path: '$dimensions.niche', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.niche', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
-            aesthetic: [{ $unwind: { path: '$dimensions.aesthetic', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.aesthetic', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
-            vibe: [{ $unwind: { path: '$dimensions.vibe', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.vibe', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
-            lighting: [{ $unwind: { path: '$dimensions.lighting', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.lighting', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
-            mockup_type: [{ $unwind: { path: '$dimensions.mockup_type', preserveNullAndEmptyArrays: false } }, { $group: { _id: '$dimensions.mockup_type', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }],
+      db
+        .collection('community_presets')
+        .aggregate([
+          { $match: { category: 'reference', isAdminCurated: true } },
+          {
+            $facet: {
+              niche: [
+                { $unwind: { path: '$dimensions.niche', preserveNullAndEmptyArrays: false } },
+                { $group: { _id: '$dimensions.niche', count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 10 },
+              ],
+              aesthetic: [
+                { $unwind: { path: '$dimensions.aesthetic', preserveNullAndEmptyArrays: false } },
+                { $group: { _id: '$dimensions.aesthetic', count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 10 },
+              ],
+              vibe: [
+                { $unwind: { path: '$dimensions.vibe', preserveNullAndEmptyArrays: false } },
+                { $group: { _id: '$dimensions.vibe', count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 10 },
+              ],
+              lighting: [
+                { $unwind: { path: '$dimensions.lighting', preserveNullAndEmptyArrays: false } },
+                { $group: { _id: '$dimensions.lighting', count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 10 },
+              ],
+              mockup_type: [
+                { $unwind: { path: '$dimensions.mockup_type', preserveNullAndEmptyArrays: false } },
+                { $group: { _id: '$dimensions.mockup_type', count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 10 },
+              ],
+            },
           },
-        },
-      ]).toArray(),
+        ])
+        .toArray(),
 
-      db.collection('community_presets')
+      db
+        .collection('community_presets')
         .find({ category: 'reference', isAdminCurated: true })
         .sort({ createdAt: -1 })
         .limit(5)
         .project({ id: 1, name: 1, createdAt: 1, dimensions: 1 })
         .toArray(),
 
-      db.collection('usage_records').aggregate([
-        { $match: { feature: 'reference-ingest' } },
-        { $group: {
-          _id: null,
-          totalCost: { $sum: '$cost' },
-          totalInputTokens: { $sum: '$inputTokens' },
-          totalOutputTokens: { $sum: '$outputTokens' },
-          totalR2Bytes: { $sum: '$r2Bytes' },
-          totalApiCalls: { $sum: '$apiCalls' },
-          count: { $sum: 1 },
-        }},
-      ]).toArray(),
+      db
+        .collection('usage_records')
+        .aggregate([
+          { $match: { feature: 'reference-ingest' } },
+          {
+            $group: {
+              _id: null,
+              totalCost: { $sum: '$cost' },
+              totalInputTokens: { $sum: '$inputTokens' },
+              totalOutputTokens: { $sum: '$outputTokens' },
+              totalR2Bytes: { $sum: '$r2Bytes' },
+              totalApiCalls: { $sum: '$apiCalls' },
+              count: { $sum: 1 },
+            },
+          },
+        ])
+        .toArray(),
     ]);
 
     // Count how many times references were retrieved (from generation_feedback with feature=reference)
-    const retrievalStats = await db.collection('generation_feedback').aggregate([
-      { $match: { feature: 'mockup', 'context.extra.curatedRefsUsed': { $gt: 0 } } },
-      { $group: { _id: null, totalGenerationsWithRefs: { $sum: 1 }, totalRefsServed: { $sum: '$context.extra.curatedRefsUsed' } } },
-    ]).toArray();
+    const retrievalStats = await db
+      .collection('generation_feedback')
+      .aggregate([
+        { $match: { feature: 'mockup', 'context.extra.curatedRefsUsed': { $gt: 0 } } },
+        {
+          $group: {
+            _id: null,
+            totalGenerationsWithRefs: { $sum: 1 },
+            totalRefsServed: { $sum: '$context.extra.curatedRefsUsed' },
+          },
+        },
+      ])
+      .toArray();
 
-    const ic = ingestCostAgg[0] || { totalCost: 0, totalInputTokens: 0, totalOutputTokens: 0, totalR2Bytes: 0, totalApiCalls: 0, count: 0 };
+    const ic = ingestCostAgg[0] || {
+      totalCost: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalR2Bytes: 0,
+      totalApiCalls: 0,
+      count: 0,
+    };
 
     return res.json({
       totalRefs,
@@ -2645,4 +3083,3 @@ router.get('/references/stats', validateAdmin, async (req: Request, res: Respons
 });
 
 export default router;
-

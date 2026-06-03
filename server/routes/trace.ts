@@ -29,7 +29,9 @@ function optionalAuth(req: AuthRequest, _res: ExpressResponse, next: NextFunctio
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string };
       if (decoded.userId) req.userId = decoded.userId;
-    } catch { /* ignore invalid tokens */ }
+    } catch {
+      /* ignore invalid tokens */
+    }
   }
   next();
 }
@@ -49,11 +51,14 @@ export interface TraceOptions {
   preset?: TracePreset;
 }
 
-const TRACE_PRESETS: Record<Exclude<TracePreset, 'custom'>, Required<Omit<TraceOptions, 'color' | 'preset'>>> = {
-  logo:      { turdSize: 3,  optTolerance: 0.3,  threshold: 'auto', alphaMax: 0.8 },
-  lettering: { turdSize: 1,  optTolerance: 0.15, threshold: 'auto', alphaMax: 0.5 },
-  lineArt:   { turdSize: 0,  optTolerance: 0.1,  threshold: 128,    alphaMax: 1.0 },
-  stamp:     { turdSize: 5,  optTolerance: 0.5,  threshold: 'auto', alphaMax: 0.8 },
+const TRACE_PRESETS: Record<
+  Exclude<TracePreset, 'custom'>,
+  Required<Omit<TraceOptions, 'color' | 'preset'>>
+> = {
+  logo: { turdSize: 3, optTolerance: 0.3, threshold: 'auto', alphaMax: 0.8 },
+  lettering: { turdSize: 1, optTolerance: 0.15, threshold: 'auto', alphaMax: 0.5 },
+  lineArt: { turdSize: 0, optTolerance: 0.1, threshold: 128, alphaMax: 1.0 },
+  stamp: { turdSize: 5, optTolerance: 0.5, threshold: 'auto', alphaMax: 0.8 },
 };
 
 export interface SvgOptimizeOptions {
@@ -102,13 +107,20 @@ async function sanitizeSvg(svg: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 const EDITOR_XMLNS = [
-  'xmlns:inkscape', 'xmlns:sodipodi', 'xmlns:sketch',
-  'xmlns:dc', 'xmlns:cc', 'xmlns:rdf',
+  'xmlns:inkscape',
+  'xmlns:sodipodi',
+  'xmlns:sketch',
+  'xmlns:dc',
+  'xmlns:cc',
+  'xmlns:rdf',
 ];
 
 const EDITOR_ATTR_PREFIXES = ['inkscape:', 'sodipodi:', 'sketch:', 'data-name'];
 
-async function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptions>): Promise<string> {
+async function optimizeSvg(
+  svgString: string,
+  options?: Partial<SvgOptimizeOptions>
+): Promise<string> {
   const opts: Required<SvgOptimizeOptions> = {
     removeComments: true,
     removeMetadata: true,
@@ -167,7 +179,7 @@ async function optimizeSvg(svgString: string, options?: Partial<SvgOptimizeOptio
     const { JSDOM } = await import('jsdom');
     const dom = new JSDOM(svg, { contentType: 'image/svg+xml' });
     const doc = dom.window.document;
-    doc.querySelectorAll('[display="none"], [visibility="hidden"]').forEach(el => el.remove());
+    doc.querySelectorAll('[display="none"], [visibility="hidden"]').forEach((el) => el.remove());
     svg = doc.documentElement.outerHTML;
   }
 
@@ -228,7 +240,9 @@ function computeOtsuFromGrayscale(pixels: Buffer): number {
   return bestThreshold;
 }
 
-async function computeOtsuFromImage(buffer: Buffer): Promise<{ threshold: number; needsInvert: boolean }> {
+async function computeOtsuFromImage(
+  buffer: Buffer
+): Promise<{ threshold: number; needsInvert: boolean }> {
   try {
     const sharp = (await import('sharp')).default;
     const grayscale = await sharp(buffer).grayscale().raw().toBuffer();
@@ -324,7 +338,9 @@ async function traceImage(buffer: Buffer, opts: TraceOptions = {}): Promise<stri
       const otsu = await computeOtsuFromImage(inverted);
       const retrySvg = await potraceTrace(inverted, { ...potraceOpts, threshold: otsu.threshold });
       if (svgHasContent(retrySvg)) return retrySvg;
-    } catch { /* fall through to original empty result */ }
+    } catch {
+      /* fall through to original empty result */
+    }
   }
 
   return svg;
@@ -353,63 +369,88 @@ async function cleanSvgPipeline(raw: string): Promise<string> {
  * POST /api/trace/png-to-svg
  * Full pipeline: PNG → potrace → sanitize → optimize → clean SVG.
  */
-router.post('/png-to-svg', traceLimiter, optionalAuth, async (req: AuthRequest, res: ExpressResponse) => {
-  try {
-    const { image, turdSize, optTolerance, threshold, alphaMax, color, preset } = req.body;
+router.post(
+  '/png-to-svg',
+  traceLimiter,
+  optionalAuth,
+  async (req: AuthRequest, res: ExpressResponse) => {
+    try {
+      const { image, turdSize, optTolerance, threshold, alphaMax, color, preset } = req.body;
 
-    if (!image || typeof image !== 'string') {
-      return res.status(400).json({ error: 'Missing image (base64 data URL)' });
+      if (!image || typeof image !== 'string') {
+        return res.status(400).json({ error: 'Missing image (base64 data URL)' });
+      }
+
+      const buffer = parseBase64Image(image);
+      if (!buffer) {
+        return res.status(400).json({ error: 'Invalid base64 image format' });
+      }
+
+      const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+      if (buffer.length > MAX_IMAGE_SIZE) {
+        return res.status(413).json({ error: 'Image too large (max 10MB)' });
+      }
+
+      const svg = await tracePipeline(buffer, {
+        turdSize,
+        optTolerance,
+        threshold,
+        alphaMax,
+        color,
+        preset,
+      });
+
+      res.json({ svg });
+    } catch (error: unknown) {
+      console.error('PNG→SVG trace error:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: message });
     }
-
-    const buffer = parseBase64Image(image);
-    if (!buffer) {
-      return res.status(400).json({ error: 'Invalid base64 image format' });
-    }
-
-    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
-    if (buffer.length > MAX_IMAGE_SIZE) {
-      return res.status(413).json({ error: 'Image too large (max 10MB)' });
-    }
-
-    const svg = await tracePipeline(buffer, { turdSize, optTolerance, threshold, alphaMax, color, preset });
-
-    res.json({ svg });
-  } catch (error: unknown) {
-    console.error('PNG→SVG trace error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    res.status(500).json({ error: message });
   }
-});
+);
 
 /**
  * POST /api/trace/optimize
  * Sanitize + optimize raw SVG (e.g. pasted from Figma, Illustrator, etc.)
  */
-router.post('/optimize', traceLimiter, optionalAuth, async (req: AuthRequest, res: ExpressResponse) => {
-  try {
-    const { svg: rawSvg } = req.body;
+router.post(
+  '/optimize',
+  traceLimiter,
+  optionalAuth,
+  async (req: AuthRequest, res: ExpressResponse) => {
+    try {
+      const { svg: rawSvg } = req.body;
 
-    if (!rawSvg || typeof rawSvg !== 'string') {
-      return res.status(400).json({ error: 'Missing svg string' });
+      if (!rawSvg || typeof rawSvg !== 'string') {
+        return res.status(400).json({ error: 'Missing svg string' });
+      }
+
+      if (!rawSvg.includes('<svg')) {
+        return res.status(400).json({ error: 'Invalid SVG: missing <svg> element' });
+      }
+
+      const svg = await cleanSvgPipeline(rawSvg);
+
+      res.json({ svg });
+    } catch (error: unknown) {
+      console.error('SVG optimize error:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: message });
     }
-
-    if (!rawSvg.includes('<svg')) {
-      return res.status(400).json({ error: 'Invalid SVG: missing <svg> element' });
-    }
-
-    const svg = await cleanSvgPipeline(rawSvg);
-
-    res.json({ svg });
-  } catch (error: unknown) {
-    console.error('SVG optimize error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    res.status(500).json({ error: message });
   }
-});
+);
 
 router.get('/presets', (_req, res: ExpressResponse) => {
   res.json({ presets: TRACE_PRESETS });
 });
 
-export { traceImage, tracePipeline, cleanSvgPipeline, optimizeSvg, sanitizeSvg, parseBase64Image, TRACE_PRESETS };
+export {
+  traceImage,
+  tracePipeline,
+  cleanSvgPipeline,
+  optimizeSvg,
+  sanitizeSvg,
+  parseBase64Image,
+  TRACE_PRESETS,
+};
 export default router;

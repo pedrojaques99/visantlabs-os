@@ -36,7 +36,11 @@ let _shPendingSnap: ShaderSnapshot | null = null;
 let _shDebounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 function snapshotShader(s: ShaderSlice): ShaderSnapshot {
-  return { shaderEnabled: s.shaderEnabled, shaderType: s.shaderType, shaderValues: { ...s.shaderValues } };
+  return {
+    shaderEnabled: s.shaderEnabled,
+    shaderType: s.shaderType,
+    shaderValues: { ...s.shaderValues },
+  };
 }
 
 export const useShaderLabStore = create<ShaderLabState & ShaderSlice>()((set, get, api) => ({
@@ -69,7 +73,11 @@ export const useShaderLabStore = create<ShaderLabState & ShaderSlice>()((set, ge
           const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
           const history = [...trimmed, _shPendingSnap!].slice(-MAX_HISTORY);
           _shPendingSnap = null;
-          return { settingsHistory: history, historyIndex: history.length - 1, historyLength: history.length };
+          return {
+            settingsHistory: history,
+            historyIndex: history.length - 1,
+            historyLength: history.length,
+          };
         });
       }
     }, HISTORY_DEBOUNCE_MS);
@@ -81,32 +89,41 @@ export const useShaderLabStore = create<ShaderLabState & ShaderSlice>()((set, ge
     set((s) => {
       const trimmed = s.settingsHistory.slice(0, s.historyIndex + 1);
       const history = [...trimmed, snap].slice(-MAX_HISTORY);
-      return { shaderType: t, shaderValues: {}, settingsHistory: history, historyIndex: history.length - 1, historyLength: history.length };
+      return {
+        shaderType: t,
+        shaderValues: {},
+        settingsHistory: history,
+        historyIndex: history.length - 1,
+        historyLength: history.length,
+      };
     });
   },
 
-  undo: () => set((s) => {
-    if (s.historyIndex < 0) return {};
-    const snap = s.settingsHistory[s.historyIndex];
-    return { ...snap, historyIndex: s.historyIndex - 1 };
-  }),
+  undo: () =>
+    set((s) => {
+      if (s.historyIndex < 0) return {};
+      const snap = s.settingsHistory[s.historyIndex];
+      return { ...snap, historyIndex: s.historyIndex - 1 };
+    }),
 
-  redo: () => set((s) => {
-    if (s.historyIndex >= s.settingsHistory.length - 1) return {};
-    const nextIndex = s.historyIndex + 1;
-    const snap = s.settingsHistory[nextIndex];
-    return { ...snap, historyIndex: nextIndex };
-  }),
+  redo: () =>
+    set((s) => {
+      if (s.historyIndex >= s.settingsHistory.length - 1) return {};
+      const nextIndex = s.historyIndex + 1;
+      const snap = s.settingsHistory[nextIndex];
+      return { ...snap, historyIndex: nextIndex };
+    }),
 
-  reset: () => set({
-    shaderEnabled: true,
-    shaderType: 'halftone',
-    shaderValues: {},
-    settingsHistory: [],
-    historyIndex: -1,
-    historyLength: 0,
-    zoom: 1,
-    panX: 0,
-    panY: 0,
-  }),
+  reset: () =>
+    set({
+      shaderEnabled: true,
+      shaderType: 'halftone',
+      shaderValues: {},
+      settingsHistory: [],
+      historyIndex: -1,
+      historyLength: 0,
+      zoom: 1,
+      panX: 0,
+      panY: 0,
+    }),
 }));

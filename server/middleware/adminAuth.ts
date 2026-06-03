@@ -26,10 +26,9 @@ export const validateAdmin = [
         await connectToMongoDB();
         const db = getDb();
         const userIdObjectId = new ObjectId(userId);
-        const userDoc = await db.collection('users').findOne(
-          { _id: userIdObjectId },
-          { projection: { isAdmin: 1 } }
-        );
+        const userDoc = await db
+          .collection('users')
+          .findOne({ _id: userIdObjectId }, { projection: { isAdmin: 1 } });
         isAdmin = userDoc?.isAdmin === true;
       } catch (mongoError) {
         console.error('Error checking admin status from MongoDB:', mongoError);

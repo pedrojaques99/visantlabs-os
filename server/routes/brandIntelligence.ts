@@ -41,26 +41,23 @@ router.post('/:id/sync', apiRateLimiter, authenticate, async (req: AuthRequest, 
     const analysis = await intelligenceService.analyzeDesignReference(imageData, {
       brandName: (guideline.identity as any)?.name || 'Unknown',
       referenceName: name,
-      additionalContext: context
+      additionalContext: context,
     });
 
     // 3. Update the guideline with the new reference and extracted principles
     const existingMedia = (guideline.media as any[]) || [];
     const existingGuidelines = (guideline.guidelines as any) || {};
-    
+
     // Upload the reference image to R2 so we don't bloat the JSON column with base64
     const refId = `ref_${Date.now()}`;
     let storedUrl = imageData;
     try {
-      storedUrl = await uploadBrandMedia(
-        imageData,
-        req.userId,
-        id,
-        refId,
-        'image/png'
-      );
+      storedUrl = await uploadBrandMedia(imageData, req.userId, id, refId, 'image/png');
     } catch (uploadErr: any) {
-      console.warn('[Brand Intel] R2 upload failed, falling back to inline data:', uploadErr.message);
+      console.warn(
+        '[Brand Intel] R2 upload failed, falling back to inline data:',
+        uploadErr.message
+      );
     }
 
     // Add to media kit as a reference
@@ -70,12 +67,16 @@ router.post('/:id/sync', apiRateLimiter, authenticate, async (req: AuthRequest, 
       type: 'reference',
       label: name || 'Design Reference',
       tags: analysis.tags,
-      analyzedAt: new Date().toISOString()
+      analyzedAt: new Date().toISOString(),
     };
 
     // Merge design principles (Dos and Don'ts)
-    const updatedDos = [...new Set([...(existingGuidelines.dos || []), ...analysis.principles.dos])];
-    const updatedDonts = [...new Set([...(existingGuidelines.donts || []), ...analysis.principles.donts])];
+    const updatedDos = [
+      ...new Set([...(existingGuidelines.dos || []), ...analysis.principles.dos]),
+    ];
+    const updatedDonts = [
+      ...new Set([...(existingGuidelines.donts || []), ...analysis.principles.donts]),
+    ];
 
     const updatedGuideline = await prisma.brandGuideline.update({
       where: { id },
@@ -85,9 +86,9 @@ router.post('/:id/sync', apiRateLimiter, authenticate, async (req: AuthRequest, 
           ...existingGuidelines,
           dos: updatedDos,
           donts: updatedDonts,
-          designTips: analysis.principles.tips // Store latest tips
-        }
-      }
+          designTips: analysis.principles.tips, // Store latest tips
+        },
+      },
     });
 
     // 🗑️ INVALIDATE cache on brand edit
@@ -101,11 +102,10 @@ router.post('/:id/sync', apiRateLimiter, authenticate, async (req: AuthRequest, 
       analysis,
       guideline: {
         ...updatedGuideline,
-        _id: updatedGuideline.id
+        _id: updatedGuideline.id,
       },
       generationId: randomUUID(), // UUID for RAG feedback loop (👍/👎)
     });
-
   } catch (error: any) {
     console.error('[Brand Intel API] Error:', error);
     res.status(500).json({ error: 'Failed to sync design intelligence', message: error.message });
@@ -133,15 +133,17 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     if (!guideline) return res.status(404).json({ error: 'Not found' });
 
     const media = (guideline.media as any[]) || [];
-    const references = media.filter(m => m.type === 'reference');
+    const references = media.filter((m) => m.type === 'reference');
 
     const result = {
       references,
-      guidelines: guideline.guidelines
+      guidelines: guideline.guidelines,
     };
 
     // 💾 CACHE SET
-    await redisClient.setex(cacheKey, CACHE_TTL.BRAND_INTEL, JSON.stringify(result)).catch(() => {});
+    await redisClient
+      .setex(cacheKey, CACHE_TTL.BRAND_INTEL, JSON.stringify(result))
+      .catch(() => {});
 
     res.json(result);
   } catch (error: any) {

@@ -5,10 +5,10 @@ import { copyToClipboard } from './clipboard';
  */
 export const formatPixCode = (code: string): string => {
   if (!code) return '';
-  
+
   // Remove any existing spaces
   const cleanCode = code.replace(/\s/g, '');
-  
+
   // Add spaces every 4 characters for better readability
   return cleanCode.replace(/(.{4})/g, '$1 ').trim();
 };
@@ -58,4 +58,3 @@ export const generatePixQrCode = async (_pixCode: string): Promise<string | null
   // For now, we'll rely on Stripe providing the QR code
   return null;
 };
-

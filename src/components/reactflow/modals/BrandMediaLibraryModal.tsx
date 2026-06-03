@@ -21,7 +21,13 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
   onAddToBoard,
   guidelineId,
 }) => (
-  <Modal isOpen={isOpen} onClose={onClose} title="Brand Media Library" size="xl" contentClassName="bg-neutral-950/98">
+  <Modal
+    isOpen={isOpen}
+    onClose={onClose}
+    title="Brand Media Library"
+    size="xl"
+    contentClassName="bg-neutral-950/98"
+  >
     <div className="h-[600px]">
       <BrandMediaLibraryPanel
         guidelineId={guidelineId}

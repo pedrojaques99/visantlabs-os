@@ -37,68 +37,71 @@ export const useBudgetAutoSave = ({
   }, []);
 
   // Save function with error handling
-  const performSave = useCallback(async (dataToSave: BudgetData) => {
-    if (!projectId) {
-      // If no project ID, we can't save yet
-      return;
-    }
-
-    if (isSavingRef.current) {
-      // If already saving, wait for it to complete
-      if (savePromiseRef.current) {
-        await savePromiseRef.current;
+  const performSave = useCallback(
+    async (dataToSave: BudgetData) => {
+      if (!projectId) {
+        // If no project ID, we can't save yet
+        return;
       }
-      return;
-    }
 
-    isSavingRef.current = true;
-    setIsSaving(true);
-    setSaveStatus('saving');
-
-    try {
-      const savePromise = budgetApi.save(dataToSave, projectId);
-      savePromiseRef.current = savePromise;
-
-      const saved = await savePromise;
-      const id = saved._id || (saved as any).id;
-
-      // Update last saved data
-      lastSavedDataRef.current = JSON.stringify(dataToSave);
-
-      setSaveStatus('saved');
-
-      // Clear saved status after 2 seconds
-      if (saveStatusTimeoutRef.current) {
-        clearTimeout(saveStatusTimeoutRef.current);
+      if (isSavingRef.current) {
+        // If already saving, wait for it to complete
+        if (savePromiseRef.current) {
+          await savePromiseRef.current;
+        }
+        return;
       }
-      saveStatusTimeoutRef.current = setTimeout(() => {
-        setSaveStatus('idle');
-      }, 2000);
 
-      if (onSaveSuccess) {
-        onSaveSuccess(id);
-      }
-    } catch (error: any) {
-      console.error('Auto-save failed:', error);
-      setSaveStatus('error');
+      isSavingRef.current = true;
+      setIsSaving(true);
+      setSaveStatus('saving');
 
-      // Clear error status after 3 seconds
-      if (saveStatusTimeoutRef.current) {
-        clearTimeout(saveStatusTimeoutRef.current);
-      }
-      saveStatusTimeoutRef.current = setTimeout(() => {
-        setSaveStatus('idle');
-      }, 3000);
+      try {
+        const savePromise = budgetApi.save(dataToSave, projectId);
+        savePromiseRef.current = savePromise;
 
-      if (onSaveError) {
-        onSaveError(error);
+        const saved = await savePromise;
+        const id = saved._id || (saved as any).id;
+
+        // Update last saved data
+        lastSavedDataRef.current = JSON.stringify(dataToSave);
+
+        setSaveStatus('saved');
+
+        // Clear saved status after 2 seconds
+        if (saveStatusTimeoutRef.current) {
+          clearTimeout(saveStatusTimeoutRef.current);
+        }
+        saveStatusTimeoutRef.current = setTimeout(() => {
+          setSaveStatus('idle');
+        }, 2000);
+
+        if (onSaveSuccess) {
+          onSaveSuccess(id);
+        }
+      } catch (error: any) {
+        console.error('Auto-save failed:', error);
+        setSaveStatus('error');
+
+        // Clear error status after 3 seconds
+        if (saveStatusTimeoutRef.current) {
+          clearTimeout(saveStatusTimeoutRef.current);
+        }
+        saveStatusTimeoutRef.current = setTimeout(() => {
+          setSaveStatus('idle');
+        }, 3000);
+
+        if (onSaveError) {
+          onSaveError(error);
+        }
+      } finally {
+        isSavingRef.current = false;
+        setIsSaving(false);
+        savePromiseRef.current = null;
       }
-    } finally {
-      isSavingRef.current = false;
-      setIsSaving(false);
-      savePromiseRef.current = null;
-    }
-  }, [projectId, onSaveSuccess, onSaveError]);
+    },
+    [projectId, onSaveSuccess, onSaveError]
+  );
 
   // Clear timeouts on unmount
   useEffect(() => {
@@ -163,4 +166,3 @@ export const useBudgetAutoSave = ({
     saveStatus,
   };
 };
-

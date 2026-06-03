@@ -1,6 +1,6 @@
 /**
  * useAngleNodeHandlers
- * 
+ *
  * Handlers para gerenciar operações de geração de ângulos de imagem
  */
 
@@ -18,10 +18,20 @@ import type { BrandGuideline } from '@/lib/figma-types';
 interface UseAngleNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
   edgesRef: React.MutableRefObject<Edge[]>;
-  setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
+  setNodes: (
+    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
+  ) => void;
   setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
-  updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void;
-  updateNodeLoadingState: <T extends FlowNodeData>(nodeId: string, isLoading: boolean, nodeType?: string) => void;
+  updateNodeData: <T extends FlowNodeData>(
+    nodeId: string,
+    newData: Partial<T>,
+    nodeType?: string
+  ) => void;
+  updateNodeLoadingState: <T extends FlowNodeData>(
+    nodeId: string,
+    isLoading: boolean,
+    nodeType?: string
+  ) => void;
   reactFlowInstance: ReactFlowInstance | null;
   addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void;
   refreshSubscriptionStatus: () => Promise<void>;
@@ -42,27 +52,53 @@ export const useAngleNodeHandlers = ({
   canvasId,
   linkedGuideline,
 }: UseAngleNodeHandlersParams) => {
-  const handleAngleNodeDataUpdate = useNodeDataUpdateHandler<AngleNodeData>(updateNodeData, 'angle');
+  const handleAngleNodeDataUpdate = useNodeDataUpdateHandler<AngleNodeData>(
+    updateNodeData,
+    'angle'
+  );
 
-  const handleAngleGenerate = useCallback(async (nodeId: string, imageInput: string, angleId: string) => {
-    const angle = getAnglePreset(angleId as any);
-    if (!angle) {
-      toast.error(`Angle ${angleId} not found`);
-      return;
-    }
+  const handleAngleGenerate = useCallback(
+    async (nodeId: string, imageInput: string, angleId: string) => {
+      const angle = getAnglePreset(angleId as any);
+      if (!angle) {
+        toast.error(`Angle ${angleId} not found`);
+        return;
+      }
 
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    const angleData = node?.data as AngleNodeData;
+      const node = nodesRef.current.find((n) => n.id === nodeId);
+      const angleData = node?.data as AngleNodeData;
 
-    const promptOverride = buildPromptWithBrandContext(angle.prompt, nodeId, nodesRef.current, edgesRef.current, linkedGuideline);
+      const promptOverride = buildPromptWithBrandContext(
+        angle.prompt,
+        nodeId,
+        nodesRef.current,
+        edgesRef.current,
+        linkedGuideline
+      );
 
-    await generateImageWithPreset({
-      nodeId,
-      nodeType: 'angle',
-      imageInput,
-      presetId: angleId,
-      preset: angle,
-      connectedImageFromData: angleData?.connectedImage,
+      await generateImageWithPreset({
+        nodeId,
+        nodeType: 'angle',
+        imageInput,
+        presetId: angleId,
+        preset: angle,
+        connectedImageFromData: angleData?.connectedImage,
+        nodesRef,
+        edgesRef,
+        setNodes,
+        setEdges,
+        updateNodeData,
+        updateNodeLoadingState,
+        reactFlowInstance,
+        addToHistory,
+        refreshSubscriptionStatus,
+        canvasId,
+        errorMessage: 'Connect an image to generate angle',
+        successMessage: 'Image angle generated successfully!',
+        promptOverride,
+      });
+    },
+    [
       nodesRef,
       edgesRef,
       setNodes,
@@ -73,15 +109,12 @@ export const useAngleNodeHandlers = ({
       addToHistory,
       refreshSubscriptionStatus,
       canvasId,
-      errorMessage: 'Connect an image to generate angle',
-      successMessage: 'Image angle generated successfully!',
-      promptOverride,
-    });
-  }, [nodesRef, edgesRef, setNodes, setEdges, updateNodeData, updateNodeLoadingState, reactFlowInstance, addToHistory, refreshSubscriptionStatus, canvasId, linkedGuideline]);
+      linkedGuideline,
+    ]
+  );
 
   return {
     handleAngleGenerate,
     handleAngleNodeDataUpdate,
   };
 };
-

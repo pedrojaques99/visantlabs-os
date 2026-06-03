@@ -1,4 +1,3 @@
-
 /**
  * Visant Labs — MCP Shared Tool Definitions
  *
@@ -20,9 +19,10 @@ function loadCliCredentials(): { apiKey?: string } {
 }
 
 const cliCreds = loadCliCredentials();
-const DEFAULT_API_URL = process.env.NODE_ENV === 'production'
-  ? 'https://api.visantlabs.com/api'
-  : 'http://localhost:3001/api';
+const DEFAULT_API_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://api.visantlabs.com/api'
+    : 'http://localhost:3001/api';
 export const API_BASE = process.env.VISANT_API_URL || DEFAULT_API_URL;
 export const API_TOKEN = process.env.VISANT_API_TOKEN || cliCreds.apiKey;
 
@@ -63,7 +63,7 @@ export const TOOLS = [
     name: 'create_creative_plan',
     description:
       'Generate a structured creative layout (background prompt, overlay, layers) for a marketing asset. ' +
-      'If brandId is provided, the plan is automatically biased by that brand\'s learned edit history.',
+      "If brandId is provided, the plan is automatically biased by that brand's learned edit history.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -98,7 +98,7 @@ export const TOOLS = [
     description:
       'Get learned brand preferences aggregated from user edit history. Returns font-size bias, ' +
       'color overrides, logo position bias, commonly removed roles, and human-readable patches. ' +
-      'Use this to understand how a brand\'s actual usage diverges from AI defaults.',
+      "Use this to understand how a brand's actual usage diverges from AI defaults.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -206,7 +206,8 @@ export const TOOLS = [
   // ---- Prompt tools ----
   {
     name: 'improve_prompt',
-    description: 'Improve and refine an existing image generation prompt to make it more detailed and effective.',
+    description:
+      'Improve and refine an existing image generation prompt to make it more detailed and effective.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -223,8 +224,14 @@ export const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        designType: { type: 'string', description: 'Type of design (e.g. product mockup, social media post, banner)' },
-        additionalPrompt: { type: 'string', description: 'Free-text creative direction to include' },
+        designType: {
+          type: 'string',
+          description: 'Type of design (e.g. product mockup, social media post, banner)',
+        },
+        additionalPrompt: {
+          type: 'string',
+          description: 'Free-text creative direction to include',
+        },
         aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], default: '1:1' },
         brandingTags: { type: 'array', items: { type: 'string' }, description: 'Brand style tags' },
         categoryTags: { type: 'array', items: { type: 'string' } },
@@ -234,7 +241,10 @@ export const TOOLS = [
         effectTags: { type: 'array', items: { type: 'string' } },
         materialTags: { type: 'array', items: { type: 'string' } },
         baseImageUrl: { type: 'string', description: 'URL of a reference image' },
-        brandGuidelineId: { type: 'string', description: 'Brand guideline id for brand-aware prompt' },
+        brandGuidelineId: {
+          type: 'string',
+          description: 'Brand guideline id for brand-aware prompt',
+        },
         negativePrompt: { type: 'string', description: 'Things to exclude from the image' },
       },
       required: ['designType'],
@@ -253,12 +263,17 @@ export const TOOLS = [
   },
   {
     name: 'extract_prompt_from_image',
-    description: 'Reverse-engineer a descriptive prompt from an image (URL or base64). Useful for replicating a visual style.',
+    description:
+      'Reverse-engineer a descriptive prompt from an image (URL or base64). Useful for replicating a visual style.',
     inputSchema: {
       type: 'object',
       properties: {
         imageUrl: { type: 'string', description: 'URL of the image to analyze' },
-        mimeType: { type: 'string', description: 'MIME type of the image (default: image/png)', default: 'image/png' },
+        mimeType: {
+          type: 'string',
+          description: 'MIME type of the image (default: image/png)',
+          default: 'image/png',
+        },
       },
       required: ['imageUrl'],
     },
@@ -272,7 +287,11 @@ export const TOOLS = [
       type: 'object',
       properties: {
         imageUrl: { type: 'string', description: 'URL of the image to analyze' },
-        mimeType: { type: 'string', description: 'MIME type (default: image/png)', default: 'image/png' },
+        mimeType: {
+          type: 'string',
+          description: 'MIME type (default: image/png)',
+          default: 'image/png',
+        },
       },
       required: ['imageUrl'],
     },
@@ -286,17 +305,32 @@ export const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        brief: { type: 'string', description: 'Description of the brand, product, or concept to name' },
-        count: { type: 'number', description: 'Number of name suggestions (default: 10)', default: 10 },
-        style: { type: 'string', description: 'Naming style preference (e.g. invented word, metaphor, compound, real word)' },
-        brandGuidelineId: { type: 'string', description: 'Brand guideline id for brand-aware naming' },
+        brief: {
+          type: 'string',
+          description: 'Description of the brand, product, or concept to name',
+        },
+        count: {
+          type: 'number',
+          description: 'Number of name suggestions (default: 10)',
+          default: 10,
+        },
+        style: {
+          type: 'string',
+          description:
+            'Naming style preference (e.g. invented word, metaphor, compound, real word)',
+        },
+        brandGuidelineId: {
+          type: 'string',
+          description: 'Brand guideline id for brand-aware naming',
+        },
       },
       required: ['brief'],
     },
   },
   {
     name: 'generate_persona',
-    description: 'Generate a detailed audience persona (demographics, psychographics, pain points, motivations) from a brand brief.',
+    description:
+      'Generate a detailed audience persona (demographics, psychographics, pain points, motivations) from a brand brief.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -308,7 +342,8 @@ export const TOOLS = [
   },
   {
     name: 'generate_archetype',
-    description: 'Generate brand archetype analysis (Hero, Sage, Lover, Caregiver, etc.) from a brand brief.',
+    description:
+      'Generate brand archetype analysis (Hero, Sage, Lover, Caregiver, etc.) from a brand brief.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -325,19 +360,26 @@ export const TOOLS = [
       type: 'object',
       properties: {
         prompt: { type: 'string', description: 'Brand or product brief' },
-        previousData: { type: 'object', description: 'Optional prior branding data (persona, colors, archetype) for richer ideas' },
+        previousData: {
+          type: 'object',
+          description: 'Optional prior branding data (persona, colors, archetype) for richer ideas',
+        },
       },
       required: ['prompt'],
     },
   },
   {
     name: 'generate_color_palettes',
-    description: 'Generate AI-recommended color palettes for a brand from a brief and optional SWOT/references context.',
+    description:
+      'Generate AI-recommended color palettes for a brand from a brief and optional SWOT/references context.',
     inputSchema: {
       type: 'object',
       properties: {
         prompt: { type: 'string', description: 'Brand or product brief' },
-        previousData: { type: 'object', description: 'Optional prior branding data (swot, references)' },
+        previousData: {
+          type: 'object',
+          description: 'Optional prior branding data (swot, references)',
+        },
       },
       required: ['prompt'],
     },
@@ -355,12 +397,16 @@ export const TOOLS = [
   },
   {
     name: 'generate_swot',
-    description: 'Generate a SWOT analysis (strengths, weaknesses, opportunities, threats) for a brand brief.',
+    description:
+      'Generate a SWOT analysis (strengths, weaknesses, opportunities, threats) for a brand brief.',
     inputSchema: {
       type: 'object',
       properties: {
         prompt: { type: 'string', description: 'Brand or product brief' },
-        previousData: { type: 'object', description: 'Optional prior market research and competitors data' },
+        previousData: {
+          type: 'object',
+          description: 'Optional prior market research and competitors data',
+        },
       },
       required: ['prompt'],
     },
@@ -372,7 +418,10 @@ export const TOOLS = [
       type: 'object',
       properties: {
         prompt: { type: 'string', description: 'Brand or product brief' },
-        previousData: { type: 'object', description: 'Optional prior branding data for richer moodboard' },
+        previousData: {
+          type: 'object',
+          description: 'Optional prior branding data for richer moodboard',
+        },
       },
       required: ['prompt'],
     },
@@ -396,7 +445,8 @@ export const TOOLS = [
         },
         model: {
           type: 'string',
-          description: 'Model name. For openai: gpt-image-1 or gpt-image-2. For gemini: gemini-2.0-flash-exp-image-generation. For seedream: seedream-3-0.',
+          description:
+            'Model name. For openai: gpt-image-1 or gpt-image-2. For gemini: gemini-2.0-flash-exp-image-generation. For seedream: seedream-3-0.',
           default: 'gpt-image-2',
         },
         aspectRatio: {
@@ -460,7 +510,8 @@ export const TOOLS = [
               },
             ],
           },
-          description: 'Array of prompts (string) or prompt objects with per-item referenceImages (max 20)',
+          description:
+            'Array of prompts (string) or prompt objects with per-item referenceImages (max 20)',
         },
         provider: {
           type: 'string',
@@ -470,7 +521,8 @@ export const TOOLS = [
         },
         model: {
           type: 'string',
-          description: 'Model name. For openai: gpt-image-1 or gpt-image-2. For gemini: gemini-2.0-flash-exp-image-generation.',
+          description:
+            'Model name. For openai: gpt-image-1 or gpt-image-2. For gemini: gemini-2.0-flash-exp-image-generation.',
           default: 'gpt-image-2',
         },
         aspectRatio: {
@@ -499,7 +551,8 @@ export const TOOLS = [
   },
   {
     name: 'list_public_mockups',
-    description: 'List all public/blank mockup templates available in the platform (no auth required).',
+    description:
+      'List all public/blank mockup templates available in the platform (no auth required).',
     inputSchema: { type: 'object', properties: {} },
   },
   {
@@ -596,8 +649,14 @@ export const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        productImageUrl: { type: 'string', description: 'URL of the product photo to use as base image' },
-        brandGuidelineId: { type: 'string', description: 'Brand guideline id for brand-aware generation' },
+        productImageUrl: {
+          type: 'string',
+          description: 'URL of the product photo to use as base image',
+        },
+        brandGuidelineId: {
+          type: 'string',
+          description: 'Brand guideline id for brand-aware generation',
+        },
         brief: { type: 'string', description: 'Creative brief describing the campaign goal' },
         count: { type: 'number', description: 'Number of ads to generate (1-20)', default: 10 },
         formats: {
@@ -660,7 +719,8 @@ export const TOOLS = [
         output: {
           type: 'string',
           enum: ['disk', 'inline'],
-          description: '"disk" saves .md alongside the PDF. "inline" returns markdownText in the response.',
+          description:
+            '"disk" saves .md alongside the PDF. "inline" returns markdownText in the response.',
         },
         include_brand_tokens: {
           type: 'boolean',
@@ -680,10 +740,21 @@ export const TOOLS = [
       type: 'object' as const,
       properties: {
         imageUrl: { type: 'string', description: 'Source image URL or base64 data URI.' },
-        mode: { type: 'string', enum: ['halftone', 'texture', 'riso'], description: 'Effect mode.' },
-        preset: { type: 'string', description: 'Named preset (e.g. "Newsprint", "Vintage Poster").' },
+        mode: {
+          type: 'string',
+          enum: ['halftone', 'texture', 'riso'],
+          description: 'Effect mode.',
+        },
+        preset: {
+          type: 'string',
+          description: 'Named preset (e.g. "Newsprint", "Vintage Poster").',
+        },
         settings: { type: 'object', description: 'Custom settings that override preset values.' },
-        format: { type: 'string', enum: ['png', 'svg', 'jpeg'], description: 'Output format. Default png.' },
+        format: {
+          type: 'string',
+          enum: ['png', 'svg', 'jpeg'],
+          description: 'Output format. Default png.',
+        },
       },
       required: ['imageUrl', 'mode'],
     },
@@ -710,7 +781,11 @@ export const TOOLS = [
     inputSchema: {
       type: 'object' as const,
       properties: {
-        mode: { type: 'string', enum: ['halftone', 'texture', 'riso', 'shader'], description: 'Mode.' },
+        mode: {
+          type: 'string',
+          enum: ['halftone', 'texture', 'riso', 'shader'],
+          description: 'Mode.',
+        },
       },
       required: ['mode'],
     },
@@ -738,11 +813,28 @@ export const TOOLS = [
       type: 'object' as const,
       properties: {
         imageUrl: { type: 'string', description: 'Source image URL or base64 data URL.' },
-        direction: { type: 'string', enum: ['up', 'down', 'left', 'right', 'all'], description: 'Expansion direction. Default: all.' },
-        expandFactor: { type: 'number', description: 'How much to expand (1.5 = 50% larger). Range 1.1-3. Default: 1.5.' },
-        prompt: { type: 'string', description: 'Optional prompt to guide what appears in the expanded area.' },
-        targetAspectRatio: { type: 'string', description: 'Target aspect ratio for the result (e.g. 16:9, 1:1, 9:16).' },
-        resolution: { type: 'string', enum: ['1K', '2K', '4K'], description: 'Output resolution tier. Default: 1K.' },
+        direction: {
+          type: 'string',
+          enum: ['up', 'down', 'left', 'right', 'all'],
+          description: 'Expansion direction. Default: all.',
+        },
+        expandFactor: {
+          type: 'number',
+          description: 'How much to expand (1.5 = 50% larger). Range 1.1-3. Default: 1.5.',
+        },
+        prompt: {
+          type: 'string',
+          description: 'Optional prompt to guide what appears in the expanded area.',
+        },
+        targetAspectRatio: {
+          type: 'string',
+          description: 'Target aspect ratio for the result (e.g. 16:9, 1:1, 9:16).',
+        },
+        resolution: {
+          type: 'string',
+          enum: ['1K', '2K', '4K'],
+          description: 'Output resolution tier. Default: 1K.',
+        },
       },
       required: ['imageUrl'],
     },
@@ -755,12 +847,24 @@ export const TOOLS = [
       type: 'object' as const,
       properties: {
         imageUrl: { type: 'string', description: 'Source image URL or base64 data URL.' },
-        mode: { type: 'string', enum: ['replace', 'remove', 'retouch'], description: 'What to do with the masked area.' },
-        prompt: { type: 'string', description: 'What to generate in the masked area. Required for "replace" mode.' },
-        maskBase64: { type: 'string', description: 'Mask as base64 PNG — transparent pixels = area to edit, opaque = keep. Takes priority over maskRegion.' },
+        mode: {
+          type: 'string',
+          enum: ['replace', 'remove', 'retouch'],
+          description: 'What to do with the masked area.',
+        },
+        prompt: {
+          type: 'string',
+          description: 'What to generate in the masked area. Required for "replace" mode.',
+        },
+        maskBase64: {
+          type: 'string',
+          description:
+            'Mask as base64 PNG — transparent pixels = area to edit, opaque = keep. Takes priority over maskRegion.',
+        },
         maskRegion: {
           type: 'object',
-          description: 'Simple rectangular mask as normalized 0-1 coordinates. Alternative to maskBase64.',
+          description:
+            'Simple rectangular mask as normalized 0-1 coordinates. Alternative to maskBase64.',
           properties: {
             x: { type: 'number', description: 'Left edge (0-1).' },
             y: { type: 'number', description: 'Top edge (0-1).' },
@@ -769,7 +873,11 @@ export const TOOLS = [
           },
           required: ['x', 'y', 'width', 'height'],
         },
-        resolution: { type: 'string', enum: ['1K', '2K', '4K'], description: 'Output resolution tier. Default: 1K.' },
+        resolution: {
+          type: 'string',
+          enum: ['1K', '2K', '4K'],
+          description: 'Output resolution tier. Default: 1K.',
+        },
       },
       required: ['imageUrl', 'mode'],
     },
@@ -782,7 +890,11 @@ export const TOOLS = [
       type: 'object' as const,
       properties: {
         imageUrl: { type: 'string', description: 'Source image URL or base64 data URL.' },
-        outputFormat: { type: 'string', enum: ['png', 'webp'], description: 'Output format. Default: png.' },
+        outputFormat: {
+          type: 'string',
+          enum: ['png', 'webp'],
+          description: 'Output format. Default: png.',
+        },
       },
       required: ['imageUrl'],
     },
@@ -857,14 +969,22 @@ export async function handleTool(name: string, args: ToolArgs) {
         brand: g.identity?.name,
         colors: (g.colors || []).map((c: any) => ({ hex: c.hex, name: c.name, role: c.role })),
         typography: (g.typography || []).map((t: any) => ({
-          family: t.family, role: t.role, size: t.size,
-          lineHeight: t.lineHeight, letterSpacing: t.letterSpacing, weights: t.weights,
+          family: t.family,
+          role: t.role,
+          size: t.size,
+          lineHeight: t.lineHeight,
+          letterSpacing: t.letterSpacing,
+          weights: t.weights,
         })),
         tokens: {
           radius: g.tokens?.radius,
           spacing: g.tokens?.spacing,
         },
-        gradients: (g.gradients || []).map((gr: any) => ({ name: gr.name, css: gr.css, usage: gr.usage })),
+        gradients: (g.gradients || []).map((gr: any) => ({
+          name: gr.name,
+          css: gr.css,
+          usage: gr.usage,
+        })),
         shadows: (g.shadows || []).map((s: any) => ({ name: s.name, css: s.css, type: s.type })),
         motion: g.motion,
         borders: (g.borders || []).map((b: any) => ({ name: b.name, css: b.css, role: b.role })),
@@ -877,47 +997,51 @@ export async function handleTool(name: string, args: ToolArgs) {
       return toolResult(ds);
     }
     case 'document_extract': {
-      const pdfPath = String(args.pdf_path)
-      const includeBrandTokens = args.include_brand_tokens !== false
+      const pdfPath = String(args.pdf_path);
+      const includeBrandTokens = args.include_brand_tokens !== false;
       // Read file locally — MCP server runs on the same machine as the PDF
-      const { readFileSync, writeFileSync } = await import('fs')
-      const { basename, dirname, join } = await import('path')
-      let pdfBase64: string
+      const { readFileSync, writeFileSync } = await import('fs');
+      const { basename, dirname, join } = await import('path');
+      let pdfBase64: string;
       try {
-        pdfBase64 = readFileSync(pdfPath).toString('base64')
+        pdfBase64 = readFileSync(pdfPath).toString('base64');
       } catch (err: any) {
-        throw new Error(`Cannot read PDF at ${pdfPath}: ${err.message}`)
+        throw new Error(`Cannot read PDF at ${pdfPath}: ${err.message}`);
       }
-      const qs = includeBrandTokens ? '' : '?brandTokens=false'
+      const qs = includeBrandTokens ? '' : '?brandTokens=false';
       const data: any = await visantFetch(`/pdf-extract${qs}`, {
         method: 'POST',
         body: JSON.stringify({ pdfBase64, filename: basename(pdfPath) }),
-      })
-      const md: string = data.markdownText ?? ''
+      });
+      const md: string = data.markdownText ?? '';
       if (args.output === 'disk') {
-        const stem = basename(pdfPath).replace(/\.pdf$/i, '')
-        const outPath = join(dirname(pdfPath), `${stem}.md`)
-        writeFileSync(outPath, md, 'utf-8')
-        const result: Record<string, any> = { saved_to: outPath, characters: md.length, preview: md.slice(0, 600) }
+        const stem = basename(pdfPath).replace(/\.pdf$/i, '');
+        const outPath = join(dirname(pdfPath), `${stem}.md`);
+        writeFileSync(outPath, md, 'utf-8');
+        const result: Record<string, any> = {
+          saved_to: outPath,
+          characters: md.length,
+          preview: md.slice(0, 600),
+        };
         if (includeBrandTokens) {
-          result.colors = data.colors
-          result.typography = data.typography
-          result.strategy = data.strategy
-          result.assetClassifications = data.assetClassifications
-          result.imageCount = data.imageCount
+          result.colors = data.colors;
+          result.typography = data.typography;
+          result.strategy = data.strategy;
+          result.assetClassifications = data.assetClassifications;
+          result.imageCount = data.imageCount;
         }
-        return toolResult(result)
+        return toolResult(result);
       }
       // inline
-      const result: Record<string, any> = { markdownText: md }
+      const result: Record<string, any> = { markdownText: md };
       if (includeBrandTokens) {
-        result.colors = data.colors
-        result.typography = data.typography
-        result.strategy = data.strategy
-        result.assetClassifications = data.assetClassifications
-        result.imageCount = data.imageCount
+        result.colors = data.colors;
+        result.typography = data.typography;
+        result.strategy = data.strategy;
+        result.assetClassifications = data.assetClassifications;
+        result.imageCount = data.imageCount;
       }
-      return toolResult(result)
+      return toolResult(result);
     }
     // ---- Prompt handlers ----
     case 'improve_prompt': {
@@ -957,14 +1081,18 @@ export async function handleTool(name: string, args: ToolArgs) {
     case 'extract_prompt_from_image': {
       const data = await visantFetch('/ai/describe-image', {
         method: 'POST',
-        body: JSON.stringify({ image: { url: args.imageUrl, mimeType: args.mimeType ?? 'image/png' } }),
+        body: JSON.stringify({
+          image: { url: args.imageUrl, mimeType: args.mimeType ?? 'image/png' },
+        }),
       });
       return toolResult(data);
     }
     case 'extract_colors': {
       const data = await visantFetch('/ai/extract-colors', {
         method: 'POST',
-        body: JSON.stringify({ image: { url: args.imageUrl, mimeType: args.mimeType ?? 'image/png' } }),
+        body: JSON.stringify({
+          image: { url: args.imageUrl, mimeType: args.mimeType ?? 'image/png' },
+        }),
       });
       return toolResult(data);
     }

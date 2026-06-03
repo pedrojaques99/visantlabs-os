@@ -223,9 +223,7 @@ export async function computeMetrics(brandId?: string) {
     totalCorrections: corrections.length,
     avgEditsPerCreative: creativeIds.size ? Number((totalEdits / creativeIds.size).toFixed(2)) : 0,
     firstTryAcceptance: creativeIds.size
-      ? Number(
-          ([...editsPer.values()].filter((n) => n <= 2).length / creativeIds.size).toFixed(2)
-        )
+      ? Number(([...editsPer.values()].filter((n) => n <= 2).length / creativeIds.size).toFixed(2))
       : 0,
   };
 }

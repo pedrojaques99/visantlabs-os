@@ -91,10 +91,10 @@ export interface RenderOptions {
 // ─── Format dimensions ─────────────────────────────────────────────────────────
 
 const FORMAT_DIMS: Record<string, { w: number; h: number }> = {
-  '1:1':  { w: 1080, h: 1080 },
+  '1:1': { w: 1080, h: 1080 },
   '16:9': { w: 1920, h: 1080 },
   '9:16': { w: 1080, h: 1920 },
-  '4:5':  { w: 1080, h: 1350 },
+  '4:5': { w: 1080, h: 1350 },
 };
 
 // ─── Accent text parser ────────────────────────────────────────────────────────
@@ -177,7 +177,10 @@ export async function renderCreativePlan(
       // Cover-fit: fill canvas maintaining aspect ratio
       const imgAspect = bgImg.width / bgImg.height;
       const canvasAspect = w / h;
-      let sx = 0, sy = 0, sw = bgImg.width, sh = bgImg.height;
+      let sx = 0,
+        sy = 0,
+        sw = bgImg.width,
+        sh = bgImg.height;
 
       if (imgAspect > canvasAspect) {
         sw = bgImg.height * canvasAspect;
@@ -212,9 +215,9 @@ export async function renderCreativePlan(
       // gradient
       const dirs: Record<string, [number, number, number, number]> = {
         bottom: [0, h, 0, 0],
-        top:    [0, 0, 0, h],
-        left:   [0, 0, w, 0],
-        right:  [w, 0, 0, 0],
+        top: [0, 0, 0, h],
+        left: [0, 0, w, 0],
+        right: [w, 0, 0, 0],
       };
       const [x0, y0, x1, y1] = dirs[ov.direction ?? 'bottom'];
       const grad = ctx.createLinearGradient(x0, y0, x1, y1);
@@ -260,14 +263,16 @@ export async function renderCreativePlan(
     if (layer.type === 'shape') {
       ctx.fillStyle = layer.color;
       ctx.fillRect(px, py, pw, ph);
-
     } else if (layer.type === 'logo') {
       try {
         const img = await loadImage(layer.url);
         // Fit within bounds preserving aspect ratio
         const ar = img.width / img.height;
         const bAr = pw / ph;
-        let dw = pw, dh = ph, dx = px, dy = py;
+        let dw = pw,
+          dh = ph,
+          dx = px,
+          dy = py;
         if (ar > bAr) {
           dh = pw / ar;
           dy = py + (ph - dh) / 2;
@@ -277,7 +282,6 @@ export async function renderCreativePlan(
         }
         ctx.drawImage(img, dx, dy, dw, dh);
       } catch {}
-
     } else if (layer.type === 'text') {
       const scaledSize = (layer.fontSize / 1080) * h;
       const fontFamily = layer.fontFamily ?? 'Inter, sans-serif';
@@ -291,7 +295,7 @@ export async function renderCreativePlan(
       // Compute total line width for alignment
       let totalWidth = 0;
       for (const seg of segments) {
-        ctx.fillStyle = seg.accent ? accentColor : (layer.color ?? '#ffffff');
+        ctx.fillStyle = seg.accent ? accentColor : layer.color ?? '#ffffff';
         totalWidth += ctx.measureText(seg.text).width;
       }
 
@@ -303,7 +307,7 @@ export async function renderCreativePlan(
       // (matches the simple banner use-case; multi-line would need a wrap pass)
       let cursorX = startX;
       for (const seg of segments) {
-        ctx.fillStyle = seg.accent ? accentColor : (layer.color ?? '#ffffff');
+        ctx.fillStyle = seg.accent ? accentColor : layer.color ?? '#ffffff';
         ctx.fillText(seg.text, cursorX, py);
         cursorX += ctx.measureText(seg.text).width;
       }

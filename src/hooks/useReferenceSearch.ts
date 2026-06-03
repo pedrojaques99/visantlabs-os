@@ -8,7 +8,11 @@ interface UseReferenceSearchParams {
   limit?: number;
 }
 
-export function useReferenceSearch({ brandGuidelineId, enabled = true, limit = 30 }: UseReferenceSearchParams = {}) {
+export function useReferenceSearch({
+  brandGuidelineId,
+  enabled = true,
+  limit = 30,
+}: UseReferenceSearchParams = {}) {
   const [results, setResults] = useState<ReferenceResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [query, setQuery] = useState('');
@@ -19,22 +23,28 @@ export function useReferenceSearch({ brandGuidelineId, enabled = true, limit = 3
     if (!enabled) return;
     setIsLoading(true);
     try {
-      const all = await referenceApi.search({ brandGuidelineId, query: deferredQuery || undefined, limit });
+      const all = await referenceApi.search({
+        brandGuidelineId,
+        query: deferredQuery || undefined,
+        limit,
+      });
 
       // Client-side dimension refinement (secondary filters on top of smart ranking)
       const activeFilters = Object.entries(dimFilters).filter(([, v]) => !!v);
       if (activeFilters.length === 0) {
         setResults(all);
       } else {
-        const filtered = all.filter(ref => {
+        const filtered = all.filter((ref) => {
           return activeFilters.every(([key, val]) => {
             const dims = ref.dimensions[key as ReferenceDimensionKey];
             return dims?.includes(val as string);
           });
         });
         // Show filtered matches first, then rest (dimmed via relevanceScore override)
-        const filteredIds = new Set(filtered.map(r => r.id));
-        const rest = all.filter(r => !filteredIds.has(r.id)).map(r => ({ ...r, relevanceScore: 0 }));
+        const filteredIds = new Set(filtered.map((r) => r.id));
+        const rest = all
+          .filter((r) => !filteredIds.has(r.id))
+          .map((r) => ({ ...r, relevanceScore: 0 }));
         setResults([...filtered, ...rest]);
       }
     } catch {
@@ -50,9 +60,10 @@ export function useReferenceSearch({ brandGuidelineId, enabled = true, limit = 3
   }, [fetch]);
 
   const toggleDimFilter = useCallback((key: ReferenceDimensionKey, value: string) => {
-    setDimFilters(prev => {
+    setDimFilters((prev) => {
       const next = { ...prev };
-      if (next[key] === value) delete next[key]; else next[key] = value;
+      if (next[key] === value) delete next[key];
+      else next[key] = value;
       return next;
     });
   }, []);

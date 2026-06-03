@@ -55,7 +55,11 @@ export const TextureFilterPage: React.FC = () => {
     setPanelVisible,
     undo,
     redo,
-    zoom: { current: zoom, set: (z) => store.getState().setZoom(z), resetPan: () => store.getState().setPan(0, 0) },
+    zoom: {
+      current: zoom,
+      set: (z) => store.getState().setZoom(z),
+      resetPan: () => store.getState().setPan(0, 0),
+    },
   });
 
   const statusItems = [
@@ -89,8 +93,12 @@ export const TextureFilterPage: React.FC = () => {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="flex flex-col items-center gap-4 text-neutral-500">
             <Upload size={28} strokeWidth={1.2} />
-            <p className="text-[11px] uppercase tracking-widest">Drop or paste an image or video to begin</p>
-            <p className="text-[10px] tracking-wide opacity-60">Ctrl+V — paste · Tab — toggle panel</p>
+            <p className="text-[11px] uppercase tracking-widest">
+              Drop or paste an image or video to begin
+            </p>
+            <p className="text-[10px] tracking-wide opacity-60">
+              Ctrl+V — paste · Tab — toggle panel
+            </p>
           </div>
         </div>
       )}

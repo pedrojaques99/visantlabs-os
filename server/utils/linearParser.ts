@@ -62,7 +62,9 @@ export function parseLinearIssue(prompt: string): LinearIssue | null {
     formato,
     textos: extractTextos(description),
     etapas: extractList(sections['etapas'] || sections['steps'] || ''),
-    observacoes: extractList(sections['observacoes'] || sections['observações'] || sections['notes'] || ''),
+    observacoes: extractList(
+      sections['observacoes'] || sections['observações'] || sections['notes'] || ''
+    ),
     prazo: extractPrazo(description),
   };
 }
@@ -121,9 +123,9 @@ function parseFormato(description: string): LinearIssue['formato'] | undefined {
 
   // Determine tipo based on dimensions
   let tipo = 'custom';
-  if (dimensoes.some(d => d.width === 1080 && d.height === 1920)) tipo = 'stories';
-  else if (dimensoes.some(d => d.width === 1080 && d.height === 1080)) tipo = 'feed';
-  else if (dimensoes.some(d => d.width === 1080 && d.height === 1350)) tipo = 'feed-portrait';
+  if (dimensoes.some((d) => d.width === 1080 && d.height === 1920)) tipo = 'stories';
+  else if (dimensoes.some((d) => d.width === 1080 && d.height === 1080)) tipo = 'feed';
+  else if (dimensoes.some((d) => d.width === 1080 && d.height === 1350)) tipo = 'feed-portrait';
 
   return { tipo, dimensoes };
 }
@@ -150,17 +152,19 @@ function extractList(text: string): string[] {
   if (!text) return [];
 
   // Match numbered or bulleted lists
-  const items = text.split(/\n/).filter(line => {
+  const items = text.split(/\n/).filter((line) => {
     const trimmed = line.trim();
     return trimmed.match(/^[\d\.\-\*]\s/) || trimmed.match(/^\d+\./);
   });
 
-  return items.map(item => item.replace(/^[\d\.\-\*]\s*/, '').trim());
+  return items.map((item) => item.replace(/^[\d\.\-\*]\s*/, '').trim());
 }
 
 function extractPrazo(description: string): string | undefined {
   // Look for date patterns
-  const prazoMatch = description.match(/(?:prazo|deadline|entregar?\s*(?:ate|até)?)[:\s]*(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/i);
+  const prazoMatch = description.match(
+    /(?:prazo|deadline|entregar?\s*(?:ate|até)?)[:\s]*(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/i
+  );
   if (prazoMatch) return prazoMatch[1];
 
   const dateMatch = description.match(/ate\s*(?:o\s*dia\s*)?(\d{1,2}\/\d{1,2})/i);
@@ -186,7 +190,8 @@ export function linearIssueToFigmaPrompt(issue: LinearIssue): string {
     lines.push('');
     lines.push('Formatos (IMPORTANTE: nome do frame DEVE incluir dimensões):');
     for (const dim of issue.formato.dimensoes) {
-      const tipo = dim.height > dim.width ? 'Stories' : dim.width === dim.height ? 'Feed' : 'Banner';
+      const tipo =
+        dim.height > dim.width ? 'Stories' : dim.width === dim.height ? 'Feed' : 'Banner';
       lines.push(`- Frame "${tipo} ${dim.width}x${dim.height}": ${dim.width}x${dim.height}px`);
     }
   }
@@ -195,7 +200,7 @@ export function linearIssueToFigmaPrompt(issue: LinearIssue): string {
     lines.push('');
     lines.push('Conteúdo:');
     for (const [key, value] of Object.entries(issue.textos!)) {
-      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
       lines.push(`- ${label}: "${value.slice(0, 100)}${value.length > 100 ? '...' : ''}"`);
     }
   }

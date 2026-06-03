@@ -126,7 +126,14 @@ export interface RisoFullPreset {
 
 // ── Texture ──
 
-export type TextureBlendMode = 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'hard-light' | 'color-burn' | 'color-dodge';
+export type TextureBlendMode =
+  | 'multiply'
+  | 'screen'
+  | 'overlay'
+  | 'soft-light'
+  | 'hard-light'
+  | 'color-burn'
+  | 'color-dodge';
 
 export interface TextureSettings {
   textureName: string;
@@ -165,7 +172,21 @@ export const TEXTURE_DEFAULTS: TextureSettings = {
 
 // ── Post-FX Shaders ──
 
-export type ShaderType = 'halftone' | 'vhs' | 'ascii' | 'matrixDither' | 'upscale' | 'dither' | 'duotone' | 'filmGrain' | 'pixelate' | 'posterize' | 'chromaticAberration' | 'crtScanlines' | 'edgeDetect' | 'glitch';
+export type ShaderType =
+  | 'halftone'
+  | 'vhs'
+  | 'ascii'
+  | 'matrixDither'
+  | 'upscale'
+  | 'dither'
+  | 'duotone'
+  | 'filmGrain'
+  | 'pixelate'
+  | 'posterize'
+  | 'chromaticAberration'
+  | 'crtScanlines'
+  | 'edgeDetect'
+  | 'glitch';
 
 export interface ShaderSettings {
   shaderType?: ShaderType;

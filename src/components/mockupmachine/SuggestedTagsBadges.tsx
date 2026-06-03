@@ -22,9 +22,7 @@ export const SuggestedTagsBadges: React.FC<SuggestedTagsBadgesProps> = ({
   const { theme } = useTheme();
 
   // Filter out already selected tags
-  const availableSuggestions = suggestedTags.filter(
-    (tag) => !selectedTags.includes(tag)
-  );
+  const availableSuggestions = suggestedTags.filter((tag) => !selectedTags.includes(tag));
 
   if (availableSuggestions.length === 0 || isLoading) {
     return null;
@@ -38,11 +36,11 @@ export const SuggestedTagsBadges: React.FC<SuggestedTagsBadgesProps> = ({
           type="button"
           onClick={() => onSelect(tag)}
           className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wide transition-all duration-200",
-            "border border-dashed cursor-pointer group",
+            'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wide transition-all duration-200',
+            'border border-dashed cursor-pointer group',
             theme === 'dark'
-              ? "bg-brand-cyan/5 border-brand-cyan/30 text-brand-cyan/80 hover:bg-brand-cyan/15 hover:border-neutral-700"
-              : "bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/20 hover:border-neutral-700"
+              ? 'bg-brand-cyan/5 border-brand-cyan/30 text-brand-cyan/80 hover:bg-brand-cyan/15 hover:border-neutral-700'
+              : 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/20 hover:border-neutral-700'
           )}
         >
           <Diamond size={8} className="opacity-60 group-hover:opacity-100 transition-opacity" />

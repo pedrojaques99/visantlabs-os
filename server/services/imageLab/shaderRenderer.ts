@@ -7,7 +7,14 @@
  */
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
-import { createGLContext, createProgram, setupFullscreenQuad, uploadTexture, readPixels, destroyContext } from './glContext.js';
+import {
+  createGLContext,
+  createProgram,
+  setupFullscreenQuad,
+  uploadTexture,
+  readPixels,
+  destroyContext,
+} from './glContext.js';
 import type { ShaderType } from './types.js';
 
 const VERTEX_SHADER = `
@@ -32,7 +39,21 @@ async function ensureInitialized(): Promise<void> {
     const registryUrl = pathToFileURL(resolve(shadersDir, 'shaderRegistry.ts')).href;
     const registry = await import(registryUrl);
 
-    const shaderNames = ['vhs', 'ascii', 'matrixDither', 'upscale', 'dither', 'duotone', 'filmGrain', 'pixelate', 'posterize', 'chromaticAberration', 'crtScanlines', 'edgeDetect', 'glitch'];
+    const shaderNames = [
+      'vhs',
+      'ascii',
+      'matrixDither',
+      'upscale',
+      'dither',
+      'duotone',
+      'filmGrain',
+      'pixelate',
+      'posterize',
+      'chromaticAberration',
+      'crtScanlines',
+      'edgeDetect',
+      'glitch',
+    ];
     for (const name of shaderNames) {
       const url = pathToFileURL(resolve(shadersDir, 'shaders', `${name}.ts`)).href;
       await import(url);
@@ -40,7 +61,21 @@ async function ensureInitialized(): Promise<void> {
     const halftoneUrl = pathToFileURL(resolve(shadersDir, 'shaders', 'halftone.ts')).href;
     const halftoneModule = await import(halftoneUrl);
 
-    const types: ShaderType[] = ['vhs', 'ascii', 'matrixDither', 'upscale', 'dither', 'duotone', 'filmGrain', 'pixelate', 'posterize', 'chromaticAberration', 'crtScanlines', 'edgeDetect', 'glitch'];
+    const types: ShaderType[] = [
+      'vhs',
+      'ascii',
+      'matrixDither',
+      'upscale',
+      'dither',
+      'duotone',
+      'filmGrain',
+      'pixelate',
+      'posterize',
+      'chromaticAberration',
+      'crtScanlines',
+      'edgeDetect',
+      'glitch',
+    ];
     for (const t of types) {
       if (registry.isShaderRegistered(t)) {
         shaderSources.set(t, registry.getShaderDefinition(t).fragmentShaderSource);
@@ -54,11 +89,21 @@ async function ensureInitialized(): Promise<void> {
     console.log(`[ImageLab] Loaded ${shaderSources.size} shader sources from client modules.`);
   } catch (err) {
     initState = 'failed';
-    console.warn('[ImageLab] Shader sources unavailable — post-fx effects disabled.', (err as Error).message);
+    console.warn(
+      '[ImageLab] Shader sources unavailable — post-fx effects disabled.',
+      (err as Error).message
+    );
   }
 }
 
-function setUniforms(gl: WebGLRenderingContext, program: WebGLProgram, shaderType: ShaderType, settings: Record<string, any>, width: number, height: number): void {
+function setUniforms(
+  gl: WebGLRenderingContext,
+  program: WebGLProgram,
+  shaderType: ShaderType,
+  settings: Record<string, any>,
+  width: number,
+  height: number
+): void {
   const u = (name: string) => gl.getUniformLocation(program, name);
 
   const resLoc = u('iResolution');
@@ -68,20 +113,76 @@ function setUniforms(gl: WebGLRenderingContext, program: WebGLProgram, shaderTyp
   if (timeLoc) gl.uniform1f(timeLoc, settings.time ?? Math.random() * 100);
 
   const uniformMap: Record<string, [string, number | number[]][]> = {
-    halftone: [['uDotSize', settings.dotSize ?? 5], ['uAngle', settings.angle ?? 0], ['uContrast', settings.contrast ?? 1], ['uSpacing', settings.spacing ?? 2], ['uThreshold', settings.halftoneThreshold ?? 1], ['uInvert', settings.halftoneInvert ?? 0]],
-    vhs: [['uTapeWaveIntensity', settings.tapeWaveIntensity ?? 1], ['uTapeCreaseIntensity', settings.tapeCreaseIntensity ?? 1], ['uSwitchingNoiseIntensity', settings.switchingNoiseIntensity ?? 1], ['uBloomIntensity', settings.bloomIntensity ?? 1], ['uACBeatIntensity', settings.acBeatIntensity ?? 1]],
-    ascii: [['u_char_size', settings.asciiCharSize ?? 8], ['u_contrast', settings.asciiContrast ?? 1], ['u_brightness', settings.asciiBrightness ?? 0], ['u_char_set', settings.asciiCharSet ?? 3], ['u_colored', settings.asciiColored ?? 0], ['u_invert', settings.asciiInvert ?? 0]],
-    matrixDither: [['matrixSize', settings.matrixSize ?? 4], ['bias', settings.bias ?? 0]],
-    upscale: [['uScaleFactor', settings.scaleFactor ?? 2], ['uSharpening', settings.upscaleSharpening ?? 0.3]],
-    dither: [['u_dither_size', settings.ditherSize ?? 4], ['u_contrast', settings.ditherContrast ?? 1.5], ['u_offset', settings.ditherOffset ?? 0], ['u_bit_depth', settings.ditherBitDepth ?? 4], ['u_palette', settings.ditherPalette ?? 0]],
-    duotone: [['u_intensity', settings.duotoneIntensity ?? 1], ['u_contrast', settings.duotoneContrast ?? 1], ['u_brightness', settings.duotoneBrightness ?? 0]],
-    filmGrain: [['u_grain_strength', settings.filmGrainStrength ?? 16], ['u_grain_size', settings.filmGrainSize ?? 1], ['u_colored', settings.filmGrainColored ?? 0]],
+    halftone: [
+      ['uDotSize', settings.dotSize ?? 5],
+      ['uAngle', settings.angle ?? 0],
+      ['uContrast', settings.contrast ?? 1],
+      ['uSpacing', settings.spacing ?? 2],
+      ['uThreshold', settings.halftoneThreshold ?? 1],
+      ['uInvert', settings.halftoneInvert ?? 0],
+    ],
+    vhs: [
+      ['uTapeWaveIntensity', settings.tapeWaveIntensity ?? 1],
+      ['uTapeCreaseIntensity', settings.tapeCreaseIntensity ?? 1],
+      ['uSwitchingNoiseIntensity', settings.switchingNoiseIntensity ?? 1],
+      ['uBloomIntensity', settings.bloomIntensity ?? 1],
+      ['uACBeatIntensity', settings.acBeatIntensity ?? 1],
+    ],
+    ascii: [
+      ['u_char_size', settings.asciiCharSize ?? 8],
+      ['u_contrast', settings.asciiContrast ?? 1],
+      ['u_brightness', settings.asciiBrightness ?? 0],
+      ['u_char_set', settings.asciiCharSet ?? 3],
+      ['u_colored', settings.asciiColored ?? 0],
+      ['u_invert', settings.asciiInvert ?? 0],
+    ],
+    matrixDither: [
+      ['matrixSize', settings.matrixSize ?? 4],
+      ['bias', settings.bias ?? 0],
+    ],
+    upscale: [
+      ['uScaleFactor', settings.scaleFactor ?? 2],
+      ['uSharpening', settings.upscaleSharpening ?? 0.3],
+    ],
+    dither: [
+      ['u_dither_size', settings.ditherSize ?? 4],
+      ['u_contrast', settings.ditherContrast ?? 1.5],
+      ['u_offset', settings.ditherOffset ?? 0],
+      ['u_bit_depth', settings.ditherBitDepth ?? 4],
+      ['u_palette', settings.ditherPalette ?? 0],
+    ],
+    duotone: [
+      ['u_intensity', settings.duotoneIntensity ?? 1],
+      ['u_contrast', settings.duotoneContrast ?? 1],
+      ['u_brightness', settings.duotoneBrightness ?? 0],
+    ],
+    filmGrain: [
+      ['u_grain_strength', settings.filmGrainStrength ?? 16],
+      ['u_grain_size', settings.filmGrainSize ?? 1],
+      ['u_colored', settings.filmGrainColored ?? 0],
+    ],
     pixelate: [['u_pixel_size', settings.pixelateSize ?? 8]],
     posterize: [['u_levels', settings.posterizeLevels ?? 4]],
-    chromaticAberration: [['u_offset', settings.chromaticOffset ?? 0.005], ['u_angle', settings.chromaticAngle ?? 0]],
-    crtScanlines: [['u_line_width', settings.crtLineWidth ?? 2], ['u_intensity', settings.crtIntensity ?? 0.3], ['u_vignette', settings.crtVignette ?? 0.3], ['u_curvature', settings.crtCurvature ?? 0]],
-    edgeDetect: [['u_threshold', settings.edgeThreshold ?? 0.1], ['u_strength', settings.edgeStrength ?? 2], ['u_overlay', settings.edgeOverlay ?? 0]],
-    glitch: [['u_amount', settings.glitchAmount ?? 0.03], ['u_speed', settings.glitchSpeed ?? 3], ['u_block_size', settings.glitchBlockSize ?? 20]],
+    chromaticAberration: [
+      ['u_offset', settings.chromaticOffset ?? 0.005],
+      ['u_angle', settings.chromaticAngle ?? 0],
+    ],
+    crtScanlines: [
+      ['u_line_width', settings.crtLineWidth ?? 2],
+      ['u_intensity', settings.crtIntensity ?? 0.3],
+      ['u_vignette', settings.crtVignette ?? 0.3],
+      ['u_curvature', settings.crtCurvature ?? 0],
+    ],
+    edgeDetect: [
+      ['u_threshold', settings.edgeThreshold ?? 0.1],
+      ['u_strength', settings.edgeStrength ?? 2],
+      ['u_overlay', settings.edgeOverlay ?? 0],
+    ],
+    glitch: [
+      ['u_amount', settings.glitchAmount ?? 0.03],
+      ['u_speed', settings.glitchSpeed ?? 3],
+      ['u_block_size', settings.glitchBlockSize ?? 20],
+    ],
   };
 
   const uniforms = uniformMap[shaderType] ?? [];
@@ -112,8 +213,11 @@ function setUniforms(gl: WebGLRenderingContext, program: WebGLProgram, shaderTyp
 }
 
 export async function renderShader(
-  pixels: Uint8Array, width: number, height: number,
-  shaderType: ShaderType, settings: Record<string, any> = {},
+  pixels: Uint8Array,
+  width: number,
+  height: number,
+  shaderType: ShaderType,
+  settings: Record<string, any> = {}
 ): Promise<Uint8Array | null> {
   await ensureInitialized();
 

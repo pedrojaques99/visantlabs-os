@@ -4,10 +4,11 @@
   <p><strong>Open-source AI-powered platform for brand creation, mockup generation, 3D visualization, and creative production.</strong></p>
   <p>Brand guidelines as AI input, 30+ design tools, Figma plugin, MCP server, and CLI — all in one stack.</p>
 
-  ![License](https://img.shields.io/badge/license-MIT-blue)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6)
-  ![React](https://img.shields.io/badge/React-19-61dafb)
-  ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6)
+![React](https://img.shields.io/badge/React-19-61dafb)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
+
 </div>
 
 ---
@@ -19,7 +20,9 @@ Visant Labs is a full-stack AI design platform where **brand guidelines are inpu
 ## Platform Features
 
 ### Brand Guidelines
+
 Comprehensive design system management with identity, colors, typography, logos, voice/tone, strategy, archetypes, and personas. Features include:
+
 - AI-powered auto-populate from URLs, PDFs, or text
 - Design system validation with WCAG contrast checks
 - Version history with rollback
@@ -29,7 +32,9 @@ Comprehensive design system management with identity, colors, typography, logos,
 - Brand grid dashboard with search, folder filters, and sort
 
 ### 3D Studio
+
 WebGL-based 3D model viewer and editor built on Three.js and React Three Fiber:
+
 - SVG/PNG to 3D extrusion with auto-fit sizing
 - Brand logo import directly from guidelines
 - 15+ material presets (plastic, metal, glass, wood, ceramic, neon, holographic)
@@ -42,7 +47,9 @@ WebGL-based 3D model viewer and editor built on Three.js and React Three Fiber:
 - Cloud scene persistence with undo/redo
 
 ### Image Lab
+
 Unified multi-mode image editor with 4 engines:
+
 - **Halftone**: CMYK halftone with dot size, angle, and color control
 - **Texture**: Film grain, noise, paper, canvas texture overlays
 - **Riso**: Risograph printing simulation with ink layers
@@ -52,7 +59,9 @@ Unified multi-mode image editor with 4 engines:
 - MCP tools for headless processing
 
 ### Mockup Machine
+
 AI-powered mockup generator with 500+ community presets:
+
 - Upload design + describe scene = photorealistic mockup
 - Categories: devices, print, apparel, signage, packaging, stationery
 - Brand-aware generation (injects logos, colors from guidelines)
@@ -61,7 +70,9 @@ AI-powered mockup generator with 500+ community presets:
 - Multi-format output: 1:1, 9:16, 16:9, 4:5
 
 ### Canvas / Pipeline Editor
+
 React Flow-based node graph for batch design automation:
+
 - 50+ node types: Image, Video, Text, Merge, Upscale, Mockup, Branding, Logo, Strategy
 - Variables & data nodes for CSV/JSON batch processing
 - Real-time collaboration via Liveblocks
@@ -69,45 +80,52 @@ React Flow-based node graph for batch design automation:
 - Export/import as JSON workflows
 
 ### Creative Studio
+
 AI-driven layout composition engine:
+
 - Structured planning: background, text layers, logo placement, overlays
 - Brand-aware generation from guidelines context
 - Server-side rendering to PNG
 - Project management with save/load
 
 ### Branding Machine
+
 Guided AI brand identity generator:
+
 - Multi-step pipeline: market research, personas, archetypes, manifesto, colors, typography
 - Moodboard collection and sentiment analysis
 - SWOT analysis generation
 - AI expert chat for brand strategy
 
 ### 30+ Design Tools
+
 All available at `/apps`:
 
-| Tool | Description |
-|------|-------------|
-| Visual Search | Multi-source search (Unsplash, Pexels, Pixabay, Wikimedia, Clearbit, Svgl) |
-| Upscale | AI image upscaling |
-| Compress | Image compression and optimization |
-| Color Converter | HEX, RGB, HSL, CMYK conversion |
-| Color Palette | Extract and generate color palettes |
-| Format Converter | Multi-format image conversion |
-| SVG Optimizer | SVG cleanup and minification |
-| QR Code | QR code generator with branding |
-| Favicon | Multi-size favicon generator |
-| OG Image | Open Graph image generator |
-| Watermark | Batch watermark tool |
-| Background Remover | AI-powered background removal |
-| Grid Paint | Pixel grid drawing tool |
-| Grid Machine | Layout grid generator |
-| Moodboard Studio | Visual moodboard builder |
-| Extractor | PDF/document text extraction |
-| Budget Machine | Project budget templates and sharing |
-| Wind Tunnel | Experimental design lab |
+| Tool               | Description                                                                |
+| ------------------ | -------------------------------------------------------------------------- |
+| Visual Search      | Multi-source search (Unsplash, Pexels, Pixabay, Wikimedia, Clearbit, Svgl) |
+| Upscale            | AI image upscaling                                                         |
+| Compress           | Image compression and optimization                                         |
+| Color Converter    | HEX, RGB, HSL, CMYK conversion                                             |
+| Color Palette      | Extract and generate color palettes                                        |
+| Format Converter   | Multi-format image conversion                                              |
+| SVG Optimizer      | SVG cleanup and minification                                               |
+| QR Code            | QR code generator with branding                                            |
+| Favicon            | Multi-size favicon generator                                               |
+| OG Image           | Open Graph image generator                                                 |
+| Watermark          | Batch watermark tool                                                       |
+| Background Remover | AI-powered background removal                                              |
+| Grid Paint         | Pixel grid drawing tool                                                    |
+| Grid Machine       | Layout grid generator                                                      |
+| Moodboard Studio   | Visual moodboard builder                                                   |
+| Extractor          | PDF/document text extraction                                               |
+| Budget Machine     | Project budget templates and sharing                                       |
+| Wind Tunnel        | Experimental design lab                                                    |
 
 ### Figma Plugin
+
 In-editor AI assistant with brand context:
+
 - Brand apply (inject colors, fonts, logos to Figma)
 - Brand import/sync from Figma variables
 - Brand matrix comparison automation
@@ -115,7 +133,9 @@ In-editor AI assistant with brand context:
 - Export with bleed and metadata
 
 ### MCP Server
+
 Model Context Protocol server for AI agent integration:
+
 - Brand guidelines CRUD and insights
 - Creative plan generation
 - Mockup and image generation
@@ -123,6 +143,7 @@ Model Context Protocol server for AI agent integration:
 - HTTP and stdio transport with bearer auth
 
 ### CLI Tool
+
 ```bash
 npx visantlabs login     # Authenticate
 npx visantlabs mcp setup # Configure MCP for Claude Code
@@ -130,6 +151,7 @@ npx visantlabs skills    # Manage skills
 ```
 
 ### Developer Portal
+
 - API key management with usage tracking
 - Interactive API documentation
 - Usage dashboard with cost analytics
@@ -137,21 +159,21 @@ npx visantlabs skills    # Manage skills
 
 ## Tech Stack
 
-| Layer | Technologies |
-|-------|-------------|
-| Frontend | React 19, TypeScript 5, Vite 6, Tailwind CSS |
-| UI | Shadcn/ui, Framer Motion, React Flow, Konva.js |
-| 3D | Three.js, React Three Fiber, React Three Drei |
-| State | Zustand, TanStack React Query |
-| Backend | Node.js, Express, Prisma ORM |
-| Database | MongoDB (Prisma ORM) |
-| AI/ML | Google Gemini, OpenAI GPT Image, Google Veo 3 (video), Seedream |
-| Storage | Cloudflare R2 |
-| Auth | Google OAuth, email/password, TOTP 2FA, session tokens |
-| Collaboration | Liveblocks (real-time canvas) |
-| Payments | Stripe, AbacatePay (PIX/Brazil) |
-| i18n | English (en-US), Portuguese Brazil (pt-BR) |
-| Testing | Vitest, Supertest, MSW |
+| Layer         | Technologies                                                    |
+| ------------- | --------------------------------------------------------------- |
+| Frontend      | React 19, TypeScript 5, Vite 6, Tailwind CSS                    |
+| UI            | Shadcn/ui, Framer Motion, React Flow, Konva.js                  |
+| 3D            | Three.js, React Three Fiber, React Three Drei                   |
+| State         | Zustand, TanStack React Query                                   |
+| Backend       | Node.js, Express, Prisma ORM                                    |
+| Database      | MongoDB (Prisma ORM)                                            |
+| AI/ML         | Google Gemini, OpenAI GPT Image, Google Veo 3 (video), Seedream |
+| Storage       | Cloudflare R2                                                   |
+| Auth          | Google OAuth, email/password, TOTP 2FA, session tokens          |
+| Collaboration | Liveblocks (real-time canvas)                                   |
+| Payments      | Stripe, AbacatePay (PIX/Brazil)                                 |
+| i18n          | English (en-US), Portuguese Brazil (pt-BR)                      |
+| Testing       | Vitest, Supertest, MSW                                          |
 
 ## Quick Start
 
@@ -194,13 +216,13 @@ GOOGLE_GEMINI_API_KEY=your-gemini-key
 
 ## Optional Services
 
-| Service | Required For | Setup Guide | Without It |
-|---------|-------------|-------------|------------|
-| Google Gemini | AI generation, mockups, branding | [docs/SETUP_LLM.md](docs/SETUP_LLM.md) | AI features disabled |
-| Stripe | Subscriptions, credit purchases | [docs/SETUP_STRIPE.md](docs/SETUP_STRIPE.md) | Payments disabled |
-| AbacatePay | PIX payments (Brazil) | [docs/SETUP_ABACATEPAY.md](docs/SETUP_ABACATEPAY.md) | PIX unavailable |
-| Cloudflare R2 | Permanent image storage | [docs/SETUP_R2.md](docs/SETUP_R2.md) | Base64 temp storage |
-| Liveblocks | Real-time canvas collaboration | [docs/SETUP_LIVEBLOCKS.md](docs/SETUP_LIVEBLOCKS.md) | Individual mode |
+| Service       | Required For                     | Setup Guide                                          | Without It           |
+| ------------- | -------------------------------- | ---------------------------------------------------- | -------------------- |
+| Google Gemini | AI generation, mockups, branding | [docs/SETUP_LLM.md](docs/SETUP_LLM.md)               | AI features disabled |
+| Stripe        | Subscriptions, credit purchases  | [docs/SETUP_STRIPE.md](docs/SETUP_STRIPE.md)         | Payments disabled    |
+| AbacatePay    | PIX payments (Brazil)            | [docs/SETUP_ABACATEPAY.md](docs/SETUP_ABACATEPAY.md) | PIX unavailable      |
+| Cloudflare R2 | Permanent image storage          | [docs/SETUP_R2.md](docs/SETUP_R2.md)                 | Base64 temp storage  |
+| Liveblocks    | Real-time canvas collaboration   | [docs/SETUP_LIVEBLOCKS.md](docs/SETUP_LIVEBLOCKS.md) | Individual mode      |
 
 ### Additional Docs
 

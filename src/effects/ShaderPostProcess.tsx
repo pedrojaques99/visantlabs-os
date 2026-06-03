@@ -57,5 +57,5 @@ export const ShaderPostProcess: React.FC<ShaderPostProcessProps> = React.memo(
         />
       </EffectComposer>
     );
-  },
+  }
 );

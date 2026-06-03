@@ -21,22 +21,22 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
-  const maxWidth = pageWidth - (margin * 2);
+  const maxWidth = pageWidth - margin * 2;
   let yPosition = margin;
 
-  const primaryColor = data.brandColors[0] ? hexToRgb(data.brandColors[0]) : [82, 221, 235] as [number, number, number];
-  const secondaryColor = data.brandColors[1] ? hexToRgb(data.brandColors[1]) : [52, 211, 153] as [number, number, number];
+  const primaryColor = data.brandColors[0]
+    ? hexToRgb(data.brandColors[0])
+    : ([82, 221, 235] as [number, number, number]);
+  const secondaryColor = data.brandColors[1]
+    ? hexToRgb(data.brandColors[1])
+    : ([52, 211, 153] as [number, number, number]);
 
   // Helper to convert hex to RGB
   function hexToRgb(hex: string): [number, number, number] {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
-      ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16),
-      ]
-      : [82, 221, 235] as [number, number, number];
+      ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
+      : ([82, 221, 235] as [number, number, number]);
   }
 
   // Helper function to add new page if needed
@@ -50,7 +50,12 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
   };
 
   // Helper function to add text with word wrap
-  const addText = (text: string, fontSize: number, isBold: boolean = false, color: [number, number, number] = [0, 0, 0]) => {
+  const addText = (
+    text: string,
+    fontSize: number,
+    isBold: boolean = false,
+    color: [number, number, number] = [0, 0, 0]
+  ) => {
     doc.setFontSize(fontSize);
     doc.setTextColor(color[0], color[1], color[2]);
     if (isBold) {
@@ -123,7 +128,13 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
   doc.setTextColor(100, 100, 100);
   doc.text(`${t('budget.clientName')}: ${data.clientName}`, margin, yPosition);
   yPosition += 6;
-  doc.text(`${t('budget.startDate')} - ${t('budget.endDate')}: ${formatDate(data.startDate)} - ${formatDate(data.endDate)}`, margin, yPosition);
+  doc.text(
+    `${t('budget.startDate')} - ${t('budget.endDate')}: ${formatDate(
+      data.startDate
+    )} - ${formatDate(data.endDate)}`,
+    margin,
+    yPosition
+  );
   yPosition += 15;
 
   // Project Description
@@ -184,9 +195,21 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
       }
 
       doc.setFontSize(9);
-      doc.text(deliverable.quantity.toString(), margin + colWidths[0], yPosition, { align: 'center' });
-      doc.text(formatCurrency(deliverable.unitValue), margin + colWidths[0] + colWidths[1], yPosition, { align: 'right' });
-      doc.text(formatCurrency(calculateTotal(deliverable)), margin + colWidths[0] + colWidths[1] + colWidths[2], yPosition, { align: 'right' });
+      doc.text(deliverable.quantity.toString(), margin + colWidths[0], yPosition, {
+        align: 'center',
+      });
+      doc.text(
+        formatCurrency(deliverable.unitValue),
+        margin + colWidths[0] + colWidths[1],
+        yPosition,
+        { align: 'right' }
+      );
+      doc.text(
+        formatCurrency(calculateTotal(deliverable)),
+        margin + colWidths[0] + colWidths[1] + colWidths[2],
+        yPosition,
+        { align: 'right' }
+      );
 
       yPosition += rowHeight * maxLines + 2;
     });
@@ -202,8 +225,15 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text(t('budget.total') + ':', margin + colWidths[0] + colWidths[1], yPosition, { align: 'right' });
-    doc.text(formatCurrency(calculateGrandTotal()), margin + colWidths[0] + colWidths[1] + colWidths[2], yPosition, { align: 'right' });
+    doc.text(t('budget.total') + ':', margin + colWidths[0] + colWidths[1], yPosition, {
+      align: 'right',
+    });
+    doc.text(
+      formatCurrency(calculateGrandTotal()),
+      margin + colWidths[0] + colWidths[1] + colWidths[2],
+      yPosition,
+      { align: 'right' }
+    );
     yPosition += 10;
   }
 
@@ -269,16 +299,15 @@ export const generateBudgetPDF = async (data: BudgetData, t: (key: string) => st
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(128, 128, 128);
-    doc.text(
-      `Página ${i} de ${totalPages} - Budget Machine®`,
-      pageWidth / 2,
-      pageHeight - 10,
-      { align: 'center' }
-    );
+    doc.text(`Página ${i} de ${totalPages} - Budget Machine®`, pageWidth / 2, pageHeight - 10, {
+      align: 'center',
+    });
   }
 
   // Generate filename
-  const filename = `budget-${data.projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
+  const filename = `budget-${data.projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${
+    new Date().toISOString().split('T')[0]
+  }.pdf`;
 
   // Save PDF
   doc.save(filename);
@@ -320,17 +349,17 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   const bgRgb = hexToRgb(bgColor);
   const isDarkBg = bgColor !== '#ffffff' && bgColor !== '#fff' && bgColor !== 'white';
   const textColor = (isDarkBg ? [255, 255, 255] : [0, 0, 0]) as [number, number, number];
-  const secondaryTextColor = (isDarkBg ? [200, 200, 200] : [100, 100, 100]) as [number, number, number];
+  const secondaryTextColor = (isDarkBg ? [200, 200, 200] : [100, 100, 100]) as [
+    number,
+    number,
+    number
+  ];
 
   function hexToRgb(hex: string): [number, number, number] {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
-      ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16),
-      ]
-      : [82, 221, 235] as [number, number, number];
+      ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
+      : ([82, 221, 235] as [number, number, number]);
   }
 
   const formatCurrency = (value: number): string => {
@@ -376,7 +405,15 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   yPosition += 30;
 
   // Project Title
-  addText(data.projectName || 'Projeto de Branding Completo - Logo, ID Visual e Extras', margin, yPosition, 18, true, textColor, 'left');
+  addText(
+    data.projectName || 'Projeto de Branding Completo - Logo, ID Visual e Extras',
+    margin,
+    yPosition,
+    18,
+    true,
+    textColor,
+    'left'
+  );
   yPosition += 15;
 
   // Services Section Header
@@ -385,7 +422,15 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   const servicesHeaderWidth = 100;
   doc.roundedRect(margin, yPosition, servicesHeaderWidth, servicesHeaderHeight, 2, 2, 'F');
   addText('Serviços', margin + 8, yPosition + 8, 14, true, [255, 255, 255], 'left');
-  addText('Qtd.', margin + servicesHeaderWidth - 20, yPosition + 8, 10, false, [255, 255, 255], 'right');
+  addText(
+    'Qtd.',
+    margin + servicesHeaderWidth - 20,
+    yPosition + 8,
+    10,
+    false,
+    [255, 255, 255],
+    'right'
+  );
   yPosition += servicesHeaderHeight + 10;
 
   // Services List
@@ -409,7 +454,15 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
       });
     }
 
-    addText(`${deliverable.quantity}x`, pageWidth - margin, yPosition - (deliverable.description ? 5 : 0), 12, false, textColor, 'right');
+    addText(
+      `${deliverable.quantity}x`,
+      pageWidth - margin,
+      yPosition - (deliverable.description ? 5 : 0),
+      12,
+      false,
+      textColor,
+      'right'
+    );
     yPosition += 12;
   });
 
@@ -417,7 +470,15 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   const totalHours = data.paymentInfo?.totalHours || 0;
   if (totalHours > 0) {
     yPosition += 5;
-    addText(`Total Horas de Trabalho: ${totalHours}h`, margin, yPosition, 10, false, secondaryTextColor, 'left');
+    addText(
+      `Total Horas de Trabalho: ${totalHours}h`,
+      margin,
+      yPosition,
+      10,
+      false,
+      secondaryTextColor,
+      'left'
+    );
     yPosition += 10;
   }
 
@@ -435,7 +496,7 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   const signatures = data.signatures || [];
   if (signatures.length > 0) {
     signatures.forEach((sig, index) => {
-      const sigX = margin + (index * (pageWidth / 3));
+      const sigX = margin + index * (pageWidth / 3);
       addText(sig.name, sigX, yPosition, 10, false, secondaryTextColor, 'left');
       doc.setDrawColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
       doc.line(sigX, yPosition + 8, sigX + 80, yPosition + 8);
@@ -449,14 +510,30 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
 
     addText('Pedro Jaques', margin + 120, yPosition, 10, false, secondaryTextColor, 'left');
     doc.line(margin + 120, yPosition + 8, margin + 200, yPosition + 8);
-    addText('Designer / Diretor', margin + 120, yPosition + 12, 8, false, secondaryTextColor, 'left');
+    addText(
+      'Designer / Diretor',
+      margin + 120,
+      yPosition + 12,
+      8,
+      false,
+      secondaryTextColor,
+      'left'
+    );
   }
 
   // Investment (right side)
   if (totalHours > 0 && data.paymentInfo?.hourlyRate) {
     const hourlyRate = data.paymentInfo!.hourlyRate!;
     addText('Investimento:', pageWidth - margin, yPosition, 10, false, secondaryTextColor, 'right');
-    addText(`${totalHours}h - R$${hourlyRate}/h`, pageWidth - margin, yPosition + 6, 10, false, textColor, 'right');
+    addText(
+      `${totalHours}h - R$${hourlyRate}/h`,
+      pageWidth - margin,
+      yPosition + 6,
+      10,
+      false,
+      textColor,
+      'right'
+    );
   }
 
   // Total Banner with Arrow
@@ -464,32 +541,50 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   const totalHoursCalc = data.paymentInfo?.totalHours || 0;
   const hourlyRateCalc = data.paymentInfo?.hourlyRate || 0;
   const totalFromHours = totalHoursCalc * hourlyRateCalc;
-  const grandTotal = totalFromHours > 0 ? totalFromHours : data.deliverables.reduce((sum, d) => sum + (d.quantity * d.unitValue), 0);
+  const grandTotal =
+    totalFromHours > 0
+      ? totalFromHours
+      : data.deliverables.reduce((sum, d) => sum + d.quantity * d.unitValue, 0);
 
   doc.setFillColor(accentRgb[0], accentRgb[1], accentRgb[2]);
   const totalBannerWidth = 120;
   const totalBannerX = pageWidth - margin - totalBannerWidth;
   doc.roundedRect(totalBannerX, yPosition, totalBannerWidth, 15, 2, 2, 'F');
-  addText(`TOTAL: ${formatCurrency(grandTotal)}`, totalBannerX + 8, yPosition + 10, 14, true, [255, 255, 255], 'left');
+  addText(
+    `TOTAL: ${formatCurrency(grandTotal)}`,
+    totalBannerX + 8,
+    yPosition + 10,
+    14,
+    true,
+    [255, 255, 255],
+    'left'
+  );
 
   // Arrow
   doc.setFillColor(255, 255, 255);
   doc.triangle(
-    totalBannerX + totalBannerWidth - 5, yPosition + 7.5,
-    totalBannerX + totalBannerWidth + 5, yPosition + 7.5,
-    totalBannerX + totalBannerWidth, yPosition + 2.5,
+    totalBannerX + totalBannerWidth - 5,
+    yPosition + 7.5,
+    totalBannerX + totalBannerWidth + 5,
+    yPosition + 7.5,
+    totalBannerX + totalBannerWidth,
+    yPosition + 2.5,
     'F'
   );
   doc.triangle(
-    totalBannerX + totalBannerWidth - 5, yPosition + 7.5,
-    totalBannerX + totalBannerWidth + 5, yPosition + 7.5,
-    totalBannerX + totalBannerWidth, yPosition + 12.5,
+    totalBannerX + totalBannerWidth - 5,
+    yPosition + 7.5,
+    totalBannerX + totalBannerWidth + 5,
+    yPosition + 7.5,
+    totalBannerX + totalBannerWidth,
+    yPosition + 12.5,
     'F'
   );
 
   // Payment Terms
   yPosition = pageHeight - 30;
-  const paymentTerms = data.paymentInfo?.paymentMethods?.[0]?.description || '50/50 no PIX, ou à vista com desconto';
+  const paymentTerms =
+    data.paymentInfo?.paymentMethods?.[0]?.description || '50/50 no PIX, ou à vista com desconto';
   addText(paymentTerms, margin, yPosition, 9, false, secondaryTextColor, 'left');
 
   // PIX and Discount Footer
@@ -501,13 +596,22 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   if (discountPercent > 0) {
     const discountAmount = grandTotal * (discountPercent / 100);
     const finalWithDiscount = grandTotal - discountAmount;
-    addText(`Desconto de ${discountPercent}% à vista no PIX! (${formatCurrency(finalWithDiscount)})`, pageWidth - margin, yPosition, 9, true, textColor, 'right');
+    addText(
+      `Desconto de ${discountPercent}% à vista no PIX! (${formatCurrency(finalWithDiscount)})`,
+      pageWidth - margin,
+      yPosition,
+      9,
+      true,
+      textColor,
+      'right'
+    );
   }
 
   // Generate filename
-  const filename = `budget-visant-${data.projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
+  const filename = `budget-visant-${data.projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${
+    new Date().toISOString().split('T')[0]
+  }.pdf`;
 
   // Save PDF
   doc.save(filename);
 };
-

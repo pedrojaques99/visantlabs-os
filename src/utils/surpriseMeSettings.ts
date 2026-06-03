@@ -40,12 +40,20 @@ export function getSurpriseMeSelectedTags(): SurpriseMeSelectedTags {
     }
 
     return {
-      selectedCategoryTags: Array.isArray(parsed.selectedCategoryTags) ? parsed.selectedCategoryTags : [],
-      selectedLocationTags: Array.isArray(parsed.selectedLocationTags) ? parsed.selectedLocationTags : [],
+      selectedCategoryTags: Array.isArray(parsed.selectedCategoryTags)
+        ? parsed.selectedCategoryTags
+        : [],
+      selectedLocationTags: Array.isArray(parsed.selectedLocationTags)
+        ? parsed.selectedLocationTags
+        : [],
       selectedAngleTags: Array.isArray(parsed.selectedAngleTags) ? parsed.selectedAngleTags : [],
-      selectedLightingTags: Array.isArray(parsed.selectedLightingTags) ? parsed.selectedLightingTags : [],
+      selectedLightingTags: Array.isArray(parsed.selectedLightingTags)
+        ? parsed.selectedLightingTags
+        : [],
       selectedEffectTags: Array.isArray(parsed.selectedEffectTags) ? parsed.selectedEffectTags : [],
-      selectedMaterialTags: Array.isArray(parsed.selectedMaterialTags) ? parsed.selectedMaterialTags : [],
+      selectedMaterialTags: Array.isArray(parsed.selectedMaterialTags)
+        ? parsed.selectedMaterialTags
+        : [],
     };
   } catch (error) {
     // Corrupted data, return default

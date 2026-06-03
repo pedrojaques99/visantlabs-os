@@ -2,9 +2,15 @@ import { create } from 'zustand';
 
 export type WatermarkType = 'text' | 'logo';
 export type WatermarkPosition =
-  | 'top-left' | 'top-center' | 'top-right'
-  | 'center-left' | 'center' | 'center-right'
-  | 'bottom-left' | 'bottom-center' | 'bottom-right'
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'center-left'
+  | 'center'
+  | 'center-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right'
   | 'tile';
 export type WmItemStatus = 'queued' | 'processing' | 'done' | 'error';
 

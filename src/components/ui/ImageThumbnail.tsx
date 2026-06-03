@@ -21,7 +21,11 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
   const [hasError, setHasError] = useState(false);
   const imageUrl = useMemo(() => {
     if (!base64 || typeof base64 !== 'string') return '';
-    if (base64.startsWith('http://') || base64.startsWith('https://') || base64.startsWith('data:')) {
+    if (
+      base64.startsWith('http://') ||
+      base64.startsWith('https://') ||
+      base64.startsWith('data:')
+    ) {
       return isSafeUrl(base64) ? base64 : '';
     }
     const dataUrl = `data:image/png;base64,${base64}`;
@@ -118,10 +122,11 @@ export const ImageThumbnailList: React.FC<ImageThumbnailListProps> = ({
       })}
       {images.length > maxThumbnails && (
         <div className="w-16 h-16 flex items-center justify-center bg-neutral-900/50 border border-neutral-700/30 rounded">
-          <span className="text-xs font-mono text-neutral-500">+{images.length - maxThumbnails}</span>
+          <span className="text-xs font-mono text-neutral-500">
+            +{images.length - maxThumbnails}
+          </span>
         </div>
       )}
     </div>
   );
 };
-

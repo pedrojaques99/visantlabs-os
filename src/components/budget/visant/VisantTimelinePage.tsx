@@ -51,23 +51,21 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
     },
   ];
 
-  const timeline = data.timeline && data.timeline.length > 0
-    ? data.timeline
-    : defaultTimeline;
+  const timeline = data.timeline && data.timeline.length > 0 ? data.timeline : defaultTimeline;
 
   // Diamond icon SVG
   const DiamondIcon = () => (
     <svg width="19" height="31" viewBox="0 0 19 31" fill="none">
-      <path
-        d="M9.5 0L19 15.5L9.5 31L0 15.5L9.5 0Z"
-        fill={accentColor}
-        fillOpacity="0.8"
-      />
+      <path d="M9.5 0L19 15.5L9.5 31L0 15.5L9.5 0Z" fill={accentColor} fillOpacity="0.8" />
     </svg>
   );
 
   // Timeline node component with different fill states
-  const TimelineNode: React.FC<{ day: number; index: number; total: number }> = ({ day, index, total }) => {
+  const TimelineNode: React.FC<{ day: number; index: number; total: number }> = ({
+    day,
+    index,
+    total,
+  }) => {
     const fillProgress = (index + 1) / total; // 0 to 1
 
     // Different node styles based on progress
@@ -169,7 +167,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
           >
             <InlineEditor
               value="TIMELINE DO PROJETO"
-              onChange={() => { }}
+              onChange={() => {}}
               editable={false}
               style={{
                 fontSize: '17.5110px',
@@ -184,7 +182,10 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
       </div>
 
       {/* Timeline */}
-      <div className="flex-1 relative flex items-center" style={{ paddingLeft: '910px', minHeight: '850px', }}>
+      <div
+        className="flex-1 relative flex items-center"
+        style={{ paddingLeft: '910px', minHeight: '850px' }}
+      >
         {/* Vertical line */}
         <div
           style={{
@@ -217,7 +218,10 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
                 }}
               >
                 {/* Day label and node */}
-                <div className="flex items-center gap-3 relative" style={{ width: '130px', flexShrink: 0, zIndex: 3, justifyContent: 'flex-end' }}>
+                <div
+                  className="flex items-center gap-3 relative"
+                  style={{ width: '130px', flexShrink: 0, zIndex: 3, justifyContent: 'flex-end' }}
+                >
                   <div
                     style={{
                       border: `1px solid ${textColor}`,
@@ -231,7 +235,8 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
                     <InlineEditor
                       value={`DIA ${milestone.day}`}
                       onChange={(newValue) => {
-                        const dayMatch = String(newValue).match(/DIA\s*(\d+)/i) || String(newValue).match(/(\d+)/);
+                        const dayMatch =
+                          String(newValue).match(/DIA\s*(\d+)/i) || String(newValue).match(/(\d+)/);
                         const day = dayMatch ? parseInt(dayMatch[1], 10) : milestone.day;
                         const updated = [...timeline];
                         updated[index] = {
@@ -333,4 +338,3 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
     </div>
   );
 };
-

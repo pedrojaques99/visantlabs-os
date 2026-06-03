@@ -1,6 +1,18 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ArrowRight, Palette, Type, Layers2, Blend, Zap, Frame, FileText, Shapes, Upload } from 'lucide-react';
+import {
+  CheckCircle2,
+  ArrowRight,
+  Palette,
+  Type,
+  Layers2,
+  Blend,
+  Zap,
+  Frame,
+  FileText,
+  Shapes,
+  Upload,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ComponentPreviewCard, type ValidationState } from './ComponentPreviewCard';
@@ -10,7 +22,8 @@ import type { BrandGuideline } from '@/lib/figma-types';
 
 const ColorsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const colors = guideline.colors || [];
-  if (colors.length === 0) return <p className="text-[10px] text-neutral-600 font-mono">No colors defined yet</p>;
+  if (colors.length === 0)
+    return <p className="text-[10px] text-neutral-600 font-mono">No colors defined yet</p>;
   return (
     <div className="grid grid-cols-4 gap-2">
       {colors.slice(0, 8).map((c, i) => (
@@ -28,24 +41,37 @@ const ColorsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
 
 const TypographyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const fonts = guideline.typography || [];
-  if (fonts.length === 0) return <p className="text-[10px] text-neutral-600 font-mono">No typography defined yet</p>;
+  if (fonts.length === 0)
+    return <p className="text-[10px] text-neutral-600 font-mono">No typography defined yet</p>;
   const primary = fonts[0];
   return (
     <div className="space-y-3">
       <div className="p-3 rounded-xl bg-neutral-900/40 border border-white/[0.03]">
-        <p className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest mb-1">{primary.role}</p>
+        <p className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest mb-1">
+          {primary.role}
+        </p>
         <p
           className="text-3xl leading-tight text-white"
-          style={{ fontFamily: primary.family, fontWeight: 300, letterSpacing: primary.letterSpacing || '-0.03em' }}
+          style={{
+            fontFamily: primary.family,
+            fontWeight: 300,
+            letterSpacing: primary.letterSpacing || '-0.03em',
+          }}
         >
           {guideline.identity?.name || 'Brand Name'}
         </p>
-        <p className="text-[9px] font-mono text-neutral-500 mt-1">{primary.family} · {primary.style || 'Regular'} · {primary.size || 16}px</p>
+        <p className="text-[9px] font-mono text-neutral-500 mt-1">
+          {primary.family} · {primary.style || 'Regular'} · {primary.size || 16}px
+        </p>
       </div>
       {fonts.length > 1 && (
         <div className="flex gap-2 flex-wrap">
           {fonts.slice(1).map((f, i) => (
-            <span key={i} className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/5 text-[10px] text-neutral-400" style={{ fontFamily: f.family }}>
+            <span
+              key={i}
+              className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/5 text-[10px] text-neutral-400"
+              style={{ fontFamily: f.family }}
+            >
               {f.family} <span className="text-neutral-600">· {f.role}</span>
             </span>
           ))}
@@ -57,8 +83,14 @@ const TypographyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline 
 
 const ButtonsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const colors = guideline.colors || [];
-  const primary = colors.find(c => c.role?.toLowerCase().includes('primary') || c.role?.toLowerCase().includes('fill')) || colors[1];
-  const accent = colors.find(c => c.role?.toLowerCase().includes('accent') || c.role?.toLowerCase().includes('highlight')) || colors[2];
+  const primary =
+    colors.find(
+      (c) => c.role?.toLowerCase().includes('primary') || c.role?.toLowerCase().includes('fill')
+    ) || colors[1];
+  const accent =
+    colors.find(
+      (c) => c.role?.toLowerCase().includes('accent') || c.role?.toLowerCase().includes('highlight')
+    ) || colors[2];
   const primaryHex = primary?.hex || '#1F7878';
   const accentHex = accent?.hex || '#52DDEB';
   const radius = guideline.tokens?.radius?.md || 10;
@@ -85,12 +117,48 @@ const ButtonsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) 
     <div className="space-y-2">
       <div className="flex gap-2">
         <div style={{ ...btnBase, background: primaryHex, color: '#F3E9E9' }}>PRIMARY</div>
-        <div style={{ ...btnBase, background: 'transparent', border: `1.5px solid ${accentHex}`, color: accentHex }}>OUTLINE</div>
-        <div style={{ ...btnBase, background: `linear-gradient(135deg, ${accentHex}, ${primaryHex})`, color: '#0D0D0D' }}>GRADIENT</div>
+        <div
+          style={{
+            ...btnBase,
+            background: 'transparent',
+            border: `1.5px solid ${accentHex}`,
+            color: accentHex,
+          }}
+        >
+          OUTLINE
+        </div>
+        <div
+          style={{
+            ...btnBase,
+            background: `linear-gradient(135deg, ${accentHex}, ${primaryHex})`,
+            color: '#0D0D0D',
+          }}
+        >
+          GRADIENT
+        </div>
       </div>
       <div className="flex gap-2">
-        <div style={{ ...btnBase, background: '#1E1E1E', border: `1.5px solid ${accentHex}`, color: accentHex, boxShadow: `0 0 18px ${accentHex}40` }}>GLOW</div>
-        <div style={{ ...btnBase, background: 'transparent', border: '1.5px solid rgba(255,255,255,0.15)', color: '#F3E9E9' }}>GHOST</div>
+        <div
+          style={{
+            ...btnBase,
+            background: '#1E1E1E',
+            border: `1.5px solid ${accentHex}`,
+            color: accentHex,
+            boxShadow: `0 0 18px ${accentHex}40`,
+          }}
+        >
+          GLOW
+        </div>
+        <div
+          style={{
+            ...btnBase,
+            background: 'transparent',
+            border: '1.5px solid rgba(255,255,255,0.15)',
+            color: '#F3E9E9',
+          }}
+        >
+          GHOST
+        </div>
       </div>
     </div>
   );
@@ -98,28 +166,96 @@ const ButtonsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) 
 
 const CardsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const colors = guideline.colors || [];
-  const bg = colors.find(c => c.role?.toLowerCase().includes('background'))?.hex || '#1E1E1E';
-  const fg = colors.find(c => c.role?.toLowerCase().includes('foreground') || c.role?.toLowerCase().includes('text'))?.hex || '#F3E9E9';
-  const accent = colors.find(c => c.role?.toLowerCase().includes('accent'))?.hex || '#52DDEB';
+  const bg = colors.find((c) => c.role?.toLowerCase().includes('background'))?.hex || '#1E1E1E';
+  const fg =
+    colors.find(
+      (c) => c.role?.toLowerCase().includes('foreground') || c.role?.toLowerCase().includes('text')
+    )?.hex || '#F3E9E9';
+  const accent = colors.find((c) => c.role?.toLowerCase().includes('accent'))?.hex || '#52DDEB';
   const radius = guideline.tokens?.radius?.lg || 15;
   const fontFamily = guideline.typography?.[0]?.family || 'inherit';
-  const shadow = guideline.shadows?.find(s => s.type === 'outer')?.css || '0 6px 18px rgba(0,0,0,0.25)';
+  const shadow =
+    guideline.shadows?.find((s) => s.type === 'outer')?.css || '0 6px 18px rgba(0,0,0,0.25)';
 
   return (
     <div className="grid grid-cols-3 gap-2">
       {/* Dark card */}
-      <div style={{ borderRadius: radius, background: bg, border: '1px solid rgba(255,255,255,0.08)', padding: 12, fontFamily, boxShadow: shadow, minHeight: 80 }}>
-        <p style={{ fontSize: 9, color: accent, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 6 }}>DARK</p>
-        <p style={{ fontSize: 12, color: fg, fontWeight: 600 }}>{guideline.identity?.name || guideline.name || 'Brand'}</p>
+      <div
+        style={{
+          borderRadius: radius,
+          background: bg,
+          border: '1px solid rgba(255,255,255,0.08)',
+          padding: 12,
+          fontFamily,
+          boxShadow: shadow,
+          minHeight: 80,
+        }}
+      >
+        <p
+          style={{
+            fontSize: 9,
+            color: accent,
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            marginBottom: 6,
+          }}
+        >
+          DARK
+        </p>
+        <p style={{ fontSize: 12, color: fg, fontWeight: 600 }}>
+          {guideline.identity?.name || guideline.name || 'Brand'}
+        </p>
       </div>
       {/* Light card */}
-      <div style={{ borderRadius: radius, background: fg, border: `1px solid ${bg}20`, padding: 12, fontFamily, minHeight: 80 }}>
-        <p style={{ fontSize: 9, color: bg, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 6 }}>LIGHT</p>
+      <div
+        style={{
+          borderRadius: radius,
+          background: fg,
+          border: `1px solid ${bg}20`,
+          padding: 12,
+          fontFamily,
+          minHeight: 80,
+        }}
+      >
+        <p
+          style={{
+            fontSize: 9,
+            color: bg,
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            marginBottom: 6,
+          }}
+        >
+          LIGHT
+        </p>
         <p style={{ fontSize: 12, color: bg, fontWeight: 600 }}>Component</p>
       </div>
       {/* Glass card */}
-      <div style={{ borderRadius: radius, background: 'rgba(255,255,255,0.04)', border: `1px solid ${accent}30`, padding: 12, fontFamily, backdropFilter: 'blur(8px)', minHeight: 80 }}>
-        <p style={{ fontSize: 9, color: accent, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 6 }}>GLASS</p>
+      <div
+        style={{
+          borderRadius: radius,
+          background: 'rgba(255,255,255,0.04)',
+          border: `1px solid ${accent}30`,
+          padding: 12,
+          fontFamily,
+          backdropFilter: 'blur(8px)',
+          minHeight: 80,
+        }}
+      >
+        <p
+          style={{
+            fontSize: 9,
+            color: accent,
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            marginBottom: 6,
+          }}
+        >
+          GLASS
+        </p>
         <p style={{ fontSize: 12, color: fg, fontWeight: 600 }}>Premium</p>
       </div>
     </div>
@@ -128,12 +264,22 @@ const CardsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =>
 
 const GradientsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const grads = guideline.gradients || [];
-  if (grads.length === 0) return <p className="text-[10px] text-neutral-600 font-mono">No gradients defined</p>;
+  if (grads.length === 0)
+    return <p className="text-[10px] text-neutral-600 font-mono">No gradients defined</p>;
   return (
     <div className="grid grid-cols-3 gap-2">
-      {grads.slice(0, 6).map(g => (
+      {grads.slice(0, 6).map((g) => (
         <div key={g.id} className="rounded-xl overflow-hidden border border-white/5">
-          <div className="h-14" style={{ background: g.css || `linear-gradient(${g.angle}deg, ${g.stops.map(s => `${s.color} ${s.position}%`).join(', ')})` }} />
+          <div
+            className="h-14"
+            style={{
+              background:
+                g.css ||
+                `linear-gradient(${g.angle}deg, ${g.stops
+                  .map((s) => `${s.color} ${s.position}%`)
+                  .join(', ')})`,
+            }}
+          />
           <div className="px-2 py-1 bg-neutral-900/60">
             <p className="text-[9px] font-mono text-neutral-400 truncate">{g.name}</p>
           </div>
@@ -145,15 +291,36 @@ const GradientsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
 
 const ShadowsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const shadows = guideline.shadows || [];
-  if (shadows.length === 0) return <p className="text-[10px] text-neutral-600 font-mono">No shadows defined</p>;
+  if (shadows.length === 0)
+    return <p className="text-[10px] text-neutral-600 font-mono">No shadows defined</p>;
   const fontFamily = guideline.typography?.[0]?.family || 'inherit';
   const radius = guideline.tokens?.radius?.md || 10;
   return (
     <div className="flex gap-4 flex-wrap">
-      {shadows.map(s => (
+      {shadows.map((s) => (
         <div key={s.id} className="flex flex-col items-center gap-2">
-          <div style={{ width: 48, height: 48, borderRadius: radius, background: '#252525', boxShadow: s.css || `${s.x}px ${s.y}px ${s.blur}px ${s.spread}px rgba(0,0,0,${s.opacity})`, border: '1px solid rgba(255,255,255,0.05)' }} />
-          <p style={{ fontFamily, fontSize: 9, color: '#7A7A7A', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{s.name}</p>
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: radius,
+              background: '#252525',
+              boxShadow:
+                s.css || `${s.x}px ${s.y}px ${s.blur}px ${s.spread}px rgba(0,0,0,${s.opacity})`,
+              border: '1px solid rgba(255,255,255,0.05)',
+            }}
+          />
+          <p
+            style={{
+              fontFamily,
+              fontSize: 9,
+              color: '#7A7A7A',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+            }}
+          >
+            {s.name}
+          </p>
         </div>
       ))}
     </div>
@@ -162,27 +329,38 @@ const ShadowsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) 
 
 const MotionPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const m = guideline.motion;
-  if (!m?.easing && !m?.durations) return <p className="text-[10px] text-neutral-600 font-mono">No motion tokens defined</p>;
+  if (!m?.easing && !m?.durations)
+    return <p className="text-[10px] text-neutral-600 font-mono">No motion tokens defined</p>;
   return (
     <div className="space-y-2">
       {m.easing && (
         <div className="flex items-center gap-2">
           <span className="text-[9px] font-mono text-neutral-600 uppercase">Easing</span>
-          <span className="text-[10px] font-mono text-neutral-300 bg-white/[0.03] px-2 py-0.5 rounded-md border border-white/5">{m.easing}</span>
+          <span className="text-[10px] font-mono text-neutral-300 bg-white/[0.03] px-2 py-0.5 rounded-md border border-white/5">
+            {m.easing}
+          </span>
         </div>
       )}
       {m.durations && (
         <div className="flex gap-2">
-          {(['fast', 'medium', 'slow'] as const).map(k => m.durations?.[k] !== undefined && (
-            <div key={k} className="flex-1 text-center p-2 rounded-lg bg-white/[0.03] border border-white/5">
-              <p className="text-[9px] font-mono text-neutral-600 uppercase">{k}</p>
-              <p className="text-[12px] font-mono text-white font-bold">{m.durations[k]}ms</p>
-            </div>
-          ))}
+          {(['fast', 'medium', 'slow'] as const).map(
+            (k) =>
+              m.durations?.[k] !== undefined && (
+                <div
+                  key={k}
+                  className="flex-1 text-center p-2 rounded-lg bg-white/[0.03] border border-white/5"
+                >
+                  <p className="text-[9px] font-mono text-neutral-600 uppercase">{k}</p>
+                  <p className="text-[12px] font-mono text-white font-bold">{m.durations[k]}ms</p>
+                </div>
+              )
+          )}
         </div>
       )}
       {m.philosophy && (
-        <span className="inline-flex px-2 py-1 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 text-[9px] font-mono text-brand-cyan uppercase tracking-wider">{m.philosophy}</span>
+        <span className="inline-flex px-2 py-1 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 text-[9px] font-mono text-brand-cyan uppercase tracking-wider">
+          {m.philosophy}
+        </span>
       )}
     </div>
   );
@@ -191,15 +369,28 @@ const MotionPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
 const EditorialPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const g = guideline.guidelines;
   const fontFamily = guideline.typography?.[0]?.family || 'inherit';
-  if (!g?.voice && !g?.dos?.length && !g?.person) return <p className="text-[10px] text-neutral-600 font-mono">No editorial rules defined</p>;
+  if (!g?.voice && !g?.dos?.length && !g?.person)
+    return <p className="text-[10px] text-neutral-600 font-mono">No editorial rules defined</p>;
   return (
     <div className="space-y-3">
       {g?.voice && (
-        <p style={{ fontFamily, fontSize: 14, color: '#F3E9E9', fontStyle: 'italic', opacity: 0.9 }}>"{g.voice}"</p>
+        <p
+          style={{ fontFamily, fontSize: 14, color: '#F3E9E9', fontStyle: 'italic', opacity: 0.9 }}
+        >
+          "{g.voice}"
+        </p>
       )}
       <div className="flex gap-2 flex-wrap">
-        {g?.person && <span className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400">2nd person: you/você</span>}
-        {g?.emojiPolicy === 'none' && <span className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400">No emoji</span>}
+        {g?.person && (
+          <span className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400">
+            2nd person: you/você
+          </span>
+        )}
+        {g?.emojiPolicy === 'none' && (
+          <span className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400">
+            No emoji
+          </span>
+        )}
       </div>
       {g?.dos && g.dos.length > 0 && (
         <div className="space-y-1">
@@ -216,13 +407,18 @@ const EditorialPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
 
 const LogosPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const logos = guideline.logos || [];
-  if (logos.length === 0) return <p className="text-[10px] text-neutral-600 font-mono">No logos uploaded</p>;
+  if (logos.length === 0)
+    return <p className="text-[10px] text-neutral-600 font-mono">No logos uploaded</p>;
   return (
     <div className="flex gap-3 flex-wrap">
       {logos.slice(0, 4).map((l, i) => (
         <div key={i} className="flex flex-col items-center gap-1">
           <div className="w-20 h-14 rounded-xl bg-neutral-900 border border-white/5 flex items-center justify-center overflow-hidden">
-            <img src={l.url} alt={l.label || l.variant} className="max-w-full max-h-full object-contain p-2" />
+            <img
+              src={l.url}
+              alt={l.label || l.variant}
+              className="max-w-full max-h-full object-contain p-2"
+            />
           </div>
           <p className="text-[8px] font-mono text-neutral-600 uppercase">{l.variant}</p>
         </div>
@@ -234,18 +430,28 @@ const LogosPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =>
 const StrategyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const s = guideline.strategy;
   const fontFamily = guideline.typography?.[0]?.family || 'inherit';
-  if (!s?.manifesto && !s?.archetypes?.length) return <p className="text-[10px] text-neutral-600 font-mono">No strategy defined</p>;
+  if (!s?.manifesto && !s?.archetypes?.length)
+    return <p className="text-[10px] text-neutral-600 font-mono">No strategy defined</p>;
   return (
     <div className="space-y-3">
       {s?.manifesto && (
         <p style={{ fontFamily, fontSize: 13, lineHeight: 1.6, color: 'rgba(243,233,233,0.8)' }}>
-          {(() => { const t = typeof s.manifesto === 'string' ? s.manifesto : (s.manifesto as any)?.full || ''; return t.slice(0, 160) + (t.length > 160 ? '...' : ''); })()}
+          {(() => {
+            const t =
+              typeof s.manifesto === 'string' ? s.manifesto : (s.manifesto as any)?.full || '';
+            return t.slice(0, 160) + (t.length > 160 ? '...' : '');
+          })()}
         </p>
       )}
       {s?.archetypes && s.archetypes.length > 0 && (
         <div className="flex gap-1 flex-wrap">
           {s.archetypes.map((a, i) => (
-            <span key={i} className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400">{a.name}</span>
+            <span
+              key={i}
+              className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400"
+            >
+              {a.name}
+            </span>
           ))}
         </div>
       )}
@@ -256,18 +462,30 @@ const StrategyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline })
 const TokensPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const radius = guideline.tokens?.radius;
   const spacing = guideline.tokens?.spacing;
-  if (!radius && !spacing) return <p className="text-[10px] text-neutral-600 font-mono">No tokens defined</p>;
-  const accent = guideline.colors?.find(c => c.role?.toLowerCase().includes('accent'))?.hex || '#52DDEB';
+  if (!radius && !spacing)
+    return <p className="text-[10px] text-neutral-600 font-mono">No tokens defined</p>;
+  const accent =
+    guideline.colors?.find((c) => c.role?.toLowerCase().includes('accent'))?.hex || '#52DDEB';
   return (
     <div className="space-y-2">
       {radius && (
         <div className="flex gap-2 flex-wrap items-end">
-          {Object.entries(radius).slice(0, 6).map(([k, v]) => (
-            <div key={k} className="flex flex-col items-center gap-1">
-              <div style={{ width: 32, height: 32, borderRadius: v === 999 ? '50%' : v, background: `${accent}20`, border: `1px solid ${accent}40` }} />
-              <p className="text-[8px] font-mono text-neutral-600">{k}</p>
-            </div>
-          ))}
+          {Object.entries(radius)
+            .slice(0, 6)
+            .map(([k, v]) => (
+              <div key={k} className="flex flex-col items-center gap-1">
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: v === 999 ? '50%' : v,
+                    background: `${accent}20`,
+                    border: `1px solid ${accent}40`,
+                  }}
+                />
+                <p className="text-[8px] font-mono text-neutral-600">{k}</p>
+              </div>
+            ))}
         </div>
       )}
     </div>
@@ -297,7 +515,7 @@ const VALIDATION_SECTIONS: ValidationSection[] = [
   {
     id: 'typography',
     title: 'Typography · Scale',
-    getSubtitle: (g) => g.typography?.map(t => t.family).join(' · ') || '',
+    getSubtitle: (g) => g.typography?.map((t) => t.family).join(' · ') || '',
     isAvailable: (g) => (g.typography?.length || 0) > 0,
     preview: TypographyPreview,
     icon: Type,
@@ -345,10 +563,13 @@ const VALIDATION_SECTIONS: ValidationSection[] = [
   {
     id: 'tokens',
     title: 'Tokens · Radii & Spacing',
-    getSubtitle: (g) => [
-      g.tokens?.radius ? `${Object.keys(g.tokens.radius).length} radii` : '',
-      g.tokens?.spacing ? `${Object.keys(g.tokens.spacing).length} spacing` : '',
-    ].filter(Boolean).join(' · ') || 'Design tokens',
+    getSubtitle: (g) =>
+      [
+        g.tokens?.radius ? `${Object.keys(g.tokens.radius).length} radii` : '',
+        g.tokens?.spacing ? `${Object.keys(g.tokens.spacing).length} spacing` : '',
+      ]
+        .filter(Boolean)
+        .join(' · ') || 'Design tokens',
     isAvailable: (g) => !!(g.tokens?.radius || g.tokens?.spacing),
     preview: TokensPreview,
     icon: Frame,
@@ -364,7 +585,8 @@ const VALIDATION_SECTIONS: ValidationSection[] = [
   {
     id: 'editorial',
     title: 'Editorial · Voice',
-    getSubtitle: (g) => g.guidelines?.voice ? `"${g.guidelines.voice.slice(0, 50)}"` : 'Tone & rules',
+    getSubtitle: (g) =>
+      g.guidelines?.voice ? `"${g.guidelines.voice.slice(0, 50)}"` : 'Tone & rules',
     isAvailable: (g) => !!(g.guidelines?.voice || g.guidelines?.dos?.length),
     preview: EditorialPreview,
     icon: FileText,
@@ -372,7 +594,8 @@ const VALIDATION_SECTIONS: ValidationSection[] = [
   {
     id: 'strategy',
     title: 'Strategy · Brand',
-    getSubtitle: (g) => g.strategy?.archetypes?.map(a => a.name).join(' · ') || 'Manifesto & archetypes',
+    getSubtitle: (g) =>
+      g.strategy?.archetypes?.map((a) => a.name).join(' · ') || 'Manifesto & archetypes',
     isAvailable: (g) => !!(g.strategy?.manifesto || g.strategy?.archetypes?.length),
     preview: StrategyPreview,
     icon: FileText,
@@ -383,18 +606,23 @@ const VALIDATION_SECTIONS: ValidationSection[] = [
 
 const ACCEPTED_TYPES = '.fig,.pdf,.txt,.md,text/plain,text/markdown,image/*';
 
-const EmptyDropZone: React.FC<{ onExtractFiles?: (files: FileList) => void }> = ({ onExtractFiles }) => {
+const EmptyDropZone: React.FC<{ onExtractFiles?: (files: FileList) => void }> = ({
+  onExtractFiles,
+}) => {
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const zoneRef = useRef<HTMLDivElement>(null);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    if (e.dataTransfer.files?.length && onExtractFiles) {
-      onExtractFiles(e.dataTransfer.files);
-    }
-  }, [onExtractFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      if (e.dataTransfer.files?.length && onExtractFiles) {
+        onExtractFiles(e.dataTransfer.files);
+      }
+    },
+    [onExtractFiles]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -433,8 +661,16 @@ const EmptyDropZone: React.FC<{ onExtractFiles?: (files: FileList) => void }> = 
       )}
       onClick={() => fileInputRef.current?.click()}
     >
-      <Upload size={28} className={cn('mx-auto transition-colors', dragging ? 'text-brand-cyan' : 'text-neutral-600')} />
-      <p className="text-[11px] font-mono text-neutral-600 uppercase tracking-widest">No sections to review yet</p>
+      <Upload
+        size={28}
+        className={cn(
+          'mx-auto transition-colors',
+          dragging ? 'text-brand-cyan' : 'text-neutral-600'
+        )}
+      />
+      <p className="text-[11px] font-mono text-neutral-600 uppercase tracking-widest">
+        No sections to review yet
+      </p>
       <p className="text-[11px] text-neutral-500 max-w-sm mx-auto">
         Drop a PDF, .fig, image, .txt or .md file here to extract brand tokens — or click to browse.
         You can also paste from clipboard (Ctrl+V).
@@ -446,7 +682,10 @@ const EmptyDropZone: React.FC<{ onExtractFiles?: (files: FileList) => void }> = 
           className="hidden"
           accept={ACCEPTED_TYPES}
           multiple
-          onChange={e => { if (e.target.files?.length) onExtractFiles(e.target.files); e.target.value = ''; }}
+          onChange={(e) => {
+            if (e.target.files?.length) onExtractFiles(e.target.files);
+            e.target.value = '';
+          }}
         />
       )}
     </div>
@@ -472,19 +711,21 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
 }) => {
   const validation = guideline.validation || {};
   const primaryFont = guideline.typography?.[0]?.family;
-  const primaryColor = guideline.colors?.find(c => c.role?.toLowerCase().includes('accent'))?.hex || '#52DDEB';
+  const primaryColor =
+    guideline.colors?.find((c) => c.role?.toLowerCase().includes('accent'))?.hex || '#52DDEB';
 
   const availableSections = useMemo(
-    () => VALIDATION_SECTIONS.filter(s => s.isAvailable(guideline)),
+    () => VALIDATION_SECTIONS.filter((s) => s.isAvailable(guideline)),
     [guideline]
   );
 
-  const approvedCount = availableSections.filter(s => validation[s.id] === 'approved').length;
+  const approvedCount = availableSections.filter((s) => validation[s.id] === 'approved').length;
   const total = availableSections.length;
   const progress = total > 0 ? (approvedCount / total) * 100 : 0;
   const allDone = approvedCount === total;
 
-  const getState = (id: string): ValidationState => (validation[id] as ValidationState) || 'pending';
+  const getState = (id: string): ValidationState =>
+    (validation[id] as ValidationState) || 'pending';
 
   const handleApprove = (id: string) => {
     onUpdate({ validation: { ...validation, [id]: 'approved' } });
@@ -501,19 +742,18 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest mb-1">Design System Review</p>
-            <h2
-              className="text-2xl font-bold text-white"
-              style={{ fontFamily: primaryFont }}
-            >
+            <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest mb-1">
+              Design System Review
+            </p>
+            <h2 className="text-2xl font-bold text-white" style={{ fontFamily: primaryFont }}>
               {guideline.identity?.name || guideline.name || 'Brand'}
             </h2>
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-mono text-neutral-600">{approvedCount}/{total} approved</p>
-            {allDone && (
-              <p className="text-[10px] font-mono text-brand-cyan">All done ✓</p>
-            )}
+            <p className="text-[10px] font-mono text-neutral-600">
+              {approvedCount}/{total} approved
+            </p>
+            {allDone && <p className="text-[10px] font-mono text-brand-cyan">All done ✓</p>}
           </div>
         </div>
 
@@ -529,7 +769,8 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
         </div>
 
         <p className="text-[11px] text-neutral-500">
-          Review each component rendered with your brand tokens. Approve or request changes — you can always edit and re-review later.
+          Review each component rendered with your brand tokens. Approve or request changes — you
+          can always edit and re-review later.
         </p>
       </div>
 
@@ -554,16 +795,15 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
       </div>
 
       {/* Empty state with drop zone */}
-      {availableSections.length === 0 && (
-        <EmptyDropZone onExtractFiles={onExtractFiles} />
-      )}
+      {availableSections.length === 0 && <EmptyDropZone onExtractFiles={onExtractFiles} />}
 
       {/* Complete CTA */}
       <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
         <div className="flex gap-2">
-          {availableSections.filter(s => getState(s.id) === 'needs_work').length > 0 && (
+          {availableSections.filter((s) => getState(s.id) === 'needs_work').length > 0 && (
             <p className="text-[10px] font-mono text-amber-400">
-              {availableSections.filter(s => getState(s.id) === 'needs_work').length} section(s) need attention
+              {availableSections.filter((s) => getState(s.id) === 'needs_work').length} section(s)
+              need attention
             </p>
           )}
         </div>

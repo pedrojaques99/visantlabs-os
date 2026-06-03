@@ -36,7 +36,8 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
         className="relative max-w-4xl w-full max-h-[90vh] bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 md:p-8 my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <Button variant="ghost"
+        <Button
+          variant="ghost"
           onClick={onClose}
           className="absolute top-4 right-4 bg-neutral-800 hover:bg-neutral-700 p-2 rounded-md text-neutral-300 hover:text-white transition-colors z-10"
           title="Close"
@@ -58,15 +59,20 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
           <div className="space-y-6 text-sm text-neutral-300 leading-relaxed max-h-[calc(90vh-180px)] overflow-y-auto">
             {/* Overview */}
             <div>
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-3  uppercase">Overview</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-3  uppercase">
+                Overview
+              </h2>
               <p className="text-neutral-400">
-                This document explains how we handle and secure your Gemini API keys when you choose to use your own API key with our service.
+                This document explains how we handle and secure your Gemini API keys when you choose
+                to use your own API key with our service.
               </p>
             </div>
 
             {/* Security Measures */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Security Measures</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+                Security Measures
+              </h2>
 
               <div className="space-y-4">
                 <div>
@@ -75,10 +81,24 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     <h3 className="text-base font-semibold text-neutral-300">Encryption</h3>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-6">
-                    <li><strong className="text-neutral-300">Encryption Algorithm:</strong> We use AES-256-GCM encryption, a military-grade encryption standard</li>
-                    <li><strong className="text-neutral-300">Storage:</strong> Your API keys are encrypted before being stored in our database</li>
-                    <li><strong className="text-neutral-300">Master Key:</strong> We use a master encryption key stored securely in environment variables (never in code or version control)</li>
-                    <li><strong className="text-neutral-300">Encryption Process:</strong> Your API key is encrypted immediately when you save it, using industry-standard cryptographic libraries</li>
+                    <li>
+                      <strong className="text-neutral-300">Encryption Algorithm:</strong> We use
+                      AES-256-GCM encryption, a military-grade encryption standard
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Storage:</strong> Your API keys are
+                      encrypted before being stored in our database
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Master Key:</strong> We use a master
+                      encryption key stored securely in environment variables (never in code or
+                      version control)
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Encryption Process:</strong> Your API key
+                      is encrypted immediately when you save it, using industry-standard
+                      cryptographic libraries
+                    </li>
                   </ul>
                 </div>
 
@@ -88,19 +108,41 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     <h3 className="text-base font-semibold text-neutral-300">Access Control</h3>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-6">
-                    <li><strong className="text-neutral-300">Authentication Required:</strong> Only authenticated users can save or access their own API keys</li>
-                    <li><strong className="text-neutral-300">User Isolation:</strong> Each user can only access their own encrypted API key</li>
-                    <li><strong className="text-neutral-300">No Plaintext Storage:</strong> Your API key is never stored in plaintext in our database, logs, or anywhere else</li>
-                    <li><strong className="text-neutral-300">No Exposure:</strong> We never return decrypted API keys in API responses - we only confirm successful operations</li>
+                    <li>
+                      <strong className="text-neutral-300">Authentication Required:</strong> Only
+                      authenticated users can save or access their own API keys
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">User Isolation:</strong> Each user can
+                      only access their own encrypted API key
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">No Plaintext Storage:</strong> Your API
+                      key is never stored in plaintext in our database, logs, or anywhere else
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">No Exposure:</strong> We never return
+                      decrypted API keys in API responses - we only confirm successful operations
+                    </li>
                   </ul>
                 </div>
 
                 <div>
                   <h3 className="text-base font-semibold text-neutral-300 mb-2">Usage</h3>
                   <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-6">
-                    <li><strong className="text-neutral-300">Priority:</strong> When you provide your own API key, it takes priority over the system's default API key for your requests</li>
-                    <li><strong className="text-neutral-300">Quota:</strong> Your API key uses your own Google Cloud quota and credits</li>
-                    <li><strong className="text-neutral-300">Transparency:</strong> All API calls made with your key are billed to your Google Cloud account, not ours</li>
+                    <li>
+                      <strong className="text-neutral-300">Priority:</strong> When you provide your
+                      own API key, it takes priority over the system's default API key for your
+                      requests
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Quota:</strong> Your API key uses your
+                      own Google Cloud quota and credits
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Transparency:</strong> All API calls made
+                      with your key are billed to your Google Cloud account, not ours
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -108,16 +150,30 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Your Responsibilities */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Your Responsibilities</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+                Your Responsibilities
+              </h2>
 
               <div className="space-y-4">
                 <div>
                   <h3 className="text-base font-semibold text-neutral-300 mb-2">Key Management</h3>
                   <ol className="list-decimal list-inside space-y-1 text-neutral-400 ml-6">
-                    <li><strong className="text-neutral-300">Keep Your Key Secure:</strong> Never share your API key with others or commit it to version control</li>
-                    <li><strong className="text-neutral-300">Rotate Regularly:</strong> Consider rotating your API key periodically for better security</li>
-                    <li><strong className="text-neutral-300">Monitor Usage:</strong> Monitor your Google Cloud Console for unexpected usage or charges</li>
-                    <li><strong className="text-neutral-300">Key Restrictions:</strong> Configure API key restrictions in Google AI Studio to limit where it can be used</li>
+                    <li>
+                      <strong className="text-neutral-300">Keep Your Key Secure:</strong> Never
+                      share your API key with others or commit it to version control
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Rotate Regularly:</strong> Consider
+                      rotating your API key periodically for better security
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Monitor Usage:</strong> Monitor your
+                      Google Cloud Console for unexpected usage or charges
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Key Restrictions:</strong> Configure API
+                      key restrictions in Google AI Studio to limit where it can be used
+                    </li>
                   </ol>
                 </div>
 
@@ -125,15 +181,28 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                   <h3 className="text-base font-semibold text-neutral-300 mb-2">Best Practices</h3>
                   <ol className="list-decimal list-inside space-y-1 text-neutral-400 ml-6">
                     <li>
-                      <strong className="text-neutral-300">Restrict Your Key:</strong> In Google AI Studio, set restrictions on your API key:
+                      <strong className="text-neutral-300">Restrict Your Key:</strong> In Google AI
+                      Studio, set restrictions on your API key:
                       <ul className="list-disc list-inside ml-6 mt-1 space-y-1">
-                        <li>Application restrictions (e.g., IP address restrictions if possible)</li>
+                        <li>
+                          Application restrictions (e.g., IP address restrictions if possible)
+                        </li>
                         <li>API restrictions (limit to only Gemini API)</li>
                       </ul>
                     </li>
-                    <li><strong className="text-neutral-300">Set Usage Quotas:</strong> Configure daily/monthly usage quotas in Google Cloud Console to prevent unexpected charges</li>
-                    <li><strong className="text-neutral-300">Monitor Billing:</strong> Regularly check your Google Cloud billing to ensure usage aligns with expectations</li>
-                    <li><strong className="text-neutral-300">Delete When Not Needed:</strong> If you stop using the service, delete your API key from our system</li>
+                    <li>
+                      <strong className="text-neutral-300">Set Usage Quotas:</strong> Configure
+                      daily/monthly usage quotas in Google Cloud Console to prevent unexpected
+                      charges
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Monitor Billing:</strong> Regularly check
+                      your Google Cloud billing to ensure usage aligns with expectations
+                    </li>
+                    <li>
+                      <strong className="text-neutral-300">Delete When Not Needed:</strong> If you
+                      stop using the service, delete your API key from our system
+                    </li>
                   </ol>
                 </div>
               </div>
@@ -141,21 +210,39 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* How It Works */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">How It Works</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+                How It Works
+              </h2>
               <ol className="list-decimal list-inside space-y-1 text-neutral-400 ml-6">
-                <li><strong className="text-neutral-300">Saving:</strong> When you save your API key, it's encrypted using AES-256-GCM before being stored</li>
-                <li><strong className="text-neutral-300">Storage:</strong> Only the encrypted version is stored in our database</li>
-                <li><strong className="text-neutral-300">Usage:</strong> When making API calls, we decrypt your key in memory, use it for the request, and immediately discard it</li>
-                <li><strong className="text-neutral-300">Deletion:</strong> When you delete your key, it's permanently removed from our database</li>
+                <li>
+                  <strong className="text-neutral-300">Saving:</strong> When you save your API key,
+                  it's encrypted using AES-256-GCM before being stored
+                </li>
+                <li>
+                  <strong className="text-neutral-300">Storage:</strong> Only the encrypted version
+                  is stored in our database
+                </li>
+                <li>
+                  <strong className="text-neutral-300">Usage:</strong> When making API calls, we
+                  decrypt your key in memory, use it for the request, and immediately discard it
+                </li>
+                <li>
+                  <strong className="text-neutral-300">Deletion:</strong> When you delete your key,
+                  it's permanently removed from our database
+                </li>
               </ol>
             </div>
 
             {/* Data Privacy */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Data Privacy</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+                Data Privacy
+              </h2>
               <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-6">
                 <li>We never share your API keys with third parties</li>
-                <li>We never use your API keys for any purpose other than processing your requests</li>
+                <li>
+                  We never use your API keys for any purpose other than processing your requests
+                </li>
                 <li>We follow industry best practices for secure key management</li>
                 <li>Your encrypted keys are stored in a secure, access-controlled database</li>
               </ul>
@@ -163,11 +250,22 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Compliance */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Compliance</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+                Compliance
+              </h2>
               <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-6">
-                <li><strong className="text-neutral-300">Encryption Standards:</strong> We follow industry standards (AES-256) for data encryption</li>
-                <li><strong className="text-neutral-300">Access Controls:</strong> We implement proper authentication and authorization controls</li>
-                <li><strong className="text-neutral-300">Audit Trail:</strong> API key operations (save/delete) are logged for security auditing</li>
+                <li>
+                  <strong className="text-neutral-300">Encryption Standards:</strong> We follow
+                  industry standards (AES-256) for data encryption
+                </li>
+                <li>
+                  <strong className="text-neutral-300">Access Controls:</strong> We implement proper
+                  authentication and authorization controls
+                </li>
+                <li>
+                  <strong className="text-neutral-300">Audit Trail:</strong> API key operations
+                  (save/delete) are logged for security auditing
+                </li>
               </ul>
             </div>
 
@@ -175,7 +273,9 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
             <div className="border-t border-neutral-800/50 pt-6">
               <div className="flex items-center gap-2 mb-3">
                 <AlertCircle className="text-amber-500" size={18} />
-                <h2 className="text-lg font-semibold font-mono text-neutral-200  uppercase">Support</h2>
+                <h2 className="text-lg font-semibold font-mono text-neutral-200  uppercase">
+                  Support
+                </h2>
               </div>
               <p className="text-neutral-400 mb-2">
                 If you have concerns about API key security or notice any suspicious activity:
@@ -189,7 +289,9 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Additional Resources */}
             <div className="border-t border-neutral-800/50 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">Additional Resources</h2>
+              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+                Additional Resources
+              </h2>
               <ul className="list-disc list-inside space-y-2 text-neutral-400 ml-6">
                 <li>
                   <a
@@ -232,4 +334,3 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
     </div>
   );
 };
-

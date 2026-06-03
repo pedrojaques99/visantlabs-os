@@ -20,7 +20,15 @@ import { Save, Download, Share2, Copy, Check, AlertCircle, Menu, X } from 'lucid
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { generateBudgetPDF } from '@/utils/generateBudgetPDF';
 import { getTemplateById } from '@/utils/budgetTemplates';
-import { DndContext, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -46,7 +54,11 @@ export const BudgetMachinePage: React.FC = () => {
   // PDF positioning mode for custom templates
   const [positioningFieldId, setPositioningFieldId] = useState<string | null>(null);
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
-  const [pendingFieldPosition, setPendingFieldPosition] = useState<{ pageNum: number; x: number; y: number } | null>(null);
+  const [pendingFieldPosition, setPendingFieldPosition] = useState<{
+    pageNum: number;
+    x: number;
+    y: number;
+  } | null>(null);
   const [focusedFieldId, setFocusedFieldId] = useState<string | null>(null);
 
   // Form width state for resize
@@ -116,9 +128,19 @@ export const BudgetMachinePage: React.FC = () => {
     const projectId = searchParams.get('projectId');
     const presetId = searchParams.get('presetId');
 
-    if (presetId && presetId.trim() !== '' && presetId !== 'undefined' && isAuthenticated === true) {
+    if (
+      presetId &&
+      presetId.trim() !== '' &&
+      presetId !== 'undefined' &&
+      isAuthenticated === true
+    ) {
       loadPreset(presetId);
-    } else if (projectId && projectId.trim() !== '' && projectId !== 'undefined' && isAuthenticated === true) {
+    } else if (
+      projectId &&
+      projectId.trim() !== '' &&
+      projectId !== 'undefined' &&
+      isAuthenticated === true
+    ) {
       if (loadedProjectIdRef.current !== projectId) {
         loadProject(projectId);
       }
@@ -136,7 +158,7 @@ export const BudgetMachinePage: React.FC = () => {
 
     try {
       const presets = await budgetApi.getPdfPresets();
-      const preset = presets.find(p => (p._id || p.id) === presetId);
+      const preset = presets.find((p) => (p._id || p.id) === presetId);
 
       if (!preset) {
         throw new Error('Preset not found');
@@ -160,7 +182,9 @@ export const BudgetMachinePage: React.FC = () => {
       navigate('/budget-machine', { replace: true });
     } catch (error: any) {
       console.error('Error loading preset:', error);
-      toast.error(error.message || t('budget.errors.failedToLoadPreset') || 'Failed to load preset');
+      toast.error(
+        error.message || t('budget.errors.failedToLoadPreset') || 'Failed to load preset'
+      );
       navigate('/budget-machine', { replace: true });
     } finally {
       setIsLoadingProject(false);
@@ -206,11 +230,18 @@ export const BudgetMachinePage: React.FC = () => {
         customContent: (project as any).customContent || undefined,
         finalCTAText: (project as any).finalCTAText || undefined,
         year: (project as any).year || undefined,
-        serviceTitle: (project as any).data?.serviceTitle || (project as any).serviceTitle || undefined,
-        coverBackgroundColor: (project as any).data?.coverBackgroundColor || (project as any).coverBackgroundColor || undefined,
-        coverTextColor: (project as any).data?.coverTextColor || (project as any).coverTextColor || undefined,
-        customPdfUrl: (project as any).data?.customPdfUrl || (project as any).customPdfUrl || undefined,
-        pdfFieldMappings: (project as any).data?.pdfFieldMappings || (project as any).pdfFieldMappings || undefined,
+        serviceTitle:
+          (project as any).data?.serviceTitle || (project as any).serviceTitle || undefined,
+        coverBackgroundColor:
+          (project as any).data?.coverBackgroundColor ||
+          (project as any).coverBackgroundColor ||
+          undefined,
+        coverTextColor:
+          (project as any).data?.coverTextColor || (project as any).coverTextColor || undefined,
+        customPdfUrl:
+          (project as any).data?.customPdfUrl || (project as any).customPdfUrl || undefined,
+        pdfFieldMappings:
+          (project as any).data?.pdfFieldMappings || (project as any).pdfFieldMappings || undefined,
       };
 
       setBudgetData(data);
@@ -231,7 +262,6 @@ export const BudgetMachinePage: React.FC = () => {
     setBudgetName(t('budget.title') || 'Budget Machine');
     setCurrentProjectId(null);
   };
-
 
   // Auto-save hook
   const { isSaving: isAutoSaving, saveStatus } = useBudgetAutoSave({
@@ -303,7 +333,11 @@ export const BudgetMachinePage: React.FC = () => {
     setIsSaving(true);
 
     try {
-      const saved = await budgetApi.save(budgetData, currentProjectId || undefined, budgetName || undefined);
+      const saved = await budgetApi.save(
+        budgetData,
+        currentProjectId || undefined,
+        budgetName || undefined
+      );
       const id = saved._id || (saved as any).id;
       setCurrentProjectId(id);
       navigate(`/budget-machine?projectId=${id}`, { replace: true });
@@ -347,7 +381,9 @@ export const BudgetMachinePage: React.FC = () => {
       setTimeout(() => setLinkCopied(false), 2000);
     } catch (error: any) {
       console.error('Error sharing budget:', error);
-      toast.error(error.message || t('budget.errors.failedToShare') || 'Failed to generate share link');
+      toast.error(
+        error.message || t('budget.errors.failedToShare') || 'Failed to generate share link'
+      );
     }
   };
 
@@ -586,11 +622,12 @@ export const BudgetMachinePage: React.FC = () => {
       seoDescription="Crie e gerencie orçamentos profissionais para seus projetos de design."
       title={budgetName || t('budget.title') || 'Budget Machine'}
       microTitle="Systems // Budget"
-      description={selectedTemplate ? (getTemplateById(selectedTemplate)?.name || selectedTemplate) : "Gerencie seus orçamentos."}
-      breadcrumb={[
-        { label: 'Systems', to: '/apps' },
-        { label: 'Budget Machine' }
-      ]}
+      description={
+        selectedTemplate
+          ? getTemplateById(selectedTemplate)?.name || selectedTemplate
+          : 'Gerencie seus orçamentos.'
+      }
+      breadcrumb={[{ label: 'Systems', to: '/apps' }, { label: 'Budget Machine' }]}
       actions={budgetActions}
       width="full"
       noBackground
@@ -602,186 +639,203 @@ export const BudgetMachinePage: React.FC = () => {
         onDragCancel={handleDragCancel}
       >
         <div className="relative h-[calc(100vh-140px)] w-full overflow-hidden">
-            {/* Overlay - Close sidebar when clicking outside */}
-            {isSidebarOpen && (
-              <div
-                className="fixed inset-0 bg-neutral-950/50 z-30 md:hidden"
-                onClick={() => setIsSidebarOpen(false)}
-              />
-            )}
-
-              <BudgetPreview
-                data={budgetData}
-                editable={true}
-                onDataChange={handlePreviewDataChange}
-                saveStatus={saveStatus}
-                positioningFieldId={positioningFieldId}
-                onPositioningModeChange={setPositioningFieldId}
-                budgetId={currentProjectId}
-                onFieldSelect={setSelectedFieldId}
-                selectedFieldId={selectedFieldId}
-                isSidebarOpen={isSidebarOpen}
-              />
-
-            {/* Form Side - Overlay Sidebar */}
+          {/* Overlay - Close sidebar when clicking outside */}
+          {isSidebarOpen && (
             <div
-              ref={formContainerRef}
-              className={`fixed top-[160px] left-0 h-[calc(100vh-160px)] z-40 bg-neutral-950 border-r border-neutral-800 overflow-hidden flex flex-col transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                }`}
-              style={formWidth ? {
-                width: `${formWidth}px`,
-                minWidth: '320px',
-                maxWidth: '600px'
-              } : {
-                width: '400px',
-                minWidth: '320px',
-                maxWidth: '600px'
-              }}
+              className="fixed inset-0 bg-neutral-950/50 z-30 md:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+
+          <BudgetPreview
+            data={budgetData}
+            editable={true}
+            onDataChange={handlePreviewDataChange}
+            saveStatus={saveStatus}
+            positioningFieldId={positioningFieldId}
+            onPositioningModeChange={setPositioningFieldId}
+            budgetId={currentProjectId}
+            onFieldSelect={setSelectedFieldId}
+            selectedFieldId={selectedFieldId}
+            isSidebarOpen={isSidebarOpen}
+          />
+
+          {/* Form Side - Overlay Sidebar */}
+          <div
+            ref={formContainerRef}
+            className={`fixed top-[160px] left-0 h-[calc(100vh-160px)] z-40 bg-neutral-950 border-r border-neutral-800 overflow-hidden flex flex-col transition-transform duration-300 ease-in-out ${
+              isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+            style={
+              formWidth
+                ? {
+                    width: `${formWidth}px`,
+                    minWidth: '320px',
+                    maxWidth: '600px',
+                  }
+                : {
+                    width: '400px',
+                    minWidth: '320px',
+                    maxWidth: '600px',
+                  }
+            }
+          >
+            {/* Toggle Sidebar Button Inline */}
+            <Button
+              variant="ghost"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="absolute top-4 right-4 z-50 p-1 bg-neutral-900 border border-neutral-800 rounded-md text-neutral-400 hover:text-white"
             >
-              {/* Toggle Sidebar Button Inline */}
-               <Button variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="absolute top-4 right-4 z-50 p-1 bg-neutral-900 border border-neutral-800 rounded-md text-neutral-400 hover:text-white"
-              >
-                <X size={16} />
-              </Button>
+              <X size={16} />
+            </Button>
 
-
-              {/* Form Content */}
-              <div className="flex-1 overflow-y-auto min-h-0">
-                {/* Field Properties Panel is now rendered inside PdfPreviewWithFields */}
-                <div className="h-full overflow-visible px-4 pt-4 pb-5 sm:px-6 sm:pt-6 sm:pb-7">
-                  <div className="max-w-2xl mx-auto space-y-6 w-full">
-                    <BudgetForm
-                      data={budgetData}
-                      onChange={setBudgetData}
-                      budgetId={currentProjectId || undefined}
-                      positioningFieldId={positioningFieldId}
-                      onPositioningModeChange={setPositioningFieldId}
-                      pendingFieldPosition={pendingFieldPosition}
-                      focusedFieldId={focusedFieldId}
-                      onFocusedFieldChange={setFocusedFieldId}
-                      onFieldFilled={((fieldId) => {
-                        // When field is filled, add it to PDF if there's a pending position
-                        if (pendingFieldPosition && budgetData) {
-                          const field = [
-                            { id: 'clientName', label: 'Nome do Cliente' },
-                            { id: 'projectName', label: 'Nome do Projeto' },
-                            { id: 'projectDescription', label: 'Descrição do Projeto' },
-                            { id: 'brandName', label: 'Nome da Marca' },
-                            { id: 'year', label: 'Ano' },
-                            { id: 'observations', label: 'Observações' },
-                            { id: 'finalCTAText', label: 'Texto CTA Final' },
-                          ].find(f => f.id === fieldId);
-
-                          if (field) {
-                            const newMapping: PdfFieldMapping = {
-                              id: `${fieldId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                              fieldId,
-                              label: field.label,
-                              x: pendingFieldPosition.x,
-                              y: pendingFieldPosition.y,
-                              fontSize: 12,
-                              color: '#000000',
-                              align: 'left',
-                              page: pendingFieldPosition.pageNum,
-                              fontFamily: 'geist',
-                              bold: false,
-                            };
-
-                            const currentMappings = budgetData.pdfFieldMappings || [];
-                            setBudgetData({ ...budgetData, pdfFieldMappings: [...currentMappings, newMapping] });
-                            setPendingFieldPosition(null);
-                            setSelectedFieldId(newMapping.id);
-                            setPositioningFieldId(fieldId);
-                          }
-                        }
-                      })}
-                      onFieldFromFormClick={((fieldId) => {
-                        if (!pendingFieldPosition || !budgetData) return;
-
+            {/* Form Content */}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {/* Field Properties Panel is now rendered inside PdfPreviewWithFields */}
+              <div className="h-full overflow-visible px-4 pt-4 pb-5 sm:px-6 sm:pt-6 sm:pb-7">
+                <div className="max-w-2xl mx-auto space-y-6 w-full">
+                  <BudgetForm
+                    data={budgetData}
+                    onChange={setBudgetData}
+                    budgetId={currentProjectId || undefined}
+                    positioningFieldId={positioningFieldId}
+                    onPositioningModeChange={setPositioningFieldId}
+                    pendingFieldPosition={pendingFieldPosition}
+                    focusedFieldId={focusedFieldId}
+                    onFocusedFieldChange={setFocusedFieldId}
+                    onFieldFilled={(fieldId) => {
+                      // When field is filled, add it to PDF if there's a pending position
+                      if (pendingFieldPosition && budgetData) {
                         const field = [
                           { id: 'clientName', label: 'Nome do Cliente' },
                           { id: 'projectName', label: 'Nome do Projeto' },
                           { id: 'projectDescription', label: 'Descrição do Projeto' },
                           { id: 'brandName', label: 'Nome da Marca' },
-                          { id: 'startDate', label: 'Data de Início' },
-                          { id: 'endDate', label: 'Data de Término' },
                           { id: 'year', label: 'Ano' },
                           { id: 'observations', label: 'Observações' },
                           { id: 'finalCTAText', label: 'Texto CTA Final' },
-                          { id: 'custom_text', label: 'Campo de Texto' },
-                          { id: 'custom_currency', label: 'Campo de Valor (Moeda)' },
-                        ].find(f => f.id === fieldId);
+                        ].find((f) => f.id === fieldId);
 
-                        if (!field) return;
+                        if (field) {
+                          const newMapping: PdfFieldMapping = {
+                            id: `${fieldId}-${Date.now()}-${Math.random()
+                              .toString(36)
+                              .substr(2, 9)}`,
+                            fieldId,
+                            label: field.label,
+                            x: pendingFieldPosition.x,
+                            y: pendingFieldPosition.y,
+                            fontSize: 12,
+                            color: '#000000',
+                            align: 'left',
+                            page: pendingFieldPosition.pageNum,
+                            fontFamily: 'geist',
+                            bold: false,
+                          };
 
-                        const newMapping: PdfFieldMapping = {
-                          id: `${fieldId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                          fieldId,
-                          label: field.label,
-                          x: pendingFieldPosition.x,
-                          y: pendingFieldPosition.y,
-                          fontSize: 12,
-                          color: '#000000',
-                          align: 'left',
-                          page: pendingFieldPosition.pageNum,
-                          fontFamily: 'geist',
-                          bold: false,
-                        };
+                          const currentMappings = budgetData.pdfFieldMappings || [];
+                          setBudgetData({
+                            ...budgetData,
+                            pdfFieldMappings: [...currentMappings, newMapping],
+                          });
+                          setPendingFieldPosition(null);
+                          setSelectedFieldId(newMapping.id);
+                          setPositioningFieldId(fieldId);
+                        }
+                      }
+                    }}
+                    onFieldFromFormClick={(fieldId) => {
+                      if (!pendingFieldPosition || !budgetData) return;
 
-                        const currentMappings = budgetData.pdfFieldMappings || [];
-                        setBudgetData({ ...budgetData, pdfFieldMappings: [...currentMappings, newMapping] });
-                        setPendingFieldPosition(null);
-                        setSelectedFieldId(newMapping.id);
-                      })}
-                    />
-                  </div>
+                      const field = [
+                        { id: 'clientName', label: 'Nome do Cliente' },
+                        { id: 'projectName', label: 'Nome do Projeto' },
+                        { id: 'projectDescription', label: 'Descrição do Projeto' },
+                        { id: 'brandName', label: 'Nome da Marca' },
+                        { id: 'startDate', label: 'Data de Início' },
+                        { id: 'endDate', label: 'Data de Término' },
+                        { id: 'year', label: 'Ano' },
+                        { id: 'observations', label: 'Observações' },
+                        { id: 'finalCTAText', label: 'Texto CTA Final' },
+                        { id: 'custom_text', label: 'Campo de Texto' },
+                        { id: 'custom_currency', label: 'Campo de Valor (Moeda)' },
+                      ].find((f) => f.id === fieldId);
+
+                      if (!field) return;
+
+                      const newMapping: PdfFieldMapping = {
+                        id: `${fieldId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                        fieldId,
+                        label: field.label,
+                        x: pendingFieldPosition.x,
+                        y: pendingFieldPosition.y,
+                        fontSize: 12,
+                        color: '#000000',
+                        align: 'left',
+                        page: pendingFieldPosition.pageNum,
+                        fontFamily: 'geist',
+                        bold: false,
+                      };
+
+                      const currentMappings = budgetData.pdfFieldMappings || [];
+                      setBudgetData({
+                        ...budgetData,
+                        pdfFieldMappings: [...currentMappings, newMapping],
+                      });
+                      setPendingFieldPosition(null);
+                      setSelectedFieldId(newMapping.id);
+                    }}
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Share Link Section */}
-              {shareLink && (
-                <div className="flex-shrink-0 border-t border-neutral-800 p-4 sm:p-6 bg-neutral-900">
-                  <div className="max-w-2xl mx-auto">
-                    <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
-                      <p className="text-sm text-neutral-400 mb-2 font-mono">{t('budget.machine.share_link')}</p>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <Input
-                          type="text"
-                          value={shareLink}
-                          readOnly
-                          className="flex-1 px-3 py-2 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
-                        />
-                        <Button variant="ghost" onClick={() => {
+            {/* Share Link Section */}
+            {shareLink && (
+              <div className="flex-shrink-0 border-t border-neutral-800 p-4 sm:p-6 bg-neutral-900">
+                <div className="max-w-2xl mx-auto">
+                  <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
+                    <p className="text-sm text-neutral-400 mb-2 font-mono">
+                      {t('budget.machine.share_link')}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input
+                        type="text"
+                        value={shareLink}
+                        readOnly
+                        className="flex-1 px-3 py-2 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
+                      />
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
                           copyToClipboard(shareLink);
                           setLinkCopied(true);
                           setTimeout(() => setLinkCopied(false), 2000);
                         }}
-                          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Copy size={16} />
-                          <span className="sm:hidden">{t('budget.machine.copiar')}</span>
-                        </Button>
-                      </div>
+                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Copy size={16} />
+                        <span className="sm:hidden">{t('budget.machine.copiar')}</span>
+                      </Button>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Resizer - Only show when sidebar is open */}
-            {budgetData && isSidebarOpen && (
-              <div
-                id="form-resizer"
-                className="fixed top-10 md:top-14 h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3.5rem)] z-50 w-2 cursor-col-resize group"
-                style={formWidth ? { left: `${formWidth}px` } : { left: '400px' }}
-              >
-                <div className="w-px h-full mx-auto bg-neutral-800 group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
               </div>
             )}
           </div>
+
+          {/* Resizer - Only show when sidebar is open */}
+          {budgetData && isSidebarOpen && (
+            <div
+              id="form-resizer"
+              className="fixed top-10 md:top-14 h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3.5rem)] z-50 w-2 cursor-col-resize group"
+              style={formWidth ? { left: `${formWidth}px` } : { left: '400px' }}
+            >
+              <div className="w-px h-full mx-auto bg-neutral-800 group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
+            </div>
+          )}
+        </div>
       </DndContext>
     </PageShell>
   );
 };
-

@@ -5,13 +5,22 @@ import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { useDynamicSuggestions } from '@/hooks/useDynamicSuggestions';
 import { translateTag } from '@/utils/localeUtils';
-import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3, Settings2, Diamond } from 'lucide-react';
+import {
+  Dices,
+  Shuffle,
+  ChevronDown,
+  Check,
+  Plus,
+  Grid3x3,
+  Settings2,
+  Diamond,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { MockupTagCategory } from '@/services/mockupTagService';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { MicroTitle } from '@/components/ui/MicroTitle'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import { SuggestedTagsBadges } from './SuggestedTagsBadges';
 
 type SectionKey = 'categories' | 'location' | 'angle' | 'lighting' | 'effects' | 'material';
@@ -42,21 +51,21 @@ const INTERNAL_TAGS = [
   'no human interaction',
   'no text',
   'sem texto',
-].map(tag => tag.toLowerCase());
+].map((tag) => tag.toLowerCase());
 
 /**
  * Checks if a tag is an internal/metadata tag
  */
 const isInternalTag = (tag: string): boolean => {
   const lowerTag = tag.toLowerCase();
-  return INTERNAL_TAGS.some(internal => lowerTag.includes(internal));
+  return INTERNAL_TAGS.some((internal) => lowerTag.includes(internal));
 };
 
 /**
  * Filters out internal/metadata tags
  */
 const filterValidTags = (tags: string[]): string[] => {
-  return tags.filter(tag => !isInternalTag(tag));
+  return tags.filter((tag) => !isInternalTag(tag));
 };
 
 interface TagDropdownProps {
@@ -120,15 +129,18 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
     }
   };
 
-  const filteredTags = availableTags.filter(tag =>
-    tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    translateTag(tag).toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTags = availableTags.filter(
+    (tag) =>
+      tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      translateTag(tag).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const showCustomOption = searchQuery.trim() &&
-    !filteredTags.some(tag =>
-      tag.toLowerCase() === searchQuery.toLowerCase() ||
-      translateTag(tag).toLowerCase() === searchQuery.toLowerCase()
+  const showCustomOption =
+    searchQuery.trim() &&
+    !filteredTags.some(
+      (tag) =>
+        tag.toLowerCase() === searchQuery.toLowerCase() ||
+        translateTag(tag).toLowerCase() === searchQuery.toLowerCase()
     );
 
   // Group tags by category if categories are provided
@@ -140,25 +152,25 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
     const groups: { categoryName: string; tags: string[] }[] = [];
     const categorizedTags = new Set<string>();
 
-    tagCategories.forEach(cat => {
+    tagCategories.forEach((cat) => {
       const categoryTags = cat.tags
-        .map(t => t.name)
-        .filter(tagName => availableTags.includes(tagName) && filteredTags.includes(tagName));
+        .map((t) => t.name)
+        .filter((tagName) => availableTags.includes(tagName) && filteredTags.includes(tagName));
 
       if (categoryTags.length > 0) {
         groups.push({
           categoryName: cat.name,
-          tags: categoryTags
+          tags: categoryTags,
         });
-        categoryTags.forEach(t => categorizedTags.add(t));
+        categoryTags.forEach((t) => categorizedTags.add(t));
       }
     });
 
-    const others = filteredTags.filter(tag => !categorizedTags.has(tag));
+    const others = filteredTags.filter((tag) => !categorizedTags.has(tag));
     if (others.length > 0) {
       groups.push({
         categoryName: 'OTHERS',
-        tags: others
+        tags: others,
       });
     }
 
@@ -166,19 +178,20 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   }, [filteredTags, tagCategories, availableTags, searchQuery]);
 
   const renderTagButton = (tag: string) => (
-    <Button variant="ghost"
+    <Button
+      variant="ghost"
       key={tag}
       type="button"
       onClick={() => handleSelect(tag)}
       className={cn(
-        "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors",
+        'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors',
         selectedTags.includes(tag)
           ? theme === 'dark'
             ? 'bg-brand-cyan/10 text-brand-cyan'
             : 'bg-brand-cyan/10 text-brand-cyan'
           : theme === 'dark'
-            ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
-            : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
+          ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
+          : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
       )}
     >
       <span className="truncate">{translateTag(tag)}</span>
@@ -187,53 +200,60 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   );
 
   return (
-    <div ref={dropdownRef} className={cn("relative flex-1 min-w-0 transition-all", isOpen && "z-50")}>
-      <Button variant="ghost"
+    <div
+      ref={dropdownRef}
+      className={cn('relative flex-1 min-w-0 transition-all', isOpen && 'z-50')}
+    >
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-[10px] font-mono transition-all duration-200 border",
+          'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-[10px] font-mono transition-all duration-200 border',
           selectedTags.length > 0
             ? theme === 'dark'
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
               : 'bg-white text-brand-cyan border-brand-cyan/40 hover:border-neutral-700'
             : theme === 'dark'
-              ? 'bg-neutral-800/40 text-neutral-500 border-neutral-700/50 hover:border-neutral-600'
-              : 'bg-neutral-100 text-neutral-500 border-neutral-300 hover:border-neutral-400'
+            ? 'bg-neutral-800/40 text-neutral-500 border-neutral-700/50 hover:border-neutral-600'
+            : 'bg-neutral-100 text-neutral-500 border-neutral-300 hover:border-neutral-400'
         )}
       >
         <span className="truncate">
           {isGenerating ? (
             <span className="inline-block w-16 h-3 rounded bg-neutral-700/50" />
+          ) : selectedTags.length > 0 ? (
+            selectedTags.length === 1 ? (
+              translateTag(selectedTags[0])
+            ) : (
+              `${translateTag(selectedTags[0])} +${selectedTags.length - 1}`
+            )
           ) : (
-            selectedTags.length > 0
-              ? (selectedTags.length === 1 ? translateTag(selectedTags[0]) : `${translateTag(selectedTags[0])} +${selectedTags.length - 1}`)
-              : placeholder
+            placeholder
           )}
         </span>
         <ChevronDown
           size={12}
-          className={cn(
-            "shrink-0 transition-transform duration-200",
-            isOpen && "rotate-180"
-          )}
+          className={cn('shrink-0 transition-transform duration-200', isOpen && 'rotate-180')}
         />
       </Button>
 
       {isOpen && (
         <div
           className={cn(
-            "absolute z-50 mt-1 w-full rounded-md border shadow-[0_10px_40px_rgba(0,0,0,0.7)] animate-fade-in overflow-hidden backdrop-blur-xl",
+            'absolute z-50 mt-1 w-full rounded-md border shadow-[0_10px_40px_rgba(0,0,0,0.7)] animate-fade-in overflow-hidden backdrop-blur-xl',
             theme === 'dark'
               ? 'bg-neutral-950/98 border-neutral-700/50'
               : 'bg-white border-neutral-200'
           )}
         >
           {/* Search Input */}
-          <div className={cn(
-            "p-1.5 border-b",
-            theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-200'
-          )}>
+          <div
+            className={cn(
+              'p-1.5 border-b',
+              theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-200'
+            )}
+          >
             <Input
               ref={inputRef}
               type="text"
@@ -242,7 +262,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               onKeyDown={handleKeyDown}
               placeholder={isGenerating ? '' : 'Pesquisar ou digitar...'}
               className={cn(
-                "w-full px-2 py-1 text-[10px] font-mono rounded border-none outline-none",
+                'w-full px-2 py-1 text-[10px] font-mono rounded border-none outline-none',
                 theme === 'dark'
                   ? 'bg-neutral-800/60 text-neutral-300 placeholder:text-neutral-600'
                   : 'bg-neutral-100 text-neutral-700 placeholder:text-neutral-400'
@@ -254,11 +274,12 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           <div className="max-h-40 overflow-y-auto">
             {/* Custom tag option */}
             {showCustomOption && (
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => handleSelect(searchQuery.trim())}
                 className={cn(
-                  "w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors",
+                  'w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors',
                   theme === 'dark'
                     ? 'text-brand-cyan hover:bg-neutral-800'
                     : 'text-brand-cyan hover:bg-neutral-100'
@@ -270,28 +291,32 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
             )}
 
             {/* Tags List */}
-            {groupedTags.type === 'grouped' ? (
-              groupedTags.groups.map((group, idx) => (
-                <div key={group.categoryName} className={cn(idx > 0 && "mt-1")}>
-                  <div className={cn(
-                    "px-2.5 py-1 text-[10px] font-bold font-mono uppercase tracking-widest",
-                    theme === 'dark' ? 'text-neutral-600 bg-black/20' : 'text-neutral-400 bg-neutral-50'
-                  )}>
-                    {group.categoryName}
+            {groupedTags.type === 'grouped'
+              ? groupedTags.groups.map((group, idx) => (
+                  <div key={group.categoryName} className={cn(idx > 0 && 'mt-1')}>
+                    <div
+                      className={cn(
+                        'px-2.5 py-1 text-[10px] font-bold font-mono uppercase tracking-widest',
+                        theme === 'dark'
+                          ? 'text-neutral-600 bg-black/20'
+                          : 'text-neutral-400 bg-neutral-50'
+                      )}
+                    >
+                      {group.categoryName}
+                    </div>
+                    {group.tags.map((tag) => renderTagButton(tag))}
                   </div>
-                  {group.tags.map(tag => renderTagButton(tag))}
-                </div>
-              ))
-            ) : (
-              filteredTags.map((tag) => renderTagButton(tag))
-            )}
+                ))
+              : filteredTags.map((tag) => renderTagButton(tag))}
 
             {/* Empty state */}
             {filteredTags.length === 0 && !showCustomOption && (
-              <div className={cn(
-                "px-2.5 py-2 text-[10px] font-mono text-center",
-                theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
-              )}>
+              <div
+                className={cn(
+                  'px-2.5 py-2 text-[10px] font-mono text-center',
+                  theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
+                )}
+              >
                 Nenhuma tag encontrada
               </div>
             )}
@@ -312,7 +337,7 @@ interface ToggleCheckboxProps {
 const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label, theme }) => (
   <div
     className={cn(
-      "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-all duration-200",
+      'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-all duration-200',
       theme === 'dark'
         ? 'bg-neutral-800/40 border-neutral-700/40 hover:bg-neutral-800/60'
         : 'bg-neutral-100 border-neutral-200 hover:bg-neutral-200'
@@ -321,22 +346,22 @@ const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label,
   >
     <div
       className={cn(
-        "w-3.5 h-3.5 rounded flex items-center justify-center border transition-all duration-200",
+        'w-3.5 h-3.5 rounded flex items-center justify-center border transition-all duration-200',
         value
           ? 'bg-brand-cyan/80 border-brand-cyan'
           : theme === 'dark'
-            ? 'bg-neutral-700 border-neutral-600'
-            : 'bg-white border-neutral-400'
+          ? 'bg-neutral-700 border-neutral-600'
+          : 'bg-white border-neutral-400'
       )}
     >
-      {value && (
-        <Check size={10} className="text-black" strokeWidth={3} />
-      )}
+      {value && <Check size={10} className="text-black" strokeWidth={3} />}
     </div>
-    <label className={cn(
-      "text-[10px] font-mono select-none cursor-pointer",
-      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-    )}>
+    <label
+      className={cn(
+        'text-[10px] font-mono select-none cursor-pointer',
+        theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+      )}
+    >
       {label}
     </label>
   </div>
@@ -351,7 +376,7 @@ interface SurpriseMeSelectedTagsDisplayProps {
 export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDisplayProps> = ({
   onRerollAll,
   isGenerating = false,
-  sidebarWidth = 400
+  sidebarWidth = 400,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -402,7 +427,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
     availableEffectTags,
     availableMaterialTags,
     togglePoolTag,
-    tagCategories
+    tagCategories,
   } = useMockupTags();
 
   // Dynamic suggestion refinement based on user selections
@@ -414,12 +439,24 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
 
   // Filter tags
   const sectionData: Record<SectionKey, string[]> = {
-    categories: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedCategoryTags || []) : selectedTags),
-    location: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedLocationTags || []) : selectedLocationTags),
-    angle: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedAngleTags || []) : selectedAngleTags),
-    lighting: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedLightingTags || []) : selectedLightingTags),
-    effects: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedEffectTags || []) : selectedEffectTags),
-    material: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedMaterialTags || []) : selectedMaterialTags),
+    categories: filterValidTags(
+      isSurpriseMeMode ? surpriseMePool.selectedCategoryTags || [] : selectedTags
+    ),
+    location: filterValidTags(
+      isSurpriseMeMode ? surpriseMePool.selectedLocationTags || [] : selectedLocationTags
+    ),
+    angle: filterValidTags(
+      isSurpriseMeMode ? surpriseMePool.selectedAngleTags || [] : selectedAngleTags
+    ),
+    lighting: filterValidTags(
+      isSurpriseMeMode ? surpriseMePool.selectedLightingTags || [] : selectedLightingTags
+    ),
+    effects: filterValidTags(
+      isSurpriseMeMode ? surpriseMePool.selectedEffectTags || [] : selectedEffectTags
+    ),
+    material: filterValidTags(
+      isSurpriseMeMode ? surpriseMePool.selectedMaterialTags || [] : selectedMaterialTags
+    ),
   };
 
   const availableTagsMap: Record<SectionKey, string[]> = {
@@ -458,11 +495,8 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
 
   // Clean up internal tags from state when detected
   useEffect(() => {
-    const cleanInternalTags = (
-      tags: string[],
-      setter: (tags: string[]) => void
-    ) => {
-      const filtered = tags.filter(tag => !isInternalTag(tag));
+    const cleanInternalTags = (tags: string[], setter: (tags: string[]) => void) => {
+      const filtered = tags.filter((tag) => !isInternalTag(tag));
       if (filtered.length !== tags.length) {
         setter(filtered);
       }
@@ -497,7 +531,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
         angle: 'selectedAngleTags',
         lighting: 'selectedLightingTags',
         effects: 'selectedEffectTags',
-        material: 'selectedMaterialTags'
+        material: 'selectedMaterialTags',
       };
       togglePoolTag(poolKeyMap[sectionKey], tag, surpriseMePool, setSurpriseMePool);
     } else {
@@ -511,15 +545,15 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
   return (
     <div
       className={cn(
-        "animate-fade-in transition-all duration-300",
+        'animate-fade-in transition-all duration-300',
         isSurpriseMeMode
-          ? "py-2"
+          ? 'py-2'
           : cn(
-            "rounded-xl p-3",
-            theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
-            "border",
-            theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60'
-          )
+              'rounded-xl p-3',
+              theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
+              'border',
+              theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60'
+            )
       )}
     >
       <div className="flex items-center gap-2 mb-3">
@@ -527,7 +561,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           <SkeletonText loading={isGenerating}>
             <h3
               className={cn(
-                "text-[10px] font-mono uppercase tracking-widest font-medium",
+                'text-[10px] font-mono uppercase tracking-widest font-medium',
                 theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
               )}
             >
@@ -536,15 +570,19 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           </SkeletonText>
         )}
         {isSurpriseMeMode && onRerollAll && (
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={handleRerollAll}
             className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200 group/reroll active:scale-90"
             title="Sortear tudo novamente (Shuffle All)"
           >
-            <Shuffle size={14} className={cn(
-              "text-neutral-500 group-hover/reroll:text-brand-cyan transition-all duration-300",
-              isGenerating ? "rotate-180" : "group-hover/reroll:rotate-180"
-            )} />
+            <Shuffle
+              size={14}
+              className={cn(
+                'text-neutral-500 group-hover/reroll:text-brand-cyan transition-all duration-300',
+                isGenerating ? 'rotate-180' : 'group-hover/reroll:rotate-180'
+              )}
+            />
           </Button>
         )}
       </div>
@@ -553,8 +591,8 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
       <div
         key={JSON.stringify(sectionData)}
         className={cn(
-          "gap-3 mb-3 animate-fade-in",
-          sidebarWidth < 450 ? "flex flex-col" : "grid grid-cols-2"
+          'gap-3 mb-3 animate-fade-in',
+          sidebarWidth < 450 ? 'flex flex-col' : 'grid grid-cols-2'
         )}
       >
         {SECTIONS.filter(({ key }) => {
@@ -571,11 +609,15 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
 
           // We use decreasing z-index so dropdowns overlap subsequent items correctly
           return (
-            <div key={key} className="flex flex-col gap-1 relative" style={{ zIndex: (filteredArr.length - index) * 10 }}>
+            <div
+              key={key}
+              className="flex flex-col gap-1 relative"
+              style={{ zIndex: (filteredArr.length - index) * 10 }}
+            >
               <SkeletonText loading={isGenerating}>
                 <span
                   className={cn(
-                    "text-[10px] font-mono uppercase ",
+                    'text-[10px] font-mono uppercase ',
                     theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                   )}
                 >
@@ -610,10 +652,20 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           className="flex items-center justify-between cursor-pointer group py-1"
           onClick={() => setShowOptions(!showOptions)}
         >
-          <span className={cn("text-[10px] font-mono flex items-center gap-1.5 transition-colors", theme === 'dark' ? 'text-neutral-500 group-hover:text-neutral-300' : 'text-neutral-500 group-hover:text-neutral-800')}>
+          <span
+            className={cn(
+              'text-[10px] font-mono flex items-center gap-1.5 transition-colors',
+              theme === 'dark'
+                ? 'text-neutral-500 group-hover:text-neutral-300'
+                : 'text-neutral-500 group-hover:text-neutral-800'
+            )}
+          >
             <Settings2 size={12} /> {t('mockup.advancedOptions') || 'Opções Avançadas'}
           </span>
-          <ChevronDown size={12} className={cn("text-neutral-500 transition-transform", showOptions && "rotate-180")} />
+          <ChevronDown
+            size={12}
+            className={cn('text-neutral-500 transition-transform', showOptions && 'rotate-180')}
+          />
         </div>
 
         {showOptions && (

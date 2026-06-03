@@ -30,9 +30,17 @@ logger.info(
 const validateStripeConfig = () => {
   const checks: Array<[string, string | undefined, string]> = [
     ['STRIPE_SECRET_KEY', process.env.STRIPE_SECRET_KEY, 'Stripe payments will not work'],
-    ['STRIPE_PRICE_ID_USD', process.env.STRIPE_PRICE_ID_USD || process.env.STRIPE_PRICE_ID, 'Subscription checkout will not work'],
+    [
+      'STRIPE_PRICE_ID_USD',
+      process.env.STRIPE_PRICE_ID_USD || process.env.STRIPE_PRICE_ID,
+      'Subscription checkout will not work',
+    ],
     ['STRIPE_PRICE_ID_BRL', process.env.STRIPE_PRICE_ID_BRL, 'BRL pricing will not be available'],
-    ['STRIPE_WEBHOOK_SECRET', process.env.STRIPE_WEBHOOK_SECRET, 'Webhook events will not be processed'],
+    [
+      'STRIPE_WEBHOOK_SECRET',
+      process.env.STRIPE_WEBHOOK_SECRET,
+      'Webhook events will not be processed',
+    ],
   ];
   for (const [name, value, warning] of checks) {
     if (!value) console.warn(`⚠️  ${name} is not configured. ${warning}.`);
@@ -90,7 +98,9 @@ if (!process.env.VERCEL) {
       }
     }
 
-    const tryListen = (port: number): Promise<{ server: ReturnType<typeof app.listen>; port: number }> =>
+    const tryListen = (
+      port: number
+    ): Promise<{ server: ReturnType<typeof app.listen>; port: number }> =>
       new Promise((resolve, reject) => {
         const s = app.listen(port, '0.0.0.0', () => resolve({ server: s, port }));
         s.once('error', (err: any) => {

@@ -88,10 +88,7 @@ export const DrawingTextRenderer: React.FC<DrawingTextRendererProps> = ({
       className={cn('w-full h-full p-2 cursor-text', className)}
       style={textStyle}
     >
-      {text || (
-        <span className="opacity-50">{placeholder}</span>
-      )}
+      {text || <span className="opacity-50">{placeholder}</span>}
     </div>
   );
 };
-

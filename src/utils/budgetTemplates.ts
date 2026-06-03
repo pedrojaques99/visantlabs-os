@@ -16,6 +16,5 @@ export const BUDGET_TEMPLATES: BudgetTemplate[] = [
 ];
 
 export const getTemplateById = (id: string): BudgetTemplate | undefined => {
-  return BUDGET_TEMPLATES.find(t => t.id === id);
+  return BUDGET_TEMPLATES.find((t) => t.id === id);
 };
-

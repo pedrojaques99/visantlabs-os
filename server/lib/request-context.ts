@@ -23,10 +23,7 @@ const asyncLocalStorage = new AsyncLocalStorage<RequestContext>();
  * Run a function within a request context.
  * All code within the callback (including async) has access to the context.
  */
-export function runWithContext<T>(
-  context: Partial<RequestContext>,
-  fn: () => T
-): T {
+export function runWithContext<T>(context: Partial<RequestContext>, fn: () => T): T {
   const fullContext: RequestContext = {
     userId: context.userId ?? null,
     userEmail: context.userEmail,
@@ -90,7 +87,7 @@ export function contextMiddleware() {
     const context: Partial<RequestContext> = {
       userId: req.userId ?? null,
       userEmail: req.userEmail,
-      requestId: req.headers['x-request-id'] as string ?? randomUUID(),
+      requestId: (req.headers['x-request-id'] as string) ?? randomUUID(),
       startTime: Date.now(),
     };
 

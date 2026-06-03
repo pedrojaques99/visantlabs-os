@@ -41,7 +41,10 @@ interface ImageNodeActionButtonsProps {
   showRemove?: boolean;
 
   // Translation keys prefix
-  translationKeyPrefix?: 'canvasNodes.imageNode' | 'canvasNodes.outputNode' | 'canvasNodes.logoNode';
+  translationKeyPrefix?:
+    | 'canvasNodes.imageNode'
+    | 'canvasNodes.outputNode'
+    | 'canvasNodes.logoNode';
   t?: (key: string) => string;
 }
 
@@ -82,7 +85,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
   return (
     <>
       {showView && onView && (
-        <NodeButton variant="ghost" 
+        <NodeButton
+          variant="ghost"
           onClick={(e) => handleClick(e, onView)}
           className="p-1"
           title={t(`${translationKeyPrefix}.viewFullScreen`) || 'View full screen'}
@@ -93,7 +97,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
       )}
 
       {showDownload && onDownload && (
-        <NodeButton variant="ghost" 
+        <NodeButton
+          variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             // Handle both function types: with or without event parameter
@@ -105,19 +110,20 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           }}
           disabled={isDownloading}
           className="p-1"
-          title={isDownloading ? t('canvasNodes.shared.downloading') || 'Downloading...' : t(`${translationKeyPrefix}.downloadImage`) || 'Download image'}
+          title={
+            isDownloading
+              ? t('canvasNodes.shared.downloading') || 'Downloading...'
+              : t(`${translationKeyPrefix}.downloadImage`) || 'Download image'
+          }
           onMouseDown={handleMouseDown}
         >
-          {isDownloading ? (
-            <GlitchLoader size={12} />
-          ) : (
-            <Download size={12} strokeWidth={2} />
-          )}
+          {isDownloading ? <GlitchLoader size={12} /> : <Download size={12} strokeWidth={2} />}
         </NodeButton>
       )}
 
       {showDelete && onDelete && (
-        <NodeButton variant="ghost" 
+        <NodeButton
+          variant="ghost"
           onClick={(e) => handleClick(e, onDelete)}
           className="p-1 !text-destructive !bg-destructive/10 hover:!bg-destructive/20"
           title={t(`${translationKeyPrefix}.delete`) || 'Delete'}
@@ -128,7 +134,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
       )}
 
       {showBrandKit && onBrandKit && (
-        <NodeButton variant="ghost" 
+        <NodeButton
+          variant="ghost"
           onClick={(e) => handleClick(e, onBrandKit)}
           disabled={brandKitDisabled}
           className="p-1"
@@ -140,7 +147,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
       )}
 
       {showLike && (onLike || onSave) && (
-        <NodeButton variant="ghost" 
+        <NodeButton
+          variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             const handler = onLike || onSave;
@@ -154,48 +162,51 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
             }
           }}
           disabled={isSaving}
-          className={cn(
-            "p-1",
-            isLiked && !isSaving && "text-brand-cyan bg-brand-cyan/10"
-          )}
+          className={cn('p-1', isLiked && !isSaving && 'text-brand-cyan bg-brand-cyan/10')}
           title={
             isLiked
               ? t(`${translationKeyPrefix}.removeFromFavorites`) || 'Remove from favorites'
               : onSave
-                ? t(`${translationKeyPrefix}.saveToCollection`) || 'Save to collection'
-                : t(`${translationKeyPrefix}.addToFavorites`) || 'Add to favorites'
+              ? t(`${translationKeyPrefix}.saveToCollection`) || 'Save to collection'
+              : t(`${translationKeyPrefix}.addToFavorites`) || 'Add to favorites'
           }
           onMouseDown={handleMouseDown}
         >
           {isSaving ? (
             <GlitchLoader size={12} />
           ) : (
-            <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
+            <Heart size={12} className={isLiked ? 'fill-current' : ''} strokeWidth={2} />
           )}
         </NodeButton>
       )}
 
       {showDescribe && onDescribe && (
-        <NodeButton variant="ghost" 
+        <NodeButton
+          variant="ghost"
           onClick={(e) => handleClick(e, onDescribe)}
           disabled={describeDisabled || isDescribing}
           className="p-1"
-          title={isDescribing ? t(`${translationKeyPrefix}.analyzingImage`) || 'Analyzing image...' : t(`${translationKeyPrefix}.describeImageWithAI`) || 'Describe image with AI'}
+          title={
+            isDescribing
+              ? t(`${translationKeyPrefix}.analyzingImage`) || 'Analyzing image...'
+              : t(`${translationKeyPrefix}.describeImageWithAI`) || 'Describe image with AI'
+          }
           onMouseDown={handleMouseDown}
         >
-          {isDescribing ? (
-            <GlitchLoader size={12} />
-          ) : (
-            <FileText size={12} strokeWidth={2} />
-          )}
+          {isDescribing ? <GlitchLoader size={12} /> : <FileText size={12} strokeWidth={2} />}
         </NodeButton>
       )}
 
       {showRemove && onRemove && (
-        <NodeButton variant="ghost" 
+        <NodeButton
+          variant="ghost"
           onClick={(e) => handleClick(e, onRemove)}
           className="p-1 !text-destructive !bg-destructive/10 hover:!bg-destructive/20"
-          title={t(`${translationKeyPrefix}.removeLogo`) || t(`${translationKeyPrefix}.remove`) || 'Remove'}
+          title={
+            t(`${translationKeyPrefix}.removeLogo`) ||
+            t(`${translationKeyPrefix}.remove`) ||
+            'Remove'
+          }
           onMouseDown={handleMouseDown}
         >
           <X size={12} strokeWidth={2} />

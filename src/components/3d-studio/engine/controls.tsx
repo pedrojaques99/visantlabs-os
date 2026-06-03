@@ -42,7 +42,9 @@ export function IntroAnimation({ type, duration, from, to, onComplete }: IntroAn
 
     if (type === 'zoom') {
       camera.position.z = fromZ + (toZ - fromZ) * t;
-      gl.domElement.style.opacity = String(fromOpacity + (toOpacity - fromOpacity) * Math.min(1, t * 1.5));
+      gl.domElement.style.opacity = String(
+        fromOpacity + (toOpacity - fromOpacity) * Math.min(1, t * 1.5)
+      );
     } else if (type === 'fade') {
       camera.position.z = toZ;
       gl.domElement.style.opacity = String(fromOpacity + (toOpacity - fromOpacity) * t);
@@ -62,7 +64,15 @@ export function IntroAnimation({ type, duration, from, to, onComplete }: IntroAn
   return null;
 }
 
-type AnimationType = 'none' | 'spin' | 'float' | 'pulse' | 'wobble' | 'swing' | 'spinFloat' | 'physicsFall';
+type AnimationType =
+  | 'none'
+  | 'spin'
+  | 'float'
+  | 'pulse'
+  | 'wobble'
+  | 'swing'
+  | 'spinFloat'
+  | 'physicsFall';
 type EasingType = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 
 interface LoopAnimationProps {
@@ -104,19 +114,19 @@ export function LoopAnimation({ type, speed, reverse, easing, meshRef }: LoopAni
       if (type === 'none') return;
     }
     elapsed.current += delta * speed;
-    
+
     // Period is usually 2*PI for sin-based, or we can just use 1.0 as a cycle for ease
     const cycle = 2 * Math.PI;
     const rawT = elapsed.current;
     const normalizedT = (rawT % cycle) / cycle;
     const easedT = easings[easing](normalizedT) * cycle;
-    
+
     // For cumulative animations like spin, we need to handle the jumps at cycle boundaries
     // or just apply easing to the delta? No, easing the phase is better for loops.
     // However, for 'spin', normalizedT jumping from 1.0 to 0.0 will cause a backward jump.
     // To avoid this, we can add the number of full cycles back.
     const fullCycles = Math.floor(rawT / cycle);
-    const t = (fullCycles * cycle) + easedT;
+    const t = fullCycles * cycle + easedT;
 
     if (initialY.current === null) {
       initialY.current = meshRef.current.position.y;
@@ -166,8 +176,17 @@ interface SmoothControlsProps {
 }
 
 export function SmoothControls({
-  rotationX, rotationY, meshRef, cursorOrbit, orbitStrength,
-  draggable, scrollZoom, zoom, resetOnIdle, resetDelay, resetKey,
+  rotationX,
+  rotationY,
+  meshRef,
+  cursorOrbit,
+  orbitStrength,
+  draggable,
+  scrollZoom,
+  zoom,
+  resetOnIdle,
+  resetDelay,
+  resetKey,
 }: SmoothControlsProps) {
   const { gl, camera } = useThree();
   const isDragging = useRef(false);
@@ -201,7 +220,9 @@ export function SmoothControls({
     targetPan.current = { x: 0, y: 0 };
   }, [rotationX, rotationY, resetKey]);
 
-  useEffect(() => { targetZoom.current = zoom; }, [zoom]);
+  useEffect(() => {
+    targetZoom.current = zoom;
+  }, [zoom]);
 
   useFrame(() => {
     if (!meshRef.current) return;
@@ -236,8 +257,12 @@ export function SmoothControls({
     targetRotation.current.y = baseRotation.current.y + (cursorOrbit ? cursorOffset.current.y : 0);
 
     const cur = meshRef.current.rotation;
-    cur.x += (targetRotation.current.x - cur.x) * (cursorOrbit && !isDragging.current ? orbitDamping : damping);
-    cur.y += (targetRotation.current.y - cur.y) * (cursorOrbit && !isDragging.current ? orbitDamping : damping);
+    cur.x +=
+      (targetRotation.current.x - cur.x) *
+      (cursorOrbit && !isDragging.current ? orbitDamping : damping);
+    cur.y +=
+      (targetRotation.current.y - cur.y) *
+      (cursorOrbit && !isDragging.current ? orbitDamping : damping);
 
     if (introComplete.current) {
       const aspect = gl.domElement.clientWidth / (gl.domElement.clientHeight || 1);
@@ -253,8 +278,13 @@ export function SmoothControls({
 
   useEffect(() => {
     if (!resetOnIdle) return;
-    const onDocLeave = () => { cursorInWindow.current = false; };
-    const onDocEnter = () => { cursorInWindow.current = true; markActive(); };
+    const onDocLeave = () => {
+      cursorInWindow.current = false;
+    };
+    const onDocEnter = () => {
+      cursorInWindow.current = true;
+      markActive();
+    };
     document.addEventListener('mouseleave', onDocLeave);
     document.addEventListener('mouseenter', onDocEnter);
     return () => {
@@ -264,7 +294,10 @@ export function SmoothControls({
   }, [resetOnIdle]);
 
   useEffect(() => {
-    if (!cursorOrbit) { cursorOffset.current = { x: 0, y: 0 }; return; }
+    if (!cursorOrbit) {
+      cursorOffset.current = { x: 0, y: 0 };
+      return;
+    }
     const onMouseMove = (e: MouseEvent) => {
       if (isDragging.current) return;
       if (resetOnIdle) markActive();
@@ -281,7 +314,9 @@ export function SmoothControls({
     const activeTouches = new Set<number>();
     const isPinching = () => activeTouches.size >= 2;
 
-    const setCursor = (c: string) => { canvas.style.cursor = c; };
+    const setCursor = (c: string) => {
+      canvas.style.cursor = c;
+    };
     if (draggable) setCursor('grab');
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -310,7 +345,10 @@ export function SmoothControls({
       const dy = e.clientY - lastPos.current.y;
       lastPos.current = { x: e.clientX, y: e.clientY };
       if (isPanning.current || e.shiftKey) {
-        if (!isPanning.current) { isPanning.current = true; setCursor('move'); }
+        if (!isPanning.current) {
+          isPanning.current = true;
+          setCursor('move');
+        }
         const panSensitivity = Math.min(0.02, Math.max(0.004, 0.01 * (camera.position.z / 8)));
         targetPan.current.x -= dx * panSensitivity;
         targetPan.current.y += dy * panSensitivity;

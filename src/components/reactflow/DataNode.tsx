@@ -37,7 +37,12 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         toast.error('File has no data rows');
         return;
       }
-      update({ fileName: file.name, rows: result.rows, columns: result.columns, selectedRowIndex: 0 });
+      update({
+        fileName: file.name,
+        rows: result.rows,
+        columns: result.columns,
+        selectedRowIndex: 0,
+      });
       toast.success(`Loaded ${result.rows.length} rows · ${result.columns.length} columns`);
       e.target.value = '';
     },
@@ -61,7 +66,9 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           Data
         </span>
         {fileName && (
-          <span className="ml-auto text-[10px] text-white/35 truncate max-w-[120px]">{fileName}</span>
+          <span className="ml-auto text-[10px] text-white/35 truncate max-w-[120px]">
+            {fileName}
+          </span>
         )}
       </div>
 
@@ -85,7 +92,10 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               <thead>
                 <tr>
                   {previewCols.map((col) => (
-                    <th key={col} className="text-left text-white/30 font-medium pb-1 pr-2 truncate max-w-[60px]">
+                    <th
+                      key={col}
+                      className="text-left text-white/30 font-medium pb-1 pr-2 truncate max-w-[60px]"
+                    >
                       {col}
                     </th>
                   ))}
@@ -138,7 +148,8 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           <div className="px-3 pb-2 flex items-start gap-1">
             <AlertCircle size={9} className="text-white/20 mt-0.5 shrink-0" />
             <p className="text-[10px] text-white/20 leading-tight">
-              Connect to a Prompt or Edit node — column names become <span className="font-mono text-brand-cyan/40">{`{{variables}}`}</span>
+              Connect to a Prompt or Edit node — column names become{' '}
+              <span className="font-mono text-brand-cyan/40">{`{{variables}}`}</span>
             </p>
           </div>
         </>
@@ -157,7 +168,14 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         type="source"
         position={Position.Right}
         id="data-out"
-        style={{ top: '50%', right: -6, width: 10, height: 10, background: 'var(--brand-cyan)', border: '2px solid var(--color-neutral-950)' }}
+        style={{
+          top: '50%',
+          right: -6,
+          width: 10,
+          height: 10,
+          background: 'var(--brand-cyan)',
+          border: '2px solid var(--color-neutral-950)',
+        }}
       />
     </NodeContainer>
   );

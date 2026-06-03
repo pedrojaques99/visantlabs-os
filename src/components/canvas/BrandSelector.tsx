@@ -21,11 +21,7 @@ export const BrandSelector: React.FC<BrandSelectorProps> = ({
   const { data: guidelines = [], isLoading } = useBrandGuidelines(true);
 
   if (isLoading) {
-    return (
-      <div className={cn("px-4 py-2 text-xs text-neutral-500", className)}>
-        Loading...
-      </div>
-    );
+    return <div className={cn('px-4 py-2 text-xs text-neutral-500', className)}>Loading...</div>;
   }
 
   // if (guidelines.length === 0) {
@@ -45,7 +41,7 @@ export const BrandSelector: React.FC<BrandSelectorProps> = ({
     options.push({
       value: 'ADD_NEW',
       label: 'Novo Brand DNA...',
-      icon: <Plus size={12} className="text-neutral-400" />
+      icon: <Plus size={12} className="text-neutral-400" />,
     });
   }
 
@@ -58,7 +54,12 @@ export const BrandSelector: React.FC<BrandSelectorProps> = ({
   };
 
   return (
-    <div className={cn("flex items-center px-1.5 bg-neutral-900/40 border border-white/5 rounded-[10px] hover:bg-[#252525]/60 hover:border-white/10 transition-all duration-200 shadow-sm h-9", className)}>
+    <div
+      className={cn(
+        'flex items-center px-1.5 bg-neutral-900/40 border border-white/5 rounded-[10px] hover:bg-[#252525]/60 hover:border-white/10 transition-all duration-200 shadow-sm h-9',
+        className
+      )}
+    >
       <Palette size={12} className="text-neutral-500 shrink-0 ml-1" />
       <Select
         options={options}

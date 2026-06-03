@@ -48,7 +48,7 @@ export type GenerateEvent =
 export async function generateMiniApp(
   prompt: string,
   opts?: { brandContext?: string; model?: string },
-  onEvent?: (event: GenerateEvent) => void,
+  onEvent?: (event: GenerateEvent) => void
 ): Promise<{ spec: Record<string, unknown>; meta: Record<string, unknown> } | null> {
   const res = await fetch(`${API_BASE}/generate`, {
     method: 'POST',
@@ -108,7 +108,7 @@ export async function iterateMiniApp(
   prompt: string,
   currentSpec: Record<string, unknown>,
   opts?: { model?: string },
-  onEvent?: (event: GenerateEvent) => void,
+  onEvent?: (event: GenerateEvent) => void
 ) {
   const res = await fetch(`${API_BASE}/iterate`, {
     method: 'POST',
@@ -166,13 +166,21 @@ export async function saveMiniApp(data: {
   actionsUsed?: string[];
   thumbnail?: string;
 }) {
-  const res = await fetch(API_BASE, { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
+  const res = await fetch(API_BASE, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
   if (!res.ok) throw new Error('Failed to save');
   return res.json();
 }
 
 export async function updateMiniApp(id: string, data: Partial<MiniAppFull>) {
-  const res = await fetch(`${API_BASE}/${id}`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(data) });
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
   if (!res.ok) throw new Error('Failed to update');
   return res.json();
 }
@@ -195,7 +203,13 @@ export async function getMyMiniApps() {
   return res.json() as Promise<{ miniApps: MiniAppSummary[] }>;
 }
 
-export async function getFeed(params?: { category?: string; sort?: string; search?: string; skip?: number; take?: number }) {
+export async function getFeed(params?: {
+  category?: string;
+  sort?: string;
+  search?: string;
+  skip?: number;
+  take?: number;
+}) {
   const qs = new URLSearchParams();
   if (params?.category) qs.set('category', params.category);
   if (params?.sort) qs.set('sort', params.sort);

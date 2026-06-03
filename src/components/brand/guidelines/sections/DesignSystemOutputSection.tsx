@@ -22,31 +22,40 @@ const FORMAT_META: Record<OutputFormat, { label: string; icon: React.ReactNode; 
   scss: { label: 'SCSS', icon: <Hash size={12} />, ext: '.scss' },
 };
 
-export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps> = ({ guideline, span }) => {
+export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps> = ({
+  guideline,
+  span,
+}) => {
   const [activeFormat, setActiveFormat] = useState<OutputFormat>('css');
   const [outputs, setOutputs] = useState<Record<string, { content: string; filename: string }>>({});
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const fetchOutput = useCallback(async (format: OutputFormat) => {
-    if (outputs[format]) {
-      setActiveFormat(format);
-      return;
-    }
-    if (!guideline.id) return;
+  const fetchOutput = useCallback(
+    async (format: OutputFormat) => {
+      if (outputs[format]) {
+        setActiveFormat(format);
+        return;
+      }
+      if (!guideline.id) return;
 
-    setLoading(true);
-    try {
-      const result = await brandGuidelineApi.compile(guideline.id, format);
-      const output = result.outputs[0];
-      setOutputs(prev => ({ ...prev, [format]: { content: output.content, filename: output.filename } }));
-      setActiveFormat(format);
-    } catch {
-      toast.error('Failed to compile tokens');
-    } finally {
-      setLoading(false);
-    }
-  }, [guideline.id, outputs]);
+      setLoading(true);
+      try {
+        const result = await brandGuidelineApi.compile(guideline.id, format);
+        const output = result.outputs[0];
+        setOutputs((prev) => ({
+          ...prev,
+          [format]: { content: output.content, filename: output.filename },
+        }));
+        setActiveFormat(format);
+      } catch {
+        toast.error('Failed to compile tokens');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [guideline.id, outputs]
+  );
 
   const fetchAll = useCallback(async () => {
     if (!guideline.id) return;
@@ -101,10 +110,20 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
     }
   };
 
-  const hasTokens = (guideline.colors?.length || 0) + (guideline.typography?.length || 0) + (guideline.shadows?.length || 0) + (guideline.gradients?.length || 0) > 0;
+  const hasTokens =
+    (guideline.colors?.length || 0) +
+      (guideline.typography?.length || 0) +
+      (guideline.shadows?.length || 0) +
+      (guideline.gradients?.length || 0) >
+    0;
 
   return (
-    <SectionBlock id="design-system-output" icon={<Code2 size={14} />} title="Design System Output" span={span as any}>
+    <SectionBlock
+      id="design-system-output"
+      icon={<Code2 size={14} />}
+      title="Design System Output"
+      span={span as any}
+    >
       <div className="space-y-4">
         {/* Visual Token Preview */}
         {hasTokens && (
@@ -119,7 +138,9 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                       style={{ backgroundColor: c.hex }}
                       title={`${c.name} — ${c.hex}`}
                     />
-                    <span className="text-[10px] font-mono text-neutral-600 max-w-[40px] truncate">{c.role || c.name}</span>
+                    <span className="text-[10px] font-mono text-neutral-600 max-w-[40px] truncate">
+                      {c.role || c.name}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -132,11 +153,16 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                   <div key={i} className="flex flex-col gap-0.5">
                     <span
                       className="text-neutral-300 leading-tight"
-                      style={{ fontFamily: `'${t.family}', sans-serif`, fontSize: Math.min(t.size || 16, 24) }}
+                      style={{
+                        fontFamily: `'${t.family}', sans-serif`,
+                        fontSize: Math.min(t.size || 16, 24),
+                      }}
                     >
                       {t.family}
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-600">{t.role} · {t.style || 'Regular'}</span>
+                    <span className="text-[10px] font-mono text-neutral-600">
+                      {t.role} · {t.style || 'Regular'}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -149,7 +175,13 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                   <div
                     key={i}
                     className="w-16 h-6 rounded-md border border-white/10"
-                    style={{ background: g.css || `linear-gradient(${g.angle}deg, ${g.stops.map(s => `${s.color} ${s.position}%`).join(', ')})` }}
+                    style={{
+                      background:
+                        g.css ||
+                        `linear-gradient(${g.angle}deg, ${g.stops
+                          .map((s) => `${s.color} ${s.position}%`)
+                          .join(', ')})`,
+                    }}
                     title={g.name}
                   />
                 ))}
@@ -160,7 +192,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
 
         {/* Format Tabs */}
         <div className="flex items-center gap-1 p-1 rounded-lg bg-white/[0.03] border border-neutral-800">
-          {(Object.keys(FORMAT_META) as OutputFormat[]).map(fmt => (
+          {(Object.keys(FORMAT_META) as OutputFormat[]).map((fmt) => (
             <button
               key={fmt}
               onClick={() => fetchOutput(fmt)}
@@ -205,7 +237,9 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
             {currentOutput && (
               <div className="flex items-center gap-2 px-4 py-2 border-b border-neutral-800 bg-white/[0.03]">
                 <FileCode size={11} className="text-neutral-600" />
-                <span className="text-[10px] font-mono text-neutral-500">{currentOutput.filename}</span>
+                <span className="text-[10px] font-mono text-neutral-500">
+                  {currentOutput.filename}
+                </span>
               </div>
             )}
 
@@ -216,7 +250,9 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               ) : currentOutput ? (
                 <code>{currentOutput.content}</code>
               ) : (
-                <span className="text-neutral-600">No output available. Add colors, typography, or tokens to your brand.</span>
+                <span className="text-neutral-600">
+                  No output available. Add colors, typography, or tokens to your brand.
+                </span>
               )}
             </pre>
           </div>
@@ -253,10 +289,12 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
 function TokenStat({ label, count }: { label: string; count: number }) {
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/[0.03] border border-neutral-800">
-      <span className={cn(
-        'text-sm font-medium tabular-nums',
-        count > 0 ? 'text-neutral-300' : 'text-neutral-700'
-      )}>
+      <span
+        className={cn(
+          'text-sm font-medium tabular-nums',
+          count > 0 ? 'text-neutral-300' : 'text-neutral-700'
+        )}
+      >
         {count}
       </span>
       <span className="text-[10px] font-mono text-neutral-600">{label}</span>

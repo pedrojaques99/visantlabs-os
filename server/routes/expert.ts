@@ -12,7 +12,10 @@ import { chargeCredits } from '../lib/credits.js';
 const expertRateLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10, // Max 10 per minute
-  message: { error: 'O Especialista precisa de um tempo para pensar. Por favor, aguarde um minuto antes de continuar.' },
+  message: {
+    error:
+      'O Especialista precisa de um tempo para pensar. Por favor, aguarde um minuto antes de continuar.',
+  },
 });
 
 const router = express.Router();
@@ -24,7 +27,9 @@ const router = express.Router();
 router.post('/ingest', expertRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!req.isAdmin) {
-      return res.status(403).json({ error: 'Apenas administradores podem inserir material na base de conhecimento.' });
+      return res
+        .status(403)
+        .json({ error: 'Apenas administradores podem inserir material na base de conhecimento.' });
     }
 
     const { parts, metadata, projectId } = req.body;
@@ -37,7 +42,7 @@ router.post('/ingest', expertRateLimiter, authenticate, async (req: AuthRequest,
       userId: req.userId!,
       projectId,
       parts,
-      metadata
+      metadata,
     });
 
     // Invalidate expert RAG cache for this project
@@ -94,12 +99,18 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
     if (brandGuidelineId) {
       try {
         const guideline = await prisma.brandGuideline.findUnique({
-          where: { id: brandGuidelineId }
+          where: { id: brandGuidelineId },
         });
 
         if (guideline && guideline.userId === req.userId!) {
-          brandContext = buildBrandContext(guideline as any, { sections: BRAND_SECTION_PRESETS.copy });
-          console.log(`[Expert] Using brand guidelines: ${(guideline.identity as { name?: string } | null)?.name || 'Unnamed'}`);
+          brandContext = buildBrandContext(guideline as any, {
+            sections: BRAND_SECTION_PRESETS.copy,
+          });
+          console.log(
+            `[Expert] Using brand guidelines: ${
+              (guideline.identity as { name?: string } | null)?.name || 'Unnamed'
+            }`
+          );
         }
       } catch (e) {
         console.warn('[Expert] Error loading brand guidelines:', e);
@@ -114,17 +125,13 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
       history,
       userApiKey,
       model,
-      brandContext
+      brandContext,
     });
 
     // Cache set
     if (queryHash && cacheKey) {
       try {
-        await redisClient.setex(
-          cacheKey,
-          CACHE_TTL.EXPERT_RAG,
-          JSON.stringify(result)
-        );
+        await redisClient.setex(cacheKey, CACHE_TTL.EXPERT_RAG, JSON.stringify(result));
         console.log(`[Cache] SET expert:${queryHash.slice(0, 8)} (24h)`);
       } catch (cacheError) {
         console.warn('[Redis] Cache store failed:', cacheError);
@@ -136,9 +143,10 @@ router.post('/chat', expertRateLimiter, authenticate, async (req: AuthRequest, r
     console.error('Expert chat error:', error);
     // Handle specific configuration errors with better status codes
     if (error.message && error.message.includes('CONFIGURAÇÃO_AUSENTE')) {
-      return res.status(503).json({ 
-        error: 'Serviço temporariamente indisponível', 
-        message: 'A base de conhecimento (RAG) não está configurada corretamente. Verifique as chaves de API do Pinecone.' 
+      return res.status(503).json({
+        error: 'Serviço temporariamente indisponível',
+        message:
+          'A base de conhecimento (RAG) não está configurada corretamente. Verifique as chaves de API do Pinecone.',
       });
     }
     next(error);

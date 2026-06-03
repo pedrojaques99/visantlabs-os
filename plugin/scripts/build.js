@@ -27,14 +27,14 @@ async function build() {
       loader: {
         '.tsx': 'tsx',
         '.ts': 'ts',
-        '.svg': 'dataurl'
+        '.svg': 'dataurl',
       },
       jsx: 'automatic',
       jsxImportSource: 'react',
       absWorkingDir: ROOT,
       alias: {
         '@': path.join(ROOT, 'src'),
-        '@shared': path.join(ROOT, 'shared')
+        '@shared': path.join(ROOT, 'shared'),
       },
       minify: !isDev,
       sourcemap: isDev,
@@ -44,7 +44,7 @@ async function build() {
         'import.meta': JSON.stringify({ env: {} }),
       },
       external: [],
-      logLevel: 'info'
+      logLevel: 'info',
     });
 
     console.log('✅ UI bundle created');
@@ -54,7 +54,10 @@ async function build() {
     // Step 2: Generate CSS via Tailwind CLI
     try {
       execSync(
-        `npx @tailwindcss/cli -i "${path.join(pluginDir, 'tailwind-plugin.css')}" -o "${path.join(distDir, 'ui-bundle.css')}"`,
+        `npx @tailwindcss/cli -i "${path.join(pluginDir, 'tailwind-plugin.css')}" -o "${path.join(
+          distDir,
+          'ui-bundle.css'
+        )}"`,
         { cwd: ROOT, stdio: 'inherit' }
       );
       console.log('✅ Tailwind CSS generated');
@@ -142,7 +145,7 @@ ${jsContent}
           code = code.replace(/__html__/g, () => JSON.stringify(htmlContent));
           return { contents: code, loader: 'ts' };
         });
-      }
+      },
     };
 
     // Step 4: Build code.ts (sandbox)
@@ -157,10 +160,10 @@ ${jsContent}
       sourcemap: isDev,
       plugins: [htmlPlugin],
       alias: {
-        '@shared': path.join(ROOT, 'shared')
+        '@shared': path.join(ROOT, 'shared'),
       },
       external: [],
-      logLevel: 'info'
+      logLevel: 'info',
     });
 
     // Post-build: sanitize `import(` references that Figma sandbox rejects
@@ -172,9 +175,16 @@ ${jsContent}
     console.log('✅ Sandbox bundled');
 
     console.log('\n✨ Build complete!');
-    console.log(`   📄 dist/code.js — ${(fs.statSync(path.join(distDir, 'code.js')).size / 1024).toFixed(1)}KB`);
-    console.log(`   🎨 dist/ui-bundle.css — ${(fs.statSync(path.join(distDir, 'ui-bundle.css')).size / 1024).toFixed(1)}KB`);
-
+    console.log(
+      `   📄 dist/code.js — ${(fs.statSync(path.join(distDir, 'code.js')).size / 1024).toFixed(
+        1
+      )}KB`
+    );
+    console.log(
+      `   🎨 dist/ui-bundle.css — ${(
+        fs.statSync(path.join(distDir, 'ui-bundle.css')).size / 1024
+      ).toFixed(1)}KB`
+    );
   } catch (err) {
     console.error('❌ Build failed:', err.message);
     process.exit(1);

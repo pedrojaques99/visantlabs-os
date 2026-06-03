@@ -29,4 +29,3 @@ export interface AIProvider {
     options?: AIGenerationOptions
   ): Promise<AIGenerationResult>;
 }
-

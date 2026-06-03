@@ -49,7 +49,9 @@ function rgbaToHex(color: FigmaColor): string {
   const r = Math.round(color.r * 255);
   const g = Math.round(color.g * 255);
   const b = Math.round(color.b * 255);
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
+    .toString(16)
+    .padStart(2, '0')}`.toUpperCase();
 }
 
 function inferColorRole(name: string): string | undefined {
@@ -68,7 +70,8 @@ function inferColorRole(name: string): string | undefined {
 
 function inferTypographyRole(name: string): string {
   const lower = name.toLowerCase();
-  if (lower.includes('heading') || lower.includes('h1') || lower.includes('title')) return 'heading';
+  if (lower.includes('heading') || lower.includes('h1') || lower.includes('title'))
+    return 'heading';
   if (lower.includes('h2') || lower.includes('subtitle')) return 'subheading';
   if (lower.includes('body') || lower.includes('paragraph')) return 'body';
   if (lower.includes('caption') || lower.includes('small')) return 'caption';
@@ -106,9 +109,18 @@ export async function getFileData(fileKey: string, token: string): Promise<Figma
 /**
  * Get full style definitions (colors, text styles)
  */
-export async function getFileStyles(fileKey: string, token: string): Promise<{
+export async function getFileStyles(
+  fileKey: string,
+  token: string
+): Promise<{
   colors: Array<{ key: string; name: string; color: FigmaColor }>;
-  textStyles: Array<{ key: string; name: string; fontFamily: string; fontSize: number; fontWeight: number }>;
+  textStyles: Array<{
+    key: string;
+    name: string;
+    fontFamily: string;
+    fontSize: number;
+    fontWeight: number;
+  }>;
 }> {
   // First get the style keys from file
   const fileData = await getFileData(fileKey, token);
@@ -127,13 +139,25 @@ export async function getFileStyles(fileKey: string, token: string): Promise<{
   if (!response.ok) {
     // Fallback: return just names without values
     const colors: Array<{ key: string; name: string; color: FigmaColor }> = [];
-    const textStyles: Array<{ key: string; name: string; fontFamily: string; fontSize: number; fontWeight: number }> = [];
+    const textStyles: Array<{
+      key: string;
+      name: string;
+      fontFamily: string;
+      fontSize: number;
+      fontWeight: number;
+    }> = [];
 
     for (const [key, style] of Object.entries(fileData.styles)) {
       if (style.styleType === 'FILL') {
         colors.push({ key, name: style.name, color: { r: 0.5, g: 0.5, b: 0.5, a: 1 } });
       } else if (style.styleType === 'TEXT') {
-        textStyles.push({ key, name: style.name, fontFamily: 'Inter', fontSize: 16, fontWeight: 400 });
+        textStyles.push({
+          key,
+          name: style.name,
+          fontFamily: 'Inter',
+          fontSize: 16,
+          fontWeight: 400,
+        });
       }
     }
 
@@ -142,7 +166,13 @@ export async function getFileStyles(fileKey: string, token: string): Promise<{
 
   const nodes = await response.json();
   const colors: Array<{ key: string; name: string; color: FigmaColor }> = [];
-  const textStyles: Array<{ key: string; name: string; fontFamily: string; fontSize: number; fontWeight: number }> = [];
+  const textStyles: Array<{
+    key: string;
+    name: string;
+    fontFamily: string;
+    fontSize: number;
+    fontWeight: number;
+  }> = [];
 
   for (const [key, style] of Object.entries(fileData.styles)) {
     const node = nodes.nodes?.[key]?.document;
@@ -196,21 +226,24 @@ export async function getComponentThumbnails(
  * Extract design tokens from a Figma file
  * Returns colors, typography, and components in BrandGuideline format
  */
-export async function extractDesignTokens(fileKey: string, token: string): Promise<ExtractedDesignTokens> {
+export async function extractDesignTokens(
+  fileKey: string,
+  token: string
+): Promise<ExtractedDesignTokens> {
   const [fileData, styles] = await Promise.all([
     getFileData(fileKey, token),
     getFileStyles(fileKey, token),
   ]);
 
   // Extract colors
-  const colors = styles.colors.map(c => ({
+  const colors = styles.colors.map((c) => ({
     hex: rgbaToHex(c.color),
     name: c.name,
     role: inferColorRole(c.name),
   }));
 
   // Extract typography
-  const typography = styles.textStyles.map(t => ({
+  const typography = styles.textStyles.map((t) => ({
     family: t.fontFamily,
     style: t.fontWeight >= 600 ? 'bold' : 'regular',
     role: inferTypographyRole(t.name),

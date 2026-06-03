@@ -30,7 +30,9 @@ router.post('/branding', apiRateLimiter, authenticate, async (req: AuthRequest, 
     // Only save positive feedback (thumbs up = rating 1)
     const feedbackRating = rating || 1;
     if (feedbackRating !== 1) {
-      return res.status(400).json({ error: 'Only positive feedback (thumbs up) is saved as examples' });
+      return res
+        .status(400)
+        .json({ error: 'Only positive feedback (thumbs up) is saved as examples' });
     }
 
     // Check if example already exists for this prompt + step combination
@@ -52,10 +54,10 @@ router.post('/branding', apiRateLimiter, authenticate, async (req: AuthRequest, 
         },
       });
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: 'Feedback updated',
-        example: updated 
+        example: updated,
       });
     }
 
@@ -69,10 +71,10 @@ router.post('/branding', apiRateLimiter, authenticate, async (req: AuthRequest, 
       },
     });
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Feedback saved as example',
-      example 
+      example,
     });
   } catch (error: any) {
     console.error('Error saving branding feedback:', error);
@@ -92,7 +94,9 @@ router.post('/mockup', authenticate, async (req: AuthRequest, res) => {
     // Only save positive feedback (thumbs up = rating 1)
     const feedbackRating = rating || 1;
     if (feedbackRating !== 1) {
-      return res.status(400).json({ error: 'Only positive feedback (thumbs up) is saved as examples' });
+      return res
+        .status(400)
+        .json({ error: 'Only positive feedback (thumbs up) is saved as examples' });
     }
 
     // Check if example already exists for this prompt + imageUrl combination
@@ -113,10 +117,10 @@ router.post('/mockup', authenticate, async (req: AuthRequest, res) => {
         },
       });
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: 'Feedback updated',
-        example: updated 
+        example: updated,
       });
     }
 
@@ -133,10 +137,10 @@ router.post('/mockup', authenticate, async (req: AuthRequest, res) => {
       },
     });
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Feedback saved as example',
-      example 
+      example,
     });
   } catch (error: any) {
     console.error('Error saving mockup feedback:', error);
@@ -179,8 +183,15 @@ router.get('/mockup-examples', apiRateLimiter, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const VALID_FEATURES: FeedbackFeature[] = [
-  'mockup', 'branding', 'canvas', 'creative',
-  'brand-intelligence', 'node-builder', 'chat', 'admin-chat', 'image-gen',
+  'mockup',
+  'branding',
+  'canvas',
+  'creative',
+  'brand-intelligence',
+  'node-builder',
+  'chat',
+  'admin-chat',
+  'image-gen',
 ];
 
 /**
@@ -201,7 +212,9 @@ router.post('/generation', apiRateLimiter, authenticate, async (req: AuthRequest
       return res.status(400).json({ error: 'generationId is required' });
     }
     if (!VALID_FEATURES.includes(feature)) {
-      return res.status(400).json({ error: `feature must be one of: ${VALID_FEATURES.join(', ')}` });
+      return res
+        .status(400)
+        .json({ error: `feature must be one of: ${VALID_FEATURES.join(', ')}` });
     }
     if (rating !== 'up' && rating !== 'down') {
       return res.status(400).json({ error: "rating must be 'up' or 'down'" });
@@ -243,7 +256,7 @@ router.post('/generation', apiRateLimiter, authenticate, async (req: AuthRequest
         try {
           const normalizedPrompt = String(context.prompt).trim().slice(0, 5000);
           const threshold = parseInt(process.env.PATTERN_PROMOTION_THRESHOLD || '5', 10);
-          
+
           const pattern = await prisma.mockupPattern.upsert({
             where: { prompt: normalizedPrompt },
             update: { rating: { increment: 1 } },
@@ -251,14 +264,18 @@ router.post('/generation', apiRateLimiter, authenticate, async (req: AuthRequest
               prompt: normalizedPrompt,
               designType: context.designType || 'blank',
               tags: Array.isArray(context.tags?.category) ? context.tags.category : [],
-              rating: 1
-            }
+              rating: 1,
+            },
           });
 
-          if (pattern.rating >= threshold && !pattern.isOfficial && process.env.AUTO_PROMOTE_PATTERNS === 'true') {
+          if (
+            pattern.rating >= threshold &&
+            !pattern.isOfficial &&
+            process.env.AUTO_PROMOTE_PATTERNS === 'true'
+          ) {
             await prisma.mockupPattern.update({
               where: { id: pattern.id },
-              data: { isOfficial: true }
+              data: { isOfficial: true },
             });
             if (process.env.NODE_ENV !== 'production') {
               console.log(`[feedback/generation] Pattern auto-promoted to official: ${pattern.id}`);
@@ -281,16 +298,21 @@ router.post('/generation', apiRateLimiter, authenticate, async (req: AuthRequest
  * DELETE /api/feedback/generation/:generationId
  * "Undo" — remove feedback (Mongo + Pinecone).
  */
-router.delete('/generation/:generationId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    const { generationId } = req.params;
-    const removed = await feedbackStore.remove(generationId, req.userId!);
-    res.json({ success: true, removed });
-  } catch (error: any) {
-    console.error('[feedback/generation] delete error:', error);
-    res.status(500).json({ error: 'Failed to remove feedback' });
+router.delete(
+  '/generation/:generationId',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      const { generationId } = req.params;
+      const removed = await feedbackStore.remove(generationId, req.userId!);
+      res.json({ success: true, removed });
+    } catch (error: any) {
+      console.error('[feedback/generation] delete error:', error);
+      res.status(500).json({ error: 'Failed to remove feedback' });
+    }
   }
-});
+);
 
 /**
  * GET /api/feedback/generation/recent?feature=mockup&limit=20
@@ -309,4 +331,3 @@ router.get('/generation/recent', apiRateLimiter, authenticate, async (req: AuthR
 });
 
 export default router;
-

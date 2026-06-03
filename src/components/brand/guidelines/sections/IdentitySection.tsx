@@ -4,7 +4,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { FileText, RefreshCw, Trash2, Globe, Instagram, Linkedin, Briefcase, Twitter } from 'lucide-react';
+import {
+  FileText,
+  RefreshCw,
+  Trash2,
+  Globe,
+  Instagram,
+  Linkedin,
+  Briefcase,
+  Twitter,
+} from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 
@@ -20,12 +29,24 @@ interface IdentitySectionProps {
 }
 
 type IdentityFields = {
-  name: string; tagline: string; description: string;
-  website: string; portfolio: string; instagram: string; linkedin: string; x: string;
+  name: string;
+  tagline: string;
+  description: string;
+  website: string;
+  portfolio: string;
+  instagram: string;
+  linkedin: string;
+  x: string;
 };
 
 export const IdentitySection: React.FC<IdentitySectionProps> = ({
-  guideline, onUpdate, onReIngest, onDelete, isDeleting, span, rowSpan,
+  guideline,
+  onUpdate,
+  onReIngest,
+  onDelete,
+  isDeleting,
+  span,
+  rowSpan,
 }) => {
   const local: IdentityFields = {
     name: guideline.identity?.name || guideline.name || '',
@@ -38,16 +59,24 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
     x: guideline.identity?.x || '',
   };
 
-  const persist = useCallback((fields: IdentityFields) => {
-    onUpdate({ identity: { ...guideline.identity, ...fields }, name: fields.name, tagline: fields.tagline, description: fields.description });
-  }, [onUpdate, guideline.identity]);
+  const persist = useCallback(
+    (fields: IdentityFields) => {
+      onUpdate({
+        identity: { ...guideline.identity, ...fields },
+        name: fields.name,
+        tagline: fields.tagline,
+        description: fields.description,
+      });
+    },
+    [onUpdate, guideline.identity]
+  );
 
   const update = (patch: Partial<IdentityFields>) => {
     const next = { ...local, ...patch };
     persist(next);
   };
 
-  const primaryLogo = guideline.logos?.find(l => l.variant === 'primary') || guideline.logos?.[0];
+  const primaryLogo = guideline.logos?.find((l) => l.variant === 'primary') || guideline.logos?.[0];
 
   return (
     <SectionBlock
@@ -56,27 +85,45 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
       title="Identity"
       span={span as any}
       rowSpan={rowSpan as any}
-      actions={(
+      actions={
         <div className="flex items-center gap-1">
           {onReIngest && (
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={onReIngest} title="Re-ingest from website" aria-label="Re-ingest">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-neutral-500 hover:text-white"
+              onClick={onReIngest}
+              title="Re-ingest from website"
+              aria-label="Re-ingest"
+            >
               <RefreshCw size={11} />
             </Button>
           )}
           {onDelete && (
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-600 hover:text-destructive" onClick={onDelete} disabled={isDeleting} aria-label="Delete guideline">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-neutral-600 hover:text-destructive"
+              onClick={onDelete}
+              disabled={isDeleting}
+              aria-label="Delete guideline"
+            >
               <Trash2 size={11} />
             </Button>
           )}
         </div>
-      )}
+      }
     >
       <div className="space-y-3 py-1">
         {/* Logo + Name */}
         <div className="flex items-center gap-3 pb-2 border-b border-neutral-800">
           {primaryLogo && (
             <div className="w-9 h-9 shrink-0 flex items-center justify-center rounded overflow-hidden bg-neutral-900/60">
-              <img src={primaryLogo.url} alt="Logo" className="max-w-full max-h-full object-contain" />
+              <img
+                src={primaryLogo.url}
+                alt="Logo"
+                className="max-w-full max-h-full object-contain"
+              />
             </div>
           )}
           <Input
@@ -111,11 +158,23 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
           ].map(({ key, icon, placeholder }) => {
             const isEmpty = !local[key];
             return (
-              <div key={key} className={cn(
-                'flex items-center gap-1.5 group/link transition-all',
-                isEmpty ? 'w-fit py-0.5' : 'w-full py-1 border-b border-neutral-800 last:border-0'
-              )}>
-                <span className={cn('shrink-0 transition-colors', isEmpty ? 'text-neutral-800 group-hover/link:text-neutral-600' : 'text-neutral-600')}>{icon}</span>
+              <div
+                key={key}
+                className={cn(
+                  'flex items-center gap-1.5 group/link transition-all',
+                  isEmpty ? 'w-fit py-0.5' : 'w-full py-1 border-b border-neutral-800 last:border-0'
+                )}
+              >
+                <span
+                  className={cn(
+                    'shrink-0 transition-colors',
+                    isEmpty
+                      ? 'text-neutral-800 group-hover/link:text-neutral-600'
+                      : 'text-neutral-600'
+                  )}
+                >
+                  {icon}
+                </span>
                 <Input
                   value={local[key]}
                   onChange={(e) => update({ [key]: e.target.value })}

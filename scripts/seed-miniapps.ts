@@ -148,7 +148,10 @@ const MINIAPPS: SeedMiniApp[] = [
         },
         sceneInput: {
           type: 'Textarea',
-          props: { placeholder: 'e.g. Vinyl sticker on brushed steel, studio lighting...', rows: 3 },
+          props: {
+            placeholder: 'e.g. Vinyl sticker on brushed steel, studio lighting...',
+            rows: 3,
+          },
         },
         imageSection: {
           type: 'ToolPanelSection',
@@ -290,7 +293,10 @@ const MINIAPPS: SeedMiniApp[] = [
         },
         resultsEmpty: {
           type: 'EmptyState',
-          props: { title: 'Results', description: 'Upload a design and select a brand guideline to check compliance' },
+          props: {
+            title: 'Results',
+            description: 'Upload a design and select a brand guideline to check compliance',
+          },
         },
       },
     },

@@ -1,6 +1,19 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Instagram, Youtube, Twitter, Globe, User, ImageIcon, Diamond, Edit, Workflow, Play, Heart, Share2 } from 'lucide-react';
+import {
+  Instagram,
+  Youtube,
+  Twitter,
+  Globe,
+  User,
+  ImageIcon,
+  Diamond,
+  Edit,
+  Workflow,
+  Play,
+  Heart,
+  Share2,
+} from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { FullScreenViewer } from '../components/FullScreenViewer';
@@ -62,7 +75,9 @@ export const CommunityProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('mockups');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<any | null>(null);
-  const [openModalType, setOpenModalType] = useState<'mockup' | 'texture' | 'angle' | 'ambience' | 'luminance' | null>(null);
+  const [openModalType, setOpenModalType] = useState<
+    'mockup' | 'texture' | 'angle' | 'ambience' | 'luminance' | null
+  >(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const isLoadingRef = useRef(false);
@@ -204,7 +219,9 @@ export const CommunityProfilePage: React.FC = () => {
 
   const handlePresetClick = useCallback((preset: any) => {
     setSelectedPreset(preset);
-    setOpenModalType(preset.presetType as 'mockup' | 'texture' | 'angle' | 'ambience' | 'luminance');
+    setOpenModalType(
+      preset.presetType as 'mockup' | 'texture' | 'angle' | 'ambience' | 'luminance'
+    );
   }, []);
 
   const handleClosePresetModal = useCallback(() => {
@@ -212,21 +229,31 @@ export const CommunityProfilePage: React.FC = () => {
     setOpenModalType(null);
   }, []);
 
-  const handleSelectPreset = useCallback((presetId: string) => {
-    if (selectedPreset) {
-      const type = selectedPreset.presetType || selectedPreset.category || 'mockup';
-      const id = selectedPreset.id || selectedPreset._id || presetId;
-      navigate(`/canvas?action=createNode&type=${encodeURIComponent(type)}&presetId=${encodeURIComponent(id)}`);
-    } else {
-      toast.success(t('common.presetSelected') || 'Preset selected');
-    }
-    handleClosePresetModal();
-  }, [t, handleClosePresetModal, selectedPreset, navigate]);
+  const handleSelectPreset = useCallback(
+    (presetId: string) => {
+      if (selectedPreset) {
+        const type = selectedPreset.presetType || selectedPreset.category || 'mockup';
+        const id = selectedPreset.id || selectedPreset._id || presetId;
+        navigate(
+          `/canvas?action=createNode&type=${encodeURIComponent(type)}&presetId=${encodeURIComponent(
+            id
+          )}`
+        );
+      } else {
+        toast.success(t('common.presetSelected') || 'Preset selected');
+      }
+      handleClosePresetModal();
+    },
+    [t, handleClosePresetModal, selectedPreset, navigate]
+  );
 
-  const handleSelectAngle = useCallback((angleId: string) => {
-    toast.success(t('common.presetSelected') || 'Preset selected');
-    handleClosePresetModal();
-  }, [t, handleClosePresetModal]);
+  const handleSelectAngle = useCallback(
+    (angleId: string) => {
+      toast.success(t('common.presetSelected') || 'Preset selected');
+      handleClosePresetModal();
+    },
+    [t, handleClosePresetModal]
+  );
 
   const handleProfileUpdate = async () => {
     if (!identifier) return;
@@ -263,16 +290,20 @@ export const CommunityProfilePage: React.FC = () => {
       const newLikedState = !workflow.isLikedByUser;
       await workflowApi.toggleLike(workflow._id);
 
-      setWorkflows(prev => prev.map(w => {
-        if (w._id === workflow._id) {
-          return {
-            ...w,
-            isLikedByUser: newLikedState,
-            likesCount: newLikedState ? (w.likesCount || 0) + 1 : Math.max(0, (w.likesCount || 0) - 1)
-          };
-        }
-        return w;
-      }));
+      setWorkflows((prev) =>
+        prev.map((w) => {
+          if (w._id === workflow._id) {
+            return {
+              ...w,
+              isLikedByUser: newLikedState,
+              likesCount: newLikedState
+                ? (w.likesCount || 0) + 1
+                : Math.max(0, (w.likesCount || 0) - 1),
+            };
+          }
+          return w;
+        })
+      );
     } catch (err) {
       console.error('Failed to toggle like:', err);
       toast.error(t('community.failedToUpdateLike') || 'Failed to update like');
@@ -316,13 +347,14 @@ export const CommunityProfilePage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0">
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">{t('community.profile.loading_profile')}</p>
+              <p className="text-neutral-400 font-mono text-sm">
+                {t('community.profile.loading_profile')}
+              </p>
             </div>
           </div>
         </div>
@@ -333,8 +365,7 @@ export const CommunityProfilePage: React.FC = () => {
   if (error || !profile) {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0">
-        </div>
+        <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
@@ -350,19 +381,22 @@ export const CommunityProfilePage: React.FC = () => {
   return (
     <>
       <SEO
-        title={t('community.profileTitle', { name: profile.name || profile.username || t('common.user') })}
-        description={profile.bio || t('community.viewProfile', { name: profile.name || profile.username || t('common.user') })}
+        title={t('community.profileTitle', {
+          name: profile.name || profile.username || t('common.user'),
+        })}
+        description={
+          profile.bio ||
+          t('community.viewProfile', { name: profile.name || profile.username || t('common.user') })
+        }
       />
 
       <div className="min-h-screen bg-neutral-950 text-neutral-300 relative overflow-hidden">
         {/* Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-        </div>
+        <div className="fixed inset-0 z-0 pointer-events-none"></div>
 
         {/* Content */}
         <div className="relative z-10 pt-20 md:pt-24 pb-12">
           <div className="max-w-7xl mx-auto px-4 md:px-6">
-
             {/* Breadcrumb */}
             <div className="mb-6">
               <BreadcrumbWithBack to="/community">
@@ -390,7 +424,6 @@ export const CommunityProfilePage: React.FC = () => {
 
             {/* Profile Header Card */}
             <div className="relative mb-8 rounded-md overflow-hidden bg-neutral-900/20 border border-white/10">
-
               {/* Cover Image */}
               <div className="h-48 md:h-64 relative w-full bg-neutral-900/50 overflow-hidden">
                 {profile.coverImageUrl ? (
@@ -415,7 +448,6 @@ export const CommunityProfilePage: React.FC = () => {
               {/* Profile Content */}
               <div className="px-6 pb-6 relative z-10 -mt-16 md:-mt-20">
                 <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
-
                   {/* Avatar */}
                   <div className="relative group">
                     <div className="w-32 h-32 md:w-36 md:h-36 rounded-md bg-neutral-900 border-4 border-neutral-950 overflow-hidden flex items-center justify-center shadow-xl">
@@ -445,7 +477,11 @@ export const CommunityProfilePage: React.FC = () => {
 
                     {/* Socials & Actions */}
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                      {socialLink(profile.instagram, <Instagram size={18} />, t('community.instagram'))}
+                      {socialLink(
+                        profile.instagram,
+                        <Instagram size={18} />,
+                        t('community.instagram')
+                      )}
                       {socialLink(profile.youtube, <Youtube size={18} />, t('community.youtube'))}
                       {socialLink(profile.x, <Twitter size={18} />, t('community.twitter'))}
                       {socialLink(profile.website, <Globe size={18} />, t('community.website'))}
@@ -465,7 +501,10 @@ export const CommunityProfilePage: React.FC = () => {
                   </div>
 
                   {/* Stats */}
-                  <GlassPanel padding="sm" className="flex-row gap-4 md:gap-8 mt-4 md:mt-0 bg-neutral-900/40 backdrop-blur-sm">
+                  <GlassPanel
+                    padding="sm"
+                    className="flex-row gap-4 md:gap-8 mt-4 md:mt-0 bg-neutral-900/40 backdrop-blur-sm"
+                  >
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {profile.stats.mockups}
@@ -487,7 +526,6 @@ export const CommunityProfilePage: React.FC = () => {
                       <MicroTitle>Presets</MicroTitle>
                     </div>
                   </GlassPanel>
-
                 </div>
               </div>
             </div>
@@ -499,21 +537,30 @@ export const CommunityProfilePage: React.FC = () => {
                   <TabsTrigger value="mockups" className="gap-2">
                     <ImageIcon size={14} />
                     Mockups
-                    <Badge variant="secondary" className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5">
+                    <Badge
+                      variant="secondary"
+                      className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5"
+                    >
                       {mockups.length}
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger value="workflows" className="gap-2">
                     <Workflow size={14} />
                     Workflows
-                    <Badge variant="secondary" className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5">
+                    <Badge
+                      variant="secondary"
+                      className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5"
+                    >
                       {workflows.length}
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger value="presets" className="gap-2">
                     <Diamond size={14} />
                     Presets
-                    <Badge variant="secondary" className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5">
+                    <Badge
+                      variant="secondary"
+                      className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5"
+                    >
                       {allPresets.length}
                     </Badge>
                   </TabsTrigger>
@@ -521,7 +568,10 @@ export const CommunityProfilePage: React.FC = () => {
               </div>
 
               {/* Mockups Tab */}
-              <TabsContent value="mockups" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+              <TabsContent
+                value="mockups"
+                className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300"
+              >
                 {mockups.length === 0 ? (
                   <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <ImageIcon size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
@@ -552,7 +602,12 @@ export const CommunityProfilePage: React.FC = () => {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                             <div className="flex items-center gap-2 text-white">
-                              <Heart size={14} className={cn(mockup.isLiked ? "fill-red-500 text-destructive" : "text-white")} />
+                              <Heart
+                                size={14}
+                                className={cn(
+                                  mockup.isLiked ? 'fill-red-500 text-destructive' : 'text-white'
+                                )}
+                              />
                               <span className="text-xs font-mono">{mockup.likesCount || 0}</span>
                             </div>
                           </div>
@@ -564,7 +619,10 @@ export const CommunityProfilePage: React.FC = () => {
               </TabsContent>
 
               {/* Workflows Tab */}
-              <TabsContent value="workflows" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+              <TabsContent
+                value="workflows"
+                className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300"
+              >
                 {workflows.length === 0 ? (
                   <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <Workflow size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
@@ -577,7 +635,7 @@ export const CommunityProfilePage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {workflows.map(workflow => (
+                    {workflows.map((workflow) => (
                       <GlassPanel
                         key={workflow._id}
                         className="group overflow-hidden hover:border-neutral-700 hover:bg-neutral-800/60 transition-all duration-300 flex flex-col h-full bg-neutral-900/40"
@@ -601,7 +659,9 @@ export const CommunityProfilePage: React.FC = () => {
 
                           {/* Overlay Actions */}
                           <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                            <Button variant="brand" size="sm"
+                            <Button
+                              variant="brand"
+                              size="sm"
                               className="gap-2 bg-brand-cyan text-black hover:bg-brand-cyan/90 border-none"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -622,7 +682,10 @@ export const CommunityProfilePage: React.FC = () => {
                           </div>
 
                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <Badge variant="secondary" className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-xs">
+                            <Badge
+                              variant="secondary"
+                              className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-xs"
+                            >
                               {workflow.category}
                             </Badge>
                           </div>
@@ -648,17 +711,19 @@ export const CommunityProfilePage: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-3">
-                              <Button variant="ghost" onClick={(e) => handleToggleWorkflowLike(e, workflow)}
+                              <Button
+                                variant="ghost"
+                                onClick={(e) => handleToggleWorkflowLike(e, workflow)}
                                 className={cn(
-                                  "flex items-center gap-1.5 text-xs font-mono transition-colors",
+                                  'flex items-center gap-1.5 text-xs font-mono transition-colors',
                                   workflow.isLikedByUser
-                                    ? "text-destructive hover:text-destructive"
-                                    : "text-neutral-500 hover:text-neutral-300"
+                                    ? 'text-destructive hover:text-destructive'
+                                    : 'text-neutral-500 hover:text-neutral-300'
                                 )}
                               >
                                 <Heart
                                   size={14}
-                                  className={cn(workflow.isLikedByUser && "fill-current")}
+                                  className={cn(workflow.isLikedByUser && 'fill-current')}
                                 />
                                 {workflow.likesCount || 0}
                               </Button>
@@ -672,7 +737,10 @@ export const CommunityProfilePage: React.FC = () => {
               </TabsContent>
 
               {/* Presets Tab */}
-              <TabsContent value="presets" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+              <TabsContent
+                value="presets"
+                className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300"
+              >
                 {allPresets.length === 0 ? (
                   <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <Diamond size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
@@ -706,7 +774,10 @@ export const CommunityProfilePage: React.FC = () => {
                               </div>
                             )}
                             <div className="absolute bottom-2 right-2">
-                              <Badge variant="secondary" className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-[10px] uppercase">
+                              <Badge
+                                variant="secondary"
+                                className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-[10px] uppercase"
+                              >
                                 {preset.presetType}
                               </Badge>
                             </div>
@@ -744,24 +815,34 @@ export const CommunityProfilePage: React.FC = () => {
             }}
             isAuthenticated={isAuthenticated === true}
             mockupId={selectedMockup._id}
-            onToggleLike={selectedMockup._id ? async () => {
-              try {
-                const newLikedState = !selectedMockup.isLiked;
-                await mockupApi.update(selectedMockup._id, { isLiked: newLikedState });
-                setMockups(prev => prev.map(m =>
-                  m._id === selectedMockup._id ? { ...m, isLiked: newLikedState } : m
-                ));
-                setSelectedMockup(prev => prev ? { ...prev, isLiked: newLikedState } : null);
-              } catch (error) {
-                console.error('Failed to toggle like:', error);
-              }
-            } : undefined}
+            onToggleLike={
+              selectedMockup._id
+                ? async () => {
+                    try {
+                      const newLikedState = !selectedMockup.isLiked;
+                      await mockupApi.update(selectedMockup._id, { isLiked: newLikedState });
+                      setMockups((prev) =>
+                        prev.map((m) =>
+                          m._id === selectedMockup._id ? { ...m, isLiked: newLikedState } : m
+                        )
+                      );
+                      setSelectedMockup((prev) =>
+                        prev ? { ...prev, isLiked: newLikedState } : null
+                      );
+                    } catch (error) {
+                      console.error('Failed to toggle like:', error);
+                    }
+                  }
+                : undefined
+            }
             onLikeStateChange={(newIsLiked) => {
               if (selectedMockup._id) {
-                setMockups(prev => prev.map(m =>
-                  m._id === selectedMockup._id ? { ...m, isLiked: newIsLiked } : m
-                ));
-                setSelectedMockup(prev => prev ? { ...prev, isLiked: newIsLiked } : null);
+                setMockups((prev) =>
+                  prev.map((m) =>
+                    m._id === selectedMockup._id ? { ...m, isLiked: newIsLiked } : m
+                  )
+                );
+                setSelectedMockup((prev) => (prev ? { ...prev, isLiked: newIsLiked } : null));
               }
             }}
             isLiked={selectedMockup.isLiked || false}

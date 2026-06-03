@@ -32,19 +32,14 @@ export function getSvgPathFromStroke(
   let b = strokePoints[1];
   const c = strokePoints[2];
 
-  let result = `M${a[0].toFixed(2)},${a[1].toFixed(2)} Q${b[0].toFixed(
+  let result = `M${a[0].toFixed(2)},${a[1].toFixed(2)} Q${b[0].toFixed(2)},${b[1].toFixed(
     2
-  )},${b[1].toFixed(2)} ${average(b[0], c[0]).toFixed(2)},${average(
-    b[1],
-    c[1]
-  ).toFixed(2)} T`;
+  )} ${average(b[0], c[0]).toFixed(2)},${average(b[1], c[1]).toFixed(2)} T`;
 
   for (let i = 2, max = strokePoints.length - 1; i < max; i++) {
     a = strokePoints[i];
     b = strokePoints[i + 1];
-    result += `${average(a[0], b[0]).toFixed(2)},${average(a[1], b[1]).toFixed(
-      2
-    )} `;
+    result += `${average(a[0], b[0]).toFixed(2)},${average(a[1], b[1]).toFixed(2)} `;
   }
 
   if (closed) {
@@ -84,5 +79,3 @@ export function calculateBounds(points: number[][]): {
     height: maxY - minY,
   };
 }
-
-

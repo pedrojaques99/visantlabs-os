@@ -3,7 +3,7 @@ import { useScrollLock } from '@/hooks/useScrollLock';
 import { X, AlertTriangle, Heart } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmText,
   cancelText,
   variant = 'warning',
-  showSaveAll = false
+  showSaveAll = false,
 }) => {
   useScrollLock(isOpen);
   const { t } = useTranslation();
@@ -53,16 +53,19 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const variantStyles = {
     warning: {
       icon: 'text-yellow-400',
-      button: 'bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border-yellow-500/30 hover:border-yellow-500/50'
+      button:
+        'bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border-yellow-500/30 hover:border-yellow-500/50',
     },
     danger: {
       icon: 'text-destructive',
-      button: 'bg-destructive/20 hover:bg-destructive/30 text-destructive border-destructive/30 hover:border-destructive/50'
+      button:
+        'bg-destructive/20 hover:bg-destructive/30 text-destructive border-destructive/30 hover:border-destructive/50',
     },
     info: {
       icon: 'text-brand-cyan',
-      button: 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[brand-cyan]/30 hover:border-[brand-cyan]/50'
-    }
+      button:
+        'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[brand-cyan]/30 hover:border-[brand-cyan]/50',
+    },
   };
 
   const styles = variantStyles[variant];
@@ -84,11 +87,10 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase mb-2">
               {title || t('confirmationModal.defaultTitle')}
             </h2>
-            <p className="text-sm text-neutral-400 font-mono leading-relaxed">
-              {message}
-            </p>
+            <p className="text-sm text-neutral-400 font-mono leading-relaxed">{message}</p>
           </div>
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={onClose}
             className="flex-shrink-0 text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
@@ -99,13 +101,15 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
         <div className="flex items-center justify-between gap-3 mt-6">
           <div className="flex items-center gap-3">
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={onClose}
               className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
             >
               {cancelText || t('common.cancel')}
             </Button>
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={() => {
                 onConfirm();
                 onClose();
@@ -116,7 +120,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             </Button>
           </div>
           {showSaveAll && onSaveAll && (
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={async () => {
                 setIsSaving(true);
                 try {
@@ -149,4 +154,3 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     </div>
   );
 };
-

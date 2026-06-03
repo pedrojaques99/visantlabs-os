@@ -149,7 +149,8 @@ export const SelectionHud: React.FC<Props> = ({
       },
     } as never);
   };
-  const setRot = (deg: number) => updateLayer(layer.id, { rotation: ((deg % 360) + 360) % 360 } as never);
+  const setRot = (deg: number) =>
+    updateLayer(layer.id, { rotation: ((deg % 360) + 360) % 360 } as never);
 
   return (
     <div

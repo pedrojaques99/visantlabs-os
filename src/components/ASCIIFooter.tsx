@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,12 +10,12 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ASCIIFooterProps {
-  className?: string
-  onPrivacyClick?: () => void
-  onTermsClick?: () => void
-  onUsagePolicyClick?: () => void
-  onRefundClick?: () => void
-  isDarkMode?: boolean
+  className?: string;
+  onPrivacyClick?: () => void;
+  onTermsClick?: () => void;
+  onUsagePolicyClick?: () => void;
+  onRefundClick?: () => void;
+  isDarkMode?: boolean;
 }
 
 export default function ASCIIFooter({
@@ -24,75 +24,93 @@ export default function ASCIIFooter({
   onTermsClick,
   onUsagePolicyClick,
   onRefundClick,
-  isDarkMode = true
+  isDarkMode = true,
 }: ASCIIFooterProps) {
-  const navigate = useNavigate()
-  const { t, locale, setLocale } = useTranslation()
-  const [time, setTime] = useState<string>('')
-  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
-  const [isPoliciesMenuOpen, setIsPoliciesMenuOpen] = useState(false)
+  const navigate = useNavigate();
+  const { t, locale, setLocale } = useTranslation();
+  const [time, setTime] = useState<string>('');
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [isPoliciesMenuOpen, setIsPoliciesMenuOpen] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
-      const now = new Date()
-      const itajaiTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }))
-      const hours = itajaiTime.getHours().toString().padStart(2, '0')
-      const minutes = itajaiTime.getMinutes().toString().padStart(2, '0')
-      const seconds = itajaiTime.getSeconds().toString().padStart(2, '0')
-      setTime(`${hours}:${minutes}:${seconds} BR`)
-    }
+      const now = new Date();
+      const itajaiTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+      const hours = itajaiTime.getHours().toString().padStart(2, '0');
+      const minutes = itajaiTime.getMinutes().toString().padStart(2, '0');
+      const seconds = itajaiTime.getSeconds().toString().padStart(2, '0');
+      setTime(`${hours}:${minutes}:${seconds} BR`);
+    };
 
-    updateTime()
-    const interval = setInterval(updateTime, 1000)
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLocaleChange = (newLocale: Locale) => {
-    setLocale(newLocale)
-    setIsLanguageMenuOpen(false)
-    window.location.reload()
-  }
+    setLocale(newLocale);
+    setIsLanguageMenuOpen(false);
+    window.location.reload();
+  };
 
   useEffect(() => {
-    if (!isLanguageMenuOpen && !isPoliciesMenuOpen) return
+    if (!isLanguageMenuOpen && !isPoliciesMenuOpen) return;
 
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      if (!target.closest('[data-language-dropdown]') && !target.closest('[data-policies-dropdown]')) {
-        setIsLanguageMenuOpen(false)
-        setIsPoliciesMenuOpen(false)
+      const target = e.target as HTMLElement;
+      if (
+        !target.closest('[data-language-dropdown]') &&
+        !target.closest('[data-policies-dropdown]')
+      ) {
+        setIsLanguageMenuOpen(false);
+        setIsPoliciesMenuOpen(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isLanguageMenuOpen, isPoliciesMenuOpen])
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isLanguageMenuOpen, isPoliciesMenuOpen]);
 
   const handlePolicyClick = (handler?: () => void) => {
-    if (handler) handler()
-    setIsPoliciesMenuOpen(false)
-  }
+    if (handler) handler();
+    setIsPoliciesMenuOpen(false);
+  };
 
   const textColor = isDarkMode ? 'text-neutral-500' : 'text-neutral-600';
   const hoverColor = isDarkMode ? '#fff' : '#000';
-  const separator = <span className={`${isDarkMode ? 'text-neutral-700/50' : 'text-neutral-400/50'} mx-1 select-none`}>/</span>;
+  const separator = (
+    <span
+      className={`${isDarkMode ? 'text-neutral-700/50' : 'text-neutral-400/50'} mx-1 select-none`}
+    >
+      /
+    </span>
+  );
 
   return (
-    <footer className={`relative border-t ${isDarkMode ? 'border-neutral-900/50 bg-background/50' : 'border-neutral-300/50 bg-white/10'} backdrop-blur-sm z-50 ${className}`}>
+    <footer
+      className={`relative border-t ${
+        isDarkMode ? 'border-neutral-900/50 bg-background/50' : 'border-neutral-300/50 bg-white/10'
+      } backdrop-blur-sm z-50 ${className}`}
+    >
       {/* Dynamic top line effect */}
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-cyan/20 to-transparent" />
 
       <div className="w-full px-4 sm:px-8 py-3">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 font-mono">
-
           {/* Left: VSN & App Version - Dynamic Scale Text */}
-          <div className={`flex items-center gap-3 text-[clamp(10px,1vw,11px)] ${textColor} whitespace-nowrap order-2 md:order-1`}>
+          <div
+            className={`flex items-center gap-3 text-[clamp(10px,1vw,11px)] ${textColor} whitespace-nowrap order-2 md:order-1`}
+          >
             <UniversalFooter isDarkMode={isDarkMode} className="text-left" />
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className={`px-1.5 py-0.5 rounded-sm ${isDarkMode ? 'bg-neutral-900/30 border-neutral-800/50' : 'bg-neutral-900/60 border-neutral-700/50'} border flex items-center gap-1.5`}
+              className={`px-1.5 py-0.5 rounded-sm ${
+                isDarkMode
+                  ? 'bg-neutral-900/30 border-neutral-800/50'
+                  : 'bg-neutral-900/60 border-neutral-700/50'
+              } border flex items-center gap-1.5`}
             >
               <div className="w-1 h-1 rounded-full bg-brand-cyan animate-pulse" />
               <span className="text-neutral-600 uppercase tracking-tighter">LIVE_SYS_v1.2</span>
@@ -100,8 +118,13 @@ export default function ASCIIFooter({
           </div>
 
           {/* Center: Dynamic Info & Links - Responsive Wrapping */}
-          <div className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[clamp(10px,1vw,11px)] ${textColor} order-1 md:order-2`}>
-            <motion.div whileHover={{ color: hoverColor }} className="flex items-center gap-1.5 transition-colors cursor-default group">
+          <div
+            className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[clamp(10px,1vw,11px)] ${textColor} order-1 md:order-2`}
+          >
+            <motion.div
+              whileHover={{ color: hoverColor }}
+              className="flex items-center gap-1.5 transition-colors cursor-default group"
+            >
               <Clock size={10} className="group-hover:text-brand-cyan transition-colors" />
               <span className="tabular-nums">{time}</span>
             </motion.div>
@@ -136,19 +159,27 @@ export default function ASCIIFooter({
           </div>
 
           {/* Right: Menus & Language - Grouped for Desktop */}
-          <div className={`flex items-center gap-4 text-[clamp(10px,1vw,11px)] ${textColor} order-3`}>
-
+          <div
+            className={`flex items-center gap-4 text-[clamp(10px,1vw,11px)] ${textColor} order-3`}
+          >
             {/* Policies Dropdown */}
             {(onTermsClick || onUsagePolicyClick || onRefundClick) && (
               <div className="relative" data-policies-dropdown>
                 <motion.button
                   whileHover={{ color: hoverColor }}
                   onClick={() => setIsPoliciesMenuOpen(!isPoliciesMenuOpen)}
-                  className={`flex items-center gap-1.5 px-2 py-1 ${isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'} rounded-sm transition-all`}
+                  className={`flex items-center gap-1.5 px-2 py-1 ${
+                    isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'
+                  } rounded-sm transition-all`}
                 >
                   <Scale size={10} />
                   <span>{t('footer.legal')}</span>
-                  <ChevronDown size={8} className={`transition-transform duration-300 ${isPoliciesMenuOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    size={8}
+                    className={`transition-transform duration-300 ${
+                      isPoliciesMenuOpen ? 'rotate-180' : ''
+                    }`}
+                  />
                 </motion.button>
 
                 <AnimatePresence>
@@ -161,21 +192,27 @@ export default function ASCIIFooter({
                     >
                       <div className="p-1 flex flex-col gap-1">
                         {onTermsClick && (
-                          <Button variant="ghost" onClick={() => handlePolicyClick(onTermsClick)}
+                          <Button
+                            variant="ghost"
+                            onClick={() => handlePolicyClick(onTermsClick)}
                             className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
                           >
                             {t('footer.terms')}
                           </Button>
                         )}
                         {onUsagePolicyClick && (
-                          <Button variant="ghost" onClick={() => handlePolicyClick(onUsagePolicyClick)}
+                          <Button
+                            variant="ghost"
+                            onClick={() => handlePolicyClick(onUsagePolicyClick)}
                             className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
                           >
                             {t('footer.usage')}
                           </Button>
                         )}
                         {onRefundClick && (
-                          <Button variant="ghost" onClick={() => handlePolicyClick(onRefundClick)}
+                          <Button
+                            variant="ghost"
+                            onClick={() => handlePolicyClick(onRefundClick)}
                             className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
                           >
                             {t('footer.refund')}
@@ -188,18 +225,29 @@ export default function ASCIIFooter({
               </div>
             )}
 
-            <div className={`w-[1px] h-3 ${isDarkMode ? 'bg-neutral-800/50' : 'bg-neutral-400/50'} hidden md:block`} />
+            <div
+              className={`w-[1px] h-3 ${
+                isDarkMode ? 'bg-neutral-800/50' : 'bg-neutral-400/50'
+              } hidden md:block`}
+            />
 
             {/* Language Selector */}
             <div className="relative" data-language-dropdown>
               <motion.button
                 whileHover={{ color: hoverColor }}
                 onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                className={`flex items-center gap-1.5 px-2 py-1 ${isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'} rounded-sm transition-all`}
+                className={`flex items-center gap-1.5 px-2 py-1 ${
+                  isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'
+                } rounded-sm transition-all`}
               >
                 <Globe size={10} className={textColor} />
                 <span className="uppercase tracking-widest">{locale?.split('-')[0] || 'EN'}</span>
-                <ChevronDown size={8} className={`transition-transform duration-300 ${isLanguageMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown
+                  size={8}
+                  className={`transition-transform duration-300 ${
+                    isLanguageMenuOpen ? 'rotate-180' : ''
+                  }`}
+                />
               </motion.button>
 
               <AnimatePresence>
@@ -211,12 +259,16 @@ export default function ASCIIFooter({
                     className="absolute bottom-full right-0 mb-3 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-sm shadow-2xl z-50 min-w-[120px] overflow-hidden"
                   >
                     <div className="p-1 flex flex-col gap-1">
-                      <Button variant="ghost" onClick={() => handleLocaleChange('en-US')}
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleLocaleChange('en-US')}
                         className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
                       >
                         {t('footer.english')}
                       </Button>
-                      <Button variant="ghost" onClick={() => handleLocaleChange('pt-BR')}
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleLocaleChange('pt-BR')}
                         className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
                       >
                         {t('footer.portuguese')}
@@ -230,5 +282,5 @@ export default function ASCIIFooter({
         </div>
       </div>
     </footer>
-  )
+  );
 }

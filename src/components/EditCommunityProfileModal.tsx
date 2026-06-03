@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Camera, X, Instagram, Youtube, Twitter, Globe, ImageIcon } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
-import { userProfileService, type UserProfile, type UpdateProfileData } from '../services/userProfileService';
+import {
+  userProfileService,
+  type UserProfile,
+  type UpdateProfileData,
+} from '../services/userProfileService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
@@ -180,10 +184,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-neutral-950/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-neutral-950/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-neutral-900 border border-neutral-800/60 rounded-xl shadow-2xl overflow-hidden animate-slide-up">
@@ -192,7 +193,8 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           <h2 className="text-xl font-semibold text-neutral-200 font-manrope tracking-tight">
             Edit Community Profile
           </h2>
-          <Button variant="ghost"
+          <Button
+            variant="ghost"
             onClick={onClose}
             className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-md"
           >
@@ -224,7 +226,9 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                   <ImageIcon size={32} className="text-neutral-700" strokeWidth={1} />
-                  <MicroTitle className="text-[10px] text-neutral-600 tracking-tight">No cover image</MicroTitle>
+                  <MicroTitle className="text-[10px] text-neutral-600 tracking-tight">
+                    No cover image
+                  </MicroTitle>
                 </div>
               )}
               <Input
@@ -235,7 +239,8 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 disabled={isUploadingCover}
                 className="hidden"
               />
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 onClick={handleCoverClick}
                 disabled={isUploadingCover}
                 className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
@@ -251,8 +256,12 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </Button>
             </div>
             <div className="flex items-center gap-2 ml-1">
-              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">16:9 Aspect</Badge>
-              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">Max 2MB</Badge>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">
+                16:9 Aspect
+              </Badge>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">
+                Max 2MB
+              </Badge>
             </div>
           </div>
 
@@ -323,8 +332,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
               <div className="space-y-2">
                 <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Twitter size={14} className="text-blue-400 uppercase" />
-                  X (Twitter)
+                  <Twitter size={14} className="text-blue-400 uppercase" />X (Twitter)
                 </MicroTitle>
                 <Input
                   type="url"
@@ -381,4 +389,3 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
     </div>
   );
 };
-

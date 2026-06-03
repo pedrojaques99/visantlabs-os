@@ -4,7 +4,14 @@ import { stripHtml } from '../utils/stripHtml.js';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type SearchSource = 'unsplash' | 'pexels' | 'pixabay' | 'wikimedia' | 'clearbit' | 'svgl' | 'google';
+export type SearchSource =
+  | 'unsplash'
+  | 'pexels'
+  | 'pixabay'
+  | 'wikimedia'
+  | 'clearbit'
+  | 'svgl'
+  | 'google';
 export type SearchIntent = 'letter' | 'logo' | 'layout' | 'typography' | 'mixed';
 
 export interface VisualSearchResult {
@@ -41,7 +48,8 @@ interface SourceResult {
 const LETTER_PATTERNS = /\b(letra|letter|character|glyph)\s+[a-zA-Z0-9]\b/i;
 const LOGO_PATTERNS = /\b(logo|marca|brand|logotipo|logomarca|emblem|badge)\b/i;
 const LAYOUT_PATTERNS = /\b(layout|grid|editorial|diagramação|composição|composition)\b/i;
-const TYPO_PATTERNS = /\b(tipografia|typography|font|typeface|lettering|caligrafia|calligraphy|serif|sans-serif)\b/i;
+const TYPO_PATTERNS =
+  /\b(tipografia|typography|font|typeface|lettering|caligrafia|calligraphy|serif|sans-serif)\b/i;
 
 export function classifyIntent(query: string): SearchIntent {
   const q = query.trim().toLowerCase();
@@ -68,7 +76,9 @@ async function searchUnsplash(query: string, perPage = 30, page = 1): Promise<So
   if (cached) return { source: 'unsplash', results: cached };
 
   try {
-    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${perPage}&page=${page}&orientation=squarish`;
+    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
+      query
+    )}&per_page=${perPage}&page=${page}&orientation=squarish`;
     const response = await safeFetch(url, {
       headers: { Authorization: `Client-ID ${key}` },
     });
@@ -78,7 +88,7 @@ async function searchUnsplash(query: string, perPage = 30, page = 1): Promise<So
       return { source: 'unsplash', results: [], error: `Unsplash ${response.status}: ${err}` };
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     const results: VisualSearchResult[] = (data.results || []).map((item: any, i: number) => ({
       id: `unsplash-${item.id}`,
       type: 'photo' as const,
@@ -128,7 +138,9 @@ async function searchPexels(query: string, perPage = 30, page = 1): Promise<Sour
   if (cached) return { source: 'pexels', results: cached };
 
   try {
-    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${perPage}&page=${page}`;
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(
+      query
+    )}&per_page=${perPage}&page=${page}`;
     const response = await safeFetch(url, {
       headers: { Authorization: key },
     });
@@ -137,7 +149,7 @@ async function searchPexels(query: string, perPage = 30, page = 1): Promise<Sour
       return { source: 'pexels', results: [], error: `Pexels ${response.status}` };
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     const results: VisualSearchResult[] = (data.photos || []).map((item: any, i: number) => ({
       id: `pexels-${item.id}`,
       type: 'photo' as const,
@@ -167,7 +179,12 @@ async function searchPexels(query: string, perPage = 30, page = 1): Promise<Sour
 
 const pixabayCache = new LRUCache<string, VisualSearchResult[]>({ max: 200, ttl: 1000 * 60 * 30 });
 
-async function searchPixabay(query: string, perPage = 30, imageType: 'all' | 'photo' | 'illustration' | 'vector' = 'all', page = 1): Promise<SourceResult> {
+async function searchPixabay(
+  query: string,
+  perPage = 30,
+  imageType: 'all' | 'photo' | 'illustration' | 'vector' = 'all',
+  page = 1
+): Promise<SourceResult> {
   const key = process.env.PIXABAY_API_KEY;
   if (!key) return { source: 'pixabay', results: [], error: 'PIXABAY_API_KEY not configured' };
 
@@ -194,20 +211,33 @@ async function searchPixabay(query: string, perPage = 30, imageType: 'all' | 'ph
       return { source: 'pixabay', results: [], error: `Pixabay ${response.status}` };
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     const results: VisualSearchResult[] = (data.hits || []).map((item: any, i: number) => ({
       id: `pixabay-${item.id}`,
-      type: (item.type === 'vector/svg' ? 'vector' : item.type === 'illustration' ? 'vector' : 'photo') as VisualSearchResult['type'],
+      type: (item.type === 'vector/svg'
+        ? 'vector'
+        : item.type === 'illustration'
+        ? 'vector'
+        : 'photo') as VisualSearchResult['type'],
       source: 'pixabay' as const,
       imageUrl: item.largeImageURL || item.webformatURL,
       thumbnailUrl: item.webformatURL || item.previewURL,
       title: item.tags || query,
       description: item.tags,
-      tags: (item.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean).slice(0, 5),
-      dimensions: { width: item.imageWidth || item.webformatWidth || 400, height: item.imageHeight || item.webformatHeight || 400 },
+      tags: (item.tags || '')
+        .split(',')
+        .map((t: string) => t.trim())
+        .filter(Boolean)
+        .slice(0, 5),
+      dimensions: {
+        width: item.imageWidth || item.webformatWidth || 400,
+        height: item.imageHeight || item.webformatHeight || 400,
+      },
       attribution: {
         author: item.user || 'Unknown',
-        authorUrl: item.userImageURL ? `https://pixabay.com/users/${item.user}-${item.user_id}/` : undefined,
+        authorUrl: item.userImageURL
+          ? `https://pixabay.com/users/${item.user}-${item.user_id}/`
+          : undefined,
         license: 'Pixabay License',
       },
       relevanceScore: 0.95 - (i / (data.hits?.length || 1)) * 0.3,
@@ -222,7 +252,10 @@ async function searchPixabay(query: string, perPage = 30, imageType: 'all' | 'ph
 
 // ── Source: Wikimedia Commons ──────────────────────────────────────────────
 
-const wikimediaCache = new LRUCache<string, VisualSearchResult[]>({ max: 200, ttl: 1000 * 60 * 30 });
+const wikimediaCache = new LRUCache<string, VisualSearchResult[]>({
+  max: 200,
+  ttl: 1000 * 60 * 30,
+});
 
 async function searchWikimedia(query: string, limit = 20): Promise<SourceResult> {
   const cacheKey = `wikimedia:${query}:${limit}`;
@@ -252,7 +285,7 @@ async function searchWikimedia(query: string, limit = 20): Promise<SourceResult>
       return { source: 'wikimedia', results: [], error: `Wikimedia ${response.status}` };
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     const pages = data.query?.pages || {};
 
     const results: VisualSearchResult[] = Object.values(pages)
@@ -269,7 +302,10 @@ async function searchWikimedia(query: string, limit = 20): Promise<SourceResult>
           title: (page.title || '').replace('File:', '').replace(/\.\w+$/, ''),
           description: stripHtml(meta.ImageDescription?.value).slice(0, 200),
           tags: [],
-          dimensions: { width: info.thumbwidth || info.width || 400, height: info.thumbheight || info.height || 400 },
+          dimensions: {
+            width: info.thumbwidth || info.width || 400,
+            height: info.thumbheight || info.height || 400,
+          },
           attribution: {
             author: stripHtml(meta.Artist?.value) || 'Wikimedia Commons',
             license: meta.LicenseShortName?.value || 'CC',
@@ -302,7 +338,7 @@ async function searchSvgl(query: string): Promise<SourceResult> {
       return { source: 'svgl', results: [], error: `Svgl ${response.status}` };
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     const items = Array.isArray(data) ? data : data.svgs || [];
 
     const results: VisualSearchResult[] = items.slice(0, 20).map((item: any, i: number) => {
@@ -345,7 +381,10 @@ async function checkClearbitDomain(domain: string): Promise<boolean> {
   const cached = clearbitCache.get(domain);
   if (cached !== undefined) return cached;
   try {
-    const res = await fetch(`https://logo.clearbit.com/${domain}?size=128`, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
+    const res = await fetch(`https://logo.clearbit.com/${domain}?size=128`, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(3000),
+    });
     const ok = res.ok;
     clearbitCache.set(domain, ok);
     return ok;
@@ -359,8 +398,10 @@ async function searchClearbit(query: string): Promise<SourceResult> {
   const domains = guessDomains(query);
   if (!domains.length) return { source: 'clearbit', results: [] };
 
-  const checks = await Promise.all(domains.map(async (d) => ({ domain: d, ok: await checkClearbitDomain(d) })));
-  const valid = checks.filter(c => c.ok);
+  const checks = await Promise.all(
+    domains.map(async (d) => ({ domain: d, ok: await checkClearbitDomain(d) }))
+  );
+  const valid = checks.filter((c) => c.ok);
 
   const results: VisualSearchResult[] = valid.map(({ domain }, i) => ({
     id: `clearbit-${domain}`,
@@ -383,14 +424,13 @@ async function searchClearbit(query: string): Promise<SourceResult> {
 }
 
 function guessDomains(query: string): string[] {
-  const q = query.toLowerCase().replace(/\s+logo\b/i, '').trim();
+  const q = query
+    .toLowerCase()
+    .replace(/\s+logo\b/i, '')
+    .trim();
   const clean = q.replace(/[^a-z0-9]/g, '');
   if (!clean) return [];
-  return [
-    `${clean}.com`,
-    `${clean}.io`,
-    `${clean}.co`,
-  ];
+  return [`${clean}.com`, `${clean}.io`, `${clean}.co`];
 }
 
 // ── Source: Google (Serper API) ───────────────────────────────────────────
@@ -398,12 +438,27 @@ function guessDomains(query: string): string[] {
 const googleCache = new LRUCache<string, VisualSearchResult[]>({ max: 200, ttl: 1000 * 60 * 30 });
 
 const PAID_STOCK_SITES = [
-  'adobestock', 'stock.adobe', 'gettyimages', 'istock', 'pond5',
-  'shutterstock', 'alamy', 'dreamstime', 'depositphotos', 'fotolia',
-  '123rf', 'clipart.com', 'canstockphoto', 'stockvault',
+  'adobestock',
+  'stock.adobe',
+  'gettyimages',
+  'istock',
+  'pond5',
+  'shutterstock',
+  'alamy',
+  'dreamstime',
+  'depositphotos',
+  'fotolia',
+  '123rf',
+  'clipart.com',
+  'canstockphoto',
+  'stockvault',
 ];
 
-async function searchGoogle(query: string, intent: SearchIntent, perPage = 20): Promise<SourceResult> {
+async function searchGoogle(
+  query: string,
+  intent: SearchIntent,
+  perPage = 20
+): Promise<SourceResult> {
   const key = process.env.SERPER_API_KEY;
   if (!key) return { source: 'google', results: [], error: 'SERPER_API_KEY not configured' };
 
@@ -431,14 +486,14 @@ async function searchGoogle(query: string, intent: SearchIntent, perPage = 20): 
 
     if (!response.ok) return { source: 'google', results: [], error: `Serper ${response.status}` };
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     const rawImages = data.images || [];
 
     const results: VisualSearchResult[] = rawImages
       .filter((img: any) => {
         const url = (img.imageUrl || '').toLowerCase();
         const domain = (img.domain || '').toLowerCase();
-        if (PAID_STOCK_SITES.some(p => url.includes(p) || domain.includes(p))) return false;
+        if (PAID_STOCK_SITES.some((p) => url.includes(p) || domain.includes(p))) return false;
         if (img.imageUrl?.includes('/reels/') || img.imageUrl?.includes('video')) return false;
         return true;
       })
@@ -499,14 +554,27 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
 
   const sourcePromises = activeSources.map((source) => {
     switch (source) {
-      case 'unsplash': return searchUnsplash(enhanceQuery(query, intent, 'unsplash'), perSource, page);
-      case 'pexels':   return searchPexels(enhanceQuery(query, intent, 'pexels'), perSource, page);
-      case 'pixabay':  return searchPixabay(enhanceQuery(query, intent, 'pixabay'), perSource, intent === 'logo' ? 'vector' : 'all', page);
-      case 'wikimedia': return searchWikimedia(enhanceQuery(query, intent, 'wikimedia'), Math.min(perSource, 20));
-      case 'svgl':     return searchSvgl(query);
-      case 'clearbit': return searchClearbit(query);
-      case 'google':   return searchGoogle(enhanceQuery(query, intent, 'google'), intent, perSource);
-      default:         return Promise.resolve({ source, results: [] } as SourceResult);
+      case 'unsplash':
+        return searchUnsplash(enhanceQuery(query, intent, 'unsplash'), perSource, page);
+      case 'pexels':
+        return searchPexels(enhanceQuery(query, intent, 'pexels'), perSource, page);
+      case 'pixabay':
+        return searchPixabay(
+          enhanceQuery(query, intent, 'pixabay'),
+          perSource,
+          intent === 'logo' ? 'vector' : 'all',
+          page
+        );
+      case 'wikimedia':
+        return searchWikimedia(enhanceQuery(query, intent, 'wikimedia'), Math.min(perSource, 20));
+      case 'svgl':
+        return searchSvgl(query);
+      case 'clearbit':
+        return searchClearbit(query);
+      case 'google':
+        return searchGoogle(enhanceQuery(query, intent, 'google'), intent, perSource);
+      default:
+        return Promise.resolve({ source, results: [] } as SourceResult);
     }
   });
 
@@ -527,7 +595,8 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
 
   allResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
 
-  const hasMore = activeSources.some(s => !['svgl', 'clearbit', 'wikimedia'].includes(s)) &&
+  const hasMore =
+    activeSources.some((s) => !['svgl', 'clearbit', 'wikimedia'].includes(s)) &&
     allResults.length >= perSource;
 
   return {
@@ -545,14 +614,24 @@ export async function aggregateSearch(opts: SearchOptions): Promise<{
 function getSourcesForIntent(intent: SearchIntent): SearchSource[] {
   const hasGoogle = !!process.env.SERPER_API_KEY;
   switch (intent) {
-    case 'letter':     return hasGoogle ? ['google', 'unsplash', 'pixabay'] : ['unsplash', 'pexels', 'pixabay'];
-    case 'logo':       return hasGoogle ? ['google', 'svgl', 'clearbit'] : ['svgl', 'clearbit', 'pixabay', 'unsplash'];
-    case 'layout':     return hasGoogle ? ['google', 'unsplash', 'pexels'] : ['unsplash', 'pexels', 'pixabay'];
-    case 'typography': return hasGoogle ? ['google', 'unsplash', 'pixabay', 'wikimedia'] : ['unsplash', 'pexels', 'pixabay', 'wikimedia'];
-    case 'mixed':      return hasGoogle ? ['google', 'unsplash', 'pexels', 'svgl'] : ['unsplash', 'pexels', 'pixabay', 'svgl'];
+    case 'letter':
+      return hasGoogle ? ['google', 'unsplash', 'pixabay'] : ['unsplash', 'pexels', 'pixabay'];
+    case 'logo':
+      return hasGoogle
+        ? ['google', 'svgl', 'clearbit']
+        : ['svgl', 'clearbit', 'pixabay', 'unsplash'];
+    case 'layout':
+      return hasGoogle ? ['google', 'unsplash', 'pexels'] : ['unsplash', 'pexels', 'pixabay'];
+    case 'typography':
+      return hasGoogle
+        ? ['google', 'unsplash', 'pixabay', 'wikimedia']
+        : ['unsplash', 'pexels', 'pixabay', 'wikimedia'];
+    case 'mixed':
+      return hasGoogle
+        ? ['google', 'unsplash', 'pexels', 'svgl']
+        : ['unsplash', 'pexels', 'pixabay', 'svgl'];
   }
 }
-
 
 function extractLetter(query: string): string | null {
   const match = query.match(/\b(?:letra|letter|character|glyph)\s+([a-zA-Z0-9])\b/i);
@@ -565,7 +644,8 @@ function enhanceQuery(query: string, intent: SearchIntent, source: SearchSource)
   if (intent === 'letter') {
     const letter = extractLetter(q);
     if (letter) {
-      if (source === 'google') return `letter "${letter}" typography lettering design -photo -landscape`;
+      if (source === 'google')
+        return `letter "${letter}" typography lettering design -photo -landscape`;
       if (source === 'wikimedia') return `letter ${letter} illuminated manuscript calligraphy`;
       return `letter ${letter} typography isolated`;
     }
@@ -573,25 +653,34 @@ function enhanceQuery(query: string, intent: SearchIntent, source: SearchSource)
 
   if (source === 'google') {
     switch (intent) {
-      case 'logo':       return `${q} logo transparent -background`;
-      case 'layout':     return `${q} editorial design layout`;
-      case 'typography': return `${q} typography lettering design`;
-      default:           return q;
+      case 'logo':
+        return `${q} logo transparent -background`;
+      case 'layout':
+        return `${q} editorial design layout`;
+      case 'typography':
+        return `${q} typography lettering design`;
+      default:
+        return q;
     }
   }
 
   if (source === 'wikimedia') {
     switch (intent) {
-      case 'typography': return `${q} vintage typography poster`;
-      default:           return `${q} design`;
+      case 'typography':
+        return `${q} vintage typography poster`;
+      default:
+        return `${q} design`;
     }
   }
 
   if (source === 'unsplash' || source === 'pexels' || source === 'pixabay') {
     switch (intent) {
-      case 'layout':     return `${q} editorial design layout`;
-      case 'typography': return `${q} typeface design`;
-      default:           return q;
+      case 'layout':
+        return `${q} editorial design layout`;
+      case 'typography':
+        return `${q} typeface design`;
+      default:
+        return q;
     }
   }
 

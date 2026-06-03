@@ -79,8 +79,12 @@ export const useCanvasHeader = () => {
 
 // Focused context for nodes that only need linkedGuidelineId.
 // Isolates re-renders: these nodes won't update on settings/collab changes.
-interface LinkedGuidelineContextValue { linkedGuidelineId: string | null; }
-const LinkedGuidelineContext = createContext<LinkedGuidelineContextValue>({ linkedGuidelineId: null });
+interface LinkedGuidelineContextValue {
+  linkedGuidelineId: string | null;
+}
+const LinkedGuidelineContext = createContext<LinkedGuidelineContextValue>({
+  linkedGuidelineId: null,
+});
 
 export const useLinkedGuidelineId = () => useContext(LinkedGuidelineContext).linkedGuidelineId;
 
@@ -95,12 +99,15 @@ const useLocalStorage = <T,>(key: string, defaultValue: T): [T, (value: T) => vo
     return defaultValue;
   });
 
-  const setValue = useCallback((value: T) => {
-    setState(value);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(key, String(value));
-    }
-  }, [key]);
+  const setValue = useCallback(
+    (value: T) => {
+      setState(value);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(key, String(value));
+      }
+    },
+    [key]
+  );
 
   return [state, setValue];
 };
@@ -116,18 +123,28 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [projectId, setProjectId] = useState<string | null>(null);
   const [linkedGuidelineId, setLinkedGuidelineId] = useState<string | null>(null);
   const [linkedGuideline, setLinkedGuideline] = useState<BrandGuideline | null>(null);
-  const [onLinkedGuidelineChange, setOnLinkedGuidelineChange] = useState<((id: string | null) => void) | undefined>(undefined);
+  const [onLinkedGuidelineChange, setOnLinkedGuidelineChange] = useState<
+    ((id: string | null) => void) | undefined
+  >(undefined);
   const [shareId, setShareId] = useState<string | null>(null);
   const [isCollaborative, setIsCollaborative] = useState(false);
   const [canEdit, setCanEdit] = useState<string[]>([]);
   const [canView, setCanView] = useState<string[]>([]);
   const [othersCount, setOthersCount] = useState(0);
-  const [onImportCommunityPreset, setOnImportCommunityPreset] = useState<((preset: any, type: string) => void) | undefined>(undefined);
-  const [onProjectNameChange, setOnProjectNameChange] = useState<((name: string) => void) | undefined>(undefined);
+  const [onImportCommunityPreset, setOnImportCommunityPreset] = useState<
+    ((preset: any, type: string) => void) | undefined
+  >(undefined);
+  const [onProjectNameChange, setOnProjectNameChange] = useState<
+    ((name: string) => void) | undefined
+  >(undefined);
   const [onSaveWorkflow, setOnSaveWorkflow] = useState<(() => void) | undefined>(undefined);
   const [onLoadWorkflow, setOnLoadWorkflow] = useState<(() => void) | undefined>(undefined);
-  const [onExportImagesRequest, setOnExportImagesRequest] = useState<(() => void) | undefined>(undefined);
-  const [onExportAllImagesRequest, setOnExportAllImagesRequest] = useState<(() => void) | undefined>(undefined);
+  const [onExportImagesRequest, setOnExportImagesRequest] = useState<(() => void) | undefined>(
+    undefined
+  );
+  const [onExportAllImagesRequest, setOnExportAllImagesRequest] = useState<
+    (() => void) | undefined
+  >(undefined);
   const [onExportJson, setOnExportJson] = useState<(() => void) | undefined>(undefined);
   const [onImportJson, setOnImportJson] = useState<(() => void) | undefined>(undefined);
   const [activeSidePanel, setActiveSidePanel] = useState<string | null>(null);
@@ -141,111 +158,114 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [brandCyan, setBrandCyan] = useLocalStorage('canvasBrandCyan', 'brand-cyan');
   const [experimentalMode, setExperimentalMode] = useLocalStorage('canvasExperimentalMode', false);
   const [edgeStyle, setEdgeStyle] = useLocalStorage<'solid' | 'dashed'>('canvasEdgeStyle', 'solid');
-  const [edgeStrokeWidth, setEdgeStrokeWidth] = useLocalStorage<'normal' | 'thin'>('canvasEdgeStrokeWidth', 'normal');
+  const [edgeStrokeWidth, setEdgeStrokeWidth] = useLocalStorage<'normal' | 'thin'>(
+    'canvasEdgeStrokeWidth',
+    'normal'
+  );
 
   const setProjectName = useCallback((name: string) => {
     setProjectNameState(name && typeof name === 'string' ? name : '');
   }, []);
 
-  const value: CanvasHeaderContextValue = useMemo(() => ({
-    projectName,
-    setProjectName,
-    selectedNodesCount,
-    setSelectedNodesCount,
-    projectId,
-    setProjectId,
-    linkedGuidelineId,
-    setLinkedGuidelineId,
-    linkedGuideline,
-    setLinkedGuideline,
-    onLinkedGuidelineChange,
-    setOnLinkedGuidelineChange,
-    shareId,
-    setShareId,
-    isCollaborative,
-    setIsCollaborative,
-    canEdit,
-    setCanEdit,
-    canView,
-    setCanView,
-    othersCount,
-    setOthersCount,
-    backgroundColor,
-    setBackgroundColor,
-    gridColor,
-    setGridColor,
-    showGrid,
-    setShowGrid,
-    showMinimap,
-    setShowMinimap,
-    showControls,
-    setShowControls,
-    cursorColor,
-    setCursorColor,
-    brandCyan,
-    setBrandCyan,
-    experimentalMode,
-    setExperimentalMode,
-    edgeStyle,
-    setEdgeStyle,
-    edgeStrokeWidth,
-    setEdgeStrokeWidth,
-    onImportCommunityPreset,
-    setOnImportCommunityPreset,
-    onProjectNameChange,
-    setOnProjectNameChange,
-    onSaveWorkflow,
-    setOnSaveWorkflow,
-    onLoadWorkflow,
-    setOnLoadWorkflow,
-    onExportImagesRequest,
-    setOnExportImagesRequest,
-    onExportAllImagesRequest,
-    setOnExportAllImagesRequest,
-    onExportJson,
-    setOnExportJson,
-    onImportJson,
-    setOnImportJson,
-    activeSidePanel,
-    setActiveSidePanel,
-  }), [
-    projectName,
-    selectedNodesCount,
-    projectId,
-    linkedGuidelineId,
-    linkedGuideline,
-    onLinkedGuidelineChange,
-    shareId,
-    isCollaborative,
-    canEdit,
-    canView,
-    othersCount,
-    backgroundColor,
-    gridColor,
-    showGrid,
-    showMinimap,
-    showControls,
-    cursorColor,
-    brandCyan,
-    experimentalMode,
-    edgeStyle,
-    edgeStrokeWidth,
-    onImportCommunityPreset,
-    onProjectNameChange,
-    onSaveWorkflow,
-    onLoadWorkflow,
-    onExportImagesRequest,
-    onExportAllImagesRequest,
-    onExportJson,
-    onImportJson,
-    activeSidePanel,
-    setActiveSidePanel,
-  ]);
-
-  const linkedGuidelineValue = useMemo(
-    () => ({ linkedGuidelineId }),
-    [linkedGuidelineId]
+  const value: CanvasHeaderContextValue = useMemo(
+    () => ({
+      projectName,
+      setProjectName,
+      selectedNodesCount,
+      setSelectedNodesCount,
+      projectId,
+      setProjectId,
+      linkedGuidelineId,
+      setLinkedGuidelineId,
+      linkedGuideline,
+      setLinkedGuideline,
+      onLinkedGuidelineChange,
+      setOnLinkedGuidelineChange,
+      shareId,
+      setShareId,
+      isCollaborative,
+      setIsCollaborative,
+      canEdit,
+      setCanEdit,
+      canView,
+      setCanView,
+      othersCount,
+      setOthersCount,
+      backgroundColor,
+      setBackgroundColor,
+      gridColor,
+      setGridColor,
+      showGrid,
+      setShowGrid,
+      showMinimap,
+      setShowMinimap,
+      showControls,
+      setShowControls,
+      cursorColor,
+      setCursorColor,
+      brandCyan,
+      setBrandCyan,
+      experimentalMode,
+      setExperimentalMode,
+      edgeStyle,
+      setEdgeStyle,
+      edgeStrokeWidth,
+      setEdgeStrokeWidth,
+      onImportCommunityPreset,
+      setOnImportCommunityPreset,
+      onProjectNameChange,
+      setOnProjectNameChange,
+      onSaveWorkflow,
+      setOnSaveWorkflow,
+      onLoadWorkflow,
+      setOnLoadWorkflow,
+      onExportImagesRequest,
+      setOnExportImagesRequest,
+      onExportAllImagesRequest,
+      setOnExportAllImagesRequest,
+      onExportJson,
+      setOnExportJson,
+      onImportJson,
+      setOnImportJson,
+      activeSidePanel,
+      setActiveSidePanel,
+    }),
+    [
+      projectName,
+      selectedNodesCount,
+      projectId,
+      linkedGuidelineId,
+      linkedGuideline,
+      onLinkedGuidelineChange,
+      shareId,
+      isCollaborative,
+      canEdit,
+      canView,
+      othersCount,
+      backgroundColor,
+      gridColor,
+      showGrid,
+      showMinimap,
+      showControls,
+      cursorColor,
+      brandCyan,
+      experimentalMode,
+      edgeStyle,
+      edgeStrokeWidth,
+      onImportCommunityPreset,
+      onProjectNameChange,
+      onSaveWorkflow,
+      onLoadWorkflow,
+      onExportImagesRequest,
+      onExportAllImagesRequest,
+      onExportJson,
+      onImportJson,
+      activeSidePanel,
+      setActiveSidePanel,
+    ]
   );
+
+  const linkedGuidelineValue = useMemo(() => ({ linkedGuidelineId }), [linkedGuidelineId]);
 
   return (
     <CanvasHeaderContext.Provider value={value}>
@@ -255,4 +275,3 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     </CanvasHeaderContext.Provider>
   );
 };
-

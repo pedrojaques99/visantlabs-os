@@ -16,10 +16,25 @@ import type { GeminiModel, SeedreamModel, Resolution } from '@/types/types';
 
 export interface ExecutionDeps {
   /** Generate a single image and spawn an output node near the custom node */
-  generateImage?: (prompt: string, images?: string[], model?: GeminiModel | SeedreamModel, outputIndex?: number) => Promise<void>;
+  generateImage?: (
+    prompt: string,
+    images?: string[],
+    model?: GeminiModel | SeedreamModel,
+    outputIndex?: number
+  ) => Promise<void>;
   /** @deprecated pass generateImage instead */
-  handlePromptGenerate?: (nodeId: string, prompt: string, images?: string[], model?: GeminiModel | SeedreamModel) => Promise<void>;
-  handleMergeGenerate?: (nodeId: string, images: string[], prompt: string, model?: GeminiModel | SeedreamModel) => Promise<void>;
+  handlePromptGenerate?: (
+    nodeId: string,
+    prompt: string,
+    images?: string[],
+    model?: GeminiModel | SeedreamModel
+  ) => Promise<void>;
+  handleMergeGenerate?: (
+    nodeId: string,
+    images: string[],
+    prompt: string,
+    model?: GeminiModel | SeedreamModel
+  ) => Promise<void>;
   handleUpscale?: (nodeId: string, image: string, resolution: Resolution) => Promise<void>;
   getNode: (id: string) => { position: { x: number; y: number } } | undefined;
   setNodes: (fn: (nds: any[]) => any[]) => void;
@@ -44,17 +59,23 @@ function spawnShaderNode(
   const source = deps.getNode(sourceNodeId);
   if (!source) return;
   const id = `shader-${Date.now()}`;
-  deps.setNodes(nds => [...nds, {
-    id,
-    type: 'shader',
-    position: { x: source.position.x + 520, y: source.position.y },
-    data: { shaderType, connectedImage, ...params },
-  }]);
-  deps.setEdges(eds => [...eds, {
-    id: `${sourceNodeId}->${id}`,
-    source: sourceNodeId,
-    target: id,
-  }]);
+  deps.setNodes((nds) => [
+    ...nds,
+    {
+      id,
+      type: 'shader',
+      position: { x: source.position.x + 520, y: source.position.y },
+      data: { shaderType, connectedImage, ...params },
+    },
+  ]);
+  deps.setEdges((eds) => [
+    ...eds,
+    {
+      id: `${sourceNodeId}->${id}`,
+      source: sourceNodeId,
+      target: id,
+    },
+  ]);
   return id;
 }
 
@@ -83,23 +104,25 @@ async function runMultiOutput(
 
   if (cfg.behavior === 'prompt-expander' && cfg.seedPrompt) {
     log('Expanding seed prompt into variations...');
-    const resp = await nodeBuilderApi.generate([{
-      role: 'user',
-      content: `Expand into ${cfg.outputCount} creative prompt variations as a JSON array of strings: "${cfg.seedPrompt}"`,
-    }]);
+    const resp = await nodeBuilderApi.generate([
+      {
+        role: 'user',
+        content: `Expand into ${cfg.outputCount} creative prompt variations as a JSON array of strings: "${cfg.seedPrompt}"`,
+      },
+    ]);
     try {
       const variations: string[] = JSON.parse(resp.type === 'question' ? resp.text : '[]');
       await Promise.all(
         variations.slice(0, cfg.outputCount).map((p, i) => generateImage(p, images, cfg.model, i))
       );
       return;
-    } catch { /* fallback below */ }
+    } catch {
+      /* fallback below */
+    }
   }
 
   log(`Generating ${activePrompts.length} images...`);
-  await Promise.all(
-    activePrompts.map((p, i) => generateImage(p, images, cfg.model, i))
-  );
+  await Promise.all(activePrompts.map((p, i) => generateImage(p, images, cfg.model, i)));
 }
 
 async function runTransform(
@@ -110,7 +133,10 @@ async function runTransform(
   log: (msg: string) => void
 ) {
   const image = runtime.connectedImages?.[0];
-  if (!image) { log('No image connected.'); return; }
+  if (!image) {
+    log('No image connected.');
+    return;
+  }
 
   const desc = runtime.shaderDescription || cfg.userDescription;
 
@@ -134,7 +160,9 @@ async function runTransform(
       const presets = cfg.mockupPresets ?? [];
       log(`Generating ${presets.length} mockup variations...`);
       await Promise.all(
-        presets.map((preset, i) => deps.generateImage?.(`${preset}. ${desc}`, [image], cfg.model, i))
+        presets.map((preset, i) =>
+          deps.generateImage?.(`${preset}. ${desc}`, [image], cfg.model, i)
+        )
       );
       break;
     }
@@ -150,10 +178,14 @@ async function runTransform(
     }
     case 'image-chain': {
       log('Analyzing image for prompt generation...');
-      const resp = await nodeBuilderApi.generate([{
-        role: 'user',
-        content: cfg.systemInstruction || 'Describe this image in vivid detail for use as a generation prompt.',
-      }]);
+      const resp = await nodeBuilderApi.generate([
+        {
+          role: 'user',
+          content:
+            cfg.systemInstruction ||
+            'Describe this image in vivid detail for use as a generation prompt.',
+        },
+      ]);
       const derivedPrompt = resp.type === 'question' ? resp.text : desc;
       log('Generating from visual description...');
       await deps.generateImage?.(derivedPrompt, [image], cfg.model, 0);
@@ -177,19 +209,16 @@ async function runPipeline(
 
     for (let i = 0; i < iterations; i++) {
       log(`Iteration ${i + 1}/${iterations}: generating...`);
-      await deps.generateImage?.(
-        currentPrompt,
-        image ? [image] : undefined,
-        cfg.model,
-        i
-      );
+      await deps.generateImage?.(currentPrompt, image ? [image] : undefined, cfg.model, i);
 
       if (i < iterations - 1) {
         log('Evaluating result...');
-        const resp = await nodeBuilderApi.generate([{
-          role: 'user',
-          content: `Evaluate the generated image against prompt: "${currentPrompt}". Rate quality 1-10 and if below 8, provide a refined prompt. JSON: {"score":N,"refinedPrompt":"<improved>"|null}`,
-        }]);
+        const resp = await nodeBuilderApi.generate([
+          {
+            role: 'user',
+            content: `Evaluate the generated image against prompt: "${currentPrompt}". Rate quality 1-10 and if below 8, provide a refined prompt. JSON: {"score":N,"refinedPrompt":"<improved>"|null}`,
+          },
+        ]);
         try {
           const ev = JSON.parse(resp.type === 'question' ? resp.text : '{}');
           if (!ev.refinedPrompt || ev.score >= 8) {
@@ -198,7 +227,9 @@ async function runPipeline(
           }
           currentPrompt = ev.refinedPrompt;
           log(`Refined (score ${ev.score}/10).`);
-        } catch { break; }
+        } catch {
+          break;
+        }
       }
     }
     return;
@@ -217,10 +248,18 @@ async function runPipeline(
         );
         break;
       case 'upscale':
-        if (image) await deps.handleUpscale?.(nodeId, image, (step.config.resolution as Resolution) ?? '2K');
+        if (image)
+          await deps.handleUpscale?.(nodeId, image, (step.config.resolution as Resolution) ?? '2K');
         break;
       case 'shader':
-        if (image) spawnShaderNode(nodeId, (step.config.shaderType as string) ?? 'halftone', step.config, image, deps);
+        if (image)
+          spawnShaderNode(
+            nodeId,
+            (step.config.shaderType as string) ?? 'halftone',
+            step.config,
+            image,
+            deps
+          );
         break;
     }
   }
@@ -239,10 +278,12 @@ async function runMultiInput(
   switch (cfg.behavior) {
     case 'merge-creative': {
       log('Writing creative merge prompt...');
-      const resp = await nodeBuilderApi.generate([{
-        role: 'user',
-        content: `${cfg.systemInstruction}\n\n${images.length} images connected. Goal: ${desc}`,
-      }]);
+      const resp = await nodeBuilderApi.generate([
+        {
+          role: 'user',
+          content: `${cfg.systemInstruction}\n\n${images.length} images connected. Goal: ${desc}`,
+        },
+      ]);
       const mergePrompt = resp.type === 'question' ? resp.text : desc;
       log('Merging images...');
       await deps.generateImage?.(mergePrompt, images, cfg.model, 0);
@@ -260,12 +301,17 @@ async function runMultiInput(
     }
     case 'conditional-branch': {
       const image = images[0];
-      if (!image) { log('No image connected.'); return; }
+      if (!image) {
+        log('No image connected.');
+        return;
+      }
       log('Analyzing image to determine best operation...');
-      const resp = await nodeBuilderApi.generate([{
-        role: 'user',
-        content: `${cfg.systemInstruction}\n\nGoal: ${desc}`,
-      }]);
+      const resp = await nodeBuilderApi.generate([
+        {
+          role: 'user',
+          content: `${cfg.systemInstruction}\n\nGoal: ${desc}`,
+        },
+      ]);
       try {
         const dec = JSON.parse(resp.type === 'question' ? resp.text : '{}');
         if (dec.operation === 'shader') {

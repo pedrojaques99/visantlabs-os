@@ -71,10 +71,7 @@ const KonvaTextLayerImpl: React.FC<Props> = ({
     if (!node) return;
     const measuredW = node.width() / canvasWidth;
     const measuredH = node.height() / canvasHeight;
-    if (
-      Math.abs(measuredW - data.size.w) > 0.001 ||
-      Math.abs(measuredH - data.size.h) > 0.001
-    ) {
+    if (Math.abs(measuredW - data.size.w) > 0.001 || Math.abs(measuredH - data.size.h) > 0.001) {
       updateLayer(layer.id, { size: { w: measuredW, h: measuredH } });
     }
   }, [
@@ -227,10 +224,7 @@ const KonvaTextLayerImpl: React.FC<Props> = ({
             { x: node.x(), y: node.y() },
             { w: canvasWidth, h: canvasHeight }
           ),
-          size: normalizeSize(
-            { w: measuredW, h: measuredH },
-            { w: canvasWidth, h: canvasHeight }
-          ),
+          size: normalizeSize({ w: measuredW, h: measuredH }, { w: canvasWidth, h: canvasHeight }),
           fontSize: newFontSize,
           rotation: node.rotation(),
         });
@@ -241,16 +235,18 @@ const KonvaTextLayerImpl: React.FC<Props> = ({
 
 // Layer ref equality is enough — store updates via .map preserve identity for
 // untouched layers, so memoization skips re-render when sibling layers change.
-export const KonvaTextLayer = React.memo(KonvaTextLayerImpl, (prev, next) =>
-  prev.layer === next.layer &&
-  prev.isSelected === next.isSelected &&
-  prev.canvasWidth === next.canvasWidth &&
-  prev.canvasHeight === next.canvasHeight &&
-  prev.accentColor === next.accentColor &&
-  prev.registerNode === next.registerNode &&
-  prev.onSelect === next.onSelect &&
-  prev.onDragStart === next.onDragStart &&
-  prev.onSmartDragMove === next.onSmartDragMove &&
-  prev.onSmartTransform === next.onSmartTransform &&
-  prev.onSmartClear === next.onSmartClear
+export const KonvaTextLayer = React.memo(
+  KonvaTextLayerImpl,
+  (prev, next) =>
+    prev.layer === next.layer &&
+    prev.isSelected === next.isSelected &&
+    prev.canvasWidth === next.canvasWidth &&
+    prev.canvasHeight === next.canvasHeight &&
+    prev.accentColor === next.accentColor &&
+    prev.registerNode === next.registerNode &&
+    prev.onSelect === next.onSelect &&
+    prev.onDragStart === next.onDragStart &&
+    prev.onSmartDragMove === next.onSmartDragMove &&
+    prev.onSmartTransform === next.onSmartTransform &&
+    prev.onSmartClear === next.onSmartClear
 );

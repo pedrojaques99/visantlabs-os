@@ -17,51 +17,57 @@ const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
   onImageUpload,
   disabled = false,
-  compact = false
+  compact = false,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const processFile = useCallback(async (file: File | Blob | null) => {
-    if (!file) return;
+  const processFile = useCallback(
+    async (file: File | Blob | null) => {
+      if (!file) return;
 
-    if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
-      setError('Tipo de arquivo não suportado. Use JPEG, PNG, WebP ou GIF.');
-      return;
-    }
+      if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
+        setError('Tipo de arquivo não suportado. Use JPEG, PNG, WebP ou GIF.');
+        return;
+      }
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      setError(`Imagem muito grande (${fileSizeMB}MB). Máximo: ${MAX_IMAGE_SIZE_MB}MB.`);
-      return;
-    }
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        setError(`Imagem muito grande (${fileSizeMB}MB). Máximo: ${MAX_IMAGE_SIZE_MB}MB.`);
+        return;
+      }
 
-    setIsProcessing(true);
-    setError(null);
-    try {
-      const imageData = await fileToBase64(file);
-      onImageUpload(imageData);
-    } catch (err) {
-      setError('Erro ao processar imagem. Tente novamente.');
-      console.error(err);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [onImageUpload]);
+      setIsProcessing(true);
+      setError(null);
+      try {
+        const imageData = await fileToBase64(file);
+        onImageUpload(imageData);
+      } catch (err) {
+        setError('Erro ao processar imagem. Tente novamente.');
+        console.error(err);
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [onImageUpload]
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) processFile(file);
   };
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) processFile(file);
-  }, [processFile]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLLabelElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) processFile(file);
+    },
+    [processFile]
+  );
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => e.preventDefault();
   const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
@@ -79,7 +85,9 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
       <div className="inline-block">
         <label
           htmlFor="admin-file-upload-compact"
-          className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 cursor-pointer transition-colors ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
+          className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 cursor-pointer transition-colors ${
+            isProcessing || disabled ? 'cursor-wait opacity-50' : ''
+          }`}
         >
           <input
             id="admin-file-upload-compact"
@@ -101,9 +109,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
             </>
           )}
         </label>
-        {error && (
-          <p className="text-destructive/80 text-xs mt-1">{error}</p>
-        )}
+        {error && <p className="text-destructive/80 text-xs mt-1">{error}</p>}
       </div>
     );
   }
@@ -116,10 +122,11 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
-        className={`relative block w-full p-4 bg-neutral-900 border rounded-md cursor-pointer transition-all duration-300 ${isDragging
-          ? 'border-dashed border-2 border-neutral-600 bg-neutral-800/30 shadow-2xl shadow-black/10'
-          : 'border-neutral-800 hover:border-neutral-800/20'
-          } ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
+        className={`relative block w-full p-4 bg-neutral-900 border rounded-md cursor-pointer transition-all duration-300 ${
+          isDragging
+            ? 'border-dashed border-2 border-neutral-600 bg-neutral-800/30 shadow-2xl shadow-black/10'
+            : 'border-neutral-800 hover:border-neutral-800/20'
+        } ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
       >
         <input
           id="admin-file-upload"
@@ -150,18 +157,21 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
           )}
           {!isProcessing && !isDragging && (
             <>
-              <UploadCloud size={32} className="text-neutral-600 group-hover:text-neutral-400 transition-colors flex-shrink-0" />
+              <UploadCloud
+                size={32}
+                className="text-neutral-600 group-hover:text-neutral-400 transition-colors flex-shrink-0"
+              />
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-neutral-400">Clique para fazer upload</p>
-                <p className="text-xs font-mono  text-neutral-500">JPEG, PNG, WebP ou GIF (máx. {MAX_IMAGE_SIZE_MB}MB)</p>
+                <p className="text-xs font-mono  text-neutral-500">
+                  JPEG, PNG, WebP ou GIF (máx. {MAX_IMAGE_SIZE_MB}MB)
+                </p>
               </div>
             </>
           )}
         </div>
       </label>
-      {error && (
-        <p className="text-center text-destructive/80 text-sm mt-2">{error}</p>
-      )}
+      {error && <p className="text-center text-destructive/80 text-sm mt-2">{error}</p>}
     </div>
   );
 };

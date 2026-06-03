@@ -14,7 +14,8 @@ interface LabTool {
 const TOOLS: LabTool[] = [
   {
     title: 'Wind Tunnel',
-    description: 'Fluid dynamics simulation around typography. Particles flow like wind hitting letterforms.',
+    description:
+      'Fluid dynamics simulation around typography. Particles flow like wind hitting letterforms.',
     path: '/labs/wind-tunnel',
     icon: <Wind className="w-5 h-5" />,
     status: 'live',

@@ -25,11 +25,13 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
   const { locale } = useTranslation();
   const statusMessages = useMemo(() => {
     const translations = getTranslations(locale);
-    return translations.mockup?.promptStatusMessages ?? [
-      'understanding your design',
-      'searching for the best visual solutions',
-      'thinking as a senior graphic designer'
-    ];
+    return (
+      translations.mockup?.promptStatusMessages ?? [
+        'understanding your design',
+        'searching for the best visual solutions',
+        'thinking as a senior graphic designer',
+      ]
+    );
   }, [locale]);
   const [messageIndex, setMessageIndex] = useState(0);
 
@@ -47,7 +49,10 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
   }, [isLoading, statusMessages]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-5 text-neutral-500 min-h-[75px] relative" style={{ width: '100%', minWidth: isLoading ? '200px' : '150px' }}>
+    <div
+      className="flex flex-col items-center justify-center gap-3 p-5 text-neutral-500 min-h-[75px] relative"
+      style={{ width: '100%', minWidth: isLoading ? '200px' : '150px' }}
+    >
       {isLoading ? (
         <div className="flex flex-col items-center justify-center gap-3 w-full">
           {/* Linha 1: Picareta */}
@@ -60,10 +65,7 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
 
           {/* Linha 3: Labels */}
           <div className="h-4 text-xs font-mono text-neutral-500 overflow-hidden text-center">
-            <span
-              key={messageIndex}
-              className="block animate-fade-in"
-            >
+            <span key={messageIndex} className="block animate-fade-in">
               {statusMessages[messageIndex]}
             </span>
           </div>
@@ -84,7 +86,9 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
               {emptyIcon}
               <span className="text-xs font-mono text-neutral-500 text-center">{emptyMessage}</span>
               {emptySubmessage && (
-                <span className="text-xs font-mono text-neutral-600 text-center">{emptySubmessage}</span>
+                <span className="text-xs font-mono text-neutral-600 text-center">
+                  {emptySubmessage}
+                </span>
               )}
             </>
           )}

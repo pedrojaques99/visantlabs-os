@@ -28,30 +28,51 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   const { theme } = useTheme();
   const dependencies = getStepDependencies(stepNumber);
   const creditsRequired = getBrandingStepCredits(stepNumber);
-  const missingDeps = dependencies.filter(dep => !hasContent(dep));
+  const missingDeps = dependencies.filter((dep) => !hasContent(dep));
 
   return (
     <div className="flex-1">
       <div className="flex items-center gap-2 mb-2">
         <div className="text-xl mr-2">{emoji}</div>
-        <h3 className={`font-semibold font-manrope text-lg ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-          }`}>{stepTitle}</h3>
+        <h3
+          className={`font-semibold font-manrope text-lg ${
+            theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
+          }`}
+        >
+          {stepTitle}
+        </h3>
       </div>
       {!isCollapsed && !hasData && (
         <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-          <div className={`flex items-center gap-1.5 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}>
+          <div
+            className={`flex items-center gap-1.5 ${
+              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+            }`}
+          >
             <Coins className="h-3.5 w-3.5 text-brand-cyan" />
-            <span>{creditsRequired} {creditsRequired === 1 ? 'credit' : 'credits'}</span>
+            <span>
+              {creditsRequired} {creditsRequired === 1 ? 'credit' : 'credits'}
+            </span>
           </div>
           {dependencies.length > 0 && (
             <div className="flex items-center gap-1.5">
-              <Link2 className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-                }`} />
+              <Link2
+                className={`h-3.5 w-3.5 ${
+                  theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
+                }`}
+              />
               <span className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}>
                 {t('branding.requires') || 'Requires'}:{' '}
-                <span className={missingDeps.length > 0 ? 'text-orange-400' : (theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500')}>
-                  {dependencies.map(dep => getDependencyStepTitle(dep, steps)).join(', ')}
+                <span
+                  className={
+                    missingDeps.length > 0
+                      ? 'text-orange-400'
+                      : theme === 'dark'
+                      ? 'text-neutral-400'
+                      : 'text-neutral-500'
+                  }
+                >
+                  {dependencies.map((dep) => getDependencyStepTitle(dep, steps)).join(', ')}
                 </span>
               </span>
             </div>
@@ -61,4 +82,3 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
     </div>
   );
 };
-

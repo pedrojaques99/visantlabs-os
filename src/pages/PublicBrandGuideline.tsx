@@ -45,17 +45,21 @@ import {
   BusinessCardMock,
   EmailHeaderMock,
 } from '@/components/brand/guidelines/preview/BrandMocks';
-import { exportMockElement, EXPORT_FORMATS, type ExportFormat } from '@/components/brand/guidelines/preview/exportMock';
+import {
+  exportMockElement,
+  EXPORT_FORMATS,
+  type ExportFormat,
+} from '@/components/brand/guidelines/preview/exportMock';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const PREVIEW_MOCKS = [
   { id: 'instagram', label: 'Instagram', Component: InstagramFeedMock },
-  { id: 'linkedin',  label: 'LinkedIn',  Component: LinkedInPostMock },
-  { id: 'website',   label: 'Website',   Component: WebsiteHeroMock },
-  { id: 'card',      label: 'Card',      Component: BusinessCardMock },
-  { id: 'email',     label: 'Email',     Component: EmailHeaderMock },
-  { id: 'poster',    label: 'Poster',    Component: PosterMock },
-  { id: 'stories',   label: 'Stories',   Component: StoriesMock },
+  { id: 'linkedin', label: 'LinkedIn', Component: LinkedInPostMock },
+  { id: 'website', label: 'Website', Component: WebsiteHeroMock },
+  { id: 'card', label: 'Card', Component: BusinessCardMock },
+  { id: 'email', label: 'Email', Component: EmailHeaderMock },
+  { id: 'poster', label: 'Poster', Component: PosterMock },
+  { id: 'stories', label: 'Stories', Component: StoriesMock },
 ] as const;
 
 export const PublicBrandGuideline: React.FC = () => {
@@ -92,19 +96,27 @@ export const PublicBrandGuideline: React.FC = () => {
     };
   }, [showExportMenu]);
 
-  const handleExportMock = useCallback(async (format: ExportFormat) => {
-    if (!publicMockRef.current || !guideline) return;
-    setExporting(true);
-    setShowExportMenu(false);
-    try {
-      await exportMockElement(publicMockRef.current, guideline.identity?.name || 'brand', activePreview, format);
-      toast.success(`Exported ${activePreview} as ${format.toUpperCase()}`);
-    } catch {
-      toast.error(`Failed to export as ${format.toUpperCase()}`);
-    } finally {
-      setExporting(false);
-    }
-  }, [activePreview, guideline]);
+  const handleExportMock = useCallback(
+    async (format: ExportFormat) => {
+      if (!publicMockRef.current || !guideline) return;
+      setExporting(true);
+      setShowExportMenu(false);
+      try {
+        await exportMockElement(
+          publicMockRef.current,
+          guideline.identity?.name || 'brand',
+          activePreview,
+          format
+        );
+        toast.success(`Exported ${activePreview} as ${format.toUpperCase()}`);
+      } catch {
+        toast.error(`Failed to export as ${format.toUpperCase()}`);
+      } finally {
+        setExporting(false);
+      }
+    },
+    [activePreview, guideline]
+  );
 
   useEffect(() => {
     if (!slug) return;
@@ -140,18 +152,24 @@ export const PublicBrandGuideline: React.FC = () => {
   const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
 
-  const currentTab = PUBLIC_TABS.find(t => t.id === activeTab) || PUBLIC_TABS[0];
+  const currentTab = PUBLIC_TABS.find((t) => t.id === activeTab) || PUBLIC_TABS[0];
   const visibleSections = currentTab.sections;
 
   const hasPreviewData =
-    (tokens.palette.length > 0) || !!tokens.primaryLogo || !!guideline?.identity?.name;
+    tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline?.identity?.name;
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 flex flex-col items-center gap-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="relative z-10 flex flex-col items-center gap-4"
+        >
           <GlitchLoader size={40} />
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.1em]">{t('public.brand.guideline.decrypting_brand_assets')}</MicroTitle>
+          <MicroTitle className="text-neutral-600 uppercase tracking-[0.1em]">
+            {t('public.brand.guideline.decrypting_brand_assets')}
+          </MicroTitle>
         </motion.div>
       </div>
     );
@@ -160,14 +178,24 @@ export const PublicBrandGuideline: React.FC = () => {
   if (error || !guideline) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-6">
-        <GlassPanel padding="lg" className="relative z-10 max-w-md text-center border-destructive/10 bg-destructive/[0.02]">
+        <GlassPanel
+          padding="lg"
+          className="relative z-10 max-w-md text-center border-destructive/10 bg-destructive/[0.02]"
+        >
           <AlertCircle size={48} className="mx-auto text-destructive/40 mb-4" />
-          <h1 className="text-xl font-bold text-neutral-200 mb-2 font-manrope">{t('public.brand.guideline.access_denied')}</h1>
+          <h1 className="text-xl font-bold text-neutral-200 mb-2 font-manrope">
+            {t('public.brand.guideline.access_denied')}
+          </h1>
           <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
-            {error || 'This brand guideline is either private or does not exist in our secure vault.'}
+            {error ||
+              'This brand guideline is either private or does not exist in our secure vault.'}
           </p>
           <Link to="/">
-            <Button variant="outline" className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5" style={{ '--accent': guideline?.colors?.[0]?.hex || '#888888' } as any}>
+            <Button
+              variant="outline"
+              className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5"
+              style={{ '--accent': guideline?.colors?.[0]?.hex || '#888888' } as any}
+            >
               Return to Surface
             </Button>
           </Link>
@@ -179,27 +207,35 @@ export const PublicBrandGuideline: React.FC = () => {
   const brandName = guideline.identity?.name || 'Brand Guidelines';
   const isLightBg = getRelativeLuminance(brandTheme.bg) > 0.5;
   const navBtnClass = isLightBg
-    ? "bg-black/5 border-black/10 text-black hover:bg-black/10"
-    : "bg-white/5 border-white/10 text-white hover:bg-white/10";
+    ? 'bg-black/5 border-black/10 text-black hover:bg-black/10'
+    : 'bg-white/5 border-white/10 text-white hover:bg-white/10';
 
   return (
     <div
       className="min-h-screen transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden"
-      style={{
-        '--accent': brandTheme.accent,
-        '--accent-rgb': brandTheme.accentRgb,
-        '--accent-text': brandTheme.accentText,
-        '--brand-bg': brandTheme.bg,
-        '--brand-surface': brandTheme.surface,
-        '--brand-text': brandTheme.text,
-        backgroundColor: 'var(--brand-bg)',
-        color: 'var(--brand-text)'
-      } as any}
+      style={
+        {
+          '--accent': brandTheme.accent,
+          '--accent-rgb': brandTheme.accentRgb,
+          '--accent-text': brandTheme.accentText,
+          '--brand-bg': brandTheme.bg,
+          '--brand-surface': brandTheme.surface,
+          '--brand-text': brandTheme.text,
+          backgroundColor: 'var(--brand-bg)',
+          color: 'var(--brand-text)',
+        } as any
+      }
     >
-      <SEO title={`${brandName} - Brand Portal`} description={guideline.identity?.description || guideline.identity?.tagline} />
+      <SEO
+        title={`${brandName} - Brand Portal`}
+        description={guideline.identity?.description || guideline.identity?.tagline}
+      />
 
       {/* Floating Side Nav (Desktop) */}
-      <nav aria-label={t('public.brand.guideline.brand_sections')} className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4">
+      <nav
+        aria-label={t('public.brand.guideline.brand_sections')}
+        className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4"
+      >
         {PUBLIC_TABS.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -208,19 +244,24 @@ export const PublicBrandGuideline: React.FC = () => {
               aria-current={activeTab === tab.id ? 'true' : undefined}
               onClick={() => {
                 setActiveTab(tab.id);
-                document.getElementById(tab.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document
+                  .getElementById(tab.id)
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
               className={cn(
-                "group flex items-center gap-3 transition-all duration-300",
-                activeTab === tab.id ? "translate-x-2" : "opacity-60 hover:opacity-100"
+                'group flex items-center gap-3 transition-all duration-300',
+                activeTab === tab.id ? 'translate-x-2' : 'opacity-60 hover:opacity-100'
               )}
             >
-              <div aria-hidden="true" className={cn(
-                "w-1 h-1 rounded-full transition-all duration-300",
-                activeTab === tab.id
-                  ? "h-6 bg-[var(--accent)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]"
-                  : "bg-current opacity-20 group-hover:opacity-60"
-              )} />
+              <div
+                aria-hidden="true"
+                className={cn(
+                  'w-1 h-1 rounded-full transition-all duration-300',
+                  activeTab === tab.id
+                    ? 'h-6 bg-[var(--accent)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]'
+                    : 'bg-current opacity-20 group-hover:opacity-60'
+                )}
+              />
               <span className="text-[10px] uppercase font-bold tracking-wider font-mono opacity-80 group-hover:opacity-100 transition-opacity">
                 {tab.label}
               </span>
@@ -234,14 +275,20 @@ export const PublicBrandGuideline: React.FC = () => {
         <Button
           onClick={() => navigate('/')}
           variant="ghost"
-          className={cn("h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all", navBtnClass)}
+          className={cn(
+            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
+            navBtnClass
+          )}
         >
           <Home size={14} /> HOME
         </Button>
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
-          className={cn("h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all", navBtnClass)}
+          className={cn(
+            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
+            navBtnClass
+          )}
         >
           <ChevronLeft size={14} /> VOLTAR
         </Button>
@@ -250,19 +297,27 @@ export const PublicBrandGuideline: React.FC = () => {
       {/* Top-right controls */}
       <div className="flex gap-2 fixed top-5 right-5 z-[1000]">
         <Button
-          onClick={() => setTheme(prev => prev === 'brand' ? 'light' : prev === 'light' ? 'dark' : 'brand')}
+          onClick={() =>
+            setTheme((prev) => (prev === 'brand' ? 'light' : prev === 'light' ? 'dark' : 'brand'))
+          }
           variant="ghost"
           aria-label={`Switch theme, current: ${theme}`}
           className={cn(
-            "h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest",
+            'h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest',
             theme === 'brand'
-              ? "bg-[var(--accent)] text-[var(--accent-text)] border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]"
+              ? 'bg-[var(--accent)] text-[var(--accent-text)] border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]'
               : theme === 'dark'
-                ? "bg-neutral-900 border-neutral-800 text-white hover:bg-neutral-800"
-                : "bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm"
+              ? 'bg-neutral-900 border-neutral-800 text-white hover:bg-neutral-800'
+              : 'bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm'
           )}
         >
-          {theme === 'brand' ? <Diamond size={14} className="animate-pulse" aria-hidden="true" /> : theme === 'light' ? <Sun size={14} aria-hidden="true" /> : <Moon size={14} aria-hidden="true" />}
+          {theme === 'brand' ? (
+            <Diamond size={14} className="animate-pulse" aria-hidden="true" />
+          ) : theme === 'light' ? (
+            <Sun size={14} aria-hidden="true" />
+          ) : (
+            <Moon size={14} aria-hidden="true" />
+          )}
           {theme}
         </Button>
         <Button
@@ -270,10 +325,10 @@ export const PublicBrandGuideline: React.FC = () => {
           variant="ghost"
           aria-label={t('public.brand.guideline.download_brand_guidelines_a')}
           className={cn(
-            "h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest",
+            'h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest',
             theme === 'dark'
-              ? "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
-              : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
+              ? 'bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white'
+              : 'bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm'
           )}
         >
           <Download size={14} aria-hidden="true" /> JSON
@@ -283,10 +338,10 @@ export const PublicBrandGuideline: React.FC = () => {
           variant="ghost"
           aria-label={t('public.brand.guideline.download_brand_variables_as')}
           className={cn(
-            "h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest",
+            'h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest',
             theme === 'dark'
-              ? "bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white"
-              : "bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm"
+              ? 'bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white'
+              : 'bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm'
           )}
         >
           <Download size={14} aria-hidden="true" /> CSS
@@ -298,7 +353,7 @@ export const PublicBrandGuideline: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          transition={{ duration: 1, ease: 'easeOut' }}
           className="relative mb-32"
         >
           {theme === 'dark' && brandTheme.isCustomBg && (
@@ -319,7 +374,10 @@ export const PublicBrandGuideline: React.FC = () => {
 
         {/* Global Controls */}
         <div className="sticky top-6 z-40 mb-16 px-2">
-          <GlassPanel padding="sm" className="backdrop-blur-2xl transition-all duration-500 bg-[var(--brand-surface)]/80 border-[var(--brand-text)]/10 shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
+          <GlassPanel
+            padding="sm"
+            className="backdrop-blur-2xl transition-all duration-500 bg-[var(--brand-surface)]/80 border-[var(--brand-text)]/10 shadow-[0_20px_50px_rgba(0,0,0,0.2)]"
+          >
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40" size={16} />
@@ -339,10 +397,10 @@ export const PublicBrandGuideline: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     aria-current={activeTab === tab.id ? 'true' : undefined}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
+                      'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0',
                       activeTab === tab.id
-                        ? "bg-[var(--accent)] text-[var(--accent-text)]"
-                        : "opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5"
+                        ? 'bg-[var(--accent)] text-[var(--accent-text)]'
+                        : 'opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5'
                     )}
                   >
                     {tab.label}
@@ -358,10 +416,10 @@ export const PublicBrandGuideline: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     aria-current={activeTab === tab.id ? 'true' : undefined}
                     className={cn(
-                      "px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                      'px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
                       activeTab === tab.id
-                        ? "bg-[var(--accent)] text-[var(--accent-text)]"
-                        : "opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5"
+                        ? 'bg-[var(--accent)] text-[var(--accent-text)]'
+                        : 'opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5'
                     )}
                   >
                     {tab.label}
@@ -392,7 +450,7 @@ export const PublicBrandGuideline: React.FC = () => {
 
             {/* Format selector + export */}
             <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1 scrollbar-none [-webkit-mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-40px),transparent)]">
-              {PREVIEW_MOCKS.map(m => (
+              {PREVIEW_MOCKS.map((m) => (
                 <button
                   key={m.id}
                   type="button"
@@ -412,7 +470,7 @@ export const PublicBrandGuideline: React.FC = () => {
               <div ref={exportMenuRef} className="ml-auto relative">
                 <button
                   type="button"
-                  onClick={() => setShowExportMenu(v => !v)}
+                  onClick={() => setShowExportMenu((v) => !v)}
                   disabled={exporting}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest opacity-50 hover:opacity-100 transition-all disabled:opacity-30"
                 >
@@ -422,7 +480,7 @@ export const PublicBrandGuideline: React.FC = () => {
                 </button>
                 {showExportMenu && (
                   <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-lg shadow-xl overflow-hidden min-w-[100px]">
-                    {EXPORT_FORMATS.map(f => (
+                    {EXPORT_FORMATS.map((f) => (
                       <button
                         key={f.id}
                         type="button"
@@ -438,16 +496,23 @@ export const PublicBrandGuideline: React.FC = () => {
             </div>
 
             {/* Active mock */}
-            <GlassPanel padding="md" className="bg-[var(--brand-surface)]/30 border-[var(--brand-text)]/5">
+            <GlassPanel
+              padding="md"
+              className="bg-[var(--brand-surface)]/30 border-[var(--brand-text)]/5"
+            >
               <div ref={publicMockRef} className="max-w-2xl mx-auto">
-                {PREVIEW_MOCKS.map(m => (
-                  activePreview === m.id && <m.Component key={m.id} tokens={tokens} />
-                ))}
+                {PREVIEW_MOCKS.map(
+                  (m) => activePreview === m.id && <m.Component key={m.id} tokens={tokens} />
+                )}
               </div>
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--brand-text)]/5">
                 <div className="flex items-center gap-2">
                   {tokens.palette.slice(0, 5).map((c, i) => (
-                    <span key={i} className="w-3 h-3 rounded-full border border-[var(--brand-text)]/10" style={{ background: c.hex }} />
+                    <span
+                      key={i}
+                      className="w-3 h-3 rounded-full border border-[var(--brand-text)]/10"
+                      style={{ background: c.hex }}
+                    />
                   ))}
                 </div>
                 <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest opacity-40">
@@ -477,8 +542,12 @@ export const PublicBrandGuideline: React.FC = () => {
         <footer className="mt-40 pt-20 border-t border-[var(--brand-text)]/10 text-center space-y-8">
           <div className="flex justify-center gap-12">
             <div className="text-left space-y-2">
-              <span className="text-[10px] font-mono opacity-30 uppercase tracking-widest">{t('public.brand.guideline.version')}</span>
-              <p className="text-xs font-bold opacity-40">{t('public.brand.guideline.visant_labs')}</p>
+              <span className="text-[10px] font-mono opacity-30 uppercase tracking-widest">
+                {t('public.brand.guideline.version')}
+              </span>
+              <p className="text-xs font-bold opacity-40">
+                {t('public.brand.guideline.visant_labs')}
+              </p>
             </div>
           </div>
         </footer>

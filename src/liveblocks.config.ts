@@ -6,7 +6,9 @@ import type { LiveList, LiveObject } from '@liveblocks/client';
 
 // Create a serializable version of FlowNodeData by omitting function properties
 type SerializableFlowNodeData = {
-  [K in keyof FlowNodeData]: FlowNodeData[K] extends (...args: unknown[]) => unknown ? never : FlowNodeData[K];
+  [K in keyof FlowNodeData]: FlowNodeData[K] extends (...args: unknown[]) => unknown
+    ? never
+    : FlowNodeData[K];
 };
 
 declare global {
@@ -49,4 +51,4 @@ declare global {
   }
 }
 
-export { };
+export {};

@@ -37,7 +37,7 @@ export function useFigmaMessages() {
           break;
         }
 
-        case 'SELECTION_CHANGED': { 
+        case 'SELECTION_CHANGED': {
           if (msg.nodes) {
             storeState.updateSelection(msg.nodes);
           }
@@ -50,7 +50,7 @@ export function useFigmaMessages() {
             usePluginStore.setState({
               pendingAttachments: msg.items,
               showSmartScanModal: true,
-              smartScanResults: msg.items
+              smartScanResults: msg.items,
             });
             storeState.showToast(`Found ${msg.items.length} elements`, 'success');
           } else {
@@ -74,7 +74,11 @@ export function useFigmaMessages() {
         case 'OPERATIONS_DONE': {
           const history = usePluginStore.getState().chatHistory;
           const lastMsg = history[history.length - 1];
-          if (lastMsg?.role === 'assistant' && lastMsg.operations && lastMsg.operations.length > 0) {
+          if (
+            lastMsg?.role === 'assistant' &&
+            lastMsg.operations &&
+            lastMsg.operations.length > 0
+          ) {
             usePluginStore.setState((s) => {
               const target = s.chatHistory[s.chatHistory.length - 1];
               if (target) {
@@ -86,14 +90,16 @@ export function useFigmaMessages() {
             const content =
               msg.message ||
               msg.summary ||
-              (typeof msg.count === 'number' ? `${msg.count} operations applied` : 'Operations applied successfully');
+              (typeof msg.count === 'number'
+                ? `${msg.count} operations applied`
+                : 'Operations applied successfully');
             storeState.addChatMessage({
               id: `msg-${Date.now()}`,
               role: 'assistant' as const,
               content,
               timestamp: Date.now(),
               operations: ops,
-              summaryItems: msg.summaryItems
+              summaryItems: msg.summaryItems,
             });
           }
           const count = msg.count || msg.summaryItems?.length || 0;
@@ -179,10 +185,11 @@ export function useFigmaMessages() {
           // Persisted brand from pluginData — auto-load on startup
           if (msg.selectedId && msg.guideline) {
             try {
-              const parsed = typeof msg.guideline === 'string' ? JSON.parse(msg.guideline) : msg.guideline;
+              const parsed =
+                typeof msg.guideline === 'string' ? JSON.parse(msg.guideline) : msg.guideline;
               if (parsed) {
                 const slice = hydrateBrandGuideline(parsed);
-                usePluginStore.setState({ ...slice as any, useBrand: true });
+                usePluginStore.setState({ ...(slice as any), useBrand: true });
               }
             } catch {}
           } else if (msg.selectedId) {
@@ -195,7 +202,10 @@ export function useFigmaMessages() {
         case 'BRAND_GUIDELINE_SAVED':
         case 'GUIDELINE_SAVED': {
           storeState.showToast('Brand guideline saved', 'success');
-          parent.postMessage({ pluginMessage: { type: 'GET_GUIDELINES' } }, 'https://www.figma.com');
+          parent.postMessage(
+            { pluginMessage: { type: 'GET_GUIDELINES' } },
+            'https://www.figma.com'
+          );
           break;
         }
 
@@ -218,7 +228,7 @@ export function useFigmaMessages() {
             }
             usePluginStore.setState({
               logos: brand.logos || [],
-              selectedColors: colorsMap
+              selectedColors: colorsMap,
             });
           }
           break;
@@ -253,8 +263,11 @@ export function useFigmaMessages() {
 
         case 'COMPONENT_THUMBNAIL': {
           if (msg.componentId && msg.thumbnail) {
-            usePluginStore.setState(state => {
-              const thumbs: Record<string, string> = { ...state.componentThumbs, [msg.componentId]: msg.thumbnail };
+            usePluginStore.setState((state) => {
+              const thumbs: Record<string, string> = {
+                ...state.componentThumbs,
+                [msg.componentId]: msg.thumbnail,
+              };
               const keys = Object.keys(thumbs);
               if (keys.length > 50) {
                 for (const k of keys.slice(0, keys.length - 50)) delete thumbs[k];
@@ -275,7 +288,9 @@ export function useFigmaMessages() {
         case 'FONT_VARIABLES_LOADED': {
           if (msg.fonts) {
             const current = usePluginStore.getState();
-            usePluginStore.setState({ designTokens: { ...current.designTokens, fonts: msg.fonts } });
+            usePluginStore.setState({
+              designTokens: { ...current.designTokens, fonts: msg.fonts },
+            });
           }
           break;
         }
@@ -283,7 +298,9 @@ export function useFigmaMessages() {
         case 'COLOR_VARIABLES_LOADED': {
           if (msg.colors) {
             const current = usePluginStore.getState();
-            usePluginStore.setState({ designTokens: { ...current.designTokens, colors: msg.colors } });
+            usePluginStore.setState({
+              designTokens: { ...current.designTokens, colors: msg.colors },
+            });
           }
           break;
         }
@@ -291,7 +308,9 @@ export function useFigmaMessages() {
         case 'AVAILABLE_FONTS_LOADED': {
           if (msg.families) {
             const current = usePluginStore.getState();
-            usePluginStore.setState({ designTokens: { ...current.designTokens, families: msg.families } });
+            usePluginStore.setState({
+              designTokens: { ...current.designTokens, families: msg.families },
+            });
           }
           break;
         }
@@ -299,7 +318,9 @@ export function useFigmaMessages() {
         case 'VARIABLE_DEFS_RESULT': {
           if (msg.variables) {
             const current = usePluginStore.getState();
-            usePluginStore.setState({ designTokens: { ...current.designTokens, variables: msg.variables } });
+            usePluginStore.setState({
+              designTokens: { ...current.designTokens, variables: msg.variables },
+            });
           }
           break;
         }
@@ -377,7 +398,10 @@ export function useFigmaMessages() {
           if (msg.report) {
             usePluginStore.setState({ brandLintReport: msg.report });
             const issueCount = msg.report.issues?.length || 0;
-            storeState.showToast(`Brand lint: ${issueCount} issues found`, issueCount > 0 ? 'warning' : 'success');
+            storeState.showToast(
+              `Brand lint: ${issueCount} issues found`,
+              issueCount > 0 ? 'warning' : 'success'
+            );
           }
           break;
         }
@@ -392,7 +416,8 @@ export function useFigmaMessages() {
 
         // ═══ Screenshots & Export ═══
         case 'SCREENSHOT_RESULT': {
-          const payload = msg.data ?? (msg.base64 ? { base64: msg.base64, nodeId: msg.nodeId } : null);
+          const payload =
+            msg.data ?? (msg.base64 ? { base64: msg.base64, nodeId: msg.nodeId } : null);
           if (payload) {
             storeState.setExportedImage({ type: 'screenshot', ...payload });
           }
@@ -402,11 +427,14 @@ export function useFigmaMessages() {
         case 'ILLUSTRATOR_CODE_READY': {
           if (msg.code) {
             // Copy code to clipboard
-            navigator.clipboard.writeText(msg.code).then(() => {
-              storeState.showToast('Illustrator code copied to clipboard!', 'success');
-            }).catch(() => {
-              storeState.showToast('Failed to copy code', 'error');
-            });
+            navigator.clipboard
+              .writeText(msg.code)
+              .then(() => {
+                storeState.showToast('Illustrator code copied to clipboard!', 'success');
+              })
+              .catch(() => {
+                storeState.showToast('Failed to copy code', 'error');
+              });
           }
           break;
         }
@@ -437,7 +465,9 @@ export function useFigmaMessages() {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    ...(storeState.authToken ? { Authorization: `Bearer ${storeState.authToken}` } : {}),
+                    ...(storeState.authToken
+                      ? { Authorization: `Bearer ${storeState.authToken}` }
+                      : {}),
                   },
                   body: JSON.stringify(context),
                 });
@@ -453,7 +483,12 @@ export function useFigmaMessages() {
                   let streamMessage = '';
                   let messageAdded = false;
 
-                  const updateAssistantMessage = (content: string, ops?: any[], tcs?: any[], imageUrl?: string) => {
+                  const updateAssistantMessage = (
+                    content: string,
+                    ops?: any[],
+                    tcs?: any[],
+                    imageUrl?: string
+                  ) => {
                     if (!messageAdded) {
                       storeState.addChatMessage({
                         id: assistantMsgId,
@@ -494,7 +529,9 @@ export function useFigmaMessages() {
                           const data = JSON.parse(line.slice(6));
                           switch (currentEvent || 'message') {
                             case 'thinking':
-                              usePluginStore.getState().setGeneratingStatus(data.message || 'Thinking...');
+                              usePluginStore
+                                .getState()
+                                .setGeneratingStatus(data.message || 'Thinking...');
                               break;
                             case 'tool_start':
                               streamToolCalls.push({
@@ -504,7 +541,11 @@ export function useFigmaMessages() {
                                 args: data.args,
                                 startedAt: new Date().toISOString(),
                               });
-                              updateAssistantMessage(`Using ${data.name}...`, undefined, streamToolCalls);
+                              updateAssistantMessage(
+                                `Using ${data.name}...`,
+                                undefined,
+                                streamToolCalls
+                              );
                               break;
                             case 'tool_end': {
                               const tc = streamToolCalls.find((t) => t.id === data.id);
@@ -520,7 +561,12 @@ export function useFigmaMessages() {
                                 }
                                 if (data.name === 'generate_mockup' && !data.error) {
                                   const isImageMode = usePluginStore.getState().generateImage;
-                                  storeState.showToast(isImageMode ? 'Image generated!' : 'Mockup generated! Applying to canvas...', 'success');
+                                  storeState.showToast(
+                                    isImageMode
+                                      ? 'Image generated!'
+                                      : 'Mockup generated! Applying to canvas...',
+                                    'success'
+                                  );
                                 }
                               }
                               updateAssistantMessage('', undefined, streamToolCalls);
@@ -531,13 +577,29 @@ export function useFigmaMessages() {
                               break;
                             case 'done': {
                               const finalOps: any[] = data.operations || streamOps;
-                              const messageOps = finalOps.filter((o: any) => o?.type === 'MESSAGE' && o.content);
-                              const designOps = finalOps.filter((o: any) => o?.type !== 'MESSAGE' && o?.type !== 'REQUEST_SCAN');
-                              const spokenText = messageOps.map((o: any) => String(o.content)).join('\n\n');
-                              streamMessage = spokenText || data.message || (designOps.length > 0 ? `Generated ${designOps.length} operation(s)` : 'Done');
+                              const messageOps = finalOps.filter(
+                                (o: any) => o?.type === 'MESSAGE' && o.content
+                              );
+                              const designOps = finalOps.filter(
+                                (o: any) => o?.type !== 'MESSAGE' && o?.type !== 'REQUEST_SCAN'
+                              );
+                              const spokenText = messageOps
+                                .map((o: any) => String(o.content))
+                                .join('\n\n');
+                              streamMessage =
+                                spokenText ||
+                                data.message ||
+                                (designOps.length > 0
+                                  ? `Generated ${designOps.length} operation(s)`
+                                  : 'Done');
 
                               const allToolCalls = data.toolCalls || streamToolCalls;
-                              updateAssistantMessage(streamMessage, designOps, allToolCalls, data.generatedImageUrl);
+                              updateAssistantMessage(
+                                streamMessage,
+                                designOps,
+                                allToolCalls,
+                                data.generatedImageUrl
+                              );
 
                               if (data.sessionContext) {
                                 usePluginStore.setState({ sessionContext: data.sessionContext });
@@ -552,21 +614,44 @@ export function useFigmaMessages() {
                                   role: 'assistant' as const,
                                   content: scanReq.reason || 'Escaneando a página...',
                                   timestamp: Date.now(),
-                                  toolCalls: [{ id: `tc-scan-${Date.now()}`, name: 'scan_page', status: 'running' as const, startedAt: new Date().toISOString() }],
+                                  toolCalls: [
+                                    {
+                                      id: `tc-scan-${Date.now()}`,
+                                      name: 'scan_page',
+                                      status: 'running' as const,
+                                      startedAt: new Date().toISOString(),
+                                    },
+                                  ],
                                 });
                                 parent.postMessage(
-                                  { pluginMessage: { type: 'GENERATE_WITH_CONTEXT', command: context.command, scanPage: true, ...context } },
-                                  'https://www.figma.com',
+                                  {
+                                    pluginMessage: {
+                                      type: 'GENERATE_WITH_CONTEXT',
+                                      command: context.command,
+                                      scanPage: true,
+                                      ...context,
+                                    },
+                                  },
+                                  'https://www.figma.com'
                                 );
                                 break;
                               }
 
                               if (designOps.length > 0) {
                                 parent.postMessage(
-                                  { pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: designOps, pageId: context.pageId } },
-                                  'https://www.figma.com',
+                                  {
+                                    pluginMessage: {
+                                      type: 'APPLY_OPERATIONS_FROM_API',
+                                      operations: designOps,
+                                      pageId: context.pageId,
+                                    },
+                                  },
+                                  'https://www.figma.com'
                                 );
-                                storeState.showToast(`Applying ${designOps.length} operation(s)…`, 'info');
+                                storeState.showToast(
+                                  `Applying ${designOps.length} operation(s)…`,
+                                  'info'
+                                );
                               }
                               break;
                             }
@@ -586,15 +671,26 @@ export function useFigmaMessages() {
                   // Handle rescan update for previous scan message
                   if (context.scanPage) {
                     const history = usePluginStore.getState().chatHistory;
-                    const scanMsg = [...history].reverse().find((m) => m.toolCalls?.some((tc) => tc.name === 'scan_page' && tc.status === 'running'));
+                    const scanMsg = [...history]
+                      .reverse()
+                      .find((m) =>
+                        m.toolCalls?.some(
+                          (tc) => tc.name === 'scan_page' && tc.status === 'running'
+                        )
+                      );
                     if (scanMsg) {
                       usePluginStore.setState((s) => {
                         const target = s.chatHistory.find((m) => m.id === scanMsg.id);
                         if (target?.toolCalls) {
                           target.toolCalls = target.toolCalls.map((tc) =>
                             tc.name === 'scan_page' && tc.status === 'running'
-                              ? { ...tc, status: 'done' as const, endedAt: new Date().toISOString(), summary: 'Page scanned' }
-                              : tc,
+                              ? {
+                                  ...tc,
+                                  status: 'done' as const,
+                                  endedAt: new Date().toISOString(),
+                                  summary: 'Page scanned',
+                                }
+                              : tc
                           );
                         }
                       });
@@ -614,7 +710,9 @@ export function useFigmaMessages() {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  ...(storeState.authToken ? { Authorization: `Bearer ${storeState.authToken}` } : {}),
+                  ...(storeState.authToken
+                    ? { Authorization: `Bearer ${storeState.authToken}` }
+                    : {}),
                 },
                 body: JSON.stringify(context),
               });
@@ -629,15 +727,24 @@ export function useFigmaMessages() {
 
               if (context.scanPage) {
                 const history = usePluginStore.getState().chatHistory;
-                const scanMsg = [...history].reverse().find((m) => m.toolCalls?.some((tc) => tc.name === 'scan_page' && tc.status === 'running'));
+                const scanMsg = [...history]
+                  .reverse()
+                  .find((m) =>
+                    m.toolCalls?.some((tc) => tc.name === 'scan_page' && tc.status === 'running')
+                  );
                 if (scanMsg) {
                   usePluginStore.setState((s) => {
                     const target = s.chatHistory.find((m) => m.id === scanMsg.id);
                     if (target?.toolCalls) {
                       target.toolCalls = target.toolCalls.map((tc) =>
                         tc.name === 'scan_page' && tc.status === 'running'
-                          ? { ...tc, status: 'done' as const, endedAt: new Date().toISOString(), summary: 'Page scanned' }
-                          : tc,
+                          ? {
+                              ...tc,
+                              status: 'done' as const,
+                              endedAt: new Date().toISOString(),
+                              summary: 'Page scanned',
+                            }
+                          : tc
                       );
                     }
                   });
@@ -650,33 +757,58 @@ export function useFigmaMessages() {
                 storeState.addChatMessage({
                   id: `msg-${Date.now()}`,
                   role: 'assistant' as const,
-                  content: scanRequest.reason || 'Escaneando a página para encontrar os elementos...',
+                  content:
+                    scanRequest.reason || 'Escaneando a página para encontrar os elementos...',
                   timestamp: Date.now(),
-                  toolCalls: [{ id: `tc-scan-${Date.now()}`, name: 'scan_page', status: 'running' as const, startedAt: new Date().toISOString() }],
+                  toolCalls: [
+                    {
+                      id: `tc-scan-${Date.now()}`,
+                      name: 'scan_page',
+                      status: 'running' as const,
+                      startedAt: new Date().toISOString(),
+                    },
+                  ],
                 });
                 parent.postMessage(
-                  { pluginMessage: { type: 'GENERATE_WITH_CONTEXT', command: context.command, scanPage: true, ...context } },
-                  'https://www.figma.com',
+                  {
+                    pluginMessage: {
+                      type: 'GENERATE_WITH_CONTEXT',
+                      command: context.command,
+                      scanPage: true,
+                      ...context,
+                    },
+                  },
+                  'https://www.figma.com'
                 );
                 break;
               }
 
               const messageOps = ops.filter((o) => o?.type === 'MESSAGE' && o.content);
-              const designOps = ops.filter((o) => o?.type !== 'MESSAGE' && o?.type !== 'REQUEST_SCAN');
+              const designOps = ops.filter(
+                (o) => o?.type !== 'MESSAGE' && o?.type !== 'REQUEST_SCAN'
+              );
               const spokenText = messageOps.map((o) => String(o.content)).join('\n\n');
               const content =
-                spokenText || result.text || result.response || result.message ||
+                spokenText ||
+                result.text ||
+                result.response ||
+                result.message ||
                 (designOps.length > 0 ? `Generated ${designOps.length} operation(s)` : 'Done');
 
               const toolCalls: any[] = result.toolCallRecord ? [result.toolCallRecord] : [];
-              if (designOps.length > 0 && !toolCalls.some((tc: any) => tc.name === 'generate_figma_operations')) {
+              if (
+                designOps.length > 0 &&
+                !toolCalls.some((tc: any) => tc.name === 'generate_figma_operations')
+              ) {
                 toolCalls.push({
                   id: `tc-gen-${Date.now()}`,
                   name: 'generate_figma_operations',
                   status: 'done' as const,
                   startedAt: new Date().toISOString(),
                   endedAt: new Date().toISOString(),
-                  summary: `${designOps.length} operation${designOps.length > 1 ? 's' : ''} via ${result.provider || 'gemini'}`,
+                  summary: `${designOps.length} operation${designOps.length > 1 ? 's' : ''} via ${
+                    result.provider || 'gemini'
+                  }`,
                 });
               }
 
@@ -692,8 +824,14 @@ export function useFigmaMessages() {
 
               if (designOps.length > 0) {
                 parent.postMessage(
-                  { pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: designOps, pageId: context.pageId } },
-                  'https://www.figma.com',
+                  {
+                    pluginMessage: {
+                      type: 'APPLY_OPERATIONS_FROM_API',
+                      operations: designOps,
+                      pageId: context.pageId,
+                    },
+                  },
+                  'https://www.figma.com'
                 );
                 storeState.showToast(`Applying ${designOps.length} operation(s)…`, 'info');
               }

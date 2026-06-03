@@ -10,12 +10,14 @@ const base = (overrides: Partial<BrandGuideline> = {}): BrandGuideline =>
     logos: [],
     tags: {},
     ...overrides,
-  }) as BrandGuideline;
+  } as BrandGuideline);
 
 describe('mergeBrandGuidelines', () => {
   it('keeps existing identity fields (no overwrite)', () => {
     const existing = base({ identity: { name: 'Acme', website: 'acme.com' } as any });
-    const merged = mergeBrandGuidelines(existing, { identity: { name: 'NotAcme', tagline: 'hi' } as any });
+    const merged = mergeBrandGuidelines(existing, {
+      identity: { name: 'NotAcme', tagline: 'hi' } as any,
+    });
     expect(merged.identity?.name).toBe('Acme');
     expect((merged.identity as any)?.website).toBe('acme.com');
     expect((merged.identity as any)?.tagline).toBe('hi');
@@ -23,7 +25,9 @@ describe('mergeBrandGuidelines', () => {
 
   it('fills empty identity fields from incoming', () => {
     const existing = base({ identity: { name: 'Acme' } as any });
-    const merged = mergeBrandGuidelines(existing, { identity: { name: 'X', tagline: 'fresh' } as any });
+    const merged = mergeBrandGuidelines(existing, {
+      identity: { name: 'X', tagline: 'fresh' } as any,
+    });
     expect((merged.identity as any)?.tagline).toBe('fresh');
   });
 

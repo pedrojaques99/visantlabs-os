@@ -4,8 +4,8 @@ import { InlineEditor } from '../InlineEditor';
 import { budgetApi } from '@/services/budgetApi';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface VisantGiftsPageProps {
   data: BudgetData;
@@ -63,9 +63,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
     },
   ];
 
-  const gifts = data.giftOptions && data.giftOptions.length > 0
-    ? data.giftOptions
-    : defaultGifts;
+  const gifts = data.giftOptions && data.giftOptions.length > 0 ? data.giftOptions : defaultGifts;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, giftIndex: number) => {
     const file = e.target.files?.[0];
@@ -80,7 +78,9 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
     // Validate file size (2.5MB max)
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      toast.error(`Imagem muito grande. Tamanho máximo: ${MAX_IMAGE_SIZE_MB}MB (atual: ${fileSizeMB}MB)`);
+      toast.error(
+        `Imagem muito grande. Tamanho máximo: ${MAX_IMAGE_SIZE_MB}MB (atual: ${fileSizeMB}MB)`
+      );
       return;
     }
 
@@ -102,7 +102,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
         const updatedGifts = [...gifts];
         updatedGifts[giftIndex] = {
           ...updatedGifts[giftIndex],
-          imageUrl: `data:${imageData.mimeType};base64,${imageData.base64}`
+          imageUrl: `data:${imageData.mimeType};base64,${imageData.base64}`,
         };
         onDataChange?.({ giftOptions: updatedGifts });
         toast.success('Imagem carregada!');
@@ -119,7 +119,14 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
     }
   };
 
-  const GiftImageUploader: React.FC<{ giftIndex: number; imageUrl?: string; placeholderWidth: number; placeholderHeight: number; placeholderText: string; placeholderStyle?: 'default' | '3d' }> = ({
+  const GiftImageUploader: React.FC<{
+    giftIndex: number;
+    imageUrl?: string;
+    placeholderWidth: number;
+    placeholderHeight: number;
+    placeholderText: string;
+    placeholderStyle?: 'default' | '3d';
+  }> = ({
     giftIndex,
     imageUrl,
     placeholderWidth,
@@ -199,14 +206,17 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
         {editable && (
           <>
             <Input
-              ref={(el) => { fileInputRefs.current[giftIndex] = el; }}
+              ref={(el) => {
+                fileInputRefs.current[giftIndex] = el;
+              }}
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={(e) => handleFileChange(e, giftIndex)}
               style={{ display: 'none' }}
               disabled={isUploading}
             />
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={() => fileInputRefs.current[giftIndex]?.click()}
               disabled={isUploading}
               className="absolute inset-0 flex items-center justify-center bg-neutral-950/50 hover:bg-neutral-950/70 rounded-md transition-opacity opacity-0 hover:opacity-100"
@@ -229,11 +239,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
   // Diamond icon SVG
   const DiamondIcon = () => (
     <svg width="19" height="31" viewBox="0 0 19 31" fill="none">
-      <path
-        d="M9.5 0L19 15.5L9.5 31L0 15.5L9.5 0Z"
-        fill={accentColor}
-        fillOpacity="0.8"
-      />
+      <path d="M9.5 0L19 15.5L9.5 31L0 15.5L9.5 0Z" fill={accentColor} fillOpacity="0.8" />
     </svg>
   );
 
@@ -266,7 +272,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
         >
           <InlineEditor
             value="Escolha o seu brinde!"
-            onChange={() => { }}
+            onChange={() => {}}
             editable={false}
             style={{ fontSize: '22.3px', fontWeight: 'bold' }}
           />
@@ -274,7 +280,10 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
       </div>
 
       {/* Gifts grid - 2x2 (4 items) */}
-      <div className="grid grid-cols-2 gap-6 mb-12 max-w-2xl mx-auto" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+      <div
+        className="grid grid-cols-2 gap-6 mb-12 max-w-2xl mx-auto"
+        style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}
+      >
         {/* Gift 1 - Digital Business Card */}
         <div
           style={{
@@ -517,4 +526,3 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
     </div>
   );
 };
-

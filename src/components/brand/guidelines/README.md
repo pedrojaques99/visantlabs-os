@@ -14,16 +14,16 @@ User edits section
 
 ## File map
 
-| Purpose | File |
-|---------|------|
-| Section metadata registry | `sections-manifest.ts` |
-| Section barrel export | `sections/index.ts` |
-| Shared debounce hook | `src/hooks/useDebounceAndPersist.ts` |
-| CSS string builders | `src/utils/brand-css.ts` |
-| Random ID generator | `src/utils/id.ts` |
-| All brand types | `src/lib/figma-types.ts` (line ~673) |
-| React-Query mutations | `src/hooks/queries/useBrandGuidelines.ts` |
-| API client | `src/services/brandGuidelineApi.ts` |
+| Purpose                   | File                                      |
+| ------------------------- | ----------------------------------------- |
+| Section metadata registry | `sections-manifest.ts`                    |
+| Section barrel export     | `sections/index.ts`                       |
+| Shared debounce hook      | `src/hooks/useDebounceAndPersist.ts`      |
+| CSS string builders       | `src/utils/brand-css.ts`                  |
+| Random ID generator       | `src/utils/id.ts`                         |
+| All brand types           | `src/lib/figma-types.ts` (line ~673)      |
+| React-Query mutations     | `src/hooks/queries/useBrandGuidelines.ts` |
+| API client                | `src/services/brandGuidelineApi.ts`       |
 
 ## Adding a new section
 
@@ -42,11 +42,11 @@ import { useDebounceAndPersist } from '@/hooks/useDebounceAndPersist';
 
 export const MySection = ({ guideline, onUpdate, span }) => {
   const [local, setLocal] = useState(guideline.myField || defaultValue);
-  const { isSaving, persist } = useDebounceAndPersist(
-    (value) => onUpdate({ myField: value })
-  );
+  const { isSaving, persist } = useDebounceAndPersist((value) => onUpdate({ myField: value }));
 
-  useEffect(() => { setLocal(guideline.myField || defaultValue); }, [guideline.id]);
+  useEffect(() => {
+    setLocal(guideline.myField || defaultValue);
+  }, [guideline.id]);
 
   const update = (patch) => {
     const next = { ...local, ...patch };

@@ -8,7 +8,17 @@ import { PageShell } from '../components/ui/PageShell';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { toast } from 'sonner';
-import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe, FolderOpen, FileJson, Search } from 'lucide-react';
+import {
+  FolderKanban,
+  Calendar,
+  Eye,
+  Trash2,
+  Plus,
+  Pickaxe,
+  FolderOpen,
+  FileJson,
+  Search,
+} from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { SearchBar } from '../components/ui/SearchBar';
@@ -18,8 +28,8 @@ import { getImageUrl } from '@/utils/imageUtils';
 import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
 import { type CanvasWorkflow } from '../services/workflowApi';
 import { validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { formatDateShort } from '@/utils/localeUtils';
 
 // Helper function to get project thumbnail
@@ -29,7 +39,7 @@ const getProjectThumbnail = (project: CanvasProject): string | null => {
   const nodes = project.nodes as Node<FlowNodeData>[];
 
   // Priority: OutputNode > ImageNode > other nodes with images
-  const outputNode = nodes.find(n => n.type === 'output') as Node<OutputNodeData> | undefined;
+  const outputNode = nodes.find((n) => n.type === 'output') as Node<OutputNodeData> | undefined;
   if (outputNode) {
     const outputData = outputNode.data as OutputNodeData;
     if (outputData.resultImageUrl) return outputData.resultImageUrl;
@@ -40,7 +50,7 @@ const getProjectThumbnail = (project: CanvasProject): string | null => {
     }
   }
 
-  const imageNode = nodes.find(n => n.type === 'image') as Node<ImageNodeData> | undefined;
+  const imageNode = nodes.find((n) => n.type === 'image') as Node<ImageNodeData> | undefined;
   if (imageNode) {
     const imageData = imageNode.data as ImageNodeData;
     if (imageData.mockup) {
@@ -95,12 +105,11 @@ export const CanvasProjectsPage: React.FC = () => {
         toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
         return;
       }
-      const newProject = await canvasApi.save(
-        workflow.name,
-        workflow.nodes,
-        workflow.edges
+      const newProject = await canvasApi.save(workflow.name, workflow.nodes, workflow.edges);
+      toast.success(
+        t('workflows.messages.loaded', { name: workflow.name }) ||
+          `Workflow loaded: ${workflow.name}`
       );
-      toast.success(t('workflows.messages.loaded', { name: workflow.name }) || `Workflow loaded: ${workflow.name}`);
       navigate(`/canvas/${newProject._id}`);
     } catch (error) {
       console.error('Failed to load workflow:', error);
@@ -162,24 +171,33 @@ export const CanvasProjectsPage: React.FC = () => {
     importJsonInputRef.current?.click();
   }, []);
 
-  const handleImportJsonFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = '';
-    try {
-      const raw = await readJsonFile(file);
-      if (!validateVisantJson(raw)) {
-        toast.error(t('canvas.projects.invalid_file_not_a_visant_canvas_j'));
-        return;
+  const handleImportJsonFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      e.target.value = '';
+      try {
+        const raw = await readJsonFile(file);
+        if (!validateVisantJson(raw)) {
+          toast.error(t('canvas.projects.invalid_file_not_a_visant_canvas_j'));
+          return;
+        }
+        const newProject = await canvasApi.save(
+          raw.name,
+          raw.nodes,
+          raw.edges,
+          undefined,
+          raw.drawings ?? []
+        );
+        toast.success(t('canvas.projects.imported_opening', { name: raw.name }));
+        navigate(`/canvas/${newProject._id}`);
+      } catch (err: any) {
+        console.error('JSON import failed:', err);
+        toast.error(err?.message || 'Failed to import JSON file.');
       }
-      const newProject = await canvasApi.save(raw.name, raw.nodes, raw.edges, undefined, raw.drawings ?? []);
-      toast.success(t('canvas.projects.imported_opening', { name: raw.name }));
-      navigate(`/canvas/${newProject._id}`);
-    } catch (err: any) {
-      console.error('JSON import failed:', err);
-      toast.error(err?.message || 'Failed to import JSON file.');
-    }
-  }, [navigate]);
+    },
+    [navigate]
+  );
 
   const handleCreateNew = async () => {
     try {
@@ -202,7 +220,7 @@ export const CanvasProjectsPage: React.FC = () => {
     setDeletingId(projectToDelete);
     try {
       await canvasApi.delete(projectToDelete);
-      setProjects(prev => prev.filter(p => p._id !== projectToDelete));
+      setProjects((prev) => prev.filter((p) => p._id !== projectToDelete));
       toast.success(t('canvas.projectDeletedSuccessfully') || 'Project deleted successfully');
     } catch (error: any) {
       console.error('Error deleting project:', error);
@@ -230,7 +248,7 @@ export const CanvasProjectsPage: React.FC = () => {
       setEditingProjectId(null);
       return;
     }
-    const project = projects.find(p => p._id === projectId);
+    const project = projects.find((p) => p._id === projectId);
     if (!project) return;
     const trimmedName = editingName.trim();
     if (trimmedName === project.name) {
@@ -240,9 +258,9 @@ export const CanvasProjectsPage: React.FC = () => {
     }
     try {
       await canvasApi.save(trimmedName, project.nodes, project.edges, projectId);
-      setProjects(prev => prev.map(p =>
-        p._id === projectId ? { ...p, name: trimmedName } : p
-      ));
+      setProjects((prev) =>
+        prev.map((p) => (p._id === projectId ? { ...p, name: trimmedName } : p))
+      );
       toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
     } catch (error: any) {
       console.error('Error updating project name:', error);
@@ -272,9 +290,7 @@ export const CanvasProjectsPage: React.FC = () => {
     let result = [...projects];
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(project =>
-        project.name?.toLowerCase().includes(query)
-      );
+      result = result.filter((project) => project.name?.toLowerCase().includes(query));
     }
     return result.sort((a, b) => {
       const dateA = new Date(a.updatedAt || a.createdAt).getTime();
@@ -286,8 +302,8 @@ export const CanvasProjectsPage: React.FC = () => {
   const headerActions = (
     <div className="flex items-center gap-3">
       <div className="relative">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => setShowSearch(!showSearch)}
           className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-900/40"
           title="Search"
@@ -308,11 +324,11 @@ export const CanvasProjectsPage: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       <div className="h-6 w-[1px] bg-neutral-800/60 mx-1 hidden md:block" />
 
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         onClick={() => setShowWorkflowLibrary(true)}
         className="h-10 px-3 hover:bg-neutral-900/40 text-neutral-400 hover:text-brand-cyan transition-all rounded-md flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"
       >
@@ -320,22 +336,20 @@ export const CanvasProjectsPage: React.FC = () => {
         <span className="hidden lg:inline">{t('workflows.importWorkflow') || 'Library'}</span>
       </Button>
 
-      <Button 
-        variant="toolbar" 
-        onClick={handleImportJsonClick}
-        
-      >
+      <Button variant="toolbar" onClick={handleImportJsonClick}>
         <FileJson className="h-4 w-4" />
         <span className="hidden lg:inline">JSON</span>
       </Button>
 
-      <Button variant="brand" onClick={handleCreateNew}
+      <Button
+        variant="brand"
+        onClick={handleCreateNew}
         className="h-10 px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-[10px] rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
       >
         <Plus className="h-4 w-4" />
         {t('canvas.newProject') || 'New Project'}
       </Button>
-      
+
       <Input
         ref={importJsonInputRef}
         type="file"
@@ -388,7 +402,7 @@ export const CanvasProjectsPage: React.FC = () => {
     const total = projects.length;
     const isSingular = count === 1;
     if (searchQuery.trim()) {
-      return locale === 'pt-BR' 
+      return locale === 'pt-BR'
         ? `${count} de ${total} ${isSingular ? 'projeto' : 'projetos'} encontrados`
         : `${count} of ${total} ${isSingular ? 'project' : 'projects'} found`;
     } else {
@@ -409,7 +423,7 @@ export const CanvasProjectsPage: React.FC = () => {
       breadcrumb={[
         { label: t('apps.home') || 'Home', to: '/' },
         { label: t('canvas.title') || 'Canvas', to: '/canvas' },
-        { label: t('canvas.projects.title') || 'Projects' }
+        { label: t('canvas.projects.title') || 'Projects' },
       ]}
       actions={headerActions}
     >
@@ -423,7 +437,9 @@ export const CanvasProjectsPage: React.FC = () => {
             <p className="text-sm text-neutral-600 font-mono mb-6">
               {t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'}
             </p>
-            <Button variant="ghost" onClick={() => setSearchQuery('')}
+            <Button
+              variant="ghost"
+              onClick={() => setSearchQuery('')}
               className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
             >
               {t('canvas.clearSearch') || 'Clear Search'}
@@ -436,9 +452,12 @@ export const CanvasProjectsPage: React.FC = () => {
               {t('canvas.noProjectsYet')?.toUpperCase() || 'NO PROJECTS YET'}
             </h2>
             <p className="text-sm text-neutral-600 font-mono mb-6">
-              {t('canvas.createFirstProject') || 'Create your first canvas project to start working with nodes.'}
+              {t('canvas.createFirstProject') ||
+                'Create your first canvas project to start working with nodes.'}
             </p>
-            <Button variant="brand" onClick={handleCreateNew}
+            <Button
+              variant="brand"
+              onClick={handleCreateNew}
               className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
             >
               <Pickaxe className="h-4 w-4" />
@@ -503,7 +522,12 @@ export const CanvasProjectsPage: React.FC = () => {
                           </h3>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-mono mb-4 uppercase tracking-widest" title={`${t('canvas.lastEdited')}: ${formatDate(project.updatedAt || project.createdAt)}`}>
+                      <div
+                        className="flex items-center gap-2 text-[10px] text-neutral-500 font-mono mb-4 uppercase tracking-widest"
+                        title={`${t('canvas.lastEdited')}: ${formatDate(
+                          project.updatedAt || project.createdAt
+                        )}`}
+                      >
                         <Calendar className="h-3 w-3" />
                         <span>{formatDate(project.updatedAt || project.createdAt)}</span>
                       </div>
@@ -511,21 +535,29 @@ export const CanvasProjectsPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-4 text-[10px] text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60">
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">{nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}</span>
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">{edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}</span>
+                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
+                      {nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
+                      {edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={(e) => {
-                      e.stopPropagation();
-                      handleView(project);
-                    }}
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(project);
+                      }}
                       className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
                       {t('canvas.open') || 'Open'}
                     </Button>
-                    <Button variant="ghost" onClick={(e) => handleDeleteClick(project._id, e)}
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
                       className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
@@ -560,7 +592,10 @@ export const CanvasProjectsPage: React.FC = () => {
         }}
         onConfirm={handleDeleteConfirm}
         title={t('canvas.deleteProject') || 'Delete Project'}
-        message={t('canvas.deleteProjectMessage') || 'Are you sure you want to delete this project? This action cannot be undone.'}
+        message={
+          t('canvas.deleteProjectMessage') ||
+          'Are you sure you want to delete this project? This action cannot be undone.'
+        }
         confirmText={t('canvas.delete') || 'Delete'}
         cancelText={t('common.cancel') || 'Cancel'}
         variant="danger"
@@ -577,4 +612,3 @@ export const CanvasProjectsPage: React.FC = () => {
     </PageShell>
   );
 };
-

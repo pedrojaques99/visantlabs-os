@@ -17,14 +17,14 @@ const DEFAULT_INSTA_STEPS = [
   'Scraping Grid',
   'Extracting SRCs',
   'Cleaning Metadata',
-  'Finalizing JSON'
+  'Finalizing JSON',
 ];
 
 export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
   isVisible,
   title = 'Extracting Assets',
   subtitle = 'Analyzing Instagram Profile',
-  steps = DEFAULT_INSTA_STEPS
+  steps = DEFAULT_INSTA_STEPS,
 }) => {
   return (
     <AnimatePresence>
@@ -62,12 +62,12 @@ export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
                         key={i}
                         animate={{
                           opacity: [0.2, 1, 0.2],
-                          scale: [1, 1.2, 1]
+                          scale: [1, 1.2, 1],
                         }}
                         transition={{
                           duration: 1.5,
                           repeat: Infinity,
-                          delay: i * 0.2
+                          delay: i * 0.2,
                         }}
                         className="w-1.5 h-1.5 rounded-full bg-neutral-400"
                       />

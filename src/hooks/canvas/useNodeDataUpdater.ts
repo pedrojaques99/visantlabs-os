@@ -16,9 +16,12 @@ export function useNodeDataUpdater<T extends object>(
     onUpdateData?.(id, updates);
   }, delay);
 
-  const immediateUpdate = useCallback((updates: Partial<T>) => {
-    onUpdateData?.(id, updates);
-  }, [onUpdateData, id]);
+  const immediateUpdate = useCallback(
+    (updates: Partial<T>) => {
+      onUpdateData?.(id, updates);
+    },
+    [onUpdateData, id]
+  );
 
   return { debouncedUpdate, immediateUpdate };
 }

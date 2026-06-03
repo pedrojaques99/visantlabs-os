@@ -112,7 +112,7 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
       tracePng(file, placeholder.traceOptions)
         .then((rawSvg) => {
           const current = get();
-          if (!current.items.some(i => i.id === itemId)) return;
+          if (!current.items.some((i) => i.id === itemId)) return;
           const result = optimizeSvg(rawSvg, current.options);
           set((s) => ({
             items: s.items.map((item) =>
@@ -125,16 +125,14 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
                     savings: result.savings,
                     status: 'done' as const,
                   }
-                : item,
+                : item
             ),
           }));
         })
         .catch((err) => {
           set((s) => ({
             items: s.items.map((item) =>
-              item.id === itemId
-                ? { ...item, status: 'error' as const, error: err.message }
-                : item,
+              item.id === itemId ? { ...item, status: 'error' as const, error: err.message } : item
             ),
           }));
         });
@@ -149,14 +147,16 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
 
     set((s) => ({
       items: s.items.map((i) =>
-        i.id === id ? { ...i, status: 'tracing' as const, traceOptions: mergedOpts, error: undefined } : i,
+        i.id === id
+          ? { ...i, status: 'tracing' as const, traceOptions: mergedOpts, error: undefined }
+          : i
       ),
     }));
 
     tracePng(item.originalFile, mergedOpts)
       .then((rawSvg) => {
         const current = get();
-        if (!current.items.some(i => i.id === id)) return;
+        if (!current.items.some((i) => i.id === id)) return;
         const result = optimizeSvg(rawSvg, current.options);
         set((s) => ({
           items: s.items.map((i) =>
@@ -169,15 +169,15 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
                   savings: result.savings,
                   status: 'done' as const,
                 }
-              : i,
+              : i
           ),
         }));
       })
       .catch((err) => {
-        if (!get().items.some(i => i.id === id)) return;
+        if (!get().items.some((i) => i.id === id)) return;
         set((s) => ({
           items: s.items.map((i) =>
-            i.id === id ? { ...i, status: 'error' as const, error: err.message } : i,
+            i.id === id ? { ...i, status: 'error' as const, error: err.message } : i
           ),
         }));
       });
@@ -224,9 +224,12 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
             optimizedSvg: result.optimized,
             originalSize: item.source === 'png' ? item.originalSize : svgSize,
             optimizedSize: result.optimizedSize,
-            savings: item.source === 'png'
-              ? (item.originalSize > 0 ? Math.round((1 - result.optimizedSize / item.originalSize) * 100) : 0)
-              : result.savings,
+            savings:
+              item.source === 'png'
+                ? item.originalSize > 0
+                  ? Math.round((1 - result.optimizedSize / item.originalSize) * 100)
+                  : 0
+                : result.savings,
           };
         }),
       };
@@ -234,7 +237,8 @@ export const useSvgOptimizerStore = create<SvgOptimizerState>()((set, get) => ({
 
   setViewMode: (v) => set({ viewMode: v }),
   setSelectedId: (id) => set({ selectedId: id }),
-  reset: () => set({ items: [], options: { ...DEFAULT_OPTIONS }, viewMode: 'preview', selectedId: null }),
+  reset: () =>
+    set({ items: [], options: { ...DEFAULT_OPTIONS }, viewMode: 'preview', selectedId: null }),
 }));
 
 // Backward compat alias

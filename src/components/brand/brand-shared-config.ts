@@ -6,16 +6,36 @@
  */
 
 import {
-  FileText, Compass, Image as ImageIcon, Palette, Type, Tag,
-  Layers, ShieldCheck, Link, BookOpen, Blend, Layers2, Zap, Frame,
-  MessageCircle, User, Diamond, MessageSquare, LayoutTemplate, Globe,
+  FileText,
+  Compass,
+  Image as ImageIcon,
+  Palette,
+  Type,
+  Tag,
+  Layers,
+  ShieldCheck,
+  Link,
+  BookOpen,
+  Blend,
+  Layers2,
+  Zap,
+  Frame,
+  MessageCircle,
+  User,
+  Diamond,
+  MessageSquare,
+  LayoutTemplate,
+  Globe,
   Smartphone,
 } from 'lucide-react';
 import type { BrandViewSection } from './BrandReadOnlyView';
 
 // ── Icon Map ────────────────────────────────────────────────────────────────
 
-export const SECTION_ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+export const SECTION_ICON_MAP: Record<
+  string,
+  React.ComponentType<{ size?: number; className?: string }>
+> = {
   identity: FileText,
   strategy: Compass,
   logos: ImageIcon,
@@ -50,27 +70,27 @@ export interface SectionVisibility {
 }
 
 export const SECTION_VISIBILITY: Record<string, SectionVisibility> = {
-  identity:              { admin: true, public: true,  label: 'Identity' },
-  manifesto:             { admin: true, public: true,  label: 'Manifesto' },
-  archetypes:            { admin: true, public: true,  label: 'Archetypes' },
-  mensagem_central:      { admin: true, public: false, label: 'Mensagem Central' },
-  voice:                 { admin: true, public: true,  label: 'Tone of Voice' },
-  personas:              { admin: true, public: true,  label: 'Personas' },
-  colors:                { admin: true, public: true,  label: 'Colors' },
-  typography:            { admin: true, public: true,  label: 'Typography' },
-  logos:                 { admin: true, public: true,  label: 'Logos' },
-  media:                 { admin: true, public: true,  label: 'Media Kit' },
-  editorial:             { admin: true, public: true,  label: 'Editorial' },
-  tags:                  { admin: true, public: false, label: 'Tags' },
-  tokens:                { admin: true, public: false, label: 'Design Tokens' },
-  gradients:             { admin: true, public: true,  label: 'Gradients' },
-  shadows:               { admin: true, public: true,  label: 'Shadows' },
-  borders:               { admin: true, public: false, label: 'Borders' },
-  motion:                { admin: true, public: false, label: 'Motion' },
-  accessibility:         { admin: true, public: true,  label: 'Accessibility' },
-  knowledge:             { admin: true, public: false, label: 'Knowledge' },
-  figma:                 { admin: true, public: false, label: 'Figma' },
-  preview:               { admin: true, public: true,  label: 'Preview' },
+  identity: { admin: true, public: true, label: 'Identity' },
+  manifesto: { admin: true, public: true, label: 'Manifesto' },
+  archetypes: { admin: true, public: true, label: 'Archetypes' },
+  mensagem_central: { admin: true, public: false, label: 'Mensagem Central' },
+  voice: { admin: true, public: true, label: 'Tone of Voice' },
+  personas: { admin: true, public: true, label: 'Personas' },
+  colors: { admin: true, public: true, label: 'Colors' },
+  typography: { admin: true, public: true, label: 'Typography' },
+  logos: { admin: true, public: true, label: 'Logos' },
+  media: { admin: true, public: true, label: 'Media Kit' },
+  editorial: { admin: true, public: true, label: 'Editorial' },
+  tags: { admin: true, public: false, label: 'Tags' },
+  tokens: { admin: true, public: false, label: 'Design Tokens' },
+  gradients: { admin: true, public: true, label: 'Gradients' },
+  shadows: { admin: true, public: true, label: 'Shadows' },
+  borders: { admin: true, public: false, label: 'Borders' },
+  motion: { admin: true, public: false, label: 'Motion' },
+  accessibility: { admin: true, public: true, label: 'Accessibility' },
+  knowledge: { admin: true, public: false, label: 'Knowledge' },
+  figma: { admin: true, public: false, label: 'Figma' },
+  preview: { admin: true, public: true, label: 'Preview' },
   'design-system-output': { admin: true, public: false, label: 'Design System Output' },
 };
 
@@ -88,7 +108,20 @@ export const PUBLIC_TABS: PublicTab[] = [
     id: 'all',
     label: 'Overview',
     icon: Globe,
-    sections: ['identity', 'coreMessage', 'pillars', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'colors', 'typography', 'logos', 'media', 'guidelines'],
+    sections: [
+      'identity',
+      'coreMessage',
+      'pillars',
+      'manifesto',
+      'archetypes',
+      'personas',
+      'voiceValues',
+      'colors',
+      'typography',
+      'logos',
+      'media',
+      'guidelines',
+    ],
   },
   {
     id: 'identity',
@@ -100,7 +133,15 @@ export const PUBLIC_TABS: PublicTab[] = [
     id: 'strategy',
     label: 'Strategy',
     icon: Compass,
-    sections: ['coreMessage', 'pillars', 'manifesto', 'archetypes', 'personas', 'voiceValues', 'guidelines'],
+    sections: [
+      'coreMessage',
+      'pillars',
+      'manifesto',
+      'archetypes',
+      'personas',
+      'voiceValues',
+      'guidelines',
+    ],
   },
   {
     id: 'colors',

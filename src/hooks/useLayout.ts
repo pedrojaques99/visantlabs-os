@@ -32,4 +32,3 @@ export const useLayout = (): LayoutContextValue => {
   }
   return context;
 };
-

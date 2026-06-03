@@ -10,13 +10,16 @@ import { getAllCommunityPresets } from './communityPresetsService';
 // Combine all static presets
 const ALL_STATIC_PRESETS: MockupPreset[] = [
   ...MOCKUP_PRESETS,
-  ...TEXTURE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
-  ...ANGLE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
-  ...AMBIENCE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
-  ...LUMINANCE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
+  ...TEXTURE_PRESETS.map((p) => ({ ...p, referenceImageUrl: '', id: p.id as string })),
+  ...ANGLE_PRESETS.map((p) => ({ ...p, referenceImageUrl: '', id: p.id as string })),
+  ...AMBIENCE_PRESETS.map((p) => ({ ...p, referenceImageUrl: '', id: p.id as string })),
+  ...LUMINANCE_PRESETS.map((p) => ({ ...p, referenceImageUrl: '', id: p.id as string })),
 ];
 
-import { fetchAllOfficialPresets, clearPresetsCache as clearUnifiedCache } from './unifiedPresetService';
+import {
+  fetchAllOfficialPresets,
+  clearPresetsCache as clearUnifiedCache,
+} from './unifiedPresetService';
 import { normalizeImageToBase64, detectMimeType } from './reactFlowService';
 
 // Cache for loaded presets
@@ -32,7 +35,7 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
   if (isLoadingPresets) {
     // Wait for ongoing load
     while (isLoadingPresets) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
     return cachedPresets || ALL_STATIC_PRESETS;
   }
@@ -45,7 +48,7 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
   try {
     // 1. Load official presets using unified service
     const official = await fetchAllOfficialPresets();
-    const adminPresets = official.mockupPresets.map(p => ({
+    const adminPresets = official.mockupPresets.map((p) => ({
       ...p,
       referenceImageUrl: p.referenceImageUrl || '',
     }));
@@ -62,10 +65,10 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
     // 3. Merge: Admin presets override static ones with same ID; then append community
     // Start with static
     const mergedMap = new Map<string, MockupPreset>();
-    ALL_STATIC_PRESETS.forEach(p => mergedMap.set(p.id as string, p));
+    ALL_STATIC_PRESETS.forEach((p) => mergedMap.set(p.id as string, p));
 
     // Override with admin
-    adminPresets.forEach(p => mergedMap.set(p.id as string, p));
+    adminPresets.forEach((p) => mergedMap.set(p.id as string, p));
 
     // Convert back to array
     const mergedOfficial = Array.from(mergedMap.values());
@@ -93,7 +96,7 @@ export const getAllPresetsAsync = async (): Promise<MockupPreset[]> => {
 
 export const getPresetAsync = async (id: string): Promise<MockupPreset | undefined> => {
   const all = await getAllPresetsAsync();
-  return all.find(p => p.id === id);
+  return all.find((p) => p.id === id);
 };
 
 /**
@@ -105,12 +108,12 @@ export async function getMockupCategoriesAsync(): Promise<MockupPreset[]> {
     // 1. Fetch official and community data
     const [official, allCommunity] = await Promise.all([
       fetchAllOfficialPresets(),
-      getAllCommunityPresets()
+      getAllCommunityPresets(),
     ]);
 
     // 2. Prepare sources
     const staticPresets = MOCKUP_PRESETS;
-    const adminPresets = official.mockupPresets.map(p => ({
+    const adminPresets = official.mockupPresets.map((p) => ({
       ...p,
       referenceImageUrl: p.referenceImageUrl || '',
     }));
@@ -120,14 +123,13 @@ export async function getMockupCategoriesAsync(): Promise<MockupPreset[]> {
     const mergedMap = new Map<string, MockupPreset>();
 
     // Add static first
-    staticPresets.forEach(p => mergedMap.set(p.id as string, p));
+    staticPresets.forEach((p) => mergedMap.set(p.id as string, p));
 
     // Override/Add admin
-    adminPresets.forEach(p => mergedMap.set(p.id as string, p));
+    adminPresets.forEach((p) => mergedMap.set(p.id as string, p));
 
     // 4. Return merged official + community
     return [...Array.from(mergedMap.values()), ...communityPresets];
-
   } catch (error) {
     console.warn('Failed to fetch mockup categories, returning defaults:', error);
     return MOCKUP_PRESETS;
@@ -136,10 +138,12 @@ export async function getMockupCategoriesAsync(): Promise<MockupPreset[]> {
 
 export const getPreset = (id: string): MockupPreset | undefined => {
   const all = getAllPresets();
-  return all.find(p => p.id === id);
+  return all.find((p) => p.id === id);
 };
 
-export const loadReferenceImage = async (preset: MockupPreset): Promise<{ base64: string; mimeType: string } | null> => {
+export const loadReferenceImage = async (
+  preset: MockupPreset
+): Promise<{ base64: string; mimeType: string } | null> => {
   if (!preset.referenceImageUrl || preset.referenceImageUrl.trim() === '') {
     return null;
   }
@@ -171,5 +175,5 @@ export const mockupPresetsService = {
   getByIdAsync: getPresetAsync,
   loadReferenceImage,
   updateCache: updatePresetsCache,
-  clearCache: clearPresetsCache
+  clearCache: clearPresetsCache,
 };

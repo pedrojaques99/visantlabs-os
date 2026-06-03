@@ -3,14 +3,14 @@ import {
   CHAT_MODELS,
   MODEL_CONFIG,
   AVAILABLE_IMAGE_MODELS,
-  getModelConfig
+  getModelConfig,
 } from '../../constants/geminiModels';
 import { supportsOutputConfig, resolveGenerationContext } from '@/utils/canvas/generationContext';
 import {
   SEEDREAM_IMAGE_MODELS,
   SEEDREAM_MODEL_CONFIG,
   isSeedreamModel,
-  getSeedreamModelConfig
+  getSeedreamModelConfig,
 } from '../../constants/seedreamModels';
 import {
   OPENAI_IMAGE_MODEL_LIST,
@@ -28,7 +28,11 @@ import type { GeminiModel, SeedreamModel, ImageProvider, Resolution } from '@/ty
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
 
 export function getPreferredImageModel(): string {
-  try { return localStorage.getItem('vsn-preferred-image-model') || DEFAULT_MODEL; } catch { return DEFAULT_MODEL; }
+  try {
+    return localStorage.getItem('vsn-preferred-image-model') || DEFAULT_MODEL;
+  } catch {
+    return DEFAULT_MODEL;
+  }
 }
 
 interface ModelSelectorProps {
@@ -58,7 +62,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   resolution,
   disabled = false,
   onSyncResolution,
-  onClearAdvancedConfig
+  onClearAdvancedConfig,
 }) => {
   const { t } = useTranslation();
   const { subscriptionStatus } = useLayout();
@@ -68,20 +72,28 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const options = useMemo(() => {
     // IMAGE MODELS LOGIC
     if (type === 'image') {
-      const geminiOptions = AVAILABLE_IMAGE_MODELS.map(modelId => {
+      const geminiOptions = AVAILABLE_IMAGE_MODELS.map((modelId) => {
         const config = MODEL_CONFIG[modelId];
         if (!config) return null;
 
         const effectiveResolution = supportsOutputConfig(modelId)
-          ? (selectedModel === modelId ? resolution : config?.defaultResolution)
+          ? selectedModel === modelId
+            ? resolution
+            : config?.defaultResolution
           : undefined;
 
         const credits = getCreditsRequired(modelId, effectiveResolution, 'gemini');
-        const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
+        const isUnlimited = isGenerationUnlimited({
+          model: modelId,
+          resolution: effectiveResolution,
+          planMetadata,
+        });
 
         const icon = config.providerDomain ? (
           <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${token ? `&token=${token}` : ''}`}
+            src={`https://img.logo.dev/${config.providerDomain}?size=48${
+              token ? `&token=${token}` : ''
+            }`}
             className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
             onError={(e) => (e.currentTarget.style.display = 'none')}
             alt=""
@@ -89,57 +101,74 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         ) : undefined;
 
         // Label with dynamic credit info
-        const label = variant === 'node'
-          ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
-          : config.label;
+        const label =
+          variant === 'node'
+            ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
+            : config.label;
 
         return { value: modelId, label: label || modelId, icon, badge: config.badge };
       }).filter(Boolean) as any[];
 
-      const seedreamOptions = SEEDREAM_IMAGE_MODELS.map(modelId => {
+      const seedreamOptions = SEEDREAM_IMAGE_MODELS.map((modelId) => {
         const config = SEEDREAM_MODEL_CONFIG[modelId];
         if (!config) return null;
 
-        const effectiveResolution = selectedModel === modelId ? resolution : config?.defaultResolution;
+        const effectiveResolution =
+          selectedModel === modelId ? resolution : config?.defaultResolution;
         const credits = getCreditsRequired(modelId, effectiveResolution, 'seedream');
-        const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
+        const isUnlimited = isGenerationUnlimited({
+          model: modelId,
+          resolution: effectiveResolution,
+          planMetadata,
+        });
 
         const icon = config.providerDomain ? (
           <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${token ? `&token=${token}` : ''}`}
+            src={`https://img.logo.dev/${config.providerDomain}?size=48${
+              token ? `&token=${token}` : ''
+            }`}
             className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
             onError={(e) => (e.currentTarget.style.display = 'none')}
             alt=""
           />
         ) : undefined;
 
-        const label = variant === 'node'
-          ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
-          : config.label;
+        const label =
+          variant === 'node'
+            ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
+            : config.label;
 
         return { value: modelId, label: label || modelId, icon, badge: config.badge };
       }).filter(Boolean) as any[];
 
-      const openaiOptions = OPENAI_IMAGE_MODEL_LIST.map(modelId => {
+      const openaiOptions = OPENAI_IMAGE_MODEL_LIST.map((modelId) => {
         const config = OPENAI_IMAGE_MODEL_CONFIG[modelId];
         if (!config) return null;
 
-        const effectiveResolution = selectedModel === modelId ? resolution : config.defaultResolution;
+        const effectiveResolution =
+          selectedModel === modelId ? resolution : config.defaultResolution;
         const credits = getCreditsRequired(modelId, effectiveResolution, 'openai');
-        const isUnlimited = isGenerationUnlimited({ model: modelId, resolution: effectiveResolution, planMetadata });
+        const isUnlimited = isGenerationUnlimited({
+          model: modelId,
+          resolution: effectiveResolution,
+          planMetadata,
+        });
 
         const icon = (
           <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${token ? `&token=${token}` : ''}`}
+            src={`https://img.logo.dev/${config.providerDomain}?size=48${
+              token ? `&token=${token}` : ''
+            }`}
             className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
             onError={(e) => (e.currentTarget.style.display = 'none')}
             alt=""
           />
         );
 
-        const label = variant === 'node'
-          ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
-          : config.label;
+        const label =
+          variant === 'node'
+            ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
+            : config.label;
 
         return { value: modelId, label: label || modelId, icon, badge: config.badge };
       }).filter(Boolean) as any[];
@@ -148,7 +177,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     }
 
     // CHAT MODELS LOGIC
-    return CHAT_MODELS.map(modelId => {
+    return CHAT_MODELS.map((modelId) => {
       const config = MODEL_CONFIG[modelId];
       return {
         value: modelId,
@@ -160,7 +189,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             onError={(e) => (e.currentTarget.style.display = 'none')}
             alt=""
           />
-        ) : undefined
+        ) : undefined,
       };
     });
   }, [type, selectedModel, resolution, planMetadata, token, variant]);
@@ -168,52 +197,73 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   // Normalization logic for image models
   const effectiveModel = useMemo(() => {
     if (type !== 'image' || !options.length) return selectedModel;
-    return options.some(o => o.value === selectedModel) ? selectedModel : options[0].value;
+    return options.some((o) => o.value === selectedModel) ? selectedModel : options[0].value;
   }, [selectedModel, options, type]);
 
   // Sync parent if normalization occurred (only for image type)
   useEffect(() => {
     if (type === 'image' && effectiveModel !== selectedModel) {
-      const provider: ImageProvider = isSeedreamModel(effectiveModel) ? 'seedream' : isOpenAIImageModel(effectiveModel) ? 'openai' : 'gemini';
+      const provider: ImageProvider = isSeedreamModel(effectiveModel)
+        ? 'seedream'
+        : isOpenAIImageModel(effectiveModel)
+        ? 'openai'
+        : 'gemini';
       onModelChange(effectiveModel, provider);
     }
   }, [effectiveModel, selectedModel, onModelChange, type]);
 
-  const handleValueChange = useCallback((newModel: string) => {
-    if (disabled || newModel === selectedModel) return;
+  const handleValueChange = useCallback(
+    (newModel: string) => {
+      if (disabled || newModel === selectedModel) return;
 
-    if (type === 'image') {
-      try { localStorage.setItem('vsn-preferred-image-model', newModel); } catch {}
-      const provider: ImageProvider = isSeedreamModel(newModel) ? 'seedream' : isOpenAIImageModel(newModel) ? 'openai' : 'gemini';
-      onModelChange(newModel, provider);
+      if (type === 'image') {
+        try {
+          localStorage.setItem('vsn-preferred-image-model', newModel);
+        } catch {}
+        const provider: ImageProvider = isSeedreamModel(newModel)
+          ? 'seedream'
+          : isOpenAIImageModel(newModel)
+          ? 'openai'
+          : 'gemini';
+        onModelChange(newModel, provider);
 
-      if (provider === 'seedream') {
-        const sdConfig = getSeedreamModelConfig(newModel);
-        if (sdConfig && !resolution && onSyncResolution) {
-          onSyncResolution(sdConfig.defaultResolution);
-        }
-      } else if (provider === 'openai') {
-        const oaiConfig = getOpenAIImageModelConfig(newModel);
-        if (oaiConfig && !resolution && onSyncResolution) {
-          onSyncResolution(oaiConfig.defaultResolution);
+        if (provider === 'seedream') {
+          const sdConfig = getSeedreamModelConfig(newModel);
+          if (sdConfig && !resolution && onSyncResolution) {
+            onSyncResolution(sdConfig.defaultResolution);
+          }
+        } else if (provider === 'openai') {
+          const oaiConfig = getOpenAIImageModelConfig(newModel);
+          if (oaiConfig && !resolution && onSyncResolution) {
+            onSyncResolution(oaiConfig.defaultResolution);
+          }
+        } else {
+          const config = getModelConfig(newModel as GeminiModel);
+          if (config.supportsImageConfig) {
+            if (!resolution && onSyncResolution && config.defaultResolution) {
+              onSyncResolution(config.defaultResolution);
+            }
+          } else if (onClearAdvancedConfig) {
+            onClearAdvancedConfig();
+          }
         }
       } else {
-        const config = getModelConfig(newModel as GeminiModel);
-        if (config.supportsImageConfig) {
-          if (!resolution && onSyncResolution && config.defaultResolution) {
-            onSyncResolution(config.defaultResolution);
-          }
-        } else if (onClearAdvancedConfig) {
-          onClearAdvancedConfig();
-        }
+        onModelChange(newModel);
       }
-    } else {
-      onModelChange(newModel);
-    }
-  }, [disabled, selectedModel, onModelChange, type, resolution, onSyncResolution, onClearAdvancedConfig]);
+    },
+    [
+      disabled,
+      selectedModel,
+      onModelChange,
+      type,
+      resolution,
+      onSyncResolution,
+      onClearAdvancedConfig,
+    ]
+  );
 
   return (
-    <div className={cn("flex flex-col gap-1.5", variant === 'node' && "min-w-[140px]", className)}>
+    <div className={cn('flex flex-col gap-1.5', variant === 'node' && 'min-w-[140px]', className)}>
       {variant === 'node' && (
         <label className="text-[10px] text-neutral-400 font-mono mb-1.5 block tracking-tight">
           {t('canvasNodes.promptNode.model') || 'MODEL'}
@@ -227,8 +277,9 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         disabled={disabled}
         placeholder={t('canvasNodes.promptNode.selectModel') || 'Select Model'}
         className={cn(
-          type === 'chat' && "!bg-transparent border-neutral-800 hover:border-white/10 !px-2 !py-0.5 h-auto",
-          type === 'chat' && "text-xs opacity-70 hover:opacity-100 transition-opacity",
+          type === 'chat' &&
+            '!bg-transparent border-neutral-800 hover:border-white/10 !px-2 !py-0.5 h-auto',
+          type === 'chat' && 'text-xs opacity-70 hover:opacity-100 transition-opacity',
           className
         )}
       />

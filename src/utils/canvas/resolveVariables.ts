@@ -13,9 +13,7 @@ export function collectVariables(
 ): Record<string, string> {
   const vars: Record<string, string> = {};
 
-  const sourceIds = edges
-    .filter((e) => e.target === nodeId)
-    .map((e) => e.source);
+  const sourceIds = edges.filter((e) => e.target === nodeId).map((e) => e.source);
 
   for (const srcId of sourceIds) {
     const srcNode = nodes.find((n) => n.id === srcId);

@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { User, FileText, Building2, Calendar, Hash, MessageSquare, Type, AlignLeft, DollarSign } from 'lucide-react';
+import {
+  User,
+  FileText,
+  Building2,
+  Calendar,
+  Hash,
+  MessageSquare,
+  Type,
+  AlignLeft,
+  DollarSign,
+} from 'lucide-react';
 import type { PdfFieldMapping, BudgetData } from '@/types/types';
 import { VariableThumbnail } from './VariableThumbnail';
 import { VariableConfigModal } from './VariableConfigModal';
@@ -41,10 +51,10 @@ export const PdfFieldEditor: React.FC<PdfFieldEditorProps> = ({
   const [configModalOpen, setConfigModalOpen] = useState(false);
 
   const getFieldStatus = (fieldId: string): 'available' | 'added' | 'positioned' => {
-    const mappings = fieldMappings.filter(m => m.fieldId === fieldId);
+    const mappings = fieldMappings.filter((m) => m.fieldId === fieldId);
     if (mappings.length === 0) return 'available';
     // If any instance is positioned, show as positioned
-    if (mappings.some(m => m.x > 0 || m.y > 0)) return 'positioned';
+    if (mappings.some((m) => m.x > 0 || m.y > 0)) return 'positioned';
     return 'added';
   };
 
@@ -81,7 +91,7 @@ export const PdfFieldEditor: React.FC<PdfFieldEditorProps> = ({
 
     // If field has value and is not custom, add directly without modal
     if (fieldValue && !isCustomField) {
-      const field = AVAILABLE_FIELDS.find(f => f.id === fieldId);
+      const field = AVAILABLE_FIELDS.find((f) => f.id === fieldId);
 
       const newMapping: PdfFieldMapping = {
         id: `${fieldId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -119,7 +129,7 @@ export const PdfFieldEditor: React.FC<PdfFieldEditorProps> = ({
   const handleConfigConfirm = (customValue?: string) => {
     if (!selectedFieldId) return;
 
-    const field = AVAILABLE_FIELDS.find(f => f.id === selectedFieldId);
+    const field = AVAILABLE_FIELDS.find((f) => f.id === selectedFieldId);
 
     // Always create new mapping instance (allow multiple instances)
     const newMapping: PdfFieldMapping = {
@@ -152,20 +162,18 @@ export const PdfFieldEditor: React.FC<PdfFieldEditorProps> = ({
   };
 
   const selectedField = selectedFieldId
-    ? AVAILABLE_FIELDS.find(f => f.id === selectedFieldId)
+    ? AVAILABLE_FIELDS.find((f) => f.id === selectedFieldId)
     : null;
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold font-mono text-neutral-300">
-        Variáveis Disponíveis
-      </h3>
+      <h3 className="text-sm font-semibold font-mono text-neutral-300">Variáveis Disponíveis</h3>
 
       {/* Grid de thumbs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {AVAILABLE_FIELDS.map((field) => {
           const Icon = field.icon;
-          const mappings = fieldMappings.filter(m => m.fieldId === field.id);
+          const mappings = fieldMappings.filter((m) => m.fieldId === field.id);
           const status = getFieldStatus(field.id);
           const instanceCount = mappings.length;
           // Get the most recent mapping for display (if any)

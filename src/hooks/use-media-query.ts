@@ -1,23 +1,23 @@
 import { useState, useEffect, useMemo } from 'react';
 
 export function useMediaQuery(query: string): boolean {
-    const [matches, setMatches] = useState(false);
+  const [matches, setMatches] = useState(false);
 
-    const media = useMemo(() => window.matchMedia(query), [query]);
+  const media = useMemo(() => window.matchMedia(query), [query]);
 
-    useEffect(() => {
-        const updateMatch = () => setMatches(media.matches);
+  useEffect(() => {
+    const updateMatch = () => setMatches(media.matches);
 
-        // Set initial value
-        updateMatch();
+    // Set initial value
+    updateMatch();
 
-        media.addEventListener('change', updateMatch);
-        return () => media.removeEventListener('change', updateMatch);
-    }, [query]);
+    media.addEventListener('change', updateMatch);
+    return () => media.removeEventListener('change', updateMatch);
+  }, [query]);
 
-    return matches;
+  return matches;
 }
 
 export function useIsMobile(): boolean {
-    return useMediaQuery('(max-width: 767px)');
+  return useMediaQuery('(max-width: 767px)');
 }

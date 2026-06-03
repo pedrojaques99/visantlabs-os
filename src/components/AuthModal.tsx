@@ -28,7 +28,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onSuccess,
   isSignUp: externalIsSignUp,
   setIsSignUp: externalSetIsSignUp,
-  defaultIsSignUp = false
+  defaultIsSignUp = false,
 }) => {
   useScrollLock(isOpen);
   const { t } = useTranslation();
@@ -43,9 +43,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<HCaptcha>(null);
 
-  const hcaptchaSiteKey = typeof window !== 'undefined'
-    ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY
-    : undefined;
+  const hcaptchaSiteKey =
+    typeof window !== 'undefined' ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY : undefined;
   const captchaEnabled = !!hcaptchaSiteKey;
 
   // Use external state if provided, otherwise use internal state
@@ -56,9 +55,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleGoogleAuth = async () => {
     setIsGoogleLoading(true);
     try {
-      const referralCode = typeof window !== 'undefined'
-        ? localStorage.getItem('referral_code')
-        : null;
+      const referralCode =
+        typeof window !== 'undefined' ? localStorage.getItem('referral_code') : null;
 
       const authUrl = await authService.getAuthUrl(referralCode || undefined);
       window.location.href = authUrl;
@@ -88,11 +86,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       if (isSignUp) {
         // Get referral code from localStorage if available
-        const referralCode = typeof window !== 'undefined'
-          ? localStorage.getItem('referral_code')
-          : null;
+        const referralCode =
+          typeof window !== 'undefined' ? localStorage.getItem('referral_code') : null;
 
-        await authService.signUp(email, password, name || undefined, referralCode || undefined, captchaToken || undefined);
+        await authService.signUp(
+          email,
+          password,
+          name || undefined,
+          referralCode || undefined,
+          captchaToken || undefined
+        );
 
         // Reset CAPTCHA after successful signup
         if (captchaRef.current) {
@@ -108,7 +111,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         await authService.signIn(email, password);
       }
 
-      toast.success(isSignUp ? t('auth.accountCreatedSuccess') : t('auth.signedInSuccess'), { duration: 2000 });
+      toast.success(isSignUp ? t('auth.accountCreatedSuccess') : t('auth.signedInSuccess'), {
+        duration: 2000,
+      });
       onSuccess();
       if (isSignUp) {
         navigate('/welcome');
@@ -178,7 +183,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {isSignUp ? t('auth.signUp') : t('auth.signIn')}
           </h2>
-          <Button variant="ghost" onClick={handleClose}
+          <Button
+            variant="ghost"
+            onClick={handleClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             <X size={20} />
@@ -264,7 +271,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </p>
             )}
             {!isSignUp && (
-              <Button variant="ghost" type="button"
+              <Button
+                variant="ghost"
+                type="button"
                 onClick={() => setShowForgotPassword(true)}
                 className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
               >
@@ -295,8 +304,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
-          <Button variant="brand" type="submit"
-            disabled={isAuthLoading || !email || !password || (isSignUp && captchaEnabled && !captchaToken)}
+          <Button
+            variant="brand"
+            type="submit"
+            disabled={
+              isAuthLoading || !email || !password || (isSignUp && captchaEnabled && !captchaToken)
+            }
             className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {isAuthLoading ? (
@@ -304,8 +317,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <GlitchLoader size={16} />
                 {isSignUp ? t('auth.creatingAccount') : t('auth.signingIn')}
               </>
+            ) : isSignUp ? (
+              t('auth.signUp')
             ) : (
-              isSignUp ? t('auth.signUp') : t('auth.signIn')
+              t('auth.signIn')
             )}
           </Button>
         </form>
@@ -320,9 +335,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             variant="outline"
             className="w-full"
           >
-            {isSignUp
-              ? t('auth.alreadyHaveAccount')
-              : t('auth.dontHaveAccount')}
+            {isSignUp ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}
           </PillButton>
         </div>
 
@@ -340,8 +353,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 }}
               >
                 {t('auth.termsOfService')}
-              </Link>
-              {' '}{t('auth.and')}{' '}
+              </Link>{' '}
+              {t('auth.and')}{' '}
               <Link
                 to="/privacy"
                 className="text-brand-cyan hover:text-brand-cyan/80 underline"
@@ -366,7 +379,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setIsSignUp(false);
         }}
       />
-    </div >
+    </div>
   );
 };
-

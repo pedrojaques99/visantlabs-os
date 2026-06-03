@@ -6,7 +6,7 @@ import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface ShaderControlsSidebarProps {
   isCollapsed?: boolean;
@@ -68,15 +68,19 @@ export const ShaderControlsSidebar = ({
   const palette = nodeData.palette ?? 0.0;
 
   // Duotone shader settings with defaults
-  const duotoneShadowColor = nodeData.duotoneShadowColor ?? [0.1, 0.0, 0.2] as [number, number, number];
-  const duotoneHighlightColor = nodeData.duotoneHighlightColor ?? [0.3, 0.9, 0.9] as [number, number, number];
+  const duotoneShadowColor =
+    nodeData.duotoneShadowColor ?? ([0.1, 0.0, 0.2] as [number, number, number]);
+  const duotoneHighlightColor =
+    nodeData.duotoneHighlightColor ?? ([0.3, 0.9, 0.9] as [number, number, number]);
   const duotoneIntensity = nodeData.duotoneIntensity ?? 1.0;
   const duotoneContrast = nodeData.duotoneContrast ?? 1.0;
   const duotoneBrightness = nodeData.duotoneBrightness ?? 0.0;
 
   // Local state for color pickers (to optimize rendering during drag)
-  const [localShadowColor, setLocalShadowColor] = useState<[number, number, number]>(duotoneShadowColor);
-  const [localHighlightColor, setLocalHighlightColor] = useState<[number, number, number]>(duotoneHighlightColor);
+  const [localShadowColor, setLocalShadowColor] =
+    useState<[number, number, number]>(duotoneShadowColor);
+  const [localHighlightColor, setLocalHighlightColor] =
+    useState<[number, number, number]>(duotoneHighlightColor);
   const shadowColorUpdateTimeoutRef = useRef<TimerRef | null>(null);
   const highlightColorUpdateTimeoutRef = useRef<TimerRef | null>(null);
   const isDraggingShadowRef = useRef(false);
@@ -92,7 +96,13 @@ export const ShaderControlsSidebar = ({
 
   // Helper function to convert RGB tuple to hex
   const rgbToHex = useCallback((rgb: [number, number, number]): string => {
-    return `#${Math.round(rgb[0] * 255).toString(16).padStart(2, '0')}${Math.round(rgb[1] * 255).toString(16).padStart(2, '0')}${Math.round(rgb[2] * 255).toString(16).padStart(2, '0')}`;
+    return `#${Math.round(rgb[0] * 255)
+      .toString(16)
+      .padStart(2, '0')}${Math.round(rgb[1] * 255)
+      .toString(16)
+      .padStart(2, '0')}${Math.round(rgb[2] * 255)
+      .toString(16)
+      .padStart(2, '0')}`;
   }, []);
 
   // Sync local state when nodeData changes externally
@@ -141,7 +151,14 @@ export const ShaderControlsSidebar = ({
         acBeatIntensity,
       };
     }
-  }, [tapeWaveIntensity, tapeCreaseIntensity, switchingNoiseIntensity, bloomIntensity, acBeatIntensity, isAnimating]);
+  }, [
+    tapeWaveIntensity,
+    tapeCreaseIntensity,
+    switchingNoiseIntensity,
+    bloomIntensity,
+    acBeatIntensity,
+    isAnimating,
+  ]);
 
   // Animation effect - subtle randomization with throttle
   useEffect(() => {
@@ -208,10 +225,17 @@ export const ShaderControlsSidebar = ({
     <aside
       data-shader-sidebar="true"
       className={cn(
-        variant === 'standalone' ? "fixed right-4 top-[81px]" : "relative h-full border-none shadow-none rounded-none bg-transparent backdrop-blur-none",
-        variant === 'standalone' && "z-50 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl transition-all duration-300 ease-out bg-neutral-950/70",
-        "flex flex-col",
-        isCollapsed ? "w-[56px] h-[56px]" : variant === 'standalone' ? "w-[280px] h-[calc(100vh-910px)]" : "w-full"
+        variant === 'standalone'
+          ? 'fixed right-4 top-[81px]'
+          : 'relative h-full border-none shadow-none rounded-none bg-transparent backdrop-blur-none',
+        variant === 'standalone' &&
+          'z-50 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl transition-all duration-300 ease-out bg-neutral-950/70',
+        'flex flex-col',
+        isCollapsed
+          ? 'w-[56px] h-[56px]'
+          : variant === 'standalone'
+          ? 'w-[280px] h-[calc(100vh-910px)]'
+          : 'w-full'
       )}
       style={{
         width: isCollapsed ? '56px' : '100%',
@@ -221,16 +245,18 @@ export const ShaderControlsSidebar = ({
     >
       {/* Toggle Button - Only visible when expanded */}
       {!isCollapsed && (
-        <Button variant="ghost" onClick={onToggleCollapse}
+        <Button
+          variant="ghost"
+          onClick={onToggleCollapse}
           className={cn(
-            "absolute -left-3 z-50",
-            "w-5 h-5 rounded-md",
-            "bg-neutral-900/60 backdrop-blur-md border border-neutral-700/30",
-            "flex items-center justify-center",
-            "text-neutral-500 hover:text-neutral-400",
-            "hover:bg-neutral-800/60 hover:border-neutral-600/40",
-            "transition-all duration-200",
-            "shadow-sm hover:shadow-md"
+            'absolute -left-3 z-50',
+            'w-5 h-5 rounded-md',
+            'bg-neutral-900/60 backdrop-blur-md border border-neutral-700/30',
+            'flex items-center justify-center',
+            'text-neutral-500 hover:text-neutral-400',
+            'hover:bg-neutral-800/60 hover:border-neutral-600/40',
+            'transition-all duration-200',
+            'shadow-sm hover:shadow-md'
           )}
           style={{
             top: '10px',
@@ -243,11 +269,16 @@ export const ShaderControlsSidebar = ({
 
       {isCollapsed ? (
         /* Collapsed State - Icon Only - Entire button is clickable */
-        <Button variant="ghost" onClick={onToggleCollapse}
+        <Button
+          variant="ghost"
+          onClick={onToggleCollapse}
           className="w-full h-full flex items-center justify-center hover:bg-neutral-800/30 transition-colors duration-200 cursor-pointer"
           title={t('shaderControls.expand')}
         >
-          <Brush size={20} className="text-neutral-500 hover:text-neutral-400 transition-colors duration-200" />
+          <Brush
+            size={20}
+            className="text-neutral-500 hover:text-neutral-400 transition-colors duration-200"
+          />
         </Button>
       ) : (
         /* Expanded State - Full Content */
@@ -271,7 +302,15 @@ export const ShaderControlsSidebar = ({
                   value={shaderType}
                   onChange={(value) => {
                     if (onUpdateData) {
-                      onUpdateData(nodeId, { shaderType: value as 'halftone' | 'vhs' | 'ascii' | 'matrixDither' | 'dither' | 'duotone' });
+                      onUpdateData(nodeId, {
+                        shaderType: value as
+                          | 'halftone'
+                          | 'vhs'
+                          | 'ascii'
+                          | 'matrixDither'
+                          | 'dither'
+                          | 'duotone',
+                      });
                     }
                   }}
                   options={[
@@ -296,7 +335,9 @@ export const ShaderControlsSidebar = ({
                     value={halftoneVariant}
                     onChange={(value) => {
                       if (onUpdateData) {
-                        onUpdateData(nodeId, { halftoneVariant: value as 'ellipse' | 'square' | 'lines' });
+                        onUpdateData(nodeId, {
+                          halftoneVariant: value as 'ellipse' | 'square' | 'lines',
+                        });
                       }
                     }}
                     options={[
@@ -368,25 +409,30 @@ export const ShaderControlsSidebar = ({
                   />
 
                   {/* Invert Checkbox - Subtle Icon Only */}
-                  <Button variant="ghost" onClick={() => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { halftoneInvert: halftoneInvert > 0.5 ? 0.0 : 1.0 });
-                    }
-                  }}
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { halftoneInvert: halftoneInvert > 0.5 ? 0.0 : 1.0 });
+                      }
+                    }}
                     className={cn(
-                      "w-full flex items-center justify-center py-1.5 rounded",
-                      "border transition-all",
-                      "hover:bg-neutral-800/30",
+                      'w-full flex items-center justify-center py-1.5 rounded',
+                      'border transition-all',
+                      'hover:bg-neutral-800/30',
                       halftoneInvert > 0.5
-                        ? "border-neutral-600/40 bg-neutral-700/30 text-neutral-300"
-                        : "border-neutral-700/30 bg-transparent text-neutral-500 hover:text-neutral-400 hover:border-neutral-600/40"
+                        ? 'border-neutral-600/40 bg-neutral-700/30 text-neutral-300'
+                        : 'border-neutral-700/30 bg-transparent text-neutral-500 hover:text-neutral-400 hover:border-neutral-600/40'
                     )}
                     title={t('shaderControls.labels.invert')}
                   >
-                    <RotateCcw size={14} className={cn(
-                      "transition-transform duration-200",
-                      halftoneInvert > 0.5 && "scale-x-[-1]"
-                    )} />
+                    <RotateCcw
+                      size={14}
+                      className={cn(
+                        'transition-transform duration-200',
+                        halftoneInvert > 0.5 && 'scale-x-[-1]'
+                      )}
+                    />
                   </Button>
                 </>
               )}
@@ -399,16 +445,22 @@ export const ShaderControlsSidebar = ({
                     <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.animation')}
                     </label>
-                    <Button variant="brand" onClick={toggleAnimation}
+                    <Button
+                      variant="brand"
+                      onClick={toggleAnimation}
                       className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded",
-                        "border transition-all",
-                        "text-xs font-mono uppercase ",
+                        'flex items-center gap-2 px-3 py-1.5 rounded',
+                        'border transition-all',
+                        'text-xs font-mono uppercase ',
                         isAnimating
-                          ? "bg-neutral-700/50 border-neutral-600/50 text-neutral-300 hover:bg-neutral-600/50"
-                          : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-700/50 hover:border-neutral-600/50"
+                          ? 'bg-neutral-700/50 border-neutral-600/50 text-neutral-300 hover:bg-neutral-600/50'
+                          : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-700/50 hover:border-neutral-600/50'
                       )}
-                      title={isAnimating ? t('shaderControls.tooltips.stopAnimation') : t('shaderControls.tooltips.startAnimation')}
+                      title={
+                        isAnimating
+                          ? t('shaderControls.tooltips.stopAnimation')
+                          : t('shaderControls.tooltips.startAnimation')
+                      }
                     >
                       {isAnimating ? (
                         <>
@@ -568,19 +620,23 @@ export const ShaderControlsSidebar = ({
                     <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.colored')}
                     </label>
-                    <Button variant="ghost" onClick={() => {
-                      if (onUpdateData) {
-                        onUpdateData(nodeId, { asciiColored: asciiColored > 0.5 ? 0.0 : 1.0 });
-                      }
-                    }}
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        if (onUpdateData) {
+                          onUpdateData(nodeId, { asciiColored: asciiColored > 0.5 ? 0.0 : 1.0 });
+                        }
+                      }}
                       className={cn(
-                        "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ",
+                        'px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ',
                         asciiColored > 0.5
-                          ? "bg-neutral-700/50 border-neutral-600/50 text-neutral-300"
-                          : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400"
+                          ? 'bg-neutral-700/50 border-neutral-600/50 text-neutral-300'
+                          : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400'
                       )}
                     >
-                      {asciiColored > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
+                      {asciiColored > 0.5
+                        ? t('shaderControls.buttons.on')
+                        : t('shaderControls.buttons.off')}
                     </Button>
                   </div>
 
@@ -588,19 +644,23 @@ export const ShaderControlsSidebar = ({
                     <label className="text-xs font-semibold text-neutral-500 uppercase ">
                       {t('shaderControls.labels.invert')}
                     </label>
-                    <Button variant="ghost" onClick={() => {
-                      if (onUpdateData) {
-                        onUpdateData(nodeId, { asciiInvert: asciiInvert > 0.5 ? 0.0 : 1.0 });
-                      }
-                    }}
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        if (onUpdateData) {
+                          onUpdateData(nodeId, { asciiInvert: asciiInvert > 0.5 ? 0.0 : 1.0 });
+                        }
+                      }}
                       className={cn(
-                        "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ",
+                        'px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ',
                         asciiInvert > 0.5
-                          ? "bg-neutral-700/50 border-neutral-600/50 text-neutral-300"
-                          : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400"
+                          ? 'bg-neutral-700/50 border-neutral-600/50 text-neutral-300'
+                          : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400'
                       )}
                     >
-                      {asciiInvert > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
+                      {asciiInvert > 0.5
+                        ? t('shaderControls.buttons.on')
+                        : t('shaderControls.buttons.off')}
                     </Button>
                   </div>
                 </>
@@ -901,4 +961,3 @@ export const ShaderControlsSidebar = ({
     </aside>
   );
 };
-

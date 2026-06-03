@@ -8,7 +8,12 @@ import { Router, json } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { chargeCredits } from '../lib/credits.js';
-import { imageLabApplyEffect, imageLabApplyShader, imageLabChain, imageLabListPresets } from '../services/imageLab/index.js';
+import {
+  imageLabApplyEffect,
+  imageLabApplyShader,
+  imageLabChain,
+  imageLabListPresets,
+} from '../services/imageLab/index.js';
 import { removeBackgroundFromImage } from '../services/backgroundRemovalService.js';
 import { generativeExpand } from '../services/generativeExpandService.js';
 import { inpaint } from '../services/inpaintingService.js';
@@ -33,65 +38,85 @@ const generativeRateLimiter = rateLimit({
 
 const router = Router();
 
-router.post('/apply-effect', imagelabBodyParser, apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { imageUrl, mode, preset, settings, format, quality } = req.body;
-    if (!imageUrl || !mode) {
-      return res.status(400).json({ error: 'imageUrl and mode are required.' });
+router.post(
+  '/apply-effect',
+  imagelabBodyParser,
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const { imageUrl, mode, preset, settings, format, quality } = req.body;
+      if (!imageUrl || !mode) {
+        return res.status(400).json({ error: 'imageUrl and mode are required.' });
+      }
+      const result = await imageLabApplyEffect(
+        { imageUrl, mode, preset, settings, format, quality },
+        req.userId!
+      );
+      res.json(result);
+    } catch (err: any) {
+      if (err.message?.includes('headless-gl')) {
+        return res.status(501).json({ error: err.message });
+      }
+      next(err);
     }
-    const result = await imageLabApplyEffect(
-      { imageUrl, mode, preset, settings, format, quality },
-      req.userId!,
-    );
-    res.json(result);
-  } catch (err: any) {
-    if (err.message?.includes('headless-gl')) {
-      return res.status(501).json({ error: err.message });
-    }
-    next(err);
   }
-});
+);
 
-router.post('/apply-shader', imagelabBodyParser, apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { imageUrl, shaderType, settings, format } = req.body;
-    if (!imageUrl || !shaderType) {
-      return res.status(400).json({ error: 'imageUrl and shaderType are required.' });
+router.post(
+  '/apply-shader',
+  imagelabBodyParser,
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const { imageUrl, shaderType, settings, format } = req.body;
+      if (!imageUrl || !shaderType) {
+        return res.status(400).json({ error: 'imageUrl and shaderType are required.' });
+      }
+      const result = await imageLabApplyShader(
+        { imageUrl, shaderType, settings, format },
+        req.userId!
+      );
+      res.json(result);
+    } catch (err: any) {
+      if (err.message?.includes('headless-gl')) {
+        return res.status(501).json({ error: err.message });
+      }
+      next(err);
     }
-    const result = await imageLabApplyShader(
-      { imageUrl, shaderType, settings, format },
-      req.userId!,
-    );
-    res.json(result);
-  } catch (err: any) {
-    if (err.message?.includes('headless-gl')) {
-      return res.status(501).json({ error: err.message });
-    }
-    next(err);
   }
-});
+);
 
-router.post('/chain', imagelabBodyParser, apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { imageUrl, effect, shader, effectOpacity, format } = req.body;
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'imageUrl is required.' });
+router.post(
+  '/chain',
+  imagelabBodyParser,
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const { imageUrl, effect, shader, effectOpacity, format } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'imageUrl is required.' });
+      }
+      const result = await imageLabChain(
+        { imageUrl, effect, shader, effectOpacity, format },
+        req.userId!
+      );
+      res.json(result);
+    } catch (err: any) {
+      next(err);
     }
-    const result = await imageLabChain(
-      { imageUrl, effect, shader, effectOpacity, format },
-      req.userId!,
-    );
-    res.json(result);
-  } catch (err: any) {
-    next(err);
   }
-});
+);
 
 router.get('/presets', async (req, res, next) => {
   try {
     const mode = req.query.mode as string;
     if (!mode) {
-      return res.status(400).json({ error: 'mode query param required (halftone|texture|riso|shader).' });
+      return res
+        .status(400)
+        .json({ error: 'mode query param required (halftone|texture|riso|shader).' });
     }
     const presets = imageLabListPresets(mode);
     res.json(presets);
@@ -100,61 +125,95 @@ router.get('/presets', async (req, res, next) => {
   }
 });
 
-router.post('/generative-expand', imagelabBodyParser, generativeRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { imageUrl, direction, anchor, targetAspectRatio, expandFactor, prompt, resolution, apiKey } = req.body;
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'imageUrl is required.' });
+router.post(
+  '/generative-expand',
+  imagelabBodyParser,
+  generativeRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const {
+        imageUrl,
+        direction,
+        anchor,
+        targetAspectRatio,
+        expandFactor,
+        prompt,
+        resolution,
+        apiKey,
+      } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'imageUrl is required.' });
+      }
+      await chargeCredits(req.userId!, 2);
+      const result = await generativeExpand(
+        {
+          imageUrl,
+          direction,
+          anchor,
+          targetAspectRatio,
+          expandFactor,
+          prompt,
+          resolution,
+          apiKey,
+        },
+        req.userId!
+      );
+      res.json(result);
+    } catch (err: any) {
+      next(err);
     }
-    await chargeCredits(req.userId!, 2);
-    const result = await generativeExpand(
-      { imageUrl, direction, anchor, targetAspectRatio, expandFactor, prompt, resolution, apiKey },
-      req.userId!,
-    );
-    res.json(result);
-  } catch (err: any) {
-    next(err);
   }
-});
+);
 
-router.post('/inpaint', imagelabBodyParser, generativeRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey } = req.body;
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'imageUrl is required.' });
+router.post(
+  '/inpaint',
+  imagelabBodyParser,
+  generativeRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey } =
+        req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'imageUrl is required.' });
+      }
+      if (!mode || !['replace', 'remove', 'retouch'].includes(mode)) {
+        return res.status(400).json({ error: 'mode is required (replace, remove, or retouch).' });
+      }
+      if (!maskBase64 && !maskRegion) {
+        return res.status(400).json({ error: 'Either maskBase64 or maskRegion is required.' });
+      }
+      await chargeCredits(req.userId!, 2);
+      const result = await inpaint(
+        { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey },
+        req.userId!
+      );
+      res.json(result);
+    } catch (err: any) {
+      next(err);
     }
-    if (!mode || !['replace', 'remove', 'retouch'].includes(mode)) {
-      return res.status(400).json({ error: 'mode is required (replace, remove, or retouch).' });
-    }
-    if (!maskBase64 && !maskRegion) {
-      return res.status(400).json({ error: 'Either maskBase64 or maskRegion is required.' });
-    }
-    await chargeCredits(req.userId!, 2);
-    const result = await inpaint(
-      { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey },
-      req.userId!,
-    );
-    res.json(result);
-  } catch (err: any) {
-    next(err);
   }
-});
+);
 
-router.post('/remove-background', imagelabBodyParser, apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
-  try {
-    const { imageUrl, outputFormat } = req.body;
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'imageUrl is required.' });
+router.post(
+  '/remove-background',
+  imagelabBodyParser,
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const { imageUrl, outputFormat } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'imageUrl is required.' });
+      }
+      await chargeCredits(req.userId!, 1);
+      const result = await removeBackgroundFromImage({ imageUrl, outputFormat }, req.userId!);
+      res.json(result);
+    } catch (err: any) {
+      next(err);
     }
-    await chargeCredits(req.userId!, 1);
-    const result = await removeBackgroundFromImage(
-      { imageUrl, outputFormat },
-      req.userId!,
-    );
-    res.json(result);
-  } catch (err: any) {
-    next(err);
   }
-});
+);
 
 export default router;

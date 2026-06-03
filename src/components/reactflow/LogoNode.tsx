@@ -13,7 +13,7 @@ import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { ConfirmationModal } from '../ConfirmationModal';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -48,7 +48,9 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       nodeData.onUploadLogo(id, imageData.base64);
       toast.success(t('canvasNodes.logoNode.logoUploadedSuccessfully'), { duration: 2000 });
     } catch (err: any) {
-      toast.error(err?.message || t('canvasNodes.logoNode.failedToProcessLogo'), { duration: 5000 });
+      toast.error(err?.message || t('canvasNodes.logoNode.failedToProcessLogo'), {
+        duration: 5000,
+      });
     }
   };
 
@@ -82,9 +84,12 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     }
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
-  const handleResize = useCallback((_: any, params: { width: number }) => {
-    handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+  const handleResize = useCallback(
+    (_: any, params: { width: number }) => {
+      handleResizeWithDebounce(id, params.width, 'auto', nodeData.onResize);
+    },
+    [id, nodeData.onResize, handleResizeWithDebounce]
+  );
 
   const handleDelete = () => {
     if (nodeData.onDelete) {
@@ -170,7 +175,10 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         title={t('canvasNodes.logoNode.deleteTitle') || 'Delete Logo Node'}
-        message={t('canvasNodes.logoNode.deleteMessage') || 'Are you sure you want to delete this logo node?'}
+        message={
+          t('canvasNodes.logoNode.deleteMessage') ||
+          'Are you sure you want to delete this logo node?'
+        }
         confirmText={t('canvasNodes.logoNode.deleteButton') || 'Delete'}
         cancelText={t('canvasNodes.logoNode.cancelButton') || 'Cancel'}
         variant="danger"

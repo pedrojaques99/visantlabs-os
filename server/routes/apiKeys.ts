@@ -24,7 +24,9 @@ router.post('/create', authenticate, async (req: AuthRequest, res: Response) => 
     const resolvedScopes = scopes && Array.isArray(scopes) ? scopes : ['read'];
     for (const scope of resolvedScopes) {
       if (!VALID_SCOPES.includes(scope)) {
-        return res.status(400).json({ error: `Invalid scope: ${scope}. Valid scopes: ${VALID_SCOPES.join(', ')}` });
+        return res
+          .status(400)
+          .json({ error: `Invalid scope: ${scope}. Valid scopes: ${VALID_SCOPES.join(', ')}` });
       }
     }
 

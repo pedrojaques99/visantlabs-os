@@ -27,9 +27,8 @@ export function safeError(
 
   // Only include detailed message in development
   if (isDev && internalError) {
-    response.message = internalError instanceof Error
-      ? internalError.message
-      : String(internalError);
+    response.message =
+      internalError instanceof Error ? internalError.message : String(internalError);
   }
 
   return response;
@@ -42,9 +41,7 @@ export function safeError(
 export function maskEmail(email: string): string {
   if (!email || !email.includes('@')) return '***';
   const [local, domain] = email.split('@');
-  const maskedLocal = local.length > 1
-    ? local[0] + '***'
-    : '***';
+  const maskedLocal = local.length > 1 ? local[0] + '***' : '***';
   return `${maskedLocal}@${domain}`;
 }
 

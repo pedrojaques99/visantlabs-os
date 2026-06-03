@@ -26,7 +26,12 @@ const BLEND_MODES = [
   { id: 'color-dodge', label: 'Dodge' },
 ] as const;
 
-const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>>> = ({ data, selected, id, dragging }) => {
+const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>>> = ({
+  data,
+  selected,
+  id,
+  dragging,
+}) => {
   const { t } = useTranslation();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const isLoading = data.isLoading || false;
@@ -62,7 +67,22 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
   useEffect(() => {
     if (!data.onApply || !hasConnectedImage || !hasResult || isLoading) return;
     data.onApply(id, data.connectedImage!).catch(console.error);
-  }, [opacity, scale, blendMode, maskMode, tileMode, rotation, data.maskInvert, data.useOriginalColor, data.textureColor, data.textureSrc, data.tileGapX, data.tileGapY, data.offsetX, data.offsetY]);
+  }, [
+    opacity,
+    scale,
+    blendMode,
+    maskMode,
+    tileMode,
+    rotation,
+    data.maskInvert,
+    data.useOriginalColor,
+    data.textureColor,
+    data.textureSrc,
+    data.tileGapX,
+    data.tileGapY,
+    data.offsetX,
+    data.offsetY,
+  ]);
 
   const { handleDownload } = useNodeDownload(resultImageUrl || null, 'texture-filter-result');
 
@@ -70,19 +90,30 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
     const width = data.imageWidth as number;
     const height = data.imageHeight as number;
     if (width && height) {
-      let tw = width, th = height;
-      if (tw > 1200) { const r = 1200 / tw; tw = 1200; th = th * r; }
+      let tw = width,
+        th = height;
+      if (tw > 1200) {
+        const r = 1200 / tw;
+        tw = 1200;
+        th = th * r;
+      }
       fitToContent(id, Math.round(tw), Math.round(th), data.onResize);
     }
   }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
 
-  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    handleResizeWithDebounce(id, params.width, 'auto');
-  }, [id, handleResizeWithDebounce]);
+  const handleResize = useCallback(
+    (_: any, params: { width: number; height: number }) => {
+      handleResizeWithDebounce(id, params.width, 'auto');
+    },
+    [id, handleResizeWithDebounce]
+  );
 
-  const updateSetting = useCallback((key: string, value: any) => {
-    if (data.onUpdateData) data.onUpdateData(id, { [key]: value });
-  }, [data.onUpdateData, id]);
+  const updateSetting = useCallback(
+    (key: string, value: any) => {
+      if (data.onUpdateData) data.onUpdateData(id, { [key]: value });
+    },
+    [data.onUpdateData, id]
+  );
 
   return (
     <NodeContainer
@@ -144,7 +175,10 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;
                 if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                  data.onUpdateData?.(id, { imageWidth: img.naturalWidth, imageHeight: img.naturalHeight });
+                  data.onUpdateData?.(id, {
+                    imageWidth: img.naturalWidth,
+                    imageHeight: img.naturalHeight,
+                  });
                 }
               }}
             />
@@ -158,19 +192,30 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
             </div>
           )}
 
-          <div className={cn(
-            "absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10",
-            selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          )}>
+          <div
+            className={cn(
+              'absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10',
+              selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            )}
+          >
             {data.onViewFullscreen && (
-              <NodeButton variant="ghost" size="xs" onClick={(e) => {
-                e.stopPropagation();
-                data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
-              }}>
+              <NodeButton
+                variant="ghost"
+                size="xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
+                }}
+              >
                 <Maximize2 size={14} />
               </NodeButton>
             )}
-            <NodeButton variant="ghost" size="xs" onClick={handleDownload} aria-label="Download result">
+            <NodeButton
+              variant="ghost"
+              size="xs"
+              onClick={handleDownload}
+              aria-label="Download result"
+            >
               <Download size={14} />
             </NodeButton>
           </div>
@@ -202,23 +247,28 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
               onClick={() => updateSetting('maskMode', !maskMode)}
               className={cn(
                 'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-all',
-                maskMode ? 'bg-brand-cyan/20 text-brand-cyan border-white/20' : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
+                maskMode
+                  ? 'bg-brand-cyan/20 text-brand-cyan border-white/20'
+                  : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
               )}
             >
               Mask
             </button>
-            {!maskMode && BLEND_MODES.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => updateSetting('blendMode', m.id)}
-                className={cn(
-                  'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-all',
-                  blendMode === m.id ? 'bg-white/10 text-white border-white/20' : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
-                )}
-              >
-                {m.label}
-              </button>
-            ))}
+            {!maskMode &&
+              BLEND_MODES.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => updateSetting('blendMode', m.id)}
+                  className={cn(
+                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-all',
+                    blendMode === m.id
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
+                  )}
+                >
+                  {m.label}
+                </button>
+              ))}
           </div>
 
           <NodeSlider
@@ -252,7 +302,9 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
             onClick={() => updateSetting('tileMode', !tileMode)}
             className={cn(
               'w-full px-2 py-1 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-all text-center',
-              tileMode ? 'bg-white/10 text-white border-white/20' : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
+              tileMode
+                ? 'bg-white/10 text-white border-white/20'
+                : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
             )}
           >
             {tileMode ? 'Tile: On' : 'Tile: Off'}

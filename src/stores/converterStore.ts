@@ -97,7 +97,7 @@ export const useConverterStore = create<ConverterState>()((set) => ({
       items: s.items.map((i) =>
         i.status === 'done' || i.status === 'error'
           ? { ...i, status: 'queued' as const, resultBlob: null, resultUrl: '', error: undefined }
-          : i,
+          : i
       ),
     })),
   setJpgQuality: (v) => set({ jpgQuality: v }),

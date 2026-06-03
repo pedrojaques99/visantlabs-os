@@ -30,7 +30,7 @@ vi.mock('../../../src/services/geminiService.js', () => {
         imageBase64: 'fake-base64',
         prompt: 'test prompt',
         tags: ['test'],
-      }
+      },
     })),
     getErrorMessage: (e: any) => e.message || String(e),
     RateLimitError,
@@ -64,17 +64,17 @@ describe('Usage & Credits Protection', () => {
         .set('Authorization', bearer(userToken))
         .send({
           promptText: 'A high-end mockup',
-          aspectRatio: '1:1'
+          aspectRatio: '1:1',
         });
-      
+
       expect(res.status).toBe(200);
       expect(res.body.imageUrl || res.body.imageBase64).toBeDefined();
-      
+
       // Verify credits were deducted in DB (check /usage endpoint)
       const usageRes = await agent
         .get('/api/payments/usage')
         .set('Authorization', bearer(userToken));
-      
+
       expect(usageRes.status).toBe(200);
       // Depending on the model, it deducts N credits. MockupMachine usually deducts 1 or 2.
       expect(usageRes.body.creditsUsed).toBeGreaterThan(0);
@@ -84,16 +84,16 @@ describe('Usage & Credits Protection', () => {
       // Create user with 0 credits
       const { user: brokeUser } = await createUser({ monthlyCredits: 0, creditsUsed: 0 });
       const brokeToken = signTestToken({ userId: brokeUser.id, email: brokeUser.email });
-      
+
       const agent = await request();
       const res = await agent
         .post('/api/mockups/generate')
         .set('Authorization', bearer(brokeToken))
         .send({
           promptText: 'I am broke',
-          aspectRatio: '1:1'
+          aspectRatio: '1:1',
         });
-      
+
       expect(res.status).toBe(403);
       expect(res.body.error).toMatch(/credits|upgrade|limit|subscription/i);
     });
@@ -102,21 +102,16 @@ describe('Usage & Credits Protection', () => {
   describe('Usage History', () => {
     it('records a usage record after generation', async () => {
       const agent = await request();
-      
+
       // Trigger a generation
-      await agent
-        .post('/api/mockups/generate')
-        .set('Authorization', bearer(userToken))
-        .send({
-          promptText: 'History record test',
-          aspectRatio: '1:1'
-        });
-      
+      await agent.post('/api/mockups/generate').set('Authorization', bearer(userToken)).send({
+        promptText: 'History record test',
+        aspectRatio: '1:1',
+      });
+
       // Check history
-      const res = await agent
-        .get('/api/usage/history')
-        .set('Authorization', bearer(userToken));
-      
+      const res = await agent.get('/api/usage/history').set('Authorization', bearer(userToken));
+
       expect(res.status).toBe(200);
       expect(res.body.records).toBeDefined();
       expect(res.body.records.length).toBeGreaterThan(0);

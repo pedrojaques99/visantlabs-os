@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -251,13 +251,13 @@
   /* Cursor pointer para elementos clicáveis */
   a,
   button,
-  [role="button"],
+  [role='button'],
   [onclick],
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  input[type="checkbox"],
-  input[type="radio"],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
+  input[type='checkbox'],
+  input[type='radio'],
   select,
   label[for],
   .cursor-pointer {
@@ -268,23 +268,29 @@
   button:disabled,
   input:disabled,
   select:disabled,
-  [aria-disabled="true"] {
+  [aria-disabled='true'] {
     cursor: not-allowed;
   }
 
   /* Cursor bullet branco para toda a WelcomeScreen (padrão) */
   .welcome-screen {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='white'/%3E%3C/svg%3E") 4 4, auto;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='white'/%3E%3C/svg%3E")
+        4 4,
+      auto;
   }
 
   /* Cursor bullet branco no fundo ASCII do WelcomeScreen */
   .welcome-ascii-bg canvas {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='white'/%3E%3C/svg%3E") 4 4, auto;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='white'/%3E%3C/svg%3E")
+        4 4,
+      auto;
   }
 
   .welcome-screen button,
-  .welcome-screen [role="button"] {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E") 4 4, auto !important;
+  .welcome-screen [role='button'] {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E")
+        4 4,
+      auto !important;
   }
 
   /* Exceção para botões desabilitados */
@@ -293,17 +299,22 @@
   }
 
   .welcome-screen a {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.5' fill='none' stroke='white' stroke-width='0.5'/%3E%3Ccircle cx='5' cy='5' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E") 5 5, auto !important;
-    text-shadow: 0 0 10px color-mix(in srgb, var(--brand-cyan), transparent 40%), 0 0 16px color-mix(in srgb, var(--brand-cyan), transparent 60%);
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.5' fill='none' stroke='white' stroke-width='0.5'/%3E%3Ccircle cx='5' cy='5' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E")
+        5 5,
+      auto !important;
+    text-shadow: 0 0 10px color-mix(in srgb, var(--brand-cyan), transparent 40%),
+      0 0 16px color-mix(in srgb, var(--brand-cyan), transparent 60%);
     transition: text-shadow 0.3s ease;
   }
 
   .welcome-screen a:hover {
-    text-shadow: 0 0 12px color-mix(in srgb, var(--brand-cyan), transparent 10%), 0 0 24px color-mix(in srgb, var(--brand-cyan), transparent 40%), 0 0 36px color-mix(in srgb, var(--brand-cyan), transparent 60%);
+    text-shadow: 0 0 12px color-mix(in srgb, var(--brand-cyan), transparent 10%),
+      0 0 24px color-mix(in srgb, var(--brand-cyan), transparent 40%),
+      0 0 36px color-mix(in srgb, var(--brand-cyan), transparent 60%);
   }
 
   /* Square color picker thumb */
-  input[type="color"].color-picker-square {
+  input[type='color'].color-picker-square {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -313,17 +324,17 @@
     padding: 0;
   }
 
-  input[type="color"].color-picker-square::-webkit-color-swatch-wrapper {
+  input[type='color'].color-picker-square::-webkit-color-swatch-wrapper {
     padding: 0;
     border-radius: 0;
   }
 
-  input[type="color"].color-picker-square::-webkit-color-swatch {
+  input[type='color'].color-picker-square::-webkit-color-swatch {
     border: none;
     border-radius: 0;
   }
 
-  input[type="color"].color-picker-square::-moz-color-swatch {
+  input[type='color'].color-picker-square::-moz-color-swatch {
     border: none;
     border-radius: 0;
   }
@@ -331,7 +342,6 @@
 
 /* MockupsPage Microinteractions and Animations */
 @keyframes subtleFloat {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -355,7 +365,6 @@
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
@@ -375,8 +384,7 @@
 }
 
 .mockup-image-wrapper {
-  transition: transform 0.2s ease-out,
-    filter 0.2s ease-out;
+  transition: transform 0.2s ease-out, filter 0.2s ease-out;
 }
 
 .mockup-image-wrapper:hover {
@@ -506,7 +514,6 @@
 }
 
 @keyframes asciiFade {
-
   0%,
   100% {
     opacity: 0.2;
@@ -518,7 +525,6 @@
 }
 
 @keyframes asciiPulse {
-
   0%,
   100% {
     opacity: 0.4;
@@ -540,7 +546,6 @@
 }
 
 @keyframes diceFloat {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -596,7 +601,6 @@
 }
 
 @keyframes diceButtonPulse {
-
   0%,
   100% {
     box-shadow: 0 0 0 0 rgba(82, 221, 235, 0);
@@ -683,7 +687,6 @@
 }
 
 @keyframes pulse-subtle {
-
   0%,
   100% {
     opacity: 1;
@@ -702,7 +705,6 @@
 
 /* Pool mode: glow pulse (no opacity change) */
 @keyframes pool-glow {
-
   0%,
   100% {
     filter: drop-shadow(0 0 10px rgba(82, 221, 235, 0.25));
@@ -715,7 +717,6 @@
 
 /* Pool mode: dot breathe (scale only) */
 @keyframes pool-dot-breathe {
-
   0%,
   100% {
     transform: scale(1);
@@ -728,7 +729,6 @@
 
 /* Pool mode: sidebar border glow (no opacity) */
 @keyframes pool-border-glow {
-
   0%,
   100% {
     box-shadow: 0 0 15px rgba(82, 221, 235, 0.06);
@@ -782,10 +782,12 @@
 }
 
 .shimmer-glow {
-  background: linear-gradient(to right,
-      transparent 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      transparent 100%);
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
 }
 
 .animate-fade-in-fast {
@@ -1001,12 +1003,14 @@
   bottom: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(135deg,
-      transparent 0%,
-      transparent 40%,
-      rgba(82, 221, 235, 0.2) 50%,
-      transparent 60%,
-      transparent 100%);
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(82, 221, 235, 0.2) 50%,
+    transparent 60%,
+    transparent 100%
+  );
   background-size: 200% 200%;
   animation: pickaxeShine 3s ease-in-out infinite;
   pointer-events: none;
@@ -1114,7 +1118,6 @@
 }
 
 @keyframes dropPulse {
-
   0%,
   100% {
     opacity: 0.4;
@@ -1311,14 +1314,14 @@
 }
 
 /* Node selected state */
-.react-flow__node.selected>div,
-.react-flow__node[data-selected="true"]>div {
+.react-flow__node.selected > div,
+.react-flow__node[data-selected='true'] > div {
   box-shadow: none;
 }
 
 /* Node selected border - use brand cyan accent */
 .react-flow__node.selected .node-container,
-.react-flow__node[data-selected="true"] .node-container {
+.react-flow__node[data-selected='true'] .node-container {
   border-color: var(--brand-cyan) !important;
   box-shadow: 0 0 15px rgba(var(--brand-cyan-rgb), 0.15) !important;
 }
@@ -1337,48 +1340,51 @@
   z-index: 10;
 }
 
-.react-flow__handle[data-handlepos="left"] {
+.react-flow__handle[data-handlepos='left'] {
   left: 0 !important;
   margin-left: -3px !important;
 }
 
-.react-flow__handle[data-handlepos="right"] {
+.react-flow__handle[data-handlepos='right'] {
   right: 0 !important;
   margin-right: -3px !important;
 }
 
-.react-flow__handle[data-handlepos="top"] {
+.react-flow__handle[data-handlepos='top'] {
   top: 0 !important;
   margin-top: -3px !important;
 }
 
-.react-flow__handle[data-handlepos="bottom"] {
+.react-flow__handle[data-handlepos='bottom'] {
   bottom: 0 !important;
   margin-bottom: -3px !important;
 }
 
-.react-flow__handle[style*="top:"] {
+.react-flow__handle[style*='top:'] {
   margin-top: -3px !important;
 }
 
-.react-flow__handle[style*="left:"] {
+.react-flow__handle[style*='left:'] {
   margin-left: -3px !important;
 }
 
-.react-flow__handle[style*="right:"] {
+.react-flow__handle[style*='right:'] {
   margin-right: -3px !important;
 }
 
-.react-flow__handle[style*="bottom:"] {
+.react-flow__handle[style*='bottom:'] {
   margin-bottom: -3px !important;
 }
 
 /* Compact nodes: smaller handles */
-:is(.react-flow__node-upscale,
-  .react-flow__node-logo,
-  .react-flow__node-pdf,
-  .react-flow__node-merge,
-  .react-flow__node-edit:not(.min-w-\[600px\])) .react-flow__handle:not(.react-flow__resize-control) {
+:is(
+    .react-flow__node-upscale,
+    .react-flow__node-logo,
+    .react-flow__node-pdf,
+    .react-flow__node-merge,
+    .react-flow__node-edit:not(.min-w-\[600px\])
+  )
+  .react-flow__handle:not(.react-flow__resize-control) {
   width: 3px;
   height: 3px;
   opacity: 0.5;
@@ -1386,11 +1392,16 @@
   background: #555555;
 }
 
-:is(.react-flow__node-upscale,
-  .react-flow__node-logo,
-  .react-flow__node-pdf,
-  .react-flow__node-merge,
-  .react-flow__node-edit:not(.min-w-\[600px\])) .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control) {
+:is(
+    .react-flow__node-upscale,
+    .react-flow__node-logo,
+    .react-flow__node-pdf,
+    .react-flow__node-merge,
+    .react-flow__node-edit:not(.min-w-\[600px\])
+  )
+  .react-flow__handle:hover:not(.connected):not([data-connected='true']):not(
+    .react-flow__resize-control
+  ) {
   width: 10px;
   height: 10px;
   opacity: 0.7;
@@ -1398,11 +1409,16 @@
   border: 0.5px solid rgba(119, 119, 119, 0.4);
 }
 
-:is(.react-flow__node-upscale,
-  .react-flow__node-logo,
-  .react-flow__node-pdf,
-  .react-flow__node-merge,
-  .react-flow__node-edit:not(.min-w-\[600px\])) :is(.react-flow__handle.connected, .react-flow__handle[data-connected="true"]):not(.react-flow__resize-control) {
+:is(
+    .react-flow__node-upscale,
+    .react-flow__node-logo,
+    .react-flow__node-pdf,
+    .react-flow__node-merge,
+    .react-flow__node-edit:not(.min-w-\[600px\])
+  )
+  :is(.react-flow__handle.connected, .react-flow__handle[data-connected='true']):not(
+    .react-flow__resize-control
+  ) {
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.4) !important;
   box-shadow: none;
@@ -1410,7 +1426,7 @@
 }
 
 /* Unconnected hover: scale up (14px), default gray */
-.react-flow__handle:hover:not(.connected):not([data-connected="true"]) {
+.react-flow__handle:hover:not(.connected):not([data-connected='true']) {
   width: 14px;
   height: 14px;
   max-width: 15px;
@@ -1430,8 +1446,8 @@
   border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
 }
 
-.react-flow__handle.handle-image:hover:not(.connected):not([data-connected="true"]),
-.react-flow__handle.handle-video:hover:not(.connected):not([data-connected="true"]) {
+.react-flow__handle.handle-image:hover:not(.connected):not([data-connected='true']),
+.react-flow__handle.handle-video:hover:not(.connected):not([data-connected='true']) {
   background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
 }
@@ -1441,7 +1457,7 @@
   border: 0.5px solid rgba(153, 153, 153, 0.4) !important;
 }
 
-.react-flow__handle.handle-text:hover:not(.connected):not([data-connected="true"]) {
+.react-flow__handle.handle-text:hover:not(.connected):not([data-connected='true']) {
   background: #aaaaaa !important;
   border: 0.5px solid rgba(170, 170, 170, 0.6) !important;
 }
@@ -1451,7 +1467,7 @@
   border: 0.5px solid rgba(102, 102, 102, 0.4) !important;
 }
 
-.react-flow__handle.handle-strategy:hover:not(.connected):not([data-connected="true"]) {
+.react-flow__handle.handle-strategy:hover:not(.connected):not([data-connected='true']) {
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.6) !important;
 }
@@ -1461,7 +1477,7 @@
   border: 0.5px solid rgba(119, 119, 119, 0.4) !important;
 }
 
-.react-flow__handle.handle-generic:hover:not(.connected):not([data-connected="true"]) {
+.react-flow__handle.handle-generic:hover:not(.connected):not([data-connected='true']) {
   background: #888888 !important;
   border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
 }
@@ -1471,14 +1487,14 @@
   border: 0.5px solid rgba(102, 102, 102, 0.4) !important;
 }
 
-.react-flow__handle.handle-text-inverted:hover:not(.connected):not([data-connected="true"]) {
+.react-flow__handle.handle-text-inverted:hover:not(.connected):not([data-connected='true']) {
   background: #aaaaaa !important;
   border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
 }
 
 /* Connected: single source (all types → gray) */
 .react-flow__handle.connected,
-.react-flow__handle[data-connected="true"] {
+.react-flow__handle[data-connected='true'] {
   background: #888888 !important;
   border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
   box-shadow: none;
@@ -1486,7 +1502,7 @@
 }
 
 .react-flow__handle.connected:hover,
-.react-flow__handle[data-connected="true"]:hover {
+.react-flow__handle[data-connected='true']:hover {
   width: 6px;
   height: 6px;
   background: #999999 !important;
@@ -1537,7 +1553,6 @@
 }
 
 /* Base style defaults to dashed if no class present (legacy support) */
-
 
 .react-flow__controls {
   background: transparent;
@@ -1668,61 +1683,61 @@
 
 /* Override all brand-cyan references inside nodes to use user configured brand color */
 .react-flow__node .node-container .text-brand-cyan,
-.react-flow__node .node-container [class*="text-brand-cyan"],
+.react-flow__node .node-container [class*='text-brand-cyan'],
 .react-flow__node .node-container svg.text-brand-cyan,
-.react-flow__node .node-container svg[class*="text-brand-cyan"] {
+.react-flow__node .node-container svg[class*='text-brand-cyan'] {
   color: var(--brand-cyan) !important;
 }
 
 /* Override border-brand-cyan inside nodes to use foreground by default (cyan on focus handled below) */
-.react-flow__node .node-container [class*="border-[brand-cyan]"],
-.react-flow__node .node-container [class*="border-brand-cyan"] {
+.react-flow__node .node-container [class*='border-[brand-cyan]'],
+.react-flow__node .node-container [class*='border-brand-cyan'] {
   border-color: var(--foreground) !important;
   opacity: 0.7;
 }
 
-.react-flow__node .node-container [class*="text-brand-cyan"] {
+.react-flow__node .node-container [class*='text-brand-cyan'] {
   color: var(--foreground) !important;
 }
 
 /* Override bg-brand-cyan inside nodes (solid, not with opacity) */
-.react-flow__node .node-container [class*="bg-brand-cyan"]:not([class*="/"]),
-.react-flow__node .node-container [class*="bg-[brand-cyan]"]:not([class*="/"]) {
+.react-flow__node .node-container [class*='bg-brand-cyan']:not([class*='/']),
+.react-flow__node .node-container [class*='bg-[brand-cyan]']:not([class*='/']) {
   background-color: var(--brand-cyan) !important;
 }
 
 /* Node selected border - use brand cyan accent */
 .react-flow__node.selected .node-container,
-.react-flow__node[data-selected="true"] .node-container {
+.react-flow__node[data-selected='true'] .node-container {
   border-color: var(--brand-cyan) !important;
   box-shadow: 0 0 15px rgba(var(--brand-cyan-rgb), 0.15) !important;
 }
 
 /* Override focus rings and other brand-cyan references */
-.react-flow__node .node-container [class*="ring-[brand-cyan]"],
-.react-flow__node .node-container [class*="ring-brand-cyan"] {
+.react-flow__node .node-container [class*='ring-[brand-cyan]'],
+.react-flow__node .node-container [class*='ring-brand-cyan'] {
   --tw-ring-color: var(--brand-cyan) !important;
 }
 
-.react-flow__node .node-container [class*="focus:border-[brand-cyan]"],
-.react-flow__node .node-container [class*="focus:border-brand-cyan"],
-.react-flow__node .node-container [class*="focus:ring-[brand-cyan]"],
-.react-flow__node .node-container [class*="focus:ring-brand-cyan"] {
+.react-flow__node .node-container [class*='focus:border-[brand-cyan]'],
+.react-flow__node .node-container [class*='focus:border-brand-cyan'],
+.react-flow__node .node-container [class*='focus:ring-[brand-cyan]'],
+.react-flow__node .node-container [class*='focus:ring-brand-cyan'] {
   border-color: var(--brand-cyan) !important;
   --tw-ring-color: var(--brand-cyan) !important;
 }
 
 /* Override hover states with brand-cyan */
-.react-flow__node .node-container [class*="hover:text-brand-cyan"]:hover {
+.react-flow__node .node-container [class*='hover:text-brand-cyan']:hover {
   color: var(--brand-cyan) !important;
 }
 
-.react-flow__node .node-container [class*="hover:border-[brand-cyan]"]:hover,
-.react-flow__node .node-container [class*="hover:border-brand-cyan"]:hover {
+.react-flow__node .node-container [class*='hover:border-[brand-cyan]']:hover,
+.react-flow__node .node-container [class*='hover:border-brand-cyan']:hover {
   border-color: var(--brand-cyan) !important;
 }
 
-.react-flow__node .node-container [class*="hover:bg-brand-cyan"]:not([class*="/"]):hover {
+.react-flow__node .node-container [class*='hover:bg-brand-cyan']:not([class*='/']):hover {
   background-color: var(--brand-cyan) !important;
 }
 
@@ -1736,28 +1751,28 @@
 }
 
 /* Buttons with dark backgrounds */
-.react-flow__node .node-container button[class*="bg-neutral-900"],
-.react-flow__node .node-container button[class*="bg-neutral-800"],
-.react-flow__node .node-container button[class*="bg-neutral-950"] {
+.react-flow__node .node-container button[class*='bg-neutral-900'],
+.react-flow__node .node-container button[class*='bg-neutral-800'],
+.react-flow__node .node-container button[class*='bg-neutral-950'] {
   color: var(--node-text-color-muted, #9ca3af) !important;
 }
 
 /* Buttons with light backgrounds */
-.react-flow__node .node-container button[class*="bg-brand-cyan/20"],
-.react-flow__node .node-container button[class*="bg-brand-cyan/10"] {
+.react-flow__node .node-container button[class*='bg-brand-cyan/20'],
+.react-flow__node .node-container button[class*='bg-brand-cyan/10'] {
   color: #00d9ff;
 }
 
-.react-flow__node .node-container button[class*="bg-green-500/5"],
-.react-flow__node .node-container button[class*="bg-green-500/10"] {
+.react-flow__node .node-container button[class*='bg-green-500/5'],
+.react-flow__node .node-container button[class*='bg-green-500/10'] {
   color: var(--node-text-color, #e5e7eb);
 }
 
 /* Light background: use dark text on light button backgrounds */
-.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-brand-cyan/20"],
-.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-brand-cyan/10"],
-.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-green-500/5"],
-.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-green-500/10"] {
+.react-flow__node[data-node-bg-light='true'] .node-container button[class*='bg-brand-cyan/20'],
+.react-flow__node[data-node-bg-light='true'] .node-container button[class*='bg-brand-cyan/10'],
+.react-flow__node[data-node-bg-light='true'] .node-container button[class*='bg-green-500/5'],
+.react-flow__node[data-node-bg-light='true'] .node-container button[class*='bg-green-500/10'] {
   color: #000000 !important;
 }
 
@@ -1863,13 +1878,11 @@
 
 /* Node variant select element styles */
 select.w-full.font-mono.node-interactive {
-  font-family: "Red Hat Mono", monospace;
+  font-family: 'Red Hat Mono', monospace;
   border-radius: 10px;
   text-align: left;
   background-color: rgba(33, 33, 33, 1);
 }
-
-
 
 .node-image-dragging {
   will-change: transform;
@@ -2047,7 +2060,7 @@ select.w-full.font-mono.node-interactive {
   animation-play-state: paused;
 }
 
-.tutorial-button-position>button {
+.tutorial-button-position > button {
   position: relative;
 }
 
@@ -2085,20 +2098,20 @@ select.w-full.font-mono.node-interactive {
 }
 
 /* Success type styling */
-[data-sonner-toast][data-type="success"] {
+[data-sonner-toast][data-type='success'] {
   border-color: color-mix(in srgb, var(--brand-cyan), transparent 85%) !important;
 }
 
-.dark [data-sonner-toast][data-type="success"] {
+.dark [data-sonner-toast][data-type='success'] {
   background: color-mix(in srgb, var(--brand-cyan), transparent 95%) !important;
 }
 
 /* Error type styling */
-[data-sonner-toast][data-type="error"] {
+[data-sonner-toast][data-type='error'] {
   border-color: color-mix(in srgb, var(--destructive), transparent 85%) !important;
 }
 
-.dark [data-sonner-toast][data-type="error"] {
+.dark [data-sonner-toast][data-type='error'] {
   background: color-mix(in srgb, var(--destructive), transparent 95%) !important;
 }
 

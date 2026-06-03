@@ -1,222 +1,239 @@
 // server/types/brandGuideline.ts
 
 export interface BrandGuidelineIdentity {
-  name?: string
-  website?: string
-  tagline?: string
-  description?: string
+  name?: string;
+  website?: string;
+  tagline?: string;
+  description?: string;
 }
 
 export interface BrandGuidelineLogo {
-  id: string
-  url: string
-  variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom'
-  label?: string
-  source?: 'upload' | 'figma'
-  thumbnailUrl?: string
-  format?: string
-  figmaKey?: string
-  figmaFileKey?: string
-  figmaNodeId?: string
+  id: string;
+  url: string;
+  variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom';
+  label?: string;
+  source?: 'upload' | 'figma';
+  thumbnailUrl?: string;
+  format?: string;
+  figmaKey?: string;
+  figmaFileKey?: string;
+  figmaNodeId?: string;
 }
 
 export interface BrandGuidelineColor {
-  hex: string
-  name: string
-  role?: string // "background", "text", "accent", "cta"
-  cmyk?: { c: number; m: number; y: number; k: number } // 0-100 each
+  hex: string;
+  name: string;
+  role?: string; // "background", "text", "accent", "cta"
+  cmyk?: { c: number; m: number; y: number; k: number }; // 0-100 each
 }
 
 export interface BrandGuidelineTypography {
-  family: string
-  style?: string   // "Bold", "Regular", "SemiBold"
-  role: string     // "heading", "body", "accent", "mono"
-  size?: number
-  lineHeight?: number
-  letterSpacing?: string
-  weights?: number[]
-  availableStyles?: string[]
+  family: string;
+  style?: string; // "Bold", "Regular", "SemiBold"
+  role: string; // "heading", "body", "accent", "mono"
+  size?: number;
+  lineHeight?: number;
+  letterSpacing?: string;
+  weights?: number[];
+  availableStyles?: string[];
 }
 
 export interface BrandGuidelineGradient {
-  id: string
-  name: string
-  type: 'linear' | 'radial'
-  angle: number
-  stops: { color: string; position: number }[]
-  usage: 'hero' | 'decorative' | 'fill' | 'overlay'
-  css?: string
+  id: string;
+  name: string;
+  type: 'linear' | 'radial';
+  angle: number;
+  stops: { color: string; position: number }[];
+  usage: 'hero' | 'decorative' | 'fill' | 'overlay';
+  css?: string;
 }
 
 export interface BrandGuidelineShadow {
-  id: string
-  name: string
-  x: number
-  y: number
-  blur: number
-  spread: number
-  color: string
-  opacity: number
-  type: 'outer' | 'inner' | 'glow'
-  css?: string
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  blur: number;
+  spread: number;
+  color: string;
+  opacity: number;
+  type: 'outer' | 'inner' | 'glow';
+  css?: string;
 }
 
 export interface BrandGuidelineMotion {
-  easing?: string
-  durations?: { fast: number; medium: number; slow: number }
-  philosophy?: 'minimal' | 'moderate' | 'expressive'
-  respectsReducedMotion?: boolean
+  easing?: string;
+  durations?: { fast: number; medium: number; slow: number };
+  philosophy?: 'minimal' | 'moderate' | 'expressive';
+  respectsReducedMotion?: boolean;
 }
 
 export interface BrandGuidelineBorder {
-  id: string
-  name: string
-  width: number
-  style: 'solid' | 'dashed' | 'dotted'
-  color: string
-  opacity: number
-  role: 'default' | 'emphasis' | 'scaffold' | 'divider'
-  css?: string
+  id: string;
+  name: string;
+  width: number;
+  style: 'solid' | 'dashed' | 'dotted';
+  color: string;
+  opacity: number;
+  role: 'default' | 'emphasis' | 'scaffold' | 'divider';
+  css?: string;
 }
 
 export interface BrandGuidelineMedia {
-  id: string
-  url: string
-  type: 'image' | 'pdf'
-  label?: string
-  category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other'
+  id: string;
+  url: string;
+  type: 'image' | 'pdf';
+  label?: string;
+  category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
 }
 
 export interface BrandGuidelineTokens {
-  spacing?: Record<string, number>
-  radius?: Record<string, number>
-  shadows?: Record<string, { x: number; y: number; blur: number; spread: number; color: string; opacity: number }>
-  components?: Record<string, any>
+  spacing?: Record<string, number>;
+  radius?: Record<string, number>;
+  shadows?: Record<
+    string,
+    { x: number; y: number; blur: number; spread: number; color: string; opacity: number }
+  >;
+  components?: Record<string, any>;
 }
 
 export interface BrandGuidelineGuidelines {
-  voice?: string
-  dos?: string[]
-  donts?: string[]
-  imagery?: string
-  accessibility?: string
-  person?: 'first' | 'second' | 'third'
-  emojiPolicy?: 'none' | 'informal' | 'free'
-  casingRules?: string[]
+  voice?: string;
+  dos?: string[];
+  donts?: string[];
+  imagery?: string;
+  accessibility?: string;
+  person?: 'first' | 'second' | 'third';
+  emojiPolicy?: 'none' | 'informal' | 'free';
+  casingRules?: string[];
 }
 
 export interface BrandGuidelineExtraction {
-  sources: Array<{ type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine'; ref?: string; date: string }>
-  completeness: number // 0-100
+  sources: Array<{
+    type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine';
+    ref?: string;
+    date: string;
+  }>;
+  completeness: number; // 0-100
 }
 
 export interface BrandArchetype {
-  name: string
-  role?: 'primary' | 'secondary'
-  description: string
-  image?: string
-  examples?: string[]
+  name: string;
+  role?: 'primary' | 'secondary';
+  description: string;
+  image?: string;
+  examples?: string[];
 }
 
 export interface BrandPersona {
-  name: string
-  age?: number
-  occupation?: string
-  traits?: string[]
-  bio?: string
-  desires?: string[]
-  painPoints?: string[]
-  image?: string
+  name: string;
+  age?: number;
+  occupation?: string;
+  traits?: string[];
+  bio?: string;
+  desires?: string[];
+  painPoints?: string[];
+  image?: string;
 }
 
 export interface BrandToneOfVoiceValue {
-  title: string
-  description: string
-  example: string
+  title: string;
+  description: string;
+  example: string;
 }
 
 export interface BrandPillar {
-  value: string
-  description: string
+  value: string;
+  description: string;
 }
 
 export interface BrandCoreMessage {
-  product: string
-  differential: string
-  emotionalBond: string
+  product: string;
+  differential: string;
+  emotionalBond: string;
 }
 
 export interface BrandManifesto {
-  provocation?: string
-  tension?: string
-  promise?: string
-  full?: string
+  provocation?: string;
+  tension?: string;
+  promise?: string;
+  full?: string;
 }
 
 export interface BrandMarketResearch {
-  competitors?: string[]
-  gaps?: string[]
-  opportunities?: string[]
-  notes?: string
+  competitors?: string[];
+  gaps?: string[];
+  opportunities?: string[];
+  notes?: string;
 }
 
 export interface BrandGraphicSystem {
-  patterns?: string[]
-  grafisms?: string[]
-  imageRules?: string[]
-  editorialGrid?: string
+  patterns?: string[];
+  grafisms?: string[];
+  imageRules?: string[];
+  editorialGrid?: string;
 }
 
 export interface BrandGuidelineStrategy {
-  manifesto?: string | BrandManifesto
-  positioning?: string[]
-  coreMessage?: BrandCoreMessage
-  pillars?: BrandPillar[]
-  archetypes?: BrandArchetype[]
-  personas?: BrandPersona[]
-  voiceValues?: BrandToneOfVoiceValue[]
-  marketResearch?: BrandMarketResearch
-  graphicSystem?: BrandGraphicSystem
+  manifesto?: string | BrandManifesto;
+  positioning?: string[];
+  coreMessage?: BrandCoreMessage;
+  pillars?: BrandPillar[];
+  archetypes?: BrandArchetype[];
+  personas?: BrandPersona[];
+  voiceValues?: BrandToneOfVoiceValue[];
+  marketResearch?: BrandMarketResearch;
+  graphicSystem?: BrandGraphicSystem;
 }
-
-
 
 export interface BrandGuideline {
-  id?: string
-  userId?: string
-  identity?: BrandGuidelineIdentity
-  logos?: BrandGuidelineLogo[]
-  colors?: BrandGuidelineColor[]
-  typography?: BrandGuidelineTypography[]
-  tags?: Record<string, string[]>
-  media?: BrandGuidelineMedia[]
-  tokens?: BrandGuidelineTokens
-  guidelines?: BrandGuidelineGuidelines
-  strategy?: BrandGuidelineStrategy
-  extraction?: BrandGuidelineExtraction
+  id?: string;
+  userId?: string;
+  identity?: BrandGuidelineIdentity;
+  logos?: BrandGuidelineLogo[];
+  colors?: BrandGuidelineColor[];
+  typography?: BrandGuidelineTypography[];
+  tags?: Record<string, string[]>;
+  media?: BrandGuidelineMedia[];
+  tokens?: BrandGuidelineTokens;
+  guidelines?: BrandGuidelineGuidelines;
+  strategy?: BrandGuidelineStrategy;
+  extraction?: BrandGuidelineExtraction;
   // Design tokens
-  gradients?: BrandGuidelineGradient[]
-  shadows?: BrandGuidelineShadow[]
-  motion?: BrandGuidelineMotion
-  borders?: BrandGuidelineBorder[]
-  colorThemes?: Array<{ id: string; name: string; bg: string; text: string; primary: string; accent: string }>
+  gradients?: BrandGuidelineGradient[];
+  shadows?: BrandGuidelineShadow[];
+  motion?: BrandGuidelineMotion;
+  borders?: BrandGuidelineBorder[];
+  colorThemes?: Array<{
+    id: string;
+    name: string;
+    bg: string;
+    text: string;
+    primary: string;
+    accent: string;
+  }>;
   // Validation state
-  validation?: Record<string, 'pending' | 'approved' | 'needs_work'>
-  updatedAt?: string
+  validation?: Record<string, 'pending' | 'approved' | 'needs_work'>;
+  updatedAt?: string;
   // Organization
-  folder?: string
+  folder?: string;
   // UI preferences
-  activeSections?: string[]
-  orderedBlocks?: string[]
+  activeSections?: string[];
+  orderedBlocks?: string[];
   // Knowledge RAG
-  knowledgeFiles?: Array<{ id: string; fileName: string; source: 'pdf' | 'image' | 'url' | 'text'; vectorIds: string[]; addedByUserId: string; addedAt: string }>
+  knowledgeFiles?: Array<{
+    id: string;
+    fileName: string;
+    source: 'pdf' | 'image' | 'url' | 'text';
+    vectorIds: string[];
+    addedByUserId: string;
+    addedAt: string;
+  }>;
   // Public sharing
-  publicSlug?: string
-  isPublic?: boolean
-  currentVersion?: number
+  publicSlug?: string;
+  isPublic?: boolean;
+  currentVersion?: number;
 }
-
-
 
 /**
  * Calculate completeness percentage based on filled sections.
@@ -237,6 +254,6 @@ export function calculateCompleteness(bg: BrandGuideline): number {
     (bg.shadows?.length ?? 0) > 0 ? 1 : 0,
     bg.motion?.easing ? 1 : 0,
     (bg.borders?.length ?? 0) > 0 ? 1 : 0,
-  ]
-  return Math.round((sections.reduce((a, b) => a + b, 0) / sections.length) * 100)
+  ];
+  return Math.round((sections.reduce((a, b) => a + b, 0) / sections.length) * 100);
 }

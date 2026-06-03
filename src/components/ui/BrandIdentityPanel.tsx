@@ -45,9 +45,9 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
   };
 
   const allColors = [
-    ...brandIdentity.colors.primary.map(c => ({ color: c, type: 'primary' as const })),
-    ...brandIdentity.colors.secondary.map(c => ({ color: c, type: 'secondary' as const })),
-    ...brandIdentity.colors.accent.map(c => ({ color: c, type: 'accent' as const })),
+    ...brandIdentity.colors.primary.map((c) => ({ color: c, type: 'primary' as const })),
+    ...brandIdentity.colors.secondary.map((c) => ({ color: c, type: 'secondary' as const })),
+    ...brandIdentity.colors.accent.map((c) => ({ color: c, type: 'accent' as const })),
   ];
 
   return (
@@ -98,7 +98,9 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
               <div className="flex flex-wrap gap-2">
                 {brandIdentity.typography.primary && (
                   <button
-                    onClick={() => handleTypographyClick(brandIdentity.typography.primary, 'primary')}
+                    onClick={() =>
+                      handleTypographyClick(brandIdentity.typography.primary, 'primary')
+                    }
                     className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 font-mono text-[10px] transition-colors cursor-pointer"
                     title={`Click to insert {brand-typography: ${brandIdentity.typography.primary}}`}
                   >
@@ -107,7 +109,9 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                 )}
                 {brandIdentity.typography.secondary && (
                   <button
-                    onClick={() => handleTypographyClick(brandIdentity.typography.secondary!, 'secondary')}
+                    onClick={() =>
+                      handleTypographyClick(brandIdentity.typography.secondary!, 'secondary')
+                    }
                     className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 font-mono text-[10px] transition-colors cursor-pointer"
                     title={`Click to insert {brand-typography: ${brandIdentity.typography.secondary}}`}
                   >
@@ -134,7 +138,9 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                 )}
                 {brandIdentity.personality.feeling && (
                   <button
-                    onClick={() => handlePersonalityClick(brandIdentity.personality.feeling, 'feeling')}
+                    onClick={() =>
+                      handlePersonalityClick(brandIdentity.personality.feeling, 'feeling')
+                    }
                     className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-[10px] transition-colors cursor-pointer"
                     title={`Click to insert {brand-feeling: ${brandIdentity.personality.feeling}}`}
                   >
@@ -161,7 +167,9 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                   </button>
                 ))}
                 {brandIdentity.visualElements.length > 8 && (
-                  <span className="text-neutral-500 text-[10px] px-2 py-1">+{brandIdentity.visualElements.length - 8} more</span>
+                  <span className="text-neutral-500 text-[10px] px-2 py-1">
+                    +{brandIdentity.visualElements.length - 8} more
+                  </span>
                 )}
               </div>
             </div>
@@ -171,9 +179,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
           {brandIdentity.composition.style && (
             <div>
               <div className="text-neutral-500 font-mono mb-1.5">Composition</div>
-              <div className="text-neutral-400 text-[10px]">
-                {brandIdentity.composition.style}
-              </div>
+              <div className="text-neutral-400 text-[10px]">{brandIdentity.composition.style}</div>
             </div>
           )}
         </div>

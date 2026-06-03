@@ -14,10 +14,18 @@ let pineconeIndex: any = null;
 
 const getIndex = () => {
   if (!apiKey) {
-    console.warn('[VectorService] ⚠️ PINECONE_API_KEY não configurada. Usando MOCK_MODE (Busca em memória limitada).');
+    console.warn(
+      '[VectorService] ⚠️ PINECONE_API_KEY não configurada. Usando MOCK_MODE (Busca em memória limitada).'
+    );
     return {
-      upsert: async () => { console.log('[VectorService-Mock] Upsert simulado com sucesso.'); return true; },
-      query: async () => { console.log('[VectorService-Mock] Query simulada retornando lista vazia.'); return { matches: [] }; },
+      upsert: async () => {
+        console.log('[VectorService-Mock] Upsert simulado com sucesso.');
+        return true;
+      },
+      query: async () => {
+        console.log('[VectorService-Mock] Query simulada retornando lista vazia.');
+        return { matches: [] };
+      },
       deleteOne: async () => true,
       deleteMany: async () => true,
     };
@@ -58,9 +66,13 @@ export const vectorService = {
         console.error('[VectorService] Invalid embedding values:', {
           type: typeof values,
           isArray: Array.isArray(values),
-          length: Array.isArray(values) ? values.length : 'N/A'
+          length: Array.isArray(values) ? values.length : 'N/A',
         });
-        throw new Error(`Valores de embedding inválidos: ${typeof values}. Array.isArray=${Array.isArray(values)}, length=${Array.isArray(values) ? values.length : 'N/A'}`);
+        throw new Error(
+          `Valores de embedding inválidos: ${typeof values}. Array.isArray=${Array.isArray(
+            values
+          )}, length=${Array.isArray(values) ? values.length : 'N/A'}`
+        );
       }
 
       // Filter metadata to remove undefined/null values which can break Pinecone SDK v7 validator
@@ -77,10 +89,15 @@ export const vectorService = {
       });
 
       // Ensure values is a proper number array
-      const valuesArray = values instanceof Float32Array ? Array.from(values) : values as number[];
+      const valuesArray =
+        values instanceof Float32Array ? Array.from(values) : (values as number[]);
 
       if (!Array.isArray(valuesArray) || valuesArray.length === 0) {
-        throw new Error(`CRITICAL: Invalid values for upsert. Type: ${typeof valuesArray}, Length: ${Array.isArray(valuesArray) ? valuesArray.length : 'N/A'}`);
+        throw new Error(
+          `CRITICAL: Invalid values for upsert. Type: ${typeof valuesArray}, Length: ${
+            Array.isArray(valuesArray) ? valuesArray.length : 'N/A'
+          }`
+        );
       }
 
       const record = {
@@ -89,22 +106,44 @@ export const vectorService = {
         metadata: cleanMetadata,
       };
 
-      console.log(`[VectorService] Record ready. ID: ${record.id}, Values: ${record.values.length}, Metadata keys: ${Object.keys(record.metadata).join(', ')}`);
+      console.log(
+        `[VectorService] Record ready. ID: ${record.id}, Values: ${
+          record.values.length
+        }, Metadata keys: ${Object.keys(record.metadata).join(', ')}`
+      );
 
       const recordsToUpsert = [record];
-      console.log(`[VectorService] Calling upsert with array of length: ${recordsToUpsert.length}. Record structure:`, { id: typeof record.id, values: Array.isArray(record.values), metadata: typeof record.metadata });
+      console.log(
+        `[VectorService] Calling upsert with array of length: ${recordsToUpsert.length}. Record structure:`,
+        {
+          id: typeof record.id,
+          values: Array.isArray(record.values),
+          metadata: typeof record.metadata,
+        }
+      );
 
-      if (recordsToUpsert.length === 0 || !recordsToUpsert[0].values || recordsToUpsert[0].values.length === 0) {
-        throw new Error("CRITICAL: recordsToUpsert is empty or has invalid values before calling Pinecone!");
+      if (
+        recordsToUpsert.length === 0 ||
+        !recordsToUpsert[0].values ||
+        recordsToUpsert[0].values.length === 0
+      ) {
+        throw new Error(
+          'CRITICAL: recordsToUpsert is empty or has invalid values before calling Pinecone!'
+        );
       }
 
       // Standard Pinecone SDK v7 upsert (Array of objects)
-      console.log(`[VectorService] Before upsert - record data:`, JSON.stringify({
-        id: recordsToUpsert[0].id,
-        valuesLength: recordsToUpsert[0].values.length,
-        metadataKeys: Object.keys(recordsToUpsert[0].metadata),
-        metadataTypes: Object.entries(recordsToUpsert[0].metadata).map(([k, v]) => `${k}:${typeof v}`)
-      }));
+      console.log(
+        `[VectorService] Before upsert - record data:`,
+        JSON.stringify({
+          id: recordsToUpsert[0].id,
+          valuesLength: recordsToUpsert[0].values.length,
+          metadataKeys: Object.keys(recordsToUpsert[0].metadata),
+          metadataTypes: Object.entries(recordsToUpsert[0].metadata).map(
+            ([k, v]) => `${k}:${typeof v}`
+          ),
+        })
+      );
 
       await getIndex().upsert(recordsToUpsert);
       return true;
@@ -159,5 +198,5 @@ export const vectorService = {
       console.error('Pinecone deleteMany error:', error);
       throw error;
     }
-  }
+  },
 };

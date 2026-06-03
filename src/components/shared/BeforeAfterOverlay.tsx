@@ -11,12 +11,15 @@ export const BeforeAfterOverlay: React.FC<BeforeAfterOverlayProps> = React.memo(
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    setSplitPosition(Math.max(5, Math.min(95, x)));
-  }, [isDragging, setSplitPosition]);
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDragging || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      setSplitPosition(Math.max(5, Math.min(95, x)));
+    },
+    [isDragging, setSplitPosition]
+  );
 
   if (!sourceUrl) return null;
 

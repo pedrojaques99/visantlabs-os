@@ -18,8 +18,8 @@ import { branding, getYoutubeThumbnail } from '../config/branding';
 import AnimatedTitle from '../components/shared/AnimatedTitle';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { MicroTitle } from '../components/ui/MicroTitle';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_IMAGE_SIZE_MB = 10;
@@ -49,55 +49,67 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
   const previousAuthRef = useRef<boolean | null>(null);
   const hasTriggeredAutoUploadRef = useRef(false);
 
-  const processFile = useCallback(async (file: File | null) => {
-    if (!file) {
-      if (isDev) console.log('📄 [WelcomeScreen] processFile: No file provided');
-      return;
-    }
+  const processFile = useCallback(
+    async (file: File | null) => {
+      if (!file) {
+        if (isDev) console.log('📄 [WelcomeScreen] processFile: No file provided');
+        return;
+      }
 
-    if (isDev) console.log('📄 [WelcomeScreen] processFile: Starting file processing', {
-      name: file.name,
-      type: file.type,
-      size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-    });
+      if (isDev)
+        console.log('📄 [WelcomeScreen] processFile: Starting file processing', {
+          name: file.name,
+          type: file.type,
+          size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+        });
 
-    if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
-      if (isDev) console.error('❌ [WelcomeScreen] processFile: Unsupported file type', file.type);
-      toast.error(t('upload.unsupportedFileType'), { duration: 5000 });
-      return;
-    }
+      if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
+        if (isDev)
+          console.error('❌ [WelcomeScreen] processFile: Unsupported file type', file.type);
+        toast.error(t('upload.unsupportedFileType'), { duration: 5000 });
+        return;
+      }
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      if (isDev) console.error('❌ [WelcomeScreen] processFile: File too large', {
-        size: fileSizeMB,
-        max: MAX_IMAGE_SIZE_MB,
-      });
-      toast.error(t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }), { duration: 5000 });
-      return;
-    }
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        if (isDev)
+          console.error('❌ [WelcomeScreen] processFile: File too large', {
+            size: fileSizeMB,
+            max: MAX_IMAGE_SIZE_MB,
+          });
+        toast.error(t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }), {
+          duration: 5000,
+        });
+        return;
+      }
 
-    setIsProcessing(true);
-    if (isDev) console.log('⏳ [WelcomeScreen] processFile: Converting file to base64...');
-    try {
-      const imageData = await fileToBase64(file);
-      if (isDev) console.log('✅ [WelcomeScreen] processFile: File converted successfully', {
-        dataLength: imageData.base64.length,
-        preview: imageData.base64.substring(0, 50) + '...',
-      });
+      setIsProcessing(true);
+      if (isDev) console.log('⏳ [WelcomeScreen] processFile: Converting file to base64...');
+      try {
+        const imageData = await fileToBase64(file);
+        if (isDev)
+          console.log('✅ [WelcomeScreen] processFile: File converted successfully', {
+            dataLength: imageData.base64.length,
+            preview: imageData.base64.substring(0, 50) + '...',
+          });
 
-      if (isDev) console.log('📤 [WelcomeScreen] processFile: Calling onImageUpload callback...');
-      onImageUpload(imageData);
+        if (isDev) console.log('📤 [WelcomeScreen] processFile: Calling onImageUpload callback...');
+        onImageUpload(imageData);
 
-      if (isDev) console.log('✅ [WelcomeScreen] processFile: File processed and callbacks executed successfully');
-    } catch (err) {
-      if (isDev) console.error('❌ [WelcomeScreen] processFile: Error processing file', err);
-      toast.error(t('upload.couldNotProcess'), { duration: 5000 });
-    } finally {
-      setIsProcessing(false);
-      if (isDev) console.log('🏁 [WelcomeScreen] processFile: Processing completed');
-    }
-  }, [onImageUpload, t]);
+        if (isDev)
+          console.log(
+            '✅ [WelcomeScreen] processFile: File processed and callbacks executed successfully'
+          );
+      } catch (err) {
+        if (isDev) console.error('❌ [WelcomeScreen] processFile: Error processing file', err);
+        toast.error(t('upload.couldNotProcess'), { duration: 5000 });
+      } finally {
+        setIsProcessing(false);
+        if (isDev) console.log('🏁 [WelcomeScreen] processFile: Processing completed');
+      }
+    },
+    [onImageUpload, t]
+  );
 
   // Check if paste tip should be shown (only once per user)
   useEffect(() => {
@@ -112,7 +124,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
       return () => clearTimeout(timer);
     }
   }, []);
-
 
   // Reset trigger ref when query parameter changes
   useEffect(() => {
@@ -180,10 +191,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
         if (item.type.indexOf('image') !== -1) {
           e.preventDefault();
           imageFile = item.getAsFile();
-          if (isDev) console.log('📋 [WelcomeScreen] handlePaste: Image found in clipboard', {
-            type: item.type,
-            fileName: imageFile?.name,
-          });
+          if (isDev)
+            console.log('📋 [WelcomeScreen] handlePaste: Image found in clipboard', {
+              type: item.type,
+              fileName: imageFile?.name,
+            });
           break;
         }
       }
@@ -199,11 +211,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
       // If still checking auth, wait a bit
       if (isCheckingAuth || isAuthenticated === null) {
-        if (isDev) console.log('⏳ [WelcomeScreen] handlePaste: Auth check in progress, verifying...');
+        if (isDev)
+          console.log('⏳ [WelcomeScreen] handlePaste: Auth check in progress, verifying...');
         try {
           const user = await authService.verifyToken(); // Use verifyToken with cache
           if (!user) {
-            if (isDev) console.log('⚠️ [WelcomeScreen] handlePaste: User not authenticated, saving file for later');
+            if (isDev)
+              console.log(
+                '⚠️ [WelcomeScreen] handlePaste: User not authenticated, saving file for later'
+              );
             pendingFileRef.current = imageFile;
             setShowAuthModal(true);
             return;
@@ -221,7 +237,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
       // Use context state - if not authenticated, show modal
       if (isAuthenticated === false) {
-        if (isDev) console.log('⚠️ [WelcomeScreen] handlePaste: User not authenticated, saving file for later');
+        if (isDev)
+          console.log(
+            '⚠️ [WelcomeScreen] handlePaste: User not authenticated, saving file for later'
+          );
         pendingFileRef.current = imageFile;
         setShowAuthModal(true);
         setIsVerifyingAuth(false);
@@ -244,12 +263,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (isDev) console.log('📂 [WelcomeScreen] handleFileChange: File selected from input', {
-      hasFile: !!file,
-      fileName: file?.name,
-      fileType: file?.type,
-      fileSize: file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : 'N/A',
-    });
+    if (isDev)
+      console.log('📂 [WelcomeScreen] handleFileChange: File selected from input', {
+        hasFile: !!file,
+        fileName: file?.name,
+        fileType: file?.type,
+        fileSize: file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : 'N/A',
+      });
     if (file) {
       processFile(file);
     } else {
@@ -259,10 +279,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
   const handleUploadClick = async () => {
     if (isDev) console.log('🖼️ [WelcomeScreen] handleUploadClick: Upload image button clicked');
-    if (isDev) console.log('🔍 [WelcomeScreen] handleUploadClick: Auth state', {
-      isAuthenticated,
-      isCheckingAuth,
-    });
+    if (isDev)
+      console.log('🔍 [WelcomeScreen] handleUploadClick: Auth state', {
+        isAuthenticated,
+        isCheckingAuth,
+      });
 
     // If still checking auth, verify with cache
     if (isCheckingAuth || isAuthenticated === null) {
@@ -271,13 +292,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
       try {
         const user = await authService.verifyToken(); // Use verifyToken with cache
         if (!user) {
-          if (isDev) console.log('⚠️ [WelcomeScreen] handleUploadClick: User not authenticated, showing auth modal');
+          if (isDev)
+            console.log(
+              '⚠️ [WelcomeScreen] handleUploadClick: User not authenticated, showing auth modal'
+            );
           setPendingAction('upload');
           setShowAuthModal(true);
           return;
         }
       } catch (error) {
-        if (isDev) console.error('❌ [WelcomeScreen] handleUploadClick: Authentication error', error);
+        if (isDev)
+          console.error('❌ [WelcomeScreen] handleUploadClick: Authentication error', error);
         setPendingAction('upload');
         setShowAuthModal(true);
         return;
@@ -288,18 +313,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
     // Use context state - if not authenticated, show modal
     if (isAuthenticated === false) {
-      if (isDev) console.log('⚠️ [WelcomeScreen] handleUploadClick: User not authenticated, showing auth modal');
+      if (isDev)
+        console.log(
+          '⚠️ [WelcomeScreen] handleUploadClick: User not authenticated, showing auth modal'
+        );
       setPendingAction('upload');
       setShowAuthModal(true);
       return;
     }
 
     // isAuthenticated === true, safe to proceed
-    if (isDev) console.log('✅ [WelcomeScreen] handleUploadClick: User authenticated (from context)');
+    if (isDev)
+      console.log('✅ [WelcomeScreen] handleUploadClick: User authenticated (from context)');
     if (isDev) console.log('📂 [WelcomeScreen] handleUploadClick: Triggering file input click');
     if (fileInputRef.current) {
       fileInputRef.current.click();
-      if (isDev) console.log('✅ [WelcomeScreen] handleUploadClick: File input clicked successfully');
+      if (isDev)
+        console.log('✅ [WelcomeScreen] handleUploadClick: File input clicked successfully');
     } else {
       if (isDev) console.error('❌ [WelcomeScreen] handleUploadClick: File input ref is null');
     }
@@ -325,12 +355,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
     setIsDragOver(false);
 
     const file = e.dataTransfer.files?.[0];
-    if (isDev) console.log('🖱️ [WelcomeScreen] handleDrop: File dropped', {
-      hasFile: !!file,
-      fileName: file?.name,
-      fileType: file?.type,
-      fileSize: file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : 'N/A',
-    });
+    if (isDev)
+      console.log('🖱️ [WelcomeScreen] handleDrop: File dropped', {
+        hasFile: !!file,
+        fileName: file?.name,
+        fileType: file?.type,
+        fileSize: file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : 'N/A',
+      });
 
     // Check authentication using context state first
     setIsVerifyingAuth(true);
@@ -375,21 +406,31 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
   return (
     <div
-      className={`welcome-screen relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20 transition-all duration-300 ${theme === 'dark'
-        ? `bg-background ${isDragOver ? 'bg-background/90 ring-4 ring-brand-cyan/50' : ''}`
-        : `bg-neutral-100 ${isDragOver ? 'bg-neutral-100/90 ring-4 ring-brand-cyan/50' : ''}`
-        }`}
+      className={`welcome-screen relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20 transition-all duration-300 ${
+        theme === 'dark'
+          ? `bg-background ${isDragOver ? 'bg-background/90 ring-4 ring-brand-cyan/50' : ''}`
+          : `bg-neutral-100 ${isDragOver ? 'bg-neutral-100/90 ring-4 ring-brand-cyan/50' : ''}`
+      }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       <div className="absolute inset-0 z-0">
         <GridDotsBackground opacity={theme === 'dark' ? 0.02 : 0.05} />
-        <InteractiveASCII isDarkMode={theme === 'dark'} fullHeight={true} color="#52ddeb" className="welcome-ascii-bg" />
+        <InteractiveASCII
+          isDarkMode={theme === 'dark'}
+          fullHeight={true}
+          color="#52ddeb"
+          className="welcome-ascii-bg"
+        />
       </div>
       <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
         <div className="space-y-4">
-          <h1 className={`text-3xl md:text-4xl font-bold font-redhatmono tracking-tight ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}>
+          <h1
+            className={`text-3xl md:text-4xl font-bold font-redhatmono tracking-tight ${
+              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
+            }`}
+          >
             {t('welcome.title') || 'MOCKUP MACHINE®'}
           </h1>
           <MicroTitle className="text-brand-cyan uppercase">
@@ -425,38 +466,48 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             </div>
           </Tooltip>
 
-          <MicroTitle as="span" className="text-[10px] md:text-xs opacity-60 hover:opacity-100 transition-opacity">
+          <MicroTitle
+            as="span"
+            className="text-[10px] md:text-xs opacity-60 hover:opacity-100 transition-opacity"
+          >
             {t('welcome.pasteTipSmall') || 'ou ctrl + v para colar'}
           </MicroTitle>
 
           {isProcessing && (
-            <div className={`flex items-center gap-2 font-manrope text-sm ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-              }`}>
+            <div
+              className={`flex items-center gap-2 font-manrope text-sm ${
+                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+              }`}
+            >
               <GlitchLoader size={16} color="var(--brand-cyan)" />
-              <span>
-                {t('welcome.loadingImage') || 'Loading image...'}
-              </span>
+              <span>{t('welcome.loadingImage') || 'Loading image...'}</span>
             </div>
           )}
-
-
         </div>
 
         {/* Tutorial Button - Floating */}
         {showTutorialButton && (
           <div className="fixed z-40 tutorial-button-position group relative">
             {/* Mobile: Simple compact button */}
-            <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
-              className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${theme === 'dark'
-                ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-neutral-700'
-                : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-neutral-700'
-                }`}
+            <Button
+              variant="ghost"
+              onClick={() => setShowTutorialModal(true)}
+              className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${
+                theme === 'dark'
+                  ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-neutral-700'
+                  : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-neutral-700'
+              }`}
             >
               <div className="flex items-center justify-center w-7 h-7 rounded-md bg-brand-cyan/80">
                 <Play size={14} className="text-black ml-0.5" fill="black" />
               </div>
-              <span className={`font-mono text-xs font-medium ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                }`}>{t('tutorial.title')}</span>
+              <span
+                className={`font-mono text-xs font-medium ${
+                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
+                }`}
+              >
+                {t('tutorial.title')}
+              </span>
               <div
                 onClick={(e) => {
                   e.stopPropagation();
@@ -471,10 +522,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                     setShowTutorialButton(false);
                   }
                 }}
-                className={`ml-1 p-1 rounded-md transition-colors cursor-pointer ${theme === 'dark'
-                  ? 'hover:bg-neutral-700 text-neutral-500 hover:text-destructive'
-                  : 'hover:bg-neutral-200 text-neutral-400 hover:text-destructive'
-                  }`}
+                className={`ml-1 p-1 rounded-md transition-colors cursor-pointer ${
+                  theme === 'dark'
+                    ? 'hover:bg-neutral-700 text-neutral-500 hover:text-destructive'
+                    : 'hover:bg-neutral-200 text-neutral-400 hover:text-destructive'
+                }`}
                 aria-label={t('welcome.screen.close_tutorial')}
               >
                 <X size={12} />
@@ -482,7 +534,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             </Button>
 
             {/* Desktop: Full thumbnail preview */}
-            <Button variant="ghost" onClick={() => setShowTutorialModal(true)}
+            <Button
+              variant="ghost"
+              onClick={() => setShowTutorialModal(true)}
               className="hidden px-4 py-2 md:block w-72 h-36 opacity-60 hover:opacity-100 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
             >
               {/* Thumbnail Container */}
@@ -504,11 +558,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                 {/* Play Button Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative flex items-center justify-center w-14 h-14 rounded-md bg-brand-cyan/60 group-hover:bg-brand-cyan/80 shadow-sm transition-all duration-300 group-hover:scale-[1.03]">
-                    <Play
-                      size={20}
-                      className="text-black ml-1"
-                      fill="black"
-                    />
+                    <Play size={20} className="text-black ml-1" fill="black" />
                   </div>
                 </div>
 
@@ -517,22 +567,30 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               </div>
 
               {/* Text Label */}
-              <div className={`absolute bottom-0 left-0 right-0 p-3 flex items-center gap-1.5 ${theme === 'dark' ? 'text-neutral-200' : 'text-white'
-                }`}>
+              <div
+                className={`absolute bottom-0 left-0 right-0 p-3 flex items-center gap-1.5 ${
+                  theme === 'dark' ? 'text-neutral-200' : 'text-white'
+                }`}
+              >
                 <BookOpen size={12} className="text-brand-cyan/90" />
-                <span className="font-mono text-sm font-medium opacity-90">{t('tutorial.title')}</span>
+                <span className="font-mono text-sm font-medium opacity-90">
+                  {t('tutorial.title')}
+                </span>
               </div>
             </Button>
 
             {/* Close Button for Desktop - Subtle - Only visible on hover */}
-            <Button variant="ghost" onClick={(e) => {
-              e.stopPropagation();
-              setShowTutorialButton(false);
-            }}
-              className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 z-50 ${theme === 'dark'
-                ? 'bg-neutral-950/80 hover:bg-destructive/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
-                : 'bg-white/80 hover:bg-destructive/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
-                }`}
+            <Button
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTutorialButton(false);
+              }}
+              className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 z-50 ${
+                theme === 'dark'
+                  ? 'bg-neutral-950/80 hover:bg-destructive/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
+                  : 'bg-white/80 hover:bg-destructive/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
+              }`}
               title={t('welcome.screen.fechar')}
             >
               <X size={14} />
@@ -579,4 +637,3 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
     </div>
   );
 };
-

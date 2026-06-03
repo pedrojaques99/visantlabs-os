@@ -55,7 +55,11 @@ export const HalftonePage: React.FC = () => {
     setPanelVisible,
     undo,
     redo,
-    zoom: { current: zoom, set: (z) => store.getState().setZoom(z), resetPan: () => store.getState().setPan(0, 0) },
+    zoom: {
+      current: zoom,
+      set: (z) => store.getState().setZoom(z),
+      resetPan: () => store.getState().setPan(0, 0),
+    },
   });
 
   const statusItems = [

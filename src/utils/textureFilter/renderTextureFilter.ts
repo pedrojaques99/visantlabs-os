@@ -40,7 +40,7 @@ function drawTexture(
   texture: HTMLImageElement,
   sw: number,
   sh: number,
-  settings: TextureFilterRenderSettings,
+  settings: TextureFilterRenderSettings
 ) {
   const tw = texture.naturalWidth || texture.width;
   const th = texture.naturalHeight || texture.height;
@@ -64,8 +64,8 @@ function drawTexture(
   if (settings.tileMode) {
     const stepX = scaledW + settings.tileGapX * settings.scale;
     const stepY = scaledH + settings.tileGapY * settings.scale;
-    for (let x = settings.offsetX % stepX - stepX; x < sw + stepX; x += stepX) {
-      for (let y = settings.offsetY % stepY - stepY; y < sh + stepY; y += stepY) {
+    for (let x = (settings.offsetX % stepX) - stepX; x < sw + stepX; x += stepX) {
+      for (let y = (settings.offsetY % stepY) - stepY; y < sh + stepY; y += stepY) {
         ctx.drawImage(texSource, x, y, scaledW, scaledH);
       }
     }
@@ -81,7 +81,7 @@ function drawTexture(
 export function renderTextureFilter(
   inputImage: HTMLImageElement | HTMLCanvasElement,
   textureImage: HTMLImageElement,
-  settings: TextureFilterRenderSettings,
+  settings: TextureFilterRenderSettings
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   const sw = inputImage instanceof HTMLImageElement ? inputImage.naturalWidth : inputImage.width;
@@ -110,7 +110,11 @@ export function renderTextureFilter(
       mctx.translate(-sw / 2, -sh / 2);
     }
     mctx.globalAlpha = 1;
-    drawTexture(mctx, textureImage, sw, sh, { ...settings, useOriginalColor: false, textureColor: '#ffffff' });
+    drawTexture(mctx, textureImage, sw, sh, {
+      ...settings,
+      useOriginalColor: false,
+      textureColor: '#ffffff',
+    });
     mctx.restore();
 
     ctx.drawImage(inputImage, 0, 0, sw, sh);

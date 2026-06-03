@@ -32,9 +32,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
   const filteredGuidelines = useMemo(() => {
     if (!searchQuery.trim()) return guidelines;
     const q = searchQuery.toLowerCase();
-    return guidelines.filter(g =>
-      (g.identity?.name || g.name || '').toLowerCase().includes(q)
-    );
+    return guidelines.filter((g) => (g.identity?.name || g.name || '').toLowerCase().includes(q));
   }, [guidelines, searchQuery]);
 
   const handleClose = () => {
@@ -50,7 +48,8 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
 
   const handlePickLogo = (logo: { url: string; variant: string; label?: string }) => {
     const ext = logo.url.split('.').pop()?.split('?')[0] || 'svg';
-    const name = logo.label || `${selectedGuideline?.identity?.name || 'brand'}-${logo.variant}.${ext}`;
+    const name =
+      logo.label || `${selectedGuideline?.identity?.name || 'brand'}-${logo.variant}.${ext}`;
     onSelectLogo(logo.url, name);
     handleClose();
   };
@@ -59,7 +58,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={selectedGuideline ? (selectedGuideline.identity?.name || 'Logos') : 'Import from Brand'}
+      title={selectedGuideline ? selectedGuideline.identity?.name || 'Logos' : 'Import from Brand'}
       size="md"
     >
       {isLoading ? (
@@ -75,7 +74,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
             <ChevronLeft size={14} /> Back to guidelines
           </button>
 
-          {(!selectedGuideline.logos || selectedGuideline.logos.length === 0) ? (
+          {!selectedGuideline.logos || selectedGuideline.logos.length === 0 ? (
             <p className="text-center text-neutral-500 text-sm py-8">No logos in this guideline</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -106,12 +105,14 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                           alt={logo.label || logo.variant}
                           className="max-w-full max-h-full object-contain p-2"
                         />
-                        <span className={cn(
-                          'absolute top-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-mono uppercase tracking-wider',
-                          svg
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-white/10 text-neutral-500'
-                        )}>
+                        <span
+                          className={cn(
+                            'absolute top-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-mono uppercase tracking-wider',
+                            svg
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : 'bg-white/10 text-neutral-500'
+                          )}
+                        >
                           {svg ? 'SVG' : 'IMG'}
                         </span>
                       </div>
@@ -135,7 +136,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
           )}
           <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
             {filteredGuidelines.map((g) => {
-              const primaryLogo = g.logos?.find(l => l.variant === 'primary') || g.logos?.[0];
+              const primaryLogo = g.logos?.find((l) => l.variant === 'primary') || g.logos?.[0];
               return (
                 <button
                   key={g.id}
@@ -147,15 +148,23 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                 >
                   <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center shrink-0 overflow-hidden">
                     {primaryLogo ? (
-                      <img src={primaryLogo.url} alt="" className="max-w-full max-h-full object-contain p-1" />
+                      <img
+                        src={primaryLogo.url}
+                        alt=""
+                        className="max-w-full max-h-full object-contain p-1"
+                      />
                     ) : (
                       <ImageIcon size={16} className="text-neutral-600" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">{g.identity?.name || g.name || 'Untitled'}</p>
+                    <p className="text-sm text-white truncate">
+                      {g.identity?.name || g.name || 'Untitled'}
+                    </p>
                     {g.logos && g.logos.length > 0 && (
-                      <p className="text-[10px] text-neutral-500">{g.logos.length} logo{g.logos.length > 1 ? 's' : ''}</p>
+                      <p className="text-[10px] text-neutral-500">
+                        {g.logos.length} logo{g.logos.length > 1 ? 's' : ''}
+                      </p>
                     )}
                   </div>
                 </button>

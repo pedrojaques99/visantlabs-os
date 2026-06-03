@@ -37,7 +37,11 @@ type LocalState = {
   emojiPolicy: EmojiPolicy | undefined;
 };
 
-export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, onUpdate, span }) => {
+export const EditorialSection: React.FC<EditorialSectionProps> = ({
+  guideline,
+  onUpdate,
+  span,
+}) => {
   const g = guideline.guidelines || {};
   const local: LocalState = {
     voice: g.voice || '',
@@ -47,16 +51,21 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
     emojiPolicy: g.emojiPolicy,
   };
 
-  const persist = useCallback((state: LocalState) => {
-    onUpdate({ guidelines: {
-      ...guideline.guidelines,
-      voice: state.voice,
-      dos: state.dos,
-      casingRules: state.casingRules,
-      person: state.person,
-      emojiPolicy: state.emojiPolicy,
-    }});
-  }, [onUpdate, guideline.guidelines]);
+  const persist = useCallback(
+    (state: LocalState) => {
+      onUpdate({
+        guidelines: {
+          ...guideline.guidelines,
+          voice: state.voice,
+          dos: state.dos,
+          casingRules: state.casingRules,
+          person: state.person,
+          emojiPolicy: state.emojiPolicy,
+        },
+      });
+    },
+    [onUpdate, guideline.guidelines]
+  );
 
   const update = (patch: Partial<LocalState>) => {
     const next = { ...local, ...patch };
@@ -65,18 +74,29 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
 
   const isEmpty = !local.voice && local.dos.length === 0;
 
-  const handleAiResult = useCallback((patch: Record<string, any>) => {
-    const gl = patch.guidelines;
-    if (!gl) return;
-    const next = { ...local };
-    if (gl.voice) next.voice = gl.voice;
-    if (Array.isArray(gl.dos)) next.dos = gl.dos;
-    persist(next);
-  }, [persist, local]);
+  const handleAiResult = useCallback(
+    (patch: Record<string, any>) => {
+      const gl = patch.guidelines;
+      if (!gl) return;
+      const next = { ...local };
+      if (gl.voice) next.voice = gl.voice;
+      if (Array.isArray(gl.dos)) next.dos = gl.dos;
+      persist(next);
+    },
+    [persist, local]
+  );
 
   return (
-    <SectionBlock id="editorial" icon={<FileText size={14} />} title="Editorial" span={span as any}
-      actions={isEmpty ? <AiFieldButton guideline={guideline} section="guidelines" onResult={handleAiResult} /> : undefined}
+    <SectionBlock
+      id="editorial"
+      icon={<FileText size={14} />}
+      title="Editorial"
+      span={span as any}
+      actions={
+        isEmpty ? (
+          <AiFieldButton guideline={guideline} section="guidelines" onResult={handleAiResult} />
+        ) : undefined
+      }
     >
       <div className="space-y-3 py-1">
         {/* Voice */}
@@ -95,28 +115,40 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
           <div className="space-y-1 flex-1">
             <MicroTitle className="text-neutral-600">Person</MicroTitle>
             <div className="flex gap-1">
-              {PERSON_OPTIONS.map(opt => (
-                <button key={opt.value} type="button" onClick={() => update({ person: opt.value })}
-                  className={cn('flex-1 h-6 rounded border text-[10px] font-mono transition-all',
+              {PERSON_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => update({ person: opt.value })}
+                  className={cn(
+                    'flex-1 h-6 rounded border text-[10px] font-mono transition-all',
                     local.person === opt.value
                       ? 'border-white/20 bg-white/5 text-neutral-200'
                       : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
                   )}
-                >{opt.label}</button>
+                >
+                  {opt.label}
+                </button>
               ))}
             </div>
           </div>
           <div className="space-y-1 flex-1">
             <MicroTitle className="text-neutral-600">Emoji</MicroTitle>
             <div className="flex gap-1">
-              {EMOJI_OPTIONS.map(opt => (
-                <button key={opt.value} type="button" onClick={() => update({ emojiPolicy: opt.value })}
-                  className={cn('flex-1 h-6 rounded border text-[10px] font-mono transition-all',
+              {EMOJI_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => update({ emojiPolicy: opt.value })}
+                  className={cn(
+                    'flex-1 h-6 rounded border text-[10px] font-mono transition-all',
                     local.emojiPolicy === opt.value
                       ? 'border-white/20 bg-white/5 text-neutral-200'
                       : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
                   )}
-                >{opt.label}</button>
+                >
+                  {opt.label}
+                </button>
               ))}
             </div>
           </div>

@@ -16,7 +16,7 @@ const BLOCKED_HOSTNAMES = new Set([
 
 function isPrivateIPv4(hostname: string): boolean {
   const parts = hostname.split('.');
-  if (parts.length !== 4 || !parts.every(p => /^\d+$/.test(p))) return false;
+  if (parts.length !== 4 || !parts.every((p) => /^\d+$/.test(p))) return false;
   const first = parseInt(parts[0]);
   const second = parseInt(parts[1]);
   if (first === 10 || first === 127) return true;
@@ -40,7 +40,11 @@ export function validateImageUrl(url: string): void {
   if (url.startsWith('data:')) return;
 
   let parsed: URL;
-  try { parsed = new URL(url); } catch { throw new Error('Invalid image URL.'); }
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('Invalid image URL.');
+  }
 
   if (!['http:', 'https:'].includes(parsed.protocol)) {
     throw new Error('Only http/https URLs are allowed.');

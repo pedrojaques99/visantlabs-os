@@ -10,8 +10,18 @@ export interface PremiumButtonProps extends React.ButtonHTMLAttributes<HTMLButto
 }
 
 export const PremiumButton = React.forwardRef<HTMLButtonElement, PremiumButtonProps>(
-  ({ className, children, disabled, isLoading, loadingText = 'LOADING...', icon: Icon = ArrowRight, ...props }, ref) => {
-
+  (
+    {
+      className,
+      children,
+      disabled,
+      isLoading,
+      loadingText = 'LOADING...',
+      icon: Icon = ArrowRight,
+      ...props
+    },
+    ref
+  ) => {
     const isDisabled = disabled || isLoading;
 
     return (
@@ -20,10 +30,10 @@ export const PremiumButton = React.forwardRef<HTMLButtonElement, PremiumButtonPr
         disabled={isDisabled}
         aria-busy={isLoading}
         className={cn(
-          "w-full flex items-center justify-center gap-3 py-4 px-6 rounded-md font-mono font-bold transition-all duration-300 group overflow-hidden relative border uppercase",
+          'w-full flex items-center justify-center gap-3 py-4 px-6 rounded-md font-mono font-bold transition-all duration-300 group overflow-hidden relative border uppercase',
           !isDisabled
-            ? "bg-brand-cyan border-neutral-800 text-black shadow-[0_10px_40px_rgba(var(--brand-cyan-rgb),0.2)] hover:scale-[1.01] active:scale-[0.99] hover:bg-brand-cyan/90 cursor-pointer"
-            : "bg-neutral-800/60 border-neutral-600/40 text-neutral-500 cursor-not-allowed shadow-none",
+            ? 'bg-brand-cyan border-neutral-800 text-black shadow-[0_10px_40px_rgba(var(--brand-cyan-rgb),0.2)] hover:scale-[1.01] active:scale-[0.99] hover:bg-brand-cyan/90 cursor-pointer'
+            : 'bg-neutral-800/60 border-neutral-600/40 text-neutral-500 cursor-not-allowed shadow-none',
           className
         )}
         {...props}
@@ -46,7 +56,7 @@ export const PremiumButton = React.forwardRef<HTMLButtonElement, PremiumButtonPr
           </>
         )}
       </button>
-    )
+    );
   }
-)
-PremiumButton.displayName = "PremiumButton"
+);
+PremiumButton.displayName = 'PremiumButton';

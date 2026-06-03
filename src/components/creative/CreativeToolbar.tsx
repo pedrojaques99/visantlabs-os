@@ -1,7 +1,38 @@
 import React, { useRef } from 'react';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
-import { AlignLeft, AlignCenter, AlignRight, Bold, Underline, Strikethrough, Trash2, Layers, Copy, AlignStartVertical, AlignCenterHorizontal, AlignEndVertical, AlignStartHorizontal, AlignCenterVertical, AlignEndHorizontal, AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween, ArrowUp, ArrowDown, ArrowUpToLine, ArrowDownToLine, Group, Ungroup, Image as ImageIcon, RefreshCcw, Upload, Diamond, X, RotateCw, Square as SquareIcon } from 'lucide-react';
+import {
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Bold,
+  Underline,
+  Strikethrough,
+  Trash2,
+  Layers,
+  Copy,
+  AlignStartVertical,
+  AlignCenterHorizontal,
+  AlignEndVertical,
+  AlignStartHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignHorizontalSpaceBetween,
+  AlignVerticalSpaceBetween,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpToLine,
+  ArrowDownToLine,
+  Group,
+  Ungroup,
+  Image as ImageIcon,
+  RefreshCcw,
+  Upload,
+  Diamond,
+  X,
+  RotateCw,
+  Square as SquareIcon,
+} from 'lucide-react';
 import type { TextLayerData, ShapeLayerData, LogoLayerData } from './store/creativeTypes';
 import { LogoFiltersPopover } from './LogoFiltersPopover';
 import type { LucideIcon } from 'lucide-react';
@@ -71,9 +102,7 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
       <Divider />
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
       <Btn icon={Upload} onClick={() => fileRef.current?.click()} title="Trocar fundo" />
-      {backgroundUrl && onEditAI && (
-        <Btn icon={Diamond} onClick={onEditAI} title="Editar com IA" />
-      )}
+      {backgroundUrl && onEditAI && <Btn icon={Diamond} onClick={onEditAI} title="Editar com IA" />}
       <Divider />
       <Btn icon={X} onClick={() => setBackgroundSelected(false)} title="Fechar" />
     </div>
@@ -98,9 +127,8 @@ export const CreativeToolbar: React.FC = () => {
   const selectedCount = selectedLayerIds.length;
   if (selectedCount === 0) return null;
 
-  const selected = selectedCount === 1
-    ? layers.find((l) => l.id === selectedLayerIds[0])
-    : undefined;
+  const selected =
+    selectedCount === 1 ? layers.find((l) => l.id === selectedLayerIds[0]) : undefined;
 
   const isText = selected?.data.type === 'text';
   const textData = isText ? (selected!.data as TextLayerData) : null;
@@ -116,7 +144,8 @@ export const CreativeToolbar: React.FC = () => {
 
   const updateText = (patch: Partial<TextLayerData>) => updateLayer(selectedLayerIds[0], patch);
   const updateLogo = (url: string) => updateLayer(selectedLayerIds[0], { url } as any);
-  const updateShape = (patch: Partial<ShapeLayerData>) => updateLayer(selectedLayerIds[0], patch as any);
+  const updateShape = (patch: Partial<ShapeLayerData>) =>
+    updateLayer(selectedLayerIds[0], patch as any);
 
   return (
     <div
@@ -151,7 +180,9 @@ export const CreativeToolbar: React.FC = () => {
               onChange={(e) => updateLogo(e.target.value)}
               className="bg-neutral-800 text-[10px] font-bold uppercase tracking-widest text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-all hover:bg-neutral-750"
             >
-              <option disabled value="">Trocar...</option>
+              <option disabled value="">
+                Trocar...
+              </option>
               {allVaultAssets.map((asset, i) => (
                 <option key={asset.url + i} value={asset.url}>
                   {(asset as any).name || (asset as any).label || `Asset ${i + 1}`}
@@ -185,7 +216,9 @@ export const CreativeToolbar: React.FC = () => {
             >
               <option value="Inter, sans-serif">Default</option>
               {fonts.map((f) => (
-                <option key={f} value={f}>{f}</option>
+                <option key={f} value={f}>
+                  {f}
+                </option>
               ))}
             </select>
           )}
@@ -199,15 +232,36 @@ export const CreativeToolbar: React.FC = () => {
             className="w-14 bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
           />
 
-          <Btn icon={Bold} onClick={() => updateText({ bold: !textData.bold })} active={textData.bold} title="Negrito" />
-          <Btn icon={Underline} onClick={() => updateText({ underline: !textData.underline })} active={!!textData.underline} title="Sublinhado" />
-          <Btn icon={Strikethrough} onClick={() => updateText({ strikethrough: !textData.strikethrough })} active={!!textData.strikethrough} title="Tachado" />
+          <Btn
+            icon={Bold}
+            onClick={() => updateText({ bold: !textData.bold })}
+            active={textData.bold}
+            title="Negrito"
+          />
+          <Btn
+            icon={Underline}
+            onClick={() => updateText({ underline: !textData.underline })}
+            active={!!textData.underline}
+            title="Sublinhado"
+          />
+          <Btn
+            icon={Strikethrough}
+            onClick={() => updateText({ strikethrough: !textData.strikethrough })}
+            active={!!textData.strikethrough}
+            title="Tachado"
+          />
 
           <div className="flex items-center gap-0.5">
             {(['left', 'center', 'right'] as const).map((a) => {
               const Icon = a === 'left' ? AlignLeft : a === 'center' ? AlignCenter : AlignRight;
               return (
-                <Btn key={a} icon={Icon} onClick={() => updateText({ align: a })} active={textData.align === a} title={`Align ${a}`} />
+                <Btn
+                  key={a}
+                  icon={Icon}
+                  onClick={() => updateText({ align: a })}
+                  active={textData.align === a}
+                  title={`Align ${a}`}
+                />
               );
             })}
           </div>
@@ -288,7 +342,9 @@ export const CreativeToolbar: React.FC = () => {
 
           {/* Stroke width + color */}
           <div className="flex items-center gap-1 pl-1" title="Borda">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">B</span>
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+              B
+            </span>
             <input
               type="number"
               value={Math.round(shapeData.strokeWidth ?? 0)}
@@ -343,12 +399,36 @@ export const CreativeToolbar: React.FC = () => {
 
       {/* ── Spatial alignment (canvas for single, group for multi) ── */}
       <div className="flex items-center gap-0.5">
-        <Btn icon={AlignStartVertical} onClick={() => alignLayers('left')} title="Alinhar à esquerda" />
-        <Btn icon={AlignCenterHorizontal} onClick={() => alignLayers('center-h')} title="Centralizar horizontalmente" />
-        <Btn icon={AlignEndVertical} onClick={() => alignLayers('right')} title="Alinhar à direita" />
-        <Btn icon={AlignStartHorizontal} onClick={() => alignLayers('top')} title="Alinhar ao topo" />
-        <Btn icon={AlignCenterVertical} onClick={() => alignLayers('center-v')} title="Centralizar verticalmente" />
-        <Btn icon={AlignEndHorizontal} onClick={() => alignLayers('bottom')} title="Alinhar à base" />
+        <Btn
+          icon={AlignStartVertical}
+          onClick={() => alignLayers('left')}
+          title="Alinhar à esquerda"
+        />
+        <Btn
+          icon={AlignCenterHorizontal}
+          onClick={() => alignLayers('center-h')}
+          title="Centralizar horizontalmente"
+        />
+        <Btn
+          icon={AlignEndVertical}
+          onClick={() => alignLayers('right')}
+          title="Alinhar à direita"
+        />
+        <Btn
+          icon={AlignStartHorizontal}
+          onClick={() => alignLayers('top')}
+          title="Alinhar ao topo"
+        />
+        <Btn
+          icon={AlignCenterVertical}
+          onClick={() => alignLayers('center-v')}
+          title="Centralizar verticalmente"
+        />
+        <Btn
+          icon={AlignEndHorizontal}
+          onClick={() => alignLayers('bottom')}
+          title="Alinhar à base"
+        />
       </div>
 
       {/* ── Distribute (3+ selected) ── */}
@@ -356,8 +436,16 @@ export const CreativeToolbar: React.FC = () => {
         <>
           <Divider />
           <div className="flex items-center gap-0.5">
-            <Btn icon={AlignHorizontalSpaceBetween} onClick={() => distributeLayers('horizontal')} title="Distribuir horizontalmente" />
-            <Btn icon={AlignVerticalSpaceBetween} onClick={() => distributeLayers('vertical')} title="Distribuir verticalmente" />
+            <Btn
+              icon={AlignHorizontalSpaceBetween}
+              onClick={() => distributeLayers('horizontal')}
+              title="Distribuir horizontalmente"
+            />
+            <Btn
+              icon={AlignVerticalSpaceBetween}
+              onClick={() => distributeLayers('vertical')}
+              title="Distribuir verticalmente"
+            />
           </div>
         </>
       )}
@@ -367,10 +455,26 @@ export const CreativeToolbar: React.FC = () => {
         <>
           <Divider />
           <div className="flex items-center gap-0.5">
-            <Btn icon={ArrowUpToLine} onClick={() => reorderLayer(selectedLayerIds[0], 'top')} title="Trazer para frente" />
-            <Btn icon={ArrowUp} onClick={() => reorderLayer(selectedLayerIds[0], 'up')} title="Subir uma camada" />
-            <Btn icon={ArrowDown} onClick={() => reorderLayer(selectedLayerIds[0], 'down')} title="Descer uma camada" />
-            <Btn icon={ArrowDownToLine} onClick={() => reorderLayer(selectedLayerIds[0], 'bottom')} title="Enviar para trás" />
+            <Btn
+              icon={ArrowUpToLine}
+              onClick={() => reorderLayer(selectedLayerIds[0], 'top')}
+              title="Trazer para frente"
+            />
+            <Btn
+              icon={ArrowUp}
+              onClick={() => reorderLayer(selectedLayerIds[0], 'up')}
+              title="Subir uma camada"
+            />
+            <Btn
+              icon={ArrowDown}
+              onClick={() => reorderLayer(selectedLayerIds[0], 'down')}
+              title="Descer uma camada"
+            />
+            <Btn
+              icon={ArrowDownToLine}
+              onClick={() => reorderLayer(selectedLayerIds[0], 'bottom')}
+              title="Enviar para trás"
+            />
           </div>
         </>
       )}

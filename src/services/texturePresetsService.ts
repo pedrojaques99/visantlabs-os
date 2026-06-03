@@ -1,7 +1,12 @@
 import type { TexturePreset, TexturePresetType } from '../types/texturePresets.js';
 import { TEXTURE_PRESETS } from '../types/texturePresets.js';
 
-import { getPresetsByType, getPresetsByTypeSync, getPresetByIdSync, fetchAllOfficialPresets } from './unifiedPresetService';
+import {
+  getPresetsByType,
+  getPresetsByTypeSync,
+  getPresetByIdSync,
+  fetchAllOfficialPresets,
+} from './unifiedPresetService';
 
 /**
  * Get a specific texture preset by ID (synchronous, uses cache)
@@ -20,9 +25,11 @@ export function getAllTexturePresets(): TexturePreset[] {
 /**
  * Get a specific texture preset by ID (async, loads from MongoDB)
  */
-export async function getTexturePresetAsync(presetId: TexturePresetType | string): Promise<TexturePreset | undefined> {
+export async function getTexturePresetAsync(
+  presetId: TexturePresetType | string
+): Promise<TexturePreset | undefined> {
   const presets = await getPresetsByType('texture');
-  return presets.find(preset => preset.id === presetId);
+  return presets.find((preset) => preset.id === presetId);
 }
 
 /**
@@ -44,22 +51,5 @@ export const texturePresetsService = {
   getAll: getAllTexturePresets,
   getByIdAsync: getTexturePresetAsync,
   getAllAsync: getAllTexturePresetsAsync,
-  initialize: initializeTexturePresets
+  initialize: initializeTexturePresets,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

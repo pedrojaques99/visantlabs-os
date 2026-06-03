@@ -17,23 +17,20 @@ import { generateOpenAPISpec } from '../lib/openapi-gen.js';
 import { generateMCPSpec, generatePlatformMCPSpec } from '../lib/mcp-gen.js';
 import { getPricingPayload } from '../lib/pricing-data.js';
 import { docsCache } from '../lib/docs-cache.js';
-import {
-  isDocumentationError,
-  ValidationError,
-} from '../lib/docs-errors.js';
+import { isDocumentationError, ValidationError } from '../lib/docs-errors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const router = express.Router();
 
-router.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false }));
+router.use(
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false })
+);
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const packageJson = JSON.parse(
-  readFileSync(resolve(__dirname, '../../package.json'), 'utf-8')
-);
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8'));
 
 const VERSION: string = packageJson.version || '1.0.0';
 const SERVER_URL: string = process.env.SERVER_URL || 'http://localhost:3001';
@@ -104,9 +101,16 @@ function validateSearchQuery(query: string): string {
   if (!query || typeof query !== 'string') throw new ValidationError('Search query is required');
 
   const sanitized = query.trim();
-  if (sanitized.length < 2) throw new ValidationError('Search query must be at least 2 characters', { length: sanitized.length });
-  if (sanitized.length > 100) throw new ValidationError('Search query must not exceed 100 characters', { length: sanitized.length });
-  if (/<[^>]*>|<script|<iframe|javascript:/i.test(sanitized)) throw new ValidationError('Invalid characters in search query');
+  if (sanitized.length < 2)
+    throw new ValidationError('Search query must be at least 2 characters', {
+      length: sanitized.length,
+    });
+  if (sanitized.length > 100)
+    throw new ValidationError('Search query must not exceed 100 characters', {
+      length: sanitized.length,
+    });
+  if (/<[^>]*>|<script|<iframe|javascript:/i.test(sanitized))
+    throw new ValidationError('Invalid characters in search query');
 
   return sanitized;
 }
@@ -115,21 +119,30 @@ function validateSearchQuery(query: string): string {
 function calcComponentUsage(imports: number): { percentage: number; level: string } {
   return {
     percentage: Math.min(100, (imports / BUTTON_MAX_IMPORTS) * 100),
-    level: imports > 30 ? 'critical'
-         : imports > 10 ? 'frequent'
-         : imports > 2  ? 'moderate'
-         : imports > 0  ? 'rare'
-         : 'unused',
+    level:
+      imports > 30
+        ? 'critical'
+        : imports > 10
+        ? 'frequent'
+        : imports > 2
+        ? 'moderate'
+        : imports > 0
+        ? 'rare'
+        : 'unused',
   };
 }
 
 // ─── Cache helpers ────────────────────────────────────────────────────────────
 
-const TTL_SPEC   = 60 * 60 * 1000; // 1h — specs rarely change
+const TTL_SPEC = 60 * 60 * 1000; // 1h — specs rarely change
 const TTL_SEARCH = 10 * 60 * 1000; // 10m — search results
 
 function getOpenAPISpec() {
-  return docsCache.getOrGenerate('openapi-spec', () => generateOpenAPISpec(VERSION, SERVER_URL), TTL_SPEC);
+  return docsCache.getOrGenerate(
+    'openapi-spec',
+    () => generateOpenAPISpec(VERSION, SERVER_URL),
+    TTL_SPEC
+  );
 }
 
 function getMCPSpec() {
@@ -247,87 +260,183 @@ router.get('/ai-designer', (_req: Request, res: Response) => {
  * Machine-readable AI Designer Agent spec for LLM agents and MCP clients
  */
 router.get('/ai-designer.json', (_req: Request, res: Response) => {
-  sendCachedJSON(res, {
-    title: 'AI Designer Agent',
-    version: VERSION,
-    description: 'Complete guide for LLMs acting as design copilots. Covers onboarding, auth, brand context, autonomous config, generation, moodboard extraction, and upscaling.',
-    onboarding: {
-      step1: 'Ask user for Visant API key (format: visant_sk_xxx). Get one at https://visantlabs.com/settings/api-keys',
-      step2: 'Validate key: call account-usage (MCP) or GET /api/account/usage (REST). If 401 key is invalid.',
-      step3: 'Call brand-guidelines-list. If empty offer to create or ingest from URL/text. If multiple ask which to use.',
-      note: 'Never assume a key exists. Guide new users to register at visantlabs.com then return with key.',
+  sendCachedJSON(
+    res,
+    {
+      title: 'AI Designer Agent',
+      version: VERSION,
+      description:
+        'Complete guide for LLMs acting as design copilots. Covers onboarding, auth, brand context, autonomous config, generation, moodboard extraction, and upscaling.',
+      onboarding: {
+        step1:
+          'Ask user for Visant API key (format: visant_sk_xxx). Get one at https://visantlabs.com/settings/api-keys',
+        step2:
+          'Validate key: call account-usage (MCP) or GET /api/account/usage (REST). If 401 key is invalid.',
+        step3:
+          'Call brand-guidelines-list. If empty offer to create or ingest from URL/text. If multiple ask which to use.',
+        note: 'Never assume a key exists. Guide new users to register at visantlabs.com then return with key.',
+      },
+      accessPatterns: [
+        {
+          method: 'MCP',
+          how: 'mockup-generate + brandGuidelineId',
+          clients: 'Claude.ai, Cursor, any MCP client',
+        },
+        {
+          method: 'REST API',
+          how: 'POST /api/mockups/generate + brandGuidelineId',
+          clients: 'Server-to-server, scripts, n8n',
+        },
+        {
+          method: 'Tool Call',
+          how: 'Gemini/Claude function declarations calling same REST endpoint',
+          clients: 'Custom LLM agents',
+        },
+      ],
+      autonomousConfig: {
+        model: {
+          options: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'],
+          default: 'gpt-image-2',
+          logic: 'photorealistic->seedream, fast->gemini, text/quality->gpt-image-2',
+        },
+        aspectRatio: {
+          options: ['1:1', '9:16', '16:9', '4:5'],
+          default: '1:1',
+          logic: 'infer from context: story->9:16, cover->16:9, square->1:1',
+        },
+        resolution: {
+          options: ['1K', '2K', '4K'],
+          default: '1K',
+          logic: 'ask only if user says high quality or print',
+        },
+        brandGuidelineId: 'Always set. If multiple guidelines, ask which brand.',
+        promptText:
+          'Describe scene, mood, composition. Never describe logo or font — auto-injected from brand guideline.',
+      },
+      fullPipeline: [
+        '1. Get/validate API key (account-usage)',
+        '2. brand-guidelines-list -> choose guideline',
+        '3. brand-guidelines-get (format=structured) -> read tokens',
+        '4. Build prompt (no logo/font description)',
+        '5. mockup-generate with brandGuidelineId + model + aspectRatio + resolution',
+        '6. (optional) POST /api/moodboard/detect-grid -> get bounding boxes of cells',
+        '7. (optional) POST /api/moodboard/upscale per cell -> 1K|2K|4K',
+        '8. (optional) POST /api/moodboard/suggest -> animation presets per cell',
+      ],
+      moodboardPipeline: {
+        generate:
+          'Single prompt: "Row 1: (1) desc. (2) desc. (3) desc. Row 2:..." -> 1 image, 1 API call, consistent style.',
+        detectGrid: {
+          endpoint: 'POST /api/moodboard/detect-grid',
+          body: '{ imageBase64 }',
+          returns: '{ boxes: [{ id, x, y, width, height }] }',
+        },
+        upscale: {
+          endpoint: 'POST /api/moodboard/upscale',
+          body: '{ imageBase64, size: "1K"|"2K"|"4K" }',
+          returns: '{ upscaledBase64 }',
+        },
+        animationSuggest: {
+          endpoint: 'POST /api/moodboard/suggest',
+          body: '{ images: [{ id, base64 }] }',
+          returns: '{ suggestions: [{ id, animationPreset, veoPrompt }] }',
+        },
+      },
+      autoInjectedWhenBrandGuidelineIdProvided: {
+        logos: 'Up to 2, priority: icon -> primary -> light -> dark. Never described in text.',
+        media: 'Up to 2 style references from media[] as referenceImages.',
+        colors: 'Full palette with hex, name, role.',
+        typography: 'Font families and roles.',
+        voice: 'Dos, donts, imagery guidelines.',
+        strategy: 'Positioning, archetypes, personas, manifesto.',
+        gradients: 'If defined in guideline.',
+      },
+      endpointDecisionTree: {
+        visantAPI:
+          'POST /api/mockups/generate + brandGuidelineId -> handles everything automatically',
+        directWithLogo: 'POST /v1/images/edits (multipart, image[])',
+        directNoLogo: 'POST /v1/images/generations (JSON, string prompt)',
+        note: '/generations does NOT accept reference images. /edits is the only direct logo injection path.',
+      },
+      promptRules: {
+        do: [
+          'Describe scene, mood, composition',
+          'Use "brand logo at bottom" + brandGuidelineId',
+          'Infer style from brand voice/archetypes',
+        ],
+        dont: [
+          'Describe logo visually',
+          'Describe font weight or name',
+          'Use hex colors in prompt (brand palette is injected)',
+        ],
+        forCleanDarkRenders: [
+          'no grain',
+          'no particles',
+          'no noise',
+          'pure black background',
+          'no reflections on background',
+        ],
+        forElegantLighting: [
+          'rim light on edges',
+          'single softbox from upper left',
+          'surgical precision lighting',
+          'void background',
+        ],
+        brandColorAsLight: 'accent color as warm rim light source, not as object fill color',
+      },
+      models: [
+        {
+          id: 'gpt-image-2',
+          provider: 'openai',
+          strengths: 'Best quality, text, brand fidelity',
+          logoRef: '/edits',
+          default: true,
+        },
+        {
+          id: 'gpt-image-1',
+          provider: 'openai',
+          strengths: 'Good quality, wider availability',
+          logoRef: '/edits',
+        },
+        {
+          id: 'gemini-3.1-flash-image-preview',
+          provider: 'gemini',
+          strengths: 'Fast, stylized, creative',
+          logoRef: 'inline base64',
+        },
+        {
+          id: 'seedream-3-0',
+          provider: 'seedream',
+          strengths: 'Photorealistic lifestyle',
+          logoRef: 'supported',
+        },
+      ],
+      brandGuidelineTools: [
+        'brand-guidelines-list',
+        'brand-guidelines-get',
+        'brand-guidelines-create',
+        'brand-guidelines-update',
+        'brand-guidelines-delete',
+        'brand-guidelines-upload-logo',
+        'brand-guidelines-delete-logo',
+        'brand-guidelines-upload-media',
+        'brand-guidelines-delete-media',
+        'brand-guidelines-duplicate',
+        'brand-guidelines-restore-version',
+        'brand-guidelines-compliance-check',
+        'brand-guidelines-ingest',
+        'brand-guidelines-share',
+        'brand-guidelines-versions',
+      ],
+      relatedDocs: {
+        brandPrompting: '/api/docs/brand-prompting',
+        brandApi: '/api/docs/brand',
+        mcpSpec: '/api/docs/platform/mcp.json',
+        llmsTxt: '/llms.txt',
+      },
     },
-    accessPatterns: [
-      { method: 'MCP', how: 'mockup-generate + brandGuidelineId', clients: 'Claude.ai, Cursor, any MCP client' },
-      { method: 'REST API', how: 'POST /api/mockups/generate + brandGuidelineId', clients: 'Server-to-server, scripts, n8n' },
-      { method: 'Tool Call', how: 'Gemini/Claude function declarations calling same REST endpoint', clients: 'Custom LLM agents' },
-    ],
-    autonomousConfig: {
-      model: { options: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'], default: 'gpt-image-2', logic: 'photorealistic->seedream, fast->gemini, text/quality->gpt-image-2' },
-      aspectRatio: { options: ['1:1', '9:16', '16:9', '4:5'], default: '1:1', logic: 'infer from context: story->9:16, cover->16:9, square->1:1' },
-      resolution: { options: ['1K', '2K', '4K'], default: '1K', logic: 'ask only if user says high quality or print' },
-      brandGuidelineId: 'Always set. If multiple guidelines, ask which brand.',
-      promptText: 'Describe scene, mood, composition. Never describe logo or font — auto-injected from brand guideline.',
-    },
-    fullPipeline: [
-      '1. Get/validate API key (account-usage)',
-      '2. brand-guidelines-list -> choose guideline',
-      '3. brand-guidelines-get (format=structured) -> read tokens',
-      '4. Build prompt (no logo/font description)',
-      '5. mockup-generate with brandGuidelineId + model + aspectRatio + resolution',
-      '6. (optional) POST /api/moodboard/detect-grid -> get bounding boxes of cells',
-      '7. (optional) POST /api/moodboard/upscale per cell -> 1K|2K|4K',
-      '8. (optional) POST /api/moodboard/suggest -> animation presets per cell',
-    ],
-    moodboardPipeline: {
-      generate: 'Single prompt: "Row 1: (1) desc. (2) desc. (3) desc. Row 2:..." -> 1 image, 1 API call, consistent style.',
-      detectGrid: { endpoint: 'POST /api/moodboard/detect-grid', body: '{ imageBase64 }', returns: '{ boxes: [{ id, x, y, width, height }] }' },
-      upscale: { endpoint: 'POST /api/moodboard/upscale', body: '{ imageBase64, size: "1K"|"2K"|"4K" }', returns: '{ upscaledBase64 }' },
-      animationSuggest: { endpoint: 'POST /api/moodboard/suggest', body: '{ images: [{ id, base64 }] }', returns: '{ suggestions: [{ id, animationPreset, veoPrompt }] }' },
-    },
-    autoInjectedWhenBrandGuidelineIdProvided: {
-      logos: 'Up to 2, priority: icon -> primary -> light -> dark. Never described in text.',
-      media: 'Up to 2 style references from media[] as referenceImages.',
-      colors: 'Full palette with hex, name, role.',
-      typography: 'Font families and roles.',
-      voice: 'Dos, donts, imagery guidelines.',
-      strategy: 'Positioning, archetypes, personas, manifesto.',
-      gradients: 'If defined in guideline.',
-    },
-    endpointDecisionTree: {
-      visantAPI: 'POST /api/mockups/generate + brandGuidelineId -> handles everything automatically',
-      directWithLogo: 'POST /v1/images/edits (multipart, image[])',
-      directNoLogo: 'POST /v1/images/generations (JSON, string prompt)',
-      note: '/generations does NOT accept reference images. /edits is the only direct logo injection path.',
-    },
-    promptRules: {
-      do: ['Describe scene, mood, composition', 'Use "brand logo at bottom" + brandGuidelineId', 'Infer style from brand voice/archetypes'],
-      dont: ['Describe logo visually', 'Describe font weight or name', 'Use hex colors in prompt (brand palette is injected)'],
-      forCleanDarkRenders: ['no grain', 'no particles', 'no noise', 'pure black background', 'no reflections on background'],
-      forElegantLighting: ['rim light on edges', 'single softbox from upper left', 'surgical precision lighting', 'void background'],
-      brandColorAsLight: 'accent color as warm rim light source, not as object fill color',
-    },
-    models: [
-      { id: 'gpt-image-2', provider: 'openai', strengths: 'Best quality, text, brand fidelity', logoRef: '/edits', default: true },
-      { id: 'gpt-image-1', provider: 'openai', strengths: 'Good quality, wider availability', logoRef: '/edits' },
-      { id: 'gemini-3.1-flash-image-preview', provider: 'gemini', strengths: 'Fast, stylized, creative', logoRef: 'inline base64' },
-      { id: 'seedream-3-0', provider: 'seedream', strengths: 'Photorealistic lifestyle', logoRef: 'supported' },
-    ],
-    brandGuidelineTools: [
-      'brand-guidelines-list', 'brand-guidelines-get', 'brand-guidelines-create', 'brand-guidelines-update', 'brand-guidelines-delete',
-      'brand-guidelines-upload-logo', 'brand-guidelines-delete-logo',
-      'brand-guidelines-upload-media', 'brand-guidelines-delete-media',
-      'brand-guidelines-duplicate', 'brand-guidelines-restore-version',
-      'brand-guidelines-compliance-check', 'brand-guidelines-ingest',
-      'brand-guidelines-share', 'brand-guidelines-versions',
-    ],
-    relatedDocs: {
-      brandPrompting: '/api/docs/brand-prompting',
-      brandApi: '/api/docs/brand',
-      mcpSpec: '/api/docs/platform/mcp.json',
-      llmsTxt: '/llms.txt',
-    },
-  }, 3600);
+    3600
+  );
 });
 
 /**
@@ -347,46 +456,73 @@ router.get('/brand-prompting', (_req: Request, res: Response) => {
  * Machine-readable prompt writing guide for LLM agents
  */
 router.get('/brand-prompting.json', (_req: Request, res: Response) => {
-  sendCachedJSON(res, {
-    title: 'Brand-Aware AI Prompting Guide',
-    version: VERSION,
-    coreRule: 'Pass brandGuidelineId and let the system inject brand assets automatically. Never describe logos or typography in prompt text.',
-    autoInjectedWhenBrandGuidelineIdProvided: {
-      logos: 'Up to 2 logo images passed as referenceImages (priority: primary → icon → light → dark)',
-      mediaKit: 'Up to 2 style reference images from brand media[] passed as referenceImages',
-      brandContext: 'Colors, typography, tone, dos/donts, imagery guidelines, strategy, positioning, archetypes, personas — prepended to prompt',
-    },
-    promptRules: {
-      do: [
-        'Describe composition, layout, mood, scene',
-        'Reference brand name as a label ("brand logo at bottom")',
-        'Use color names from brand palette',
-        'Reference product category',
-        'Describe photography style (motion blur, studio crisp, etc.)',
+  sendCachedJSON(
+    res,
+    {
+      title: 'Brand-Aware AI Prompting Guide',
+      version: VERSION,
+      coreRule:
+        'Pass brandGuidelineId and let the system inject brand assets automatically. Never describe logos or typography in prompt text.',
+      autoInjectedWhenBrandGuidelineIdProvided: {
+        logos:
+          'Up to 2 logo images passed as referenceImages (priority: primary → icon → light → dark)',
+        mediaKit: 'Up to 2 style reference images from brand media[] passed as referenceImages',
+        brandContext:
+          'Colors, typography, tone, dos/donts, imagery guidelines, strategy, positioning, archetypes, personas — prepended to prompt',
+      },
+      promptRules: {
+        do: [
+          'Describe composition, layout, mood, scene',
+          'Reference brand name as a label ("brand logo at bottom")',
+          'Use color names from brand palette',
+          'Reference product category',
+          'Describe photography style (motion blur, studio crisp, etc.)',
+        ],
+        dont: [
+          'Describe logo visually (shape, colors, concentric circles icon, etc.)',
+          'Reproduce typography by describing font weight/style',
+          'Use generic colors that contradict the brand palette',
+          'Ask for text overlays — image models render text poorly',
+        ],
+      },
+      examples: {
+        bad: 'Product post with SPORTS 248 logo featuring concentric circles bullseye icon in white Archivo Bold font at the bottom...',
+        good: 'Product post. Dark navy background, cricket bats centered, brand logo at bottom.',
+      },
+      apiEndpoints: {
+        generate: 'POST /api/mockups/generate',
+        batchGenerate: 'POST /api/mockups/batch-generate',
+        requiredField: 'brandGuidelineId',
+      },
+      models: [
+        {
+          id: 'gpt-image-1',
+          provider: 'openai',
+          strengths: 'Best brand fidelity with referenceImages',
+          envVar: 'OPENAI_KEY or OPENAI_API_KEY',
+        },
+        {
+          id: 'gpt-image-2',
+          provider: 'openai',
+          strengths: 'Higher quality, better text rendering',
+          note: 'Requires OpenAI org verification',
+        },
+        {
+          id: 'gemini-3.1-flash-image-preview',
+          provider: 'gemini',
+          strengths: 'Fast, stylized, creative compositions',
+          envVar: 'GEMINI_API_KEY',
+        },
+        {
+          id: 'seedream-3-0',
+          provider: 'seedream',
+          strengths: 'Photorealistic lifestyle photography',
+          envVar: 'SEEDREAM_API_KEY',
+        },
       ],
-      dont: [
-        'Describe logo visually (shape, colors, concentric circles icon, etc.)',
-        'Reproduce typography by describing font weight/style',
-        'Use generic colors that contradict the brand palette',
-        'Ask for text overlays — image models render text poorly',
-      ],
     },
-    examples: {
-      bad: 'Product post with SPORTS 248 logo featuring concentric circles bullseye icon in white Archivo Bold font at the bottom...',
-      good: 'Product post. Dark navy background, cricket bats centered, brand logo at bottom.',
-    },
-    apiEndpoints: {
-      generate: 'POST /api/mockups/generate',
-      batchGenerate: 'POST /api/mockups/batch-generate',
-      requiredField: 'brandGuidelineId',
-    },
-    models: [
-      { id: 'gpt-image-1', provider: 'openai', strengths: 'Best brand fidelity with referenceImages', envVar: 'OPENAI_KEY or OPENAI_API_KEY' },
-      { id: 'gpt-image-2', provider: 'openai', strengths: 'Higher quality, better text rendering', note: 'Requires OpenAI org verification' },
-      { id: 'gemini-3.1-flash-image-preview', provider: 'gemini', strengths: 'Fast, stylized, creative compositions', envVar: 'GEMINI_API_KEY' },
-      { id: 'seedream-3-0', provider: 'seedream', strengths: 'Photorealistic lifestyle photography', envVar: 'SEEDREAM_API_KEY' },
-    ],
-  }, 3600);
+    3600
+  );
 });
 
 /**
@@ -394,42 +530,66 @@ router.get('/brand-prompting.json', (_req: Request, res: Response) => {
  * API Keys documentation
  */
 router.get('/api/api-keys', (_req: Request, res: Response) => {
-  sendCachedJSON(res, {
-    title: 'API Keys',
-    description: 'Manage API keys for programmatic access and MCP integrations.',
-    endpoint: '/api/api-keys',
-    authentication: 'JWT required (user session)',
-    operations: [
-      {
-        method: 'POST',
-        path: '/api/api-keys/create',
-        description: 'Create a new API key. Raw key returned once — save it.',
-        body: {
-          name: 'string (required, max 100 chars)',
-          scopes: 'string[] (optional) — "read" | "write" | "generate"',
-          expiresAt: 'ISO date string (optional)',
+  sendCachedJSON(
+    res,
+    {
+      title: 'API Keys',
+      description: 'Manage API keys for programmatic access and MCP integrations.',
+      endpoint: '/api/api-keys',
+      authentication: 'JWT required (user session)',
+      operations: [
+        {
+          method: 'POST',
+          path: '/api/api-keys/create',
+          description: 'Create a new API key. Raw key returned once — save it.',
+          body: {
+            name: 'string (required, max 100 chars)',
+            scopes: 'string[] (optional) — "read" | "write" | "generate"',
+            expiresAt: 'ISO date string (optional)',
+          },
+          response: {
+            id: 'string',
+            key: 'visant_sk_xxx (shown once)',
+            keyPrefix: 'string',
+            name: 'string',
+            scopes: 'string[]',
+            expiresAt: 'string|null',
+          },
         },
-        response: { id: 'string', key: 'visant_sk_xxx (shown once)', keyPrefix: 'string', name: 'string', scopes: 'string[]', expiresAt: 'string|null' },
+        {
+          method: 'GET',
+          path: '/api/api-keys',
+          description: 'List all API keys for the authenticated user.',
+          response: {
+            keys: [
+              {
+                id: 'string',
+                keyPrefix: 'string',
+                name: 'string',
+                scopes: 'string[]',
+                lastUsed: 'string|null',
+                createdAt: 'string',
+                expiresAt: 'string|null',
+                active: 'boolean',
+              },
+            ],
+          },
+        },
+        {
+          method: 'DELETE',
+          path: '/api/api-keys/:id',
+          description: 'Revoke an API key (soft delete).',
+          response: { message: 'API key revoked' },
+        },
+      ],
+      usage: {
+        header: 'Authorization: Bearer visant_sk_xxx',
+        mcp_endpoint: '/api/mcp',
+        note: 'API keys are used for MCP server access and programmatic REST API calls.',
       },
-      {
-        method: 'GET',
-        path: '/api/api-keys',
-        description: 'List all API keys for the authenticated user.',
-        response: { keys: [{ id: 'string', keyPrefix: 'string', name: 'string', scopes: 'string[]', lastUsed: 'string|null', createdAt: 'string', expiresAt: 'string|null', active: 'boolean' }] },
-      },
-      {
-        method: 'DELETE',
-        path: '/api/api-keys/:id',
-        description: 'Revoke an API key (soft delete).',
-        response: { message: 'API key revoked' },
-      },
-    ],
-    usage: {
-      header: 'Authorization: Bearer visant_sk_xxx',
-      mcp_endpoint: '/api/mcp',
-      note: 'API keys are used for MCP server access and programmatic REST API calls.',
     },
-  }, 3600);
+    3600
+  );
 });
 
 /**
@@ -470,7 +630,10 @@ router.get('/search', (req: Request, res: Response) => {
     }
 
     for (const tool of mcpSpec.tools) {
-      if (tool.name.toLowerCase().includes(query) || tool.description.toLowerCase().includes(query)) {
+      if (
+        tool.name.toLowerCase().includes(query) ||
+        tool.description.toLowerCase().includes(query)
+      ) {
         results.push({
           type: 'tool',
           title: tool.name,
@@ -525,24 +688,29 @@ router.get('/export', (req: Request, res: Response) => {
 router.get('/api/components-usage', (_req: Request, res: Response) => {
   const metricsPath = join(process.cwd(), 'scripts', 'reports', 'component-usage.json');
 
-  fsAsync.readFile(metricsPath, 'utf-8')
-    .then(data => {
+  fsAsync
+    .readFile(metricsPath, 'utf-8')
+    .then((data) => {
       const metrics = JSON.parse(data);
-      sendCachedJSON(res, {
-        success: true,
-        generatedAt: new Date().toISOString(),
-        summary: metrics.metadata,
-        distribution: metrics.categorized,
-        components: (metrics.components || []).map((c: any) => ({
-          name: c.name,
-          path: c.path,
-          imports: c.imports,
-          category: c.category,
-          usage: calcComponentUsage(c.imports),
-        })),
-        topComponents: (metrics.components || []).slice(0, 10),
-        orphaned: (metrics.components || []).filter((c: any) => c.imports === 0),
-      }, 3600);
+      sendCachedJSON(
+        res,
+        {
+          success: true,
+          generatedAt: new Date().toISOString(),
+          summary: metrics.metadata,
+          distribution: metrics.categorized,
+          components: (metrics.components || []).map((c: any) => ({
+            name: c.name,
+            path: c.path,
+            imports: c.imports,
+            category: c.category,
+            usage: calcComponentUsage(c.imports),
+          })),
+          topComponents: (metrics.components || []).slice(0, 10),
+          orphaned: (metrics.components || []).filter((c: any) => c.imports === 0),
+        },
+        3600
+      );
     })
     .catch((err: Error) => {
       setDocsHeaders(res);
@@ -570,8 +738,9 @@ router.get('/api/component/:name', (req: Request, res: Response) => {
 
   const metricsPath = join(process.cwd(), 'scripts', 'reports', 'component-usage.json');
 
-  fsAsync.readFile(metricsPath, 'utf-8')
-    .then(data => {
+  fsAsync
+    .readFile(metricsPath, 'utf-8')
+    .then((data) => {
       const metrics = JSON.parse(data);
       const component = (metrics.components || []).find(
         (c: any) => c.name.toLowerCase() === name.toLowerCase()
@@ -583,10 +752,14 @@ router.get('/api/component/:name', (req: Request, res: Response) => {
         return;
       }
 
-      sendCachedJSON(res, {
-        success: true,
-        component: { ...component, usage: calcComponentUsage(component.imports) },
-      }, 3600);
+      sendCachedJSON(
+        res,
+        {
+          success: true,
+          component: { ...component, usage: calcComponentUsage(component.imports) },
+        },
+        3600
+      );
     })
     .catch((err: Error) => {
       setDocsHeaders(res);

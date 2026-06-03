@@ -9,7 +9,7 @@ export async function withRetry<T>(fn: () => Promise<T>, label: string): Promise
   } catch (e: any) {
     if (!/timeout|503|429|ECONNRESET/i.test(e.message || '')) throw e;
     console.warn(`[Chat] Retrying ${label}:`, e.message);
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 2000));
     return fn();
   }
 }

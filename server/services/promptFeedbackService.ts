@@ -118,20 +118,19 @@ async function updateConfidence(
   const collection = await getCollection();
 
   // Find similar learnings (same component type, similar text)
-  const similar = await collection.find({
-    componentType,
-    success,
-    learning: { $exists: true },
-  }).toArray();
+  const similar = await collection
+    .find({
+      componentType,
+      success,
+      learning: { $exists: true },
+    })
+    .toArray();
 
   // Increase confidence for learnings that match
   for (const doc of similar) {
     if (doc.learning && isSimilarLearning(doc.learning, learning)) {
       const newConfidence = Math.min(1, (doc.confidence || 0.5) + 0.1);
-      await collection.updateOne(
-        { _id: doc._id },
-        { $set: { confidence: newConfidence } }
-      );
+      await collection.updateOne({ _id: doc._id }, { $set: { confidence: newConfidence } });
     }
   }
 }
@@ -152,40 +151,39 @@ function isSimilarLearning(a: string, b: string): boolean {
 /**
  * Get learnings for a component type, sorted by confidence
  */
-export async function getLearnings(
-  componentType: string,
-  limit: number = 10
-): Promise<Learning[]> {
+export async function getLearnings(componentType: string, limit: number = 10): Promise<Learning[]> {
   const collection = await getCollection();
 
   // Aggregate learnings by similarity and confidence
-  const results = await collection.aggregate<{
-    _id: { learning: string; success: boolean };
-    count: number;
-    avgConfidence: number;
-  }>([
-    {
-      $match: {
-        componentType,
-        learning: { $exists: true, $ne: null },
+  const results = await collection
+    .aggregate<{
+      _id: { learning: string; success: boolean };
+      count: number;
+      avgConfidence: number;
+    }>([
+      {
+        $match: {
+          componentType,
+          learning: { $exists: true, $ne: null },
+        },
       },
-    },
-    {
-      $group: {
-        _id: { learning: '$learning', success: '$success' },
-        count: { $sum: 1 },
-        avgConfidence: { $avg: '$confidence' },
+      {
+        $group: {
+          _id: { learning: '$learning', success: '$success' },
+          count: { $sum: 1 },
+          avgConfidence: { $avg: '$confidence' },
+        },
       },
-    },
-    {
-      $sort: { avgConfidence: -1, count: -1 },
-    },
-    {
-      $limit: limit,
-    },
-  ]).toArray();
+      {
+        $sort: { avgConfidence: -1, count: -1 },
+      },
+      {
+        $limit: limit,
+      },
+    ])
+    .toArray();
 
-  return results.map(r => ({
+  return results.map((r) => ({
     type: r._id.success ? 'do' : 'dont',
     rule: r._id.learning,
     confidence: r.avgConfidence,
@@ -197,9 +195,7 @@ export async function getLearnings(
  * Build learning context for system prompt
  * Returns formatted string to inject into prompt
  */
-export async function buildLearningContext(
-  componentType: string
-): Promise<string | null> {
+export async function buildLearningContext(componentType: string): Promise<string | null> {
   const learnings = await getLearnings(componentType, 8);
 
   if (learnings.length === 0) {
@@ -217,13 +213,13 @@ export async function buildLearningContext(
  */
 function formatLearnings(learnings: Learning[]): string {
   const dos = learnings
-    .filter(l => l.type === 'do' && l.confidence >= 0.6)
-    .map(l => `✓ ${l.rule.replace('DO: ', '')}`)
+    .filter((l) => l.type === 'do' && l.confidence >= 0.6)
+    .map((l) => `✓ ${l.rule.replace('DO: ', '')}`)
     .slice(0, 4);
 
   const donts = learnings
-    .filter(l => l.type === 'dont' && l.confidence >= 0.6)
-    .map(l => `✗ ${l.rule.replace('DONT: ', '')}`)
+    .filter((l) => l.type === 'dont' && l.confidence >= 0.6)
+    .map((l) => `✗ ${l.rule.replace('DONT: ', '')}`)
     .slice(0, 4);
 
   if (dos.length === 0 && donts.length === 0) return '';
@@ -246,14 +242,16 @@ export async function getFeedbackStats(): Promise<{
 }> {
   const collection = await getCollection();
 
-  const stats = await collection.aggregate([
-    {
-      $group: {
-        _id: { componentType: '$componentType', success: '$success' },
-        count: { $sum: 1 },
+  const stats = await collection
+    .aggregate([
+      {
+        $group: {
+          _id: { componentType: '$componentType', success: '$success' },
+          count: { $sum: 1 },
+        },
       },
-    },
-  ]).toArray();
+    ])
+    .toArray();
 
   let total = 0;
   let positive = 0;

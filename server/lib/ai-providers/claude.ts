@@ -36,7 +36,10 @@ function buildMessageContent(
     } else if (att.mimeType === 'text/csv') {
       try {
         const csv = Buffer.from(att.data, 'base64').toString('utf-8');
-        content.push({ type: 'text', text: `\n\n📊 Arquivo CSV: ${att.name}\n\`\`\`csv\n${csv}\n\`\`\`` });
+        content.push({
+          type: 'text',
+          text: `\n\n📊 Arquivo CSV: ${att.name}\n\`\`\`csv\n${csv}\n\`\`\``,
+        });
       } catch {
         console.warn(`[Claude] Failed to decode CSV ${att.name}`);
       }
@@ -48,7 +51,8 @@ function buildMessageContent(
 
 const FIGMA_TOOL: Anthropic.Tool = {
   name: 'apply_figma_operations',
-  description: 'Applies design operations to the Figma canvas. Call this once you have all the information needed to create or modify the design.',
+  description:
+    'Applies design operations to the Figma canvas. Call this once you have all the information needed to create or modify the design.',
   input_schema: {
     type: 'object' as const,
     properties: {
@@ -82,9 +86,7 @@ const claudeProvider: AIProvider = {
       const client = getClient(options?.apiKey);
       const messageContent = buildMessageContent(userPrompt, options?.attachments);
 
-      const messages: Anthropic.MessageParam[] = [
-        { role: 'user', content: messageContent },
-      ];
+      const messages: Anthropic.MessageParam[] = [{ role: 'user', content: messageContent }];
 
       const tools: Anthropic.Tool[] = [WEB_SEARCH_TOOL, FIGMA_TOOL];
 
@@ -131,7 +133,9 @@ const claudeProvider: AIProvider = {
         // Claude called web_search (server_tool_use) — results are already in the response content.
         // Notify UI and append the full assistant turn so Claude can continue with search results.
         if (response.stop_reason === 'tool_use') {
-          const searchBlock = response.content.find((b: any) => b.type === 'server_tool_use') as any;
+          const searchBlock = response.content.find(
+            (b: any) => b.type === 'server_tool_use'
+          ) as any;
           if (searchBlock && options?.onStatus) {
             const query: string = searchBlock.input?.query ?? '';
             options.onStatus(query ? `Pesquisando: "${query}"` : 'Pesquisando referências...');

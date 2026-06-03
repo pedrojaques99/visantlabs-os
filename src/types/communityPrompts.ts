@@ -14,8 +14,8 @@ export const VALID_PROMPT_CATEGORIES = [
   'ambience',
   'luminance',
   // AI-generated prompts
-  'ui-prompts',     // Prompts para geração de imagem (Seedream, etc)
-  'figma-prompts',  // Prompts para Figma plugin
+  'ui-prompts', // Prompts para geração de imagem (Seedream, etc)
+  'figma-prompts', // Prompts para Figma plugin
 ] as const;
 
 // Config para novas categorias de prompts
@@ -35,7 +35,7 @@ export const PROMPT_CATEGORY_CONFIG = {
 } as const;
 
 // Categorias - inclui novas e antigas
-export type PromptCategory = typeof VALID_PROMPT_CATEGORIES[number] | 'all';
+export type PromptCategory = (typeof VALID_PROMPT_CATEGORIES)[number] | 'all';
 
 // Tipos legados (para compatibilidade - agora são categorias também)
 export type LegacyPresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
@@ -103,4 +103,3 @@ export function migrateLegacyPreset(legacy: any): CommunityPrompt {
 export function isLegacyPreset(preset: any): boolean {
   return !preset.category && !!preset.presetType;
 }
-

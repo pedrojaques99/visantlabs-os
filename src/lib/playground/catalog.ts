@@ -17,14 +17,16 @@ export const visantCatalog = schema.createCatalog({
         className: z.string().optional(),
       }),
       slots: ['default'],
-      description: 'Glassmorphism container with backdrop blur and subtle border. Use to group content.',
+      description:
+        'Glassmorphism container with backdrop blur and subtle border. Use to group content.',
     },
 
     // ─── Tool Panel Family ──────────────────────────────
     ToolPanel: {
       props: z.object({}),
       slots: ['default'],
-      description: 'Right-side glass panel container. Use ToolPanelHeader, ToolPanelContent, ToolPanelActions as children.',
+      description:
+        'Right-side glass panel container. Use ToolPanelHeader, ToolPanelContent, ToolPanelActions as children.',
     },
     ToolPanelHeader: {
       props: z.object({}),
@@ -108,7 +110,9 @@ export const visantCatalog = schema.createCatalog({
     },
     Button: {
       props: z.object({
-        variant: z.enum(['default', 'brand', 'surface', 'subtle', 'danger', 'outline', 'ghost']).optional(),
+        variant: z
+          .enum(['default', 'brand', 'surface', 'subtle', 'danger', 'outline', 'ghost'])
+          .optional(),
         size: z.enum(['default', 'sm', 'xs', 'lg', 'icon']).optional(),
         disabled: z.boolean().optional(),
       }),
@@ -144,7 +148,8 @@ export const visantCatalog = schema.createCatalog({
     ImageUploader: {
       props: z.object({}),
       slots: [],
-      description: 'Full-area drag-drop image uploader. Use as main area when app needs image input.',
+      description:
+        'Full-area drag-drop image uploader. Use as main area when app needs image input.',
     },
     ImageThumbnail: {
       props: z.object({

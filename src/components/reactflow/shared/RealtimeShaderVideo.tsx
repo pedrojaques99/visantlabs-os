@@ -85,13 +85,7 @@ export const RealtimeShaderVideo: React.FC<RealtimeShaderVideoProps> = ({
       }
 
       // Render shader effect on the frame
-      const resultDataUrl = await renderer.render(
-        tempCanvas,
-        videoSrc,
-        width,
-        height,
-        settings
-      );
+      const resultDataUrl = await renderer.render(tempCanvas, videoSrc, width, height, settings);
 
       // Draw result to canvas
       const ctx = canvas.getContext('2d');
@@ -189,11 +183,7 @@ export const RealtimeShaderVideo: React.FC<RealtimeShaderVideoProps> = ({
         preload="auto"
       />
       {/* Canvas for rendered output */}
-      <canvas
-        ref={canvasRef}
-        className={className || 'w-full h-full object-contain rounded'}
-      />
+      <canvas ref={canvasRef} className={className || 'w-full h-full object-contain rounded'} />
     </div>
   );
 };
-

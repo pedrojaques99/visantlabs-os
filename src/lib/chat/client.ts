@@ -30,8 +30,16 @@ export interface ChatRequestOptions {
  *
  * Throws `Error(error.error ?? fallback)` on non-2xx responses.
  */
-export async function chatApiRequest<T>(path: string, options: ChatRequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, errorMessage = 'Chat API request failed', expectNoContent } = options;
+export async function chatApiRequest<T>(
+  path: string,
+  options: ChatRequestOptions = {}
+): Promise<T> {
+  const {
+    method = 'GET',
+    body,
+    errorMessage = 'Chat API request failed',
+    expectNoContent,
+  } = options;
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,

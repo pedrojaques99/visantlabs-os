@@ -110,8 +110,13 @@ export class FluidSolver {
 
   getVorticity(i: number, j: number): number {
     if (i < 2 || i >= this.N || j < 2 || j >= this.N) return 0;
-    return (this.v[this.IX(i + 1, j)] - this.v[this.IX(i - 1, j)]
-          - this.u[this.IX(i, j + 1)] + this.u[this.IX(i, j - 1)]) * 0.5;
+    return (
+      (this.v[this.IX(i + 1, j)] -
+        this.v[this.IX(i - 1, j)] -
+        this.u[this.IX(i, j + 1)] +
+        this.u[this.IX(i, j - 1)]) *
+      0.5
+    );
   }
 
   reset(): void {
@@ -129,7 +134,10 @@ export class FluidSolver {
     this.addSource(this.v, this.v0, dt);
 
     for (let i = 0; i < this.size; i++) {
-      if (this.obstacle[i]) { this.u[i] = 0; this.v[i] = 0; }
+      if (this.obstacle[i]) {
+        this.u[i] = 0;
+        this.v[i] = 0;
+      }
     }
 
     this.swap('u', 'u0');
@@ -163,7 +171,10 @@ export class FluidSolver {
     }
   }
 
-  private swap(a: 'u' | 'v' | 'u0' | 'v0' | 'dens' | 'dens0', b: 'u' | 'v' | 'u0' | 'v0' | 'dens' | 'dens0'): void {
+  private swap(
+    a: 'u' | 'v' | 'u0' | 'v0' | 'dens' | 'dens0',
+    b: 'u' | 'v' | 'u0' | 'v0' | 'dens' | 'dens0'
+  ): void {
     const tmp = this[a];
     (this as any)[a] = this[b];
     (this as any)[b] = tmp;
@@ -209,22 +220,28 @@ export class FluidSolver {
             x[this.IX(i, j)] = 0;
             continue;
           }
-          x[this.IX(i, j)] = (
-            x0[this.IX(i, j)] +
-            a * (
-              x[this.IX(i - 1, j)] +
-              x[this.IX(i + 1, j)] +
-              x[this.IX(i, j - 1)] +
-              x[this.IX(i, j + 1)]
-            )
-          ) / denom;
+          x[this.IX(i, j)] =
+            (x0[this.IX(i, j)] +
+              a *
+                (x[this.IX(i - 1, j)] +
+                  x[this.IX(i + 1, j)] +
+                  x[this.IX(i, j - 1)] +
+                  x[this.IX(i, j + 1)])) /
+            denom;
         }
       }
       this.setBnd(b, x);
     }
   }
 
-  private advect(b: number, d: Float64Array, d0: Float64Array, u: Float64Array, v: Float64Array, dt: number): void {
+  private advect(
+    b: number,
+    d: Float64Array,
+    d0: Float64Array,
+    u: Float64Array,
+    v: Float64Array,
+    dt: number
+  ): void {
     const N = this.N;
     const dt0 = dt * N;
 
@@ -270,10 +287,13 @@ export class FluidSolver {
           p[this.IX(i, j)] = 0;
           continue;
         }
-        div[this.IX(i, j)] = -0.5 * (
-          u[this.IX(i + 1, j)] - u[this.IX(i - 1, j)] +
-          v[this.IX(i, j + 1)] - v[this.IX(i, j - 1)]
-        ) / N;
+        div[this.IX(i, j)] =
+          (-0.5 *
+            (u[this.IX(i + 1, j)] -
+              u[this.IX(i - 1, j)] +
+              v[this.IX(i, j + 1)] -
+              v[this.IX(i, j - 1)])) /
+          N;
         p[this.IX(i, j)] = 0;
       }
     }
@@ -284,13 +304,13 @@ export class FluidSolver {
       for (let i = 1; i <= N; i++) {
         for (let j = 1; j <= N; j++) {
           if (this.obstacle[this.IX(i, j)]) continue;
-          p[this.IX(i, j)] = (
-            div[this.IX(i, j)] +
-            p[this.IX(i - 1, j)] +
-            p[this.IX(i + 1, j)] +
-            p[this.IX(i, j - 1)] +
-            p[this.IX(i, j + 1)]
-          ) / 4;
+          p[this.IX(i, j)] =
+            (div[this.IX(i, j)] +
+              p[this.IX(i - 1, j)] +
+              p[this.IX(i + 1, j)] +
+              p[this.IX(i, j - 1)] +
+              p[this.IX(i, j + 1)]) /
+            4;
         }
       }
       this.setBnd(0, p);

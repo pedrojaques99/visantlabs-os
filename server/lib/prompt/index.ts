@@ -13,7 +13,12 @@ import { CREATE_RULES, CREATE_EXAMPLE, MULTIPLE_FRAMES_RULES } from './modules/c
 import { EDIT_RULES, EDIT_EXAMPLE, TEXT_EDIT_WARNING } from './modules/edit.js';
 import { TEMPLATE_RULES, TEMPLATE_EXAMPLE } from './modules/template.js';
 import { CHART_RULES, CHART_EXAMPLE } from './modules/charts.js';
-import { BRAND_PRIORITY_RULE, buildCompactBrandContext, buildBrandStrategyContext, type BrandStrategyInput } from './modules/brand.js';
+import {
+  BRAND_PRIORITY_RULE,
+  buildCompactBrandContext,
+  buildBrandStrategyContext,
+  type BrandStrategyInput,
+} from './modules/brand.js';
 import { DESIGN_EXCELLENCE_RULES } from './modules/design-excellence.js';
 import { COLOR_SPEC_RULES } from './modules/color-spec.js';
 import { buildSelectionContext, buildContainersHint } from './modules/context.js';
@@ -23,16 +28,28 @@ import { GOLDEN_RULES, THINK_MODE_RULES } from './modules/golden-rules.js';
 // Re-export for external use
 export * from './types.js';
 export * from './presets.js';
-export { classifyIntent, isChatOnly, refineIntentWithLLM, type EnrichedIntent } from './classifier.js';
+export {
+  classifyIntent,
+  isChatOnly,
+  refineIntentWithLLM,
+  type EnrichedIntent,
+} from './classifier.js';
 
 export interface PromptAssemblerInput {
   command: string;
   selectedElements?: any[];
   scanPage?: boolean;
   brandColors?: Array<{ name: string; value: string; role?: string }>;
-  brandFonts?: { primary?: { family?: string; style?: string; size?: number; availableStyles?: string[] }; secondary?: { family?: string; style?: string; size?: number; availableStyles?: string[] } };
+  brandFonts?: {
+    primary?: { family?: string; style?: string; size?: number; availableStyles?: string[] };
+    secondary?: { family?: string; style?: string; size?: number; availableStyles?: string[] };
+  };
   brandLogos?: { light?: { name: string; key?: string }; dark?: { name: string; key?: string } };
-  brandTokens?: { spacing?: Record<string, number>; radius?: Record<string, number>; shadows?: Record<string, any> };
+  brandTokens?: {
+    spacing?: Record<string, number>;
+    radius?: Record<string, number>;
+    shadows?: Record<string, any>;
+  };
   brandVoice?: string;
   brandDos?: string[];
   brandDonts?: string[];
@@ -148,7 +165,8 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
   if (activeIntents.has('arrange')) {
     modules.push({
       id: 'arrange_rules',
-      content: 'ARRANGE: Use MOVE (nodeId/ref, x, y), SET_AUTO_LAYOUT, RESIZE. Para alinhar, calcule posições a partir do contexto.',
+      content:
+        'ARRANGE: Use MOVE (nodeId/ref, x, y), SET_AUTO_LAYOUT, RESIZE. Para alinhar, calcule posições a partir do contexto.',
       priority: 80,
     });
   }
@@ -172,23 +190,32 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
       input.brandTokens,
       input.brandVoice,
       input.brandDos,
-      input.brandDonts,
+      input.brandDonts
     );
     if (brandContext) {
-      modules.push({ id: 'brand', content: BRAND_PRIORITY_RULE + '\n' + brandContext, priority: 85 });
+      modules.push({
+        id: 'brand',
+        content: BRAND_PRIORITY_RULE + '\n' + brandContext,
+        priority: 85,
+      });
     }
     const strategyContext = buildBrandStrategyContext(input.brandStrategy);
     if (strategyContext) {
       modules.push({ id: 'brand_strategy', content: strategyContext, priority: 84 });
     }
     if (input.brandKnowledgeContext) {
-      modules.push({ id: 'brand_knowledge', content: `<brand_knowledge>\n${input.brandKnowledgeContext}\n</brand_knowledge>`, priority: 84 });
+      modules.push({
+        id: 'brand_knowledge',
+        content: `<brand_knowledge>\n${input.brandKnowledgeContext}\n</brand_knowledge>`,
+        priority: 84,
+      });
     }
   } else {
     modules.push({
       id: 'brand_disabled',
-      content: 'BRANDING: O usuário desativou o uso de marca. Use estilos genéricos e modernos (ex: Inter para fontes, cores neutras ou cores vibrantes genéricas se não especificado).',
-      priority: 85
+      content:
+        'BRANDING: O usuário desativou o uso de marca. Use estilos genéricos e modernos (ex: Inter para fontes, cores neutras ou cores vibrantes genéricas se não especificado).',
+      priority: 85,
     });
   }
 
@@ -198,19 +225,31 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
     const dsParts: string[] = ['DESIGN SYSTEM IMPORTADO:'];
     if (ds.name) dsParts.push(`Nome: ${ds.name} v${ds.version || '1.0'}`);
     if (ds.colors?.length) {
-      const colorList = ds.colors.slice(0, 10).map((c: any) => `${c.name}:${c.value}`).join(', ');
+      const colorList = ds.colors
+        .slice(0, 10)
+        .map((c: any) => `${c.name}:${c.value}`)
+        .join(', ');
       dsParts.push(`Cores: ${colorList}`);
     }
     if (ds.typography?.length) {
-      const typoList = ds.typography.slice(0, 6).map((t: any) => `${t.name}:${t.fontFamily}/${t.fontSize}px`).join(', ');
+      const typoList = ds.typography
+        .slice(0, 6)
+        .map((t: any) => `${t.name}:${t.fontFamily}/${t.fontSize}px`)
+        .join(', ');
       dsParts.push(`Tipografia: ${typoList}`);
     }
     if (ds.spacing) {
-      const spacingList = Object.entries(ds.spacing).slice(0, 6).map(([k, v]) => `${k}:${v}px`).join(', ');
+      const spacingList = Object.entries(ds.spacing)
+        .slice(0, 6)
+        .map(([k, v]) => `${k}:${v}px`)
+        .join(', ');
       dsParts.push(`Spacing: ${spacingList}`);
     }
     if (ds.radius) {
-      const radiusList = Object.entries(ds.radius).slice(0, 6).map(([k, v]) => `${k}:${v}px`).join(', ');
+      const radiusList = Object.entries(ds.radius)
+        .slice(0, 6)
+        .map(([k, v]) => `${k}:${v}px`)
+        .join(', ');
       dsParts.push(`Radius: ${radiusList}`);
     }
     modules.push({ id: 'design_system', content: dsParts.join('\n'), priority: 84 });
@@ -256,7 +295,7 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
   if (input.colorVariables?.length) {
     const varList = input.colorVariables
       .slice(0, 20)
-      .map(v => `${v.name}:${v.value} (id:"${v.id}")`)
+      .map((v) => `${v.name}:${v.value} (id:"${v.id}")`)
       .join(', ');
     modules.push({
       id: 'color_vars',
@@ -280,7 +319,9 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
 
   // ── 12. Attachments ──
   if (input.attachments?.length) {
-    const attList = input.attachments.map(a => `- ${a.name}${a.mimeType ? ` (${a.mimeType})` : ''}`).join('\n');
+    const attList = input.attachments
+      .map((a) => `- ${a.name}${a.mimeType ? ` (${a.mimeType})` : ''}`)
+      .join('\n');
     modules.push({
       id: 'attachments',
       content: `ARQUIVOS ANEXADOS:\n${attList}`,
@@ -310,7 +351,10 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
   if (input.previousErrors?.length) {
     modules.push({
       id: 'feedback',
-      content: `PREVIOUS ERRORS (avoid repeating):\n${input.previousErrors.slice(0, 5).map(e => `- ${e}`).join('\n')}`,
+      content: `PREVIOUS ERRORS (avoid repeating):\n${input.previousErrors
+        .slice(0, 5)
+        .map((e) => `- ${e}`)
+        .join('\n')}`,
       priority: 98,
     });
   }
@@ -320,7 +364,11 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
     modules.push({ id: 'scanned_templates', content: input.templateContext, priority: 86 });
   }
   if (input.agentComponentsContext) {
-    modules.push({ id: 'scanned_agent_components', content: input.agentComponentsContext, priority: 84 });
+    modules.push({
+      id: 'scanned_agent_components',
+      content: input.agentComponentsContext,
+      priority: 84,
+    });
   }
   if (input.brandChoiceContext) {
     modules.push({ id: 'brand_choice', content: input.brandChoiceContext, priority: 88 });
@@ -331,14 +379,14 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
 
   // Sort by priority (higher first) and assemble
   modules.sort((a, b) => b.priority - a.priority);
-  const systemPrompt = modules.map(m => m.content).join('\n\n');
+  const systemPrompt = modules.map((m) => m.content).join('\n\n');
 
   const tokenEstimate = Math.ceil(systemPrompt.length / 4);
 
   return {
     system: systemPrompt,
     tokenEstimate,
-    modules: modules.map(m => m.id),
+    modules: modules.map((m) => m.id),
     intent,
   };
 }

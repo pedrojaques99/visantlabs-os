@@ -14,29 +14,40 @@ export const PipelineInbox: React.FC<PipelineInboxProps> = ({ onUseAsset }) => {
   const { assets, isLoading, refresh, consume } = usePipelinePending();
 
   // Poll every 30s while open, refresh once on mount
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
   useEffect(() => {
     if (!open) return;
     const id = setInterval(refresh, 30_000);
     return () => clearInterval(id);
   }, [open, refresh]);
 
-  const handleUse = useCallback(async (asset: PipelineAsset) => {
-    onUseAsset(asset);
-    await consume(asset.id);
-    if (assets.length <= 1) setOpen(false);
-  }, [assets.length, consume, onUseAsset]);
+  const handleUse = useCallback(
+    async (asset: PipelineAsset) => {
+      onUseAsset(asset);
+      await consume(asset.id);
+      if (assets.length <= 1) setOpen(false);
+    },
+    [assets.length, consume, onUseAsset]
+  );
 
-  const handleDiscard = useCallback(async (asset: PipelineAsset) => {
-    await consume(asset.id);
-  }, [consume]);
+  const handleDiscard = useCallback(
+    async (asset: PipelineAsset) => {
+      await consume(asset.id);
+    },
+    [consume]
+  );
 
   const count = assets.length;
 
   return (
     <div className="relative">
       <button
-        onClick={() => { setOpen((v) => !v); if (!open) refresh(); }}
+        onClick={() => {
+          setOpen((v) => !v);
+          if (!open) refresh();
+        }}
         title="Pipeline Inbox"
         className={cn(
           'relative flex items-center justify-center w-8 h-8 rounded-lg border transition-colors',
@@ -57,16 +68,23 @@ export const PipelineInbox: React.FC<PipelineInboxProps> = ({ onUseAsset }) => {
         <div className="absolute left-10 top-0 z-50 bg-neutral-950 border border-neutral-700/50 rounded-xl shadow-2xl w-72">
           <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
             <span className="text-xs text-neutral-300">Pipeline Inbox</span>
-            <button onClick={() => setOpen(false)} className="text-neutral-500 hover:text-neutral-300">
+            <button
+              onClick={() => setOpen(false)}
+              className="text-neutral-500 hover:text-neutral-300"
+            >
               <X size={12} />
             </button>
           </div>
 
-          {isLoading && <div className="px-3 py-4 text-xs text-neutral-500 text-center">Loading…</div>}
+          {isLoading && (
+            <div className="px-3 py-4 text-xs text-neutral-500 text-center">Loading…</div>
+          )}
 
           {!isLoading && count === 0 && (
             <div className="px-3 py-6 text-xs text-neutral-500 text-center">
-              No pending assets.<br />Use "Send to →" in any tool to send assets here.
+              No pending assets.
+              <br />
+              Use "Send to →" in any tool to send assets here.
             </div>
           )}
 
@@ -74,7 +92,7 @@ export const PipelineInbox: React.FC<PipelineInboxProps> = ({ onUseAsset }) => {
             {assets.map((asset) => (
               <div key={asset.id} className="flex items-center gap-2 px-3 py-2">
                 <div className="w-10 h-10 rounded-md bg-neutral-800 flex-shrink-0 overflow-hidden">
-                  {(asset.imageUrl || asset.imageBase64) ? (
+                  {asset.imageUrl || asset.imageBase64 ? (
                     <img
                       src={asset.imageUrl || asset.imageBase64}
                       alt=""

@@ -1,8 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  Copy, ClipboardPaste, Files, Lock, Unlock, Eye, EyeOff,
-  ArrowUp, ArrowDown, ChevronsUp, ChevronsDown, Trash2,
+  Copy,
+  ClipboardPaste,
+  Files,
+  Lock,
+  Unlock,
+  Eye,
+  EyeOff,
+  ArrowUp,
+  ArrowDown,
+  ChevronsUp,
+  ChevronsDown,
+  Trash2,
 } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
 import { copyLayersToClipboard, pasteLayersFromClipboard } from './lib/clipboard';
@@ -29,7 +39,10 @@ const Item: React.FC<{
 }> = ({ icon, label, shortcut, danger, onClick, disabled }) => (
   <button
     type="button"
-    onClick={(e) => { e.stopPropagation(); if (!disabled) onClick(); }}
+    onClick={(e) => {
+      e.stopPropagation();
+      if (!disabled) onClick();
+    }}
     disabled={disabled}
     className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-[11px] font-mono transition-colors ${
       disabled
@@ -76,12 +89,17 @@ export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
   // If right-click hit a layer that isn't in the current selection, replace selection.
   // If it hit one already selected, keep multi-selection so actions apply to all.
   const targetIds = state.layerId
-    ? (selectedLayerIds.includes(state.layerId) ? selectedLayerIds : [state.layerId])
+    ? selectedLayerIds.includes(state.layerId)
+      ? selectedLayerIds
+      : [state.layerId]
     : selectedLayerIds;
   const targetLayer = state.layerId ? layers.find((l) => l.id === state.layerId) ?? null : null;
   const hasTarget = targetIds.length > 0;
 
-  const wrap = (fn: () => void) => () => { fn(); onClose(); };
+  const wrap = (fn: () => void) => () => {
+    fn();
+    onClose();
+  };
 
   const onCopy = wrap(() => {
     void copyLayersToClipboard(targetIds);
@@ -131,9 +149,21 @@ export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
       style={{ left, top, width: W }}
       className="fixed z-[10000] bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-md shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-100"
     >
-      <Item icon={<Copy size={11} />} label="Copiar" shortcut="Ctrl+C" onClick={onCopy} disabled={!hasTarget} />
+      <Item
+        icon={<Copy size={11} />}
+        label="Copiar"
+        shortcut="Ctrl+C"
+        onClick={onCopy}
+        disabled={!hasTarget}
+      />
       <Item icon={<ClipboardPaste size={11} />} label="Colar" shortcut="Ctrl+V" onClick={onPaste} />
-      <Item icon={<Files size={11} />} label="Duplicar" shortcut="Ctrl+D" onClick={onDuplicate} disabled={!hasTarget} />
+      <Item
+        icon={<Files size={11} />}
+        label="Duplicar"
+        shortcut="Ctrl+D"
+        onClick={onDuplicate}
+        disabled={!hasTarget}
+      />
 
       <Separator />
 
@@ -152,14 +182,41 @@ export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
 
       <Separator />
 
-      <Item icon={<ArrowUp size={11} />} label="Avançar" onClick={onBringForward} disabled={!hasTarget} />
-      <Item icon={<ChevronsUp size={11} />} label="Trazer pra frente" onClick={onBringToFront} disabled={!hasTarget} />
-      <Item icon={<ArrowDown size={11} />} label="Recuar" onClick={onSendBackward} disabled={!hasTarget} />
-      <Item icon={<ChevronsDown size={11} />} label="Mandar pro fundo" onClick={onSendToBack} disabled={!hasTarget} />
+      <Item
+        icon={<ArrowUp size={11} />}
+        label="Avançar"
+        onClick={onBringForward}
+        disabled={!hasTarget}
+      />
+      <Item
+        icon={<ChevronsUp size={11} />}
+        label="Trazer pra frente"
+        onClick={onBringToFront}
+        disabled={!hasTarget}
+      />
+      <Item
+        icon={<ArrowDown size={11} />}
+        label="Recuar"
+        onClick={onSendBackward}
+        disabled={!hasTarget}
+      />
+      <Item
+        icon={<ChevronsDown size={11} />}
+        label="Mandar pro fundo"
+        onClick={onSendToBack}
+        disabled={!hasTarget}
+      />
 
       <Separator />
 
-      <Item icon={<Trash2 size={11} />} label="Apagar" shortcut="Del" danger onClick={onDelete} disabled={!hasTarget} />
+      <Item
+        icon={<Trash2 size={11} />}
+        label="Apagar"
+        shortcut="Del"
+        danger
+        onClick={onDelete}
+        disabled={!hasTarget}
+      />
     </div>,
     document.body
   );

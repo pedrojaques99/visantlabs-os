@@ -68,13 +68,16 @@ export function ChatInput({ onSend }: ChatInputProps) {
     pendingAttachments,
     brandGuideline,
     isGenerating,
-    selectedModel
+    selectedModel,
   } = usePluginStore();
 
   const mentions = useMentions(textareaRef, setContent);
 
   const activeBrandName = brandGuideline?.name || brandGuideline?.identity?.name || 'Brand';
-  const brandLogo = (brandGuideline?.logos?.find(l => l.variant === 'icon' || l.variant === 'primary') ?? brandGuideline?.logos?.[0])?.url;
+  const brandLogo = (
+    brandGuideline?.logos?.find((l) => l.variant === 'icon' || l.variant === 'primary') ??
+    brandGuideline?.logos?.[0]
+  )?.url;
 
   const handleSend = () => {
     if (content.trim()) {
@@ -176,7 +179,9 @@ export function ChatInput({ onSend }: ChatInputProps) {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
-      className={`border-t border-border bg-card p-2.5 space-y-1.5 transition-colors ${isDragging ? 'bg-brand-cyan/5 border-brand-cyan/40' : ''}`}
+      className={`border-t border-border bg-card p-2.5 space-y-1.5 transition-colors ${
+        isDragging ? 'bg-brand-cyan/5 border-brand-cyan/40' : ''
+      }`}
     >
       {/* Toolbar — muted config row */}
       <div className="flex items-center gap-1.5 px-0.5">
@@ -292,7 +297,10 @@ export function ChatInput({ onSend }: ChatInputProps) {
                 <div className="absolute bottom-full left-0 mb-1 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[140px] z-50">
                   <button
                     type="button"
-                    onClick={() => { setScanPage(!scanPage); setShowActions(false); }}
+                    onClick={() => {
+                      setScanPage(!scanPage);
+                      setShowActions(false);
+                    }}
                     className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs transition-colors ${
                       scanPage ? 'text-brand-cyan' : 'text-foreground hover:bg-muted'
                     }`}
@@ -303,7 +311,10 @@ export function ChatInput({ onSend }: ChatInputProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => { usePluginStore.setState({ generateImage: !generateImage }); setShowActions(false); }}
+                    onClick={() => {
+                      usePluginStore.setState({ generateImage: !generateImage });
+                      setShowActions(false);
+                    }}
                     className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs transition-colors ${
                       generateImage ? 'text-brand-cyan' : 'text-foreground hover:bg-muted'
                     }`}

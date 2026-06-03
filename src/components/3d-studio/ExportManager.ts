@@ -19,10 +19,10 @@ function getExportCanvas(
   aspectRatio: AspectRatio,
   resolution: ExportResolution,
   transparentBg: boolean,
-  bgColor: string,
+  bgColor: string
 ): HTMLCanvasElement {
   const ar = ASPECT_RATIOS[aspectRatio];
-  const scale = EXPORT_RESOLUTIONS.find(r => r.id === resolution)?.scale ?? 2;
+  const scale = EXPORT_RESOLUTIONS.find((r) => r.id === resolution)?.scale ?? 2;
   const w = ar.w * scale;
   const h = ar.h * scale;
 
@@ -63,14 +63,17 @@ export async function exportPNG(
   transparentBg: boolean,
   bgColor: string,
   fileName: string,
-  shader?: ShaderSettings,
+  shader?: ShaderSettings
 ): Promise<void> {
   let offscreen = getExportCanvas(canvas, aspectRatio, resolution, transparentBg, bgColor);
   if (shader) {
     offscreen = await applyShaderToCanvas(offscreen, shader);
   }
   const blob = await new Promise<Blob>((resolve, reject) => {
-    offscreen.toBlob((b) => b ? resolve(b) : reject(new Error('Failed to create PNG blob')), 'image/png');
+    offscreen.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error('Failed to create PNG blob'))),
+      'image/png'
+    );
   });
   downloadBlob(blob, `${fileName || '3d-export'}.png`);
 }
@@ -80,7 +83,7 @@ export async function exportVideo(
   duration: number,
   fileName: string,
   onProgress?: (progress: number) => void,
-  shader?: ShaderSettings,
+  shader?: ShaderSettings
 ): Promise<void> {
   let captureSource = canvas;
 
@@ -110,10 +113,12 @@ export async function exportVideo(
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
     ? 'video/webm;codecs=vp9'
     : MediaRecorder.isTypeSupported('video/webm')
-      ? 'video/webm'
-      : null;
+    ? 'video/webm'
+    : null;
   if (!mimeType) {
-    throw new Error('Video recording is not supported in this browser. Try Chrome or Edge for best compatibility.');
+    throw new Error(
+      'Video recording is not supported in this browser. Try Chrome or Edge for best compatibility.'
+    );
   }
   const recorder = new MediaRecorder(stream, {
     mimeType,
@@ -157,10 +162,7 @@ export async function exportVideo(
   });
 }
 
-export async function exportGLB(
-  scene: Scene,
-  fileName: string,
-): Promise<void> {
+export async function exportGLB(scene: Scene, fileName: string): Promise<void> {
   if (!scene.children.length) throw new Error('Scene is empty — nothing to export');
   const THREE = await import('three');
   const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
@@ -177,10 +179,7 @@ export async function exportGLB(
   downloadBlob(blob, `${fileName || '3d-export'}.glb`);
 }
 
-export async function exportOBJ(
-  scene: Scene,
-  fileName: string,
-): Promise<void> {
+export async function exportOBJ(scene: Scene, fileName: string): Promise<void> {
   if (!scene.children.length) throw new Error('Scene is empty — nothing to export');
   const { OBJExporter } = await import('three/examples/jsm/exporters/OBJExporter.js');
   const exporter = new OBJExporter();
@@ -198,7 +197,7 @@ export async function exportBatchViews(
   bgColor: string,
   fileName: string,
   setCameraView: (view: string) => void,
-  shader?: ShaderSettings,
+  shader?: ShaderSettings
 ): Promise<void> {
   const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
@@ -210,7 +209,7 @@ export async function exportBatchViews(
     let offscreen = getExportCanvas(canvas, aspectRatio, resolution, transparentBg, bgColor);
     if (shader) offscreen = await applyShaderToCanvas(offscreen, shader);
     const blob = await new Promise<Blob>((resolve, reject) => {
-      offscreen.toBlob((b) => b ? resolve(b) : reject(new Error('Failed')), 'image/png');
+      offscreen.toBlob((b) => (b ? resolve(b) : reject(new Error('Failed'))), 'image/png');
     });
     zip.file(`${fileName || '3d-export'}-${view}.png`, blob);
   }
@@ -224,7 +223,7 @@ export async function exportTurntable(
   duration: number,
   fileName: string,
   onProgress?: (progress: number) => void,
-  shader?: ShaderSettings,
+  shader?: ShaderSettings
 ): Promise<void> {
   let captureSource = canvas;
 
@@ -240,7 +239,9 @@ export async function exportTurntable(
         const processed = await applyShaderToCanvas(canvas, shader);
         shaderCtx.clearRect(0, 0, shaderCanvas!.width, shaderCanvas!.height);
         shaderCtx.drawImage(processed, 0, 0);
-      } catch { /* non-fatal */ }
+      } catch {
+        /* non-fatal */
+      }
       shaderAnimId = requestAnimationFrame(renderLoop);
     };
     renderLoop();
@@ -253,7 +254,9 @@ export async function exportTurntable(
     : 'video/webm';
   const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
   const chunks: Blob[] = [];
-  recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+  recorder.ondataavailable = (e) => {
+    if (e.data.size > 0) chunks.push(e.data);
+  };
 
   return new Promise((resolve, reject) => {
     recorder.onerror = () => {
@@ -262,7 +265,10 @@ export async function exportTurntable(
     };
     recorder.onstop = () => {
       if (shaderAnimId) cancelAnimationFrame(shaderAnimId);
-      if (chunks.length === 0) { reject(new Error('No frames captured')); return; }
+      if (chunks.length === 0) {
+        reject(new Error('No frames captured'));
+        return;
+      }
       const blob = new Blob(chunks, { type: 'video/webm' });
       downloadBlob(blob, `${fileName || '3d-export'}-turntable.webm`);
       resolve();
@@ -273,7 +279,10 @@ export async function exportTurntable(
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       onProgress?.(Math.min(elapsed / totalMs, 1));
-      if (elapsed >= totalMs) { clearInterval(interval); recorder.stop(); }
+      if (elapsed >= totalMs) {
+        clearInterval(interval);
+        recorder.stop();
+      }
     }, 100);
   });
 }
@@ -294,9 +303,10 @@ const MAX_CONCURRENT_UPLOADS = 2;
 async function canvasToArrayBuffer(canvas: HTMLCanvasElement): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (b) => (b ? b.arrayBuffer().then(resolve, reject) : reject(new Error('Canvas capture failed'))),
+      (b) =>
+        b ? b.arrayBuffer().then(resolve, reject) : reject(new Error('Canvas capture failed')),
       'image/jpeg',
-      FRAME_QUALITY,
+      FRAME_QUALITY
     );
   });
 }
@@ -304,7 +314,7 @@ async function canvasToArrayBuffer(canvas: HTMLCanvasElement): Promise<ArrayBuff
 async function sendFrameBatch(
   jobId: string,
   frames: ArrayBuffer[],
-  startIndex: number,
+  startIndex: number
 ): Promise<void> {
   let totalSize = 0;
   for (const f of frames) totalSize += 4 + f.byteLength;
@@ -343,7 +353,7 @@ export async function exportVideoServerSide(
   format: VideoFormat,
   onProgress?: (pct: number) => void,
   shader?: ShaderSettings,
-  fps: number = 30,
+  fps: number = 30
 ): Promise<Blob> {
   const totalFrames = Math.ceil(duration * fps);
   const frameInterval = 1000 / fps;
@@ -361,8 +371,8 @@ export async function exportVideoServerSide(
   const uploadQueue: Promise<void>[] = [];
 
   for (let i = 0; i < totalFrames; i++) {
-    await new Promise(r => setTimeout(r, frameInterval));
-    await new Promise(r => requestAnimationFrame(r));
+    await new Promise((r) => setTimeout(r, frameInterval));
+    await new Promise((r) => requestAnimationFrame(r));
 
     let captureCanvas = canvas;
     if (shader) {
@@ -376,7 +386,10 @@ export async function exportVideoServerSide(
       while (uploadQueue.length >= MAX_CONCURRENT_UPLOADS) {
         await Promise.race(uploadQueue);
         for (let j = uploadQueue.length - 1; j >= 0; j--) {
-          const settled = await Promise.race([uploadQueue[j].then(() => true), Promise.resolve(false)]);
+          const settled = await Promise.race([
+            uploadQueue[j].then(() => true),
+            Promise.resolve(false),
+          ]);
           if (settled) uploadQueue.splice(j, 1);
         }
       }

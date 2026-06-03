@@ -19,17 +19,26 @@ class RenderQueue {
 
   private notify() {
     this.snapshot = Array.from(this.jobs.values());
-    this.listeners.forEach(fn => fn());
+    this.listeners.forEach((fn) => fn());
   }
 
-  getJobs(): RenderJob[] { return this.snapshot; }
-  getJob(id: string): RenderJob | undefined { return this.jobs.get(id); }
+  getJobs(): RenderJob[] {
+    return this.snapshot;
+  }
+  getJob(id: string): RenderJob | undefined {
+    return this.jobs.get(id);
+  }
 
   enqueue(composition: RenderComposition): string {
     const job: RenderJob = {
-      id: composition.id, composition,
-      status: 'queued', progress: 0,
-      blob: null, error: null, startedAt: null, completedAt: null,
+      id: composition.id,
+      composition,
+      status: 'queued',
+      progress: 0,
+      blob: null,
+      error: null,
+      startedAt: null,
+      completedAt: null,
     };
     this.jobs.set(job.id, job);
     this.queue.push(job.id);
@@ -43,7 +52,7 @@ class RenderQueue {
     const job = this.jobs.get(id);
     if (job && (job.status === 'queued' || job.status === 'rendering')) {
       job.status = 'cancelled';
-      this.queue = this.queue.filter(qId => qId !== id);
+      this.queue = this.queue.filter((qId) => qId !== id);
       this.notify();
     }
   }
@@ -74,7 +83,10 @@ class RenderQueue {
 
     try {
       const blob = await renderComposition(job.composition, {
-        onProgress: (percent) => { job.progress = percent; this.notify(); },
+        onProgress: (percent) => {
+          job.progress = percent;
+          this.notify();
+        },
         signal: controller.signal,
       });
 
@@ -89,7 +101,9 @@ class RenderQueue {
         downloadBlob(blob, `${name}.mp4`);
         job.status = 'downloaded';
         this.notify();
-      } catch (e) { console.error('Auto-download failed', e); }
+      } catch (e) {
+        console.error('Auto-download failed', e);
+      }
     } catch (err: any) {
       job.status = err.name === 'AbortError' ? 'cancelled' : 'error';
       if (job.status === 'error') job.error = err.message || 'Render failed';

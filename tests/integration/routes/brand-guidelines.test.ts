@@ -66,10 +66,7 @@ describe('POST /api/brand-guidelines', () => {
 
   it('400 with completely empty body', async () => {
     const { token } = await seedUser();
-    const res = await (await request())
-      .post(BASE)
-      .set('Authorization', bearer(token))
-      .send({});
+    const res = await (await request()).post(BASE).set('Authorization', bearer(token)).send({});
     // Schema may accept empty body (identity is optional) — just must not crash
     expect([200, 201, 400]).toContain(res.status);
   });
@@ -88,10 +85,7 @@ describe('POST /api/brand-guidelines', () => {
 
   it('created guideline is returned on subsequent GET', async () => {
     const { token } = await seedUser();
-    await (await request())
-      .post(BASE)
-      .set('Authorization', bearer(token))
-      .send(VALID_PAYLOAD);
+    await (await request()).post(BASE).set('Authorization', bearer(token)).send(VALID_PAYLOAD);
 
     const list = await (await request()).get(BASE).set('Authorization', bearer(token));
     expect(list.body.guidelines).toHaveLength(1);
@@ -147,7 +141,9 @@ describe('PUT /api/brand-guidelines/:id', () => {
     const { user: other } = await createUser();
     const { guideline } = await createBrandGuideline({ userId: other.id });
 
-    const res = await (await request())
+    const res = await (
+      await request()
+    )
       .put(`${BASE}/${guideline._id}`)
       .set('Authorization', bearer(token))
       .send({ identity: { name: 'Hacked' } });
@@ -158,7 +154,9 @@ describe('PUT /api/brand-guidelines/:id', () => {
     const { user, token } = await seedUser();
     const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Old Name' });
 
-    const res = await (await request())
+    const res = await (
+      await request()
+    )
       .put(`${BASE}/${guideline._id}`)
       .set('Authorization', bearer(token))
       .send({ identity: { name: 'New Name', tagline: 'New Tagline' } });
@@ -340,7 +338,9 @@ describe('POST /api/brand-guidelines/:id/figma-sync', () => {
     const { user, token } = await seedUser();
     const { guideline } = await createBrandGuideline({ userId: user.id });
 
-    const res = await (await request())
+    const res = await (
+      await request()
+    )
       .post(`${BASE}/${guideline._id}/figma-sync`)
       .set('Authorization', bearer(token))
       .send({
@@ -396,12 +396,17 @@ describe('PUT /api/brand-guidelines/:id — design token fields', () => {
       name: 'Hero Gradient',
       type: 'linear',
       angle: 135,
-      stops: [{ color: '#52DDEB', position: 0 }, { color: '#1F7878', position: 100 }],
+      stops: [
+        { color: '#52DDEB', position: 0 },
+        { color: '#1F7878', position: 100 },
+      ],
       usage: 'hero',
       css: 'linear-gradient(135deg, #52DDEB 0%, #1F7878 100%)',
     };
 
-    const res = await (await request())
+    const res = await (
+      await request()
+    )
       .put(`${BASE}/${guideline._id}`)
       .set('Authorization', bearer(token))
       .send({ gradients: [gradient] });
@@ -419,13 +424,19 @@ describe('PUT /api/brand-guidelines/:id — design token fields', () => {
     const shadow = {
       id: 's1',
       name: 'Soft',
-      x: 6, y: 6, blur: 17, spread: 0,
-      color: '#6d6d6d', opacity: 0.15,
+      x: 6,
+      y: 6,
+      blur: 17,
+      spread: 0,
+      color: '#6d6d6d',
+      opacity: 0.15,
       type: 'outer',
       css: '6px 6px 17px 0px rgba(109, 109, 109, 0.15)',
     };
 
-    const res = await (await request())
+    const res = await (
+      await request()
+    )
       .put(`${BASE}/${guideline._id}`)
       .set('Authorization', bearer(token))
       .send({ shadows: [shadow] });
@@ -465,12 +476,17 @@ describe('PUT /api/brand-guidelines/:id — design token fields', () => {
     const border = {
       id: 'b1',
       name: 'Emphasis',
-      width: 1.5, style: 'solid', color: '#52DDEB', opacity: 0.4,
+      width: 1.5,
+      style: 'solid',
+      color: '#52DDEB',
+      opacity: 0.4,
       role: 'emphasis',
       css: '1.5px solid rgba(82, 221, 235, 0.4)',
     };
 
-    const res = await (await request())
+    const res = await (
+      await request()
+    )
       .put(`${BASE}/${guideline._id}`)
       .set('Authorization', bearer(token))
       .send({ borders: [border] });
@@ -484,7 +500,9 @@ describe('PUT /api/brand-guidelines/:id — design token fields', () => {
     const { user, token } = await seedUser();
     const { guideline } = await createBrandGuideline({ userId: user.id });
 
-    const res = await (await request())
+    const res = await (
+      await request()
+    )
       .put(`${BASE}/${guideline._id}`)
       .set('Authorization', bearer(token))
       .send({ validation: { colors: 'approved', typography: 'needs_work' } });
@@ -499,7 +517,14 @@ describe('PUT /api/brand-guidelines/:id — design token fields', () => {
     const { guideline } = await createBrandGuideline({ userId: user.id });
 
     const typography = [
-      { family: 'Inter', role: 'body', size: 16, lineHeight: 1.5, letterSpacing: '-0.01em', weights: [400, 500, 700] },
+      {
+        family: 'Inter',
+        role: 'body',
+        size: 16,
+        lineHeight: 1.5,
+        letterSpacing: '-0.01em',
+        weights: [400, 500, 700],
+      },
     ];
 
     const res = await (await request())

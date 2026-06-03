@@ -1,5 +1,5 @@
 import { prisma } from '../db/prisma.js';
-import { validate } from 'temporary-email-address-validator'; 
+import { validate } from 'temporary-email-address-validator';
 
 interface AbuseScore {
   score: number; // 0-100, higher = more suspicious
@@ -34,10 +34,7 @@ function isTemporaryEmail(email: string): boolean {
 /**
  * Detect suspicious patterns and return abuse score
  */
-export async function detectAbuse(
-  email: string,
-  ipAddress: string
-): Promise<AbuseScore> {
+export async function detectAbuse(email: string, ipAddress: string): Promise<AbuseScore> {
   const reasons: string[] = [];
   let score = 0;
 
@@ -76,7 +73,7 @@ export async function detectAbuse(
     const domain = getEmailDomain(email);
     if (domain) {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      
+
       // Count signup attempts with same domain in last hour
       const recentSignups = await prisma.user.findMany({
         where: {
@@ -91,10 +88,14 @@ export async function detectAbuse(
 
       if (recentSignups.length >= 5) {
         score += 35;
-        reasons.push(`Multiple accounts created from same domain (${recentSignups.length} in last hour)`);
+        reasons.push(
+          `Multiple accounts created from same domain (${recentSignups.length} in last hour)`
+        );
       } else if (recentSignups.length >= 3) {
         score += 15;
-        reasons.push(`Multiple accounts created from same domain (${recentSignups.length} in last hour)`);
+        reasons.push(
+          `Multiple accounts created from same domain (${recentSignups.length} in last hour)`
+        );
       }
     }
   } catch (error) {
@@ -150,4 +151,3 @@ export async function recordSignupAttempt(
     // Don't throw - this is non-critical logging
   }
 }
-

@@ -10,7 +10,11 @@ import { PageShell } from '../components/ui/PageShell';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { useLayout } from '@/hooks/useLayout';
-import { useCreativeProjects, useDeleteCreativeProject, useUpdateCreativeProject } from '@/hooks/queries/useCreativeProjects';
+import {
+  useCreativeProjects,
+  useDeleteCreativeProject,
+  useUpdateCreativeProject,
+} from '@/hooks/queries/useCreativeProjects';
 import { useCreativeStore } from '@/components/creative/store/creativeStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatDateShort } from '@/utils/localeUtils';
@@ -88,10 +92,7 @@ export const CreativeProjectsPage: React.FC = () => {
     }
   };
 
-  const handleNameEditStart = (
-    project: { _id: string; name: string },
-    e: React.MouseEvent
-  ) => {
+  const handleNameEditStart = (project: { _id: string; name: string }, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingProjectId(project._id);
     setEditingName(project.name || 'Untitled Creative');
@@ -117,10 +118,7 @@ export const CreativeProjectsPage: React.FC = () => {
     }
   };
 
-  const handleNameEditKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    projectId: string
-  ) => {
+  const handleNameEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, projectId: string) => {
     if (e.key === 'Enter') e.currentTarget.blur();
     else if (e.key === 'Escape') {
       setEditingProjectId(null);
@@ -131,8 +129,8 @@ export const CreativeProjectsPage: React.FC = () => {
   const headerActions = (
     <div className="flex items-center gap-3">
       <div className="relative">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => setShowSearch(!showSearch)}
           className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-900/40"
           title="Search"
@@ -216,7 +214,7 @@ export const CreativeProjectsPage: React.FC = () => {
       breadcrumb={[
         { label: 'Home', to: '/' },
         { label: 'Creative Studio', to: '/create' },
-        { label: 'Projects' }
+        { label: 'Projects' },
       ]}
       actions={headerActions}
     >
@@ -310,10 +308,7 @@ export const CreativeProjectsPage: React.FC = () => {
                           <h3
                             className="font-bold text-neutral-200 font-manrope text-lg line-clamp-1 cursor-text group-hover:text-brand-cyan transition-colors"
                             onClick={(e) =>
-                              handleNameEditStart(
-                                { _id: project._id, name: project.name },
-                                e
-                              )
+                              handleNameEditStart({ _id: project._id, name: project.name }, e)
                             }
                             title="Click to edit"
                           >
@@ -326,9 +321,7 @@ export const CreativeProjectsPage: React.FC = () => {
                         title={`Last edited: ${formatDate(project.updatedAt || project.createdAt)}`}
                       >
                         <Calendar className="h-3 w-3" />
-                        <span>
-                          {formatDate(project.updatedAt || project.createdAt)}
-                        </span>
+                        <span>{formatDate(project.updatedAt || project.createdAt)}</span>
                       </div>
                       {project.prompt && (
                         <p className="text-[11px] text-neutral-500 font-mono line-clamp-2 mb-5 leading-relaxed opacity-60">
@@ -391,4 +384,3 @@ export const CreativeProjectsPage: React.FC = () => {
     </PageShell>
   );
 };
-

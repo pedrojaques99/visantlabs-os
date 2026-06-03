@@ -20,11 +20,7 @@ export const VisantIntroductionPage: React.FC<VisantIntroductionPageProps> = ({
   // Diamond icon SVG
   const DiamondIcon = () => (
     <svg width="19" height="31" viewBox="0 0 19 31" fill="none">
-      <path
-        d="M9.5 0L19 15.5L9.5 31L0 15.5L9.5 0Z"
-        fill={accentColor}
-        fillOpacity="0.8"
-      />
+      <path d="M9.5 0L19 15.5L9.5 31L0 15.5L9.5 0Z" fill={accentColor} fillOpacity="0.8" />
     </svg>
   );
 
@@ -36,7 +32,8 @@ Nossa metodologia é própria, evoluída durante nossa trajetória para entregar
 
   const defaultInfoBox = `O logotipo é o "ícone" que representa um negócio, já a identidade visual é todo universo que compõe a marca, como paleta de cores, tipografias (fontes) e elementos visuais.`;
 
-  const introText = data.customContent?.projectDetailSections?.[0]?.paragraphs?.join('\n\n') || defaultIntroText;
+  const introText =
+    data.customContent?.projectDetailSections?.[0]?.paragraphs?.join('\n\n') || defaultIntroText;
   const infoBoxText = data.customContent?.infoBoxes?.[0]?.content || defaultInfoBox;
 
   return (
@@ -71,7 +68,8 @@ Nossa metodologia é própria, evoluída durante nossa trajetória para entregar
               onDataChange?.({
                 customContent: {
                   ...data.customContent,
-                  projectDetailSections: sections.length > 0 ? sections : [{ title: String(newValue), paragraphs: [] }],
+                  projectDetailSections:
+                    sections.length > 0 ? sections : [{ title: String(newValue), paragraphs: [] }],
                 },
               });
             }}
@@ -101,7 +99,10 @@ Nossa metodologia é própria, evoluída durante nossa trajetória para entregar
             onDataChange?.({
               customContent: {
                 ...data.customContent,
-                projectDetailSections: sections.length > 0 ? sections : [{ title: 'Projeto de Branding & Identidade Visual', paragraphs }],
+                projectDetailSections:
+                  sections.length > 0
+                    ? sections
+                    : [{ title: 'Projeto de Branding & Identidade Visual', paragraphs }],
               },
             });
           }}
@@ -145,7 +146,8 @@ Nossa metodologia é própria, evoluída durante nossa trajetória para entregar
               onDataChange?.({
                 customContent: {
                   ...data.customContent,
-                  infoBoxes: infoBoxes.length > 0 ? infoBoxes : [{ title: '', content: String(newValue) }],
+                  infoBoxes:
+                    infoBoxes.length > 0 ? infoBoxes : [{ title: '', content: String(newValue) }],
                 },
               });
             }}
@@ -168,4 +170,3 @@ Nossa metodologia é própria, evoluída durante nossa trajetória para entregar
     </div>
   );
 };
-

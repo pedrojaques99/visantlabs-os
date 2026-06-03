@@ -17,7 +17,9 @@ export function Header() {
       clickCount.current = 0;
       toggleDevMode();
     } else {
-      clickTimer.current = setTimeout(() => { clickCount.current = 0; }, 800);
+      clickTimer.current = setTimeout(() => {
+        clickCount.current = 0;
+      }, 800);
     }
   }, [toggleDevMode]);
 
@@ -35,23 +37,43 @@ export function Header() {
         <div
           className="w-2 h-2 rounded-full"
           role="status"
-          aria-label={isConnected === true ? 'Server connected' : isConnected === false ? 'Server disconnected' : 'Checking connection'}
+          aria-label={
+            isConnected === true
+              ? 'Server connected'
+              : isConnected === false
+              ? 'Server disconnected'
+              : 'Checking connection'
+          }
           style={{
-            backgroundColor: isConnected === true ? '#00ff00' : isConnected === false ? '#ff4444' : '#888888',
-            transition: 'background-color 0.3s'
+            backgroundColor:
+              isConnected === true ? '#00ff00' : isConnected === false ? '#ff4444' : '#888888',
+            transition: 'background-color 0.3s',
           }}
-          title={isConnected === true ? 'Server connected' : isConnected === false ? 'Server disconnected' : 'Checking...'}
+          title={
+            isConnected === true
+              ? 'Server connected'
+              : isConnected === false
+              ? 'Server disconnected'
+              : 'Checking...'
+          }
         />
 
         {credits && (
-          <Button variant="ghost" className="flex items-center gap-1.5 h-7 px-2 rounded-[6px] text-[10px] text-brand-cyan font-mono bg-neutral-900/50 border border-brand-cyan/20 hover:bg-neutral-800 hover:border-brand-cyan/40 transition-all cursor-default shadow-sm">
+          <Button
+            variant="ghost"
+            className="flex items-center gap-1.5 h-7 px-2 rounded-[6px] text-[10px] text-brand-cyan font-mono bg-neutral-900/50 border border-brand-cyan/20 hover:bg-neutral-800 hover:border-brand-cyan/40 transition-all cursor-default shadow-sm"
+          >
             <Pickaxe size={12} className="text-brand-cyan" />
             <span>{Math.max(0, credits.limit - credits.used)}</span>
           </Button>
         )}
 
         {userInfo?.photoUrl ? (
-          <img src={userInfo.photoUrl} alt={userInfo.name} className="w-7 h-7 rounded-md object-cover" />
+          <img
+            src={userInfo.photoUrl}
+            alt={userInfo.name}
+            className="w-7 h-7 rounded-md object-cover"
+          />
         ) : userInfo ? (
           <div className="w-7 h-7 rounded-md bg-neutral-800 flex items-center justify-center border border-border">
             <UserIcon size={14} className="text-neutral-400" />

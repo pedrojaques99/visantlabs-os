@@ -6,24 +6,18 @@ import {
   AVAILABLE_MATERIAL_TAGS,
 } from '@/utils/mockupConstants';
 
-export type VibeSegment = 
-  | 'construção' 
-  | 'advocacia' 
-  | 'saúde' 
-  | 'sport' 
-  | 'fashion' 
-  | 'lifestyle' 
-  | 'finance' 
-  | 'tech' 
+export type VibeSegment =
+  | 'construção'
+  | 'advocacia'
+  | 'saúde'
+  | 'sport'
+  | 'fashion'
+  | 'lifestyle'
+  | 'finance'
+  | 'tech'
   | 'saas';
 
-export type VibeStyle = 
-  | 'elegante' 
-  | 'artesanal' 
-  | 'pop' 
-  | 'energic' 
-  | 'natural' 
-  | 'industrial';
+export type VibeStyle = 'elegante' | 'artesanal' | 'pop' | 'energic' | 'natural' | 'industrial';
 
 export interface VibeConfig {
   locationTags: string[];

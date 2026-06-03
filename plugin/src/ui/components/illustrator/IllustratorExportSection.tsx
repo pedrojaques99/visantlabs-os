@@ -27,7 +27,10 @@ export function IllustratorExportSection() {
           {copying ? 'Copied!' : 'Copy JSX Code'}
         </Button>
 
-        <Button onClick={handleExport} className="w-full bg-brand-cyan text-black hover:bg-brand-cyan/90 text-xs h-8">
+        <Button
+          onClick={handleExport}
+          className="w-full bg-brand-cyan text-black hover:bg-brand-cyan/90 text-xs h-8"
+        >
           <Download size={12} className="mr-1" />
           Export Assets
         </Button>

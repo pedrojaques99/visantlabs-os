@@ -31,7 +31,11 @@ const limiter = rateLimit({
 
 const TELEMETRY_DIR = path.resolve(process.cwd(), '.agent', 'telemetry');
 
-interface AuditViolation { node: string; rule: string; detail?: string }
+interface AuditViolation {
+  node: string;
+  rule: string;
+  detail?: string;
+}
 interface AuditReport {
   rootCount: number;
   nodeCount: number;
@@ -59,13 +63,28 @@ function formatEntry(input: {
   const intentLine = (intent || '—').replace(/\s+/g, ' ').slice(0, 140);
 
   const lines: string[] = [];
-  lines.push(`## ${ts} · [${kind}] ops=${opCount} · nodes=${telemetry.nodeCount} · roots=${telemetry.rootCount}`);
+  lines.push(
+    `## ${ts} · [${kind}] ops=${opCount} · nodes=${telemetry.nodeCount} · roots=${telemetry.rootCount}`
+  );
   lines.push(`> ${intentLine}`);
   if (kind === 'brand') {
-    lines.push(`brand: fontsApplied=${s.fontsApplied ?? 0} failed=${s.fontsFailedCount ?? 0} | colors=${s.colorsApplied ?? 0} gradients=${s.gradientsApplied ?? 0} | text=${s.textNodes} skipped=${s.textNodesSkipped ?? 0}`);
-    if (s.roleCounts) lines.push(`roles: ${Object.entries(s.roleCounts).map(([k, v]) => `${k}=${v}`).join(' ')}`);
+    lines.push(
+      `brand: fontsApplied=${s.fontsApplied ?? 0} failed=${s.fontsFailedCount ?? 0} | colors=${
+        s.colorsApplied ?? 0
+      } gradients=${s.gradientsApplied ?? 0} | text=${s.textNodes} skipped=${
+        s.textNodesSkipped ?? 0
+      }`
+    );
+    if (s.roleCounts)
+      lines.push(
+        `roles: ${Object.entries(s.roleCounts)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(' ')}`
+      );
   } else {
-    lines.push(`sizing: fixed=${s.fixed} hug=${s.hug} fill=${s.fill} | text=${s.textNodes} | whiteFrames=${s.whiteFrames}`);
+    lines.push(
+      `sizing: fixed=${s.fixed} hug=${s.hug} fill=${s.fill} | text=${s.textNodes} | whiteFrames=${s.whiteFrames}`
+    );
   }
   if (telemetry.violations.length === 0) {
     lines.push(`violations: none`);
@@ -79,7 +98,11 @@ function formatEntry(input: {
     }
     lines.push(`violations:`);
     for (const [rule, nodes] of byRule) {
-      lines.push(`- \`${rule}\` ×${nodes.length}: ${nodes.slice(0, 6).join(', ')}${nodes.length > 6 ? ' …' : ''}`);
+      lines.push(
+        `- \`${rule}\` ×${nodes.length}: ${nodes.slice(0, 6).join(', ')}${
+          nodes.length > 6 ? ' …' : ''
+        }`
+      );
     }
   }
   lines.push(''); // blank line separator
@@ -94,7 +117,12 @@ router.post('/operations', limiter, async (req, res) => {
     }
     const safeKind = kind === 'brand' ? 'brand' : 'ops';
 
-    const md = formatEntry({ kind: safeKind, intent: intent ?? null, opCount: Number(opCount) || 0, telemetry });
+    const md = formatEntry({
+      kind: safeKind,
+      intent: intent ?? null,
+      opCount: Number(opCount) || 0,
+      telemetry,
+    });
     const date = new Date().toISOString().slice(0, 10);
 
     await getTelemetrySink().append({
@@ -119,12 +147,18 @@ router.get('/summary', limiter, async (req, res) => {
   try {
     const days = Math.min(Math.max(parseInt(String(req.query.days || '7'), 10) || 7, 1), 30);
     await fs.mkdir(TELEMETRY_DIR, { recursive: true });
-    const files = (await fs.readdir(TELEMETRY_DIR)).filter(f => f.endsWith('.md')).sort().slice(-days);
+    const files = (await fs.readdir(TELEMETRY_DIR))
+      .filter((f) => f.endsWith('.md'))
+      .sort()
+      .slice(-days);
 
     const ruleCount = new Map<string, number>();
     let entries = 0;
     let totalNodes = 0;
-    let totalFixed = 0, totalHug = 0, totalFill = 0, totalWhite = 0;
+    let totalFixed = 0,
+      totalHug = 0,
+      totalFill = 0,
+      totalWhite = 0;
 
     for (const f of files) {
       const content = await fs.readFile(path.join(TELEMETRY_DIR, f), 'utf8');
@@ -134,10 +168,14 @@ router.get('/summary', limiter, async (req, res) => {
           const m = line.match(/nodes=(\d+)/);
           if (m) totalNodes += parseInt(m[1], 10);
         } else if (line.startsWith('sizing:')) {
-          const f1 = line.match(/fixed=(\d+)/); if (f1) totalFixed += +f1[1];
-          const f2 = line.match(/hug=(\d+)/);   if (f2) totalHug += +f2[1];
-          const f3 = line.match(/fill=(\d+)/);  if (f3) totalFill += +f3[1];
-          const f4 = line.match(/whiteFrames=(\d+)/); if (f4) totalWhite += +f4[1];
+          const f1 = line.match(/fixed=(\d+)/);
+          if (f1) totalFixed += +f1[1];
+          const f2 = line.match(/hug=(\d+)/);
+          if (f2) totalHug += +f2[1];
+          const f3 = line.match(/fill=(\d+)/);
+          if (f3) totalFill += +f3[1];
+          const f4 = line.match(/whiteFrames=(\d+)/);
+          if (f4) totalWhite += +f4[1];
         } else if (line.startsWith('- `')) {
           const m = line.match(/`([^`]+)`\s*×(\d+)/);
           if (m) ruleCount.set(m[1], (ruleCount.get(m[1]) || 0) + parseInt(m[2], 10));

@@ -13,7 +13,10 @@ interface InlineTagsProps {
  * Click a badge to edit it, X to delete, + to add new.
  */
 export const InlineTags: React.FC<InlineTagsProps> = ({
-  values, onChange, placeholder = 'Add...', inputWidth = 100,
+  values,
+  onChange,
+  placeholder = 'Add...',
+  inputWidth = 100,
 }) => {
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editVal, setEditVal] = useState('');
@@ -22,14 +25,18 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
   const editRef = useRef<HTMLInputElement>(null);
   const addRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { if (editIdx !== null) editRef.current?.focus(); }, [editIdx]);
-  useEffect(() => { if (adding) addRef.current?.focus(); }, [adding]);
+  useEffect(() => {
+    if (editIdx !== null) editRef.current?.focus();
+  }, [editIdx]);
+  useEffect(() => {
+    if (adding) addRef.current?.focus();
+  }, [adding]);
 
   const commitEdit = () => {
     if (editIdx === null) return;
     const trimmed = editVal.trim();
     if (trimmed) {
-      onChange(values.map((v, i) => i === editIdx ? trimmed : v));
+      onChange(values.map((v, i) => (i === editIdx ? trimmed : v)));
     } else {
       onChange(values.filter((_, i) => i !== editIdx));
     }
@@ -53,7 +60,10 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
             value={editVal}
             onChange={(e) => setEditVal(e.target.value)}
             onBlur={commitEdit}
-            onKeyDown={(e) => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') setEditIdx(null); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitEdit();
+              if (e.key === 'Escape') setEditIdx(null);
+            }}
             className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-200 focus:outline-none focus:border-white/30"
             style={{ width: `${Math.max(editVal.length * 7 + 24, inputWidth)}px` }}
           />
@@ -61,11 +71,17 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
           <span
             key={i}
             className="group/t inline-flex items-center gap-1 px-2 h-6 rounded border border-white/10 bg-neutral-800/30 text-xs text-neutral-300 cursor-pointer hover:border-white/20 hover:bg-neutral-800/50 transition-colors"
-            onClick={() => { setEditIdx(i); setEditVal(v); }}
+            onClick={() => {
+              setEditIdx(i);
+              setEditVal(v);
+            }}
           >
             {v}
             <button
-              onClick={(e) => { e.stopPropagation(); onChange(values.filter((_, j) => j !== i)); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange(values.filter((_, j) => j !== i));
+              }}
               className="text-neutral-700 hover:text-destructive opacity-0 group-hover/t:opacity-100 transition-all"
               aria-label="Remove"
             >
@@ -81,7 +97,13 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
           value={addVal}
           onChange={(e) => setAddVal(e.target.value)}
           onBlur={commitAdd}
-          onKeyDown={(e) => { if (e.key === 'Enter') commitAdd(); if (e.key === 'Escape') { setAdding(false); setAddVal(''); } }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitAdd();
+            if (e.key === 'Escape') {
+              setAdding(false);
+              setAddVal('');
+            }
+          }}
           placeholder={placeholder}
           className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:border-white/30"
           style={{ width: `${inputWidth}px` }}

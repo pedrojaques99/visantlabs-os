@@ -1,6 +1,28 @@
-import React, { useCallback, useState, useMemo, useEffect, useRef, type PointerEvent as RPointerEvent } from 'react';
+import React, {
+  useCallback,
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  type PointerEvent as RPointerEvent,
+} from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Upload, CircleDot, Paintbrush, Undo2, Redo2, PanelRightOpen, Hand, Printer, Play, Pause, Zap, Blend, Pin, HelpCircle } from 'lucide-react';
+import {
+  Upload,
+  CircleDot,
+  Paintbrush,
+  Undo2,
+  Redo2,
+  PanelRightOpen,
+  Hand,
+  Printer,
+  Play,
+  Pause,
+  Zap,
+  Blend,
+  Pin,
+  HelpCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
@@ -8,11 +30,17 @@ import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { HalftoneCanvas, type HalftoneCanvasHandle } from '@/components/halftone/HalftoneCanvas';
 import { generateHalftoneSvg } from '@/components/halftone/halftone-svg-export';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
-import { TextureFilterCanvas, type TextureFilterCanvasHandle } from '@/components/texture-filter/TextureFilterCanvas';
+import {
+  TextureFilterCanvas,
+  type TextureFilterCanvasHandle,
+} from '@/components/texture-filter/TextureFilterCanvas';
 import { TextureFilterControls } from '@/components/texture-filter/TextureFilterControls';
 import { RisoCanvas, type RisoCanvasHandle } from '@/components/riso/RisoCanvas';
 import { RisoControls } from '@/components/riso/RisoControls';
-import { ShaderLabCanvas, type ShaderLabCanvasHandle } from '@/components/shader-lab/ShaderLabCanvas';
+import {
+  ShaderLabCanvas,
+  type ShaderLabCanvasHandle,
+} from '@/components/shader-lab/ShaderLabCanvas';
 import { ShaderLabControls } from '@/components/shader-lab/ShaderLabControls';
 import { BeforeAfterOverlay } from '@/components/shared/BeforeAfterOverlay';
 import { ExportModal } from '@/components/shared/ExportModal';
@@ -60,46 +88,154 @@ function usePerModeState(mode: ImageLabMode) {
   const r = useRisoStore;
   const s = useShaderLabStore;
 
-  const hPanel = h((s) => s.panelVisible); const hSetPanel = h((s) => s.setPanelVisible);
-  const hReset = h((s) => s.resetSettings); const hFile = h((s) => s.fileName);
-  const hZoom = h((s) => s.zoom); const hUndo = h((s) => s.undo); const hRedo = h((s) => s.redo);
-  const hHi = h((s) => s.historyIndex); const hHl = h((s) => s.settingsHistory.length);
+  const hPanel = h((s) => s.panelVisible);
+  const hSetPanel = h((s) => s.setPanelVisible);
+  const hReset = h((s) => s.resetSettings);
+  const hFile = h((s) => s.fileName);
+  const hZoom = h((s) => s.zoom);
+  const hUndo = h((s) => s.undo);
+  const hRedo = h((s) => s.redo);
+  const hHi = h((s) => s.historyIndex);
+  const hHl = h((s) => s.settingsHistory.length);
   const hImg = h((s) => s.imageUrl);
 
-  const tPanel = t((s) => s.panelVisible); const tSetPanel = t((s) => s.setPanelVisible);
-  const tReset = t((s) => s.resetSettings); const tFile = t((s) => s.fileName);
-  const tZoom = t((s) => s.zoom); const tUndo = t((s) => s.undo); const tRedo = t((s) => s.redo);
-  const tHi = t((s) => s.historyIndex); const tHl = t((s) => s.settingsHistory.length);
+  const tPanel = t((s) => s.panelVisible);
+  const tSetPanel = t((s) => s.setPanelVisible);
+  const tReset = t((s) => s.resetSettings);
+  const tFile = t((s) => s.fileName);
+  const tZoom = t((s) => s.zoom);
+  const tUndo = t((s) => s.undo);
+  const tRedo = t((s) => s.redo);
+  const tHi = t((s) => s.historyIndex);
+  const tHl = t((s) => s.settingsHistory.length);
   const tImg = t((s) => s.imageUrl);
 
-  const rPanel = r((s) => s.panelVisible); const rSetPanel = r((s) => s.setPanelVisible);
-  const rReset = r((s) => s.resetSettings); const rFile = r((s) => s.fileName);
-  const rZoom = r((s) => s.zoom); const rUndo = r((s) => s.undo); const rRedo = r((s) => s.redo);
-  const rHi = r((s) => s.historyIndex); const rHl = r((s) => s.settingsHistory.length);
+  const rPanel = r((s) => s.panelVisible);
+  const rSetPanel = r((s) => s.setPanelVisible);
+  const rReset = r((s) => s.resetSettings);
+  const rFile = r((s) => s.fileName);
+  const rZoom = r((s) => s.zoom);
+  const rUndo = r((s) => s.undo);
+  const rRedo = r((s) => s.redo);
+  const rHi = r((s) => s.historyIndex);
+  const rHl = r((s) => s.settingsHistory.length);
   const rImg = r((s) => s.imageUrl);
 
-  const sZoom = s((st) => st.zoom); const sUndo = s((st) => st.undo); const sRedo = s((st) => st.redo);
-  const sHi = s((st) => st.historyIndex); const sHl = s((st) => st.historyLength);
-  const sImg = s((st) => st.imageUrl); const sFile = s((st) => st.fileName);
+  const sZoom = s((st) => st.zoom);
+  const sUndo = s((st) => st.undo);
+  const sRedo = s((st) => st.redo);
+  const sHi = s((st) => st.historyIndex);
+  const sHl = s((st) => st.historyLength);
+  const sImg = s((st) => st.imageUrl);
+  const sFile = s((st) => st.fileName);
   const sReset = s((st) => st.reset);
 
   const [sPanelVisible, setSPanelVisible] = useState(true);
 
   return useMemo(() => {
-    if (mode === 'halftone') return { panelVisible: hPanel, setPanelVisible: hSetPanel, resetSettings: hReset, fileName: hFile, zoom: hZoom, undo: hUndo, redo: hRedo, historyIndex: hHi, historyLength: hHl, hasImage: !!hImg, store: h };
-    if (mode === 'texture') return { panelVisible: tPanel, setPanelVisible: tSetPanel, resetSettings: tReset, fileName: tFile, zoom: tZoom, undo: tUndo, redo: tRedo, historyIndex: tHi, historyLength: tHl, hasImage: !!tImg, store: t };
-    if (mode === 'shaders') return { panelVisible: sPanelVisible, setPanelVisible: setSPanelVisible, resetSettings: sReset, fileName: sFile, zoom: sZoom, undo: sUndo, redo: sRedo, historyIndex: sHi, historyLength: sHl, hasImage: !!sImg, store: s };
-    return { panelVisible: rPanel, setPanelVisible: rSetPanel, resetSettings: rReset, fileName: rFile, zoom: rZoom, undo: rUndo, redo: rRedo, historyIndex: rHi, historyLength: rHl, hasImage: !!rImg, store: r };
-  }, [mode, hPanel, hSetPanel, hReset, hFile, hZoom, hUndo, hRedo, hHi, hHl, hImg,
-    tPanel, tSetPanel, tReset, tFile, tZoom, tUndo, tRedo, tHi, tHl, tImg,
-    rPanel, rSetPanel, rReset, rFile, rZoom, rUndo, rRedo, rHi, rHl, rImg,
-    sPanelVisible, sReset, sFile, sZoom, sUndo, sRedo, sHi, sHl, sImg]);
+    if (mode === 'halftone')
+      return {
+        panelVisible: hPanel,
+        setPanelVisible: hSetPanel,
+        resetSettings: hReset,
+        fileName: hFile,
+        zoom: hZoom,
+        undo: hUndo,
+        redo: hRedo,
+        historyIndex: hHi,
+        historyLength: hHl,
+        hasImage: !!hImg,
+        store: h,
+      };
+    if (mode === 'texture')
+      return {
+        panelVisible: tPanel,
+        setPanelVisible: tSetPanel,
+        resetSettings: tReset,
+        fileName: tFile,
+        zoom: tZoom,
+        undo: tUndo,
+        redo: tRedo,
+        historyIndex: tHi,
+        historyLength: tHl,
+        hasImage: !!tImg,
+        store: t,
+      };
+    if (mode === 'shaders')
+      return {
+        panelVisible: sPanelVisible,
+        setPanelVisible: setSPanelVisible,
+        resetSettings: sReset,
+        fileName: sFile,
+        zoom: sZoom,
+        undo: sUndo,
+        redo: sRedo,
+        historyIndex: sHi,
+        historyLength: sHl,
+        hasImage: !!sImg,
+        store: s,
+      };
+    return {
+      panelVisible: rPanel,
+      setPanelVisible: rSetPanel,
+      resetSettings: rReset,
+      fileName: rFile,
+      zoom: rZoom,
+      undo: rUndo,
+      redo: rRedo,
+      historyIndex: rHi,
+      historyLength: rHl,
+      hasImage: !!rImg,
+      store: r,
+    };
+  }, [
+    mode,
+    hPanel,
+    hSetPanel,
+    hReset,
+    hFile,
+    hZoom,
+    hUndo,
+    hRedo,
+    hHi,
+    hHl,
+    hImg,
+    tPanel,
+    tSetPanel,
+    tReset,
+    tFile,
+    tZoom,
+    tUndo,
+    tRedo,
+    tHi,
+    tHl,
+    tImg,
+    rPanel,
+    rSetPanel,
+    rReset,
+    rFile,
+    rZoom,
+    rUndo,
+    rRedo,
+    rHi,
+    rHl,
+    rImg,
+    sPanelVisible,
+    sReset,
+    sFile,
+    sZoom,
+    sUndo,
+    sRedo,
+    sHi,
+    sHl,
+    sImg,
+  ]);
 }
 
 /* ─── Canvas thumbnail hook ─── */
 
 function useCanvasThumbnails(
-  canvasRefsMap: React.MutableRefObject<Record<ImageLabMode, HTMLCanvasElement | null>>,
+  canvasRefsMap: React.MutableRefObject<Record<ImageLabMode, HTMLCanvasElement | null>>
 ) {
   const hHi = useHalftoneStore((s) => s.historyIndex);
   const hImg = useHalftoneStore((s) => s.imageUrl);
@@ -112,37 +248,53 @@ function useCanvasThumbnails(
   const sImg = useShaderLabStore((s) => s.imageUrl);
 
   const [thumbs, setThumbs] = useState<Record<ImageLabMode, string | null>>({
-    halftone: null, texture: null, riso: null, shaders: null,
+    halftone: null,
+    texture: null,
+    riso: null,
+    shaders: null,
   });
 
   const frameId = useRef<number>(0);
 
-  const capture = useCallback((modeKey: ImageLabMode) => {
-    const canvas = canvasRefsMap.current[modeKey];
-    if (!canvas || canvas.width === 0 || canvas.height === 0) return;
-    cancelAnimationFrame(frameId.current);
-    frameId.current = requestAnimationFrame(() => {
-      try {
-        const tmp = document.createElement('canvas');
-        const size = 72;
-        tmp.width = size;
-        tmp.height = size;
-        const ctx = tmp.getContext('2d');
-        if (!ctx) return;
-        const scale = Math.max(size / canvas.width, size / canvas.height);
-        const w = canvas.width * scale;
-        const h = canvas.height * scale;
-        ctx.drawImage(canvas, (size - w) / 2, (size - h) / 2, w, h);
-        const url = tmp.toDataURL('image/jpeg', 0.6);
-        setThumbs((prev) => ({ ...prev, [modeKey]: url }));
-      } catch { /* tainted canvas, ignore */ }
-    });
-  }, [canvasRefsMap]);
+  const capture = useCallback(
+    (modeKey: ImageLabMode) => {
+      const canvas = canvasRefsMap.current[modeKey];
+      if (!canvas || canvas.width === 0 || canvas.height === 0) return;
+      cancelAnimationFrame(frameId.current);
+      frameId.current = requestAnimationFrame(() => {
+        try {
+          const tmp = document.createElement('canvas');
+          const size = 72;
+          tmp.width = size;
+          tmp.height = size;
+          const ctx = tmp.getContext('2d');
+          if (!ctx) return;
+          const scale = Math.max(size / canvas.width, size / canvas.height);
+          const w = canvas.width * scale;
+          const h = canvas.height * scale;
+          ctx.drawImage(canvas, (size - w) / 2, (size - h) / 2, w, h);
+          const url = tmp.toDataURL('image/jpeg', 0.6);
+          setThumbs((prev) => ({ ...prev, [modeKey]: url }));
+        } catch {
+          /* tainted canvas, ignore */
+        }
+      });
+    },
+    [canvasRefsMap]
+  );
 
-  useEffect(() => { if (hImg) capture('halftone'); }, [hHi, hImg, capture]);
-  useEffect(() => { if (tImg) capture('texture'); }, [tHi, tImg, capture]);
-  useEffect(() => { if (rImg) capture('riso'); }, [rHi, rImg, capture]);
-  useEffect(() => { if (sImg) capture('shaders'); }, [sHi, sImg, capture]);
+  useEffect(() => {
+    if (hImg) capture('halftone');
+  }, [hHi, hImg, capture]);
+  useEffect(() => {
+    if (tImg) capture('texture');
+  }, [tHi, tImg, capture]);
+  useEffect(() => {
+    if (rImg) capture('riso');
+  }, [rHi, rImg, capture]);
+  useEffect(() => {
+    if (sImg) capture('shaders');
+  }, [sHi, sImg, capture]);
 
   return thumbs;
 }
@@ -152,44 +304,54 @@ function useCanvasThumbnails(
 function usePresetCycling(mode: ImageLabMode) {
   const [currentPresetIndex, setCurrentPresetIndex] = useState(-1);
 
-  const cyclePreset = useCallback((direction: 1 | -1) => {
-    const keys = PRESET_KEYS[mode];
-    if (!keys.length) return;
+  const cyclePreset = useCallback(
+    (direction: 1 | -1) => {
+      const keys = PRESET_KEYS[mode];
+      if (!keys.length) return;
 
-    const next = currentPresetIndex + direction;
-    const idx = ((next % keys.length) + keys.length) % keys.length;
-    setCurrentPresetIndex(idx);
-    const name = keys[idx];
+      const next = currentPresetIndex + direction;
+      const idx = ((next % keys.length) + keys.length) % keys.length;
+      setCurrentPresetIndex(idx);
+      const name = keys[idx];
 
-    if (mode === 'halftone') {
-      useHalftoneStore.getState().applyPreset(name);
-    } else if (mode === 'texture') {
-      const preset = FILTER_PRESETS[name];
-      const store = useTextureFilterStore.getState();
-      Object.entries(preset).forEach(([k, v]) => store.updateSetting(k as any, v as any));
-    } else if (mode === 'riso') {
-      const preset = RISO_FULL_PRESETS[name];
-      if (preset) {
-        const store = useRisoStore.getState();
-        const layers = preset.colors.map((hex: string, i: number) => ({
-          color: hexToRgb(hex), hex, visible: true, alpha: 0.85,
-          angle: i * 22.5, offsetX: [1, -1, 1, -1][i], offsetY: [-1, 1, 1, -1][i],
-        }));
-        store.setLayers(layers);
-        store.updateSetting('frequency', preset.frequency);
-        store.updateSetting('dotSize', preset.dotSize);
-        store.updateSetting('paperColor', preset.paperColor);
-        store.updateSetting('paperNoise', preset.paperNoise);
-        store.updateSetting('inkNoise', preset.inkNoise);
-        store.updateSetting('inkDropout', preset.inkDropout);
-        store.updateSetting('misregistration', preset.misregistration);
-        store.updateSetting('edgeBleed', preset.edgeBleed);
+      if (mode === 'halftone') {
+        useHalftoneStore.getState().applyPreset(name);
+      } else if (mode === 'texture') {
+        const preset = FILTER_PRESETS[name];
+        const store = useTextureFilterStore.getState();
+        Object.entries(preset).forEach(([k, v]) => store.updateSetting(k as any, v as any));
+      } else if (mode === 'riso') {
+        const preset = RISO_FULL_PRESETS[name];
+        if (preset) {
+          const store = useRisoStore.getState();
+          const layers = preset.colors.map((hex: string, i: number) => ({
+            color: hexToRgb(hex),
+            hex,
+            visible: true,
+            alpha: 0.85,
+            angle: i * 22.5,
+            offsetX: [1, -1, 1, -1][i],
+            offsetY: [-1, 1, 1, -1][i],
+          }));
+          store.setLayers(layers);
+          store.updateSetting('frequency', preset.frequency);
+          store.updateSetting('dotSize', preset.dotSize);
+          store.updateSetting('paperColor', preset.paperColor);
+          store.updateSetting('paperNoise', preset.paperNoise);
+          store.updateSetting('inkNoise', preset.inkNoise);
+          store.updateSetting('inkDropout', preset.inkDropout);
+          store.updateSetting('misregistration', preset.misregistration);
+          store.updateSetting('edgeBleed', preset.edgeBleed);
+        }
       }
-    }
-    toast.success(`Preset: ${name}`);
-  }, [mode, currentPresetIndex]);
+      toast.success(`Preset: ${name}`);
+    },
+    [mode, currentPresetIndex]
+  );
 
-  useEffect(() => { setCurrentPresetIndex(-1); }, [mode]);
+  useEffect(() => {
+    setCurrentPresetIndex(-1);
+  }, [mode]);
 
   return cyclePreset;
 }
@@ -222,7 +384,19 @@ export const ImageLabPage: React.FC = () => {
   const risoStore = useRisoStore;
 
   const active = usePerModeState(mode);
-  const { panelVisible, setPanelVisible, resetSettings, fileName, zoom, undo, redo, historyIndex, historyLength, hasImage, store: activeStore } = active;
+  const {
+    panelVisible,
+    setPanelVisible,
+    resetSettings,
+    fileName,
+    zoom,
+    undo,
+    redo,
+    historyIndex,
+    historyLength,
+    hasImage,
+    store: activeStore,
+  } = active;
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [presetLibraryOpen, setPresetLibraryOpen] = useState(false);
@@ -244,20 +418,23 @@ export const ImageLabPage: React.FC = () => {
     return () => clearTimeout(t);
   }, [canAutoHide]);
 
-  const handleCanvasPointerMove = useCallback((e: RPointerEvent<HTMLDivElement>) => {
-    if (!canAutoHide) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relY = e.clientY - rect.top;
-    const nearTop = relY < FX_PROXIMITY_PX;
+  const handleCanvasPointerMove = useCallback(
+    (e: RPointerEvent<HTMLDivElement>) => {
+      if (!canAutoHide) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const relY = e.clientY - rect.top;
+      const nearTop = relY < FX_PROXIMITY_PX;
 
-    if (nearTop) {
-      clearTimeout(fxHideTimer.current);
-      setFxBarVisible(true);
-    } else if (!fxBarRef.current?.matches(':hover')) {
-      clearTimeout(fxHideTimer.current);
-      fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
-    }
-  }, [canAutoHide]);
+      if (nearTop) {
+        clearTimeout(fxHideTimer.current);
+        setFxBarVisible(true);
+      } else if (!fxBarRef.current?.matches(':hover')) {
+        clearTimeout(fxHideTimer.current);
+        fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
+      }
+    },
+    [canAutoHide]
+  );
 
   const handleFxBarEnter = useCallback(() => {
     if (!canAutoHide) return;
@@ -279,23 +456,32 @@ export const ImageLabPage: React.FC = () => {
     }
   }, []);
 
-  const handleModeChange = useCallback((m: ImageLabMode) => {
-    setMode(m);
-    setSearchParams({ mode: m }, { replace: true });
-  }, [setMode, setSearchParams]);
+  const handleModeChange = useCallback(
+    (m: ImageLabMode) => {
+      setMode(m);
+      setSearchParams({ mode: m }, { replace: true });
+    },
+    [setMode, setSearchParams]
+  );
 
   const shaderLabStore = useShaderLabStore;
 
-  const broadcastImage = useCallback((url: string, name: string, mediaType: 'image' | 'video' = 'image') => {
-    labStore.getState().setSource(url, name, mediaType);
-    halftoneStore.getState().setImageUrl(url, name, mediaType);
-    risoStore.getState().setImageUrl(url, name, mediaType);
-    textureStore.getState().setImageUrl(url, name, mediaType);
-    shaderLabStore.getState().setImageUrl(url, name, mediaType);
-  }, []);
+  const broadcastImage = useCallback(
+    (url: string, name: string, mediaType: 'image' | 'video' = 'image') => {
+      labStore.getState().setSource(url, name, mediaType);
+      halftoneStore.getState().setImageUrl(url, name, mediaType);
+      risoStore.getState().setImageUrl(url, name, mediaType);
+      textureStore.getState().setImageUrl(url, name, mediaType);
+      shaderLabStore.getState().setImageUrl(url, name, mediaType);
+    },
+    []
+  );
 
   const canvasRefsMap = useRef<Record<ImageLabMode, HTMLCanvasElement | null>>({
-    halftone: null, texture: null, riso: null, shaders: null,
+    halftone: null,
+    texture: null,
+    riso: null,
+    shaders: null,
   });
   const halftoneRef = useRef<HalftoneCanvasHandle>(null);
   const risoRef = useRef<RisoCanvasHandle>(null);
@@ -345,45 +531,63 @@ export const ImageLabPage: React.FC = () => {
     return null;
   }, [mode]);
 
-  const handleVideoExport = useCallback(async (fmt: VideoFormat, onProgress: (pct: number) => void) => {
-    const canvas = canvasRef.current;
-    if (!canvas) throw new Error('No canvas');
+  const handleVideoExport = useCallback(
+    async (fmt: VideoFormat, onProgress: (pct: number) => void) => {
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error('No canvas');
 
-    const vc = getActiveVideoControls();
-    if (!vc?.videoRef.current) throw new Error('No video source');
+      const vc = getActiveVideoControls();
+      if (!vc?.videoRef.current) throw new Error('No video source');
 
-    const video = vc.videoRef.current;
+      const video = vc.videoRef.current;
 
-    const renderFrame = async (v: HTMLVideoElement) => {
-      if (mode === 'halftone') {
-        const r = halftoneRef.current?.getRenderer();
-        if (r) { r.updateTexture(v); r.render({ ...useHalftoneStore.getState().getSettings(), effectOpacity: useImageLabStore.getState().effectOpacity }); }
-      } else if (mode === 'riso') {
-        const r = risoRef.current?.getRenderer();
-        if (r) { r.updateTexture(v); r.render({ ...useRisoStore.getState().getSettings(), effectOpacity: useImageLabStore.getState().effectOpacity }); }
-      } else if (mode === 'texture') {
-        // TextureFilterCanvas renderFrame is internal, trigger via seeking (rAF will pick it up)
-      }
-    };
+      const renderFrame = async (v: HTMLVideoElement) => {
+        if (mode === 'halftone') {
+          const r = halftoneRef.current?.getRenderer();
+          if (r) {
+            r.updateTexture(v);
+            r.render({
+              ...useHalftoneStore.getState().getSettings(),
+              effectOpacity: useImageLabStore.getState().effectOpacity,
+            });
+          }
+        } else if (mode === 'riso') {
+          const r = risoRef.current?.getRenderer();
+          if (r) {
+            r.updateTexture(v);
+            r.render({
+              ...useRisoStore.getState().getSettings(),
+              effectOpacity: useImageLabStore.getState().effectOpacity,
+            });
+          }
+        } else if (mode === 'texture') {
+          // TextureFilterCanvas renderFrame is internal, trigger via seeking (rAF will pick it up)
+        }
+      };
 
-    return exportVideoServerSide({
-      video,
-      renderFrame,
-      canvas,
-      format: fmt,
-      fps: 30,
-      onProgress,
-    });
-  }, [canvasRef, mode, getActiveVideoControls]);
+      return exportVideoServerSide({
+        video,
+        renderFrame,
+        canvas,
+        format: fmt,
+        fps: 30,
+        onProgress,
+      });
+    },
+    [canvasRef, mode, getActiveVideoControls]
+  );
 
   const { isDragOver, dragProps, dropMessage } = useToolEditorDragDrop({
     accept: 'image+video',
-    onFile: useCallback((file: File) => {
-      const isVideo = file.type.startsWith('video/');
-      const url = URL.createObjectURL(file);
-      broadcastImage(url, file.name || 'pasted', isVideo ? 'video' : 'image');
-      toast.success(`Loaded ${file.name || 'pasted image'}`);
-    }, [broadcastImage]),
+    onFile: useCallback(
+      (file: File) => {
+        const isVideo = file.type.startsWith('video/');
+        const url = URL.createObjectURL(file);
+        broadcastImage(url, file.name || 'pasted', isVideo ? 'video' : 'image');
+        toast.success(`Loaded ${file.name || 'pasted image'}`);
+      },
+      [broadcastImage]
+    ),
     dropMessage: 'Drop image or video here',
   });
 
@@ -428,11 +632,20 @@ export const ImageLabPage: React.FC = () => {
 
       if (e.key === 'Escape') {
         const current = labStore.getState().compareMode;
-        if (current !== 'off') { e.preventDefault(); setCompareMode('off'); }
+        if (current !== 'off') {
+          e.preventDefault();
+          setCompareMode('off');
+        }
       }
 
-      if (e.key === '[') { e.preventDefault(); cyclePreset(-1); }
-      if (e.key === ']') { e.preventDefault(); cyclePreset(1); }
+      if (e.key === '[') {
+        e.preventDefault();
+        cyclePreset(-1);
+      }
+      if (e.key === ']') {
+        e.preventDefault();
+        cyclePreset(1);
+      }
 
       if (e.shiftKey && e.key === 'E') {
         e.preventDefault();
@@ -457,14 +670,23 @@ export const ImageLabPage: React.FC = () => {
     if (compareMode !== 'toggle') return;
     const down = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.code === 'Space' && !e.repeat) { e.preventDefault(); setShowOriginal(true); }
+      if (e.code === 'Space' && !e.repeat) {
+        e.preventDefault();
+        setShowOriginal(true);
+      }
     };
     const up = (e: KeyboardEvent) => {
-      if (e.code === 'Space') { e.preventDefault(); setShowOriginal(false); }
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setShowOriginal(false);
+      }
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+    };
   }, [compareMode, setShowOriginal]);
 
   const handleAiEnhance = useCallback(async () => {
@@ -521,30 +743,65 @@ export const ImageLabPage: React.FC = () => {
 
   const modeControls = useMemo(() => {
     switch (mode) {
-      case 'halftone': return <HalftoneControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
-      case 'texture': return <TextureFilterControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
-      case 'riso': return <RisoControls onExport={() => setExportModalOpen(true)} onAiEnhance={handleAiEnhance} isAiProcessing={isAiProcessing} onCopyAsPng={handleCopyAsPng} />;
-      case 'shaders': return <ShaderLabControls onExport={() => setExportModalOpen(true)} onCopyAsPng={handleCopyAsPng} />;
+      case 'halftone':
+        return (
+          <HalftoneControls
+            onExport={() => setExportModalOpen(true)}
+            onCopyAsPng={handleCopyAsPng}
+          />
+        );
+      case 'texture':
+        return (
+          <TextureFilterControls
+            onExport={() => setExportModalOpen(true)}
+            onCopyAsPng={handleCopyAsPng}
+          />
+        );
+      case 'riso':
+        return (
+          <RisoControls
+            onExport={() => setExportModalOpen(true)}
+            onAiEnhance={handleAiEnhance}
+            isAiProcessing={isAiProcessing}
+            onCopyAsPng={handleCopyAsPng}
+          />
+        );
+      case 'shaders':
+        return (
+          <ShaderLabControls
+            onExport={() => setExportModalOpen(true)}
+            onCopyAsPng={handleCopyAsPng}
+          />
+        );
     }
   }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, handleCopyAsPng]);
 
-  const controlsPanel = useMemo(() => (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-hidden">{modeControls}</div>
-      <div className="shrink-0 border-t border-neutral-800/50 px-4 py-3">
-        <ImageLabSavePreset />
+  const controlsPanel = useMemo(
+    () => (
+      <div className="h-full flex flex-col">
+        <div className="flex-1 overflow-hidden">{modeControls}</div>
+        <div className="shrink-0 border-t border-neutral-800/50 px-4 py-3">
+          <ImageLabSavePreset />
+        </div>
       </div>
-    </div>
-  ), [modeControls]);
+    ),
+    [modeControls]
+  );
 
-  const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(() => [
-    { id: 'halftone', icon: <CircleDot size={16} />, label: 'Halftone' },
-    { id: 'texture', icon: <Paintbrush size={16} />, label: 'Texture' },
-    { id: 'riso', icon: <Printer size={16} />, label: 'Riso' },
-    { id: 'shaders', icon: <Zap size={16} />, label: 'Shaders' },
-  ], []);
+  const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(
+    () => [
+      { id: 'halftone', icon: <CircleDot size={16} />, label: 'Halftone' },
+      { id: 'texture', icon: <Paintbrush size={16} />, label: 'Texture' },
+      { id: 'riso', icon: <Printer size={16} />, label: 'Riso' },
+      { id: 'shaders', icon: <Zap size={16} />, label: 'Shaders' },
+    ],
+    []
+  );
 
-  const tbBtn = cn('flex items-center justify-center rounded-lg transition-all', isMobile ? 'w-11 h-11' : 'w-9 h-9');
+  const tbBtn = cn(
+    'flex items-center justify-center rounded-lg transition-all',
+    isMobile ? 'w-11 h-11' : 'w-9 h-9'
+  );
   const tbIcon = isMobile ? 18 : 15;
 
   return (
@@ -555,9 +812,10 @@ export const ImageLabPage: React.FC = () => {
         panelVisible={panelVisible}
         setPanelVisible={setPanelVisible}
         onReset={handleReset}
-        resetMessage={mode === 'riso'
-          ? 'All riso settings will return to defaults and extracted layers will be cleared.'
-          : `All ${mode} settings will return to defaults.`
+        resetMessage={
+          mode === 'riso'
+            ? 'All riso settings will return to defaults and extracted layers will be cleared.'
+            : `All ${mode} settings will return to defaults.`
         }
         controlsPanel={controlsPanel}
         statusItems={statusItems}
@@ -573,14 +831,14 @@ export const ImageLabPage: React.FC = () => {
         <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
 
         {/* Floating tools — canvas-only actions */}
-        <div className={cn('absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50', isMobile && 'left-2 top-2 p-1')}>
-          <ImageLabUploadWidget
-            imageUrl={sourceUrl}
-            onLoad={broadcastImage}
-          />
-          {hasImage && (
-            <OpacityToggle value={effectOpacity} onChange={setEffectOpacity} />
+        <div
+          className={cn(
+            'absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50',
+            isMobile && 'left-2 top-2 p-1'
           )}
+        >
+          <ImageLabUploadWidget imageUrl={sourceUrl} onLoad={broadcastImage} />
+          {hasImage && <OpacityToggle value={effectOpacity} onChange={setEffectOpacity} />}
           {hasImage && (
             <button
               onClick={() => setMagicHandActive(!magicHandActive)}
@@ -589,7 +847,7 @@ export const ImageLabPage: React.FC = () => {
                 tbBtn,
                 magicHandActive
                   ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
-                  : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
+                  : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
               )}
             >
               <Hand size={tbIcon} />
@@ -601,7 +859,13 @@ export const ImageLabPage: React.FC = () => {
               <button
                 onClick={() => {
                   const vc = getActiveVideoControls();
-                  if (vc) { if (videoIsPlaying) { vc.pause(); } else { vc.play(); } }
+                  if (vc) {
+                    if (videoIsPlaying) {
+                      vc.pause();
+                    } else {
+                      vc.play();
+                    }
+                  }
                 }}
                 title={videoIsPlaying ? 'Pause' : 'Play'}
                 className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}
@@ -609,19 +873,31 @@ export const ImageLabPage: React.FC = () => {
                 {videoIsPlaying ? <Pause size={tbIcon} /> : <Play size={tbIcon} />}
               </button>
               {videoDuration > 0 && (
-                <div className="flex flex-col items-center gap-0.5 py-1" title={`${videoCurrentTime.toFixed(1)}s / ${videoDuration.toFixed(1)}s`}>
+                <div
+                  className="flex flex-col items-center gap-0.5 py-1"
+                  title={`${videoCurrentTime.toFixed(1)}s / ${videoDuration.toFixed(1)}s`}
+                >
                   <input
                     type="range"
-                    min={0} max={videoDuration} step={0.01}
+                    min={0}
+                    max={videoDuration}
+                    step={0.01}
                     value={videoCurrentTime}
                     onChange={(e) => {
                       const vc = getActiveVideoControls();
                       if (vc) vc.seek(parseFloat(e.target.value));
                     }}
                     className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                    style={{ writingMode: 'vertical-lr', direction: 'rtl', height: '56px', width: '12px' }}
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '56px',
+                      width: '12px',
+                    }}
                   />
-                  <span className="text-[7px] font-mono text-neutral-600">{videoCurrentTime.toFixed(1)}s</span>
+                  <span className="text-[7px] font-mono text-neutral-600">
+                    {videoCurrentTime.toFixed(1)}s
+                  </span>
                 </div>
               )}
             </>
@@ -637,16 +913,26 @@ export const ImageLabPage: React.FC = () => {
             'absolute top-3 left-1/2 -translate-x-1/2 z-20 transition-all duration-300',
             fxBarVisible
               ? 'opacity-100 translate-y-0'
-              : 'opacity-0 -translate-y-2 pointer-events-none',
+              : 'opacity-0 -translate-y-2 pointer-events-none'
           )}
         >
           <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 shadow-2xl shadow-black/40">
             {/* Undo / Redo */}
             <div className="flex items-center gap-0.5 pr-1 border-r border-neutral-800/60">
-              <button onClick={undo} disabled={historyIndex < 0} title="Undo (Ctrl+Z)" className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none">
+              <button
+                onClick={undo}
+                disabled={historyIndex < 0}
+                title="Undo (Ctrl+Z)"
+                className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
+              >
                 <Undo2 size={14} />
               </button>
-              <button onClick={redo} disabled={historyIndex >= historyLength - 1} title="Redo (Ctrl+Shift+Z)" className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none">
+              <button
+                onClick={redo}
+                disabled={historyIndex >= historyLength - 1}
+                title="Redo (Ctrl+Shift+Z)"
+                className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
+              >
                 <Redo2 size={14} />
               </button>
             </div>
@@ -663,17 +949,26 @@ export const ImageLabPage: React.FC = () => {
                     'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 text-[11px] font-medium whitespace-nowrap',
                     isActive
                       ? 'bg-white/12 text-white shadow-sm'
-                      : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5',
+                      : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
                   )}
                 >
-                  <span className={cn('transition-colors', isActive ? 'text-white' : 'text-neutral-600 group-hover/fx:text-neutral-400')}>
+                  <span
+                    className={cn(
+                      'transition-colors',
+                      isActive ? 'text-white' : 'text-neutral-600 group-hover/fx:text-neutral-400'
+                    )}
+                  >
                     {m.icon}
                   </span>
                   <span>{m.label}</span>
-                  <span className={cn(
-                    'text-[9px] font-mono tabular-nums transition-colors',
-                    isActive ? 'text-neutral-500' : 'text-neutral-700',
-                  )}>{i + 1}</span>
+                  <span
+                    className={cn(
+                      'text-[9px] font-mono tabular-nums transition-colors',
+                      isActive ? 'text-neutral-500' : 'text-neutral-700'
+                    )}
+                  >
+                    {i + 1}
+                  </span>
                   {thumb && !isActive && (
                     <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
                       <div className="rounded-lg overflow-hidden border border-neutral-700/60 shadow-xl shadow-black/60 bg-neutral-900">
@@ -690,19 +985,40 @@ export const ImageLabPage: React.FC = () => {
 
             {/* Help + Pin + Panel toggle */}
             <div className="pl-1 border-l border-neutral-800/60 flex items-center gap-0.5">
-              <button onClick={() => setShortcutsOpen(true)} title="Shortcuts (?)" className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors">
+              <button
+                onClick={() => setShortcutsOpen(true)}
+                title="Shortcuts (?)"
+                className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
+              >
                 <HelpCircle size={12} />
               </button>
               {!isMobile && (
                 <>
                   <button
-                    onClick={() => { setFxBarPinned(!fxBarPinned); setFxBarVisible(true); }}
+                    onClick={() => {
+                      setFxBarPinned(!fxBarPinned);
+                      setFxBarVisible(true);
+                    }}
                     title={fxBarPinned ? 'Unpin toolbar' : 'Pin toolbar'}
-                    className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', fxBarPinned ? 'text-neutral-300 bg-white/10' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}
+                    className={cn(
+                      'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
+                      fxBarPinned
+                        ? 'text-neutral-300 bg-white/10'
+                        : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                    )}
                   >
                     <Pin size={12} className={cn(fxBarPinned && 'rotate-45')} />
                   </button>
-                  <button onClick={() => setPanelVisible(!panelVisible)} title="Toggle panel (Tab)" className={cn('flex items-center justify-center w-7 h-7 rounded-full transition-colors', panelVisible ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}>
+                  <button
+                    onClick={() => setPanelVisible(!panelVisible)}
+                    title="Toggle panel (Tab)"
+                    className={cn(
+                      'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
+                      panelVisible
+                        ? 'text-neutral-400 hover:text-neutral-200'
+                        : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                    )}
+                  >
                     <PanelRightOpen size={14} />
                   </button>
                 </>
@@ -749,7 +1065,10 @@ export const ImageLabPage: React.FC = () => {
           <label className="absolute inset-0 flex items-center justify-center z-10 cursor-pointer">
             <div className="flex flex-col items-center gap-4 text-neutral-500 group">
               <div className="w-16 h-16 rounded-2xl border border-dashed border-neutral-700 group-hover:border-neutral-500 flex items-center justify-center transition-colors">
-                <Upload size={24} className="text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+                <Upload
+                  size={24}
+                  className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
+                />
               </div>
               <p className="text-[11px] uppercase tracking-widest">
                 Drop or paste an image or video to begin
@@ -782,41 +1101,69 @@ export const ImageLabPage: React.FC = () => {
         )}
         {/* Shortcuts help overlay */}
         {shortcutsOpen && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShortcutsOpen(false)}>
-            <div className="bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={() => setShortcutsOpen(false)}
+          >
+            <div
+              className="bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">Keyboard Shortcuts</span>
-                <button onClick={() => setShortcutsOpen(false)} className="text-neutral-600 hover:text-neutral-300 p-1"><span className="text-xs">ESC</span></button>
+                <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
+                  Keyboard Shortcuts
+                </span>
+                <button
+                  onClick={() => setShortcutsOpen(false)}
+                  className="text-neutral-600 hover:text-neutral-300 p-1"
+                >
+                  <span className="text-xs">ESC</span>
+                </button>
               </div>
               <div className="space-y-3 text-[11px]">
-                {([
-                  ['Modes', [['1 / 2 / 3 / 4', 'Switch FX mode']]],
-                  ['Canvas', [
-                    ['Ctrl+V', 'Paste image'],
-                    ['Ctrl+Z', 'Undo'],
-                    ['Ctrl+Shift+Z', 'Redo'],
-                    ['[ / ]', 'Cycle presets'],
-                    ['M', 'Magic hand tool'],
-                    ['Scroll', 'Zoom'],
-                  ]],
-                  ['Compare', [
-                    ['Alt+Z', 'Before / After toggle'],
-                    ['Alt+X', 'Split view'],
-                    ['Esc', 'Exit compare'],
-                  ]],
-                  ['Panels', [
-                    ['Tab', 'Toggle controls panel'],
-                    ['Shift+E', 'Export'],
-                    ['Shift+P', 'Community presets'],
-                    ['?', 'This help'],
-                  ]],
-                ] as [string, [string, string][]][]).map(([section, items]) => (
+                {(
+                  [
+                    ['Modes', [['1 / 2 / 3 / 4', 'Switch FX mode']]],
+                    [
+                      'Canvas',
+                      [
+                        ['Ctrl+V', 'Paste image'],
+                        ['Ctrl+Z', 'Undo'],
+                        ['Ctrl+Shift+Z', 'Redo'],
+                        ['[ / ]', 'Cycle presets'],
+                        ['M', 'Magic hand tool'],
+                        ['Scroll', 'Zoom'],
+                      ],
+                    ],
+                    [
+                      'Compare',
+                      [
+                        ['Alt+Z', 'Before / After toggle'],
+                        ['Alt+X', 'Split view'],
+                        ['Esc', 'Exit compare'],
+                      ],
+                    ],
+                    [
+                      'Panels',
+                      [
+                        ['Tab', 'Toggle controls panel'],
+                        ['Shift+E', 'Export'],
+                        ['Shift+P', 'Community presets'],
+                        ['?', 'This help'],
+                      ],
+                    ],
+                  ] as [string, [string, string][]][]
+                ).map(([section, items]) => (
                   <div key={section}>
-                    <div className="text-[9px] font-mono uppercase tracking-widest text-neutral-600 mb-1.5">{section}</div>
+                    <div className="text-[9px] font-mono uppercase tracking-widest text-neutral-600 mb-1.5">
+                      {section}
+                    </div>
                     {items.map(([key, desc]) => (
                       <div key={key} className="flex items-center justify-between py-0.5">
                         <span className="text-neutral-400">{desc}</span>
-                        <kbd className="px-1.5 py-0.5 rounded bg-neutral-800/60 text-neutral-500 font-mono text-[10px]">{key}</kbd>
+                        <kbd className="px-1.5 py-0.5 rounded bg-neutral-800/60 text-neutral-500 font-mono text-[10px]">
+                          {key}
+                        </kbd>
                       </div>
                     ))}
                   </div>
@@ -835,20 +1182,24 @@ export const ImageLabPage: React.FC = () => {
         getShaderSettings={getShaderSettings}
         isVideo={sourceMediaType === 'video'}
         onExportVideo={sourceMediaType === 'video' ? handleVideoExport : undefined}
-        onExportSvg={mode === 'halftone' ? async () => {
-          const imgUrl = halftoneStore.getState().imageUrl;
-          if (!imgUrl) return undefined;
-          const settings = halftoneStore.getState().getSettings();
-          const img = await loadImage(imgUrl);
-          const c = document.createElement('canvas');
-          c.width = img.naturalWidth;
-          c.height = img.naturalHeight;
-          const ctx = c.getContext('2d');
-          if (!ctx) return undefined;
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, c.width, c.height);
-          return generateHalftoneSvg(imageData, settings);
-        } : undefined}
+        onExportSvg={
+          mode === 'halftone'
+            ? async () => {
+                const imgUrl = halftoneStore.getState().imageUrl;
+                if (!imgUrl) return undefined;
+                const settings = halftoneStore.getState().getSettings();
+                const img = await loadImage(imgUrl);
+                const c = document.createElement('canvas');
+                c.width = img.naturalWidth;
+                c.height = img.naturalHeight;
+                const ctx = c.getContext('2d');
+                if (!ctx) return undefined;
+                ctx.drawImage(img, 0, 0);
+                const imageData = ctx.getImageData(0, 0, c.width, c.height);
+                return generateHalftoneSvg(imageData, settings);
+              }
+            : undefined
+        }
         onExportScaled={(scale) => {
           if (mode === 'halftone') {
             const renderer = halftoneRef.current?.getRenderer();
@@ -917,7 +1268,11 @@ function useStatusItems(mode: ImageLabMode) {
   return useMemo(() => {
     const extras: { label: string; color?: string }[] = [];
     if (sourceMediaType === 'video') extras.push({ label: 'video', color: 'text-green-400' });
-    if (compareMode !== 'off') extras.push({ label: compareMode === 'toggle' ? 'before/after' : 'split view', color: 'text-amber-400' });
+    if (compareMode !== 'off')
+      extras.push({
+        label: compareMode === 'toggle' ? 'before/after' : 'split view',
+        color: 'text-amber-400',
+      });
 
     switch (mode) {
       case 'halftone':
@@ -945,27 +1300,59 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `freq ${rFrequency}` },
           { label: `dot ${rDotSize.toFixed(2)}` },
           { label: `misreg ${rMisregistration}px` },
-          { label: `${rLayers.filter(l => l.visible).length} layers` },
-          ...(rSoloLayer >= 0 ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-amber-400' }] : []),
+          { label: `${rLayers.filter((l) => l.visible).length} layers` },
+          ...(rSoloLayer >= 0
+            ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-amber-400' }]
+            : []),
           ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-cyan-400' }] : []),
           ...extras,
         ];
       case 'shaders':
         return [
           { label: `${Math.round(sZoom * 100)}%` },
-          ...(sShaderEnabled ? [{ label: sShaderType, color: 'text-cyan-400' }] : [{ label: 'off' }]),
+          ...(sShaderEnabled
+            ? [{ label: sShaderType, color: 'text-cyan-400' }]
+            : [{ label: 'off' }]),
           ...extras,
         ];
     }
-  }, [mode, compareMode, sourceMediaType, hZoom, hFrequency, hDotSize, hBlendMode, hShaderEnabled, hShaderType,
-    tZoom, tBlendMode, tOpacity, tTextureName, tMaskMode, tShaderEnabled, tShaderType,
-    rZoom, rFrequency, rDotSize, rMisregistration, rLayers, rSoloLayer, rShaderEnabled, rShaderType,
-    sShaderType, sShaderEnabled, sZoom]);
+  }, [
+    mode,
+    compareMode,
+    sourceMediaType,
+    hZoom,
+    hFrequency,
+    hDotSize,
+    hBlendMode,
+    hShaderEnabled,
+    hShaderType,
+    tZoom,
+    tBlendMode,
+    tOpacity,
+    tTextureName,
+    tMaskMode,
+    tShaderEnabled,
+    tShaderType,
+    rZoom,
+    rFrequency,
+    rDotSize,
+    rMisregistration,
+    rLayers,
+    rSoloLayer,
+    rShaderEnabled,
+    rShaderType,
+    sShaderType,
+    sShaderEnabled,
+    sZoom,
+  ]);
 }
 
 /* ─── Opacity Toggle (collapsible) ─── */
 
-const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> = ({ value, onChange }) => {
+const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> = ({
+  value,
+  onChange,
+}) => {
   const [open, setOpen] = useState(false);
   return (
     <div className="flex flex-col items-center">
@@ -976,7 +1363,7 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
           'flex items-center justify-center w-9 h-9 rounded-lg transition-all',
           open
             ? 'bg-white/10 text-white ring-1 ring-white/30'
-            : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
+            : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
         )}
       >
         <Blend size={15} />
@@ -985,11 +1372,18 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
         <div className="flex flex-col items-center gap-0.5 py-1 animate-fade-in">
           <input
             type="range"
-            min={0} max={1} step={0.01}
+            min={0}
+            max={1}
+            step={0.01}
             value={value}
             onChange={(e) => onChange(parseFloat(e.target.value))}
             className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-            style={{ writingMode: 'vertical-lr' as any, direction: 'rtl', height: '56px', width: '12px' }}
+            style={{
+              writingMode: 'vertical-lr' as any,
+              direction: 'rtl',
+              height: '56px',
+              width: '12px',
+            }}
           />
           <span className="text-[8px] font-mono text-neutral-600">{Math.round(value * 100)}</span>
         </div>

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface TutorialProps {
   isOpen: boolean;
@@ -87,8 +87,11 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         {/* Close Button */}
         <Button
           onClick={onClose}
-          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${theme === 'dark' ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-500 hover:text-neutral-700'
-            }`}
+          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${
+            theme === 'dark'
+              ? 'text-neutral-400 hover:text-neutral-200'
+              : 'text-neutral-500 hover:text-neutral-700'
+          }`}
           aria-label={t('common.close')}
         >
           <X className="size-4 sm:size-5" />
@@ -111,10 +114,11 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                 <div className="relative h-full flex flex-col p-6 sm:p-7 md:p-8">
                   {/* Video or Image */}
                   <div
-                    className={`tutorial-bento-image flex-shrink-0 w-full rounded-md overflow-hidden mb-4 sm:mb-5 md:mb-6 ${step.isVideo && step.videoId
-                      ? 'aspect-video'
-                      : 'h-[160px] sm:h-[200px] md:h-[240px] flex items-center justify-center'
-                      }`}
+                    className={`tutorial-bento-image flex-shrink-0 w-full rounded-md overflow-hidden mb-4 sm:mb-5 md:mb-6 ${
+                      step.isVideo && step.videoId
+                        ? 'aspect-video'
+                        : 'h-[160px] sm:h-[200px] md:h-[240px] flex items-center justify-center'
+                    }`}
                     style={{ backgroundColor: cardBg }}
                   >
                     {step.isVideo && step.videoId ? (
@@ -140,7 +144,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                             target.parentElement.style.justifyContent = 'center';
                             if (!target.parentElement.querySelector('.placeholder')) {
                               const placeholder = document.createElement('div');
-                              placeholder.className = 'placeholder text-neutral-500 text-sm font-mono';
+                              placeholder.className =
+                                'placeholder text-neutral-500 text-sm font-mono';
                               placeholder.textContent = `${t('tutorial.step')} ${step.number}`;
                               target.parentElement.appendChild(placeholder);
                             }
@@ -156,12 +161,22 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                     <div
                       className="tutorial-bento-step-number flex-shrink-0 rounded-md w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 flex items-center justify-center"
                       style={{
-                        backgroundColor: theme === 'dark' ? 'oklch(from var(--brand-cyan) l c h / 15%)' : 'oklch(from var(--brand-cyan) l c h / 10%)',
-                        border: `1px solid ${theme === 'dark' ? 'oklch(from var(--brand-cyan) l c h / 30%)' : 'oklch(from var(--brand-cyan) l c h / 20%)'}`,
+                        backgroundColor:
+                          theme === 'dark'
+                            ? 'oklch(from var(--brand-cyan) l c h / 15%)'
+                            : 'oklch(from var(--brand-cyan) l c h / 10%)',
+                        border: `1px solid ${
+                          theme === 'dark'
+                            ? 'oklch(from var(--brand-cyan) l c h / 30%)'
+                            : 'oklch(from var(--brand-cyan) l c h / 20%)'
+                        }`,
                       }}
                     >
-                      <p className={`font-mono font-medium leading-normal text-nowrap whitespace-pre text-xs sm:text-sm md:text-base ${theme === 'dark' ? 'text-cyan-300' : 'text-cyan-600'
-                        }`}>
+                      <p
+                        className={`font-mono font-medium leading-normal text-nowrap whitespace-pre text-xs sm:text-sm md:text-base ${
+                          theme === 'dark' ? 'text-cyan-300' : 'text-cyan-600'
+                        }`}
+                      >
                         {step.number}
                       </p>
                     </div>
@@ -178,15 +193,17 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         {/* CTA Button */}
         {onCreateMockup && (
           <div className="mt-6 sm:mt-8 md:mt-10 flex justify-center">
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               onClick={() => {
                 onCreateMockup();
                 onClose();
               }}
-              className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-all duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${theme === 'dark'
-                ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[brand-cyan]/30'
-                : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[brand-cyan]/30'
-                }`}
+              className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-all duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[brand-cyan]/30'
+                  : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[brand-cyan]/30'
+              }`}
             >
               <span>{t('tutorial.createMockup')}</span>
             </Button>
@@ -196,4 +213,3 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
     </div>
   );
 };
-

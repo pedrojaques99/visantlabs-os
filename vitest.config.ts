@@ -81,7 +81,12 @@ export default defineConfig({
         'server/routes/payments.ts': { lines: 70, functions: 70, branches: 60, statements: 70 },
         'server/lib/ai-resilience.ts': { lines: 70, functions: 70, branches: 60, statements: 70 },
         'server/middleware/auth.ts': { lines: 80, functions: 80, branches: 70, statements: 80 },
-        'server/middleware/adminAuth.ts': { lines: 80, functions: 80, branches: 70, statements: 80 },
+        'server/middleware/adminAuth.ts': {
+          lines: 80,
+          functions: 80,
+          branches: 70,
+          statements: 80,
+        },
       },
     },
   },

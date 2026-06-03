@@ -27,7 +27,10 @@ export function parseAgentMetadata(description: string): AgentComponentMetadata 
     const match = line.match(/@agent:(\w+)\s+(.+)/);
     if (match) {
       const [, key, values] = match;
-      const parsed = values.split(/[,|]/).map(v => v.trim().toLowerCase()).filter(Boolean);
+      const parsed = values
+        .split(/[,|]/)
+        .map((v) => v.trim().toLowerCase())
+        .filter(Boolean);
 
       switch (key) {
         case 'intent':
@@ -79,7 +82,7 @@ export async function scanAgentComponents(fileId: string): Promise<AgentComponen
 
   if (!raw || !Array.isArray(raw)) return [];
 
-  return raw.map(comp => {
+  return raw.map((comp) => {
     const { category, type } = parseComponentName(comp.name);
     const metadata = parseAgentMetadata(comp.description || '');
 
@@ -107,14 +110,21 @@ export function matchComponentToIntent(
 ): AgentComponent | null {
   const normalizedIntent = intent.toLowerCase();
 
-  const scored = components.map(comp => {
+  const scored = components.map((comp) => {
     let score = 0;
 
-    if (comp.metadata.intents.some(i => normalizedIntent.includes(i) || i.includes(normalizedIntent))) {
+    if (
+      comp.metadata.intents.some(
+        (i) => normalizedIntent.includes(i) || i.includes(normalizedIntent)
+      )
+    ) {
       score += 10;
     }
 
-    if (comp.type.toLowerCase().includes(normalizedIntent) || normalizedIntent.includes(comp.type.toLowerCase())) {
+    if (
+      comp.type.toLowerCase().includes(normalizedIntent) ||
+      normalizedIntent.includes(comp.type.toLowerCase())
+    ) {
       score += 5;
     }
 

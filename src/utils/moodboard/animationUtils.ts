@@ -37,14 +37,14 @@ export const calculateAnimationStyles = (
       break;
     case 'pan-lr':
       scale = zoomScale;
-      translateX = -panAmount + (panAmount * 2 * clampedProgress);
+      translateX = -panAmount + panAmount * 2 * clampedProgress;
       break;
     case 'pan-rl':
       scale = zoomScale;
-      translateX = panAmount - (panAmount * 2 * clampedProgress);
+      translateX = panAmount - panAmount * 2 * clampedProgress;
       break;
     case 'fade-in':
-      opacity = Math.min(frame * speed / 15, 1);
+      opacity = Math.min((frame * speed) / 15, 1);
       break;
   }
 

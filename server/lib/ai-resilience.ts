@@ -35,7 +35,7 @@ export function onResilienceEvent(listener: (event: ResilienceEvent) => void) {
 }
 
 function emit(event: ResilienceEvent) {
-  listeners.forEach(l => l(event));
+  listeners.forEach((l) => l(event));
   if (process.env.NODE_ENV === 'development') {
     console.log(`[AI-Resilience] ${event.type}`, event);
   }
@@ -100,10 +100,7 @@ function getPolicy(provider: string): IPolicy {
  * @returns The result of the function
  * @throws If all retries fail or circuit is open
  */
-export async function withResilience<T>(
-  provider: string,
-  fn: () => Promise<T>
-): Promise<T> {
+export async function withResilience<T>(provider: string, fn: () => Promise<T>): Promise<T> {
   const policy = getPolicy(provider);
   return policy.execute(fn);
 }

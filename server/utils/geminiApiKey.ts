@@ -50,21 +50,10 @@ export async function getGeminiApiKey(
   if (!systemKey || systemKey === 'undefined' || systemKey.length === 0) {
     throw new Error(
       'GEMINI_API_KEY not found. ' +
-      'Configure GEMINI_API_KEY in .env file to use AI features. ' +
-      'Users can also provide their own API key in settings.'
+        'Configure GEMINI_API_KEY in .env file to use AI features. ' +
+        'Users can also provide their own API key in settings.'
     );
   }
 
   return systemKey;
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -16,7 +16,7 @@ const path = require('path');
 // Parse CLI arguments
 const args = process.argv.slice(2);
 const outputJson = args.includes('--json');
-const backendUrlArg = args.find(arg => arg.startsWith('--backend-url='));
+const backendUrlArg = args.find((arg) => arg.startsWith('--backend-url='));
 const backendUrl = backendUrlArg ? backendUrlArg.split('=')[1] : 'http://localhost:3001';
 
 // Colors for terminal output
@@ -27,10 +27,12 @@ const colors = {
   red: '\x1b[31m',
   yellow: '\x1b[33m',
   cyan: '\x1b[36m',
-  gray: '\x1b[90m'
+  gray: '\x1b[90m',
 };
 
-const c = outputJson ? { ...colors, bright: '', green: '', red: '', yellow: '', cyan: '', gray: '', reset: '' } : colors;
+const c = outputJson
+  ? { ...colors, bright: '', green: '', red: '', yellow: '', cyan: '', gray: '', reset: '' }
+  : colors;
 
 // Test results collector
 const results = {
@@ -39,21 +41,21 @@ const results = {
   backend: {
     url: backendUrl,
     status: 'unknown',
-    tests: {}
+    tests: {},
   },
   plugin: {
     status: 'unknown',
-    tests: {}
+    tests: {},
   },
   environment: {
     nodeVersion: process.version,
-    platform: process.platform
+    platform: process.platform,
   },
   summary: {
     passed: 0,
     failed: 0,
-    warnings: 0
-  }
+    warnings: 0,
+  },
 };
 
 function log(message, type = 'info') {
@@ -65,7 +67,7 @@ function log(message, type = 'info') {
     error: `${c.red}✗${c.reset}`,
     warning: `${c.yellow}⚠${c.reset}`,
     title: `${c.bright}${c.cyan}${c.reset}`,
-    step: `${c.cyan}→${c.reset}`
+    step: `${c.cyan}→${c.reset}`,
   };
 
   console.log(`${prefix[type]} ${message}`);
@@ -88,21 +90,21 @@ async function testHttpEndpoint(method, path, headers = {}, body = null) {
         method,
         headers: {
           'Content-Type': 'application/json',
-          ...headers
+          ...headers,
         },
-        timeout: 5000
+        timeout: 5000,
       };
 
       const req = client.request(url, options, (res) => {
         let data = '';
-        res.on('data', chunk => data += chunk);
+        res.on('data', (chunk) => (data += chunk));
         res.on('end', () => {
           resolve({
             status: res.statusCode,
             statusText: res.statusMessage,
             headers: res.headers,
             body: data,
-            success: res.statusCode < 500
+            success: res.statusCode < 500,
           });
         });
       });
@@ -112,7 +114,7 @@ async function testHttpEndpoint(method, path, headers = {}, body = null) {
           status: 0,
           statusText: err.code || err.message,
           error: true,
-          message: err.message
+          message: err.message,
         });
       });
 
@@ -122,7 +124,7 @@ async function testHttpEndpoint(method, path, headers = {}, body = null) {
           status: 0,
           statusText: 'TIMEOUT',
           error: true,
-          message: 'Request timeout after 5000ms'
+          message: 'Request timeout after 5000ms',
         });
       });
 
@@ -136,7 +138,7 @@ async function testHttpEndpoint(method, path, headers = {}, body = null) {
         status: 0,
         statusText: 'ERROR',
         error: true,
-        message: err.message
+        message: err.message,
       });
     }
   });
@@ -157,7 +159,7 @@ async function runDiagnostics() {
     status: isPingOk ? 'pass' : 'fail',
     statusCode: pingResult.status,
     message: pingResult.message || pingResult.statusText,
-    time: new Date().toISOString()
+    time: new Date().toISOString(),
   };
 
   if (isPingOk) {
@@ -181,7 +183,7 @@ async function runDiagnostics() {
     status: isAuthOk ? 'pass' : 'fail',
     statusCode: authResult.status,
     message: authResult.statusText,
-    time: new Date().toISOString()
+    time: new Date().toISOString(),
   };
 
   if (isAuthOk) {
@@ -196,9 +198,9 @@ async function runDiagnostics() {
   logSection('3. CORS Configuration');
 
   const corsResult = await testHttpEndpoint('OPTIONS', '/api/auth/status', {
-    'Origin': 'null',
+    Origin: 'null',
     'Access-Control-Request-Method': 'POST',
-    'Access-Control-Request-Headers': 'content-type'
+    'Access-Control-Request-Headers': 'content-type',
   });
 
   const hasCorsHeaders = corsResult.headers && corsResult.headers['access-control-allow-origin'];
@@ -209,7 +211,7 @@ async function runDiagnostics() {
     statusCode: corsResult.status,
     hasAllowOrigin: !!hasCorsHeaders,
     allowOrigin: corsResult.headers?.['access-control-allow-origin'],
-    time: new Date().toISOString()
+    time: new Date().toISOString(),
   };
 
   if (corsOk) {
@@ -230,14 +232,16 @@ async function runDiagnostics() {
     const manifestPath = path.join(__dirname, '../plugin/manifest.json');
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
 
-    const hasBackendUrl = manifest.networkAccess?.allowedDomains?.includes(backendUrl.replace('http://', ''));
-    const hasCors = manifest.networkAccess?.allowedDomains?.some(d => d.includes('localhost'));
+    const hasBackendUrl = manifest.networkAccess?.allowedDomains?.includes(
+      backendUrl.replace('http://', '')
+    );
+    const hasCors = manifest.networkAccess?.allowedDomains?.some((d) => d.includes('localhost'));
 
     results.plugin.tests.manifest = {
       status: 'pass',
       pluginId: manifest.id,
       apiVersion: manifest.api,
-      allowedDomains: manifest.networkAccess?.allowedDomains || []
+      allowedDomains: manifest.networkAccess?.allowedDomains || [],
     };
 
     log(`Manifest loaded: Plugin ID ${manifest.id}`, 'success');
@@ -261,19 +265,25 @@ async function runDiagnostics() {
   logSection('5. API Endpoints');
 
   // Test login endpoint
-  const loginResult = await testHttpEndpoint('POST', '/api/auth/signin', {}, {
-    email: 'test@test.com',
-    password: 'test'
-  });
+  const loginResult = await testHttpEndpoint(
+    'POST',
+    '/api/auth/signin',
+    {},
+    {
+      email: 'test@test.com',
+      password: 'test',
+    }
+  );
 
-  const loginOk = loginResult.status === 200 || loginResult.status === 401 || loginResult.status === 400;
+  const loginOk =
+    loginResult.status === 200 || loginResult.status === 401 || loginResult.status === 400;
 
   results.backend.tests.endpoints = {
     login: {
       status: loginOk ? 'pass' : 'fail',
       statusCode: loginResult.status,
-      message: loginResult.statusText
-    }
+      message: loginResult.statusText,
+    },
   };
 
   if (loginOk) {
@@ -295,10 +305,15 @@ async function runDiagnostics() {
     results.backend.tests.smoke = { status: 'skipped', reason: 'missing credentials' };
     results.summary.warnings++;
   } else {
-    const signinResp = await testHttpEndpoint('POST', '/api/auth/signin', {}, {
-      email: smokeEmail,
-      password: smokePassword
-    });
+    const signinResp = await testHttpEndpoint(
+      'POST',
+      '/api/auth/signin',
+      {},
+      {
+        email: smokeEmail,
+        password: smokePassword,
+      }
+    );
 
     let token = null;
     try {
@@ -310,7 +325,7 @@ async function runDiagnostics() {
       results.backend.tests.smoke = {
         status: 'fail',
         step: 'signin',
-        statusCode: signinResp.status
+        statusCode: signinResp.status,
       };
       results.summary.failed++;
     } else {
@@ -318,7 +333,7 @@ async function runDiagnostics() {
       results.summary.passed++;
 
       const authStatusResp = await testHttpEndpoint('GET', '/api/plugin/auth/status', {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       });
       const authStatusOk = authStatusResp.status === 200;
 
@@ -331,16 +346,21 @@ async function runDiagnostics() {
       }
 
       // Hit smart-analyze with minimal payload — expect 200/400/422, NOT 401
-      const smartAnalyzeResp = await testHttpEndpoint('POST', '/api/plugin/smart-analyze', {
-        Authorization: `Bearer ${token}`
-      }, { mode: 'figma-plugin' });
+      const smartAnalyzeResp = await testHttpEndpoint(
+        'POST',
+        '/api/plugin/smart-analyze',
+        {
+          Authorization: `Bearer ${token}`,
+        },
+        { mode: 'figma-plugin' }
+      );
 
       const smartAnalyzeAuthed = smartAnalyzeResp.status !== 401 && smartAnalyzeResp.status !== 403;
 
       results.backend.tests.smoke = {
         status: authStatusOk && smartAnalyzeAuthed ? 'pass' : 'fail',
         authStatusCode: authStatusResp.status,
-        smartAnalyzeStatusCode: smartAnalyzeResp.status
+        smartAnalyzeStatusCode: smartAnalyzeResp.status,
       };
 
       if (smartAnalyzeAuthed) {
@@ -380,7 +400,7 @@ async function runDiagnostics() {
 }
 
 // Run diagnostics
-runDiagnostics().catch(err => {
+runDiagnostics().catch((err) => {
   log(`Fatal error: ${err.message}`, 'error');
   process.exit(1);
 });

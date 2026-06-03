@@ -5,7 +5,7 @@ import type { BrandGuideline } from '@/lib/figma-types';
 import {
   parseBrandGuidelineList,
   unwrapGuidelineResponse,
-  BrandGuidelineSchema
+  BrandGuidelineSchema,
 } from '@/lib/brandGuidelineSchema';
 
 export function useBrandSync() {
@@ -24,7 +24,7 @@ export function useBrandSync() {
         }
         const response = await call('/api/brand-guidelines', {
           method: 'POST',
-          body: JSON.stringify(payload.data)
+          body: JSON.stringify(payload.data),
         });
         const saved = unwrapGuidelineResponse(response);
         if (saved?.id) {
@@ -48,14 +48,14 @@ export function useBrandSync() {
       const rawArr = Array.isArray(response)
         ? response
         : Array.isArray((response as any)?.guidelines)
-          ? (response as any).guidelines
-          : [];
+        ? (response as any).guidelines
+        : [];
       if (guidelines.length === 0 && rawArr.length > 0) {
         console.warn('[brandSync] schema filtered all items; using raw list', rawArr);
         guidelines = rawArr;
       }
       usePluginStore.setState({
-        savedGuidelineIds: guidelines.map((g) => (g.id ?? g._id) as string).filter(Boolean)
+        savedGuidelineIds: guidelines.map((g) => (g.id ?? g._id) as string).filter(Boolean),
       });
       return guidelines;
     } catch (err) {
@@ -69,7 +69,7 @@ export function useBrandSync() {
       try {
         const response = await call(`/api/brand-guidelines/${id}`, {
           method: 'PUT',
-          body: JSON.stringify(patch)
+          body: JSON.stringify(patch),
         });
         const saved = unwrapGuidelineResponse(response);
         if (saved?.id || saved?._id) {

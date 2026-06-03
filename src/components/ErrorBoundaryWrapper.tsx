@@ -7,7 +7,10 @@ interface ErrorBoundaryWrapperProps {
   fallback?: ReactNode;
 }
 
-export const ErrorBoundaryWrapper: React.FC<ErrorBoundaryWrapperProps> = ({ children, fallback }) => {
+export const ErrorBoundaryWrapper: React.FC<ErrorBoundaryWrapperProps> = ({
+  children,
+  fallback,
+}) => {
   const { t } = useTranslation();
 
   const translations = {
@@ -32,5 +35,3 @@ export const ErrorBoundaryWrapper: React.FC<ErrorBoundaryWrapperProps> = ({ chil
     </ErrorBoundary>
   );
 };
-
-

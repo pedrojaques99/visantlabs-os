@@ -124,7 +124,13 @@ export async function compressImage(
 
   // This ensures we always return something, even if slightly over limit
   if (finalBinarySize > maxSizeBytes) {
-    console.warn(`Image compression: Final size (${(finalBinarySize / 1024 / 1024).toFixed(2)}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(2)}MB) after ${maxAttempts} attempts`);
+    console.warn(
+      `Image compression: Final size (${(finalBinarySize / 1024 / 1024).toFixed(
+        2
+      )}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(
+        2
+      )}MB) after ${maxAttempts} attempts`
+    );
   }
   return compressedBase64;
 }
@@ -146,12 +152,13 @@ function getMimeTypeFromBase64(base64: string): string | null {
  * @param maxSizeBytes - Maximum size in bytes (default: 2MB)
  * @returns true if image exceeds max size
  */
-export function needsCompression(base64Image: string, maxSizeBytes: number = DEFAULT_MAX_SIZE_BYTES): boolean {
+export function needsCompression(
+  base64Image: string,
+  maxSizeBytes: number = DEFAULT_MAX_SIZE_BYTES
+): boolean {
   if (!base64Image) return false;
 
-  const base64Data = base64Image.includes(',')
-    ? base64Image.split(',')[1]
-    : base64Image;
+  const base64Data = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
 
   if (!base64Data) return false;
 
@@ -164,9 +171,7 @@ export function needsCompression(base64Image: string, maxSizeBytes: number = DEF
  * Get approximate size of base64 image in bytes
  */
 export function getBase64ImageSize(base64Image: string): number {
-  const base64Data = base64Image.includes(',')
-    ? base64Image.split(',')[1]
-    : base64Image;
+  const base64Data = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
 
   if (!base64Data) return 0;
 
@@ -265,7 +270,13 @@ export async function compressImageFile(
           // If size is acceptable, return
           if (blob.size <= maxSizeBytes || attempts >= maxAttempts) {
             if (blob.size > maxSizeBytes) {
-              console.warn(`Image compression: Final size (${(blob.size / 1024 / 1024).toFixed(2)}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(2)}MB) after ${maxAttempts} attempts`);
+              console.warn(
+                `Image compression: Final size (${(blob.size / 1024 / 1024).toFixed(
+                  2
+                )}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(
+                  2
+                )}MB) after ${maxAttempts} attempts`
+              );
             }
             resolve(blob);
             return;
@@ -284,4 +295,3 @@ export async function compressImageFile(
     tryCompress();
   });
 }
-

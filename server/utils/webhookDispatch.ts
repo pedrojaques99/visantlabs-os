@@ -73,14 +73,13 @@ export async function dispatchWebhookEvent(
 
     await Promise.allSettled(
       webhooks.map(async (wh) => {
-        const signature = crypto
-          .createHmac('sha256', wh.secret)
-          .update(body)
-          .digest('hex');
+        const signature = crypto.createHmac('sha256', wh.secret).update(body).digest('hex');
 
         const ok = await deliverWithRetry(wh.url, body, signature, event);
         if (!ok) {
-          console.error(`[webhook] delivery failed after ${MAX_RETRIES + 1} attempts: ${event} → ${wh.url}`);
+          console.error(
+            `[webhook] delivery failed after ${MAX_RETRIES + 1} attempts: ${event} → ${wh.url}`
+          );
         }
       })
     );

@@ -1,5 +1,23 @@
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, BrandNodeData, OutputNodeData, BrandIdentity, LogoNodeData, PromptNodeData, MockupNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, PDFNodeData, VideoNodeData } from '@/types/reactFlow';
+import type {
+  FlowNodeData,
+  ImageNodeData,
+  MergeNodeData,
+  EditNodeData,
+  UpscaleNodeData,
+  BrandNodeData,
+  OutputNodeData,
+  BrandIdentity,
+  LogoNodeData,
+  PromptNodeData,
+  MockupNodeData,
+  AngleNodeData,
+  TextureNodeData,
+  AmbienceNodeData,
+  LuminanceNodeData,
+  PDFNodeData,
+  VideoNodeData,
+} from '@/types/reactFlow';
 import { getImageUrl } from '../imageUtils';
 import { copyImageAsPng, copyImageOriginal } from '../clipboard';
 
@@ -8,11 +26,8 @@ let nodeIdCounter = 0;
 export const generateNodeId = (type: string) => `${type}-${Date.now()}-${++nodeIdCounter}`;
 
 // Get image URL or base64 from node (prefers URL from R2)
-export const getImageFromNode = (
-  nodeId: string,
-  nodes: Node<FlowNodeData>[]
-): string | null => {
-  const node = nodes.find(n => n.id === nodeId);
+export const getImageFromNode = (nodeId: string, nodes: Node<FlowNodeData>[]): string | null => {
+  const node = nodes.find((n) => n.id === nodeId);
   if (!node) return null;
 
   if (node.type === 'image') {
@@ -70,7 +85,7 @@ export const getImageFromNodeWithFallback = (
   nodeId: string,
   nodes: Node<FlowNodeData>[]
 ): { url?: string; base64?: string } => {
-  const node = nodes.find(n => n.id === nodeId);
+  const node = nodes.find((n) => n.id === nodeId);
   if (!node) return {};
 
   if (node.type === 'image') {
@@ -100,9 +115,11 @@ export const getImageFromNodeWithFallback = (
   if (node.type === 'brand') {
     const data = node.data as BrandNodeData;
     // For brand nodes, logoImage might be URL, logoBase64 is base64
-    const url = data.logoImage && (data.logoImage.startsWith('http://') || data.logoImage.startsWith('https://'))
-      ? data.logoImage
-      : undefined;
+    const url =
+      data.logoImage &&
+      (data.logoImage.startsWith('http://') || data.logoImage.startsWith('https://'))
+        ? data.logoImage
+        : undefined;
     return {
       url,
       base64: data.logoBase64 || undefined,
@@ -118,7 +135,7 @@ export const getConnectedImages = (
   nodes: Node<FlowNodeData>[],
   edges: Edge[]
 ): string[] => {
-  const connectedEdges = edges.filter(e => e.target === nodeId);
+  const connectedEdges = edges.filter((e) => e.target === nodeId);
   const images: string[] = [];
 
   for (const edge of connectedEdges) {
@@ -139,12 +156,20 @@ export const cleanEdgeHandles = (edge: Edge): Edge => {
   };
 
   // Remove sourceHandle if it's null, "null", or empty string
-  if (cleaned.sourceHandle === null || cleaned.sourceHandle === 'null' || cleaned.sourceHandle === '') {
+  if (
+    cleaned.sourceHandle === null ||
+    cleaned.sourceHandle === 'null' ||
+    cleaned.sourceHandle === ''
+  ) {
     delete (cleaned as any).sourceHandle;
   }
 
   // Remove targetHandle if it's null, "null", or empty string
-  if (cleaned.targetHandle === null || cleaned.targetHandle === 'null' || cleaned.targetHandle === '') {
+  if (
+    cleaned.targetHandle === null ||
+    cleaned.targetHandle === 'null' ||
+    cleaned.targetHandle === ''
+  ) {
     delete (cleaned as any).targetHandle;
   }
 
@@ -170,14 +195,17 @@ export const arraysEqual = <T>(a: T[] | undefined | null, b: T[] | undefined | n
 };
 
 // Compare mockup arrays by ID - more efficient than JSON.stringify
-export const mockupArraysEqual = (a: any[] | undefined | null, b: any[] | undefined | null): boolean => {
+export const mockupArraysEqual = (
+  a: any[] | undefined | null,
+  b: any[] | undefined | null
+): boolean => {
   if (a === b) return true;
   if (!a || !b) return false;
   if (a.length !== b.length) return false;
 
   // Compare by _id if available, otherwise by reference
-  const aIds = a.map(m => m?._id || m);
-  const bIds = b.map(m => m?._id || m);
+  const aIds = a.map((m) => m?._id || m);
+  const bIds = b.map((m) => m?._id || m);
 
   if (aIds.length !== bIds.length) return false;
 
@@ -195,10 +223,10 @@ export const getConnectedBrandIdentity = (
   nodes: Node<FlowNodeData>[],
   edges: Edge[]
 ): BrandIdentity | null => {
-  const connectedEdges = edges.filter(e => e.target === nodeId);
+  const connectedEdges = edges.filter((e) => e.target === nodeId);
 
   for (const edge of connectedEdges) {
-    const sourceNode = nodes.find(n => n.id === edge.source);
+    const sourceNode = nodes.find((n) => n.id === edge.source);
     if (sourceNode?.type === 'brand') {
       const brandData = sourceNode.data as BrandNodeData;
       if (brandData.brandIdentity) {
@@ -257,11 +285,27 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
   }
 
   // For other node types that produce images
-  if (sourceNode.type === 'merge' || sourceNode.type === 'edit' || sourceNode.type === 'upscale' ||
-    sourceNode.type === 'mockup' || sourceNode.type === 'angle' || sourceNode.type === 'prompt' ||
-    sourceNode.type === 'output' || sourceNode.type === 'shader' || sourceNode.type === 'textureFilter' || sourceNode.type === 'studio3d') {
-    const nodeData = sourceNode.data as MergeNodeData | EditNodeData | UpscaleNodeData |
-      PromptNodeData | MockupNodeData | AngleNodeData | OutputNodeData | any;
+  if (
+    sourceNode.type === 'merge' ||
+    sourceNode.type === 'edit' ||
+    sourceNode.type === 'upscale' ||
+    sourceNode.type === 'mockup' ||
+    sourceNode.type === 'angle' ||
+    sourceNode.type === 'prompt' ||
+    sourceNode.type === 'output' ||
+    sourceNode.type === 'shader' ||
+    sourceNode.type === 'textureFilter' ||
+    sourceNode.type === 'studio3d'
+  ) {
+    const nodeData = sourceNode.data as
+      | MergeNodeData
+      | EditNodeData
+      | UpscaleNodeData
+      | PromptNodeData
+      | MockupNodeData
+      | AngleNodeData
+      | OutputNodeData
+      | any;
 
     // Prioritize base64 for thumbnails
     if (nodeData.resultImageBase64 && typeof nodeData.resultImageBase64 === 'string') {
@@ -272,7 +316,11 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
     }
 
     // Fallback to resultImageUrl (R2 URL)
-    if (nodeData.resultImageUrl && typeof nodeData.resultImageUrl === 'string' && nodeData.resultImageUrl.length > 0) {
+    if (
+      nodeData.resultImageUrl &&
+      typeof nodeData.resultImageUrl === 'string' &&
+      nodeData.resultImageUrl.length > 0
+    ) {
       return nodeData.resultImageUrl;
     }
   }
@@ -304,7 +352,11 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
       return base64;
     }
     // Fallback to resultVideoUrl (R2 URL)
-    if (videoData.resultVideoUrl && typeof videoData.resultVideoUrl === 'string' && videoData.resultVideoUrl.length > 0) {
+    if (
+      videoData.resultVideoUrl &&
+      typeof videoData.resultVideoUrl === 'string' &&
+      videoData.resultVideoUrl.length > 0
+    ) {
       return videoData.resultVideoUrl;
     }
   }
@@ -331,7 +383,9 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
  * @param sourceNode - The source node to extract data from
  * @returns Object with base64/url and type, or null
  */
-export const getDataFromSourceNode = (sourceNode: Node<FlowNodeData>): { data: string; type: 'pdf' | 'png' } | null => {
+export const getDataFromSourceNode = (
+  sourceNode: Node<FlowNodeData>
+): { data: string; type: 'pdf' | 'png' } | null => {
   if (!sourceNode) return null;
 
   // For PDFNode
@@ -361,9 +415,12 @@ export const getDataFromSourceNode = (sourceNode: Node<FlowNodeData>): { data: s
  * @param nodes - All nodes in the canvas
  * @returns Image URL or base64 string
  */
-export const getImageFromEdge = (edge: Edge | undefined, nodes: Node<FlowNodeData>[]): string | null => {
+export const getImageFromEdge = (
+  edge: Edge | undefined,
+  nodes: Node<FlowNodeData>[]
+): string | null => {
   if (!edge) return null;
-  const sourceNode = nodes.find(node => node.id === edge.source);
+  const sourceNode = nodes.find((node) => node.id === edge.source);
   if (!sourceNode) return null;
   return getImageFromSourceNode(sourceNode);
 };
@@ -381,14 +438,15 @@ export const syncConnectedImage = (
   edges: Edge[],
   nodes: Node<FlowNodeData>[]
 ): string | undefined => {
-  const connectedEdge = edges.find(e => e.target === targetNodeId);
+  const connectedEdge = edges.find((e) => e.target === targetNodeId);
   if (!connectedEdge) return undefined;
 
-  const sourceNode = nodes.find(node => node.id === connectedEdge.source);
+  const sourceNode = nodes.find((node) => node.id === connectedEdge.source);
   if (!sourceNode) return undefined;
 
   // Check if source node is a valid image source
-  const hasConnectedImage = sourceNode.type === 'image' ||
+  const hasConnectedImage =
+    sourceNode.type === 'image' ||
     sourceNode.type === 'logo' ||
     sourceNode.type === 'brand' ||
     sourceNode.type === 'output' ||
@@ -456,10 +514,16 @@ export const getMediaFromNodeForCopy = (
   }
 
   // MergeNode, EditNode, UpscaleNode, UpscaleBicubicNode, MockupNode, AngleNode, PromptNode, ShaderNode
-  if (node.type === 'merge' || node.type === 'edit' || node.type === 'upscale' ||
+  if (
+    node.type === 'merge' ||
+    node.type === 'edit' ||
+    node.type === 'upscale' ||
     node.type === 'upscaleBicubic' ||
-    node.type === 'mockup' || node.type === 'angle' || node.type === 'prompt' ||
-    node.type === 'shader') {
+    node.type === 'mockup' ||
+    node.type === 'angle' ||
+    node.type === 'prompt' ||
+    node.type === 'shader'
+  ) {
     const nodeData = node.data as any;
     if (nodeData.resultImageUrl) {
       return { mediaUrl: nodeData.resultImageUrl, isVideo: false };
@@ -555,4 +619,3 @@ export const copyMediaFromNode = async (
   }
   return copyImageOriginal(media.mediaUrl);
 };
-

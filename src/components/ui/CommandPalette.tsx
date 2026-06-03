@@ -24,9 +24,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  const filteredItems = items.filter(item =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredItems = items.filter(
+    (item) =>
+      item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   useEffect(() => {
@@ -77,10 +78,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex(prev => Math.min(prev + 1, filteredItems.length - 1));
+      setSelectedIndex((prev) => Math.min(prev + 1, filteredItems.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIndex(prev => Math.max(prev - 1, 0));
+      setSelectedIndex((prev) => Math.max(prev - 1, 0));
     } else if (e.key === 'Enter' && filteredItems[selectedIndex]) {
       e.preventDefault();
       handleSelect(filteredItems[selectedIndex]);
@@ -110,7 +111,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
               value={searchQuery}
               onChange={setSearchQuery}
               onKeyDown={handleKeyDown}
-              placeholder={t('designSystem.commandPalette.placeholder') || 'Search components, colors, typography...'}
+              placeholder={
+                t('designSystem.commandPalette.placeholder') ||
+                'Search components, colors, typography...'
+              }
               iconSize={20}
               showClearButton={false}
               className="flex-1 bg-transparent border-0 text-neutral-200 placeholder:text-neutral-500 focus:outline-none font-mono text-sm focus:ring-offset-0"
@@ -121,10 +125,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
               <kbd className="text-xs font-mono text-neutral-500">K</kbd>
             </div>
           </div>
-          <div
-            ref={resultsRef}
-            className="max-h-[60vh] overflow-y-auto"
-          >
+          <div ref={resultsRef} className="max-h-[60vh] overflow-y-auto">
             {filteredItems.length === 0 ? (
               <div className="px-4 py-8 text-center text-neutral-500 font-mono text-sm">
                 {t('designSystem.commandPalette.noResults') || 'No results found'}
@@ -143,7 +144,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-sm font-mono text-neutral-200">{item.label}</div>
-                        <div className="text-xs font-mono text-neutral-500 mt-0.5">{item.category}</div>
+                        <div className="text-xs font-mono text-neutral-500 mt-0.5">
+                          {item.category}
+                        </div>
                       </div>
                     </div>
                   </button>
@@ -156,4 +159,3 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
     </>
   );
 };
-

@@ -17,7 +17,7 @@ export const mockupSeed = (overrides: Record<string, any> = {}): Record<string, 
 
 export const createMockup = async (overrides: any = {}) => {
   const seed = mockupSeed(overrides);
-  
+
   if (!seed.userId) {
     const { createUser } = await import('./user.js');
     const { user } = await createUser();

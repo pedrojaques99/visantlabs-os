@@ -4,7 +4,7 @@ Connect any MCP-compatible AI client to Visant's full tool suite — brand guide
 
 **Endpoint:** `https://visantlabs.com/api/mcp`  
 **Transport:** Streamable HTTP (MCP spec 2025-03-26, stateless)  
-**Auth:** Bearer API key  
+**Auth:** Bearer API key
 
 > **Full tool reference + agent workflows:** `.agent/memory/MCP-GETTING-STARTED.md`
 
@@ -25,6 +25,7 @@ Claude Code only supports stdio MCP servers, so you need `mcp-remote` as a bridg
 Add to `.mcp.json` in your project root, or `~/.claude/mcp.json` globally:
 
 **Option A — OAuth (recommended, zero token config):**
+
 ```json
 {
   "mcpServers": {
@@ -35,9 +36,11 @@ Add to `.mcp.json` in your project root, or `~/.claude/mcp.json` globally:
   }
 }
 ```
+
 On first use, a browser window opens → log in → click Approve → done. Token stored in OS keychain.
 
 **Option B — API key:**
+
 ```json
 {
   "mcpServers": {
@@ -56,9 +59,11 @@ On first use, a browser window opens → log in → click Approve → done. Toke
   }
 }
 ```
+
 Note: `Authorization:Bearer` has no space after the colon — avoids a Windows argument-splitting bug.
 
 Verify:
+
 ```bash
 claude mcp list
 ```
@@ -70,6 +75,7 @@ claude mcp list
 Cursor supports Streamable HTTP natively — no `mcp-remote` needed.
 
 Edit `~/.cursor/mcp.json`:
+
 ```json
 {
   "mcpServers": {
@@ -88,6 +94,7 @@ Edit `~/.cursor/mcp.json`:
 ## Claude Desktop
 
 Edit the config file:
+
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
@@ -101,6 +108,7 @@ Edit the config file:
   }
 }
 ```
+
 Restart Claude Desktop. OAuth browser flow opens on first use.
 
 ---
@@ -116,6 +124,7 @@ Restart Claude Desktop. OAuth browser flow opens on first use.
 ## Other clients (VS Code, OpenAI, etc.)
 
 Any client that supports Streamable HTTP MCP:
+
 ```
 URL:    https://visantlabs.com/api/mcp
 Header: Authorization: Bearer visant_sk_your_key_here
@@ -148,6 +157,7 @@ curl -X POST https://visantlabs.com/api/mcp \
 ```
 
 **No brand yet?**
+
 ```
 1. branding-generate (prompt, step=full)      → full brand intelligence
 2. brand-guidelines-create                    → create vault from results

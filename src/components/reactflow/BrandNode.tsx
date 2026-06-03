@@ -1,7 +1,18 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Position, type NodeProps, NodeResizer } from '@xyflow/react';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { UploadCloud, FileText, Palette, X, ChevronDown, ChevronUp, Plus, Trash2, Edit2, Check } from 'lucide-react';
+import {
+  UploadCloud,
+  FileText,
+  Palette,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Trash2,
+  Edit2,
+  Check,
+} from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandNodeData, BrandIdentity } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -23,7 +34,7 @@ import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 const ColorEditRow = ({
   color,
   onChange,
-  onDelete
+  onDelete,
 }: {
   color: string;
   onChange: (newColor: string) => void;
@@ -97,8 +108,12 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const connectedIdentityType = nodeData.connectedIdentityType;
 
   const logoBase64 = connectedLogo || nodeData.logoBase64;
-  const identityBase64 = connectedIdentity || nodeData.identityPdfBase64 || nodeData.identityImageBase64;
-  const identityFileType = connectedIdentityType || nodeData.identityFileType || (nodeData.identityPdfBase64 ? 'pdf' : nodeData.identityImageBase64 ? 'png' : undefined);
+  const identityBase64 =
+    connectedIdentity || nodeData.identityPdfBase64 || nodeData.identityImageBase64;
+  const identityFileType =
+    connectedIdentityType ||
+    nodeData.identityFileType ||
+    (nodeData.identityPdfBase64 ? 'pdf' : nodeData.identityImageBase64 ? 'png' : undefined);
   const brandIdentity = nodeData.brandIdentity;
 
   // Start expanded if brandIdentity already exists
@@ -137,9 +152,12 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   }, [id, debouncedFitToContent]);
 
   // Handle resize from NodeResizer
-  const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
-  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+  const handleResize = useCallback(
+    (width: number, height: number) => {
+      handleResizeWithDebounce(id, width, 'auto', nodeData.onResize);
+    },
+    [id, nodeData.onResize, handleResizeWithDebounce]
+  );
 
   const handleFitToContent = useCallback(() => {
     fitToContent(id, 'auto', 'auto', nodeData.onResize);
@@ -147,17 +165,18 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   // Format logo URL - handle both base64 strings and data URLs
   const logoImageUrl = logoBase64
-    ? (logoBase64.startsWith('http') || logoBase64.startsWith('data:')
+    ? logoBase64.startsWith('http') || logoBase64.startsWith('data:')
       ? logoBase64
-      : `data:image/png;base64,${logoBase64}`)
+      : `data:image/png;base64,${logoBase64}`
     : nodeData.logoImage;
 
   // Format identity image URL - handle both base64 strings and data URLs
-  const identityImageUrl = identityFileType === 'png' && identityBase64
-    ? (identityBase64.startsWith('http') || identityBase64.startsWith('data:')
-      ? identityBase64
-      : `data:image/png;base64,${identityBase64}`)
-    : undefined;
+  const identityImageUrl =
+    identityFileType === 'png' && identityBase64
+      ? identityBase64.startsWith('http') || identityBase64.startsWith('data:')
+        ? identityBase64
+        : `data:image/png;base64,${identityBase64}`
+      : undefined;
 
   const handleLogoUploadClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -185,7 +204,9 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       nodeData.onUploadLogo(id, imageData.base64);
       toast.success(t('canvasNodes.brandNode.logoUploadedSuccessfully'), { duration: 2000 });
     } catch (err: any) {
-      toast.error(err?.message || t('canvasNodes.logoNode.failedToProcessLogo'), { duration: 5000 });
+      toast.error(err?.message || t('canvasNodes.logoNode.failedToProcessLogo'), {
+        duration: 5000,
+      });
     }
   };
 
@@ -225,13 +246,13 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           nodeData.onUpdateData(id, {
             identityPdfBase64: base64,
             identityImageBase64: undefined,
-            identityFileType: 'pdf'
+            identityFileType: 'pdf',
           });
         } else {
           nodeData.onUpdateData(id, {
             identityImageBase64: base64,
             identityPdfBase64: undefined,
-            identityFileType: 'png'
+            identityFileType: 'png',
           });
         }
       }
@@ -242,18 +263,25 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     }
   };
 
-  const updateColors = useCallback((newColors: BrandIdentity['colors']) => {
-    if (!nodeData.onUpdateData || !brandIdentity) return;
+  const updateColors = useCallback(
+    (newColors: BrandIdentity['colors']) => {
+      if (!nodeData.onUpdateData || !brandIdentity) return;
 
-    nodeData.onUpdateData(id, {
-      brandIdentity: {
-        ...brandIdentity,
-        colors: newColors
-      }
-    });
-  }, [nodeData, id, brandIdentity]);
+      nodeData.onUpdateData(id, {
+        brandIdentity: {
+          ...brandIdentity,
+          colors: newColors,
+        },
+      });
+    },
+    [nodeData, id, brandIdentity]
+  );
 
-  const handleColorChange = (category: keyof BrandIdentity['colors'], index: number, newColor: string) => {
+  const handleColorChange = (
+    category: keyof BrandIdentity['colors'],
+    index: number,
+    newColor: string
+  ) => {
     if (!brandIdentity) return;
 
     const currentCategory = [...brandIdentity.colors[category]];
@@ -261,7 +289,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     updateColors({
       ...brandIdentity.colors,
-      [category]: currentCategory
+      [category]: currentCategory,
     });
   };
 
@@ -273,7 +301,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     updateColors({
       ...brandIdentity.colors,
-      [category]: currentCategory
+      [category]: currentCategory,
     });
   };
 
@@ -285,7 +313,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     updateColors({
       ...brandIdentity.colors,
-      [category]: currentCategory
+      [category]: currentCategory,
     });
   };
 
@@ -305,7 +333,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         updateColors({
           primary,
           secondary,
-          accent
+          accent,
         });
         toast.success(t('canvasNodes.brandNode.colorsExtractedSuccessfully'));
       }
@@ -338,7 +366,6 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       // We don't automatically override colors here to avoid race conditions with standard analysis,
       // but we provide the "Extract from Logo" button for users to upgrade/fix the color palette manually.
-
     } catch (error) {
       console.error('Analysis failed:', error);
       toast.error(t('canvasNodes.brandNode.analysisFailed'), { duration: 3000 });
@@ -361,7 +388,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         identityPdfUrl: undefined,
         identityImageBase64: undefined,
         identityImageUrl: undefined,
-        identityFileType: undefined
+        identityFileType: undefined,
       });
     }
     if (pdfInputRef.current) {
@@ -371,7 +398,11 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   const canAnalyze = !!(logoBase64 && identityBase64 && identityFileType && !isAnalyzing);
 
-  const renderColorCategory = (title: string, category: keyof BrandIdentity['colors'], colors: string[]) => {
+  const renderColorCategory = (
+    title: string,
+    category: keyof BrandIdentity['colors'],
+    colors: string[]
+  ) => {
     const isEditing = editingCategory === category;
 
     return (
@@ -384,7 +415,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               size="xs"
               className="h-5 w-5 text-brand-cyan p-0"
               onClick={() => setEditingCategory(null)}
-              title={t('common.done') || "Done"}
+              title={t('common.done') || 'Done'}
             >
               <Check size={10} />
             </NodeButton>
@@ -394,7 +425,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               size="xs"
               className="h-5 w-5 text-neutral-500 hover:text-neutral-300 p-0"
               onClick={() => setEditingCategory(category)}
-              title={t('common.edit') || "Edit"}
+              title={t('common.edit') || 'Edit'}
             >
               <Edit2 size={10} />
             </NodeButton>
@@ -417,7 +448,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               className="w-full h-6 text-[10px] text-neutral-500 hover:text-neutral-300"
               onClick={() => handleColorAdd(category)}
             >
-              <Plus size={10} className="mr-1" /> {t('common.addColor') || "Add"}
+              <Plus size={10} className="mr-1" /> {t('common.addColor') || 'Add'}
             </NodeButton>
           </div>
         ) : (
@@ -426,7 +457,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div
                 key={idx}
                 className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-950/50 rounded border-node border-neutral-700/30 cursor-pointer hover:border-neutral-500 transition-colors"
-                title={t('canvas.clickToEdit') || "Click to edit"}
+                title={t('canvas.clickToEdit') || 'Click to edit'}
                 onClick={() => setEditingCategory(category)}
               >
                 <div
@@ -437,7 +468,9 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               </div>
             ))}
             {colors.length === 0 && (
-              <span className="text-[10px] text-neutral-600">{t('common.noResults') || "None"}</span>
+              <span className="text-[10px] text-neutral-600">
+                {t('common.noResults') || 'None'}
+              </span>
             )}
           </div>
         )}
@@ -504,14 +537,14 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         type="source"
         position={Position.Right}
         label={t('canvasNodes.brandNode.output') || 'Brand Context'}
-        style={{ top: '270px' }} // Keep label for main context output? Or remove? User said "hide image output handles". 
-      // The specific image handles are the ones creating clutter. 
+        style={{ top: '270px' }} // Keep label for main context output? Or remove? User said "hide image output handles".
+        // The specific image handles are the ones creating clutter.
       />
 
       {/* Header */}
       <NodeHeader
         icon={Palette}
-        title={t('canvasNodes.brandNode.title') || "Brand Guideline"}
+        title={t('canvasNodes.brandNode.title') || 'Brand Guideline'}
         selected={selected}
       />
 
@@ -520,7 +553,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         <div className="p-3 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
           <div className="flex items-center justify-between mb-2">
             <NodeLabel className="text-[10px]">
-              {t('canvasNodes.brandNode.logoDna') || "Logo DNA"}
+              {t('canvasNodes.brandNode.logoDna') || 'Logo DNA'}
             </NodeLabel>
             {logoImageUrl && !connectedLogo && (
               <NodeButton
@@ -545,9 +578,13 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               </div>
               <div className="flex-1">
                 <div className="text-[10px] font-mono text-brand-cyan/70">
-                  {connectedLogo ? t('common.connected') : t('common.localSource') || 'Local Source'}
+                  {connectedLogo
+                    ? t('common.connected')
+                    : t('common.localSource') || 'Local Source'}
                 </div>
-                <div className="text-[10px] text-neutral-500">{t('common.propertyDetected') || "Property detected"}</div>
+                <div className="text-[10px] text-neutral-500">
+                  {t('common.propertyDetected') || 'Property detected'}
+                </div>
               </div>
             </div>
           ) : (
@@ -571,31 +608,34 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         <div className="p-3 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
           <div className="flex items-center justify-between mb-2">
             <NodeLabel className="text-[10px]">
-              {t('canvasNodes.brandNode.identity') || "Brand Guidelines"}
+              {t('canvasNodes.brandNode.identity') || 'Brand Guidelines'}
             </NodeLabel>
-            {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) && !connectedIdentity && (
-              <NodeButton
-                variant="ghost"
-                size="xs"
-                onClick={handleRemoveIdentity}
-                className="h-6 w-6 text-neutral-500 hover:text-destructive p-0"
-              >
-                <X size={12} />
-              </NodeButton>
-            )}
+            {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) &&
+              !connectedIdentity && (
+                <NodeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={handleRemoveIdentity}
+                  className="h-6 w-6 text-neutral-500 hover:text-destructive p-0"
+                >
+                  <X size={12} />
+                </NodeButton>
+              )}
           </div>
 
-          {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) ? (
+          {identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl ? (
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-md bg-neutral-950/50 border-node border-neutral-700/30">
                 <FileText size={18} className="text-brand-cyan/70" />
               </div>
               <div className="flex-1 overflow-hidden">
                 <div className="text-[10px] font-mono text-brand-cyan/70">
-                  {t('common.fileFound') || "File found"}
+                  {t('common.fileFound') || 'File found'}
                 </div>
                 <div className="text-[10px] text-neutral-500">
-                  {connectedIdentity ? t('common.referenceDocument') : t('common.localUpload') || 'Local upload'}
+                  {connectedIdentity
+                    ? t('common.referenceDocument')
+                    : t('common.localUpload') || 'Local upload'}
                 </div>
               </div>
             </div>
@@ -610,28 +650,23 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               />
               <NodeButton variant="primary" size="full" onClick={handlePdfUploadClick}>
                 <FileText size={14} className="mr-2" />
-                {t('canvasNodes.brandCore.uploadLogo') || "Upload Guidelines"}
+                {t('canvasNodes.brandCore.uploadLogo') || 'Upload Guidelines'}
               </NodeButton>
             </>
           )}
         </div>
 
         {/* Analyze Button */}
-        <NodeButton
-          onClick={handleAnalyze}
-          disabled={!canAnalyze}
-          variant="primary"
-          size="full"
-        >
+        <NodeButton onClick={handleAnalyze} disabled={!canAnalyze} variant="primary" size="full">
           {isAnalyzing ? (
             <>
               <GlitchLoader size={14} className="mr-1" color="brand-cyan" />
-              <span>{t('canvasNodes.directorNode.analyzing') || "Analyzing..."}</span>
+              <span>{t('canvasNodes.directorNode.analyzing') || 'Analyzing...'}</span>
             </>
           ) : (
             <>
               <Palette size={14} />
-              <span>{t('canvasNodes.brandNode.analyze') || "Analyze Brand Engine"}</span>
+              <span>{t('canvasNodes.brandNode.analyze') || 'Analyze Brand Engine'}</span>
             </>
           )}
         </NodeButton>
@@ -645,8 +680,14 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex items-center justify-between"
             >
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">{t('canvasNodes.brandNode.extractedIdentity') || "Extracted Identity"}</span>
-              {isExpanded ? <ChevronUp size={14} className="text-neutral-500" /> : <ChevronDown size={14} className="text-neutral-500" />}
+              <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                {t('canvasNodes.brandNode.extractedIdentity') || 'Extracted Identity'}
+              </span>
+              {isExpanded ? (
+                <ChevronUp size={14} className="text-neutral-500" />
+              ) : (
+                <ChevronDown size={14} className="text-neutral-500" />
+              )}
             </NodeButton>
 
             {isExpanded && (
@@ -654,7 +695,9 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {/* Colors */}
                 <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                   <div className="flex items-center justify-between mb-2">
-                    <NodeLabel className="text-[10px]">{t('canvasNodes.brandNode.paletteMatrix') || "Palette"}</NodeLabel>
+                    <NodeLabel className="text-[10px]">
+                      {t('canvasNodes.brandNode.paletteMatrix') || 'Palette'}
+                    </NodeLabel>
                     <NodeButton
                       variant="ghost"
                       size="xs"
@@ -662,7 +705,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       onClick={manuallyExtractColors}
                       disabled={!logoBase64}
                     >
-                      {t('canvasNodes.brandNode.refineFromLogo') || "Refine"}
+                      {t('canvasNodes.brandNode.refineFromLogo') || 'Refine'}
                     </NodeButton>
                   </div>
 
@@ -676,11 +719,17 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {/* Typography */}
                 {brandIdentity.typography.primary && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
-                    <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.typography') || "Typography"}</NodeLabel>
+                    <NodeLabel className="text-[10px] mb-1.5">
+                      {t('canvasNodes.brandNode.typography') || 'Typography'}
+                    </NodeLabel>
                     <div className="space-y-1">
-                      <div className="text-neutral-300 text-[11px]">{brandIdentity.typography.primary}</div>
+                      <div className="text-neutral-300 text-[11px]">
+                        {brandIdentity.typography.primary}
+                      </div>
                       {brandIdentity.typography.secondary && (
-                        <div className="text-neutral-500 text-[10px]">{brandIdentity.typography.secondary}</div>
+                        <div className="text-neutral-500 text-[10px]">
+                          {brandIdentity.typography.secondary}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -689,13 +738,25 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {/* Personality */}
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
-                    <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.persona') || "Persona"}</NodeLabel>
+                    <NodeLabel className="text-[10px] mb-1.5">
+                      {t('canvasNodes.brandNode.persona') || 'Persona'}
+                    </NodeLabel>
                     <div className="space-y-1.5 text-[11px] text-neutral-400">
                       {brandIdentity.personality.tone && (
-                        <div><span className="text-neutral-600 text-[10px] font-mono mr-1.5">{t('canvasNodes.brandNode.tone') || "Tone:"}</span>{brandIdentity.personality.tone}</div>
+                        <div>
+                          <span className="text-neutral-600 text-[10px] font-mono mr-1.5">
+                            {t('canvasNodes.brandNode.tone') || 'Tone:'}
+                          </span>
+                          {brandIdentity.personality.tone}
+                        </div>
                       )}
                       {brandIdentity.personality.feeling && (
-                        <div><span className="text-neutral-600 text-[10px] font-mono mr-1.5">{t('canvasNodes.brandNode.feeling') || "Feeling:"}</span>{brandIdentity.personality.feeling}</div>
+                        <div>
+                          <span className="text-neutral-600 text-[10px] font-mono mr-1.5">
+                            {t('canvasNodes.brandNode.feeling') || 'Feeling:'}
+                          </span>
+                          {brandIdentity.personality.feeling}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -704,15 +765,22 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {/* Visual Elements */}
                 {brandIdentity.visualElements.length > 0 && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
-                    <NodeLabel className="text-[10px] mb-1.5">{t('canvasNodes.brandNode.visualLanguage') || "Visual Elements"}</NodeLabel>
+                    <NodeLabel className="text-[10px] mb-1.5">
+                      {t('canvasNodes.brandNode.visualLanguage') || 'Visual Elements'}
+                    </NodeLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (
-                        <span key={idx} className="px-2 py-0.5 bg-neutral-950/50 rounded text-[10px] text-neutral-400 border-node border-neutral-700/30">
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 bg-neutral-950/50 rounded text-[10px] text-neutral-400 border-node border-neutral-700/30"
+                        >
                           {element}
                         </span>
                       ))}
                       {brandIdentity.visualElements.length > 8 && (
-                        <span className="text-neutral-500 text-[10px]">+{brandIdentity.visualElements.length - 8}</span>
+                        <span className="text-neutral-500 text-[10px]">
+                          +{brandIdentity.visualElements.length - 8}
+                        </span>
                       )}
                     </div>
                   </div>

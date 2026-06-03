@@ -10,7 +10,17 @@ function makePane(left = 0, top = 0) {
   pane.className = 'react-flow__pane';
   // jsdom doesn't do real layout — override getBoundingClientRect
   pane.getBoundingClientRect = () =>
-    ({ left, top, right: left + 800, bottom: top + 600, width: 800, height: 600, x: left, y: top, toJSON: () => {} } as DOMRect);
+    ({
+      left,
+      top,
+      right: left + 800,
+      bottom: top + 600,
+      width: 800,
+      height: 600,
+      x: left,
+      y: top,
+      toJSON: () => {},
+    } as DOMRect);
   return pane;
 }
 

@@ -1,10 +1,37 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { Command } from 'cmdk';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Diamond, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, MessageSquare, Clipboard, LayoutTemplate, Blocks, Brush, Pipette, Cpu, Lightbulb, Box } from 'lucide-react';
+import {
+  Pickaxe,
+  Settings,
+  Maximize2,
+  X,
+  Image as ImageIcon,
+  Diamond,
+  Palette,
+  Target,
+  Dna,
+  FileDown,
+  Camera,
+  Upload,
+  FileText,
+  Video,
+  Layers,
+  MapPin,
+  Sun,
+  MessageSquare,
+  Clipboard,
+  LayoutTemplate,
+  Blocks,
+  Brush,
+  Pipette,
+  Cpu,
+  Lightbulb,
+  Box,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface ContextMenuProps {
   x: number;
@@ -153,60 +180,111 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   }, [onClose]);
 
   // Check if source node is an ImageNode to hide media upload nodes
-  const sourceNode = sourceNodeId && nodes ? nodes.find(n => n.id === sourceNodeId) : null;
+  const sourceNode = sourceNodeId && nodes ? nodes.find((n) => n.id === sourceNodeId) : null;
   const isSourceImageNode = sourceNode?.type === 'image';
 
   const menuItems: MenuItem[] = [
     // Edit & View
-    ...(onPaste ? [{
-      id: 'paste',
-      label: 'Paste',
-      icon: <Clipboard size={16} />,
-      onClick: () => { onPaste(); onClose(); },
-      section: 'edit' as const,
-    }] : []),
-    ...(onToggleUI ? [{
-      id: 'toggle-ui',
-      label: 'Show/Hide UI',
-      icon: <LayoutTemplate size={16} />,
-      onClick: () => { onToggleUI(); onClose(); },
-      section: 'view' as const,
-    }] : []),
+    ...(onPaste
+      ? [
+          {
+            id: 'paste',
+            label: 'Paste',
+            icon: <Clipboard size={16} />,
+            onClick: () => {
+              onPaste();
+              onClose();
+            },
+            section: 'edit' as const,
+          },
+        ]
+      : []),
+    ...(onToggleUI
+      ? [
+          {
+            id: 'toggle-ui',
+            label: 'Show/Hide UI',
+            icon: <LayoutTemplate size={16} />,
+            onClick: () => {
+              onToggleUI();
+              onClose();
+            },
+            section: 'view' as const,
+          },
+        ]
+      : []),
     // Input nodes
-    ...(isSourceImageNode ? [] : [{
-      id: 'image',
-      label: 'Image Node',
-      icon: <ImageIcon size={16} />,
-      onClick: () => { onAddImage(); onClose(); },
-      section: 'input' as const,
-    }]),
-    ...(isSourceImageNode ? [] : (onAddText ? [{
-      id: 'text',
-      label: 'Text Node',
-      icon: <FileText size={16} />,
-      onClick: () => { onAddText!(); onClose(); },
-      section: 'input' as const,
-    }] : [])),
-    ...(isSourceImageNode ? [] : (onAddLogo ? [{
-      id: 'logo',
-      label: 'Logo Node',
-      icon: <Upload size={16} />,
-      onClick: () => { onAddLogo!(); onClose(); },
-      section: 'input' as const,
-    }] : [])),
-    ...(isSourceImageNode ? [] : (onAddPDF ? [{
-      id: 'pdf',
-      label: 'PDF Node',
-      icon: <FileText size={16} />,
-      onClick: () => { onAddPDF!(); onClose(); },
-      section: 'input' as const,
-    }] : [])),
+    ...(isSourceImageNode
+      ? []
+      : [
+          {
+            id: 'image',
+            label: 'Image Node',
+            icon: <ImageIcon size={16} />,
+            onClick: () => {
+              onAddImage();
+              onClose();
+            },
+            section: 'input' as const,
+          },
+        ]),
+    ...(isSourceImageNode
+      ? []
+      : onAddText
+      ? [
+          {
+            id: 'text',
+            label: 'Text Node',
+            icon: <FileText size={16} />,
+            onClick: () => {
+              onAddText!();
+              onClose();
+            },
+            section: 'input' as const,
+          },
+        ]
+      : []),
+    ...(isSourceImageNode
+      ? []
+      : onAddLogo
+      ? [
+          {
+            id: 'logo',
+            label: 'Logo Node',
+            icon: <Upload size={16} />,
+            onClick: () => {
+              onAddLogo!();
+              onClose();
+            },
+            section: 'input' as const,
+          },
+        ]
+      : []),
+    ...(isSourceImageNode
+      ? []
+      : onAddPDF
+      ? [
+          {
+            id: 'pdf',
+            label: 'PDF Node',
+            icon: <FileText size={16} />,
+            onClick: () => {
+              onAddPDF!();
+              onClose();
+            },
+            section: 'input' as const,
+          },
+        ]
+      : []),
     // Processing nodes - Generate
     {
       id: 'prompt',
       label: 'Prompt Node',
       icon: <Diamond size={16} />,
-      onClick: () => { onAddPrompt(); onClose(); },
+      onClick: () => {
+        onAddPrompt();
+        onClose();
+      },
       section: 'processing',
       category: 'Generate',
     },
@@ -214,23 +292,36 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       id: 'merge',
       label: 'Merge Images',
       icon: <Pickaxe size={16} />,
-      onClick: () => { onAddMerge(); onClose(); },
+      onClick: () => {
+        onAddMerge();
+        onClose();
+      },
       section: 'processing',
       category: 'Generate',
     },
-    ...(isSourceImageNode ? [] : [{
-      id: 'video',
-      label: 'Video Node',
-      icon: <Video size={16} />,
-      onClick: () => { onAddVideo?.(); onClose(); },
-      section: 'processing' as const,
-      category: 'Generate',
-    }]),
+    ...(isSourceImageNode
+      ? []
+      : [
+          {
+            id: 'video',
+            label: 'Video Node',
+            icon: <Video size={16} />,
+            onClick: () => {
+              onAddVideo?.();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Generate',
+          },
+        ]),
     {
       id: 'mockup',
       label: 'Mockup Preset',
       icon: <ImageIcon size={16} />,
-      onClick: () => { onAddMockup(); onClose(); },
+      onClick: () => {
+        onAddMockup();
+        onClose();
+      },
       section: 'processing',
       category: 'Generate',
     },
@@ -239,57 +330,94 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       id: 'angle',
       label: 'Angle Node',
       icon: <Camera size={16} />,
-      onClick: () => { onAddAngle(); onClose(); },
+      onClick: () => {
+        onAddAngle();
+        onClose();
+      },
       section: 'processing',
       category: 'Composition',
     },
-    ...(onAddAmbience ? [{
-      id: 'ambience',
-      label: 'Ambience Node',
-      icon: <MapPin size={16} />,
-      onClick: () => { onAddAmbience!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Composition',
-    }] : []),
-    ...(onAddLuminance ? [{
-      id: 'luminance',
-      label: 'Luminance Node',
-      icon: <Sun size={16} />,
-      onClick: () => { onAddLuminance!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Composition',
-    }] : []),
+    ...(onAddAmbience
+      ? [
+          {
+            id: 'ambience',
+            label: 'Ambience Node',
+            icon: <MapPin size={16} />,
+            onClick: () => {
+              onAddAmbience!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Composition',
+          },
+        ]
+      : []),
+    ...(onAddLuminance
+      ? [
+          {
+            id: 'luminance',
+            label: 'Luminance Node',
+            icon: <Sun size={16} />,
+            onClick: () => {
+              onAddLuminance!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Composition',
+          },
+        ]
+      : []),
     {
       id: 'upscale',
       label: 'Upscale Image',
       icon: <Maximize2 size={16} />,
-      onClick: () => { onAddUpscale(); onClose(); },
+      onClick: () => {
+        onAddUpscale();
+        onClose();
+      },
       section: 'processing',
       category: 'Composition',
     },
-    ...(onAddUpscaleBicubic ? [{
-      id: 'upscaleBicubic',
-      label: 'Upscale Bicubic',
-      icon: <Maximize2 size={16} />,
-      onClick: () => { onAddUpscaleBicubic!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Composition',
-    }] : []),
+    ...(onAddUpscaleBicubic
+      ? [
+          {
+            id: 'upscaleBicubic',
+            label: 'Upscale Bicubic',
+            icon: <Maximize2 size={16} />,
+            onClick: () => {
+              onAddUpscaleBicubic!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Composition',
+          },
+        ]
+      : []),
     // Effects
-    ...(onAddTexture ? [{
-      id: 'texture',
-      label: 'Texture Node',
-      icon: <Layers size={16} />,
-      onClick: () => { onAddTexture!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Effects',
-    }] : []),
+    ...(onAddTexture
+      ? [
+          {
+            id: 'texture',
+            label: 'Texture Node',
+            icon: <Layers size={16} />,
+            onClick: () => {
+              onAddTexture!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Effects',
+          },
+        ]
+      : []),
     // Edit node — was missing
     {
       id: 'edit',
       label: 'Edit Node',
       icon: <FileText size={16} />,
-      onClick: () => { onAddEdit(); onClose(); },
+      onClick: () => {
+        onAddEdit();
+        onClose();
+      },
       section: 'processing',
       category: 'Generate',
     },
@@ -298,7 +426,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       id: 'brandkit',
       label: 'Brand Kit',
       icon: <Palette size={16} />,
-      onClick: () => { onAddBrandKit(); onClose(); },
+      onClick: () => {
+        onAddBrandKit();
+        onClose();
+      },
       section: 'processing',
       category: 'Branding',
     },
@@ -306,102 +437,173 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       id: 'brand',
       label: 'Brand Node',
       icon: <Palette size={16} />,
-      onClick: () => { onAddBrand(); onClose(); },
+      onClick: () => {
+        onAddBrand();
+        onClose();
+      },
       section: 'processing',
       category: 'Branding',
     },
-    ...(onAddColorExtractor ? [{
-      id: 'colorExtractor',
-      label: 'Color Extractor',
-      icon: <Pipette size={16} />,
-      onClick: () => { onAddColorExtractor!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Branding',
-    }] : []),
-    ...(onAddBrandCore ? [{
-      id: 'brandCore',
-      label: 'Brand Core',
-      icon: <Cpu size={16} />,
-      onClick: () => { onAddBrandCore!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Branding',
-    }] : []),
-    ...(onAddStrategy ? [{
-      id: 'strategy',
-      label: 'Strategy Node',
-      icon: <Lightbulb size={16} />,
-      onClick: () => { onAddStrategy!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Branding',
-    }] : []),
+    ...(onAddColorExtractor
+      ? [
+          {
+            id: 'colorExtractor',
+            label: 'Color Extractor',
+            icon: <Pipette size={16} />,
+            onClick: () => {
+              onAddColorExtractor!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Branding',
+          },
+        ]
+      : []),
+    ...(onAddBrandCore
+      ? [
+          {
+            id: 'brandCore',
+            label: 'Brand Core',
+            icon: <Cpu size={16} />,
+            onClick: () => {
+              onAddBrandCore!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Branding',
+          },
+        ]
+      : []),
+    ...(onAddStrategy
+      ? [
+          {
+            id: 'strategy',
+            label: 'Strategy Node',
+            icon: <Lightbulb size={16} />,
+            onClick: () => {
+              onAddStrategy!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Branding',
+          },
+        ]
+      : []),
     // Tools
-    ...(onAddShader ? [{
-      id: 'shader',
-      label: 'Shader Node',
-      icon: <Brush size={16} />,
-      onClick: () => { onAddShader!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Effects',
-    }] : []),
-    ...(onAddTextureFilter ? [{
-      id: 'textureFilter',
-      label: 'Texture Filter',
-      icon: <Layers size={16} />,
-      onClick: () => { onAddTextureFilter!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Effects',
-    }] : []),
-    ...(onAddStudio3D ? [{
-      id: 'studio3d',
-      label: '3D Studio',
-      icon: <Box size={16} />,
-      onClick: () => { onAddStudio3D!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Effects',
-    }] : []),
-    ...(onAddChat ? [{
-      id: 'chat',
-      label: 'Chat Node',
-      icon: <MessageSquare size={16} />,
-      onClick: () => { onAddChat!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Custom',
-    }] : []),
-    ...(onAddVideoInput ? [{
-      id: 'videoInput',
-      label: 'Video Input',
-      icon: <Video size={16} />,
-      onClick: () => { onAddVideoInput!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Generate',
-    }] : []),
+    ...(onAddShader
+      ? [
+          {
+            id: 'shader',
+            label: 'Shader Node',
+            icon: <Brush size={16} />,
+            onClick: () => {
+              onAddShader!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Effects',
+          },
+        ]
+      : []),
+    ...(onAddTextureFilter
+      ? [
+          {
+            id: 'textureFilter',
+            label: 'Texture Filter',
+            icon: <Layers size={16} />,
+            onClick: () => {
+              onAddTextureFilter!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Effects',
+          },
+        ]
+      : []),
+    ...(onAddStudio3D
+      ? [
+          {
+            id: 'studio3d',
+            label: '3D Studio',
+            icon: <Box size={16} />,
+            onClick: () => {
+              onAddStudio3D!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Effects',
+          },
+        ]
+      : []),
+    ...(onAddChat
+      ? [
+          {
+            id: 'chat',
+            label: 'Chat Node',
+            icon: <MessageSquare size={16} />,
+            onClick: () => {
+              onAddChat!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Custom',
+          },
+        ]
+      : []),
+    ...(onAddVideoInput
+      ? [
+          {
+            id: 'videoInput',
+            label: 'Video Input',
+            icon: <Video size={16} />,
+            onClick: () => {
+              onAddVideoInput!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Generate',
+          },
+        ]
+      : []),
     // Node Builder
-    ...(onAddNodeBuilder ? [{
-      id: 'nodeBuilder',
-      label: 'Node Builder',
-      icon: <Blocks size={16} />,
-      onClick: () => { onAddNodeBuilder!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Custom',
-    }] : []),
+    ...(onAddNodeBuilder
+      ? [
+          {
+            id: 'nodeBuilder',
+            label: 'Node Builder',
+            icon: <Blocks size={16} />,
+            onClick: () => {
+              onAddNodeBuilder!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Custom',
+          },
+        ]
+      : []),
     // Export
-    ...(onExport && sourceNodeId ? [{
-      id: 'export',
-      label: 'Export',
-      icon: <FileDown size={16} />,
-      onClick: () => { onExport!(); onClose(); },
-      section: 'export' as const,
-      highlight: true,
-    }] : []),
+    ...(onExport && sourceNodeId
+      ? [
+          {
+            id: 'export',
+            label: 'Export',
+            icon: <FileDown size={16} />,
+            onClick: () => {
+              onExport!();
+              onClose();
+            },
+            section: 'export' as const,
+            highlight: true,
+          },
+        ]
+      : []),
   ];
 
   const categoryOrder = ['Generate', 'Composition', 'Effects', 'Branding', 'Custom'];
 
   const GroupLabel: React.FC<{ title: string }> = ({ title }) => (
     <div className="px-3 py-1.5">
-      <span className="text-[10px] font-semibold text-neutral-500 uppercase">
-        {title}
-      </span>
+      <span className="text-[10px] font-semibold text-neutral-500 uppercase">{title}</span>
     </div>
   );
 
@@ -411,21 +613,23 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       value={item.label}
       onSelect={item.onClick}
       className={cn(
-        "w-full px-2 py-1.5 mb-0.5",
-        "backdrop-blur-md",
-        "border-node rounded-md",
-        "transition-colors duration-150",
-        "flex items-center gap-2 cursor-pointer",
-        "aria-selected:bg-neutral-800/50 aria-selected:text-white",
+        'w-full px-2 py-1.5 mb-0.5',
+        'backdrop-blur-md',
+        'border-node rounded-md',
+        'transition-colors duration-150',
+        'flex items-center gap-2 cursor-pointer',
+        'aria-selected:bg-neutral-800/50 aria-selected:text-white',
         item.highlight
-          ? "border-neutral-800 bg-brand-cyan/10 text-brand-cyan"
-          : "border-neutral-800/40 bg-black/30 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-800/50 hover:text-white"
+          ? 'border-neutral-800 bg-brand-cyan/10 text-brand-cyan'
+          : 'border-neutral-800/40 bg-black/30 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-800/50 hover:text-white'
       )}
     >
-      <span className={cn(
-        "transition-colors duration-150 flex-shrink-0",
-        item.highlight ? "text-brand-cyan" : "text-neutral-400"
-      )}>
+      <span
+        className={cn(
+          'transition-colors duration-150 flex-shrink-0',
+          item.highlight ? 'text-brand-cyan' : 'text-neutral-400'
+        )}
+      >
         {item.icon}
       </span>
       <span className="text-[11px] font-medium whitespace-nowrap flex-1 text-left tracking-wide">
@@ -434,11 +638,11 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     </Command.Item>
   );
 
-  const inputItems = menuItems.filter(item => item.section === 'input');
-  const processingItems = menuItems.filter(item => item.section === 'processing');
-  const exportItems = menuItems.filter(item => item.section === 'export');
-  const editItems = menuItems.filter(item => item.section === 'edit');
-  const viewItems = menuItems.filter(item => item.section === 'view');
+  const inputItems = menuItems.filter((item) => item.section === 'input');
+  const processingItems = menuItems.filter((item) => item.section === 'processing');
+  const exportItems = menuItems.filter((item) => item.section === 'export');
+  const editItems = menuItems.filter((item) => item.section === 'edit');
+  const viewItems = menuItems.filter((item) => item.section === 'view');
 
   const groupedProcessingItems = processingItems.reduce((acc, item) => {
     const category = item.category || 'Other';
@@ -452,9 +656,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       ref={menuRef}
       data-context-menu
       className={cn(
-        "fixed z-50 bg-neutral-950/70 backdrop-blur-xl border-node border-neutral-800/50 rounded-md shadow-2xl",
-        "min-w-[220px] max-w-[280px]",
-        "transition-all duration-200 ease-out"
+        'fixed z-50 bg-neutral-950/70 backdrop-blur-xl border-node border-neutral-800/50 rounded-md shadow-2xl',
+        'min-w-[220px] max-w-[280px]',
+        'transition-all duration-200 ease-out'
       )}
       style={menuStyle}
       onClick={(e) => e.stopPropagation()}
@@ -465,10 +669,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         {/* Header with Search */}
         <div className="sticky top-0 bg-neutral-950/70 backdrop-blur-xl border-b border-neutral-800/30 z-10 rounded-t-2xl">
           <div className="px-3 py-2.5 flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-neutral-300 uppercase">
-              Add Node
-            </span>
-            <Button variant="ghost" onClick={onClose}
+            <span className="text-xs font-semibold text-neutral-300 uppercase">Add Node</span>
+            <Button
+              variant="ghost"
+              onClick={onClose}
               className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
               aria-label="Close menu"
               onMouseDown={(e) => e.stopPropagation()}
@@ -482,14 +686,17 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               placeholder="Search nodes..."
               autoFocus
               className={cn(
-                "w-full bg-neutral-900/60 border border-neutral-800/50 rounded-md",
-                "px-3 py-1.5 text-xs text-neutral-200 placeholder:text-neutral-500",
-                "focus:outline-none focus:border-neutral-600",
-                "transition-colors duration-150"
+                'w-full bg-neutral-900/60 border border-neutral-800/50 rounded-md',
+                'px-3 py-1.5 text-xs text-neutral-200 placeholder:text-neutral-500',
+                'focus:outline-none focus:border-neutral-600',
+                'transition-colors duration-150'
               )}
               onMouseDown={(e) => e.stopPropagation()}
               onKeyDown={(e) => {
-                if (e.key === 'Escape') { e.stopPropagation(); onClose(); }
+                if (e.key === 'Escape') {
+                  e.stopPropagation();
+                  onClose();
+                }
               }}
             />
           </div>

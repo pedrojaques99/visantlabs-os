@@ -42,7 +42,11 @@ const getAuthHeaders = () => {
 };
 
 export const abacatepayService = {
-  async createPayment(credits: number, currency: string, taxId?: string): Promise<CreateAbacatePaymentResponse> {
+  async createPayment(
+    credits: number,
+    currency: string,
+    taxId?: string
+  ): Promise<CreateAbacatePaymentResponse> {
     const response = await fetch(`${API_BASE_URL}/payments/create-abacate-pix`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -99,5 +103,3 @@ export const abacatepayService = {
     });
   },
 };
-
-

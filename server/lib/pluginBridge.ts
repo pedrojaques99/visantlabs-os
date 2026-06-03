@@ -41,9 +41,7 @@ export interface PluginSession {
  */
 class PluginBridge {
   private sessions: Map<string, PluginSession> = new Map();
-  private readonly operationTimeout = parseInt(
-    process.env.FIGMA_WS_OP_TIMEOUT || '10000',
-  ); // 10 seconds
+  private readonly operationTimeout = parseInt(process.env.FIGMA_WS_OP_TIMEOUT || '10000'); // 10 seconds
   private readonly heartbeatInterval = 30000; // 30 seconds
 
   /** Whether the plugin is currently connected and WebSocket is open. */
@@ -79,7 +77,7 @@ class PluginBridge {
 
     // Drain any ops queued while plugin was offline (fire-and-forget)
     this.drainQueue(fileId).catch((err) =>
-      console.error(`[PluginBridge] drainQueue error for ${fileId}:`, err),
+      console.error(`[PluginBridge] drainQueue error for ${fileId}:`, err)
     );
 
     return session;
@@ -137,7 +135,7 @@ class PluginBridge {
    */
   async push(
     fileId: string,
-    operations: Operation[],
+    operations: Operation[]
   ): Promise<{
     success: boolean;
     appliedCount: number;
@@ -172,11 +170,7 @@ class PluginBridge {
     }>((resolve, reject) => {
       const timeout = setTimeout(() => {
         session.pendingAcks.delete(opId);
-        reject(
-          new Error(
-            `Operation timeout (${this.operationTimeout}ms) for opId=${opId}`,
-          ),
-        );
+        reject(new Error(`Operation timeout (${this.operationTimeout}ms) for opId=${opId}`));
       }, this.operationTimeout);
 
       session.pendingAcks.set(opId, {
@@ -197,18 +191,13 @@ class PluginBridge {
       session.ws.send(JSON.stringify(message), (err) => {
         if (err) {
           session.pendingAcks.delete(opId);
-          console.error(
-            `[PluginBridge] Failed to send message to ${fileId}:`,
-            err,
-          );
+          console.error(`[PluginBridge] Failed to send message to ${fileId}:`, err);
         }
       });
 
       // Wait for ACK
       const result = await ackPromise;
-      console.log(
-        `[PluginBridge] Operation ${opId} completed: ${result.appliedCount} applied`,
-      );
+      console.log(`[PluginBridge] Operation ${opId} completed: ${result.appliedCount} applied`);
       return result;
     } catch (err) {
       return {
@@ -265,9 +254,7 @@ class PluginBridge {
   onMessage(fileId: string, message: any): void {
     const session = this.sessions.get(fileId);
     if (!session) {
-      console.warn(
-        `[PluginBridge] Received message for unknown session: ${fileId}`,
-      );
+      console.warn(`[PluginBridge] Received message for unknown session: ${fileId}`);
       return;
     }
 
@@ -310,7 +297,7 @@ class PluginBridge {
         // User selection changed (can be used for future broadcasts)
         console.log(
           `[PluginBridge] Selection changed in ${fileId}:`,
-          message.nodes?.map((n: any) => n.name).join(', ') || '(empty)',
+          message.nodes?.map((n: any) => n.name).join(', ') || '(empty)'
         );
         break;
       }
@@ -321,7 +308,15 @@ class PluginBridge {
         if (pending) {
           clearTimeout(pending.timeout);
           session.pendingAcks.delete(message.requestId || message.opId);
-          pending.resolve(message.templates || message.context || message.variables || message.base64 || message.results || message.mappings || []);
+          pending.resolve(
+            message.templates ||
+              message.context ||
+              message.variables ||
+              message.base64 ||
+              message.results ||
+              message.mappings ||
+              []
+          );
         }
         break;
       }
@@ -342,7 +337,7 @@ class PluginBridge {
           else if (type === 'SCREENSHOT_RESULT') result = message.base64;
           else if (type === 'SEARCH_DS_RESULT') result = message.results;
           else if (type === 'CODE_CONNECT_RESULT') result = message.mappings;
-          
+
           pending.resolve(result);
         }
         break;
@@ -423,10 +418,7 @@ class PluginBridge {
       if (session.ws.readyState === WebSocket.OPEN) {
         session.ws.ping((err: Error | undefined) => {
           if (err) {
-            console.error(
-              `[PluginBridge] Heartbeat failed for ${session.fileId}:`,
-              err,
-            );
+            console.error(`[PluginBridge] Heartbeat failed for ${session.fileId}:`, err);
             this.unregister(session.fileId);
           }
         });

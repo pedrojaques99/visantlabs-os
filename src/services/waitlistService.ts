@@ -55,7 +55,10 @@ class WaitlistService {
    * Get all waitlist entries (for admin use)
    * @returns Promise with waitlist entries
    */
-  async getWaitlist(): Promise<{ count: number; entries: Array<{ id: string; email: string; createdAt: string }> }> {
+  async getWaitlist(): Promise<{
+    count: number;
+    entries: Array<{ id: string; email: string; createdAt: string }>;
+  }> {
     try {
       const response = await fetch(`${API_BASE_URL}/waitlist`, {
         method: 'GET',
@@ -86,14 +89,3 @@ class WaitlistService {
 }
 
 export const waitlistService = new WaitlistService();
-
-
-
-
-
-
-
-
-
-
-

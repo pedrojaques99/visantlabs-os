@@ -8,12 +8,13 @@ export function ClientProvider({ children }: { children: ReactNode }) {
   const serverUrl = usePluginStore((s) => s.serverUrl);
 
   const client = useMemo(
-    () => createClient({
-      baseUrl: serverUrl,
-      getToken: () => usePluginStore.getState().authToken,
-      getBrandId: () => (usePluginStore.getState() as any).activeBrandId ?? null,
-      onUnauthorized: () => usePluginStore.setState({ authToken: null, authEmail: null } as any),
-    }),
+    () =>
+      createClient({
+        baseUrl: serverUrl,
+        getToken: () => usePluginStore.getState().authToken,
+        getBrandId: () => (usePluginStore.getState() as any).activeBrandId ?? null,
+        onUnauthorized: () => usePluginStore.setState({ authToken: null, authEmail: null } as any),
+      }),
     [serverUrl]
   );
 
