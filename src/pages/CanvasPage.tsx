@@ -4856,6 +4856,7 @@ export const CanvasPage: React.FC = () => {
             onAddVideoInput={() => handleAddNode(addVideoInputNode)}
             onAddStrategy={() => handleAddNode(addStrategyNode)}
             onAddBrandCore={() => handleAddNode(addBrandCoreNode)}
+            onAddBrandBatch={() => handleAddNode(addBrandBatchNode)}
             onAddChat={() => handleAddNode(addChatNode)}
             onAddNodeBuilder={() => handleAddNode(addNodeBuilderNode)}
             experimentalMode={experimentalMode}

@@ -61,6 +61,7 @@ interface ContextMenuProps {
   onAddVideoInput?: () => void;
   onAddStrategy?: () => void;
   onAddBrandCore?: () => void;
+  onAddBrandBatch?: () => void;
   onAddChat?: () => void;
   onAddNodeBuilder?: () => void;
   onExport?: () => void;
@@ -109,6 +110,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onAddVideoInput,
   onAddStrategy,
   onAddBrandCore,
+  onAddBrandBatch,
   onAddChat,
   onAddNodeBuilder,
   onExport,
@@ -482,6 +484,21 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             icon: <Lightbulb size={16} />,
             onClick: () => {
               onAddStrategy!();
+              onClose();
+            },
+            section: 'processing' as const,
+            category: 'Branding',
+          },
+        ]
+      : []),
+    ...(onAddBrandBatch
+      ? [
+          {
+            id: 'brandBatch',
+            label: 'Brand Batch',
+            icon: <Layers size={16} />,
+            onClick: () => {
+              onAddBrandBatch!();
               onClose();
             },
             section: 'processing' as const,

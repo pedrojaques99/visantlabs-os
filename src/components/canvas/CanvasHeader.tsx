@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '@/components/ui/BackButton';
 import {
@@ -356,7 +357,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         </div>
       </div>
 
-      {showSettingsModal && (
+      {showSettingsModal && createPortal(
         <CanvasSettingsModal
           isOpen={showSettingsModal}
           onClose={() => setShowSettingsModal(false)}
@@ -380,7 +381,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           onEdgeStyleChange={setEdgeStyle}
           edgeStrokeWidth={edgeStrokeWidth}
           onEdgeStrokeWidthChange={setEdgeStrokeWidth}
-        />
+        />,
+        document.body
       )}
 
       {/* Share Modal */}

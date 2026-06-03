@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,8 @@ import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSe
 import { mockupApi } from '@/services/mockupApi';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { getCreditsRequired } from '@/utils/creditCalculator';
-import { Image, Download, RotateCcw, Save, Zap, Check } from 'lucide-react';
+import { downloadImage } from '@/utils/imageUtils';
+import { Image, Download, RotateCcw, Save, Zap, Check, Square } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -70,7 +71,32 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
   >([]);
   const [batchProgress, setBatchProgress] = useState(0);
 
+  const batchTotalRef = useRef(0);
+  const cancelledRef = useRef(false);
+
   const credits = useMemo(() => getCreditsRequired(model, resolution), [model, resolution]);
+
+  const resetToForm = useCallback(() => {
+    setView('form');
+    setResult(null);
+    setSaved(false);
+    setBatchResults([]);
+    setBatchProgress(0);
+    batchTotalRef.current = 0;
+    cancelledRef.current = false;
+    setSuggestions([]);
+  }, []);
+
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen) {
+        cancelledRef.current = true;
+        resetToForm();
+      }
+      onOpenChange(nextOpen);
+    },
+    [onOpenChange, resetToForm]
+  );
 
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim()) {
@@ -79,6 +105,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
     }
     setView('generating');
     setResult(null);
+    cancelledRef.current = false;
     try {
       const res = await mockupApi.generate({
         promptText: prompt,
@@ -93,6 +120,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           : 'gemini',
         uniqueId: `brand-mockup-${Date.now()}`,
       });
+      if (cancelledRef.current) return;
       const url =
         res.imageUrl || (res.imageBase64 ? `data:image/png;base64,${res.imageBase64}` : '');
       if (url) {
@@ -121,6 +149,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
         setView('form');
       }
     } catch (err: any) {
+      if (cancelledRef.current) return;
       toast.error(err.message || 'Erro ao gerar mockup');
       setView('form');
     }
@@ -151,14 +180,31 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
     });
   }, []);
 
+  const toggleAllSuggestions = useCallback(() => {
+    setSelectedSuggestions((prev) => {
+      if (prev.size === suggestions.length) return new Set();
+      return new Set(suggestions.map((_, i) => i));
+    });
+  }, [suggestions]);
+
+  const handleCancelBatch = useCallback(() => {
+    cancelledRef.current = true;
+  }, []);
+
   const handleGenerateBatch = useCallback(async () => {
     const selected = Array.from(selectedSuggestions).sort();
     if (selected.length === 0) return;
     setView('generating');
     setBatchProgress(0);
-    const results: Array<{ url: string; prompt: string; label: string } | null> = [];
+    setBatchResults(new Array(selected.length).fill(null));
+    batchTotalRef.current = selected.length;
+    cancelledRef.current = false;
+
+    let successCount = 0;
 
     for (let idx = 0; idx < selected.length; idx++) {
+      if (cancelledRef.current) break;
+
       const s = suggestions[selected[idx]];
       const ar = (
         ['1:1', '16:9', '9:16', '4:3', '4:5'].includes(s.aspectRatio) ? s.aspectRatio : '1:1'
@@ -177,10 +223,17 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
             : 'gemini',
           uniqueId: `brand-surprise-${Date.now()}-${idx}`,
         });
+        if (cancelledRef.current) break;
         const url =
           res.imageUrl || (res.imageBase64 ? `data:image/png;base64,${res.imageBase64}` : '');
         if (url) {
-          results.push({ url, prompt: s.prompt, label: s.label });
+          const item = { url, prompt: s.prompt, label: s.label };
+          setBatchResults((prev) => {
+            const next = [...prev];
+            next[idx] = item;
+            return next;
+          });
+          successCount++;
           mockupApi
             .save({
               imageUrl: res.imageUrl || undefined,
@@ -192,18 +245,17 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
               aspectRatio: ar,
             } as any)
             .catch(() => {});
-        } else {
-          results.push(null);
         }
       } catch {
-        results.push(null);
+        /* slot stays null */
       }
       setBatchProgress(idx + 1);
     }
 
-    setBatchResults(results);
-    const successCount = results.filter(Boolean).length;
-    if (successCount > 0) {
+    if (cancelledRef.current && successCount > 0) {
+      toast.info(`Cancelado — ${successCount} mockup${successCount !== 1 ? 's' : ''} gerado${successCount !== 1 ? 's' : ''}`);
+      setView('result');
+    } else if (successCount > 0) {
       toast.success(`${successCount}/${selected.length} mockups gerados`);
       setView('result');
     } else {
@@ -260,28 +312,20 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
   }, [batchResults, guideline.id]);
 
   const handleDownload = useCallback((url: string, name: string) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${name}-${Date.now()}.png`;
-    a.click();
-  }, []);
-
-  const resetToForm = useCallback(() => {
-    setView('form');
-    setResult(null);
-    setSaved(false);
-    setBatchResults([]);
-    setSuggestions([]);
+    downloadImage(url, name);
   }, []);
 
   const brandName = guideline.identity?.name || guideline.name || 'Brand';
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
-          'transition-all',
-          batchResults.filter(Boolean).length > 1 ? 'max-w-3xl' : 'max-w-lg'
+          'transition-all duration-500',
+          (view === 'generating' && batchTotalRef.current > 1) ||
+            batchResults.filter(Boolean).length > 1
+            ? 'max-w-3xl'
+            : 'max-w-lg'
         )}
       >
         <DialogHeader>
@@ -366,14 +410,21 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           {view === 'suggestions' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-                  Selecione os mockups para gerar
-                </p>
+                <div className="flex items-center gap-3">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                    Selecione os mockups
+                  </p>
+                  <button
+                    onClick={toggleAllSuggestions}
+                    className="text-[10px] font-mono text-violet-400 hover:text-violet-300 transition-colors"
+                  >
+                    {selectedSuggestions.size === suggestions.length ? 'Nenhum' : 'Todos'}
+                  </button>
+                </div>
                 <span className="text-[10px] font-mono text-neutral-600">
-                  {selectedSuggestions.size} selecionado{selectedSuggestions.size !== 1 ? 's' : ''}
+                  {selectedSuggestions.size}/{suggestions.length}
                   {' · '}
-                  {selectedSuggestions.size * credits} crédito
-                  {selectedSuggestions.size * credits !== 1 ? 's' : ''}
+                  {selectedSuggestions.size * credits} cr
                 </span>
               </div>
 
@@ -442,15 +493,99 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
             </div>
           )}
 
-          {/* ── GENERATING ── */}
-          {view === 'generating' && (
+          {/* ── GENERATING (single) ── */}
+          {view === 'generating' && batchTotalRef.current <= 1 && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <GlitchLoader size={20} />
               <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-widest">
-                {batchResults.length === 0 && selectedSuggestions.size <= 1
-                  ? 'Gerando mockup…'
-                  : `Gerando ${batchProgress}/${selectedSuggestions.size}…`}
+                Gerando mockup…
               </p>
+            </div>
+          )}
+
+          {/* ── GENERATING (batch — streaming grid) ── */}
+          {view === 'generating' && batchTotalRef.current > 1 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <GlitchLoader size={12} />
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                    Gerando {batchProgress}/{batchTotalRef.current}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-1 w-[100px] rounded-full bg-neutral-800 overflow-hidden">
+                    <div
+                      className="h-full bg-violet-500 rounded-full transition-all duration-700 ease-out"
+                      style={{ width: `${(batchProgress / batchTotalRef.current) * 100}%` }}
+                    />
+                  </div>
+                  <button
+                    onClick={handleCancelBatch}
+                    className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    <Square size={8} />
+                    Parar
+                  </button>
+                </div>
+              </div>
+
+              <div
+                className={cn(
+                  'grid gap-3',
+                  batchTotalRef.current <= 4 ? 'grid-cols-2' : 'grid-cols-3'
+                )}
+              >
+                {batchResults.map((r, i) => (
+                  <div key={i} className="relative aspect-square rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950">
+                    {r ? (
+                      <img
+                        src={r.url}
+                        alt={r.label}
+                        className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-500"
+                      />
+                    ) : i < batchProgress ? (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[10px] font-mono text-neutral-700">erro</span>
+                      </div>
+                    ) : (
+                      <div className="absolute inset-0">
+                        <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 to-neutral-950" />
+                        {i === batchProgress && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <GlitchLoader size={14} />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_25%,rgba(255,255,255,0.03)_50%,transparent_75%)] bg-[length:200%_100%] animate-[shimmer_2s_infinite]" />
+                      </div>
+                    )}
+                    {r && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-2">
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-[10px] text-neutral-300 font-medium truncate mr-2">
+                            {r.label}
+                          </span>
+                          <div className="flex gap-1 shrink-0">
+                            <button
+                              onClick={() => handleDownload(r.url, r.label)}
+                              className="w-6 h-6 rounded bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                            >
+                              <Download size={10} className="text-white" />
+                            </button>
+                            <button
+                              onClick={() => handleSaveToMedia(r.url, `Mockup — ${r.label}`)}
+                              disabled={saving}
+                              className="w-6 h-6 rounded bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                            >
+                              <Save size={10} className="text-white" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -494,14 +629,16 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           {/* ── RESULT (batch) ── */}
           {view === 'result' && batchResults.length > 0 && (
             <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-500">
+                  {batchResults.filter(Boolean).length} mockup{batchResults.filter(Boolean).length !== 1 ? 's' : ''} gerado{batchResults.filter(Boolean).length !== 1 ? 's' : ''}
+                </p>
+              </div>
+
               <div
                 className={cn(
                   'grid gap-3',
-                  batchResults.filter(Boolean).length === 1
-                    ? 'grid-cols-1'
-                    : batchResults.filter(Boolean).length <= 4
-                    ? 'grid-cols-2'
-                    : 'grid-cols-3'
+                  batchTotalRef.current <= 4 ? 'grid-cols-2' : 'grid-cols-3'
                 )}
               >
                 {batchResults.map(
@@ -509,12 +646,12 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                     r && (
                       <div
                         key={i}
-                        className="group relative rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950"
+                        className="group relative aspect-square rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950"
                       >
                         <img
                           src={r.url}
                           alt={r.label}
-                          className="w-full aspect-square object-cover"
+                          className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                           <div className="flex items-center justify-between w-full">
@@ -566,7 +703,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                       : `Salvar todos (${batchResults.filter(Boolean).length})`}
                   </Button>
                   <Button
-                    onClick={() => onOpenChange(false)}
+                    onClick={() => handleOpenChange(false)}
                     className="h-8 px-4 text-xs bg-white/5 border border-white/15 text-neutral-200 hover:bg-white/10"
                   >
                     Fechar
