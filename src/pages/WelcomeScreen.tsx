@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { ArrowRight, UploadCloud, BookOpen, Play, X, Layers } from 'lucide-react';
+import { ArrowRight, UploadCloud, BookOpen, Play, X, Layers, Gem } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { InteractiveASCII } from '../components/ui/InteractiveASCII';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -20,6 +20,7 @@ import { PremiumButton } from '../components/ui/PremiumButton';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 
 const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_IMAGE_SIZE_MB = 10;
@@ -34,7 +35,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
   const { t } = useTranslation();
   const { theme } = useTheme();
   const location = useLocation();
-  const { isAuthenticated, isCheckingAuth } = useLayout(); // Usar estado de autenticação do contexto centralizado
+  const { isAuthenticated, isCheckingAuth } = useLayout();
+  const { data: brandGuidelines = [] } = useBrandGuidelines(isAuthenticated);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(false);
@@ -472,6 +474,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           >
             {t('welcome.pasteTipSmall') || 'ou ctrl + v para colar'}
           </MicroTitle>
+
+          {brandGuidelines.length > 0 && (
+            <Link
+              to="/brand-guidelines"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-800/50 bg-neutral-900/30 hover:bg-neutral-800/50 hover:border-neutral-700 transition-all duration-200 group"
+            >
+              <Gem size={14} className="text-brand-cyan group-hover:scale-110 transition-transform" />
+              <span className="text-[11px] font-mono text-neutral-400 group-hover:text-neutral-200 transition-colors">
+                {t('welcome.openBrandGuideline') || 'Abrir Brand Guideline'}
+              </span>
+              <ArrowRight size={12} className="text-neutral-600 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all" />
+            </Link>
+          )}
 
           {isProcessing && (
             <div

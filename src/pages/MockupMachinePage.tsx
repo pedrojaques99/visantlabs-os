@@ -9,7 +9,7 @@ import { MockupDisplay } from '../components/mockupmachine/MockupDisplay';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { WelcomeScreen } from './WelcomeScreen';
 import { SidebarOrchestrator } from '../components/mockupmachine/SidebarOrchestrator';
-import { SurpriseMeControl } from '../components/mockupmachine/SurpriseMeControl';
+
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { Button } from '../components/ui/button';
 import { AnalyzingImageOverlay } from '../components/ui/AnalyzingImageOverlay';

@@ -13,6 +13,7 @@ import { SurpriseMeSelectedTagsDisplay } from './SurpriseMeSelectedTagsDisplay';
 import { AnalyzedSummaryCard } from './AnalyzedSummaryCard';
 import type { UploadedImage } from '@/types/types';
 import { SurpriseMeControl } from './SurpriseMeControl';
+import { MockupOutputConfig } from './MockupOutputConfig';
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { PresetsControl } from './PresetsControl';
@@ -516,33 +517,22 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
           ) : null;
         })()}
 
-        {/* 4. Generation Toolbar (Moved to sidebar) */}
-        <div className="mt-6 pt-6 border-t border-neutral-800 animate-fade-in-up stagger-5">
+        {/* 4. Output Config + Generation Toolbar */}
+        <div className="mt-6 pt-6 border-t border-neutral-800/50 animate-fade-in-up stagger-5 space-y-6">
+          <MockupOutputConfig />
           <SurpriseMeControl
             onSurpriseMe={handleSurpriseMe}
             isGeneratingPrompt={isGeneratingPrompt}
             isDiceAnimating={false}
             isSurpriseMeMode={isSurpriseMeMode}
             setIsSurpriseMeMode={setIsSurpriseMeMode}
-            autoGenerate={autoGenerate}
-            setAutoGenerate={setAutoGenerate}
-            selectedModel={selectedModel}
-            setSelectedModel={setSelectedModel}
-            imageProvider={imageProvider}
-            setImageProvider={setImageProvider}
-            mockupCount={mockupCount}
-            setMockupCount={setMockupCount}
-            resolution={resolution}
-            setResolution={setResolution}
-            aspectRatio={aspectRatio}
-            setAspectRatio={setAspectRatio}
-            uploadedImage={uploadedImage}
             onGeneratePrompt={() => onGenerateSmartPrompt(autoGenerate)}
             onGenerateOutputs={onGenerateClick}
             isGenerateDisabled={isGenerateDisabled}
             isGeneratingOutputs={isGenerating}
             isPromptReady={isPromptReady}
             variant="inline"
+            uploadedImage={uploadedImage}
           />
         </div>
 
