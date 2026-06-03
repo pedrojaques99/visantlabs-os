@@ -15,7 +15,8 @@ interface PlaygroundScene3DProps {
 }
 
 // Three.js typeface JSON format — helvetiker is bundled with three-stdlib
-const FONT_URL = 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/fonts/helvetiker_bold.typeface.json';
+const FONT_URL =
+  'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/fonts/helvetiker_bold.typeface.json';
 
 const SHAPE_GEOMETRIES: Record<string, () => THREE.BufferGeometry> = {
   coin: () => new THREE.CylinderGeometry(1.5, 1.5, 0.15, 64),
@@ -48,7 +49,10 @@ function MaterialProps({ material, color }: { material: string; color: string })
   );
 }
 
-function useAnimation(meshRef: React.RefObject<THREE.Mesh | THREE.Group | null>, animation: string) {
+function useAnimation(
+  meshRef: React.RefObject<THREE.Mesh | THREE.Group | null>,
+  animation: string
+) {
   useFrame((state) => {
     if (!meshRef.current) return;
     const t = state.clock.elapsedTime;
@@ -179,12 +183,7 @@ export default function PlaygroundScene3D({
 
       <ContactShadows position={[0, -1.5, 0]} opacity={0.4} blur={2} />
       <Environment preset="studio" />
-      <OrbitControls
-        enablePan={false}
-        enableZoom={true}
-        minDistance={3}
-        maxDistance={10}
-      />
+      <OrbitControls enablePan={false} enableZoom={true} minDistance={3} maxDistance={10} />
     </Canvas>
   );
 }

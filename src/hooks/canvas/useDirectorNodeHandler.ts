@@ -510,16 +510,20 @@ export const useDirectorNodeHandler = ({
         const hasAnalyzedTags = directorData.hasAnalyzed;
         const promptResult = await aiApi.generateSmartPrompt({
           baseImage: imageData,
-          designType: directorData.selectedDesignType || directorData.suggestedDesignType || 'mockup',
-          brandingTags: hasAnalyzedTags ? (directorData.selectedBrandingTags || []) : [],
-          categoryTags: hasAnalyzedTags ? (directorData.selectedCategoryTags || []) : [],
-          locationTags: hasAnalyzedTags ? (directorData.selectedLocationTags || []) : [],
-          angleTags: hasAnalyzedTags ? (directorData.selectedAngleTags || []) : [],
-          lightingTags: hasAnalyzedTags ? (directorData.selectedLightingTags || []) : [],
+          designType:
+            directorData.selectedDesignType || directorData.suggestedDesignType || 'mockup',
+          brandingTags: hasAnalyzedTags ? directorData.selectedBrandingTags || [] : [],
+          categoryTags: hasAnalyzedTags ? directorData.selectedCategoryTags || [] : [],
+          locationTags: hasAnalyzedTags ? directorData.selectedLocationTags || [] : [],
+          angleTags: hasAnalyzedTags ? directorData.selectedAngleTags || [] : [],
+          lightingTags: hasAnalyzedTags ? directorData.selectedLightingTags || [] : [],
           effectTags: hasAnalyzedTags
-            ? [...(directorData.selectedEffectTags || []), ...(directorData.selectedMaterialTags || [])]
+            ? [
+                ...(directorData.selectedEffectTags || []),
+                ...(directorData.selectedMaterialTags || []),
+              ]
             : [],
-          selectedColors: hasAnalyzedTags ? (directorData.selectedColors || []) : [],
+          selectedColors: hasAnalyzedTags ? directorData.selectedColors || [] : [],
           aspectRatio: DEFAULT_ASPECT_RATIO,
           generateText: false,
           withHuman: false,
@@ -543,14 +547,13 @@ export const useDirectorNodeHandler = ({
           generatedPrompt = buildEnhancement(generatedPrompt, brandTokens);
         }
 
-        updateNodeData<DirectorNodeData>(
-          nodeId,
-          { generatedPrompt },
-          'director'
-        );
+        updateNodeData<DirectorNodeData>(nodeId, { generatedPrompt }, 'director');
 
         if (isLocalDevelopment()) {
-          console.log('[DirectorNode] Direct mockup generation with prompt:', generatedPrompt.substring(0, 120));
+          console.log(
+            '[DirectorNode] Direct mockup generation with prompt:',
+            generatedPrompt.substring(0, 120)
+          );
         }
 
         const result = await mockupApi.generate({
@@ -582,13 +585,17 @@ export const useDirectorNodeHandler = ({
         }
 
         if (refreshSubscriptionStatus) {
-          try { await refreshSubscriptionStatus(); } catch {}
+          try {
+            await refreshSubscriptionStatus();
+          } catch {}
         }
 
         trackCanvasEvent('generation_completed', 'director_mockup');
         toast.success('Mockup generated!');
       } catch (error: any) {
-        trackCanvasEvent('generation_failed', 'director_mockup', undefined, { error: error?.message });
+        trackCanvasEvent('generation_failed', 'director_mockup', undefined, {
+          error: error?.message,
+        });
         if (isLocalDevelopment()) {
           console.error('[DirectorNode] Direct mockup generation error:', error);
         }

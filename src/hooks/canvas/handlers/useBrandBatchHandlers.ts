@@ -140,10 +140,7 @@ export function useBrandBatchHandlers({
       addToHistory(nodesRef.current, edgesRef.current);
 
       for (let i = 0; i < images.length; i++) {
-        const skeleton = createOutputNodeWithSkeleton(
-          batchNode || node,
-          batchNodeId
-        );
+        const skeleton = createOutputNodeWithSkeleton(batchNode || node, batchNodeId);
         if (skeleton) {
           skeleton.node.position = {
             x: (batchNode || node).position.x + 400,
@@ -306,7 +303,19 @@ export function useBrandBatchHandlers({
         toast.info(`Brand Batch cancelled — ${doneCount} generated before cancel.`);
       }
     },
-    [nodesRef, edgesRef, updateNodeData, setNodes, setEdges, addToHistory, createOutputNodeWithSkeleton, updateOutputNodeWithResult, uploadImageToR2Auto, cleanupFailedNode, linkedGuideline]
+    [
+      nodesRef,
+      edgesRef,
+      updateNodeData,
+      setNodes,
+      setEdges,
+      addToHistory,
+      createOutputNodeWithSkeleton,
+      updateOutputNodeWithResult,
+      uploadImageToR2Auto,
+      cleanupFailedNode,
+      linkedGuideline,
+    ]
   );
 
   const handleBrandBatchCancel = useCallback(

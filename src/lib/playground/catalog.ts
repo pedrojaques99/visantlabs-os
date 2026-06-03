@@ -2,17 +2,54 @@ import { schema } from '@json-render/react';
 import { z } from 'zod';
 
 const shaderTypeEnum = z.enum([
-  'halftone', 'vhs', 'ascii', 'matrixDither', 'dither', 'duotone',
-  'filmGrain', 'pixelate', 'posterize', 'chromaticAberration',
-  'crtScanlines', 'edgeDetect', 'glitch',
+  'halftone',
+  'vhs',
+  'ascii',
+  'matrixDither',
+  'dither',
+  'duotone',
+  'filmGrain',
+  'pixelate',
+  'posterize',
+  'chromaticAberration',
+  'crtScanlines',
+  'edgeDetect',
+  'glitch',
 ]);
 
 const materialPresetEnum = z.enum([
-  'default', 'plastic', 'metal', 'glass', 'rubber', 'chrome', 'gold',
-  'clay', 'emissive', 'holographic', 'brushedSteel', 'copper', 'marble',
-  'wood', 'concrete', 'fabric', 'leather', 'paper', 'ceramic', 'ice',
-  'crystal', 'neon', 'frostedGlass', 'carbonFiber', 'titanium', 'bronze',
-  'obsidian', 'jade', 'pearl', 'velvet', 'resin', 'wax',
+  'default',
+  'plastic',
+  'metal',
+  'glass',
+  'rubber',
+  'chrome',
+  'gold',
+  'clay',
+  'emissive',
+  'holographic',
+  'brushedSteel',
+  'copper',
+  'marble',
+  'wood',
+  'concrete',
+  'fabric',
+  'leather',
+  'paper',
+  'ceramic',
+  'ice',
+  'crystal',
+  'neon',
+  'frostedGlass',
+  'carbonFiber',
+  'titanium',
+  'bronze',
+  'obsidian',
+  'jade',
+  'pearl',
+  'velvet',
+  'resin',
+  'wax',
 ]);
 
 export const visantCatalog = schema.createCatalog({
@@ -535,8 +572,7 @@ export const visantCatalog = schema.createCatalog({
       }),
     },
     applyShader: {
-      description:
-        'Apply a WebGL shader effect to an image client-side. Returns { resultBase64 }',
+      description: 'Apply a WebGL shader effect to an image client-side. Returns { resultBase64 }',
       params: z.object({
         imageUrl: z.string(),
         shaderType: shaderTypeEnum,

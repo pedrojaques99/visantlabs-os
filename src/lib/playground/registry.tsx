@@ -93,7 +93,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       </div>
     ),
     GlassPanel: ({ props, children }) => (
-      <GlassPanel className={props.className} style={props.style as React.CSSProperties | undefined}>
+      <GlassPanel
+        className={props.className}
+        style={props.style as React.CSSProperties | undefined}
+      >
         {children}
       </GlassPanel>
     ),
@@ -388,10 +391,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
         (async () => {
           try {
             const { applyShaderEffect } = await import('@/utils/shaders/shaderRenderer');
-            const result = await applyShaderEffect(
-              props.imageUrl, w, h,
-              { shaderType: currentType as any, ...currentParams }
-            );
+            const result = await applyShaderEffect(props.imageUrl, w, h, {
+              shaderType: currentType as any,
+              ...currentParams,
+            });
             if (!cancelled && canvasRef.current) {
               const ctx = canvasRef.current.getContext('2d');
               if (ctx) {
@@ -402,21 +405,34 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
                   ctx.drawImage(img, 0, 0);
                   setLoading(false);
                 };
-                img.onerror = () => { setError('Failed to render'); setLoading(false); };
+                img.onerror = () => {
+                  setError('Failed to render');
+                  setLoading(false);
+                };
                 img.src = result;
               }
             }
           } catch (e: any) {
-            if (!cancelled) { setError(e.message || 'Shader error'); setLoading(false); }
+            if (!cancelled) {
+              setError(e.message || 'Shader error');
+              setLoading(false);
+            }
           }
         })();
-        return () => { cancelled = true; };
+        return () => {
+          cancelled = true;
+        };
       }, [props.imageUrl, currentType, JSON.stringify(currentParams)]);
 
       if (!props.imageUrl) {
         return (
-          <div className="rounded-lg bg-neutral-900 flex items-center justify-center" style={{ width: w, height: h }}>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Upload an image to apply shader</span>
+          <div
+            className="rounded-lg bg-neutral-900 flex items-center justify-center"
+            style={{ width: w, height: h }}
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+              Upload an image to apply shader
+            </span>
           </div>
         );
       }
@@ -548,8 +564,16 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
                       img.onerror = reject;
                       img.src = layer.src;
                     });
-                    ctx.drawImage(img, 0, 0, layer.width || img.naturalWidth, layer.height || img.naturalHeight);
-                  } catch { /* skip broken images */ }
+                    ctx.drawImage(
+                      img,
+                      0,
+                      0,
+                      layer.width || img.naturalWidth,
+                      layer.height || img.naturalHeight
+                    );
+                  } catch {
+                    /* skip broken images */
+                  }
                 }
                 break;
               }
@@ -580,8 +604,15 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
                 const r = layer.radius || 50;
                 ctx.beginPath();
                 ctx.arc(r, r, r, 0, Math.PI * 2);
-                if (layer.fill) { ctx.fillStyle = layer.fill; ctx.fill(); }
-                if (layer.stroke) { ctx.strokeStyle = layer.stroke; ctx.lineWidth = layer.strokeWidth || 1; ctx.stroke(); }
+                if (layer.fill) {
+                  ctx.fillStyle = layer.fill;
+                  ctx.fill();
+                }
+                if (layer.stroke) {
+                  ctx.strokeStyle = layer.stroke;
+                  ctx.lineWidth = layer.strokeWidth || 1;
+                  ctx.stroke();
+                }
                 break;
               }
             }
@@ -643,13 +674,29 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             if (!cancelled) setLoading(false);
           }
         })();
-        return () => { cancelled = true; };
-      }, [props.imageUrl, props.variant, dotSize, angle, contrast, spacing, props.threshold, props.invert]);
+        return () => {
+          cancelled = true;
+        };
+      }, [
+        props.imageUrl,
+        props.variant,
+        dotSize,
+        angle,
+        contrast,
+        spacing,
+        props.threshold,
+        props.invert,
+      ]);
 
       if (!props.imageUrl) {
         return (
-          <div className="rounded-lg bg-neutral-900 flex items-center justify-center" style={{ width: w, height: h }}>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Upload an image for halftone</span>
+          <div
+            className="rounded-lg bg-neutral-900 flex items-center justify-center"
+            style={{ width: w, height: h }}
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+              Upload an image for halftone
+            </span>
           </div>
         );
       }
@@ -715,13 +762,20 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             if (!cancelled) setLoading(false);
           }
         })();
-        return () => { cancelled = true; };
+        return () => {
+          cancelled = true;
+        };
       }, [props.imageUrl, color1, color2, props.halftoneAngle1, props.dotSize]);
 
       if (!props.imageUrl) {
         return (
-          <div className="rounded-lg bg-neutral-900 flex items-center justify-center" style={{ width: w, height: h }}>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Upload an image for riso effect</span>
+          <div
+            className="rounded-lg bg-neutral-900 flex items-center justify-center"
+            style={{ width: w, height: h }}
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+              Upload an image for riso effect
+            </span>
           </div>
         );
       }
@@ -784,7 +838,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
         return (
           <div style={{ columnCount: cols, columnGap: `${gap * 4}px` }}>
             {props.images.map((img, i) => (
-              <div key={i} className="mb-4 rounded-lg overflow-hidden bg-neutral-800 break-inside-avoid">
+              <div
+                key={i}
+                className="mb-4 rounded-lg overflow-hidden bg-neutral-800 break-inside-avoid"
+              >
                 {renderImg(img, 'w-full h-auto')}
               </div>
             ))}
@@ -815,10 +872,29 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       const level = props.level ?? 2;
       const cls = 'font-semibold text-neutral-100';
       const style = props.style as React.CSSProperties | undefined;
-      if (level === 1) return <h1 className={cls} style={style}>{props.text}</h1>;
-      if (level === 3) return <h3 className={cls} style={style}>{props.text}</h3>;
-      if (level === 4) return <h4 className={cls} style={style}>{props.text}</h4>;
-      return <h2 className={cls} style={style}>{props.text}</h2>;
+      if (level === 1)
+        return (
+          <h1 className={cls} style={style}>
+            {props.text}
+          </h1>
+        );
+      if (level === 3)
+        return (
+          <h3 className={cls} style={style}>
+            {props.text}
+          </h3>
+        );
+      if (level === 4)
+        return (
+          <h4 className={cls} style={style}>
+            {props.text}
+          </h4>
+        );
+      return (
+        <h2 className={cls} style={style}>
+          {props.text}
+        </h2>
+      );
     },
     Text: ({ props }) => {
       const styles: Record<string, string> = {

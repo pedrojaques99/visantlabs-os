@@ -146,66 +146,228 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
 
   // Top 10 most-used tools — shown by default
   const PRIMARY_IDS = [
-    'prompt', 'mockup', 'director', 'merge', 'upscale',
-    'angle', 'studio3d', 'shader', 'brandBatch', 'chat',
+    'prompt',
+    'mockup',
+    'director',
+    'merge',
+    'upscale',
+    'angle',
+    'studio3d',
+    'shader',
+    'brandBatch',
+    'chat',
   ];
 
   // All available tools (flat list, no categories)
   const allTools: ToolItem[] = [
     ...(onAddPrompt
-      ? [{ id: 'prompt', icon: <Pickaxe className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.prompt'), tooltip: t('canvasToolbar.addPromptNode'), onClick: onAddPrompt }]
+      ? [
+          {
+            id: 'prompt',
+            icon: <Pickaxe className="w-3.5 h-3.5" />,
+            label: t('canvasToolbar.labels.prompt'),
+            tooltip: t('canvasToolbar.addPromptNode'),
+            onClick: onAddPrompt,
+          },
+        ]
       : []),
-    { id: 'mockup', icon: <ImageIcon className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.mockup'), tooltip: t('canvasToolbar.addMockupPresetNode'), onClick: onAddMockup },
+    {
+      id: 'mockup',
+      icon: <ImageIcon className="w-3.5 h-3.5" />,
+      label: t('canvasToolbar.labels.mockup'),
+      tooltip: t('canvasToolbar.addMockupPresetNode'),
+      onClick: onAddMockup,
+    },
     ...(onAddDirector
-      ? [{ id: 'director', icon: <Compass className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.director') || 'Director', tooltip: t('canvasToolbar.addDirectorNode') || 'Add Director Node', onClick: onAddDirector }]
+      ? [
+          {
+            id: 'director',
+            icon: <Compass className="w-3.5 h-3.5" />,
+            label: t('canvasToolbar.labels.director') || 'Director',
+            tooltip: t('canvasToolbar.addDirectorNode') || 'Add Director Node',
+            onClick: onAddDirector,
+          },
+        ]
       : []),
     ...(onAddMerge
-      ? [{ id: 'merge', icon: <Layers className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.merge') || 'Merge', tooltip: t('canvasToolbar.addMergeNode') || 'Add Merge Node', onClick: onAddMerge }]
+      ? [
+          {
+            id: 'merge',
+            icon: <Layers className="w-3.5 h-3.5" />,
+            label: t('canvasToolbar.labels.merge') || 'Merge',
+            tooltip: t('canvasToolbar.addMergeNode') || 'Add Merge Node',
+            onClick: onAddMerge,
+          },
+        ]
       : []),
     ...(onAddUpscale
-      ? [{ id: 'upscale', icon: <Diamond className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.upscale') || 'Upscale', tooltip: t('canvasToolbar.addUpscaleNode') || 'Add Upscale Node', onClick: onAddUpscale }]
+      ? [
+          {
+            id: 'upscale',
+            icon: <Diamond className="w-3.5 h-3.5" />,
+            label: t('canvasToolbar.labels.upscale') || 'Upscale',
+            tooltip: t('canvasToolbar.addUpscaleNode') || 'Add Upscale Node',
+            onClick: onAddUpscale,
+          },
+        ]
       : []),
-    { id: 'angle', icon: <Camera className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.angle'), tooltip: t('canvasToolbar.addCameraAngleNode'), onClick: onAddAngle },
+    {
+      id: 'angle',
+      icon: <Camera className="w-3.5 h-3.5" />,
+      label: t('canvasToolbar.labels.angle'),
+      tooltip: t('canvasToolbar.addCameraAngleNode'),
+      onClick: onAddAngle,
+    },
     ...(onAddStudio3D
-      ? [{ id: 'studio3d', icon: <Box className="w-3.5 h-3.5" />, label: '3D Studio', tooltip: 'Add 3D Studio Node', onClick: onAddStudio3D }]
+      ? [
+          {
+            id: 'studio3d',
+            icon: <Box className="w-3.5 h-3.5" />,
+            label: '3D Studio',
+            tooltip: 'Add 3D Studio Node',
+            onClick: onAddStudio3D,
+          },
+        ]
       : []),
     ...(onAddShader
-      ? [{ id: 'shader', icon: <Brush className="w-3.5 h-3.5" />, label: 'Shader', tooltip: 'Add Shader Node', onClick: onAddShader }]
+      ? [
+          {
+            id: 'shader',
+            icon: <Brush className="w-3.5 h-3.5" />,
+            label: 'Shader',
+            tooltip: 'Add Shader Node',
+            onClick: onAddShader,
+          },
+        ]
       : []),
     ...(onAddBrandBatch
-      ? [{ id: 'brandBatch', icon: <Layers className="w-3.5 h-3.5" />, label: 'Brand Batch', tooltip: 'Batch generate with branding applied', onClick: onAddBrandBatch }]
+      ? [
+          {
+            id: 'brandBatch',
+            icon: <Layers className="w-3.5 h-3.5" />,
+            label: 'Brand Batch',
+            tooltip: 'Batch generate with branding applied',
+            onClick: onAddBrandBatch,
+          },
+        ]
       : []),
     ...(onAddChat
-      ? [{ id: 'chat', icon: <MessageSquare className="w-3.5 h-3.5" />, label: 'Chat', tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node', onClick: onAddChat }]
+      ? [
+          {
+            id: 'chat',
+            icon: <MessageSquare className="w-3.5 h-3.5" />,
+            label: 'Chat',
+            tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
+            onClick: onAddChat,
+          },
+        ]
       : []),
     // Advanced tools
     ...(onAddAmbience
-      ? [{ id: 'ambience', icon: <Target className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.ambience') || 'Ambience', tooltip: t('canvasToolbar.addAmbienceNode') || 'Add Ambience Node', onClick: onAddAmbience }]
+      ? [
+          {
+            id: 'ambience',
+            icon: <Target className="w-3.5 h-3.5" />,
+            label: t('canvasToolbar.labels.ambience') || 'Ambience',
+            tooltip: t('canvasToolbar.addAmbienceNode') || 'Add Ambience Node',
+            onClick: onAddAmbience,
+          },
+        ]
       : []),
     ...(onAddLuminance
-      ? [{ id: 'luminance', icon: <Grid3x3 className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.luminance') || 'Luminance', tooltip: t('canvasToolbar.addLuminanceNode') || 'Add Luminance Node', onClick: onAddLuminance }]
+      ? [
+          {
+            id: 'luminance',
+            icon: <Grid3x3 className="w-3.5 h-3.5" />,
+            label: t('canvasToolbar.labels.luminance') || 'Luminance',
+            tooltip: t('canvasToolbar.addLuminanceNode') || 'Add Luminance Node',
+            onClick: onAddLuminance,
+          },
+        ]
       : []),
     ...(onAddTexture
-      ? [{ id: 'texture', icon: <Dna className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.texture') || 'Texture', tooltip: t('canvasToolbar.addTextureNode') || 'Add Texture Node', onClick: onAddTexture }]
+      ? [
+          {
+            id: 'texture',
+            icon: <Dna className="w-3.5 h-3.5" />,
+            label: t('canvasToolbar.labels.texture') || 'Texture',
+            tooltip: t('canvasToolbar.addTextureNode') || 'Add Texture Node',
+            onClick: onAddTexture,
+          },
+        ]
       : []),
     ...(onAddTextureFilter
-      ? [{ id: 'textureFilter', icon: <Layers className="w-3.5 h-3.5" />, label: 'Texture Filter', tooltip: 'Add Texture Filter Node', onClick: onAddTextureFilter }]
+      ? [
+          {
+            id: 'textureFilter',
+            icon: <Layers className="w-3.5 h-3.5" />,
+            label: 'Texture Filter',
+            tooltip: 'Add Texture Filter Node',
+            onClick: onAddTextureFilter,
+          },
+        ]
       : []),
     ...(onAddNodeBuilder
-      ? [{ id: 'nodeBuilder', icon: <Blocks className="w-3.5 h-3.5" />, label: 'Node Builder', tooltip: 'Build a custom AI node', onClick: onAddNodeBuilder }]
+      ? [
+          {
+            id: 'nodeBuilder',
+            icon: <Blocks className="w-3.5 h-3.5" />,
+            label: 'Node Builder',
+            tooltip: 'Build a custom AI node',
+            onClick: onAddNodeBuilder,
+          },
+        ]
       : []),
     ...(onAddBrandCore
-      ? [{ id: 'brandCore', icon: <Diamond className="w-3.5 h-3.5" />, label: 'Brand Core', tooltip: 'Add Brand Core Node', onClick: onAddBrandCore }]
+      ? [
+          {
+            id: 'brandCore',
+            icon: <Diamond className="w-3.5 h-3.5" />,
+            label: 'Brand Core',
+            tooltip: 'Add Brand Core Node',
+            onClick: onAddBrandCore,
+          },
+        ]
       : []),
-    { id: 'brandkit', icon: <Palette className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.brandKit'), tooltip: t('canvasToolbar.addBrandKit'), onClick: onAddBrandKit },
+    {
+      id: 'brandkit',
+      icon: <Palette className="w-3.5 h-3.5" />,
+      label: t('canvasToolbar.labels.brandKit'),
+      tooltip: t('canvasToolbar.addBrandKit'),
+      onClick: onAddBrandKit,
+    },
     ...(onAddColorExtractor
-      ? [{ id: 'colorExtractor', icon: <Building2 className="w-3.5 h-3.5" />, label: 'Color Extract', tooltip: 'Add Color Extractor Node', onClick: onAddColorExtractor }]
+      ? [
+          {
+            id: 'colorExtractor',
+            icon: <Building2 className="w-3.5 h-3.5" />,
+            label: 'Color Extract',
+            tooltip: 'Add Color Extractor Node',
+            onClick: onAddColorExtractor,
+          },
+        ]
       : []),
     ...(onAddPDF
-      ? [{ id: 'pdf', icon: <FileTextIcon className="w-3.5 h-3.5" />, label: t('canvasToolbar.labels.pdf'), tooltip: t('canvasToolbar.addPdfNode'), onClick: onAddPDF }]
+      ? [
+          {
+            id: 'pdf',
+            icon: <FileTextIcon className="w-3.5 h-3.5" />,
+            label: t('canvasToolbar.labels.pdf'),
+            tooltip: t('canvasToolbar.addPdfNode'),
+            onClick: onAddPDF,
+          },
+        ]
       : []),
     ...(onAddStrategy
-      ? [{ id: 'strategy', icon: <Compass className="w-3.5 h-3.5" />, label: 'Strategy', tooltip: 'Add Strategy Node', onClick: onAddStrategy }]
+      ? [
+          {
+            id: 'strategy',
+            icon: <Compass className="w-3.5 h-3.5" />,
+            label: 'Strategy',
+            tooltip: 'Add Strategy Node',
+            onClick: onAddStrategy,
+          },
+        ]
       : []),
   ];
 
@@ -242,17 +404,21 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           'w-full px-2 py-1 rounded',
           'flex items-center gap-2 cursor-grab active:cursor-grabbing',
           'transition-colors duration-100',
-          isLight
-            ? 'hover:bg-neutral-200/60'
-            : 'hover:bg-white/[0.06]'
+          isLight ? 'hover:bg-neutral-200/60' : 'hover:bg-white/[0.06]'
         )}
         style={{ color: textColors.muted }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = textColors.primary; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = textColors.muted; }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = textColors.primary;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = textColors.muted;
+        }}
         aria-label={tool.label}
       >
         <span className="flex-shrink-0">{tool.icon}</span>
-        <span className="text-[11px] font-medium whitespace-nowrap tracking-wide">{tool.label}</span>
+        <span className="text-[11px] font-medium whitespace-nowrap tracking-wide">
+          {tool.label}
+        </span>
       </button>
     </Tooltip>
   );
@@ -316,7 +482,9 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                 onClick={onClose}
                 className={cn(
                   'p-1.5 border-l transition-colors',
-                  isLight ? 'border-neutral-300/50 hover:bg-neutral-200/50' : 'border-neutral-800/50 hover:bg-neutral-800/50'
+                  isLight
+                    ? 'border-neutral-300/50 hover:bg-neutral-200/50'
+                    : 'border-neutral-800/50 hover:bg-neutral-800/50'
                 )}
                 style={{ color: textColors.muted }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = textColors.primary)}
@@ -349,7 +517,10 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                 >
                   <ChevronDown
                     size={10}
-                    className={cn('transition-transform duration-150', showAdvanced && 'rotate-180')}
+                    className={cn(
+                      'transition-transform duration-150',
+                      showAdvanced && 'rotate-180'
+                    )}
                   />
                   {t('canvasToolbar.categories.advanced') || 'Advanced'}
                   <span

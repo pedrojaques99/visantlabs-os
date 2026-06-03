@@ -73,6 +73,10 @@ export function useReferenceSearch({
     setQuery('');
   }, []);
 
+  const updateResult = useCallback((id: string, updates: Partial<ReferenceResult>) => {
+    setResults((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
+  }, []);
+
   return {
     results,
     isLoading,
@@ -83,5 +87,6 @@ export function useReferenceSearch({
     clearFilters,
     activeFilterCount: Object.keys(dimFilters).length,
     refresh: fetch,
+    updateResult,
   };
 }

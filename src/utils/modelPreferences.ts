@@ -42,9 +42,7 @@ function save(prefs: ModelPreferences) {
   } catch {}
 }
 
-export function getModelPreference<K extends keyof ModelPreferences>(
-  key: K
-): ModelPreferences[K] {
+export function getModelPreference<K extends keyof ModelPreferences>(key: K): ModelPreferences[K] {
   return load()[key];
 }
 

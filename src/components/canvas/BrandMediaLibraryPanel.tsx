@@ -1,8 +1,18 @@
-import React, { useState, useMemo, useContext, useDeferredValue } from 'react';
+import React, { useState, useMemo, useContext, useDeferredValue, useCallback } from 'react';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useTranslation } from '@/hooks/useTranslation';
 import { MockupContext } from '@/components/mockupmachine/MockupContext';
-import { ImageIcon, Plus, Search, LayoutGrid, List, Paintbrush, Zap, X } from 'lucide-react';
+import {
+  ImageIcon,
+  Plus,
+  Search,
+  LayoutGrid,
+  List,
+  Paintbrush,
+  Zap,
+  X,
+  Eraser,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SegmentedControl } from '@/components/shared/ToolPanel';
 import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
@@ -16,6 +26,7 @@ import { copyToClipboard } from '@/utils/clipboard';
 import { REFERENCE_DIMENSIONS, type ReferenceDimensionKey } from '@/constants/referenceDimensions';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useReferenceSearch } from '@/hooks/useReferenceSearch';
+import { referenceApi, type ReferenceResult } from '@/services/referenceApi';
 
 interface BrandMediaLibraryPanelProps {
   onSelectAsset?: (url: string, type: 'image' | 'logo' | 'color') => void;
@@ -102,6 +113,29 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
     brandGuidelineId: selectedBrandGuidelineId,
     enabled: activeTab === 'refs',
   });
+
+  const [sanitizingIds, setSanitizingIds] = useState<Set<string>>(new Set());
+
+  const handleSanitize = useCallback(
+    async (ref: ReferenceResult) => {
+      setSanitizingIds((prev) => new Set(prev).add(ref.id));
+      const toastId = toast.loading('Sanitizando referência...');
+      try {
+        const newUrl = await referenceApi.sanitize(ref);
+        refSearch.updateResult(ref.id, { referenceImageUrl: newUrl, sanitized: true });
+        toast.success('Referência sanitizada com sucesso', { id: toastId });
+      } catch {
+        toast.error('Erro ao sanitizar referência', { id: toastId });
+      } finally {
+        setSanitizingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(ref.id);
+          return next;
+        });
+      }
+    },
+    [refSearch]
+  );
 
   if (!selectedBrandGuidelineId && activeTab !== 'refs') {
     return (
@@ -436,6 +470,23 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                 </span>
                               </div>
                             )}
+                            {!ref.sanitized && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSanitize(ref);
+                                }}
+                                disabled={sanitizingIds.has(ref.id)}
+                                className="p-1 rounded bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                                title="Sanitizar — remover branding do studio"
+                              >
+                                {sanitizingIds.has(ref.id) ? (
+                                  <GlitchLoader size={10} />
+                                ) : (
+                                  <Eraser size={10} />
+                                )}
+                              </button>
+                            )}
                           </div>
                         );
                       }
@@ -493,8 +544,27 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               ))}
                             </div>
                           </div>
-                          <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-brand-cyan/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Plus size={8} className="text-black" />
+                          <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="w-4 h-4 rounded-full bg-brand-cyan/80 flex items-center justify-center">
+                              <Plus size={8} className="text-black" />
+                            </div>
+                            {!ref.sanitized && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSanitize(ref);
+                                }}
+                                disabled={sanitizingIds.has(ref.id)}
+                                className="w-4 h-4 rounded-full bg-amber-500/80 flex items-center justify-center hover:bg-amber-400 transition-colors disabled:opacity-50"
+                                title="Sanitizar — remover branding do studio"
+                              >
+                                {sanitizingIds.has(ref.id) ? (
+                                  <GlitchLoader size={6} />
+                                ) : (
+                                  <Eraser size={8} className="text-black" />
+                                )}
+                              </button>
+                            )}
                           </div>
                         </div>
                       );

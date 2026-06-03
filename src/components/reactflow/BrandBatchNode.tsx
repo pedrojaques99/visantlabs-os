@@ -1,15 +1,6 @@
 import React, { memo, useCallback, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import {
-  Layers,
-  Play,
-  Square,
-  RotateCcw,
-  ChevronDown,
-  ChevronUp,
-  Plus,
-  Flame,
-} from 'lucide-react';
+import { Layers, Play, Square, RotateCcw, ChevronDown, ChevronUp, Plus, Flame } from 'lucide-react';
 import { useReferenceSearch } from '@/hooks/useReferenceSearch';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import type { ReferenceResult } from '@/services/referenceApi';
