@@ -466,6 +466,7 @@ function MoodboardStudio() {
   const handleBatchRemotion = async (preset: AnimationPreset) => {
     const targets =
       selectedIds.size > 0 ? croppedImages.filter((c) => selectedIds.has(c.id)) : croppedImages;
+    if (targets.length === 0) return;
     if (targets.length === 1) {
       const crop = targets[0];
       const url = crop.upscaledUrl || crop.url;
@@ -490,7 +491,7 @@ function MoodboardStudio() {
       );
       setRemotionData({
         name: `Moodboard (${targets.length})`,
-        thumbnailUrl: targets[0].thumbnailUrl || targets[0].url,
+        thumbnailUrl: targets[0]?.thumbnailUrl || targets[0]?.url,
         slides,
         transition: 'fade',
       });

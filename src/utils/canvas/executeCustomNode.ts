@@ -91,10 +91,10 @@ async function runMultiOutput(
   const { generateImage } = deps;
   if (!generateImage) return;
 
-  const activePrompts = runtime.prompts ?? cfg.prompts;
+  const activePrompts = runtime.prompts ?? cfg.prompts ?? [];
   const images = runtime.connectedImages?.[0] ? [runtime.connectedImages[0]] : undefined;
 
-  if (cfg.behavior === 'model-comparison' && cfg.models?.length) {
+  if (cfg.behavior === 'model-comparison' && cfg.models?.length && activePrompts[0]) {
     log(`Comparing ${cfg.models.length} models...`);
     await Promise.all(
       cfg.models.map((model, i) => generateImage(activePrompts[0], images, model, i))
@@ -121,6 +121,10 @@ async function runMultiOutput(
     }
   }
 
+  if (!activePrompts.length) {
+    log('No prompts provided.');
+    return;
+  }
   log(`Generating ${activePrompts.length} images...`);
   await Promise.all(activePrompts.map((p, i) => generateImage(p, images, cfg.model, i)));
 }

@@ -21,7 +21,8 @@ const CACHE_KEY = 'imagelab-saved-presets';
 
 function getCached(): SavedPreset[] {
   try {
-    return JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
+    const raw: SavedPreset[] = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
+    return raw.filter((p) => p.data?.mode);
   } catch {
     return [];
   }
@@ -44,6 +45,7 @@ function collectSettings(mode: ImageLabMode) {
 }
 
 function applyPreset(preset: SavedPreset) {
+  if (!preset.data?.mode) return;
   const { mode, settings, layers } = preset.data;
   useImageLabStore.getState().setMode(mode);
 
@@ -84,11 +86,13 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
       });
       if (res.ok) {
         const data = await res.json();
-        const list = (data.presets || data || []).map((p: any) => ({
-          id: p._id || p.id,
-          name: p.name,
-          data: p.data,
-        }));
+        const list = (data.presets || data || [])
+          .filter((p: any) => p.data?.mode)
+          .map((p: any) => ({
+            id: p._id || p.id,
+            name: p.name,
+            data: p.data,
+          }));
         setPresets(list);
         localStorage.setItem(CACHE_KEY, JSON.stringify(list));
       } else setPresets(getCached());
@@ -205,13 +209,13 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
                     <span
                       className={cn(
                         'text-[7px] font-mono uppercase shrink-0',
-                        p.data.mode === 'halftone' && 'text-cyan-600',
-                        p.data.mode === 'texture' && 'text-purple-600',
-                        p.data.mode === 'riso' && 'text-amber-600',
-                        p.data.mode === 'shaders' && 'text-emerald-600'
+                        p.data?.mode === 'halftone' && 'text-cyan-600',
+                        p.data?.mode === 'texture' && 'text-purple-600',
+                        p.data?.mode === 'riso' && 'text-amber-600',
+                        p.data?.mode === 'shaders' && 'text-emerald-600'
                       )}
                     >
-                      {p.data.mode}
+                      {p.data?.mode}
                     </span>
                   </button>
                   <button

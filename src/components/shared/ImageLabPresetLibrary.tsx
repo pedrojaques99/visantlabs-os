@@ -31,6 +31,7 @@ interface ImageLabPresetLibraryProps {
 }
 
 const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
+  if (!preset.data) return null;
   const { mode, settings, layers } = preset.data;
   const colors: string[] = [];
 
@@ -71,6 +72,7 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
 };
 
 const PresetDetails: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
+  if (!preset.data) return null;
   const { mode, settings } = preset.data;
   const tags: string[] = [];
 
@@ -121,7 +123,9 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
       });
       if (res.ok) {
         const data = await res.json();
-        const imageLabPresets = (data['imagelab'] || []) as ImageLabPreset[];
+        const imageLabPresets = ((data['imagelab'] || []) as ImageLabPreset[]).filter(
+          (p) => p.data?.mode
+        );
         setPresets(imageLabPresets);
       }
     } catch {
@@ -137,6 +141,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
 
   const applyPreset = useCallback(
     (preset: ImageLabPreset) => {
+      if (!preset.data) return;
       const { mode: presetMode, settings, layers } = preset.data;
       useImageLabStore.getState().setMode(presetMode);
 
@@ -175,7 +180,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
   }, []);
 
   const filtered = presets.filter((p) => {
-    if (filter !== 'all' && p.data.mode !== filter) return false;
+    if (filter !== 'all' && p.data?.mode !== filter) return false;
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -264,12 +269,12 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                       <span
                         className={cn(
                           'text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
-                          preset.data.mode === 'halftone' && 'bg-cyan-400/10 text-cyan-400',
-                          preset.data.mode === 'texture' && 'bg-purple-400/10 text-purple-400',
-                          preset.data.mode === 'riso' && 'bg-amber-400/10 text-amber-400'
+                          preset.data?.mode === 'halftone' && 'bg-cyan-400/10 text-cyan-400',
+                          preset.data?.mode === 'texture' && 'bg-purple-400/10 text-purple-400',
+                          preset.data?.mode === 'riso' && 'bg-amber-400/10 text-amber-400'
                         )}
                       >
-                        {preset.data.mode}
+                        {preset.data?.mode}
                       </span>
                     </div>
                     <PresetDetails preset={preset} />
