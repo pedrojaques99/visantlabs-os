@@ -465,9 +465,11 @@ export const AdminPage: React.FC = () => {
     handleFetch();
   };
 
-  const handleSaveUser = async (user: AdminUser, field: string, value: string) => {
-    // Optimistic check
-    if ((user as any)[field] === value) return;
+  const handleSaveUser = async (user: AdminUser, field: string, value: any) => {
+    const numericFields = ['monthlyCredits', 'creditsUsed', 'manualCredits'];
+    const parsed = numericFields.includes(field) ? Number(value) : value;
+
+    if ((user as any)[field] === parsed) return;
 
     const token = authService.getToken();
     if (!token) {
@@ -476,15 +478,9 @@ export const AdminPage: React.FC = () => {
     }
 
     try {
-      // Assuming generic update endpoint /api/admin/users/:id
-      // We might need to send the whole object or just the patch.
-      // Based on typical patterns, let's try sending the updated field in a body.
-      // If the backend expects a specific structure, we might need to adjust.
-      // For now, mimicking the preset logic but for users.
-
       const body = {
         ...user,
-        [field]: value,
+        [field]: parsed,
       };
 
       const response = await fetch(`${ADMIN_API}/${user.id}`, {
@@ -817,12 +813,19 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'subscriptionTier',
         header: t('admin.subscription'),
         cell: ({ row }) => (
-          <Badge
-            variant="outline"
-            className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 font-mono w-fit"
-          >
-            {row.original.subscriptionTier}
-          </Badge>
+          <DataTableEditableCell
+            row={row}
+            field="subscriptionTier"
+            type="select"
+            options={[
+              { label: 'Free', value: 'free' },
+              { label: 'Starter', value: 'starter' },
+              { label: 'Pro', value: 'pro' },
+              { label: 'Enterprise', value: 'enterprise' },
+            ]}
+            className="text-xs font-mono text-brand-cyan"
+            onSave={handleSaveUser}
+          />
         ),
         size: 120,
         enableSorting: true,
@@ -831,9 +834,19 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'subscriptionStatus',
         header: 'Status',
         cell: ({ row }) => (
-          <span className="text-xs text-neutral-500 font-mono capitalize">
-            {row.original.subscriptionStatus}
-          </span>
+          <DataTableEditableCell
+            row={row}
+            field="subscriptionStatus"
+            type="select"
+            options={[
+              { label: 'Active', value: 'active' },
+              { label: 'Inactive', value: 'inactive' },
+              { label: 'Canceled', value: 'canceled' },
+              { label: 'Past Due', value: 'past_due' },
+            ]}
+            className="text-xs font-mono text-neutral-400"
+            onSave={handleSaveUser}
+          />
         ),
         size: 100,
         enableSorting: true,
@@ -842,7 +855,13 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'monthlyCredits',
         header: t('admin.monthly'),
         cell: ({ row }) => (
-          <span className="text-xs font-mono">{row.original.monthlyCredits ?? 0}</span>
+          <DataTableEditableCell
+            row={row}
+            field="monthlyCredits"
+            type="number"
+            className="text-xs font-mono"
+            onSave={handleSaveUser}
+          />
         ),
         size: 100,
         enableSorting: true,
@@ -851,7 +870,13 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'creditsUsed',
         header: t('admin.used'),
         cell: ({ row }) => (
-          <span className="text-xs font-mono">{row.original.creditsUsed ?? 0}</span>
+          <DataTableEditableCell
+            row={row}
+            field="creditsUsed"
+            type="number"
+            className="text-xs font-mono"
+            onSave={handleSaveUser}
+          />
         ),
         size: 80,
         enableSorting: true,
@@ -868,7 +893,15 @@ export const AdminPage: React.FC = () => {
       {
         accessorKey: 'manualCredits',
         header: t('admin.manual'),
-        cell: ({ row }) => <span className="text-xs font-mono">{row.original.manualCredits}</span>,
+        cell: ({ row }) => (
+          <DataTableEditableCell
+            row={row}
+            field="manualCredits"
+            type="number"
+            className="text-xs font-mono"
+            onSave={handleSaveUser}
+          />
+        ),
         size: 80,
         enableSorting: true,
       },
