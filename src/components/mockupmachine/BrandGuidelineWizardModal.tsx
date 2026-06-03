@@ -626,7 +626,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 className="relative group aspect-square rounded bg-neutral-900 border border-neutral-800 overflow-hidden"
               >
                 <img
-                  src={preview}
+                  src={/^blob:|^data:image\//.test(preview) ? preview : ''}
                   alt=""
                   className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
                 />

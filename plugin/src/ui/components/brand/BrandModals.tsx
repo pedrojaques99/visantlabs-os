@@ -20,6 +20,16 @@ interface SmartScanModalProps {
   onClose: () => void;
 }
 
+function sanitizeThumbnailUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null;
+    return parsed.href;
+  } catch {
+    return null;
+  }
+}
+
 export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanModalProps) {
   const [categorized, setCategorized] = useState<SmartScanItem[]>(items);
 
@@ -46,9 +56,13 @@ export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanMod
           {categorized.map((item) => (
             <div key={item.id} className="border border-border rounded p-2 space-y-2">
               <div className="flex items-center gap-2">
-                {item.thumbnail && /^https?:\/\//i.test(item.thumbnail) && (
-                  <img src={item.thumbnail} alt={item.name} className="w-8 h-8 rounded" />
-                )}
+                {item.thumbnail &&
+                  (() => {
+                    const safeUrl = sanitizeThumbnailUrl(item.thumbnail!);
+                    return safeUrl ? (
+                      <img src={safeUrl} alt={item.name} className="w-8 h-8 rounded" />
+                    ) : null;
+                  })()}
                 <div className="flex-1">
                   <p className="text-xs font-mono font-semibold">{item.name}</p>
                   {item.metadata && (

@@ -1173,10 +1173,11 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         else if (n.type === 'ELLIPSE')
           code += `  var item = doc.pathItems.ellipse(${top}, ${x}, ${w}, ${h});\n`;
         else if (n.type === 'TEXT') {
-          code += `  var item = doc.textFrames.add(); item.contents = "${n.characters.replace(
-            /"/g,
-            '\\"'
-          )}";\n`;
+          code += `  var item = doc.textFrames.add(); item.contents = "${n.characters
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')}";\n`;
           code += `  item.top = ${top}; item.left = ${x};\n`;
           if ('fontSize' in n && typeof n.fontSize === 'number')
             code += `  item.textRange.characterAttributes.size = ${n.fontSize};\n`;
