@@ -47,9 +47,9 @@ export function cleanHtmlForAgent(html: string): string {
   // Remove HTML comments
   cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '');
 
-  // Remove decorative attributes
+  // Remove decorative attributes (handles double-quoted, single-quoted, and unquoted values)
   cleaned = cleaned.replace(
-    /\s(class|style|onclick|onload|data-testid|data-analytics|aria-hidden)="[^"]*"/gi,
+    /\s(class|style|onclick|onload|data-testid|data-analytics|aria-hidden)=(?:"[^"]*"|'[^']*'|[^\s>]*)/gi,
     ''
   );
 

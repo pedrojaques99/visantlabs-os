@@ -119,7 +119,12 @@ export const usePluginStore = create<PluginStore>()(
       set((state) => {
         state.chatHistory = [];
         state.sessionId =
-          crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          crypto.randomUUID?.() ??
+          (() => {
+            const buf = new Uint8Array(16);
+            crypto.getRandomValues(buf);
+            return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
+          })();
         state.sessionContext = null;
       });
       scheduleChatPersist();

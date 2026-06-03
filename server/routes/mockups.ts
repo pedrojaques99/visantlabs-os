@@ -1058,7 +1058,9 @@ router.post(
             }
 
             console.log(
-              `${logPrefix} [Usage Tracking] Recorded mockup usage for user ${req.userId}:`,
+              `${logPrefix} [Usage Tracking] Recorded mockup usage for user ${String(
+                req.userId
+              ).replace(/%/g, '')}:`,
               {
                 userId: req.userId,
                 requestId,
