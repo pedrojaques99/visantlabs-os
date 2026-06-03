@@ -19,7 +19,7 @@ export interface SelectionDetail {
 }
 
 export interface LogoSlot {
-  name: 'light' | 'dark' | 'accent';
+  name: string;
   src?: string; // preview URL for <img> (thumbnailUrl ?? url)
   loaded?: boolean;
   id?: string; // server-side logo id
@@ -215,4 +215,5 @@ export interface PluginStore {
   toggleMatrixColor: (id: string) => void;
   addMatrixColor: (color: { id: string; name: string; r: number; g: number; b: number }) => void;
   toggleDevMode: () => void;
+  addLogoSlot: (name: string) => void;
 }

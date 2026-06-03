@@ -879,9 +879,10 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
     () =>
       logos.filter(
         (l) =>
-          !searchTerm ||
-          l.label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          l.variant.toLowerCase().includes(searchTerm.toLowerCase())
+          l.url &&
+          (!searchTerm ||
+            l.label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            l.variant?.toLowerCase().includes(searchTerm.toLowerCase()))
       ),
     [logos, searchTerm]
   );

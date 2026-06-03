@@ -212,6 +212,7 @@ export function safeFileName(label?: string, fallback = 'asset'): string {
   return (label || fallback).replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
 }
 
-export function extFromUrl(url: string): string {
+export function extFromUrl(url?: string): string {
+  if (!url) return 'png';
   return url.split('.').pop()?.split('?')[0] || 'png';
 }

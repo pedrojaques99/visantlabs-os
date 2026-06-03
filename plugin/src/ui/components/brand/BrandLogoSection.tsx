@@ -1,20 +1,17 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { usePluginStore } from '../../store';
 import { useLogoUpload } from '../../hooks/useLogoUpload';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { MousePointer2, X, FileText, ImageIcon } from 'lucide-react';
+import { MousePointer2, X, FileText, ImageIcon, Plus, Upload } from 'lucide-react';
 import type { LogoSlot } from '../../store/types';
 import { cn } from '@/lib/utils';
-
-type Variant = 'light' | 'dark' | 'accent';
 
 function LogoPreview({ logo }: { logo: LogoSlot }) {
   const preview = logo.thumbnailUrl || logo.src || logo.url;
   if (!preview) {
     return <ImageIcon size={20} className="text-neutral-800" />;
   }
-  // PDFs don't render in <img>; fall back to icon + label.
   if (logo.format === 'pdf' && !logo.thumbnailUrl) {
     return (
       <div className="flex flex-col items-center gap-1 text-center px-2">
@@ -36,9 +33,16 @@ function LogoPreview({ logo }: { logo: LogoSlot }) {
 }
 
 function LogoSlotCard({ logo }: { logo: LogoSlot }) {
-  const { linkFromSelection, clearSlot, busySlot } = useLogoUpload();
+  const { linkFromSelection, uploadFile, clearSlot, busySlot } = useLogoUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const busy = busySlot === logo.name;
   const hasLogo = !!(logo.url || logo.thumbnailUrl || logo.src);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadFile(logo.name, file);
+    e.target.value = '';
+  };
 
   return (
     <div className="flex flex-col gap-1.5 group">
@@ -47,7 +51,7 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
           'w-full aspect-square bg-neutral-950 border border-white/5 rounded-xl flex items-center justify-center overflow-hidden relative transition-all group-hover:border-brand-cyan/20 cursor-pointer',
           !hasLogo && 'hover:bg-neutral-900 border-dashed'
         )}
-        onClick={() => !hasLogo && linkFromSelection(logo.name as Variant)}
+        onClick={() => !hasLogo && !busy && linkFromSelection(logo.name)}
       >
         {busy ? (
           <div className="flex flex-col items-center gap-2">
@@ -64,12 +68,11 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
         <div
           className={cn(
             'absolute inset-0 bg-neutral-950/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-all duration-200',
-            !hasLogo && 'pointer-events-none opacity-0' // Stay invisible if empty
+            !hasLogo && 'pointer-events-none opacity-0'
           )}
         >
           {!busy && hasLogo && (
             <>
-              {/* Primary Actions */}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -77,20 +80,30 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
                   className="h-8 w-8 bg-neutral-900 border-white/10 text-white hover:text-brand-cyan hover:border-brand-cyan/30 rounded-lg"
                   onClick={(e) => {
                     e.stopPropagation();
-                    linkFromSelection(logo.name as Variant);
+                    linkFromSelection(logo.name);
                   }}
                   title="Capture selection from Figma"
                 >
                   <MousePointer2 size={14} />
                 </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 bg-neutral-900 border-white/10 text-white hover:text-brand-cyan hover:border-brand-cyan/30 rounded-lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  title="Upload image file"
+                >
+                  <Upload size={14} />
+                </Button>
               </div>
-
-              {/* Danger Action (Top Right) */}
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  clearSlot(logo.name as Variant);
+                  clearSlot(logo.name);
                 }}
                 className="absolute top-1.5 right-1.5 p-1 rounded-full text-neutral-500 hover:text-red-400 hover:bg-neutral-900 transition-colors"
                 title="Remove Logo"
@@ -103,11 +116,32 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
 
         {/* Empty state hint */}
         {!hasLogo && !busy && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <MousePointer2 size={14} className="text-brand-cyan" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+            <MousePointer2 size={12} className="text-neutral-600 group-hover:text-brand-cyan transition-colors" />
+            <span className="text-[7px] font-mono uppercase text-neutral-600 group-hover:text-brand-cyan transition-colors text-center leading-tight px-1">
+              Select → Click
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+              className="text-[7px] font-mono text-neutral-700 hover:text-brand-cyan underline transition-colors"
+            >
+              or upload
+            </button>
           </div>
         )}
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,.svg,.pdf"
+        onChange={handleFileChange}
+        className="hidden"
+      />
 
       <div className="flex items-center justify-center">
         <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 group-hover:text-brand-cyan transition-colors">
@@ -120,29 +154,27 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
 
 export function BrandLogoSection() {
   const logos = usePluginStore((s) => s.logos);
+  const addLogoSlot = usePluginStore((s) => s.addLogoSlot);
+
+  const handleAddSlot = () => {
+    const idx = logos.length + 1;
+    const name = `variant-${idx}`;
+    addLogoSlot(name);
+  };
+
   return (
     <div className="grid grid-cols-4 gap-3">
       {logos.map((logo) => (
         <LogoSlotCard key={logo.name} logo={logo} />
       ))}
       <div
-        className="aspect-square rounded-xl border border-dashed border-white/5 flex flex-col items-center justify-center opacity-30 hover:opacity-100 hover:border-brand-cyan/30 hover:bg-neutral-900/40 transition-all cursor-pointer group"
-        onClick={() => {
-          // Future: add additional slot or just notify
-          parent.postMessage(
-            {
-              pluginMessage: {
-                type: 'NOTIFY',
-                message: 'Select an object in Figma and click a slot to link.',
-              },
-            },
-            '*'
-          );
-        }}
+        className="aspect-square rounded-xl border border-dashed border-white/5 flex flex-col items-center justify-center opacity-40 hover:opacity-100 hover:border-brand-cyan/30 hover:bg-neutral-900/40 transition-all cursor-pointer group"
+        onClick={handleAddSlot}
+        title="Add logo variant"
       >
-        <MousePointer2 size={12} className="text-neutral-500 group-hover:text-brand-cyan" />
-        <span className="text-[8px] mt-1 font-mono uppercase tracking-tighter text-neutral-600">
-          Pick Frame
+        <Plus size={14} className="text-neutral-500 group-hover:text-brand-cyan transition-colors" />
+        <span className="text-[7px] mt-1 font-mono uppercase tracking-tighter text-neutral-600 group-hover:text-brand-cyan transition-colors">
+          Add Slot
         </span>
       </div>
     </div>

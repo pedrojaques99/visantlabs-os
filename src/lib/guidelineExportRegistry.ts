@@ -278,8 +278,8 @@ export function extractExportData(g: BrandGuideline): GuidelineExportData {
         }
       : null,
 
-    logos: (g.logos || []).map((l) => {
-      const ext = l.url.split('?')[0].toLowerCase();
+    logos: (g.logos || []).filter((l) => l.url).map((l) => {
+      const ext = l.url!.split('?')[0].toLowerCase();
       const format = ext.endsWith('.svg')
         ? 'svg'
         : ext.endsWith('.png')
@@ -434,7 +434,7 @@ export function renderTailwind(d: GuidelineExportData): string {
     const borderWidth: Record<string, string> = {};
     const borderColor: Record<string, string> = {};
     d.borders.forEach((b) => {
-      const parts = b.css.split(' ');
+      const parts = (b.css || '').split(' ');
       if (parts[0]) borderWidth[slug(b.name)] = parts[0];
       if (parts[2]) borderColor[slug(b.name)] = parts[2];
     });
