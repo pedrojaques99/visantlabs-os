@@ -71,6 +71,7 @@ export const registry: Registry = {
 
   // Text
   'text.scanFonts': async () => H.scanFontsInSelection(),
+  'text.scanFontsPage': async () => H.scanFontsInPage(),
   'text.swapFonts': async (p) => H.swapFonts(p),
   'text.getStyles': async (p) => H.getStylesForFamily(p),
 

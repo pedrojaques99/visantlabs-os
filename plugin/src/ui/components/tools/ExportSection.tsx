@@ -26,48 +26,51 @@ export function ExportSection() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="grid grid-cols-2 gap-2">
-        <OpButton
-          opId="copyJSX"
-          runner={runner}
-          message={{ type: 'COPY_ILLUSTRATOR_CODE' }}
-          responseTypes={['ILLUSTRATOR_CODE_READY']}
-          busyLabel="Copiando…"
-          variant="outline"
-          size="sm"
-          className="h-8 text-[10px]"
-        >
-          <Copy size={12} className="mr-2" />
-          Copy AI JSX
-        </OpButton>
         <OpButton
           opId="exportAI"
           runner={runner}
           message={{ type: 'ILLUSTRATOR_EXPORT' }}
           responseTypes={['ILLUSTRATOR_CODE_READY', 'OPERATIONS_DONE']}
-          busyLabel="Exportando…"
+          busyLabel="Exporting…"
           variant="brand"
           size="sm"
+          title="Export selected layers as production-ready assets"
           className="h-8 text-[10px]"
         >
-          <Download size={12} className="mr-2" />
-          Export Assets
+          <Download size={12} className="mr-1.5" />
+          Assets
+        </OpButton>
+        <OpButton
+          opId="copyJSX"
+          runner={runner}
+          message={{ type: 'COPY_ILLUSTRATOR_CODE' }}
+          responseTypes={['ILLUSTRATOR_CODE_READY']}
+          busyLabel="Copying…"
+          variant="outline"
+          size="sm"
+          title="Copy selection as JSX code to clipboard"
+          className="h-8 text-[10px]"
+        >
+          <Copy size={12} className="mr-1.5" />
+          Copy JSX
         </OpButton>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <OpButton
           opId="slices"
           runner={runner}
           message={{ type: 'SELECTION_TO_SLICES' }}
           responseTypes={['OPERATIONS_DONE']}
-          busyLabel="Fatiando…"
+          busyLabel="…"
           variant="outline"
           size="sm"
+          title="Split selection into numbered slices for carousel posts"
           className="h-8 text-[10px]"
         >
-          <LayoutGrid size={12} className="mr-2 text-neutral-500" />
+          <LayoutGrid size={11} className="mr-1.5 text-neutral-500" />
           Slices
         </OpButton>
         <OpButton
@@ -75,35 +78,29 @@ export function ExportSection() {
           runner={runner}
           message={{ type: 'RESPONSIVE_MULTIPLY' }}
           responseTypes={['OPERATIONS_DONE']}
-          busyLabel="Gerando…"
+          busyLabel="…"
           variant="outline"
           size="sm"
+          title="Duplicate selection into multiple screen sizes"
           className="h-8 text-[10px]"
         >
-          <Smartphone size={12} className="mr-2 text-neutral-500" />
+          <Smartphone size={11} className="mr-1.5 text-neutral-500" />
           Responsive
         </OpButton>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
         <OpButton
           opId="exportTexts"
           runner={runner}
           task={handleExportTexts}
-          busyLabel="Extraindo…"
+          busyLabel="…"
           variant="outline"
           size="sm"
+          title="Extract all text layers from the page as Markdown"
           className="h-8 text-[10px]"
         >
-          <FileText size={12} className="mr-2 text-neutral-500" />
-          Export Texts .md
+          <FileText size={11} className="mr-1.5 text-neutral-500" />
+          Texts
         </OpButton>
       </div>
-
-      <p className="text-[9px] text-neutral-500 italic px-1">
-        * Export assets, generate responsive variations, slice for carousels, or extract all page
-        texts as Markdown.
-      </p>
     </div>
   );
 }

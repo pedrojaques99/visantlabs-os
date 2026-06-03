@@ -8,6 +8,7 @@ interface BrandSectionProps {
   children: React.ReactNode;
   className?: string;
   badge?: string;
+  description?: string;
   collapsible?: boolean;
   defaultOpen?: boolean;
 }
@@ -18,6 +19,7 @@ export function BrandSection({
   children,
   className,
   badge,
+  description,
   collapsible = false,
   defaultOpen = true,
 }: BrandSectionProps) {
@@ -32,16 +34,22 @@ export function BrandSection({
     >
       <div
         className={cn(
-          'px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02]',
+          'px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02] group/section',
           collapsible && 'cursor-pointer hover:bg-white/[0.05]'
         )}
         onClick={() => collapsible && setIsOpen(!isOpen)}
+        title={description}
       >
         <div className="flex items-center gap-2">
           {Icon && <Icon size={14} className="text-brand-cyan" />}
           <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400">
             {title}
           </h3>
+          {description && (
+            <span className="text-[9px] text-neutral-600 font-normal normal-case tracking-normal hidden group-hover/section:inline">
+              — {description}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {badge && (

@@ -16,6 +16,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { validateFile } from '@/utils/fileUtils';
 
+function sanitizePreviewUrl(url: string): string {
+  if (url.startsWith('blob:') || url.startsWith('data:image/')) return url;
+  return '';
+}
+
 const isFigmaUrl = (text: string): boolean => {
   try {
     const u = new URL(text);
@@ -626,7 +631,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 className="relative group aspect-square rounded bg-neutral-900 border border-neutral-800 overflow-hidden"
               >
                 <img
-                  src={/^blob:|^data:image\//.test(preview) ? preview : ''}
+                  src={sanitizePreviewUrl(preview)}
                   alt=""
                   className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
                 />

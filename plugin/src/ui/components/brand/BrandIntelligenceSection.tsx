@@ -1,6 +1,5 @@
 import React from 'react';
 import { usePluginStore } from '../../store';
-import { useBrandIntelligence } from '../../hooks/useBrandIntelligence';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { useBrandImport } from '../../hooks/useBrandImport';
 import { useBrandStrategyIngest } from '../../hooks/useBrandStrategyIngest';
@@ -34,6 +33,7 @@ export function BrandIntelligenceSection() {
             disabled={isImporting || isGenerating}
             variant="brand"
             size="sm"
+            title="Detect and sync tokens, colors, typography from this Figma file"
             className="w-full h-8 font-bold uppercase tracking-wider text-[10px]"
           >
             {isImporting ? (
@@ -41,7 +41,7 @@ export function BrandIntelligenceSection() {
             ) : (
               <RefreshCw size={12} className="mr-2" />
             )}
-            {isImporting ? 'Sincronizando...' : 'Smart Import from Figma'}
+            {isImporting ? 'Syncing…' : 'Smart Import from Figma'}
           </Button>
 
           <Button
@@ -49,6 +49,7 @@ export function BrandIntelligenceSection() {
             disabled={isIngesting || isImporting || isGenerating}
             variant="outline"
             size="sm"
+            title="Extract text from the current page and populate brand strategy fields"
             className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
           >
             {isIngesting ? (
@@ -64,9 +65,10 @@ export function BrandIntelligenceSection() {
             runner={runner}
             message={{ type: 'SMART_SCAN_SELECTION' }}
             responseTypes={['SMART_SCAN_RESULT']}
-            busyLabel="Scanning selection…"
+            busyLabel="Scanning…"
             variant="outline"
             size="sm"
+            title="Categorize selected layers into brand asset types"
             className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
           >
             <Layers size={12} className="mr-2" />
@@ -75,10 +77,6 @@ export function BrandIntelligenceSection() {
         </div>
       </div>
 
-      <p className="text-[9px] text-neutral-500 leading-tight px-1 italic">
-        * Smart Import detecta automaticamente tokens (primary/500, Heading/H1, Logo/Dark) no
-        arquivo atual.
-      </p>
 
       {references.length > 0 && (
         <div className="space-y-2">

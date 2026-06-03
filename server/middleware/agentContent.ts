@@ -44,8 +44,12 @@ export function cleanHtmlForAgent(html: string): string {
   cleaned = cleaned.replace(/<nav[\s\S]*?<\/nav>/gi, '');
   cleaned = cleaned.replace(/<footer[\s\S]*?<\/footer>/gi, '');
 
-  // Remove HTML comments
-  cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '');
+  // Remove HTML comments (loop to handle nested/overlapping fragments)
+  let prev = '';
+  while (prev !== cleaned) {
+    prev = cleaned;
+    cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '');
+  }
 
   // Remove decorative attributes (handles double-quoted, single-quoted, and unquoted values)
   cleaned = cleaned.replace(

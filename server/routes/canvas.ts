@@ -558,7 +558,7 @@ async function processCanvasNodesForR2(
                 },
               };
             } catch (uploadError: any) {
-              console.error(`Failed to upload image for node ${nodeId}:`, uploadError);
+              console.error('Failed to upload image for node %s:', nodeId, uploadError);
               // Keep base64 if upload fails
             }
           }
@@ -579,7 +579,11 @@ async function processCanvasNodesForR2(
                 resultImageBase64: undefined,
               };
             } catch (uploadError: any) {
-              console.error(`Failed to upload result image for merge node ${nodeId}:`, uploadError);
+              console.error(
+                'Failed to upload result image for merge node %s:',
+                nodeId,
+                uploadError
+              );
             }
           }
         }
@@ -669,7 +673,8 @@ async function processCanvasNodesForR2(
                 };
               } catch (uploadError: any) {
                 console.error(
-                  `Failed to upload referenceImage for edit node ${nodeId}:`,
+                  'Failed to upload referenceImage for edit node %s:',
+                  nodeId,
                   uploadError
                 );
               }
@@ -700,7 +705,9 @@ async function processCanvasNodesForR2(
                       };
                     } catch (uploadError: any) {
                       console.error(
-                        `Failed to upload referenceImage[${index}] for edit node ${nodeId}:`,
+                        'Failed to upload referenceImage[%d] for edit node %s:',
+                        index,
+                        nodeId,
                         uploadError
                       );
                       return refImage;
@@ -733,7 +740,8 @@ async function processCanvasNodesForR2(
               };
             } catch (uploadError: any) {
               console.error(
-                `Failed to upload result image for upscale node ${nodeId}:`,
+                'Failed to upload result image for upscale node %s:',
+                nodeId,
                 uploadError
               );
             }
@@ -758,7 +766,7 @@ async function processCanvasNodesForR2(
                 pdfBase64: undefined, // Remove base64 after upload
               };
             } catch (uploadError: any) {
-              console.error(`Failed to upload PDF for node ${nodeId}:`, uploadError);
+              console.error('Failed to upload PDF for node %s:', nodeId, uploadError);
               // Keep base64 if upload fails
             }
           }
@@ -786,12 +794,16 @@ async function processCanvasNodesForR2(
                 identityPdfBase64: undefined,
               };
             } catch (uploadError: any) {
-              console.error(`Failed to upload identity PDF for brand node ${nodeId}:`, uploadError);
+              console.error(
+                'Failed to upload identity PDF for brand node %s:',
+                nodeId,
+                uploadError
+              );
             }
           }
         }
       } catch (error: any) {
-        console.error(`Error processing node ${nodeId}:`, error);
+        console.error('Error processing node %s:', nodeId, error);
         // Return original node if processing fails
       }
 

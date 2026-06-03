@@ -160,16 +160,18 @@ export function BrandGuidelineSection() {
             </>
           ) : (
             <>
-              <Button
-                onClick={handleCreateNew}
-                variant="outline"
-                size="sm"
-                className="h-8"
-                disabled={loading}
-              >
-                <Plus size={14} className="mr-2" />
-                New
-              </Button>
+              {!linkedGuideline && (
+                <Button
+                  onClick={handleCreateNew}
+                  variant="outline"
+                  size="sm"
+                  className="h-8"
+                  disabled={loading}
+                >
+                  <Plus size={14} className="mr-2" />
+                  New
+                </Button>
+              )}
               <Button
                 onClick={refresh}
                 variant="ghost"
@@ -179,6 +181,16 @@ export function BrandGuidelineSection() {
               >
                 <RefreshCw size={14} />
               </Button>
+              {linkedGuideline && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-brand-cyan hover:bg-brand-cyan/10 text-[10px] font-bold uppercase tracking-wider"
+                  onClick={() => setPushOpen(true)}
+                >
+                  Push
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -189,38 +201,15 @@ export function BrandGuidelineSection() {
           </p>
         )}
 
-        {linkedGuideline && (
-          <div className="flex items-center justify-between bg-brand-cyan/[0.04] border border-brand-cyan/10 rounded px-3 py-1.5 text-[10px]">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
-              <span className="text-neutral-400 font-mono uppercase tracking-wider">
-                Brand Active
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-brand-cyan hover:bg-brand-cyan/10 uppercase tracking-widest text-[8px] font-bold"
-              onClick={() => setPushOpen(true)}
-            >
-              Push to Cloud
-            </Button>
-          </div>
-        )}
       </div>
 
-      <div className="flex items-center justify-between px-1">
-        <p className="text-[9px] text-neutral-500 leading-snug">
-          Matches by naming: <code className="text-[10px] text-neutral-400">primary/500</code>...
-        </p>
-        <button
-          onClick={() => setGuideOpen(true)}
-          className="text-[9px] font-bold text-brand-cyan uppercase tracking-widest hover:underline flex items-center gap-1"
-        >
-          <BookOpen size={10} />
-          See Guide
-        </button>
-      </div>
+      <button
+        onClick={() => setGuideOpen(true)}
+        className="w-full flex items-center justify-center gap-1.5 py-1 text-[8px] text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-widest"
+      >
+        <BookOpen size={9} />
+        Naming Guide
+      </button>
 
       <NamingGuideModal isOpen={guideOpen} onClose={() => setGuideOpen(false)} />
       <PushPreviewModal
