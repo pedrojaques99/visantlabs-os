@@ -150,10 +150,12 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
   const start = Date.now();
 
   try {
+    console.log(`[psd-render] Job ${jobId}: downloading PSD + art...`);
     await Promise.all([
       downloadPsd(req.psdUrl, psdLocal),
       downloadArt(req.artUrl, artLocal),
     ]);
+    console.log(`[psd-render] Job ${jobId}: downloads complete, starting render...`);
 
     const args = [
       '--psd', psdLocal,
@@ -166,6 +168,7 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
     }
 
     const result = await runBunWorker(args);
+    console.log(`[psd-render] Job ${jobId}: worker done (exit ${result.code})`);
 
     if (result.code !== 0) {
       const errMsg = result.stderr || result.stdout || 'Unknown render error';

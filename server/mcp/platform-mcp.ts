@@ -8,6 +8,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
+import { getUserStorageLimit } from '../services/r2Service.js';
 import { ObjectId } from 'mongodb';
 import { improvePrompt, describeImage } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
@@ -136,6 +137,35 @@ async function getQuotaMeta(userId: string) {
     : totalCreditsEarned > 0 ||
       (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && credits_remaining > 0);
 
+  // Storage info from Prisma (SQL)
+  const storageUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      storageUsedBytes: true,
+      storageLimitBytes: true,
+      subscriptionTier: true,
+      isAdmin: true,
+    },
+  });
+
+  const storageTier = storageUser?.subscriptionTier || 'free';
+  const storageLimit = getUserStorageLimit(
+    storageTier,
+    storageUser?.isAdmin || false,
+    storageUser?.storageLimitBytes
+  );
+  const storageUsed = storageUser?.storageUsedBytes || 0;
+  const storageRemaining = Math.max(0, storageLimit - storageUsed);
+  const storagePct = storageLimit > 0 ? parseFloat(((storageUsed / storageLimit) * 100).toFixed(2)) : 0;
+
+  const fmtBytes = (b: number) => {
+    if (b === 0) return '0 B';
+    const k = 1024;
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.min(Math.floor(Math.log(b) / Math.log(k)), units.length - 1);
+    return `${parseFloat((b / Math.pow(k, i)).toFixed(2))} ${units[i]}`;
+  };
+
   return {
     credits_remaining,
     credits_used: creditsUsed,
@@ -144,6 +174,17 @@ async function getQuotaMeta(userId: string) {
     plan,
     can_generate,
     reset_date: creditsResetDate?.toISOString() ?? null,
+    storage: {
+      used: storageUsed,
+      limit: storageLimit,
+      remaining: storageRemaining,
+      percentage: storagePct,
+      formatted: {
+        used: fmtBytes(storageUsed),
+        limit: fmtBytes(storageLimit),
+        remaining: fmtBytes(storageRemaining),
+      },
+    },
   };
 }
 
@@ -578,7 +619,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
 
   server.tool(
     'account-usage',
-    'Get credit usage, remaining balance, plan limits, and billing cycle info for the authenticated account.',
+    'Get credit usage, remaining balance, plan limits, storage quota (used/limit/remaining), and billing cycle info for the authenticated account.',
     {},
     async () => {
       const currentUserId = getMcpUserId();

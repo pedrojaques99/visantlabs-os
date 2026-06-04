@@ -49,6 +49,7 @@ router.post('/render', authenticate, renderLimiter, async (req: AuthRequest, res
       },
     });
   } catch (err: any) {
+    console.error('[psd-render] Error:', err.message || err, err.stack);
     const status = err.message?.includes('queue is full') ? 429 : 500;
     res.status(status).json({ error: err.message || 'Render failed' });
   }
