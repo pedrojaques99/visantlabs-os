@@ -275,6 +275,12 @@ When unsure what prompt to write, query these first — they contain battle-test
 4. brand-guidelines-compile — export CSS/Tailwind/JSON tokens for code
 5. brand-guidelines-compliance-check — AI audit for consistency
 
+### Client onboarding (send brand to a client's AI tool)
+1. brand-guidelines-invite — create invite link for a brand guideline
+2. Send the connectUrl to the client — they accept, pick their LLM, and connect in one click
+   - Cursor and VS Code get deep-link buttons (zero config)
+   - Claude and ChatGPT get copy-paste URL instructions
+
 ### Edit an existing mockup
 1. ai-change-object — replace/modify objects in a mockup image
 2. ai-apply-theme — apply visual themes (christmas, cyberpunk, etc.)
@@ -2019,6 +2025,72 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         const shareUrl = `${baseUrl}/brand/${publicSlug}`;
 
         return jsonResponse({ success: true, isPublic: true, shareUrl, publicSlug, _meta: quota });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-invite',
+    'Create an invite link for a brand guideline. The recipient gets a connect page where they can accept the invite, associate the brand to their account, and get one-click deep links to connect their AI tool (Cursor, VS Code, Claude, ChatGPT). Perfect for onboarding clients.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      role: z
+        .enum(['viewer', 'editor'])
+        .default('viewer')
+        .describe('Access level: viewer (read-only) or editor (can modify).'),
+      label: z
+        .string()
+        .optional()
+        .describe('Display label for the invite (e.g. "YSA — Brand Kit"). Auto-generated if omitted.'),
+      expiresInDays: z
+        .number()
+        .int()
+        .min(1)
+        .max(365)
+        .optional()
+        .describe('Days until the invite expires. No expiration if omitted.'),
+    },
+    async ({ id, role, label, expiresInDays }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
+        if (!existing) return ERR.notFound('Brand guideline');
+
+        const { nanoid } = await import('nanoid');
+        const token = nanoid(16);
+        const brandName = (existing.identity as any)?.name || 'Brand Kit';
+        const expiresAt = expiresInDays
+          ? new Date(Date.now() + expiresInDays * 86_400_000)
+          : undefined;
+
+        await prisma.brandInvite.create({
+          data: {
+            token,
+            brandGuidelineId: existing.id,
+            createdByUserId: currentUserId,
+            role,
+            label: label || `${brandName} — Connect`,
+            expiresAt,
+          },
+        });
+
+        const baseUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+        const connectUrl = `${baseUrl}/connect/${token}`;
+
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({
+          connectUrl,
+          token,
+          role,
+          expiresAt: expiresAt?.toISOString() || null,
+          instructions: 'Send this URL to your client. They will create an account (or log in), accept the invite, and get one-click connection buttons for Cursor, VS Code, Claude, and ChatGPT.',
+          _meta: quota,
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
