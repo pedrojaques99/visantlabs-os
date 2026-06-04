@@ -96,6 +96,10 @@ const KonvaTextLayerImpl: React.FC<Props> = ({
 
     const stageBox = stage.container().getBoundingClientRect();
     const absPos = textNode.absolutePosition();
+    const sx = stage.scaleX() || 1;
+    const sy = stage.scaleY() || 1;
+    const stageX = stage.x() || 0;
+    const stageY = stage.y() || 0;
 
     textNode.hide();
     setIsEditing(true);
@@ -106,11 +110,11 @@ const KonvaTextLayerImpl: React.FC<Props> = ({
 
     ta.value = displayText;
     ta.style.position = 'absolute';
-    ta.style.top = `${stageBox.top + absPos.y + window.scrollY}px`;
-    ta.style.left = `${stageBox.left + absPos.x + window.scrollX}px`;
-    ta.style.width = `${textNode.width() - textNode.padding() * 2}px`;
-    ta.style.height = `${textNode.height() - textNode.padding() * 2 + 5}px`;
-    ta.style.fontSize = `${scaledFontSize}px`;
+    ta.style.top = `${stageBox.top + absPos.y * sy + stageY + window.scrollY}px`;
+    ta.style.left = `${stageBox.left + absPos.x * sx + stageX + window.scrollX}px`;
+    ta.style.width = `${(textNode.width() - textNode.padding() * 2) * sx}px`;
+    ta.style.height = `${(textNode.height() - textNode.padding() * 2 + 5) * sy}px`;
+    ta.style.fontSize = `${scaledFontSize * sy}px`;
     ta.style.fontFamily = data.fontFamily;
     ta.style.fontWeight = data.bold ? '700' : '400';
     ta.style.color = data.color;

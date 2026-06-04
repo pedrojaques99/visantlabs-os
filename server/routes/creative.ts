@@ -291,7 +291,7 @@ router.post(
         colors.find((c: any) => c.role === 'accent' || c.role === 'secondary')?.hex ??
         colors.find((c: any) => c.role === 'primary')?.hex ??
         colors[0]?.hex ??
-        '#000000';
+        '#00e5ff';
 
       const pngBuffer = await renderCreativePlan(
         { ...plan, backgroundImageUrl: pickedMedia?.url } as any,
