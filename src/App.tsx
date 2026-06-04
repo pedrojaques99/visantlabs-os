@@ -147,6 +147,9 @@ const BrandingExpertPage = lazyWithRetry(() =>
 const CreatePage = lazyWithRetry(() =>
   import('./pages/CreatePage').then((m) => ({ default: m.CreatePage }))
 );
+const ContentStudioPage = lazyWithRetry(() =>
+  import('./pages/ContentStudioPage').then((m) => ({ default: m.ContentStudioPage }))
+);
 const AdminChatPage = lazyWithRetry(() =>
   import('./pages/AdminChatPage').then((m) => ({ default: m.AdminChatPage }))
 );
@@ -342,6 +345,7 @@ const App: React.FC = () => {
 
                   <Route path="/create" element={<CreatePage />} />
                   <Route path="/create/projects" element={<CreativeProjectsPage />} />
+                  <Route path="/content-studio" element={<ContentStudioPage />} />
                   <Route path="/playground" element={<PlaygroundPage />} />
                   <Route path="/playground/explore" element={<PlaygroundGalleryPage />} />
                   <Route path="/playground/shared/:shareId" element={<PlaygroundSharedPage />} />
