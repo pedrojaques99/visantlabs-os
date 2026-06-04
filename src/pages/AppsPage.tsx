@@ -583,6 +583,17 @@ export const AppsPage: React.FC = () => {
         free: false,
       },
 
+      {
+        id: 'content-studio',
+        name: 'Content Studio',
+        desc: '1 brief → all social media assets with copy, images & brand consistency',
+        link: '/content-studio',
+        badge: 'BETA',
+        badgeVariant: 'free',
+        category: 'pro',
+        free: false,
+      },
+
       // Creative Lab
       {
         id: 'grid-machine',

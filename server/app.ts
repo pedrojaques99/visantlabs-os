@@ -56,6 +56,7 @@ import chatRoutes from './routes/chat.js';
 import apiKeysRoutes from './routes/apiKeys.js';
 import pipelineRoutes from './routes/pipeline.js';
 import campaignRoutes from './routes/campaign.js';
+import contentStudioRoutes from './routes/contentStudio.js';
 import oauthRoutes from './routes/oauth.js';
 import liveblocksRoutes from './routes/liveblocks.js';
 import studio3dRoutes from './routes/studio3d.js';
@@ -316,6 +317,7 @@ export function createApp() {
     ['/api-keys', apiKeysRoutes],
     ['/pipeline', pipelineRoutes],
     ['/canvas/generate-campaign', campaignRoutes],
+    ['/content-studio', contentStudioRoutes],
     ['/liveblocks', liveblocksRoutes],
     ['/imagelab', imagelabRoutes],
     ['/studio3d', studio3dRoutes],
