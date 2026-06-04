@@ -8,15 +8,19 @@ interface UseReferenceSearchParams {
   limit?: number;
 }
 
+const PAGE_SIZE = 30;
+
 export function useReferenceSearch({
   brandGuidelineId,
   enabled = true,
-  limit = 30,
+  limit: initialLimit = PAGE_SIZE,
 }: UseReferenceSearchParams = {}) {
   const [results, setResults] = useState<ReferenceResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [query, setQuery] = useState('');
   const [dimFilters, setDimFilters] = useState<Partial<Record<ReferenceDimensionKey, string>>>({});
+  const [limit, setLimit] = useState(initialLimit);
+  const [hasMore, setHasMore] = useState(false);
   const deferredQuery = useDeferredValue(query);
 
   const fetch = useCallback(async () => {
@@ -28,6 +32,8 @@ export function useReferenceSearch({
         query: deferredQuery || undefined,
         limit,
       });
+
+      setHasMore(all.length >= limit);
 
       // Client-side dimension refinement (secondary filters on top of smart ranking)
       const activeFilters = Object.entries(dimFilters).filter(([, v]) => !!v);
@@ -59,6 +65,15 @@ export function useReferenceSearch({
     return () => clearTimeout(timer);
   }, [fetch]);
 
+  // Reset limit when query or filters change
+  useEffect(() => {
+    setLimit(initialLimit);
+  }, [deferredQuery, dimFilters, initialLimit]);
+
+  const loadMore = useCallback(() => {
+    setLimit((prev) => prev + PAGE_SIZE);
+  }, []);
+
   const toggleDimFilter = useCallback((key: ReferenceDimensionKey, value: string) => {
     setDimFilters((prev) => {
       const next = { ...prev };
@@ -73,6 +88,10 @@ export function useReferenceSearch({
     setQuery('');
   }, []);
 
+  const updateResult = useCallback((id: string, updates: Partial<ReferenceResult>) => {
+    setResults((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
+  }, []);
+
   return {
     results,
     isLoading,
@@ -83,5 +102,8 @@ export function useReferenceSearch({
     clearFilters,
     activeFilterCount: Object.keys(dimFilters).length,
     refresh: fetch,
+    updateResult,
+    hasMore,
+    loadMore,
   };
 }

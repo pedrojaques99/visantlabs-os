@@ -1242,7 +1242,8 @@
       "selectTags": "Selecione tags para seu prompt",
       "tagsSelected": "tags selecionadas",
       "title": "Diretor",
-      "analyze": "Analyze"
+      "analyze": "Analisar",
+      "generateMockup": "Gerar Mockup"
     },
     "drawingNode": {
       "drawing": "Desenho",
@@ -1618,8 +1619,9 @@
     "addTextureNode": "Adicionar Texture Node",
     "addUpscaleNode": "Adicionar Upscale Node",
     "categories": {
+      "advanced": "Avançado",
       "branding": "Branding",
-      "composition": "Composition",
+      "composition": "Composição",
       "core": "Core"
     },
     "collapseToolbar": "Recolher barra de ferramentas",
@@ -2451,6 +2453,7 @@
     "essentialModeFootnote": "Essential mode usa presets otimizados para velocidade e qualidade profissional.",
     "generateResults": "GERAR MOCKUPS",
     "selectVibe": "Selecione um estilo antes de gerar.",
+    "selectVibeHint": "Selecione um estilo acima para gerar",
     "switchToExpert": "MODO EXPERT",
     "vibeSelect": "ESCOLHA O ESTILO (VIBE)",
     "scenarioDetails": "DETALHES DO CENÁRIO",
@@ -2581,6 +2584,8 @@
     "designTypeQuestion": "Isto é um logo ou layout?",
     "directorModeDescription": "Selecione e defina quais tags poderão ser escolhidas ao gerar",
     "directorModeLabel": "Modo Diretor",
+    "compareModeLabel": "Comparar Modelos",
+    "compareModeDescription": "Gera o mesmo prompt em múltiplos modelos lado a lado",
     "editIdentity": "Editar identidade",
     "editIdentityDescription": "Editar a identidade do design",
     "editInstructions": "Editar instruções",
@@ -4217,6 +4222,7 @@
     "uploadLogo": "Envie seu logo ou layout",
     "version": "v1.0",
     "viewAllApps": "Ver Todos os Apps",
+    "openBrandGuideline": "Abrir Brand Guideline",
     "screen": {
       "fechar": "Fechar",
       "close_tutorial": "Close tutorial"

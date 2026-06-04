@@ -278,19 +278,21 @@ export function extractExportData(g: BrandGuideline): GuidelineExportData {
         }
       : null,
 
-    logos: (g.logos || []).filter((l) => l.url).map((l) => {
-      const ext = l.url!.split('?')[0].toLowerCase();
-      const format = ext.endsWith('.svg')
-        ? 'svg'
-        : ext.endsWith('.png')
-        ? 'png'
-        : ext.endsWith('.jpg') || ext.endsWith('.jpeg')
-        ? 'jpg'
-        : ext.endsWith('.webp')
-        ? 'webp'
-        : undefined;
-      return { url: l.url, variant: l.variant, label: l.label, format };
-    }),
+    logos: (g.logos || [])
+      .filter((l) => l.url)
+      .map((l) => {
+        const ext = l.url!.split('?')[0].toLowerCase();
+        const format = ext.endsWith('.svg')
+          ? 'svg'
+          : ext.endsWith('.png')
+          ? 'png'
+          : ext.endsWith('.jpg') || ext.endsWith('.jpeg')
+          ? 'jpg'
+          : ext.endsWith('.webp')
+          ? 'webp'
+          : undefined;
+        return { url: l.url, variant: l.variant, label: l.label, format };
+      }),
 
     media: (g.media || []).map((m) => ({
       url: m.url,

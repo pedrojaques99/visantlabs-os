@@ -8,6 +8,7 @@ export interface SelectOption {
   label: string;
   icon?: React.ReactNode;
   badge?: 'latest' | 'popular' | 'fast' | 'edit' | 'pro' | 'reasoning';
+  description?: string;
 }
 
 export interface SelectProps {
@@ -237,7 +238,14 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                       {option.icon}
                     </span>
                   )}
-                  <span className="truncate">{option.label}</span>
+                  <span className={cn('truncate', option.description && 'flex flex-col')}>
+                    <span className="truncate">{option.label}</span>
+                    {option.description && (
+                      <span className="text-[9px] text-neutral-500 truncate font-normal leading-tight">
+                        {option.description}
+                      </span>
+                    )}
+                  </span>
                   {option.badge && (
                     <span
                       className={cn(

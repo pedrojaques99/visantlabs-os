@@ -22,6 +22,7 @@ import {
   saveSurpriseMeSelectedTags,
   type SurpriseMeSelectedTags,
 } from '@/utils/surpriseMeSettings';
+import { getPreferredImageProvider, setModelPreference } from '@/utils/modelPreferences';
 
 interface MockupContextState {
   uploadedImage: UploadedImage | null;
@@ -111,6 +112,12 @@ interface MockupContextState {
   // Seed for deterministic generation
   seed: number | undefined;
   seedLocked: boolean;
+
+  // Compare Mode — generate same prompt across multiple models
+  isCompareMode: boolean;
+  compareModels: string[];
+  /** Labels for each mockup slot in compare mode (model display name) */
+  compareLabels: string[];
 }
 
 interface MockupContextActions {
@@ -180,6 +187,9 @@ interface MockupContextActions {
   setAutoGenerate: Dispatch<SetStateAction<boolean>>;
   setSeed: Dispatch<SetStateAction<number | undefined>>;
   setSeedLocked: Dispatch<SetStateAction<boolean>>;
+  setIsCompareMode: Dispatch<SetStateAction<boolean>>;
+  setCompareModels: Dispatch<SetStateAction<string[]>>;
+  setCompareLabels: Dispatch<SetStateAction<string[]>>;
   resetAll: () => void;
   clearAllTags: () => void;
 }
@@ -201,28 +211,16 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [selectedVibeSegment, setSelectedVibeSegment] = useState<string | null>(null);
   const [selectedVibeStyle, setSelectedVibeStyle] = useState<string | null>(null);
 
-  // Image provider state with localStorage persistence
-  const [imageProvider, setImageProviderState] = useState<ImageProvider>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('visantlabs-image-provider');
-      return (saved === 'seedream' ? 'seedream' : 'gemini') as ImageProvider;
-    }
-    return 'gemini';
-  });
+  // Image provider state with centralized persistence
+  const [imageProvider, setImageProviderState] = useState<ImageProvider>(() =>
+    getPreferredImageProvider()
+  );
 
-  // Wrapper to persist imageProvider to localStorage
   const setImageProvider = useCallback(
     (value: ImageProvider | ((prev: ImageProvider) => ImageProvider)) => {
       setImageProviderState((prev) => {
         const newValue = typeof value === 'function' ? value(prev) : value;
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.setItem('visantlabs-image-provider', newValue);
-          } catch (e) {
-            // Ignore localStorage quota errors
-            console.warn('Failed to persist image provider to localStorage:', e);
-          }
-        }
+        setModelPreference('imageProvider', newValue);
         return newValue;
       });
     },
@@ -290,6 +288,9 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [autoGenerate, setAutoGenerate] = useState(true);
   const [seed, setSeed] = useState<number | undefined>(undefined);
   const [seedLocked, setSeedLocked] = useState(false);
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const [compareModels, setCompareModels] = useState<string[]>([]);
+  const [compareLabels, setCompareLabels] = useState<string[]>([]);
 
   // Wrapper to clear selected tags when entering pool mode
   const setIsSurpriseMeMode = useCallback((value: boolean) => {
@@ -337,6 +338,9 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setDetectedLanguage(null);
     setDetectedText(null);
     setInstructions('');
+    setIsCompareMode(false);
+    setCompareModels([]);
+    setCompareLabels([]);
   };
 
   // Clear all tags (both normal mode and pool mode) without resetting everything
@@ -498,6 +502,12 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setSeed,
       seedLocked,
       setSeedLocked,
+      isCompareMode,
+      setIsCompareMode,
+      compareModels,
+      setCompareModels,
+      compareLabels,
+      setCompareLabels,
       resetAll,
       clearAllTags,
     }),
@@ -566,6 +576,9 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       autoGenerate,
       seed,
       seedLocked,
+      isCompareMode,
+      compareModels,
+      compareLabels,
       resetAll,
       clearAllTags,
     ]

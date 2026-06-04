@@ -63,7 +63,13 @@ import {
   AVAILABLE_EFFECT_TAGS,
   AVAILABLE_MATERIAL_TAGS,
 } from '@/utils/mockupConstants';
-import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { GEMINI_MODELS, MODEL_CONFIG } from '@/constants/geminiModels';
+import { isSeedreamModel, SEEDREAM_MODEL_CONFIG } from '@/constants/seedreamModels';
+import { isOpenAIImageModel, OPENAI_IMAGE_MODEL_CONFIG } from '@/constants/openaiModels';
+import { isImagenModel, IMAGEN_MODEL_CONFIG } from '@/constants/imagenModels';
+import { isIdeogramModel, IDEOGRAM_MODEL_CONFIG } from '@/constants/ideogramModels';
+import { isReveModel, REVE_MODEL_CONFIG } from '@/constants/reveModels';
+import type { ImageProvider } from '@/types/types';
 import {
   getBackgroundsForBranding,
   filterPresetsByBranding,
@@ -72,6 +78,24 @@ import {
   getRandomArchetype,
 } from '@/utils/promptHelpers';
 import { API_BASE } from '@/config/api';
+
+function resolveProviderForModel(model: string): ImageProvider {
+  if (isSeedreamModel(model)) return 'seedream';
+  if (isOpenAIImageModel(model)) return 'openai';
+  if (isImagenModel(model)) return 'imagen';
+  if (isIdeogramModel(model)) return 'ideogram';
+  if (isReveModel(model)) return 'reve';
+  return 'gemini';
+}
+
+function resolveModelLabel(model: string): string {
+  if (isSeedreamModel(model)) return SEEDREAM_MODEL_CONFIG[model as keyof typeof SEEDREAM_MODEL_CONFIG]?.label ?? model;
+  if (isOpenAIImageModel(model)) return OPENAI_IMAGE_MODEL_CONFIG[model as keyof typeof OPENAI_IMAGE_MODEL_CONFIG]?.label ?? model;
+  if (isImagenModel(model)) return IMAGEN_MODEL_CONFIG[model as keyof typeof IMAGEN_MODEL_CONFIG]?.label ?? model;
+  if (isIdeogramModel(model)) return IDEOGRAM_MODEL_CONFIG[model as keyof typeof IDEOGRAM_MODEL_CONFIG]?.label ?? model;
+  if (isReveModel(model)) return REVE_MODEL_CONFIG[model as keyof typeof REVE_MODEL_CONFIG]?.label ?? model;
+  return MODEL_CONFIG[model as keyof typeof MODEL_CONFIG]?.label ?? model;
+}
 
 export const MockupMachinePage: React.FC = () => {
   return (
@@ -217,6 +241,8 @@ const MockupMachinePageContent: React.FC = () => {
     setDetectedLanguage,
     detectedText,
     setDetectedText,
+    isCompareMode,
+    compareModels,
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -944,31 +970,21 @@ const MockupMachinePageContent: React.FC = () => {
 
       if (!hasGenerated) setHasGenerated(true);
 
-      const generateAndSet = async (index: number) => {
+      const generateAndSet = async (index: number, overrideModel?: string, overrideProvider?: ImageProvider) => {
         let imageGenerated = false;
 
         try {
-          // Note: Credit validation and deduction now happens in backend endpoint
-          // No need to validate here - backend will return error if insufficient credits
+          const effectiveModel = overrideModel || modelToUse;
+          const effectiveProvider = overrideProvider || imageProvider;
 
-          // No modo normal, passa imagem (não existe mais modo blank)
           const baseImageForGeneration = uploadedImage || undefined;
-
-          // Process base image if needed (compression disabled)
           const processedBaseImage = baseImageForGeneration || undefined;
-
-          // Use reference images directly (compression disabled)
           const processedReferenceImages = referenceImages.length > 0 ? referenceImages : undefined;
-
-          // Use reference images if available (Pro: up to 3, HD: up to 1)
           const referenceImagesToUse =
             processedReferenceImages && processedReferenceImages.length > 0
               ? processedReferenceImages
               : undefined;
 
-          // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
-          // This prevents abuse and ensures credits are always deducted atomically
-          // Pass slot index as uniqueId to allow parallel batch requests with same parameters
           const result = await mockupApi.generate({
             promptText: promptToUse,
             baseImage: processedBaseImage
@@ -976,7 +992,7 @@ const MockupMachinePageContent: React.FC = () => {
                 ? { url: processedBaseImage.url, mimeType: processedBaseImage.mimeType }
                 : { base64: processedBaseImage.base64, mimeType: processedBaseImage.mimeType }
               : undefined,
-            model: modelToUse,
+            model: effectiveModel,
             resolution: resolutionToUse,
             aspectRatio: aspectRatio,
             referenceImages: referenceImagesToUse?.map((img) =>
@@ -986,10 +1002,10 @@ const MockupMachinePageContent: React.FC = () => {
             ),
             imagesCount: 1,
             feature: 'mockupmachine',
-            uniqueId: index, // Use slot index to differentiate parallel batch requests
-            provider: imageProvider,
-            brandGuidelineId: selectedBrandGuideline || undefined, // Auto-inject brand context
-            seed: seedLocked ? seed : undefined, // Pass seed only when locked
+            uniqueId: index,
+            provider: effectiveProvider,
+            brandGuidelineId: selectedBrandGuideline || undefined,
+            seed: seedLocked ? seed : undefined,
           });
 
           // Track generationId for feedback system
@@ -1185,48 +1201,45 @@ const MockupMachinePageContent: React.FC = () => {
             }
           }
         } else {
-          // Normal mode: adjust arrays to match mockupCount when generating new images
+          // Compare mode: generate same prompt across multiple models in parallel
+          const slotCount = isCompareMode && compareModels.length > 1 ? compareModels.length : mockupCount;
+
           setMockups((prev) => {
             const newMockups = [...prev];
-            // Only expand if needed, never shrink to preserve existing images
-            while (newMockups.length < mockupCount) {
+            while (newMockups.length < slotCount) {
               newMockups.push(null);
             }
-            // Reset only the slots that will be generated (up to mockupCount)
-            for (let i = 0; i < mockupCount; i++) {
+            for (let i = 0; i < slotCount; i++) {
               newMockups[i] = null;
             }
-            return newMockups;
+            return newMockups.slice(0, Math.max(slotCount, prev.length));
           });
 
           setIsLoading((prev) => {
             const newLoading = [...prev];
-            // Only expand if needed
-            while (newLoading.length < mockupCount) {
+            while (newLoading.length < slotCount) {
               newLoading.push(false);
             }
-            // Set loading for slots that will be generated
-            for (let i = 0; i < mockupCount; i++) {
+            for (let i = 0; i < slotCount; i++) {
               newLoading[i] = true;
             }
-            return newLoading;
+            return newLoading.slice(0, Math.max(slotCount, prev.length));
           });
 
           setPromptSuggestions([]);
 
-          // Track which images were successfully generated for batch tracking
           const successfulIndices: number[] = [];
-          const promises = Array.from({ length: mockupCount }, (_, i) =>
-            generateAndSet(i)
+          const promises = Array.from({ length: slotCount }, (_, i) => {
+            const overrideModel = isCompareMode && compareModels.length > 1 ? compareModels[i] : undefined;
+            const overrideProvider = overrideModel ? resolveProviderForModel(overrideModel) : undefined;
+            return generateAndSet(i, overrideModel, overrideProvider)
               .then(() => {
-                // Only count as successful if image was actually generated
-                // generateAndSet always tracks usage for each successfully generated image
                 if (mockups[i] !== null) {
                   successfulIndices.push(i);
                 }
               })
-              .catch(() => {})
-          );
+              .catch(() => {});
+          });
           await Promise.allSettled(promises);
 
           // Count successful generations
@@ -1276,6 +1289,8 @@ const MockupMachinePageContent: React.FC = () => {
       t,
       imageProvider,
       selectedBrandGuideline,
+      isCompareMode,
+      compareModels,
     ]
   );
 
@@ -3484,6 +3499,7 @@ Generate the new mockup image with the requested changes applied.`;
                       feedbackContext={getFeedbackContext}
                       feedbackRatings={feedbackRatings}
                       onFeedbackRatingChange={handleFeedbackRatingChange}
+                      compareLabels={isCompareMode ? compareModels.map((m) => resolveModelLabel(m)) : undefined}
                     />
                   </div>
                 </div>

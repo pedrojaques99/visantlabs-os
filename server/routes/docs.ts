@@ -219,6 +219,30 @@ router.get('/mcp-setup', (_req: Request, res: Response) => {
 });
 
 /**
+ * GET /docs/providers
+ * Which image/video/chat providers have API keys configured.
+ * Frontend uses this to hide model groups for unconfigured providers.
+ */
+router.get('/providers', (_req: Request, res: Response) => {
+  const has = (key: string) => {
+    const v = process.env[key];
+    return !!v && v !== 'undefined' && v.trim().length > 0;
+  };
+
+  res.json({
+    gemini: has('GEMINI_API_KEY') || has('VITE_GEMINI_API_KEY') || has('VITE_API_KEY'),
+    imagen: has('GEMINI_API_KEY') || has('VITE_GEMINI_API_KEY') || has('VITE_API_KEY'),
+    openai: has('OPENAI_KEY') || has('OPENAI_API_KEY'),
+    seedream: has('BYTEPLUS_API_KEY'),
+    ideogram: has('IDEOGRAM_API_KEY'),
+    reve: has('REVE_API_KEY'),
+    kling: has('KLING_ACCESS_KEY') && has('KLING_SECRET_KEY'),
+    seedance: has('BYTEPLUS_API_KEY'),
+    veo: has('GEMINI_API_KEY') || has('VITE_GEMINI_API_KEY'),
+  });
+});
+
+/**
  * GET /docs/pricing
  * Credit costs, packages, storage plans, Google pricing — single source of truth
  */

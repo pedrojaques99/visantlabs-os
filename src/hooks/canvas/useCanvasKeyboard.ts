@@ -32,7 +32,9 @@ export const useCanvasKeyboard = (
   addUpscaleNode?: (customPosition?: { x: number; y: number }) => string | undefined,
   deleteSelectedDrawings?: () => void,
   selectedDrawingIds?: Set<string>,
-  setSelectedDrawingIds?: (ids: Set<string>) => void
+  setSelectedDrawingIds?: (ids: Set<string>) => void,
+  saveImmediately?: () => Promise<void>,
+  onShowShortcuts?: () => void
 ) => {
   // Keep refs for latest values to avoid stale closures in hotkeys
   const nodesRef = useRef(nodes);
@@ -370,6 +372,60 @@ export const useCanvasKeyboard = (
       if (selectedNodes.length > 0) {
         openNodeFileUpload(selectedNodes);
       }
+    },
+    { enableOnFormTags: false }
+  );
+
+  // Ctrl+S / Cmd+S — save canvas
+  useHotkeys(
+    'ctrl+s,meta+s',
+    () => {
+      if (saveImmediately) {
+        saveImmediately().then(() => {
+          toast.success('Canvas saved', { duration: 1500 });
+        });
+      }
+    },
+    { preventDefault: true, enableOnFormTags: false }
+  );
+
+  // Ctrl+= / Ctrl+- — zoom in/out
+  useHotkeys(
+    'ctrl+=,meta+=,ctrl+plus,meta+plus',
+    () => {
+      if (reactFlowInstance) {
+        reactFlowInstance.zoomIn({ duration: 200 });
+      }
+    },
+    { preventDefault: true, enableOnFormTags: false }
+  );
+
+  useHotkeys(
+    'ctrl+-,meta+-,ctrl+minus,meta+minus',
+    () => {
+      if (reactFlowInstance) {
+        reactFlowInstance.zoomOut({ duration: 200 });
+      }
+    },
+    { preventDefault: true, enableOnFormTags: false }
+  );
+
+  // Ctrl+0 — fit view
+  useHotkeys(
+    'ctrl+0,meta+0',
+    () => {
+      if (reactFlowInstance) {
+        reactFlowInstance.fitView({ duration: 300, padding: 0.2 });
+      }
+    },
+    { preventDefault: true, enableOnFormTags: false }
+  );
+
+  // ? — show keyboard shortcuts
+  useHotkeys(
+    'shift+/',
+    () => {
+      onShowShortcuts?.();
     },
     { enableOnFormTags: false }
   );

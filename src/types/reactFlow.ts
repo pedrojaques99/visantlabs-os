@@ -750,6 +750,8 @@ export interface DirectorNodeData extends BaseNodeData {
 
   // Generation state
   isGeneratingPrompt?: boolean;
+  isGeneratingMockup?: boolean;
+  activeGenerations?: number;
   generatedPrompt?: string;
 
   // Source image node ID (for auto-connect)
@@ -769,6 +771,7 @@ export interface DirectorNodeData extends BaseNodeData {
   // Handlers
   onAnalyze?: (nodeId: string) => Promise<void>;
   onGeneratePrompt?: (nodeId: string) => Promise<void>;
+  onGenerateMockup?: (nodeId: string) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<DirectorNodeData>) => void;
   onOpenSidePanel?: (nodeId: string) => void;
 }

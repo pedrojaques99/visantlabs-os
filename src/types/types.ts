@@ -11,6 +11,7 @@ import { GEMINI_MODELS } from '../constants/geminiModels';
 // All valid Gemini models (image + text)
 export type GeminiModel =
   // Text/chat models
+  | typeof GEMINI_MODELS.FLASH_3_5
   | typeof GEMINI_MODELS.PRO_2_0
   | typeof GEMINI_MODELS.FLASH_2_5
   | typeof GEMINI_MODELS.PRO_3_1
@@ -26,17 +27,19 @@ export type GeminiModel =
   | typeof GEMINI_MODELS.PRO
   // Video models
   | 'veo-3.1-generate-preview'
-  | 'veo-3.1-fast-generate-preview';
+  | 'veo-3.1-fast-generate-preview'
+  | 'veo-3.1-lite-generate-preview';
 
 // Seedream / Seededit models via BytePlus API — single source of truth is seedreamModels.ts
 export type { SeedreamModelId as SeedreamModel } from '../constants/seedreamModels';
 
 // Image generation provider
-export type ImageProvider = 'gemini' | 'seedream' | 'openai';
+export type ImageProvider = 'gemini' | 'seedream' | 'openai' | 'imagen' | 'ideogram' | 'reve';
 
 export enum VeoModel {
   VEO_3_1 = 'veo-3.1-generate-preview',
   VEO_3_1_FAST = 'veo-3.1-fast-generate-preview',
+  VEO_3_1_LITE = 'veo-3.1-lite-generate-preview',
 }
 
 export enum GenerationMode {

@@ -6,6 +6,8 @@ import type { GeminiModel, Resolution, AspectRatio } from '../types/types';
 //   Nano Banana 2  = gemini-3.1-flash-image-preview (2K default, up to 10 ref images, 512px–4K)
 //   Nano Banana Pro = gemini-3-pro-image-preview    (reasoning, text rendering, up to 14 ref images, 1K–4K)
 export const GEMINI_MODELS = {
+  /** Gemini 3.5 Flash — Most intelligent, sustained frontier performance */
+  FLASH_3_5: 'gemini-3.5-flash' as const,
   /** Gemini 3.1 Pro - Flagship intelligence (1M tokens) */
   PRO_3_1: 'gemini-3.1-pro-preview' as const,
   /** Gemini 3 Flash - Optimized for performance and reasoning */
@@ -54,9 +56,24 @@ export interface ModelConfig {
   inputTokenLimit: number;
   /** Domain for Logo.dev integration */
   providerDomain?: string;
+  /** Hidden by default in selectors, shown when user expands "older models" */
+  deprecated?: boolean;
 }
 
 export const MODEL_CONFIG: Record<string, ModelConfig> = {
+  [GEMINI_MODELS.FLASH_3_5]: {
+    label: 'Gemini 3.5 Flash',
+    badge: 'latest',
+    emoji: '🚀',
+    maxHandles: 4,
+    maxRefImages: 5,
+    defaultResolution: undefined,
+    supportsImageConfig: false,
+    supportsThinking: true,
+    supportsSearchGrounding: true,
+    inputTokenLimit: 1_000_000,
+    providerDomain: 'google.com',
+  },
   [GEMINI_MODELS.PRO_3_1]: {
     label: 'Gemini 3.1 Pro',
     emoji: '🌌',
@@ -104,6 +121,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsSearchGrounding: true,
     inputTokenLimit: 1_000_000,
     providerDomain: 'google.com',
+    deprecated: true,
   },
   [GEMINI_MODELS.IMAGE_FLASH]: {
     label: 'Nano Banana',
@@ -117,6 +135,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     supportsSearchGrounding: false,
     inputTokenLimit: 65_536,
     providerDomain: 'google.com',
+    deprecated: true,
   },
   [GEMINI_MODELS.IMAGE_NB2]: {
     label: 'Nano Banana 2',
@@ -148,6 +167,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
 
 /** List of models suitable for Chat/Expert conversation */
 export const CHAT_MODELS: string[] = [
+  GEMINI_MODELS.FLASH_3_5,
   GEMINI_MODELS.PRO_3_1,
   GEMINI_MODELS.FLASH_3,
   GEMINI_MODELS.FLASH_2_5,

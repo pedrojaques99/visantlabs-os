@@ -55,6 +55,8 @@ export interface SeedreamModelConfig {
   adaptiveSize: boolean;
   /** Domain for Logo.dev integration */
   providerDomain?: string;
+  /** Hidden by default in selectors, shown when user expands "older models" */
+  deprecated?: boolean;
 }
 
 export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig> = {
@@ -100,6 +102,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     defaultResolution: '2K',
     adaptiveSize: false,
     providerDomain: 'bytedance.com',
+    deprecated: true,
   },
   [SEEDREAM_MODELS.SD_3_T2I]: {
     label: 'Seedream 3',
@@ -114,6 +117,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     defaultResolution: '1K',
     adaptiveSize: false,
     providerDomain: 'bytedance.com',
+    deprecated: true,
   },
   [SEEDREAM_MODELS.SE_3_I2I]: {
     label: 'Seededit 3',
@@ -129,6 +133,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
     defaultResolution: '1K', // unused — adaptiveSize=true
     adaptiveSize: true,
     providerDomain: 'bytedance.com',
+    deprecated: true,
   },
 };
 

@@ -40,6 +40,8 @@ interface MockupDisplayProps {
   feedbackRatings?: Map<number, FeedbackRating | null>;
   /** Called when a card's feedback rating changes */
   onFeedbackRatingChange?: (index: number, rating: FeedbackRating | null) => void;
+  /** Labels for each slot in compare mode (model display name) */
+  compareLabels?: string[];
 }
 
 export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
@@ -71,6 +73,7 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
     feedbackContext,
     feedbackRatings,
     onFeedbackRatingChange,
+    compareLabels,
   }) => {
     const { t } = useTranslation();
 
@@ -176,44 +179,54 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
               return null;
             }
 
+            const compareLabel = compareLabels?.[index];
+
             return (
-              <MockupCard
-                key={index}
-                className="min-w-0 w-full"
-                base64Image={mockups[index]}
-                isLoading={isItemLoading && !mockups[index]}
-                isRedrawing={isItemLoading && !!mockups[index]}
-                onRedraw={() => onRedraw(index)}
-                onView={() => onView(index)}
-                onNewAngle={(angle) => onNewAngle(index, angle)}
-                onNewBackground={() => onNewBackground(index)}
-                onReImagine={
-                  onReImagine ? (reimaginePrompt) => onReImagine(index, reimaginePrompt) : undefined
-                }
-                onSave={onSave ? (imageBase64) => onSave(index, imageBase64) : undefined}
-                isSaved={savedIndices.has(index)}
-                mockupId={mockupId}
-                onToggleLike={onToggleLike ? () => onToggleLike(index) : undefined}
-                isLiked={isLiked}
-                onLikeStateChange={
-                  mockupId && onLikeStateChange ? onLikeStateChange(index) : undefined
-                }
-                onRemove={onRemove ? () => onRemove(index) : undefined}
-                prompt={prompt}
-                designType={designType}
-                tags={tags}
-                brandingTags={brandingTags}
-                aspectRatio={aspectRatio}
-                editButtonsDisabled={editButtonsDisabled}
-                creditsPerOperation={creditsPerOperation}
-                generationId={generationIds?.[index]}
-                feedbackContext={feedbackContext}
-                feedbackRating={feedbackRatings?.get(index) ?? null}
-                onFeedbackRatingChange={
-                  onFeedbackRatingChange ? (r) => onFeedbackRatingChange(index, r) : undefined
-                }
-                isGeneratingPrompt={isGeneratingPrompt && isItemLoading && !mockups[index]}
-              />
+              <div key={index} className="relative min-w-0 w-full">
+                {compareLabel && (
+                  <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
+                    <span className="text-[10px] font-mono text-neutral-300 tracking-wide">
+                      {compareLabel}
+                    </span>
+                  </div>
+                )}
+                <MockupCard
+                  className="min-w-0 w-full"
+                  base64Image={mockups[index]}
+                  isLoading={isItemLoading && !mockups[index]}
+                  isRedrawing={isItemLoading && !!mockups[index]}
+                  onRedraw={() => onRedraw(index)}
+                  onView={() => onView(index)}
+                  onNewAngle={(angle) => onNewAngle(index, angle)}
+                  onNewBackground={() => onNewBackground(index)}
+                  onReImagine={
+                    onReImagine ? (reimaginePrompt) => onReImagine(index, reimaginePrompt) : undefined
+                  }
+                  onSave={onSave ? (imageBase64) => onSave(index, imageBase64) : undefined}
+                  isSaved={savedIndices.has(index)}
+                  mockupId={mockupId}
+                  onToggleLike={onToggleLike ? () => onToggleLike(index) : undefined}
+                  isLiked={isLiked}
+                  onLikeStateChange={
+                    mockupId && onLikeStateChange ? onLikeStateChange(index) : undefined
+                  }
+                  onRemove={onRemove ? () => onRemove(index) : undefined}
+                  prompt={prompt}
+                  designType={designType}
+                  tags={tags}
+                  brandingTags={brandingTags}
+                  aspectRatio={aspectRatio}
+                  editButtonsDisabled={editButtonsDisabled}
+                  creditsPerOperation={creditsPerOperation}
+                  generationId={generationIds?.[index]}
+                  feedbackContext={feedbackContext}
+                  feedbackRating={feedbackRatings?.get(index) ?? null}
+                  onFeedbackRatingChange={
+                    onFeedbackRatingChange ? (r) => onFeedbackRatingChange(index, r) : undefined
+                  }
+                  isGeneratingPrompt={isGeneratingPrompt && isItemLoading && !mockups[index]}
+                />
+              </div>
             );
           })}
 

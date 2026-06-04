@@ -1242,7 +1242,8 @@
       "selectTags": "Select tags for your prompt",
       "tagsSelected": "tags selected",
       "title": "Director",
-      "analyze": "Analyze"
+      "analyze": "Analyze",
+      "generateMockup": "Generate Mockup"
     },
     "drawingNode": {
       "drawing": "Drawing",
@@ -1618,6 +1619,7 @@
     "addTextureNode": "Add Texture Node",
     "addUpscaleNode": "Add Upscale Node",
     "categories": {
+      "advanced": "Advanced",
       "branding": "Branding",
       "composition": "Composition",
       "core": "Core"
@@ -2451,6 +2453,7 @@
     "essentialModeFootnote": "Essential mode uses presets optimized for speed and professional quality.",
     "generateResults": "GENERATE MOCKUPS",
     "selectVibe": "Please select a style before generating.",
+    "selectVibeHint": "Select a style above to generate",
     "switchToExpert": "EXPERT MODE",
     "vibeSelect": "CHOOSE THE STYLE (VIBE)",
     "scenarioDetails": "SCENARIO DETAILS",
@@ -2582,6 +2585,8 @@
     "designTypeQuestion": "Is this a logo or layout?",
     "directorModeDescription": "Select and define which tags can be chosen when generating",
     "directorModeLabel": "Director Mode",
+    "compareModeLabel": "Compare Models",
+    "compareModeDescription": "Generate the same prompt across multiple models side-by-side",
     "editIdentity": "Edit identity",
     "editIdentityDescription": "Edit the identity of the design",
     "editInstructions": "Edit instructions",
@@ -4213,6 +4218,7 @@
     "uploadLogo": "Upload your logo or layout",
     "version": "v1.0",
     "viewAllApps": "View All Apps",
+    "openBrandGuideline": "Open Brand Guideline",
     "screen": {
       "fechar": "Fechar",
       "close_tutorial": "Close tutorial"

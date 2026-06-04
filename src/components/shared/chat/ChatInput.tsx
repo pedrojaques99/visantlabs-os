@@ -65,6 +65,7 @@ interface ChatInputProps {
   resolution?: Resolution;
   onResolutionChange?: (res: Resolution) => void;
   showOutputConfig?: boolean;
+  compact?: boolean;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -89,6 +90,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   resolution,
   onResolutionChange,
   showOutputConfig = false,
+  compact = false,
 }) => {
   const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -179,7 +181,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 selectedModel={selectedModel!}
                 onModelChange={onModelChange!}
                 type={modelSelectorType}
-                className="!min-w-[120px]"
+                className={compact ? '!min-w-0 max-w-[110px]' : '!min-w-[120px]'}
               />
             )}
 
@@ -202,9 +204,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       </div>
 
       {/* Disclaimer sutil */}
-      <div className="px-4 text-xs text-white/20 text-center">
-        Powered by Gemini · Visant Labs OS
-      </div>
+      {!compact && (
+        <div className="px-4 text-xs text-white/20 text-center">
+          Powered by Gemini · Visant Labs OS
+        </div>
+      )}
     </div>
   );
 };

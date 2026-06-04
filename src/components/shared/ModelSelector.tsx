@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import {
   CHAT_MODELS,
   MODEL_CONFIG,
@@ -18,6 +18,24 @@ import {
   isOpenAIImageModel,
   getOpenAIImageModelConfig,
 } from '../../constants/openaiModels';
+import {
+  IMAGEN_MODEL_LIST,
+  IMAGEN_MODEL_CONFIG,
+  isImagenModel,
+  getImagenModelConfig,
+} from '../../constants/imagenModels';
+import {
+  IDEOGRAM_MODEL_LIST,
+  IDEOGRAM_MODEL_CONFIG,
+  isIdeogramModel,
+  getIdeogramModelConfig,
+} from '../../constants/ideogramModels';
+import {
+  REVE_MODEL_LIST,
+  REVE_MODEL_CONFIG,
+  isReveModel,
+  getReveModelConfig,
+} from '../../constants/reveModels';
 import { Select } from '@/components/ui/select';
 import { cn } from '../../lib/utils';
 import { getCreditsRequired } from '@/utils/creditCalculator';
@@ -26,13 +44,14 @@ import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { GeminiModel, SeedreamModel, ImageProvider, Resolution } from '@/types/types';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
+import {
+  getPreferredImageModel as _getPreferredImageModel,
+  setModelPreference,
+} from '@/utils/modelPreferences';
+import { useAvailableProviders } from '@/hooks/useAvailableProviders';
 
 export function getPreferredImageModel(): string {
-  try {
-    return localStorage.getItem('vsn-preferred-image-model') || DEFAULT_MODEL;
-  } catch {
-    return DEFAULT_MODEL;
-  }
+  return _getPreferredImageModel() || DEFAULT_MODEL;
 }
 
 interface ModelSelectorProps {
@@ -68,131 +87,292 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const { subscriptionStatus } = useLayout();
   const planMetadata = subscriptionStatus?.planMetadata;
   const token = import.meta.env.VITE_LOGO_DEV_TOKEN || '';
+  const [showOlderModels, setShowOlderModels] = useState(false);
+  const availableProviders = useAvailableProviders();
+
+  const hasDeprecated = useMemo(() => {
+    if (type === 'image') {
+      return (
+        AVAILABLE_IMAGE_MODELS.some((id) => MODEL_CONFIG[id]?.deprecated) ||
+        SEEDREAM_IMAGE_MODELS.some((id) => SEEDREAM_MODEL_CONFIG[id]?.deprecated)
+      );
+    }
+    return CHAT_MODELS.some((id) => MODEL_CONFIG[id]?.deprecated);
+  }, [type]);
 
   const options = useMemo(() => {
+    const isVisible = (modelId: string, config: { deprecated?: boolean } | undefined) =>
+      showOlderModels || !config?.deprecated || modelId === selectedModel;
+
     // IMAGE MODELS LOGIC
     if (type === 'image') {
-      const geminiOptions = AVAILABLE_IMAGE_MODELS.map((modelId) => {
-        const config = MODEL_CONFIG[modelId];
-        if (!config) return null;
+      const geminiOptions = !availableProviders.gemini
+        ? []
+        : (AVAILABLE_IMAGE_MODELS.map((modelId) => {
+            const config = MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
 
-        const effectiveResolution = supportsOutputConfig(modelId)
-          ? selectedModel === modelId
-            ? resolution
-            : config?.defaultResolution
-          : undefined;
+            const effectiveResolution = supportsOutputConfig(modelId)
+              ? selectedModel === modelId
+                ? resolution
+                : config?.defaultResolution
+              : undefined;
 
-        const credits = getCreditsRequired(modelId, effectiveResolution, 'gemini');
-        const isUnlimited = isGenerationUnlimited({
-          model: modelId,
-          resolution: effectiveResolution,
-          planMetadata,
-        });
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'gemini');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
 
-        const icon = config.providerDomain ? (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${
-              token ? `&token=${token}` : ''
-            }`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        ) : undefined;
+            const icon = config.providerDomain ? (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            ) : undefined;
 
-        // Label with dynamic credit info
-        const label =
-          variant === 'node'
-            ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
-            : config.label;
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
 
-        return { value: modelId, label: label || modelId, icon, badge: config.badge };
-      }).filter(Boolean) as any[];
+            const desc = config.supportsImageConfig
+              ? `${config.maxRefImages} ref images, ${config.defaultResolution || 'auto'}`
+              : `${config.maxRefImages} ref images`;
 
-      const seedreamOptions = SEEDREAM_IMAGE_MODELS.map((modelId) => {
-        const config = SEEDREAM_MODEL_CONFIG[modelId];
-        if (!config) return null;
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: desc,
+            };
+          }).filter(Boolean) as any[]);
 
-        const effectiveResolution =
-          selectedModel === modelId ? resolution : config?.defaultResolution;
-        const credits = getCreditsRequired(modelId, effectiveResolution, 'seedream');
-        const isUnlimited = isGenerationUnlimited({
-          model: modelId,
-          resolution: effectiveResolution,
-          planMetadata,
-        });
+      const seedreamOptions = !availableProviders.seedream
+        ? []
+        : (SEEDREAM_IMAGE_MODELS.map((modelId) => {
+            const config = SEEDREAM_MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
 
-        const icon = config.providerDomain ? (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${
-              token ? `&token=${token}` : ''
-            }`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        ) : undefined;
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config?.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'seedream');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
 
-        const label =
-          variant === 'node'
-            ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
-            : config.label;
+            const icon = config.providerDomain ? (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            ) : undefined;
 
-        return { value: modelId, label: label || modelId, icon, badge: config.badge };
-      }).filter(Boolean) as any[];
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
 
-      const openaiOptions = OPENAI_IMAGE_MODEL_LIST.map((modelId) => {
-        const config = OPENAI_IMAGE_MODEL_CONFIG[modelId];
-        if (!config) return null;
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
 
-        const effectiveResolution =
-          selectedModel === modelId ? resolution : config.defaultResolution;
-        const credits = getCreditsRequired(modelId, effectiveResolution, 'openai');
-        const isUnlimited = isGenerationUnlimited({
-          model: modelId,
-          resolution: effectiveResolution,
-          planMetadata,
-        });
+      const openaiOptions = !availableProviders.openai
+        ? []
+        : (OPENAI_IMAGE_MODEL_LIST.map((modelId) => {
+            const config = OPENAI_IMAGE_MODEL_CONFIG[modelId];
+            if (!config) return null;
 
-        const icon = (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?size=48${
-              token ? `&token=${token}` : ''
-            }`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        );
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'openai');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
 
-        const label =
-          variant === 'node'
-            ? `${config.label}${isUnlimited ? ' (∞)' : ` (${credits})`}`
-            : config.label;
+            const icon = (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            );
 
-        return { value: modelId, label: label || modelId, icon, badge: config.badge };
-      }).filter(Boolean) as any[];
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
 
-      return [...geminiOptions, ...seedreamOptions, ...openaiOptions];
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
+
+      const imagenOptions = !availableProviders.imagen
+        ? []
+        : (IMAGEN_MODEL_LIST.map((modelId) => {
+            const config = IMAGEN_MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
+
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'imagen');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
+
+            const icon = (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            );
+
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
+
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
+
+      const ideogramOptions = !availableProviders.ideogram
+        ? []
+        : (IDEOGRAM_MODEL_LIST.map((modelId) => {
+            const config = IDEOGRAM_MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
+
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'ideogram');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
+
+            const icon = (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            );
+
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
+
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
+
+      const reveOptions = !availableProviders.reve
+        ? []
+        : (REVE_MODEL_LIST.map((modelId) => {
+            const config = REVE_MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
+
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'reve');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
+
+            const icon = (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            );
+
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
+
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
+
+      return [...geminiOptions, ...imagenOptions, ...ideogramOptions, ...reveOptions, ...seedreamOptions, ...openaiOptions];
     }
 
     // CHAT MODELS LOGIC
-    return CHAT_MODELS.map((modelId) => {
-      const config = MODEL_CONFIG[modelId];
-      return {
-        value: modelId,
-        label: config?.label || modelId,
-        icon: config?.providerDomain ? (
-          <img
-            src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
-            className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-            alt=""
-          />
-        ) : undefined,
-      };
-    });
-  }, [type, selectedModel, resolution, planMetadata, token, variant]);
+    return CHAT_MODELS.filter((modelId) => isVisible(modelId, MODEL_CONFIG[modelId])).map(
+      (modelId) => {
+        const config = MODEL_CONFIG[modelId];
+        return {
+          value: modelId,
+          label: config?.label || modelId,
+          icon: config?.providerDomain ? (
+            <img
+              src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
+              className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+              alt=""
+            />
+          ) : undefined,
+        };
+      }
+    );
+  }, [
+    type,
+    selectedModel,
+    resolution,
+    planMetadata,
+    token,
+    variant,
+    showOlderModels,
+    availableProviders,
+  ]);
 
   // Normalization logic for image models
   const effectiveModel = useMemo(() => {
@@ -207,6 +387,12 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         ? 'seedream'
         : isOpenAIImageModel(effectiveModel)
         ? 'openai'
+        : isImagenModel(effectiveModel)
+        ? 'imagen'
+        : isIdeogramModel(effectiveModel)
+        ? 'ideogram'
+        : isReveModel(effectiveModel)
+        ? 'reve'
         : 'gemini';
       onModelChange(effectiveModel, provider);
     }
@@ -217,17 +403,27 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       if (disabled || newModel === selectedModel) return;
 
       if (type === 'image') {
-        try {
-          localStorage.setItem('vsn-preferred-image-model', newModel);
-        } catch {}
+        setModelPreference('imageModel', newModel);
         const provider: ImageProvider = isSeedreamModel(newModel)
           ? 'seedream'
           : isOpenAIImageModel(newModel)
           ? 'openai'
+          : isImagenModel(newModel)
+          ? 'imagen'
+          : isIdeogramModel(newModel)
+          ? 'ideogram'
+          : isReveModel(newModel)
+          ? 'reve'
           : 'gemini';
         onModelChange(newModel, provider);
+        setModelPreference('imageProvider', provider);
 
-        if (provider === 'seedream') {
+        if (provider === 'imagen') {
+          const imgConfig = getImagenModelConfig(newModel);
+          if (imgConfig && !resolution && onSyncResolution) {
+            onSyncResolution(imgConfig.defaultResolution);
+          }
+        } else if (provider === 'seedream') {
           const sdConfig = getSeedreamModelConfig(newModel);
           if (sdConfig && !resolution && onSyncResolution) {
             onSyncResolution(sdConfig.defaultResolution);
@@ -236,6 +432,16 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           const oaiConfig = getOpenAIImageModelConfig(newModel);
           if (oaiConfig && !resolution && onSyncResolution) {
             onSyncResolution(oaiConfig.defaultResolution);
+          }
+        } else if (provider === 'ideogram') {
+          const idConfig = getIdeogramModelConfig(newModel);
+          if (idConfig && !resolution && onSyncResolution) {
+            onSyncResolution(idConfig.defaultResolution);
+          }
+        } else if (provider === 'reve') {
+          const rvConfig = getReveModelConfig(newModel);
+          if (rvConfig && !resolution && onSyncResolution) {
+            onSyncResolution(rvConfig.defaultResolution);
           }
         } else {
           const config = getModelConfig(newModel as GeminiModel);
@@ -248,6 +454,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           }
         }
       } else {
+        setModelPreference('chatModel', newModel);
         onModelChange(newModel);
       }
     },
@@ -276,6 +483,20 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         onChange={handleValueChange}
         disabled={disabled}
         placeholder={t('canvasNodes.promptNode.selectModel') || 'Select Model'}
+        footer={
+          hasDeprecated ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowOlderModels(!showOlderModels);
+              }}
+              className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
+            >
+              {showOlderModels ? 'Hide older models' : 'Show older models'}
+            </button>
+          ) : undefined
+        }
         className={cn(
           type === 'chat' &&
             '!bg-transparent border-neutral-800 hover:border-white/10 !px-2 !py-0.5 h-auto',
