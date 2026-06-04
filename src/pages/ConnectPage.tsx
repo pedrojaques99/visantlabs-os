@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import { AuthModal } from '../components/AuthModal';
 import { useLayout } from '../hooks/useLayout';
 import { authService } from '../services/authService';
+import { cn } from '../lib/utils';
+import { Check, Copy, ArrowRight, ExternalLink, Terminal, ChevronRight } from 'lucide-react';
 
-const API_BASE_URL =
+const API =
   (import.meta as any).env?.VITE_API_URL || '/api';
 
 const MCP_URL = 'https://api.visantlabs.com/api/mcp';
+
+// ── Types ──
 
 interface InviteData {
   invite: {
@@ -26,60 +31,74 @@ interface InviteData {
   creator: { name: string; picture: string | null } | null;
 }
 
-type Step = 'loading' | 'preview' | 'auth' | 'accepting' | 'connected' | 'error';
+type Step = 'loading' | 'invite' | 'auth' | 'accepting' | 'connected' | 'error';
 
-function buildCursorDeepLink() {
-  const config = btoa(JSON.stringify({ type: 'http', url: MCP_URL }));
-  return `cursor://anysphere.cursor-deeplink/mcp/install?name=Visant%20Labs&config=${config}`;
+// ── Deep links ──
+
+function cursorLink() {
+  const cfg = btoa(JSON.stringify({ type: 'http', url: MCP_URL }));
+  return `cursor://anysphere.cursor-deeplink/mcp/install?name=Visant%20Labs&config=${cfg}`;
 }
 
-function buildVscodeDeepLink() {
-  const config = JSON.stringify({
-    name: 'Visant Labs',
-    type: 'http',
-    url: MCP_URL,
-  });
-  return `vscode://mcp/install?${encodeURIComponent(config)}`;
+function vscodeLink() {
+  const cfg = JSON.stringify({ name: 'Visant Labs', type: 'http', url: MCP_URL });
+  return `vscode://mcp/install?${encodeURIComponent(cfg)}`;
 }
 
-const LLM_OPTIONS = [
+const PROVIDERS = [
   {
     id: 'cursor',
     name: 'Cursor',
-    icon: '/icons/cursor.svg',
-    deepLink: buildCursorDeepLink(),
-    instructions: null,
+    sub: 'One-click install',
+    href: cursorLink(),
+    action: 'connect' as const,
   },
   {
     id: 'vscode',
     name: 'VS Code',
-    icon: '/icons/vscode.svg',
-    deepLink: buildVscodeDeepLink(),
-    instructions: null,
+    sub: 'One-click install',
+    href: vscodeLink(),
+    action: 'connect' as const,
   },
   {
     id: 'claude',
     name: 'Claude',
-    icon: '/icons/claude.svg',
-    deepLink: null,
-    instructions: 'Settings → Connectors → Add custom connector → Paste URL',
+    sub: 'Settings → Connectors → Add connector',
+    action: 'copy' as const,
   },
   {
     id: 'chatgpt',
     name: 'ChatGPT',
-    icon: '/icons/chatgpt.svg',
-    deepLink: null,
-    instructions: 'Settings → Apps → Developer Mode → Create App → Paste URL',
+    sub: 'Settings → Apps → Developer Mode',
+    action: 'copy' as const,
   },
   {
     id: 'cli',
-    name: 'Claude Code',
-    icon: '/icons/claude.svg',
-    deepLink: null,
-    instructions: null,
-    cliCommand: `claude mcp add --transport http visant ${MCP_URL}`,
+    name: 'Terminal',
+    sub: `claude mcp add --transport http visant ${MCP_URL}`,
+    action: 'cli' as const,
+    cli: `claude mcp add --transport http visant ${MCP_URL}`,
   },
 ] as const;
+
+// ── Animations ──
+
+const ease = [0.25, 0.46, 0.45, 0.94] as const;
+const fadeIn = { opacity: 0, y: 8 };
+const fadeVisible = { opacity: 1, y: 0 };
+const fadeOut = { opacity: 0, y: -8 };
+const dur = { duration: 0.35, ease };
+
+const staggerVariants = {
+  animate: { transition: { staggerChildren: 0.06 } },
+};
+
+const itemVariants = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease } },
+};
+
+// ── Component ──
 
 export default function ConnectPage() {
   const { token } = useParams<{ token: string }>();
@@ -91,41 +110,38 @@ export default function ConnectPage() {
   const [error, setError] = useState('');
   const [showAuth, setShowAuth] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
-  const [acceptResult, setAcceptResult] = useState<{ brandName: string; role: string } | null>(null);
+  const [brandName, setBrandName] = useState('');
 
   useEffect(() => {
-    if (!token) {
-      setError('Invalid invite link');
-      setStep('error');
-      return;
-    }
+    if (!token) { setError('Invalid link'); setStep('error'); return; }
     fetchInvite(token);
   }, [token]);
 
   async function fetchInvite(t: string) {
     try {
-      const res = await fetch(`${API_BASE_URL}/brand-guidelines/invite/${t}`);
+      const res = await fetch(`${API}/brand-guidelines/invite/${t}`);
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Invite not found');
+        const d = await res.json().catch(() => ({}));
+        setError(d.error || 'This invite is no longer available');
         setStep('error');
         return;
       }
       const data: InviteData = await res.json();
       setInvite(data);
-      setStep('preview');
+      setBrandName(data.brand.name || 'Brand Kit');
+      setStep('invite');
     } catch {
-      setError('Failed to load invite');
+      setError('Unable to load invite');
       setStep('error');
     }
   }
 
-  async function acceptInvite() {
+  async function accept() {
     if (!token) return;
     setStep('accepting');
     try {
       const authToken = authService.getToken();
-      const res = await fetch(`${API_BASE_URL}/brand-guidelines/invite/${token}/accept`, {
+      const res = await fetch(`${API}/brand-guidelines/invite/${token}/accept`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,257 +149,393 @@ export default function ConnectPage() {
         },
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Failed to accept invite');
+        const d = await res.json().catch(() => ({}));
+        setError(d.error || 'Could not accept invite');
         setStep('error');
         return;
       }
       const data = await res.json();
-      setAcceptResult({ brandName: data.brandName, role: data.role });
+      setBrandName(data.brandName || brandName);
       setStep('connected');
     } catch {
-      setError('Failed to accept invite');
+      setError('Connection failed');
       setStep('error');
     }
   }
 
-  function handleAuthSuccess() {
-    setShowAuth(false);
-    acceptInvite();
-  }
-
   function handleConnect() {
-    if (isAuthenticated) {
-      acceptInvite();
-    } else {
-      setShowAuth(true);
-    }
+    if (isAuthenticated) { accept(); } else { setShowAuth(true); }
   }
 
-  function copyToClipboard(text: string, id: string) {
+  const copy = useCallback((text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopied(id);
-    setTimeout(() => setCopied(null), 2000);
-  }
+    setTimeout(() => setCopied(null), 1800);
+  }, []);
 
-  // ── Loading ──
-  if (step === 'loading') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const logo = invite?.brand.logo;
+  const colors = invite?.brand.colors || [];
+  const creator = invite?.creator?.name;
 
-  // ── Error ──
-  if (step === 'error') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center space-y-4">
-          <div className="text-4xl font-mono font-bold text-foreground/20">404</div>
-          <p className="text-sm text-muted-foreground">{error}</p>
-          <Button variant="outline" size="sm" onClick={() => navigate('/')}>
-            Go home
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-16">
+      <AnimatePresence mode="wait">
+        {/* ── Loading ── */}
+        {step === 'loading' && (
+          <motion.div key="load" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="flex flex-col items-center gap-3">
+            <Spinner />
+            <p className="text-[13px] text-muted-foreground">Loading invite...</p>
+          </motion.div>
+        )}
 
-  const brandName = invite?.brand.name || 'Brand Kit';
-  const brandLogo = invite?.brand.logo;
-  const brandColors = invite?.brand.colors || [];
-  const creatorName = invite?.creator?.name || 'Someone';
-
-  // ── Preview (invite details + connect button) ──
-  if (step === 'preview') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="max-w-md w-full space-y-8">
-          {/* Brand card */}
-          <div className="border border-border rounded-lg p-6 space-y-5">
-            <div className="flex items-center gap-4">
-              {brandLogo ? (
-                <img
-                  src={brandLogo}
-                  alt={brandName}
-                  className="w-12 h-12 rounded-md object-contain bg-muted"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground">
-                  {brandName[0]?.toUpperCase()}
-                </div>
-              )}
-              <div>
-                <h1 className="text-lg font-semibold text-foreground">{brandName}</h1>
-                <p className="text-xs text-muted-foreground">
-                  {creatorName} invited you as {invite?.invite.role}
-                </p>
-              </div>
-            </div>
-
-            {/* Color preview */}
-            {brandColors.length > 0 && (
-              <div className="flex gap-1.5">
-                {brandColors.map((c, i) => (
-                  <div
-                    key={i}
-                    className="w-7 h-7 rounded-full border border-border"
-                    style={{ backgroundColor: c.hex }}
-                    title={c.name || c.hex}
-                  />
-                ))}
-              </div>
-            )}
-
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Accept this invite to connect <strong>{brandName}</strong> to your
-              AI tools. All brand guidelines, colors, typography, and assets will
-              be available in your LLM of choice.
-            </p>
-
-            <Button className="w-full" onClick={handleConnect}>
-              Accept &amp; Connect
+        {/* ── Error ── */}
+        {step === 'error' && (
+          <motion.div key="err" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="max-w-sm w-full text-center space-y-5">
+            <div className="text-5xl font-mono font-bold text-foreground/10 select-none">?</div>
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={() => navigate('/')}
+            >
+              Back to home
             </Button>
-          </div>
+          </motion.div>
+        )}
 
-          <p className="text-[11px] text-muted-foreground text-center">
-            Powered by{' '}
-            <a href="https://visantlabs.com" className="underline hover:text-foreground">
-              Visant Labs
-            </a>
-          </p>
+        {/* ── Invite preview ── */}
+        {step === 'invite' && invite && (
+          <motion.div key="inv" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="max-w-[420px] w-full space-y-6">
+            {/* Brand identity */}
+            <motion.div className="flex flex-col items-center text-center gap-4" variants={staggerVariants} initial="initial" animate="animate">
+              <motion.div variants={itemVariants}>
+                {logo ? (
+                  <img
+                    src={logo}
+                    alt={brandName}
+                    className="w-16 h-16 rounded-2xl object-contain bg-muted/50 ring-1 ring-border"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl bg-muted/50 ring-1 ring-border flex items-center justify-center">
+                    <span className="text-2xl font-semibold text-muted-foreground">
+                      {brandName[0]?.toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="space-y-1">
+                <h1 className="text-xl font-semibold text-foreground tracking-tight">{brandName}</h1>
+                {creator && (
+                  <p className="text-[13px] text-muted-foreground">
+                    Invited by {creator}
+                  </p>
+                )}
+              </motion.div>
+
+              {/* Color strip */}
+              {colors.length > 0 && (
+                <motion.div variants={itemVariants} className="flex gap-1">
+                  {colors.map((c, i) => (
+                    <div
+                      key={i}
+                      className="w-6 h-6 rounded-full ring-1 ring-black/5 dark:ring-white/10 transition-transform hover:scale-110"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* Description */}
+            <motion.p
+              variants={itemVariants}
+              className="text-[13px] text-muted-foreground text-center leading-relaxed max-w-xs mx-auto"
+            >
+              Accept to connect this brand to your AI tools.
+              Colors, typography, logos and assets — ready in your LLM.
+            </motion.p>
+
+            {/* CTA */}
+            <motion.div variants={itemVariants}>
+              <Button
+                className="w-full h-11 text-sm font-medium relative overflow-hidden group"
+                onClick={handleConnect}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Accept & Connect
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </Button>
+            </motion.div>
+
+            <Watermark />
+          </motion.div>
+        )}
+
+        {/* ── Accepting ── */}
+        {step === 'accepting' && (
+          <motion.div key="acc" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="flex flex-col items-center gap-3">
+            <Spinner />
+            <p className="text-[13px] text-muted-foreground">Connecting {brandName}...</p>
+          </motion.div>
+        )}
+
+        {/* ── Connected ── */}
+        {step === 'connected' && (
+          <motion.div key="done" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="max-w-[460px] w-full space-y-8">
+            {/* Success */}
+            <motion.div className="flex flex-col items-center text-center gap-3" variants={staggerVariants} initial="initial" animate="animate">
+              <motion.div
+                variants={itemVariants}
+                className="w-12 h-12 rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20 flex items-center justify-center"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
+                <Check className="w-5 h-5 text-emerald-500" strokeWidth={2.5} />
+              </motion.div>
+              <motion.h1 variants={itemVariants} className="text-lg font-semibold text-foreground tracking-tight">
+                {brandName} is connected
+              </motion.h1>
+              <motion.p variants={itemVariants} className="text-[13px] text-muted-foreground">
+                Choose how you want to work with it.
+              </motion.p>
+            </motion.div>
+
+            {/* MCP URL */}
+            <motion.div
+              variants={itemVariants}
+              className="rounded-xl border border-border bg-muted/30 p-4 space-y-2"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
+                  Server URL
+                </span>
+                <CopyBtn text={MCP_URL} id="url" copied={copied} onCopy={copy} />
+              </div>
+              <code className="block text-sm font-mono text-foreground/80 break-all select-all">
+                {MCP_URL}
+              </code>
+            </motion.div>
+
+            {/* Providers */}
+            <motion.div className="space-y-1.5" variants={staggerVariants} initial="initial" animate="animate">
+              {PROVIDERS.map((p) => (
+                <motion.div key={p.id} variants={itemVariants}>
+                  <ProviderRow provider={p} copied={copied} onCopy={copy} />
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Footer */}
+            <motion.div variants={itemVariants} className="flex flex-col items-center gap-3 pt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground text-[13px]"
+                onClick={() => navigate('/brand-guidelines')}
+              >
+                Go to dashboard
+                <ChevronRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+              <Watermark />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Auth modal */}
+      {showAuth && (
+        <AuthModal
+          isOpen={showAuth}
+          onClose={() => setShowAuth(false)}
+          onSuccess={() => { setShowAuth(false); accept(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Sub-components ──
+
+function Spinner() {
+  return (
+    <div className="relative w-5 h-5">
+      <div className="absolute inset-0 rounded-full border-2 border-foreground/10" />
+      <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-foreground animate-spin" />
+    </div>
+  );
+}
+
+function Watermark() {
+  return (
+    <p className="text-[11px] text-muted-foreground/50 text-center select-none">
+      Powered by{' '}
+      <a
+        href="https://visantlabs.com"
+        className="hover:text-muted-foreground transition-colors"
+        target="_blank"
+        rel="noopener"
+      >
+        Visant Labs
+      </a>
+    </p>
+  );
+}
+
+function CopyBtn({
+  text,
+  id,
+  copied,
+  onCopy,
+  className,
+}: {
+  text: string;
+  id: string;
+  copied: string | null;
+  onCopy: (t: string, id: string) => void;
+  className?: string;
+}) {
+  const isCopied = copied === id;
+  return (
+    <button
+      onClick={() => onCopy(text, id)}
+      className={cn(
+        'inline-flex items-center gap-1.5 text-[12px] font-medium rounded-md px-2.5 py-1',
+        'bg-transparent hover:bg-muted/80 text-muted-foreground hover:text-foreground',
+        'transition-all duration-200 active:scale-95',
+        className,
+      )}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {isCopied ? (
+          <motion.span
+            key="ok"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            className="flex items-center gap-1 text-emerald-500"
+          >
+            <Check className="w-3 h-3" /> Copied
+          </motion.span>
+        ) : (
+          <motion.span
+            key="cp"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            className="flex items-center gap-1"
+          >
+            <Copy className="w-3 h-3" /> Copy
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </button>
+  );
+}
+
+function ProviderRow({
+  provider,
+  copied,
+  onCopy,
+}: {
+  provider: (typeof PROVIDERS)[number];
+  copied: string | null;
+  onCopy: (t: string, id: string) => void;
+}) {
+  const p = provider;
+
+  return (
+    <div
+      className={cn(
+        'group flex items-center justify-between rounded-xl border border-border/60 px-4 py-3',
+        'hover:border-border hover:bg-muted/20 transition-all duration-200',
+      )}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <ProviderIcon id={p.id} />
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-foreground">{p.name}</div>
+          {p.action === 'cli' ? (
+            <code className="text-[11px] text-muted-foreground font-mono truncate block max-w-[260px]">
+              {p.sub}
+            </code>
+          ) : (
+            <div className="text-[11px] text-muted-foreground">{p.sub}</div>
+          )}
         </div>
+      </div>
 
-        {showAuth && (
-          <AuthModal
-            isOpen={showAuth}
-            onClose={() => setShowAuth(false)}
-            onSuccess={handleAuthSuccess}
-          />
+      <div className="shrink-0 ml-3">
+        {p.action === 'connect' ? (
+          <a
+            href={p.href}
+            className={cn(
+              'inline-flex items-center gap-1.5 text-[12px] font-medium rounded-lg px-3 py-1.5',
+              'bg-foreground text-background hover:bg-foreground/90',
+              'transition-all duration-200 active:scale-95',
+            )}
+          >
+            Connect
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        ) : p.action === 'cli' ? (
+          <CopyBtn text={p.cli!} id={`cli-${p.id}`} copied={copied} onCopy={onCopy} />
+        ) : (
+          <CopyBtn text={MCP_URL} id={`url-${p.id}`} copied={copied} onCopy={onCopy} />
         )}
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  // ── Accepting (spinner) ──
-  if (step === 'accepting') {
+function ProviderIcon({ id }: { id: string }) {
+  const base = 'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors';
+
+  if (id === 'cursor') {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-5 h-5 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground">Connecting brand...</p>
-        </div>
+      <div className={cn(base, 'bg-[#1a1a1a] dark:bg-white/10')}>
+        <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="currentColor">
+          <path d="M5.868 2.75L10 12l-4.132 9.25L2 12l3.868-9.25zM13.132 2.75L22 12l-8.868 9.25L9 12l4.132-9.25z" />
+        </svg>
       </div>
     );
   }
-
-  // ── Connected (deep links + instructions) ──
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <div className="max-w-lg w-full space-y-8">
-        {/* Success header */}
-        <div className="text-center space-y-2">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
-            <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 className="text-lg font-semibold text-foreground">
-            {acceptResult?.brandName || brandName} connected
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Now connect to your AI tool of choice.
-          </p>
-        </div>
-
-        {/* MCP URL copy */}
-        <div className="border border-border rounded-lg p-4 space-y-2">
-          <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
-            MCP Server URL
-          </label>
-          <div className="flex gap-2">
-            <code className="flex-1 bg-muted rounded px-3 py-2 text-sm font-mono text-foreground truncate">
-              {MCP_URL}
-            </code>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => copyToClipboard(MCP_URL, 'mcp-url')}
-            >
-              {copied === 'mcp-url' ? 'Copied' : 'Copy'}
-            </Button>
-          </div>
-        </div>
-
-        {/* LLM connection options */}
-        <div className="space-y-2">
-          {LLM_OPTIONS.map((llm) => (
-            <div
-              key={llm.id}
-              className="border border-border rounded-lg p-4 flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0">
-                  <span className="text-xs font-bold text-muted-foreground">
-                    {llm.name[0]}
-                  </span>
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-foreground">{llm.name}</div>
-                  {llm.instructions && (
-                    <div className="text-[11px] text-muted-foreground truncate">
-                      {llm.instructions}
-                    </div>
-                  )}
-                  {'cliCommand' in llm && llm.cliCommand && (
-                    <code className="text-[11px] text-muted-foreground font-mono">
-                      {llm.cliCommand}
-                    </code>
-                  )}
-                </div>
-              </div>
-
-              <div className="shrink-0">
-                {llm.deepLink ? (
-                  <Button size="sm" asChild>
-                    <a href={llm.deepLink}>Connect</a>
-                  </Button>
-                ) : 'cliCommand' in llm && llm.cliCommand ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(llm.cliCommand!, `cli-${llm.id}`)}
-                  >
-                    {copied === `cli-${llm.id}` ? 'Copied' : 'Copy'}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(MCP_URL, `url-${llm.id}`)}
-                  >
-                    {copied === `url-${llm.id}` ? 'Copied' : 'Copy URL'}
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <div className="text-center space-y-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/brand-guidelines')}>
-            Go to Dashboard
-          </Button>
-          <p className="text-[11px] text-muted-foreground">
-            Your brand is now accessible via 100+ AI tools.{' '}
-            <a href="/developer/getting-started" className="underline hover:text-foreground">
-              View docs
-            </a>
-          </p>
-        </div>
+  if (id === 'vscode') {
+    return (
+      <div className={cn(base, 'bg-[#007ACC]/10')}>
+        <svg viewBox="0 0 24 24" className="w-4 h-4 text-[#007ACC]" fill="currentColor">
+          <path d="M17.583 2.296L9.23 9.652l-4.38-3.42L2.25 7.5v9l2.6 1.268 4.38-3.42 8.353 7.356L21.75 19.5V4.5l-4.167-2.204zM17.25 16.5l-5.4-4.5 5.4-4.5v9z" />
+        </svg>
       </div>
+    );
+  }
+  if (id === 'claude') {
+    return (
+      <div className={cn(base, 'bg-[#D97757]/10')}>
+        <svg viewBox="0 0 24 24" className="w-4 h-4 text-[#D97757]" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 10H8v-1c0-2 4-3.1 4-3.1s4 1.1 4 3.1v1z" />
+        </svg>
+      </div>
+    );
+  }
+  if (id === 'chatgpt') {
+    return (
+      <div className={cn(base, 'bg-[#10A37F]/10')}>
+        <svg viewBox="0 0 24 24" className="w-4 h-4 text-[#10A37F]" fill="currentColor">
+          <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.998 5.998 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073z" />
+        </svg>
+      </div>
+    );
+  }
+  // CLI / Terminal
+  return (
+    <div className={cn(base, 'bg-muted/50')}>
+      <Terminal className="w-4 h-4 text-muted-foreground" />
     </div>
   );
 }
