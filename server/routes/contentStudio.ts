@@ -7,17 +7,35 @@ import { buildBrandContextJSON, BRAND_SECTION_PRESETS } from '../lib/brandContex
 import { planFromBrand, type CreativeFormat } from '../lib/creative-plan-engine.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
-import { chargeCredits } from '../lib/credits.js';
+import { chargeCredits, refundCredits } from '../lib/credits.js';
 import { getCreditsRequired } from '../utils/usageTracking.js';
 import { generateMockup as generateGeminiImage } from '../services/geminiService.js';
+import { generateIdeogramImage } from '../services/ideogramService.js';
+import { generateReveImage } from '../services/reveService.js';
+import { generateSeedreamImage } from '../services/seedreamService.js';
+import { generateOpenAIImage } from '../services/openaiImageService.js';
+import { generateImagenImage } from '../services/imagenService.js';
+import { isIdeogramModel } from '../../src/constants/ideogramModels.js';
+import { isReveModel } from '../../src/constants/reveModels.js';
+import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
+import { isOpenAIImageModel } from '../../src/constants/openaiModels.js';
+import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { withResilience } from '../lib/ai-resilience.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { rateLimit } from 'express-rate-limit';
 
 const router = express.Router();
 
 const JOB_TTL_SECONDS = 60 * 60 * 2;
 const MAX_CONCURRENCY = 4;
+
+const contentStudioLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  message: { error: 'Too many content generation requests. Please wait a moment.' },
+  keyGenerator: (req: any) => req.userId || req.ip,
+});
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,6 +61,7 @@ interface ContentJob {
   totalCount: number;
   completedCount: number;
   assets: ContentAsset[];
+  creditsCharged: number;
   error?: string;
 }
 
@@ -118,7 +137,7 @@ No markdown fences.`;
   }
 }
 
-// ─── Image generation per format ─────────────────────────────────────────────
+// ─── Multi-provider image generation ─────────────────────────────────────────
 
 async function generateFormatImage(params: {
   brief: string;
@@ -128,8 +147,9 @@ async function generateFormatImage(params: {
   model: string;
 }): Promise<string> {
   const { brief, format, brandGuideline, userId, model } = params;
-
   const creativeRatio = mapRatio(format.ratio);
+
+  let prompt = `${brief}. Professional ${format.platform} ${format.ratio} format.`;
 
   if (brandGuideline) {
     const { plan, pickedMedia } = await planFromBrand({
@@ -137,56 +157,60 @@ async function generateFormatImage(params: {
       format: creativeRatio,
       brandGuideline,
     });
-
-    if (pickedMedia?.url) {
-      return pickedMedia.url;
-    }
-
-    const bgPrompt = plan.background?.prompt ?? brief;
-    const base64 = await generateGeminiImage(
-      bgPrompt,
-      undefined,
-      model as any,
-      undefined,
-      creativeRatio,
-      undefined,
-      undefined,
-      undefined
-    );
-
-    return uploadCanvasImage(base64, userId, `content-${nanoid(8)}`);
+    if (pickedMedia?.url) return pickedMedia.url;
+    prompt = plan.background?.prompt ?? brief;
   }
 
-  const base64 = await generateGeminiImage(
-    `${brief}. Professional ${format.platform} ${format.ratio} format.`,
+  const base64 = await generateImageWithProvider(prompt, model, creativeRatio);
+  return uploadCanvasImage(base64, userId, `content-${nanoid(8)}`);
+}
+
+async function generateImageWithProvider(
+  prompt: string,
+  model: string,
+  aspectRatio: CreativeFormat
+): Promise<string> {
+  if (isIdeogramModel(model)) {
+    const result = await generateIdeogramImage({ prompt, model: model as any, aspectRatio: aspectRatio as any });
+    return result.base64;
+  }
+  if (isReveModel(model)) {
+    const result = await generateReveImage({ prompt, aspectRatio: aspectRatio as any });
+    return result.base64;
+  }
+  if (isSeedreamModel(model)) {
+    const result = await generateSeedreamImage({ prompt, model: model as any, aspectRatio: aspectRatio as any });
+    return result.base64;
+  }
+  if (isOpenAIImageModel(model)) {
+    const result = await generateOpenAIImage({ prompt, model, aspectRatio: aspectRatio as any });
+    return result.base64;
+  }
+  if (isImagenModel(model)) {
+    const result = await generateImagenImage({ prompt, model: model as any, aspectRatio });
+    return result.base64;
+  }
+  return generateGeminiImage(
+    prompt,
     undefined,
     model as any,
     undefined,
-    creativeRatio,
+    aspectRatio,
     undefined,
     undefined,
     undefined
   );
-
-  return uploadCanvasImage(base64, userId, `content-${nanoid(8)}`);
 }
 
 function mapRatio(ratio: string): CreativeFormat {
   switch (ratio) {
-    case '1:1':
-      return '1:1';
-    case '9:16':
-      return '9:16';
-    case '16:9':
-      return '16:9';
-    case '4:5':
-      return '4:5';
-    case '1.91:1':
-      return '16:9';
-    case '2:3':
-      return '9:16';
-    default:
-      return '1:1';
+    case '1:1': return '1:1';
+    case '9:16': return '9:16';
+    case '16:9': return '16:9';
+    case '4:5': return '4:5';
+    case '1.91:1': return '16:9';
+    case '2:3': return '9:16';
+    default: return '1:1';
   }
 }
 
@@ -220,22 +244,28 @@ async function runContentGeneration(params: {
         where: { id: brandGuidelineId, userId },
       });
       if (brandGuideline) {
-        const ctx = buildBrandContextJSON(brandGuideline as any, BRAND_SECTION_PRESETS.imageGen);
-        brandContextStr = `Brand: ${ctx.brand.name}. ${ctx.voice?.tone || ''}`;
+        const ctx = buildBrandContextJSON(brandGuideline as any, BRAND_SECTION_PRESETS.copy);
+        const parts = [
+          `Brand: ${ctx.brand.name}`,
+          ctx.voice?.tone ? `Tone: ${ctx.voice.tone}` : null,
+          ctx.voice?.dos?.length ? `Do: ${ctx.voice.dos.join(', ')}` : null,
+          ctx.voice?.donts?.length ? `Don't: ${ctx.voice.donts.join(', ')}` : null,
+          ctx.colors?.length
+            ? `Colors: ${ctx.colors.map((c: any) => `${c.name || ''} ${c.hex}`).join(', ')}`
+            : null,
+          ctx.strategy?.positioning?.length
+            ? `Positioning: ${ctx.strategy.positioning.join(', ')}`
+            : null,
+        ];
+        brandContextStr = parts.filter(Boolean).join('. ');
       }
     }
 
-    // Step 1: Generate copy for all formats
+    // Step 1: Generate copy
     job.status = 'generating-copy';
     await saveJob(job);
 
-    const copies = await generateCopy({
-      brief,
-      formats,
-      brandContext: brandContextStr,
-      tone,
-    });
-
+    const copies = await generateCopy({ brief, formats, brandContext: brandContextStr, tone });
     const copyMap = new Map(copies.map((c) => [c.formatId, c]));
     for (const asset of job.assets) {
       const copy = copyMap.get(asset.formatId);
@@ -251,6 +281,7 @@ async function runContentGeneration(params: {
     await saveJob(job);
 
     const queue = formats.map((_, i) => i);
+    let successCount = 0;
 
     const worker = async () => {
       while (queue.length > 0) {
@@ -269,6 +300,7 @@ async function runContentGeneration(params: {
             model,
           });
           job.assets[i] = { ...job.assets[i], status: 'done', imageUrl };
+          successCount++;
         } catch (err: any) {
           job.assets[i] = { ...job.assets[i], status: 'error', error: err.message };
         }
@@ -284,16 +316,37 @@ async function runContentGeneration(params: {
 
     job.status = 'done';
     await saveJob(job);
+
+    // Refund credits for failed images
+    const failedCount = formats.length - successCount;
+    if (failedCount > 0) {
+      const perImageCredits = getCreditsRequired(model, '1K');
+      const refundAmount = perImageCredits * failedCount;
+      try {
+        await refundCredits(userId, refundAmount);
+        console.log(`[content-studio] Refunded ${refundAmount} credits for ${failedCount} failed images`);
+      } catch (refundErr: any) {
+        console.error('[content-studio] Failed to refund credits:', refundErr.message);
+      }
+    }
   } catch (err: any) {
     job.status = 'error';
     job.error = err.message;
     await saveJob(job);
+
+    // Full refund on catastrophic failure
+    try {
+      await refundCredits(userId, job.creditsCharged);
+      console.log(`[content-studio] Full refund of ${job.creditsCharged} credits after job failure`);
+    } catch (refundErr: any) {
+      console.error('[content-studio] Failed to refund credits on error:', refundErr.message);
+    }
   }
 }
 
 // ─── POST /api/content-studio ────────────────────────────────────────────────
 
-router.post('/', authenticate, async (req: AuthRequest, res) => {
+router.post('/', contentStudioLimiter, authenticate, async (req: AuthRequest, res) => {
   if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
   const {
@@ -330,7 +383,16 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 
   const perImageCredits = getCreditsRequired(model, '1K');
   const totalCredits = 1 + perImageCredits * formats.length;
-  await chargeCredits(req.userId!, totalCredits);
+
+  try {
+    await chargeCredits(req.userId!, totalCredits);
+  } catch (err: any) {
+    return res.status(402).json({
+      error: 'Insufficient credits',
+      required: totalCredits,
+      message: err.message,
+    });
+  }
 
   const job: ContentJob = {
     jobId: nanoid(),
@@ -339,6 +401,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     createdAt: Date.now(),
     totalCount: formats.length,
     completedCount: 0,
+    creditsCharged: totalCredits,
     assets: formats.map((f) => ({
       formatId: f.id,
       platform: f.platform,

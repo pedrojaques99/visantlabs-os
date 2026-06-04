@@ -940,6 +940,11 @@ const MockupMachinePageContent: React.FC = () => {
         return;
       }
 
+      if (isCompareMode && compareModels.length === 0) {
+        toast.error('Select at least one model to compare', { duration: 5000 });
+        return;
+      }
+
       const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
       const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
 

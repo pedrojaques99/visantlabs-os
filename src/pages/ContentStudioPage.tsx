@@ -6,7 +6,6 @@ import {
   Copy,
   Check,
   Loader2,
-  ImageIcon,
   Type,
   Hash,
   AlertCircle,
@@ -51,6 +50,8 @@ export const ContentStudioPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const pollCountRef = useRef(0);
+  const MAX_POLLS = 200; // ~10 min at 3s interval
 
   const toneOptions = [
     { value: '', label: 'Auto' },
@@ -96,8 +97,17 @@ export const ContentStudioPage: React.FC = () => {
 
       const initialJob = await pollContentJob(result.jobId);
       setJob(initialJob);
+      pollCountRef.current = 0;
 
       pollRef.current = setInterval(async () => {
+        pollCountRef.current++;
+        if (pollCountRef.current > MAX_POLLS) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          setIsGenerating(false);
+          toast.error('Generation timed out. Check back later.');
+          return;
+        }
         try {
           const updated = await pollContentJob(result.jobId);
           setJob(updated);
@@ -164,9 +174,9 @@ export const ContentStudioPage: React.FC = () => {
         </span>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Sidebar — Brief + Config */}
-        <aside className="w-[380px] flex-shrink-0 border-r border-neutral-800/50 overflow-y-auto custom-scrollbar p-5 space-y-5">
+        <aside className="w-full md:w-[380px] flex-shrink-0 border-r border-neutral-800/50 overflow-y-auto custom-scrollbar p-5 space-y-5 md:max-h-full max-h-[50vh]">
           {/* Brief */}
           <div className="space-y-2">
             <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
