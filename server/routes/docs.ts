@@ -18,6 +18,8 @@ import { generateMCPSpec, generatePlatformMCPSpec } from '../lib/mcp-gen.js';
 import { getPricingPayload } from '../lib/pricing-data.js';
 import { docsCache } from '../lib/docs-cache.js';
 import { isDocumentationError, ValidationError } from '../lib/docs-errors.js';
+import { IMAGE_MODEL_REGISTRY } from '../../src/constants/imageModelRegistry.js';
+import { MCP_SPEC_VERSION } from '../lib/mcp-constants.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -195,7 +197,7 @@ router.get('/plugin/mcp.json', (req: Request, res: Response) => {
 router.get('/platform/mcp.json', (req: Request, res: Response) => {
   try {
     const spec = getPlatformSpec();
-    res.setHeader('X-MCP-Version', '2025-03-26');
+    res.setHeader('X-MCP-Version', MCP_SPEC_VERSION);
     sendCachedJSON(res, spec, 3600);
   } catch (err) {
     handleDocsError(err, res);
@@ -319,9 +321,9 @@ router.get('/ai-designer.json', (_req: Request, res: Response) => {
       ],
       autonomousConfig: {
         model: {
-          options: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'],
+          options: IMAGE_MODEL_REGISTRY.map((m) => m.id),
           default: 'gpt-image-2',
-          logic: 'photorealistic->seedream, fast->gemini, text/quality->gpt-image-2',
+          logic: 'photorealistic->seedream, fast->gemini, text/quality->gpt-image-2, text-rendering->ideogram-v4/reve',
         },
         aspectRatio: {
           options: ['1:1', '9:16', '16:9', '4:5'],
@@ -408,33 +410,12 @@ router.get('/ai-designer.json', (_req: Request, res: Response) => {
         ],
         brandColorAsLight: 'accent color as warm rim light source, not as object fill color',
       },
-      models: [
-        {
-          id: 'gpt-image-2',
-          provider: 'openai',
-          strengths: 'Best quality, text, brand fidelity',
-          logoRef: '/edits',
-          default: true,
-        },
-        {
-          id: 'gpt-image-1',
-          provider: 'openai',
-          strengths: 'Good quality, wider availability',
-          logoRef: '/edits',
-        },
-        {
-          id: 'gemini-3.1-flash-image-preview',
-          provider: 'gemini',
-          strengths: 'Fast, stylized, creative',
-          logoRef: 'inline base64',
-        },
-        {
-          id: 'seedream-3-0',
-          provider: 'seedream',
-          strengths: 'Photorealistic lifestyle',
-          logoRef: 'supported',
-        },
-      ],
+      models: IMAGE_MODEL_REGISTRY.map((m) => ({
+        id: m.id,
+        provider: m.provider,
+        strengths: m.description,
+        logoRef: m.supportsLogoRef ? 'supported' : 'not supported',
+      })),
       brandGuidelineTools: [
         'brand-guidelines-list',
         'brand-guidelines-get',
@@ -518,32 +499,12 @@ router.get('/brand-prompting.json', (_req: Request, res: Response) => {
         batchGenerate: 'POST /api/mockups/batch-generate',
         requiredField: 'brandGuidelineId',
       },
-      models: [
-        {
-          id: 'gpt-image-1',
-          provider: 'openai',
-          strengths: 'Best brand fidelity with referenceImages',
-          envVar: 'OPENAI_KEY or OPENAI_API_KEY',
-        },
-        {
-          id: 'gpt-image-2',
-          provider: 'openai',
-          strengths: 'Higher quality, better text rendering',
-          note: 'Requires OpenAI org verification',
-        },
-        {
-          id: 'gemini-3.1-flash-image-preview',
-          provider: 'gemini',
-          strengths: 'Fast, stylized, creative compositions',
-          envVar: 'GEMINI_API_KEY',
-        },
-        {
-          id: 'seedream-3-0',
-          provider: 'seedream',
-          strengths: 'Photorealistic lifestyle photography',
-          envVar: 'SEEDREAM_API_KEY',
-        },
-      ],
+      models: IMAGE_MODEL_REGISTRY.map((m) => ({
+        id: m.id,
+        provider: m.provider,
+        strengths: m.description,
+        envVar: m.envVar,
+      })),
     },
     3600
   );

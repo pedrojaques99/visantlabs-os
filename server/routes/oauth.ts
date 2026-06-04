@@ -3,11 +3,12 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
+import { API_BASE_URL, MCP_ENDPOINT, MCP_SCOPES } from '../lib/mcp-constants.js';
 
 const router = express.Router();
 
-const BASE_URL = process.env.API_BASE_URL || 'https://api.visantlabs.com';
-const MCP_RESOURCE = `${BASE_URL}/api/mcp`;
+const BASE_URL = API_BASE_URL;
+const MCP_RESOURCE = MCP_ENDPOINT;
 const REFRESH_TOKEN_TTL_DAYS = 30;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -76,10 +77,12 @@ router.get('/.well-known/oauth-authorization-server', (_req, res) => {
     authorization_endpoint: `${BASE_URL}/oauth/authorize`,
     token_endpoint: `${BASE_URL}/oauth/token`,
     registration_endpoint: `${BASE_URL}/oauth/register`,
+    revocation_endpoint: `${BASE_URL}/oauth/revoke`,
     code_challenge_methods_supported: ['S256'],
     grant_types_supported: ['authorization_code', 'refresh_token'],
     response_types_supported: ['code'],
     token_endpoint_auth_methods_supported: ['none'],
+    scopes_supported: [...MCP_SCOPES],
     client_id_metadata_document_supported: true,
   });
 });
@@ -90,7 +93,7 @@ router.get('/.well-known/oauth-protected-resource', (_req, res) => {
   res.json({
     resource: MCP_RESOURCE,
     authorization_servers: [BASE_URL],
-    scopes_supported: ['read', 'write', 'generate'],
+    scopes_supported: [...MCP_SCOPES],
   });
 });
 

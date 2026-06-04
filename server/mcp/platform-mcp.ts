@@ -147,9 +147,15 @@ async function getQuotaMeta(userId: string) {
   };
 }
 
+import { MCP_RESULT_MAX_CHARS } from '../lib/mcp-constants.js';
+
 function jsonResponse(data: unknown) {
+  let text = JSON.stringify(data, null, 2);
+  if (text.length > MCP_RESULT_MAX_CHARS) {
+    text = text.slice(0, MCP_RESULT_MAX_CHARS) + '\n\n... [truncated — result exceeded 140k chars]';
+  }
   return {
-    content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }],
+    content: [{ type: 'text' as const, text }],
   };
 }
 
@@ -217,6 +223,7 @@ export function createPlatformMcpServer(): McpServer {
       capabilities: {
         tools: {},
         prompts: {},
+        resources: {},
       },
       instructions: `Visant Labs MCP — AI design platform for mockups, branding, creative studio, and image generation.
 
