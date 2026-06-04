@@ -1,8 +1,10 @@
 import { spawn } from 'child_process';
 import { randomUUID } from 'crypto';
-import { existsSync, writeFileSync, readFileSync, mkdirSync, rmSync } from 'fs';
+import { existsSync, writeFileSync, readFileSync, mkdirSync, rmSync, readdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import JSZip from 'jszip';
 import { redisClient } from '../lib/redis.js';
 import { uploadSharedAsset } from './r2Service.js';
 
@@ -29,10 +31,81 @@ interface RenderResult {
   durationMs: number;
 }
 
-async function downloadToFile(url: string, destPath: string): Promise<void> {
+function getDoSpacesClient(): S3Client | null {
+  const key = process.env.DO_SPACES_KEY;
+  const secret = process.env.DO_SPACES_SECRET;
+  const endpoint = process.env.DO_SPACES_ENDPOINT;
+  if (!key || !secret || !endpoint) return null;
+  return new S3Client({
+    region: 'us-east-1',
+    endpoint,
+    credentials: { accessKeyId: key, secretAccessKey: secret },
+    forcePathStyle: false,
+  });
+}
+
+function parseSpacesUrl(url: string): { bucket: string; key: string } | null {
+  const patterns = [
+    /https?:\/\/([^.]+)\.[^.]+\.cdn\.digitaloceanspaces\.com\/(.+)/,
+    /https?:\/\/([^.]+)\.[^.]+\.digitaloceanspaces\.com\/(.+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return { bucket: match[1], key: decodeURIComponent(match[2]) };
+  }
+
+  const cdnUrl = process.env.DO_SPACES_CDN_URL;
+  if (cdnUrl && url.startsWith(cdnUrl)) {
+    const bucket = process.env.DO_SPACES_BUCKET;
+    if (!bucket) return null;
+    const key = url.slice(cdnUrl.length).replace(/^\//, '');
+    return { bucket, key: decodeURIComponent(key) };
+  }
+
+  return null;
+}
+
+async function downloadBuffer(url: string): Promise<Buffer> {
+  const spacesInfo = parseSpacesUrl(url);
+  if (spacesInfo) {
+    const client = getDoSpacesClient();
+    if (!client) throw new Error('Digital Ocean Spaces credentials not configured');
+    const resp = await client.send(new GetObjectCommand({
+      Bucket: spacesInfo.bucket,
+      Key: spacesInfo.key,
+    }));
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of resp.Body as AsyncIterable<Uint8Array>) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  }
+
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to download ${url}: ${res.status}`);
-  const buffer = Buffer.from(await res.arrayBuffer());
+  return Buffer.from(await res.arrayBuffer());
+}
+
+async function downloadPsd(url: string, destPath: string): Promise<void> {
+  const buffer = await downloadBuffer(url);
+
+  if (url.toLowerCase().endsWith('.zip')) {
+    const zip = await JSZip.loadAsync(buffer);
+    const psdEntry = Object.values(zip.files).find(
+      (f) => !f.dir && f.name.toLowerCase().endsWith('.psd') && !f.name.startsWith('__MACOSX')
+    );
+    if (!psdEntry) throw new Error('No .psd file found inside ZIP');
+    const psdBuffer = await psdEntry.async('nodebuffer');
+    writeFileSync(destPath, psdBuffer);
+    return;
+  }
+
+  writeFileSync(destPath, buffer);
+}
+
+async function downloadArt(url: string, destPath: string): Promise<void> {
+  const buffer = await downloadBuffer(url);
   writeFileSync(destPath, buffer);
 }
 
@@ -78,8 +151,8 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
 
   try {
     await Promise.all([
-      downloadToFile(req.psdUrl, psdLocal),
-      downloadToFile(req.artUrl, artLocal),
+      downloadPsd(req.psdUrl, psdLocal),
+      downloadArt(req.artUrl, artLocal),
     ]);
 
     const args = [
