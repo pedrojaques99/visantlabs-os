@@ -69,6 +69,7 @@ import sessionsRoutes from './routes/sessions.js';
 import totpRoutes from './routes/totp.js';
 import internalRoutes from './routes/internal.js';
 import visualSearchRoutes from './routes/visual-search.js';
+import psdRenderRoutes from './routes/psdRender.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -337,6 +338,7 @@ export function createApp() {
     ['/totp', totpRoutes],
     ['/internal', internalRoutes],
     ['/visual-search', visualSearchRoutes],
+    ['/psd-render', psdRenderRoutes],
   ];
 
   // OpenAPI spec — public, no auth required
