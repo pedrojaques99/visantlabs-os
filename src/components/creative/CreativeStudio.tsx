@@ -417,7 +417,9 @@ export const CreativeStudio: React.FC = () => {
             </div>
           )}
 
-          {status === 'editing' && backgroundSelected && <BackgroundToolbar />}
+          {status === 'editing' && backgroundSelected && (
+            <BackgroundToolbar onEditAI={() => useCreativeStore.getState().setStatus('setup')} />
+          )}
           {status === 'editing' && <CreativeToolbar />}
         </div>
 

@@ -25,6 +25,28 @@ import {
   TRANSFORMER_STROKE,
 } from './lib/editorTokens';
 
+const GridOverlay = React.memo(
+  ({ width, height, gridSize }: { width: number; height: number; gridSize: number }) => {
+    const lines = useMemo(() => {
+      const result: React.ReactElement[] = [];
+      const cols = Math.floor(width / gridSize) + 1;
+      const rows = Math.floor(height / gridSize) + 1;
+      for (let i = 0; i < cols; i++) {
+        result.push(
+          <Line key={`gx${i}`} points={[i * gridSize, 0, i * gridSize, height]} stroke={GRID_LINE_COLOR} strokeWidth={1} listening={false} />
+        );
+      }
+      for (let i = 0; i < rows; i++) {
+        result.push(
+          <Line key={`gy${i}`} points={[0, i * gridSize, width, i * gridSize]} stroke={GRID_LINE_COLOR} strokeWidth={1} listening={false} />
+        );
+      }
+      return result;
+    }, [width, height, gridSize]);
+    return <>{lines}</>;
+  }
+);
+
 interface Props {
   width: number;
   height: number;
@@ -456,26 +478,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
 
             {/* Optional grid overlay — drawn above content, below transformer */}
             {gridEnabled && gridSize > 0 && (
-              <>
-                {Array.from({ length: Math.floor(width / gridSize) + 1 }, (_, i) => (
-                  <Line
-                    key={`gx${i}`}
-                    points={[i * gridSize, 0, i * gridSize, height]}
-                    stroke={GRID_LINE_COLOR}
-                    strokeWidth={1}
-                    listening={false}
-                  />
-                ))}
-                {Array.from({ length: Math.floor(height / gridSize) + 1 }, (_, i) => (
-                  <Line
-                    key={`gy${i}`}
-                    points={[0, i * gridSize, width, i * gridSize]}
-                    stroke={GRID_LINE_COLOR}
-                    strokeWidth={1}
-                    listening={false}
-                  />
-                ))}
-              </>
+              <GridOverlay width={width} height={height} gridSize={gridSize} />
             )}
 
             {/* Smart guide overlay — magenta lines, drawn last so they sit above content */}
