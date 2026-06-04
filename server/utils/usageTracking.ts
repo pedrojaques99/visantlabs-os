@@ -6,6 +6,8 @@ import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { OPENAI_IMAGE_MODELS, isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
 import { isImagenModel } from '../../src/constants/imagenModels.js';
+import { isIdeogramModel } from '../../src/constants/ideogramModels.js';
+import { isReveModel } from '../../src/constants/reveModels.js';
 import { lookupCredits } from '../lib/pricing-data.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
@@ -74,6 +76,34 @@ export function getCreditsRequired(model: GeminiModel | string, resolution?: Res
         return 4;
       case '1080p':
         return 3;
+      default:
+        return 2;
+    }
+  }
+
+  if (isReveModel(model)) {
+    switch (resolution) {
+      case '512px':
+      case 'HD':
+      case '1K':
+        return 2;
+      case '2K':
+        return 3;
+      default:
+        return 2;
+    }
+  }
+
+  if (isIdeogramModel(model)) {
+    switch (resolution) {
+      case '512px':
+      case 'HD':
+      case '1K':
+        return 2;
+      case '2K':
+        return 3;
+      case '4K':
+        return 4;
       default:
         return 2;
     }

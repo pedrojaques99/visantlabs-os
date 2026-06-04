@@ -15,9 +15,13 @@ import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js'
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
+import { generateIdeogramImage } from '../services/ideogramService.js';
+import { generateReveImage } from '../services/reveService.js';
 import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
 import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { isImagenModel } from '../../src/constants/imagenModels.js';
+import { isIdeogramModel } from '../../src/constants/ideogramModels.js';
+import { isReveModel } from '../../src/constants/reveModels.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -434,6 +438,10 @@ router.post(
         provider = 'openai';
       } else if (provider === 'gemini' && isSeedreamModel(model)) {
         provider = 'seedream';
+      } else if (provider === 'gemini' && isIdeogramModel(model)) {
+        provider = 'ideogram';
+      } else if (provider === 'gemini' && isReveModel(model)) {
+        provider = 'reve';
       }
 
       // Validate model ID
@@ -815,6 +823,38 @@ router.post(
               console.error(`${logPrefix} [API KEY] Failed to decrypt Seedream key:`, decryptError);
             }
           }
+        } else if (provider === 'ideogram') {
+          // Check for Ideogram API Key (user BYOK)
+          const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
+          if (user?.encryptedIdeogramApiKey) {
+            const { decryptApiKey } = await import('../utils/encryption.js');
+            try {
+              userApiKey = decryptApiKey(user.encryptedIdeogramApiKey);
+              if (userApiKey) {
+                usingUserKey = true;
+                apiKeySource = 'user';
+                console.log(`${logPrefix} [API KEY] Using user Ideogram API key`);
+              }
+            } catch (decryptError) {
+              console.error(`${logPrefix} [API KEY] Failed to decrypt Ideogram key:`, decryptError);
+            }
+          }
+        } else if (provider === 'reve') {
+          // Check for REVE API Key (user BYOK)
+          const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
+          if (user?.encryptedReveApiKey) {
+            const { decryptApiKey } = await import('../utils/encryption.js');
+            try {
+              userApiKey = decryptApiKey(user.encryptedReveApiKey);
+              if (userApiKey) {
+                usingUserKey = true;
+                apiKeySource = 'user';
+                console.log(`${logPrefix} [API KEY] Using user REVE API key`);
+              }
+            } catch (decryptError) {
+              console.error(`${logPrefix} [API KEY] Failed to decrypt REVE key:`, decryptError);
+            }
+          }
         } else if (provider === 'openai' || isOpenAIImageModel(model)) {
           // Check for OpenAI API Key (user BYOK) via helper — never access raw key field directly
           const { getOpenAiApiKey } = await import('../utils/openAiApiKey.js');
@@ -974,6 +1014,42 @@ router.post(
         });
         imageBase64 = seedreamResult.base64;
         usedSeed = seedreamResult.seed;
+      } else if (provider === 'reve' || isReveModel(model)) {
+        // Use REVE API
+        console.log(`${logPrefix} [GENERATION] Using REVE provider`, {
+          model,
+          aspectRatio,
+          seed: validSeed ?? 'random',
+        });
+
+        const reveResult = await generateReveImage({
+          prompt: finalPromptText,
+          aspectRatio: aspectRatio as any,
+          apiKey: userApiKey,
+          seed: validSeed,
+        });
+        imageBase64 = reveResult.base64;
+        usedSeed = reveResult.seed;
+      } else if (provider === 'ideogram' || isIdeogramModel(model)) {
+        // Use Ideogram API
+        const ideogramModel = isIdeogramModel(model) ? model : 'ideogram-v4';
+        console.log(`${logPrefix} [GENERATION] Using Ideogram provider`, {
+          model: ideogramModel,
+          resolution,
+          aspectRatio,
+          seed: validSeed ?? 'random',
+        });
+
+        const ideogramResult = await generateIdeogramImage({
+          prompt: finalPromptText,
+          model: ideogramModel as any,
+          resolution: resolution as any,
+          aspectRatio: aspectRatio as any,
+          apiKey: userApiKey,
+          seed: validSeed,
+        });
+        imageBase64 = ideogramResult.base64;
+        usedSeed = ideogramResult.seed;
       } else if (provider === 'openai' || isOpenAIImageModel(model)) {
         // Use OpenAI image generation
         const openaiModel = isOpenAIImageModel(model) ? model : OPENAI_IMAGE_MODELS.GPT_IMAGE_2;

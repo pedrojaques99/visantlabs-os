@@ -234,6 +234,8 @@ router.get('/providers', (_req: Request, res: Response) => {
     imagen: has('GEMINI_API_KEY') || has('VITE_GEMINI_API_KEY') || has('VITE_API_KEY'),
     openai: has('OPENAI_KEY') || has('OPENAI_API_KEY'),
     seedream: has('BYTEPLUS_API_KEY'),
+    ideogram: has('IDEOGRAM_API_KEY'),
+    reve: has('REVE_API_KEY'),
     kling: has('KLING_ACCESS_KEY') && has('KLING_SECRET_KEY'),
     seedance: has('BYTEPLUS_API_KEY'),
     veo: has('GEMINI_API_KEY') || has('VITE_GEMINI_API_KEY'),

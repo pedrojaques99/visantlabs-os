@@ -34,7 +34,7 @@ export type GeminiModel =
 export type { SeedreamModelId as SeedreamModel } from '../constants/seedreamModels';
 
 // Image generation provider
-export type ImageProvider = 'gemini' | 'seedream' | 'openai' | 'imagen';
+export type ImageProvider = 'gemini' | 'seedream' | 'openai' | 'imagen' | 'ideogram' | 'reve';
 
 export enum VeoModel {
   VEO_3_1 = 'veo-3.1-generate-preview',

@@ -299,6 +299,56 @@ export const CREDIT_COSTS: PricingTier[] = [
     creditsRequired: 4,
     category: 'image',
   },
+  // ── REVE Image (Reve API, TypoGuard text rendering) ──
+  {
+    model: 'Reve 1',
+    modelId: 'reve-image-1.0',
+    resolution: '1K',
+    googlePriceUSD: 0.1,
+    creditsRequired: 2,
+    category: 'image',
+  },
+  {
+    model: 'Reve 1',
+    modelId: 'reve-image-1.0',
+    resolution: '2K',
+    googlePriceUSD: 0.1,
+    creditsRequired: 3,
+    category: 'image',
+  },
+  // ── Ideogram Image (Ideogram API, DEFAULT speed tier pricing) ──
+  {
+    model: 'Ideogram 4',
+    modelId: 'ideogram-v4',
+    resolution: '1K',
+    googlePriceUSD: 0.06,
+    creditsRequired: 2,
+    category: 'image',
+  },
+  {
+    model: 'Ideogram 4',
+    modelId: 'ideogram-v4',
+    resolution: '2K',
+    googlePriceUSD: 0.06,
+    creditsRequired: 3,
+    category: 'image',
+  },
+  {
+    model: 'Ideogram 3',
+    modelId: 'ideogram-v3',
+    resolution: '1K',
+    googlePriceUSD: 0.06,
+    creditsRequired: 2,
+    category: 'image',
+  },
+  {
+    model: 'Ideogram 3',
+    modelId: 'ideogram-v3',
+    resolution: '2K',
+    googlePriceUSD: 0.06,
+    creditsRequired: 3,
+    category: 'image',
+  },
   // ── Veo Video (Google, per-second × 8s default) ──
   {
     model: 'Veo 3.1 Lite',

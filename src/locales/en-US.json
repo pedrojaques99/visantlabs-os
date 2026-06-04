@@ -2585,6 +2585,8 @@
     "designTypeQuestion": "Is this a logo or layout?",
     "directorModeDescription": "Select and define which tags can be chosen when generating",
     "directorModeLabel": "Director Mode",
+    "compareModeLabel": "Compare Models",
+    "compareModeDescription": "Generate the same prompt across multiple models side-by-side",
     "editIdentity": "Edit identity",
     "editIdentityDescription": "Edit the identity of the design",
     "editInstructions": "Edit instructions",

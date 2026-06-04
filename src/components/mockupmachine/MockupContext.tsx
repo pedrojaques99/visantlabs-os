@@ -112,6 +112,12 @@ interface MockupContextState {
   // Seed for deterministic generation
   seed: number | undefined;
   seedLocked: boolean;
+
+  // Compare Mode — generate same prompt across multiple models
+  isCompareMode: boolean;
+  compareModels: string[];
+  /** Labels for each mockup slot in compare mode (model display name) */
+  compareLabels: string[];
 }
 
 interface MockupContextActions {
@@ -181,6 +187,9 @@ interface MockupContextActions {
   setAutoGenerate: Dispatch<SetStateAction<boolean>>;
   setSeed: Dispatch<SetStateAction<number | undefined>>;
   setSeedLocked: Dispatch<SetStateAction<boolean>>;
+  setIsCompareMode: Dispatch<SetStateAction<boolean>>;
+  setCompareModels: Dispatch<SetStateAction<string[]>>;
+  setCompareLabels: Dispatch<SetStateAction<string[]>>;
   resetAll: () => void;
   clearAllTags: () => void;
 }
@@ -279,6 +288,9 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [autoGenerate, setAutoGenerate] = useState(true);
   const [seed, setSeed] = useState<number | undefined>(undefined);
   const [seedLocked, setSeedLocked] = useState(false);
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const [compareModels, setCompareModels] = useState<string[]>([]);
+  const [compareLabels, setCompareLabels] = useState<string[]>([]);
 
   // Wrapper to clear selected tags when entering pool mode
   const setIsSurpriseMeMode = useCallback((value: boolean) => {
@@ -326,6 +338,9 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setDetectedLanguage(null);
     setDetectedText(null);
     setInstructions('');
+    setIsCompareMode(false);
+    setCompareModels([]);
+    setCompareLabels([]);
   };
 
   // Clear all tags (both normal mode and pool mode) without resetting everything
@@ -487,6 +502,12 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setSeed,
       seedLocked,
       setSeedLocked,
+      isCompareMode,
+      setIsCompareMode,
+      compareModels,
+      setCompareModels,
+      compareLabels,
+      setCompareLabels,
       resetAll,
       clearAllTags,
     }),
@@ -555,6 +576,9 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       autoGenerate,
       seed,
       seedLocked,
+      isCompareMode,
+      compareModels,
+      compareLabels,
       resetAll,
       clearAllTags,
     ]

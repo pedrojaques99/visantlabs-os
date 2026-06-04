@@ -6,6 +6,8 @@ export interface AvailableProviders {
   imagen: boolean;
   openai: boolean;
   seedream: boolean;
+  ideogram: boolean;
+  reve: boolean;
   kling: boolean;
   seedance: boolean;
   veo: boolean;
@@ -16,6 +18,8 @@ const DEFAULT: AvailableProviders = {
   imagen: true,
   openai: true,
   seedream: true,
+  ideogram: true,
+  reve: true,
   kling: true,
   seedance: true,
   veo: true,

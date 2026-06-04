@@ -30,6 +30,18 @@ import {
   isImagenModel,
 } from '@/constants/imagenModels';
 import {
+  IDEOGRAM_MODELS,
+  IDEOGRAM_MODEL_LIST,
+  IDEOGRAM_MODEL_CONFIG,
+  isIdeogramModel,
+} from '@/constants/ideogramModels';
+import {
+  REVE_MODELS,
+  REVE_MODEL_LIST,
+  REVE_MODEL_CONFIG,
+  isReveModel,
+} from '@/constants/reveModels';
+import {
   VIDEO_MODEL_IDS,
   VIDEO_MODEL_LIST,
   VIDEO_MODEL_CONFIG,
@@ -169,6 +181,60 @@ describe('Imagen model registry', () => {
   });
 });
 
+// ── Ideogram Models ──────────────────────────────────────────────────────────
+
+describe('Ideogram model registry', () => {
+  it('every model in list has config', () => {
+    for (const id of IDEOGRAM_MODEL_LIST) {
+      expect(IDEOGRAM_MODEL_CONFIG[id], `missing config for ${id}`).toBeDefined();
+    }
+  });
+
+  it('includes V4 and V3', () => {
+    expect(IDEOGRAM_MODEL_LIST).toHaveLength(2);
+    expect(IDEOGRAM_MODEL_LIST).toContain(IDEOGRAM_MODELS.V4);
+    expect(IDEOGRAM_MODEL_LIST).toContain(IDEOGRAM_MODELS.V3);
+  });
+
+  it('isIdeogramModel detects correctly', () => {
+    expect(isIdeogramModel('ideogram-v4')).toBe(true);
+    expect(isIdeogramModel('ideogram-v3')).toBe(true);
+    expect(isIdeogramModel('gemini-2.5-flash')).toBe(false);
+  });
+
+  it('credits scale with resolution', () => {
+    expect(getCreditsRequired(IDEOGRAM_MODELS.V4, '1K', 'ideogram')).toBe(2);
+    expect(getCreditsRequired(IDEOGRAM_MODELS.V4, '2K', 'ideogram')).toBe(3);
+    expect(getCreditsRequired(IDEOGRAM_MODELS.V3, '1K', 'ideogram')).toBe(2);
+    expect(getCreditsRequired(IDEOGRAM_MODELS.V3, '2K', 'ideogram')).toBe(3);
+  });
+});
+
+// ── REVE Models ─────────────────────────────────────────────────────────────
+
+describe('REVE model registry', () => {
+  it('every model in list has config', () => {
+    for (const id of REVE_MODEL_LIST) {
+      expect(REVE_MODEL_CONFIG[id], `missing config for ${id}`).toBeDefined();
+    }
+  });
+
+  it('includes Reve 1', () => {
+    expect(REVE_MODEL_LIST).toContain(REVE_MODELS.REVE_1);
+  });
+
+  it('isReveModel detects correctly', () => {
+    expect(isReveModel('reve-image-1.0')).toBe(true);
+    expect(isReveModel('gemini-2.5-flash')).toBe(false);
+    expect(isReveModel('ideogram-v4')).toBe(false);
+  });
+
+  it('credits scale with resolution', () => {
+    expect(getCreditsRequired(REVE_MODELS.REVE_1, '1K', 'reve')).toBe(2);
+    expect(getCreditsRequired(REVE_MODELS.REVE_1, '2K', 'reve')).toBe(3);
+  });
+});
+
 // ── Video Models ──────────────────────────────────────────────────────────────
 
 describe('Video model registry', () => {
@@ -297,6 +363,8 @@ describe('Cross-registry consistency', () => {
       ...AVAILABLE_IMAGE_MODELS,
       ...SEEDREAM_IMAGE_MODELS,
       ...OPENAI_IMAGE_MODEL_LIST,
+      ...IDEOGRAM_MODEL_LIST,
+      ...REVE_MODEL_LIST,
     ]);
     for (const chatId of CHAT_MODELS) {
       expect(imageSet.has(chatId as any)).toBe(false);

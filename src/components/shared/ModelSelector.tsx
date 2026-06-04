@@ -24,6 +24,18 @@ import {
   isImagenModel,
   getImagenModelConfig,
 } from '../../constants/imagenModels';
+import {
+  IDEOGRAM_MODEL_LIST,
+  IDEOGRAM_MODEL_CONFIG,
+  isIdeogramModel,
+  getIdeogramModelConfig,
+} from '../../constants/ideogramModels';
+import {
+  REVE_MODEL_LIST,
+  REVE_MODEL_CONFIG,
+  isReveModel,
+  getReveModelConfig,
+} from '../../constants/reveModels';
 import { Select } from '@/components/ui/select';
 import { cn } from '../../lib/utils';
 import { getCreditsRequired } from '@/utils/creditCalculator';
@@ -254,7 +266,83 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             };
           }).filter(Boolean) as any[]);
 
-      return [...geminiOptions, ...imagenOptions, ...seedreamOptions, ...openaiOptions];
+      const ideogramOptions = !availableProviders.ideogram
+        ? []
+        : (IDEOGRAM_MODEL_LIST.map((modelId) => {
+            const config = IDEOGRAM_MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
+
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'ideogram');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
+
+            const icon = (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            );
+
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
+
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
+
+      const reveOptions = !availableProviders.reve
+        ? []
+        : (REVE_MODEL_LIST.map((modelId) => {
+            const config = REVE_MODEL_CONFIG[modelId];
+            if (!config || !isVisible(modelId, config)) return null;
+
+            const effectiveResolution =
+              selectedModel === modelId ? resolution : config.defaultResolution;
+            const credits = getCreditsRequired(modelId, effectiveResolution, 'reve');
+            const isUnlimited = isGenerationUnlimited({
+              model: modelId,
+              resolution: effectiveResolution,
+              planMetadata,
+            });
+
+            const icon = (
+              <img
+                src={`https://img.logo.dev/${config.providerDomain}?size=48${
+                  token ? `&token=${token}` : ''
+                }`}
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                alt=""
+              />
+            );
+
+            const creditSuffix = isUnlimited ? ' (∞)' : ` (${credits})`;
+            const label = `${config.label}${creditSuffix}`;
+
+            return {
+              value: modelId,
+              label: label || modelId,
+              icon,
+              badge: config.badge,
+              description: config.description,
+            };
+          }).filter(Boolean) as any[]);
+
+      return [...geminiOptions, ...imagenOptions, ...ideogramOptions, ...reveOptions, ...seedreamOptions, ...openaiOptions];
     }
 
     // CHAT MODELS LOGIC
@@ -301,6 +389,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         ? 'openai'
         : isImagenModel(effectiveModel)
         ? 'imagen'
+        : isIdeogramModel(effectiveModel)
+        ? 'ideogram'
+        : isReveModel(effectiveModel)
+        ? 'reve'
         : 'gemini';
       onModelChange(effectiveModel, provider);
     }
@@ -318,6 +410,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           ? 'openai'
           : isImagenModel(newModel)
           ? 'imagen'
+          : isIdeogramModel(newModel)
+          ? 'ideogram'
+          : isReveModel(newModel)
+          ? 'reve'
           : 'gemini';
         onModelChange(newModel, provider);
         setModelPreference('imageProvider', provider);
@@ -336,6 +432,16 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           const oaiConfig = getOpenAIImageModelConfig(newModel);
           if (oaiConfig && !resolution && onSyncResolution) {
             onSyncResolution(oaiConfig.defaultResolution);
+          }
+        } else if (provider === 'ideogram') {
+          const idConfig = getIdeogramModelConfig(newModel);
+          if (idConfig && !resolution && onSyncResolution) {
+            onSyncResolution(idConfig.defaultResolution);
+          }
+        } else if (provider === 'reve') {
+          const rvConfig = getReveModelConfig(newModel);
+          if (rvConfig && !resolution && onSyncResolution) {
+            onSyncResolution(rvConfig.defaultResolution);
           }
         } else {
           const config = getModelConfig(newModel as GeminiModel);

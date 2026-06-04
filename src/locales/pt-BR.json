@@ -2584,6 +2584,8 @@
     "designTypeQuestion": "Isto é um logo ou layout?",
     "directorModeDescription": "Selecione e defina quais tags poderão ser escolhidas ao gerar",
     "directorModeLabel": "Modo Diretor",
+    "compareModeLabel": "Comparar Modelos",
+    "compareModeDescription": "Gera o mesmo prompt em múltiplos modelos lado a lado",
     "editIdentity": "Editar identidade",
     "editIdentityDescription": "Editar a identidade do design",
     "editInstructions": "Editar instruções",

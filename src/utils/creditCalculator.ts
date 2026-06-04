@@ -3,6 +3,8 @@ import { GEMINI_MODELS, MODEL_CONFIG, AVAILABLE_IMAGE_MODELS } from '../constant
 import { isSeedreamModel } from '../constants/seedreamModels';
 import { isOpenAIImageModel } from '../constants/openaiModels';
 import { isImagenModel } from '../constants/imagenModels';
+import { isIdeogramModel } from '../constants/ideogramModels';
+import { isReveModel } from '../constants/reveModels';
 
 /**
  * Get credits required for image generation based on model, resolution, and provider
@@ -28,6 +30,36 @@ export function getCreditsRequired(
 
   // OpenAI GPT Image 2 (~$0.05-$0.21/image, token-based)
   if (provider === 'openai' || isOpenAIImageModel(model)) {
+    switch (resolution) {
+      case '512px':
+      case 'HD':
+      case '1K':
+        return 2;
+      case '2K':
+        return 3;
+      case '4K':
+        return 4;
+      default:
+        return 2;
+    }
+  }
+
+  // REVE models (~$0.10-0.15/image, 1 Reve credit = 2 Visant credits base)
+  if (provider === 'reve' || isReveModel(model)) {
+    switch (resolution) {
+      case '512px':
+      case 'HD':
+      case '1K':
+        return 2;
+      case '2K':
+        return 3;
+      default:
+        return 2;
+    }
+  }
+
+  // Ideogram models (~$0.03-$0.09/image depending on speed)
+  if (provider === 'ideogram' || isIdeogramModel(model)) {
     switch (resolution) {
       case '512px':
       case 'HD':
