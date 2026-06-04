@@ -67,24 +67,29 @@ function parseSpacesUrl(url: string): { bucket: string; key: string } | null {
 }
 
 async function downloadBuffer(url: string): Promise<Buffer> {
-  const spacesInfo = parseSpacesUrl(url);
-  if (spacesInfo) {
-    const client = getDoSpacesClient();
-    if (!client) throw new Error('Digital Ocean Spaces credentials not configured');
-    const resp = await client.send(new GetObjectCommand({
-      Bucket: spacesInfo.bucket,
-      Key: spacesInfo.key,
-    }));
-    const chunks: Uint8Array[] = [];
-    for await (const chunk of resp.Body as AsyncIterable<Uint8Array>) {
-      chunks.push(chunk);
+  // Try public fetch first (works for CDN-enabled DO Spaces buckets)
+  const res = await fetch(url);
+  if (res.ok) return Buffer.from(await res.arrayBuffer());
+
+  // If 403, try S3 credentials for private buckets
+  if (res.status === 403) {
+    const spacesInfo = parseSpacesUrl(url);
+    if (spacesInfo) {
+      const client = getDoSpacesClient();
+      if (!client) throw new Error('Digital Ocean Spaces credentials not configured');
+      const resp = await client.send(new GetObjectCommand({
+        Bucket: spacesInfo.bucket,
+        Key: spacesInfo.key,
+      }));
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of resp.Body as AsyncIterable<Uint8Array>) {
+        chunks.push(chunk);
+      }
+      return Buffer.concat(chunks);
     }
-    return Buffer.concat(chunks);
   }
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to download ${url}: ${res.status}`);
-  return Buffer.from(await res.arrayBuffer());
+  throw new Error(`Failed to download ${url}: ${res.status}`);
 }
 
 async function downloadPsd(url: string, destPath: string): Promise<void> {
