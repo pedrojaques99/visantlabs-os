@@ -751,6 +751,7 @@ export interface DirectorNodeData extends BaseNodeData {
   // Generation state
   isGeneratingPrompt?: boolean;
   isGeneratingMockup?: boolean;
+  activeGenerations?: number;
   generatedPrompt?: string;
 
   // Source image node ID (for auto-connect)

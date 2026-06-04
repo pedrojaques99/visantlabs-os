@@ -1,7 +1,8 @@
 import React, { memo, useCallback } from 'react';
 import { type NodeProps, Position, NodeResizer } from '@xyflow/react';
-import { Compass, PanelRight, Image as ImageIcon, Check, Diamond, Dices, Zap } from 'lucide-react';
+import { Compass, PanelRight, Image as ImageIcon, Check, Dices, Zap } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import type { DirectorNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { NodeContainer } from './shared/NodeContainer';
@@ -26,8 +27,7 @@ export const DirectorNode = memo(
     const isAnalyzing = nodeData.isAnalyzing || false;
     const hasAnalyzed = nodeData.hasAnalyzed || false;
     const isGeneratingPrompt = nodeData.isGeneratingPrompt || false;
-    const isGeneratingMockup = nodeData.isGeneratingMockup || false;
-    const generatedPrompt = nodeData.generatedPrompt;
+    const activeGenerations = nodeData.activeGenerations || 0;
 
     // Count selected tags
     const selectedTagCount = [
@@ -83,31 +83,6 @@ export const DirectorNode = memo(
         (nodeData.selectedEffectTags?.length || 0) > 0 ||
         (nodeData.selectedMaterialTags?.length || 0) > 0 ||
         (nodeData.selectedColors?.length || 0) > 0);
-
-    // Get status for display
-    const getStatusLabel = () => {
-      if (isGeneratingMockup) return 'Generating mockup...';
-      if (isGeneratingPrompt)
-        return t('canvasNodes.directorNode.generatingPrompt') || 'Generating...';
-      if (generatedPrompt) return t('canvasNodes.directorNode.promptReady') || 'Prompt Ready';
-      if (hasAnalyzed)
-        return `${selectedTagCount} ${
-          t('canvasNodes.directorNode.tagsSelected') || 'tags selected'
-        }`;
-      if (isAnalyzing) return t('canvasNodes.directorNode.analyzing') || 'Analyzing...';
-      if (connectedImage) return t('canvasNodes.directorNode.readyToAnalyze') || 'Ready to analyze';
-      return t('canvasNodes.directorNode.connectImage') || 'Connect an image';
-    };
-
-    const getStatusColor = () => {
-      if (isGeneratingMockup) return 'text-amber-400';
-      if (isGeneratingPrompt) return 'text-amber-400';
-      if (generatedPrompt) return 'text-green-400';
-      if (hasAnalyzed) return 'node-text-accent';
-      if (isAnalyzing) return 'text-amber-400';
-      if (connectedImage) return 'node-text-muted';
-      return 'node-text-subtle';
-    };
 
     const handleResize = useCallback(
       (_: any, params: { width: number }) => {
@@ -185,27 +160,40 @@ export const DirectorNode = memo(
             )}
           </div>
 
+          {/* Active generations indicator */}
+          {activeGenerations > 0 && (
+            <div className="p-2.5 rounded-md border-node border-brand-cyan/20 bg-brand-cyan/5">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-cyan">
+                  {activeGenerations} {activeGenerations === 1 ? 'mockup' : 'mockups'}
+                </span>
+                <span className="text-[9px] font-mono text-neutral-500">
+                  {t('canvasNodes.directorNode.generating') || 'generating'}
+                </span>
+              </div>
+              <PremiumGlitchLoader color="var(--brand-cyan)" />
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex flex-col gap-2">
-            {/* Generate Mockup — direct, no side panel needed */}
+            {/* Generate Mockup — always available, fires new prompt each time */}
             <NodeButton
               variant="primary"
               size="full"
               onClick={handleGenerateMockup}
-              disabled={!connectedImage || isGeneratingMockup || isGeneratingPrompt}
+              disabled={!connectedImage || isGeneratingPrompt}
               className="shadow-sm backdrop-blur-sm nodrag"
               onMouseDown={(e) => e.stopPropagation()}
             >
-              {isGeneratingMockup ? (
-                <>
-                  <GlitchLoader size={14} className="mr-2" color="currentColor" />
-                  <span>Generating...</span>
-                </>
-              ) : (
-                <>
-                  <Zap size={14} className="mr-2" />
-                  <span>Generate Mockup</span>
-                </>
+              <Zap size={14} className="mr-2" />
+              <span>
+                {t('canvasNodes.directorNode.generateMockup') || 'Generate Mockup'}
+              </span>
+              {activeGenerations > 0 && (
+                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-black/30 text-[10px] tabular-nums">
+                  +{activeGenerations}
+                </span>
               )}
             </NodeButton>
 
@@ -214,7 +202,7 @@ export const DirectorNode = memo(
               variant="default"
               size="full"
               onClick={handleOpenSidePanel}
-              disabled={!connectedImage || isGeneratingMockup}
+              disabled={!connectedImage}
               className="shadow-sm backdrop-blur-sm nodrag"
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -228,7 +216,7 @@ export const DirectorNode = memo(
                 variant="default"
                 size="full"
                 onClick={handleGeneratePrompt}
-                disabled={!hasSelections || isGeneratingPrompt || isGeneratingMockup}
+                disabled={!hasSelections || isGeneratingPrompt}
                 className="shadow-sm backdrop-blur-sm nodrag"
                 onMouseDown={(e) => e.stopPropagation()}
               >
@@ -246,18 +234,6 @@ export const DirectorNode = memo(
               </NodeButton>
             )}
           </div>
-
-          {/* Generated Prompt Preview (if exists) */}
-          {generatedPrompt && (
-            <div className="p-3 rounded-md border-node border-neutral-700/20 bg-neutral-900/40 backdrop-blur-sm shadow-sm">
-              <div className="text-[10px] font-mono text-neutral-500 mb-2 uppercase tracking-widest font-bold">
-                {t('canvasNodes.directorNode.generatedPrompt') || 'Generated Prompt'}
-              </div>
-              <p className="text-xs text-neutral-200 line-clamp-4 leading-relaxed">
-                {generatedPrompt}
-              </p>
-            </div>
-          )}
         </div>
       </NodeContainer>
     );
@@ -266,14 +242,12 @@ export const DirectorNode = memo(
     const prevData = prevProps.data as DirectorNodeData;
     const nextData = nextProps.data as DirectorNodeData;
 
-    // Re-render if important props change
     if (
       prevData.connectedImage !== nextData.connectedImage ||
       prevData.isAnalyzing !== nextData.isAnalyzing ||
       prevData.hasAnalyzed !== nextData.hasAnalyzed ||
       prevData.isGeneratingPrompt !== nextData.isGeneratingPrompt ||
-      prevData.isGeneratingMockup !== nextData.isGeneratingMockup ||
-      prevData.generatedPrompt !== nextData.generatedPrompt ||
+      prevData.activeGenerations !== nextData.activeGenerations ||
       prevData.selectedBrandingTags?.length !== nextData.selectedBrandingTags?.length ||
       prevData.selectedCategoryTags?.length !== nextData.selectedCategoryTags?.length ||
       prevData.onOpenSidePanel !== nextData.onOpenSidePanel ||
