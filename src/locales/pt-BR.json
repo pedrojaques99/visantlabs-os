@@ -1242,7 +1242,8 @@
       "selectTags": "Selecione tags para seu prompt",
       "tagsSelected": "tags selecionadas",
       "title": "Diretor",
-      "analyze": "Analyze"
+      "analyze": "Analisar",
+      "generateMockup": "Gerar Mockup"
     },
     "drawingNode": {
       "drawing": "Desenho",

@@ -27,6 +27,7 @@ import { REFERENCE_DIMENSIONS, type ReferenceDimensionKey } from '@/constants/re
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useReferenceSearch } from '@/hooks/useReferenceSearch';
 import { referenceApi, type ReferenceResult } from '@/services/referenceApi';
+import { getProxiedUrl } from '@/utils/proxyUtils';
 
 interface BrandMediaLibraryPanelProps {
   onSelectAsset?: (url: string, type: 'image' | 'logo' | 'color') => void;
@@ -244,7 +245,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   {filteredLogos.map((logo, i) => (
                     <AssetCard
                       key={`logo-${i}`}
-                      url={logo.url!}
+                      url={getProxiedUrl(logo.url!)}
                       label={logo.label || `Logo ${i + 1}`}
                       type="logo"
                       viewMode={viewMode}
@@ -266,7 +267,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   {filteredMedia.map((asset, i) => (
                     <AssetCard
                       key={`media-${i}`}
-                      url={asset.url!}
+                      url={getProxiedUrl(asset.url!)}
                       label={asset.label || `Asset ${i + 1}`}
                       type="image"
                       viewMode={viewMode}
@@ -438,7 +439,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                           >
                             <div className="w-8 h-8 rounded overflow-hidden flex-shrink-0 bg-neutral-950">
                               <img
-                                src={ref.referenceImageUrl}
+                                src={getProxiedUrl(ref.referenceImageUrl)}
                                 alt={ref.name}
                                 loading="lazy"
                                 className="w-full h-full object-cover"
@@ -515,7 +516,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                           )}
                         >
                           <img
-                            src={ref.referenceImageUrl}
+                            src={getProxiedUrl(ref.referenceImageUrl)}
                             alt={ref.name}
                             loading="lazy"
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
@@ -570,6 +571,19 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                       );
                     })}
                   </div>
+                )}
+                {refSearch.hasMore && (
+                  <button
+                    onClick={() => refSearch.loadMore()}
+                    disabled={refSearch.isLoading}
+                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-all disabled:opacity-50"
+                  >
+                    {refSearch.isLoading ? (
+                      <GlitchLoader size={10} className="mx-auto" />
+                    ) : (
+                      'Ver mais'
+                    )}
+                  </button>
                 )}
               </div>
             )}
