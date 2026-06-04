@@ -187,9 +187,7 @@ export const DirectorNode = memo(
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Zap size={14} className="mr-2" />
-              <span>
-                {t('canvasNodes.directorNode.generateMockup') || 'Generate Mockup'}
-              </span>
+              <span>{t('canvasNodes.directorNode.generateMockup') || 'Generate Mockup'}</span>
               {activeGenerations > 0 && (
                 <span className="ml-2 px-1.5 py-0.5 rounded-full bg-black/30 text-[10px] tabular-nums">
                   +{activeGenerations}

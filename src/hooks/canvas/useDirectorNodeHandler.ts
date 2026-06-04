@@ -490,7 +490,7 @@ export const useDirectorNodeHandler = ({
       if (!hasCredits) return;
 
       trackCanvasEvent('generation_started', 'director_mockup');
-      const prev = (directorData.activeGenerations || 0);
+      const prev = directorData.activeGenerations || 0;
       updateNodeData<DirectorNodeData>(nodeId, { activeGenerations: prev + 1 }, 'director');
 
       let newOutputNodeId: string | null = null;
@@ -589,8 +589,14 @@ export const useDirectorNodeHandler = ({
           } catch {}
         }
 
-        const cur = ((nodesRef.current.find(n => n.id === nodeId)?.data as DirectorNodeData)?.activeGenerations || 1);
-        updateNodeData<DirectorNodeData>(nodeId, { activeGenerations: Math.max(0, cur - 1) }, 'director');
+        const cur =
+          (nodesRef.current.find((n) => n.id === nodeId)?.data as DirectorNodeData)
+            ?.activeGenerations || 1;
+        updateNodeData<DirectorNodeData>(
+          nodeId,
+          { activeGenerations: Math.max(0, cur - 1) },
+          'director'
+        );
 
         trackCanvasEvent('generation_completed', 'director_mockup');
         toast.success('Mockup generated!');
@@ -602,8 +608,14 @@ export const useDirectorNodeHandler = ({
           console.error('[DirectorNode] Direct mockup generation error:', error);
         }
 
-        const curFail = ((nodesRef.current.find(n => n.id === nodeId)?.data as DirectorNodeData)?.activeGenerations || 1);
-        updateNodeData<DirectorNodeData>(nodeId, { activeGenerations: Math.max(0, curFail - 1) }, 'director');
+        const curFail =
+          (nodesRef.current.find((n) => n.id === nodeId)?.data as DirectorNodeData)
+            ?.activeGenerations || 1;
+        updateNodeData<DirectorNodeData>(
+          nodeId,
+          { activeGenerations: Math.max(0, curFail - 1) },
+          'director'
+        );
 
         if (newOutputNodeId && cleanupFailedNode) {
           cleanupFailedNode(newOutputNodeId);
