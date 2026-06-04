@@ -170,6 +170,7 @@ const LabsPage = lazyWithRetry(() =>
 const WindTunnelPage = lazyWithRetry(() =>
   import('./pages/labs/WindTunnelPage').then((m) => ({ default: m.WindTunnelPage }))
 );
+const BenchmarkArenaPage = lazyWithRetry(() => import('./pages/BenchmarkArenaPage'));
 const Studio3DPage = lazyWithRetry(() =>
   import('./pages/Studio3DPage').then((m) => ({ default: m.Studio3DPage }))
 );
@@ -323,6 +324,7 @@ const App: React.FC = () => {
                       </DesktopOnlyGate>
                     }
                   />
+                  <Route path="/labs/benchmark" element={<BenchmarkArenaPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/onboard" element={<OnboardPage />} />
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />

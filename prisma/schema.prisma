@@ -770,3 +770,38 @@ model BrandInvite {
   @@index([createdByUserId])
   @@map("brand_invites")
 }
+
+model Benchmark {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String             @db.ObjectId
+  prompt             String
+  brandGuidelineId   String?            @db.ObjectId
+  models             String[]
+  resolution         String?
+  aspectRatio        String?
+  status             String             @default("pending") // "pending" | "running" | "completed" | "failed"
+  results            BenchmarkResult[]
+  totalCreditsCharged Int               @default(0)
+  creditsRefunded    Int                @default(0)
+  voted              Boolean            @default(false)
+  winnerModel        String?
+  isPublic           Boolean            @default(true)
+  viewCount          Int                @default(0)
+  createdAt          DateTime           @default(now())
+  completedAt        DateTime?
+
+  @@index([userId])
+  @@index([isPublic, createdAt])
+  @@index([status])
+  @@map("benchmarks")
+}
+
+type BenchmarkResult {
+  model       String
+  provider    String
+  imageUrl    String?
+  durationMs  Int?
+  error       String?
+  creditsCost Int     @default(0)
+  votes       Int     @default(0)
+}
