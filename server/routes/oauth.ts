@@ -254,8 +254,7 @@ router.get('/oauth/authorize', async (req, res) => {
     }
 
     if (!userId) {
-      // Redirect to login, carrying back all OAuth params so the frontend can
-      // append ?token=<jwt> after authentication and come back.
+      // Redirect to frontend /login with redirect_back to come back after auth
       const params = new URLSearchParams({
         client_id,
         redirect_uri,
@@ -265,9 +264,10 @@ router.get('/oauth/authorize', async (req, res) => {
         response_type: response_type || 'code',
         ...(resource ? { resource } : {}),
       });
-      const loginUrl = `${
-        process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://app.visantlabs.com'
-      }/login?redirect_back=${encodeURIComponent(`/oauth/authorize?${params.toString()}`)}`;
+      const frontendUrl =
+        process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+      const authorizeUrl = `${API_BASE_URL}/oauth/authorize?${params.toString()}`;
+      const loginUrl = `${frontendUrl}/login?redirect_back=${encodeURIComponent(authorizeUrl)}`;
       return res.redirect(loginUrl);
     }
 
@@ -589,6 +589,164 @@ async function cleanupExpiredOAuthData() {
 // Run cleanup every 6 hours
 setInterval(cleanupExpiredOAuthData, 6 * 60 * 60 * 1000);
 cleanupExpiredOAuthData().catch(() => {});
+
+// ── Login HTML page (inline, no SPA dependency) ─────────────────────────────
+
+interface LoginPageParams {
+  clientName: string;
+  clientId: string;
+  redirectUri: string;
+  codeChallenge: string;
+  codeChallengeMethod: string;
+  state: string;
+  resource: string;
+  responseType: string;
+}
+
+function buildLoginPage(p: LoginPageParams): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const apiBase = API_BASE_URL;
+  const authorizeParams = new URLSearchParams({
+    client_id: p.clientId,
+    redirect_uri: p.redirectUri,
+    code_challenge: p.codeChallenge,
+    code_challenge_method: p.codeChallengeMethod,
+    state: p.state,
+    response_type: p.responseType,
+    resource: p.resource,
+  }).toString();
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in — Visant Labs</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      max-width: 420px;
+      width: 100%;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.75rem;
+    }
+    .logo-text { font-size: 1.1rem; font-weight: 700; color: #f8fafc; }
+    h1 { font-size: 1.25rem; font-weight: 600; color: #f8fafc; margin-bottom: 0.5rem; }
+    .app-name { color: #0ea5e9; font-weight: 600; }
+    .subtitle { font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.75rem; }
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field input {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #f8fafc;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: #0ea5e9; }
+    .btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: #0ea5e9;
+      color: #fff;
+      transition: opacity 0.15s;
+      margin-top: 0.5rem;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error { color: #f87171; font-size: 0.85rem; margin-top: 0.75rem; display: none; }
+    .register-link { text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: #64748b; }
+    .register-link a { color: #0ea5e9; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#0ea5e9"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">Visant Labs</span>
+    </div>
+    <h1>Sign in to continue</h1>
+    <p class="subtitle"><span class="app-name">${esc(p.clientName)}</span> wants to connect to your account.</p>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autocomplete="email" autofocus />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn" id="submitBtn">Sign in</button>
+      <div class="error" id="error"></div>
+    </form>
+    <div class="register-link">
+      Don't have an account? <a href="https://visantlabs.com" target="_blank">Sign up</a>
+    </div>
+  </div>
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorEl = document.getElementById('error');
+    const btn = document.getElementById('submitBtn');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+      try {
+        const res = await fetch('${esc(apiBase)}/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.token) {
+          throw new Error(data.message || data.error || 'Invalid credentials');
+        }
+        window.location.href = '${esc(apiBase)}/oauth/authorize?${esc(authorizeParams)}&token=' + encodeURIComponent(data.token);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+      }
+    });
+  </script>
+</body>
+</html>`;
+}
 
 // ── Consent HTML page ─────────────────────────────────────────────────────────
 
