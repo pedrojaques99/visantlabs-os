@@ -150,7 +150,14 @@ router.get('/brand/:brandId/insights', async (req, res) => {
 // ─── Server-side render ───────────────────────────────────────────────────────
 // POST /api/creative/render: plan + bg URL → PNG → R2.
 
-router.post('/render', authenticate, async (req: AuthRequest, res) => {
+const renderLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.post('/render', renderLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { plan, format, accentColor, backgroundImageUrl } = req.body as {
       plan: Record<string, any>;
@@ -173,18 +180,21 @@ router.post('/render', authenticate, async (req: AuthRequest, res) => {
       accentColor: accentColor ?? '#ffffff',
     });
 
+    const base64Str = pngBuffer.toString('base64');
+    const base64DataUri = `data:image/png;base64,${base64Str}`;
+    const userId = req.userId ?? 'system';
+
     try {
-      const base64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
-      const userId = req.userId ?? 'system';
       const imageUrl = await uploadCanvasImage(
-        base64,
+        base64DataUri,
         userId,
         'creative-render',
         `render-${Date.now()}`
       );
-      return res.json({ imageUrl });
-    } catch {
-      return res.json({ imageBase64: pngBuffer.toString('base64') });
+      return res.json({ imageUrl, imageBase64: base64Str });
+    } catch (uploadErr: any) {
+      console.error('[creative/render] R2 upload failed, returning base64 fallback:', uploadErr?.message);
+      return res.json({ imageBase64: base64Str });
     }
   } catch (err: any) {
     console.error('[creative/render] error:', err);
@@ -298,36 +308,26 @@ router.post(
         { format, accentColor }
       );
 
-      const base64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+      const base64Str = pngBuffer.toString('base64');
+      const base64DataUri = `data:image/png;base64,${base64Str}`;
       const userId = req.userId ?? 'system';
+      const brandUsed = {
+        colors: colors.slice(0, 4),
+        fonts: ((brand.typography as any[]) ?? []).slice(0, 2),
+        logos: logoUrls,
+      };
+
       try {
         const imageUrl = await uploadCanvasImage(
-          base64,
+          base64DataUri,
           userId,
           'creative-render',
           `brand-gen-${Date.now()}`
         );
-        return res.json({
-          imageUrl,
-          plan,
-          pickedMedia,
-          brandUsed: {
-            colors: colors.slice(0, 4),
-            fonts: ((brand.typography as any[]) ?? []).slice(0, 2),
-            logos: logoUrls,
-          },
-        });
-      } catch {
-        return res.json({
-          imageBase64: base64,
-          plan,
-          pickedMedia,
-          brandUsed: {
-            colors: colors.slice(0, 4),
-            fonts: ((brand.typography as any[]) ?? []).slice(0, 2),
-            logos: logoUrls,
-          },
-        });
+        return res.json({ imageUrl, imageBase64: base64Str, plan, pickedMedia, brandUsed });
+      } catch (uploadErr: any) {
+        console.error('[creative/generate-from-brand] R2 upload failed:', uploadErr?.message);
+        return res.json({ imageBase64: base64Str, plan, pickedMedia, brandUsed });
       }
     } catch (err: any) {
       console.error('[creative/generate-from-brand] error:', err);

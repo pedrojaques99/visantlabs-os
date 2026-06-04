@@ -2915,7 +2915,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
 
   server.tool(
     'creative-render',
-    'Render a creative plan (from creative-generate) into a PNG image server-side. Pass the plan JSON and the pre-generated background image URL. Returns imageUrl (R2) or imageBase64. Use this to close the generate→image loop without a browser: generate plan, render, inspect image with vision, adjust, re-render.',
+    'Render a creative plan (from creative-generate) into a PNG image server-side. Pass the plan JSON and the pre-generated background image URL. Returns imageUrl (public R2 URL). Use this to close the generate→image loop without a browser: generate plan, render, inspect image with vision, adjust, re-render.',
     {
       plan: z
         .object({
@@ -2958,11 +2958,31 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           },
           body: JSON.stringify({ plan, backgroundImageUrl, format, accentColor }),
         });
-        const result = await response.json();
+        const result = (await response.json()) as any;
         if (!response.ok)
           return jsonResponse({ error: result.error || 'Render failed', status: response.status });
+
+        // If render returned only base64, upload to R2 for a public URL
+        if (!result.imageUrl && result.imageBase64) {
+          try {
+            const uploadRes = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+              body: JSON.stringify({ data: result.imageBase64, contentType: 'image/png', label: 'creative-render' }),
+            });
+            const uploadData = (await uploadRes.json()) as any;
+            if (uploadRes.ok && uploadData.url) {
+              result.imageUrl = uploadData.url;
+            }
+          } catch (uploadErr: any) {
+            console.error('[creative-render] fallback upload failed:', uploadErr?.message);
+          }
+        }
+
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        // Omit base64 from MCP response to avoid truncation
+        const { imageBase64: _omit, ...cleanResult } = result;
+        return jsonResponse({ ...cleanResult, _meta: quota });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3059,8 +3079,35 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             creditsUsed: credits,
           });
         }
-        const imageUrl: string = renderData.imageUrl ?? renderData.imageBase64;
+        let imageUrl: string = renderData.imageUrl;
         credits.render = renderData.creditsUsed ?? null;
+
+        // If render returned only base64 (R2 upload failed there), upload it now
+        if (!imageUrl && renderData.imageBase64) {
+          try {
+            const uploadRes = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+              body: JSON.stringify({ data: renderData.imageBase64, contentType: 'image/png', label: 'creative-render' }),
+            });
+            const uploadData = (await uploadRes.json()) as any;
+            if (uploadRes.ok && uploadData.url) {
+              imageUrl = uploadData.url;
+            }
+          } catch (uploadErr: any) {
+            console.error('[creative-full] fallback upload failed:', uploadErr?.message);
+          }
+        }
+
+        if (!imageUrl) {
+          return jsonResponse({
+            error: 'Render succeeded but image upload to R2 failed. Check R2 configuration.',
+            step: 'upload',
+            plan,
+            backgroundImageUrl,
+            creditsUsed: credits,
+          });
+        }
 
         // Step 4: Optionally save project
         let projectId: string | undefined;
