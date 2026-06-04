@@ -34,6 +34,9 @@ import {
 } from '@/services/contentStudioApi';
 import type { ImageProvider } from '@/types/types';
 
+const STORAGE_KEY = 'content-studio-job';
+const MAX_POLLS = 200;
+
 export const ContentStudioPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -51,16 +54,73 @@ export const ContentStudioPage: React.FC = () => {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const pollCountRef = useRef(0);
-  const MAX_POLLS = 200; // ~10 min at 3s interval
 
   const toneOptions = [
-    { value: '', label: 'Auto' },
-    { value: 'professional', label: 'Professional' },
-    { value: 'casual', label: 'Casual' },
-    { value: 'playful', label: 'Playful' },
-    { value: 'bold', label: 'Bold' },
-    { value: 'minimal', label: 'Minimal' },
+    { value: '', label: t('contentStudio.toneAuto') },
+    { value: 'professional', label: t('contentStudio.toneProfessional') },
+    { value: 'casual', label: t('contentStudio.toneCasual') },
+    { value: 'playful', label: t('contentStudio.tonePlayful') },
+    { value: 'bold', label: t('contentStudio.toneBold') },
+    { value: 'minimal', label: t('contentStudio.toneMinimal') },
   ];
+
+  const startPolling = useCallback((jobId: string) => {
+    pollCountRef.current = 0;
+    setIsGenerating(true);
+
+    pollRef.current = setInterval(async () => {
+      pollCountRef.current++;
+      if (pollCountRef.current > MAX_POLLS) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        pollRef.current = null;
+        setIsGenerating(false);
+        localStorage.removeItem(STORAGE_KEY);
+        toast.error(t('contentStudio.generationTimeout'));
+        return;
+      }
+      try {
+        const updated = await pollContentJob(jobId);
+        setJob(updated);
+        if (updated.status === 'done' || updated.status === 'error') {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          setIsGenerating(false);
+          localStorage.removeItem(STORAGE_KEY);
+          if (updated.status === 'done') {
+            toast.success(t('contentStudio.allGenerated'));
+          } else {
+            toast.error(t('contentStudio.generationFailed', { error: updated.error }));
+          }
+        }
+      } catch {
+        if (pollRef.current) clearInterval(pollRef.current);
+        pollRef.current = null;
+        setIsGenerating(false);
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }, 3000);
+  }, [t]);
+
+  // Resume polling from localStorage on mount
+  useEffect(() => {
+    const savedJobId = localStorage.getItem(STORAGE_KEY);
+    if (!savedJobId) return;
+
+    (async () => {
+      try {
+        const existing = await pollContentJob(savedJobId);
+        setJob(existing);
+        if (existing.status === 'done' || existing.status === 'error') {
+          localStorage.removeItem(STORAGE_KEY);
+        } else {
+          toast.info(t('contentStudio.resuming'));
+          startPolling(savedJobId);
+        }
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    })();
+  }, [startPolling, t]);
 
   const toggleFormat = useCallback((id: string) => {
     setSelectedFormats((prev) =>
@@ -71,11 +131,11 @@ export const ContentStudioPage: React.FC = () => {
   const handleGenerate = useCallback(async () => {
     if (!requireAuth()) return;
     if (!brief.trim()) {
-      toast.error('Write a campaign brief first');
+      toast.error(t('contentStudio.briefRequired'));
       return;
     }
     if (selectedFormats.length === 0) {
-      toast.error('Select at least one format');
+      toast.error(t('contentStudio.formatRequired'));
       return;
     }
 
@@ -93,45 +153,17 @@ export const ContentStudioPage: React.FC = () => {
         tone: tone || undefined,
       });
 
-      toast.success(`Generating ${result.totalCount} assets (${result.creditsCharged} credits)`);
+      localStorage.setItem(STORAGE_KEY, result.jobId);
+      toast.success(t('contentStudio.generatingToast', { count: result.totalCount, credits: result.creditsCharged }));
 
       const initialJob = await pollContentJob(result.jobId);
       setJob(initialJob);
-      pollCountRef.current = 0;
-
-      pollRef.current = setInterval(async () => {
-        pollCountRef.current++;
-        if (pollCountRef.current > MAX_POLLS) {
-          if (pollRef.current) clearInterval(pollRef.current);
-          pollRef.current = null;
-          setIsGenerating(false);
-          toast.error('Generation timed out. Check back later.');
-          return;
-        }
-        try {
-          const updated = await pollContentJob(result.jobId);
-          setJob(updated);
-          if (updated.status === 'done' || updated.status === 'error') {
-            if (pollRef.current) clearInterval(pollRef.current);
-            pollRef.current = null;
-            setIsGenerating(false);
-            if (updated.status === 'done') {
-              toast.success('All assets generated!');
-            } else {
-              toast.error(`Generation failed: ${updated.error}`);
-            }
-          }
-        } catch {
-          if (pollRef.current) clearInterval(pollRef.current);
-          pollRef.current = null;
-          setIsGenerating(false);
-        }
-      }, 3000);
+      startPolling(result.jobId);
     } catch (err: any) {
       toast.error(err.message);
       setIsGenerating(false);
     }
-  }, [brief, selectedFormats, brandGuidelineId, model, tone, requireAuth]);
+  }, [brief, selectedFormats, brandGuidelineId, model, tone, requireAuth, startPolling, t]);
 
   useEffect(() => {
     return () => {
@@ -166,11 +198,11 @@ export const ContentStudioPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <Sparkles size={16} className="text-brand-cyan" />
           <MicroTitle as="h1" className="text-base">
-            Content Studio
+            {t('contentStudio.title')}
           </MicroTitle>
         </div>
         <span className="text-[10px] font-mono text-neutral-500 bg-neutral-900 px-2 py-0.5 rounded">
-          BETA
+          {t('contentStudio.beta')}
         </span>
       </header>
 
@@ -180,12 +212,12 @@ export const ContentStudioPage: React.FC = () => {
           {/* Brief */}
           <div className="space-y-2">
             <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-              Campaign Brief
+              {t('contentStudio.campaignBrief')}
             </label>
             <textarea
               value={brief}
               onChange={(e) => setBrief(e.target.value)}
-              placeholder="Describe your campaign... e.g. 'Summer collection launch, vibrant colors, beach lifestyle, targeting millennials'"
+              placeholder={t('contentStudio.briefPlaceholder')}
               className="w-full h-28 px-3 py-2.5 rounded-lg bg-neutral-900/80 border border-neutral-800/50 text-sm text-neutral-200 placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
@@ -196,7 +228,7 @@ export const ContentStudioPage: React.FC = () => {
           {/* Tone */}
           <div className="space-y-2">
             <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-              Tone
+              {t('contentStudio.tone')}
             </label>
             <div className="flex flex-wrap gap-1.5">
               {toneOptions.map((opt) => (
@@ -219,7 +251,7 @@ export const ContentStudioPage: React.FC = () => {
           {/* Model */}
           <div className="space-y-2">
             <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-              Image Model
+              {t('contentStudio.imageModel')}
             </label>
             <ModelSelector
               type="image"
@@ -232,7 +264,7 @@ export const ContentStudioPage: React.FC = () => {
           {/* Formats */}
           <div className="space-y-2">
             <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-              Platforms ({selectedFormats.length}/{SOCIAL_FORMATS.length})
+              {t('contentStudio.platforms')} ({selectedFormats.length}/{SOCIAL_FORMATS.length})
             </label>
             <div className="flex flex-wrap gap-1.5">
               {SOCIAL_FORMATS.map((fmt) => {
@@ -270,12 +302,12 @@ export const ContentStudioPage: React.FC = () => {
             {isGenerating ? (
               <>
                 <Loader2 size={14} className="animate-spin" />
-                Generating... {progress}%
+                {t('contentStudio.generating')} {progress}%
               </>
             ) : (
               <>
                 <Sparkles size={14} />
-                Generate {selectedFormats.length} Assets
+                {t('contentStudio.generateAssets', { count: selectedFormats.length })}
               </>
             )}
           </button>
@@ -288,11 +320,10 @@ export const ContentStudioPage: React.FC = () => {
               <GlassPanel padding="lg" className="max-w-md">
                 <Sparkles size={32} className="text-neutral-600 mx-auto mb-4" />
                 <MicroTitle as="h3" className="text-lg text-neutral-300 mb-2">
-                  Content Studio
+                  {t('contentStudio.emptyTitle')}
                 </MicroTitle>
                 <p className="text-sm text-neutral-500">
-                  Write a campaign brief, select your platforms, and generate brand-consistent
-                  content for all channels at once.
+                  {t('contentStudio.emptyDescription')}
                 </p>
               </GlassPanel>
             </div>
@@ -324,25 +355,30 @@ function BrandSelect({
   value: string | null;
   onChange: (id: string | null) => void;
 }) {
-  const { data: guidelines = [] } = useBrandGuidelines(true);
+  const { t } = useTranslation();
+  const { data: guidelines = [], isLoading } = useBrandGuidelines(true);
 
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-        Brand Guideline
+        {t('contentStudio.brandGuideline')}
       </label>
-      <select
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value || null)}
-        className="w-full px-3 py-2 rounded-lg bg-neutral-900/80 border border-neutral-800/50 text-sm text-neutral-300 focus:outline-none focus:border-white/20 transition-colors appearance-none cursor-pointer"
-      >
-        <option value="">No brand (generic)</option>
-        {guidelines.map((g: any) => (
-          <option key={g.id} value={g.id}>
-            {g.name}
-          </option>
-        ))}
-      </select>
+      {isLoading ? (
+        <div className="w-full h-[38px] rounded-lg bg-neutral-900/80 border border-neutral-800/50 animate-pulse" />
+      ) : (
+        <select
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value || null)}
+          className="w-full px-3 py-2 rounded-lg bg-neutral-900/80 border border-neutral-800/50 text-sm text-neutral-300 focus:outline-none focus:border-white/20 transition-colors appearance-none cursor-pointer"
+        >
+          <option value="">{t('contentStudio.noBrand')}</option>
+          {guidelines.map((g: any) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
+            </option>
+          ))}
+        </select>
+      )}
     </div>
   );
 }
@@ -358,6 +394,7 @@ function ContentAssetCard({
   copiedIndex: number | null;
   onCopyCaption: (text: string, index: number) => void;
 }) {
+  const { t } = useTranslation();
   const isLoading = asset.status === 'pending' || asset.status === 'generating';
   const hasError = asset.status === 'error';
   const isDone = asset.status === 'done';
@@ -385,7 +422,7 @@ function ContentAssetCard({
           <div className="flex flex-col items-center gap-2">
             <Loader2 size={24} className="animate-spin text-neutral-600" />
             <span className="text-[10px] font-mono text-neutral-600">
-              {asset.status === 'generating' ? 'Generating...' : 'Queued'}
+              {asset.status === 'generating' ? t('contentStudio.generating') : t('contentStudio.queued')}
             </span>
           </div>
         )}
@@ -436,7 +473,7 @@ function ContentAssetCard({
                 className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 transition-all"
               >
                 {copiedIndex === index ? <Check size={10} /> : <Copy size={10} />}
-                {copiedIndex === index ? 'Copied' : 'Copy'}
+                {copiedIndex === index ? t('contentStudio.copied') : t('contentStudio.copy')}
               </button>
               {isDone && asset.imageUrl && (
                 <a
@@ -447,7 +484,7 @@ function ContentAssetCard({
                   className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 transition-all"
                 >
                   <Download size={10} />
-                  Image
+                  {t('contentStudio.image')}
                 </a>
               )}
             </div>

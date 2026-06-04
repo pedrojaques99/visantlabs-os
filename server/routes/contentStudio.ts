@@ -34,7 +34,8 @@ const contentStudioLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5,
   message: { error: 'Too many content generation requests. Please wait a moment.' },
-  keyGenerator: (req: any) => req.userId || req.ip,
+  keyGenerator: (req: any) => req.userId || req.ip!,
+  validate: { keyGeneratorIpFallback: false },
 });
 
 // ─── Types ───────────────────────────────────────────────────────────────────

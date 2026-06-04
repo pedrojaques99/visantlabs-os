@@ -1,5 +1,6 @@
 import express from 'express';
 import { getMcpToolCount, getMcpToolNames } from '../mcp/platform-mcp.js';
+import { MCP_ENDPOINT, MCP_SPEC_VERSION, MCP_BETA_HEADER, API_BASE_URL } from '../lib/mcp-constants.js';
 
 const router = express.Router();
 
@@ -30,11 +31,13 @@ router.get('/llms.txt', (req, res) => {
 
 ## For Agents (Claude Connectors)
 
-**MCP Server**: \`POST /api/mcp\` — ${getMcpToolCount()} tools via Streamable HTTP (MCP 2025-03-26)
+**MCP Server**: \`POST /api/mcp\` — ${getMcpToolCount()} tools via Streamable HTTP (MCP ${MCP_SPEC_VERSION})
 
 Connect:
-- **Claude Code CLI / Claude Desktop**: \`npx mcp-remote@0.1.16 https://api.visantlabs.com/api/mcp\` (OAuth browser flow)
-- **Cursor**: URL \`https://api.visantlabs.com/api/mcp\` + Bearer header
+- **Claude.ai / Claude Desktop**: Settings > Connectors > Add > \`${MCP_ENDPOINT}\` (OAuth auto-flow)
+- **Claude Code CLI**: \`claude mcp add --transport http visant ${MCP_ENDPOINT}\`
+- **Anthropic API**: Pass as \`mcp_servers\` with beta header \`${MCP_BETA_HEADER}\`
+- **Cursor**: URL \`${MCP_ENDPOINT}\` + Bearer header
 - **Full setup guide**: https://api.visantlabs.com/api/docs/mcp-setup
 
 **REST API**: Full CRUD under \`/api/*\` — see /llms-full.txt
@@ -76,28 +79,50 @@ API keys are generated in the user dashboard under Settings > API Keys.
 - Credit costs vary by operation (mockup ~5 credits, branding ~10 credits, image gen ~2 credits)
 - Free tier includes starter credits on signup
 
-## MCP Server (Claude Connectors Compatible)
+## MCP Server (Claude Connector Ready)
 
 **Endpoint**: \`POST /api/mcp\`
-**Protocol**: JSON-RPC 2.0 over Streamable HTTP (MCP 2025-03-26)
+**Protocol**: JSON-RPC 2.0 over Streamable HTTP (MCP ${MCP_SPEC_VERSION})
+**Auth**: OAuth 2.1 (DCR + PKCE S256) or API Key (\`visant_sk_*\`)
+**Discovery**: \`GET /.well-known/mcp.json\`
 
-### Connect via Claude.ai
+### Connect via Claude.ai (Recommended)
 
-1. Go to **Settings → Connectors → Add custom connector**
-2. Enter URL: \`https://api.visantlabs.com/api/mcp\`
-3. (Optional) Add API key for authenticated access: \`visant_sk_xxx\`
+1. Go to **Settings → Connectors → Add**
+2. Enter URL: \`${MCP_ENDPOINT}\`
+3. Authorize via OAuth (automatic browser flow — no API key needed)
 
-### Getting Started (3 steps)
+### Connect via Anthropic API (MCP Connector)
+
+\`\`\`json
+{
+  "mcp_servers": [{
+    "type": "url",
+    "url": "${MCP_ENDPOINT}",
+    "name": "visant",
+    "authorization_token": "visant_sk_xxx"
+  }],
+  "tools": [{ "type": "mcp_toolset", "mcp_server_name": "visant" }]
+}
+\`\`\`
+Requires beta header: \`"anthropic-beta": "${MCP_BETA_HEADER}"\`
+
+### Connect via Claude Code CLI
+
+\`\`\`bash
+claude mcp add --transport http visant ${MCP_ENDPOINT}
+\`\`\`
+
+### Getting Started with API Keys
 
 1. Create an API key at \`https://visantlabs.com/settings/api-keys\`
-2. Add to Claude.ai: Settings → Integrations → Add MCP → URL: \`https://api.visantlabs.com/api/mcp\`
-3. Add header: \`Authorization: Bearer visant_sk_xxx\`
+2. Use as Bearer token: \`Authorization: Bearer visant_sk_xxx\`
 
 ### Connect Programmatically
 
 **curl**
 \`\`\`bash
-curl -X POST https://api.visantlabs.com/api/mcp \\
+curl -X POST ${MCP_ENDPOINT} \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json, text/event-stream" \\
   -H "Authorization: Bearer visant_sk_xxx" \\
@@ -111,7 +136,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 
 const client = new Client({ name: 'my-app', version: '1.0.0' });
 await client.connect(new StreamableHTTPClientTransport(
-  new URL('https://api.visantlabs.com/api/mcp'),
+  new URL('${MCP_ENDPOINT}'),
   { requestInit: { headers: { Authorization: 'Bearer visant_sk_xxx' } } }
 ));
 const result = await client.callTool('mockup-generate', {
@@ -127,7 +152,7 @@ from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
 async with streamablehttp_client(
-    "https://api.visantlabs.com/api/mcp",
+    "${MCP_ENDPOINT}",
     headers={"Authorization": "Bearer visant_sk_xxx"},
 ) as (read, write, _):
     async with ClientSession(read, write) as session:
@@ -140,7 +165,7 @@ async with streamablehttp_client(
 {
   "mcpServers": {
     "visant": {
-      "url": "https://api.visantlabs.com/api/mcp",
+      "url": "${MCP_ENDPOINT}",
       "headers": { "Authorization": "Bearer visant_sk_xxx" }
     }
   }

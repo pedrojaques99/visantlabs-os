@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { authenticateApiKey } from './apiKeyAuth.js';
+import { MCP_ENDPOINT } from '../lib/mcp-constants.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -54,7 +55,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     };
 
     // OAuth 2.1 access token path — has `sub` + `aud` (MCP resource)
-    const mcpResource = `${process.env.API_BASE_URL || 'https://api.visantlabs.com'}/api/mcp`;
+    const mcpResource = MCP_ENDPOINT;
     const aud = decoded.aud;
     const isOAuthToken =
       decoded.sub && (aud === mcpResource || (Array.isArray(aud) && aud.includes(mcpResource)));

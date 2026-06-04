@@ -4772,5 +4772,37 @@
       "backToApps": "Back to Apps"
     },
     "tapToUpload": "Tap to upload"
+  },
+  "contentStudio": {
+    "title": "Content Studio",
+    "beta": "BETA",
+    "campaignBrief": "Campaign Brief",
+    "briefPlaceholder": "Describe your campaign... e.g. 'Summer collection launch, vibrant colors, beach lifestyle, targeting millennials'",
+    "brandGuideline": "Brand Guideline",
+    "noBrand": "No brand (generic)",
+    "tone": "Tone",
+    "toneAuto": "Auto",
+    "toneProfessional": "Professional",
+    "toneCasual": "Casual",
+    "tonePlayful": "Playful",
+    "toneBold": "Bold",
+    "toneMinimal": "Minimal",
+    "imageModel": "Image Model",
+    "platforms": "Platforms",
+    "generating": "Generating...",
+    "generateAssets": "Generate {count} Assets",
+    "briefRequired": "Write a campaign brief first",
+    "formatRequired": "Select at least one format",
+    "generatingToast": "Generating {count} assets ({credits} credits)",
+    "allGenerated": "All assets generated!",
+    "generationFailed": "Generation failed: {error}",
+    "generationTimeout": "Generation timed out. Check back later.",
+    "emptyTitle": "Content Studio",
+    "emptyDescription": "Write a campaign brief, select your platforms, and generate brand-consistent content for all channels at once.",
+    "queued": "Queued",
+    "copied": "Copied",
+    "copy": "Copy",
+    "image": "Image",
+    "resuming": "Resuming previous generation..."
   }
 }

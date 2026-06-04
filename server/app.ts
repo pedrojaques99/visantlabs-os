@@ -86,6 +86,13 @@ import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from './utils/jwtSecret.js';
+import {
+  API_BASE_URL,
+  FRONTEND_BASE_URL,
+  MCP_ENDPOINT,
+  MCP_SCOPES,
+  MCP_SPEC_VERSION,
+} from './lib/mcp-constants.js';
 
 export function createApp() {
   const app = express();
@@ -348,24 +355,23 @@ export function createApp() {
 
   // ── MCP Discovery ────────────────────────────────────────────────────────
   app.get('/.well-known/mcp.json', (_req, res) => {
-    const apiBase = process.env.API_BASE_URL || 'https://api.visantlabs.com';
-    const frontendBase =
-      process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
     res.json({
-      mcpVersion: '2025-03-26',
+      mcpVersion: MCP_SPEC_VERSION,
       name: 'Visant Labs',
-      description: 'AI-powered design platform for mockups, branding, budgets, and canvas.',
-      endpoint: `${apiBase}/api/mcp`,
+      description: 'AI-powered design platform for mockups, branding, creative studio, and image generation.',
+      endpoint: MCP_ENDPOINT,
       transport: ['streamable-http'],
       authentication: {
         type: 'oauth2',
-        authorization_url: `${apiBase}/.well-known/oauth-authorization-server`,
-        token_url: `${apiBase}/oauth/token`,
-        registration_url: `${apiBase}/oauth/register`,
-        scopes: ['read', 'write', 'generate'],
+        authorization_url: `${API_BASE_URL}/.well-known/oauth-authorization-server`,
+        token_url: `${API_BASE_URL}/oauth/token`,
+        registration_url: `${API_BASE_URL}/oauth/register`,
+        revocation_url: `${API_BASE_URL}/oauth/revoke`,
+        scopes: [...MCP_SCOPES],
       },
+      capabilities: ['tools', 'prompts', 'resources'],
       toolCount: getMcpToolCount(),
-      docsUrl: `${frontendBase}/llms-full.txt`,
+      docsUrl: `${FRONTEND_BASE_URL}/llms-full.txt`,
     });
   });
 
@@ -423,7 +429,7 @@ export function createApp() {
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.slice(7);
       try {
-        const mcpResource = `${process.env.API_BASE_URL || 'https://api.visantlabs.com'}/api/mcp`;
+        const mcpResource = MCP_ENDPOINT;
         const decoded = jwt.verify(token, JWT_SECRET) as {
           sub?: string;
           aud?: string | string[];
@@ -459,7 +465,7 @@ export function createApp() {
       toolCount: getMcpToolCount(),
       tools: getMcpToolNames(),
       endpoint: `${routePrefix}/mcp`,
-      protocol: 'MCP 2025-03-26',
+      protocol: `MCP ${MCP_SPEC_VERSION}`,
       transport: 'Streamable HTTP',
     });
   });
@@ -472,7 +478,7 @@ export function createApp() {
         id: null,
       });
     }
-    const mcpApiBase = process.env.API_BASE_URL || 'https://api.visantlabs.com';
+    const mcpApiBase = API_BASE_URL;
     const isAuthenticated = await authenticateMcpRequest(req);
     if (!isAuthenticated) {
       res.setHeader(
@@ -507,7 +513,7 @@ export function createApp() {
   });
 
   app.get(`${routePrefix}/mcp`, (_req, res) => {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'POST, DELETE');
     res.status(405).json({
       jsonrpc: '2.0',
       error: {
@@ -516,6 +522,10 @@ export function createApp() {
       },
       id: null,
     });
+  });
+
+  app.delete(`${routePrefix}/mcp`, (_req, res) => {
+    res.status(200).json({ jsonrpc: '2.0', result: null, id: null });
   });
 
   app.get(`${routePrefix}/mcp/sse`, async (req: any, res) => {

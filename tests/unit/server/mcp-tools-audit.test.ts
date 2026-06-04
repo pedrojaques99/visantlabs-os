@@ -599,7 +599,7 @@ describe('auth tools contract', () => {
             name,
             scopes: ['read', 'write', 'generate'],
             usage: 'Authorization: Bearer visant_sk_testabc123',
-            mcpUrl: 'https://visantlabs.com/api/mcp',
+            mcpUrl: 'https://api.visantlabs.com/api/mcp',
           }),
         },
       ],
@@ -626,7 +626,7 @@ describe('auth tools contract', () => {
   it('api-key-create works with JWT (no existing API key)', () => {
     const r = parseResponse(simulateApiKeyCreate('Claude MCP', 'jwt_token_abc'));
     expect(r.key).toMatch(/^visant_sk_/);
-    expect(r.mcpUrl).toBe('https://visantlabs.com/api/mcp');
+    expect(r.mcpUrl).toBe('https://api.visantlabs.com/api/mcp');
     expect(r.message).toContain('Save the key');
   });
 

@@ -65,7 +65,8 @@ AI-powered mockup generator with 500+ community presets:
 - Upload design + describe scene = photorealistic mockup
 - Categories: devices, print, apparel, signage, packaging, stationery
 - Brand-aware generation (injects logos, colors from guidelines)
-- Multi-model: GPT Image, Gemini, Seedream
+- Multi-model: GPT Image, Gemini, Seedream, Ideogram V3/V4, REVE Image 1.0
+- Compare Models mode: generate with multiple providers side-by-side
 - Community preset library with likes, search, and filtering
 - Multi-format output: 1:1, 9:16, 16:9, 4:5
 
@@ -78,6 +79,17 @@ React Flow-based node graph for batch design automation:
 - Real-time collaboration via Liveblocks
 - Pipeline asset inbox for organizing inputs
 - Export/import as JSON workflows
+
+### Content Studio
+
+Campaign-to-assets pipeline — one brief generates all social media content:
+
+- Write a campaign brief → generate copy + images for every platform at once
+- Brand guideline injection for on-brand results
+- Tone control (professional, casual, playful, bold, minimal)
+- Multi-provider image generation (Gemini, Ideogram, REVE, Seedream)
+- Background job polling with auto-resume on page reload
+- Full i18n support (en-US, pt-BR)
 
 ### Creative Studio
 
@@ -132,15 +144,24 @@ In-editor AI assistant with brand context:
 - Component registry and context tools
 - Export with bleed and metadata
 
+### Playground
+
+AI-powered interactive miniapps and experimentation space:
+
+- Chat interface for AI-composed components
+- Community sharing with fork/like/publish
+- Sandpack live code preview
+- Collapsible sidebar with search
+
 ### MCP Server
 
 Model Context Protocol server for AI agent integration:
 
-- Brand guidelines CRUD and insights
-- Creative plan generation
-- Mockup and image generation
-- Analytics and metrics
-- HTTP and stdio transport with bearer auth
+- 93+ tools for brand, mockup, creative, image, and analytics operations
+- OAuth 2.1 + PKCE authentication (no more hardcoded tokens)
+- Streamable HTTP transport (`POST /api/mcp`) + legacy SSE (`GET /api/mcp/sse`)
+- Persistent refresh tokens with automatic cleanup
+- HTTP and stdio transport modes
 
 ### CLI Tool
 
@@ -167,7 +188,7 @@ npx visantlabs skills    # Manage skills
 | State         | Zustand, TanStack React Query                                   |
 | Backend       | Node.js, Express, Prisma ORM                                    |
 | Database      | MongoDB (Prisma ORM)                                            |
-| AI/ML         | Google Gemini, OpenAI GPT Image, Google Veo 3 (video), Seedream |
+| AI/ML         | Google Gemini, OpenAI GPT Image, Ideogram V3/V4, REVE Image 1.0, Google Veo 3 (video), Seedream |
 | Storage       | Cloudflare R2                                                   |
 | Auth          | Google OAuth, email/password, TOTP 2FA, session tokens          |
 | Collaboration | Liveblocks (real-time canvas)                                   |
@@ -219,6 +240,8 @@ GOOGLE_GEMINI_API_KEY=your-gemini-key
 | Service       | Required For                     | Setup Guide                                          | Without It           |
 | ------------- | -------------------------------- | ---------------------------------------------------- | -------------------- |
 | Google Gemini | AI generation, mockups, branding | [docs/SETUP_LLM.md](docs/SETUP_LLM.md)               | AI features disabled |
+| Ideogram      | Ideogram V3/V4 image generation  | Set `IDEOGRAM_API_KEY` in `.env.local`                | Ideogram unavailable |
+| REVE          | REVE Image 1.0 generation        | Set `REVE_API_KEY` in `.env.local`                    | REVE unavailable     |
 | Stripe        | Subscriptions, credit purchases  | [docs/SETUP_STRIPE.md](docs/SETUP_STRIPE.md)         | Payments disabled    |
 | AbacatePay    | PIX payments (Brazil)            | [docs/SETUP_ABACATEPAY.md](docs/SETUP_ABACATEPAY.md) | PIX unavailable      |
 | Cloudflare R2 | Permanent image storage          | [docs/SETUP_R2.md](docs/SETUP_R2.md)                 | Base64 temp storage  |

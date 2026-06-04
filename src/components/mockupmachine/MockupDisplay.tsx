@@ -179,7 +179,7 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
               return null;
             }
 
-            const compareLabel = compareLabels?.[index];
+            const compareLabel = compareLabels?.[index]?.trim();
 
             return (
               <div key={index} className="relative min-w-0 w-full">

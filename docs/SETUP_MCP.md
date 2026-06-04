@@ -2,9 +2,10 @@
 
 Connect any MCP-compatible AI client to Visant's full tool suite — brand guidelines, mockup generation, creatives, canvas, and budgets.
 
-**Endpoint:** `https://visantlabs.com/api/mcp`  
-**Transport:** Streamable HTTP (MCP spec 2025-03-26, stateless)  
-**Auth:** Bearer API key
+**Endpoint:** `https://api.visantlabs.com/api/mcp`  
+**Transport:** Streamable HTTP (MCP spec 2025-11-25, stateless)  
+**Auth:** OAuth 2.1 (DCR + PKCE S256) or API key (`visant_sk_*`)  
+**Discovery:** `GET /.well-known/mcp.json`
 
 > **Full tool reference + agent workflows:** `.agent/memory/MCP-GETTING-STARTED.md`
 
@@ -20,52 +21,29 @@ Connect any MCP-compatible AI client to Visant's full tool suite — brand guide
 
 ## Claude Code CLI
 
-Claude Code only supports stdio MCP servers, so you need `mcp-remote` as a bridge.
+Claude Code now supports remote HTTP MCP servers natively — no `mcp-remote` bridge needed.
 
-Add to `.mcp.json` in your project root, or `~/.claude/mcp.json` globally:
-
-**Option A — OAuth (recommended, zero token config):**
-
-```json
-{
-  "mcpServers": {
-    "visant": {
-      "command": "npx",
-      "args": ["mcp-remote@0.1.16", "https://visantlabs.com/api/mcp"]
-    }
-  }
-}
+```bash
+claude mcp add --transport http visant https://api.visantlabs.com/api/mcp
 ```
 
-On first use, a browser window opens → log in → click Approve → done. Token stored in OS keychain.
-
-**Option B — API key:**
-
-```json
-{
-  "mcpServers": {
-    "visant": {
-      "command": "npx",
-      "args": [
-        "mcp-remote@0.1.16",
-        "https://visantlabs.com/api/mcp",
-        "--header",
-        "Authorization:Bearer ${VISANT_API_TOKEN}"
-      ],
-      "env": {
-        "VISANT_API_TOKEN": "visant_sk_your_key_here"
-      }
-    }
-  }
-}
-```
-
-Note: `Authorization:Bearer` has no space after the colon — avoids a Windows argument-splitting bug.
-
-Verify:
+OAuth browser flow opens on first use. Verify:
 
 ```bash
 claude mcp list
+```
+
+**Legacy (mcp-remote bridge):** Still works if preferred — add to `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "visant": {
+      "command": "npx",
+      "args": ["mcp-remote@0.1.16", "https://api.visantlabs.com/api/mcp"]
+    }
+  }
+}
 ```
 
 ---
@@ -91,33 +69,36 @@ Edit `~/.cursor/mcp.json`:
 
 ---
 
-## Claude Desktop
+## Claude.ai / Claude Desktop (Connector)
 
-Edit the config file:
+1. Go to **Settings → Connectors → Add**
+2. Enter URL: `https://api.visantlabs.com/api/mcp`
+3. Authorize via OAuth (automatic browser flow — no API key needed)
 
-- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "visant": {
-      "command": "npx",
-      "args": ["mcp-remote@0.1.16", "https://visantlabs.com/api/mcp"]
-    }
-  }
-}
-```
-
-Restart Claude Desktop. OAuth browser flow opens on first use.
+Works across claude.ai, Claude Desktop, Cowork, and mobile apps.
 
 ---
 
-## Claude.ai Web
+## Anthropic API (MCP Connector)
 
-1. **Settings → Integrations → Add custom MCP**
-2. URL: `https://visantlabs.com/api/mcp`
-3. Header: `Authorization: Bearer visant_sk_xxx`
+Use Visant as a remote MCP server directly in API calls:
+
+```json
+{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 4096,
+  "mcp_servers": [{
+    "type": "url",
+    "url": "https://api.visantlabs.com/api/mcp",
+    "name": "visant",
+    "authorization_token": "visant_sk_your_key_here"
+  }],
+  "tools": [{ "type": "mcp_toolset", "mcp_server_name": "visant" }],
+  "messages": [{ "role": "user", "content": "Generate a mockup of a coffee brand packaging" }]
+}
+```
+
+Requires header: `"anthropic-beta": "mcp-client-2025-11-20"`
 
 ---
 
