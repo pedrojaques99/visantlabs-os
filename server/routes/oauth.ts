@@ -44,6 +44,57 @@ function redirectUriMatches(presented: string, stored: string): boolean {
   return false;
 }
 
+function isClientIdUrl(clientId: string): boolean {
+  try {
+    const u = new URL(clientId);
+    return u.protocol === 'https:' || u.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+async function resolveOrRegisterClient(clientId: string) {
+  const existing = await prisma.oAuthClient.findUnique({ where: { clientId } });
+  if (existing) return existing;
+
+  if (!isClientIdUrl(clientId)) return null;
+
+  try {
+    const res = await fetch(clientId, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+
+    const meta = (await res.json()) as {
+      client_name?: string;
+      redirect_uris?: string[];
+      grant_types?: string[];
+      token_endpoint_auth_method?: string;
+    };
+
+    if (!meta.redirect_uris?.length) return null;
+
+    const normalizedUris = meta.redirect_uris.map((uri: string) => normalizeRedirectUri(uri));
+    const grantTypes = Array.isArray(meta.grant_types) ? meta.grant_types : ['authorization_code'];
+
+    const client = await prisma.oAuthClient.create({
+      data: {
+        clientId,
+        clientName: meta.client_name || new URL(clientId).hostname,
+        redirectUris: normalizedUris,
+        grantTypes: grantTypes,
+      },
+    });
+
+    console.log(`[OAuth] Auto-registered client from metadata URL: ${clientId}`);
+    return client;
+  } catch (err) {
+    console.error(`[OAuth] Failed to fetch client metadata from ${clientId}:`, err);
+    return null;
+  }
+}
+
 function verifyPkce(codeVerifier: string, storedChallenge: string): boolean {
   const hash = crypto.createHash('sha256').update(codeVerifier).digest();
   const computed = Buffer.from(hash).toString('base64url');
@@ -168,8 +219,8 @@ router.get('/oauth/authorize', async (req, res) => {
   }
 
   try {
-    // Lookup client
-    const oauthClient = await prisma.oAuthClient.findUnique({ where: { clientId: client_id } });
+    // Lookup client — auto-register if client_id is a metadata URL (RFC 7591 §2)
+    const oauthClient = await resolveOrRegisterClient(client_id);
     if (!oauthClient) {
       return res.status(400).send('Unknown client_id');
     }
@@ -268,7 +319,7 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
 
   try {
     // Verify client exists and redirect_uri is valid
-    const oauthClient = await prisma.oAuthClient.findUnique({ where: { clientId: client_id } });
+    const oauthClient = await resolveOrRegisterClient(client_id);
     if (!oauthClient) {
       return res.status(400).send('Unknown client_id');
     }

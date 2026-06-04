@@ -147,7 +147,7 @@ async function getQuotaMeta(userId: string) {
   };
 }
 
-import { MCP_RESULT_MAX_CHARS } from '../lib/mcp-constants.js';
+import { MCP_RESULT_MAX_CHARS, MCP_ENDPOINT } from '../lib/mcp-constants.js';
 
 function jsonResponse(data: unknown) {
   let text = JSON.stringify(data, null, 2);
@@ -452,7 +452,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           name: result.name,
           scopes: result.scopes,
           usage: 'Authorization: Bearer ' + result.key,
-          mcpUrl: 'https://visantlabs.com/api/mcp',
+          mcpUrl: MCP_ENDPOINT,
         });
       } catch (err: any) {
         return ERR.internal(err.message);

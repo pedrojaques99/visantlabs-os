@@ -5,7 +5,7 @@ Any MCP-compatible client can call brand guidelines, generate mockups, run campa
 
 **Endpoint:** `https://api.visantlabs.com/api/mcp`
 **Auth:** OAuth 2.1 (automatic) or API key (`visant_sk_...`)
-**Transport:** Streamable HTTP (MCP spec 2025-03-26, stateless)
+**Transport:** Streamable HTTP (MCP spec 2025-11-25, stateless)
 **Scopes:** `read`, `write`, `generate`
 
 ---
@@ -55,7 +55,31 @@ Zero-config for MCP clients that support HTTP transport. The flow:
 
 ## Client Setup
 
-### Claude Desktop
+### Claude.ai / Claude Desktop (Connector)
+
+1. Go to **Settings → Connectors → Add**
+2. Enter URL: `https://api.visantlabs.com/api/mcp`
+3. Authorize via OAuth (automatic browser flow)
+
+Works across claude.ai, Claude Desktop, Cowork, and mobile apps.
+
+### Anthropic API (MCP Connector)
+
+```json
+{
+  "mcp_servers": [{
+    "type": "url",
+    "url": "https://api.visantlabs.com/api/mcp",
+    "name": "visant",
+    "authorization_token": "visant_sk_xxx"
+  }],
+  "tools": [{ "type": "mcp_toolset", "mcp_server_name": "visant" }]
+}
+```
+
+Requires header: `"anthropic-beta": "mcp-client-2025-11-20"`
+
+### Claude Desktop (Legacy config)
 
 Uses OAuth automatically with HTTP transport:
 
