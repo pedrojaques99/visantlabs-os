@@ -752,3 +752,21 @@ model MiniAppLike {
   @@unique([miniAppId, userId])
   @@map("mini_app_likes")
 }
+
+model BrandInvite {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  token            String    @unique
+  brandGuidelineId String    @db.ObjectId
+  createdByUserId  String    @db.ObjectId
+  role             String    @default("viewer") // "viewer" | "editor"
+  label            String?   // Display label (e.g. "YSA Architects — Brand Kit")
+  acceptedByUserId String?   @db.ObjectId
+  status           String    @default("pending") // "pending" | "accepted" | "revoked"
+  expiresAt        DateTime?
+  acceptedAt       DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([brandGuidelineId])
+  @@index([createdByUserId])
+  @@map("brand_invites")
+}

@@ -1146,6 +1146,213 @@ router.get('/public/:slug', publicRateLimiter, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════
+// BRAND INVITE (Connect flow)
+// ═══════════════════════════════════════════════════
+
+// POST /api/brand-guidelines/:id/invite — create invite token
+router.post('/:id/invite', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    const { role = 'viewer', label, expiresInDays } = req.body as {
+      role?: string;
+      label?: string;
+      expiresInDays?: number;
+    };
+
+    const token = nanoid(16);
+    const brandName = (guideline.identity as any)?.name || 'Brand Kit';
+    const expiresAt = expiresInDays
+      ? new Date(Date.now() + expiresInDays * 86_400_000)
+      : undefined;
+
+    const invite = await prisma.brandInvite.create({
+      data: {
+        token,
+        brandGuidelineId: guideline.id,
+        createdByUserId: req.userId,
+        role: role === 'editor' ? 'editor' : 'viewer',
+        label: label || `${brandName} — Connect`,
+        expiresAt,
+      },
+    });
+
+    const baseUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+    const connectUrl = `${baseUrl}/connect/${token}`;
+
+    res.status(201).json({
+      invite: { ...invite, _id: invite.id },
+      connectUrl,
+    });
+  } catch (error: any) {
+    console.error('[Brand Invite Create] Error:', error);
+    res.status(500).json({ error: 'Failed to create invite' });
+  }
+});
+
+// GET /api/brand-guidelines/invite/:token — public: get invite details
+router.get('/invite/:token', publicRateLimiter, async (req, res) => {
+  try {
+    const invite = await prisma.brandInvite.findUnique({
+      where: { token: req.params.token },
+    });
+    if (!invite) return res.status(404).json({ error: 'Invite not found' });
+    if (invite.status === 'revoked') return res.status(410).json({ error: 'Invite revoked' });
+    if (invite.expiresAt && invite.expiresAt < new Date()) {
+      return res.status(410).json({ error: 'Invite expired' });
+    }
+
+    const guideline = await prisma.brandGuideline.findUnique({
+      where: { id: invite.brandGuidelineId },
+      select: {
+        id: true,
+        identity: true,
+        logos: true,
+        colors: true,
+      },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand not found' });
+
+    const creator = await prisma.user.findUnique({
+      where: { id: invite.createdByUserId },
+      select: { name: true, picture: true },
+    });
+
+    res.json({
+      invite: {
+        token: invite.token,
+        label: invite.label,
+        role: invite.role,
+        status: invite.status,
+        expiresAt: invite.expiresAt,
+      },
+      brand: {
+        name: (guideline.identity as any)?.name,
+        logo: ((guideline.logos as any[]) ?? [])[0]?.url,
+        colors: ((guideline.colors as any[]) ?? []).slice(0, 5),
+      },
+      creator: creator ? { name: creator.name, picture: creator.picture } : null,
+    });
+  } catch (error: any) {
+    console.error('[Brand Invite Get] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch invite' });
+  }
+});
+
+// POST /api/brand-guidelines/invite/:token/accept — accept invite (requires auth)
+router.post('/invite/:token/accept', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const invite = await prisma.brandInvite.findUnique({
+      where: { token: req.params.token },
+    });
+    if (!invite) return res.status(404).json({ error: 'Invite not found' });
+    if (invite.status !== 'pending') return res.status(409).json({ error: 'Invite already used' });
+    if (invite.expiresAt && invite.expiresAt < new Date()) {
+      return res.status(410).json({ error: 'Invite expired' });
+    }
+
+    // Don't let the owner accept their own invite
+    if (invite.createdByUserId === req.userId) {
+      return res.status(409).json({ error: 'Cannot accept your own invite' });
+    }
+
+    // Add user to brand's canView or canEdit
+    const guideline = await prisma.brandGuideline.findUnique({
+      where: { id: invite.brandGuidelineId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand not found' });
+
+    const field = invite.role === 'editor' ? 'canEdit' : 'canView';
+    const currentList = (guideline[field] as string[]) ?? [];
+    if (!currentList.includes(req.userId)) {
+      await prisma.brandGuideline.update({
+        where: { id: guideline.id },
+        data: { [field]: [...currentList, req.userId] },
+      });
+    }
+
+    await prisma.brandInvite.update({
+      where: { id: invite.id },
+      data: {
+        status: 'accepted',
+        acceptedByUserId: req.userId,
+        acceptedAt: new Date(),
+      },
+    });
+
+    const apiBaseUrl = process.env.API_BASE_URL || 'https://api.visantlabs.com';
+    const mcpUrl = `${apiBaseUrl}/api/mcp`;
+
+    res.json({
+      ok: true,
+      brandGuidelineId: guideline.id,
+      brandName: (guideline.identity as any)?.name,
+      mcpUrl,
+      role: invite.role,
+    });
+  } catch (error: any) {
+    console.error('[Brand Invite Accept] Error:', error);
+    res.status(500).json({ error: 'Failed to accept invite' });
+  }
+});
+
+// DELETE /api/brand-guidelines/:id/invite/:inviteId — revoke invite
+router.delete('/:id/invite/:inviteId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const invite = await prisma.brandInvite.findFirst({
+      where: {
+        id: req.params.inviteId,
+        brandGuidelineId: req.params.id,
+        createdByUserId: req.userId,
+      },
+    });
+    if (!invite) return res.status(404).json({ error: 'Invite not found' });
+
+    await prisma.brandInvite.update({
+      where: { id: invite.id },
+      data: { status: 'revoked' },
+    });
+
+    res.json({ ok: true });
+  } catch (error: any) {
+    console.error('[Brand Invite Revoke] Error:', error);
+    res.status(500).json({ error: 'Failed to revoke invite' });
+  }
+});
+
+// GET /api/brand-guidelines/:id/invites — list invites for a brand
+router.get('/:id/invites', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    const invites = await prisma.brandInvite.findMany({
+      where: { brandGuidelineId: guideline.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ invites: invites.map((i) => ({ ...i, _id: i.id })) });
+  } catch (error: any) {
+    console.error('[Brand Invite List] Error:', error);
+    res.status(500).json({ error: 'Failed to list invites' });
+  }
+});
+
 // POST /api/brand-guidelines/:id/ai-populate — generate content for empty brand fields
 router.post('/:id/ai-populate', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
