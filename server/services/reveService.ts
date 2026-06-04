@@ -2,6 +2,7 @@ import type { AspectRatio } from '../../src/types/types.js';
 import type { ReveModelId } from '../../src/constants/reveModels.js';
 import { REVE_MODELS, resolveReveAspectRatio } from '../../src/constants/reveModels.js';
 import { safeFetch } from '../utils/securityValidation.js';
+import { withResilience } from '../lib/ai-resilience.js';
 
 const REVE_BASE_URL = 'https://api.reve.art/v1';
 
@@ -57,51 +58,53 @@ export async function generateReveImage(
     `[Reve] Generating: model=${model}, aspect=${reveAspect}, keySource=${specificApiKey ? 'user' : 'server'}`
   );
 
-  const response = await safeFetch(`${REVE_BASE_URL}/image/create`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
+  return withResilience('reve', async () => {
+    const response = await safeFetch(`${REVE_BASE_URL}/image/create`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Reve] API error status:', response.status);
+      console.error('[Reve] API error text:', errorText);
+
+      if (response.status === 401) {
+        throw new Error('Invalid REVE API key. Please check your REVE_API_KEY.');
+      }
+      if (response.status === 402) {
+        throw new Error('Insufficient REVE credits. Please top up your account at reve.art.');
+      }
+      if (response.status === 429) {
+        throw new Error('REVE rate limit exceeded. Please try again shortly.');
+      }
+
+      throw new Error(`REVE API failed: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.content_violation) {
+      throw new Error('REVE flagged the content as a policy violation');
+    }
+
+    if (!data.image) {
+      console.error('[Reve] No image in response:', JSON.stringify(data, null, 2));
+      throw new Error('No image data in REVE response');
+    }
+
+    console.log(
+      `[Reve] Generation complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${data.credits_used ?? 'n/a'}`
+    );
+
+    return {
+      base64: data.image,
+      seed: data.seed,
+      requestId: data.request_id,
+    };
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[Reve] API error status:', response.status);
-    console.error('[Reve] API error text:', errorText);
-
-    if (response.status === 401) {
-      throw new Error('Invalid REVE API key. Please check your REVE_API_KEY.');
-    }
-    if (response.status === 402) {
-      throw new Error('Insufficient REVE credits. Please top up your account at reve.art.');
-    }
-    if (response.status === 429) {
-      throw new Error('REVE rate limit exceeded. Please try again shortly.');
-    }
-
-    throw new Error(`REVE API failed: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
-
-  if (data.content_violation) {
-    throw new Error('REVE flagged the content as a policy violation');
-  }
-
-  if (!data.image) {
-    console.error('[Reve] No image in response:', JSON.stringify(data, null, 2));
-    throw new Error('No image data in REVE response');
-  }
-
-  console.log(
-    `[Reve] Generation complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${data.credits_used ?? 'n/a'}`
-  );
-
-  return {
-    base64: data.image,
-    seed: data.seed,
-    requestId: data.request_id,
-  };
 }

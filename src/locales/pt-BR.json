@@ -4776,5 +4776,37 @@
       "backToApps": "Voltar para Apps"
     },
     "tapToUpload": "Toque para enviar"
+  },
+  "contentStudio": {
+    "title": "Content Studio",
+    "beta": "BETA",
+    "campaignBrief": "Brief da Campanha",
+    "briefPlaceholder": "Descreva sua campanha... ex: 'Lançamento coleção verão, cores vibrantes, lifestyle praia, público millennial'",
+    "brandGuideline": "Brand Guideline",
+    "noBrand": "Sem marca (genérico)",
+    "tone": "Tom",
+    "toneAuto": "Auto",
+    "toneProfessional": "Profissional",
+    "toneCasual": "Casual",
+    "tonePlayful": "Divertido",
+    "toneBold": "Ousado",
+    "toneMinimal": "Minimal",
+    "imageModel": "Modelo de Imagem",
+    "platforms": "Plataformas",
+    "generating": "Gerando...",
+    "generateAssets": "Gerar {count} Assets",
+    "briefRequired": "Escreva um brief de campanha primeiro",
+    "formatRequired": "Selecione pelo menos um formato",
+    "generatingToast": "Gerando {count} assets ({credits} créditos)",
+    "allGenerated": "Todos os assets gerados!",
+    "generationFailed": "Falha na geração: {error}",
+    "generationTimeout": "Geração expirou. Tente novamente mais tarde.",
+    "emptyTitle": "Content Studio",
+    "emptyDescription": "Escreva um brief de campanha, selecione suas plataformas e gere conteúdo consistente com sua marca para todos os canais de uma vez.",
+    "queued": "Na fila",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "image": "Imagem",
+    "resuming": "Retomando geração anterior..."
   }
 }

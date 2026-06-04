@@ -2,6 +2,7 @@ import type { AspectRatio, Resolution } from '../../src/types/types.js';
 import type { IdeogramModelId, IdeogramRenderingSpeed } from '../../src/constants/ideogramModels.js';
 import { IDEOGRAM_MODELS, resolveIdeogramAspectRatio } from '../../src/constants/ideogramModels.js';
 import { safeFetch } from '../utils/securityValidation.js';
+import { withResilience } from '../lib/ai-resilience.js';
 
 const IDEOGRAM_BASE_URL = 'https://api.ideogram.ai';
 
@@ -93,62 +94,63 @@ export async function generateIdeogramImage(
     `[Ideogram] Generating: model=${model}, speed=${renderingSpeed}, aspect=${ideogramAspect}, keySource=${specificApiKey ? 'user' : 'server'}`
   );
 
-  const response = await safeFetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Api-Key': apiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
+  return withResilience('ideogram', async () => {
+    const response = await safeFetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Api-Key': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Ideogram] API error status:', response.status);
+      console.error('[Ideogram] API error text:', errorText);
+
+      if (response.status === 401) {
+        throw new Error('Invalid Ideogram API key. Please check your IDEOGRAM_API_KEY.');
+      }
+      if (response.status === 402) {
+        throw new Error('Insufficient Ideogram credits. Please top up your account at ideogram.ai.');
+      }
+      if (response.status === 422) {
+        throw new Error(`Ideogram safety filter triggered: ${errorText}`);
+      }
+      if (response.status === 429) {
+        throw new Error('Ideogram rate limit exceeded. Maximum 10 concurrent requests.');
+      }
+
+      throw new Error(`Ideogram API failed: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.data || data.data.length === 0) {
+      console.error('[Ideogram] No images in response:', JSON.stringify(data, null, 2));
+      throw new Error('No images in Ideogram response');
+    }
+
+    const imageData = data.data[0];
+
+    if (!imageData.url) {
+      if (!imageData.is_image_safe) {
+        throw new Error('Ideogram flagged the generated image as unsafe');
+      }
+      throw new Error('No image URL in Ideogram response');
+    }
+
+    const base64 = await downloadImageAsBase64(imageData.url);
+
+    console.log(
+      `[Ideogram] Generation complete. seed=${imageData.seed ?? 'n/a'}, resolution=${imageData.resolution ?? 'n/a'}`
+    );
+
+    return {
+      base64,
+      seed: imageData.seed,
+      resolution: imageData.resolution,
+    };
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[Ideogram] API error status:', response.status);
-    console.error('[Ideogram] API error text:', errorText);
-
-    if (response.status === 401) {
-      throw new Error('Invalid Ideogram API key. Please check your IDEOGRAM_API_KEY.');
-    }
-    if (response.status === 402) {
-      throw new Error('Insufficient Ideogram credits. Please top up your account at ideogram.ai.');
-    }
-    if (response.status === 422) {
-      throw new Error(`Ideogram safety filter triggered: ${errorText}`);
-    }
-    if (response.status === 429) {
-      throw new Error('Ideogram rate limit exceeded. Maximum 10 concurrent requests.');
-    }
-
-    throw new Error(`Ideogram API failed: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
-
-  if (!data.data || data.data.length === 0) {
-    console.error('[Ideogram] No images in response:', JSON.stringify(data, null, 2));
-    throw new Error('No images in Ideogram response');
-  }
-
-  const imageData = data.data[0];
-
-  if (!imageData.url) {
-    if (!imageData.is_image_safe) {
-      throw new Error('Ideogram flagged the generated image as unsafe');
-    }
-    throw new Error('No image URL in Ideogram response');
-  }
-
-  // Download the temporary URL to base64 (URLs expire)
-  const base64 = await downloadImageAsBase64(imageData.url);
-
-  console.log(
-    `[Ideogram] Generation complete. seed=${imageData.seed ?? 'n/a'}, resolution=${imageData.resolution ?? 'n/a'}`
-  );
-
-  return {
-    base64,
-    seed: imageData.seed,
-    resolution: imageData.resolution,
-  };
 }
