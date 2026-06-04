@@ -156,6 +156,7 @@ export function createApp() {
             'blob:',
           ],
           mediaSrc: ["'self'", 'blob:', 'data:'],
+          formAction: ["'self'", 'https://api.visantlabs.com', 'https://claude.ai'],
           objectSrc: ["'none'"],
         },
       },

@@ -108,6 +108,7 @@ const AboutPage = lazyWithRetry(() =>
 const PrivacyPolicyPage = lazyWithRetry(() =>
   import('./pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage }))
 );
+const LoginPage = lazyWithRetry(() => import('./pages/LoginPage'));
 const AuthCallbackPage = lazyWithRetry(() =>
   import('./pages/AuthCallbackPage').then((m) => ({ default: m.AuthCallbackPage }))
 );
@@ -332,6 +333,7 @@ const App: React.FC = () => {
                   <Route path="/settings/api-keys" element={<ApiKeysPage />} />
                   <Route path="/developer/usage" element={<UsageDashboardPage />} />
                   <Route path="/developer/getting-started" element={<GettingStartedPage />} />
+                  <Route path="/login" element={<LoginPage />} />
                   <Route path="/auth" element={<AuthCallbackPage />} />
                   <Route path="/waitlist" element={<WaitlistPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
