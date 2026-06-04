@@ -159,7 +159,14 @@ const RunBenchmark: React.FC = () => {
         },
         onError: (data) => {
           setGeneratingModels((prev) => { const n = new Set(prev); n.delete(data.model); return n; });
-          setStreamingResults((prev) => [...prev, { ...data, provider: data.provider || 'unknown', imageUrl: undefined, durationMs: 0, creditsCost: 0, votes: 0 } as StreamingResult]);
+          setStreamingResults((prev) => [...prev, {
+            ...data,
+            provider: data.provider || 'unknown',
+            imageUrl: undefined,
+            durationMs: data.durationMs || 0,
+            creditsCost: data.creditsCost || 0,
+            votes: 0,
+          } as StreamingResult]);
         },
         onComplete: (data) => {
           setStreamComplete(true);
@@ -452,10 +459,19 @@ const RunBenchmark: React.FC = () => {
                           )}
                         </motion.div>
                       ) : result.error ? (
-                        <div className="aspect-square bg-red-500/[0.03] flex items-center justify-center">
+                        <div className={cn(
+                          'aspect-square flex items-center justify-center',
+                          result.generationSucceeded ? 'bg-yellow-500/[0.03]' : 'bg-red-500/[0.03]'
+                        )}>
                           <div className="text-center px-4">
-                            <AlertCircle className="w-6 h-6 text-red-400/40 mx-auto mb-2" />
-                            <p className="text-[10px] text-red-400/60 line-clamp-3">{result.error}</p>
+                            <AlertCircle className={cn(
+                              'w-6 h-6 mx-auto mb-2',
+                              result.generationSucceeded ? 'text-yellow-400/40' : 'text-red-400/40'
+                            )} />
+                            <p className={cn(
+                              'text-[10px] line-clamp-3',
+                              result.generationSucceeded ? 'text-yellow-400/60' : 'text-red-400/60'
+                            )}>{result.error}</p>
                           </div>
                         </div>
                       ) : null}

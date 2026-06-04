@@ -315,25 +315,31 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
         const { base64 } = await generateForModel(model, enrichedPrompt, resolution as Resolution, aspectRatio as AspectRatio);
 
         let imageUrl: string | undefined;
+        let uploadError: string | null = null;
         if (isR2Configured() && base64) {
           try {
             imageUrl = await uploadImage(base64, userId, `bench-${benchmark.id}-${model}`, subscriptionTier, isAdmin);
           } catch (uploadErr: any) {
             if (uploadErr instanceof StorageLimitExceededError) {
-              console.warn(`[Benchmark] Storage limit hit for user ${userId}, model ${model}`);
+              uploadError = 'Storage limit exceeded — upgrade your plan or free up space';
             } else {
-              console.warn(`[Benchmark] R2 upload failed for ${model}:`, uploadErr.message);
+              uploadError = 'Upload failed — image was generated but could not be saved';
             }
+            console.warn(`[Benchmark] Upload error for ${model}:`, uploadErr.message);
           }
+        } else if (!isR2Configured()) {
+          uploadError = 'Storage not configured';
         }
 
+        const credits = getCreditsRequired(model, (resolution || '1K') as Resolution);
         const result = {
           model,
           provider: getProviderForModel(model),
           imageUrl: imageUrl || undefined,
           durationMs: Date.now() - start,
-          error: !imageUrl ? 'Image generated but storage upload failed' : null,
-          creditsCost: getCreditsRequired(model, (resolution || '1K') as Resolution),
+          error: uploadError,
+          creditsCost: credits,
+          generationSucceeded: true,
           votes: 0,
         };
 
@@ -341,24 +347,26 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
         allResults.push(result);
         sendSSE(res, 'result', { ...result, completedCount, totalModels: validModels.length, label: meta?.label || model });
       } catch (err: any) {
+        const credits = getCreditsRequired(model, (resolution || '1K') as Resolution);
         const result = {
           model,
           provider: getProviderForModel(model),
           imageUrl: null,
           durationMs: Date.now() - start,
           error: err.message?.slice(0, 200) || 'Generation failed',
-          creditsCost: getCreditsRequired(model, (resolution || '1K') as Resolution),
+          creditsCost: credits,
+          generationSucceeded: false,
           votes: 0,
         };
 
         completedCount++;
         allResults.push(result);
-        sendSSE(res, 'error', { model, provider: getProviderForModel(model), error: result.error, completedCount, totalModels: validModels.length, label: meta?.label || model });
+        sendSSE(res, 'error', { model, provider: getProviderForModel(model), error: result.error, durationMs: result.durationMs, creditsCost: result.creditsCost, completedCount, totalModels: validModels.length, label: meta?.label || model });
       }
     })
   );
 
-  const failedCredits = allResults.filter((r) => r.error).reduce((sum, r) => sum + r.creditsCost, 0);
+  const failedCredits = allResults.filter((r) => !r.generationSucceeded).reduce((sum, r) => sum + r.creditsCost, 0);
   if (failedCredits > 0 && chargeResult.charged) {
     try {
       await refundCredits(userId, failedCredits, chargeResult.deductionSource as DeductionSource);
@@ -378,8 +386,8 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
   sendSSE(res, 'complete', {
     benchmarkId: benchmark.id,
     totalModels: validModels.length,
-    successCount: allResults.filter((r) => !r.error).length,
-    failedCount: allResults.filter((r) => r.error).length,
+    successCount: allResults.filter((r) => r.generationSucceeded).length,
+    failedCount: allResults.filter((r) => !r.generationSucceeded).length,
     creditsRefunded: failedCredits,
   });
 

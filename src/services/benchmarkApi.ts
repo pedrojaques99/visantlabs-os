@@ -78,6 +78,7 @@ export interface SSEResultEvent {
   durationMs?: number;
   error?: string;
   creditsCost: number;
+  generationSucceeded?: boolean;
   completedCount: number;
   totalModels: number;
 }
@@ -121,7 +122,7 @@ export const benchmarkApi = {
       onStart?: (data: SSEStartEvent) => void;
       onGenerating?: (data: { model: string; label: string; provider: string }) => void;
       onResult?: (data: SSEResultEvent) => void;
-      onError?: (data: { model: string; label: string; provider: string; error: string; completedCount: number; totalModels: number }) => void;
+      onError?: (data: { model: string; label: string; provider: string; error: string; durationMs?: number; creditsCost?: number; completedCount: number; totalModels: number }) => void;
       onComplete?: (data: SSECompleteEvent) => void;
       onFail?: (error: string) => void;
     }
