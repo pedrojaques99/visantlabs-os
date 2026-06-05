@@ -17,7 +17,10 @@ function useGlitchText() {
   useEffect(() => {
     const id = setInterval(() => {
       setText(
-        Array.from({ length: 2 }, () => GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]).join('')
+        Array.from(
+          { length: 2 },
+          () => GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
+        ).join('')
       );
     }, 150);
     return () => clearInterval(id);
@@ -30,14 +33,42 @@ function FolderIcon({ open }: { open?: boolean }) {
     <svg width="40" height="34" viewBox="0 0 40 34" fill="none">
       {open ? (
         <>
-          <rect x="0" y="8" width="36" height="24" rx="1" fill="#F5D245" stroke="#BFA030" strokeWidth="1.5" />
-          <path d="M0 8 L14 8 L17 3 L36 3 L36 8" fill="#F5D245" stroke="#BFA030" strokeWidth="1.5" />
+          <rect
+            x="0"
+            y="8"
+            width="36"
+            height="24"
+            rx="1"
+            fill="#F5D245"
+            stroke="#BFA030"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M0 8 L14 8 L17 3 L36 3 L36 8"
+            fill="#F5D245"
+            stroke="#BFA030"
+            strokeWidth="1.5"
+          />
           <rect x="0" y="8" width="36" height="4" rx="0" fill="#E8C630" />
         </>
       ) : (
         <>
-          <rect x="2" y="10" width="36" height="22" rx="1" fill="#F5D245" stroke="#BFA030" strokeWidth="1.5" />
-          <path d="M2 10 L16 10 L19 5 L38 5 L38 10" fill="#F5D245" stroke="#BFA030" strokeWidth="1.5" />
+          <rect
+            x="2"
+            y="10"
+            width="36"
+            height="22"
+            rx="1"
+            fill="#F5D245"
+            stroke="#BFA030"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M2 10 L16 10 L19 5 L38 5 L38 10"
+            fill="#F5D245"
+            stroke="#BFA030"
+            strokeWidth="1.5"
+          />
         </>
       )}
     </svg>

@@ -35,10 +35,26 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TIER_CONFIG: Record<BenchmarkTier, { label: string; color: string; description: string }> = {
-  flagship: { label: 'Flagship', color: 'text-yellow-400 border-yellow-400/20', description: 'Best quality per provider' },
-  balanced: { label: 'Balanced', color: 'text-blue-400 border-blue-400/20', description: 'Quality/cost sweet spot' },
-  fast: { label: 'Fast', color: 'text-emerald-400 border-emerald-400/20', description: 'Speed optimized' },
-  legacy: { label: 'Legacy', color: 'text-white/30 border-white/10', description: 'Previous generation' },
+  flagship: {
+    label: 'Flagship',
+    color: 'text-yellow-400 border-yellow-400/20',
+    description: 'Best quality per provider',
+  },
+  balanced: {
+    label: 'Balanced',
+    color: 'text-blue-400 border-blue-400/20',
+    description: 'Quality/cost sweet spot',
+  },
+  fast: {
+    label: 'Fast',
+    color: 'text-emerald-400 border-emerald-400/20',
+    description: 'Speed optimized',
+  },
+  legacy: {
+    label: 'Legacy',
+    color: 'text-white/30 border-white/10',
+    description: 'Previous generation',
+  },
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -78,53 +94,73 @@ const RunBenchmark: React.FC = () => {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    benchmarkApi.getAvailableModels().then(({ models: m, maxPerBenchmark }) => {
-      setModels(m);
-      setMaxModels(maxPerBenchmark);
-    }).catch(() => toast.error('Failed to load models'));
+    benchmarkApi
+      .getAvailableModels()
+      .then(({ models: m, maxPerBenchmark }) => {
+        setModels(m);
+        setMaxModels(maxPerBenchmark);
+      })
+      .catch(() => toast.error('Failed to load models'));
   }, []);
 
   useEffect(() => {
-    return () => { abortRef.current?.abort(); };
+    return () => {
+      abortRef.current?.abort();
+    };
   }, []);
 
-  const toggleModel = useCallback((modelId: string) => {
-    const model = models.find((m) => m.id === modelId);
-    if (model && !model.available) {
-      toast.error(`${model.label} — API key not configured`);
-      return;
-    }
-    setSelectedModels((prev) => {
-      const next = new Set(prev);
-      if (next.has(modelId)) {
-        next.delete(modelId);
-      } else if (next.size < maxModels) {
-        next.add(modelId);
-      } else {
-        toast.error(`Maximum ${maxModels} models per benchmark`);
+  const toggleModel = useCallback(
+    (modelId: string) => {
+      const model = models.find((m) => m.id === modelId);
+      if (model && !model.available) {
+        toast.error(`${model.label} — API key not configured`);
+        return;
       }
-      return next;
-    });
-  }, [maxModels, models]);
+      setSelectedModels((prev) => {
+        const next = new Set(prev);
+        if (next.has(modelId)) {
+          next.delete(modelId);
+        } else if (next.size < maxModels) {
+          next.add(modelId);
+        } else {
+          toast.error(`Maximum ${maxModels} models per benchmark`);
+        }
+        return next;
+      });
+    },
+    [maxModels, models]
+  );
 
   const totalCredits = Array.from(selectedModels).reduce((sum, modelId) => {
     const model = models.find((m) => m.id === modelId);
     return sum + (model?.creditsCost1K || 2);
   }, 0);
 
-  const selectTier = useCallback((tier: BenchmarkTier) => {
-    const tierModels = models.filter((m) => m.tier === tier && m.available);
-    if (tierModels.length < 2) {
-      toast.error(`Not enough available models in ${TIER_CONFIG[tier].label} tier`);
-      return;
-    }
-    setSelectedModels(new Set(tierModels.slice(0, maxModels).map((m) => m.id)));
-  }, [models, maxModels]);
+  const selectTier = useCallback(
+    (tier: BenchmarkTier) => {
+      const tierModels = models.filter((m) => m.tier === tier && m.available);
+      if (tierModels.length < 2) {
+        toast.error(`Not enough available models in ${TIER_CONFIG[tier].label} tier`);
+        return;
+      }
+      setSelectedModels(new Set(tierModels.slice(0, maxModels).map((m) => m.id)));
+    },
+    [models, maxModels]
+  );
 
   const startBenchmark = async () => {
-    if (!authService.getToken()) { toast.error('Login required'); return; }
-    if (selectedModels.size < 2) { toast.error('Select at least 2 models'); return; }
-    if (!prompt.trim()) { toast.error('Enter a prompt'); return; }
+    if (!authService.getToken()) {
+      toast.error('Login required');
+      return;
+    }
+    if (selectedModels.size < 2) {
+      toast.error('Select at least 2 models');
+      return;
+    }
+    if (!prompt.trim()) {
+      toast.error('Enter a prompt');
+      return;
+    }
 
     setLoading(true);
     setIsStreaming(true);
@@ -151,22 +187,35 @@ const RunBenchmark: React.FC = () => {
           setGeneratingModels((prev) => new Set([...prev, data.model]));
         },
         onResult: (data) => {
-          setGeneratingModels((prev) => { const n = new Set(prev); n.delete(data.model); return n; });
+          setGeneratingModels((prev) => {
+            const n = new Set(prev);
+            n.delete(data.model);
+            return n;
+          });
           setStreamingResults((prev) => [...prev, { ...data, isNew: true }]);
           setTimeout(() => {
-            setStreamingResults((prev) => prev.map((r) => r.model === data.model ? { ...r, isNew: false } : r));
+            setStreamingResults((prev) =>
+              prev.map((r) => (r.model === data.model ? { ...r, isNew: false } : r))
+            );
           }, 600);
         },
         onError: (data) => {
-          setGeneratingModels((prev) => { const n = new Set(prev); n.delete(data.model); return n; });
-          setStreamingResults((prev) => [...prev, {
-            ...data,
-            provider: data.provider || 'unknown',
-            imageUrl: undefined,
-            durationMs: data.durationMs || 0,
-            creditsCost: data.creditsCost || 0,
-            votes: 0,
-          } as StreamingResult]);
+          setGeneratingModels((prev) => {
+            const n = new Set(prev);
+            n.delete(data.model);
+            return n;
+          });
+          setStreamingResults((prev) => [
+            ...prev,
+            {
+              ...data,
+              provider: data.provider || 'unknown',
+              imageUrl: undefined,
+              durationMs: data.durationMs || 0,
+              creditsCost: data.creditsCost || 0,
+              votes: 0,
+            } as StreamingResult,
+          ]);
         },
         onComplete: (data) => {
           setStreamComplete(true);
@@ -190,10 +239,12 @@ const RunBenchmark: React.FC = () => {
     try {
       const result = await benchmarkApi.vote(benchmarkId, winnerModel);
       toast.success(result.message);
-      setStreamingResults((prev) => prev.map((r) => ({
-        ...r,
-        votes: r.model === winnerModel ? 1 : 0,
-      })));
+      setStreamingResults((prev) =>
+        prev.map((r) => ({
+          ...r,
+          votes: r.model === winnerModel ? 1 : 0,
+        }))
+      );
       setHasVoted(true);
       setCreditsRefunded((prev) => prev + result.creditsRefunded);
     } catch (err: any) {
@@ -249,7 +300,9 @@ const RunBenchmark: React.FC = () => {
       {/* Model Selection by Tier */}
       <GlassPanel className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <MicroTitle>Models ({selectedModels.size}/{maxModels})</MicroTitle>
+          <MicroTitle>
+            Models ({selectedModels.size}/{maxModels})
+          </MicroTitle>
           <Badge variant="outline" className="text-[10px]">
             {totalCredits} credits total
           </Badge>
@@ -263,7 +316,12 @@ const RunBenchmark: React.FC = () => {
             return (
               <div key={tier}>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={cn('text-[10px] font-mono uppercase tracking-wider', cfg.color.split(' ')[0])}>
+                  <span
+                    className={cn(
+                      'text-[10px] font-mono uppercase tracking-wider',
+                      cfg.color.split(' ')[0]
+                    )}
+                  >
                     {cfg.label}
                   </span>
                   <span className="text-[9px] text-white/20">{cfg.description}</span>
@@ -291,15 +349,26 @@ const RunBenchmark: React.FC = () => {
                           </div>
                         )}
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-xs font-medium text-white/80 leading-tight">{model.label}</span>
-                          <span className={cn('text-[8px] px-1.5 py-0.5 rounded-full', PROVIDER_COLORS[model.provider] || 'bg-white/5 text-white/40')}>
+                          <span className="text-xs font-medium text-white/80 leading-tight">
+                            {model.label}
+                          </span>
+                          <span
+                            className={cn(
+                              'text-[8px] px-1.5 py-0.5 rounded-full',
+                              PROVIDER_COLORS[model.provider] || 'bg-white/5 text-white/40'
+                            )}
+                          >
                             {model.provider}
                           </span>
                         </div>
-                        <span className="text-[10px] text-white/30 line-clamp-1">{model.description}</span>
+                        <span className="text-[10px] text-white/30 line-clamp-1">
+                          {model.description}
+                        </span>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[9px] text-white/20">{model.creditsCost1K} cr</span>
-                          {!model.available && <span className="text-[9px] text-red-400/50">no key</span>}
+                          {!model.available && (
+                            <span className="text-[9px] text-red-400/50">no key</span>
+                          )}
                           <span className="text-[9px] text-white/15">{model.released}</span>
                         </div>
                       </button>
@@ -324,7 +393,9 @@ const RunBenchmark: React.FC = () => {
                   onClick={() => setResolution(r)}
                   className={cn(
                     'px-3 py-1.5 rounded text-xs font-mono transition-all',
-                    resolution === r ? 'bg-white/10 text-white' : 'bg-white/[0.03] text-white/40 hover:text-white/60'
+                    resolution === r
+                      ? 'bg-white/10 text-white'
+                      : 'bg-white/[0.03] text-white/40 hover:text-white/60'
                   )}
                 >
                   {r}
@@ -341,7 +412,9 @@ const RunBenchmark: React.FC = () => {
                   onClick={() => setAspectRatio(ar)}
                   className={cn(
                     'px-3 py-1.5 rounded text-xs font-mono transition-all',
-                    aspectRatio === ar ? 'bg-white/10 text-white' : 'bg-white/[0.03] text-white/40 hover:text-white/60'
+                    aspectRatio === ar
+                      ? 'bg-white/10 text-white'
+                      : 'bg-white/[0.03] text-white/40 hover:text-white/60'
                   )}
                 >
                   {ar}
@@ -412,11 +485,16 @@ const RunBenchmark: React.FC = () => {
           )}
 
           {/* Results grid */}
-          <div className={cn(
-            'grid gap-4',
-            streamingResults.length <= 2 ? 'grid-cols-1 sm:grid-cols-2' :
-            streamingResults.length <= 4 ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-3'
-          )}>
+          <div
+            className={cn(
+              'grid gap-4',
+              streamingResults.length <= 2
+                ? 'grid-cols-1 sm:grid-cols-2'
+                : streamingResults.length <= 4
+                ? 'grid-cols-2'
+                : 'grid-cols-2 lg:grid-cols-3'
+            )}
+          >
             <AnimatePresence mode="popLayout">
               {streamingResults.map((result) => {
                 const isWinner = result.votes > 0;
@@ -459,19 +537,33 @@ const RunBenchmark: React.FC = () => {
                           )}
                         </motion.div>
                       ) : result.error ? (
-                        <div className={cn(
-                          'aspect-square flex items-center justify-center',
-                          result.generationSucceeded ? 'bg-yellow-500/[0.03]' : 'bg-red-500/[0.03]'
-                        )}>
+                        <div
+                          className={cn(
+                            'aspect-square flex items-center justify-center',
+                            result.generationSucceeded
+                              ? 'bg-yellow-500/[0.03]'
+                              : 'bg-red-500/[0.03]'
+                          )}
+                        >
                           <div className="text-center px-4">
-                            <AlertCircle className={cn(
-                              'w-6 h-6 mx-auto mb-2',
-                              result.generationSucceeded ? 'text-yellow-400/40' : 'text-red-400/40'
-                            )} />
-                            <p className={cn(
-                              'text-[10px] line-clamp-3',
-                              result.generationSucceeded ? 'text-yellow-400/60' : 'text-red-400/60'
-                            )}>{result.error}</p>
+                            <AlertCircle
+                              className={cn(
+                                'w-6 h-6 mx-auto mb-2',
+                                result.generationSucceeded
+                                  ? 'text-yellow-400/40'
+                                  : 'text-red-400/40'
+                              )}
+                            />
+                            <p
+                              className={cn(
+                                'text-[10px] line-clamp-3',
+                                result.generationSucceeded
+                                  ? 'text-yellow-400/60'
+                                  : 'text-red-400/60'
+                              )}
+                            >
+                              {result.error}
+                            </p>
                           </div>
                         </div>
                       ) : null}
@@ -479,7 +571,12 @@ const RunBenchmark: React.FC = () => {
                       <div className="p-3">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs font-medium text-white/80">{result.label}</span>
-                          <span className={cn('text-[8px] px-1.5 py-0.5 rounded-full', PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40')}>
+                          <span
+                            className={cn(
+                              'text-[8px] px-1.5 py-0.5 rounded-full',
+                              PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40'
+                            )}
+                          >
                             {result.provider}
                           </span>
                         </div>
@@ -513,14 +610,18 @@ const RunBenchmark: React.FC = () => {
           {streamComplete && !hasVoted && (
             <div className="text-center text-[10px] text-white/30">
               <Zap className="w-3.5 h-3.5 inline mr-1" />
-              Vote for the best result to get 50% of your credits back ({Math.floor(totalCharged / 2)} cr)
+              Vote for the best result to get 50% of your credits back (
+              {Math.floor(totalCharged / 2)} cr)
             </div>
           )}
 
           {/* Credits summary */}
           {creditsRefunded > 0 && (
             <div className="text-center">
-              <Badge variant="outline" className="text-emerald-400 border-emerald-400/20 text-[10px]">
+              <Badge
+                variant="outline"
+                className="text-emerald-400 border-emerald-400/20 text-[10px]"
+              >
                 {creditsRefunded} credits refunded
               </Badge>
             </div>
@@ -575,12 +676,17 @@ const BenchmarkGallery: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { loadGallery(page); }, [page, loadGallery]);
+  useEffect(() => {
+    loadGallery(page);
+  }, [page, loadGallery]);
 
   useEffect(() => {
-    benchmarkApi.getAvailableModels().then(({ models }) => {
-      setModelLabels(new Map(models.map((m) => [m.id, m.label])));
-    }).catch(() => {});
+    benchmarkApi
+      .getAvailableModels()
+      .then(({ models }) => {
+        setModelLabels(new Map(models.map((m) => [m.id, m.label])));
+      })
+      .catch(() => {});
   }, []);
 
   const openBenchmark = async (id: string) => {
@@ -598,7 +704,12 @@ const BenchmarkGallery: React.FC = () => {
   if (selectedBenchmark) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={() => setSelectedBenchmark(null)} className="text-xs text-white/40">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setSelectedBenchmark(null)}
+          className="text-xs text-white/40"
+        >
           &larr; Back to Gallery
         </Button>
         <ViewBenchmark benchmark={selectedBenchmark} modelLabels={modelLabels} />
@@ -635,14 +746,29 @@ const BenchmarkGallery: React.FC = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((item) => (
-          <motion.div key={item.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2 }}>
-            <GlassPanel className="overflow-hidden cursor-pointer hover:border-white/15 transition-all" onClick={() => openBenchmark(item.id)}>
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -2 }}
+          >
+            <GlassPanel
+              className="overflow-hidden cursor-pointer hover:border-white/15 transition-all"
+              onClick={() => openBenchmark(item.id)}
+            >
               <div className="grid grid-cols-2 gap-0.5 aspect-square bg-black/20">
                 {item.thumbnails.slice(0, 4).map((t, i) => (
                   <div key={i} className="relative overflow-hidden">
-                    <img src={t.imageUrl} alt={t.model} className="w-full h-full object-cover" loading="lazy" />
+                    <img
+                      src={t.imageUrl}
+                      alt={t.model}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                     {item.winnerModel === t.model && (
-                      <div className="absolute top-1 left-1"><Crown className="w-3 h-3 text-yellow-400" /></div>
+                      <div className="absolute top-1 left-1">
+                        <Crown className="w-3 h-3 text-yellow-400" />
+                      </div>
                     )}
                   </div>
                 ))}
@@ -652,11 +778,24 @@ const BenchmarkGallery: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] text-white/30">{item.models.length} models</span>
-                    {item.voted && <Badge variant="outline" className="text-[9px] text-emerald-400/60 border-emerald-400/20">voted</Badge>}
+                    {item.voted && (
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] text-emerald-400/60 border-emerald-400/20"
+                      >
+                        voted
+                      </Badge>
+                    )}
                   </div>
-                  <span className="flex items-center gap-0.5 text-[10px] text-white/20"><Eye className="w-3 h-3" /> {item.viewCount}</span>
+                  <span className="flex items-center gap-0.5 text-[10px] text-white/20">
+                    <Eye className="w-3 h-3" /> {item.viewCount}
+                  </span>
                 </div>
-                {item.user && <p className="text-[10px] text-white/20 mt-1">by {item.user.name || 'anonymous'}</p>}
+                {item.user && (
+                  <p className="text-[10px] text-white/20 mt-1">
+                    by {item.user.name || 'anonymous'}
+                  </p>
+                )}
               </div>
             </GlassPanel>
           </motion.div>
@@ -665,9 +804,27 @@ const BenchmarkGallery: React.FC = () => {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs">Previous</Button>
-          <span className="text-xs text-white/40">{page} / {totalPages}</span>
-          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs">Next</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="text-xs"
+          >
+            Previous
+          </Button>
+          <span className="text-xs text-white/40">
+            {page} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="text-xs"
+          >
+            Next
+          </Button>
         </div>
       )}
     </div>
@@ -676,7 +833,10 @@ const BenchmarkGallery: React.FC = () => {
 
 // ─── View Benchmark (read-only, from gallery) ────────────────────────────────
 
-const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<string, string> }> = ({ benchmark, modelLabels }) => {
+const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<string, string> }> = ({
+  benchmark,
+  modelLabels,
+}) => {
   const successResults = benchmark.results.filter((r) => r.imageUrl && !r.error);
   const getLabel = (modelId: string) => modelLabels?.get(modelId) || modelId;
 
@@ -689,42 +849,74 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
             <p className="text-sm text-white/60 max-w-lg line-clamp-2">{benchmark.prompt}</p>
           </div>
           <div className="flex items-center gap-3 text-[10px] text-white/40">
-            <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {benchmark.viewCount}</span>
-            <span className="flex items-center gap-1"><CreditCard className="w-3 h-3" /> {benchmark.totalCreditsCharged} cr</span>
+            <span className="flex items-center gap-1">
+              <Eye className="w-3 h-3" /> {benchmark.viewCount}
+            </span>
+            <span className="flex items-center gap-1">
+              <CreditCard className="w-3 h-3" /> {benchmark.totalCreditsCharged} cr
+            </span>
             {benchmark.creditsRefunded > 0 && (
-              <Badge variant="outline" className="text-emerald-400 border-emerald-400/20 text-[10px]">-{benchmark.creditsRefunded} refunded</Badge>
+              <Badge
+                variant="outline"
+                className="text-emerald-400 border-emerald-400/20 text-[10px]"
+              >
+                -{benchmark.creditsRefunded} refunded
+              </Badge>
             )}
           </div>
         </div>
       </GlassPanel>
 
-      <div className={cn(
-        'grid gap-4',
-        successResults.length <= 2 ? 'grid-cols-1 sm:grid-cols-2' :
-        successResults.length <= 4 ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-3'
-      )}>
+      <div
+        className={cn(
+          'grid gap-4',
+          successResults.length <= 2
+            ? 'grid-cols-1 sm:grid-cols-2'
+            : successResults.length <= 4
+            ? 'grid-cols-2'
+            : 'grid-cols-2 lg:grid-cols-3'
+        )}
+      >
         {successResults.map((result) => {
           const isWinner = benchmark.winnerModel === result.model;
           return (
-            <GlassPanel key={result.model} className={cn('overflow-hidden', isWinner && 'ring-1 ring-yellow-400/30')}>
+            <GlassPanel
+              key={result.model}
+              className={cn('overflow-hidden', isWinner && 'ring-1 ring-yellow-400/30')}
+            >
               <div className="relative aspect-square bg-black/20">
-                <img src={result.imageUrl} alt={result.model} className="w-full h-full object-cover" loading="lazy" />
+                <img
+                  src={result.imageUrl}
+                  alt={result.model}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
                 {isWinner && (
                   <div className="absolute top-2 left-2">
-                    <Badge className="bg-yellow-400/90 text-black text-[10px] gap-1"><Crown className="w-3 h-3" /> Winner</Badge>
+                    <Badge className="bg-yellow-400/90 text-black text-[10px] gap-1">
+                      <Crown className="w-3 h-3" /> Winner
+                    </Badge>
                   </div>
                 )}
               </div>
               <div className="p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-white/80">{getLabel(result.model)}</span>
-                  <span className={cn('text-[8px] px-1.5 py-0.5 rounded-full', PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40')}>
+                  <span className="text-xs font-medium text-white/80">
+                    {getLabel(result.model)}
+                  </span>
+                  <span
+                    className={cn(
+                      'text-[8px] px-1.5 py-0.5 rounded-full',
+                      PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40'
+                    )}
+                  >
                     {result.provider}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/30 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {result.durationMs ? `${(result.durationMs / 1000).toFixed(1)}s` : '—'}
+                    <Clock className="w-3 h-3" />{' '}
+                    {result.durationMs ? `${(result.durationMs / 1000).toFixed(1)}s` : '—'}
                   </span>
                   <span className="text-[10px] text-white/30">{result.creditsCost} cr</span>
                 </div>
@@ -756,11 +948,19 @@ const BenchmarkArenaPage: React.FC = () => {
       <div className="max-w-4xl mx-auto pb-20">
         <Tabs value={tab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="run" className="gap-1.5"><Play className="w-3.5 h-3.5" /> Run</TabsTrigger>
-            <TabsTrigger value="gallery" className="gap-1.5"><Trophy className="w-3.5 h-3.5" /> Gallery</TabsTrigger>
+            <TabsTrigger value="run" className="gap-1.5">
+              <Play className="w-3.5 h-3.5" /> Run
+            </TabsTrigger>
+            <TabsTrigger value="gallery" className="gap-1.5">
+              <Trophy className="w-3.5 h-3.5" /> Gallery
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="run"><RunBenchmark /></TabsContent>
-          <TabsContent value="gallery"><BenchmarkGallery /></TabsContent>
+          <TabsContent value="run">
+            <RunBenchmark />
+          </TabsContent>
+          <TabsContent value="gallery">
+            <BenchmarkGallery />
+          </TabsContent>
         </Tabs>
       </div>
     </PageShell>

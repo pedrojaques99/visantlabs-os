@@ -350,9 +350,7 @@ export function getToolById(id: string): ToolDef | undefined {
 export function getCompatibleTargets(outputMime: string, excludeId?: string): ToolDef[] {
   return TOOL_REGISTRY.filter(
     (t) =>
-      t.isPipelineTarget &&
-      t.id !== excludeId &&
-      t.accepts.some((a) => mimeMatches(a, outputMime)),
+      t.isPipelineTarget && t.id !== excludeId && t.accepts.some((a) => mimeMatches(a, outputMime))
   );
 }
 

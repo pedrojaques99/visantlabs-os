@@ -20,19 +20,19 @@ POST /api/psd-render/render
 
 ## Files Added
 
-| File | Purpose |
-|---|---|
-| `server/routes/psdRender.ts` | Express route: POST /render, GET /status |
+| File                                  | Purpose                                               |
+| ------------------------------------- | ----------------------------------------------------- |
+| `server/routes/psdRender.ts`          | Express route: POST /render, GET /status              |
 | `server/services/psdRenderService.ts` | Download files, spawn Bun worker, upload result to R2 |
-| `server/scripts/psd-render-worker.ts` | Bun script: HeadlessPhotopea PSD render |
+| `server/scripts/psd-render-worker.ts` | Bun script: HeadlessPhotopea PSD render               |
 
 ## Files Modified
 
-| File | Change |
-|---|---|
-| `server/app.ts` | Added import + mount at `/psd-render` |
-| `Dockerfile` | Added: chromium, fonts, curl, Bun runtime, @printmadehq/mockup-generator |
-| `package.json` | Added: puppeteer-core |
+| File            | Change                                                                   |
+| --------------- | ------------------------------------------------------------------------ |
+| `server/app.ts` | Added import + mount at `/psd-render`                                    |
+| `Dockerfile`    | Added: chromium, fonts, curl, Bun runtime, @printmadehq/mockup-generator |
+| `package.json`  | Added: puppeteer-core                                                    |
 
 ## Dockerfile Changes
 
@@ -68,6 +68,7 @@ curl -X POST https://api.visantlabs.com/api/psd-render/render \
 ```
 
 Response:
+
 ```json
 {
   "success": true,

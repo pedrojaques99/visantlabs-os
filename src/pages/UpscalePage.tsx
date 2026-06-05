@@ -219,8 +219,12 @@ export const UpscalePage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.35 }}
             >
-              <p className="text-sm text-neutral-300 font-medium">Upscale images with bicubic interpolation</p>
-              <p className="text-xs text-neutral-600 font-mono">Up to 4x with sharpening — batch supported</p>
+              <p className="text-sm text-neutral-300 font-medium">
+                Upscale images with bicubic interpolation
+              </p>
+              <p className="text-xs text-neutral-600 font-mono">
+                Up to 4x with sharpening — batch supported
+              </p>
             </motion.div>
 
             <motion.label
@@ -440,7 +444,9 @@ export const UpscalePage: React.FC = () => {
                         <span className="ml-2">
                           {isProcessing
                             ? `Processing…`
-                            : `Upscale ${queuedOrErrorCount > 1 ? `${queuedOrErrorCount} images` : ''}`}
+                            : `Upscale ${
+                                queuedOrErrorCount > 1 ? `${queuedOrErrorCount} images` : ''
+                              }`}
                         </span>
                       </Button>
                     </motion.div>
@@ -454,11 +460,15 @@ export const UpscalePage: React.FC = () => {
                       summary={`${doneCount} image${doneCount > 1 ? 's' : ''} upscaled`}
                       onDownloadAll={handleDownloadAll}
                       onCopy={handleCopyPreview}
-                      assetData={previewItem?.resultBase64 ? {
-                        imageBase64: previewItem.resultBase64,
-                        mimeType: 'image/png',
-                        label: previewItem.fileName,
-                      } : undefined}
+                      assetData={
+                        previewItem?.resultBase64
+                          ? {
+                              imageBase64: previewItem.resultBase64,
+                              mimeType: 'image/png',
+                              label: previewItem.fileName,
+                            }
+                          : undefined
+                      }
                     />
                   </motion.div>
                 )}

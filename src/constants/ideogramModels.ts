@@ -11,10 +11,7 @@ export const IDEOGRAM_MODELS = {
 export type IdeogramModelId = (typeof IDEOGRAM_MODELS)[keyof typeof IDEOGRAM_MODELS];
 
 // ── Ordered list for UI display ────────────────────────────────────────────────
-export const IDEOGRAM_MODEL_LIST: IdeogramModelId[] = [
-  IDEOGRAM_MODELS.V4,
-  IDEOGRAM_MODELS.V3,
-];
+export const IDEOGRAM_MODEL_LIST: IdeogramModelId[] = [IDEOGRAM_MODELS.V4, IDEOGRAM_MODELS.V3];
 
 // ── Rendering speed tiers ─────────────────────────────────────────────────────
 export type IdeogramRenderingSpeed = 'FLASH' | 'TURBO' | 'DEFAULT' | 'QUALITY';
@@ -77,19 +74,17 @@ export const IDEOGRAM_ASPECT_MAP: Partial<Record<AspectRatio, string>> = {
 };
 
 // ── Resolution mapping (our format → Ideogram pixel dimensions) ───────────────
-export const IDEOGRAM_RESOLUTION_MAP: Record<
-  Resolution,
-  { width: number; height: number } | null
-> = {
-  '512px': { width: 512, height: 512 },
-  HD: { width: 1024, height: 1024 },
-  '1K': { width: 1024, height: 1024 },
-  '2K': { width: 1536, height: 1024 },
-  '3K': { width: 1536, height: 1024 },
-  '4K': { width: 2048, height: 1248 },
-  '720p': { width: 1024, height: 1024 },
-  '1080p': { width: 1536, height: 1024 },
-};
+export const IDEOGRAM_RESOLUTION_MAP: Record<Resolution, { width: number; height: number } | null> =
+  {
+    '512px': { width: 512, height: 512 },
+    HD: { width: 1024, height: 1024 },
+    '1K': { width: 1024, height: 1024 },
+    '2K': { width: 1536, height: 1024 },
+    '3K': { width: 1536, height: 1024 },
+    '4K': { width: 2048, height: 1248 },
+    '720p': { width: 1024, height: 1024 },
+    '1080p': { width: 1536, height: 1024 },
+  };
 
 // ── Helper functions ───────────────────────────────────────────────────────────
 

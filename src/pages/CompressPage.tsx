@@ -21,8 +21,18 @@ import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
-const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 const DIMENSION_OPTIONS = [512, 1024, 2048, 4096] as const;
 const FORMAT_OPTIONS: Array<'jpeg' | 'png' | 'webp'> = ['jpeg', 'png', 'webp'];
@@ -534,7 +544,9 @@ export const CompressPage: React.FC = () => {
                         <span className="ml-2">
                           {isProcessing
                             ? 'Compressing...'
-                            : `Compress ${queuedOrErrorCount > 1 ? `${queuedOrErrorCount} images` : 'All'}`}
+                            : `Compress ${
+                                queuedOrErrorCount > 1 ? `${queuedOrErrorCount} images` : 'All'
+                              }`}
                         </span>
                       </Button>
                     </motion.div>
@@ -551,11 +563,15 @@ export const CompressPage: React.FC = () => {
                         savedPercent={totalPercent}
                         onDownloadAll={handleDownloadAll}
                         onCopy={handleCopyPreview}
-                        assetData={previewItem?.resultBase64 ? {
-                          imageBase64: previewItem.resultBase64,
-                          mimeType: `image/${outputFormat}`,
-                          label: previewItem.fileName,
-                        } : undefined}
+                        assetData={
+                          previewItem?.resultBase64
+                            ? {
+                                imageBase64: previewItem.resultBase64,
+                                mimeType: `image/${outputFormat}`,
+                                label: previewItem.fileName,
+                              }
+                            : undefined
+                        }
                       />
                     </motion.div>
                   )}

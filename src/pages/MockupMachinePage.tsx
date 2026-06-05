@@ -90,11 +90,18 @@ function resolveProviderForModel(model: string): ImageProvider {
 }
 
 function resolveModelLabel(model: string): string {
-  if (isSeedreamModel(model)) return SEEDREAM_MODEL_CONFIG[model as keyof typeof SEEDREAM_MODEL_CONFIG]?.label ?? model;
-  if (isOpenAIImageModel(model)) return OPENAI_IMAGE_MODEL_CONFIG[model as keyof typeof OPENAI_IMAGE_MODEL_CONFIG]?.label ?? model;
-  if (isImagenModel(model)) return IMAGEN_MODEL_CONFIG[model as keyof typeof IMAGEN_MODEL_CONFIG]?.label ?? model;
-  if (isIdeogramModel(model)) return IDEOGRAM_MODEL_CONFIG[model as keyof typeof IDEOGRAM_MODEL_CONFIG]?.label ?? model;
-  if (isReveModel(model)) return REVE_MODEL_CONFIG[model as keyof typeof REVE_MODEL_CONFIG]?.label ?? model;
+  if (isSeedreamModel(model))
+    return SEEDREAM_MODEL_CONFIG[model as keyof typeof SEEDREAM_MODEL_CONFIG]?.label ?? model;
+  if (isOpenAIImageModel(model))
+    return (
+      OPENAI_IMAGE_MODEL_CONFIG[model as keyof typeof OPENAI_IMAGE_MODEL_CONFIG]?.label ?? model
+    );
+  if (isImagenModel(model))
+    return IMAGEN_MODEL_CONFIG[model as keyof typeof IMAGEN_MODEL_CONFIG]?.label ?? model;
+  if (isIdeogramModel(model))
+    return IDEOGRAM_MODEL_CONFIG[model as keyof typeof IDEOGRAM_MODEL_CONFIG]?.label ?? model;
+  if (isReveModel(model))
+    return REVE_MODEL_CONFIG[model as keyof typeof REVE_MODEL_CONFIG]?.label ?? model;
   return MODEL_CONFIG[model as keyof typeof MODEL_CONFIG]?.label ?? model;
 }
 
@@ -989,7 +996,11 @@ const MockupMachinePageContent: React.FC = () => {
 
       if (!hasGenerated) setHasGenerated(true);
 
-      const generateAndSet = async (index: number, overrideModel?: string, overrideProvider?: ImageProvider) => {
+      const generateAndSet = async (
+        index: number,
+        overrideModel?: string,
+        overrideProvider?: ImageProvider
+      ) => {
         let imageGenerated = false;
 
         try {
@@ -1221,7 +1232,8 @@ const MockupMachinePageContent: React.FC = () => {
           }
         } else {
           // Compare mode: generate same prompt across multiple models in parallel
-          const slotCount = isCompareMode && compareModels.length > 1 ? compareModels.length : mockupCount;
+          const slotCount =
+            isCompareMode && compareModels.length > 1 ? compareModels.length : mockupCount;
 
           setMockups((prev) => {
             const newMockups = [...prev];
@@ -1249,8 +1261,11 @@ const MockupMachinePageContent: React.FC = () => {
 
           const successfulIndices: number[] = [];
           const promises = Array.from({ length: slotCount }, (_, i) => {
-            const overrideModel = isCompareMode && compareModels.length > 1 ? compareModels[i] : undefined;
-            const overrideProvider = overrideModel ? resolveProviderForModel(overrideModel) : undefined;
+            const overrideModel =
+              isCompareMode && compareModels.length > 1 ? compareModels[i] : undefined;
+            const overrideProvider = overrideModel
+              ? resolveProviderForModel(overrideModel)
+              : undefined;
             return generateAndSet(i, overrideModel, overrideProvider)
               .then(() => {
                 if (mockups[i] !== null) {
@@ -3518,7 +3533,9 @@ Generate the new mockup image with the requested changes applied.`;
                       feedbackContext={getFeedbackContext}
                       feedbackRatings={feedbackRatings}
                       onFeedbackRatingChange={handleFeedbackRatingChange}
-                      compareLabels={isCompareMode ? compareModels.map((m) => resolveModelLabel(m)) : undefined}
+                      compareLabels={
+                        isCompareMode ? compareModels.map((m) => resolveModelLabel(m)) : undefined
+                      }
                     />
                   </div>
                 </div>

@@ -13,8 +13,18 @@ import ralColorsData from '@/data/ralColors.json';
 import pantoneColorsData from '@/data/pantoneColors.json';
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
-const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 /* ── Nearest-match helpers (Euclidean distance in RGB) ───── */
 
@@ -262,10 +272,7 @@ export const ColorConverterPage: React.FC = () => {
       showReset={colors.length > 0}
     >
       {/* Input */}
-      <motion.div
-        {...fadeUp}
-        className="flex gap-2 items-center"
-      >
+      <motion.div {...fadeUp} className="flex gap-2 items-center">
         {livePreview && (
           <div
             className="w-9 h-9 rounded-lg border border-neutral-700 flex-shrink-0"
@@ -310,11 +317,7 @@ export const ColorConverterPage: React.FC = () => {
       {/* Batch actions */}
       <AnimatePresence>
         {colors.length > 0 && (
-          <motion.div
-            {...fadeUp}
-            exit={{ opacity: 0, y: 8 }}
-            className="flex gap-2 flex-wrap"
-          >
+          <motion.div {...fadeUp} exit={{ opacity: 0, y: 8 }} className="flex gap-2 flex-wrap">
             <Button
               onClick={() => handleCopyAll('json')}
               variant="outline"
@@ -334,9 +337,7 @@ export const ColorConverterPage: React.FC = () => {
       </AnimatePresence>
 
       {/* WCAG contrast check */}
-      <AnimatePresence>
-        {colors.length >= 2 && <ContrastPanel colors={colors} />}
-      </AnimatePresence>
+      <AnimatePresence>{colors.length >= 2 && <ContrastPanel colors={colors} />}</AnimatePresence>
     </MiniToolShell>
   );
 };

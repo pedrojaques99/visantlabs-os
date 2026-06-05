@@ -52,7 +52,7 @@ function fileToBase64(file: File): Promise<string> {
 async function processItem(
   item: PdfItem,
   preset: CompressPreset,
-  updateItem: (id: string, patch: Partial<PdfItem>) => void,
+  updateItem: (id: string, patch: Partial<PdfItem>) => void
 ) {
   updateItem(item.id, { status: 'processing' });
   try {
@@ -103,9 +103,14 @@ export const PdfCompressPage: React.FC = () => {
   }, [pendingAsset, acceptAsset, addFiles]);
 
   const doneCount = items.filter((i) => i.status === 'done').length;
-  const totalOriginal = items.filter((i) => i.status === 'done').reduce((s, i) => s + i.originalSize, 0);
-  const totalCompressed = items.filter((i) => i.status === 'done').reduce((s, i) => s + i.compressedSize, 0);
-  const totalSavings = totalOriginal > 0 ? Math.round((1 - totalCompressed / totalOriginal) * 100) : 0;
+  const totalOriginal = items
+    .filter((i) => i.status === 'done')
+    .reduce((s, i) => s + i.originalSize, 0);
+  const totalCompressed = items
+    .filter((i) => i.status === 'done')
+    .reduce((s, i) => s + i.compressedSize, 0);
+  const totalSavings =
+    totalOriginal > 0 ? Math.round((1 - totalCompressed / totalOriginal) * 100) : 0;
 
   const handleFiles = useCallback(
     (fileList: FileList) => {
@@ -123,7 +128,7 @@ export const PdfCompressPage: React.FC = () => {
       });
       if (valid.length) addFiles(valid);
     },
-    [addFiles],
+    [addFiles]
   );
 
   const handleInputChange = useCallback(
@@ -131,7 +136,7 @@ export const PdfCompressPage: React.FC = () => {
       if (e.target.files) handleFiles(e.target.files);
       if (e.target) e.target.value = '';
     },
-    [handleFiles],
+    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -140,7 +145,7 @@ export const PdfCompressPage: React.FC = () => {
       setIsDragOver(false);
       if (e.dataTransfer.files) handleFiles(e.dataTransfer.files);
     },
-    [handleFiles],
+    [handleFiles]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -217,7 +222,7 @@ export const PdfCompressPage: React.FC = () => {
                 'w-full max-w-md border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors',
                 isDragOver
                   ? 'border-brand-cyan bg-brand-cyan/5'
-                  : 'border-neutral-800 hover:border-neutral-600',
+                  : 'border-neutral-800 hover:border-neutral-600'
               )}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
@@ -297,7 +302,7 @@ export const PdfCompressPage: React.FC = () => {
                         'px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all',
                         preset === opt.value
                           ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
-                          : 'text-neutral-500 hover:text-neutral-300 border border-transparent',
+                          : 'text-neutral-500 hover:text-neutral-300 border border-transparent'
                       )}
                       title={opt.desc}
                     >
@@ -328,7 +333,14 @@ export const PdfCompressPage: React.FC = () => {
                       <span className="ml-2">{convertProgress}%</span>
                     </>
                   ) : (
-                    `Compress${items.filter((i) => i.status === 'queued' || i.status === 'error').length > 0 ? ` (${items.filter((i) => i.status === 'queued' || i.status === 'error').length})` : ''}`
+                    `Compress${
+                      items.filter((i) => i.status === 'queued' || i.status === 'error').length > 0
+                        ? ` (${
+                            items.filter((i) => i.status === 'queued' || i.status === 'error')
+                              .length
+                          })`
+                        : ''
+                    }`
                   )}
                 </Button>
               </div>
@@ -339,7 +351,11 @@ export const PdfCompressPage: React.FC = () => {
                   <QuickActions
                     toolId="pdf-compress"
                     outputMime="application/pdf"
-                    summary={`${doneCount} PDF${doneCount > 1 ? 's' : ''} compressed — saved ${formatBytes(totalOriginal - totalCompressed)} (${totalSavings}%)`}
+                    summary={`${doneCount} PDF${
+                      doneCount > 1 ? 's' : ''
+                    } compressed — saved ${formatBytes(
+                      totalOriginal - totalCompressed
+                    )} (${totalSavings}%)`}
                     onDownloadAll={handleDownloadAll}
                   />
                 </motion.div>

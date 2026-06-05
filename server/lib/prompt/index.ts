@@ -154,7 +154,10 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
     activeIntents.has('clone') ||
     intent.isTemplate ||
     !!input.templateContext ||
-    (intent.hasSelection && /\b(varia[çc][õo]es|vers[õo]es|clon[ae]|duplic|faça todos|fa[çc]a \d+|versions?|variations?)\b/i.test(command));
+    (intent.hasSelection &&
+      /\b(varia[çc][õo]es|vers[õo]es|clon[ae]|duplic|faça todos|fa[çc]a \d+|versions?|variations?)\b/i.test(
+        command
+      ));
   if (wantsClone) {
     modules.push({ id: 'template_rules', content: TEMPLATE_RULES, priority: 85 });
     modules.push({ id: 'template_example', content: TEMPLATE_EXAMPLE, priority: 70 });

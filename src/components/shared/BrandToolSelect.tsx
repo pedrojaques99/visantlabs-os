@@ -14,11 +14,7 @@ interface BrandToolSelectProps {
  * Compact brand selector for mini-tools.
  * Shows a small dropdown to optionally link a brand guideline.
  */
-export const BrandToolSelect: React.FC<BrandToolSelectProps> = ({
-  value,
-  onChange,
-  className,
-}) => {
+export const BrandToolSelect: React.FC<BrandToolSelectProps> = ({ value, onChange, className }) => {
   const { data: guidelines = [], isLoading } = useBrandGuidelines(true);
 
   if (isLoading || guidelines.length === 0) return null;
@@ -41,9 +37,7 @@ export const BrandToolSelect: React.FC<BrandToolSelectProps> = ({
           </option>
         ))}
       </select>
-      {selected && (
-        <BrandAvatar brand={selected} size={14} rounded="sm" />
-      )}
+      {selected && <BrandAvatar brand={selected} size={14} rounded="sm" />}
     </div>
   );
 };

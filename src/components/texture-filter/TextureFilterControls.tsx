@@ -274,7 +274,11 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
             disabled={!store.imageUrl}
             sendTo={
               store.imageUrl ? (
-                <SendToButton source="texture-filter" outputMime="image/png" imageUrl={store.imageUrl} />
+                <SendToButton
+                  source="texture-filter"
+                  outputMime="image/png"
+                  imageUrl={store.imageUrl}
+                />
               ) : undefined
             }
             onCopyAsPng={onCopyAsPng}

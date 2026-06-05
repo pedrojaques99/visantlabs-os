@@ -49,7 +49,10 @@ export function flattenNodesCompact(nodes: any[], depth = 0, maxDepth = 6): stri
     if (n.opacity != null && n.opacity < 1) parts.push(`op:${n.opacity}`);
 
     // Font info (for text nodes)
-    if (n.fontFamily) parts.push(`font:"${n.fontFamily}${n.fontStyle && n.fontStyle !== 'Regular' ? ` ${n.fontStyle}` : ''}"`);
+    if (n.fontFamily)
+      parts.push(
+        `font:"${n.fontFamily}${n.fontStyle && n.fontStyle !== 'Regular' ? ` ${n.fontStyle}` : ''}"`
+      );
     if (n.fontSize) parts.push(`fs:${n.fontSize}`);
 
     // Component key (for identifying instances)

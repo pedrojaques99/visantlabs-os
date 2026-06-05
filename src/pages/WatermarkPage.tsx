@@ -28,8 +28,18 @@ import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 /* ------------------------------------------------------------------ */
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
-const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 /* ------------------------------------------------------------------ */
 /*  Position helpers                                                   */
@@ -718,7 +728,9 @@ export const WatermarkPage: React.FC = () => {
                   </div>
                   {/* Size */}
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-neutral-500 uppercase w-12">Size</span>
+                    <span className="text-[10px] font-mono text-neutral-500 uppercase w-12">
+                      Size
+                    </span>
                     <input
                       type="range"
                       min="10"
@@ -773,7 +785,9 @@ export const WatermarkPage: React.FC = () => {
                         <span className="ml-2">
                           {isProcessing
                             ? 'Processing...'
-                            : `Apply${queuedOrErrorCount > 1 ? ` ${queuedOrErrorCount} images` : ' All'}`}
+                            : `Apply${
+                                queuedOrErrorCount > 1 ? ` ${queuedOrErrorCount} images` : ' All'
+                              }`}
                         </span>
                       </Button>
                     </motion.div>
@@ -788,11 +802,15 @@ export const WatermarkPage: React.FC = () => {
                         summary={`${doneCount} image${doneCount > 1 ? 's' : ''} watermarked`}
                         onDownloadAll={handleDownloadAll}
                         onCopy={handleCopyPreview}
-                        assetData={previewItem?.resultBase64 ? {
-                          imageBase64: previewItem.resultBase64,
-                          mimeType: 'image/png',
-                          label: previewItem.fileName,
-                        } : undefined}
+                        assetData={
+                          previewItem?.resultBase64
+                            ? {
+                                imageBase64: previewItem.resultBase64,
+                                mimeType: 'image/png',
+                                label: previewItem.fileName,
+                              }
+                            : undefined
+                        }
                       />
                     </motion.div>
                   )}

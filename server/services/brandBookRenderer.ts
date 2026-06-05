@@ -5,11 +5,24 @@ import { logger } from '../lib/logger.js';
 interface BrandBookData {
   identity?: { name?: string; tagline?: string; description?: string; website?: string };
   logos?: Array<{ url: string; variant: string; label?: string }>;
-  colors?: Array<{ hex: string; name: string; role?: string; cmyk?: { c: number; m: number; y: number; k: number } }>;
-  typography?: Array<{ family: string; style?: string; role: string; size?: number; weights?: number[] }>;
+  colors?: Array<{
+    hex: string;
+    name: string;
+    role?: string;
+    cmyk?: { c: number; m: number; y: number; k: number };
+  }>;
+  typography?: Array<{
+    family: string;
+    style?: string;
+    role: string;
+    size?: number;
+    weights?: number[];
+  }>;
   guidelines?: { voice?: string; dos?: string[]; donts?: string[]; imagery?: string };
   strategy?: {
-    manifesto?: string | { full?: string; provocation?: string; tension?: string; promise?: string };
+    manifesto?:
+      | string
+      | { full?: string; provocation?: string; tension?: string; promise?: string };
     pillars?: Array<{ value: string; description: string }>;
     archetypes?: Array<{ name: string; description: string; role?: string }>;
     voiceValues?: Array<{ title: string; description: string; example: string }>;
@@ -32,12 +45,16 @@ function buildHtml(brand: BrandBookData): string {
     ? `<div class="section">
         <h2>Logo</h2>
         <div class="logo-grid">
-          ${brand.logos.map((l) => `
+          ${brand.logos
+            .map(
+              (l) => `
             <div class="logo-card">
               <img src="${l.url}" alt="${l.variant}" />
               <span class="logo-label">${l.label || l.variant}</span>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
       </div>`
     : '';
@@ -46,17 +63,25 @@ function buildHtml(brand: BrandBookData): string {
     ? `<div class="section page-break">
         <h2>Color Palette</h2>
         <div class="color-grid">
-          ${brand.colors.map((c) => `
+          ${brand.colors
+            .map(
+              (c) => `
             <div class="color-card">
               <div class="color-swatch" style="background:${c.hex}"></div>
               <div class="color-info">
                 <strong>${c.name}</strong>
                 <span class="color-hex">${c.hex}</span>
                 ${c.role ? `<span class="color-role">${c.role}</span>` : ''}
-                ${c.cmyk ? `<span class="color-cmyk">C${c.cmyk.c} M${c.cmyk.m} Y${c.cmyk.y} K${c.cmyk.k}</span>` : ''}
+                ${
+                  c.cmyk
+                    ? `<span class="color-cmyk">C${c.cmyk.c} M${c.cmyk.m} Y${c.cmyk.y} K${c.cmyk.k}</span>`
+                    : ''
+                }
               </div>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
       </div>`
     : '';
@@ -65,76 +90,124 @@ function buildHtml(brand: BrandBookData): string {
     ? `<div class="section">
         <h2>Typography</h2>
         <div class="typo-grid">
-          ${brand.typography.map((t) => `
+          ${brand.typography
+            .map(
+              (t) => `
             <div class="typo-card">
-              <div class="typo-sample" style="font-family:'${t.family}',sans-serif;font-size:${Math.min(t.size || 32, 48)}px">Aa</div>
+              <div class="typo-sample" style="font-family:'${
+                t.family
+              }',sans-serif;font-size:${Math.min(t.size || 32, 48)}px">Aa</div>
               <div class="typo-info">
                 <strong>${t.family}</strong>
                 <span class="typo-role">${t.role}${t.style ? ` · ${t.style}` : ''}</span>
-                ${t.weights?.length ? `<span class="typo-weights">${t.weights.join(', ')}</span>` : ''}
+                ${
+                  t.weights?.length
+                    ? `<span class="typo-weights">${t.weights.join(', ')}</span>`
+                    : ''
+                }
               </div>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
       </div>`
     : '';
 
   const manifesto = brand.strategy?.manifesto;
-  const manifestoText = typeof manifesto === 'string'
-    ? manifesto
-    : manifesto?.full || [manifesto?.provocation, manifesto?.tension, manifesto?.promise].filter(Boolean).join('\n\n');
+  const manifestoText =
+    typeof manifesto === 'string'
+      ? manifesto
+      : manifesto?.full ||
+        [manifesto?.provocation, manifesto?.tension, manifesto?.promise]
+          .filter(Boolean)
+          .join('\n\n');
 
-  const strategySection = manifestoText || brand.strategy?.pillars?.length
-    ? `<div class="section page-break">
+  const strategySection =
+    manifestoText || brand.strategy?.pillars?.length
+      ? `<div class="section page-break">
         <h2>Brand Strategy</h2>
-        ${manifestoText ? `<div class="manifesto"><p>${manifestoText.replace(/\n/g, '</p><p>')}</p></div>` : ''}
-        ${brand.strategy?.pillars?.length ? `
+        ${
+          manifestoText
+            ? `<div class="manifesto"><p>${manifestoText.replace(/\n/g, '</p><p>')}</p></div>`
+            : ''
+        }
+        ${
+          brand.strategy?.pillars?.length
+            ? `
           <h3>Pillars</h3>
           <div class="pillars-grid">
-            ${brand.strategy.pillars.map((p) => `
+            ${brand.strategy.pillars
+              .map(
+                (p) => `
               <div class="pillar-card">
                 <strong>${p.value}</strong>
                 <p>${p.description}</p>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>`
-    : '';
+      : '';
 
-  const voiceSection = brand.guidelines?.voice || brand.guidelines?.dos?.length || brand.strategy?.voiceValues?.length
-    ? `<div class="section">
+  const voiceSection =
+    brand.guidelines?.voice || brand.guidelines?.dos?.length || brand.strategy?.voiceValues?.length
+      ? `<div class="section">
         <h2>Voice & Tone</h2>
         ${brand.guidelines?.voice ? `<p class="voice-desc">${brand.guidelines.voice}</p>` : ''}
-        ${brand.strategy?.voiceValues?.length ? `
+        ${
+          brand.strategy?.voiceValues?.length
+            ? `
           <div class="voice-grid">
-            ${brand.strategy.voiceValues.map((v) => `
+            ${brand.strategy.voiceValues
+              .map(
+                (v) => `
               <div class="voice-card">
                 <strong>${v.title}</strong>
                 <p>${v.description}</p>
                 <em>"${v.example}"</em>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
-        ` : ''}
-        ${brand.guidelines?.dos?.length || brand.guidelines?.donts?.length ? `
+        `
+            : ''
+        }
+        ${
+          brand.guidelines?.dos?.length || brand.guidelines?.donts?.length
+            ? `
           <div class="dos-donts">
-            ${brand.guidelines?.dos?.length ? `
+            ${
+              brand.guidelines?.dos?.length
+                ? `
               <div class="dos">
                 <h3>Do</h3>
                 <ul>${brand.guidelines.dos.map((d) => `<li>${d}</li>`).join('')}</ul>
               </div>
-            ` : ''}
-            ${brand.guidelines?.donts?.length ? `
+            `
+                : ''
+            }
+            ${
+              brand.guidelines?.donts?.length
+                ? `
               <div class="donts">
                 <h3>Don't</h3>
                 <ul>${brand.guidelines.donts.map((d) => `<li>${d}</li>`).join('')}</ul>
               </div>
-            ` : ''}
+            `
+                : ''
+            }
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>`
-    : '';
+      : '';
 
   return `<!DOCTYPE html>
 <html>
@@ -212,7 +285,11 @@ function buildHtml(brand: BrandBookData): string {
     ${tagline ? `<div class="tagline">${tagline}</div>` : ''}
   </div>
 
-  ${description ? `<div class="section"><p style="font-size:15px;line-height:1.7;color:#444;max-width:640px">${description}</p></div>` : ''}
+  ${
+    description
+      ? `<div class="section"><p style="font-size:15px;line-height:1.7;color:#444;max-width:640px">${description}</p></div>`
+      : ''
+  }
   ${logoSection}
   ${colorSection}
   ${typoSection}
@@ -226,7 +303,7 @@ function buildHtml(brand: BrandBookData): string {
 
 export async function renderBrandBookPdf(
   brand: BrandBookData,
-  opts: RenderOptions = {},
+  opts: RenderOptions = {}
 ): Promise<Buffer> {
   const html = buildHtml(brand);
   const chromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium';

@@ -917,7 +917,7 @@ ${
             ref,
             imageUrl: img.url,
             scaleMode: 'FILL',
-          },
+          }
         );
         xOffset += dims.w + 40;
       }
@@ -925,9 +925,10 @@ ${
       const count = mockupImages.length;
       allOps.push({
         type: 'MESSAGE',
-        content: count > 1
-          ? `${count} mockups gerados e aplicados no canvas.`
-          : `Mockup gerado e aplicado no canvas.`,
+        content:
+          count > 1
+            ? `${count} mockups gerados e aplicados no canvas.`
+            : `Mockup gerado e aplicado no canvas.`,
       });
 
       send('operations', allOps);
@@ -983,9 +984,10 @@ ${
 
       send('done', {
         operations: allOps,
-        message: count > 1
-          ? `${count} mockups gerados e aplicados no canvas.`
-          : 'Mockup gerado e aplicado no canvas.',
+        message:
+          count > 1
+            ? `${count} mockups gerados e aplicados no canvas.`
+            : 'Mockup gerado e aplicado no canvas.',
         provider: 'pre-pass',
         durationMs: Date.now() - streamStartMs,
         toolCalls: toolCallRecords,

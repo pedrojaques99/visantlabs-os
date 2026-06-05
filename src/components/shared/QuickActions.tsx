@@ -42,7 +42,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
 
   const targets = useMemo(
     () => getCompatibleTargets(outputMime, toolId).slice(0, 4),
-    [outputMime, toolId],
+    [outputMime, toolId]
   );
 
   const handleSendTo = async (targetId: string, targetPath: string, targetName: string) => {
@@ -72,7 +72,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       transition={{ duration: 0.4, ease }}
       className={cn(
         'flex flex-col gap-2.5 p-3 rounded-xl bg-neutral-900/60 border border-neutral-800/60',
-        className,
+        className
       )}
     >
       {/* Summary line */}
@@ -109,9 +109,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         )}
 
         {/* Separator */}
-        {targets.length > 0 && assetData && (
-          <div className="w-px h-4 bg-neutral-700/40 mx-0.5" />
-        )}
+        {targets.length > 0 && assetData && <div className="w-px h-4 bg-neutral-700/40 mx-0.5" />}
 
         {/* Send to targets */}
         {assetData &&

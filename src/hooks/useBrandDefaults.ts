@@ -60,7 +60,7 @@ function getHeadingFont(brand: BrandGuideline): string | null {
 
 function deriveDefaults<T extends keyof ToolDefaults>(
   toolId: T,
-  brand: BrandGuideline,
+  brand: BrandGuideline
 ): ToolDefaults[T] {
   switch (toolId) {
     case 'compress':
@@ -104,7 +104,7 @@ interface UseBrandDefaultsReturn<T extends keyof ToolDefaults> {
 }
 
 export function useBrandDefaults<T extends keyof ToolDefaults>(
-  toolId: T,
+  toolId: T
 ): UseBrandDefaultsReturn<T> {
   const [brandId, setBrandId] = useState<string | null>(null);
 
@@ -114,10 +114,7 @@ export function useBrandDefaults<T extends keyof ToolDefaults>(
     enabled: !!brandId,
   });
 
-  const defaults = useMemo(
-    () => (brand ? deriveDefaults(toolId, brand) : null),
-    [toolId, brand],
-  );
+  const defaults = useMemo(() => (brand ? deriveDefaults(toolId, brand) : null), [toolId, brand]);
 
   const handleSetBrandId = useCallback((id: string | null) => {
     setBrandId(id);

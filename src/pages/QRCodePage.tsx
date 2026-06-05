@@ -12,8 +12,18 @@ import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
-const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 

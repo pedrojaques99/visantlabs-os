@@ -29,8 +29,18 @@ import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
-const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 const SvgVectorEditor = lazy(() =>
   import('@/components/svg-optimizer/SvgVectorEditor').then((m) => ({ default: m.SvgVectorEditor }))
@@ -271,9 +281,7 @@ export const SvgOptimizerPage: React.FC = () => {
       icon={FileCode}
       title="SVG Optimizer"
       centered={!hasItems}
-      countLabel={
-        hasItems ? `${items.length} file${items.length > 1 ? 's' : ''}` : undefined
-      }
+      countLabel={hasItems ? `${items.length} file${items.length > 1 ? 's' : ''}` : undefined}
       onReset={reset}
       showReset={hasItems}
       dragDrop={{
@@ -615,80 +623,85 @@ export const SvgOptimizerPage: React.FC = () => {
                 </div>
 
                 {/* Trace refinement -- only for selected PNG item */}
-                {selectedItem && selectedItem.source === 'png' && selectedItem.status !== 'tracing' && (
-                  <motion.div {...fadeUp} className="space-y-2 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">
-                        Trace preset
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
-                        <motion.button
-                          key={p}
-                          whileHover={{ scale: 1.04 }}
-                          whileTap={{ scale: 0.96 }}
-                          onClick={() => handlePresetChange(p)}
-                          className={cn(
-                            'px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider transition-all duration-200',
-                            localPreset === p
-                              ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
-                              : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300'
-                          )}
-                        >
-                          {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
-                        </motion.button>
-                      ))}
-                    </div>
-                    {localPreset === 'custom' && (
-                      <>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <ScrubInput
-                            label="Noise"
-                            value={localTurd}
-                            min={0}
-                            max={20}
-                            step={1}
-                            onChange={setLocalTurd}
-                          />
-                          <ScrubInput
-                            label="Simplify"
-                            value={localOpt}
-                            min={0}
-                            max={2}
-                            step={0.05}
-                            onChange={setLocalOpt}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <ScrubInput
-                            label="Threshold"
-                            value={typeof localThresh === 'number' ? localThresh : 128}
-                            min={0}
-                            max={255}
-                            step={1}
-                            onChange={setLocalThresh}
-                          />
-                          <ScrubInput
-                            label="Corners"
-                            value={localAlphaMax}
-                            min={0}
-                            max={1.334}
-                            step={0.05}
-                            onChange={setLocalAlphaMax}
-                          />
-                        </div>
-                      </>
-                    )}
-                    <Button
-                      variant="outline"
-                      className="w-full text-[10px] font-mono uppercase tracking-widest h-8 border-neutral-700"
-                      onClick={handleRetrace}
+                {selectedItem &&
+                  selectedItem.source === 'png' &&
+                  selectedItem.status !== 'tracing' && (
+                    <motion.div
+                      {...fadeUp}
+                      className="space-y-2 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60"
                     >
-                      <RefreshCw size={12} className="mr-1.5" /> Re-trace
-                    </Button>
-                  </motion.div>
-                )}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">
+                          Trace preset
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
+                          <motion.button
+                            key={p}
+                            whileHover={{ scale: 1.04 }}
+                            whileTap={{ scale: 0.96 }}
+                            onClick={() => handlePresetChange(p)}
+                            className={cn(
+                              'px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider transition-all duration-200',
+                              localPreset === p
+                                ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
+                                : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300'
+                            )}
+                          >
+                            {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
+                          </motion.button>
+                        ))}
+                      </div>
+                      {localPreset === 'custom' && (
+                        <>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <ScrubInput
+                              label="Noise"
+                              value={localTurd}
+                              min={0}
+                              max={20}
+                              step={1}
+                              onChange={setLocalTurd}
+                            />
+                            <ScrubInput
+                              label="Simplify"
+                              value={localOpt}
+                              min={0}
+                              max={2}
+                              step={0.05}
+                              onChange={setLocalOpt}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <ScrubInput
+                              label="Threshold"
+                              value={typeof localThresh === 'number' ? localThresh : 128}
+                              min={0}
+                              max={255}
+                              step={1}
+                              onChange={setLocalThresh}
+                            />
+                            <ScrubInput
+                              label="Corners"
+                              value={localAlphaMax}
+                              min={0}
+                              max={1.334}
+                              step={0.05}
+                              onChange={setLocalAlphaMax}
+                            />
+                          </div>
+                        </>
+                      )}
+                      <Button
+                        variant="outline"
+                        className="w-full text-[10px] font-mono uppercase tracking-widest h-8 border-neutral-700"
+                        onClick={handleRetrace}
+                      >
+                        <RefreshCw size={12} className="mr-1.5" /> Re-trace
+                      </Button>
+                    </motion.div>
+                  )}
               </motion.div>
             </div>
 
@@ -723,14 +736,24 @@ export const SvgOptimizerPage: React.FC = () => {
                   <QuickActions
                     toolId="svg-optimizer"
                     outputMime="image/svg+xml"
-                    summary={`${doneItems.length} file${doneItems.length !== 1 ? 's' : ''} optimized · saved ${formatBytes(totalOriginal - totalOptimized)} (${totalSavings}%)`}
+                    summary={`${doneItems.length} file${
+                      doneItems.length !== 1 ? 's' : ''
+                    } optimized · saved ${formatBytes(
+                      totalOriginal - totalOptimized
+                    )} (${totalSavings}%)`}
                     onDownloadAll={handleDownloadAll}
                     onCopy={handleCopy}
-                    assetData={selectedItem && selectedItem.status === 'done' ? {
-                      imageBase64: btoa(unescape(encodeURIComponent(selectedItem.optimizedSvg))),
-                      mimeType: 'image/svg+xml',
-                      label: selectedItem.fileName,
-                    } : undefined}
+                    assetData={
+                      selectedItem && selectedItem.status === 'done'
+                        ? {
+                            imageBase64: btoa(
+                              unescape(encodeURIComponent(selectedItem.optimizedSvg))
+                            ),
+                            mimeType: 'image/svg+xml',
+                            label: selectedItem.fileName,
+                          }
+                        : undefined
+                    }
                   />
                 </motion.div>
               )}

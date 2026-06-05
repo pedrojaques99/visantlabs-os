@@ -45,12 +45,9 @@ export const pdfApi = {
   fromImages: (images: string[]) =>
     post<{ pdf: string; size: number; pageCount: number }>('/from-images', { images }),
 
-  merge: (pdfs: string[]) =>
-    post<{ pdf: string; size: number }>('/merge', { pdfs }),
+  merge: (pdfs: string[]) => post<{ pdf: string; size: number }>('/merge', { pdfs }),
 
-  cmyk: (pdf: string) =>
-    post<{ pdf: string; size: number }>('/cmyk', { pdf }),
+  cmyk: (pdf: string) => post<{ pdf: string; size: number }>('/cmyk', { pdf }),
 
-  pdfa: (pdf: string) =>
-    post<{ pdf: string; size: number }>('/pdfa', { pdf }),
+  pdfa: (pdf: string) => post<{ pdf: string; size: number }>('/pdfa', { pdf }),
 };

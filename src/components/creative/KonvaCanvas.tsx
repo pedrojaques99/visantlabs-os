@@ -33,12 +33,24 @@ const GridOverlay = React.memo(
       const rows = Math.floor(height / gridSize) + 1;
       for (let i = 0; i < cols; i++) {
         result.push(
-          <Line key={`gx${i}`} points={[i * gridSize, 0, i * gridSize, height]} stroke={GRID_LINE_COLOR} strokeWidth={1} listening={false} />
+          <Line
+            key={`gx${i}`}
+            points={[i * gridSize, 0, i * gridSize, height]}
+            stroke={GRID_LINE_COLOR}
+            strokeWidth={1}
+            listening={false}
+          />
         );
       }
       for (let i = 0; i < rows; i++) {
         result.push(
-          <Line key={`gy${i}`} points={[0, i * gridSize, width, i * gridSize]} stroke={GRID_LINE_COLOR} strokeWidth={1} listening={false} />
+          <Line
+            key={`gy${i}`}
+            points={[0, i * gridSize, width, i * gridSize]}
+            stroke={GRID_LINE_COLOR}
+            strokeWidth={1}
+            listening={false}
+          />
         );
       }
       return result;

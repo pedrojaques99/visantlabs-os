@@ -52,7 +52,12 @@ router.post('/compress', pdfRateLimit, authenticate, async (req: AuthRequest, re
 // POST /api/pdf/to-images
 router.post('/to-images', pdfRateLimit, authenticate, async (req: AuthRequest, res) => {
   try {
-    const { pdf, dpi = 150, format = 'png', pages } = req.body as {
+    const {
+      pdf,
+      dpi = 150,
+      format = 'png',
+      pages,
+    } = req.body as {
       pdf?: string;
       dpi?: number;
       format?: 'png' | 'jpeg';

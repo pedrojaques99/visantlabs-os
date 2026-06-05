@@ -359,9 +359,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
         )}
 
         {/* Generated mockup image */}
-        {message.generatedImageUrl && (
-          <MockupImage url={message.generatedImageUrl} />
-        )}
+        {message.generatedImageUrl && <MockupImage url={message.generatedImageUrl} />}
 
         {/* Operations applied */}
         {ops.length > 0 && (

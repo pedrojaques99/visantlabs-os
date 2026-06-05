@@ -14,10 +14,22 @@ import {
   ToolPanelRow,
 } from '@/components/shared/ToolPanel';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS, MODEL_CONFIG } from '@/constants/geminiModels';
-import { SEEDREAM_IMAGE_MODELS, SEEDREAM_MODEL_CONFIG, isSeedreamModel } from '@/constants/seedreamModels';
-import { OPENAI_IMAGE_MODEL_LIST, OPENAI_IMAGE_MODEL_CONFIG, isOpenAIImageModel } from '@/constants/openaiModels';
+import {
+  SEEDREAM_IMAGE_MODELS,
+  SEEDREAM_MODEL_CONFIG,
+  isSeedreamModel,
+} from '@/constants/seedreamModels';
+import {
+  OPENAI_IMAGE_MODEL_LIST,
+  OPENAI_IMAGE_MODEL_CONFIG,
+  isOpenAIImageModel,
+} from '@/constants/openaiModels';
 import { IMAGEN_MODEL_LIST, IMAGEN_MODEL_CONFIG, isImagenModel } from '@/constants/imagenModels';
-import { IDEOGRAM_MODEL_LIST, IDEOGRAM_MODEL_CONFIG, isIdeogramModel } from '@/constants/ideogramModels';
+import {
+  IDEOGRAM_MODEL_LIST,
+  IDEOGRAM_MODEL_CONFIG,
+  isIdeogramModel,
+} from '@/constants/ideogramModels';
 import { REVE_MODEL_LIST, REVE_MODEL_CONFIG, isReveModel } from '@/constants/reveModels';
 import { useAvailableProviders } from '@/hooks/useAvailableProviders';
 import type { Resolution, AspectRatio, ImageProvider } from '@/types/types';
@@ -161,7 +173,8 @@ export const MockupOutputConfig: React.FC = () => {
         <ModelSelector
           type="image"
           selectedModel={
-            selectedModel || (imageProvider === 'seedream' ? 'seedream-4.5' : GEMINI_MODELS.IMAGE_NB2)
+            selectedModel ||
+            (imageProvider === 'seedream' ? 'seedream-4.5' : GEMINI_MODELS.IMAGE_NB2)
           }
           onModelChange={handleModelChange}
           resolution={resolution}
@@ -198,7 +211,9 @@ export const MockupOutputConfig: React.FC = () => {
                 >
                   {model.providerDomain && (
                     <img
-                      src={`https://img.logo.dev/${model.providerDomain}?size=32${token ? `&token=${token}` : ''}`}
+                      src={`https://img.logo.dev/${model.providerDomain}?size=32${
+                        token ? `&token=${token}` : ''
+                      }`}
                       className="w-3 h-3 rounded-sm"
                       onError={(e) => (e.currentTarget.style.display = 'none')}
                       alt=""
@@ -252,7 +267,10 @@ export const MockupOutputConfig: React.FC = () => {
             checked={isCompareMode}
             onClick={handleToggleCompareMode}
             dark={dark}
-            tooltip={t('mockup.compareModeDescription') || 'Generate the same prompt across multiple models side-by-side'}
+            tooltip={
+              t('mockup.compareModeDescription') ||
+              'Generate the same prompt across multiple models side-by-side'
+            }
           />
         </ToolPanelRow>
         <ToolPanelRow label={t('mockup.autoGenerateLabel') || 'Prompt + Imagem'}>

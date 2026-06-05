@@ -34,10 +34,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const targets = useMemo(
-    () => getCompatibleTargets(outputMime, source),
-    [outputMime, source],
-  );
+  const targets = useMemo(() => getCompatibleTargets(outputMime, source), [outputMime, source]);
 
   useEffect(() => {
     if (!open) return;
@@ -91,7 +88,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
           'flex items-center gap-1 rounded-md transition-colors disabled:opacity-50',
           variant === 'node'
             ? 'p-1 bg-transparent hover:bg-neutral-900/40 text-neutral-400 hover:text-neutral-200'
-            : 'p-1.5 bg-neutral-800/60 hover:bg-neutral-700/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30',
+            : 'p-1.5 bg-neutral-800/60 hover:bg-neutral-700/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30'
         )}
       >
         <Send size={12} strokeWidth={2} />

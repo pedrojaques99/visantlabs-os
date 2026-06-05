@@ -122,7 +122,16 @@ export const benchmarkApi = {
       onStart?: (data: SSEStartEvent) => void;
       onGenerating?: (data: { model: string; label: string; provider: string }) => void;
       onResult?: (data: SSEResultEvent) => void;
-      onError?: (data: { model: string; label: string; provider: string; error: string; durationMs?: number; creditsCost?: number; completedCount: number; totalModels: number }) => void;
+      onError?: (data: {
+        model: string;
+        label: string;
+        provider: string;
+        error: string;
+        durationMs?: number;
+        creditsCost?: number;
+        completedCount: number;
+        totalModels: number;
+      }) => void;
       onComplete?: (data: SSECompleteEvent) => void;
       onFail?: (error: string) => void;
     }
@@ -143,7 +152,10 @@ export const benchmarkApi = {
         }
 
         const reader = res.body?.getReader();
-        if (!reader) { callbacks.onFail?.('No stream'); return; }
+        if (!reader) {
+          callbacks.onFail?.('No stream');
+          return;
+        }
 
         const decoder = new TextDecoder();
         let buffer = '';
@@ -164,13 +176,25 @@ export const benchmarkApi = {
               try {
                 const data = JSON.parse(line.slice(6));
                 switch (currentEvent) {
-                  case 'start': callbacks.onStart?.(data); break;
-                  case 'generating': callbacks.onGenerating?.(data); break;
-                  case 'result': callbacks.onResult?.(data); break;
-                  case 'error': callbacks.onError?.(data); break;
-                  case 'complete': callbacks.onComplete?.(data); break;
+                  case 'start':
+                    callbacks.onStart?.(data);
+                    break;
+                  case 'generating':
+                    callbacks.onGenerating?.(data);
+                    break;
+                  case 'result':
+                    callbacks.onResult?.(data);
+                    break;
+                  case 'error':
+                    callbacks.onError?.(data);
+                    break;
+                  case 'complete':
+                    callbacks.onComplete?.(data);
+                    break;
                 }
-              } catch { /* skip malformed */ }
+              } catch {
+                /* skip malformed */
+              }
               currentEvent = '';
             }
           }
@@ -191,7 +215,10 @@ export const benchmarkApi = {
     return res.json();
   },
 
-  async vote(id: string, winnerModel: string): Promise<{ success: boolean; creditsRefunded: number; message: string }> {
+  async vote(
+    id: string,
+    winnerModel: string
+  ): Promise<{ success: boolean; creditsRefunded: number; message: string }> {
     const res = await fetch(`${API_BASE_URL}/benchmark/${id}/vote`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -204,7 +231,10 @@ export const benchmarkApi = {
     return res.json();
   },
 
-  async gallery(page = 1, limit = 12): Promise<{ items: GalleryItem[]; total: number; page: number; totalPages: number }> {
+  async gallery(
+    page = 1,
+    limit = 12
+  ): Promise<{ items: GalleryItem[]; total: number; page: number; totalPages: number }> {
     const res = await fetch(`${API_BASE_URL}/benchmark?page=${page}&limit=${limit}`);
     if (!res.ok) throw new Error('Failed to fetch gallery');
     return res.json();

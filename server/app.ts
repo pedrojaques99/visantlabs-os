@@ -365,7 +365,8 @@ export function createApp() {
     res.json({
       mcpVersion: MCP_SPEC_VERSION,
       name: 'Visant Labs',
-      description: 'AI-powered design platform for mockups, branding, creative studio, and image generation.',
+      description:
+        'AI-powered design platform for mockups, branding, creative studio, and image generation.',
       endpoint: MCP_ENDPOINT,
       transport: ['streamable-http'],
       authentication: {

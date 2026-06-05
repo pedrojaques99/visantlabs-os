@@ -1,6 +1,11 @@
 import express from 'express';
 import { getMcpToolCount, getMcpToolNames } from '../mcp/platform-mcp.js';
-import { MCP_ENDPOINT, MCP_SPEC_VERSION, MCP_BETA_HEADER, API_BASE_URL } from '../lib/mcp-constants.js';
+import {
+  MCP_ENDPOINT,
+  MCP_SPEC_VERSION,
+  MCP_BETA_HEADER,
+  API_BASE_URL,
+} from '../lib/mcp-constants.js';
 
 const router = express.Router();
 

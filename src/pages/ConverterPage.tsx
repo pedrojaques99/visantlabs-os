@@ -19,8 +19,18 @@ import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
-const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 /* ── Conversion logic (all client-side) ── */
 
@@ -174,7 +184,9 @@ export const ConverterPage: React.FC = () => {
             return new File([bytes], `${baseName}-page${img.page}.png`, { type: 'image/png' });
           });
           if (pageFiles.length) addFiles(pageFiles);
-          toast.success(`${pdf.name}: ${pageFiles.length} page${pageFiles.length > 1 ? 's' : ''} imported`);
+          toast.success(
+            `${pdf.name}: ${pageFiles.length} page${pageFiles.length > 1 ? 's' : ''} imported`
+          );
         } catch (err: any) {
           toast.error(`${pdf.name}: ${err?.message || 'Failed to process PDF'}`);
         }
@@ -287,9 +299,7 @@ export const ConverterPage: React.FC = () => {
             </motion.div>
             <div className="text-center space-y-1">
               <h2 className="text-sm font-medium text-neutral-200">Convert image formats</h2>
-              <p className="text-xs text-neutral-500">
-                PNG, JPG, WebP, PDF, ICO — batch supported
-              </p>
+              <p className="text-xs text-neutral-500">PNG, JPG, WebP, PDF, ICO — batch supported</p>
             </div>
             <motion.label
               whileHover={{ scale: 1.02 }}
@@ -488,7 +498,9 @@ export const ConverterPage: React.FC = () => {
 
                 {outputFormat === 'jpg' && (
                   <div className="flex items-center gap-2 flex-1 min-w-[180px]">
-                    <span className="text-[10px] font-mono text-neutral-500 uppercase">Quality</span>
+                    <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                      Quality
+                    </span>
                     <input
                       type="range"
                       min="10"
@@ -523,7 +535,9 @@ export const ConverterPage: React.FC = () => {
                       <span className="ml-2">
                         {isProcessing
                           ? 'Converting...'
-                          : `Convert ${queuedOrErrorCount > 1 ? `${queuedOrErrorCount} files` : 'All'}`}
+                          : `Convert ${
+                              queuedOrErrorCount > 1 ? `${queuedOrErrorCount} files` : 'All'
+                            }`}
                       </span>
                     </Button>
                   )}
@@ -531,13 +545,19 @@ export const ConverterPage: React.FC = () => {
                     <QuickActions
                       toolId="converter"
                       outputMime={`image/${outputFormat}`}
-                      summary={`${doneCount} file${doneCount > 1 ? 's' : ''} converted to ${outputFormat.toUpperCase()}`}
+                      summary={`${doneCount} file${
+                        doneCount > 1 ? 's' : ''
+                      } converted to ${outputFormat.toUpperCase()}`}
                       onDownloadAll={handleDownloadAll}
-                      assetData={previewItem?.resultUrl ? {
-                        imageUrl: previewItem.resultUrl,
-                        mimeType: `image/${outputFormat}`,
-                        label: previewItem.fileName,
-                      } : undefined}
+                      assetData={
+                        previewItem?.resultUrl
+                          ? {
+                              imageUrl: previewItem.resultUrl,
+                              mimeType: `image/${outputFormat}`,
+                              label: previewItem.fileName,
+                            }
+                          : undefined
+                      }
                     />
                   )}
                 </motion.div>

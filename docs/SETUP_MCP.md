@@ -87,12 +87,14 @@ Use Visant as a remote MCP server directly in API calls:
 {
   "model": "claude-sonnet-4-6",
   "max_tokens": 4096,
-  "mcp_servers": [{
-    "type": "url",
-    "url": "https://api.visantlabs.com/api/mcp",
-    "name": "visant",
-    "authorization_token": "visant_sk_your_key_here"
-  }],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "url": "https://api.visantlabs.com/api/mcp",
+      "name": "visant",
+      "authorization_token": "visant_sk_your_key_here"
+    }
+  ],
   "tools": [{ "type": "mcp_toolset", "mcp_server_name": "visant" }],
   "messages": [{ "role": "user", "content": "Generate a mockup of a coffee brand packaging" }]
 }

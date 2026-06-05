@@ -20,8 +20,18 @@ import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
-const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 const SIZE_LABELS: Record<number, string> = {
   16: 'favicon',
@@ -340,7 +350,8 @@ export const FaviconPage: React.FC = () => {
                 <div
                   className="w-20 h-20 rounded-2xl border border-neutral-800 overflow-hidden flex items-center justify-center duration-200"
                   style={{
-                    background: 'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 10px 10px',
+                    background:
+                      'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 10px 10px',
                   }}
                 >
                   <img src={sourceUrl} alt={fileName} className="w-full h-full object-contain" />
@@ -503,7 +514,11 @@ export const FaviconPage: React.FC = () => {
                   </div>
 
                   {/* Code snippets */}
-                  <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.15 }} className="space-y-3">
+                  <motion.div
+                    {...fadeUp}
+                    transition={{ ...fadeUp.transition, delay: 0.15 }}
+                    className="space-y-3"
+                  >
                     <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
                       HTML Tags
                     </h2>
@@ -547,7 +562,11 @@ export const FaviconPage: React.FC = () => {
                     onDownloadAll={handleDownloadZip}
                     assetData={
                       generatedIcons.find((i) => i.size === 512)?.url
-                        ? { imageUrl: generatedIcons.find((i) => i.size === 512)!.url, mimeType: 'image/png', label: 'favicon-512x512.png' }
+                        ? {
+                            imageUrl: generatedIcons.find((i) => i.size === 512)!.url,
+                            mimeType: 'image/png',
+                            label: 'favicon-512x512.png',
+                          }
                         : undefined
                     }
                   />

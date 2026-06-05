@@ -156,7 +156,8 @@ async function getQuotaMeta(userId: string) {
   );
   const storageUsed = storageUser?.storageUsedBytes || 0;
   const storageRemaining = Math.max(0, storageLimit - storageUsed);
-  const storagePct = storageLimit > 0 ? parseFloat(((storageUsed / storageLimit) * 100).toFixed(2)) : 0;
+  const storagePct =
+    storageLimit > 0 ? parseFloat(((storageUsed / storageLimit) * 100).toFixed(2)) : 0;
 
   const fmtBytes = (b: number) => {
     if (b === 0) return '0 B';
@@ -2084,7 +2085,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       label: z
         .string()
         .optional()
-        .describe('Display label for the invite (e.g. "YSA — Brand Kit"). Auto-generated if omitted.'),
+        .describe(
+          'Display label for the invite (e.g. "YSA — Brand Kit"). Auto-generated if omitted.'
+        ),
       expiresInDays: z
         .number()
         .int()
@@ -2129,7 +2132,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           token,
           role,
           expiresAt: expiresAt?.toISOString() || null,
-          instructions: 'Send this URL to your client. They will create an account (or log in), accept the invite, and get one-click connection buttons for Cursor, VS Code, Claude, and ChatGPT.',
+          instructions:
+            'Send this URL to your client. They will create an account (or log in), accept the invite, and get one-click connection buttons for Cursor, VS Code, Claude, and ChatGPT.',
           _meta: quota,
         });
       } catch (err: any) {
@@ -3081,7 +3085,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             const uploadRes = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-              body: JSON.stringify({ data: result.imageBase64, contentType: 'image/png', label: 'creative-render' }),
+              body: JSON.stringify({
+                data: result.imageBase64,
+                contentType: 'image/png',
+                label: 'creative-render',
+              }),
             });
             const uploadData = (await uploadRes.json()) as any;
             if (uploadRes.ok && uploadData.url) {
@@ -3201,7 +3209,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             const uploadRes = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-              body: JSON.stringify({ data: renderData.imageBase64, contentType: 'image/png', label: 'creative-render' }),
+              body: JSON.stringify({
+                data: renderData.imageBase64,
+                contentType: 'image/png',
+                label: 'creative-render',
+              }),
             });
             const uploadData = (await uploadRes.json()) as any;
             if (uploadRes.ok && uploadData.url) {

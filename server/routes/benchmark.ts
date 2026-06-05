@@ -46,21 +46,61 @@ interface BenchmarkExtra {
 }
 
 const BENCHMARK_EXTRAS: Record<string, BenchmarkExtra> = {
-  'gpt-image-2':                  { tier: 'flagship',  released: '2025-04', strengths: ['text', 'editing', 'photorealism'] },
-  'gemini-3-pro-image-preview':   { tier: 'flagship',  released: '2025-06', strengths: ['reasoning', 'text', 'multi-ref'] },
-  'imagen-4.0-ultra-generate-001':{ tier: 'flagship',  released: '2025-05', strengths: ['photorealism', 'quality'] },
-  'seedream-5-0-lite':            { tier: 'flagship',  released: '2025-06', strengths: ['resolution', 'photorealism', 'batch'] },
-  'ideogram-v4':                  { tier: 'flagship',  released: '2025-05', strengths: ['text-rendering', 'typography', 'structured'] },
-  'reve-image-1.0':               { tier: 'flagship',  released: '2025-04', strengths: ['prompt-adherence', 'text', 'typoguard'] },
-  'gemini-3.1-flash-image-preview':{ tier: 'balanced', released: '2025-05', strengths: ['speed', 'multi-ref', 'cost'] },
-  'imagen-4.0-generate-001':      { tier: 'balanced',  released: '2025-05', strengths: ['quality-cost', 'text'] },
-  'seedream-4.5':                 { tier: 'balanced',  released: '2025-03', strengths: ['resolution', 'multi-ref'] },
-  'gpt-image-1':                  { tier: 'balanced',  released: '2025-01', strengths: ['editing', 'versatile'] },
-  'ideogram-v3':                  { tier: 'balanced',  released: '2025-02', strengths: ['styles', 'presets', 'character-ref'] },
-  'imagen-4.0-fast-generate-001': { tier: 'fast',      released: '2025-05', strengths: ['speed', 'cost'] },
-  'seedream-4.0':                 { tier: 'legacy',    released: '2024-12', strengths: ['resolution'] },
-  'seedream-3.0-t2i':             { tier: 'legacy',    released: '2024-09', strengths: ['seed-control'] },
-  'seededit-3.0-i2i':             { tier: 'legacy',    released: '2024-09', strengths: ['editing'] },
+  'gpt-image-2': {
+    tier: 'flagship',
+    released: '2025-04',
+    strengths: ['text', 'editing', 'photorealism'],
+  },
+  'gemini-3-pro-image-preview': {
+    tier: 'flagship',
+    released: '2025-06',
+    strengths: ['reasoning', 'text', 'multi-ref'],
+  },
+  'imagen-4.0-ultra-generate-001': {
+    tier: 'flagship',
+    released: '2025-05',
+    strengths: ['photorealism', 'quality'],
+  },
+  'seedream-5-0-lite': {
+    tier: 'flagship',
+    released: '2025-06',
+    strengths: ['resolution', 'photorealism', 'batch'],
+  },
+  'ideogram-v4': {
+    tier: 'flagship',
+    released: '2025-05',
+    strengths: ['text-rendering', 'typography', 'structured'],
+  },
+  'reve-image-1.0': {
+    tier: 'flagship',
+    released: '2025-04',
+    strengths: ['prompt-adherence', 'text', 'typoguard'],
+  },
+  'gemini-3.1-flash-image-preview': {
+    tier: 'balanced',
+    released: '2025-05',
+    strengths: ['speed', 'multi-ref', 'cost'],
+  },
+  'imagen-4.0-generate-001': {
+    tier: 'balanced',
+    released: '2025-05',
+    strengths: ['quality-cost', 'text'],
+  },
+  'seedream-4.5': { tier: 'balanced', released: '2025-03', strengths: ['resolution', 'multi-ref'] },
+  'gpt-image-1': { tier: 'balanced', released: '2025-01', strengths: ['editing', 'versatile'] },
+  'ideogram-v3': {
+    tier: 'balanced',
+    released: '2025-02',
+    strengths: ['styles', 'presets', 'character-ref'],
+  },
+  'imagen-4.0-fast-generate-001': {
+    tier: 'fast',
+    released: '2025-05',
+    strengths: ['speed', 'cost'],
+  },
+  'seedream-4.0': { tier: 'legacy', released: '2024-12', strengths: ['resolution'] },
+  'seedream-3.0-t2i': { tier: 'legacy', released: '2024-09', strengths: ['seed-control'] },
+  'seededit-3.0-i2i': { tier: 'legacy', released: '2024-09', strengths: ['editing'] },
 };
 
 interface BenchmarkModelMeta {
@@ -75,21 +115,25 @@ interface BenchmarkModelMeta {
 }
 
 // Derive from IMAGE_MODEL_REGISTRY — only models with benchmark extras are included
-const MODEL_META: BenchmarkModelMeta[] = IMAGE_MODEL_REGISTRY
-  .filter((m) => m.id in BENCHMARK_EXTRAS)
-  .map((m) => ({
-    id: m.id,
-    provider: m.provider,
-    label: m.label,
-    description: m.description,
-    supportsLogoRef: m.supportsLogoRef,
-    ...BENCHMARK_EXTRAS[m.id],
-  }));
+const MODEL_META: BenchmarkModelMeta[] = IMAGE_MODEL_REGISTRY.filter(
+  (m) => m.id in BENCHMARK_EXTRAS
+).map((m) => ({
+  id: m.id,
+  provider: m.provider,
+  label: m.label,
+  description: m.description,
+  supportsLogoRef: m.supportsLogoRef,
+  ...BENCHMARK_EXTRAS[m.id],
+}));
 
 const MODEL_META_MAP = new Map(MODEL_META.map((m) => [m.id, m]));
 
 function getProviderForModel(model: string): string {
-  return MODEL_META_MAP.get(model)?.provider || IMAGE_MODEL_REGISTRY.find((m) => m.id === model)?.provider || 'gemini';
+  return (
+    MODEL_META_MAP.get(model)?.provider ||
+    IMAGE_MODEL_REGISTRY.find((m) => m.id === model)?.provider ||
+    'gemini'
+  );
 }
 
 function hasProviderKey(provider: string): boolean {
@@ -98,12 +142,19 @@ function hasProviderKey(provider: string): boolean {
     return !!v && v !== 'undefined' && v.trim().length > 0;
   };
   switch (provider) {
-    case 'gemini': case 'imagen': return has('GEMINI_API_KEY') || has('VITE_GEMINI_API_KEY');
-    case 'openai': return has('OPENAI_KEY') || has('OPENAI_API_KEY');
-    case 'seedream': return has('BYTEPLUS_API_KEY');
-    case 'ideogram': return has('IDEOGRAM_API_KEY');
-    case 'reve': return has('REVE_API_KEY');
-    default: return false;
+    case 'gemini':
+    case 'imagen':
+      return has('GEMINI_API_KEY') || has('VITE_GEMINI_API_KEY');
+    case 'openai':
+      return has('OPENAI_KEY') || has('OPENAI_API_KEY');
+    case 'seedream':
+      return has('BYTEPLUS_API_KEY');
+    case 'ideogram':
+      return has('IDEOGRAM_API_KEY');
+    case 'reve':
+      return has('REVE_API_KEY');
+    default:
+      return false;
   }
 }
 
@@ -114,11 +165,20 @@ async function generateForModel(
   aspectRatio?: AspectRatio
 ): Promise<{ base64: string; seed?: number }> {
   if (isImagenModel(model)) {
-    const result = await generateImagenImage({ prompt, model: model as any, aspectRatio: aspectRatio || '1:1' });
+    const result = await generateImagenImage({
+      prompt,
+      model: model as any,
+      aspectRatio: aspectRatio || '1:1',
+    });
     return { base64: result.base64 };
   }
   if (isSeedreamModel(model)) {
-    const result = await generateSeedreamImage({ prompt, model: model as any, resolution, aspectRatio });
+    const result = await generateSeedreamImage({
+      prompt,
+      model: model as any,
+      resolution,
+      aspectRatio,
+    });
     return { base64: result.base64, seed: result.seed };
   }
   if (isOpenAIImageModel(model)) {
@@ -126,7 +186,12 @@ async function generateForModel(
     return { base64: result.base64 };
   }
   if (isIdeogramModel(model)) {
-    const result = await generateIdeogramImage({ prompt, model: model as any, resolution, aspectRatio });
+    const result = await generateIdeogramImage({
+      prompt,
+      model: model as any,
+      resolution,
+      aspectRatio,
+    });
     return { base64: result.base64, seed: result.seed };
   }
   if (isReveModel(model)) {
@@ -167,7 +232,8 @@ router.get('/models', (_req, res) => {
 
 router.get('/status/:id', async (req, res) => {
   const { id } = req.params;
-  if (!/^[a-fA-F0-9]{24}$/.test(id)) return res.status(400).json({ error: 'Invalid benchmark ID.' });
+  if (!/^[a-fA-F0-9]{24}$/.test(id))
+    return res.status(400).json({ error: 'Invalid benchmark ID.' });
 
   const benchmark = await prisma.benchmark.findUnique({
     where: { id },
@@ -175,7 +241,9 @@ router.get('/status/:id', async (req, res) => {
   });
   if (!benchmark) return res.status(404).json({ error: 'Benchmark not found.' });
 
-  const completedCount = (benchmark.results as any[]).filter((r: any) => r.imageUrl || r.error).length;
+  const completedCount = (benchmark.results as any[]).filter(
+    (r: any) => r.imageUrl || r.error
+  ).length;
   res.json({ status: benchmark.status, completedCount, completedAt: benchmark.completedAt });
 });
 
@@ -193,9 +261,17 @@ router.get('/', async (req, res) => {
       skip,
       take: limit,
       select: {
-        id: true, prompt: true, models: true, results: true,
-        winnerModel: true, voted: true, viewCount: true,
-        resolution: true, aspectRatio: true, createdAt: true, userId: true,
+        id: true,
+        prompt: true,
+        models: true,
+        results: true,
+        winnerModel: true,
+        voted: true,
+        viewCount: true,
+        resolution: true,
+        aspectRatio: true,
+        createdAt: true,
+        userId: true,
       },
     }),
     prisma.benchmark.count({ where: { isPublic: true, status: 'completed' } }),
@@ -217,7 +293,10 @@ router.get('/', async (req, res) => {
       winnerModel: b.winnerModel,
       voted: b.voted,
       viewCount: b.viewCount,
-      thumbnails: (b.results as any[]).filter((r: any) => r.imageUrl).slice(0, 4).map((r: any) => ({ model: r.model, imageUrl: r.imageUrl })),
+      thumbnails: (b.results as any[])
+        .filter((r: any) => r.imageUrl)
+        .slice(0, 4)
+        .map((r: any) => ({ model: r.model, imageUrl: r.imageUrl })),
       createdAt: b.createdAt,
       user: user ? { name: user.name, picture: user.picture, username: user.username } : null,
     };
@@ -239,10 +318,14 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
     return res.status(400).json({ error: 'At least 2 models required.' });
   }
   if (models.length > MAX_MODELS_PER_BENCHMARK) {
-    return res.status(400).json({ error: `Maximum ${MAX_MODELS_PER_BENCHMARK} models per benchmark.` });
+    return res
+      .status(400)
+      .json({ error: `Maximum ${MAX_MODELS_PER_BENCHMARK} models per benchmark.` });
   }
 
-  const validModels = models.filter((m: string) => MODEL_META_MAP.has(m) && hasProviderKey(getProviderForModel(m)));
+  const validModels = models.filter(
+    (m: string) => MODEL_META_MAP.has(m) && hasProviderKey(getProviderForModel(m))
+  );
   if (validModels.length < 2) {
     return res.status(400).json({ error: 'At least 2 available models required.' });
   }
@@ -271,7 +354,9 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
     try {
       const bg = await prisma.brandGuideline.findFirst({ where: { id: brandGuidelineId } });
       if (bg) enrichedPrompt = `${buildBrandContextForImageGen(bg as any)}\n\n${enrichedPrompt}`;
-    } catch { /* continue */ }
+    } catch {
+      /* continue */
+    }
   }
 
   const benchmark = await prisma.benchmark.create({
@@ -309,16 +394,31 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
       const meta = MODEL_META_MAP.get(model);
       const start = Date.now();
 
-      sendSSE(res, 'generating', { model, label: meta?.label || model, provider: getProviderForModel(model) });
+      sendSSE(res, 'generating', {
+        model,
+        label: meta?.label || model,
+        provider: getProviderForModel(model),
+      });
 
       try {
-        const { base64 } = await generateForModel(model, enrichedPrompt, resolution as Resolution, aspectRatio as AspectRatio);
+        const { base64 } = await generateForModel(
+          model,
+          enrichedPrompt,
+          resolution as Resolution,
+          aspectRatio as AspectRatio
+        );
 
         let imageUrl: string | undefined;
         let uploadError: string | null = null;
         if (isR2Configured() && base64) {
           try {
-            imageUrl = await uploadImage(base64, userId, `bench-${benchmark.id}-${model}`, subscriptionTier, isAdmin);
+            imageUrl = await uploadImage(
+              base64,
+              userId,
+              `bench-${benchmark.id}-${model}`,
+              subscriptionTier,
+              isAdmin
+            );
           } catch (uploadErr: any) {
             if (uploadErr instanceof StorageLimitExceededError) {
               uploadError = 'Storage limit exceeded — upgrade your plan or free up space';
@@ -345,7 +445,12 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
 
         completedCount++;
         allResults.push(result);
-        sendSSE(res, 'result', { ...result, completedCount, totalModels: validModels.length, label: meta?.label || model });
+        sendSSE(res, 'result', {
+          ...result,
+          completedCount,
+          totalModels: validModels.length,
+          label: meta?.label || model,
+        });
       } catch (err: any) {
         const credits = getCreditsRequired(model, (resolution || '1K') as Resolution);
         const result = {
@@ -361,16 +466,29 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
 
         completedCount++;
         allResults.push(result);
-        sendSSE(res, 'error', { model, provider: getProviderForModel(model), error: result.error, durationMs: result.durationMs, creditsCost: result.creditsCost, completedCount, totalModels: validModels.length, label: meta?.label || model });
+        sendSSE(res, 'error', {
+          model,
+          provider: getProviderForModel(model),
+          error: result.error,
+          durationMs: result.durationMs,
+          creditsCost: result.creditsCost,
+          completedCount,
+          totalModels: validModels.length,
+          label: meta?.label || model,
+        });
       }
     })
   );
 
-  const failedCredits = allResults.filter((r) => !r.generationSucceeded).reduce((sum, r) => sum + r.creditsCost, 0);
+  const failedCredits = allResults
+    .filter((r) => !r.generationSucceeded)
+    .reduce((sum, r) => sum + r.creditsCost, 0);
   if (failedCredits > 0 && chargeResult.charged) {
     try {
       await refundCredits(userId, failedCredits, chargeResult.deductionSource as DeductionSource);
-    } catch { /* log but don't block */ }
+    } catch {
+      /* log but don't block */
+    }
   }
 
   await prisma.benchmark.update({
@@ -398,7 +516,8 @@ router.post('/run', benchmarkLimiter, authenticate, async (req: AuthRequest, res
 
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  if (!/^[a-fA-F0-9]{24}$/.test(id)) return res.status(400).json({ error: 'Invalid benchmark ID.' });
+  if (!/^[a-fA-F0-9]{24}$/.test(id))
+    return res.status(400).json({ error: 'Invalid benchmark ID.' });
 
   const benchmark = await prisma.benchmark.findUnique({ where: { id } });
   if (!benchmark) return res.status(404).json({ error: 'Benchmark not found.' });
@@ -441,14 +560,18 @@ router.post('/:id/vote', authenticate, async (req: AuthRequest, res) => {
   const { id } = req.params;
   const { winnerModel } = req.body;
 
-  if (!/^[a-fA-F0-9]{24}$/.test(id)) return res.status(400).json({ error: 'Invalid benchmark ID.' });
+  if (!/^[a-fA-F0-9]{24}$/.test(id))
+    return res.status(400).json({ error: 'Invalid benchmark ID.' });
 
   const benchmark = await prisma.benchmark.findUnique({ where: { id } });
   if (!benchmark) return res.status(404).json({ error: 'Benchmark not found.' });
-  if (benchmark.userId !== userId) return res.status(403).json({ error: 'Only the benchmark creator can vote.' });
+  if (benchmark.userId !== userId)
+    return res.status(403).json({ error: 'Only the benchmark creator can vote.' });
   if (benchmark.voted) return res.status(409).json({ error: 'Already voted on this benchmark.' });
-  if (benchmark.status !== 'completed') return res.status(400).json({ error: 'Benchmark must be completed before voting.' });
-  if (!winnerModel || !benchmark.models.includes(winnerModel)) return res.status(400).json({ error: 'Winner must be one of the benchmark models.' });
+  if (benchmark.status !== 'completed')
+    return res.status(400).json({ error: 'Benchmark must be completed before voting.' });
+  if (!winnerModel || !benchmark.models.includes(winnerModel))
+    return res.status(400).json({ error: 'Winner must be one of the benchmark models.' });
 
   const updatedResults = (benchmark.results as any[]).map((r: any) => ({
     ...r,
@@ -457,19 +580,31 @@ router.post('/:id/vote', authenticate, async (req: AuthRequest, res) => {
 
   const refundAmount = Math.floor(benchmark.totalCreditsCharged / 2);
   if (refundAmount > 0) {
-    try { await refundCredits(userId, refundAmount); } catch { /* continue */ }
+    try {
+      await refundCredits(userId, refundAmount);
+    } catch {
+      /* continue */
+    }
   }
 
   await prisma.benchmark.update({
     where: { id },
-    data: { voted: true, winnerModel, results: updatedResults, creditsRefunded: benchmark.creditsRefunded + refundAmount },
+    data: {
+      voted: true,
+      winnerModel,
+      results: updatedResults,
+      creditsRefunded: benchmark.creditsRefunded + refundAmount,
+    },
   });
 
   res.json({
     success: true,
     winnerModel,
     creditsRefunded: refundAmount,
-    message: refundAmount > 0 ? `Vote recorded! ${refundAmount} credits refunded (50% back).` : 'Vote recorded!',
+    message:
+      refundAmount > 0
+        ? `Vote recorded! ${refundAmount} credits refunded (50% back).`
+        : 'Vote recorded!',
   });
 });
 

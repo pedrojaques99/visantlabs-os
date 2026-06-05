@@ -340,7 +340,8 @@ export const BgRemovePage: React.FC = () => {
     if (mode !== 'simple' || isProcessing) return;
     const hadResult = items.some((i) => i.status === 'done');
     if (!hadResult) return;
-    if (prevSliderRef.current.threshold === threshold && prevSliderRef.current.feather === feather) return;
+    if (prevSliderRef.current.threshold === threshold && prevSliderRef.current.feather === feather)
+      return;
     prevSliderRef.current = { threshold, feather };
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -430,7 +431,9 @@ export const BgRemovePage: React.FC = () => {
               transition={{ delay: 0.15, duration: 0.35 }}
             >
               <p className="text-sm text-neutral-300 font-medium">Remove image backgrounds</p>
-              <p className="text-xs text-neutral-600 font-mono">AI-powered or threshold-based — batch supported</p>
+              <p className="text-xs text-neutral-600 font-mono">
+                AI-powered or threshold-based — batch supported
+              </p>
             </motion.div>
 
             <motion.label
@@ -515,7 +518,7 @@ export const BgRemovePage: React.FC = () => {
                   <>
                     <AnimatePresence mode="wait">
                       <motion.img
-                        key={showOriginal ? 'original' : (previewItem.resultBase64 || 'source')}
+                        key={showOriginal ? 'original' : previewItem.resultBase64 || 'source'}
                         src={
                           showOriginal
                             ? previewItem.sourceUrl
@@ -736,10 +739,16 @@ export const BgRemovePage: React.FC = () => {
                     </AnimatePresence>
                   </motion.div>
                 ) : (
-                  <motion.div key="simple-controls" {...fadeUp} className="flex flex-wrap items-center gap-4">
+                  <motion.div
+                    key="simple-controls"
+                    {...fadeUp}
+                    className="flex flex-wrap items-center gap-4"
+                  >
                     <div className="flex items-center gap-2 flex-1 min-w-[180px]">
                       <Eraser size={10} className="text-brand-cyan flex-shrink-0" />
-                      <span className="text-[10px] font-mono text-neutral-500 uppercase">Threshold</span>
+                      <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                        Threshold
+                      </span>
                       <input
                         type="range"
                         min="0"
@@ -755,7 +764,9 @@ export const BgRemovePage: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 flex-1 min-w-[180px]">
-                      <span className="text-[10px] font-mono text-neutral-500 uppercase">Feather</span>
+                      <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                        Feather
+                      </span>
                       <input
                         type="range"
                         min="0"
@@ -800,7 +811,9 @@ export const BgRemovePage: React.FC = () => {
                           {isProcessing
                             ? 'Processing...'
                             : `Remove ${
-                                queuedOrErrorCount > 1 ? `${queuedOrErrorCount} images` : 'background'
+                                queuedOrErrorCount > 1
+                                  ? `${queuedOrErrorCount} images`
+                                  : 'background'
                               }`}
                         </span>
                       </Button>
@@ -813,14 +826,20 @@ export const BgRemovePage: React.FC = () => {
                       <QuickActions
                         toolId="remove-bg"
                         outputMime="image/png"
-                        summary={`${doneCount} image${doneCount > 1 ? 's' : ''} — background removed`}
+                        summary={`${doneCount} image${
+                          doneCount > 1 ? 's' : ''
+                        } — background removed`}
                         onDownloadAll={handleDownloadAll}
                         onCopy={handleCopyPreview}
-                        assetData={previewItem?.resultBase64 ? {
-                          imageBase64: previewItem.resultBase64,
-                          mimeType: 'image/png',
-                          label: previewItem.fileName,
-                        } : undefined}
+                        assetData={
+                          previewItem?.resultBase64
+                            ? {
+                                imageBase64: previewItem.resultBase64,
+                                mimeType: 'image/png',
+                                label: previewItem.fileName,
+                              }
+                            : undefined
+                        }
                       />
                     </motion.div>
                   )}

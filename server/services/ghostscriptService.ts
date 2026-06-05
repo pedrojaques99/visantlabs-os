@@ -66,7 +66,7 @@ function bufferFromBase64(input: string): Buffer {
 
 export async function compressPdf(
   input: string | Buffer,
-  preset: CompressPreset = 'ebook',
+  preset: CompressPreset = 'ebook'
 ): Promise<Buffer> {
   const inputBuf = typeof input === 'string' ? bufferFromBase64(input) : input;
 
@@ -127,7 +127,7 @@ export async function convertToCmyk(input: string | Buffer): Promise<Buffer> {
 
 export async function rasterizePages(
   input: string | Buffer,
-  opts: RasterizeOptions = {},
+  opts: RasterizeOptions = {}
 ): Promise<Buffer[]> {
   const inputBuf = typeof input === 'string' ? bufferFromBase64(input) : input;
   const { dpi = 150, format = 'png' } = opts;
@@ -159,9 +159,7 @@ export async function rasterizePages(
     await runGs(args);
 
     const { readdir } = await import('fs/promises');
-    const files = (await readdir(dir))
-      .filter((f) => f.startsWith('page-'))
-      .sort();
+    const files = (await readdir(dir)).filter((f) => f.startsWith('page-')).sort();
 
     return Promise.all(files.map((f) => readFile(join(dir, f))));
   });

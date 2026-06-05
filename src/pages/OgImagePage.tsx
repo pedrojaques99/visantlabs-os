@@ -19,8 +19,18 @@ const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
-const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 /* ------------------------------------------------------------------ */
 /*  Canvas rendering                                                   */
@@ -493,11 +503,15 @@ export const OgImagePage: React.FC = () => {
                 summary="OG image generated"
                 onDownloadAll={handleDownload}
                 onCopy={handleCopy}
-                assetData={previewUrl ? {
-                  imageBase64: previewUrl,
-                  mimeType: 'image/png',
-                  label: 'og-image.png',
-                } : undefined}
+                assetData={
+                  previewUrl
+                    ? {
+                        imageBase64: previewUrl,
+                        mimeType: 'image/png',
+                        label: 'og-image.png',
+                      }
+                    : undefined
+                }
               />
             )}
             <motion.div whileTap={{ scale: 0.98 }}>

@@ -342,7 +342,14 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             };
           }).filter(Boolean) as any[]);
 
-      return [...geminiOptions, ...imagenOptions, ...ideogramOptions, ...reveOptions, ...seedreamOptions, ...openaiOptions];
+      return [
+        ...geminiOptions,
+        ...imagenOptions,
+        ...ideogramOptions,
+        ...reveOptions,
+        ...seedreamOptions,
+        ...openaiOptions,
+      ];
     }
 
     // CHAT MODELS LOGIC
