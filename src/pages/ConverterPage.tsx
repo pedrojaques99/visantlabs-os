@@ -8,8 +8,10 @@ import { loadImage } from '@/utils/imageUtils';
 import { downloadBlob } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
@@ -100,6 +102,7 @@ export const ConverterPage: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [convertProgress, setConvertProgress] = useState(0);
 
   const items = useConverterStore((s) => s.items);
   const outputFormat = useConverterStore((s) => s.outputFormat);
@@ -176,7 +179,9 @@ export const ConverterPage: React.FC = () => {
     }
 
     setIsProcessing(true);
+    setConvertProgress(0);
     let done = 0;
+    const total = toProcess.length;
     for (const item of toProcess) {
       updateItem(item.id, { status: 'processing' });
       try {
@@ -186,7 +191,9 @@ export const ConverterPage: React.FC = () => {
       } catch (err: any) {
         console.error(`Convert failed for ${item.fileName}:`, err);
         updateItem(item.id, { status: 'error', error: err?.message || 'Failed' });
+        done++;
       }
+      setConvertProgress(Math.round((done / total) * 100));
     }
     setIsProcessing(false);
     toast.success(`${done} file${done > 1 ? 's' : ''} converted`);
@@ -291,15 +298,18 @@ export const ConverterPage: React.FC = () => {
                       className="w-full h-auto max-h-[60vh] object-contain"
                     />
                     <AnimatePresence>
-                      {previewItem.status === 'processing' && (
+                      {isProcessing && (
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.2 }}
-                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm"
+                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm"
                         >
-                          <GlitchLoader size={20} color="brand-cyan" />
+                          <FlyingPaperLoader
+                            progress={convertProgress}
+                            label={`${convertProgress}% — ${doneCount}/${items.length}`}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -503,15 +513,23 @@ export const ConverterPage: React.FC = () => {
                     </Button>
                   )}
                   {doneCount > 0 && (
-                    <Button
-                      onClick={handleDownloadAll}
-                      className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                    >
-                      <Download size={14} />
-                      <span className="ml-2">
-                        {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
-                      </span>
-                    </Button>
+                    <>
+                      <Button
+                        onClick={handleDownloadAll}
+                        className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                      >
+                        <Download size={14} />
+                        <span className="ml-2">
+                          {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
+                        </span>
+                      </Button>
+                      <SendToButton
+                        source="converter"
+                        outputMime={`image/${outputFormat}`}
+                        imageUrl={previewItem?.resultUrl}
+                        mimeType={`image/${outputFormat}`}
+                      />
+                    </>
                   )}
                 </motion.div>
               </AnimatePresence>

@@ -21,9 +21,11 @@ import { TRACE_PRESETS, type TracePreset } from '@/services/svgPipeline';
 import { sanitizeSvgForRender } from '@/utils/svgOptimizer';
 import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { Button } from '@/components/ui/button';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
 
@@ -399,12 +401,9 @@ export const SvgOptimizerPage: React.FC = () => {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2, ease }}
-                      className="flex-1 flex flex-col items-center justify-center gap-3 p-4"
+                      className="flex-1 flex items-center justify-center p-4"
                     >
-                      <GlitchLoader size={24} />
-                      <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-                        Tracing {selectedItem.fileName}...
-                      </span>
+                      <FlyingPaperLoader label={`Tracing ${selectedItem.fileName}...`} />
                     </motion.div>
                   )}
 
@@ -727,6 +726,14 @@ export const SvgOptimizerPage: React.FC = () => {
                     >
                       <Copy size={14} />
                     </Button>
+                    {selectedItem && selectedItem.status === 'done' && (
+                      <SendToButton
+                        source="svg-optimizer"
+                        outputMime="image/svg+xml"
+                        imageBase64={btoa(unescape(encodeURIComponent(selectedItem.optimizedSvg)))}
+                        mimeType="image/svg+xml"
+                      />
+                    )}
                   </div>
                 </motion.div>
               </AnimatePresence>

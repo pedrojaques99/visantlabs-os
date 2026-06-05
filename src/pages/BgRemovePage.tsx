@@ -14,6 +14,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
+import { SendToButton } from '@/components/shared/SendToButton';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
@@ -816,6 +817,12 @@ export const BgRemovePage: React.FC = () => {
                       >
                         <Copy size={14} />
                       </Button>
+                      <SendToButton
+                        source="remove-bg"
+                        outputMime="image/png"
+                        imageBase64={previewItem?.resultBase64}
+                        mimeType="image/png"
+                      />
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -10,7 +10,9 @@ import { copyImageAsPng, downloadBlob } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
@@ -74,6 +76,7 @@ export const CompressPage: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [convertProgress, setConvertProgress] = useState(0);
 
   const items = useCompressStore((s) => s.items);
   const quality = useCompressStore((s) => s.quality);
@@ -154,10 +157,13 @@ export const CompressPage: React.FC = () => {
     }
 
     setIsProcessing(true);
+    setConvertProgress(0);
     let done = 0;
+    const total = toProcess.length;
     for (const item of toProcess) {
       await compressItem(item, quality, maxDimension, outputFormat, updateItem);
       done++;
+      setConvertProgress(Math.round((done / total) * 100));
     }
     setIsProcessing(false);
     toast.success(`${done} image${done > 1 ? 's' : ''} compressed`);
@@ -279,14 +285,17 @@ export const CompressPage: React.FC = () => {
                       className="w-full h-auto max-h-[60vh] object-contain"
                     />
                     <AnimatePresence>
-                      {previewItem.status === 'processing' && (
+                      {isProcessing && (
                         <motion.div
-                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm"
+                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                         >
-                          <GlitchLoader size={20} color="brand-cyan" />
+                          <FlyingPaperLoader
+                            progress={convertProgress}
+                            label={`${convertProgress}% — ${doneCount}/${items.length}`}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -527,6 +536,12 @@ export const CompressPage: React.FC = () => {
                       >
                         <Copy size={14} />
                       </Button>
+                      <SendToButton
+                        source="compress"
+                        outputMime={`image/${outputFormat}`}
+                        imageBase64={previewItem?.resultBase64}
+                        mimeType={`image/${outputFormat}`}
+                      />
                     </motion.div>
                   )}
                 </AnimatePresence>

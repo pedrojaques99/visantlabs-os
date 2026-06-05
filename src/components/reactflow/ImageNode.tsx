@@ -27,6 +27,7 @@ import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NODE_LAYOUT, NODE_TYPES } from '@/constants/nodeLayout';
 import { useBaseNode } from '@/hooks/canvas/useBaseNode';
+import { ImageEditor, type ImageEditorResult } from '@/components/image-editor/ImageEditor';
 
 import { Input } from '@/components/ui/input';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -62,6 +63,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showBrandKitModal, setShowBrandKitModal] = useState(false);
+  const [showImageEditor, setShowImageEditor] = useState(false);
   const [localDescription, setLocalDescription] = useState(description);
 
   const { handleDownload, isDownloading } = useNodeDownload(imageUrl, 'generated-image');
@@ -303,6 +305,18 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     toast.success(t('canvasNodes.imageNode.descriptionCleared'), { duration: 2000 });
   }, [nodeData, id, t]);
 
+  const handleImageEditorResult = useCallback(
+    (result: ImageEditorResult) => {
+      if (result.imageUrl) {
+        nodeData.onUpdateData?.(String(id), {
+          mockup: { ...mockup, imageUrl: result.imageUrl, imageBase64: result.base64 },
+        } as any);
+      }
+      setShowImageEditor(false);
+    },
+    [nodeData, id, mockup]
+  );
+
   const handleUploadClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     imageInputRef.current?.click();
@@ -523,6 +537,8 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             onLike={handleToggleLike}
             isLiked={isLiked}
             showLike={true}
+            onEditImage={() => setShowImageEditor(true)}
+            showEditImage={!!imageUrl}
             onDescribe={handleDescribe}
             isDescribing={isDescribing}
             describeDisabled={!imageUrl}
@@ -562,6 +578,16 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           isLoading={false}
           multiSelect={true}
           maxSelections={5}
+        />
+      )}
+
+      {showImageEditor && imageUrl && (
+        <ImageEditor
+          imageUrl={imageUrl}
+          imageWidth={nodeData.imageWidth || 512}
+          imageHeight={nodeData.imageHeight || 512}
+          onResult={handleImageEditorResult}
+          onClose={() => setShowImageEditor(false)}
         />
       )}
 

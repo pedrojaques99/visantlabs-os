@@ -474,6 +474,7 @@ export const OutputNode = memo(
             />
             <SendToButton
               source="canvas"
+              outputMime="image/png"
               imageUrl={
                 typeof mediaUrl === 'string' && !mediaUrl.startsWith('data:') ? mediaUrl : undefined
               }

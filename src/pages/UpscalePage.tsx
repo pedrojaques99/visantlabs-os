@@ -12,8 +12,10 @@ import { validateFile } from '@/utils/fileUtils';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ImageCompareSlider } from '@/components/shared/ImageCompareSlider';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
+import { SendToButton } from '@/components/shared/SendToButton';
 import JSZip from 'jszip';
 
 const SCALE_OPTIONS = [2, 3, 4] as const;
@@ -60,6 +62,7 @@ export const UpscalePage: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [convertProgress, setConvertProgress] = useState(0);
 
   const items = useUpscaleStore((s) => s.items);
   const scaleFactor = useUpscaleStore((s) => s.scaleFactor);
@@ -128,10 +131,13 @@ export const UpscalePage: React.FC = () => {
     }
 
     setIsProcessing(true);
+    setConvertProgress(0);
     let done = 0;
+    const total = toProcess.length;
     for (const item of toProcess) {
       await processItem(item, scaleFactor, sharpening, updateItem);
       done++;
+      setConvertProgress(Math.round((done / total) * 100));
     }
     setIsProcessing(false);
     toast.success(`${done} image${done > 1 ? 's' : ''} upscaled`);
@@ -278,15 +284,18 @@ export const UpscalePage: React.FC = () => {
                     </AnimatePresence>
 
                     <AnimatePresence>
-                      {previewItem.status === 'processing' && (
+                      {isProcessing && (
                         <motion.div
-                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm"
+                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <GlitchLoader size={20} color="brand-cyan" />
+                          <FlyingPaperLoader
+                            progress={convertProgress}
+                            label={`${convertProgress}% — ${doneCount}/${items.length}`}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -447,6 +456,12 @@ export const UpscalePage: React.FC = () => {
                       >
                         <Copy size={14} />
                       </Button>
+                      <SendToButton
+                        source="upscale"
+                        outputMime="image/png"
+                        imageBase64={previewItem?.resultBase64}
+                        mimeType="image/png"
+                      />
                     </motion.div>
                   )}
                 </AnimatePresence>

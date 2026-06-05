@@ -10,6 +10,7 @@ import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
 import { encodePngsToIco } from '@/utils/icoEncoder';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import JSZip from 'jszip';
@@ -420,6 +421,21 @@ export const FaviconPage: React.FC = () => {
                 </motion.button>
               </Button>
             </motion.div>
+
+            {/* Generation animation */}
+            <AnimatePresence>
+              {isGenerating && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                  className="py-6"
+                >
+                  <FlyingPaperLoader label="Generating icons..." />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Generated icons grid */}
             <AnimatePresence>

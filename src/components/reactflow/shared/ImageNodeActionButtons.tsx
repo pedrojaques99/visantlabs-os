@@ -1,5 +1,5 @@
 import React from 'react';
-import { Maximize2, Heart, Download, FileText, Trash2, Palette, X } from 'lucide-react';
+import { Maximize2, Heart, Download, FileText, Trash2, Palette, X, Scissors } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { NodeButton } from './node-button';
@@ -36,6 +36,10 @@ interface ImageNodeActionButtonsProps {
   describeDisabled?: boolean;
   showDescribe?: boolean;
 
+  // Edit Image (opens ImageEditor modal)
+  onEditImage?: () => void;
+  showEditImage?: boolean;
+
   // Remove button (for LogoNode)
   onRemove?: () => void;
   showRemove?: boolean;
@@ -68,6 +72,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
   isDescribing = false,
   describeDisabled = false,
   showDescribe = false,
+  onEditImage,
+  showEditImage = false,
   onRemove,
   showRemove = false,
   translationKeyPrefix = 'canvasNodes.imageNode',
@@ -177,6 +183,18 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           ) : (
             <Heart size={12} className={isLiked ? 'fill-current' : ''} strokeWidth={2} />
           )}
+        </NodeButton>
+      )}
+
+      {showEditImage && onEditImage && (
+        <NodeButton
+          variant="ghost"
+          onClick={(e) => handleClick(e, onEditImage)}
+          className="p-1 !text-brand-cyan !bg-brand-cyan/10 hover:!bg-brand-cyan/20"
+          title={t(`${translationKeyPrefix}.editImage`) || 'Edit Image'}
+          onMouseDown={handleMouseDown}
+        >
+          <Scissors size={12} strokeWidth={2} />
         </NodeButton>
       )}
 

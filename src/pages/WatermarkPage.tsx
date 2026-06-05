@@ -14,9 +14,11 @@ import { copyImageAsPng, downloadBlob } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import JSZip from 'jszip';
+import { SendToButton } from '@/components/shared/SendToButton';
 
 /* ------------------------------------------------------------------ */
 /*  Animation presets                                                  */
@@ -173,6 +175,7 @@ export const WatermarkPage: React.FC = () => {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [convertProgress, setConvertProgress] = useState(0);
 
   const items = useWatermarkStore((s) => s.items);
   const watermarkType = useWatermarkStore((s) => s.watermarkType);
@@ -289,7 +292,9 @@ export const WatermarkPage: React.FC = () => {
     }
 
     setIsProcessing(true);
+    setConvertProgress(0);
     let done = 0;
+    const total = toProcess.length;
     for (const item of toProcess) {
       updateItem(item.id, { status: 'processing' });
       try {
@@ -299,7 +304,9 @@ export const WatermarkPage: React.FC = () => {
       } catch (err: any) {
         console.error(`Watermark failed for ${item.fileName}:`, err);
         updateItem(item.id, { status: 'error', error: err?.message || 'Failed' });
+        done++;
       }
+      setConvertProgress(Math.round((done / total) * 100));
     }
     setIsProcessing(false);
     if (done > 0) toast.success(`${done} image${done > 1 ? 's' : ''} watermarked`);
@@ -434,16 +441,19 @@ export const WatermarkPage: React.FC = () => {
                       className="w-full h-auto max-h-[60vh] object-contain"
                     />
                     <AnimatePresence>
-                      {previewItem.status === 'processing' && (
+                      {isProcessing && (
                         <motion.div
                           key="processing-overlay"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.2, ease }}
-                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm"
+                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm"
                         >
-                          <GlitchLoader size={20} color="brand-cyan" />
+                          <FlyingPaperLoader
+                            progress={convertProgress}
+                            label={`${convertProgress}% — ${doneCount}/${items.length}`}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -769,6 +779,14 @@ export const WatermarkPage: React.FC = () => {
                         >
                           <Copy size={14} />
                         </Button>
+                      </motion.div>
+                      <motion.div key="sendto-btn" {...fadeScale}>
+                        <SendToButton
+                          source="watermark"
+                          outputMime="image/png"
+                          imageBase64={previewItem?.resultBase64}
+                          mimeType="image/png"
+                        />
                       </motion.div>
                     </>
                   )}
