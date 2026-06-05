@@ -45,6 +45,7 @@ import pluginRoutes from './routes/plugin.js';
 import imagelabRoutes from './routes/imagelab.js';
 import brandGuidelinesRoutes from './routes/brand-guidelines.js';
 import pdfExtractRoutes from './routes/pdf-extract.js';
+import pdfRoutes from './routes/pdf.js';
 import creativeRoutes from './routes/creative.js';
 import creativeProjectsRoutes from './routes/creative-projects.js';
 import docsRoutes from './routes/docs.js';
@@ -70,6 +71,7 @@ import totpRoutes from './routes/totp.js';
 import internalRoutes from './routes/internal.js';
 import visualSearchRoutes from './routes/visual-search.js';
 import psdRenderRoutes from './routes/psdRender.js';
+import benchmarkRoutes from './routes/benchmark.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { detectAgent } from './middleware/agentContent.js';
@@ -313,6 +315,7 @@ export function createApp() {
     ['/plugin', pluginRoutes],
     ['/brand-guidelines', brandGuidelinesRoutes],
     ['/pdf-extract', pdfExtractRoutes],
+    ['/pdf', pdfRoutes],
     ['/creative', creativeRoutes],
     ['/creative-projects', creativeProjectsRoutes],
     ['/docs', docsRoutes],
@@ -339,6 +342,7 @@ export function createApp() {
     ['/internal', internalRoutes],
     ['/visual-search', visualSearchRoutes],
     ['/psd-render', psdRenderRoutes],
+    ['/benchmark', benchmarkRoutes],
   ];
 
   // OpenAPI spec — public, no auth required
@@ -361,7 +365,8 @@ export function createApp() {
     res.json({
       mcpVersion: MCP_SPEC_VERSION,
       name: 'Visant Labs',
-      description: 'AI-powered design platform for mockups, branding, creative studio, and image generation.',
+      description:
+        'AI-powered design platform for mockups, branding, creative studio, and image generation.',
       endpoint: MCP_ENDPOINT,
       transport: ['streamable-http'],
       authentication: {

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { HalftoneCanvas } from '@/components/halftone/HalftoneCanvas';
@@ -7,6 +7,7 @@ import { useHalftoneStore } from '@/stores/halftoneStore';
 import { useExportCanvas } from '@/hooks/useExportCanvas';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
+import { useToolInput } from '@/hooks/useToolInput';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export const HalftonePage: React.FC = () => {
@@ -47,6 +48,15 @@ export const HalftonePage: React.FC = () => {
     }, []),
     dropMessage: t('halftone.drop_image_here'),
   });
+
+  const { pendingAsset, acceptAsset } = useToolInput('halftone');
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) store.getState().setImageUrl(url, asset.label || 'pipeline-asset');
+  }, [pendingAsset, acceptAsset]);
 
   useToolEditorHotkeys({
     onExport: exportPng,

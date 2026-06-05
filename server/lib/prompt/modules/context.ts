@@ -20,7 +20,7 @@ function rgbToHex(c: any): string {
 /**
  * Flatten node tree - compact format
  */
-export function flattenNodesCompact(nodes: any[], depth = 0, maxDepth = 4): string[] {
+export function flattenNodesCompact(nodes: any[], depth = 0, maxDepth = 6): string[] {
   const lines: string[] = [];
 
   for (const n of nodes) {
@@ -48,7 +48,11 @@ export function flattenNodesCompact(nodes: any[], depth = 0, maxDepth = 4): stri
     // Opacity
     if (n.opacity != null && n.opacity < 1) parts.push(`op:${n.opacity}`);
 
-    // Font size (for text nodes)
+    // Font info (for text nodes)
+    if (n.fontFamily)
+      parts.push(
+        `font:"${n.fontFamily}${n.fontStyle && n.fontStyle !== 'Regular' ? ` ${n.fontStyle}` : ''}"`
+      );
     if (n.fontSize) parts.push(`fs:${n.fontSize}`);
 
     // Component key (for identifying instances)

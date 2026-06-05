@@ -323,7 +323,8 @@ router.get('/ai-designer.json', (_req: Request, res: Response) => {
         model: {
           options: IMAGE_MODEL_REGISTRY.map((m) => m.id),
           default: 'gpt-image-2',
-          logic: 'photorealistic->seedream, fast->gemini, text/quality->gpt-image-2, text-rendering->ideogram-v4/reve',
+          logic:
+            'photorealistic->seedream, fast->gemini, text/quality->gpt-image-2, text-rendering->ideogram-v4/reve',
         },
         aspectRatio: {
           options: ['1:1', '9:16', '16:9', '4:5'],

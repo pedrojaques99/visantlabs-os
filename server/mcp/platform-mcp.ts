@@ -156,7 +156,8 @@ async function getQuotaMeta(userId: string) {
   );
   const storageUsed = storageUser?.storageUsedBytes || 0;
   const storageRemaining = Math.max(0, storageLimit - storageUsed);
-  const storagePct = storageLimit > 0 ? parseFloat(((storageUsed / storageLimit) * 100).toFixed(2)) : 0;
+  const storagePct =
+    storageLimit > 0 ? parseFloat(((storageUsed / storageLimit) * 100).toFixed(2)) : 0;
 
   const fmtBytes = (b: number) => {
     if (b === 0) return '0 B';
@@ -2084,7 +2085,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       label: z
         .string()
         .optional()
-        .describe('Display label for the invite (e.g. "YSA — Brand Kit"). Auto-generated if omitted.'),
+        .describe(
+          'Display label for the invite (e.g. "YSA — Brand Kit"). Auto-generated if omitted.'
+        ),
       expiresInDays: z
         .number()
         .int()
@@ -2129,7 +2132,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           token,
           role,
           expiresAt: expiresAt?.toISOString() || null,
-          instructions: 'Send this URL to your client. They will create an account (or log in), accept the invite, and get one-click connection buttons for Cursor, VS Code, Claude, and ChatGPT.',
+          instructions:
+            'Send this URL to your client. They will create an account (or log in), accept the invite, and get one-click connection buttons for Cursor, VS Code, Claude, and ChatGPT.',
           _meta: quota,
         });
       } catch (err: any) {
@@ -3081,7 +3085,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             const uploadRes = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-              body: JSON.stringify({ data: result.imageBase64, contentType: 'image/png', label: 'creative-render' }),
+              body: JSON.stringify({
+                data: result.imageBase64,
+                contentType: 'image/png',
+                label: 'creative-render',
+              }),
             });
             const uploadData = (await uploadRes.json()) as any;
             if (uploadRes.ok && uploadData.url) {
@@ -3201,7 +3209,11 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
             const uploadRes = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-              body: JSON.stringify({ data: renderData.imageBase64, contentType: 'image/png', label: 'creative-render' }),
+              body: JSON.stringify({
+                data: renderData.imageBase64,
+                contentType: 'image/png',
+                label: 'creative-render',
+              }),
             });
             const uploadData = (await uploadRes.json()) as any;
             if (uploadRes.ok && uploadData.url) {
@@ -3948,6 +3960,97 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       }
 
       return jsonResponse({ markdownText: md, ...tokens });
+    }
+  );
+
+  // ─── PDF Tools (Ghostscript) ────────────────────────────────────────────────
+
+  server.tool(
+    'pdf-compress',
+    'Compress a PDF using Ghostscript. Reduces file size by recompressing images. ' +
+      'Presets: screen (72dpi, smallest), ebook (150dpi, balanced), printer (300dpi), prepress (300dpi, color-preserving). ' +
+      'Returns compressed PDF as base64 with size comparison.',
+    {
+      pdf_base64: z.string().describe('Base64-encoded PDF content'),
+      preset: z
+        .enum(['screen', 'ebook', 'printer', 'prepress'])
+        .default('ebook')
+        .describe('Compression preset'),
+    },
+    async ({ pdf_base64, preset }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const { compressPdf } = await import('../services/ghostscriptService.js');
+        const inputBuf = Buffer.from(pdf_base64, 'base64');
+        const result = await compressPdf(inputBuf, preset);
+        return jsonResponse({
+          pdf: result.toString('base64'),
+          originalSize: inputBuf.length,
+          compressedSize: result.length,
+          savings: Math.round((1 - result.length / inputBuf.length) * 100),
+        });
+      } catch (err: any) {
+        return ERR.internal(err);
+      }
+    }
+  );
+
+  server.tool(
+    'pdf-to-images',
+    'Rasterize PDF pages to images (PNG or JPEG) using Ghostscript. ' +
+      'Returns an array of base64-encoded images, one per page. Useful for thumbnails, previews, or further processing.',
+    {
+      pdf_base64: z.string().describe('Base64-encoded PDF content'),
+      dpi: z.number().min(72).max(600).default(150).describe('Resolution in DPI'),
+      format: z.enum(['png', 'jpeg']).default('png').describe('Output image format'),
+      pages: z.string().optional().describe('Page range, e.g. "1-3" or "1". Omit for all pages.'),
+    },
+    async ({ pdf_base64, dpi, format, pages }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const { rasterizePages } = await import('../services/ghostscriptService.js');
+        const images = await rasterizePages(pdf_base64, { dpi, format, pages });
+        return jsonResponse({
+          images: images.map((buf, i) => ({
+            page: i + 1,
+            data: `data:image/${format};base64,${buf.toString('base64')}`,
+            size: buf.length,
+          })),
+          pageCount: images.length,
+        });
+      } catch (err: any) {
+        return ERR.internal(err);
+      }
+    }
+  );
+
+  server.tool(
+    'images-to-pdf',
+    'Create a multi-page PDF from images. Each image becomes one page sized to fit the image dimensions. ' +
+      'Accepts PNG and JPEG base64-encoded images.',
+    {
+      images: z.array(z.string()).min(1).describe('Array of base64-encoded images (PNG or JPEG)'),
+    },
+    async ({ images }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const { imagesToPdf } = await import('../services/ghostscriptService.js');
+        const buffers = images.map((img) => {
+          const cleaned = img.replace(/^data:image\/\w+;base64,/, '');
+          return Buffer.from(cleaned, 'base64');
+        });
+        const result = await imagesToPdf(buffers);
+        return jsonResponse({
+          pdf: result.toString('base64'),
+          size: result.length,
+          pageCount: images.length,
+        });
+      } catch (err: any) {
+        return ERR.internal(err);
+      }
     }
   );
 

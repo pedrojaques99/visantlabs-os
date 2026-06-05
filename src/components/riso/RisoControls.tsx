@@ -626,7 +626,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 )}
                 {store.imageUrl && (
                   <div className="px-1 py-0.5">
-                    <SendToButton source="riso" imageUrl={store.imageUrl} />
+                    <SendToButton source="riso" outputMime="image/png" imageUrl={store.imageUrl} />
                   </div>
                 )}
               </div>

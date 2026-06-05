@@ -1,5 +1,8 @@
 import type { AspectRatio, Resolution } from '../../src/types/types.js';
-import type { IdeogramModelId, IdeogramRenderingSpeed } from '../../src/constants/ideogramModels.js';
+import type {
+  IdeogramModelId,
+  IdeogramRenderingSpeed,
+} from '../../src/constants/ideogramModels.js';
 import { IDEOGRAM_MODELS, resolveIdeogramAspectRatio } from '../../src/constants/ideogramModels.js';
 import { safeFetch } from '../utils/securityValidation.js';
 import { withResilience } from '../lib/ai-resilience.js';
@@ -91,7 +94,9 @@ export async function generateIdeogramImage(
   }
 
   console.log(
-    `[Ideogram] Generating: model=${model}, speed=${renderingSpeed}, aspect=${ideogramAspect}, keySource=${specificApiKey ? 'user' : 'server'}`
+    `[Ideogram] Generating: model=${model}, speed=${renderingSpeed}, aspect=${ideogramAspect}, keySource=${
+      specificApiKey ? 'user' : 'server'
+    }`
   );
 
   return withResilience('ideogram', async () => {
@@ -113,7 +118,9 @@ export async function generateIdeogramImage(
         throw new Error('Invalid Ideogram API key. Please check your IDEOGRAM_API_KEY.');
       }
       if (response.status === 402) {
-        throw new Error('Insufficient Ideogram credits. Please top up your account at ideogram.ai.');
+        throw new Error(
+          'Insufficient Ideogram credits. Please top up your account at ideogram.ai.'
+        );
       }
       if (response.status === 422) {
         throw new Error(`Ideogram safety filter triggered: ${errorText}`);
@@ -144,7 +151,9 @@ export async function generateIdeogramImage(
     const base64 = await downloadImageAsBase64(imageData.url);
 
     console.log(
-      `[Ideogram] Generation complete. seed=${imageData.seed ?? 'n/a'}, resolution=${imageData.resolution ?? 'n/a'}`
+      `[Ideogram] Generation complete. seed=${imageData.seed ?? 'n/a'}, resolution=${
+        imageData.resolution ?? 'n/a'
+      }`
     );
 
     return {

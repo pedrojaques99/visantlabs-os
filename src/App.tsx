@@ -170,6 +170,7 @@ const LabsPage = lazyWithRetry(() =>
 const WindTunnelPage = lazyWithRetry(() =>
   import('./pages/labs/WindTunnelPage').then((m) => ({ default: m.WindTunnelPage }))
 );
+const BenchmarkArenaPage = lazyWithRetry(() => import('./pages/BenchmarkArenaPage'));
 const Studio3DPage = lazyWithRetry(() =>
   import('./pages/Studio3DPage').then((m) => ({ default: m.Studio3DPage }))
 );
@@ -211,6 +212,9 @@ const ColorConverterPage = lazyWithRetry(() =>
 );
 const CompressPage = lazyWithRetry(() =>
   import('./pages/CompressPage').then((m) => ({ default: m.CompressPage }))
+);
+const PdfCompressPage = lazyWithRetry(() =>
+  import('./pages/PdfCompressPage').then((m) => ({ default: m.PdfCompressPage }))
 );
 const ColorPalettePage = lazyWithRetry(() =>
   import('./pages/ColorPalettePage').then((m) => ({ default: m.ColorPalettePage }))
@@ -289,6 +293,7 @@ const App: React.FC = () => {
                   <Route path="/favicon" element={<FaviconPage />} />
                   <Route path="/color-converter" element={<ColorConverterPage />} />
                   <Route path="/compress" element={<CompressPage />} />
+                  <Route path="/pdf-compress" element={<PdfCompressPage />} />
                   <Route path="/color-palette" element={<ColorPalettePage />} />
                   <Route path="/converter" element={<ConverterPage />} />
                   <Route path="/svg-optimizer" element={<SvgOptimizerPage />} />
@@ -323,6 +328,7 @@ const App: React.FC = () => {
                       </DesktopOnlyGate>
                     }
                   />
+                  <Route path="/labs/benchmark" element={<BenchmarkArenaPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/onboard" element={<OnboardPage />} />
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />

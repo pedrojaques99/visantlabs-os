@@ -25,9 +25,7 @@ export interface ReveGenerateResult {
  * Generate image using REVE API (text-to-image).
  * Returns base64 directly (no URL download needed).
  */
-export async function generateReveImage(
-  options: ReveGenerateOptions
-): Promise<ReveGenerateResult> {
+export async function generateReveImage(options: ReveGenerateOptions): Promise<ReveGenerateResult> {
   const {
     prompt,
     model = REVE_MODELS.REVE_1,
@@ -55,7 +53,9 @@ export async function generateReveImage(
   if (typeof seed === 'number' && seed >= 0) body.seed = seed;
 
   console.log(
-    `[Reve] Generating: model=${model}, aspect=${reveAspect}, keySource=${specificApiKey ? 'user' : 'server'}`
+    `[Reve] Generating: model=${model}, aspect=${reveAspect}, keySource=${
+      specificApiKey ? 'user' : 'server'
+    }`
   );
 
   return withResilience('reve', async () => {
@@ -98,7 +98,9 @@ export async function generateReveImage(
     }
 
     console.log(
-      `[Reve] Generation complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${data.credits_used ?? 'n/a'}`
+      `[Reve] Generation complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${
+        data.credits_used ?? 'n/a'
+      }`
     );
 
     return {

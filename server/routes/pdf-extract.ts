@@ -36,7 +36,10 @@ router.post('/', rateLimiter, authenticate, async (req: AuthRequest, res) => {
 
   let buffer: Buffer;
   try {
-    const raw = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
+    const raw = pdfBase64.replace(
+      /^data:(application\/pdf|application\/postscript|application\/eps|application\/illustrator);base64,/,
+      ''
+    );
     buffer = Buffer.from(raw, 'base64');
   } catch {
     return res.status(400).json({ error: 'Invalid base64 PDF data' });
@@ -76,7 +79,7 @@ router.post('/', rateLimiter, authenticate, async (req: AuthRequest, res) => {
 
   try {
     await chargeCredits(req.userId!, 1);
-    await extractPdfStreaming(buffer, writeEvent, req.userId);
+    await extractPdfStreaming(buffer, writeEvent, req.userId, filename);
   } catch (err: any) {
     return res.status(500).json({ error: err.message || 'PDF extraction failed' });
   }

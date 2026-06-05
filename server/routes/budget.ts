@@ -9,6 +9,7 @@ import {
 } from '../../src/services/r2Service.js';
 import crypto from 'crypto';
 import { rateLimit } from 'express-rate-limit';
+import { compressPdfSimple } from '../utils/pdfCompression.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -120,7 +121,8 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
 
     if (pdfUrlFromData && isBase64Pdf(pdfUrlFromData)) {
       try {
-        finalCustomPdfUrl = await uploadBudgetPdf(pdfUrlFromData, req.userId);
+        const compressedPdf = await compressPdfSimple(pdfUrlFromData);
+        finalCustomPdfUrl = await uploadBudgetPdf(compressedPdf, req.userId);
         budgetData.customPdfUrl = finalCustomPdfUrl;
       } catch (error: any) {
         console.error('Error migrating PDF to R2:', error);
@@ -359,8 +361,11 @@ router.post('/pdf-presets', apiRateLimiter, authenticate, async (req: AuthReques
       return res.status(400).json({ error: 'Missing preset name' });
     }
 
+    // Compress PDF before uploading to R2
+    const compressedPdf = await compressPdfSimple(pdfBase64);
+
     // Upload to R2
-    const pdfUrl = await uploadCustomPdfPreset(pdfBase64, req.userId);
+    const pdfUrl = await uploadCustomPdfPreset(compressedPdf, req.userId);
 
     // Create preset in database
     const preset = await prisma.customPdfPreset.create({
@@ -516,7 +521,8 @@ router.put('/:id', authenticate, apiRateLimiter, async (req: AuthRequest, res) =
 
     if (pdfUrlFromData && isBase64Pdf(pdfUrlFromData)) {
       try {
-        const migratedUrl = await uploadBudgetPdf(pdfUrlFromData, req.userId, id);
+        const compressedPdf = await compressPdfSimple(pdfUrlFromData);
+        const migratedUrl = await uploadBudgetPdf(compressedPdf, req.userId, id);
         budgetData.customPdfUrl = migratedUrl;
         if (data) {
           data.customPdfUrl = migratedUrl;
@@ -844,8 +850,11 @@ router.post('/:id/pdf', uploadImageRateLimiter, authenticate, async (req: AuthRe
       return res.status(404).json({ error: 'Budget not found' });
     }
 
+    // Compress PDF before uploading to R2
+    const compressedPdf = await compressPdfSimple(pdfBase64);
+
     // Upload to R2
-    const pdfUrl = await uploadBudgetPdf(pdfBase64, req.userId, id);
+    const pdfUrl = await uploadBudgetPdf(compressedPdf, req.userId, id);
 
     // Update budget with new PDF URL
     const budget = await prisma.budgetProject.update({

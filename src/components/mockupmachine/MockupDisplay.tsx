@@ -200,7 +200,9 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
                   onNewAngle={(angle) => onNewAngle(index, angle)}
                   onNewBackground={() => onNewBackground(index)}
                   onReImagine={
-                    onReImagine ? (reimaginePrompt) => onReImagine(index, reimaginePrompt) : undefined
+                    onReImagine
+                      ? (reimaginePrompt) => onReImagine(index, reimaginePrompt)
+                      : undefined
                   }
                   onSave={onSave ? (imageBase64) => onSave(index, imageBase64) : undefined}
                   isSaved={savedIndices.has(index)}

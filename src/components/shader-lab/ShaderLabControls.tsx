@@ -31,7 +31,9 @@ export const ShaderLabControls: React.FC<ShaderLabControlsProps> = React.memo(
           isExporting={store.isExporting}
           disabled={!store.imageUrl}
           sendTo={
-            store.imageUrl ? <SendToButton source="shaders" imageUrl={store.imageUrl} /> : undefined
+            store.imageUrl ? (
+              <SendToButton source="shaders" outputMime="image/png" imageUrl={store.imageUrl} />
+            ) : undefined
           }
           onCopyAsPng={onCopyAsPng}
         />

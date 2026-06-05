@@ -17,6 +17,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { tokenizePdf, type PdfTokens, type TextBlock } from './pdf-tokenize.js';
+import { convertEpsToPdf } from '../services/ghostscriptService.js';
 
 const SEMANTIC_PROMPT = `You are a brand strategy expert. Brand tokens (colors, fonts, images) have ALREADY been extracted algorithmically from the PDF. Your job is the SEMANTIC content only.
 
@@ -59,8 +60,24 @@ Return JSON only.`;
 export async function extractPdfStreaming(
   buffer: Buffer,
   writeEvent: (event: object) => void,
-  userId?: string
+  userId?: string,
+  filename?: string
 ): Promise<void> {
+  // ── PRE-PHASE — EPS/AI → PDF conversion ───────────────────────────────────
+
+  const ext = filename ? filename.split('.').pop()?.toLowerCase() : undefined;
+  const isEpsOrAi = ext === 'eps' || ext === 'ai' || isEpsBuffer(buffer);
+
+  if (isEpsOrAi) {
+    writeEvent({ type: 'status', message: 'Converting EPS/AI to PDF via Ghostscript…' });
+    try {
+      buffer = await convertEpsToPdf(buffer);
+    } catch (err: any) {
+      writeEvent({ type: 'error', message: `EPS/AI conversion failed: ${err.message}` });
+      return;
+    }
+  }
+
   // ── PHASE A — Algorithmic tokenization ─────────────────────────────────────
 
   writeEvent({ type: 'status', message: 'Parsing PDF structure…' });
@@ -290,6 +307,12 @@ function blocksToMarkdown(blocks: TextBlock[], fullText: string): string {
   }
 
   return lines.join('\n');
+}
+
+function isEpsBuffer(buf: Buffer): boolean {
+  // EPS files start with "%!PS" or "%!PS-Adobe"; AI files often do too
+  const head = buf.subarray(0, 16).toString('ascii');
+  return head.startsWith('%!PS');
 }
 
 async function downscalePngBase64(dataUrl: string, maxDim: number): Promise<string> {

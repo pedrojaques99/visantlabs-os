@@ -279,6 +279,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
 
                 <SendToButton
                   source="mockupmachine"
+                  outputMime="image/png"
                   imageUrl={imageUrl}
                   mimeType="image/png"
                   label="Mockup Machine output"

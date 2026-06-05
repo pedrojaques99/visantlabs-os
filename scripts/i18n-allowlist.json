@@ -11,6 +11,7 @@
     "${translationKeyPrefix}.removeFromFavorites",
     "${translationKeyPrefix}.removeLogo",
     "${translationKeyPrefix}.saveToCollection",
+    "${translationKeyPrefix}.editImage",
     "${translationKeyPrefix}.viewFullScreen",
     "canvasNodes.videoNode.mode.${opt.value}",
     "common.${interval}",

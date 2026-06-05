@@ -67,12 +67,14 @@ Works across claude.ai, Claude Desktop, Cowork, and mobile apps.
 
 ```json
 {
-  "mcp_servers": [{
-    "type": "url",
-    "url": "https://api.visantlabs.com/api/mcp",
-    "name": "visant",
-    "authorization_token": "visant_sk_xxx"
-  }],
+  "mcp_servers": [
+    {
+      "type": "url",
+      "url": "https://api.visantlabs.com/api/mcp",
+      "name": "visant",
+      "authorization_token": "visant_sk_xxx"
+    }
+  ],
   "tools": [{ "type": "mcp_toolset", "mcp_server_name": "visant" }]
 }
 ```

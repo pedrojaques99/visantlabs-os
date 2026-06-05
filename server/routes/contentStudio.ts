@@ -172,7 +172,11 @@ async function generateImageWithProvider(
   aspectRatio: CreativeFormat
 ): Promise<string> {
   if (isIdeogramModel(model)) {
-    const result = await generateIdeogramImage({ prompt, model: model as any, aspectRatio: aspectRatio as any });
+    const result = await generateIdeogramImage({
+      prompt,
+      model: model as any,
+      aspectRatio: aspectRatio as any,
+    });
     return result.base64;
   }
   if (isReveModel(model)) {
@@ -180,7 +184,11 @@ async function generateImageWithProvider(
     return result.base64;
   }
   if (isSeedreamModel(model)) {
-    const result = await generateSeedreamImage({ prompt, model: model as any, aspectRatio: aspectRatio as any });
+    const result = await generateSeedreamImage({
+      prompt,
+      model: model as any,
+      aspectRatio: aspectRatio as any,
+    });
     return result.base64;
   }
   if (isOpenAIImageModel(model)) {
@@ -205,13 +213,20 @@ async function generateImageWithProvider(
 
 function mapRatio(ratio: string): CreativeFormat {
   switch (ratio) {
-    case '1:1': return '1:1';
-    case '9:16': return '9:16';
-    case '16:9': return '16:9';
-    case '4:5': return '4:5';
-    case '1.91:1': return '16:9';
-    case '2:3': return '9:16';
-    default: return '1:1';
+    case '1:1':
+      return '1:1';
+    case '9:16':
+      return '9:16';
+    case '16:9':
+      return '16:9';
+    case '4:5':
+      return '4:5';
+    case '1.91:1':
+      return '16:9';
+    case '2:3':
+      return '9:16';
+    default:
+      return '1:1';
   }
 }
 
@@ -325,7 +340,9 @@ async function runContentGeneration(params: {
       const refundAmount = perImageCredits * failedCount;
       try {
         await refundCredits(userId, refundAmount);
-        console.log(`[content-studio] Refunded ${refundAmount} credits for ${failedCount} failed images`);
+        console.log(
+          `[content-studio] Refunded ${refundAmount} credits for ${failedCount} failed images`
+        );
       } catch (refundErr: any) {
         console.error('[content-studio] Failed to refund credits:', refundErr.message);
       }
@@ -338,7 +355,9 @@ async function runContentGeneration(params: {
     // Full refund on catastrophic failure
     try {
       await refundCredits(userId, job.creditsCharged);
-      console.log(`[content-studio] Full refund of ${job.creditsCharged} credits after job failure`);
+      console.log(
+        `[content-studio] Full refund of ${job.creditsCharged} credits after job failure`
+      );
     } catch (refundErr: any) {
       console.error('[content-studio] Failed to refund credits on error:', refundErr.message);
     }

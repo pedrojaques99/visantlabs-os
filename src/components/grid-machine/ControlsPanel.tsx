@@ -270,7 +270,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
             >
               <Download size={14} /> Export PNG
             </Button>
-            {svgContent && <SendToButton source="grid-machine" />}
+            {svgContent && <SendToButton source="grid-machine" outputMime="image/png" />}
           </div>
           <Button
             onClick={onExportSvg}

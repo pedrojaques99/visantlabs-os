@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Palette, Upload, Lock, Unlock, Copy, X, Plus, RefreshCw, Shuffle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,7 @@ import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { useToolInput } from '@/hooks/useToolInput';
 
 export const ColorPalettePage: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,6 +35,8 @@ export const ColorPalettePage: React.FC = () => {
 
   // Keep base64 + mimeType in a ref so we can re-extract without re-reading the file
   const imageDataRef = useRef<{ base64: string; mimeType: string } | null>(null);
+
+  const { pendingAsset, acceptAsset } = useToolInput('color-palette');
 
   const runExtraction = useCallback(
     async (shouldRandomize = false) => {
@@ -87,6 +90,21 @@ export const ColorPalettePage: React.FC = () => {
     },
     [maxColors, setImage, setColors, setIsExtracting]
   );
+
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (!url) return;
+    fetch(url)
+      .then((res) => res.blob())
+      .then((blob) => {
+        const file = new File([blob], asset.label || 'pipeline-asset.png', { type: blob.type });
+        handleFile(file);
+      })
+      .catch(() => toast.error('Failed to load pipeline asset'));
+  }, [pendingAsset, acceptAsset, handleFile]);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

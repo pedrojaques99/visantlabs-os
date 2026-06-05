@@ -1,9 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Image, Download, Copy, Code, Upload, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Image, Code, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useOgImageStore, type OgTemplate } from '@/stores/ogImageStore';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
+import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
+import { QuickActions } from '@/components/shared/QuickActions';
+import { useBrandDefaults } from '@/hooks/useBrandDefaults';
+import { useToolInput } from '@/hooks/useToolInput';
 import { loadImage } from '@/utils/imageUtils';
 import { copyImageAsPng, downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
@@ -12,6 +17,20 @@ import { Input } from '@/components/ui/input';
 
 const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
+
+const ease = [0.4, 0, 0.2, 1] as const;
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease },
+};
+const fadeScale = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: { duration: 0.3, ease },
+};
 
 /* ------------------------------------------------------------------ */
 /*  Canvas rendering                                                   */
@@ -202,6 +221,17 @@ export const OgImagePage: React.FC = () => {
   const setTextColor = useOgImageStore((s) => s.setTextColor);
   const reset = useOgImageStore((s) => s.reset);
 
+  const { brandId, setBrandId, defaults: brandDefaults } = useBrandDefaults('og-image');
+  useToolInput('og-image');
+
+  /* --- Apply brand defaults when brand is selected --- */
+  useEffect(() => {
+    if (!brandDefaults) return;
+    if (brandDefaults.bgColor) setBackgroundColor(brandDefaults.bgColor);
+    if (brandDefaults.textColor) setTextColor(brandDefaults.textColor);
+    if (brandDefaults.logoUrl) setLogoUrl(brandDefaults.logoUrl);
+  }, [brandDefaults, setBackgroundColor, setTextColor, setLogoUrl]);
+
   // Debounced re-render
   useEffect(() => {
     clearTimeout(debounceRef.current);
@@ -289,7 +319,12 @@ export const OgImagePage: React.FC = () => {
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         {/* Preview */}
-        <div className="relative rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950/40">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease }}
+          className="relative rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950/40"
+        >
           {previewUrl ? (
             <img
               src={previewUrl}
@@ -308,10 +343,18 @@ export const OgImagePage: React.FC = () => {
           <span className="absolute bottom-2 right-2 text-[10px] font-mono text-neutral-500 bg-neutral-950/80 px-2 py-0.5 rounded">
             {width} x {height}
           </span>
-        </div>
+        </motion.div>
 
         {/* Controls */}
-        <div className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.35, delay: 0.1, ease }}
+          className="space-y-4"
+        >
+          {/* Brand select */}
+          <BrandToolSelect value={brandId} onChange={setBrandId} />
+
           {/* Template selector */}
           <div className="space-y-1.5">
             <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
@@ -319,9 +362,11 @@ export const OgImagePage: React.FC = () => {
             </span>
             <div className="flex gap-2">
               {TEMPLATES.map((tpl) => (
-                <button
+                <motion.button
                   key={tpl.id}
                   onClick={() => setTemplate(tpl.id)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   className="flex flex-col items-center gap-1 group"
                   title={tpl.label}
                 >
@@ -336,7 +381,7 @@ export const OgImagePage: React.FC = () => {
                   >
                     {tpl.label}
                   </span>
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -451,35 +496,36 @@ export const OgImagePage: React.FC = () => {
 
           {/* Actions */}
           <div className="flex flex-col gap-2 pt-2">
-            <Button
-              onClick={handleDownload}
-              disabled={!previewUrl}
-              className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-            >
-              <Download size={14} />
-              <span className="ml-2">Download PNG</span>
-            </Button>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleCopy}
-                disabled={!previewUrl}
-                variant="outline"
-                className="flex-1 font-mono text-xs uppercase tracking-widest border-neutral-700"
-              >
-                <Copy size={14} />
-                <span className="ml-2">Copy</span>
-              </Button>
+            {previewUrl && (
+              <QuickActions
+                toolId="og-image"
+                outputMime="image/png"
+                summary="OG image generated"
+                onDownloadAll={handleDownload}
+                onCopy={handleCopy}
+                assetData={
+                  previewUrl
+                    ? {
+                        imageBase64: previewUrl,
+                        mimeType: 'image/png',
+                        label: 'og-image.png',
+                      }
+                    : undefined
+                }
+              />
+            )}
+            <motion.div whileTap={{ scale: 0.98 }}>
               <Button
                 onClick={handleCopyMeta}
                 variant="outline"
-                className="flex-1 font-mono text-xs uppercase tracking-widest border-neutral-700"
+                className="w-full font-mono text-xs uppercase tracking-widest border-neutral-700"
               >
                 <Code size={14} />
-                <span className="ml-2">Meta Tags</span>
+                <span className="ml-2">Copy Meta Tags</span>
               </Button>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </MiniToolShell>
   );

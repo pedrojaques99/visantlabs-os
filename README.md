@@ -180,21 +180,21 @@ npx visantlabs skills    # Manage skills
 
 ## Tech Stack
 
-| Layer         | Technologies                                                    |
-| ------------- | --------------------------------------------------------------- |
-| Frontend      | React 19, TypeScript 5, Vite 6, Tailwind CSS                    |
-| UI            | Shadcn/ui, Framer Motion, React Flow, Konva.js                  |
-| 3D            | Three.js, React Three Fiber, React Three Drei                   |
-| State         | Zustand, TanStack React Query                                   |
-| Backend       | Node.js, Express, Prisma ORM                                    |
-| Database      | MongoDB (Prisma ORM)                                            |
+| Layer         | Technologies                                                                                    |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| Frontend      | React 19, TypeScript 5, Vite 6, Tailwind CSS                                                    |
+| UI            | Shadcn/ui, Framer Motion, React Flow, Konva.js                                                  |
+| 3D            | Three.js, React Three Fiber, React Three Drei                                                   |
+| State         | Zustand, TanStack React Query                                                                   |
+| Backend       | Node.js, Express, Prisma ORM                                                                    |
+| Database      | MongoDB (Prisma ORM)                                                                            |
 | AI/ML         | Google Gemini, OpenAI GPT Image, Ideogram V3/V4, REVE Image 1.0, Google Veo 3 (video), Seedream |
-| Storage       | Cloudflare R2                                                   |
-| Auth          | Google OAuth, email/password, TOTP 2FA, session tokens          |
-| Collaboration | Liveblocks (real-time canvas)                                   |
-| Payments      | Stripe, AbacatePay (PIX/Brazil)                                 |
-| i18n          | English (en-US), Portuguese Brazil (pt-BR)                      |
-| Testing       | Vitest, Supertest, MSW                                          |
+| Storage       | Cloudflare R2                                                                                   |
+| Auth          | Google OAuth, email/password, TOTP 2FA, session tokens                                          |
+| Collaboration | Liveblocks (real-time canvas)                                                                   |
+| Payments      | Stripe, AbacatePay (PIX/Brazil)                                                                 |
+| i18n          | English (en-US), Portuguese Brazil (pt-BR)                                                      |
+| Testing       | Vitest, Supertest, MSW                                                                          |
 
 ## Quick Start
 
@@ -240,8 +240,8 @@ GOOGLE_GEMINI_API_KEY=your-gemini-key
 | Service       | Required For                     | Setup Guide                                          | Without It           |
 | ------------- | -------------------------------- | ---------------------------------------------------- | -------------------- |
 | Google Gemini | AI generation, mockups, branding | [docs/SETUP_LLM.md](docs/SETUP_LLM.md)               | AI features disabled |
-| Ideogram      | Ideogram V3/V4 image generation  | Set `IDEOGRAM_API_KEY` in `.env.local`                | Ideogram unavailable |
-| REVE          | REVE Image 1.0 generation        | Set `REVE_API_KEY` in `.env.local`                    | REVE unavailable     |
+| Ideogram      | Ideogram V3/V4 image generation  | Set `IDEOGRAM_API_KEY` in `.env.local`               | Ideogram unavailable |
+| REVE          | REVE Image 1.0 generation        | Set `REVE_API_KEY` in `.env.local`                   | REVE unavailable     |
 | Stripe        | Subscriptions, credit purchases  | [docs/SETUP_STRIPE.md](docs/SETUP_STRIPE.md)         | Payments disabled    |
 | AbacatePay    | PIX payments (Brazil)            | [docs/SETUP_ABACATEPAY.md](docs/SETUP_ABACATEPAY.md) | PIX unavailable      |
 | Cloudflare R2 | Permanent image storage          | [docs/SETUP_R2.md](docs/SETUP_R2.md)                 | Base64 temp storage  |

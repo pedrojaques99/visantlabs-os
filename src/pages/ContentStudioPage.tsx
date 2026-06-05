@@ -64,42 +64,45 @@ export const ContentStudioPage: React.FC = () => {
     { value: 'minimal', label: t('contentStudio.toneMinimal') },
   ];
 
-  const startPolling = useCallback((jobId: string) => {
-    pollCountRef.current = 0;
-    setIsGenerating(true);
+  const startPolling = useCallback(
+    (jobId: string) => {
+      pollCountRef.current = 0;
+      setIsGenerating(true);
 
-    pollRef.current = setInterval(async () => {
-      pollCountRef.current++;
-      if (pollCountRef.current > MAX_POLLS) {
-        if (pollRef.current) clearInterval(pollRef.current);
-        pollRef.current = null;
-        setIsGenerating(false);
-        localStorage.removeItem(STORAGE_KEY);
-        toast.error(t('contentStudio.generationTimeout'));
-        return;
-      }
-      try {
-        const updated = await pollContentJob(jobId);
-        setJob(updated);
-        if (updated.status === 'done' || updated.status === 'error') {
+      pollRef.current = setInterval(async () => {
+        pollCountRef.current++;
+        if (pollCountRef.current > MAX_POLLS) {
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
           setIsGenerating(false);
           localStorage.removeItem(STORAGE_KEY);
-          if (updated.status === 'done') {
-            toast.success(t('contentStudio.allGenerated'));
-          } else {
-            toast.error(t('contentStudio.generationFailed', { error: updated.error }));
-          }
+          toast.error(t('contentStudio.generationTimeout'));
+          return;
         }
-      } catch {
-        if (pollRef.current) clearInterval(pollRef.current);
-        pollRef.current = null;
-        setIsGenerating(false);
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    }, 3000);
-  }, [t]);
+        try {
+          const updated = await pollContentJob(jobId);
+          setJob(updated);
+          if (updated.status === 'done' || updated.status === 'error') {
+            if (pollRef.current) clearInterval(pollRef.current);
+            pollRef.current = null;
+            setIsGenerating(false);
+            localStorage.removeItem(STORAGE_KEY);
+            if (updated.status === 'done') {
+              toast.success(t('contentStudio.allGenerated'));
+            } else {
+              toast.error(t('contentStudio.generationFailed', { error: updated.error }));
+            }
+          }
+        } catch {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          setIsGenerating(false);
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }, 3000);
+    },
+    [t]
+  );
 
   // Resume polling from localStorage on mount
   useEffect(() => {
@@ -154,7 +157,12 @@ export const ContentStudioPage: React.FC = () => {
       });
 
       localStorage.setItem(STORAGE_KEY, result.jobId);
-      toast.success(t('contentStudio.generatingToast', { count: result.totalCount, credits: result.creditsCharged }));
+      toast.success(
+        t('contentStudio.generatingToast', {
+          count: result.totalCount,
+          credits: result.creditsCharged,
+        })
+      );
 
       const initialJob = await pollContentJob(result.jobId);
       setJob(initialJob);
@@ -322,9 +330,7 @@ export const ContentStudioPage: React.FC = () => {
                 <MicroTitle as="h3" className="text-lg text-neutral-300 mb-2">
                   {t('contentStudio.emptyTitle')}
                 </MicroTitle>
-                <p className="text-sm text-neutral-500">
-                  {t('contentStudio.emptyDescription')}
-                </p>
+                <p className="text-sm text-neutral-500">{t('contentStudio.emptyDescription')}</p>
               </GlassPanel>
             </div>
           )}
@@ -422,7 +428,9 @@ function ContentAssetCard({
           <div className="flex flex-col items-center gap-2">
             <Loader2 size={24} className="animate-spin text-neutral-600" />
             <span className="text-[10px] font-mono text-neutral-600">
-              {asset.status === 'generating' ? t('contentStudio.generating') : t('contentStudio.queued')}
+              {asset.status === 'generating'
+                ? t('contentStudio.generating')
+                : t('contentStudio.queued')}
             </span>
           </div>
         )}
@@ -466,7 +474,12 @@ function ContentAssetCard({
               <button
                 onClick={() =>
                   onCopyCaption(
-                    `${asset.caption}${asset.hashtags?.length ? '\n\n' + asset.hashtags.map((h) => (h.startsWith('#') ? h : `#${h}`)).join(' ') : ''}`,
+                    `${asset.caption}${
+                      asset.hashtags?.length
+                        ? '\n\n' +
+                          asset.hashtags.map((h) => (h.startsWith('#') ? h : `#${h}`)).join(' ')
+                        : ''
+                    }`,
                     index
                   )
                 }

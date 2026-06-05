@@ -71,7 +71,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
           <Download size={12} className="mr-1.5" />
           {t('studio3d.export.title')}
         </Button>
-        <SendToButton source="3d-studio" />
+        <SendToButton source="3d-studio" outputMime="image/png" />
       </div>
     </ToolPanel>
   );

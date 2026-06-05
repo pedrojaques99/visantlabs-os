@@ -705,7 +705,9 @@ function buildLoginPage(p: LoginPageParams): string {
   <div class="card">
     <div class="brand">VISANT LABS&reg;</div>
     <h1>Sign in to continue</h1>
-    <p class="subtitle"><span class="app-name">${esc(p.clientName)}</span> wants to connect to your account.</p>
+    <p class="subtitle"><span class="app-name">${esc(
+      p.clientName
+    )}</span> wants to connect to your account.</p>
 
     <form id="loginForm">
       <div class="field">
@@ -745,7 +747,9 @@ function buildLoginPage(p: LoginPageParams): string {
         if (!res.ok || !data.token) {
           throw new Error(data.message || data.error || 'Invalid credentials');
         }
-        window.location.href = '${esc(apiBase)}/oauth/authorize?${esc(authorizeParams)}&token=' + encodeURIComponent(data.token);
+        window.location.href = '${esc(apiBase)}/oauth/authorize?${esc(
+    authorizeParams
+  )}&token=' + encodeURIComponent(data.token);
       } catch (err) {
         errorEl.textContent = err.message;
         errorEl.style.display = 'block';

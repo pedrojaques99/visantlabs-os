@@ -193,7 +193,10 @@ router.post('/render', renderLimiter, authenticate, async (req: AuthRequest, res
       );
       return res.json({ imageUrl, imageBase64: base64Str });
     } catch (uploadErr: any) {
-      console.error('[creative/render] R2 upload failed, returning base64 fallback:', uploadErr?.message);
+      console.error(
+        '[creative/render] R2 upload failed, returning base64 fallback:',
+        uploadErr?.message
+      );
       return res.json({ imageBase64: base64Str });
     }
   } catch (err: any) {

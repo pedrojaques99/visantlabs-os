@@ -255,7 +255,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
           disabled={!store.imageUrl}
           sendTo={
             store.imageUrl ? (
-              <SendToButton source="halftone" imageUrl={store.imageUrl} />
+              <SendToButton source="halftone" outputMime="image/png" imageUrl={store.imageUrl} />
             ) : undefined
           }
           onCopyAsPng={onCopyAsPng}

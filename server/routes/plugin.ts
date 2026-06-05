@@ -741,12 +741,13 @@ Available tools:
 - update_session_memory: Persist detected brands, client names, project references, and decisions in session memory so they're available in follow-up messages.
 
 Rules:
-- If the user wants a mockup/image, ALWAYS use generate_mockup. The imageUrl in the result will be used with SET_IMAGE_FILL in the design phase.
+- If the user wants a mockup/image — whether through the IMAGE mode button OR by mentioning it in their message (e.g. "crie imagens", "gera foto", "generate image", "mockup with photo", "use imagem de fundo") — ALWAYS use generate_mockup. The imageUrl in the result will be used with SET_IMAGE_FILL in the design phase.
 - If brandGuidelineId is available, pass it to generate_mockup — it auto-injects logo + colors + typography.
 - If the user wants to feed/populate/update brand guidelines with content from the selection, use brand_guideline_update. Parse the selected text content into the appropriate structured fields (strategy.manifesto, strategy.archetypes, strategy.personas, strategy.voiceValues, guidelines.voice, etc.).
 - If the user mentions a brand by name but no brandGuidelineId is active, call brand_guideline_list first to resolve the name to an ID, then proceed with the resolved ID.
 - If the request doesn't need any tools, respond with just "READY".
 - You can call multiple tools if needed.
+- When the user asks to create MULTIPLE variations (e.g. "4 anúncios", "3 versions"), call generate_mockup ONCE PER VARIATION with different prompts tailored to each one.
 ${
   brandGuidelineId
     ? `\nActive brandGuidelineId: "${brandGuidelineId}" — pass this as brand_guideline_id to brand_guideline_update, and as brandGuidelineId to generate_mockup and get_brand_context.`
@@ -858,65 +859,91 @@ ${
       }
     }
 
-    // Extract imageUrl from pre-pass mockup result (if any)
-    const mockupRecord = toolCallRecords.find(
+    // Extract imageUrls from ALL pre-pass mockup results
+    const mockupRecords = toolCallRecords.filter(
       (t) => t.name === 'generate_mockup' && t.status === 'done'
     );
-    let generatedImageUrl: string | undefined;
-    if (mockupRecord?.summary) {
-      const imgMatch = mockupRecord.summary.match(/"imageUrl"\s*:\s*"([^"]+)"/);
-      if (imgMatch) generatedImageUrl = imgMatch[1];
+    const mockupImages: Array<{ url: string; aspect: string; label?: string }> = [];
+    for (const rec of mockupRecords) {
+      if (rec.summary) {
+        const imgMatch = rec.summary.match(/"imageUrl"\s*:\s*"([^"]+)"/);
+        if (imgMatch) {
+          mockupImages.push({
+            url: imgMatch[1],
+            aspect: rec.args?.aspectRatio || '1:1',
+            label: rec.args?.prompt?.slice(0, 40),
+          });
+        }
+      }
     }
-    if (!generatedImageUrl && enrichedContext) {
+    if (!mockupImages.length && enrichedContext) {
       const ctxMatch = enrichedContext.match(/"imageUrl"\s*:\s*"([^"]+)"/);
-      if (ctxMatch) generatedImageUrl = ctxMatch[1];
+      if (ctxMatch) mockupImages.push({ url: ctxMatch[1], aspect: '1:1' });
     }
 
-    // If mockup was generated, skip Phase 2 LLM and return result directly
-    if (generatedImageUrl) {
+    // If mockups were generated, create frames for ALL of them
+    if (mockupImages.length > 0) {
       const aspectMap: Record<string, { w: number; h: number }> = {
         '1:1': { w: 1024, h: 1024 },
         '16:9': { w: 1280, h: 720 },
         '9:16': { w: 720, h: 1280 },
         '4:5': { w: 800, h: 1000 },
       };
-      const detectedAspect = mockupRecord?.args?.aspectRatio || '1:1';
-      const dims = aspectMap[detectedAspect] || aspectMap['1:1'];
 
-      // When generateImage flag is on, return image in chat only (no canvas frame)
-      // When generate_mockup was called by LLM decision (not generateImage flag), apply to canvas
-      const mockupOps = generateImage
-        ? [{ type: 'MESSAGE', content: `Imagem gerada com sucesso!`, imageUrl: generatedImageUrl }]
-        : [
-            {
-              type: 'CREATE_FRAME',
-              ref: 'mockup_frame',
-              props: {
-                name: `Mockup — ${command.slice(0, 40)}`,
-                width: dims.w,
-                height: dims.h,
-                fills: [{ type: 'SOLID', color: '#000000', opacity: 0 }],
-              },
-            },
-            {
-              type: 'SET_IMAGE_FILL',
-              ref: 'mockup_frame',
-              imageUrl: generatedImageUrl,
-              scaleMode: 'FILL',
-            },
-            { type: 'MESSAGE', content: `Mockup gerado e aplicado no canvas.` },
-          ];
+      const allOps: any[] = [];
+      let xOffset = 0;
 
-      send('operations', mockupOps);
+      for (let i = 0; i < mockupImages.length; i++) {
+        const img = mockupImages[i];
+        const dims = aspectMap[img.aspect] || aspectMap['1:1'];
+        const ref = `mockup_frame_${i}`;
+        const label = img.label || command.slice(0, 40);
+
+        allOps.push(
+          {
+            type: 'CREATE_FRAME',
+            ref,
+            props: {
+              name: `Mockup ${i + 1} — ${label}`,
+              width: dims.w,
+              height: dims.h,
+              x: xOffset,
+              y: 0,
+              fills: [{ type: 'SOLID', color: '#000000', opacity: 0 }],
+            },
+          },
+          {
+            type: 'SET_IMAGE_FILL',
+            ref,
+            imageUrl: img.url,
+            scaleMode: 'FILL',
+          }
+        );
+        xOffset += dims.w + 40;
+      }
+
+      const count = mockupImages.length;
+      allOps.push({
+        type: 'MESSAGE',
+        content:
+          count > 1
+            ? `${count} mockups gerados e aplicados no canvas.`
+            : `Mockup gerado e aplicado no canvas.`,
+      });
+
+      send('operations', allOps);
+
+      // Use first image as the chat preview
+      const generatedImageUrl = mockupImages[0].url;
 
       const genToolCall = {
         id: `tc-${Date.now()}`,
         name: 'apply_mockup_to_canvas',
         status: 'done' as const,
-        args: { imageUrl: generatedImageUrl.slice(0, 80) + '...' },
+        args: { count, imageUrl: generatedImageUrl.slice(0, 80) + '...' },
         startedAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),
-        summary: `Applied mockup image to ${dims.w}×${dims.h} frame`,
+        summary: `Applied ${count} mockup image${count > 1 ? 's' : ''} to canvas`,
       };
       toolCallRecords.push(genToolCall);
 
@@ -930,8 +957,8 @@ ${
             { role: 'user', content: command, timestamp: new Date() },
             {
               role: 'assistant',
-              content: `Generated mockup`,
-              operations: mockupOps,
+              content: `Generated ${count} mockup${count > 1 ? 's' : ''}`,
+              operations: allOps,
               toolCalls: toolCallRecords,
               timestamp: new Date(),
             },
@@ -956,10 +983,11 @@ ${
       }
 
       send('done', {
-        operations: mockupOps,
-        message: generateImage
-          ? 'Imagem gerada com sucesso!'
-          : 'Mockup gerado e aplicado no canvas.',
+        operations: allOps,
+        message:
+          count > 1
+            ? `${count} mockups gerados e aplicados no canvas.`
+            : 'Mockup gerado e aplicado no canvas.',
         provider: 'pre-pass',
         durationMs: Date.now() - streamStartMs,
         toolCalls: toolCallRecords,

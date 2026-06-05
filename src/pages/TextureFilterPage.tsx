@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
@@ -8,6 +8,7 @@ import { useTextureFilterStore } from '@/stores/textureFilterStore';
 import { useExportCanvas } from '@/hooks/useExportCanvas';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
+import { useToolInput } from '@/hooks/useToolInput';
 
 export const TextureFilterPage: React.FC = () => {
   const store = useTextureFilterStore;
@@ -47,6 +48,15 @@ export const TextureFilterPage: React.FC = () => {
     }, []),
     dropMessage: 'Drop image or video here',
   });
+
+  const { pendingAsset, acceptAsset } = useToolInput('texture-filter');
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) store.getState().setImageUrl(url, asset.label || 'pipeline-asset');
+  }, [pendingAsset, acceptAsset]);
 
   useToolEditorHotkeys({
     onExport: exportPng,

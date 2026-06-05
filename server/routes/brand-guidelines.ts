@@ -13,6 +13,7 @@ import {
   BrandGuidelineLogo,
   calculateCompleteness,
 } from '../types/brandGuideline.js';
+import { renderBrandBookPdf } from '../services/brandBookRenderer.js';
 import { parseUrl, parsePdf, parseImage, parseJson, parseText } from '../lib/brand-parse.js';
 import { extractBrandData, type AssetClassification } from '../lib/brand-extract.js';
 import { mergeBrandGuidelines } from '../lib/brand-merge.js';
@@ -582,6 +583,24 @@ router.get('/:id/export', apiRateLimiter, authenticate, async (req: AuthRequest,
     });
 
     if (!guideline) return res.status(404).json({ error: 'Not found' });
+
+    if (format === 'pdf') {
+      const bg = guideline as any;
+      const pdfBuffer = await renderBrandBookPdf({
+        identity: bg.identity,
+        logos: bg.logos,
+        colors: bg.colors,
+        typography: bg.typography,
+        guidelines: bg.guidelines,
+        strategy: bg.strategy,
+        gradients: bg.gradients,
+      });
+      const brandName = bg.identity?.name || 'brand-guidelines';
+      const safeName = brandName.replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase();
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${safeName}-brand-book.pdf"`);
+      return res.send(pdfBuffer);
+    }
 
     if (format === 'design-system') {
       // Export in legacy DesignSystemJSON format for backward compat
@@ -1160,7 +1179,11 @@ router.post('/:id/invite', apiRateLimiter, authenticate, async (req: AuthRequest
     });
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
-    const { role = 'viewer', label, expiresInDays } = req.body as {
+    const {
+      role = 'viewer',
+      label,
+      expiresInDays,
+    } = req.body as {
       role?: string;
       label?: string;
       expiresInDays?: number;
@@ -1168,9 +1191,7 @@ router.post('/:id/invite', apiRateLimiter, authenticate, async (req: AuthRequest
 
     const token = nanoid(16);
     const brandName = (guideline.identity as any)?.name || 'Brand Kit';
-    const expiresAt = expiresInDays
-      ? new Date(Date.now() + expiresInDays * 86_400_000)
-      : undefined;
+    const expiresAt = expiresInDays ? new Date(Date.now() + expiresInDays * 86_400_000) : undefined;
 
     const invite = await prisma.brandInvite.create({
       data: {
@@ -1246,89 +1267,100 @@ router.get('/invite/:token', publicRateLimiter, async (req, res) => {
 });
 
 // POST /api/brand-guidelines/invite/:token/accept — accept invite (requires auth)
-router.post('/invite/:token/accept', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+router.post(
+  '/invite/:token/accept',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const invite = await prisma.brandInvite.findUnique({
-      where: { token: req.params.token },
-    });
-    if (!invite) return res.status(404).json({ error: 'Invite not found' });
-    if (invite.status !== 'pending') return res.status(409).json({ error: 'Invite already used' });
-    if (invite.expiresAt && invite.expiresAt < new Date()) {
-      return res.status(410).json({ error: 'Invite expired' });
-    }
-
-    // Don't let the owner accept their own invite
-    if (invite.createdByUserId === req.userId) {
-      return res.status(409).json({ error: 'Cannot accept your own invite' });
-    }
-
-    // Add user to brand's canView or canEdit
-    const guideline = await prisma.brandGuideline.findUnique({
-      where: { id: invite.brandGuidelineId },
-    });
-    if (!guideline) return res.status(404).json({ error: 'Brand not found' });
-
-    const field = invite.role === 'editor' ? 'canEdit' : 'canView';
-    const currentList = (guideline[field] as string[]) ?? [];
-    if (!currentList.includes(req.userId)) {
-      await prisma.brandGuideline.update({
-        where: { id: guideline.id },
-        data: { [field]: [...currentList, req.userId] },
+      const invite = await prisma.brandInvite.findUnique({
+        where: { token: req.params.token },
       });
+      if (!invite) return res.status(404).json({ error: 'Invite not found' });
+      if (invite.status !== 'pending')
+        return res.status(409).json({ error: 'Invite already used' });
+      if (invite.expiresAt && invite.expiresAt < new Date()) {
+        return res.status(410).json({ error: 'Invite expired' });
+      }
+
+      // Don't let the owner accept their own invite
+      if (invite.createdByUserId === req.userId) {
+        return res.status(409).json({ error: 'Cannot accept your own invite' });
+      }
+
+      // Add user to brand's canView or canEdit
+      const guideline = await prisma.brandGuideline.findUnique({
+        where: { id: invite.brandGuidelineId },
+      });
+      if (!guideline) return res.status(404).json({ error: 'Brand not found' });
+
+      const field = invite.role === 'editor' ? 'canEdit' : 'canView';
+      const currentList = (guideline[field] as string[]) ?? [];
+      if (!currentList.includes(req.userId)) {
+        await prisma.brandGuideline.update({
+          where: { id: guideline.id },
+          data: { [field]: [...currentList, req.userId] },
+        });
+      }
+
+      await prisma.brandInvite.update({
+        where: { id: invite.id },
+        data: {
+          status: 'accepted',
+          acceptedByUserId: req.userId,
+          acceptedAt: new Date(),
+        },
+      });
+
+      const apiBaseUrl = process.env.API_BASE_URL || 'https://api.visantlabs.com';
+      const mcpUrl = `${apiBaseUrl}/api/mcp`;
+
+      res.json({
+        ok: true,
+        brandGuidelineId: guideline.id,
+        brandName: (guideline.identity as any)?.name,
+        mcpUrl,
+        role: invite.role,
+      });
+    } catch (error: any) {
+      console.error('[Brand Invite Accept] Error:', error);
+      res.status(500).json({ error: 'Failed to accept invite' });
     }
-
-    await prisma.brandInvite.update({
-      where: { id: invite.id },
-      data: {
-        status: 'accepted',
-        acceptedByUserId: req.userId,
-        acceptedAt: new Date(),
-      },
-    });
-
-    const apiBaseUrl = process.env.API_BASE_URL || 'https://api.visantlabs.com';
-    const mcpUrl = `${apiBaseUrl}/api/mcp`;
-
-    res.json({
-      ok: true,
-      brandGuidelineId: guideline.id,
-      brandName: (guideline.identity as any)?.name,
-      mcpUrl,
-      role: invite.role,
-    });
-  } catch (error: any) {
-    console.error('[Brand Invite Accept] Error:', error);
-    res.status(500).json({ error: 'Failed to accept invite' });
   }
-});
+);
 
 // DELETE /api/brand-guidelines/:id/invite/:inviteId — revoke invite
-router.delete('/:id/invite/:inviteId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+router.delete(
+  '/:id/invite/:inviteId',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const invite = await prisma.brandInvite.findFirst({
-      where: {
-        id: req.params.inviteId,
-        brandGuidelineId: req.params.id,
-        createdByUserId: req.userId,
-      },
-    });
-    if (!invite) return res.status(404).json({ error: 'Invite not found' });
+      const invite = await prisma.brandInvite.findFirst({
+        where: {
+          id: req.params.inviteId,
+          brandGuidelineId: req.params.id,
+          createdByUserId: req.userId,
+        },
+      });
+      if (!invite) return res.status(404).json({ error: 'Invite not found' });
 
-    await prisma.brandInvite.update({
-      where: { id: invite.id },
-      data: { status: 'revoked' },
-    });
+      await prisma.brandInvite.update({
+        where: { id: invite.id },
+        data: { status: 'revoked' },
+      });
 
-    res.json({ ok: true });
-  } catch (error: any) {
-    console.error('[Brand Invite Revoke] Error:', error);
-    res.status(500).json({ error: 'Failed to revoke invite' });
+      res.json({ ok: true });
+    } catch (error: any) {
+      console.error('[Brand Invite Revoke] Error:', error);
+      res.status(500).json({ error: 'Failed to revoke invite' });
+    }
   }
-});
+);
 
 // GET /api/brand-guidelines/:id/invites — list invites for a brand
 router.get('/:id/invites', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {

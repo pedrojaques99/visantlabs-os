@@ -8,8 +8,7 @@ import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
 import { Check, Copy, ArrowRight, ExternalLink, Terminal, ChevronRight } from 'lucide-react';
 
-const API =
-  (import.meta as any).env?.VITE_API_URL || '/api';
+const API = (import.meta as any).env?.VITE_API_URL || '/api';
 
 const MCP_URL = 'https://api.visantlabs.com/api/mcp';
 
@@ -113,7 +112,11 @@ export default function ConnectPage() {
   const [brandName, setBrandName] = useState('');
 
   useEffect(() => {
-    if (!token) { setError('Invalid link'); setStep('error'); return; }
+    if (!token) {
+      setError('Invalid link');
+      setStep('error');
+      return;
+    }
     fetchInvite(token);
   }, [token]);
 
@@ -164,7 +167,11 @@ export default function ConnectPage() {
   }
 
   function handleConnect() {
-    if (isAuthenticated) { accept(); } else { setShowAuth(true); }
+    if (isAuthenticated) {
+      accept();
+    } else {
+      setShowAuth(true);
+    }
   }
 
   const copy = useCallback((text: string, id: string) => {
@@ -182,7 +189,14 @@ export default function ConnectPage() {
       <AnimatePresence mode="wait">
         {/* ── Loading ── */}
         {step === 'loading' && (
-          <motion.div key="load" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="flex flex-col items-center gap-3">
+          <motion.div
+            key="load"
+            initial={fadeIn}
+            animate={fadeVisible}
+            exit={fadeOut}
+            transition={dur}
+            className="flex flex-col items-center gap-3"
+          >
             <Spinner />
             <p className="text-[13px] text-muted-foreground">Loading invite...</p>
           </motion.div>
@@ -190,7 +204,14 @@ export default function ConnectPage() {
 
         {/* ── Error ── */}
         {step === 'error' && (
-          <motion.div key="err" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="max-w-sm w-full text-center space-y-5">
+          <motion.div
+            key="err"
+            initial={fadeIn}
+            animate={fadeVisible}
+            exit={fadeOut}
+            transition={dur}
+            className="max-w-sm w-full text-center space-y-5"
+          >
             <div className="text-5xl font-mono font-bold text-foreground/10 select-none">?</div>
             <p className="text-sm text-muted-foreground">{error}</p>
             <Button
@@ -206,9 +227,21 @@ export default function ConnectPage() {
 
         {/* ── Invite preview ── */}
         {step === 'invite' && invite && (
-          <motion.div key="inv" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="max-w-[420px] w-full space-y-6">
+          <motion.div
+            key="inv"
+            initial={fadeIn}
+            animate={fadeVisible}
+            exit={fadeOut}
+            transition={dur}
+            className="max-w-[420px] w-full space-y-6"
+          >
             {/* Brand identity */}
-            <motion.div className="flex flex-col items-center text-center gap-4" variants={staggerVariants} initial="initial" animate="animate">
+            <motion.div
+              className="flex flex-col items-center text-center gap-4"
+              variants={staggerVariants}
+              initial="initial"
+              animate="animate"
+            >
               <motion.div variants={itemVariants}>
                 {logo ? (
                   <img
@@ -226,11 +259,11 @@ export default function ConnectPage() {
               </motion.div>
 
               <motion.div variants={itemVariants} className="space-y-1">
-                <h1 className="text-xl font-semibold text-foreground tracking-tight">{brandName}</h1>
+                <h1 className="text-xl font-semibold text-foreground tracking-tight">
+                  {brandName}
+                </h1>
                 {creator && (
-                  <p className="text-[13px] text-muted-foreground">
-                    Invited by {creator}
-                  </p>
+                  <p className="text-[13px] text-muted-foreground">Invited by {creator}</p>
                 )}
               </motion.div>
 
@@ -253,8 +286,8 @@ export default function ConnectPage() {
               variants={itemVariants}
               className="text-[13px] text-muted-foreground text-center leading-relaxed max-w-xs mx-auto"
             >
-              Accept to connect this brand to your AI tools.
-              Colors, typography, logos and assets — ready in your LLM.
+              Accept to connect this brand to your AI tools. Colors, typography, logos and assets —
+              ready in your LLM.
             </motion.p>
 
             {/* CTA */}
@@ -276,7 +309,14 @@ export default function ConnectPage() {
 
         {/* ── Accepting ── */}
         {step === 'accepting' && (
-          <motion.div key="acc" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="flex flex-col items-center gap-3">
+          <motion.div
+            key="acc"
+            initial={fadeIn}
+            animate={fadeVisible}
+            exit={fadeOut}
+            transition={dur}
+            className="flex flex-col items-center gap-3"
+          >
             <Spinner />
             <p className="text-[13px] text-muted-foreground">Connecting {brandName}...</p>
           </motion.div>
@@ -284,9 +324,21 @@ export default function ConnectPage() {
 
         {/* ── Connected ── */}
         {step === 'connected' && (
-          <motion.div key="done" initial={fadeIn} animate={fadeVisible} exit={fadeOut} transition={dur} className="max-w-[460px] w-full space-y-8">
+          <motion.div
+            key="done"
+            initial={fadeIn}
+            animate={fadeVisible}
+            exit={fadeOut}
+            transition={dur}
+            className="max-w-[460px] w-full space-y-8"
+          >
             {/* Success */}
-            <motion.div className="flex flex-col items-center text-center gap-3" variants={staggerVariants} initial="initial" animate="animate">
+            <motion.div
+              className="flex flex-col items-center text-center gap-3"
+              variants={staggerVariants}
+              initial="initial"
+              animate="animate"
+            >
               <motion.div
                 variants={itemVariants}
                 className="w-12 h-12 rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20 flex items-center justify-center"
@@ -296,7 +348,10 @@ export default function ConnectPage() {
               >
                 <Check className="w-5 h-5 text-emerald-500" strokeWidth={2.5} />
               </motion.div>
-              <motion.h1 variants={itemVariants} className="text-lg font-semibold text-foreground tracking-tight">
+              <motion.h1
+                variants={itemVariants}
+                className="text-lg font-semibold text-foreground tracking-tight"
+              >
                 {brandName} is connected
               </motion.h1>
               <motion.p variants={itemVariants} className="text-[13px] text-muted-foreground">
@@ -321,7 +376,12 @@ export default function ConnectPage() {
             </motion.div>
 
             {/* Providers */}
-            <motion.div className="space-y-1.5" variants={staggerVariants} initial="initial" animate="animate">
+            <motion.div
+              className="space-y-1.5"
+              variants={staggerVariants}
+              initial="initial"
+              animate="animate"
+            >
               {PROVIDERS.map((p) => (
                 <motion.div key={p.id} variants={itemVariants}>
                   <ProviderRow provider={p} copied={copied} onCopy={copy} />
@@ -351,7 +411,10 @@ export default function ConnectPage() {
         <AuthModal
           isOpen={showAuth}
           onClose={() => setShowAuth(false)}
-          onSuccess={() => { setShowAuth(false); accept(); }}
+          onSuccess={() => {
+            setShowAuth(false);
+            accept();
+          }}
         />
       )}
     </div>
@@ -406,7 +469,7 @@ function CopyBtn({
         'inline-flex items-center gap-1.5 text-[12px] font-medium rounded-md px-2.5 py-1',
         'bg-transparent hover:bg-muted/80 text-muted-foreground hover:text-foreground',
         'transition-all duration-200 active:scale-95',
-        className,
+        className
       )}
     >
       <AnimatePresence mode="wait" initial={false}>
@@ -453,7 +516,7 @@ function ProviderRow({
     <div
       className={cn(
         'group flex items-center justify-between rounded-xl border border-border/60 px-4 py-3',
-        'hover:border-border hover:bg-muted/20 transition-all duration-200',
+        'hover:border-border hover:bg-muted/20 transition-all duration-200'
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -477,7 +540,7 @@ function ProviderRow({
             className={cn(
               'inline-flex items-center gap-1.5 text-[12px] font-medium rounded-lg px-3 py-1.5',
               'bg-foreground text-background hover:bg-foreground/90',
-              'transition-all duration-200 active:scale-95',
+              'transition-all duration-200 active:scale-95'
             )}
           >
             Connect

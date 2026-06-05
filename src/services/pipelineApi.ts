@@ -21,7 +21,19 @@ export type AssetSource =
   | 'grid-machine'
   | '3d-studio'
   | 'grid-paint'
-  | 'shaders';
+  | 'shaders'
+  | 'compress'
+  | 'converter'
+  | 'remove-bg'
+  | 'watermark'
+  | 'upscale'
+  | 'svg-optimizer'
+  | 'favicon'
+  | 'qrcode'
+  | 'og-image'
+  | 'image-lab'
+  | 'content-studio'
+  | 'pdf-compress';
 
 export interface PipelineAsset {
   id: string;

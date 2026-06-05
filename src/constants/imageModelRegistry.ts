@@ -21,10 +21,7 @@ export interface ImageModelEntry {
   supportsLogoRef: boolean;
 }
 
-const GEMINI_IMAGE_IDS = [
-  GEMINI_MODELS.IMAGE_NB2,
-  GEMINI_MODELS.IMAGE_PRO,
-] as const;
+const GEMINI_IMAGE_IDS = [GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO] as const;
 
 export const IMAGE_MODEL_REGISTRY: ImageModelEntry[] = [
   // OpenAI

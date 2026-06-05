@@ -77,10 +77,12 @@ async function downloadBuffer(url: string): Promise<Buffer> {
     if (spacesInfo) {
       const client = getDoSpacesClient();
       if (!client) throw new Error('Digital Ocean Spaces credentials not configured');
-      const resp = await client.send(new GetObjectCommand({
-        Bucket: spacesInfo.bucket,
-        Key: spacesInfo.key,
-      }));
+      const resp = await client.send(
+        new GetObjectCommand({
+          Bucket: spacesInfo.bucket,
+          Key: spacesInfo.key,
+        })
+      );
       const chunks: Uint8Array[] = [];
       for await (const chunk of resp.Body as AsyncIterable<Uint8Array>) {
         chunks.push(chunk);
@@ -127,8 +129,12 @@ function runBunWorker(args: string[]): Promise<{ stdout: string; stderr: string;
     let stdout = '';
     let stderr = '';
 
-    proc.stdout.on('data', (d) => { stdout += d.toString(); });
-    proc.stderr.on('data', (d) => { stderr += d.toString(); });
+    proc.stdout.on('data', (d) => {
+      stdout += d.toString();
+    });
+    proc.stderr.on('data', (d) => {
+      stderr += d.toString();
+    });
 
     proc.on('close', (code) => resolve({ stdout, stderr, code: code ?? 1 }));
     proc.on('error', reject);
@@ -156,17 +162,18 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
 
   try {
     console.log(`[psd-render] Job ${jobId}: downloading PSD + art...`);
-    await Promise.all([
-      downloadPsd(req.psdUrl, psdLocal),
-      downloadArt(req.artUrl, artLocal),
-    ]);
+    await Promise.all([downloadPsd(req.psdUrl, psdLocal), downloadArt(req.artUrl, artLocal)]);
     console.log(`[psd-render] Job ${jobId}: downloads complete, starting render...`);
 
     const args = [
-      '--psd', psdLocal,
-      '--art', artLocal,
-      '--smart-object', req.smartObject,
-      '--output', outputLocal,
+      '--psd',
+      psdLocal,
+      '--art',
+      artLocal,
+      '--smart-object',
+      req.smartObject,
+      '--output',
+      outputLocal,
     ];
     if (req.hideLayers?.length) {
       args.push('--hide', req.hideLayers.join(','));
