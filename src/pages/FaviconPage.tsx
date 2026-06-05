@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Upload, Download, Copy, Image as ImageIcon, Check } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Upload, Copy, Image as ImageIcon, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,10 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { QuickActions } from '@/components/shared/QuickActions';
+import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
+import { useToolInput } from '@/hooks/useToolInput';
+import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
@@ -122,6 +126,26 @@ export const FaviconPage: React.FC = () => {
   const setGeneratedIcons = useFaviconStore((s) => s.setGeneratedIcons);
   const setIsGenerating = useFaviconStore((s) => s.setIsGenerating);
   const reset = useFaviconStore((s) => s.reset);
+
+  const { pendingAsset, acceptAsset } = useToolInput('favicon');
+  const { brandId, setBrandId, defaults: brandDefaults } = useBrandDefaults('favicon');
+
+  /* --- Accept piped asset from another tool --- */
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) setSource(url, asset.label || 'pipeline-asset.png');
+  }, [pendingAsset, acceptAsset, setSource]);
+
+  /* --- Apply brand defaults when brand is selected --- */
+  useEffect(() => {
+    if (!brandDefaults) return;
+    if (brandDefaults.logoUrl) {
+      setSource(brandDefaults.logoUrl, 'brand-logo');
+    }
+  }, [brandDefaults, setSource]);
 
   const handleFile = useCallback(
     (file: File) => {
@@ -328,6 +352,8 @@ export const FaviconPage: React.FC = () => {
 
               {/* Controls */}
               <div className="flex-1 min-w-[240px] space-y-3">
+                <BrandToolSelect value={brandId} onChange={setBrandId} />
+
                 {/* Background color */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
@@ -513,17 +539,18 @@ export const FaviconPage: React.FC = () => {
                     </div>
                   </motion.div>
 
-                  {/* Download ZIP */}
-                  <Button
-                    onClick={handleDownloadZip}
-                    className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                    asChild
-                  >
-                    <motion.button whileTap={{ scale: 0.98 }}>
-                      <Download size={14} />
-                      <span className="ml-2">Download ZIP</span>
-                    </motion.button>
-                  </Button>
+                  {/* Quick Actions — download, copy, send to other tools */}
+                  <QuickActions
+                    toolId="favicon"
+                    outputMime="image/png"
+                    summary={`${generatedIcons.length} favicon sizes generated`}
+                    onDownloadAll={handleDownloadZip}
+                    assetData={
+                      generatedIcons.find((i) => i.size === 512)?.url
+                        ? { imageUrl: generatedIcons.find((i) => i.size === 512)!.url, mimeType: 'image/png', label: 'favicon-512x512.png' }
+                        : undefined
+                    }
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

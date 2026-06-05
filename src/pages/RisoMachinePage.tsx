@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { API_BASE } from '@/config/api';
 import { toast } from 'sonner';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
@@ -9,6 +9,7 @@ import { useExportCanvas } from '@/hooks/useExportCanvas';
 import { loadImage } from '@/utils/imageUtils';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
+import { useToolInput } from '@/hooks/useToolInput';
 import { generateRisoSvgFromCanvas } from '@/components/riso/riso-svg-export';
 import { downloadBlob } from '@/utils/clipboard';
 
@@ -61,6 +62,15 @@ export const RisoMachinePage: React.FC = () => {
       toast.success(`Loaded ${file.name || 'pasted image'}`);
     }, []),
   });
+
+  const { pendingAsset, acceptAsset } = useToolInput('riso');
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) store.getState().setImageUrl(url, asset.label || 'pipeline-asset');
+  }, [pendingAsset, acceptAsset]);
 
   useToolEditorHotkeys({
     onExport: exportPng,

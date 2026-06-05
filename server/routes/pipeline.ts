@@ -3,8 +3,6 @@ import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { assetPipeline } from '../lib/assetPipeline.js';
 import type { AssetSource } from '../lib/assetPipeline.js';
 
-const VALID_SOURCES = new Set<AssetSource>(['canvas', 'mockupmachine', 'extractor', 'creative']);
-
 const router = Router();
 
 router.use(authenticate);
@@ -12,16 +10,14 @@ router.use(authenticate);
 // Send an asset to the pipeline
 router.post('/send', async (req: AuthRequest, res) => {
   const { source, imageUrl, imageBase64, mimeType, label } = req.body;
-  if (!source || !VALID_SOURCES.has(source)) {
-    return res
-      .status(400)
-      .json({ error: 'valid source required (canvas|mockupmachine|extractor|creative)' });
+  if (!source || typeof source !== 'string') {
+    return res.status(400).json({ error: 'source is required' });
   }
   if (!imageUrl && !imageBase64) {
     return res.status(400).json({ error: 'imageUrl or imageBase64 required' });
   }
   const asset = await assetPipeline.enqueue(req.userId!, {
-    source,
+    source: source as AssetSource,
     imageUrl,
     imageBase64,
     mimeType,

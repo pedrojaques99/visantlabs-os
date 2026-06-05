@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Upload, Download, Copy, Maximize2, Diamond, X } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Upload, Maximize2, Diamond, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,8 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
-import { SendToButton } from '@/components/shared/SendToButton';
+import { useToolInput } from '@/hooks/useToolInput';
+import { QuickActions } from '@/components/shared/QuickActions';
 import JSZip from 'jszip';
 
 const SCALE_OPTIONS = [2, 3, 4] as const;
@@ -75,6 +76,15 @@ export const UpscalePage: React.FC = () => {
   const setSharpening = useUpscaleStore((s) => s.setSharpening);
   const setIsProcessing = useUpscaleStore((s) => s.setIsProcessing);
   const reset = useUpscaleStore((s) => s.reset);
+
+  const { pendingAsset, acceptAsset } = useToolInput('upscale');
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) addFiles([{ url, name: asset.label || 'pipeline-asset.png' }]);
+  }, [pendingAsset, acceptAsset, addFiles]);
 
   const doneCount = items.filter((i) => i.status === 'done').length;
   const queuedOrErrorCount = items.filter(
@@ -436,35 +446,22 @@ export const UpscalePage: React.FC = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <AnimatePresence>
-                  {doneCount > 0 && (
-                    <motion.div className="flex gap-2" {...fadeScale}>
-                      <Button
-                        onClick={handleDownloadAll}
-                        className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest transition-all duration-200"
-                      >
-                        <Download size={14} />
-                        <span className="ml-2">
-                          {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
-                        </span>
-                      </Button>
-                      <Button
-                        onClick={handleCopyPreview}
-                        variant="outline"
-                        className="font-mono text-xs uppercase tracking-widest border-neutral-700 transition-all duration-200"
-                        title="Copy current preview"
-                      >
-                        <Copy size={14} />
-                      </Button>
-                      <SendToButton
-                        source="upscale"
-                        outputMime="image/png"
-                        imageBase64={previewItem?.resultBase64}
-                        mimeType="image/png"
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {doneCount > 0 && !isProcessing && (
+                  <motion.div {...fadeScale}>
+                    <QuickActions
+                      toolId="upscale"
+                      outputMime="image/png"
+                      summary={`${doneCount} image${doneCount > 1 ? 's' : ''} upscaled`}
+                      onDownloadAll={handleDownloadAll}
+                      onCopy={handleCopyPreview}
+                      assetData={previewItem?.resultBase64 ? {
+                        imageBase64: previewItem.resultBase64,
+                        mimeType: 'image/png',
+                        label: previewItem.fileName,
+                      } : undefined}
+                    />
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           </motion.div>

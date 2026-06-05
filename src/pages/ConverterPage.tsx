@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Upload, Download, ArrowLeftRight, X, ArrowRight } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Upload, ArrowLeftRight, X, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -8,12 +8,13 @@ import { loadImage } from '@/utils/imageUtils';
 import { downloadBlob } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
-import { SendToButton } from '@/components/shared/SendToButton';
+import { QuickActions } from '@/components/shared/QuickActions';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { formatBytes } from '@/utils/formatUtils';
+import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
@@ -116,6 +117,15 @@ export const ConverterPage: React.FC = () => {
   const setIsProcessing = useConverterStore((s) => s.setIsProcessing);
   const reset = useConverterStore((s) => s.reset);
 
+  const { pendingAsset, acceptAsset } = useToolInput('converter');
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) addFiles([{ url, name: asset.label || 'pipeline-asset.png', size: 0 }] as any);
+  }, [pendingAsset, acceptAsset, addFiles]);
+
   const hasItems = items.length > 0;
   const doneCount = items.filter((i) => i.status === 'done').length;
   const queuedOrErrorCount = items.filter(
@@ -123,13 +133,6 @@ export const ConverterPage: React.FC = () => {
   ).length;
   const previewItem =
     items.find((i) => i.id === previewId) || items.find((i) => i.status === 'done') || items[0];
-
-  const totalOriginal = items
-    .filter((i) => i.status === 'done')
-    .reduce((acc, i) => acc + i.originalSize, 0);
-  const totalConverted = items
-    .filter((i) => i.status === 'done' && i.resultBlob)
-    .reduce((acc, i) => acc + (i.resultBlob?.size || 0), 0);
 
   const handleFiles = useCallback(
     (fileList: FileList) => {
@@ -470,27 +473,6 @@ export const ConverterPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Size summary */}
-              <AnimatePresence>
-                {doneCount > 0 && totalOriginal > 0 && (
-                  <motion.div {...fadeUp} className="text-[10px] font-mono text-neutral-500 tabular-nums">
-                    {formatBytes(totalOriginal)}{' '}
-                    <ArrowRight size={8} className="inline text-neutral-600" />{' '}
-                    {formatBytes(totalConverted)}
-                    {totalConverted < totalOriginal && (
-                      <span className="text-emerald-500 ml-1">
-                        (-{Math.round((1 - totalConverted / totalOriginal) * 100)}%)
-                      </span>
-                    )}
-                    {totalConverted > totalOriginal && (
-                      <span className="text-amber-500 ml-1">
-                        (+{Math.round((totalConverted / totalOriginal - 1) * 100)}%)
-                      </span>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
               {/* Actions */}
               <AnimatePresence>
                 <motion.div {...fadeScale} className="flex gap-2">
@@ -512,24 +494,18 @@ export const ConverterPage: React.FC = () => {
                       </span>
                     </Button>
                   )}
-                  {doneCount > 0 && (
-                    <>
-                      <Button
-                        onClick={handleDownloadAll}
-                        className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                      >
-                        <Download size={14} />
-                        <span className="ml-2">
-                          {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
-                        </span>
-                      </Button>
-                      <SendToButton
-                        source="converter"
-                        outputMime={`image/${outputFormat}`}
-                        imageUrl={previewItem?.resultUrl}
-                        mimeType={`image/${outputFormat}`}
-                      />
-                    </>
+                  {doneCount > 0 && !isProcessing && (
+                    <QuickActions
+                      toolId="converter"
+                      outputMime={`image/${outputFormat}`}
+                      summary={`${doneCount} file${doneCount > 1 ? 's' : ''} converted to ${outputFormat.toUpperCase()}`}
+                      onDownloadAll={handleDownloadAll}
+                      assetData={previewItem?.resultUrl ? {
+                        imageUrl: previewItem.resultUrl,
+                        mimeType: `image/${outputFormat}`,
+                        label: previewItem.fileName,
+                      } : undefined}
+                    />
                   )}
                 </motion.div>
               </AnimatePresence>

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Send } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { pipelineApi, type AssetSource } from '@/services/pipelineApi';
-import { getCompatibleTargets } from '@/lib/toolRegistry';
+import { getCompatibleTargets, type ToolDef } from '@/lib/toolRegistry';
 import { toast } from 'sonner';
 
 interface SendToButtonProps {
@@ -31,6 +32,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const targets = useMemo(
     () => getCompatibleTargets(outputMime, source),
@@ -57,13 +59,14 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const handleSend = async (e: React.MouseEvent, _targetId: string) => {
+  const handleSend = async (e: React.MouseEvent, target: ToolDef) => {
     e.stopPropagation();
     setSending(true);
     setOpen(false);
     try {
       await pipelineApi.send({ source, imageUrl, imageBase64, mimeType, label });
-      toast.success('Sent to pipeline — open the destination tool to use it');
+      toast.success(`Opening ${target.name}…`);
+      navigate(target.path);
     } catch {
       toast.error('Failed to send asset');
     } finally {
@@ -100,7 +103,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
           {targets.map((t) => (
             <button
               key={t.id}
-              onClick={(e) => handleSend(e, t.id)}
+              onClick={(e) => handleSend(e, t)}
               className="w-full text-left px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-neutral-800 hover:text-brand-cyan transition-colors flex items-center gap-2"
             >
               <t.icon size={12} className="shrink-0 opacity-60" />

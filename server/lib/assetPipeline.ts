@@ -11,8 +11,29 @@ import { randomUUID } from 'crypto';
 import { redisClient } from './redis.js';
 import { CacheKey, CACHE_TTL } from './cache-utils.js';
 
-export type AssetSource = 'canvas' | 'mockupmachine' | 'extractor' | 'creative';
-export type AssetTarget = 'canvas' | 'mockupmachine' | 'extractor';
+export type AssetSource =
+  | 'canvas'
+  | 'mockupmachine'
+  | 'extractor'
+  | 'creative'
+  | 'riso'
+  | 'halftone'
+  | 'texture-filter'
+  | 'grid-machine'
+  | '3d-studio'
+  | 'grid-paint'
+  | 'shaders'
+  | 'compress'
+  | 'converter'
+  | 'remove-bg'
+  | 'watermark'
+  | 'upscale'
+  | 'svg-optimizer'
+  | 'favicon'
+  | 'qrcode'
+  | 'og-image'
+  | 'image-lab'
+  | 'content-studio';
 
 export interface PipelineAsset {
   id: string;

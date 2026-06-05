@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Stamp, Upload, Download, Copy, X, Type, Image } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Stamp, Upload, X, Type, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,10 @@ import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import JSZip from 'jszip';
-import { SendToButton } from '@/components/shared/SendToButton';
+import { QuickActions } from '@/components/shared/QuickActions';
+import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
+import { useToolInput } from '@/hooks/useToolInput';
+import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 
 /* ------------------------------------------------------------------ */
 /*  Animation presets                                                  */
@@ -200,6 +203,24 @@ export const WatermarkPage: React.FC = () => {
   const setColor = useWatermarkStore((s) => s.setColor);
   const setIsProcessing = useWatermarkStore((s) => s.setIsProcessing);
   const reset = useWatermarkStore((s) => s.reset);
+
+  const { pendingAsset, acceptAsset } = useToolInput('watermark');
+  const { brandId, setBrandId, defaults: brandDefaults } = useBrandDefaults('watermark');
+
+  /* --- Apply brand defaults when brand is selected --- */
+  useEffect(() => {
+    if (!brandDefaults) return;
+    if (brandDefaults.logoUrl) setLogoUrl(brandDefaults.logoUrl);
+    if (brandDefaults.textColor) setColor(brandDefaults.textColor);
+  }, [brandDefaults, setLogoUrl, setColor]);
+
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) addFiles([{ url, name: asset.label || 'pipeline-asset.png' }]);
+  }, [pendingAsset, acceptAsset, addFiles]);
 
   const hasItems = items.length > 0;
   const doneCount = items.filter((i) => i.status === 'done').length;
@@ -545,6 +566,8 @@ export const WatermarkPage: React.FC = () => {
             >
               {/* Type toggle + text/logo input */}
               <div className="flex flex-wrap items-center gap-4">
+                <BrandToolSelect value={brandId} onChange={setBrandId} />
+
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono text-neutral-500 uppercase">Type</span>
                   <div className="flex gap-1">
@@ -757,38 +780,21 @@ export const WatermarkPage: React.FC = () => {
                   )}
                 </AnimatePresence>
                 <AnimatePresence>
-                  {doneCount > 0 && (
-                    <>
-                      <motion.div key="download-btn" {...fadeScale}>
-                        <Button
-                          onClick={handleDownloadAll}
-                          className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                        >
-                          <Download size={14} />
-                          <span className="ml-2 tabular-nums">
-                            {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
-                          </span>
-                        </Button>
-                      </motion.div>
-                      <motion.div key="copy-btn" {...fadeScale}>
-                        <Button
-                          onClick={handleCopyPreview}
-                          variant="outline"
-                          className="font-mono text-xs uppercase tracking-widest border-neutral-700"
-                          title="Copy current preview"
-                        >
-                          <Copy size={14} />
-                        </Button>
-                      </motion.div>
-                      <motion.div key="sendto-btn" {...fadeScale}>
-                        <SendToButton
-                          source="watermark"
-                          outputMime="image/png"
-                          imageBase64={previewItem?.resultBase64}
-                          mimeType="image/png"
-                        />
-                      </motion.div>
-                    </>
+                  {doneCount > 0 && !isProcessing && (
+                    <motion.div key="quick-actions" {...fadeScale}>
+                      <QuickActions
+                        toolId="watermark"
+                        outputMime="image/png"
+                        summary={`${doneCount} image${doneCount > 1 ? 's' : ''} watermarked`}
+                        onDownloadAll={handleDownloadAll}
+                        onCopy={handleCopyPreview}
+                        assetData={previewItem?.resultBase64 ? {
+                          imageBase64: previewItem.resultBase64,
+                          mimeType: 'image/png',
+                          label: previewItem.fileName,
+                        } : undefined}
+                      />
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>

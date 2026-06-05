@@ -18,6 +18,7 @@ import {
   Calculator,
   Wand2,
   Search,
+  Grid3X3,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -249,6 +250,32 @@ export const TOOL_REGISTRY: ToolDef[] = [
     icon: Pipette,
     category: 'converters',
     accepts: ['none'],
+    outputs: ['none'],
+    supportsBatch: false,
+    supportsBrandContext: false,
+    isPipelineTarget: false,
+  },
+
+  // ── Utilities ──────────────────────────────────────────────────────────
+  {
+    id: 'grid-paint',
+    name: 'Grid Paint',
+    path: '/grid-paint',
+    icon: Grid3X3,
+    category: 'creative',
+    accepts: ['none'],
+    outputs: ['image/png', 'image/svg+xml'],
+    supportsBatch: false,
+    supportsBrandContext: false,
+    isPipelineTarget: false,
+  },
+  {
+    id: 'color-palette',
+    name: 'Color Palette',
+    path: '/color-palette',
+    icon: Palette,
+    category: 'converters',
+    accepts: ['image/*'],
     outputs: ['none'],
     supportsBatch: false,
     supportsBrandContext: false,

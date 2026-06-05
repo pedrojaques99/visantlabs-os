@@ -61,6 +61,7 @@ import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
 import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { ImageLabSavePreset } from '@/components/shared/ImageLabSavePreset';
+import { useToolInput } from '@/hooks/useToolInput';
 
 const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso', 'shaders']);
 
@@ -476,6 +477,19 @@ export const ImageLabPage: React.FC = () => {
     },
     []
   );
+
+  /* ── Pipeline input: receive piped assets from other tools ── */
+  const { pendingAsset, acceptAsset } = useToolInput('image-lab');
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) {
+      broadcastImage(url, asset.label || 'piped-image');
+      toast.success(`Loaded piped image${asset.label ? `: ${asset.label}` : ''}`);
+    }
+  }, [pendingAsset, acceptAsset, broadcastImage]);
 
   const canvasRefsMap = useRef<Record<ImageLabMode, HTMLCanvasElement | null>>({
     halftone: null,

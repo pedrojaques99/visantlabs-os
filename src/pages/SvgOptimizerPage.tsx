@@ -1,9 +1,7 @@
-import React, { useCallback, useRef, useState, lazy, Suspense } from 'react';
+import React, { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react';
 import {
   FileCode,
   Upload,
-  Download,
-  Copy,
   Eye,
   Code,
   X,
@@ -21,12 +19,13 @@ import { TRACE_PRESETS, type TracePreset } from '@/services/svgPipeline';
 import { sanitizeSvgForRender } from '@/utils/svgOptimizer';
 import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
-import { SendToButton } from '@/components/shared/SendToButton';
+import { QuickActions } from '@/components/shared/QuickActions';
 import { Button } from '@/components/ui/button';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { formatBytes } from '@/utils/formatUtils';
+import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
@@ -81,6 +80,32 @@ export const SvgOptimizerPage: React.FC = () => {
   const setViewMode = useSvgOptimizerStore((s) => s.setViewMode);
   const setSelectedId = useSvgOptimizerStore((s) => s.setSelectedId);
   const reset = useSvgOptimizerStore((s) => s.reset);
+
+  const { pendingAsset, acceptAsset } = useToolInput('svg-optimizer');
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const b64 = asset.imageBase64 || '';
+    // SVG data URL: decode the base64 SVG content
+    if (b64.startsWith('data:image/svg+xml;base64,')) {
+      const svgContent = atob(b64.replace('data:image/svg+xml;base64,', ''));
+      addSvgFiles([{ name: asset.label || 'pipeline-asset.svg', content: svgContent }]);
+    } else if (b64.includes('<svg')) {
+      // Raw SVG string passed as base64 field
+      addSvgFiles([{ name: asset.label || 'pipeline-asset.svg', content: b64 }]);
+    } else if (asset.imageUrl) {
+      // Fetch the URL — could be SVG or raster
+      fetch(asset.imageUrl)
+        .then((r) => r.text())
+        .then((text) => {
+          if (text.includes('<svg')) {
+            addSvgFiles([{ name: asset.label || 'pipeline-asset.svg', content: text }]);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [pendingAsset, acceptAsset, addSvgFiles]);
 
   const hasItems = items.length > 0;
   const selectedItem = items.find((i) => i.id === selectedId) || items[0];
@@ -693,50 +718,22 @@ export const SvgOptimizerPage: React.FC = () => {
               </div>
 
               {/* Summary + Actions */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`summary-${doneItems.length}`}
-                  {...fadeScale}
-                  className="flex items-center gap-3 flex-wrap"
-                >
-                  <span className="text-[10px] font-mono text-neutral-500">
-                    {doneItems.length} file{doneItems.length !== 1 ? 's' : ''} ready
-                    {items.length > doneItems.length &&
-                      ` · ${items.length - doneItems.length} processing`}
-                    {doneItems.length > 0 &&
-                      ` · saved ${formatBytes(totalOriginal - totalOptimized)} (${totalSavings}%)`}
-                  </span>
-                  <div className="flex gap-2 ml-auto">
-                    <Button
-                      onClick={handleDownloadAll}
-                      disabled={doneItems.length === 0}
-                      className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                    >
-                      <Download size={14} />
-                      <span className="ml-2">
-                        {doneItems.length > 1 ? `Download ZIP (${doneItems.length})` : 'Download'}
-                      </span>
-                    </Button>
-                    <Button
-                      onClick={handleCopy}
-                      disabled={!selectedItem || selectedItem.status !== 'done'}
-                      variant="outline"
-                      className="font-mono text-xs uppercase tracking-widest border-neutral-700"
-                      title="Copy selected SVG"
-                    >
-                      <Copy size={14} />
-                    </Button>
-                    {selectedItem && selectedItem.status === 'done' && (
-                      <SendToButton
-                        source="svg-optimizer"
-                        outputMime="image/svg+xml"
-                        imageBase64={btoa(unescape(encodeURIComponent(selectedItem.optimizedSvg)))}
-                        mimeType="image/svg+xml"
-                      />
-                    )}
-                  </div>
+              {doneItems.length > 0 && (
+                <motion.div {...fadeScale}>
+                  <QuickActions
+                    toolId="svg-optimizer"
+                    outputMime="image/svg+xml"
+                    summary={`${doneItems.length} file${doneItems.length !== 1 ? 's' : ''} optimized · saved ${formatBytes(totalOriginal - totalOptimized)} (${totalSavings}%)`}
+                    onDownloadAll={handleDownloadAll}
+                    onCopy={handleCopy}
+                    assetData={selectedItem && selectedItem.status === 'done' ? {
+                      imageBase64: btoa(unescape(encodeURIComponent(selectedItem.optimizedSvg))),
+                      mimeType: 'image/svg+xml',
+                      label: selectedItem.fileName,
+                    } : undefined}
+                  />
                 </motion.div>
-              </AnimatePresence>
+              )}
             </motion.div>
           </motion.div>
         )}

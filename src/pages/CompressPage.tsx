@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Upload, Download, Copy, Minimize2, X } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Upload, Minimize2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -12,8 +12,11 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
-import { SendToButton } from '@/components/shared/SendToButton';
+import { QuickActions } from '@/components/shared/QuickActions';
+import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToolInput } from '@/hooks/useToolInput';
+import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
 
@@ -91,6 +94,23 @@ export const CompressPage: React.FC = () => {
   const setOutputFormat = useCompressStore((s) => s.setOutputFormat);
   const setIsProcessing = useCompressStore((s) => s.setIsProcessing);
   const reset = useCompressStore((s) => s.reset);
+
+  const { pendingAsset, acceptAsset } = useToolInput('compress');
+  const { brandId, setBrandId, defaults: brandDefaults } = useBrandDefaults('compress');
+
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) addFiles([{ url, name: asset.label || 'pipeline-asset.png', size: 0 }]);
+  }, [pendingAsset, acceptAsset, addFiles]);
+
+  useEffect(() => {
+    if (!brandDefaults) return;
+    setQuality(brandDefaults.quality);
+    setOutputFormat(brandDefaults.outputFormat);
+  }, [brandDefaults, setQuality, setOutputFormat]);
 
   const hasItems = items.length > 0;
   const doneCount = items.filter((i) => i.status === 'done').length;
@@ -423,7 +443,11 @@ export const CompressPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.2 }}
             >
-              {/* Quality + Max Dimension + Format */}
+              {/* Brand + Quality + Max Dimension + Format */}
+              <div className="flex flex-wrap items-center gap-4">
+                <BrandToolSelect value={brandId} onChange={setBrandId} />
+                <div className="w-px h-4 bg-neutral-700/30" />
+              </div>
               <div className="flex flex-wrap items-center gap-4">
                 {/* Quality slider */}
                 <div className="flex items-center gap-2 flex-1 min-w-[200px]">
@@ -517,55 +541,26 @@ export const CompressPage: React.FC = () => {
                   )}
                 </AnimatePresence>
                 <AnimatePresence>
-                  {doneCount > 0 && (
-                    <motion.div {...fadeScale} className="flex gap-2">
-                      <Button
-                        onClick={handleDownloadAll}
-                        className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                      >
-                        <Download size={14} />
-                        <span className="ml-2">
-                          {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
-                        </span>
-                      </Button>
-                      <Button
-                        onClick={handleCopyPreview}
-                        variant="outline"
-                        className="font-mono text-xs uppercase tracking-widest border-neutral-700"
-                        title="Copy current preview"
-                      >
-                        <Copy size={14} />
-                      </Button>
-                      <SendToButton
-                        source="compress"
+                  {doneCount > 0 && !isProcessing && (
+                    <motion.div {...fadeScale}>
+                      <QuickActions
+                        toolId="compress"
                         outputMime={`image/${outputFormat}`}
-                        imageBase64={previewItem?.resultBase64}
-                        mimeType={`image/${outputFormat}`}
+                        summary={`${doneCount} image${doneCount > 1 ? 's' : ''} compressed`}
+                        savedBytes={totalSaved}
+                        savedPercent={totalPercent}
+                        onDownloadAll={handleDownloadAll}
+                        onCopy={handleCopyPreview}
+                        assetData={previewItem?.resultBase64 ? {
+                          imageBase64: previewItem.resultBase64,
+                          mimeType: `image/${outputFormat}`,
+                          label: previewItem.fileName,
+                        } : undefined}
                       />
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-
-              {/* Total savings summary */}
-              <AnimatePresence>
-                {doneCount > 0 && totalOriginal > 0 && (
-                  <motion.div
-                    {...fadeUp}
-                    className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20"
-                  >
-                    <span className="text-[10px] font-mono text-neutral-400 uppercase">
-                      Total saved
-                    </span>
-                    <span className="text-xs font-mono font-bold text-emerald-400 tabular-nums">
-                      {formatBytes(totalSaved)}
-                    </span>
-                    <span className="text-[10px] font-mono text-emerald-500/80 tabular-nums">
-                      ({totalPercent}% reduction)
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </motion.div>
           </motion.div>
         )}

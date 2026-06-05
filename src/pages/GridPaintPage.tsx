@@ -1092,7 +1092,7 @@ export const GridPaintPage: React.FC = () => {
                 <Copy size={12} />
               </Button>
             </Tooltip>
-            <SendToButton source="grid-paint" />
+            <SendToButton source="grid-paint" outputMime="image/png" />
             <AppShellLegalMenu />
           </>
         }

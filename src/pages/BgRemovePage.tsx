@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Eraser, Upload, Download, Copy, X, Eye, EyeOff, Cpu, Zap, Crosshair } from 'lucide-react';
+import { Eraser, Upload, X, Eye, EyeOff, Cpu, Zap, Crosshair } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,8 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
-import { SendToButton } from '@/components/shared/SendToButton';
+import { useToolInput } from '@/hooks/useToolInput';
+import { QuickActions } from '@/components/shared/QuickActions';
 import JSZip from 'jszip';
 
 const ease = [0.4, 0, 0.2, 1] as const;
@@ -233,6 +234,15 @@ export const BgRemovePage: React.FC = () => {
   const setIsProcessing = useBgRemoveStore((s) => s.setIsProcessing);
   const setFocusRegion = useBgRemoveStore((s) => s.setFocusRegion);
   const reset = useBgRemoveStore((s) => s.reset);
+
+  const { pendingAsset, acceptAsset } = useToolInput('remove-bg');
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) addFiles([{ url, name: asset.label || 'pipeline-asset.png' }]);
+  }, [pendingAsset, acceptAsset, addFiles]);
 
   const doneCount = items.filter((i) => i.status === 'done').length;
   const queuedOrErrorCount = items.filter(
@@ -798,30 +808,19 @@ export const BgRemovePage: React.FC = () => {
                   )}
                 </AnimatePresence>
                 <AnimatePresence>
-                  {doneCount > 0 && (
-                    <motion.div className="flex gap-2" {...fadeScale}>
-                      <Button
-                        onClick={handleDownloadAll}
-                        className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest transition-all duration-200"
-                      >
-                        <Download size={14} />
-                        <span className="ml-2">
-                          {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
-                        </span>
-                      </Button>
-                      <Button
-                        onClick={handleCopyPreview}
-                        variant="outline"
-                        className="font-mono text-xs uppercase tracking-widest border-neutral-700 transition-all duration-200"
-                        title="Copy current preview"
-                      >
-                        <Copy size={14} />
-                      </Button>
-                      <SendToButton
-                        source="remove-bg"
+                  {doneCount > 0 && !isProcessing && (
+                    <motion.div {...fadeScale}>
+                      <QuickActions
+                        toolId="remove-bg"
                         outputMime="image/png"
-                        imageBase64={previewItem?.resultBase64}
-                        mimeType="image/png"
+                        summary={`${doneCount} image${doneCount > 1 ? 's' : ''} — background removed`}
+                        onDownloadAll={handleDownloadAll}
+                        onCopy={handleCopyPreview}
+                        assetData={previewItem?.resultBase64 ? {
+                          imageBase64: previewItem.resultBase64,
+                          mimeType: 'image/png',
+                          label: previewItem.fileName,
+                        } : undefined}
                       />
                     </motion.div>
                   )}
