@@ -28,6 +28,8 @@
     "../src/components/shared/**/*.ts",
     "../src/components/shared/**/*.tsx",
     "../src/utils/clipboard.ts",
+    "../src/utils/proxyUtils.ts",
+    "../src/utils/imageUtils.ts",
     "../src/utils/time.ts",
     "../src/utils/markdownRenderer.tsx",
     "../src/hooks/chat/useAutoScrollToBottom.ts",

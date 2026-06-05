@@ -34,6 +34,11 @@ OPERAÇÕES AVANÇADAS:
 - SET_BLEND_MODE: { type:"SET_BLEND_MODE", nodeId:"...", blendMode:"MULTIPLY"|"SCREEN"|"OVERLAY"|... }
 - SET_CONSTRAINTS: { type:"SET_CONSTRAINTS", nodeId:"...", horizontal:"STRETCH"|"MIN"|"CENTER"|"MAX"|"SCALE", vertical:"STRETCH"|"MIN"|"CENTER"|"MAX"|"SCALE" }
 
+FONTES:
+- LEIA as fontes nos elementos selecionados (campo font:"..." na SELECAO). USE essas mesmas fontes ao criar novos textos.
+- Se a seleção usa "Montserrat Bold" para títulos, crie títulos com fontName "Montserrat" fontStyle "Bold".
+- NUNCA use "Inter" se a seleção já tem outras fontes — copie o padrão existente.
+
 COMPONENTES:
 - Nomes com [Component] prefix e estrutura com /: "[Component] Button/Primary"
 - Se existir componente na lista COMPONENTES DISPONÍVEIS, use CREATE_COMPONENT_INSTANCE ao invés de criar do zero.
