@@ -19,6 +19,7 @@ import {
   Wand2,
   Search,
   Grid3X3,
+  FileDown,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -280,6 +281,20 @@ export const TOOL_REGISTRY: ToolDef[] = [
     supportsBatch: false,
     supportsBrandContext: false,
     isPipelineTarget: false,
+  },
+
+  // ── PDF Tools ──────────────────────────────────────────────────────────
+  {
+    id: 'pdf-compress',
+    name: 'PDF Compress',
+    path: '/pdf-compress',
+    icon: FileDown,
+    category: 'converters',
+    accepts: ['application/pdf'],
+    outputs: ['application/pdf'],
+    supportsBatch: true,
+    supportsBrandContext: false,
+    isPipelineTarget: true,
   },
 
   // ── Generators ─────────────────────────────────────────────────────────

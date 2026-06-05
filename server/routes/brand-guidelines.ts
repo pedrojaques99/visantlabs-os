@@ -13,6 +13,7 @@ import {
   BrandGuidelineLogo,
   calculateCompleteness,
 } from '../types/brandGuideline.js';
+import { renderBrandBookPdf } from '../services/brandBookRenderer.js';
 import { parseUrl, parsePdf, parseImage, parseJson, parseText } from '../lib/brand-parse.js';
 import { extractBrandData, type AssetClassification } from '../lib/brand-extract.js';
 import { mergeBrandGuidelines } from '../lib/brand-merge.js';
@@ -582,6 +583,24 @@ router.get('/:id/export', apiRateLimiter, authenticate, async (req: AuthRequest,
     });
 
     if (!guideline) return res.status(404).json({ error: 'Not found' });
+
+    if (format === 'pdf') {
+      const bg = guideline as any;
+      const pdfBuffer = await renderBrandBookPdf({
+        identity: bg.identity,
+        logos: bg.logos,
+        colors: bg.colors,
+        typography: bg.typography,
+        guidelines: bg.guidelines,
+        strategy: bg.strategy,
+        gradients: bg.gradients,
+      });
+      const brandName = bg.identity?.name || 'brand-guidelines';
+      const safeName = brandName.replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase();
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${safeName}-brand-book.pdf"`);
+      return res.send(pdfBuffer);
+    }
 
     if (format === 'design-system') {
       // Export in legacy DesignSystemJSON format for backward compat

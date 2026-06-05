@@ -213,6 +213,9 @@ const ColorConverterPage = lazyWithRetry(() =>
 const CompressPage = lazyWithRetry(() =>
   import('./pages/CompressPage').then((m) => ({ default: m.CompressPage }))
 );
+const PdfCompressPage = lazyWithRetry(() =>
+  import('./pages/PdfCompressPage').then((m) => ({ default: m.PdfCompressPage }))
+);
 const ColorPalettePage = lazyWithRetry(() =>
   import('./pages/ColorPalettePage').then((m) => ({ default: m.ColorPalettePage }))
 );
@@ -290,6 +293,7 @@ const App: React.FC = () => {
                   <Route path="/favicon" element={<FaviconPage />} />
                   <Route path="/color-converter" element={<ColorConverterPage />} />
                   <Route path="/compress" element={<CompressPage />} />
+                  <Route path="/pdf-compress" element={<PdfCompressPage />} />
                   <Route path="/color-palette" element={<ColorPalettePage />} />
                   <Route path="/converter" element={<ConverterPage />} />
                   <Route path="/svg-optimizer" element={<SvgOptimizerPage />} />

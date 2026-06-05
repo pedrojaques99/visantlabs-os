@@ -7,6 +7,7 @@ import { useConverterStore, type ConvertItem, type OutputFormat } from '@/stores
 import { loadImage } from '@/utils/imageUtils';
 import { downloadBlob } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
+import { pdfApi } from '@/services/pdfApi';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -135,9 +136,14 @@ export const ConverterPage: React.FC = () => {
     items.find((i) => i.id === previewId) || items.find((i) => i.status === 'done') || items[0];
 
   const handleFiles = useCallback(
-    (fileList: FileList) => {
+    async (fileList: FileList) => {
       const valid: File[] = [];
+      const pdfFiles: File[] = [];
       Array.from(fileList).forEach((file) => {
+        if (file.type === 'application/pdf') {
+          pdfFiles.push(file);
+          return;
+        }
         const error = validateFile(file, 'image');
         if (error) {
           toast.error(`${file.name}: ${error}`);
@@ -146,6 +152,33 @@ export const ConverterPage: React.FC = () => {
         valid.push(file);
       });
       if (valid.length) addFiles(valid);
+
+      // Rasterize PDF pages and add each as a separate image
+      for (const pdf of pdfFiles) {
+        try {
+          const reader = new FileReader();
+          const base64: string = await new Promise((resolve, reject) => {
+            reader.onload = () => {
+              const result = reader.result as string;
+              resolve(result.split(',')[1] || result);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(pdf);
+          });
+          const { images } = await pdfApi.toImages(base64);
+          const pageFiles: File[] = images.map((img) => {
+            const byteString = atob(img.data);
+            const bytes = new Uint8Array(byteString.length);
+            for (let i = 0; i < byteString.length; i++) bytes[i] = byteString.charCodeAt(i);
+            const baseName = pdf.name.replace(/\.pdf$/i, '');
+            return new File([bytes], `${baseName}-page${img.page}.png`, { type: 'image/png' });
+          });
+          if (pageFiles.length) addFiles(pageFiles);
+          toast.success(`${pdf.name}: ${pageFiles.length} page${pageFiles.length > 1 ? 's' : ''} imported`);
+        } catch (err: any) {
+          toast.error(`${pdf.name}: ${err?.message || 'Failed to process PDF'}`);
+        }
+      }
     },
     [addFiles]
   );
@@ -270,12 +303,12 @@ export const ConverterPage: React.FC = () => {
             >
               <Upload size={24} className="text-neutral-500" />
               <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
-                Drop images or click
+                Drop images / PDF or click
               </span>
               <input
                 ref={inputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp"
+                accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp,application/pdf"
                 multiple
                 className="hidden"
                 onChange={handleInputChange}
@@ -343,10 +376,10 @@ export const ConverterPage: React.FC = () => {
                 {/* Add more */}
                 <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
                   <Upload size={12} />
-                  Add images
+                  Add images / PDF
                   <input
                     type="file"
-                    accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp"
+                    accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp,application/pdf"
                     multiple
                     className="hidden"
                     onChange={handleInputChange}

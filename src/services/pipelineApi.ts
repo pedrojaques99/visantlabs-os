@@ -32,7 +32,8 @@ export type AssetSource =
   | 'qrcode'
   | 'og-image'
   | 'image-lab'
-  | 'content-studio';
+  | 'content-studio'
+  | 'pdf-compress';
 
 export interface PipelineAsset {
   id: string;

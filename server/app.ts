@@ -45,6 +45,7 @@ import pluginRoutes from './routes/plugin.js';
 import imagelabRoutes from './routes/imagelab.js';
 import brandGuidelinesRoutes from './routes/brand-guidelines.js';
 import pdfExtractRoutes from './routes/pdf-extract.js';
+import pdfRoutes from './routes/pdf.js';
 import creativeRoutes from './routes/creative.js';
 import creativeProjectsRoutes from './routes/creative-projects.js';
 import docsRoutes from './routes/docs.js';
@@ -314,6 +315,7 @@ export function createApp() {
     ['/plugin', pluginRoutes],
     ['/brand-guidelines', brandGuidelinesRoutes],
     ['/pdf-extract', pdfExtractRoutes],
+    ['/pdf', pdfRoutes],
     ['/creative', creativeRoutes],
     ['/creative-projects', creativeProjectsRoutes],
     ['/docs', docsRoutes],
