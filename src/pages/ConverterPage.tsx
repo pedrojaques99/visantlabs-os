@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { Upload, Download, ArrowLeftRight, X, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useConverterStore, type ConvertItem, type OutputFormat } from '@/stores/converterStore';
@@ -12,6 +13,10 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Button } from '@/components/ui/button';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
+
+const ease = [0.4, 0, 0.2, 1] as const;
+const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
+const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
 
 /* ── Conversion logic (all client-side) ── */
 
@@ -108,6 +113,7 @@ export const ConverterPage: React.FC = () => {
   const setIsProcessing = useConverterStore((s) => s.setIsProcessing);
   const reset = useConverterStore((s) => s.reset);
 
+  const hasItems = items.length > 0;
   const doneCount = items.filter((i) => i.status === 'done').length;
   const queuedOrErrorCount = items.filter(
     (i) => i.status === 'queued' || i.status === 'error'
@@ -213,9 +219,10 @@ export const ConverterPage: React.FC = () => {
     <MiniToolShell
       icon={ArrowLeftRight}
       title="File Converter"
-      countLabel={items.length > 0 ? `${doneCount}/${items.length}` : undefined}
+      countLabel={hasItems ? `${doneCount}/${items.length}` : undefined}
       onReset={reset}
-      showReset={items.length > 0}
+      showReset={hasItems}
+      centered={!hasItems}
       dragDrop={{
         onDrop: handleDrop,
         onDragOver: handleDragOver,
@@ -223,226 +230,295 @@ export const ConverterPage: React.FC = () => {
         isDragOver,
       }}
     >
-      {/* Upload zone */}
-      {items.length === 0 ? (
-        <label
-          className={cn(
-            'flex flex-col items-center justify-center gap-3 w-full h-48 rounded-xl border-2 border-dashed cursor-pointer transition-all',
-            isDragOver
-              ? 'border-brand-cyan bg-brand-cyan/5'
-              : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
-          )}
-        >
-          <Upload size={24} className="text-neutral-500" />
-          <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
-            Drop images or click — batch supported
-          </span>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp"
-            multiple
-            className="hidden"
-            onChange={handleInputChange}
-          />
-        </label>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
-          {/* Preview */}
-          <div className="relative rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950/40 min-h-[300px] flex items-center justify-center">
-            {previewItem ? (
-              <>
-                <img
-                  src={previewItem.resultUrl || previewItem.sourceUrl}
-                  alt={previewItem.fileName}
-                  className="w-full h-auto max-h-[60vh] object-contain"
-                />
-                {previewItem.status === 'processing' && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm">
-                    <GlitchLoader size={20} color="brand-cyan" />
-                  </div>
-                )}
-                {previewItem.status === 'done' && (
-                  <span className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded">
-                    {outputFormat.toUpperCase()}
-                  </span>
-                )}
-              </>
-            ) : null}
-          </div>
-
-          {/* Queue panel */}
-          <div className="space-y-3">
-            {/* Add more */}
-            <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
-              <Upload size={12} />
-              Add images
+      <AnimatePresence mode="wait">
+        {!hasItems ? (
+          /* ── Empty / Upload state ── */
+          <motion.div key="empty" {...fadeUp} className="flex flex-col items-center gap-4 py-8">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4, ease }}
+              className="w-12 h-12 rounded-2xl bg-brand-cyan/10 flex items-center justify-center"
+            >
+              <ArrowLeftRight size={28} className="text-brand-cyan" />
+            </motion.div>
+            <div className="text-center space-y-1">
+              <h2 className="text-sm font-medium text-neutral-200">Convert image formats</h2>
+              <p className="text-xs text-neutral-500">
+                PNG, JPG, WebP, PDF, ICO — batch supported
+              </p>
+            </div>
+            <motion.label
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={cn(
+                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200',
+                isDragOver
+                  ? 'border-brand-cyan bg-brand-cyan/5'
+                  : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
+              )}
+            >
+              <Upload size={24} className="text-neutral-500" />
+              <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+                Drop images or click
+              </span>
               <input
+                ref={inputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp"
                 multiple
                 className="hidden"
                 onChange={handleInputChange}
               />
-            </label>
-
-            {/* Thumbnail queue */}
-            <div className="max-h-[40vh] overflow-y-auto space-y-1.5 pr-1">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => setPreviewId(item.id)}
-                  className={cn(
-                    'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all group',
-                    previewItem?.id === item.id
-                      ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
-                      : 'hover:bg-neutral-900/60'
-                  )}
-                >
-                  <img
-                    src={
-                      previewItem?.id === item.id && item.resultUrl
-                        ? item.resultUrl
-                        : item.sourceUrl
-                    }
-                    alt=""
-                    className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-mono text-neutral-300 truncate">
-                      {item.fileName}
-                    </p>
-                    <div className="flex items-center gap-1">
-                      <FormatBadge from={item.inputFormat} to={outputFormat} />
-                      <span className="text-[9px] font-mono text-neutral-600">
-                        {formatBytes(item.originalSize)}
-                      </span>
-                      {item.status === 'done' && item.resultBlob && (
-                        <>
-                          <ArrowRight size={7} className="text-neutral-600" />
-                          <span className="text-[9px] font-mono text-neutral-500">
-                            {formatBytes(item.resultBlob.size)}
-                          </span>
-                        </>
+            </motion.label>
+          </motion.div>
+        ) : (
+          /* ── Working state ── */
+          <motion.div key="workspace" {...fadeScale} className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
+              {/* Preview */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease }}
+                className="relative rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-950/40 min-h-[300px] flex items-center justify-center"
+              >
+                {previewItem ? (
+                  <>
+                    <img
+                      src={previewItem.resultUrl || previewItem.sourceUrl}
+                      alt={previewItem.fileName}
+                      className="w-full h-auto max-h-[60vh] object-contain"
+                    />
+                    <AnimatePresence>
+                      {previewItem.status === 'processing' && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute inset-0 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm"
+                        >
+                          <GlitchLoader size={20} color="brand-cyan" />
+                        </motion.div>
                       )}
-                    </div>
-                    <StatusBadge status={item.status} />
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeItem(item.id);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-all flex-shrink-0"
-                  >
-                    <X size={12} />
-                  </button>
+                    </AnimatePresence>
+                    <AnimatePresence>
+                      {previewItem.status === 'done' && (
+                        <motion.span
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.2, ease }}
+                          className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded"
+                        >
+                          {outputFormat.toUpperCase()}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </>
+                ) : null}
+              </motion.div>
+
+              {/* Queue panel */}
+              <motion.div
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, ease, delay: 0.05 }}
+                className="space-y-3"
+              >
+                {/* Add more */}
+                <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
+                  <Upload size={12} />
+                  Add images
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp"
+                    multiple
+                    className="hidden"
+                    onChange={handleInputChange}
+                  />
+                </label>
+
+                {/* Thumbnail queue */}
+                <div className="max-h-[40vh] overflow-y-auto space-y-1.5 pr-1">
+                  {items.map((item, i) => (
+                    <motion.div
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2, ease, delay: i * 0.03 }}
+                      onClick={() => setPreviewId(item.id)}
+                      className={cn(
+                        'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200 group',
+                        previewItem?.id === item.id
+                          ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
+                          : 'hover:bg-neutral-900/60'
+                      )}
+                    >
+                      <img
+                        src={
+                          previewItem?.id === item.id && item.resultUrl
+                            ? item.resultUrl
+                            : item.sourceUrl
+                        }
+                        alt=""
+                        className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-mono text-neutral-300 truncate">
+                          {item.fileName}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <FormatBadge from={item.inputFormat} to={outputFormat} />
+                          <span className="text-[9px] font-mono text-neutral-600 tabular-nums">
+                            {formatBytes(item.originalSize)}
+                          </span>
+                          {item.status === 'done' && item.resultBlob && (
+                            <AnimatePresence>
+                              <motion.span
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex items-center gap-1"
+                              >
+                                <ArrowRight size={7} className="text-neutral-600" />
+                                <span className="text-[9px] font-mono text-neutral-500 tabular-nums">
+                                  {formatBytes(item.resultBlob.size)}
+                                </span>
+                              </motion.span>
+                            </AnimatePresence>
+                          )}
+                        </div>
+                        <StatusBadge status={item.status} />
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeItem(item.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-all duration-200 flex-shrink-0"
+                      >
+                        <X size={12} />
+                      </button>
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Controls */}
-      {items.length > 0 && (
-        <div className="space-y-4">
-          {/* Format selector + Quality */}
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">Format</span>
-              <div className="flex gap-1">
-                {OUTPUT_FORMATS.map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setOutputFormat(f)}
-                    disabled={isProcessing}
-                    className={cn(
-                      'px-2.5 py-0.5 rounded text-xs font-mono transition-all',
-                      outputFormat === f
-                        ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
-                        : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
-                    )}
-                  >
-                    {f.toUpperCase()}
-                  </button>
-                ))}
-              </div>
+              </motion.div>
             </div>
 
-            {outputFormat === 'jpg' && (
-              <div className="flex items-center gap-2 flex-1 min-w-[180px]">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase">Quality</span>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  step="5"
-                  value={jpgQuality}
-                  onChange={(e) => setJpgQuality(parseInt(e.target.value, 10))}
-                  disabled={isProcessing}
-                  className="flex-1 h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                />
-                <span className="text-[10px] font-mono text-neutral-500 w-8 text-right">
-                  {jpgQuality}%
-                </span>
-              </div>
-            )}
-          </div>
+            {/* Controls */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease, delay: 0.1 }}
+              className="space-y-4"
+            >
+              {/* Format selector + Quality */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-neutral-500 uppercase">Format</span>
+                  <div className="flex gap-1">
+                    {OUTPUT_FORMATS.map((f) => (
+                      <motion.button
+                        key={f}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setOutputFormat(f)}
+                        disabled={isProcessing}
+                        className={cn(
+                          'px-2.5 py-0.5 rounded text-xs font-mono transition-all duration-200',
+                          outputFormat === f
+                            ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
+                            : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
+                        )}
+                      >
+                        {f.toUpperCase()}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
 
-          {/* Size summary */}
-          {doneCount > 0 && totalOriginal > 0 && (
-            <div className="text-[10px] font-mono text-neutral-500">
-              {formatBytes(totalOriginal)}{' '}
-              <ArrowRight size={8} className="inline text-neutral-600" />{' '}
-              {formatBytes(totalConverted)}
-              {totalConverted < totalOriginal && (
-                <span className="text-emerald-500 ml-1">
-                  (-{Math.round((1 - totalConverted / totalOriginal) * 100)}%)
-                </span>
-              )}
-              {totalConverted > totalOriginal && (
-                <span className="text-amber-500 ml-1">
-                  (+{Math.round((totalConverted / totalOriginal - 1) * 100)}%)
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-2">
-            {queuedOrErrorCount > 0 && (
-              <Button
-                onClick={handleConvertAll}
-                disabled={isProcessing}
-                className="flex-1 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-              >
-                {isProcessing ? (
-                  <GlitchLoader size={14} color="currentColor" />
-                ) : (
-                  <ArrowLeftRight size={14} />
+                {outputFormat === 'jpg' && (
+                  <div className="flex items-center gap-2 flex-1 min-w-[180px]">
+                    <span className="text-[10px] font-mono text-neutral-500 uppercase">Quality</span>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      step="5"
+                      value={jpgQuality}
+                      onChange={(e) => setJpgQuality(parseInt(e.target.value, 10))}
+                      disabled={isProcessing}
+                      className="flex-1 h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+                    />
+                    <span className="text-[10px] font-mono text-neutral-500 w-8 text-right tabular-nums">
+                      {jpgQuality}%
+                    </span>
+                  </div>
                 )}
-                <span className="ml-2">
-                  {isProcessing
-                    ? 'Converting...'
-                    : `Convert ${queuedOrErrorCount > 1 ? `${queuedOrErrorCount} files` : 'All'}`}
-                </span>
-              </Button>
-            )}
-            {doneCount > 0 && (
-              <Button
-                onClick={handleDownloadAll}
-                className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-              >
-                <Download size={14} />
-                <span className="ml-2">
-                  {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
-                </span>
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+              </div>
+
+              {/* Size summary */}
+              <AnimatePresence>
+                {doneCount > 0 && totalOriginal > 0 && (
+                  <motion.div {...fadeUp} className="text-[10px] font-mono text-neutral-500 tabular-nums">
+                    {formatBytes(totalOriginal)}{' '}
+                    <ArrowRight size={8} className="inline text-neutral-600" />{' '}
+                    {formatBytes(totalConverted)}
+                    {totalConverted < totalOriginal && (
+                      <span className="text-emerald-500 ml-1">
+                        (-{Math.round((1 - totalConverted / totalOriginal) * 100)}%)
+                      </span>
+                    )}
+                    {totalConverted > totalOriginal && (
+                      <span className="text-amber-500 ml-1">
+                        (+{Math.round((totalConverted / totalOriginal - 1) * 100)}%)
+                      </span>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Actions */}
+              <AnimatePresence>
+                <motion.div {...fadeScale} className="flex gap-2">
+                  {queuedOrErrorCount > 0 && (
+                    <Button
+                      onClick={handleConvertAll}
+                      disabled={isProcessing}
+                      className="flex-1 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                    >
+                      {isProcessing ? (
+                        <GlitchLoader size={14} color="currentColor" />
+                      ) : (
+                        <ArrowLeftRight size={14} />
+                      )}
+                      <span className="ml-2">
+                        {isProcessing
+                          ? 'Converting...'
+                          : `Convert ${queuedOrErrorCount > 1 ? `${queuedOrErrorCount} files` : 'All'}`}
+                      </span>
+                    </Button>
+                  )}
+                  {doneCount > 0 && (
+                    <Button
+                      onClick={handleDownloadAll}
+                      className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                    >
+                      <Download size={14} />
+                      <span className="ml-2">
+                        {doneCount > 1 ? `Download ZIP (${doneCount})` : 'Download'}
+                      </span>
+                    </Button>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </MiniToolShell>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Pipette, Copy, Trash2, Check, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -10,6 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ralColorsData from '@/data/ralColors.json';
 import pantoneColorsData from '@/data/pantoneColors.json';
+
+const ease = [0.4, 0, 0.2, 1] as const;
+const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
+const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
 
 /* ── Nearest-match helpers (Euclidean distance in RGB) ───── */
 
@@ -70,13 +75,14 @@ function CopyBtn({ value }: { value: string }) {
     } else toast.error('Copy failed');
   };
   return (
-    <button
+    <motion.button
       onClick={handleCopy}
+      whileTap={{ scale: 0.95 }}
       className="ml-1 text-neutral-600 hover:text-neutral-300 transition-colors"
       title="Copy"
     >
       {copied ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
-    </button>
+    </motion.button>
   );
 }
 
@@ -92,7 +98,10 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
   const wcag = checkWCAGCompliance(ratio);
 
   return (
-    <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 space-y-3">
+    <motion.div
+      {...fadeUp}
+      className="mt-6 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 space-y-3"
+    >
       <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-400">
         WCAG Contrast Check
       </h3>
@@ -153,7 +162,7 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
         <Badge pass={wcag.largeAA} label="AA Large" />
         <Badge pass={wcag.largeAAA} label="AAA Large" />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -253,7 +262,10 @@ export const ColorConverterPage: React.FC = () => {
       showReset={colors.length > 0}
     >
       {/* Input */}
-      <div className="flex gap-2 items-center">
+      <motion.div
+        {...fadeUp}
+        className="flex gap-2 items-center"
+      >
         {livePreview && (
           <div
             className="w-9 h-9 rounded-lg border border-neutral-700 flex-shrink-0"
@@ -277,39 +289,54 @@ export const ColorConverterPage: React.FC = () => {
         >
           Add
         </Button>
-      </div>
+      </motion.div>
 
       {/* Color rows */}
       {colors.length > 0 && (
         <div className="space-y-2">
           {colors.map((c, i) => (
-            <ColorRow key={`${c.hex}-${i}`} color={c} index={i} onRemove={removeColor} />
+            <motion.div
+              key={`${c.hex}-${i}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.05, ease }}
+            >
+              <ColorRow color={c} index={i} onRemove={removeColor} />
+            </motion.div>
           ))}
         </div>
       )}
 
       {/* Batch actions */}
-      {colors.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            onClick={() => handleCopyAll('json')}
-            variant="outline"
-            className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+      <AnimatePresence>
+        {colors.length > 0 && (
+          <motion.div
+            {...fadeUp}
+            exit={{ opacity: 0, y: 8 }}
+            className="flex gap-2 flex-wrap"
           >
-            <Copy size={12} className="mr-1" /> Copy JSON
-          </Button>
-          <Button
-            onClick={() => handleCopyAll('csv')}
-            variant="outline"
-            className="font-mono text-xs uppercase tracking-widest border-neutral-700"
-          >
-            <Copy size={12} className="mr-1" /> Copy CSV
-          </Button>
-        </div>
-      )}
+            <Button
+              onClick={() => handleCopyAll('json')}
+              variant="outline"
+              className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+            >
+              <Copy size={12} className="mr-1" /> Copy JSON
+            </Button>
+            <Button
+              onClick={() => handleCopyAll('csv')}
+              variant="outline"
+              className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+            >
+              <Copy size={12} className="mr-1" /> Copy CSV
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* WCAG contrast check */}
-      <ContrastPanel colors={colors} />
+      <AnimatePresence>
+        {colors.length >= 2 && <ContrastPanel colors={colors} />}
+      </AnimatePresence>
     </MiniToolShell>
   );
 };
@@ -368,32 +395,42 @@ function ColorRow({
       </div>
 
       {/* Expanded details */}
-      {expanded && (
-        <div className="border-t border-neutral-800 px-3 py-2 flex flex-wrap gap-4 text-[10px] font-mono text-neutral-400">
-          <div className="flex items-center gap-1.5">
-            <div
-              className="w-4 h-4 rounded border border-neutral-700"
-              style={{ backgroundColor: ral.hex }}
-            />
-            <span>
-              Nearest RAL: <strong className="text-neutral-200">{ral.code}</strong> {ral.name} (
-              {ral.hex})
-            </span>
-            <CopyBtn value={ral.code} />
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div
-              className="w-4 h-4 rounded border border-neutral-700"
-              style={{ backgroundColor: pantone.hex }}
-            />
-            <span>
-              Nearest Pantone: <strong className="text-neutral-200">{pantone.code}</strong> (
-              {pantone.hex})
-            </span>
-            <CopyBtn value={pantone.code} />
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-neutral-800 px-3 py-2 flex flex-wrap gap-4 text-[10px] font-mono text-neutral-400">
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-4 h-4 rounded border border-neutral-700"
+                  style={{ backgroundColor: ral.hex }}
+                />
+                <span>
+                  Nearest RAL: <strong className="text-neutral-200">{ral.code}</strong> {ral.name} (
+                  {ral.hex})
+                </span>
+                <CopyBtn value={ral.code} />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-4 h-4 rounded border border-neutral-700"
+                  style={{ backgroundColor: pantone.hex }}
+                />
+                <span>
+                  Nearest Pantone: <strong className="text-neutral-200">{pantone.code}</strong> (
+                  {pantone.hex})
+                </span>
+                <CopyBtn value={pantone.code} />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

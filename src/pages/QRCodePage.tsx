@@ -1,14 +1,19 @@
 import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { Download, QrCode } from 'lucide-react';
 import { useLayout } from '@/hooks/useLayout';
 import { loadImage } from '@/utils/imageUtils';
 import { downloadBlob } from '@/utils/clipboard';
-import { FormInput } from '../components/ui/form-input';
-import { Button } from '../components/ui/button';
-import { Select } from '../components/ui/select';
+import { FormInput } from '@/components/ui/form-input';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { MiniToolShell } from '@/components/shared/MiniToolShell';
 import { useTranslation } from '@/hooks/useTranslation';
+
+const ease = [0.4, 0, 0.2, 1] as const;
+const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.35, ease } };
+const fadeScale = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: { duration: 0.3, ease } };
 
 type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 
@@ -64,8 +69,13 @@ export const QRCodePage: React.FC = () => {
     <MiniToolShell icon={QrCode} title="QR Code Generator" maxWidth="6xl">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Section */}
-        <div className="space-y-6">
-          <div className="bg-neutral-950/70 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease }}
+          className="space-y-6"
+        >
+          <div className="bg-neutral-950/70 border border-zinc-800 rounded-2xl p-6 backdrop-blur-sm">
             <h2 className="text-xl font-semibold text-white mb-6">Settings</h2>
 
             {/* Text Input */}
@@ -154,49 +164,79 @@ export const QRCodePage: React.FC = () => {
               />
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* QR Code Display */}
-        <div className="space-y-6">
-          <div className="bg-neutral-950/70 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.1, ease }}
+          className="space-y-6"
+        >
+          <div className="bg-neutral-950/70 border border-zinc-800 rounded-2xl p-6 backdrop-blur-sm">
             <h2 className="text-xl font-semibold text-white mb-6">Preview</h2>
 
             <div className="flex flex-col items-center justify-center min-h-[400px]">
-              {hasText ? (
-                <div ref={qrCodeRef} className="p-4 bg-white rounded-md">
-                  <QRCodeSVG
-                    value={text}
-                    size={size}
-                    level={errorCorrectionLevel}
-                    bgColor={bgColor}
-                    fgColor={fgColor}
-                    marginSize={marginSize}
-                  />
-                </div>
-              ) : (
-                <div className="text-center text-zinc-500">
-                  <QrCode className="w-24 h-24 mx-auto mb-4 opacity-40" />
-                  <p className="font-mono text-sm">
-                    {t('q.r.code.enter_text_to_generate_qr_code')}
-                  </p>
-                </div>
-              )}
+              <AnimatePresence mode="wait">
+                {hasText ? (
+                  <motion.div
+                    key="qr-code"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3, ease }}
+                    ref={qrCodeRef}
+                    className="p-4 bg-white rounded-md"
+                  >
+                    <QRCodeSVG
+                      value={text}
+                      size={size}
+                      level={errorCorrectionLevel}
+                      bgColor={bgColor}
+                      fgColor={fgColor}
+                      marginSize={marginSize}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty-state"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.3, ease }}
+                    className="text-center text-zinc-500"
+                  >
+                    <QrCode className="w-24 h-24 mx-auto mb-4 opacity-40" />
+                    <p className="font-mono text-sm">
+                      {t('q.r.code.enter_text_to_generate_qr_code')}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {hasText && (
-              <div className="mt-6 flex justify-center">
-                <Button
-                  variant="brand"
-                  onClick={handleDownload}
-                  className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-semibold px-6 py-3 rounded-md flex items-center gap-2"
+            <AnimatePresence>
+              {hasText && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{ duration: 0.25, ease }}
+                  className="mt-6 flex justify-center"
                 >
-                  <Download className="w-5 h-5" />
-                  Download PNG
-                </Button>
-              </div>
-            )}
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleDownload}
+                    className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-semibold px-6 py-3 rounded-md flex items-center gap-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download PNG
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       </div>
     </MiniToolShell>
   );
