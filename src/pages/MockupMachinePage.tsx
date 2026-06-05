@@ -47,6 +47,7 @@ import { useMockupTags } from '@/hooks/useMockupTags';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useCreditValidation } from '@/hooks/useCreditValidation';
 import { useAnalysisOverlay } from '@/hooks/useAnalysisOverlay';
+import { useToolInput } from '@/hooks/useToolInput';
 import { formatMockupError } from '@/utils/mockupErrorHandling';
 import { compressImage } from '@/utils/imageCompression';
 import { loadImage } from '@/utils/imageUtils';
@@ -252,6 +253,19 @@ const MockupMachinePageContent: React.FC = () => {
     onCreditPackagesModalOpen
   );
   const { showTemporaryOverlay, hideOverlay } = useAnalysisOverlay();
+
+  const { pendingAsset, acceptAsset } = useToolInput('mockupmachine');
+
+  useEffect(() => {
+    if (!pendingAsset) return;
+    const asset = acceptAsset();
+    if (!asset) return;
+    const url = asset.imageUrl || asset.imageBase64 || '';
+    if (url) {
+      const mimeType = asset.mimeType || 'image/png';
+      setUploadedImage({ url, mimeType });
+    }
+  }, [pendingAsset, acceptAsset, setUploadedImage]);
 
   const { availableMockupTags, availableLocationTags } = useMockupTags();
 

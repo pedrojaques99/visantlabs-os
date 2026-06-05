@@ -332,7 +332,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
     outputs: ['image/png'],
     supportsBatch: false,
     supportsBrandContext: true,
-    isPipelineTarget: false,
+    isPipelineTarget: true,
   },
 ];
 
