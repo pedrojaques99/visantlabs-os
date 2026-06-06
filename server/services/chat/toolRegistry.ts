@@ -9,6 +9,7 @@
  */
 import { CHAT_TOOLS, executeToolCall } from '../chatToolExecutor.js';
 import { ADMIN_CHAT_TOOLS, executeAdminChatTool } from '../adminChatTools.js';
+import { IMAGE_MODEL_IDS } from '../../../src/constants/imageModelRegistry.js';
 import { prisma } from '../../db/prisma.js';
 import { describeImage } from '../geminiService.js';
 import {
@@ -155,7 +156,7 @@ REGISTRY['generate_mockup'] = {
         },
         model: {
           type: 'string',
-          enum: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'],
+          enum: IMAGE_MODEL_IDS as string[],
           description:
             'Image model. gpt-image-2=best quality+brand fidelity, gemini=fast/creative, seedream=photorealistic lifestyle.',
         },
@@ -211,7 +212,7 @@ REGISTRY['generate_mockup'] = {
       body: JSON.stringify({
         promptText: args.prompt,
         brandGuidelineId: args.brandGuidelineId || ctx.brandGuidelineId,
-        model: args.model || 'gpt-image-2',
+        model: args.model || IMAGE_MODEL_IDS[0],
         aspectRatio: args.aspectRatio || '1:1',
         resolution: args.resolution || '1K',
         designType: args.designType || 'blank',
@@ -226,7 +227,7 @@ REGISTRY['generate_mockup'] = {
     return JSON.stringify({
       imageUrl: result.imageUrl || null,
       mockupId: result.id || result.mockup?.id || null,
-      model: args.model || 'gpt-image-2',
+      model: args.model || IMAGE_MODEL_IDS[0],
       provider: result.provider || null,
       aspectRatio: args.aspectRatio || '1:1',
       resolution: args.resolution || '1K',

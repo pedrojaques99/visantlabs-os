@@ -8,6 +8,7 @@
 
 import express, { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
+import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { readFileSync } from 'fs';
 import { promises as fsAsync } from 'fs';
 import { resolve, join } from 'path';
@@ -322,7 +323,7 @@ router.get('/ai-designer.json', (_req: Request, res: Response) => {
       autonomousConfig: {
         model: {
           options: IMAGE_MODEL_REGISTRY.map((m) => m.id),
-          default: 'gpt-image-2',
+          default: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
           logic:
             'photorealistic->seedream, fast->gemini, text/quality->gpt-image-2, text-rendering->ideogram-v4/reve',
         },

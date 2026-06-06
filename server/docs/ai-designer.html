@@ -77,7 +77,7 @@
     <table>
       <thead><tr><th>Parameter</th><th>Options</th><th>Default</th><th>When to ask</th></tr></thead>
       <tbody>
-        <tr><td><code>model</code></td><td><code>gpt-image-2</code>, <code>gpt-image-1</code>, <code>gemini-3.1-flash-image-preview</code>, <code>seedream-3-0</code></td><td><code>gpt-image-2</code></td><td>Only if user requests a specific style (photorealistic → seedream, fast → gemini)</td></tr>
+        <tr><td><code>model</code></td><td><code>gpt-image-2</code>, <code>gpt-image-1</code>, <code>gemini-3.1-flash-image-preview</code>, <code>seedream-5-0-lite</code></td><td><code>gpt-image-2</code></td><td>Only if user requests a specific style (photorealistic → seedream, fast → gemini)</td></tr>
         <tr><td><code>aspectRatio</code></td><td><code>1:1</code>, <code>9:16</code>, <code>16:9</code>, <code>4:5</code></td><td><code>1:1</code></td><td>Infer from context: "Instagram story" → 9:16, "cover" → 16:9</td></tr>
         <tr><td><code>resolution</code></td><td><code>1K</code>, <code>2K</code>, <code>4K</code></td><td><code>1K</code></td><td>Ask only if user says "high quality" or "print". Costs more credits.</td></tr>
         <tr><td><code>brandGuidelineId</code></td><td>Any guideline ID from <code>brand-guidelines-list</code></td><td>First found</td><td>Always set. If multiple, ask which brand.</td></tr>
@@ -86,7 +86,7 @@
     </table>
 
     <h3>Model selection logic</h3>
-    <pre>if (userWantsPhotorealism)  → seedream-3-0
+    <pre>if (userWantsPhotorealism)  → seedream-5-0-lite
 if (userWantsFast)          → gemini-3.1-flash-image-preview
 if (userWantsBestQuality)   → gpt-image-2  (default)
 if (userNeedsTextInImage)   → gpt-image-2  (best text rendering)</pre>
@@ -250,7 +250,7 @@ Authorization: Bearer visant_sk_xxx
         <tr><td><code>gpt-image-2</code></td><td>OpenAI</td><td>Best quality, text, brand fidelity (default)</td><td>✅ /edits</td></tr>
         <tr><td><code>gpt-image-1</code></td><td>OpenAI</td><td>Good quality, wider availability</td><td>✅ /edits</td></tr>
         <tr><td><code>gemini-3.1-flash-image-preview</code></td><td>Google</td><td>Fast, stylized, creative</td><td>✅ inline</td></tr>
-        <tr><td><code>seedream-3-0</code></td><td>Seedream</td><td>Photorealistic lifestyle</td><td>✅</td></tr>
+        <tr><td><code>seedream-5-0-lite</code></td><td>Seedream</td><td>Photorealistic lifestyle</td><td>✅</td></tr>
       </tbody>
     </table>
   </section>

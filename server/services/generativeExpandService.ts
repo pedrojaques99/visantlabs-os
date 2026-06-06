@@ -11,6 +11,7 @@
  */
 import { uploadImage } from './r2Service.js';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
+import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 
 const MAX_IMAGE_BYTES = 50 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 60_000;
@@ -208,7 +209,7 @@ export async function generativeExpand(
     ] ?? 'medium';
 
   const response = await client.images.edit({
-    model: 'gpt-image-2',
+    model: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
     image: imageFile,
     mask: maskFile,
     prompt,

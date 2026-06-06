@@ -9,6 +9,7 @@
 
 import { SpecGenerationError, ValidationError } from './docs-errors.js';
 import { FIGMA_TOOLS, FigmaTool } from './tools/registry.js';
+import { IMAGE_MODEL_IDS } from '../../src/constants/imageModelRegistry.js';
 
 type ToolCost = 'free' | 'credits';
 type ToolCategory =
@@ -210,8 +211,8 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
       brandGuidelineId: { type: 'string' },
       model: {
         type: 'string',
-        enum: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'],
-        default: 'gpt-image-2',
+        enum: IMAGE_MODEL_IDS,
+        default: IMAGE_MODEL_IDS[0],
       },
       provider: { type: 'string', enum: ['openai', 'gemini', 'seedream'] },
       aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'] },
@@ -285,8 +286,8 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
       prompt: { type: 'string' },
       model: {
         type: 'string',
-        enum: ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'],
-        default: 'gpt-image-2',
+        enum: IMAGE_MODEL_IDS,
+        default: IMAGE_MODEL_IDS[0],
       },
       aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], default: '1:1' },
       resolution: { type: 'string', enum: ['1K', '2K', '4K'], default: '1K' },
@@ -799,7 +800,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
       prompt: { type: 'string' },
       brandGuidelineId: { type: 'string' },
       format: { type: 'string', enum: ['1:1', '16:9', '9:16', '4:5'], default: '1:1' },
-      model: { type: 'string', default: 'gpt-image-2' },
+      model: { type: 'string', default: IMAGE_MODEL_IDS[0] },
       resolution: { type: 'string', enum: ['1K', '2K', '4K'], default: '1K' },
       autoSave: { type: 'boolean', default: true },
     },

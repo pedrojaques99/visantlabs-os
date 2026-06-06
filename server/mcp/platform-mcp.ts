@@ -19,6 +19,7 @@ import {
   type BrandContextSection,
 } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
+import { IMAGE_MODEL_IDS } from '../../src/constants/imageModelRegistry.js';
 
 // ─── Structured error codes ───────────────────────────────────────────────────
 function mcpError(code: string, message: string, extra?: Record<string, any>) {
@@ -773,15 +774,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .min(1)
         .describe('Full image description — style, composition, colors, lighting, mood.'),
       model: z
-        .enum([
-          'gpt-image-2',
-          'gpt-image-1',
-          GEMINI_MODELS.IMAGE_FLASH,
-          GEMINI_MODELS.IMAGE_NB2,
-          GEMINI_MODELS.IMAGE_PRO,
-          'seedream-3-0',
-        ])
-        .default('gpt-image-2')
+        .enum(IMAGE_MODEL_IDS)
+        .default(IMAGE_MODEL_IDS[0])
         .describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
       aspectRatio: z
         .enum(['1:1', '9:16', '16:9', '4:5'])
@@ -848,20 +842,13 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           'Brand guideline ID. Auto-injects logo, colors, typography, voice into generation.'
         ),
       model: z
-        .enum([
-          'gpt-image-2',
-          'gpt-image-1',
-          GEMINI_MODELS.IMAGE_FLASH,
-          GEMINI_MODELS.IMAGE_NB2,
-          GEMINI_MODELS.IMAGE_PRO,
-          'seedream-3-0',
-        ])
-        .default('gpt-image-2')
+        .enum(IMAGE_MODEL_IDS)
+        .default(IMAGE_MODEL_IDS[0])
         .describe(
           'gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'
         ),
       provider: z
-        .enum(['openai', 'gemini', 'seedream'])
+        .enum(['openai', 'gemini', 'seedream', 'imagen', 'ideogram', 'reve'])
         .optional()
         .describe('Provider override. Inferred from model by default.'),
       aspectRatio: z
@@ -3128,15 +3115,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .default('1:1')
         .describe('Output aspect ratio.'),
       model: z
-        .enum([
-          'gpt-image-2',
-          'gpt-image-1',
-          GEMINI_MODELS.IMAGE_FLASH,
-          GEMINI_MODELS.IMAGE_NB2,
-          GEMINI_MODELS.IMAGE_PRO,
-          'seedream-3-0',
-        ])
-        .default('gpt-image-2')
+        .enum(IMAGE_MODEL_IDS)
+        .default(IMAGE_MODEL_IDS[0])
         .describe('Model for background image generation.'),
       resolution: z
         .enum(['1K', '2K', '4K'])

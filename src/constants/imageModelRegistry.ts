@@ -102,3 +102,9 @@ export const IMAGE_MODEL_REGISTRY: ImageModelEntry[] = [
     };
   }),
 ];
+
+/**
+ * All image model IDs from the registry — single source of truth for tool enums.
+ * Used by MCP tools, chat tool registry, and doc generators.
+ */
+export const IMAGE_MODEL_IDS = IMAGE_MODEL_REGISTRY.map((m) => m.id) as [string, ...string[]];

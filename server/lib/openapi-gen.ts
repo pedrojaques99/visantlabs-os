@@ -8,6 +8,7 @@
  */
 
 import { SpecGenerationError, ValidationError } from './docs-errors.js';
+import { IMAGE_MODEL_IDS } from '../../src/constants/imageModelRegistry.js';
 
 interface Parameter {
   name: string;
@@ -338,14 +339,7 @@ export function generateOpenAPISpec(
                   resolution: { type: 'string', enum: ['hd', '1k', '2k', '4k'] },
                   model: {
                     type: 'string',
-                    enum: [
-                      'gemini-2.5-flash-image',
-                      'gemini-3.1-flash-image-preview',
-                      'gemini-3-pro-image-preview',
-                      'seedream-4.5',
-                      'seedream-4.0',
-                      'gpt-image-2',
-                    ],
+                    enum: IMAGE_MODEL_IDS,
                   },
                   provider: {
                     type: 'string',
@@ -881,7 +875,7 @@ Step values:
                     enum: ['gemini', 'openai', 'seedream'],
                     default: 'openai',
                   },
-                  model: { type: 'string', default: 'gpt-image-2' },
+                  model: { type: 'string', default: IMAGE_MODEL_IDS[0] },
                   aspectRatio: {
                     type: 'string',
                     enum: ['1:1', '9:16', '16:9', '4:5'],

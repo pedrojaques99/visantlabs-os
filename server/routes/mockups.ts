@@ -17,10 +17,10 @@ import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
 import { generateIdeogramImage } from '../services/ideogramService.js';
 import { generateReveImage } from '../services/reveService.js';
-import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
+import { isSeedreamModel, SEEDREAM_MODELS } from '../../src/constants/seedreamModels.js';
 import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { isImagenModel } from '../../src/constants/imagenModels.js';
-import { isIdeogramModel } from '../../src/constants/ideogramModels.js';
+import { isIdeogramModel, IDEOGRAM_MODELS } from '../../src/constants/ideogramModels.js';
 import { isReveModel } from '../../src/constants/reveModels.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
@@ -992,7 +992,7 @@ router.post(
           console.warn(
             `${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`
           );
-          seedreamModel = 'seedream-4.5';
+          seedreamModel = SEEDREAM_MODELS.SD_4_5;
         }
 
         console.log(`${logPrefix} [GENERATION] Using Seedream provider`, {
@@ -1032,7 +1032,7 @@ router.post(
         usedSeed = reveResult.seed;
       } else if (provider === 'ideogram' || isIdeogramModel(model)) {
         // Use Ideogram API
-        const ideogramModel = isIdeogramModel(model) ? model : 'ideogram-v4';
+        const ideogramModel = isIdeogramModel(model) ? model : IDEOGRAM_MODELS.V4;
         console.log(`${logPrefix} [GENERATION] Using Ideogram provider`, {
           model: ideogramModel,
           resolution,
@@ -1441,7 +1441,7 @@ router.post(
           error: 'provider_timeout',
           message: 'The AI provider took too long to respond.',
           hint: 'Try again or use a faster model.',
-          suggestModel: 'gemini-2.5-flash-image',
+          suggestModel: GEMINI_MODELS.IMAGE_FLASH,
         };
       } else if (
         msg.includes('quota') ||

@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
-import { OPENAI_QUALITY_MAP, resolveOpenAISize } from '../../src/constants/openaiModels.js';
+import { OPENAI_IMAGE_MODELS, OPENAI_QUALITY_MAP, resolveOpenAISize } from '../../src/constants/openaiModels.js';
 
 export interface OpenAIImageInput {
   base64?: string;
@@ -44,7 +44,7 @@ export async function generateOpenAIImage(
     prompt,
     baseImage,
     referenceImages,
-    model = 'gpt-image-2',
+    model = OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
     resolution = '1K',
     aspectRatio,
     apiKey,

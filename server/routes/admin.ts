@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { ObjectId } from 'mongodb';
 import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
@@ -1039,7 +1040,7 @@ router.post('/presets/mockup/batch', validateAdmin, async (req: Request, res: Re
       return res.status(400).json({ error: 'presets array cannot be empty' });
     }
 
-    const validModels = ['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'];
+    const validModels = [GEMINI_MODELS.IMAGE_FLASH, GEMINI_MODELS.IMAGE_PRO];
 
     const errors: Array<{ index: number; id?: string; error: string }> = [];
     const validPresets: any[] = [];
