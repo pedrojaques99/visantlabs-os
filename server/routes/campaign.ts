@@ -11,6 +11,7 @@ import { uploadCanvasImage } from '../services/r2Service.js';
 import { validateExternalUrl, safeFetch } from '../utils/securityValidation.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import OpenAI from 'openai';
 import { chargeCredits, refundCredits } from '../lib/credits.js';
 import { getCreditsRequired } from '../utils/usageTracking.js';
@@ -315,7 +316,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     brief = 'Create compelling marketing ads for this product',
     count = 10,
     formats = ['square', 'story'],
-    model = 'gpt-image-1',
+    model = OPENAI_IMAGE_MODELS.GPT_IMAGE_1,
   } = req.body as {
     brandGuidelineId?: string;
     productImageUrl?: string;

@@ -125,7 +125,7 @@ As tools aparecem com o prefixo `mcp__visant__` na próxima sessão.
 
 | Tool                           | O que faz                                                                              | Custo   |
 | ------------------------------ | -------------------------------------------------------------------------------------- | ------- |
-| `ai-generate-image`            | Gerar imagem do zero (sem brand injection). Models: gpt-image-2, gemini, seedream-3-0. | Credits |
+| `ai-generate-image`            | Gerar imagem do zero (sem brand injection). Models: gpt-image-2, gemini, seedream-5-0-lite. | Credits |
 | `ai-describe-image`            | Descrever imagem (URL ou base64)                                                       | Free    |
 | `ai-improve-prompt`            | Melhorar prompt text                                                                   | Free    |
 | `ai-suggest-prompt-variations` | Gerar variações criativas de um prompt                                                 | Free    |

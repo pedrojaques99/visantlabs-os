@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { OPENAI_IMAGE_MODELS } from '../../../src/constants/openaiModels';
+import { GEMINI_MODELS } from '../../../src/constants/geminiModels';
+import { SEEDREAM_MODELS } from '../../../src/constants/seedreamModels';
 
 /**
  * MCP Tools Audit Tests
@@ -231,7 +234,7 @@ describe('mockup-generate tool contract', () => {
   });
 
   it('accepts all valid models', () => {
-    const models = ['gpt-image-2', 'gpt-image-1', 'gemini-3.1-flash-image-preview', 'seedream-3-0'];
+    const models = [OPENAI_IMAGE_MODELS.GPT_IMAGE_2, OPENAI_IMAGE_MODELS.GPT_IMAGE_1, GEMINI_MODELS.IMAGE_NB2, SEEDREAM_MODELS.SD_5_LITE];
     for (const model of models) {
       const r = simulateMockupGenerate(
         { prompt: 'test', model },

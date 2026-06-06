@@ -9,11 +9,11 @@ import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
 import { generateIdeogramImage } from '../services/ideogramService.js';
 import { generateReveImage } from '../services/reveService.js';
-import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
-import { isOpenAIImageModel } from '../../src/constants/openaiModels.js';
-import { isImagenModel } from '../../src/constants/imagenModels.js';
-import { isIdeogramModel } from '../../src/constants/ideogramModels.js';
-import { isReveModel } from '../../src/constants/reveModels.js';
+import { isSeedreamModel, SEEDREAM_MODELS } from '../../src/constants/seedreamModels.js';
+import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
+import { isImagenModel, IMAGEN_MODELS } from '../../src/constants/imagenModels.js';
+import { isIdeogramModel, IDEOGRAM_MODELS } from '../../src/constants/ideogramModels.js';
+import { isReveModel, REVE_MODELS } from '../../src/constants/reveModels.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { IMAGE_MODEL_REGISTRY } from '../../src/constants/imageModelRegistry.js';
 import { chargeCredits, refundCredits, type DeductionSource } from '../lib/credits.js';
@@ -46,61 +46,61 @@ interface BenchmarkExtra {
 }
 
 const BENCHMARK_EXTRAS: Record<string, BenchmarkExtra> = {
-  'gpt-image-2': {
+  [OPENAI_IMAGE_MODELS.GPT_IMAGE_2]: {
     tier: 'flagship',
     released: '2025-04',
     strengths: ['text', 'editing', 'photorealism'],
   },
-  'gemini-3-pro-image-preview': {
+  [GEMINI_MODELS.IMAGE_PRO]: {
     tier: 'flagship',
     released: '2025-06',
     strengths: ['reasoning', 'text', 'multi-ref'],
   },
-  'imagen-4.0-ultra-generate-001': {
+  [IMAGEN_MODELS.IMAGEN_4_ULTRA]: {
     tier: 'flagship',
     released: '2025-05',
     strengths: ['photorealism', 'quality'],
   },
-  'seedream-5-0-lite': {
+  [SEEDREAM_MODELS.SD_5_LITE]: {
     tier: 'flagship',
     released: '2025-06',
     strengths: ['resolution', 'photorealism', 'batch'],
   },
-  'ideogram-v4': {
+  [IDEOGRAM_MODELS.V4]: {
     tier: 'flagship',
     released: '2025-05',
     strengths: ['text-rendering', 'typography', 'structured'],
   },
-  'reve-image-1.0': {
+  [REVE_MODELS.REVE_1]: {
     tier: 'flagship',
     released: '2025-04',
     strengths: ['prompt-adherence', 'text', 'typoguard'],
   },
-  'gemini-3.1-flash-image-preview': {
+  [GEMINI_MODELS.IMAGE_NB2]: {
     tier: 'balanced',
     released: '2025-05',
     strengths: ['speed', 'multi-ref', 'cost'],
   },
-  'imagen-4.0-generate-001': {
+  [IMAGEN_MODELS.IMAGEN_4]: {
     tier: 'balanced',
     released: '2025-05',
     strengths: ['quality-cost', 'text'],
   },
-  'seedream-4.5': { tier: 'balanced', released: '2025-03', strengths: ['resolution', 'multi-ref'] },
-  'gpt-image-1': { tier: 'balanced', released: '2025-01', strengths: ['editing', 'versatile'] },
-  'ideogram-v3': {
+  [SEEDREAM_MODELS.SD_4_5]: { tier: 'balanced', released: '2025-03', strengths: ['resolution', 'multi-ref'] },
+  [OPENAI_IMAGE_MODELS.GPT_IMAGE_1]: { tier: 'balanced', released: '2025-01', strengths: ['editing', 'versatile'] },
+  [IDEOGRAM_MODELS.V3]: {
     tier: 'balanced',
     released: '2025-02',
     strengths: ['styles', 'presets', 'character-ref'],
   },
-  'imagen-4.0-fast-generate-001': {
+  [IMAGEN_MODELS.IMAGEN_4_FAST]: {
     tier: 'fast',
     released: '2025-05',
     strengths: ['speed', 'cost'],
   },
-  'seedream-4.0': { tier: 'legacy', released: '2024-12', strengths: ['resolution'] },
-  'seedream-3.0-t2i': { tier: 'legacy', released: '2024-09', strengths: ['seed-control'] },
-  'seededit-3.0-i2i': { tier: 'legacy', released: '2024-09', strengths: ['editing'] },
+  [SEEDREAM_MODELS.SD_4_0]: { tier: 'legacy', released: '2024-12', strengths: ['resolution'] },
+  [SEEDREAM_MODELS.SD_3_T2I]: { tier: 'legacy', released: '2024-09', strengths: ['seed-control'] },
+  [SEEDREAM_MODELS.SE_3_I2I]: { tier: 'legacy', released: '2024-09', strengths: ['editing'] },
 };
 
 interface BenchmarkModelMeta {

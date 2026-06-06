@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { chooseProvider } from '../lib/ai-providers/router.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
@@ -728,7 +729,7 @@ Available tools:
 - generate_mockup: Generate AI images/mockups. Use when user asks to create mockups, generate images, or needs visual assets. Choose model wisely:
   - gpt-image-2: best quality + brand fidelity (default)
   - gemini-3.1-flash-image-preview: fast/creative explorations
-  - seedream-3-0: photorealistic lifestyle/product shots
+  - seedream-5-0-lite / seedream-4.5: photorealistic lifestyle/product shots
   Choose aspectRatio based on context: 1:1 (Instagram/square), 9:16 (story/Reels), 16:9 (landscape/billboard/cover), 4:5 (portrait feed).
   Set designType when relevant: social-media, business-card, packaging, billboard, apparel, signage.
 - describe_image: Analyze an image by URL or base64. Use when user shares an image to recreate or reference.
@@ -819,7 +820,7 @@ ${
       try {
         const tcId = `tc-${Date.now()}-force`;
         const startedAt = new Date().toISOString();
-        const forceArgs: any = { prompt: command, model: 'gpt-image-2' };
+        const forceArgs: any = { prompt: command, model: OPENAI_IMAGE_MODELS.GPT_IMAGE_2 };
         if (brandGuidelineId) forceArgs.brandGuidelineId = brandGuidelineId;
 
         send('tool_start', { id: tcId, name: 'generate_mockup', args: forceArgs });

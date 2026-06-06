@@ -6,6 +6,13 @@
  * so there is exactly one place to update pricing.
  */
 
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { IMAGEN_MODELS } from '../../src/constants/imagenModels.js';
+import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
+import { SEEDREAM_MODELS } from '../../src/constants/seedreamModels.js';
+import { REVE_MODELS } from '../../src/constants/reveModels.js';
+import { IDEOGRAM_MODELS } from '../../src/constants/ideogramModels.js';
+
 export interface PricingTier {
   model: string;
   modelId: string;
@@ -82,9 +89,9 @@ export const STORAGE_PLANS: StoragePlan[] = [
 
 export const GOOGLE_OFFICIAL_PRICING = {
   image: {
-    'gemini-2.5-flash-image': { '~1K': 0.039 },
-    'gemini-3.1-flash-image-preview': { '512px': 0.045, '1K': 0.067, '2K': 0.101, '4K': 0.151 },
-    'gemini-3-pro-image-preview': { '1K': 0.134, '2K': 0.134, '4K': 0.24 },
+    [GEMINI_MODELS.IMAGE_FLASH]: { '~1K': 0.039 },
+    [GEMINI_MODELS.IMAGE_NB2]: { '512px': 0.045, '1K': 0.067, '2K': 0.101, '4K': 0.151 },
+    [GEMINI_MODELS.IMAGE_PRO]: { '1K': 0.134, '2K': 0.134, '4K': 0.24 },
   },
   video: {
     'veo-3.1-lite-generate-preview': { '720p': 0.05, '1080p': 0.08 },
@@ -98,7 +105,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   // ── Gemini Image ──
   {
     model: 'Gemini 2.5 Flash',
-    modelId: 'gemini-2.5-flash-image',
+    modelId: GEMINI_MODELS.IMAGE_FLASH,
     resolution: '~1K (HD)',
     googlePriceUSD: 0.039,
     creditsRequired: 1,
@@ -106,7 +113,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3.1 Flash',
-    modelId: 'gemini-3.1-flash-image-preview',
+    modelId: GEMINI_MODELS.IMAGE_NB2,
     resolution: '512px',
     googlePriceUSD: 0.045,
     creditsRequired: 1,
@@ -114,7 +121,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3.1 Flash',
-    modelId: 'gemini-3.1-flash-image-preview',
+    modelId: GEMINI_MODELS.IMAGE_NB2,
     resolution: '1K (HD)',
     googlePriceUSD: 0.067,
     creditsRequired: 2,
@@ -122,7 +129,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3.1 Flash',
-    modelId: 'gemini-3.1-flash-image-preview',
+    modelId: GEMINI_MODELS.IMAGE_NB2,
     resolution: '2K',
     googlePriceUSD: 0.101,
     creditsRequired: 3,
@@ -130,7 +137,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3.1 Flash',
-    modelId: 'gemini-3.1-flash-image-preview',
+    modelId: GEMINI_MODELS.IMAGE_NB2,
     resolution: '4K',
     googlePriceUSD: 0.151,
     creditsRequired: 4,
@@ -138,7 +145,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3 Pro',
-    modelId: 'gemini-3-pro-image-preview',
+    modelId: GEMINI_MODELS.IMAGE_PRO,
     resolution: '1K (HD)',
     googlePriceUSD: 0.134,
     creditsRequired: 3,
@@ -146,7 +153,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3 Pro',
-    modelId: 'gemini-3-pro-image-preview',
+    modelId: GEMINI_MODELS.IMAGE_PRO,
     resolution: '2K',
     googlePriceUSD: 0.134,
     creditsRequired: 5,
@@ -154,7 +161,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3 Pro',
-    modelId: 'gemini-3-pro-image-preview',
+    modelId: GEMINI_MODELS.IMAGE_PRO,
     resolution: '4K',
     googlePriceUSD: 0.24,
     creditsRequired: 7,
@@ -163,7 +170,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   // ── Imagen 4 (Google, fixed price per image) ──
   {
     model: 'Imagen 4 Fast',
-    modelId: 'imagen-4.0-fast-generate-001',
+    modelId: IMAGEN_MODELS.IMAGEN_4_FAST,
     resolution: '1K',
     googlePriceUSD: 0.02,
     creditsRequired: 1,
@@ -171,7 +178,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Imagen 4',
-    modelId: 'imagen-4.0-generate-001',
+    modelId: IMAGEN_MODELS.IMAGEN_4,
     resolution: '1K',
     googlePriceUSD: 0.04,
     creditsRequired: 1,
@@ -179,7 +186,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Imagen 4',
-    modelId: 'imagen-4.0-generate-001',
+    modelId: IMAGEN_MODELS.IMAGEN_4,
     resolution: '2K',
     googlePriceUSD: 0.04,
     creditsRequired: 2,
@@ -187,7 +194,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Imagen 4 Ultra',
-    modelId: 'imagen-4.0-ultra-generate-001',
+    modelId: IMAGEN_MODELS.IMAGEN_4_ULTRA,
     resolution: '1K',
     googlePriceUSD: 0.06,
     creditsRequired: 2,
@@ -195,7 +202,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Imagen 4 Ultra',
-    modelId: 'imagen-4.0-ultra-generate-001',
+    modelId: IMAGEN_MODELS.IMAGEN_4_ULTRA,
     resolution: '2K',
     googlePriceUSD: 0.06,
     creditsRequired: 2,
@@ -204,7 +211,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   // ── OpenAI Image (gpt-image-2, token-based, estimates per image) ──
   {
     model: 'GPT Image 2',
-    modelId: 'gpt-image-2',
+    modelId: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
     resolution: '1K (HD)',
     googlePriceUSD: 0.053,
     creditsRequired: 2,
@@ -212,7 +219,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'GPT Image 2',
-    modelId: 'gpt-image-2',
+    modelId: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
     resolution: '2K',
     googlePriceUSD: 0.12,
     creditsRequired: 3,
@@ -220,7 +227,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'GPT Image 2',
-    modelId: 'gpt-image-2',
+    modelId: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
     resolution: '4K',
     googlePriceUSD: 0.211,
     creditsRequired: 4,
@@ -229,7 +236,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   // ── Seedream Image (BytePlus API) ──
   {
     model: 'Seedream 5 Lite',
-    modelId: 'seedream-5-0-lite',
+    modelId: SEEDREAM_MODELS.SD_5_LITE,
     resolution: '2K',
     googlePriceUSD: 0.035,
     creditsRequired: 2,
@@ -237,7 +244,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Seedream 5 Lite',
-    modelId: 'seedream-5-0-lite',
+    modelId: SEEDREAM_MODELS.SD_5_LITE,
     resolution: '3K',
     googlePriceUSD: 0.045,
     creditsRequired: 3,
@@ -245,7 +252,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Seedream 5 Lite',
-    modelId: 'seedream-5-0-lite',
+    modelId: SEEDREAM_MODELS.SD_5_LITE,
     resolution: '4K',
     googlePriceUSD: 0.055,
     creditsRequired: 4,
@@ -253,7 +260,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Seedream 4.5',
-    modelId: 'seedream-4.5',
+    modelId: SEEDREAM_MODELS.SD_4_5,
     resolution: '2K',
     googlePriceUSD: 0.04,
     creditsRequired: 2,
@@ -261,7 +268,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Seedream 4.5',
-    modelId: 'seedream-4.5',
+    modelId: SEEDREAM_MODELS.SD_4_5,
     resolution: '3K',
     googlePriceUSD: 0.045,
     creditsRequired: 3,
@@ -269,7 +276,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Seedream 4.5',
-    modelId: 'seedream-4.5',
+    modelId: SEEDREAM_MODELS.SD_4_5,
     resolution: '4K',
     googlePriceUSD: 0.055,
     creditsRequired: 4,
@@ -277,7 +284,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Seedream 4.0',
-    modelId: 'seedream-4.0',
+    modelId: SEEDREAM_MODELS.SD_4_0,
     resolution: '2K',
     googlePriceUSD: 0.025,
     creditsRequired: 2,
@@ -285,7 +292,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Seedream 4.0',
-    modelId: 'seedream-4.0',
+    modelId: SEEDREAM_MODELS.SD_4_0,
     resolution: '3K',
     googlePriceUSD: 0.035,
     creditsRequired: 3,
@@ -293,7 +300,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Seedream 4.0',
-    modelId: 'seedream-4.0',
+    modelId: SEEDREAM_MODELS.SD_4_0,
     resolution: '4K',
     googlePriceUSD: 0.045,
     creditsRequired: 4,
@@ -302,7 +309,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   // ── REVE Image (Reve API, TypoGuard text rendering) ──
   {
     model: 'Reve 1',
-    modelId: 'reve-image-1.0',
+    modelId: REVE_MODELS.REVE_1,
     resolution: '1K',
     googlePriceUSD: 0.1,
     creditsRequired: 2,
@@ -310,7 +317,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Reve 1',
-    modelId: 'reve-image-1.0',
+    modelId: REVE_MODELS.REVE_1,
     resolution: '2K',
     googlePriceUSD: 0.1,
     creditsRequired: 3,
@@ -319,7 +326,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   // ── Ideogram Image (Ideogram API, DEFAULT speed tier pricing) ──
   {
     model: 'Ideogram 4',
-    modelId: 'ideogram-v4',
+    modelId: IDEOGRAM_MODELS.V4,
     resolution: '1K',
     googlePriceUSD: 0.06,
     creditsRequired: 2,
@@ -327,7 +334,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Ideogram 4',
-    modelId: 'ideogram-v4',
+    modelId: IDEOGRAM_MODELS.V4,
     resolution: '2K',
     googlePriceUSD: 0.06,
     creditsRequired: 3,
@@ -335,7 +342,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Ideogram 3',
-    modelId: 'ideogram-v3',
+    modelId: IDEOGRAM_MODELS.V3,
     resolution: '1K',
     googlePriceUSD: 0.06,
     creditsRequired: 2,
@@ -343,7 +350,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Ideogram 3',
-    modelId: 'ideogram-v3',
+    modelId: IDEOGRAM_MODELS.V3,
     resolution: '2K',
     googlePriceUSD: 0.06,
     creditsRequired: 3,

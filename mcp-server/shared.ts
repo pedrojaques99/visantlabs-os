@@ -446,7 +446,7 @@ export const TOOLS = [
         model: {
           type: 'string',
           description:
-            'Model name. For openai: gpt-image-1 or gpt-image-2. For gemini: gemini-2.0-flash-exp-image-generation. For seedream: seedream-3-0.',
+            'Model name. For openai: gpt-image-1 or gpt-image-2. For gemini: gemini-2.0-flash-exp-image-generation. For seedream: seedream-5-0-lite.',
           default: 'gpt-image-2',
         },
         aspectRatio: {
