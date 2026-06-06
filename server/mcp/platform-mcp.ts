@@ -19,7 +19,7 @@ import {
   type BrandContextSection,
 } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
-import { IMAGE_MODEL_IDS } from '../../src/constants/imageModelRegistry.js';
+import { IMAGE_MODEL_IDS, IMAGE_PROVIDERS } from '../../src/constants/imageModelRegistry.js';
 
 // ─── Structured error codes ───────────────────────────────────────────────────
 function mcpError(code: string, message: string, extra?: Record<string, any>) {
@@ -848,7 +848,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           'gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'
         ),
       provider: z
-        .enum(['openai', 'gemini', 'seedream', 'imagen', 'ideogram', 'reve'])
+        .enum(IMAGE_PROVIDERS)
         .optional()
         .describe('Provider override. Inferred from model by default.'),
       aspectRatio: z

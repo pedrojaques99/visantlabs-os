@@ -9,7 +9,7 @@
 
 import { SpecGenerationError, ValidationError } from './docs-errors.js';
 import { FIGMA_TOOLS, FigmaTool } from './tools/registry.js';
-import { IMAGE_MODEL_IDS } from '../../src/constants/imageModelRegistry.js';
+import { IMAGE_MODEL_IDS, IMAGE_PROVIDERS } from '../../src/constants/imageModelRegistry.js';
 
 type ToolCost = 'free' | 'credits';
 type ToolCategory =
@@ -214,7 +214,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
         enum: IMAGE_MODEL_IDS,
         default: IMAGE_MODEL_IDS[0],
       },
-      provider: { type: 'string', enum: ['openai', 'gemini', 'seedream'] },
+      provider: { type: 'string', enum: IMAGE_PROVIDERS as string[] },
       aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'] },
       resolution: { type: 'string', enum: ['1K', '2K', '4K'] },
       referenceImages: {

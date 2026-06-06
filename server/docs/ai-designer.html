@@ -77,7 +77,7 @@
     <table>
       <thead><tr><th>Parameter</th><th>Options</th><th>Default</th><th>When to ask</th></tr></thead>
       <tbody>
-        <tr><td><code>model</code></td><td><code>gpt-image-2</code>, <code>gpt-image-1</code>, <code>gemini-3.1-flash-image-preview</code>, <code>seedream-5-0-lite</code></td><td><code>gpt-image-2</code></td><td>Only if user requests a specific style (photorealistic → seedream, fast → gemini)</td></tr>
+        <tr><td><code>model</code></td><td>See <a href="#models">Models table</a> — 6 providers, 15+ models</td><td><code>gpt-image-2</code></td><td>Only if user requests a specific style (photorealistic → seedream, fast → imagen, text → ideogram)</td></tr>
         <tr><td><code>aspectRatio</code></td><td><code>1:1</code>, <code>9:16</code>, <code>16:9</code>, <code>4:5</code></td><td><code>1:1</code></td><td>Infer from context: "Instagram story" → 9:16, "cover" → 16:9</td></tr>
         <tr><td><code>resolution</code></td><td><code>1K</code>, <code>2K</code>, <code>4K</code></td><td><code>1K</code></td><td>Ask only if user says "high quality" or "print". Costs more credits.</td></tr>
         <tr><td><code>brandGuidelineId</code></td><td>Any guideline ID from <code>brand-guidelines-list</code></td><td>First found</td><td>Always set. If multiple, ask which brand.</td></tr>
@@ -86,10 +86,14 @@
     </table>
 
     <h3>Model selection logic</h3>
-    <pre>if (userWantsPhotorealism)  → seedream-5-0-lite
-if (userWantsFast)          → gemini-3.1-flash-image-preview
-if (userWantsBestQuality)   → gpt-image-2  (default)
-if (userNeedsTextInImage)   → gpt-image-2  (best text rendering)</pre>
+    <pre>if (userWantsPhotorealism)  → seedream-5-0-lite   (BytePlus)
+if (userWantsFast)          → imagen-4.0-fast-generate-001  (Google)
+if (userWantsBestQuality)   → gpt-image-2         (OpenAI, default)
+if (userNeedsTextInImage)   → ideogram-v4          (Ideogram, best text rendering)
+if (userWantsCreative)      → gemini-3.1-flash-image-preview  (Google)
+if (userWantsUltraQuality)  → imagen-4.0-ultra-generate-001   (Google)
+if (userWantsVideo)         → reve-image-1.0       (Reve, TypoGuard text)</pre>
+    <div class="note">Full model list: <a href="/api/docs/platform/mcp.json">MCP spec (JSON)</a> — the authoritative, auto-generated source.</div>
   </section>
 
   <!-- ── FULL PIPELINE ── -->
@@ -242,15 +246,34 @@ Authorization: Bearer visant_sk_xxx
   </section>
 
   <!-- ── MODELS ── -->
-  <section>
+  <section id="models">
     <h2>Models</h2>
+    <div class="note">Authoritative list lives in <code>src/constants/imageModelRegistry.ts</code>. This table is a human-friendly snapshot — check the <a href="/api/docs/platform/mcp.json">MCP spec</a> for the latest.</div>
     <table>
       <thead><tr><th>Model ID</th><th>Provider</th><th>Best for</th><th>Logo ref</th></tr></thead>
       <tbody>
+        <tr><td colspan="4" style="color:var(--muted);font-weight:600;background:var(--bg)">OpenAI</td></tr>
         <tr><td><code>gpt-image-2</code></td><td>OpenAI</td><td>Best quality, text, brand fidelity (default)</td><td>✅ /edits</td></tr>
         <tr><td><code>gpt-image-1</code></td><td>OpenAI</td><td>Good quality, wider availability</td><td>✅ /edits</td></tr>
-        <tr><td><code>gemini-3.1-flash-image-preview</code></td><td>Google</td><td>Fast, stylized, creative</td><td>✅ inline</td></tr>
-        <tr><td><code>seedream-5-0-lite</code></td><td>Seedream</td><td>Photorealistic lifestyle</td><td>✅</td></tr>
+        <tr><td colspan="4" style="color:var(--muted);font-weight:600;background:var(--bg)">Google Gemini</td></tr>
+        <tr><td><code>gemini-2.5-flash-image</code></td><td>Gemini</td><td>Fast image gen, up to 3 ref images</td><td>✅ inline</td></tr>
+        <tr><td><code>gemini-3.1-flash-image-preview</code></td><td>Gemini</td><td>High-perf 2K multimodal, up to 10 refs</td><td>✅ inline</td></tr>
+        <tr><td><code>gemini-3-pro-image-preview</code></td><td>Gemini</td><td>Reasoning + text rendering, up to 14 refs</td><td>✅ inline</td></tr>
+        <tr><td colspan="4" style="color:var(--muted);font-weight:600;background:var(--bg)">Google Imagen</td></tr>
+        <tr><td><code>imagen-4.0-fast-generate-001</code></td><td>Imagen</td><td>Fastest, lowest cost</td><td>❌</td></tr>
+        <tr><td><code>imagen-4.0-generate-001</code></td><td>Imagen</td><td>Best quality/cost, text rendering</td><td>❌</td></tr>
+        <tr><td><code>imagen-4.0-ultra-generate-001</code></td><td>Imagen</td><td>Maximum quality, photorealistic</td><td>❌</td></tr>
+        <tr><td colspan="4" style="color:var(--muted);font-weight:600;background:var(--bg)">BytePlus Seedream</td></tr>
+        <tr><td><code>seedream-5-0-lite</code></td><td>Seedream</td><td>Newest — 2K/3K/4K, batch, multi-ref</td><td>✅</td></tr>
+        <tr><td><code>seedream-4.5</code></td><td>Seedream</td><td>Photorealistic lifestyle</td><td>✅</td></tr>
+        <tr><td><code>seedream-4.0</code></td><td>Seedream</td><td>1K–4K, batch, multi-ref</td><td>✅</td></tr>
+        <tr><td><code>seedream-3.0-t2i</code></td><td>Seedream</td><td>Text-to-image, seed control</td><td>✅</td></tr>
+        <tr><td><code>seededit-3.0-i2i</code></td><td>Seedream</td><td>Image editing, adaptive size</td><td>✅</td></tr>
+        <tr><td colspan="4" style="color:var(--muted);font-weight:600;background:var(--bg)">Ideogram</td></tr>
+        <tr><td><code>ideogram-v4</code></td><td>Ideogram</td><td>Best text rendering, structured prompts, 2K</td><td>❌</td></tr>
+        <tr><td><code>ideogram-v3</code></td><td>Ideogram</td><td>60+ style presets, character refs, palettes</td><td>❌</td></tr>
+        <tr><td colspan="4" style="color:var(--muted);font-weight:600;background:var(--bg)">Reve</td></tr>
+        <tr><td><code>reve-image-1.0</code></td><td>Reve</td><td>TypoGuard text rendering, 98% prompt adherence</td><td>❌</td></tr>
       </tbody>
     </table>
   </section>

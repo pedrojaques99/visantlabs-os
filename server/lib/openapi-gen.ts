@@ -8,7 +8,7 @@
  */
 
 import { SpecGenerationError, ValidationError } from './docs-errors.js';
-import { IMAGE_MODEL_IDS } from '../../src/constants/imageModelRegistry.js';
+import { IMAGE_MODEL_IDS, IMAGE_PROVIDERS } from '../../src/constants/imageModelRegistry.js';
 
 interface Parameter {
   name: string;
@@ -343,7 +343,7 @@ export function generateOpenAPISpec(
                   },
                   provider: {
                     type: 'string',
-                    enum: ['gemini', 'seedream', 'openai'],
+                    enum: IMAGE_PROVIDERS as string[],
                     description: 'Image generation provider. Defaults to gemini.',
                   },
                 },
@@ -872,7 +872,7 @@ Step values:
                   },
                   provider: {
                     type: 'string',
-                    enum: ['gemini', 'openai', 'seedream'],
+                    enum: IMAGE_PROVIDERS as string[],
                     default: 'openai',
                   },
                   model: { type: 'string', default: IMAGE_MODEL_IDS[0] },
