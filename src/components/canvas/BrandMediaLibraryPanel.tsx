@@ -18,6 +18,7 @@ import { loadImage } from '@/utils/imageUtils';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { SegmentedControl } from '@/components/shared/ToolPanel';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import { useBrandKitSafe } from '@/contexts/BrandKitContext';

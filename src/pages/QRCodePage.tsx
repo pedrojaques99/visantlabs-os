@@ -9,6 +9,7 @@ import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { useTranslation } from '@/hooks/useTranslation';
+import { MiniToolShell } from '@/components/shared/MiniToolShell';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 const fadeUp = {

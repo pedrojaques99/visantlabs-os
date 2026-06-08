@@ -3,6 +3,7 @@
  * Used by both the standalone TextureFilter page and the React Flow node.
  */
 import { loadImage } from '@/utils/imageUtils';
+export { loadImage };
 
 export interface TextureFilterRenderSettings {
   opacity: number;
