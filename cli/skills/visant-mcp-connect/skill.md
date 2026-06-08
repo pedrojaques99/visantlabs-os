@@ -59,7 +59,7 @@ As tools aparecem com o prefixo `mcp__visant__` na próxima sessão.
 
 ---
 
-## Tools disponíveis (93 tools)
+## Tools disponíveis (116 tools)
 
 ### Account & Auth (6 tools)
 

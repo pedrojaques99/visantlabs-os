@@ -5,6 +5,7 @@
 ## Live endpoints
 
 - MCP Server: `POST https://api.visantlabs.com/api/mcp` (Streamable HTTP, MCP 2025-11-25)
+- LLM discovery: https://api.visantlabs.com/llms.txt (always up-to-date tool count)
 - Full LLM reference: https://api.visantlabs.com/llms-full.txt
 - OpenAPI spec: https://api.visantlabs.com/api/docs/api/spec
 - Public brand context demo (no auth): https://api.visantlabs.com/api/brand-guidelines/public/visant/context?output=text
@@ -12,9 +13,9 @@
 ## Repository structure
 
 - `/server` — Express.js backend (API + MCP server)
-- `/server/mcp/platform-mcp.ts` — All MCP tool definitions (116 tools, all annotated)
-- `/server/routes/` — REST API routes
-- `/server/lib/brandContextBuilder.ts` — Brand context builder (LLM-ready output)
+- `/server/mcp/platform-mcp.ts` — All MCP tool definitions (annotated with readOnlyHint/destructiveHint)
+- `/server/lib/mcp-constants.ts` — SSoT for MCP config (endpoint, spec version, limits)
+- `/server/routes/llms.ts` — Dynamic llms.txt/llms-full.txt generation
 - `/src` — React frontend (Vite + Tailwind)
 - `/prisma` — Database schema (MongoDB via Prisma)
 - `/tests` — Vitest suites
@@ -22,5 +23,5 @@
 ## Key concepts
 
 - **Brand Guidelines as AI input**: guidelines are structured data that feed into mockup/creative generation — not just static documentation.
-- **MCP-first**: the platform is designed for agent access. All 116 tools have `readOnlyHint`/`destructiveHint` annotations.
+- **MCP-first**: the platform is designed for agent access. All tools have `readOnlyHint`/`destructiveHint` annotations.
 - **OAuth 2.1**: PKCE + Dynamic Client Registration for Claude Connector Directory compatibility.

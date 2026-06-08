@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getCurrentLocale } from '@/utils/localeUtils';
+import { branding } from '@/config/branding';
 
 export interface SEOProps {
   title?: string;
@@ -23,8 +24,7 @@ const getSiteUrl = (): string => {
 };
 
 const defaultTitle = 'Visant Labs® | Tools for Designers';
-const defaultDescription =
-  'AI design platform: generate mockups, brand identities, marketing creatives, and 3D scenes from text prompts. Brand guidelines as input for AI generation.';
+const defaultDescription = branding.description;
 
 /**
  * Default Open Graph Image
@@ -154,10 +154,7 @@ export const SEO: React.FC<SEOProps> = ({
         name: 'Visant Labs',
         url: siteUrl,
         logo: `${siteUrl}/og-image.png`,
-        sameAs: [
-          'https://github.com/pedrojaques99/visantlabs-os',
-          'https://x.com/visantlabs',
-        ],
+        sameAs: Object.values(branding.social),
       },
       {
         '@context': 'https://schema.org',

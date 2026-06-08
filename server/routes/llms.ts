@@ -5,6 +5,8 @@ import {
   MCP_SPEC_VERSION,
   API_BASE_URL,
   FRONTEND_BASE_URL,
+  SUPPORT_EMAIL,
+  PLATFORM_DESCRIPTION,
 } from '../lib/mcp-constants.js';
 
 const router = express.Router();
@@ -20,7 +22,7 @@ router.get('/llms.txt', (_req, res) => {
   res.set(COMMON_HEADERS);
   res.send(`# Visant Labs
 
-> Visant Labs is an AI design platform that turns brand guidelines into production-ready mockups, creatives, and brand identities — accessible via MCP, REST API, or web UI.
+> Visant Labs is an ${PLATFORM_DESCRIPTION}
 
 - Website: ${FRONTEND_BASE_URL}
 - Full reference: ${API_BASE_URL}/llms-full.txt
@@ -57,7 +59,7 @@ Returns the Visant Labs brand context as plain text — try it to see the output
 ## Links
 
 - Privacy: ${FRONTEND_BASE_URL}/privacy
-- Support: support@visantlabs.com
+- Support: ${SUPPORT_EMAIL}
 `);
 });
 
@@ -66,7 +68,7 @@ router.get('/llms-full.txt', (_req, res) => {
   res.set(COMMON_HEADERS);
   res.send(`# Visant Labs — MCP Server Reference
 
-> Complete tool reference for AI agents connecting via MCP.
+> Complete tool reference for AI agents connecting to Visant Labs via MCP.
 > Endpoint: ${MCP_ENDPOINT} | Protocol: MCP ${MCP_SPEC_VERSION} | Transport: Streamable HTTP
 
 ## Authentication
@@ -304,7 +306,7 @@ All tool errors return: \`{ "error": { "code": "...", "message": "..." } }\`
 - OpenAPI: ${API_BASE_URL}/api/docs/api/spec
 - OAuth discovery: ${API_BASE_URL}/.well-known/oauth-authorization-server
 - Public brand demo: ${API_BASE_URL}/api/brand-guidelines/public/visant/context?output=text
-- Support: support@visantlabs.com
+- Support: ${SUPPORT_EMAIL}
 `);
 });
 
