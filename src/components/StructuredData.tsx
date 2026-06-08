@@ -21,7 +21,7 @@ export interface OrganizationSchemaProps {
 
 export const OrganizationSchema: React.FC<OrganizationSchemaProps> = ({
   name = 'Visant Labs',
-  description = 'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.',
+  description = 'AI design platform: generate mockups, creatives, brand identities, and production-ready assets from brand guidelines.',
   logo,
   url,
   sameAs = [],
@@ -78,7 +78,7 @@ export interface SoftwareApplicationSchemaProps {
 
 export const SoftwareApplicationSchema: React.FC<SoftwareApplicationSchemaProps> = ({
   name = 'Visant Labs Creative Tools',
-  description = 'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.',
+  description = 'AI design platform: generate mockups, creatives, brand identities, and production-ready assets from brand guidelines.',
   applicationCategory = 'DesignApplication',
   operatingSystem = 'Web',
   offers,
@@ -187,7 +187,7 @@ export interface WebSiteSchemaProps {
 
 export const WebSiteSchema: React.FC<WebSiteSchemaProps> = ({
   name = 'Visant Labs',
-  description = 'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.',
+  description = 'AI design platform: generate mockups, creatives, brand identities, and production-ready assets from brand guidelines.',
   url,
   potentialAction,
 }) => {

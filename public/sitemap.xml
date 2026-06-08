@@ -1,99 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  IMPORTANT: Update this file before deploying to production!
-  Replace visant.app with your actual domain.
-  
-  You can also generate this dynamically using a build script.
--->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <!-- Homepage -->
   <url>
-    <loc>https://visant.app/</loc>
+    <loc>https://visantlabs.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/?locale=en-US"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visantlabs.com/?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://visantlabs.com/?locale=en-US"/>
   </url>
   
   <!-- Pricing -->
   <url>
-    <loc>https://visant.app/pricing</loc>
+    <loc>https://visantlabs.com/pricing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/pricing?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/pricing?locale=en-US"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visantlabs.com/pricing?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://visantlabs.com/pricing?locale=en-US"/>
   </url>
   
   <!-- About -->
   <url>
-    <loc>https://visant.app/about</loc>
+    <loc>https://visantlabs.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/about?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/about?locale=en-US"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visantlabs.com/about?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://visantlabs.com/about?locale=en-US"/>
   </url>
   
   <!-- Apps -->
   <url>
-    <loc>https://visant.app/apps</loc>
+    <loc>https://visantlabs.com/apps</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/apps?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/apps?locale=en-US"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visantlabs.com/apps?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://visantlabs.com/apps?locale=en-US"/>
   </url>
   
   <!-- Community Mockups -->
   <url>
-    <loc>https://visant.app/mockups</loc>
+    <loc>https://visantlabs.com/mockups</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/mockups?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/mockups?locale=en-US"/>
-  </url>
-  
-  <!-- Canvas -->
-  <url>
-    <loc>https://visant.app/canvas</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/canvas?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/canvas?locale=en-US"/>
-  </url>
-  
-  <!-- Saved -->
-  <url>
-    <loc>https://visant.app/my-outputs</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/my-outputs?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/my-outputs?locale=en-US"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visantlabs.com/mockups?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://visantlabs.com/mockups?locale=en-US"/>
   </url>
   
   <!-- Branding Machine -->
   <url>
-    <loc>https://visant.app/branding-machine</loc>
+    <loc>https://visantlabs.com/branding-machine</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/branding-machine?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/branding-machine?locale=en-US"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visantlabs.com/branding-machine?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://visantlabs.com/branding-machine?locale=en-US"/>
   </url>
   
   <!-- Budget Machine -->
   <url>
-    <loc>https://visant.app/budget-machine</loc>
+    <loc>https://visantlabs.com/budget-machine</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/budget-machine?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/budget-machine?locale=en-US"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visantlabs.com/budget-machine?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://visantlabs.com/budget-machine?locale=en-US"/>
   </url>
   
-  <!-- Waitlist -->
+  <!-- Documentation -->
   <url>
-    <loc>https://visant.app/waitlist</loc>
+    <loc>https://visantlabs.com/docs</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Brand Guidelines -->
+  <url>
+    <loc>https://visantlabs.com/brand-guidelines</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://visantlabs.com/privacy</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://visant.app/waitlist?locale=pt-BR"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://visant.app/waitlist?locale=en-US"/>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Getting Started -->
+  <url>
+    <loc>https://visantlabs.com/getting-started</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

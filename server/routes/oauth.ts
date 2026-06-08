@@ -712,11 +712,11 @@ function buildLoginPage(p: LoginPageParams): string {
     <form id="loginForm">
       <div class="field">
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com" autofocus />
+        <input type="email" id="email" name="email" required autocomplete="email" placeholder="name@company.com" autofocus />
       </div>
       <div class="field">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" />
+        <input type="password" id="password" name="password" required autocomplete="current-password" />
       </div>
       <button type="submit" class="btn btn-primary" id="submitBtn">Sign in</button>
       <div class="error" id="error"></div>

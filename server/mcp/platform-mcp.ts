@@ -195,7 +195,7 @@ import { MCP_RESULT_MAX_CHARS, MCP_ENDPOINT } from '../lib/mcp-constants.js';
 function jsonResponse(data: unknown) {
   let text = JSON.stringify(data, null, 2);
   if (text.length > MCP_RESULT_MAX_CHARS) {
-    text = text.slice(0, MCP_RESULT_MAX_CHARS) + '\n\n... [truncated — result exceeded 140k chars]';
+    text = text.slice(0, MCP_RESULT_MAX_CHARS) + `\n\n... [truncated — result exceeded ${Math.round(MCP_RESULT_MAX_CHARS / 1000)}k chars]`;
   }
   return {
     content: [{ type: 'text' as const, text }],
@@ -295,7 +295,7 @@ For each design file: upload-image → collect URL → mockup-generate with refe
 Run upload-image calls in parallel, then mockup-generate calls in parallel.
 
 ## Prompt Templates (MCP Prompts)
-Use listPrompts() to discover available prompt templates pulled from real user data:
+Prompt templates are discoverable via the MCP prompts API (prompts/list):
 - **mockup-scene** — proven scene descriptions for mockup-generate, from community presets + user feedback (thumbs-up only)
 - **prompt-library** — full searchable library across community, feedback, and auto-promoted patterns
 When unsure what prompt to write, query these first — they contain battle-tested prompts with real results.
