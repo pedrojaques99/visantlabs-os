@@ -379,7 +379,7 @@ export function createApp() {
       },
       capabilities: ['tools', 'prompts', 'resources'],
       toolCount: getMcpToolCount(),
-      docsUrl: `${FRONTEND_BASE_URL}/llms-full.txt`,
+      docsUrl: `${API_BASE_URL}/llms-full.txt`,
     });
   });
 

@@ -1,26 +1,24 @@
-# robots.txt
-# https://www.robotstxt.org/robotstxt.html
+# robots.txt — visantlabs.com (frontend SPA)
+# LLM reference files are served from api.visantlabs.com, not this domain.
 
 User-agent: *
 Allow: /
 Allow: /pricing
 Allow: /about
 Allow: /apps
+Allow: /docs
+Allow: /brand-guidelines
+Allow: /privacy
 Allow: /mockups
 Allow: /branding-machine
 Allow: /budget-machine
-Allow: /waitlist
-Allow: /llms.txt
-Allow: /llms-full.txt
 
-# Disallow private/user pages
+# Private/user pages
 Disallow: /profile
 Disallow: /my-outputs
 Disallow: /my-brandings
 Disallow: /my-budgets
 Disallow: /canvas/
-Disallow: /canvas/:id
-Disallow: /budget/shared/
 Disallow: /admin
 Disallow: /admin/
 Disallow: /editor
@@ -29,26 +27,17 @@ Disallow: /thank-you
 Disallow: /recharge-success
 Disallow: /forgot-password
 
-# AI Crawlers — explicitly allowed
-User-agent: GPTBot
-Allow: /
-Allow: /llms.txt
-Allow: /llms-full.txt
-
+# AI crawlers — allowed on public routes
 User-agent: ClaudeBot
 Allow: /
-Allow: /llms.txt
-Allow: /llms-full.txt
+
+User-agent: GPTBot
+Allow: /
 
 User-agent: PerplexityBot
 Allow: /
-Allow: /llms.txt
-Allow: /llms-full.txt
 
 User-agent: Anthropic
 Allow: /
-Allow: /llms.txt
-Allow: /llms-full.txt
 
-# Allow sitemap
 Sitemap: https://visantlabs.com/sitemap.xml

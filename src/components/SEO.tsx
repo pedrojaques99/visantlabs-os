@@ -145,7 +145,7 @@ export const SEO: React.FC<SEOProps> = ({
     updateLinkTag('alternate', finalUrl, 'x-default');
 
     // AI Discovery
-    updateLinkTag('ai-index', '/llms.txt');
+    updateLinkTag('ai-index', 'https://api.visantlabs.com/llms.txt');
     updateMetaTag('ai-status', 'ready');
 
     // Update html lang attribute
