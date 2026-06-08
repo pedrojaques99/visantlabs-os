@@ -328,7 +328,7 @@ const AppList: React.FC<AppListProps> = ({
             </button>
           ) : (
             <a
-              href="mailto:contact@visantlabs.com"
+              href="mailto:contato@visant.co"
               className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
             >
               contact
@@ -511,7 +511,7 @@ export const HomePage: React.FC = () => {
                         {t('home.info')}
                       </button>
                       <a
-                        href="mailto:contact@visantlabs.com"
+                        href="mailto:contato@visant.co"
                         className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
                       >
                         {t('home.contact')}
