@@ -11,7 +11,7 @@ export type McpScope = (typeof MCP_SCOPES)[number];
 
 export const MCP_RESULT_MAX_CHARS = 140_000;
 
-export const SUPPORT_EMAIL = 'support@visantlabs.com';
+export const SUPPORT_EMAIL = 'contato@visant.co';
 
 export const PLATFORM_DESCRIPTION =
   'AI design platform that turns brand guidelines into production-ready mockups, creatives, and brand identities — accessible via MCP, REST API, or web UI.';

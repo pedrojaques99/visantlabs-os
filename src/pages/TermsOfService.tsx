@@ -263,14 +263,14 @@ export const TermsOfService: React.FC<TermsOfServiceProps> = ({ isOpen, onClose 
               }}
             />
             <p className="text-neutral-400">
-              {t('terms.sections.contact.support').split('suporte@visantlabs.com')[0]}
+              {t('terms.sections.contact.support').split('contato@visant.co')[0]}
               <a
-                href="mailto:suporte@visantlabs.com"
+                href="mailto:contato@visant.co"
                 className="text-brand-cyan hover:text-brand-cyan/80 underline"
               >
-                suporte@visantlabs.com
+                contato@visant.co
               </a>
-              {t('terms.sections.contact.support').split('suporte@visantlabs.com')[1]}
+              {t('terms.sections.contact.support').split('contato@visant.co')[1]}
             </p>
           </section>
 

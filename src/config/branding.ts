@@ -28,7 +28,7 @@ export const branding = {
   },
 
   support: {
-    email: 'support@visantlabs.com',
+    email: 'contato@visant.co',
   },
 
   links: {
