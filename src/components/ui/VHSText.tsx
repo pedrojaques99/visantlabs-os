@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
+import { loadImage } from '@/utils/imageUtils';
 import { PersistentShaderRenderer } from '@/utils/shaders/shaderRenderer';
 import { loadImage } from '@/utils/imageUtils';
 

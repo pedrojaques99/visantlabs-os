@@ -1613,6 +1613,7 @@ router.post('/:id/health-check', apiRateLimiter, authenticate, async (req: AuthR
     });
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
+    await chargeCredits(req.userId!, 1);
     const apiKey = await getGeminiApiKey(req.userId).catch(() => undefined);
     const report = await runBrandHealth(guideline as any, { apiKey });
 
@@ -1819,6 +1820,8 @@ router.post(
       } catch {
         // Will use system key
       }
+
+      await chargeCredits(req.userId!, 1);
 
       // Run compliance check
       const result = await checkBrandCompliance(

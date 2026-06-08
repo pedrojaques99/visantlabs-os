@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
-import { generateGridLines, type GridLine, type Point, type Segment } from './SvgAnalyzer';
 import { loadImage } from '@/utils/imageUtils';
+import { generateGridLines, type GridLine, type Point, type Segment } from './SvgAnalyzer';
 
 export interface GridCanvasHandle {
   getCanvas: () => HTMLCanvasElement | null;
@@ -368,6 +368,7 @@ function drawSvgLogo(
   if (!img) {
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const blobUrl = URL.createObjectURL(blob);
+    // Start loading and cache a placeholder; drawSvgLogo will draw once loaded
     const placeholder = new Image();
     svgImageCache.set(svgStr, placeholder);
     loadImage(blobUrl, null).then((loaded) => {

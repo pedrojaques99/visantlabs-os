@@ -2,6 +2,7 @@
  * Headless TextureFilter renderer — pure Canvas2D, no DOM/store dependencies.
  * Used by both the standalone TextureFilter page and the React Flow node.
  */
+import { loadImage } from '@/utils/imageUtils';
 
 export interface TextureFilterRenderSettings {
   opacity: number;
@@ -141,5 +142,4 @@ export function renderTextureFilter(
   return canvas;
 }
 
-// Re-export loadImage from the shared utility for backward compatibility
-export { loadImage } from '@/utils/imageUtils';
+// loadImage is now imported from '@/utils/imageUtils'

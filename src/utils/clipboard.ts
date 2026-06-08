@@ -81,11 +81,7 @@ async function convertToPngBlob(blob: Blob): Promise<Blob> {
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((result) => {
       URL.revokeObjectURL(objectUrl);
-      if (result) {
-        resolve(result);
-      } else {
-        reject(new Error('PNG conversion failed'));
-      }
+      result ? resolve(result) : reject(new Error('PNG conversion failed'));
     }, 'image/png');
   });
 }
