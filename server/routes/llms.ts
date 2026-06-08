@@ -73,7 +73,7 @@ router.get('/llms-full.txt', (_req, res) => {
 
 **Option A — OAuth 2.1 (recommended for Claude Connectors)**
 Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
-Flow: Authorization Code + PKCE (S256) + Dynamic Client Registration.
+Flow: Authorization Code + PKCE (S256) + Dynamic Client Registration. Refresh tokens supported.
 Scopes: \`read\`, \`write\`, \`generate\`.
 
 **Option B — API Key**

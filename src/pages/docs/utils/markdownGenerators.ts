@@ -74,7 +74,7 @@ Describe what you want in natural language — the AI creates, edits, and organi
 - **Clickable layer refs** — operation summaries show \`@"LayerName"\` links that select and zoom to the referenced layer.
 - **Copy & select** — hover any message bubble for a copy button; text is fully selectable.
 
-## Supported Operations (42+)
+## Supported Operations (50)
 
 ### Creation
 \`CREATE_PAGE\`, \`CREATE_FRAME\`, \`CREATE_RECTANGLE\`, \`CREATE_ELLIPSE\`, \`CREATE_TEXT\`, \`CREATE_COMPONENT_INSTANCE\`, \`CREATE_COMPONENT\`, \`CREATE_SVG\`, \`CREATE_ICON\`, \`CREATE_LINE\`, \`CREATE_POLYGON\`, \`CREATE_STAR\`
@@ -218,9 +218,9 @@ function generateAgentsMarkdown(platformMcpSpec?: MCPSpec | null): string {
     'Visant Labs provides three main ways for AI agents to interact with the platform: Discovery, MCP Tools, and REST API.',
     '',
     '## Discovery (LLM Discovery)',
-    '- `/llms.txt` — Concise platform overview',
-    '- `/llms-full.txt` — Comprehensive platform reference',
-    '- `/api/docs/api/spec` — OpenAPI JSON Spec',
+    '- `https://api.visantlabs.com/llms.txt` — Concise platform overview',
+    '- `https://api.visantlabs.com/llms-full.txt` — Complete MCP reference',
+    '- `https://api.visantlabs.com/api/docs/api/spec` — OpenAPI JSON Spec',
     '',
     '## Authentication',
     'Two methods: **OAuth 2.1** (recommended for Claude Connector) or **API Key**.',

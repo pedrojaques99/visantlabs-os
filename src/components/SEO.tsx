@@ -24,7 +24,7 @@ const getSiteUrl = (): string => {
 
 const defaultTitle = 'Visant Labs® | Tools for Designers';
 const defaultDescription =
-  'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.';
+  'AI design platform: generate mockups, brand identities, marketing creatives, and 3D scenes from text prompts. Brand guidelines as input for AI generation.';
 
 /**
  * Default Open Graph Image
@@ -129,27 +129,14 @@ export const SEO: React.FC<SEOProps> = ({
     // Canonical URL
     updateLinkTag('canonical', finalUrl);
 
-    // Language alternates (hreflang)
-    const basePath = location.pathname;
-    const currentLangPath = currentLocale === 'pt-BR' ? 'pt-BR' : 'en-US';
-
-    // Add current language
-    updateLinkTag('alternate', finalUrl, currentLangPath);
-
-    // Add alternate language (if different)
-    const altLang = currentLocale === 'pt-BR' ? 'en-US' : 'pt-BR';
-    const altUrl = finalUrl; // Same URL for now, can be customized per page
-    updateLinkTag('alternate', altUrl, altLang);
-
-    // Add x-default
+    // Canonical serves as x-default (single-language app)
     updateLinkTag('alternate', finalUrl, 'x-default');
 
     // AI Discovery
     updateLinkTag('ai-index', 'https://api.visantlabs.com/llms.txt');
     updateMetaTag('ai-status', 'ready');
 
-    // Update html lang attribute
-    document.documentElement.lang = currentLocale === 'pt-BR' ? 'pt-BR' : 'en-US';
+    document.documentElement.lang = currentLocale === 'pt-BR' ? 'pt-BR' : 'en';
 
     // JSON-LD structured data (Organization + SoftwareApplication)
     const jsonLdId = 'visant-jsonld';
@@ -167,7 +154,10 @@ export const SEO: React.FC<SEOProps> = ({
         name: 'Visant Labs',
         url: siteUrl,
         logo: `${siteUrl}/og-image.png`,
-        sameAs: [],
+        sameAs: [
+          'https://github.com/pedrojaques99/visantlabs-os',
+          'https://x.com/visantlabs',
+        ],
       },
       {
         '@context': 'https://schema.org',
