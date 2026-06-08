@@ -193,12 +193,18 @@ async function getQuotaMeta(userId: string) {
 import { MCP_RESULT_MAX_CHARS, MCP_ENDPOINT } from '../lib/mcp-constants.js';
 
 function jsonResponse(data: unknown) {
-  let text = JSON.stringify(data, null, 2);
-  if (text.length > MCP_RESULT_MAX_CHARS) {
-    text = text.slice(0, MCP_RESULT_MAX_CHARS) + `\n\n... [truncated — result exceeded ${Math.round(MCP_RESULT_MAX_CHARS / 1000)}k chars]`;
+  const text = JSON.stringify(data, null, 2);
+  if (text.length <= MCP_RESULT_MAX_CHARS) {
+    return { content: [{ type: 'text' as const, text }] };
   }
+  const meta = JSON.stringify({
+    _truncated: true,
+    _originalChars: text.length,
+    _message: `Result exceeded ${Math.round(MCP_RESULT_MAX_CHARS / 1000)}k chars. Use pagination (limit/skip) or filter parameters to reduce the response.`,
+  });
+  const budget = MCP_RESULT_MAX_CHARS - meta.length - 20;
   return {
-    content: [{ type: 'text' as const, text }],
+    content: [{ type: 'text' as const, text: meta + '\n\n' + text.slice(0, budget) }],
   };
 }
 
@@ -358,12 +364,25 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
   const collectedNames: string[] = [];
   const originalTool = server.tool.bind(server);
 
-  const WRITE_TOOLS = /^(update-|delete-|create-|remove-|validate-|api-key-|auth-)/;
-  const GENERATE_TOOLS = /^(generate-|improve-|suggest-|extract-|batch-|campaign-|describe-)/;
+  const GENERATE_TOOLS_SET = new Set([
+    'mockup-generate', 'creative-generate', 'creative-full', 'branding-generate',
+    'ai-generate-image', 'ai-generate-naming', 'ai-improve-prompt',
+    'ai-suggest-prompt-variations', 'ai-change-object', 'ai-apply-theme',
+    'moodboard-upscale', 'moodboard-suggest', 'video-generate',
+    'campaign-generate', 'playground-generate',
+  ]);
+
+  const WRITE_PATTERN = /-(create|update|delete|remove|save|duplicate|invite|share|upload|restore|fork|publish|link|sync|ingest|render|iterate|like|quickstart)($|-)/;
+  const WRITE_PREFIXES = /^(auth-|pdf-|images-to-)/;
+  const READ_OVERRIDES = new Set([
+    'api-key-list', 'brand-guidelines-compile', 'brand-guidelines-export',
+    'brand-guidelines-compare-versions',
+  ]);
 
   function scopeForTool(name: string): 'read' | 'write' | 'generate' {
-    if (WRITE_TOOLS.test(name)) return 'write';
-    if (GENERATE_TOOLS.test(name)) return 'generate';
+    if (GENERATE_TOOLS_SET.has(name)) return 'generate';
+    if (READ_OVERRIDES.has(name)) return 'read';
+    if (WRITE_PATTERN.test(name) || WRITE_PREFIXES.test(name)) return 'write';
     return 'read';
   }
 
@@ -765,7 +784,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       if (!currentUserId) return ERR.auth();
       try {
         const db = await connectToMongoDB();
-        const presets = await db.collection('mockup_presets').find({ type }).toArray();
+        const presets = await db.collection('mockup_presets').find({ type }).limit(50).toArray();
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ presets, total: presets.length, _meta: quota });
       } catch (err: any) {
