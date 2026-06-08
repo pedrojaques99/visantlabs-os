@@ -413,7 +413,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       password: z.string().min(8).describe('Password (min 8 characters).'),
       name: z.string().optional().describe('Display name.'),
     },
-    { destructiveHint: false },
+    { title: 'Register Account', destructiveHint: false },
     async ({ email, password, name }) => {
       try {
         const resp = await fetch(`${INTERNAL_API_BASE}/api/auth/signup`, {
@@ -445,7 +445,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       email: z.string().email().describe('Account email.'),
       password: z.string().describe('Account password.'),
     },
-    { destructiveHint: false },
+    { title: 'Sign In', destructiveHint: false },
     async ({ email, password }) => {
       try {
         const resp = await fetch(`${INTERNAL_API_BASE}/api/auth/signin`, {
@@ -487,7 +487,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('JWT token from auth-login or auth-register (if you have no API key yet).'),
     },
-    { destructiveHint: false },
+    { title: 'Create API Key', destructiveHint: false },
     async ({ name, scopes, jwt }) => {
       const currentUserId = getMcpUserId();
       // Allow either MCP API key auth OR a JWT passed directly
@@ -535,7 +535,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'api-key-list',
     'List all API keys for the authenticated user. Shows prefix, name, scopes, last used, and expiry — but not the raw key value.',
     {},
-    { readOnlyHint: true },
+    { title: 'List API Keys', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -562,7 +562,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       imageBase64: z.string().describe('Base64-encoded moodboard image to analyze.'),
     },
-    { readOnlyHint: true },
+    { title: 'Detect Moodboard Grid', readOnlyHint: true },
     async ({ imageBase64 }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -588,7 +588,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       imageBase64: z.string().describe('Base64-encoded image to upscale.'),
       size: z.enum(['1K', '2K', '4K']).default('4K').describe('Target resolution.'),
     },
-    { destructiveHint: false },
+    { title: 'Upscale Image', destructiveHint: false },
     async ({ imageBase64, size }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -622,7 +622,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .max(9)
         .describe('Array of moodboard cells to analyze.'),
     },
-    { destructiveHint: false },
+    { title: 'Suggest Moodboard Images', destructiveHint: false },
     async ({ images }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -649,7 +649,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'account-usage',
     'Get credit usage, remaining balance, plan limits, storage quota (used/limit/remaining), and billing cycle info for the authenticated account.',
     {},
-    { readOnlyHint: true },
+    { title: 'Get Account Usage', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -667,7 +667,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'account-profile',
     'Get the authenticated user profile including name, email, avatar, and subscription plan.',
     {},
-    { readOnlyHint: true },
+    { title: 'Get Account Profile', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -709,7 +709,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       limit: z.number().int().min(1).max(100).default(20).describe('Max items to return (1-100).'),
       skip: z.number().int().min(0).default(0).describe('Number of items to skip for pagination.'),
     },
-    { readOnlyHint: true },
+    { title: 'List Mockups', readOnlyHint: true },
     async ({ limit, skip }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -743,7 +743,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('The mockup ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Get Mockup', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -778,7 +778,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         ])
         .describe('The preset category to browse.'),
     },
-    { readOnlyHint: true },
+    { title: 'Browse Mockup Presets', readOnlyHint: true },
     async ({ type }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -819,7 +819,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('Reference URLs or base64 to guide style. Use upload-image for local files.'),
       seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
-    { destructiveHint: false },
+    { title: 'Generate AI Image', destructiveHint: false },
     async ({ prompt, model, aspectRatio, resolution, referenceImages, seed }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -901,7 +901,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         ),
       seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
-    { destructiveHint: false },
+    { title: 'Generate Mockup', destructiveHint: false },
     async ({
       prompt,
       brandGuidelineId,
@@ -1014,7 +1014,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('CFG scale 0-1 (Kling v1.x only). 0=free, 1=strict prompt adherence.'),
     },
-    { destructiveHint: false },
+    { title: 'Generate Video', destructiveHint: false },
     async ({
       prompt,
       model,
@@ -1084,7 +1084,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'branding-list',
     'List branding projects owned by the authenticated user.',
     {},
-    { readOnlyHint: true },
+    { title: 'List Brand Identities', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1108,7 +1108,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('The branding project ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Get Brand Identity', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1172,7 +1172,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Existing brand guideline ID to use as context/reference.'),
     },
-    { destructiveHint: false },
+    { title: 'Generate Brand Identity', destructiveHint: false },
     async ({ prompt, step, previousData, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1265,7 +1265,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'canvas-list',
     'List canvas (whiteboard) projects owned by the authenticated user.',
     {},
-    { readOnlyHint: true },
+    { title: 'List Canvases', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1289,7 +1289,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('The canvas project ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Get Canvas', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1312,7 +1312,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       name: z.string().min(1).describe('Name for the new canvas.'),
     },
-    { destructiveHint: false },
+    { title: 'Create Canvas', destructiveHint: false },
     async ({ name }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1336,7 +1336,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'budget-list',
     'List budget documents created by the authenticated user.',
     {},
-    { readOnlyHint: true },
+    { title: 'List Budgets', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1360,7 +1360,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('The budget document ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Get Budget', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1385,7 +1385,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       projectDescription: z.string().min(1).describe('Brief description of the project scope.'),
       brandName: z.string().optional().describe('Brand name if different from client name.'),
     },
-    { destructiveHint: false },
+    { title: 'Create Budget', destructiveHint: false },
     async ({ clientName, projectDescription, brandName }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1425,7 +1425,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       prompt: z.string().min(1).describe('The original prompt to improve.'),
     },
-    { destructiveHint: false },
+    { title: 'Improve Prompt', destructiveHint: false },
     async ({ prompt }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1463,7 +1463,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('MIME type. Default: image/png.'),
       label: z.string().optional().describe('Optional label for organization (e.g. "sticker-v1").'),
     },
-    { destructiveHint: false },
+    { title: 'Upload Image', destructiveHint: false },
     async ({ data, contentType, label }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1495,7 +1495,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Base64-encoded image data (include data URI prefix or raw base64).'),
     },
-    { readOnlyHint: true },
+    { title: 'Describe Image', readOnlyHint: true },
     async ({ imageUrl, base64 }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1542,7 +1542,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .default(80)
         .describe('Maximum number of images to return (default 80).'),
     },
-    { readOnlyHint: true },
+    { title: 'Extract Image from URL', readOnlyHint: true },
     async ({ url, limit }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1575,7 +1575,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'brand-guidelines-list',
     'List all brand guidelines (identity vaults) owned by the authenticated user.',
     {},
-    { readOnlyHint: true },
+    { title: 'List Brand Guidelines', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1626,7 +1626,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           'Which brand sections to include. Pass an array of specific sections or a preset name. Omit for full context.'
         ),
     },
-    { readOnlyHint: true },
+    { title: 'Get Brand Guideline', readOnlyHint: true },
     async ({ id, format, sections: sectionsInput }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1664,7 +1664,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       slug: z.string().describe('The public slug of the brand guideline.'),
     },
-    { readOnlyHint: true },
+    { title: 'Get Public Brand Guideline', readOnlyHint: true },
     async ({ slug }) => {
       try {
         const guideline = await prisma.brandGuideline.findFirst({
@@ -1774,7 +1774,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         })
         .optional(),
     },
-    { destructiveHint: false },
+    { title: 'Create Brand Guideline', destructiveHint: false },
     async (input) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1904,7 +1904,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Industry/keyword tags by category, e.g. { "style": ["premium", "minimal"] }'),
     },
-    { destructiveHint: false },
+    { title: 'Update Brand Guideline', destructiveHint: false },
     async ({ id, ...patch }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1967,7 +1967,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       id: z.string().describe('The brand guideline ID to delete.'),
       confirm: z.literal(true).describe('Must be true. Prevents accidental deletion.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Brand Guideline', destructiveHint: true },
     async ({ id, confirm }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2003,7 +2003,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Raw text or markdown to extract from (required when source=text).'),
     },
-    { destructiveHint: false },
+    { title: 'Ingest Brand from URL', destructiveHint: false },
     async ({ id, source, url, text }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2065,7 +2065,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Pass true to revoke public access instead of enabling it.'),
     },
-    { destructiveHint: false },
+    { title: 'Share Brand Guideline', destructiveHint: false },
     async ({ id, disable }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2138,7 +2138,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Days until the invite expires. No expiration if omitted.'),
     },
-    { destructiveHint: false },
+    { title: 'Invite Collaborator', destructiveHint: false },
     async ({ id, role, label, expiresInDays }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2192,7 +2192,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       id: z.string().describe('Brand guideline ID.'),
       limit: z.number().int().min(1).max(50).default(10).describe('Max versions to return.'),
     },
-    { readOnlyHint: true },
+    { title: 'List Guideline Versions', readOnlyHint: true },
     async ({ id, limit }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2255,7 +2255,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Human-readable label, e.g. "Horizontal", "Dark mode".'),
     },
-    { destructiveHint: false },
+    { title: 'Upload Brand Logo', destructiveHint: false },
     async ({ id, data, url, variant, label }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2287,7 +2287,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       id: z.string().describe('Brand guideline ID.'),
       logoId: z.string().describe('Logo ID to delete (from the logos array).'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Brand Logo', destructiveHint: true },
     async ({ id, logoId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2331,7 +2331,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Label for this media asset, e.g. "Brand Presentation", "Campaign Photo".'),
     },
-    { destructiveHint: false },
+    { title: 'Upload Brand Media', destructiveHint: false },
     async ({ id, data, url, type, label }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2363,7 +2363,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       id: z.string().describe('Brand guideline ID.'),
       mediaId: z.string().describe('Media asset ID to delete.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Brand Media', destructiveHint: true },
     async ({ id, mediaId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2397,7 +2397,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID to duplicate.'),
     },
-    { destructiveHint: false },
+    { title: 'Duplicate Brand Guideline', destructiveHint: false },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2431,7 +2431,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .min(1)
         .describe('Version number to restore (from brand-guidelines-versions).'),
     },
-    { destructiveHint: false },
+    { title: 'Restore Guideline Version', destructiveHint: false },
     async ({ id, version }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2463,7 +2463,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID to check.'),
     },
-    { readOnlyHint: true },
+    { title: 'Brand Compliance Check', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2516,7 +2516,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       category: z.enum(validCategories).optional().describe('Filter by category.'),
       search: z.string().max(200).optional().describe('Search presets by name or tags.'),
     },
-    { readOnlyHint: true },
+    { title: 'Browse Community Presets', readOnlyHint: true },
     async ({ limit, skip, category, search }) => {
       try {
         await connectToMongoDB();
@@ -2561,7 +2561,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().min(1).describe('Preset ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Get Community Preset', readOnlyHint: true },
     async ({ id }) => {
       try {
         await connectToMongoDB();
@@ -2612,7 +2612,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Example outputs or variations.'),
     },
-    { destructiveHint: false },
+    { title: 'Create Community Preset', destructiveHint: false },
     async ({
       name,
       description,
@@ -2689,7 +2689,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       useCase: z.string().max(1000).optional(),
       examples: z.array(z.string().max(2000)).max(5).optional(),
     },
-    { destructiveHint: false },
+    { title: 'Update Community Preset', destructiveHint: false },
     async ({ id, ...fields }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2734,7 +2734,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().min(1).describe('Preset ID to delete.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Community Preset', destructiveHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2763,7 +2763,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().min(1).describe('Preset ID to like/unlike.'),
     },
-    { destructiveHint: false },
+    { title: 'Like Community Preset', destructiveHint: false },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2800,7 +2800,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       limit: z.number().int().min(1).max(50).default(20).describe('Max presets to return.'),
       skip: z.number().int().min(0).default(0).describe('Items to skip for pagination.'),
     },
-    { readOnlyHint: true },
+    { title: 'My Community Presets', readOnlyHint: true },
     async ({ limit, skip }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2869,7 +2869,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('Filter by mockup type (e.g. "packaging", "stationery").'),
       limit: z.number().int().min(1).max(50).default(20).describe('Max results.'),
     },
-    { readOnlyHint: true },
+    { title: 'Search References', readOnlyHint: true },
     async ({ search, niche, aesthetic, vibe, lighting, texture, mockup_type, limit }) => {
       try {
         await connectToMongoDB();
@@ -2924,7 +2924,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       tags: z.array(z.string()).optional().describe('Manual tags to add.'),
       prompt: z.string().optional().describe('The prompt that generated this mockup (if known).'),
     },
-    { destructiveHint: false },
+    { title: 'Ingest Reference Material', destructiveHint: false },
     async ({ imageUrl, name, studio, tags, prompt }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -2960,7 +2960,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       limit: z.number().int().min(1).max(50).default(20).describe('Max profiles to return (1-50).'),
       skip: z.number().int().min(0).default(0).describe('Number of items to skip for pagination.'),
     },
-    { readOnlyHint: true },
+    { title: 'Browse Community Profiles', readOnlyHint: true },
     async ({ limit, skip }) => {
       try {
         const users = await prisma.user.findMany({
@@ -2995,7 +2995,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       limit: z.number().int().min(1).max(100).default(20).describe('Max items to return.'),
       skip: z.number().int().min(0).default(0).describe('Items to skip for pagination.'),
     },
-    { readOnlyHint: true },
+    { title: 'List Creative Projects', readOnlyHint: true },
     async ({ limit, skip }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3021,7 +3021,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('The creative project ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Get Creative Project', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3063,7 +3063,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .default('1:1')
         .describe('Output aspect ratio.'),
     },
-    { destructiveHint: false },
+    { title: 'Generate Creative', destructiveHint: false },
     async ({ prompt, brandGuidelineId, format }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3127,7 +3127,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Hex color for <accent> words in text layers. Defaults to white.'),
     },
-    { destructiveHint: false },
+    { title: 'Render Creative to Image', destructiveHint: false },
     async ({ plan, backgroundImageUrl, format, accentColor }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3202,7 +3202,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('Resolution for background image generation.'),
       autoSave: z.boolean().default(true).describe('Persist result as a creative project.'),
     },
-    { destructiveHint: false },
+    { title: 'Generate Full Creative Set', destructiveHint: false },
     async ({ prompt, brandGuidelineId, format, model, resolution, autoSave }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3355,7 +3355,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('Overlay config from creative plan.'),
       thumbnailUrl: z.string().nullable().optional().describe('Thumbnail image URL.'),
     },
-    { destructiveHint: false },
+    { title: 'Create Creative Project', destructiveHint: false },
     async ({ prompt, format, layers, name, brandId, backgroundUrl, overlay, thumbnailUrl }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3403,7 +3403,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('Updated overlay config.'),
       thumbnailUrl: z.string().nullable().optional().describe('Updated thumbnail URL.'),
     },
-    { destructiveHint: false },
+    { title: 'Update Creative Project', destructiveHint: false },
     async ({ id, name, prompt, format, layers, brandId, backgroundUrl, overlay, thumbnailUrl }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3439,7 +3439,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Creative project ID to delete.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Creative Project', destructiveHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3474,7 +3474,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       brandingTags: z.array(z.string()).optional().describe('Branding tag list.'),
       isLiked: z.boolean().optional().describe('Mark/unmark as liked.'),
     },
-    { destructiveHint: false },
+    { title: 'Update Mockup', destructiveHint: false },
     async ({ id, prompt, designType, aspectRatio, tags, brandingTags, isLiked }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3499,7 +3499,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Mockup MongoDB ObjectId to delete.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Mockup', destructiveHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3538,7 +3538,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('Existing project ID to update. Omit to create a new project.'),
       name: z.string().optional().describe('Project display name.'),
     },
-    { destructiveHint: false },
+    { title: 'Save Brand Identity', destructiveHint: false },
     async ({ prompt, data, projectId, name }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3565,7 +3565,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Branding project ID to delete.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Brand Identity', destructiveHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3602,7 +3602,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('Updated drawings array.'),
       linkedGuidelineId: z.string().nullable().optional().describe('Brand guideline ID to link.'),
     },
-    { destructiveHint: false },
+    { title: 'Update Canvas', destructiveHint: false },
     async ({ id, name, nodes, edges, drawings, linkedGuidelineId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3629,7 +3629,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Canvas project ID to delete.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Canvas', destructiveHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3656,7 +3656,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       canEdit: z.array(z.string()).default([]).describe('List of user emails or IDs who can edit.'),
       canView: z.array(z.string()).default([]).describe('List of user emails or IDs who can view.'),
     },
-    { destructiveHint: false },
+    { title: 'Share Canvas', destructiveHint: false },
     async ({ id, canEdit, canView }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3697,7 +3697,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Full budget data object (replaces existing data field).'),
     },
-    { destructiveHint: false },
+    { title: 'Update Budget', destructiveHint: false },
     async ({
       id,
       name,
@@ -3742,7 +3742,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Budget project ID to delete.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete Budget', destructiveHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3766,7 +3766,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Budget project ID to duplicate.'),
     },
-    { destructiveHint: false },
+    { title: 'Duplicate Budget', destructiveHint: false },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3811,7 +3811,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .record(z.string(), z.string())
         .describe('Map of variable name to value, e.g. {"brand":"Nike","color":"red"}.'),
     },
-    { readOnlyHint: true },
+    { title: 'Resolve Canvas Variables', readOnlyHint: true },
     async ({ prompt, variables }) => {
       const resolved = prompt.replace(/\{\{(\w+)\}\}/g, (match: string, key: string) =>
         Object.prototype.hasOwnProperty.call(variables, key)
@@ -3841,7 +3841,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .default(5)
         .describe('Number of rows to return in the preview (1-50).'),
     },
-    { readOnlyHint: true },
+    { title: 'Parse CSV for Canvas', readOnlyHint: true },
     async ({ csv, preview_rows }) => {
       try {
         // Inline minimal CSV parse (no external deps in MCP context)
@@ -3874,7 +3874,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       limit: z.number().int().min(1).max(50).default(10).describe('Max projects to return.'),
     },
-    { readOnlyHint: true },
+    { title: 'List Canvas Projects', readOnlyHint: true },
     async ({ limit }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -3947,7 +3947,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           'Include colors, typography, strategy, and asset classifications. Default: true.'
         ),
     },
-    { readOnlyHint: true },
+    { title: 'Extract Document Content', readOnlyHint: true },
     async ({ pdf_base64, pdf_filename, pdf_path, output, include_brand_tokens }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4053,7 +4053,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .default('ebook')
         .describe('Compression preset'),
     },
-    { readOnlyHint: true },
+    { title: 'Compress PDF', readOnlyHint: true },
     async ({ pdf_base64, preset }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4083,7 +4083,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       format: z.enum(['png', 'jpeg']).default('png').describe('Output image format'),
       pages: z.string().optional().describe('Page range, e.g. "1-3" or "1". Omit for all pages.'),
     },
-    { readOnlyHint: true },
+    { title: 'Convert PDF to Images', readOnlyHint: true },
     async ({ pdf_base64, dpi, format, pages }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4111,7 +4111,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       images: z.array(z.string()).min(1).describe('Array of base64-encoded images (PNG or JPEG)'),
     },
-    { readOnlyHint: true },
+    { title: 'Convert Images to PDF', readOnlyHint: true },
     async ({ images }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4144,7 +4144,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       prompt: z.string().min(1).describe('Original prompt to create variations of.'),
     },
-    { readOnlyHint: true },
+    { title: 'Suggest Prompt Variations', readOnlyHint: true },
     async ({ prompt }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4171,7 +4171,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       base64: z.string().optional().describe('Base64-encoded image data.'),
       mimeType: z.string().optional().describe('MIME type if using base64 (e.g. image/png).'),
     },
-    { readOnlyHint: true },
+    { title: 'Extract Colors from Image', readOnlyHint: true },
     async ({ imageUrl, base64, mimeType }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4212,7 +4212,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Brand guideline ID for tone/voice consistency.'),
     },
-    { destructiveHint: false },
+    { title: 'Generate Brand Names', destructiveHint: false },
     async ({ brief, count, style, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4246,7 +4246,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       model: z.string().optional().describe('AI model override.'),
       resolution: z.string().optional().describe('Output resolution: hd, 1k, 2k, 4k.'),
     },
-    { destructiveHint: false },
+    { title: 'Edit Image Object', destructiveHint: false },
     async ({ imageUrl, base64, mimeType, newObject, model, resolution }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4281,7 +4281,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       model: z.string().optional().describe('AI model override.'),
       resolution: z.string().optional().describe('Output resolution: hd, 1k, 2k, 4k.'),
     },
-    { destructiveHint: false },
+    { title: 'Apply Visual Theme', destructiveHint: false },
     async ({ imageUrl, base64, mimeType, themes, model, resolution }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4308,7 +4308,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Export Brand Guideline', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4331,7 +4331,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Compile Brand Context', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4354,7 +4354,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'Brand Health Check', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4380,7 +4380,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       v1: z.number().int().describe('First version number.'),
       v2: z.number().int().describe('Second version number.'),
     },
-    { readOnlyHint: true },
+    { title: 'Compare Guideline Versions', readOnlyHint: true },
     async ({ id, v1, v2 }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4415,7 +4415,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .default(false)
         .describe('Import component names and structure.'),
     },
-    { destructiveHint: false },
+    { title: 'Sync from Figma', destructiveHint: false },
     async ({ id, fileId, includeVariables, includeComponents }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4442,7 +4442,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       fileId: z.string().optional().describe('Figma file ID to link. Omit to unlink.'),
       fileName: z.string().optional().describe('Figma file name for display.'),
     },
-    { destructiveHint: false },
+    { title: 'Link Figma File', destructiveHint: false },
     async ({ id, fileId, fileName }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4476,7 +4476,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Brand guideline ID.'),
     },
-    { readOnlyHint: true },
+    { title: 'List Brand Knowledge', readOnlyHint: true },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4497,7 +4497,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'payments-subscription-status',
     'Get the current user subscription tier, credit balance, usage, and whether they can generate. Use this to check before suggesting paid operations.',
     {},
-    { readOnlyHint: true },
+    { title: 'Get Subscription Status', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4518,7 +4518,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'payments-usage',
     'Get detailed credit usage: free generations used, subscription credits remaining, reset date. More granular than account-usage.',
     {},
-    { readOnlyHint: true },
+    { title: 'Get Payment Usage', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4541,7 +4541,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       currency: z.enum(['USD', 'BRL']).default('USD').describe('Currency for prices.'),
     },
-    { readOnlyHint: true },
+    { title: 'List Plans', readOnlyHint: true },
     async ({ currency }) => {
       try {
         const res = await fetch(`${INTERNAL_API_BASE}/api/payments/plans?currency=${currency}`);
@@ -4558,7 +4558,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'settings-byok-status',
     'Check which API keys the user has configured (Gemini, OpenAI, Seedream) and storage tier. Use to know which models are available.',
     {},
-    { readOnlyHint: true },
+    { title: 'Check BYOK Status', readOnlyHint: true },
     async () => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4603,7 +4603,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .describe('Output formats to generate.'),
       model: z.string().optional().describe('AI model override (e.g. gpt-image-1).'),
     },
-    { destructiveHint: false },
+    { title: 'Generate Campaign', destructiveHint: false },
     async ({ productImageUrl, brandGuidelineId, brief, count, formats, model }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4628,7 +4628,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       jobId: z.string().describe('Job ID returned by campaign-generate.'),
     },
-    { readOnlyHint: true },
+    { title: 'Check Campaign Status', readOnlyHint: true },
     async ({ jobId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4656,7 +4656,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Brand guideline ID for brand-aware analysis.'),
     },
-    { readOnlyHint: true },
+    { title: 'Analyze Image', readOnlyHint: true },
     async ({ base64, mimeType, brandGuideline }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4686,7 +4686,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'studio3d-list-presets',
     'List all built-in 3D Studio scene presets (Product Shot, Hero Banner, Neon, etc.) with their full configurations. Free.',
     {},
-    { readOnlyHint: true },
+    { title: 'List 3D Presets', readOnlyHint: true },
     async () => {
       // Import presets inline to avoid circular deps — these are static constants
       const presets: Record<string, any> = {
@@ -4932,7 +4932,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       tags: z.array(z.string()).max(20).optional().describe('Scene tags.'),
       isPublic: z.boolean().optional().describe('Make scene publicly accessible.'),
     },
-    { destructiveHint: false },
+    { title: 'Create 3D Scene', destructiveHint: false },
     async ({ name, description, config, svgData, inputMode, text, font, tags, isPublic }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -4978,7 +4978,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       limit: z.number().int().min(1).max(200).optional().describe('Max results (default 60).'),
     },
-    { readOnlyHint: true },
+    { title: 'List 3D Scenes', readOnlyHint: true },
     async ({ limit }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5000,7 +5000,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       sceneId: z.string().describe('Scene ID to retrieve.'),
     },
-    { readOnlyHint: true },
+    { title: 'Get 3D Scene', readOnlyHint: true },
     async ({ sceneId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5036,7 +5036,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       tags: z.array(z.string()).max(20).optional().describe('New tags.'),
       isPublic: z.boolean().optional().describe('Update public visibility.'),
     },
-    { destructiveHint: false },
+    { title: 'Update 3D Scene', destructiveHint: false },
     async ({ sceneId, ...updates }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5060,7 +5060,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       sceneId: z.string().describe('Scene ID to delete.'),
     },
-    { destructiveHint: true },
+    { title: 'Delete 3D Scene', destructiveHint: true },
     async ({ sceneId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5096,7 +5096,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Optional brand guideline ID to inject colors/fonts/logos into the generation.'),
     },
-    { destructiveHint: false },
+    { title: 'Generate Mini-App', destructiveHint: false },
     async ({ prompt, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5148,7 +5148,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .record(z.string(), z.unknown())
         .describe('The current spec JSON to iterate on.'),
     },
-    { destructiveHint: false },
+    { title: 'Iterate Mini-App', destructiveHint: false },
     async ({ prompt, currentSpec }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5189,7 +5189,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       spec: z.record(z.string(), z.unknown()).describe('The mini-app spec JSON (root + elements).'),
       actionsUsed: z.array(z.string()).optional().describe('List of action names used.'),
     },
-    { destructiveHint: false },
+    { title: 'Save Mini-App', destructiveHint: false },
     async ({ title, description, tags, category, spec, actionsUsed }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5207,7 +5207,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     }
   );
 
-  server.tool('playground-list', "List the authenticated user's saved mini-apps.", {}, { readOnlyHint: true }, async () => {
+  server.tool('playground-list', "List the authenticated user's saved mini-apps.", {}, { title: 'List Mini-Apps', readOnlyHint: true }, async () => {
     const currentUserId = getMcpUserId();
     if (!currentUserId) return ERR.auth();
     try {
@@ -5227,7 +5227,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       slug: z.string().describe('The mini-app slug (from URL or list).'),
     },
-    { readOnlyHint: true },
+    { title: 'Get Mini-App', readOnlyHint: true },
     async ({ slug }) => {
       try {
         const res = await fetch(`${INTERNAL_API_BASE}/api/playground/${slug}`);
@@ -5245,7 +5245,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Mini-app ID to publish.'),
     },
-    { destructiveHint: false },
+    { title: 'Publish Mini-App', destructiveHint: false },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5275,7 +5275,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       take: z.number().max(50).optional().describe('Results per page (default: 20, max: 50).'),
       skip: z.number().optional().describe('Pagination offset.'),
     },
-    { readOnlyHint: true },
+    { title: 'Browse Mini-App Feed', readOnlyHint: true },
     async ({ category, search, sort, take, skip }) => {
       try {
         const params = new URLSearchParams();
@@ -5299,7 +5299,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Mini-app ID to fork.'),
     },
-    { destructiveHint: false },
+    { title: 'Fork Mini-App', destructiveHint: false },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5322,7 +5322,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       id: z.string().describe('Mini-app ID to share.'),
     },
-    { destructiveHint: false },
+    { title: 'Share Mini-App', destructiveHint: false },
     async ({ id }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5355,7 +5355,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         .optional()
         .describe('Brand guideline ID for brand-aware generation.'),
     },
-    { destructiveHint: false },
+    { title: 'Quickstart Mini-App', destructiveHint: false },
     async ({ prompt, title, description, tags, category, brandGuidelineId }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -5379,7 +5379,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     {
       spec: z.record(z.string(), z.unknown()).describe('The mini-app spec JSON (root + elements).'),
     },
-    { readOnlyHint: true },
+    { title: 'Describe Mini-App', readOnlyHint: true },
     async ({ spec }) => {
       try {
         const elements = (spec.elements || {}) as Record<string, any>;
