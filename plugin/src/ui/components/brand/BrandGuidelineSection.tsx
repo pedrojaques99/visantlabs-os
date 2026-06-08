@@ -23,20 +23,26 @@ export function BrandGuidelineSection() {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const newNameInputRef = useRef<HTMLInputElement>(null);
+  const refreshingRef = useRef(false);
 
   const refresh = async () => {
-    const data = await loadBrandGuidelines();
-    if (data) {
-      setGuidelines(data);
-      // Auto-restore: if linkedGuideline is set (from pluginData) but brandGuideline isn't hydrated yet
-      const state = usePluginStore.getState();
-      if (state.linkedGuideline && !state.brandGuideline) {
-        const match = data.find((g: any) => getGuidelineId(g) === state.linkedGuideline);
-        if (match) {
-          apply(match, { silent: true });
-          usePluginStore.setState({ useBrand: true });
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
+    try {
+      const data = await loadBrandGuidelines();
+      if (data) {
+        setGuidelines(data);
+        const state = usePluginStore.getState();
+        if (state.linkedGuideline && !state.brandGuideline) {
+          const match = data.find((g: any) => getGuidelineId(g) === state.linkedGuideline);
+          if (match) {
+            apply(match, { silent: true });
+            usePluginStore.setState({ useBrand: true });
+          }
         }
       }
+    } finally {
+      refreshingRef.current = false;
     }
   };
 

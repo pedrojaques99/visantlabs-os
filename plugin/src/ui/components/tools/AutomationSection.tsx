@@ -2,7 +2,7 @@ import React from 'react';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
-import { Zap, LayoutGrid } from 'lucide-react';
+import { Zap, LayoutGrid, Palette, Stamp } from 'lucide-react';
 
 export function AutomationSection() {
   const store = usePluginStore();
@@ -31,6 +31,36 @@ export function AutomationSection() {
       >
         <Zap size={12} className="mr-2" />
         Smart Color Variations
+      </OpButton>
+
+      <OpButton
+        opId="generateVariants"
+        runner={runner}
+        message={{ type: 'GENERATE_VARIANTS' }}
+        responseTypes={['OPERATIONS_DONE']}
+        busyLabel="Generating variants…"
+        variant="outline"
+        size="sm"
+        title="Clone selection into Lava, Off-White and Terra color variants"
+        className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
+      >
+        <Palette size={12} className="mr-2" />
+        Generate Variants
+      </OpButton>
+
+      <OpButton
+        opId="convertToPreset"
+        runner={runner}
+        message={{ type: 'CONVERT_TO_PRESET', format: 'Story' }}
+        responseTypes={['PRESET_CREATED']}
+        busyLabel="Converting…"
+        variant="outline"
+        size="sm"
+        title="Convert selected frame into a template preset with auto-mapped text placeholders"
+        className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
+      >
+        <Stamp size={12} className="mr-2" />
+        Convert to Preset
       </OpButton>
 
       <OpButton

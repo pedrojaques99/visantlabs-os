@@ -67,9 +67,15 @@ function BrandCompletenessBar() {
 export function BrandTab() {
   useBrandAutoSync();
   const linkedGuideline = usePluginStore((s) => s.linkedGuideline);
+  const prevLinkedRef = React.useRef(linkedGuideline);
 
   useEffect(() => {
-    parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, 'https://www.figma.com');
+    // Only re-fetch context when the linked guideline actually changes, not on initial mount
+    // (App.tsx already fires GET_CONTEXT on startup)
+    if (prevLinkedRef.current !== linkedGuideline && prevLinkedRef.current !== undefined) {
+      parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, 'https://www.figma.com');
+    }
+    prevLinkedRef.current = linkedGuideline;
   }, [linkedGuideline]);
 
   return (

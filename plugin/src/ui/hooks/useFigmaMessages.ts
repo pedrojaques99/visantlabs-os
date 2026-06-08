@@ -175,8 +175,13 @@ export function useFigmaMessages() {
         // ═══ Brand Guidelines ═══
         case 'BRAND_GUIDELINES_LOADED':
         case 'GUIDELINES_LOADED': {
-          if (msg.guidelines) {
-            usePluginStore.setState({ brandGuideline: msg.guidelines });
+          // Legacy pluginData list — extract IDs only for the selector.
+          // Never overwrite brandGuideline (single selected) with the array.
+          if (msg.guidelines && Array.isArray(msg.guidelines)) {
+            const ids = msg.guidelines
+              .map((g: any) => g?.id ?? g?._id)
+              .filter(Boolean) as string[];
+            usePluginStore.setState({ savedGuidelineIds: ids });
           }
           break;
         }

@@ -24,6 +24,16 @@ export function BrandSection({
   defaultOpen = true,
 }: BrandSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [hasOpened, setHasOpened] = useState(defaultOpen);
+
+  const toggle = () => {
+    if (!collapsible) return;
+    const next = !isOpen;
+    setIsOpen(next);
+    if (next && !hasOpened) setHasOpened(true);
+  };
+
+  const shouldMount = !collapsible || hasOpened;
 
   return (
     <div
@@ -37,7 +47,7 @@ export function BrandSection({
           'px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02] group/section',
           collapsible && 'cursor-pointer hover:bg-white/[0.05]'
         )}
-        onClick={() => collapsible && setIsOpen(!isOpen)}
+        onClick={toggle}
         title={description}
       >
         <div className="flex items-center gap-2">
@@ -75,7 +85,7 @@ export function BrandSection({
           !isOpen ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[2000px] opacity-100'
         )}
       >
-        <div className="p-4">{children}</div>
+        {shouldMount && <div className="p-4">{children}</div>}
       </div>
     </div>
   );

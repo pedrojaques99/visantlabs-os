@@ -58,6 +58,12 @@ import {
   scanPaintStyles,
   generateBrandMatrix,
   generateLogoMatrix,
+  generateVariants,
+  convertToPreset,
+  scanPresets,
+  linearToFigma,
+  saveLinearConfig,
+  getLinearConfig,
 } from './handlers/index';
 import { dispatch } from './handlers/registry';
 import { isEnvelope } from '@shared/protocol';
@@ -1055,6 +1061,73 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     } catch (err) {
       postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
     }
+    return;
+  }
+
+  // ── Variant Generator ──
+  if ((msg as any).type === 'GENERATE_VARIANTS') {
+    try {
+      const presets = (msg as any).presets;
+      await generateVariants(presets);
+      postToUI({ type: 'OPERATIONS_DONE' });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Convert to Preset ──
+  if ((msg as any).type === 'CONVERT_TO_PRESET') {
+    try {
+      const result = await convertToPreset({
+        format: (msg as any).format,
+        variant: (msg as any).variant,
+      });
+      postToUI({ type: 'PRESET_CREATED', ...result });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Linear Bridge: scan presets ──
+  if ((msg as any).type === 'SCAN_PRESETS') {
+    try {
+      const presets = scanPresets();
+      postToUI({ type: 'PRESETS_SCANNED', presets });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Linear Bridge: full pipeline ──
+  if ((msg as any).type === 'LINEAR_TO_FIGMA') {
+    try {
+      const result = await linearToFigma({
+        linearApiKey: (msg as any).linearApiKey,
+        projectId: (msg as any).projectId,
+        strategy: (msg as any).strategy || 'random',
+        formats: (msg as any).formats || ['Story'],
+        filterIssues: (msg as any).filterIssues,
+        dryRun: (msg as any).dryRun,
+      });
+      postToUI({ type: 'BRIDGE_DONE', ...result });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Linear Bridge: save/load config ──
+  if ((msg as any).type === 'SAVE_LINEAR_CONFIG') {
+    await saveLinearConfig({ apiKey: (msg as any).apiKey, projectId: (msg as any).projectId });
+    postToUI({ type: 'LINEAR_CONFIG_SAVED' });
+    return;
+  }
+  if ((msg as any).type === 'GET_LINEAR_CONFIG') {
+    const config = await getLinearConfig();
+    postToUI({ type: 'LINEAR_CONFIG_LOADED', ...config });
     return;
   }
 

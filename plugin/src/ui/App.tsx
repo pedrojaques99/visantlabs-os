@@ -8,7 +8,6 @@ import { AppShell } from './components/layout/AppShell';
 import { loadChatHistory, setChatPersistClient } from './store';
 
 export function App() {
-  const { activeView, authToken } = usePluginStore();
   const setServerUrl = usePluginStore((s) => s.setServerUrl);
   const { send } = useFigmaMessages();
   const { checkStatus } = useAuth();
@@ -36,12 +35,9 @@ export function App() {
     init();
   }, []);
 
-  // Load guidelines after auth is checked and available
-  useEffect(() => {
-    if (authToken) {
-      send({ type: 'GET_GUIDELINES' } as any);
-    }
-  }, [authToken, send]);
+  // Guidelines are loaded on-demand by BrandGuidelineSection via the API
+  // (single source of truth). The legacy pluginData path (GET_GUIDELINES)
+  // is kept only for offline/cache fallback inside the sandbox.
 
   return <AppShell />;
 }
