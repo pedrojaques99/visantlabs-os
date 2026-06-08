@@ -2399,7 +2399,7 @@
     "modelChanged": "Modelo alterado. Você pode precisar regenerar o prompt.",
     "modelOverloaded": "O modelo de IA está sobrecarregado no momento.",
     "modelOverloadedSuggestion": "Este é um problema temporário. Seus créditos não foram deduzidos. Por favor, tente novamente em alguns minutos.",
-    "modelRequiresCredits": "Mockup Machine® 4K requer pelo menos {minCredits} créditos. Você tem {remaining}.",
+    "modelRequiresCredits": "Pro (4K) requer pelo menos {minCredits} créditos. Você tem {remaining}.",
     "needCredits": "Você precisa de {creditsNeeded} crédito{plural} para gerar. Por favor, compre créditos para continuar.",
     "needCreditsButHave": "Você precisa de {creditsNeeded} crédito{plural} mas só tem {remaining} restante{pluralRemaining}. Por favor, compre créditos para continuar.",
     "needCreditsSubscription": "Você precisa de {creditsNeeded} crédito{plural} mas só tem {remaining} restante{pluralRemaining}. Os créditos serão renovados em {resetDate}.",
@@ -2424,8 +2424,8 @@
     "serviceUnavailableSuggestion": "O serviço está com alta carga. Seus créditos não foram deduzidos. Por favor, tente novamente em alguns minutos.",
     "subscriptionRequired": "Assinatura necessária. Por favor, faça upgrade para continuar gerando mockups.",
     "surpriseSelectionGenerated": "Seleção surpresa gerada! 🎲",
-    "switchedTo4K": "Mudado para Mockup Machine® 4K. Controle de resolução habilitado.",
-    "switchedToHD": "Mudado para Mockup Machine® HD. Controle de resolução desabilitado.",
+    "switchedTo4K": "Mudado para Pro (4K). Controle de resolução habilitado.",
+    "switchedToHD": "Mudado para Standard (HD). Controle de resolução desabilitado.",
     "tagsChanged": "As tags foram alteradas. Por favor, regenere o prompt para corresponder às suas seleções atuais.",
     "tryAgainIn10Minutes": "Tente novamente em cerca de 10 minutos. Isso nos ajuda a garantir acesso justo para todos.",
     "unableToProcessImage": "Não foi possível processar a imagem enviada.",
@@ -2475,7 +2475,7 @@
     "analyzingImage": "ANALISANDO PROJETO...",
     "aspectRatio": "PROPORÇÃO_",
     "aspectRatioLabel": "Proporção",
-    "aspectRatioAutoTooltip": "Determinado automaticamente para o Mockup Machine® HD",
+    "aspectRatioAutoTooltip": "Determinado automaticamente para o Standard (HD)",
     "aspectRatioLandscape": "Paisagem",
     "aspectRatioLandscape54": "Paisagem",
     "aspectRatioPortrait": "Retrato",
@@ -2651,14 +2651,14 @@
       "gemini-2.5-flash-image": {
         "emoji": "⛏️",
         "features": ["Geração rápida", "1 crédito por imagem", "Proporção automática"],
-        "name": "Mockup Machine® HD",
+        "name": "Standard (HD)",
         "version": "HD"
       },
       "gemini-3-pro-image-preview": {
         "credits": "3-10 créditos",
         "emoji": "⛏️",
         "features": ["Resolução 4K", "Ferramentas avançadas", "Qualidade superior"],
-        "name": "Mockup Machine® 4K",
+        "name": "Pro (4K)",
         "version": "4K"
       }
     },
@@ -2923,9 +2923,9 @@
   "privacy": {
     "backToHome": "Voltar para Início",
     "lastUpdated": "Última atualização: {date}",
-    "overview": "A Visant Labs está comprometida em proteger sua privacidade. Esta Política explica como coletamos, usamos e protegemos suas informações ao usar o <strong>Mockup Machine</strong>, nossa plataforma de geração e edição de imagens com IA.",
+    "overview": "A Visant Labs está comprometida em proteger sua privacidade. Esta Política explica como coletamos, usamos e protegemos suas informações ao usar o <strong>Visant Labs</strong>, nossa plataforma de design com IA.",
     "sections": {
-      "agreement": "Ao usar o Mockup Machine, você concorda com esta Política de Privacidade.",
+      "agreement": "Ao usar o Visant Labs, você concorda com esta Política de Privacidade.",
       "changesToPolicy": {
         "note": "Podemos atualizar esta política periodicamente. Alterações substanciais serão comunicadas por e-mail ou dentro do aplicativo.",
         "title": "8. ALTERAÇÕES NESTA POLÍTICA"
@@ -2963,7 +2963,7 @@
         "apiKeys": {
           "intro": "Suas chaves de API criptografadas são retidas:",
           "items": [
-            "Enquanto sua conta no Mockup Machine estiver ativa e você optar por usar sua própria chave de API",
+            "Enquanto sua conta no Visant Labs estiver ativa e você optar por usar sua própria chave de API",
             "Até que você exclua explicitamente sua chave de API do nosso sistema",
             "Removidas permanentemente imediatamente após a exclusão — sem período de retenção"
           ],
@@ -2980,7 +2980,7 @@
         "googleAuth": {
           "intro": "Os dados de autenticação do Google (e-mail, nome, foto de perfil, ID do Usuário do Google) são retidos:",
           "items": [
-            "Enquanto sua conta no Mockup Machine estiver ativa",
+            "Enquanto sua conta no Visant Labs estiver ativa",
             "Por até 90 dias após a exclusão da conta (para fins de segurança e prevenção de fraudes)",
             "Conforme exigido por lei ou obrigações legais"
           ],
@@ -2989,8 +2989,8 @@
         "requestingDeletion": {
           "intro": "Você tem o direito de solicitar a exclusão de seus dados, incluindo dados de autenticação do Google e chaves de API:",
           "items": [
-            "Você pode excluir sua chave de API diretamente através das configurações do Mockup Machine a qualquer momento",
-            "Você pode excluir sua conta diretamente através das configurações do Mockup Machine",
+            "Você pode excluir sua chave de API diretamente através das configurações do Visant Labs a qualquer momento",
+            "Você pode excluir sua conta diretamente através das configurações do Visant Labs",
             "Entre em contato conosco em contato@visant.co para solicitar exclusão imediata",
             "Após a exclusão da chave de API, sua chave criptografada é permanentemente removida de nossos sistemas imediatamente",
             "Após a exclusão da conta, seu ID do Usuário do Google e dados de perfil associados serão permanentemente removidos de nossos sistemas",
@@ -3021,7 +3021,7 @@
             "Armazenados com segurança em nosso próprio banco de dados",
             "Usados exclusivamente para autenticação e gerenciamento de conta",
             "Não vendidos, alugados ou compartilhados com anunciantes ou parceiros de marketing",
-            "Não usados para qualquer propósito além do necessário para operar o serviço Mockup Machine"
+            "Não usados para qualquer propósito além do necessário para operar o serviço Visant Labs"
           ],
           "title": "3.2 Compartilhamento de Dados do Google"
         },
@@ -3061,7 +3061,7 @@
         "googleAuth": {
           "intro": "Usamos os dados coletados da sua conta do Google exclusivamente para:",
           "items": [
-            "Criar e gerenciar sua conta no Mockup Machine",
+            "Criar e gerenciar sua conta no Visant Labs",
             "Autenticar sua identidade quando você faz login",
             "Vincular sua conta do Google à sua conta existente (se aplicável)",
             "Pré-preencher suas informações de perfil (nome e foto de perfil)",
@@ -3072,7 +3072,7 @@
         },
         "intro": "Usamos seus dados para:",
         "items": [
-          "Operar e melhorar o Mockup Machine",
+          "Operar e melhorar o Visant Labs",
           "Processar assinaturas e pagamentos",
           "Monitorar limites de uso do plano",
           "Personalizar sua experiência",
@@ -3189,7 +3189,7 @@
         "title": "5. SEUS DIREITOS"
       }
     },
-    "title": "Política de Privacidade — Visant Labs Mockup Machine",
+    "title": "Política de Privacidade — Visant Labs",
     "policy": {
       "contatovisantco_2": "contato@visant.co",
       "contatovisantco": "contato@visant.co",
@@ -3254,7 +3254,7 @@
   },
   "refund": {
     "lastUpdated": "Última atualização: {date}",
-    "overview": "Esta Política de Reembolso está em conformidade com o <strong>Código de Defesa do Consumidor (CDC - Lei nº 8.078/1990)</strong> e estabelece os procedimentos para solicitação de reembolso de assinaturas e créditos adquiridos na plataforma <strong>Mockup Machine</strong>, operada pela Visant Labs.",
+    "overview": "Esta Política de Reembolso está em conformidade com o <strong>Código de Defesa do Consumidor (CDC - Lei nº 8.078/1990)</strong> e estabelece os procedimentos para solicitação de reembolso de assinaturas e créditos adquiridos na plataforma <strong>Visant Labs</strong>.",
     "sections": {
       "cancellation": {
         "content": "Você pode cancelar sua assinatura a qualquer momento através das configurações da sua conta. O cancelamento entrará em vigor ao final do período pago atual, e você continuará tendo acesso aos serviços até essa data.",
@@ -3352,7 +3352,7 @@
         "title": "3. Reembolso de Assinaturas"
       }
     },
-    "title": "Política de Reembolso — Visant Labs Mockup Machine",
+    "title": "Política de Reembolso — Visant Labs",
     "policy": {
       "contatovisantco": "contato@visant.co"
     }
@@ -3694,7 +3694,7 @@
   },
   "terms": {
     "lastUpdated": "Última atualização: {date}",
-    "overview": "Bem-vindo ao <strong>Mockup Machine</strong>, uma plataforma de geração e edição de imagens com IA operada pela Visant Labs. Ao acessar ou usar nosso serviço, você concorda em estar vinculado a estes Termos de Serviço.",
+    "overview": "Bem-vindo ao <strong>Visant Labs</strong>, uma plataforma de design com IA. Ao acessar ou usar nosso serviço, você concorda em estar vinculado a estes Termos de Serviço.",
     "sections": {
       "acceptableUse": {
         "intro": "Você concorda em não:",
@@ -3711,17 +3711,17 @@
         "title": "5. Uso Aceitável"
       },
       "acceptance": {
-        "content": "Ao criar uma conta, acessar ou usar o Mockup Machine, você reconhece que leu, entendeu e concorda em estar vinculado a estes Termos de Serviço e nossa Política de Privacidade. Se você não concordar com estes termos, não poderá usar nosso serviço.",
+        "content": "Ao criar uma conta, acessar ou usar o Visant Labs, você reconhece que leu, entendeu e concorda em estar vinculado a estes Termos de Serviço e nossa Política de Privacidade. Se você não concordar com estes termos, não poderá usar nosso serviço.",
         "title": "1. Aceitação dos Termos"
       },
-      "agreement": "Ao usar o Mockup Machine, você reconhece que leu, entendeu e concorda em estar vinculado a estes Termos de Serviço.",
+      "agreement": "Ao usar o Visant Labs, você reconhece que leu, entendeu e concorda em estar vinculado a estes Termos de Serviço.",
       "contact": {
         "company": "Visant Labs ®",
         "support": "E-mail de suporte: contato@visant.co",
         "title": "14. Contato"
       },
       "description": {
-        "intro": "O Mockup Machine é uma plataforma que permite aos usuários:",
+        "intro": "O Visant Labs é uma plataforma que permite aos usuários:",
         "items": [
           "Gerar mockups fotorrealistas usando tecnologia de IA",
           "Enviar e aplicar designs em vários modelos de mockup",
@@ -3766,7 +3766,7 @@
           "title": "6.2 Imagens Geradas"
         },
         "ourService": {
-          "content": "A plataforma Mockup Machine, incluindo seu design, funcionalidade e tecnologia subjacente, é propriedade da Visant Labs e protegida por leis de propriedade intelectual.",
+          "content": "A plataforma Visant Labs, incluindo seu design, funcionalidade e tecnologia subjacente, é propriedade da Visant Labs e protegida por leis de propriedade intelectual.",
           "title": "6.3 Nosso Serviço"
         },
         "title": "6. Propriedade Intelectual",
@@ -3853,7 +3853,7 @@
         "title": "3. Contas de Usuário"
       }
     },
-    "title": "Termos de Serviço — Visant Labs Mockup Machine"
+    "title": "Termos de Serviço — Visant Labs"
   },
   "thankYou": {
     "benefit1": "{credits} créditos por {interval}",
@@ -3973,9 +3973,9 @@
   },
   "usage": {
     "lastUpdated": "Última atualização: {date}",
-    "overview": "Esta Política de Uso divulga a tecnologia de IA e os serviços usados pelo <strong>Mockup Machine</strong> para fornecer capacidades de geração de imagens. Ao usar nosso serviço, você reconhece que entende e concorda com estes detalhes técnicos.",
+    "overview": "Esta Política de Uso divulga a tecnologia de IA e os serviços usados pelo <strong>Visant Labs</strong> para fornecer capacidades de design e geração de imagens com IA. Ao usar nosso serviço, você reconhece que entende e concorda com estes detalhes técnicos.",
     "sections": {
-      "agreement": "Ao usar o Mockup Machine, você reconhece que leu e entende esta Política de Uso, incluindo a divulgação de que o serviço usa modelos de IA Google Gemini para geração de imagens.",
+      "agreement": "Ao usar o Visant Labs, você reconhece que leu e entende esta Política de Uso, incluindo a divulgação de que o serviço usa modelos de IA para design e geração de imagens.",
       "aiTechnology": {
         "4k": {
           "features": [
@@ -3986,7 +3986,7 @@
             "Suporte para múltiplas imagens de referência"
           ],
           "model": "Alimentado por Google Gemini 3 Pro Preview",
-          "name": "Mockup Machine® 4K"
+          "name": "Pro (4K)"
         },
         "hd": {
           "features": [
@@ -3996,9 +3996,9 @@
             "Saída de menor resolução adequada para a maioria dos casos de uso"
           ],
           "model": "Alimentado por Google Gemini 2.5 Flash",
-          "name": "Mockup Machine® HD"
+          "name": "Standard (HD)"
         },
-        "intro": "O Mockup Machine utiliza os modelos de IA Gemini do Google para geração de imagens. O serviço fornece dois níveis de qualidade distintos, cada um alimentado por diferentes modelos Google Gemini:",
+        "intro": "O Visant Labs utiliza múltiplos modelos de IA para design e geração de imagens. O serviço de mockups fornece dois níveis de qualidade distintos:",
         "title": "1. Divulgação de Tecnologia de IA"
       },
       "capabilities": {
@@ -4022,8 +4022,8 @@
         },
         "resolution": {
           "items": [
-            "Mockup Machine® HD: Resolução fixa otimizada para velocidade e eficiência",
-            "Mockup Machine® 4K: Opções de resolução configuráveis (1K, 2K, 4K)",
+            "Standard (HD): Resolução fixa otimizada para velocidade e eficiência",
+            "Pro (4K): Opções de resolução configuráveis (1K, 2K, 4K)",
             "Resoluções mais altas consomem mais créditos e podem levar mais tempo para gerar",
             "A qualidade real da saída depende dos parâmetros de entrada e das capacidades do modelo"
           ],
@@ -4037,7 +4037,7 @@
         "title": "12. Contato"
       },
       "contentPolicies": {
-        "intro": "Tanto o Mockup Machine quanto o Google têm políticas de conteúdo que restringem:",
+        "intro": "Tanto o Visant Labs quanto seus provedores de IA têm políticas de conteúdo que restringem:",
         "items": [
           "Geração de conteúdo ilegal",
           "Geração de conteúdo prejudicial ou abusivo",
@@ -4048,12 +4048,12 @@
         "title": "10. Políticas de Conteúdo"
       },
       "dataUsage": {
-        "intro": "Quando você gera imagens usando o Mockup Machine:",
+        "intro": "Quando você gera imagens usando o Visant Labs:",
         "items": [
           "Suas imagens enviadas e prompts são enviados para a API Gemini do Google para processamento",
           "Os dados da imagem são transmitidos com segurança para a infraestrutura do Google Cloud",
           "O Google pode usar esses dados de acordo com sua Política de Privacidade e Termos de Serviço",
-          "As imagens geradas são retornadas ao Mockup Machine e armazenadas de acordo com nossa Política de Privacidade",
+          "As imagens geradas são retornadas ao Visant Labs e armazenadas de acordo com nossa Política de Privacidade",
           "Não controlamos como o Google usa ou armazena dados enviados através de sua API"
         ],
         "note": "Para detalhes sobre o tratamento de dados, revise nossa Política de Privacidade e a Política de Privacidade dos Serviços de IA do Google.",
@@ -4064,14 +4064,14 @@
         "items": [
           "O conteúdo gerado por IA pode conter erros, imprecisões ou resultados inesperados",
           "Não garantimos que as imagens geradas atenderão aos seus requisitos específicos",
-          "As capacidades e limitações do modelo são determinadas pelo Google, não pelo Mockup Machine",
+          "As capacidades e limitações do modelo são determinadas pelos provedores de IA, não pelo Visant Labs",
           "A qualidade e disponibilidade do serviço dependem da infraestrutura de terceiros",
           "O Google pode modificar, descontinuar ou alterar seus modelos sem aviso"
         ],
         "title": "11. Isenções"
       },
       "modelChanges": {
-        "intro": "O Google pode atualizar, modificar ou descontinuar seus modelos Gemini a qualquer momento. O Mockup Machine reserva o direito de:",
+        "intro": "O Google pode atualizar, modificar ou descontinuar seus modelos Gemini a qualquer momento. O Visant Labs reserva o direito de:",
         "items": [
           "Atualizar quais modelos do Google são usados para cada nível",
           "Migrar para versões mais recentes do modelo conforme ficam disponíveis",
@@ -4084,7 +4084,7 @@
       "rateLimits": {
         "intro": "A geração de imagens está sujeita a limites de taxa impostos por:",
         "items": [
-          "Limites de taxa do Mockup Machine: Com base no seu nível de assinatura e saldo de créditos",
+          "Limites de taxa do Visant Labs: Com base no seu nível de assinatura e saldo de créditos",
           "Limites de taxa da API do Google: Impostos pelo Google Cloud no uso da API",
           "Exceder os limites de taxa pode resultar em indisponibilidade temporária do serviço",
           "Os limites de taxa podem variar com base na carga atual da API e nas políticas do Google",
@@ -4093,7 +4093,7 @@
         "title": "5. Limites de Taxa e Cotas"
       },
       "serviceAvailability": {
-        "intro": "A disponibilidade do Mockup Machine depende de:",
+        "intro": "A disponibilidade do Visant Labs depende de:",
         "items": [
           "Disponibilidade e status operacional da API do Google Cloud",
           "Conectividade de rede entre nossos servidores e a infraestrutura do Google",
@@ -4111,15 +4111,15 @@
           "Acesso à API do Google Gemini 3 Pro Preview para geração 4K",
           "Todas as solicitações de geração de imagens são processadas pelos servidores do Google"
         ],
-        "note": "O Mockup Machine atua como um serviço intermediário que se conecta com os modelos de IA do Google para fornecer capacidades de geração de imagens. Seu uso do Mockup Machine também está sujeito aos Termos de Serviço e Política de Privacidade do Google para seus serviços de IA.",
+        "note": "O Visant Labs atua como um serviço intermediário que se conecta com múltiplos modelos de IA para fornecer capacidades de design e geração de imagens. Seu uso do Visant Labs também está sujeito aos Termos de Serviço e Políticas de Privacidade dos nossos provedores de IA.",
         "title": "2. Provedor de Serviços"
       },
       "technicalSpecs": {
         "creditCosts": {
           "items": [
-            "Mockup Machine® HD: 1 crédito por imagem",
-            "Mockup Machine® 4K: 3-7 créditos por imagem (varia conforme a resolução selecionada)",
-            "Os custos de crédito são definidos pelo Mockup Machine e podem mudar com aviso",
+            "Standard (HD): 1 crédito por imagem",
+            "Pro (4K): 3-7 créditos por imagem (varia conforme a resolução selecionada)",
+            "Os custos de crédito são definidos pelo Visant Labs e podem mudar com aviso",
             "Os créditos são consumidos após a geração bem-sucedida, não na solicitação"
           ],
           "title": "6.1 Custos de Crédito"
@@ -4144,7 +4144,7 @@
         "title": "6. Especificações Técnicas"
       },
       "userResponsibilities": {
-        "intro": "Ao usar os recursos com IA do Mockup Machine, você concorda em:",
+        "intro": "Ao usar os recursos com IA do Visant Labs, você concorda em:",
         "items": [
           "Usar conteúdo gerado em conformidade com leis e regulamentos aplicáveis",
           "Respeitar os direitos de propriedade intelectual de outros",
@@ -4156,7 +4156,7 @@
         "title": "7. Responsabilidades do Usuário"
       }
     },
-    "title": "Política de Uso — Visant Labs Mockup Machine",
+    "title": "Política de Uso — Visant Labs",
     "policy": {
       "contatovisantco": "contato@visant.co"
     }
