@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
-import { useBrandGuidelines, useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
+import { useBrandGuidelines, useBrandGuideline, useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { useQueryClient } from '@tanstack/react-query';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -425,11 +425,7 @@ export const BrandGuidelinesPage: React.FC = () => {
 
   // Server state via react-query
   const { data: guidelines = [], isLoading } = useBrandGuidelines(isAuthenticated === true);
-
-  const selected = useMemo(
-    () => guidelines.find((g) => g.id === selectedId),
-    [guidelines, selectedId]
-  );
+  const { data: selected } = useBrandGuideline(selectedId);
 
   const tabSections = useMemo(
     () => SECTION_TABS.find((t) => t.id === activeTabId)?.sections ?? [],

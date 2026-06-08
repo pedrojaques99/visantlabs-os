@@ -566,6 +566,10 @@ model BrandGuideline {
   versions BrandGuidelineVersion[]
 
   @@index([userId])
+  @@index([userId, folder])
+  @@index([updatedAt])
+  @@index([publicSlug])
+  @@index([figmaFileKey])
   @@map("brand_guidelines")
 }
 

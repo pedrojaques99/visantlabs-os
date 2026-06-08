@@ -5,9 +5,10 @@
 ## Live endpoints
 
 - MCP Server: `POST https://api.visantlabs.com/api/mcp` (Streamable HTTP, MCP 2025-11-25)
-- LLM discovery: https://api.visantlabs.com/llms.txt (always up-to-date tool count)
-- Full LLM reference: https://api.visantlabs.com/llms-full.txt
+- LLM discovery (dynamic): https://api.visantlabs.com/llms.txt (always up-to-date tool count)
+- Full LLM reference (dynamic): https://api.visantlabs.com/llms-full.txt
 - OpenAPI spec: https://api.visantlabs.com/api/docs/api/spec
+- OAuth discovery: https://api.visantlabs.com/.well-known/oauth-authorization-server
 - Public brand context demo (no auth): https://api.visantlabs.com/api/brand-guidelines/public/visant/context?output=text
 
 ## Repository structure
@@ -17,11 +18,23 @@
 - `/server/lib/mcp-constants.ts` — SSoT for MCP config (endpoint, spec version, limits)
 - `/server/routes/llms.ts` — Dynamic llms.txt/llms-full.txt generation
 - `/src` — React frontend (Vite + Tailwind)
+- `/src/config/branding.ts` — SSoT for app branding (company name, links, support email)
 - `/prisma` — Database schema (MongoDB via Prisma)
 - `/tests` — Vitest suites
 
 ## Key concepts
 
 - **Brand Guidelines as AI input**: guidelines are structured data that feed into mockup/creative generation — not just static documentation.
-- **MCP-first**: the platform is designed for agent access. All tools have `readOnlyHint`/`destructiveHint` annotations.
-- **OAuth 2.1**: PKCE + Dynamic Client Registration for Claude Connector Directory compatibility.
+- **MCP-first**: the platform is designed for agent access. All 116 tools have `readOnlyHint`/`destructiveHint` annotations and `title` fields.
+- **OAuth 2.1**: PKCE (S256) + Dynamic Client Registration for Claude Connector Directory compatibility.
+- **Optimized data layer**: list endpoint uses field projection + pagination; detail endpoint returns full data. Redis cache invalidation on mutations. React Query with optimistic updates.
+
+## SSoT files
+
+| What | File |
+|------|------|
+| MCP config (endpoint, version, limits) | `server/lib/mcp-constants.ts` |
+| App branding (name, links, email) | `src/config/branding.ts` |
+| Database schema | `prisma/schema.prisma` |
+| Tool definitions (MCP) | `server/mcp/platform-mcp.ts` |
+| Cache keys & TTLs | `server/lib/cache-utils.ts` |

@@ -20,9 +20,14 @@ const getAuthHeaders = () => {
 };
 
 export const brandGuidelineApi = {
-  async getAll(): Promise<BrandGuideline[]> {
+  async getAll(params?: { limit?: number; offset?: number }): Promise<BrandGuideline[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/brand-guidelines`, {
+      const qs = new URLSearchParams();
+      if (params?.limit) qs.set('limit', String(params.limit));
+      if (params?.offset) qs.set('offset', String(params.offset));
+      const suffix = qs.toString() ? `?${qs}` : '';
+
+      const response = await fetch(`${API_BASE_URL}/brand-guidelines${suffix}`, {
         headers: getAuthHeaders(),
       });
 

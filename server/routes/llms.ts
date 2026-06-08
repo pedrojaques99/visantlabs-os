@@ -98,7 +98,7 @@ Legend: (R) = read-only, (W) = write, (D) = destructive/delete.
 
 Core differentiator: brand guidelines are INPUT for AI generation, not just static docs.
 
-- \`brand-guidelines-list\` (R) — List user's brand guidelines
+- \`brand-guidelines-list\` (R) — List user's brand guidelines (returns summary fields; full data via \`brand-guidelines-get\`)
 - \`brand-guidelines-get\` (R) — Get guideline as JSON or LLM-ready prompt text. Use \`format: "prompt"\` to get injectable brand context.
 - \`brand-guidelines-public\` (R) — Get public guideline by slug (no auth). Example: slug \`visant\`
 - \`brand-guidelines-create\` (W) — Create guideline with identity, colors, typography, strategy, tokens

@@ -18,6 +18,8 @@ import { parseUrl, parsePdf, parseImage, parseJson, parseText } from '../lib/bra
 import { extractBrandData, type AssetClassification } from '../lib/brand-extract.js';
 import { mergeBrandGuidelines } from '../lib/brand-merge.js';
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js';
+import { redisClient } from '../lib/redis.js';
+import { CacheInvalidation } from '../lib/cache-utils.js';
 import { brandSharedService } from '../services/brandSharedService.js';
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { runBrandHealth } from '../lib/brandHealth.js';
@@ -70,16 +72,49 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const guidelines = await prisma.brandGuideline.findMany({
-      where: { userId: req.userId },
-      orderBy: { updatedAt: 'desc' },
-    });
+    const limit = Math.min(parseInt(req.query.limit as string) || 100, 200);
+    const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+    const where = { userId: req.userId };
+
+    const [guidelines, total] = await Promise.all([
+      prisma.brandGuideline.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        take: limit,
+        skip: offset,
+        select: {
+          id: true,
+          userId: true,
+          identity: true,
+          logos: true,
+          colors: true,
+          typography: true,
+          tags: true,
+          media: true,
+          extraction: true,
+          folder: true,
+          publicSlug: true,
+          isPublic: true,
+          publicViews: true,
+          lastViewedAt: true,
+          canEdit: true,
+          canView: true,
+          currentVersion: true,
+          figmaFileUrl: true,
+          figmaFileKey: true,
+          activeSections: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      prisma.brandGuideline.count({ where }),
+    ]);
 
     res.json({
-      guidelines: guidelines.map((g) => ({
-        ...g,
-        _id: g.id,
-      })),
+      guidelines: guidelines.map((g) => ({ ...g, _id: g.id })),
+      total,
+      limit,
+      offset,
     });
   } catch (error: any) {
     console.error('Error listing brand guidelines:', error);
@@ -233,6 +268,16 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     });
 
     dispatchWebhookEvent(existing.userId, 'brand.updated', { id: guideline.id });
+
+    // Invalidate cached brand context so plugins/MCP get fresh data
+    const keysToInvalidate = CacheInvalidation.onBrandEdit(guideline.id);
+    for (const pattern of keysToInvalidate) {
+      try {
+        const matches = await redisClient.keys(pattern);
+        if (matches.length > 0) await redisClient.del(...matches);
+      } catch { /* Redis down — graceful degradation */ }
+    }
+
     res.json({ guideline: { ...guideline, _id: guideline.id } });
   } catch (error: any) {
     console.error('Error updating brand guideline:', error?.message || error);
@@ -2621,10 +2666,21 @@ router.post('/:id/liveblocks-auth', authenticate, async (req: AuthRequest, res) 
     const { id } = req.params;
     if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const guideline = (await prisma.brandGuideline.findUnique({
-      where: { id },
-      select: { userId: true, canEdit: true, canView: true },
-    })) as { userId: string; canEdit?: unknown; canView?: unknown } | null;
+    const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY;
+    if (!LIVEBLOCKS_SECRET_KEY) {
+      return res.status(500).json({ error: 'Liveblocks is not configured' });
+    }
+
+    const [guideline, user] = await Promise.all([
+      prisma.brandGuideline.findUnique({
+        where: { id },
+        select: { userId: true, canEdit: true, canView: true },
+      }) as Promise<{ userId: string; canEdit?: unknown; canView?: unknown } | null>,
+      prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { email: true, name: true, picture: true },
+      }),
+    ]);
 
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
@@ -2638,16 +2694,6 @@ router.post('/:id/liveblocks-auth', authenticate, async (req: AuthRequest, res) 
       (Array.isArray(guideline.canView) && (guideline.canView as string[]).includes(req.userId!));
 
     if (!canView) return res.status(403).json({ error: 'Access denied' });
-
-    const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY;
-    if (!LIVEBLOCKS_SECRET_KEY) {
-      return res.status(500).json({ error: 'Liveblocks is not configured' });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: { email: true, name: true, picture: true },
-    });
 
     const liveblocks = new Liveblocks({ secret: LIVEBLOCKS_SECRET_KEY });
     const session = liveblocks.prepareSession(req.userId, {
