@@ -4336,9 +4336,10 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compile`, {
-          headers: { 'x-mcp-user-id': currentUserId },
-        });
+        const res = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compile?format=all`,
+          { headers: { 'x-mcp-user-id': currentUserId } }
+        );
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
       } catch (err: any) {
