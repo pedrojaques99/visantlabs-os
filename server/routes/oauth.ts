@@ -201,6 +201,7 @@ router.get('/oauth/authorize', async (req, res) => {
     state,
     resource,
     response_type,
+    scope,
   } = req.query as Record<string, string>;
 
   // Validate required params
@@ -253,6 +254,13 @@ router.get('/oauth/authorize', async (req, res) => {
       }
     }
 
+    // Validate requested scopes — default to all if not specified
+    const validScopes = new Set(MCP_SCOPES as readonly string[]);
+    const requestedScopes = scope
+      ? scope.split(' ').filter((s) => validScopes.has(s))
+      : [...MCP_SCOPES];
+    const resolvedScopes = requestedScopes.length > 0 ? requestedScopes : [...MCP_SCOPES];
+
     if (!userId) {
       // Redirect to frontend /login with redirect_back to come back after auth
       const params = new URLSearchParams({
@@ -263,6 +271,7 @@ router.get('/oauth/authorize', async (req, res) => {
         state,
         response_type: response_type || 'code',
         ...(resource ? { resource } : {}),
+        scope: resolvedScopes.join(' '),
       });
       const frontendUrl =
         process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
@@ -281,7 +290,7 @@ router.get('/oauth/authorize', async (req, res) => {
       codeChallengeMethod: code_challenge_method || 'S256',
       state,
       resource: resource || MCP_RESOURCE,
-      scopes: 'read write generate',
+      scopes: resolvedScopes.join(' '),
       token: rawToken,
     });
 
@@ -588,7 +597,7 @@ async function cleanupExpiredOAuthData() {
 
 // Run cleanup every 6 hours
 setInterval(cleanupExpiredOAuthData, 6 * 60 * 60 * 1000);
-cleanupExpiredOAuthData().catch(() => {});
+cleanupExpiredOAuthData().catch((err) => console.error('[OAuth] initial cleanup error:', err.message));
 
 // ── Login HTML page (inline, no SPA dependency) ─────────────────────────────
 
@@ -712,11 +721,11 @@ function buildLoginPage(p: LoginPageParams): string {
     <form id="loginForm">
       <div class="field">
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com" autofocus />
+        <input type="email" id="email" name="email" required autocomplete="email" placeholder="name@company.com" autofocus />
       </div>
       <div class="field">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" />
+        <input type="password" id="password" name="password" required autocomplete="current-password" />
       </div>
       <button type="submit" class="btn btn-primary" id="submitBtn">Sign in</button>
       <div class="error" id="error"></div>
@@ -809,9 +818,9 @@ function buildConsentPage(p: ConsentPageParams): string {
     <div class="divider"></div>
 
     <div class="scopes">
-      <div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>
-      <div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>
-      <div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>
+      ${p.scopes.includes('read') ? '<div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>' : ''}
+      ${p.scopes.includes('write') ? '<div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>' : ''}
+      ${p.scopes.includes('generate') ? '<div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>' : ''}
     </div>
 
     <div class="divider"></div>

@@ -1,10 +1,12 @@
 import express from 'express';
-import { getMcpToolCount, getMcpToolNames } from '../mcp/platform-mcp.js';
+import { getMcpToolCount } from '../mcp/platform-mcp.js';
 import {
   MCP_ENDPOINT,
   MCP_SPEC_VERSION,
-  MCP_BETA_HEADER,
   API_BASE_URL,
+  FRONTEND_BASE_URL,
+  SUPPORT_EMAIL,
+  PLATFORM_DESCRIPTION,
 } from '../lib/mcp-constants.js';
 
 const router = express.Router();
@@ -15,395 +17,296 @@ const COMMON_HEADERS = {
   Link: '</llms.txt>; rel="ai-index"',
 };
 
-// GET /llms.txt — concise overview for AI agents
-router.get('/llms.txt', (req, res) => {
+// ─── GET /llms.txt — concise discovery file (< 4 KB) ────────────────────────
+router.get('/llms.txt', (_req, res) => {
   res.set(COMMON_HEADERS);
   res.send(`# Visant Labs
 
-> AI-powered design platform for mockups, branding, budgets, and collaborative canvas.
+> Visant Labs is an ${PLATFORM_DESCRIPTION}
 
-## Capabilities
+- Website: ${FRONTEND_BASE_URL}
+- Full reference: ${API_BASE_URL}/llms-full.txt
+- OpenAPI spec: ${API_BASE_URL}/api/docs/api/spec
 
-- **Mockup Generation**: AI-generated product mockups from text prompts and images
-- **Branding Machine**: Complete brand identity generation (logos, colors, typography, guidelines)
-- **Creative Studio**: Generate layered marketing creatives (text, logos, shapes) with AI-guided layouts
-- **Brand Guidelines**: Centralized identity vault to maintain visual consistency across designs
-- **Canvas Editor**: Collaborative design canvas with real-time multiplayer
-- **Budget Machine**: AI-powered project budget estimation and planning
-- **Figma Plugin**: Direct AI generation inside Figma via plugin + MCP server
-- **Community**: Public gallery of user-created mockups and designs
-- **AI Tools**: Image generation, background removal, upscaling, style transfer
+## MCP Server
 
-## For Agents (Claude Connectors)
+- Endpoint: ${MCP_ENDPOINT}
+- Transport: Streamable HTTP (MCP ${MCP_SPEC_VERSION})
+- Auth: OAuth 2.1 (PKCE + Dynamic Client Registration) or API key
+- Tools: ${getMcpToolCount()}, all annotated with readOnlyHint / destructiveHint
 
-**MCP Server**: \`POST /api/mcp\` — ${getMcpToolCount()} tools via Streamable HTTP (MCP ${MCP_SPEC_VERSION})
+## What you can do
 
-Connect:
-- **Claude.ai / Claude Desktop**: Settings > Connectors > Add > \`${MCP_ENDPOINT}\` (OAuth auto-flow)
-- **Claude Code CLI**: \`claude mcp add --transport http visant ${MCP_ENDPOINT}\`
-- **Anthropic API**: Pass as \`mcp_servers\` with beta header \`${MCP_BETA_HEADER}\`
-- **Cursor**: URL \`${MCP_ENDPOINT}\` + Bearer header
-- **Full setup guide**: https://api.visantlabs.com/api/docs/mcp-setup
+1. **Brand Guidelines** — Create, ingest from URL, update, export, compile to CSS/Tailwind, share publicly. The \`brand-guidelines-get\` tool returns LLM-ready context you can inject into any downstream prompt.
+2. **Mockup Generation** — Generate photorealistic product mockups from text prompts, optionally injecting brand context (colors, logo, typography) automatically.
+3. **Creative Studio** — Generate layered marketing creatives (social posts, ads, banners) with AI-composed text, logos, and shapes.
+4. **Branding Machine** — Generate a complete brand identity from a brief (name, colors, typography, strategy, archetypes).
+5. **Image Tools** — Generate, describe, extract colors, change objects, apply themes, upscale.
+6. **3D Studio** — Create and render 3D product scenes.
+7. **Playground** — Generate interactive mini-apps from prompts.
+8. **Canvas** — Collaborative design editor with variables and CSV data-merge.
+9. **Budget** — AI-powered project budget estimation.
+10. **Campaign** — Batch-generate creatives for a full campaign.
 
-**REST API**: Full CRUD under \`/api/*\` — see /llms-full.txt
-**Auth**: API key (\`Authorization: Bearer visant_sk_xxx\`) or OAuth 2.1
-**Credits**: Pay-per-use; check via \`GET /api/usage/credits\`
-**Rate Limits**: 60 req/min API, 10 req/min AI generation
+## Public endpoint (no auth)
 
-## Documentation
+\`\`\`
+GET ${API_BASE_URL}/api/brand-guidelines/public/visant/context?output=text
+\`\`\`
 
-- MCP Setup: https://api.visantlabs.com/api/docs/mcp-setup
-- API Docs: \`/api/docs/api/spec\` (OpenAPI JSON)
-- MCP Spec: \`/api/docs/plugin/mcp.json\`
-- Full LLM Reference: \`/llms-full.txt\`
-- Website: https://visantlabs.com
+Returns the Visant Labs brand context as plain text — try it to see the output format.
+
+## Links
+
+- Privacy: ${FRONTEND_BASE_URL}/privacy
+- Support: ${SUPPORT_EMAIL}
 `);
 });
 
-// GET /llms-full.txt — full reference for AI agents
-router.get('/llms-full.txt', (req, res) => {
+// ─── GET /llms-full.txt — complete MCP reference ─────────────────────────────
+router.get('/llms-full.txt', (_req, res) => {
   res.set(COMMON_HEADERS);
-  res.send(`# Visant Labs — Full LLM Reference
+  res.send(`# Visant Labs — MCP Server Reference
 
-> Complete API reference for AI agents and LLM integrations.
+> Complete tool reference for AI agents connecting to Visant Labs via MCP.
+> Endpoint: ${MCP_ENDPOINT} | Protocol: MCP ${MCP_SPEC_VERSION} | Transport: Streamable HTTP
 
 ## Authentication
 
-Two methods supported:
+**Option A — OAuth 2.1 (recommended for Claude Connectors)**
+Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
+Flow: Authorization Code + PKCE (S256) + Dynamic Client Registration. Refresh tokens supported.
+Scopes: \`read\`, \`write\`, \`generate\`.
 
-1. **API Key** (recommended): \`Authorization: Bearer visant_sk_xxx\`
-2. **JWT Token**: \`Authorization: Bearer <jwt>\` (obtained via /api/auth/login)
+**Option B — API Key**
+Header: \`Authorization: Bearer visant_sk_xxx\`
+Create keys at: ${FRONTEND_BASE_URL}/settings/api-keys
 
-API keys are generated in the user dashboard under Settings > API Keys.
+## Credits
 
-## Credit System
+AI operations consume credits. Check balance with \`account-usage\`.
+Costs: mockup ~5, branding ~10, image gen ~2, creative ~3. Free tier includes starter credits.
 
-- All AI operations consume credits
-- Check balance: \`GET /api/usage/credits\`
-- Purchase credits: via Stripe checkout (\`POST /api/payments/create-checkout\`)
-- Credit costs vary by operation (mockup ~5 credits, branding ~10 credits, image gen ~2 credits)
-- Free tier includes starter credits on signup
+---
 
-## MCP Server (Claude Connector Ready)
+## Tools (${getMcpToolCount()} total)
 
-**Endpoint**: \`POST /api/mcp\`
-**Protocol**: JSON-RPC 2.0 over Streamable HTTP (MCP ${MCP_SPEC_VERSION})
-**Auth**: OAuth 2.1 (DCR + PKCE S256) or API Key (\`visant_sk_*\`)
-**Discovery**: \`GET /.well-known/mcp.json\`
+All tools include \`readOnlyHint\` or \`destructiveHint\` annotations.
+Legend: (R) = read-only, (W) = write, (D) = destructive/delete.
 
-### Connect via Claude.ai (Recommended)
+### Brand Guidelines
 
-1. Go to **Settings → Connectors → Add**
-2. Enter URL: \`${MCP_ENDPOINT}\`
-3. Authorize via OAuth (automatic browser flow — no API key needed)
+Core differentiator: brand guidelines are INPUT for AI generation, not just static docs.
 
-### Connect via Anthropic API (MCP Connector)
+- \`brand-guidelines-list\` (R) — List user's brand guidelines
+- \`brand-guidelines-get\` (R) — Get guideline as JSON or LLM-ready prompt text. Use \`format: "prompt"\` to get injectable brand context.
+- \`brand-guidelines-public\` (R) — Get public guideline by slug (no auth). Example: slug \`visant\`
+- \`brand-guidelines-create\` (W) — Create guideline with identity, colors, typography, strategy, tokens
+- \`brand-guidelines-update\` (W) — Patch any section; strategy sub-fields merge independently
+- \`brand-guidelines-delete\` (D) — Permanently delete (requires \`confirm: true\`)
+- \`brand-guidelines-ingest\` (W) — Extract brand data from URL or raw text, merge into guideline
+- \`brand-guidelines-share\` (W) — Generate or revoke a public slug link
+- \`brand-guidelines-invite\` (W) — Invite collaborator by email
+- \`brand-guidelines-versions\` (R) — Version history with changelog
+- \`brand-guidelines-restore-version\` (W) — Restore a previous version
+- \`brand-guidelines-duplicate\` (W) — Clone a guideline
+- \`brand-guidelines-upload-logo\` (W) — Upload logo image to guideline
+- \`brand-guidelines-delete-logo\` (D) — Remove a logo by ID
+- \`brand-guidelines-upload-media\` (W) — Upload media asset (photo, pattern, etc.)
+- \`brand-guidelines-delete-media\` (D) — Remove media by ID
+- \`brand-guidelines-export\` (R) — Export guideline as structured data
+- \`brand-guidelines-compile\` (R) — Compile brand tokens to CSS, Tailwind config, or React theme
+- \`brand-guidelines-health-check\` (R) — Audit guideline completeness (missing sections, weak areas)
+- \`brand-guidelines-compliance-check\` (R) — Check design/text against brand rules
+- \`brand-guidelines-compare-versions\` (R) — Diff two versions
+- \`brand-guidelines-figma-link\` (W) — Link guideline to a Figma file
+- \`brand-guidelines-figma-sync\` (W) — Sync tokens to/from Figma
+- \`brand-guidelines-knowledge-list\` (R) — List knowledge base entries for a guideline
 
-\`\`\`json
-{
-  "mcp_servers": [{
-    "type": "url",
-    "url": "${MCP_ENDPOINT}",
-    "name": "visant",
-    "authorization_token": "visant_sk_xxx"
-  }],
-  "tools": [{ "type": "mcp_toolset", "mcp_server_name": "visant" }]
-}
+### Mockups
+
+- \`mockup-generate\` (W) — Generate mockup from prompt. Accepts \`brandGuidelineId\` to auto-inject brand context. ~5 credits.
+- \`mockup-list\` (R) — List user's mockups (paginated: \`limit\`, \`skip\`)
+- \`mockup-get\` (R) — Get mockup by ID (image URL, prompt, metadata)
+- \`mockup-presets\` (R) — Browse community presets by category
+- \`mockup-update\` (W) — Update mockup metadata
+- \`mockup-delete\` (D) — Delete mockup
+
+### Creative Studio
+
+- \`creative-generate\` (W) — Generate layered creative (text + logo + shapes) with brand context. ~3 credits.
+- \`creative-render\` (W) — Render a creative to final image
+- \`creative-full\` (W) — Generate + render in one call
+- \`creative-projects-list\` (R) — List creative projects (paginated)
+- \`creative-projects-get\` (R) — Get project with all layers
+- \`creative-projects-create\` (W) — Create new project
+- \`creative-projects-update\` (W) — Update project
+- \`creative-projects-delete\` (D) — Delete project
+
+### Branding Machine
+
+- \`branding-generate\` (W) — Generate complete brand identity from brief. ~10 credits.
+- \`branding-list\` (R) — List branding projects
+- \`branding-get\` (R) — Get branding by ID
+- \`branding-save\` (W) — Save/update branding
+- \`branding-delete\` (D) — Delete branding
+
+### Image & Media
+
+- \`ai-generate-image\` (W) — Generate image from prompt. ~2 credits.
+- \`upload-image\` (W) — Upload image, returns public URL
+- \`ai-describe-image\` (R) — Analyze and describe an image
+- \`image-extract-url\` (R) — Extract image URL from a webpage
+- \`ai-extract-colors\` (R) — Extract color palette from image (hex, name, role)
+- \`ai-change-object\` (W) — Replace/modify objects in an image
+- \`ai-apply-theme\` (W) — Apply visual theme/style to an image
+- \`moodboard-detect-grid\` (R) — Detect grid layout in a moodboard image
+- \`moodboard-upscale\` (W) — Upscale a moodboard cell
+- \`moodboard-suggest\` (W) — Get AI suggestions for moodboard composition
+- \`video-generate\` (W) — Generate video from prompt
+
+### AI Utilities
+
+- \`ai-improve-prompt\` (W) — Enhance a prompt for better generation results
+- \`ai-suggest-prompt-variations\` (R) — Generate alternative prompt wordings
+- \`ai-generate-naming\` (W) — Generate brand/product name suggestions
+- \`smart-analyze\` (R) — Multi-modal analysis of images or designs
+
+### 3D Studio
+
+- \`studio3d-list-presets\` (R) — Browse 3D scene presets
+- \`studio3d-create-scene\` (W) — Create 3D product scene
+- \`studio3d-list-scenes\` (R) — List user's scenes
+- \`studio3d-get-scene\` (R) — Get scene by ID
+- \`update-studio3d-scene\` (W) — Update scene
+- \`delete-studio3d-scene\` (D) — Delete scene
+
+### Playground (Mini-Apps)
+
+- \`playground-generate\` (W) — Generate interactive mini-app from prompt
+- \`playground-iterate\` (W) — Iterate/improve an existing mini-app
+- \`playground-save\` (W) — Save to account
+- \`playground-list\` (R) — List saved mini-apps
+- \`playground-get\` (R) — Get by slug (public)
+- \`playground-publish\` (W) — Publish to community feed
+- \`playground-feed\` (R) — Browse published mini-apps
+- \`playground-fork\` (W) — Fork a public mini-app
+- \`playground-share\` (W) — Generate share link
+- \`playground-quickstart\` (W) — Create from template
+- \`playground-describe\` (R) — Describe a mini-app's functionality
+
+### Canvas
+
+- \`canvas-list\` (R) — List canvas projects
+- \`canvas-get\` (R) — Get canvas by ID
+- \`canvas-create\` (W) — Create new canvas
+- \`canvas-update\` (W) — Update canvas
+- \`canvas-delete\` (D) — Delete canvas
+- \`canvas-share\` (W) — Share canvas
+- \`canvas-resolve-variables\` (R) — Resolve \`{{placeholder}}\` tokens in a prompt using canvas data
+- \`canvas-parse-csv\` (R) — Parse CSV for data-driven generation
+- \`canvas-list-projects\` (R) — Extended list with metadata
+
+### Budget
+
+- \`budget-list\` (R) — List budget documents
+- \`budget-get\` (R) — Get budget by ID
+- \`budget-create\` (W) — Create budget from template
+- \`budget-update\` (W) — Update budget
+- \`budget-delete\` (D) — Delete budget
+- \`budget-duplicate\` (W) — Clone a budget
+
+### Campaign
+
+- \`campaign-generate\` (W) — Batch-generate creatives for a campaign
+- \`campaign-status\` (R) — Check generation progress
+
+### Community
+
+- \`community-presets\` (R) — Browse approved presets (public, paginated)
+- \`community-preset-get\` (R) — Get preset by ID
+- \`community-profiles\` (R) — Browse creator profiles (public)
+- \`community-preset-create\` (W) — Create preset
+- \`community-preset-update\` (W) — Update your preset
+- \`community-preset-delete\` (D) — Delete your preset
+- \`community-preset-like\` (W) — Toggle like
+- \`community-my-presets\` (R) — List your presets
+
+### Documents & PDF
+
+- \`document-extract\` (R) — Extract text/data from documents and PDFs
+- \`pdf-compress\` (R) — Compress a PDF
+- \`pdf-to-images\` (R) — Convert PDF pages to images
+- \`images-to-pdf\` (R) — Combine images into a PDF
+
+### Reference Library
+
+- \`reference-search\` (R) — Search curated mockup references
+- \`reference-ingest\` (W) — Add reference to library
+
+### Account & Auth
+
+- \`account-usage\` (R) — Credit balance, plan limits, billing info
+- \`account-profile\` (R) — User profile (name, email, plan)
+- \`auth-register\` (W) — Create account (returns JWT)
+- \`auth-login\` (W) — Sign in (returns JWT)
+- \`api-key-create\` (W) — Generate \`visant_sk_xxx\` API key
+- \`api-key-list\` (R) — List API keys (prefix only, not raw values)
+- \`payments-subscription-status\` (R) — Subscription details
+- \`payments-usage\` (R) — Usage breakdown
+- \`payments-plans\` (R) — Available plans and pricing
+- \`settings-byok-status\` (R) — BYOK (Bring Your Own Key) status
+
+---
+
+## Common Workflows
+
+### 1. Create brand from website, then generate mockups
+
 \`\`\`
-Requires beta header: \`"anthropic-beta": "${MCP_BETA_HEADER}"\`
-
-### Connect via Claude Code CLI
-
-\`\`\`bash
-claude mcp add --transport http visant ${MCP_ENDPOINT}
+brand-guidelines-create → brand-guidelines-ingest (url) → brand-guidelines-get (format: prompt) → mockup-generate (with brandGuidelineId)
 \`\`\`
 
-### Getting Started with API Keys
+### 2. Generate a full campaign
 
-1. Create an API key at \`https://visantlabs.com/settings/api-keys\`
-2. Use as Bearer token: \`Authorization: Bearer visant_sk_xxx\`
-
-### Connect Programmatically
-
-**curl**
-\`\`\`bash
-curl -X POST ${MCP_ENDPOINT} \\
-  -H "Content-Type: application/json" \\
-  -H "Accept: application/json, text/event-stream" \\
-  -H "Authorization: Bearer visant_sk_xxx" \\
-  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+\`\`\`
+brand-guidelines-get → campaign-generate (count: 10, formats: [social, banner, card])
 \`\`\`
 
-**Node.js (@modelcontextprotocol/sdk)**
-\`\`\`typescript
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+### 3. Get brand context for external use
 
-const client = new Client({ name: 'my-app', version: '1.0.0' });
-await client.connect(new StreamableHTTPClientTransport(
-  new URL('${MCP_ENDPOINT}'),
-  { requestInit: { headers: { Authorization: 'Bearer visant_sk_xxx' } } }
-));
-const result = await client.callTool('mockup-generate', {
-  prompt: 'coffee brand packaging, kraft paper, minimal black logo',
-  designType: 'packaging',
-  aspectRatio: '1:1',
-});
+\`\`\`
+brand-guidelines-public (slug) → returns LLM-ready text you can inject into any other agent's system prompt
 \`\`\`
 
-**Python (mcp SDK)**
-\`\`\`python
-from mcp.client.streamable_http import streamablehttp_client
-from mcp import ClientSession
+---
 
-async with streamablehttp_client(
-    "${MCP_ENDPOINT}",
-    headers={"Authorization": "Bearer visant_sk_xxx"},
-) as (read, write, _):
-    async with ClientSession(read, write) as session:
-        await session.initialize()
-        result = await session.call_tool("account-usage", {})
-\`\`\`
+## Error Codes
 
-**Cursor (.cursor/mcp.json)**
-\`\`\`json
-{
-  "mcpServers": {
-    "visant": {
-      "url": "${MCP_ENDPOINT}",
-      "headers": { "Authorization": "Bearer visant_sk_xxx" }
-    }
-  }
-}
-\`\`\`
+All tool errors return: \`{ "error": { "code": "...", "message": "..." } }\`
 
-### Required Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| \`Content-Type\` | \`application/json\` | Yes |
-| \`Accept\` | \`application/json, text/event-stream\` | Yes |
-| \`Authorization\` | \`Bearer visant_sk_xxx\` | For authenticated tools |
-
-### Legacy SSE Transport
-
-For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
-
-### Available Tools (${getMcpToolCount()})
-
-**Account** (requires auth):
-- \`account-usage\` — Get credit balance, plan limits, billing info
-- \`account-profile\` — Get user profile (name, email, plan)
-
-**Mockups** (requires auth):
-- \`mockup-list\` — List user's mockups (paginated)
-- \`mockup-get\` — Get mockup by ID
-- \`mockup-presets\` — Browse presets by category
-- \`mockup-generate\` — Generate mockup (1 credit)
-
-**Branding** (requires auth):
-- \`branding-list\` — List branding projects
-- \`branding-get\` — Get branding by ID
-- \`branding-generate\` — Generate brand identity
-
-**Canvas** (requires auth):
-- \`canvas-list\` — List canvas projects
-- \`canvas-get\` — Get canvas by ID
-- \`canvas-create\` — Create new canvas
-- \`canvas-resolve-variables\` — Resolve {{placeholder}} tokens in a prompt
-- \`canvas-parse-csv\` — Parse CSV for data-driven generation
-- \`canvas-list-projects\` — Extended canvas list with metadata
-
-**Budget** (requires auth):
-- \`budget-list\` — List budget documents
-- \`budget-get\` — Get budget by ID
-- \`budget-create\` — Create budget from template
-
-**AI Utilities** (requires auth):
-- \`ai-improve-prompt\` — Enhance prompt for better results (1 credit)
-- \`ai-describe-image\` — Analyze and describe image (1 credit)
-
-**Brand Guidelines** (requires auth):
-- \`brand-guidelines-list\` — List user's brand guidelines
-- \`brand-guidelines-get\` — Get guideline in JSON or LLM-ready prompt format
-- \`brand-guidelines-create\` — Create a new brand guideline (identity, colors, typography, strategy, tokens)
-- \`brand-guidelines-update\` — Patch any section; sub-fields of strategy merged independently
-- \`brand-guidelines-delete\` — Permanently delete (requires confirm: true)
-- \`brand-guidelines-ingest\` — Extract brand data from URL or text and merge into guideline
-- \`brand-guidelines-share\` — Generate (or revoke) a public read-only link
-- \`brand-guidelines-versions\` — List version history and changelog
-- \`brand-guidelines-public\` — Get a public guideline by slug (no auth required)
-
-**Creative Studio** (requires auth):
-- \`creative-projects-list\` — List creative projects (paginated)
-- \`creative-projects-get\` — Get creative project with all layers
-- \`creative-generate\` — Generate layered creative layout with brand context (1 credit)
-
-**Community** (public):
-- \`community-presets\` — Browse approved presets with category/search filters
-- \`community-preset-get\` — Get a single preset by ID
-- \`community-profiles\` — Browse public creator profiles
-
-**Community** (auth required):
-- \`community-preset-create\` — Create a new community preset
-- \`community-preset-update\` — Update your own preset
-- \`community-preset-delete\` — Delete your own preset
-- \`community-preset-like\` — Toggle like/unlike on a preset
-- \`community-my-presets\` — List your own presets
-
-### Error format (MCP tools)
-
-All tool errors return structured JSON:
-\`\`\`json
-{ "error": { "code": "NOT_FOUND", "message": "Brand guideline not found" } }
-\`\`\`
-Codes: \`UNAUTHORIZED\`, \`NOT_FOUND\`, \`VALIDATION_ERROR\`, \`INSUFFICIENT_CREDITS\`, \`INTERNAL_ERROR\`
-
-## REST API Endpoints
-
-### Auth — \`/api/auth\`
-- \`POST /api/auth/register\` — Create account
-- \`POST /api/auth/login\` — Login, returns JWT
-- \`POST /api/auth/forgot-password\` — Request password reset
-- \`POST /api/auth/reset-password\` — Reset password with token
-- \`GET /api/auth/me\` — Get current user profile
-- \`PUT /api/auth/profile\` — Update profile
-
-### Mockups — \`/api/mockups\`
-- \`POST /api/mockups/generate\` — Generate mockup (consumes credits)
-- \`GET /api/mockups\` — List user's mockups (paginated)
-- \`GET /api/mockups/:id\` — Get mockup by ID
-- \`DELETE /api/mockups/:id\` — Delete mockup
-- \`POST /api/mockups/:id/publish\` — Publish to community
-
-### Mockup Tags — \`/api/mockup-tags\`
-- \`GET /api/mockup-tags\` — List available tags/categories
-
-### Branding — \`/api/branding\`
-- \`POST /api/branding/generate\` — Generate brand identity (consumes credits)
-- \`GET /api/branding\` — List user's brandings
-- \`GET /api/branding/:id\` — Get branding by ID
-- \`DELETE /api/branding/:id\` — Delete branding
-
-### Canvas — \`/api/canvas\`
-- \`POST /api/canvas\` — Create canvas
-- \`GET /api/canvas\` — List user's canvases
-- \`GET /api/canvas/:id\` — Get canvas by ID
-- \`PUT /api/canvas/:id\` — Update canvas
-- \`DELETE /api/canvas/:id\` — Delete canvas
-
-### Brand Guidelines — \`/api/brand-guidelines\`
-- \`GET /api/brand-guidelines\` — List all guidelines
-- \`GET /api/brand-guidelines/:id\` — Get guideline details
-- \`POST /api/brand-guidelines\` — Create new guideline
-- \`PUT /api/brand-guidelines/:id\` — Update guideline
-- \`DELETE /api/brand-guidelines/:id\` — Delete guideline
-- \`GET /api/brand-guidelines/:id/context\` — Get LLM-ready context (text/json)
-
-### Creatives — \`/api/creative\`
-- \`POST /api/creative/plan\` — Generate structured creative layout with Gemini
-- \`POST /api/brand-guidelines/:id/share\` — Enable public sharing
-- \`GET /api/brand-guidelines/public/:slug\` — Public read access
-- \`GET /api/brand-guidelines/public/:slug/context\` — Public LLM context
-
-### Budget — \`/api/budget\`
-- \`POST /api/budget/generate\` — Generate budget estimate (consumes credits)
-- \`GET /api/budget\` — List user's budgets
-- \`GET /api/budget/:id\` — Get budget by ID
-- \`DELETE /api/budget/:id\` — Delete budget
-- \`GET /api/budget/shared/:shareId\` — Get shared budget (public)
-
-### AI — \`/api/ai\`
-- \`POST /api/ai/generate-image\` — Generate image from prompt
-- \`POST /api/ai/remove-background\` — Remove image background
-- \`POST /api/ai/upscale\` — Upscale image
-
-### Images — \`/api/images\`
-- \`POST /api/images/upload\` — Upload image
-- \`GET /api/images/:id\` — Get image by ID
-- \`DELETE /api/images/:id\` — Delete image
-
-### Community — \`/api/community\`
-- \`GET /api/community/posts\` — List public posts (paginated)
-- \`GET /api/community/posts/:id\` — Get post details
-- \`POST /api/community/posts/:id/like\` — Like a post
-- \`POST /api/community/posts/:id/comment\` — Comment on a post
-
-### Payments — \`/api/payments\`
-- \`POST /api/payments/create-checkout\` — Create Stripe checkout session
-- \`GET /api/payments/history\` — Get payment history
-
-### Usage — \`/api/usage\`
-- \`GET /api/usage/credits\` — Get current credit balance
-- \`GET /api/usage/history\` — Get usage history
-
-### Storage — \`/api/storage\`
-- \`POST /api/storage/upload\` — Upload file to R2 storage
-- \`GET /api/storage/:key\` — Get file by key
-
-### Users — \`/api/users\`
-- \`GET /api/users/:id\` — Get public user profile
-- \`GET /api/users/:id/posts\` — Get user's public posts
-
-### Referral — \`/api/referral\`
-- \`GET /api/referral/code\` — Get referral code
-- \`POST /api/referral/apply\` — Apply referral code
-
-### Workflows — \`/api/workflows\`
-- \`POST /api/workflows\` — Create workflow
-- \`GET /api/workflows\` — List workflows
-- \`GET /api/workflows/:id\` — Get workflow by ID
-
-### Visant Templates — \`/api/visant-templates\`
-- \`GET /api/visant-templates\` — List design templates
-- \`GET /api/visant-templates/:id\` — Get template by ID
-
-### Docs — \`/api/docs\`
-- \`GET /api/docs/api/spec\` — OpenAPI specification (JSON)
-- \`GET /api/docs/plugin/mcp.json\` — MCP tool specification (JSON)
-
-### Figma Plugin — \`/api/plugin\`
-- \`POST /api/plugin/generate\` — AI generation for Figma plugin
-- \`POST /api/plugin/agent-command\` — Agent command execution
-- WebSocket: \`ws://host/api/plugin/ws\` — Real-time plugin communication
-
-## Figma Plugin MCP
-
-Separate stdio-based MCP server for direct Figma integration.
-Runs locally alongside the Figma plugin, not exposed over HTTP.
+| Code | Meaning |
+|------|---------|
+| UNAUTHORIZED | Missing or invalid auth |
+| NOT_FOUND | Resource not found |
+| VALIDATION_ERROR | Invalid parameters |
+| INSUFFICIENT_CREDITS | Not enough credits |
+| INTERNAL_ERROR | Server error |
 
 ## Rate Limits
 
-- **General API**: 60 requests/minute per user
-- **AI Generation**: 10 requests/minute per user
-- **Auth endpoints**: 10 requests/minute per IP
-- **Health checks**: 30 requests/minute
+- General API: 60 req/min per user
+- AI generation: 10 req/min per user
+- Rate limit headers: \`RateLimit-Limit\`, \`RateLimit-Remaining\`, \`RateLimit-Reset\`
 
-Rate limit headers included in responses:
-- \`RateLimit-Limit\`
-- \`RateLimit-Remaining\`
-- \`RateLimit-Reset\`
+## Links
 
-## Error Format
-
-All errors return JSON:
-
-\`\`\`json
-{
-  "error": "Human-readable error message",
-  "code": "ERROR_CODE",
-  "status": 400
-}
-\`\`\`
-
-Common error codes:
-- \`UNAUTHORIZED\` (401) — Missing or invalid auth
-- \`FORBIDDEN\` (403) — Insufficient permissions
-- \`NOT_FOUND\` (404) — Resource not found
-- \`INSUFFICIENT_CREDITS\` (402) — Not enough credits
-- \`RATE_LIMITED\` (429) — Too many requests
-- \`VALIDATION_ERROR\` (400) — Invalid request body
-- \`INTERNAL_ERROR\` (500) — Server error
+- Website: ${FRONTEND_BASE_URL}
+- Privacy: ${FRONTEND_BASE_URL}/privacy
+- OpenAPI: ${API_BASE_URL}/api/docs/api/spec
+- OAuth discovery: ${API_BASE_URL}/.well-known/oauth-authorization-server
+- Public brand demo: ${API_BASE_URL}/api/brand-guidelines/public/visant/context?output=text
+- Support: ${SUPPORT_EMAIL}
 `);
 });
 

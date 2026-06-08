@@ -645,7 +645,7 @@ export const DocsPage: React.FC = () => {
                                 </code>
                               </p>
                               <p>Requires: Figma plugin connected</p>
-                              <p>9 tools available</p>
+                              <p>14 tools available</p>
                             </div>
                           </div>
                         </div>
@@ -758,13 +758,13 @@ export const DocsPage: React.FC = () => {
                           </p>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
-                              Platform MCP (SSE)
+                              Platform MCP (Streamable HTTP)
                             </div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
   "mcpServers": {
     "visant-platform": {
-      "url": "https://your-domain.com/api/mcp",
-      "transport": "sse",
+      "url": "https://api.visantlabs.com/api/mcp",
+      "transport": "streamable-http",
       "headers": {
         "Authorization": "Bearer visant_sk_xxxxxxxxxxxx"
       }
@@ -785,7 +785,7 @@ export const DocsPage: React.FC = () => {
       "command": "npx",
       "args": ["-y", "visant-figma-mcp"],
       "env": {
-        "VISANT_API_URL": "https://your-domain.com"
+        "VISANT_API_URL": "https://api.visantlabs.com"
       }
     }
   }
@@ -813,8 +813,8 @@ export const DocsPage: React.FC = () => {
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
   "mcpServers": {
     "visant-platform": {
-      "url": "https://your-domain.com/api/mcp",
-      "transport": "sse",
+      "url": "https://api.visantlabs.com/api/mcp",
+      "transport": "streamable-http",
       "headers": {
         "Authorization": "Bearer visant_sk_xxxxxxxxxxxx"
       }
@@ -835,10 +835,10 @@ export const DocsPage: React.FC = () => {
                               @modelcontextprotocol/sdk
                             </div>
                             <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-const transport = new SSEClientTransport(
-  new URL("https://your-domain.com/api/mcp"),
+const transport = new StreamableHTTPClientTransport(
+  new URL("https://api.visantlabs.com/api/mcp"),
   {
     requestInit: {
       headers: {
@@ -928,7 +928,7 @@ const result = await client.callTool({
                         Figma MCP &mdash; Tool Reference
                       </h3>
                       <p className="text-muted-foreground mb-6 text-sm">
-                        9 tools for direct Figma manipulation via the plugin bridge. Requires the
+                        14 tools for direct Figma manipulation via the plugin bridge. Requires the
                         Visant Copilot Figma plugin to be running and connected.
                       </p>
                     </div>
@@ -1899,7 +1899,7 @@ figma.ui.onmessage = async (msg) => {
                             Base URL
                           </div>
                           <code className="text-brand-cyan font-redhatmono text-sm">
-                            https://your-domain.com/api/canvas
+                            https://api.visantlabs.com/api/canvas
                           </code>
                         </div>
                         <div className="bg-secondary/30 rounded-md border border-border p-4">
@@ -2627,7 +2627,7 @@ Content-Type: application/json`}</pre>
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
                               JavaScript / TypeScript
                             </div>
-                            <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`const BASE = "https://your-domain.com/api";
+                            <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`const BASE = "https://api.visantlabs.com/api";
 const TOKEN = "your_jwt_token";
 const headers = { "Authorization": \`Bearer \${TOKEN}\`, "Content-Type": "application/json" };
 
@@ -3157,20 +3157,20 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </p>
                               <div className="space-y-1.5">
                                 <p className="text-muted-foreground text-xs">
-                                  <code className="font-redhatmono bg-secondary px-1 rounded">
-                                    /llms.txt
+                                  <code className="font-redhatmono bg-secondary px-1 rounded text-[10px]">
+                                    api.visantlabs.com/llms.txt
                                   </code>{' '}
                                   — Concise overview
                                 </p>
                                 <p className="text-muted-foreground text-xs">
-                                  <code className="font-redhatmono bg-secondary px-1 rounded">
-                                    /llms-full.txt
+                                  <code className="font-redhatmono bg-secondary px-1 rounded text-[10px]">
+                                    api.visantlabs.com/llms-full.txt
                                   </code>{' '}
                                   — Full platform reference
                                 </p>
                                 <p className="text-muted-foreground text-xs">
-                                  <code className="font-redhatmono bg-secondary px-1 rounded">
-                                    /api/docs/api/spec
+                                  <code className="font-redhatmono bg-secondary px-1 rounded text-[10px]">
+                                    api.visantlabs.com/api/docs/api/spec
                                   </code>{' '}
                                   — OpenAPI JSON
                                 </p>

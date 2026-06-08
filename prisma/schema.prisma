@@ -106,9 +106,9 @@ model Mockup {
 
   user User @relation(fields: [userId], references: [id])
 
-  // Indexes for better query performance
   @@index([userId])
   @@index([createdAt])
+  @@index([userId, createdAt])
   @@map("mockups")
 }
 
@@ -471,6 +471,7 @@ model ApiKey {
   active    Boolean   @default(true)
 
   @@index([userId])
+  @@index([userId, active])
   @@map("api_keys")
 }
 

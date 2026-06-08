@@ -123,150 +123,172 @@ const SECTIONS = [
 
 // ─── Code snippets ───────────────────────────────────────────────────────────
 
-const AUTH_CURL = `curl -X POST https://api.visant.dev/api/mcp \\
-  -H "Authorization: Bearer visant_sk_YOUR_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{"method": "tools/call", "params": {"name": "list-tools", "arguments": {}}}'`;
+const MCP_URL = 'https://api.visantlabs.com/api/mcp';
+const API_KEY_PLACEHOLDER = 'visant_sk_xxxxxxxxxxxx';
 
-const BRAND_JS = `const response = await fetch('https://api.visant.dev/api/mcp', {
+const AUTH_CURL = `curl -X POST ${MCP_URL} \\
+  -H "Authorization: Bearer ${API_KEY_PLACEHOLDER}" \\
+  -H "Content-Type: application/json" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`;
+
+const BRAND_JS = `const response = await fetch('${MCP_URL}', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer visant_sk_YOUR_KEY',
+    'Authorization': 'Bearer ${API_KEY_PLACEHOLDER}',
     'Content-Type': 'application/json',
+    'Accept': 'application/json, text/event-stream',
   },
   body: JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
     method: 'tools/call',
     params: {
-      name: 'generate-brand-guidelines',
+      name: 'brand-guidelines-create',
       arguments: {
-        brandName: 'Acme Corp',
-        industry: 'Technology',
-        tone: 'professional',
+        name: 'Acme Corp',
+        identity: {
+          industry: 'Technology',
+          description: 'Next-gen developer tools',
+        },
       },
     },
   }),
 });
 
 const result = await response.json();
-console.log(result.content);`;
+console.log(result.result);`;
 
 const BRAND_PY = `import requests
 
 response = requests.post(
-    'https://api.visant.dev/api/mcp',
+    '${MCP_URL}',
     headers={
-        'Authorization': 'Bearer visant_sk_YOUR_KEY',
+        'Authorization': 'Bearer ${API_KEY_PLACEHOLDER}',
         'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
     },
     json={
+        'jsonrpc': '2.0',
+        'id': 1,
         'method': 'tools/call',
         'params': {
-            'name': 'generate-brand-guidelines',
+            'name': 'brand-guidelines-create',
             'arguments': {
-                'brandName': 'Acme Corp',
-                'industry': 'Technology',
-                'tone': 'professional',
+                'name': 'Acme Corp',
+                'identity': {
+                    'industry': 'Technology',
+                    'description': 'Next-gen developer tools',
+                },
             },
         },
     },
 )
 
 result = response.json()
-print(result['content'])`;
+print(result['result'])`;
 
-const MOCKUP_JS = `const response = await fetch('https://api.visant.dev/api/mcp', {
+const MOCKUP_JS = `const response = await fetch('${MCP_URL}', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer visant_sk_YOUR_KEY',
+    'Authorization': 'Bearer ${API_KEY_PLACEHOLDER}',
     'Content-Type': 'application/json',
+    'Accept': 'application/json, text/event-stream',
   },
   body: JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
     method: 'tools/call',
     params: {
       name: 'mockup-generate',
       arguments: {
-        templateId: 'tshirt-front',
-        imageUrl: 'https://your-cdn.com/artwork.png',
-        backgroundColor: '#ffffff',
+        prompt: 'White t-shirt with minimal logo, studio lighting, flat lay',
+        aspectRatio: '1:1',
       },
     },
   }),
 });
 
 const result = await response.json();
-// result.content[0].url — generated mockup image URL`;
+// result.result.content[0].text — JSON with generated mockup URL`;
 
 const MOCKUP_PY = `import requests
 
 response = requests.post(
-    'https://api.visant.dev/api/mcp',
+    '${MCP_URL}',
     headers={
-        'Authorization': 'Bearer visant_sk_YOUR_KEY',
+        'Authorization': 'Bearer ${API_KEY_PLACEHOLDER}',
         'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
     },
     json={
+        'jsonrpc': '2.0',
+        'id': 1,
         'method': 'tools/call',
         'params': {
             'name': 'mockup-generate',
             'arguments': {
-                'templateId': 'tshirt-front',
-                'imageUrl': 'https://your-cdn.com/artwork.png',
-                'backgroundColor': '#ffffff',
+                'prompt': 'White t-shirt with minimal logo, studio lighting, flat lay',
+                'aspectRatio': '1:1',
             },
         },
     },
 )
 
 result = response.json()
-# result['content'][0]['url'] — generated mockup image URL`;
+# result['result']['content'][0]['text'] — JSON with generated mockup URL`;
 
-const CREATIVE_JS = `const response = await fetch('https://api.visant.dev/api/mcp', {
+const CREATIVE_JS = `const response = await fetch('${MCP_URL}', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer visant_sk_YOUR_KEY',
+    'Authorization': 'Bearer ${API_KEY_PLACEHOLDER}',
     'Content-Type': 'application/json',
+    'Accept': 'application/json, text/event-stream',
   },
   body: JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
     method: 'tools/call',
     params: {
       name: 'creative-generate',
       arguments: {
         prompt: 'A bold social media banner for a tech startup launch',
-        brandId: 'YOUR_BRAND_ID',
+        brandGuidelineId: '<your-guideline-id>',
         format: 'instagram-post',
-        style: 'modern',
       },
     },
   }),
 });
 
 const result = await response.json();
-// result.content[0].url — generated creative asset URL`;
+// result.result.content[0].text — JSON with generated creative layers`;
 
 const CREATIVE_PY = `import requests
 
 response = requests.post(
-    'https://api.visant.dev/api/mcp',
+    '${MCP_URL}',
     headers={
-        'Authorization': 'Bearer visant_sk_YOUR_KEY',
+        'Authorization': 'Bearer ${API_KEY_PLACEHOLDER}',
         'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
     },
     json={
+        'jsonrpc': '2.0',
+        'id': 1,
         'method': 'tools/call',
         'params': {
             'name': 'creative-generate',
             'arguments': {
                 'prompt': 'A bold social media banner for a tech startup launch',
-                'brandId': 'YOUR_BRAND_ID',
+                'brandGuidelineId': '<your-guideline-id>',
                 'format': 'instagram-post',
-                'style': 'modern',
             },
         },
     },
 )
 
 result = response.json()
-# result['content'][0]['url'] — generated creative asset URL`;
+# result['result']['content'][0]['text'] — JSON with generated creative layers`;
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -591,7 +613,7 @@ export const GettingStartedPage: React.FC = () => {
                         </div>
                         <p className="text-sm font-medium text-neutral-300">Full API Reference</p>
                         <p className="text-xs text-neutral-600">
-                          Browse all 93 tools with params and response schemas
+                          Browse all MCP tools with params and response schemas
                         </p>
                       </Link>
                       <Link

@@ -379,7 +379,7 @@ export function createApp() {
       },
       capabilities: ['tools', 'prompts', 'resources'],
       toolCount: getMcpToolCount(),
-      docsUrl: `${FRONTEND_BASE_URL}/llms-full.txt`,
+      docsUrl: `${API_BASE_URL}/llms-full.txt`,
     });
   });
 
@@ -503,8 +503,8 @@ export function createApp() {
       const server = createPlatformMcpServer();
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
       res.on('close', () => {
-        transport.close().catch(() => {});
-        server.close().catch(() => {});
+        transport.close().catch((e) => console.error('[MCP] transport close error:', e.message));
+        server.close().catch((e) => console.error('[MCP] server close error:', e.message));
       });
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);

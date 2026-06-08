@@ -34,7 +34,7 @@ export async function authenticateApiKey(req: AuthRequest): Promise<boolean> {
       where: { id: apiKey.id },
       data: { lastUsed: new Date() },
     })
-    .catch(() => {});
+    .catch((err) => console.error('[apiKeyAuth] lastUsed update failed:', err.message));
 
   req.userId = user.id;
   req.userEmail = user.email;

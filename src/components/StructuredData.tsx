@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getCurrentLocale } from '@/utils/localeUtils';
+import { branding } from '@/config/branding';
 
 const getSiteUrl = (): string => {
   if (typeof window !== 'undefined') {
@@ -21,7 +22,7 @@ export interface OrganizationSchemaProps {
 
 export const OrganizationSchema: React.FC<OrganizationSchemaProps> = ({
   name = 'Visant Labs',
-  description = 'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.',
+  description = branding.description,
   logo,
   url,
   sameAs = [],
@@ -78,7 +79,7 @@ export interface SoftwareApplicationSchemaProps {
 
 export const SoftwareApplicationSchema: React.FC<SoftwareApplicationSchemaProps> = ({
   name = 'Visant Labs Creative Tools',
-  description = 'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.',
+  description = branding.description,
   applicationCategory = 'DesignApplication',
   operatingSystem = 'Web',
   offers,
@@ -187,7 +188,7 @@ export interface WebSiteSchemaProps {
 
 export const WebSiteSchema: React.FC<WebSiteSchemaProps> = ({
   name = 'Visant Labs',
-  description = 'Mockup generator with AI integration. Speedy asset creation and innovative design tools for creative professionals.',
+  description = branding.description,
   url,
   potentialAction,
 }) => {

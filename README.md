@@ -157,11 +157,11 @@ AI-powered interactive miniapps and experimentation space:
 
 Model Context Protocol server for AI agent integration:
 
-- 93+ tools for brand, mockup, creative, image, and analytics operations
-- OAuth 2.1 + PKCE authentication (no more hardcoded tokens)
-- Streamable HTTP transport (`POST /api/mcp`) + legacy SSE (`GET /api/mcp/sse`)
+- 116 tools for brand, mockup, creative, image, 3D, playground, and analytics operations — all with `readOnlyHint`/`destructiveHint` annotations
+- OAuth 2.1 + PKCE + Dynamic Client Registration (Claude Connector Directory compatible)
+- Streamable HTTP transport (`POST /api/mcp`)
 - Persistent refresh tokens with automatic cleanup
-- HTTP and stdio transport modes
+- LLM reference files: `/llms.txt` (discovery) and `/llms-full.txt` (full tool reference)
 
 ### CLI Tool
 

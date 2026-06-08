@@ -1,5 +1,5 @@
 /**
- * Branding Configuration
+ * Branding Configuration — Single Source of Truth
  *
  * This file centralizes all branding-related content that may need to be
  * customized when forking this project. Edit these values to personalize
@@ -10,34 +10,31 @@
  */
 
 export const branding = {
-  // Company/Organization Info
   companyName: 'Visant Labs',
-  productName: 'VSN Mockup Machine',
+  productName: 'Visant Labs',
 
-  // Repository
+  description:
+    'AI design platform: generate mockups, creatives, brand identities, and production-ready assets from brand guidelines.',
+
   github: {
     organization: 'pedrojaques99',
     repository: 'visantlabs-os',
     url: 'https://github.com/pedrojaques99/visantlabs-os',
   },
 
-  // Contact & Support
-  support: {
-    // These emails appear in legal pages and support sections
-    // Customize for your own deployment
-    email: 'contato@visant.co',
-    supportEmail: 'suporte@visantlabs.com',
+  social: {
+    github: 'https://github.com/pedrojaques99/visantlabs-os',
+    x: 'https://x.com/visantlabs',
   },
 
-  // External Links
+  support: {
+    email: 'contato@visant.co',
+  },
+
   links: {
-    // Portfolio/website link shown in About page
     website: 'https://www.visant.co/works',
   },
 
-  // Tutorial Video
-  // YouTube video ID for the tutorial shown on welcome screen
-  // Set to empty string to hide the tutorial video
   tutorialVideo: {
     youtubeId: 'nzLeKvcL6-Y',
     enabled: true,
