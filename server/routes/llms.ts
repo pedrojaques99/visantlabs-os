@@ -36,7 +36,7 @@ router.get('/llms.txt', (req, res) => {
 
 ## For Agents (Claude Connectors)
 
-**MCP Server**: \`POST /api/mcp\` — ${getMcpToolCount()} tools via Streamable HTTP (MCP ${MCP_SPEC_VERSION})
+**MCP Server**: \`POST /api/mcp\` — ${getMcpToolCount()} tools via Streamable HTTP (MCP ${MCP_SPEC_VERSION}), all with readOnlyHint/destructiveHint annotations
 
 Connect:
 - **Claude.ai / Claude Desktop**: Settings > Connectors > Add > \`${MCP_ENDPOINT}\` (OAuth auto-flow)
@@ -90,6 +90,7 @@ API keys are generated in the user dashboard under Settings > API Keys.
 **Protocol**: JSON-RPC 2.0 over Streamable HTTP (MCP ${MCP_SPEC_VERSION})
 **Auth**: OAuth 2.1 (DCR + PKCE S256) or API Key (\`visant_sk_*\`)
 **Discovery**: \`GET /.well-known/mcp.json\`
+**Tool Annotations**: All tools include \`readOnlyHint\` / \`destructiveHint\` annotations
 
 ### Connect via Claude.ai (Recommended)
 
@@ -250,6 +251,62 @@ For older clients: \`GET /api/mcp/sse\` (deprecated, use POST /api/mcp)
 - \`community-preset-delete\` — Delete your own preset
 - \`community-preset-like\` — Toggle like/unlike on a preset
 - \`community-my-presets\` — List your own presets
+
+**Playground Mini-Apps** (requires auth):
+- \`playground-generate\` — Generate an interactive mini-app from a prompt
+- \`playground-iterate\` — Iterate on an existing mini-app
+- \`playground-save\` — Save mini-app to user account
+- \`playground-list\` — List saved mini-apps
+- \`playground-get\` — Get mini-app by slug (public)
+- \`playground-publish\` — Publish mini-app to community feed
+- \`playground-feed\` — Browse published mini-apps (public)
+- \`playground-fork\` — Fork a public mini-app
+- \`playground-share\` — Generate share link
+- \`playground-quickstart\` — Create from a template
+- \`playground-describe\` — Describe a mini-app's functionality
+
+**3D Studio** (requires auth):
+- \`studio3d-list-presets\` — Browse 3D scene presets
+- \`studio3d-create-scene\` — Create 3D product scene
+- \`studio3d-list-scenes\` — List user's scenes
+- \`studio3d-get-scene\` — Get scene by ID
+- \`update-studio3d-scene\` — Update scene settings
+- \`delete-studio3d-scene\` — Delete scene
+
+**Campaign** (requires auth):
+- \`campaign-generate\` — Generate batch creatives for a campaign
+- \`campaign-status\` — Check campaign generation status
+
+**Document & PDF** (requires auth):
+- \`document-extract\` — Extract text/data from documents and PDFs
+- \`pdf-compress\` — Compress a PDF
+- \`pdf-to-images\` — Convert PDF pages to images
+- \`images-to-pdf\` — Combine images into a PDF
+
+**AI Extras** (requires auth):
+- \`ai-suggest-prompt-variations\` — Generate prompt alternatives
+- \`ai-extract-colors\` — Extract color palette from an image
+- \`ai-generate-naming\` — Generate brand names from a brief
+- \`ai-change-object\` — AI object replacement in images
+- \`ai-apply-theme\` — Apply visual theme to an image
+- \`smart-analyze\` — Multi-modal analysis of images/designs
+
+**Reference Library** (requires auth):
+- \`reference-search\` — Search curated mockup references
+- \`reference-ingest\` — Add new reference to the library
+
+**Payments & Settings** (requires auth):
+- \`payments-subscription-status\` — Get subscription details
+- \`payments-usage\` — Get usage breakdown
+- \`payments-plans\` — List available plans
+- \`settings-byok-status\` — Check BYOK (Bring Your Own Key) status
+
+### Public Brand Context Demo
+
+Try it without auth — LLM-ready brand context in one call:
+\`\`\`bash
+curl "https://api.visantlabs.com/api/brand-guidelines/public/visant/context?format=prompt&output=text"
+\`\`\`
 
 ### Error format (MCP tools)
 

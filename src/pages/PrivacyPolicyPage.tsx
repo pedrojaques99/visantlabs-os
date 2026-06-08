@@ -5,6 +5,7 @@ import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTranslations, getCurrentLocale } from '@/utils/localeUtils';
 import { Button } from '@/components/ui/button';
+import { SEO } from '@/components/SEO';
 
 export const PrivacyPolicyPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +28,11 @@ export const PrivacyPolicyPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-300 relative">
+      <SEO
+        title="Privacy Policy — Visant Labs"
+        description="Visant Labs privacy policy: what data we collect, how we use it, storage practices, and your rights."
+        keywords="privacy policy, data protection, Visant Labs"
+      />
       <div className="fixed inset-0 z-0"></div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 pt-[30px] pb-16 md:pb-24">
