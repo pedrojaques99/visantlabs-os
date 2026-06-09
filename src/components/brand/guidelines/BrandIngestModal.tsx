@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
@@ -9,6 +10,8 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
+import { BrandIngestDropZone } from './BrandIngestDropZone';
 // ─── Section order ────────────────────────────────────────────────────────────
 const SECTION_ORDER: Array<{ key: FigCategory; label: string }> = [
   { key: 'colors', label: 'Colors' },
@@ -328,6 +331,10 @@ interface BrandIngestModalProps {
   title?: string;
   /** Source identifier for audit trail — defaults to 'manual' if omitted */
   source?: 'pdf' | 'fig_file' | 'images' | 'image' | 'url' | 'json' | 'manual';
+  /** Show drop zone for file upload before extraction starts */
+  showDropZone?: boolean;
+  /** Handle files dropped in the drop zone */
+  onDropFiles?: (files: FileList) => void;
 }
 
 export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
@@ -337,6 +344,8 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
   onClose,
   title = 'Review extraction',
   source = 'manual',
+  showDropZone = false,
+  onDropFiles,
 }) => {
   const [itemSel, setItemSel] = useState<ItemSel>(new Map());
   const [applying, setApplying] = useState(false);
@@ -514,9 +523,13 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
 
   const isDone = state.status === 'done';
   const isStreaming = state.status === 'streaming';
+  const isIdle = state.status === 'idle';
 
   const totalSelected = Array.from(itemSel.values()).reduce((sum, s) => sum + s.size, 0);
   const totalLoaded = SECTION_ORDER.filter(({ key }) => getItems(state, key).length > 0).length;
+
+  const showUploadPhase = showDropZone && isIdle;
+  const showProcessingPhase = isStreaming && totalLoaded === 0;
 
   const renderContent = (key: FigCategory) => {
     const items = getItems(state, key);
@@ -545,111 +558,174 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
     }
   };
 
+  const modalDescription = showUploadPhase
+    ? 'Drag & drop or browse files to extract brand tokens'
+    : showProcessingPhase
+    ? state.statusMessage || 'Extracting brand tokens…'
+    : isStreaming
+    ? `${state.statusMessage || 'Parsing…'} · ${totalLoaded} categories`
+    : isDone
+    ? `${totalLoaded} categories · ${totalSelected} items selected`
+    : state.error || '';
+
+  const showFooter = !showUploadPhase && !showProcessingPhase;
+
   return (
     <Modal
       isOpen
       onClose={onClose}
-      title={title}
-      description={
-        isStreaming
-          ? `${state.statusMessage || 'Parsing…'} · ${totalLoaded} categories`
-          : isDone
-          ? `${totalLoaded} categories · ${totalSelected} items selected`
-          : state.error || ''
-      }
+      title={showUploadPhase ? 'Extract Brand' : title}
+      description={modalDescription}
       size="lg"
       footer={
-        <div className="flex items-center justify-between w-full gap-3">
-          <div className="flex items-center gap-1 rounded border border-white/10 p-0.5">
-            {(['merge', 'replace'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                title={
-                  m === 'merge'
-                    ? 'Add selected tokens, keep existing'
-                    : 'Replace tokens with selected data'
-                }
-                className={`px-2.5 h-6 rounded text-[10px] font-mono uppercase transition-all ${
-                  mode === m
-                    ? 'bg-white/10 text-neutral-200'
-                    : 'text-neutral-600 hover:text-neutral-400'
-                }`}
+        showFooter ? (
+          <div className="flex items-center justify-between w-full gap-3">
+            <div className="flex items-center gap-1 rounded border border-white/10 p-0.5">
+              {(['merge', 'replace'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  title={
+                    m === 'merge'
+                      ? 'Add selected tokens, keep existing'
+                      : 'Replace tokens with selected data'
+                  }
+                  className={`px-2.5 h-6 rounded text-[10px] font-mono uppercase transition-all ${
+                    mode === m
+                      ? 'bg-white/10 text-neutral-200'
+                      : 'text-neutral-600 hover:text-neutral-400'
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={onClose}
+                className="h-8 px-4 gap-1.5 border border-white/10 text-xs"
               >
-                {m}
-              </button>
-            ))}
+                <X size={12} /> Discard
+              </Button>
+              <Button
+                onClick={apply}
+                disabled={applying || totalSelected === 0}
+                className="h-8 px-4 gap-1.5 bg-white/10 border border-white/15 text-neutral-200 hover:bg-white/10 text-xs"
+              >
+                {applying ? <GlitchLoader size={12} /> : <Check size={12} />}
+                {applying ? 'Applying…' : `Apply (${totalSelected})`}
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={onClose}
-              className="h-8 px-4 gap-1.5 border border-white/10 text-xs"
-            >
-              <X size={12} /> Discard
-            </Button>
-            <Button
-              onClick={apply}
-              disabled={applying || totalSelected === 0}
-              className="h-8 px-4 gap-1.5 bg-white/10 border border-white/15 text-neutral-200 hover:bg-white/10 text-xs"
-            >
-              {applying ? <GlitchLoader size={12} /> : <Check size={12} />}
-              {applying ? 'Applying…' : `Apply (${totalSelected})`}
-            </Button>
-          </div>
-        </div>
+        ) : undefined
       }
     >
-      <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
-        {state.error && (
-          <p className="text-sm text-destructive font-mono py-4 text-center">{state.error}</p>
+      <AnimatePresence mode="wait">
+        {/* Phase 1: Drop Zone */}
+        {showUploadPhase && onDropFiles && (
+          <motion.div
+            key="dropzone"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <BrandIngestDropZone onFiles={onDropFiles} />
+          </motion.div>
         )}
 
-        {SECTION_ORDER.map(({ key, label }) => {
-          const items = getItems(state, key);
-          const content = renderContent(key);
-          const isLoading = isStreaming && !items.length;
-          if (!items.length && !isLoading) return null;
-          const sel = itemSel.get(key) || new Set<number>();
-          return (
-            <SectionShell
-              key={key}
-              label={label}
-              loading={isLoading}
-              allChecked={sel.size === items.length && items.length > 0}
-              someChecked={sel.size > 0}
-              onToggleAll={() => toggleSection(key)}
-            >
-              {isLoading ? (
-                <div className="space-y-1.5 pt-1">
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-6 w-1/2" />
-                </div>
-              ) : (
-                content
-              )}
-            </SectionShell>
-          );
-        })}
+        {/* Phase 2: Processing with FlyingPaperLoader */}
+        {showProcessingPhase && (
+          <motion.div
+            key="processing"
+            className="flex flex-col items-center justify-center py-16"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4 }}
+          >
+            <FlyingPaperLoader
+              label={state.statusMessage || 'Extracting brand tokens…'}
+            />
+          </motion.div>
+        )}
 
-        {isStreaming && totalLoaded < SECTION_ORDER.length && (
-          <div className="opacity-30 space-y-2">
-            {SECTION_ORDER.slice(totalLoaded, totalLoaded + 2).map(({ key, label }) => (
-              <SectionShell
-                key={key}
-                label={label}
-                loading
-                allChecked={false}
-                someChecked={false}
-                onToggleAll={() => {}}
+        {/* Phase 3: Review */}
+        {!showUploadPhase && !showProcessingPhase && (
+          <motion.div
+            key="review"
+            className="space-y-2 max-h-[60vh] overflow-y-auto pr-1"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {state.error && (
+              <p className="text-sm text-destructive font-mono py-4 text-center">{state.error}</p>
+            )}
+
+            {SECTION_ORDER.map(({ key, label }, sectionIdx) => {
+              const items = getItems(state, key);
+              const content = renderContent(key);
+              const isLoading = isStreaming && !items.length;
+              if (!items.length && !isLoading) return null;
+              const sel = itemSel.get(key) || new Set<number>();
+              return (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.35,
+                    delay: sectionIdx * 0.06,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
+                >
+                  <SectionShell
+                    label={label}
+                    loading={isLoading}
+                    allChecked={sel.size === items.length && items.length > 0}
+                    someChecked={sel.size > 0}
+                    onToggleAll={() => toggleSection(key)}
+                  >
+                    {isLoading ? (
+                      <div className="space-y-1.5 pt-1">
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-6 w-1/2" />
+                      </div>
+                    ) : (
+                      content
+                    )}
+                  </SectionShell>
+                </motion.div>
+              );
+            })}
+
+            {isStreaming && totalLoaded < SECTION_ORDER.length && (
+              <motion.div
+                className="opacity-30 space-y-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.3 }}
+                transition={{ duration: 0.5 }}
               >
-                <Skeleton className="h-6 w-2/3 mt-1" />
-              </SectionShell>
-            ))}
-          </div>
+                {SECTION_ORDER.slice(totalLoaded, totalLoaded + 2).map(({ key, label }) => (
+                  <SectionShell
+                    key={key}
+                    label={label}
+                    loading
+                    allChecked={false}
+                    someChecked={false}
+                    onToggleAll={() => {}}
+                  >
+                    <Skeleton className="h-6 w-2/3 mt-1" />
+                  </SectionShell>
+                ))}
+              </motion.div>
+            )}
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </Modal>
   );
 };

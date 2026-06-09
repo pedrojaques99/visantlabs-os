@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 import { useExtractFileStream } from '@/hooks/useExtractFigStream';
@@ -8,6 +8,12 @@ import type { BrandGuideline } from '@/lib/figma-types';
 import type { FigStreamState } from '@/hooks/useExtractFigStream';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+
+const IDLE_STATE: FigStreamState = {
+  status: 'idle',
+  statusMessage: '',
+};
+
 interface BrandIngestButtonProps {
   guideline: BrandGuideline;
   onSuccess: () => void;
@@ -28,6 +34,8 @@ type ActiveSource = {
  *   .pdf   → /extract-pdf  (streaming NDJSON, Gemini native PDF vision)
  *   images → useIngestAsStream (dryRun /ingest → normalised FigStreamState)
  * All paths share BrandIngestModal for the approve/select/apply step.
+ *
+ * Click opens the modal in drop zone mode first — user can drag & drop or browse.
  */
 export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
   guideline,
@@ -37,7 +45,7 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
   const fig = useExtractFileStream(guideline.id!, 'extract-fig');
   const pdf = useExtractFileStream(guideline.id!, 'extract-pdf');
   const images = useIngestAsStream(guideline.id!);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showDropZoneModal, setShowDropZoneModal] = useState(false);
 
   // Whichever hook is not idle drives the modal
   const active: ActiveSource =
@@ -50,11 +58,12 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
       : null;
 
   const isBusy = !!active && active.state.status === 'streaming';
-  const showModal = !!active && active.state.status !== 'idle';
+  const showExtractModal = !!active && active.state.status !== 'idle';
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
       if (!files?.length) return;
+      setShowDropZoneModal(false);
       const file = files[0];
 
       if (file.name.endsWith('.fig')) {
@@ -82,31 +91,39 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
     };
   }, [triggerRef, handleFiles]);
 
+  const handleClose = useCallback(() => {
+    setShowDropZoneModal(false);
+    if (active) active.reset();
+  }, [active]);
+
   return (
     <>
       <Button
         variant="ghost"
         className="h-8 px-3 gap-1.5 text-xs border border-white/10 text-neutral-400 hover:text-neutral-200"
         disabled={isBusy}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => setShowDropZoneModal(true)}
       >
         {isBusy ? <GlitchLoader size={13} /> : <Upload size={13} />}
         <span className="hidden sm:inline">Extract</span>
       </Button>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        className="hidden"
-        accept=".fig,.pdf,.txt,.md,text/plain,text/markdown,image/*"
-        multiple
-        onChange={(e) => {
-          handleFiles(e.target.files);
-          e.target.value = '';
-        }}
-      />
+      {/* Drop zone modal (no extraction running yet) */}
+      {showDropZoneModal && !showExtractModal && (
+        <BrandIngestModal
+          title="Extract Brand"
+          source="manual"
+          state={IDLE_STATE}
+          guideline={guideline}
+          showDropZone
+          onDropFiles={handleFiles}
+          onSuccess={onSuccess}
+          onClose={() => setShowDropZoneModal(false)}
+        />
+      )}
 
-      {showModal && active && (
+      {/* Extraction/Review modal (extraction in progress or done) */}
+      {showExtractModal && active && (
         <BrandIngestModal
           title={active.title}
           source={active.source}
@@ -115,8 +132,9 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
           onSuccess={() => {
             onSuccess();
             active.reset();
+            setShowDropZoneModal(false);
           }}
-          onClose={active.reset}
+          onClose={handleClose}
         />
       )}
     </>
