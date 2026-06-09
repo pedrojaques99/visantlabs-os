@@ -772,7 +772,7 @@ function buildOobPage(p: { code: string | null; error: string | null }): string 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Denied — Visant Labs</title>
+  <title>Access Denied | Visant Labs</title>
   <style>${oauthPageStyles()}${oobStyles}</style>
 </head>
 <body>
@@ -791,7 +791,7 @@ function buildOobPage(p: { code: string | null; error: string | null }): string 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Authorization Successful — Visant Labs</title>
+  <title>Authorization Successful | Visant Labs</title>
   <style>${oauthPageStyles()}${oobStyles}</style>
 </head>
 <body>
@@ -843,7 +843,7 @@ function buildLoginPage(p: LoginPageParams): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign in — Visant Labs</title>
+  <title>Sign in | Visant Labs</title>
   <style>${oauthPageStyles()}</style>
 </head>
 <body>
@@ -940,7 +940,7 @@ function buildConsentPage(p: ConsentPageParams): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Authorize — Visant Labs</title>
+  <title>Authorize | Visant Labs</title>
   <style>${oauthPageStyles()}</style>
 </head>
 <body>
