@@ -519,11 +519,17 @@ export function createApp() {
     }
     try {
       const server = createPlatformMcpServer();
-      const acceptHeader = req.headers.accept || '';
-      const wantsJson = acceptHeader.includes('application/json') && !acceptHeader.includes('text/event-stream');
-      if (wantsJson) {
+      const rawAccept = req.headers.accept || '';
+      const hasJson = rawAccept.includes('application/json');
+      const hasSse = rawAccept.includes('text/event-stream');
+      if (!hasJson && !hasSse) {
         req.headers.accept = 'application/json, text/event-stream';
+      } else if (hasJson && !hasSse) {
+        req.headers.accept = rawAccept + ', text/event-stream';
+      } else if (!hasJson && hasSse) {
+        req.headers.accept = 'application/json, ' + rawAccept;
       }
+      const wantsJson = hasJson && !hasSse;
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined,
         enableJsonResponse: wantsJson,
