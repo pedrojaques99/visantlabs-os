@@ -521,6 +521,9 @@ export function createApp() {
       const server = createPlatformMcpServer();
       const acceptHeader = req.headers.accept || '';
       const wantsJson = acceptHeader.includes('application/json') && !acceptHeader.includes('text/event-stream');
+      if (wantsJson) {
+        req.headers.accept = 'application/json, text/event-stream';
+      }
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined,
         enableJsonResponse: wantsJson,

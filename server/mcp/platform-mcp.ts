@@ -294,7 +294,7 @@ You are connected via OAuth 2.1 or API key. If you need to authenticate a new ag
 
 **No local server? Use Device Flow (recommended):**
 1. \`POST /oauth/device/code\` with \`{"client_id":"...","scope":"read write generate"}\`
-2. Show user the \`verification_uri_complete\` link
+2. Show user ONLY the \`verification_uri_complete\` link (code is already in the URL — do NOT show code separately)
 3. Poll \`POST /oauth/token\` with \`grant_type=urn:ietf:params:oauth:grant-type:device_code&device_code=...&client_id=...\` every 5s
 4. When user approves, poll returns access_token + refresh_token automatically
 

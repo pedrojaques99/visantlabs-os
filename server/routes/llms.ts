@@ -79,7 +79,7 @@ Scopes: \`read\`, \`write\`, \`generate\`
 Best for Telegram bots, CLI tools, remote agents. Zero copy-paste — agent polls automatically.
 
 1. \`POST ${API_BASE_URL}/oauth/device/code\` with \`{"client_id": "...", "scope": "read write generate"}\`
-2. Show user: "Go to \`verification_uri\` and enter code: \`user_code\`" (or give them \`verification_uri_complete\`)
+2. Show user ONLY the \`verification_uri_complete\` link — it already has the code embedded, so they just click and approve. Do NOT show the code separately.
 3. Poll \`POST ${API_BASE_URL}/oauth/token\` with \`{"grant_type": "urn:ietf:params:oauth:grant-type:device_code", "device_code": "...", "client_id": "..."}\` every 5s
 4. When user approves, poll returns access_token + refresh_token
 
@@ -233,7 +233,7 @@ Best for Telegram bots, CLI tools, IoT, remote agents. User approves in browser;
    \`\`\`
    Response: \`{"device_code": "...", "user_code": "ABCD-1234", "verification_uri": "${API_BASE_URL}/oauth/device", "verification_uri_complete": "${API_BASE_URL}/oauth/device?code=ABCD-1234", "expires_in": 600, "interval": 5}\`
 
-2. **Show user** the \`verification_uri_complete\` link (or \`verification_uri\` + \`user_code\` separately)
+2. **Show user ONLY the \`verification_uri_complete\` link** — it already has the code embedded in the URL, so the user just clicks and approves. Do NOT show the code separately or ask the user to type it. Example: "Click here to authorize: https://api.visantlabs.com/oauth/device?code=ABCD-1234"
 
 3. **Poll for token** every \`interval\` seconds:
    \`\`\`
