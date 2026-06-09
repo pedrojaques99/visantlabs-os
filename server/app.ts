@@ -522,14 +522,21 @@ export function createApp() {
       const rawAccept = req.headers.accept || '';
       const hasJson = rawAccept.includes('application/json');
       const hasSse = rawAccept.includes('text/event-stream');
-      if (!hasJson && !hasSse) {
-        req.headers.accept = 'application/json, text/event-stream';
-      } else if (hasJson && !hasSse) {
-        req.headers.accept = rawAccept + ', text/event-stream';
-      } else if (!hasJson && hasSse) {
-        req.headers.accept = 'application/json, ' + rawAccept;
-      }
       const wantsJson = hasJson && !hasSse;
+      const normalizedAccept = (!hasJson || !hasSse)
+        ? 'application/json, text/event-stream'
+        : rawAccept;
+      if (normalizedAccept !== rawAccept) {
+        req.headers.accept = normalizedAccept;
+        const idx = req.rawHeaders.findIndex(
+          (v, i) => i % 2 === 0 && v.toLowerCase() === 'accept',
+        );
+        if (idx >= 0) {
+          req.rawHeaders[idx + 1] = normalizedAccept;
+        } else {
+          req.rawHeaders.push('Accept', normalizedAccept);
+        }
+      }
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined,
         enableJsonResponse: wantsJson,
