@@ -137,7 +137,13 @@ export function validateExternalUrl(url: string): UrlValidationResult {
  * so the request target is not a user-derived URL string, satisfying CodeQL js/request-forgery.
  * validateExternalUrl enforces blocklist of internal IPs, localhost, and metadata endpoints.
  */
-export async function safeFetch(url: string, init?: RequestInit): Promise<Response> {
+export async function safeFetch(
+  url: string,
+  init?: RequestInit,
+  _redirectCount = 0
+): Promise<Response> {
+  if (_redirectCount > 5) throw new Error('Too many redirects');
+
   const validation = validateExternalUrl(url);
   if (!validation.valid || !validation.url) {
     throw new SSRFValidationError(validation.error || 'Invalid URL');
@@ -158,10 +164,17 @@ export async function safeFetch(url: string, init?: RequestInit): Promise<Respon
         headers: (init?.headers as Record<string, string>) ?? {},
       },
       (res) => {
+        const status = res.statusCode ?? 0;
+        if ([301, 302, 307, 308].includes(status) && res.headers.location) {
+          const redirectUrl = new URL(res.headers.location, validation.url).href;
+          res.resume();
+          resolve(safeFetch(redirectUrl, init, _redirectCount + 1));
+          return;
+        }
         const body = Readable.toWeb(res) as ReadableStream<Uint8Array>;
         resolve(
           new Response(body, {
-            status: res.statusCode ?? 0,
+            status,
             statusText: res.statusMessage ?? '',
             headers: res.headers as HeadersInit,
           })

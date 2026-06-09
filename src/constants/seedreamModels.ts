@@ -2,16 +2,16 @@ import type { Resolution, AspectRatio } from '../types/types';
 
 // ── Model IDs (single source of truth) ────────────────────────────────────────
 export const SEEDREAM_MODELS = {
-  /** Seedream 5.0 Lite — Newest flagship, t2i + i2i, 2K/3K/4K, batch, up to 14 ref images, png/jpeg output */
-  SD_5_LITE: 'seedream-5-0-lite' as const,
+  /** Seedream 5.0 — Newest flagship, t2i + i2i, 2K/3K/4K, batch, up to 14 ref images, png/jpeg output */
+  SD_5_LITE: 'seedream-5-0-260128' as const,
   /** Seedream 4.5 — t2i + i2i, 2K/3K/4K, batch, up to 14 ref images */
-  SD_4_5: 'seedream-4.5' as const,
+  SD_4_5: 'seedream-4-5-250601' as const,
   /** Seedream 4.0 — t2i + i2i, 1K/2K/4K, batch, up to 14 ref images */
-  SD_4_0: 'seedream-4.0' as const,
+  SD_4_0: 'seedream-4-0-250828' as const,
   /** Seedream 3.0 text-to-image — t2i only, lower res (512px–2K), seed + guidance_scale */
-  SD_3_T2I: 'seedream-3.0-t2i' as const,
+  SD_3_T2I: 'seedream-3-0-t2i-250415' as const,
   /** Seededit 3.0 image-to-image — i2i edit only, adaptive size, seed + guidance_scale */
-  SE_3_I2I: 'seededit-3.0-i2i' as const,
+  SE_3_I2I: 'seededit-3-0-i2i-250415' as const,
 } as const;
 
 export type SeedreamModelId = (typeof SEEDREAM_MODELS)[keyof typeof SEEDREAM_MODELS];
