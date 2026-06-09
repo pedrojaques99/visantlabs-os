@@ -7,6 +7,7 @@ import {
   FRONTEND_BASE_URL,
   SUPPORT_EMAIL,
   PLATFORM_DESCRIPTION,
+  MCP_HINTS,
 } from '../lib/mcp-constants.js';
 
 const router = express.Router();
@@ -53,12 +54,9 @@ router.get('/llms.txt', (_req, res) => {
 MCP uses JSON-RPC 2.0 over HTTP. All requests are POST to \`${MCP_ENDPOINT}\`.
 
 1. Authenticate (see below) → get access_token
-2. Initialize: \`POST ${MCP_ENDPOINT}\` with \`{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"${MCP_SPEC_VERSION}","capabilities":{},"clientInfo":{"name":"Your Agent","version":"1.0"}},"id":1}\`
-   — Save the \`mcp-session-id\` response header
-3. Discover tools: \`{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}\`
-4. Call a tool: \`{"jsonrpc":"2.0","method":"tools/call","params":{"name":"account-profile","arguments":{}},"id":3}\`
+${MCP_HINTS.jsonRpcSteps(MCP_ENDPOINT, MCP_SPEC_VERSION).map(s => `${s}`).join('\n')}
 
-**Important:** This is NOT a REST API. Do NOT call \`GET /auth/profile\` — use \`tools/call\` with the tool name. \`"arguments": {}\` is REQUIRED in every tools/call, even for parameterless tools. Persist the access token (1h lifetime) and session ID across requests. Add \`Accept: application/json\` header if your client cannot read SSE streams.
+**Important:** ${MCP_HINTS.warnings.notRestApi} ${MCP_HINTS.warnings.argumentsRequired} ${MCP_HINTS.warnings.persistToken} ${MCP_HINTS.responseFormat}
 
 Full reference: ${API_BASE_URL}/llms-full.txt
 
@@ -67,10 +65,7 @@ Full reference: ${API_BASE_URL}/llms-full.txt
 **Option A — OAuth 2.1 (recommended for AI agents)**
 Full Authorization Code + PKCE flow. No API key needed — the user authorizes you via browser.
 
-1. Register: \`POST ${API_BASE_URL}/oauth/register\` with \`{"client_name": "Your Agent", "redirect_uris": ["http://localhost:..."], "grant_types": ["authorization_code"]}\`
-2. Authorize: open \`${API_BASE_URL}/oauth/authorize?client_id=...&redirect_uri=...&code_challenge=...&code_challenge_method=S256&state=...&response_type=code&scope=read+write+generate\` in the user's browser
-3. Exchange: \`POST ${API_BASE_URL}/oauth/token\` with \`grant_type=authorization_code&code=...&code_verifier=...&client_id=...\`
-4. Refresh: \`POST ${API_BASE_URL}/oauth/token\` with \`grant_type=refresh_token&refresh_token=...\`
+${MCP_HINTS.oauthSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
 
 Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
 Scopes: \`read\`, \`write\`, \`generate\`
@@ -78,10 +73,7 @@ Scopes: \`read\`, \`write\`, \`generate\`
 **Option B — Device Flow (recommended for agents without a local server)**
 Best for Telegram bots, CLI tools, remote agents. Zero copy-paste — agent polls automatically.
 
-1. \`POST ${API_BASE_URL}/oauth/device/code\` with \`{"client_id": "...", "scope": "read write generate"}\`
-2. Show user ONLY the \`verification_uri_complete\` link — it already has the code embedded, so they just click and approve. Do NOT show the code separately.
-3. Poll \`POST ${API_BASE_URL}/oauth/token\` with \`{"grant_type": "urn:ietf:params:oauth:grant-type:device_code", "device_code": "...", "client_id": "..."}\` every 5s
-4. When user approves, poll returns access_token + refresh_token
+${MCP_HINTS.deviceFlowSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
 
 **Option C — OOB flow (fallback — manual copy-paste)**
 Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — user sees the code on screen and pastes it back to the agent.
@@ -154,19 +146,17 @@ Content-Type: application/json
 Response: \`{"jsonrpc": "2.0", "result": {"content": [{"type": "text", "text": "..."}]}, "id": 3}\`
 
 ### Important
-- **Always use \`tools/call\` with a \`name\` field** — do NOT call tool names as top-level methods.
-- **Persist the access token** — reuse it for all requests until it expires (1 hour). Then use the refresh token.
-- **Persist the session ID** — include the \`Mcp-Session-Id\` header in every request after initialize.
-- **This is NOT a REST API** — do not try to call \`GET /auth/profile\` or similar. All communication is JSON-RPC via the single MCP endpoint.
+- ${MCP_HINTS.warnings.argumentsRequired}
+- ${MCP_HINTS.warnings.notRestApi}
+- ${MCP_HINTS.warnings.persistToken}
 
 ### Response Format
-By default, the server responds with **SSE (Server-Sent Events)** streams (\`text/event-stream\`). Each SSE event contains a JSON-RPC response in its \`data:\` field.
+${MCP_HINTS.responseFormat}
 
 If your client does not support SSE (e.g. Python \`requests\`, simple HTTP clients), add the header:
 \`\`\`
 Accept: application/json
 \`\`\`
-The server will then return plain JSON responses instead of SSE streams. This is recommended for agents making simple request/response calls.
 
 ---
 
@@ -233,7 +223,7 @@ Best for Telegram bots, CLI tools, IoT, remote agents. User approves in browser;
    \`\`\`
    Response: \`{"device_code": "...", "user_code": "ABCD-1234", "verification_uri": "${API_BASE_URL}/oauth/device", "verification_uri_complete": "${API_BASE_URL}/oauth/device?code=ABCD-1234", "expires_in": 600, "interval": 5}\`
 
-2. **Show user ONLY the \`verification_uri_complete\` link** — it already has the code embedded in the URL, so the user just clicks and approves. Do NOT show the code separately or ask the user to type it. Example: "Click here to authorize: https://api.visantlabs.com/oauth/device?code=ABCD-1234"
+2. **${MCP_HINTS.warnings.verificationUri}** Example: "Click here to authorize: ${API_BASE_URL}/oauth/device?code=ABCD-1234"
 
 3. **Poll for token** every \`interval\` seconds:
    \`\`\`

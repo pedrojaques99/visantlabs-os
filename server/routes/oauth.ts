@@ -4,17 +4,15 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
-import { API_BASE_URL, MCP_ENDPOINT, MCP_SCOPES } from '../lib/mcp-constants.js';
+import { API_BASE_URL, MCP_ENDPOINT, MCP_SCOPES, MCP_SPEC_VERSION, MCP_HINTS, DEVICE_CODE_GRANT, OOB_REDIRECT_URI } from '../lib/mcp-constants.js';
 
 const router = express.Router();
 
 const BASE_URL = API_BASE_URL;
 const MCP_RESOURCE = MCP_ENDPOINT;
 const REFRESH_TOKEN_TTL_DAYS = 30;
-const OOB_REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob';
 const DEVICE_CODE_TTL_SECONDS = 600;
 const DEVICE_POLL_INTERVAL = 5;
-const DEVICE_CODE_GRANT = 'urn:ietf:params:oauth:grant-type:device_code';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -179,15 +177,9 @@ router.get('/.well-known/oauth-protected-resource', (_req, res) => {
     _agent_hint: {
       message: 'To connect, use OAuth 2.1 (PKCE), Device Flow, or an API key (visant_sk_xxx).',
       oauth_discovery: `${BASE_URL}/.well-known/oauth-authorization-server`,
-      quick_start: [
-        `1. Register: POST ${BASE_URL}/oauth/register with {"client_name":"Your Agent","redirect_uris":["http://localhost:3456/callback"],"grant_types":["authorization_code"]}`,
-        '2. Generate PKCE: code_verifier (43+ chars) → code_challenge = base64url(sha256(verifier))',
-        `3. Open in user browser: ${BASE_URL}/oauth/authorize?client_id=<id>&redirect_uri=<uri>&code_challenge=<challenge>&code_challenge_method=S256&state=<random>&response_type=code&scope=read+write+generate`,
-        `4. Exchange code: POST ${BASE_URL}/oauth/token with grant_type=authorization_code&code=<code>&code_verifier=<verifier>&client_id=<id>`,
-        '5. Use token: Authorization: Bearer <access_token>',
-      ],
-      device_flow: `For agents without localhost (Telegram, CLI): POST ${BASE_URL}/oauth/device/code → show user verification_uri_complete link → poll POST ${BASE_URL}/oauth/token with grant_type=urn:ietf:params:oauth:grant-type:device_code`,
-      json_rpc_protocol: `After auth, POST JSON-RPC to ${MCP_RESOURCE}: (1) {"method":"initialize",...} → save mcp-session-id header, (2) {"method":"tools/list",...}, (3) {"method":"tools/call","params":{"name":"tool-name","arguments":{}}}. arguments:{} is REQUIRED even for parameterless tools. Add Accept: application/json header for plain JSON responses (otherwise SSE).`,
+      quick_start: MCP_HINTS.oauthSteps(BASE_URL),
+      device_flow: MCP_HINTS.deviceFlowSteps(BASE_URL),
+      json_rpc_protocol: MCP_HINTS.protocolHintCompact(MCP_RESOURCE, MCP_SPEC_VERSION),
       full_reference: `${BASE_URL}/llms-full.txt`,
     },
   });

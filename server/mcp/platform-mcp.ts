@@ -190,7 +190,7 @@ async function getQuotaMeta(userId: string) {
   };
 }
 
-import { MCP_RESULT_MAX_CHARS, MCP_ENDPOINT } from '../lib/mcp-constants.js';
+import { MCP_RESULT_MAX_CHARS, MCP_ENDPOINT, MCP_SPEC_VERSION, API_BASE_URL, MCP_HINTS } from '../lib/mcp-constants.js';
 
 function jsonResponse(data: unknown) {
   const text = JSON.stringify(data, null, 2);
@@ -280,50 +280,33 @@ export function createPlatformMcpServer(): McpServer {
 
 You are connected via OAuth 2.1 or API key. If you need to authenticate a new agent or check your own access:
 
-- **OAuth discovery:** \`GET https://api.visantlabs.com/.well-known/oauth-authorization-server\`
+- **OAuth discovery:** \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
 - **Scopes:** \`read\` (list/get), \`write\` (create/update), \`generate\` (AI generation — costs credits)
 - **Token lifetime:** access token = 1 hour (JWT), refresh token = 30 days (rotated on use)
 - **Manage connected apps:** use \`oauth-authorized-apps\` tool to list, \`oauth-revoke-app\` to revoke
 
 ### For custom agents connecting via OAuth:
-1. Register: \`POST /oauth/register\` → get \`client_id\`
-2. PKCE: generate \`code_verifier\` (random 43+ chars) → \`code_challenge\` = base64url(sha256(verifier))
-3. Authorize: open \`/oauth/authorize?client_id=...&redirect_uri=...&code_challenge=...&code_challenge_method=S256&state=<random>&response_type=code&scope=read write generate\` in user's browser
-4. Exchange: \`POST /oauth/token\` with \`grant_type=authorization_code&code=...&code_verifier=...&client_id=...\`
-5. Refresh: \`POST /oauth/token\` with \`grant_type=refresh_token&refresh_token=...\`
+${MCP_HINTS.oauthSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
 
 **No local server? Use Device Flow (recommended):**
-1. \`POST /oauth/device/code\` with \`{"client_id":"...","scope":"read write generate"}\`
-2. Show user ONLY the \`verification_uri_complete\` link (code is already in the URL — do NOT show code separately)
-3. Poll \`POST /oauth/token\` with \`grant_type=urn:ietf:params:oauth:grant-type:device_code&device_code=...&client_id=...\` every 5s
-4. When user approves, poll returns access_token + refresh_token automatically
+${MCP_HINTS.deviceFlowSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
 
 **Fallback (OOB):** Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — the auth code is displayed on screen for the user to copy back to you.
 
 ## JSON-RPC Protocol (for custom agents using raw HTTP)
 
-If you are NOT using a native MCP client, all communication is JSON-RPC 2.0 via a single endpoint: \`POST https://api.visantlabs.com/api/mcp\`
+All communication is JSON-RPC 2.0 via a single endpoint: \`POST ${MCP_ENDPOINT}\`
 
 **Required headers:**
-- \`Authorization: Bearer <access_token>\`
-- \`Content-Type: application/json\`
-- \`Accept: application/json\` (recommended — returns plain JSON instead of SSE streams)
-- \`Mcp-Session-Id: <id>\` (after initialize — include in all subsequent requests)
+${MCP_HINTS.requiredHeaders.map(h => `- \`${h}\``).join('\n')}
 
-**Step 1 — Initialize:**
-\`{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"YourAgent","version":"1.0"}},"id":1}\`
-→ Save the \`mcp-session-id\` response header.
-
-**Step 2 — List tools:**
-\`{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}\`
-
-**Step 3 — Call a tool:**
-\`{"jsonrpc":"2.0","method":"tools/call","params":{"name":"account-profile","arguments":{}},"id":3}\`
+**Steps:**
+${MCP_HINTS.jsonRpcSteps(MCP_ENDPOINT, MCP_SPEC_VERSION).map(s => `- ${s}`).join('\n')}
 
 **IMPORTANT:**
-- \`"arguments": {}\` is REQUIRED in every \`tools/call\`, even for tools with no parameters. Omitting it causes a validation error.
-- This is NOT a REST API. Do NOT call paths like \`GET /auth/profile\`. Use \`tools/call\` with the tool name.
-- Persist the access token (1h lifetime) and reuse it. Use refresh token when it expires. Do NOT re-authenticate for every call.
+- ${MCP_HINTS.warnings.argumentsRequired}
+- ${MCP_HINTS.warnings.notRestApi}
+- ${MCP_HINTS.warnings.persistToken}
 
 ## Tool Workflows (follow these sequences)
 

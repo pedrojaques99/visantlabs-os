@@ -95,6 +95,8 @@ import {
   MCP_ENDPOINT,
   MCP_SCOPES,
   MCP_SPEC_VERSION,
+  MCP_HINTS,
+  DEVICE_CODE_GRANT,
 } from './lib/mcp-constants.js';
 
 export function createApp() {
@@ -383,10 +385,10 @@ export function createApp() {
         registration_url: `${API_BASE_URL}/oauth/register`,
         revocation_url: `${API_BASE_URL}/oauth/revoke`,
         device_authorization_endpoint: `${API_BASE_URL}/oauth/device/code`,
-        grant_types_supported: ['authorization_code', 'refresh_token', 'urn:ietf:params:oauth:grant-type:device_code'],
+        grant_types_supported: ['authorization_code', 'refresh_token', DEVICE_CODE_GRANT],
         scopes: [...MCP_SCOPES],
       },
-      protocol_hint: 'MCP uses JSON-RPC 2.0. POST to the endpoint with: (1) {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"...","version":"1.0"}},"id":1} → save mcp-session-id header, (2) {"method":"tools/list","params":{},"id":2}, (3) {"method":"tools/call","params":{"name":"tool-name","arguments":{}},"id":3}. IMPORTANT: "arguments":{} is required even for parameterless tools. Headers: Authorization: Bearer <token>, Content-Type: application/json, Mcp-Session-Id: <id>. Add Accept: application/json for plain JSON responses instead of SSE streams.',
+      protocol_hint: MCP_HINTS.protocolHintCompact(MCP_ENDPOINT, MCP_SPEC_VERSION),
       capabilities: ['tools', 'prompts', 'resources'],
       toolCount: getMcpToolCount(),
       docsUrl: `${API_BASE_URL}/llms-full.txt`,
@@ -507,12 +509,7 @@ export function createApp() {
         jsonrpc: '2.0',
         error: {
           code: -32600,
-          message: 'Unauthorized — you need an access token. '
-            + 'Options: (1) OAuth 2.1 + PKCE: GET ' + mcpApiBase + '/.well-known/oauth-authorization-server, '
-            + '(2) Device Flow (Telegram/CLI/remote agents): POST ' + mcpApiBase + '/oauth/device/code, '
-            + '(3) API key: Authorization: Bearer visant_sk_xxx. '
-            + 'After authenticating, use JSON-RPC to this endpoint: {"jsonrpc":"2.0","method":"initialize",...} then tools/list, then tools/call. '
-            + 'Full guide: ' + mcpApiBase + '/llms-full.txt',
+          message: MCP_HINTS.unauthorizedMessage(mcpApiBase, `${mcpApiBase}/llms-full.txt`),
         },
         id: null,
       });
