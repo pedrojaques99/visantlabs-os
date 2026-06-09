@@ -519,7 +519,12 @@ export function createApp() {
     }
     try {
       const server = createPlatformMcpServer();
-      const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+      const acceptHeader = req.headers.accept || '';
+      const wantsJson = acceptHeader.includes('application/json') && !acceptHeader.includes('text/event-stream');
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+        enableJsonResponse: wantsJson,
+      });
       res.on('close', () => {
         transport.close().catch((e) => console.error('[MCP] transport close error:', e.message));
         server.close().catch((e) => console.error('[MCP] server close error:', e.message));

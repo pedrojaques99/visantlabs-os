@@ -58,7 +58,7 @@ MCP uses JSON-RPC 2.0 over HTTP. All requests are POST to \`${MCP_ENDPOINT}\`.
 3. Discover tools: \`{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}\`
 4. Call a tool: \`{"jsonrpc":"2.0","method":"tools/call","params":{"name":"account-profile","arguments":{}},"id":3}\`
 
-**Important:** This is NOT a REST API. Do NOT call \`GET /auth/profile\` — use \`tools/call\` with the tool name. Persist the access token (1h lifetime) and session ID across requests.
+**Important:** This is NOT a REST API. Do NOT call \`GET /auth/profile\` — use \`tools/call\` with the tool name. Persist the access token (1h lifetime) and session ID across requests. Add \`Accept: application/json\` header if your client cannot read SSE streams.
 
 Full reference: ${API_BASE_URL}/llms-full.txt
 
@@ -158,6 +158,15 @@ Response: \`{"jsonrpc": "2.0", "result": {"content": [{"type": "text", "text": "
 - **Persist the access token** — reuse it for all requests until it expires (1 hour). Then use the refresh token.
 - **Persist the session ID** — include the \`Mcp-Session-Id\` header in every request after initialize.
 - **This is NOT a REST API** — do not try to call \`GET /auth/profile\` or similar. All communication is JSON-RPC via the single MCP endpoint.
+
+### Response Format
+By default, the server responds with **SSE (Server-Sent Events)** streams (\`text/event-stream\`). Each SSE event contains a JSON-RPC response in its \`data:\` field.
+
+If your client does not support SSE (e.g. Python \`requests\`, simple HTTP clients), add the header:
+\`\`\`
+Accept: application/json
+\`\`\`
+The server will then return plain JSON responses instead of SSE streams. This is recommended for agents making simple request/response calls.
 
 ---
 
