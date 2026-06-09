@@ -197,7 +197,7 @@ router.post('/render', renderLimiter, authenticate, async (req: AuthRequest, res
         '[creative/render] R2 upload failed, returning base64 fallback:',
         uploadErr?.message
       );
-      return res.json({ imageBase64: base64Str });
+      return res.json({ imageBase64: base64Str, uploadError: uploadErr?.message });
     }
   } catch (err: any) {
     console.error('[creative/render] error:', err);

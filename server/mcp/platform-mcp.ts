@@ -3681,6 +3681,8 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             const uploadData = (await uploadRes.json()) as any;
             if (uploadRes.ok && uploadData.url) {
               imageUrl = uploadData.url;
+            } else {
+              console.error('[creative-full] fallback upload response:', uploadData);
             }
           } catch (uploadErr: any) {
             console.error('[creative-full] fallback upload failed:', uploadErr?.message);
@@ -3688,8 +3690,9 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         }
 
         if (!imageUrl) {
+          const uploadReason = renderData.uploadError || 'unknown';
           return jsonResponse({
-            error: 'Render succeeded but image upload to R2 failed. Check R2 configuration.',
+            error: `Render succeeded but image upload failed: ${uploadReason}`,
             step: 'upload',
             plan,
             backgroundImageUrl,
