@@ -66,6 +66,10 @@ const ROUTE: Record<OpName, Channel> = {
   'text.getStyles': 'figma',
   'export.textToMarkdown': 'figma',
 
+  // colors
+  'colors.scanForRename': 'figma',
+  'colors.applyRename': 'figma',
+
   // http (server)
   'ai.chat': 'http',
   'ai.generate': 'http',

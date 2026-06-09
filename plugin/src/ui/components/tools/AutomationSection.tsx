@@ -1,13 +1,17 @@
 import React from 'react';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
+import { useColorRename } from '../../hooks/useColorRename';
 import { OpButton } from '../common/OpButton';
-import { Zap, LayoutGrid, Palette, Stamp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Zap, LayoutGrid, Palette, Stamp, Paintbrush } from 'lucide-react';
 
 export function AutomationSection() {
   const store = usePluginStore();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
+  const colorRename = useColorRename();
 
   const brandColorHexes = store.selectedColors
     ? Array.from(store.selectedColors.values()).map((c) => c.hex)
@@ -17,8 +21,34 @@ export function AutomationSection() {
     ? Array.from(store.selectedColors.values()).map((c) => ({ hex: c.hex, name: c.role }))
     : [];
 
+  const isRenaming = colorRename.status !== 'idle' && colorRename.status !== 'done' && colorRename.status !== 'error';
+  const renameLabel =
+    colorRename.status === 'scanning'
+      ? 'Scanning colors…'
+      : colorRename.status === 'naming'
+      ? 'AI naming…'
+      : colorRename.status === 'applying'
+      ? 'Applying…'
+      : 'Smart Color Rename';
+
   return (
     <div className="space-y-2">
+      <Button
+        variant="brand"
+        size="sm"
+        disabled={isRenaming || runner.anyBusy}
+        onClick={() => colorRename.run({ createVariables: true, createStyles: true })}
+        className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
+        title="AI-rename selected color swatches using brand strategy + populate library"
+      >
+        {isRenaming ? (
+          <GlitchLoader size={12} className="mr-2" />
+        ) : (
+          <Paintbrush size={12} className="mr-2" />
+        )}
+        {renameLabel}
+      </Button>
+
       <OpButton
         opId="varyColors"
         runner={runner}

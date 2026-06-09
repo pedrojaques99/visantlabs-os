@@ -50,3 +50,4 @@ export { scanFontsInSelection, scanFontsInPage, swapFonts, getStylesForFamily } 
 export { generateVariants, DEFAULT_PRESETS } from './variantGenerator';
 export { convertToPreset } from './convertToPreset';
 export { scanPresets, linearToFigma, fetchProjects, fetchMilestones, saveLinearConfig, getLinearConfig } from './linearBridge';
+export { scanColorsForRename, applyColorRename } from './colorRename';

@@ -1108,6 +1108,86 @@ Rules:
 });
 
 /**
+ * POST /ai/rename-colors
+ * Generate brand-coherent 1-word names for colors and compute all color codes.
+ * Body: { colors: Array<{ hex: string; currentName?: string }>, brandGuidelineId: string }
+ */
+router.post('/rename-colors', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  const { colors, brandGuidelineId } = req.body;
+  if (!colors?.length) return res.status(400).json({ error: 'colors array is required' });
+
+  try {
+    const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
+    const apiKey = userOwnKey || (await getGeminiApiKey(req.userId!));
+    if (!apiKey) throw new Error('Gemini API key not configured');
+    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey });
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH });
+
+    let brandContext = '';
+    if (brandGuidelineId) {
+      const g = await prisma.brandGuideline.findUnique({ where: { id: brandGuidelineId } });
+      if (g) {
+        const { buildBrandContext } = await import('../lib/brandContextBuilder.js');
+        brandContext = buildBrandContext(g as any, {
+          sections: ['identity', 'strategy', 'voice'],
+          compact: true,
+          includeLogos: false,
+          includeMedia: false,
+        });
+      }
+    }
+
+    const colorList = colors
+      .map((c: any, i: number) => `${i + 1}. HEX: ${c.hex}${c.currentName ? ` (current: "${c.currentName}")` : ''}`)
+      .join('\n');
+
+    const prompt = `${brandContext ? `Brand context:\n${brandContext}\n\n` : ''}You are a brand color naming expert.
+
+Given these ${colors.length} colors, generate a unique single-word name for each that:
+- Reflects the tone/mood of the color AND the brand personality
+- Is evocative, memorable, and poetic (not generic like "Blue" or "Dark")
+- Uses words from nature, emotions, materials, or abstract concepts
+- Each name must be UNIQUE — no repeated words
+- Names should feel cohesive as a palette family
+- Maximum 1 word per color, in the brand's primary language (detect from brand context, default Portuguese)
+
+Colors:
+${colorList}
+
+Also compute the exact color codes for each. Use the HEX value provided to calculate:
+- RGB (R, G, B values 0-255)
+- HSL (H degrees, S percentage, L percentage)
+- CMYK (C, M, Y, K values 0-100)
+- Nearest Pantone color (use closest standard Pantone Coated reference)
+
+Respond ONLY with valid JSON:
+{
+  "colors": [
+    {
+      "index": 0,
+      "hex": "#XXXXXX",
+      "name": "SingleWord",
+      "rgb": { "r": 0, "g": 0, "b": 0 },
+      "hsl": { "h": 0, "s": 0, "l": 0 },
+      "cmyk": { "c": 0, "m": 0, "y": 0, "k": 0 },
+      "pantone": "Pantone XXXX C"
+    }
+  ]
+}`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(500).json({ error: 'Failed to parse color naming response' });
+    res.json(JSON.parse(jsonMatch[0]));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * POST /ai/extract-colors
  * Extract a color palette from an image URL or base64.
  */

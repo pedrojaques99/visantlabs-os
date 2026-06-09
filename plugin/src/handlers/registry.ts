@@ -78,6 +78,10 @@ export const registry: Registry = {
   // Export
   'export.textToMarkdown': async (p) => H.exportTextToMarkdown(p),
 
+  // Colors
+  'colors.scanForRename': async () => H.scanColorsForRename() as any,
+  'colors.applyRename': async (p) => H.applyColorRename(p as any) as any,
+
   // Dev
   'dev.stickyPrompt': async (p) => H.createStickyPrompt((p as any).text ?? '', 'Prompt') as any,
   'dev.varyColors': async (p) => H.varySelectionColors((p as any).brandColors) as any,

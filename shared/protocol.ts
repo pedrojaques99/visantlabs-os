@@ -99,6 +99,30 @@ export interface OpMap {
     result: { markdown: string; filename: string; scope: 'selection' | 'page' };
   };
 
+  // ── Colors ──
+  'colors.scanForRename': {
+    payload: Record<string, never>;
+    result: {
+      items: Array<{
+        nodeId: string;
+        name: string;
+        hex: string;
+        parentNodeId?: string;
+        textChildren: Array<{ nodeId: string; name: string; content: string }>;
+      }>;
+    };
+  };
+  'colors.applyRename': {
+    payload: {
+      renames: Array<{
+        nodeId: string;
+        newName: string;
+        textUpdates: Array<{ nodeId: string; content: string }>;
+      }>;
+    };
+    result: { renamed: number };
+  };
+
   // ── Dev / Misc ──
   'dev.stickyPrompt': { payload: { text?: string }; result: unknown };
   'dev.varyColors': { payload: Record<string, unknown>; result: unknown };
