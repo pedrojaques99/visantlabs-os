@@ -99,7 +99,11 @@ function resolveApiKey(specificApiKey?: string): string {
   return apiKey;
 }
 
-function parseIdeogramResponse(data: Record<string, unknown>): { url: string; seed?: number; resolution?: string } {
+function parseIdeogramResponse(data: Record<string, unknown>): {
+  url: string;
+  seed?: number;
+  resolution?: string;
+} {
   const dataArray = data.data as Array<Record<string, unknown>> | undefined;
   if (!dataArray || dataArray.length === 0) {
     throw new Error('No images in Ideogram response');
@@ -126,9 +130,7 @@ function handleIdeogramError(response: Response, errorText: string): never {
     throw new Error('Invalid Ideogram API key. Please check your IDEOGRAM_API_KEY.');
   }
   if (response.status === 402) {
-    throw new Error(
-      'Insufficient Ideogram credits. Please top up your account at ideogram.ai.'
-    );
+    throw new Error('Insufficient Ideogram credits. Please top up your account at ideogram.ai.');
   }
   if (response.status === 422) {
     throw new Error(`Ideogram safety filter triggered: ${errorText}`);
@@ -162,7 +164,7 @@ export async function generateIdeogramImage(
 
   const apiKey = resolveApiKey(specificApiKey);
   const ideogramAspect = resolveIdeogramAspectRatio(aspectRatio);
-  const hasRefs = !!(referenceImages?.length);
+  const hasRefs = !!referenceImages?.length;
 
   // V3 + referenceImages → multipart with character_reference_images
   if (model !== IDEOGRAM_MODELS.V4 && hasRefs) {
@@ -316,7 +318,11 @@ export async function remixIdeogramImage(
 
     const imageBuffer = await resolveImageToBuffer(baseImage);
     const mime = getMimeType(baseImage);
-    formData.append('image', new Blob([imageBuffer], { type: mime }), `input.${getExtension(mime)}`);
+    formData.append(
+      'image',
+      new Blob([imageBuffer], { type: mime }),
+      `input.${getExtension(mime)}`
+    );
 
     formData.append('prompt', prompt);
     formData.append('image_weight', String(imageWeight));
@@ -398,12 +404,20 @@ export async function editIdeogramImage(
 
     const imageBuffer = await resolveImageToBuffer(baseImage);
     const mime = getMimeType(baseImage);
-    formData.append('image', new Blob([imageBuffer], { type: mime }), `input.${getExtension(mime)}`);
+    formData.append(
+      'image',
+      new Blob([imageBuffer], { type: mime }),
+      `input.${getExtension(mime)}`
+    );
 
     if (mask) {
       const maskBuffer = await resolveImageToBuffer(mask);
       const maskMime = getMimeType(mask);
-      formData.append('mask', new Blob([maskBuffer], { type: maskMime }), `mask.${getExtension(maskMime)}`);
+      formData.append(
+        'mask',
+        new Blob([maskBuffer], { type: maskMime }),
+        `mask.${getExtension(maskMime)}`
+      );
     }
 
     formData.append('prompt', prompt);

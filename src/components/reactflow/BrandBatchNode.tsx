@@ -147,11 +147,21 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               : 'bg-white/[0.02] text-white/30 border border-dashed border-white/10'
           )}
         >
-          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', hasBrand ? 'bg-white/50' : 'bg-white/20')} />
+          <span
+            className={cn(
+              'w-1.5 h-1.5 rounded-full shrink-0',
+              hasBrand ? 'bg-white/50' : 'bg-white/20'
+            )}
+          />
           {hasBrand ? 'Brand Guidelines connected' : 'Connect Brand Guidelines'}
         </div>
         <p className="text-[10px] text-white/30 flex items-center gap-1.5">
-          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', imageCount > 0 ? 'bg-white/50' : 'bg-white/20')} />
+          <span
+            className={cn(
+              'w-1.5 h-1.5 rounded-full shrink-0',
+              imageCount > 0 ? 'bg-white/50' : 'bg-white/20'
+            )}
+          />
           {imageCount > 0 ? (
             <span className="text-white/50">
               {imageCount} image{imageCount > 1 ? 's' : ''} connected

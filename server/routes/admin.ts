@@ -3166,7 +3166,10 @@ router.get('/references/stats', validateAdmin, async (req: Request, res: Respons
 
 router.get('/mcp-stats', validateAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const days = Math.min(Math.max(parseInt(ensureString(req.query.days) || '30', 10) || 30, 1), 365);
+    const days = Math.min(
+      Math.max(parseInt(ensureString(req.query.days) || '30', 10) || 30, 1),
+      365
+    );
     const since = new Date();
     since.setDate(since.getDate() - days);
 
@@ -3201,7 +3204,12 @@ router.get('/mcp-stats', validateAdmin, async (req: AuthRequest, res: Response) 
                   avgDuration: { $round: ['$avgDuration', 0] },
                   successRate: {
                     $round: [
-                      { $multiply: [{ $divide: ['$successCount', { $max: ['$totalCalls', 1] }] }, 100] },
+                      {
+                        $multiply: [
+                          { $divide: ['$successCount', { $max: ['$totalCalls', 1] }] },
+                          100,
+                        ],
+                      },
                       1,
                     ],
                   },

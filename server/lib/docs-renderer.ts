@@ -17,25 +17,31 @@ import { docsCache } from './docs-cache.js';
 const TTL_RENDERED = 60 * 60 * 1000; // 1h
 
 export function renderFullDocsHTML(version: string, serverUrl: string): string {
-  return docsCache.getOrGenerate('docs-full-html', () => {
-    const openApiSpec = generateOpenAPISpec(version, serverUrl) as OpenAPISpec;
-    const mcpSpec = generateMCPSpec() as MCPSpec;
-    const platformSpec = generatePlatformMCPSpec() as MCPSpec;
-    const pricing = getPricingPayload() as PricingData;
+  return docsCache.getOrGenerate(
+    'docs-full-html',
+    () => {
+      const openApiSpec = generateOpenAPISpec(version, serverUrl) as OpenAPISpec;
+      const mcpSpec = generateMCPSpec() as MCPSpec;
+      const platformSpec = generatePlatformMCPSpec() as MCPSpec;
+      const pricing = getPricingPayload() as PricingData;
 
-    const fullMarkdown = generateFullDocsMarkdown(openApiSpec, mcpSpec, platformSpec, pricing);
-    const htmlContent = marked.parse(fullMarkdown, { async: false }) as string;
+      const fullMarkdown = generateFullDocsMarkdown(openApiSpec, mcpSpec, platformSpec, pricing);
+      const htmlContent = marked.parse(fullMarkdown, { async: false }) as string;
 
-    const platformToolCount = platformSpec?.tools?.length ?? 0;
-    const apiEndpointCount = Object.values(openApiSpec?.paths ?? {}).reduce(
-      (acc, methods) => acc + Object.keys(methods as object).filter(m =>
-        ['get', 'post', 'put', 'delete', 'patch'].includes(m)
-      ).length,
-      0
-    );
+      const platformToolCount = platformSpec?.tools?.length ?? 0;
+      const apiEndpointCount = Object.values(openApiSpec?.paths ?? {}).reduce(
+        (acc, methods) =>
+          acc +
+          Object.keys(methods as object).filter((m) =>
+            ['get', 'post', 'put', 'delete', 'patch'].includes(m)
+          ).length,
+        0
+      );
 
-    return buildHTMLPage(htmlContent, version, platformToolCount, apiEndpointCount);
-  }, TTL_RENDERED);
+      return buildHTMLPage(htmlContent, version, platformToolCount, apiEndpointCount);
+    },
+    TTL_RENDERED
+  );
 }
 
 function buildHTMLPage(

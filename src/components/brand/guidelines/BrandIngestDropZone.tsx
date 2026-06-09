@@ -97,11 +97,7 @@ export function BrandIngestDropZone({ onFiles, disabled }: BrandIngestDropZonePr
             className={`relative w-16 h-16 rounded-2xl flex items-center justify-center ${
               isDragOver ? 'bg-brand-cyan/10' : 'bg-white/5'
             }`}
-            animate={
-              isDragOver
-                ? { scale: [1, 1.08, 1], y: [0, -4, 0] }
-                : { scale: 1, y: 0 }
-            }
+            animate={isDragOver ? { scale: [1, 1.08, 1], y: [0, -4, 0] } : { scale: 1, y: 0 }}
             transition={
               isDragOver
                 ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }
@@ -110,9 +106,7 @@ export function BrandIngestDropZone({ onFiles, disabled }: BrandIngestDropZonePr
           >
             <Upload
               size={28}
-              className={`transition-colors ${
-                isDragOver ? 'text-brand-cyan' : 'text-neutral-500'
-              }`}
+              className={`transition-colors ${isDragOver ? 'text-brand-cyan' : 'text-neutral-500'}`}
             />
 
             {/* Orbital dots on drag */}

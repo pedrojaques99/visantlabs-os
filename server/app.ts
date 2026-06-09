@@ -200,7 +200,9 @@ export function createApp() {
   ];
 
   const selfOrigin = API_BASE_URL; // OAuth login page is served from the API domain
-  const allAllowedOrigins = [...new Set([...envFrontendOrigins, ...claudeOrigins, ...devOrigins, selfOrigin])];
+  const allAllowedOrigins = [
+    ...new Set([...envFrontendOrigins, ...claudeOrigins, ...devOrigins, selfOrigin]),
+  ];
 
   app.use(
     cors({
@@ -520,14 +522,11 @@ export function createApp() {
       const hasJson = rawAccept.includes('application/json');
       const hasSse = rawAccept.includes('text/event-stream');
       const wantsJson = hasJson && !hasSse;
-      const normalizedAccept = (!hasJson || !hasSse)
-        ? 'application/json, text/event-stream'
-        : rawAccept;
+      const normalizedAccept =
+        !hasJson || !hasSse ? 'application/json, text/event-stream' : rawAccept;
       if (normalizedAccept !== rawAccept) {
         req.headers.accept = normalizedAccept;
-        const idx = req.rawHeaders.findIndex(
-          (v, i) => i % 2 === 0 && v.toLowerCase() === 'accept',
-        );
+        const idx = req.rawHeaders.findIndex((v, i) => i % 2 === 0 && v.toLowerCase() === 'accept');
         if (idx >= 0) {
           req.rawHeaders[idx + 1] = normalizedAccept;
         } else {

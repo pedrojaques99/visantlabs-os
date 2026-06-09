@@ -20,12 +20,8 @@ function getCollection(): Collection<Document> | null {
     collection = db.collection('mcp_tool_calls');
     if (!indexEnsured) {
       indexEnsured = true;
-      collection
-        .createIndex({ createdAt: -1, toolName: 1 }, { background: true })
-        .catch(() => {});
-      collection
-        .createIndex({ userId: 1, createdAt: -1 }, { background: true })
-        .catch(() => {});
+      collection.createIndex({ createdAt: -1, toolName: 1 }, { background: true }).catch(() => {});
+      collection.createIndex({ userId: 1, createdAt: -1 }, { background: true }).catch(() => {});
     }
     return collection;
   } catch {

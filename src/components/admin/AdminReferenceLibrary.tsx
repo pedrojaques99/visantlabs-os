@@ -414,9 +414,13 @@ export const AdminReferenceLibrary: React.FC = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {isLoading && refs.length === 0 &&
+        {isLoading &&
+          refs.length === 0 &&
           Array.from({ length: 10 }).map((_, i) => (
-            <div key={`skel-${i}`} className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden animate-pulse">
+            <div
+              key={`skel-${i}`}
+              className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden animate-pulse"
+            >
               <div className="aspect-square bg-neutral-800/50" />
               <div className="p-2 space-y-1.5">
                 <div className="h-3 bg-neutral-800/50 rounded w-3/4" />

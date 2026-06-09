@@ -275,7 +275,9 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       try {
         const matches = await redisClient.keys(pattern);
         if (matches.length > 0) await redisClient.del(...matches);
-      } catch { /* Redis down — graceful degradation */ }
+      } catch {
+        /* Redis down — graceful degradation */
+      }
     }
 
     res.json({ guideline: { ...guideline, _id: guideline.id } });

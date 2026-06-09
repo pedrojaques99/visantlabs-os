@@ -500,7 +500,10 @@ function SceneContent() {
           s.chromaticAberrationEnabled ||
           s.noiseEnabled ||
           s.colorGradingEnabled) ? (
-        <EffectComposer key={s.resetKey} multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
+        <EffectComposer
+          key={s.resetKey}
+          multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}
+        >
           {s.ssaoEnabled && s.renderQuality !== 'performance' && (
             <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />
           )}

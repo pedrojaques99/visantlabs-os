@@ -5,7 +5,11 @@ import {
   AVAILABLE_IMAGE_MODELS,
   getModelConfig,
 } from '../../constants/geminiModels';
-import { supportsOutputConfig, resolveGenerationContext, resolveProvider } from '@/utils/canvas/generationContext';
+import {
+  supportsOutputConfig,
+  resolveGenerationContext,
+  resolveProvider,
+} from '@/utils/canvas/generationContext';
 import {
   SEEDREAM_IMAGE_MODELS,
   SEEDREAM_MODEL_CONFIG,
@@ -54,13 +58,14 @@ export function getPreferredImageModel(): string {
   return _getPreferredImageModel() || DEFAULT_MODEL;
 }
 
-const CONFIG_RESOLVERS: Record<string, (id: string) => { defaultResolution?: string } | undefined> = {
-  imagen: (id) => getImagenModelConfig(id),
-  seedream: (id) => getSeedreamModelConfig(id),
-  openai: (id) => getOpenAIImageModelConfig(id),
-  ideogram: (id) => getIdeogramModelConfig(id),
-  reve: (id) => getReveModelConfig(id),
-};
+const CONFIG_RESOLVERS: Record<string, (id: string) => { defaultResolution?: string } | undefined> =
+  {
+    imagen: (id) => getImagenModelConfig(id),
+    seedream: (id) => getSeedreamModelConfig(id),
+    openai: (id) => getOpenAIImageModelConfig(id),
+    ideogram: (id) => getIdeogramModelConfig(id),
+    reve: (id) => getReveModelConfig(id),
+  };
 
 interface ModelSelectorProps {
   selectedModel: string;
@@ -99,7 +104,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const availableProviders = useAvailableProviders();
 
   const options = useMemo(() => {
-    const isVisible = (modelId: string, config: { deprecated?: boolean; badge?: string } | undefined) => {
+    const isVisible = (
+      modelId: string,
+      config: { deprecated?: boolean; badge?: string } | undefined
+    ) => {
       if (modelId === selectedModel) return true;
       if (config?.deprecated && !showAllModels) return false;
       if (showAllModels) return true;

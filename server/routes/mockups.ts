@@ -1030,7 +1030,7 @@ router.post(
         usedSeed = seedreamResult.seed;
       } else if (provider === 'reve' || isReveModel(model)) {
         const hasBaseImage = !!finalBaseImage;
-        const hasRefs = !!(finalReferenceImages?.length);
+        const hasRefs = !!finalReferenceImages?.length;
         console.log(`${logPrefix} [GENERATION] Using REVE provider`, {
           model,
           aspectRatio,
@@ -1077,7 +1077,7 @@ router.post(
       } else if (provider === 'ideogram' || isIdeogramModel(model)) {
         const ideogramModel = isIdeogramModel(model) ? model : IDEOGRAM_MODELS.V4;
         const hasBaseImage = !!finalBaseImage;
-        const hasRefs = !!(finalReferenceImages?.length);
+        const hasRefs = !!finalReferenceImages?.length;
         console.log(`${logPrefix} [GENERATION] Using Ideogram provider`, {
           model: ideogramModel,
           resolution,
@@ -1534,7 +1534,12 @@ router.post(
         };
       }
 
-      console.error('[mockup-generate] Error classified as', errorResponse.error, '— raw:', msg || error);
+      console.error(
+        '[mockup-generate] Error classified as',
+        errorResponse.error,
+        '— raw:',
+        msg || error
+      );
 
       res.status(statusCode).json(errorResponse);
     }

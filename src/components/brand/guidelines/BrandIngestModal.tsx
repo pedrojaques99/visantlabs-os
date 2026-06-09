@@ -646,9 +646,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
           >
-            <FlyingPaperLoader
-              label={state.statusMessage || 'Extracting brand tokens…'}
-            />
+            <FlyingPaperLoader label={state.statusMessage || 'Extracting brand tokens…'} />
           </motion.div>
         )}
 

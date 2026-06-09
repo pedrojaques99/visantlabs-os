@@ -1255,9 +1255,7 @@ const MockupMachinePageContent: React.FC = () => {
           const promises = Array.from({ length: slotCount }, (_, i) => {
             const overrideModel =
               isCompareMode && compareModels.length > 1 ? compareModels[i] : undefined;
-            const overrideProvider = overrideModel
-              ? resolveProvider(overrideModel)
-              : undefined;
+            const overrideProvider = overrideModel ? resolveProvider(overrideModel) : undefined;
             return generateAndSet(i, overrideModel, overrideProvider)
               .then(() => {
                 if (mockups[i] !== null) {
