@@ -36,9 +36,7 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({ children, toolName }) 
         </div>
         <div className="space-y-2">
           <h2 className="text-sm font-medium text-white uppercase tracking-wider">{toolName}</h2>
-          <p className="text-xs text-neutral-500 leading-relaxed">
-            {t('premium.upgradeRequired')}
-          </p>
+          <p className="text-xs text-neutral-500 leading-relaxed">{t('premium.upgradeRequired')}</p>
         </div>
         <div className="flex gap-3">
           {!isAuthenticated && (

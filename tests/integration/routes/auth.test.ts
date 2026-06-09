@@ -123,7 +123,12 @@ describe('GET /api/auth/google/callback', () => {
   it('redirects with error when Google rejects token exchange (invalid_client)', async () => {
     getTokenOverride = Object.assign(new Error('invalid_client'), {
       code: 401,
-      response: { data: { error: 'invalid_client', error_description: 'The provided client secret is invalid.' } },
+      response: {
+        data: {
+          error: 'invalid_client',
+          error_description: 'The provided client secret is invalid.',
+        },
+      },
     });
     const agent = await request();
 

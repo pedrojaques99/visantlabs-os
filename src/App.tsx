@@ -277,7 +277,14 @@ const App: React.FC = () => {
                     }
                   />
                   <Route path="/branding-machine" element={<BrandingMachinePage />} />
-                  <Route path="/my-brandings" element={<PremiumGate toolName="My Brandings"><MyBrandingsPage /></PremiumGate>} />
+                  <Route
+                    path="/my-brandings"
+                    element={
+                      <PremiumGate toolName="My Brandings">
+                        <MyBrandingsPage />
+                      </PremiumGate>
+                    }
+                  />
                   <Route path="/branding-expert" element={<BrandingExpertPage />} />
                   <Route path="/budget-machine" element={<BudgetMachinePage />} />
                   <Route path="/my-budgets" element={<MyBudgetsPage />} />
@@ -361,12 +368,47 @@ const App: React.FC = () => {
                   <Route path="/create" element={<CreatePage />} />
                   <Route path="/create/projects" element={<CreativeProjectsPage />} />
                   <Route path="/content-studio" element={<ContentStudioPage />} />
-                  <Route path="/playground" element={<PremiumGate toolName="Playground"><PlaygroundPage /></PremiumGate>} />
-                  <Route path="/playground/explore" element={<PremiumGate toolName="Playground"><PlaygroundGalleryPage /></PremiumGate>} />
+                  <Route
+                    path="/playground"
+                    element={
+                      <PremiumGate toolName="Playground">
+                        <PlaygroundPage />
+                      </PremiumGate>
+                    }
+                  />
+                  <Route
+                    path="/playground/explore"
+                    element={
+                      <PremiumGate toolName="Playground">
+                        <PlaygroundGalleryPage />
+                      </PremiumGate>
+                    }
+                  />
                   <Route path="/playground/shared/:shareId" element={<PlaygroundSharedPage />} />
-                  <Route path="/playground/:slug" element={<PremiumGate toolName="Playground"><PlaygroundPage /></PremiumGate>} />
-                  <Route path="/community" element={<PremiumGate toolName="Community"><CommunityPage /></PremiumGate>} />
-                  <Route path="/community/presets" element={<PremiumGate toolName="Community"><CommunityPresetsPage /></PremiumGate>} />
+                  <Route
+                    path="/playground/:slug"
+                    element={
+                      <PremiumGate toolName="Playground">
+                        <PlaygroundPage />
+                      </PremiumGate>
+                    }
+                  />
+                  <Route
+                    path="/community"
+                    element={
+                      <PremiumGate toolName="Community">
+                        <CommunityPage />
+                      </PremiumGate>
+                    }
+                  />
+                  <Route
+                    path="/community/presets"
+                    element={
+                      <PremiumGate toolName="Community">
+                        <CommunityPresetsPage />
+                      </PremiumGate>
+                    }
+                  />
                   <Route path="/profile/:identifier" element={<CommunityProfilePage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
