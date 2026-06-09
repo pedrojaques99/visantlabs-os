@@ -803,10 +803,21 @@ function buildOobPage(p: { code: string | null; error: string | null }): string 
     <div class="code-container">
       <div class="code-label">Authorization Code</div>
       <div class="code-box" id="code">${esc(p.code!)}</div>
-      <button class="copy-btn" id="copyBtn" onclick="navigator.clipboard.writeText(document.getElementById('code').textContent).then(()=>{const b=document.getElementById('copyBtn');b.textContent='Copied';b.classList.add('copied');setTimeout(()=>{b.textContent='Copy code';b.classList.remove('copied')},2000)})">Copy code</button>
+      <button class="copy-btn" id="copyBtn">Copy code</button>
     </div>
     <p class="hint">Expires in 10 minutes &middot; Close this window after pasting</p>
   </div>
+  <script>
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var code = document.getElementById('code').textContent;
+      navigator.clipboard.writeText(code).then(function() {
+        var btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = 'Copy code'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  </script>
 </body>
 </html>`;
 }
