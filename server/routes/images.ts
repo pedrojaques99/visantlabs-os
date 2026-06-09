@@ -1192,7 +1192,8 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
     }
 
     const imageId = `upload-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    const url = await uploadImage(base64Data, userId, imageId);
+    const isAdmin = (req as any).isAdmin === true;
+    const url = await uploadImage(base64Data, userId, imageId, undefined, isAdmin);
 
     return res.json({
       success: true,

@@ -189,7 +189,9 @@ router.post('/render', renderLimiter, authenticate, async (req: AuthRequest, res
         base64DataUri,
         userId,
         'creative-render',
-        `render-${Date.now()}`
+        `render-${Date.now()}`,
+        undefined,
+        req.isAdmin
       );
       return res.json({ imageUrl, imageBase64: base64Str });
     } catch (uploadErr: any) {
@@ -325,7 +327,9 @@ router.post(
           base64DataUri,
           userId,
           'creative-render',
-          `brand-gen-${Date.now()}`
+          `brand-gen-${Date.now()}`,
+          undefined,
+          req.isAdmin
         );
         return res.json({ imageUrl, imageBase64: base64Str, plan, pickedMedia, brandUsed });
       } catch (uploadErr: any) {

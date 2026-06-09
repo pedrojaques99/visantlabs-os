@@ -15,6 +15,7 @@ import {
   Globe,
   Key,
   ShieldCheck,
+  BookOpen,
 } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
@@ -415,6 +416,18 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 >
                   <Globe size={14} />
                   {t('common.community') || 'Community'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    window.history.pushState({}, '', '/docs');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
+                >
+                  <BookOpen size={14} />
+                  Docs
                 </Button>
                 {user.isAdmin && (
                   <>
