@@ -382,8 +382,11 @@ export function createApp() {
         token_url: `${API_BASE_URL}/oauth/token`,
         registration_url: `${API_BASE_URL}/oauth/register`,
         revocation_url: `${API_BASE_URL}/oauth/revoke`,
+        device_authorization_endpoint: `${API_BASE_URL}/oauth/device/code`,
+        grant_types_supported: ['authorization_code', 'refresh_token', 'urn:ietf:params:oauth:grant-type:device_code'],
         scopes: [...MCP_SCOPES],
       },
+      protocol_hint: 'MCP uses JSON-RPC 2.0. POST to the endpoint with: (1) {"method":"initialize",...} to start session, (2) {"method":"tools/list",...} to discover tools, (3) {"method":"tools/call","params":{"name":"tool-name","arguments":{...}},...} to call tools. Include Authorization: Bearer <token> and Mcp-Session-Id headers.',
       capabilities: ['tools', 'prompts', 'resources'],
       toolCount: getMcpToolCount(),
       docsUrl: `${API_BASE_URL}/llms-full.txt`,
@@ -504,9 +507,11 @@ export function createApp() {
         jsonrpc: '2.0',
         error: {
           code: -32600,
-          message: 'Unauthorized — OAuth 2.1 or API key required. '
-            + 'Start here: GET ' + mcpApiBase + '/.well-known/oauth-authorization-server '
-            + 'for OAuth discovery, or use an API key (Authorization: Bearer visant_sk_xxx). '
+          message: 'Unauthorized — you need an access token. '
+            + 'Options: (1) OAuth 2.1 + PKCE: GET ' + mcpApiBase + '/.well-known/oauth-authorization-server, '
+            + '(2) Device Flow (Telegram/CLI/remote agents): POST ' + mcpApiBase + '/oauth/device/code, '
+            + '(3) API key: Authorization: Bearer visant_sk_xxx. '
+            + 'After authenticating, use JSON-RPC to this endpoint: {"jsonrpc":"2.0","method":"initialize",...} then tools/list, then tools/call. '
             + 'Full guide: ' + mcpApiBase + '/llms-full.txt',
         },
         id: null,

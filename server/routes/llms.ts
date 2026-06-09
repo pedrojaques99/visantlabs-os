@@ -48,6 +48,20 @@ router.get('/llms.txt', (_req, res) => {
 9. **Budget** — AI-powered project budget estimation.
 10. **Campaign** — Batch-generate creatives for a full campaign.
 
+## How to Connect (MCP Protocol)
+
+MCP uses JSON-RPC 2.0 over HTTP. All requests are POST to \`${MCP_ENDPOINT}\`.
+
+1. Authenticate (see below) → get access_token
+2. Initialize: \`POST ${MCP_ENDPOINT}\` with \`{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"${MCP_SPEC_VERSION}","capabilities":{},"clientInfo":{"name":"Your Agent","version":"1.0"}},"id":1}\`
+   — Save the \`mcp-session-id\` response header
+3. Discover tools: \`{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}\`
+4. Call a tool: \`{"jsonrpc":"2.0","method":"tools/call","params":{"name":"account-profile","arguments":{}},"id":3}\`
+
+**Important:** This is NOT a REST API. Do NOT call \`GET /auth/profile\` — use \`tools/call\` with the tool name. Persist the access token (1h lifetime) and session ID across requests.
+
+Full reference: ${API_BASE_URL}/llms-full.txt
+
 ## Authentication
 
 **Option A — OAuth 2.1 (recommended for AI agents)**
@@ -98,6 +112,54 @@ router.get('/llms-full.txt', (_req, res) => {
 
 > Complete tool reference for AI agents connecting to Visant Labs via MCP.
 > Endpoint: ${MCP_ENDPOINT} | Protocol: MCP ${MCP_SPEC_VERSION} | Transport: Streamable HTTP
+
+## How to Connect (MCP Protocol)
+
+MCP uses JSON-RPC 2.0 over HTTP. All requests go to \`${MCP_ENDPOINT}\` as POST with \`Content-Type: application/json\`.
+
+### Step 1 — Authenticate (get an access token)
+See the Authentication section below for OAuth 2.1, Device Flow, or API key.
+
+### Step 2 — Initialize the session
+\`\`\`
+POST ${MCP_ENDPOINT}
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{"jsonrpc": "2.0", "method": "initialize", "params": {"protocolVersion": "${MCP_SPEC_VERSION}", "capabilities": {}, "clientInfo": {"name": "Your Agent", "version": "1.0"}}, "id": 1}
+\`\`\`
+Response: \`{"jsonrpc": "2.0", "result": {"protocolVersion": "...", "capabilities": {"tools": {}}, "serverInfo": {"name": "Visant Labs", ...}}, "id": 1}\`
+Save the \`mcp-session-id\` header from the response — include it in all subsequent requests.
+
+### Step 3 — Discover available tools
+\`\`\`
+POST ${MCP_ENDPOINT}
+Authorization: Bearer <access_token>
+Mcp-Session-Id: <session_id>
+Content-Type: application/json
+
+{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 2}
+\`\`\`
+Response: list of all tools with names, descriptions, and input schemas.
+
+### Step 4 — Call a tool
+\`\`\`
+POST ${MCP_ENDPOINT}
+Authorization: Bearer <access_token>
+Mcp-Session-Id: <session_id>
+Content-Type: application/json
+
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "account-profile", "arguments": {}}, "id": 3}
+\`\`\`
+Response: \`{"jsonrpc": "2.0", "result": {"content": [{"type": "text", "text": "..."}]}, "id": 3}\`
+
+### Important
+- **Always use \`tools/call\` with a \`name\` field** — do NOT call tool names as top-level methods.
+- **Persist the access token** — reuse it for all requests until it expires (1 hour). Then use the refresh token.
+- **Persist the session ID** — include the \`Mcp-Session-Id\` header in every request after initialize.
+- **This is NOT a REST API** — do not try to call \`GET /auth/profile\` or similar. All communication is JSON-RPC via the single MCP endpoint.
+
+---
 
 ## Authentication
 
