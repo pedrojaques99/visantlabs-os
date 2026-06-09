@@ -881,9 +881,7 @@ function buildLoginPage(p: LoginPageParams): string {
         if (!res.ok || !data.token) {
           throw new Error(data.message || data.error || 'Invalid credentials');
         }
-        window.location.href = '${esc(apiBase)}/oauth/authorize?${esc(
-    authorizeParams
-  )}&token=' + encodeURIComponent(data.token);
+        window.location.href = '${apiBase}/oauth/authorize?${authorizeParams}&token=' + encodeURIComponent(data.token);
       } catch (err) {
         errorEl.textContent = err.message;
         errorEl.style.display = 'block';
