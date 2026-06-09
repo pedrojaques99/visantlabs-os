@@ -12,11 +12,14 @@
       "destination": "https://api.visantlabs.com/oauth/$1"
     },
     {
-      "source": "/docs/reference",
-      "destination": "https://api.visantlabs.com/api/docs/full"
-    },
-    {
       "source": "/docs",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "^(?!.*Mozilla).*$"
+        }
+      ],
       "destination": "https://api.visantlabs.com/api/docs/"
     },
     {

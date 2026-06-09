@@ -31,6 +31,7 @@ import { Button } from '../components/ui/button';
 import { Separator } from '../components/ui/separator';
 import { NavigationSidebar } from '../components/ui/NavigationSidebar';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
+import { CommandPalette } from '../components/ui/CommandPalette';
 import { cn } from '../lib/utils';
 
 // Modular docs imports
@@ -75,6 +76,67 @@ export const DocsPage: React.FC = () => {
 
   // Build navigation with dynamic MCP tools
   const navigationItems = useMemo(() => buildNavigationWithMcpTools(mcpToolNames), [mcpToolNames]);
+
+  // Build search items for Ctrl+K command palette
+  const searchItems = useMemo(() => {
+    const items: Array<{ id: string; label: string; category: string; onClick: () => void }> = [];
+
+    // Navigation sections
+    for (const nav of navigationItems) {
+      items.push({
+        id: `nav-${nav.id}`,
+        label: nav.label,
+        category: 'Section',
+        onClick: () => handleNavigationClick(nav.id),
+      });
+      if (nav.sections) {
+        for (const sec of nav.sections) {
+          items.push({
+            id: `sec-${sec.id}`,
+            label: sec.label,
+            category: nav.label,
+            onClick: () => handleNavigationClick(nav.id, sec.id),
+          });
+        }
+      }
+    }
+
+    // MCP tools
+    if (platformMcpSpec?.tools) {
+      for (const tool of platformMcpSpec.tools) {
+        items.push({
+          id: `tool-${tool.name}`,
+          label: tool.name,
+          category: 'MCP Tool',
+          onClick: () => {
+            setActiveTab('mcp-tools');
+            setTimeout(() => {
+              const el = document.getElementById(`tool-${tool.name}`);
+              el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+          },
+        });
+      }
+    }
+
+    // API endpoints
+    for (const ep of [...authEndpoints, ...mockupEndpoints, ...pluginEndpoints]) {
+      items.push({
+        id: `ep-${ep.method}-${ep.path}`,
+        label: `${ep.method} ${ep.path}`,
+        category: 'API Endpoint',
+        onClick: () => {
+          setActiveTab('api');
+          setTimeout(() => {
+            const el = document.getElementById('api');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 150);
+        },
+      });
+    }
+
+    return items;
+  }, [navigationItems, platformMcpSpec, authEndpoints, mockupEndpoints, pluginEndpoints]);
 
   // Use modular markdown generator — platform spec and pricing from server (single source of truth)
   const getMarkdown = useCallback(
@@ -290,6 +352,8 @@ export const DocsPage: React.FC = () => {
         keywords="documentation, API, MCP, Figma plugin, developers"
       />
 
+      <CommandPalette items={searchItems} />
+
       <div className="bg-background text-foreground relative min-h-screen">
         <div className="fixed inset-0 z-0"></div>
 
@@ -331,20 +395,29 @@ export const DocsPage: React.FC = () => {
                     </BreadcrumbList>
                   </BreadcrumbWithBack>
 
-                  <Button
-                    variant="brand"
-                    onClick={handleCopyMarkdown}
-                    title="Copy this section as clean Markdown — ideal for pasting into LLM contexts"
-                    className={cn(
-                      'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-all duration-200 shrink-0',
-                      copied
-                        ? 'bg-green-500/10 border-green-500/40 text-green-500'
-                        : 'bg-secondary/60 border-border text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5'
-                    )}
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copied ? 'Copied!' : 'Copy as Markdown'}
-                  </Button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-secondary/60 text-xs font-redhatmono text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5 transition-all duration-200"
+                    >
+                      <span>Search</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-[10px] font-mono text-neutral-400">⌘K</kbd>
+                    </button>
+                    <Button
+                      variant="brand"
+                      onClick={handleCopyMarkdown}
+                      title="Copy this section as clean Markdown — ideal for pasting into LLM contexts"
+                      className={cn(
+                        'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-all duration-200 shrink-0',
+                        copied
+                          ? 'bg-green-500/10 border-green-500/40 text-green-500'
+                          : 'bg-secondary/60 border-border text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5'
+                      )}
+                    >
+                      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? 'Copied!' : 'Copy as Markdown'}
+                    </Button>
+                  </div>
                 </div>
 
                 {activeTab === 'overview' && (
