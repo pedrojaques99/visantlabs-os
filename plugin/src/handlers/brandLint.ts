@@ -521,8 +521,8 @@ export async function fixBrandIssues(brand: BrandContext) {
 /**
  * Focus a specific node on canvas — invoked when the user clicks an issue.
  */
-export function focusNode(nodeId: string) {
-  const node = figma.getNodeById(nodeId);
+export async function focusNode(nodeId: string) {
+  const node = await figma.getNodeByIdAsync(nodeId);
   if (!node || node.type === 'DOCUMENT' || node.type === 'PAGE') return;
   figma.currentPage.selection = [node as SceneNode];
   figma.viewport.scrollAndZoomIntoView([node as SceneNode]);

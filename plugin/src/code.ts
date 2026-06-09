@@ -62,6 +62,8 @@ import {
   convertToPreset,
   scanPresets,
   linearToFigma,
+  fetchProjects,
+  fetchMilestones,
   saveLinearConfig,
   getLinearConfig,
 } from './handlers/index';
@@ -1101,6 +1103,28 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  // ── Linear Bridge: fetch projects ──
+  if ((msg as any).type === 'FETCH_LINEAR_PROJECTS') {
+    try {
+      const projects = await fetchProjects((msg as any).linearApiKey);
+      postToUI({ type: 'LINEAR_PROJECTS', projects });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Linear Bridge: fetch milestones ──
+  if ((msg as any).type === 'FETCH_LINEAR_MILESTONES') {
+    try {
+      const milestones = await fetchMilestones((msg as any).linearApiKey, (msg as any).projectId);
+      postToUI({ type: 'LINEAR_MILESTONES', milestones });
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
   // ── Linear Bridge: full pipeline ──
   if ((msg as any).type === 'LINEAR_TO_FIGMA') {
     try {
@@ -1110,6 +1134,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         strategy: (msg as any).strategy || 'random',
         formats: (msg as any).formats || ['Story'],
         filterIssues: (msg as any).filterIssues,
+        milestoneId: (msg as any).milestoneId,
         dryRun: (msg as any).dryRun,
       });
       postToUI({ type: 'BRIDGE_DONE', ...result });

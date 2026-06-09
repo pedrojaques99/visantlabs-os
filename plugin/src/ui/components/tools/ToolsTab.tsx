@@ -5,7 +5,8 @@ import { IntelligenceSection } from './IntelligenceSection';
 import { FontSwapSection } from './FontSwapSection';
 import { LintingSection } from './LintingSection';
 import { AutomationSection } from './AutomationSection';
-import { Cpu, Download, ShieldCheck, Type, Zap } from 'lucide-react';
+import { ConnectorsSection } from './ConnectorsSection';
+import { Cpu, Download, ShieldCheck, Type, Zap, Cable } from 'lucide-react';
 
 const SECTIONS = [
   {
@@ -21,9 +22,17 @@ const SECTIONS = [
     id: 'automation',
     title: 'Automation',
     icon: Zap,
-    description: 'Color variations and social frames',
+    description: 'Color variations, presets, and social frames',
     component: AutomationSection,
     defaultOpen: true,
+  },
+  {
+    id: 'connectors',
+    title: 'Connectors',
+    icon: Cable,
+    description: 'Linear, Figma templates, production pipelines',
+    component: ConnectorsSection,
+    defaultOpen: false,
   },
   {
     id: 'fontswap',

@@ -86,11 +86,15 @@ export async function exportTextToMarkdown(opts: {
   const docName = figma.root.name || 'Untitled';
 
   const useSelection = opts.nodeIds && opts.nodeIds.length > 0;
-  const roots: readonly SceneNode[] = useSelection
-    ? opts
-        .nodeIds!.map((id) => figma.getNodeById(id))
-        .filter((n): n is SceneNode => n !== null && 'visible' in n)
-    : page.children;
+  let roots: readonly SceneNode[];
+  if (useSelection) {
+    const resolved = await Promise.all(
+      opts.nodeIds!.map((id) => figma.getNodeByIdAsync(id))
+    );
+    roots = resolved.filter((n): n is SceneNode => n !== null && 'visible' in n);
+  } else {
+    roots = page.children;
+  }
 
   for (const topLevel of roots) {
     collectTexts(topLevel, entries, topLevel.name, topLevel.name, includeHidden);

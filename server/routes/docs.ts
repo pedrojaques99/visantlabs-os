@@ -19,6 +19,7 @@ import { generateMCPSpec, generatePlatformMCPSpec } from '../lib/mcp-gen.js';
 import { getPricingPayload } from '../lib/pricing-data.js';
 import { docsCache } from '../lib/docs-cache.js';
 import { isDocumentationError, ValidationError } from '../lib/docs-errors.js';
+import { renderFullDocsHTML } from '../lib/docs-renderer.js';
 import { IMAGE_MODEL_REGISTRY } from '../../src/constants/imageModelRegistry.js';
 import { MCP_SPEC_VERSION } from '../lib/mcp-constants.js';
 
@@ -577,6 +578,20 @@ router.get('/api/api-keys', (_req: Request, res: Response) => {
     },
     3600
   );
+});
+
+/**
+ * GET /docs/full
+ * Server-rendered HTML documentation page — crawlable, SEO-ready.
+ * All content generated from live API data via shared markdown generators (SSoT).
+ */
+router.get('/full', (_req: Request, res: Response) => {
+  try {
+    const html = renderFullDocsHTML(VERSION, SERVER_URL);
+    sendCachedHTML(res, html, 3600);
+  } catch (err) {
+    handleDocsError(err, res);
+  }
 });
 
 /**

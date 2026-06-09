@@ -1,86 +1,14 @@
 /**
  * useDocsData Hook
- * Fetches and memoizes documentation specs from server
+ * Fetches and memoizes documentation specs from server.
+ * Types re-exported from SSoT: src/lib/docs-markdown.ts
  */
 
 import { useState, useEffect, useMemo } from 'react';
 import { API_BASE } from '@/config/api';
+import type { OpenAPISpec, MCPSpec, MCPTool, PricingData, ApiEndpoint } from '@/lib/docs-markdown';
 
-export interface OpenAPISpec {
-  openapi: string;
-  info: {
-    title: string;
-    version: string;
-    description: string;
-  };
-  paths: Record<string, Record<string, any>>;
-}
-
-export interface MCPTool {
-  name: string;
-  description: string;
-  inputSchema: {
-    type: string;
-    properties: Record<string, any>;
-    required?: string[];
-  };
-  examples?: Array<{
-    name: string;
-    description?: string;
-    input: any;
-    expectedOutput?: string;
-  }>;
-  // Extended fields served by /api/docs/platform/mcp.json
-  'x-cost'?: 'free' | 'credits';
-  'x-category'?: string;
-  'x-auth'?: boolean;
-}
-
-export interface PricingData {
-  creditCosts: Array<{
-    model: string;
-    modelId: string;
-    resolution: string;
-    googlePriceUSD: number;
-    creditsRequired: number;
-    category: 'image' | 'video' | 'chat' | 'branding';
-  }>;
-  creditPackages: Array<{
-    credits: number;
-    priceBRL: number;
-    priceUSD: number;
-    pricePerCreditUSD: number;
-    imagesHD: number;
-    images4K: number;
-    videosFast: number;
-    videosStandard: number;
-  }>;
-  storagePlans: Array<{
-    id: string;
-    name: string;
-    storageMB: number;
-    priceBRL: number;
-    priceUSD: number;
-    billingCycle: string;
-    features: string[];
-    isByok?: boolean;
-  }>;
-  googlePricing: Record<string, any>;
-  infraCosts: Record<string, number>;
-}
-
-export interface MCPSpec {
-  tools: MCPTool[];
-}
-
-export interface ApiEndpoint {
-  path: string;
-  method: string;
-  summary?: string;
-  description?: string;
-  tags?: string[];
-  parameters?: any[];
-}
+export type { OpenAPISpec, MCPSpec, MCPTool, PricingData, ApiEndpoint };
 
 export function useDocsData() {
   const [openApiSpec, setOpenApiSpec] = useState<OpenAPISpec | null>(null);

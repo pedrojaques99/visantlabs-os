@@ -15,6 +15,7 @@ interface LinearIssue {
   url: string;
   state: { name: string; type: string };
   labels: { nodes: { name: string }[] };
+  projectMilestone?: { id: string; name: string } | null;
 }
 
 interface ParsedIssue {
@@ -24,23 +25,41 @@ interface ParsedIssue {
   briefing: string;
   data: string;
   month: number | null;
+  incomplete: boolean;
 }
 
-interface PresetMap {
-  [format: string]: string[];
-}
+interface PresetMap { [format: string]: string[] }
 
 interface BridgeOptions {
   linearApiKey: string;
   projectId: string;
   strategy?: 'random' | 'rotate';
-  formats?: string[];       // ['Story', 'Feed'] — which formats to generate
-  filterIssues?: string[];  // ['VSN-675', 'VSN-680']
+  formats?: string[];
+  filterIssues?: string[];
+  milestoneId?: string;
   dryRun?: boolean;
 }
 
 // ---------------------------------------------------------------------------
-// 1. Scan Presets — reads all "Template - {format} :: {variant}" from file
+// Helpers: Linear GraphQL
+// ---------------------------------------------------------------------------
+
+async function gql(apiKey: string, query: string, variables: Record<string, any> = {}) {
+  const res = await fetch('https://api.linear.app/graphql', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: apiKey },
+    body: JSON.stringify({ query, variables }),
+  });
+  const text = await res.text();
+  let json: any;
+  try { json = JSON.parse(text); } catch { throw new Error(`Linear ${res.status}: ${text.slice(0, 200)}`); }
+  if (!res.ok) throw new Error(`Linear ${res.status}: ${json.errors?.[0]?.message || text.slice(0, 200)}`);
+  if (json.errors) throw new Error(json.errors[0].message);
+  return json.data;
+}
+
+// ---------------------------------------------------------------------------
+// 1. Scan Presets
 // ---------------------------------------------------------------------------
 
 export function scanPresets(): PresetMap {
@@ -65,52 +84,78 @@ export function scanPresets(): PresetMap {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Fetch Linear issues
+// 2. Fetch projects from Linear
 // ---------------------------------------------------------------------------
 
-async function fetchIssues(apiKey: string, projectId: string): Promise<LinearIssue[]> {
+export async function fetchProjects(apiKey: string) {
+  const data = await gql(apiKey, `query {
+    projects(first: 50) {
+      nodes { id name }
+    }
+  }`);
+  return data.projects.nodes as { id: string; name: string }[];
+}
+
+// ---------------------------------------------------------------------------
+// 3. Fetch milestones for a project
+// ---------------------------------------------------------------------------
+
+export async function fetchMilestones(apiKey: string, projectId: string) {
+  const data = await gql(apiKey, `query($projectId: ID!) {
+    project(id: $projectId) {
+      projectMilestones { nodes { id name sortOrder } }
+    }
+  }`, { projectId });
+  const milestones = data.project.projectMilestones.nodes as { id: string; name: string; sortOrder: number }[];
+  return milestones.sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+// ---------------------------------------------------------------------------
+// 4. Fetch issues (with optional milestone filter)
+// ---------------------------------------------------------------------------
+
+async function fetchIssues(apiKey: string, projectId: string, milestoneId?: string): Promise<LinearIssue[]> {
   const allIssues: LinearIssue[] = [];
   let cursor: string | null = null;
   let hasMore = true;
 
+  const milestoneFilter = milestoneId
+    ? `projectMilestone: { id: { eq: "${milestoneId}" } }`
+    : '';
+
   while (hasMore) {
-    const res = await fetch('https://api.linear.app/graphql', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: apiKey },
-      body: JSON.stringify({
-        query: `query($projectId: ID!, $cursor: String) {
-          issues(
-            filter: {
-              project: { id: { eq: $projectId } }
-              title: { contains: "[T]" }
-              state: { type: { nin: ["completed", "canceled"] } }
-            }
-            first: 50
-            after: $cursor
-            orderBy: updatedAt
-          ) {
-            pageInfo { hasNextPage endCursor }
-            nodes { id identifier title description dueDate url state { name type } labels { nodes { name } } }
-          }
-        }`,
-        variables: { projectId, cursor },
-      }),
-    });
+    const data = await gql(apiKey, `query($projectId: ID!, $cursor: String) {
+      issues(
+        filter: {
+          project: { id: { eq: $projectId } }
+          title: { contains: "[T]" }
+          state: { type: { nin: ["completed", "canceled"] } }
+          ${milestoneFilter}
+        }
+        first: 50
+        after: $cursor
+        orderBy: updatedAt
+      ) {
+        pageInfo { hasNextPage endCursor }
+        nodes {
+          id identifier title description dueDate url
+          state { name type }
+          labels { nodes { name } }
+          projectMilestone { id name }
+        }
+      }
+    }`, { projectId, cursor });
 
-    if (!res.ok) throw new Error(`Linear API ${res.status}`);
-    const json = await res.json();
-    if (json.errors) throw new Error(json.errors[0].message);
-
-    allIssues.push(...json.data.issues.nodes);
-    hasMore = json.data.issues.pageInfo.hasNextPage;
-    cursor = json.data.issues.pageInfo.endCursor;
+    allIssues.push(...data.issues.nodes);
+    hasMore = data.issues.pageInfo.hasNextPage;
+    cursor = data.issues.pageInfo.endCursor;
   }
 
   return allIssues;
 }
 
 // ---------------------------------------------------------------------------
-// 3. Parse issue fields
+// 5. Parse issue fields
 // ---------------------------------------------------------------------------
 
 function parseIssue(issue: LinearIssue): ParsedIssue {
@@ -133,17 +178,25 @@ function parseIssue(issue: LinearIssue): ParsedIssue {
   titulo = titulo.replace(/\s*\(\d{2}\/\d{2}\)\s*$/, '');
 
   let briefing = '';
+  let incomplete = false;
   if (issue.description) {
-    const lines = issue.description.trim().split('\n');
+    // Cut at --- separator (instructions/notes below it are ignored)
+    const aboveFold = issue.description.split(/\n+---\n+/)[0].trim();
+    const lines = aboveFold.split('\n');
     const lastLine = lines[lines.length - 1].trim();
     if (/feed|stories|e-?mail/i.test(lastLine)) {
       if (!canal) canal = lastLine;
       briefing = lines.slice(0, -1).join(' ').trim();
     } else {
-      briefing = issue.description.trim().replace(/\n+/g, ' ');
+      briefing = aboveFold.replace(/\n+/g, ' ');
     }
   }
   briefing = briefing.replace(/["""""]/g, '').replace(/\s{2,}/g, ' ').trim();
+  // \* or * prefix = incomplete briefing, needs manual attention
+  if (/^\\?\*/.test(briefing)) {
+    incomplete = true;
+    briefing = briefing.replace(/^\\?\*\s*/, '');
+  }
 
   let data = '';
   let month: number | null = null;
@@ -153,11 +206,11 @@ function parseIssue(issue: LinearIssue): ParsedIssue {
     month = parseInt(m, 10);
   }
 
-  return { codigo: issue.identifier, titulo, canal, briefing, data, month };
+  return { codigo: issue.identifier, titulo, canal, briefing, data, month, incomplete };
 }
 
 // ---------------------------------------------------------------------------
-// 4. Pick variant (deterministic random or rotate)
+// 6. Pick variant
 // ---------------------------------------------------------------------------
 
 function pickVariant(index: number, codigo: string, pool: string[], strategy: string): string {
@@ -170,7 +223,7 @@ function pickVariant(index: number, codigo: string, pool: string[], strategy: st
 }
 
 // ---------------------------------------------------------------------------
-// 5. Clone + populate — uses native Figma API directly
+// 7. Clone + populate
 // ---------------------------------------------------------------------------
 
 async function cloneAndPopulate(
@@ -192,7 +245,6 @@ async function cloneAndPopulate(
   clone.y = y;
   figma.currentPage.appendChild(clone);
 
-  // Apply text overrides
   for (const [layerName, content] of Object.entries(textOverrides)) {
     const textNode = clone.findOne(n => n.type === 'TEXT' && n.name === layerName) as TextNode | null;
     if (!textNode) continue;
@@ -207,14 +259,13 @@ async function cloneAndPopulate(
 }
 
 // ---------------------------------------------------------------------------
-// 6. Main pipeline
+// 8. Main pipeline
 // ---------------------------------------------------------------------------
 
 export async function linearToFigma(opts: BridgeOptions) {
-  const { linearApiKey, projectId, strategy = 'random', formats = ['Story'], filterIssues, dryRun } = opts;
+  const { linearApiKey, projectId, strategy = 'random', formats = ['Story'], filterIssues, milestoneId, dryRun } = opts;
 
-  // Step 1: Scan presets
-  postToUI({ type: 'BRIDGE_PROGRESS', step: 'scan', message: 'Scanning templates...' });
+  postToUI({ type: 'BRIDGE_PROGRESS', step: 'scan', message: 'Scanning templates…' });
   const presets = scanPresets();
   const formatCount = Object.values(presets).reduce((s, v) => s + v.length, 0);
 
@@ -222,9 +273,8 @@ export async function linearToFigma(opts: BridgeOptions) {
     throw new Error('Nenhum template encontrado. Use "Convert to Preset" primeiro.');
   }
 
-  // Step 2: Fetch issues
-  postToUI({ type: 'BRIDGE_PROGRESS', step: 'fetch', message: 'Fetching Linear issues...' });
-  let issues = await fetchIssues(linearApiKey, projectId);
+  postToUI({ type: 'BRIDGE_PROGRESS', step: 'fetch', message: 'Fetching issues…' });
+  let issues = await fetchIssues(linearApiKey, projectId, milestoneId);
 
   if (filterIssues && filterIssues.length > 0) {
     issues = issues.filter(i => filterIssues.includes(i.identifier));
@@ -234,8 +284,7 @@ export async function linearToFigma(opts: BridgeOptions) {
     throw new Error('Nenhuma issue [T] pendente encontrada.');
   }
 
-  // Step 3: Parse + map
-  postToUI({ type: 'BRIDGE_PROGRESS', step: 'map', message: `Mapping ${issues.length} issues...` });
+  postToUI({ type: 'BRIDGE_PROGRESS', step: 'map', message: `Mapping ${issues.length} issues…` });
 
   const operations: {
     templateName: string;
@@ -286,10 +335,8 @@ export async function linearToFigma(opts: BridgeOptions) {
     };
   }
 
-  // Step 4: Clone & populate
-  postToUI({ type: 'BRIDGE_PROGRESS', step: 'clone', message: `Creating ${operations.length} frames...` });
+  postToUI({ type: 'BRIDGE_PROGRESS', step: 'clone', message: `Creating ${operations.length} frames…` });
 
-  // Grid positioning: find rightmost node on page as starting X
   let startX = 0;
   for (const child of figma.currentPage.children) {
     const right = child.x + child.width;
@@ -302,14 +349,12 @@ export async function linearToFigma(opts: BridgeOptions) {
   const GAP_Y = 80;
 
   const results: { id: string; name: string }[] = [];
-  let errors: string[] = [];
+  const errors: string[] = [];
 
   for (let i = 0; i < operations.length; i++) {
     const op = operations[i];
     const col = i % COLS;
     const row = Math.floor(i / COLS);
-
-    // Use first template to estimate size (1080 for story, 1080 for feed)
     const w = 1080;
     const h = op.format === 'Feed' ? 1080 : 1920;
     const x = startX + col * (w + GAP_X);
@@ -320,15 +365,11 @@ export async function linearToFigma(opts: BridgeOptions) {
     if (result) {
       results.push(result);
     } else {
-      errors.push(`Template "${op.templateName}" not found for ${op.parsed.codigo}`);
+      errors.push(`"${op.templateName}" not found → ${op.parsed.codigo}`);
     }
 
     if ((i + 1) % 5 === 0 || i === operations.length - 1) {
-      postToUI({
-        type: 'BRIDGE_PROGRESS',
-        step: 'clone',
-        message: `${i + 1}/${operations.length} frames created`,
-      });
+      postToUI({ type: 'BRIDGE_PROGRESS', step: 'clone', message: `${i + 1}/${operations.length} frames` });
     }
   }
 
@@ -343,7 +384,7 @@ export async function linearToFigma(opts: BridgeOptions) {
 }
 
 // ---------------------------------------------------------------------------
-// 7. Storage helpers for Linear credentials
+// 9. Storage
 // ---------------------------------------------------------------------------
 
 export async function saveLinearConfig(config: { apiKey: string; projectId: string }) {

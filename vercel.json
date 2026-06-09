@@ -8,6 +8,10 @@
       "destination": "https://api.visantlabs.com/api/$1"
     },
     {
+      "source": "/docs/reference",
+      "destination": "https://api.visantlabs.com/api/docs/full"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
