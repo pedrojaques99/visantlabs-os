@@ -247,23 +247,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                     )}
                   </span>
                   {option.badge && (
-                    <span
-                      className={cn(
-                        'flex-shrink-0 px-1 py-px rounded text-[10px] font-bold uppercase tracking-wider leading-none',
-                        option.badge === 'latest' &&
-                          'bg-neutral-700/30 text-neutral-300 border border-neutral-700',
-                        option.badge === 'popular' &&
-                          'bg-green-500/15 text-green-400 border border-green-500/30',
-                        option.badge === 'fast' &&
-                          'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-                        option.badge === 'edit' &&
-                          'bg-violet-500/15 text-violet-400 border border-violet-500/30',
-                        option.badge === 'pro' &&
-                          'bg-orange-500/15 text-orange-400 border border-orange-500/30',
-                        option.badge === 'reasoning' &&
-                          'bg-purple-500/15 text-purple-400 border border-purple-500/30'
-                      )}
-                    >
+                    <span className="flex-shrink-0 px-1 py-px rounded text-[9px] font-medium uppercase tracking-wider leading-none text-neutral-500">
                       {option.badge === 'popular' ? 'top' : option.badge}
                     </span>
                   )}
@@ -311,23 +295,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               )}
             </span>
             {selectedOption?.badge && (
-              <span
-                className={cn(
-                  'flex-shrink-0 px-1 py-px rounded text-[10px] font-bold uppercase tracking-wider leading-none',
-                  selectedOption.badge === 'latest' &&
-                    'bg-neutral-700/30 text-neutral-300 border border-neutral-700',
-                  selectedOption.badge === 'popular' &&
-                    'bg-green-500/15 text-green-400 border border-green-500/30',
-                  selectedOption.badge === 'fast' &&
-                    'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-                  selectedOption.badge === 'edit' &&
-                    'bg-violet-500/15 text-violet-400 border border-violet-500/30',
-                  selectedOption.badge === 'pro' &&
-                    'bg-orange-500/15 text-orange-400 border border-orange-500/30',
-                  selectedOption.badge === 'reasoning' &&
-                    'bg-purple-500/15 text-purple-400 border border-purple-500/30'
-                )}
-              >
+              <span className="flex-shrink-0 px-1 py-px rounded text-[9px] font-medium uppercase tracking-wider leading-none text-neutral-500">
                 {selectedOption.badge === 'popular' ? 'top' : selectedOption.badge}
               </span>
             )}

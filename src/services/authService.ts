@@ -390,44 +390,23 @@ class AuthService {
   }
 
   async ensureAuthenticated(): Promise<User | null> {
-    // Se não há token, retorna null imediatamente
-    if (!this.token) {
-      return null;
-    }
+    if (!this.token) return null;
 
-    // Se há uma verificação em andamento, aguarda ela
-    if (this.verifyPromise) {
-      const result = await this.verifyPromise;
-      return result;
-    }
+    // Reuse in-flight verification
+    if (this.verifyPromise) return this.verifyPromise;
 
-    // Se há resultado cacheado válido e está dentro do throttle, retorna cache
+    // Return cached result if still within throttle window
     const now = Date.now();
-    const timeSinceLastVerify = now - this.lastVerifyTime;
-
-    if (timeSinceLastVerify < this.VERIFY_THROTTLE_MS && this.lastValidResult !== null) {
-      // Retorna resultado cacheado se ainda está dentro do throttle
+    if (now - this.lastVerifyTime < this.VERIFY_THROTTLE_MS && this.lastValidResult !== null) {
       return this.lastValidResult;
     }
 
-    // Se a última verificação foi recente (dentro do throttle) mas não há cache válido,
-    // aguarda um pouco e força nova verificação
-    if (timeSinceLastVerify < this.VERIFY_THROTTLE_MS) {
-      // Aguarda o tempo restante do throttle mais um pequeno delay
-      const waitTime = this.VERIFY_THROTTLE_MS - timeSinceLastVerify + 100;
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-    }
-
-    // Aguarda um micro delay adicional para garantir que verificações pendentes sejam concluídas
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Força nova verificação (ignorando throttle para garantir resultado atualizado)
-    this.lastVerifyTime = Date.now();
+    // Perform fresh verification (no artificial delays)
+    this.lastVerifyTime = now;
     this.verifyPromise = this._performVerify();
 
     try {
       const result = await this.verifyPromise;
-      // Cache já é atualizado em _performVerify
       return result;
     } finally {
       this.verifyPromise = null;

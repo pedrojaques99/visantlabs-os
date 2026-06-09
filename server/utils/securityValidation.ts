@@ -183,6 +183,22 @@ export async function safeFetch(
     );
     req.on('error', reject);
     if (init?.body != null && method !== 'GET') {
+      if (init.body instanceof FormData) {
+        // Serialize FormData — read full body then write at once
+        (async () => {
+          try {
+            const resp = new Response(init.body);
+            const ct = resp.headers.get('content-type');
+            if (ct) req.setHeader('content-type', ct);
+            const buf = Buffer.from(await resp.arrayBuffer());
+            req.write(buf);
+            req.end();
+          } catch (e) {
+            reject(e);
+          }
+        })();
+        return;
+      }
       if (typeof init.body === 'string') req.write(init.body);
       else if (init.body instanceof ArrayBuffer) req.write(Buffer.from(init.body));
       else if (ArrayBuffer.isView(init.body)) req.write(Buffer.from(init.body as Uint8Array));

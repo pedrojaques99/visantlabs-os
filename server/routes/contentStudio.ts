@@ -10,8 +10,8 @@ import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { chargeCredits, refundCredits } from '../lib/credits.js';
 import { getCreditsRequired } from '../utils/usageTracking.js';
 import { generateMockup as generateGeminiImage } from '../services/geminiService.js';
-import { generateIdeogramImage } from '../services/ideogramService.js';
-import { generateReveImage } from '../services/reveService.js';
+import { generateIdeogramImage, remixIdeogramImage } from '../services/ideogramService.js';
+import { generateReveImage, editReveImage } from '../services/reveService.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
@@ -169,9 +169,18 @@ async function generateFormatImage(params: {
 async function generateImageWithProvider(
   prompt: string,
   model: string,
-  aspectRatio: CreativeFormat
+  aspectRatio: CreativeFormat,
+  baseImage?: { base64?: string; url?: string; mimeType: string }
 ): Promise<string> {
   if (isIdeogramModel(model)) {
+    if (baseImage) {
+      const result = await remixIdeogramImage({
+        prompt,
+        baseImage: baseImage as any,
+        aspectRatio: aspectRatio as any,
+      });
+      return result.base64;
+    }
     const result = await generateIdeogramImage({
       prompt,
       model: model as any,
@@ -180,6 +189,14 @@ async function generateImageWithProvider(
     return result.base64;
   }
   if (isReveModel(model)) {
+    if (baseImage) {
+      const result = await editReveImage({
+        editInstruction: prompt,
+        baseImage: baseImage as any,
+        aspectRatio: aspectRatio as any,
+      });
+      return result.base64;
+    }
     const result = await generateReveImage({ prompt, aspectRatio: aspectRatio as any });
     return result.base64;
   }

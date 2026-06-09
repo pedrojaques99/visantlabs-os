@@ -30,6 +30,8 @@ export interface ReveModelConfig {
   defaultResolution: Resolution;
   supportedResolutions: Resolution[];
   providerDomain: string;
+  supportsEdit: boolean;
+  supportsRemix: boolean;
   deprecated?: boolean;
 }
 
@@ -40,7 +42,9 @@ export const REVE_MODEL_CONFIG: Record<ReveModelId, ReveModelConfig> = {
     description: 'TypoGuard text rendering, 98% prompt adherence',
     defaultResolution: '2K',
     supportedResolutions: ['1K', '2K'],
-    providerDomain: 'reve.art',
+    providerDomain: 'reve.com',
+    supportsEdit: true,
+    supportsRemix: true,
   },
 };
 

@@ -54,6 +54,23 @@ export function getPreferredImageModel(): string {
   return _getPreferredImageModel() || DEFAULT_MODEL;
 }
 
+function resolveProvider(modelId: string): ImageProvider {
+  if (isSeedreamModel(modelId)) return 'seedream';
+  if (isOpenAIImageModel(modelId)) return 'openai';
+  if (isImagenModel(modelId)) return 'imagen';
+  if (isIdeogramModel(modelId)) return 'ideogram';
+  if (isReveModel(modelId)) return 'reve';
+  return 'gemini';
+}
+
+const CONFIG_RESOLVERS: Record<string, (id: string) => { defaultResolution?: string } | undefined> = {
+  imagen: (id) => getImagenModelConfig(id),
+  seedream: (id) => getSeedreamModelConfig(id),
+  openai: (id) => getOpenAIImageModelConfig(id),
+  ideogram: (id) => getIdeogramModelConfig(id),
+  reve: (id) => getReveModelConfig(id),
+};
+
 interface ModelSelectorProps {
   selectedModel: string;
   onModelChange: (model: string, provider?: ImageProvider) => void;
@@ -87,22 +104,16 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const { subscriptionStatus } = useLayout();
   const planMetadata = subscriptionStatus?.planMetadata;
   const token = import.meta.env.VITE_LOGO_DEV_TOKEN || '';
-  const [showOlderModels, setShowOlderModels] = useState(false);
+  const [showAllModels, setShowAllModels] = useState(false);
   const availableProviders = useAvailableProviders();
 
-  const hasDeprecated = useMemo(() => {
-    if (type === 'image') {
-      return (
-        AVAILABLE_IMAGE_MODELS.some((id) => MODEL_CONFIG[id]?.deprecated) ||
-        SEEDREAM_IMAGE_MODELS.some((id) => SEEDREAM_MODEL_CONFIG[id]?.deprecated)
-      );
-    }
-    return CHAT_MODELS.some((id) => MODEL_CONFIG[id]?.deprecated);
-  }, [type]);
-
   const options = useMemo(() => {
-    const isVisible = (modelId: string, config: { deprecated?: boolean } | undefined) =>
-      showOlderModels || !config?.deprecated || modelId === selectedModel;
+    const isVisible = (modelId: string, config: { deprecated?: boolean; badge?: string } | undefined) => {
+      if (modelId === selectedModel) return true;
+      if (config?.deprecated && !showAllModels) return false;
+      if (showAllModels) return true;
+      return config?.badge === 'latest' || config?.badge === 'popular';
+    };
 
     // IMAGE MODELS LOGIC
     if (type === 'image') {
@@ -194,7 +205,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         ? []
         : (OPENAI_IMAGE_MODEL_LIST.map((modelId) => {
             const config = OPENAI_IMAGE_MODEL_CONFIG[modelId];
-            if (!config) return null;
+            if (!config || !isVisible(modelId, config)) return null;
 
             const effectiveResolution =
               selectedModel === modelId ? resolution : config.defaultResolution;
@@ -377,7 +388,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     planMetadata,
     token,
     variant,
-    showOlderModels,
+    showAllModels,
     availableProviders,
   ]);
 
@@ -390,18 +401,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   // Sync parent if normalization occurred (only for image type)
   useEffect(() => {
     if (type === 'image' && effectiveModel !== selectedModel) {
-      const provider: ImageProvider = isSeedreamModel(effectiveModel)
-        ? 'seedream'
-        : isOpenAIImageModel(effectiveModel)
-        ? 'openai'
-        : isImagenModel(effectiveModel)
-        ? 'imagen'
-        : isIdeogramModel(effectiveModel)
-        ? 'ideogram'
-        : isReveModel(effectiveModel)
-        ? 'reve'
-        : 'gemini';
-      onModelChange(effectiveModel, provider);
+      onModelChange(effectiveModel, resolveProvider(effectiveModel));
     }
   }, [effectiveModel, selectedModel, onModelChange, type]);
 
@@ -411,44 +411,15 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
       if (type === 'image') {
         setModelPreference('imageModel', newModel);
-        const provider: ImageProvider = isSeedreamModel(newModel)
-          ? 'seedream'
-          : isOpenAIImageModel(newModel)
-          ? 'openai'
-          : isImagenModel(newModel)
-          ? 'imagen'
-          : isIdeogramModel(newModel)
-          ? 'ideogram'
-          : isReveModel(newModel)
-          ? 'reve'
-          : 'gemini';
+        const provider = resolveProvider(newModel);
         onModelChange(newModel, provider);
         setModelPreference('imageProvider', provider);
 
-        if (provider === 'imagen') {
-          const imgConfig = getImagenModelConfig(newModel);
-          if (imgConfig && !resolution && onSyncResolution) {
-            onSyncResolution(imgConfig.defaultResolution);
-          }
-        } else if (provider === 'seedream') {
-          const sdConfig = getSeedreamModelConfig(newModel);
-          if (sdConfig && !resolution && onSyncResolution) {
-            onSyncResolution(sdConfig.defaultResolution);
-          }
-        } else if (provider === 'openai') {
-          const oaiConfig = getOpenAIImageModelConfig(newModel);
-          if (oaiConfig && !resolution && onSyncResolution) {
-            onSyncResolution(oaiConfig.defaultResolution);
-          }
-        } else if (provider === 'ideogram') {
-          const idConfig = getIdeogramModelConfig(newModel);
-          if (idConfig && !resolution && onSyncResolution) {
-            onSyncResolution(idConfig.defaultResolution);
-          }
-        } else if (provider === 'reve') {
-          const rvConfig = getReveModelConfig(newModel);
-          if (rvConfig && !resolution && onSyncResolution) {
-            onSyncResolution(rvConfig.defaultResolution);
+        const resolver = CONFIG_RESOLVERS[provider];
+        if (resolver) {
+          const cfg = resolver(newModel);
+          if (cfg && !resolution && onSyncResolution && cfg.defaultResolution) {
+            onSyncResolution(cfg.defaultResolution as Resolution);
           }
         } else {
           const config = getModelConfig(newModel as GeminiModel);
@@ -491,18 +462,16 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         disabled={disabled}
         placeholder={t('canvasNodes.promptNode.selectModel') || 'Select Model'}
         footer={
-          hasDeprecated ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowOlderModels(!showOlderModels);
-              }}
-              className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
-            >
-              {showOlderModels ? 'Hide older models' : 'Show older models'}
-            </button>
-          ) : undefined
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAllModels(!showAllModels);
+            }}
+            className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
+          >
+            {showAllModels ? 'Show less' : 'Show all models'}
+          </button>
         }
         className={cn(
           type === 'chat' &&

@@ -29,6 +29,7 @@ import {
   BarChart2,
   ChevronRight,
   MessageSquare,
+  Activity,
 } from 'lucide-react';
 import {
   Area,
@@ -47,6 +48,7 @@ import {
 } from 'recharts';
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { NavigationSidebar, type NavigationItem } from '../components/ui/NavigationSidebar';
 import {
   BreadcrumbWithBack,
   BreadcrumbList,
@@ -72,7 +74,7 @@ import {
   TableHead,
   TableCell,
 } from '../components/ui/table';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
+// Tabs components no longer used — admin uses NavigationSidebar
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -323,12 +325,32 @@ export const AdminPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated: isUserAuthenticated, isCheckingAuth } = useLayout();
+  const { isAuthenticated: isUserAuthenticated, isCheckingAuth, user: layoutUser } = useLayout();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<AdminResponse | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const adminNavItems = useMemo<NavigationItem[]>(
+    () => [
+      { id: 'overview', label: t('admin.dashboard') || 'Dashboard', icon: ShieldCheck },
+      ...(data?.generationStats
+        ? [{ id: 'generations', label: t('admin.generations') || 'Generations', icon: TrendingUp }]
+        : []),
+      { id: 'users', label: t('admin.users') || 'Users', icon: Users },
+      { id: 'financial', label: t('admin.financial') || 'Financial', icon: DollarSign },
+      { id: 'presets', label: t('common.presets') || 'Presets', icon: Settings },
+      { id: 'products', label: t('admin.products.title') || 'Products', icon: ShoppingCart },
+      { id: 'admin-chat', label: 'Chat Estratégico', icon: MessageSquare },
+      { id: 'design-system', label: t('admin.designSystem') || 'Design System', icon: Palette },
+      { id: 'mcp-usage', label: 'MCP Usage', icon: Activity },
+      { id: 'feedback-rag', label: 'Feedback & RAG', icon: BarChart2 },
+      { id: 'references', label: 'Reference Library', icon: Image },
+    ],
+    [t, data?.generationStats]
+  );
 
   // Canvas Analytics state
   const [canvasEventStats, setCanvasEventStats] = useState<{
@@ -338,6 +360,31 @@ export const AdminPage: React.FC = () => {
     period: { days: number; since: string };
   } | null>(null);
   const [canvasEventsLoading, setCanvasEventsLoading] = useState(false);
+
+  // MCP Usage tab state
+  const [mcpStats, setMcpStats] = useState<any>(null);
+  const [mcpStatsLoading, setMcpStatsLoading] = useState(false);
+
+  const fetchMcpStats = async (days = 30) => {
+    const token = authService.getToken();
+    if (!token) return;
+    setMcpStatsLoading(true);
+    try {
+      const resp = await fetch(`/api/admin/mcp-stats?days=${days}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!resp.ok) throw new Error('Failed to fetch MCP stats');
+      setMcpStats(await resp.json());
+    } catch (err) {
+      console.error('[AdminPage] MCP stats error:', err);
+      toast.error('Failed to load MCP stats');
+    } finally {
+      setMcpStatsLoading(false);
+    }
+  };
+
+  // Sidebar dynamic width
+  const [sidebarWidth, setSidebarWidth] = useState(256);
 
   // Feedback & RAG tab state
   const [feedbackStats, setFeedbackStats] = useState<any>(null);
@@ -508,32 +555,19 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  // Check if user is admin and load data
+  // Check if user is admin and load data — uses Layout's cached user instead of re-verifying
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (isCheckingAuth) return;
+    if (isCheckingAuth) return;
 
-      if (isUserAuthenticated === true) {
-        try {
-          const user = await authService.verifyToken();
-          const userIsAdmin = user?.isAdmin || false;
-          setIsAdmin(userIsAdmin);
-
-          // Load data if user is admin
-          if (userIsAdmin) {
-            handleFetch();
-          }
-        } catch (error) {
-          setIsAdmin(false);
-        }
-      } else {
-        setIsAdmin(false);
-      }
-    };
-
-    checkAdminStatus();
+    if (isUserAuthenticated === true && layoutUser) {
+      const userIsAdmin = layoutUser.isAdmin || false;
+      setIsAdmin(userIsAdmin);
+      if (userIsAdmin) handleFetch();
+    } else {
+      setIsAdmin(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isUserAuthenticated, isCheckingAuth]);
+  }, [isUserAuthenticated, isCheckingAuth, layoutUser]);
 
   const isAuthenticated = isUserAuthenticated === true && isAdmin === true && data !== null;
 
@@ -1111,17 +1145,20 @@ export const AdminPage: React.FC = () => {
       <SEO title={t('admin.title')} description={t('admin.description')} noindex={true} />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0"></div>
-        <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
-          {/* Skeleton Loading States */}
-          {(isCheckingAuth ||
-            (isUserAuthenticated && isAdmin === null) ||
-            (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
-            <AdminDashboardSkeleton />
-          )}
 
-          {/* Access Denied States */}
-          {!isCheckingAuth && !isAuthenticated && !isLoading && (
-            <Card className="bg-neutral-900 border border-white/10 rounded-xl max-w-md mx-auto">
+        {/* Skeleton Loading States */}
+        {(isCheckingAuth ||
+          (isUserAuthenticated && isAdmin === null) ||
+          (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
+          <div className="max-w-5xl mx-auto px-4 pt-[30px]">
+            <AdminDashboardSkeleton />
+          </div>
+        )}
+
+        {/* Access Denied States */}
+        {!isCheckingAuth && !isAuthenticated && !isLoading && (
+          <div className="max-w-md mx-auto px-4 pt-[30px]">
+            <Card className="bg-neutral-900 border border-white/10 rounded-xl">
               <CardContent className="p-6 md:p-8 space-y-4 text-center">
                 {isUserAuthenticated === false ? (
                   <>
@@ -1146,161 +1183,72 @@ export const AdminPage: React.FC = () => {
                 ) : null}
               </CardContent>
             </Card>
-          )}
+          </div>
+        )}
 
-          {isAuthenticated && data && (
-            <Tabs
-              value={activeTab}
-              onValueChange={(val) => {
-                if (val === 'presets') {
+        {isAuthenticated && data && (
+          <>
+            <NavigationSidebar
+              items={adminNavItems}
+              activeItemId={activeTab}
+              onItemClick={(itemId) => {
+                if (itemId === 'presets') {
                   navigate('/admin/presets');
-                } else if (val === 'products') {
+                } else if (itemId === 'products') {
                   navigate('/admin/products');
-                } else if (val === 'admin-chat') {
+                } else if (itemId === 'admin-chat') {
                   navigate('/admin/chat');
-                } else if (val === 'design-system') {
+                } else if (itemId === 'design-system') {
                   navigate('/design-system');
                 } else {
-                  setActiveTab(val);
-                  if (val === 'feedback-rag' && !feedbackStats) {
+                  setActiveTab(itemId);
+                  if (itemId === 'feedback-rag' && !feedbackStats) {
                     fetchFeedbackStats(feedbackFeatureFilter);
                   }
-                  if (val === 'generations' && !canvasEventStats) {
+                  if (itemId === 'generations' && !canvasEventStats) {
                     fetchCanvasEventStats();
+                  }
+                  if (itemId === 'mcp-usage' && !mcpStats) {
+                    fetchMcpStats();
                   }
                 }
               }}
-              className="space-y-6"
-            >
-              {/* Unified Header */}
-              <Card className="bg-neutral-900 border border-white/10 rounded-xl mb-6">
-                <CardContent className="p-4 md:p-6">
-                  {/* Breadcrumb */}
-                  <div className="mb-4">
-                    <BreadcrumbWithBack to="/">
-                      <BreadcrumbList>
-                        <BreadcrumbItem>
-                          <BreadcrumbLink asChild>
-                            <Link to="/">{t('apps.home')}</Link>
-                          </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                          <BreadcrumbPage>{t('admin.title') || 'Admin'}</BreadcrumbPage>
-                        </BreadcrumbItem>
-                      </BreadcrumbList>
-                    </BreadcrumbWithBack>
-                  </div>
+              title="Admin"
+              isOpen={sidebarOpen}
+              onToggleOpen={setSidebarOpen}
+              storageKey="admin-sidebar-width"
+              onWidthChange={setSidebarWidth}
+            />
 
-                  {/* Separator */}
-                  <div className="border-t border-white/10 mb-4"></div>
-
-                  {/* Icon | Title | Description */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
+            <div className="min-h-screen max-lg:!pl-0" style={{ paddingLeft: `${sidebarWidth}px` }}>
+              <div className="px-4 md:px-8 pt-6 pb-16 md:pb-24 relative z-10">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="h-5 w-5 text-neutral-500 hidden md:block" />
                     <div>
-                      <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
-                        {t('admin.panelTitle')}
+                      <h1 className="text-lg md:text-xl font-semibold text-neutral-200">
+                        {adminNavItems.find((i) => i.id === activeTab)?.label || t('admin.panelTitle')}
                       </h1>
-                      <p className="text-neutral-500 font-mono text-xs md:text-sm">
+                      <p className="text-neutral-600 text-xs font-mono">
                         {t('admin.panelSubtitle')}
                       </p>
                     </div>
                   </div>
+                  <Button
+                    onClick={handleRefresh}
+                    disabled={isLoading}
+                    variant="outline"
+                    size="sm"
+                    className="border-neutral-800 hover:bg-neutral-800/50 h-8 w-8 p-0"
+                    aria-label="Refresh data"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
 
-                  {/* Separator */}
-                  <div className="border-t border-white/10 mb-4"></div>
-
-                  {/* Navbar abas | Botão atualizar (somente icon) */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
-                    <TabsList className="bg-neutral-900/50 border border-white/10 p-1 h-auto flex-wrap">
-                      <TabsTrigger
-                        value="overview"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        {t('admin.dashboard')}
-                      </TabsTrigger>
-                      {data.generationStats && (
-                        <TabsTrigger
-                          value="generations"
-                          className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                        >
-                          {t('admin.generations')}
-                        </TabsTrigger>
-                      )}
-                      <TabsTrigger
-                        value="users"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        {t('admin.users')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="financial"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        {t('admin.financial')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="presets"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('common.presets')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="products"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('admin.products.title') || 'Produtos'}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="admin-chat"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <MessageSquare className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        Chat Estratégico
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="design-system"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <Palette className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('admin.designSystem')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="feedback-rag"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <BarChart2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        Feedback & RAG
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="references"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <Image className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        Reference Library
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <Button
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center justify-center border-white/10 hover:bg-neutral-800/50 h-9 w-9 p-0"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <TabsContent
-                value="overview"
-                className={`space-y-6 ${activeTab === 'overview' ? 'admin-tab-enter' : ''}`}
-              >
+              {activeTab === 'overview' && (
+              <div className="space-y-6 admin-tab-enter">
                 {/* KPI Grid - Top Level Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                   {/* Total Users */}
@@ -1537,13 +1485,10 @@ export const AdminPage: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </div>)}
 
-              {data.generationStats && (
-                <TabsContent
-                  value="generations"
-                  className={`space-y-6 ${activeTab === 'generations' ? 'admin-tab-enter' : ''}`}
-                >
+              {activeTab === 'generations' && data.generationStats && (
+              <div className="space-y-6 admin-tab-enter">
                   {/* Summary KPIs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
@@ -2081,13 +2026,10 @@ export const AdminPage: React.FC = () => {
                       )}
                     </CardContent>
                   </Card>
-                </TabsContent>
-              )}
+                </div>)}
 
-              <TabsContent
-                value="users"
-                className={`space-y-6 ${activeTab === 'users' ? 'admin-tab-enter' : ''}`}
-              >
+              {activeTab === 'users' && (
+              <div className="space-y-6 admin-tab-enter">
                 {/* Summary Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                   <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
@@ -2266,13 +2208,11 @@ export const AdminPage: React.FC = () => {
                     />
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </div>)}
 
               {/* Financial Tab */}
-              <TabsContent
-                value="financial"
-                className={`space-y-6 ${activeTab === 'financial' ? 'admin-tab-enter' : ''}`}
-              >
+              {activeTab === 'financial' && (
+              <div className="space-y-6 admin-tab-enter">
                 {/* Financial Overview - Revenue, Cost, Profit */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   {/* Revenue Total Card */}
@@ -2745,13 +2685,11 @@ export const AdminPage: React.FC = () => {
                     </Card>
                   </>
                 )}
-              </TabsContent>
+              </div>)}
 
               {/* ── Feedback & RAG ─────────────────────────────────────── */}
-              <TabsContent
-                value="feedback-rag"
-                className={`space-y-6 ${activeTab === 'feedback-rag' ? 'admin-tab-enter' : ''}`}
-              >
+              {activeTab === 'feedback-rag' && (
+              <div className="space-y-6 admin-tab-enter">
                 {/* Feature filter + refresh row */}
                 <div className="flex items-center gap-3 flex-wrap">
                   <select
@@ -3443,17 +3381,179 @@ export const AdminPage: React.FC = () => {
                     </Button>
                   </div>
                 )}
-              </TabsContent>
+              </div>)}
 
-              <TabsContent
-                value="references"
-                className={`space-y-6 ${activeTab === 'references' ? 'admin-tab-enter' : ''}`}
-              >
+              {activeTab === 'mcp-usage' && (
+              <div className="space-y-6 admin-tab-enter">
+                {mcpStatsLoading && !mcpStats ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => (
+                      <Card key={i} className="bg-neutral-900 border border-white/10">
+                        <CardContent className="p-6">
+                          <SkeletonLoader width="80px" height="12px" className="rounded mb-3" />
+                          <SkeletonLoader width="120px" height="32px" className="rounded" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : mcpStats ? (
+                  <>
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {[
+                        { label: 'Total Calls', value: mcpStats.summary.totalCalls.toLocaleString(), icon: Activity },
+                        { label: 'Unique Users', value: mcpStats.summary.uniqueUsers.toLocaleString(), icon: Users },
+                        { label: 'Avg Latency', value: `${mcpStats.summary.avgDuration}ms`, icon: TrendingUp },
+                        { label: 'Success Rate', value: `${mcpStats.summary.successRate}%`, icon: ShieldCheck },
+                      ].map((kpi) => (
+                        <Card key={kpi.label} className="bg-neutral-900 border border-white/10">
+                          <CardContent className="p-5">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">{kpi.label}</span>
+                              <kpi.icon className="h-3.5 w-3.5 text-neutral-600" />
+                            </div>
+                            <span className="text-2xl font-semibold text-neutral-200">{kpi.value}</span>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {/* Scope Breakdown */}
+                    {mcpStats.byScope?.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {mcpStats.byScope.map((s: any) => (
+                          <Card key={s.scope} className="bg-neutral-900 border border-white/10">
+                            <CardContent className="p-5">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-mono uppercase tracking-wider text-neutral-400">{s.scope}</span>
+                                <Badge variant="outline" className="text-[9px] border-neutral-700 text-neutral-500">
+                                  {s.avgDuration}ms avg
+                                </Badge>
+                              </div>
+                              <span className="text-xl font-semibold text-neutral-200">{s.calls.toLocaleString()} calls</span>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Daily Calls Chart */}
+                    {mcpStats.byDay?.length > 0 && (
+                      <Card className="bg-neutral-900 border border-white/10">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium text-neutral-300">Daily Tool Calls</CardTitle>
+                          <CardDescription className="text-xs text-neutral-600 font-mono">Last {mcpStats.days} days</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={260}>
+                            <AreaChart data={mcpStats.byDay}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                              <XAxis
+                                dataKey="date"
+                                tick={{ fill: '#525252', fontSize: 10 }}
+                                tickFormatter={(v: string) => v.slice(5)}
+                              />
+                              <YAxis tick={{ fill: '#525252', fontSize: 10 }} width={40} />
+                              <Tooltip
+                                contentStyle={{ background: '#171717', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }}
+                                labelStyle={{ color: '#a3a3a3' }}
+                              />
+                              <Area type="monotone" dataKey="calls" stroke="#737373" fill="rgba(115,115,115,0.15)" strokeWidth={1.5} />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Top Tools + Top Users side by side */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {/* Top Tools */}
+                      {mcpStats.byTool?.length > 0 && (
+                        <Card className="bg-neutral-900 border border-white/10">
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-neutral-300">Top Tools</CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="border-white/5 hover:bg-transparent">
+                                  <TableHead className="text-neutral-500 text-[10px] font-mono">Tool</TableHead>
+                                  <TableHead className="text-neutral-500 text-[10px] font-mono text-right">Calls</TableHead>
+                                  <TableHead className="text-neutral-500 text-[10px] font-mono text-right">Avg ms</TableHead>
+                                  <TableHead className="text-neutral-500 text-[10px] font-mono text-right">Scope</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {mcpStats.byTool.map((tool: any) => (
+                                  <TableRow key={tool.toolName} className="border-white/5">
+                                    <TableCell className="text-xs text-neutral-300 font-mono">{tool.toolName}</TableCell>
+                                    <TableCell className="text-xs text-neutral-400 text-right">{tool.calls}</TableCell>
+                                    <TableCell className="text-xs text-neutral-500 text-right">{tool.avgDuration}</TableCell>
+                                    <TableCell className="text-right">
+                                      <Badge variant="outline" className="text-[9px] border-neutral-700 text-neutral-500">
+                                        {tool.scope}
+                                      </Badge>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Top Users */}
+                      {mcpStats.byUser?.length > 0 && (
+                        <Card className="bg-neutral-900 border border-white/10">
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-neutral-300">Top Users</CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="border-white/5 hover:bg-transparent">
+                                  <TableHead className="text-neutral-500 text-[10px] font-mono">User</TableHead>
+                                  <TableHead className="text-neutral-500 text-[10px] font-mono text-right">Calls</TableHead>
+                                  <TableHead className="text-neutral-500 text-[10px] font-mono text-right">Last Active</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {mcpStats.byUser.map((u: any) => (
+                                  <TableRow key={u.userId} className="border-white/5">
+                                    <TableCell className="text-xs text-neutral-300">{u.email}</TableCell>
+                                    <TableCell className="text-xs text-neutral-400 text-right">{u.calls}</TableCell>
+                                    <TableCell className="text-xs text-neutral-500 text-right">
+                                      {u.lastActive ? formatDate(new Date(u.lastActive)) : '—'}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <Card className="bg-neutral-900 border border-white/10">
+                    <CardContent className="p-12 text-center">
+                      <Activity className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
+                      <p className="text-sm text-neutral-500">No MCP usage data yet</p>
+                      <p className="text-xs text-neutral-600 mt-1">Tool calls will appear here once agents start using the MCP server</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>)}
+
+              {activeTab === 'references' && (
+              <div className="space-y-6 admin-tab-enter">
                 <AdminReferenceLibrary />
-              </TabsContent>
-            </Tabs>
-          )}
-        </div>
+              </div>)}
+
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Usage History Modal */}

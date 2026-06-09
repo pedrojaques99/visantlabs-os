@@ -85,7 +85,7 @@ export const IMAGE_MODEL_REGISTRY: ImageModelEntry[] = [
       label: c.label,
       description: c.description,
       envVar: 'IDEOGRAM_API_KEY',
-      supportsLogoRef: false,
+      supportsLogoRef: c.supportsI2I,
     };
   }),
 
@@ -98,7 +98,7 @@ export const IMAGE_MODEL_REGISTRY: ImageModelEntry[] = [
       label: c.label,
       description: c.description,
       envVar: 'REVE_API_KEY',
-      supportsLogoRef: false,
+      supportsLogoRef: c.supportsEdit,
     };
   }),
 ];

@@ -25,12 +25,10 @@ export const BreadcrumbWithBack: React.FC<BreadcrumbWithBackProps> = ({
 }) => {
   return (
     <div
-      className={`flex items-center gap-2 sm:gap-3 h-10 sm:h-[60px] ${className}`}
+      className={`flex items-center gap-2 sm:gap-3 ${className}`}
       style={{ margin: 0 }}
     >
-      <div className="flex items-center flex-shrink-0 h-full justify-center flex-wrap">
-        <BackButton to={to} onClick={onClick} className="mb-0" />
-      </div>
+      <BackButton to={to} onClick={onClick} className="mb-0 flex-shrink-0" />
       <Breadcrumb className="flex-1 flex items-center">{children}</Breadcrumb>
     </div>
   );

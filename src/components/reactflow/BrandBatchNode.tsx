@@ -83,20 +83,6 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
 
   return (
     <NodeContainer selected={selected} dragging={dragging} className="min-w-[300px] max-w-[360px]">
-      {/* Brand input */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="brand-in"
-        style={{
-          top: '20%',
-          left: -6,
-          width: 10,
-          height: 10,
-          background: 'var(--color-amber-400)',
-          border: '2px solid var(--color-neutral-950)',
-        }}
-      />
       {/* Image inputs */}
       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
         <Handle
@@ -105,11 +91,11 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           position={Position.Left}
           id={`input-${i}`}
           style={{
-            top: `${20 + i * 8}%`,
+            top: `${12 + i * 8}%`,
             left: -6,
             width: 8,
             height: 8,
-            background: 'var(--color-violet-400)',
+            background: 'var(--color-neutral-500)',
             border: '2px solid var(--color-neutral-950)',
           }}
         />
@@ -125,30 +111,25 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           right: -6,
           width: 10,
           height: 10,
-          background: 'var(--color-green-400)',
+          background: 'var(--color-neutral-400)',
           border: '2px solid var(--color-neutral-950)',
         }}
       />
 
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
-        <Layers size={12} className="text-amber-400 shrink-0" />
+        <Layers size={12} className="text-neutral-400 shrink-0" />
         <span className="text-[11px] font-semibold uppercase tracking-widest text-white/70">
           Brand Batch
         </span>
-        <div className="ml-auto flex items-center gap-1.5">
-          {hasBrand && (
-            <span className="text-[10px] px-1 py-0.5 rounded bg-amber-400/10 text-amber-400 font-medium">
-              BRAND
-            </span>
-          )}
+        <div className="ml-auto">
           <span
             className={cn(
               'text-[10px] px-1.5 py-0.5 rounded font-medium',
               status === 'idle' && 'text-white/30 bg-white/5',
-              status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
-              status === 'done' && 'text-green-400 bg-green-400/10',
-              status === 'cancelled' && 'text-orange-400 bg-orange-400/10'
+              status === 'running' && 'text-neutral-300 bg-white/10',
+              status === 'done' && 'text-neutral-300 bg-white/10',
+              status === 'cancelled' && 'text-neutral-400 bg-white/5'
             )}
           >
             {status}
@@ -157,13 +138,20 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
       </div>
 
       {/* Connection info */}
-      <div className="px-3 py-1.5 space-y-0.5 border-b border-neutral-800">
-        <p className="text-[10px] text-white/30">
-          <span className="text-amber-400">●</span>{' '}
-          {hasBrand ? <span className="text-white/50">Brand connected</span> : 'Connect BrandCore'}
-        </p>
-        <p className="text-[10px] text-white/30">
-          <span className="text-violet-400">●</span>{' '}
+      <div className="px-3 py-1.5 space-y-1 border-b border-neutral-800">
+        <div
+          className={cn(
+            'flex items-center gap-2 px-2 py-1.5 rounded text-[10px] transition-colors',
+            hasBrand
+              ? 'bg-white/5 text-white/60'
+              : 'bg-white/[0.02] text-white/30 border border-dashed border-white/10'
+          )}
+        >
+          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', hasBrand ? 'bg-white/50' : 'bg-white/20')} />
+          {hasBrand ? 'Brand Guidelines connected' : 'Connect Brand Guidelines'}
+        </div>
+        <p className="text-[10px] text-white/30 flex items-center gap-1.5">
+          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', imageCount > 0 ? 'bg-white/50' : 'bg-white/20')} />
           {imageCount > 0 ? (
             <span className="text-white/50">
               {imageCount} image{imageCount > 1 ? 's' : ''} connected
@@ -180,7 +168,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           {!showSuggestions ? (
             <button
               onClick={() => setShowSuggestions(true)}
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded text-[10px] font-medium bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors border border-violet-500/20"
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded text-[10px] font-medium bg-white/5 hover:bg-white/10 text-white/40 transition-colors border border-white/10"
             >
               <Flame size={10} />
               Suggest References
@@ -195,7 +183,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
                 <button
                   key={ref.id}
                   onClick={() => handleAddRef(ref)}
-                  className="group relative flex-1 aspect-square rounded overflow-hidden bg-neutral-900 border border-violet-500/20 hover:border-violet-400/50 transition-all"
+                  className="group relative flex-1 aspect-square rounded overflow-hidden bg-neutral-900 border border-white/10 hover:border-white/20 transition-all"
                   title={ref.name}
                 >
                   <img
@@ -270,7 +258,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           </div>
           <div className="h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-amber-400 transition-all duration-300 rounded-full"
+              className="h-full bg-white/40 transition-all duration-300 rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -286,7 +274,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
             className={cn(
               'flex-1 flex items-center justify-center gap-1.5 rounded py-1.5',
               imageCount > 0
-                ? 'bg-amber-400/15 hover:bg-amber-400/25 text-amber-400'
+                ? 'bg-white/10 hover:bg-white/15 text-white/70'
                 : 'bg-white/5 text-white/20 cursor-not-allowed',
               'text-[10px] font-medium transition-colors'
             )}
@@ -315,7 +303,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
             </button>
             <button
               onClick={handleRun}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 text-[10px] transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-white/10 hover:bg-white/15 text-white/70 text-[10px] transition-colors"
             >
               <Play size={10} />
               Re-run

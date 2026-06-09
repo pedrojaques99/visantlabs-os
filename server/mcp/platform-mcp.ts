@@ -13,6 +13,7 @@ import { ObjectId } from 'mongodb';
 import { improvePrompt, describeImage } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { getCurrentUserId, runWithContext } from '../lib/request-context.js';
+import { trackMcpToolCall } from './mcp-tracking.js';
 import {
   buildBrandContext,
   BRAND_SECTION_PRESETS,
@@ -426,9 +427,18 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     const originalHandler = rest[handlerIdx];
     if (typeof originalHandler === 'function') {
       rest[handlerIdx] = async (...args: any[]) => {
-        const scopeErr = requireScope(scopeForTool(name));
+        const scope = scopeForTool(name);
+        const scopeErr = requireScope(scope);
         if (scopeErr) return mcpError('FORBIDDEN', scopeErr);
-        return originalHandler(...args);
+        const start = Date.now();
+        try {
+          const result = await originalHandler(...args);
+          trackMcpToolCall(name, getCurrentUserId(), scope, Date.now() - start, true);
+          return result;
+        } catch (err) {
+          trackMcpToolCall(name, getCurrentUserId(), scope, Date.now() - start, false);
+          throw err;
+        }
       };
     }
     return (originalTool as any)(name, ...rest);

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Upload,
   Search,
@@ -11,6 +11,7 @@ import {
   Pencil,
   Save,
   Eye,
+  Loader2,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '../ui/dialog';
 import { Card, CardContent } from '../ui/card';
@@ -81,12 +82,14 @@ const DIMENSION_LABELS: Record<string, string> = {
 
 const authHeaders = () => ({ Authorization: `Bearer ${authService.getToken()}` });
 
+const PAGE_SIZE = 30;
+
 export const AdminReferenceLibrary: React.FC = () => {
   const [refs, setRefs] = useState<Reference[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [search, setSearch] = useState('');
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
@@ -94,12 +97,18 @@ export const AdminReferenceLibrary: React.FC = () => {
   const [selectedRef, setSelectedRef] = useState<Reference | null>(null);
   const [stats, setStats] = useState<RefStats | null>(null);
   const [showStats, setShowStats] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef(1);
 
   const fetchRefs = useCallback(
-    async (p = 1) => {
-      setIsLoading(true);
+    async (p = 1, append = false) => {
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+      }
       try {
-        const params = new URLSearchParams({ page: String(p), limit: '20' });
+        const params = new URLSearchParams({ page: String(p), limit: String(PAGE_SIZE) });
         if (search) params.set('search', search);
         for (const [key, val] of Object.entries(activeFilters)) {
           if (val) params.set(key, val);
@@ -107,19 +116,51 @@ export const AdminReferenceLibrary: React.FC = () => {
         const resp = await fetch(`/api/admin/references?${params}`, { headers: authHeaders() });
         if (!resp.ok) throw new Error('Failed to fetch');
         const data: RefsResponse = await resp.json();
-        setRefs(data.references);
+        if (append) {
+          setRefs((prev) => {
+            const existingIds = new Set(prev.map((r) => r.id));
+            const fresh = data.references.filter((r) => !existingIds.has(r.id));
+            return [...prev, ...fresh];
+          });
+        } else {
+          setRefs(data.references);
+        }
         setTotal(data.total);
-        setPage(data.page);
-        setPages(data.pages);
+        pageRef.current = data.page;
+        setHasMore(data.page < data.pages);
         setHasLoaded(true);
       } catch {
         toast.error('Erro ao carregar referências');
       } finally {
         setIsLoading(false);
+        setIsLoadingMore(false);
       }
     },
     [search, activeFilters]
   );
+
+  // Re-fetch when filters change
+  useEffect(() => {
+    if (hasLoaded) fetchRefs(1);
+  }, [activeFilters]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
+          fetchRefs(pageRef.current + 1, true);
+        }
+      },
+      { rootMargin: '400px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading, isLoadingMore, fetchRefs]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -152,6 +193,7 @@ export const AdminReferenceLibrary: React.FC = () => {
             data.failed ? `, ${data.failed} falha(s)` : ''
           }`
         );
+        setRefs([]);
         fetchRefs(1);
       } catch {
         toast.error('Erro no upload');
@@ -251,7 +293,12 @@ export const AdminReferenceLibrary: React.FC = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && fetchRefs(1)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setRefs([]);
+                fetchRefs(1);
+              }
+            }}
             placeholder="Buscar referências..."
             className="pl-9 bg-neutral-900 border-neutral-700 text-sm h-8"
           />
@@ -267,6 +314,7 @@ export const AdminReferenceLibrary: React.FC = () => {
                 const next = { ...activeFilters };
                 delete next[key];
                 setActiveFilters(next);
+                setRefs([]);
               }}
             >
               {DIMENSION_LABELS[key]}: {activeFilters[key]}
@@ -276,7 +324,10 @@ export const AdminReferenceLibrary: React.FC = () => {
         )}
 
         <Button
-          onClick={() => fetchRefs(1)}
+          onClick={() => {
+            setRefs([]);
+            fetchRefs(1);
+          }}
           size="sm"
           variant="outline"
           className="h-8 bg-neutral-800 border-neutral-700 text-xs"
@@ -348,7 +399,7 @@ export const AdminReferenceLibrary: React.FC = () => {
                       className="text-[8px] px-1 py-0 border-neutral-700 text-neutral-400 cursor-pointer hover:border-brand-cyan/50"
                       onClick={() => {
                         setActiveFilters((prev) => ({ ...prev, [key]: item._id }));
-                        fetchRefs(1);
+                        setRefs([]);
                       }}
                     >
                       {item._id} ({item.count})
@@ -363,6 +414,16 @@ export const AdminReferenceLibrary: React.FC = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {isLoading && refs.length === 0 &&
+          Array.from({ length: 10 }).map((_, i) => (
+            <div key={`skel-${i}`} className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden animate-pulse">
+              <div className="aspect-square bg-neutral-800/50" />
+              <div className="p-2 space-y-1.5">
+                <div className="h-3 bg-neutral-800/50 rounded w-3/4" />
+                <div className="h-2 bg-neutral-800/30 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
         {refs.map((ref) => (
           <Card
             key={ref.id}
@@ -408,31 +469,18 @@ export const AdminReferenceLibrary: React.FC = () => {
         ))}
       </div>
 
-      {/* Pagination */}
-      {pages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page <= 1}
-            onClick={() => fetchRefs(page - 1)}
-            className="h-7 text-xs bg-neutral-800 border-neutral-700"
-          >
-            Anterior
-          </Button>
-          <span className="text-xs text-neutral-500">
-            {page}/{pages}
-          </span>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page >= pages}
-            onClick={() => fetchRefs(page + 1)}
-            className="h-7 text-xs bg-neutral-800 border-neutral-700"
-          >
-            Próxima
-          </Button>
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="h-1" />
+      {isLoadingMore && (
+        <div className="flex items-center justify-center py-4 gap-2 text-neutral-500">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-xs">Carregando mais...</span>
         </div>
+      )}
+      {!hasMore && refs.length > 0 && (
+        <p className="text-center text-[10px] text-neutral-600 py-2">
+          {refs.length} de {total} referências
+        </p>
       )}
 
       {/* Detail Modal */}
