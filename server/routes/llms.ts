@@ -61,10 +61,18 @@ Full Authorization Code + PKCE flow. No API key needed — the user authorizes y
 Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
 Scopes: \`read\`, \`write\`, \`generate\`
 
-**Option B — OOB flow (agents without a local server, e.g. Telegram bots)**
+**Option B — Device Flow (recommended for agents without a local server)**
+Best for Telegram bots, CLI tools, remote agents. Zero copy-paste — agent polls automatically.
+
+1. \`POST ${API_BASE_URL}/oauth/device/code\` with \`{"client_id": "...", "scope": "read write generate"}\`
+2. Show user: "Go to \`verification_uri\` and enter code: \`user_code\`" (or give them \`verification_uri_complete\`)
+3. Poll \`POST ${API_BASE_URL}/oauth/token\` with \`{"grant_type": "urn:ietf:params:oauth:grant-type:device_code", "device_code": "...", "client_id": "..."}\` every 5s
+4. When user approves, poll returns access_token + refresh_token
+
+**Option C — OOB flow (fallback — manual copy-paste)**
 Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — user sees the code on screen and pastes it back to the agent.
 
-**Option C — API Key (manual)**
+**Option D — API Key (manual)**
 Header: \`Authorization: Bearer visant_sk_xxx\`
 Create keys at: ${FRONTEND_BASE_URL}/settings/api-keys
 
@@ -142,12 +150,35 @@ Scopes: \`read\`, \`write\`, \`generate\`
    grant_type=refresh_token&refresh_token=<refresh_token>&client_id=<client_id>
    \`\`\`
 
-**Option B — OOB flow (for agents without a local server, e.g. Telegram bots)**
+**Option B — Device Flow (recommended for agents without a local server)**
+Best for Telegram bots, CLI tools, IoT, remote agents. User approves in browser; agent polls and gets the token automatically — no copy-paste.
+
+1. **Request device code**:
+   \`\`\`
+   POST ${API_BASE_URL}/oauth/device/code
+   Content-Type: application/json
+
+   {"client_id": "<client_id>", "scope": "read write generate"}
+   \`\`\`
+   Response: \`{"device_code": "...", "user_code": "ABCD-1234", "verification_uri": "${API_BASE_URL}/oauth/device", "verification_uri_complete": "${API_BASE_URL}/oauth/device?code=ABCD-1234", "expires_in": 600, "interval": 5}\`
+
+2. **Show user** the \`verification_uri_complete\` link (or \`verification_uri\` + \`user_code\` separately)
+
+3. **Poll for token** every \`interval\` seconds:
+   \`\`\`
+   POST ${API_BASE_URL}/oauth/token
+   Content-Type: application/x-www-form-urlencoded
+
+   grant_type=urn:ietf:params:oauth:grant-type:device_code&device_code=<device_code>&client_id=<client_id>
+   \`\`\`
+   Returns \`{"error": "authorization_pending"}\` until user approves, then returns \`{"access_token": "...", "refresh_token": "...", ...}\`
+
+**Option C — OOB flow (fallback — manual copy-paste)**
 If your agent can't listen on a local port, use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\`.
 After the user approves, the authorization code is displayed on screen for them to copy back to the agent.
 Everything else (register, PKCE, token exchange) is the same as Option A.
 
-**Option C — API Key (manual, for scripts)**
+**Option D — API Key (manual, for scripts)**
 Header: \`Authorization: Bearer visant_sk_xxx\`
 Create keys at: ${FRONTEND_BASE_URL}/settings/api-keys
 

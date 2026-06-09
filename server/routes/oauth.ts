@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
+import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { API_BASE_URL, MCP_ENDPOINT, MCP_SCOPES } from '../lib/mcp-constants.js';
 
@@ -11,6 +12,9 @@ const BASE_URL = API_BASE_URL;
 const MCP_RESOURCE = MCP_ENDPOINT;
 const REFRESH_TOKEN_TTL_DAYS = 30;
 const OOB_REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob';
+const DEVICE_CODE_TTL_SECONDS = 600;
+const DEVICE_POLL_INTERVAL = 5;
+const DEVICE_CODE_GRANT = 'urn:ietf:params:oauth:grant-type:device_code';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -96,6 +100,26 @@ async function resolveOrRegisterClient(clientId: string) {
   }
 }
 
+function generateUserCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I/O/0/1 to avoid confusion
+  let code = '';
+  const bytes = crypto.randomBytes(8);
+  for (let i = 0; i < 8; i++) {
+    code += chars[bytes[i] % chars.length];
+  }
+  return code.slice(0, 4) + '-' + code.slice(4);
+}
+
+async function getDeviceCodesCollection() {
+  await connectToMongoDB();
+  const db = getDb();
+  const col = db.collection('oauth_device_codes');
+  await col.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }).catch(() => {});
+  await col.createIndex({ deviceCode: 1 }, { unique: true }).catch(() => {});
+  await col.createIndex({ userCode: 1 }).catch(() => {});
+  return col;
+}
+
 function verifyPkce(codeVerifier: string, storedChallenge: string): boolean {
   const hash = crypto.createHash('sha256').update(codeVerifier).digest();
   const computed = Buffer.from(hash).toString('base64url');
@@ -131,7 +155,8 @@ router.get('/.well-known/oauth-authorization-server', (_req, res) => {
     registration_endpoint: `${BASE_URL}/oauth/register`,
     revocation_endpoint: `${BASE_URL}/oauth/revoke`,
     code_challenge_methods_supported: ['S256'],
-    grant_types_supported: ['authorization_code', 'refresh_token'],
+    device_authorization_endpoint: `${BASE_URL}/oauth/device/code`,
+    grant_types_supported: ['authorization_code', 'refresh_token', DEVICE_CODE_GRANT],
     response_types_supported: ['code'],
     token_endpoint_auth_methods_supported: ['none'],
     scopes_supported: [...MCP_SCOPES],
@@ -436,6 +461,10 @@ router.post('/oauth/token', async (req, res) => {
     return handleRefreshToken(req, res);
   }
 
+  if (grant_type === DEVICE_CODE_GRANT) {
+    return handleDeviceCodeExchange(req, res);
+  }
+
   return res.status(400).json({ error: 'unsupported_grant_type' });
 });
 
@@ -584,6 +613,228 @@ async function handleRefreshToken(req: express.Request, res: express.Response) {
   }
 }
 
+// ── Device Authorization Grant (RFC 8628) ─────────────────────────────────
+
+router.post('/oauth/device/code', async (req, res) => {
+  try {
+    const { client_id, scope } = req.body as Record<string, string>;
+
+    if (!client_id) {
+      return res.status(400).json({ error: 'invalid_request', error_description: 'client_id is required' });
+    }
+
+    const oauthClient = await resolveOrRegisterClient(client_id);
+    if (!oauthClient) {
+      return res.status(400).json({ error: 'invalid_client' });
+    }
+
+    const validScopes = new Set(MCP_SCOPES as readonly string[]);
+    const requestedScopes = scope
+      ? scope.split(/[\s+]+/).filter((s) => validScopes.has(s))
+      : [...MCP_SCOPES];
+    const resolvedScopes = requestedScopes.length > 0 ? requestedScopes : [...MCP_SCOPES];
+
+    const deviceCode = crypto.randomBytes(32).toString('hex');
+    const userCode = generateUserCode();
+    const expiresAt = new Date(Date.now() + DEVICE_CODE_TTL_SECONDS * 1000);
+
+    const col = await getDeviceCodesCollection();
+    await col.insertOne({
+      deviceCode,
+      userCode,
+      clientId: client_id,
+      clientName: oauthClient.clientName,
+      scopes: resolvedScopes,
+      resource: MCP_RESOURCE,
+      status: 'pending',
+      userId: null,
+      expiresAt,
+      lastPolled: null,
+      createdAt: new Date(),
+    });
+
+    return res.json({
+      device_code: deviceCode,
+      user_code: userCode,
+      verification_uri: `${BASE_URL}/oauth/device`,
+      verification_uri_complete: `${BASE_URL}/oauth/device?code=${userCode}`,
+      expires_in: DEVICE_CODE_TTL_SECONDS,
+      interval: DEVICE_POLL_INTERVAL,
+    });
+  } catch (err) {
+    console.error('[OAuth] device/code error', err);
+    return res.status(500).json({ error: 'server_error' });
+  }
+});
+
+router.get('/oauth/device', async (req, res) => {
+  const prefillCode = (req.query.code as string) || '';
+  const tokenParam = req.query.token as string | undefined;
+  const bearerHeader = req.headers.authorization?.replace(/^Bearer\s+/i, '');
+  const rawToken = tokenParam || bearerHeader;
+
+  let userId: string | null = null;
+  if (rawToken) {
+    try {
+      const decoded = jwt.verify(rawToken, JWT_SECRET) as { userId?: string; sub?: string };
+      userId = decoded.userId || decoded.sub || null;
+    } catch {}
+  }
+
+  if (!userId) {
+    return res.send(buildDeviceLoginPage(prefillCode));
+  }
+
+  if (!prefillCode) {
+    return res.send(buildDeviceCodeEntryPage(rawToken || ''));
+  }
+
+  // User is logged in and has a code — verify and show consent
+  try {
+    const col = await getDeviceCodesCollection();
+    const record = await col.findOne({ userCode: prefillCode.toUpperCase(), status: 'pending' });
+
+    if (!record) {
+      return res.send(buildDeviceErrorPage('Invalid or expired code. Please try again.'));
+    }
+
+    if (new Date() > record.expiresAt) {
+      return res.send(buildDeviceErrorPage('This code has expired. Ask your agent for a new one.'));
+    }
+
+    return res.send(buildDeviceConsentPage({
+      clientName: record.clientName,
+      userCode: record.userCode,
+      scopes: record.scopes.join(' '),
+      token: rawToken || '',
+    }));
+  } catch (err) {
+    console.error('[OAuth] device page error', err);
+    return res.status(500).send('Internal server error');
+  }
+});
+
+router.post('/oauth/device', express.urlencoded({ extended: false }), async (req, res) => {
+  const { user_code, action, token } = req.body as Record<string, string>;
+
+  if (!user_code || !action) {
+    return res.status(400).send('Missing required parameters');
+  }
+
+  let userId: string | null = null;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string; sub?: string };
+      userId = decoded.userId || decoded.sub || null;
+    } catch {}
+  }
+
+  if (!userId) {
+    return res.status(401).send('Session expired. Please log in again.');
+  }
+
+  try {
+    const col = await getDeviceCodesCollection();
+    const record = await col.findOne({ userCode: user_code.toUpperCase(), status: 'pending' });
+
+    if (!record || new Date() > record.expiresAt) {
+      return res.send(buildDeviceErrorPage('This code has expired or is invalid.'));
+    }
+
+    if (action === 'deny') {
+      await col.updateOne({ userCode: user_code.toUpperCase() }, { $set: { status: 'denied' } });
+      return res.send(buildDeviceDonePage(false));
+    }
+
+    await col.updateOne(
+      { userCode: user_code.toUpperCase() },
+      { $set: { status: 'approved', userId } }
+    );
+
+    return res.send(buildDeviceDonePage(true));
+  } catch (err) {
+    console.error('[OAuth] device approval error', err);
+    return res.status(500).send('Internal server error');
+  }
+});
+
+async function handleDeviceCodeExchange(req: express.Request, res: express.Response) {
+  const { device_code, client_id } = req.body as Record<string, string>;
+
+  if (!device_code || !client_id) {
+    return res.status(400).json({
+      error: 'invalid_request',
+      error_description: 'device_code and client_id are required',
+    });
+  }
+
+  try {
+    const col = await getDeviceCodesCollection();
+    const record = await col.findOne({ deviceCode: device_code });
+
+    if (!record) {
+      return res.status(400).json({ error: 'invalid_grant', error_description: 'Unknown device code' });
+    }
+
+    if (new Date() > record.expiresAt) {
+      return res.status(400).json({ error: 'expired_token' });
+    }
+
+    if (record.clientId !== client_id) {
+      return res.status(400).json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
+    }
+
+    // Enforce polling interval (slow_down)
+    if (record.lastPolled) {
+      const elapsed = (Date.now() - new Date(record.lastPolled).getTime()) / 1000;
+      if (elapsed < DEVICE_POLL_INTERVAL) {
+        return res.status(400).json({ error: 'slow_down' });
+      }
+    }
+
+    await col.updateOne({ deviceCode: device_code }, { $set: { lastPolled: new Date() } });
+
+    if (record.status === 'pending') {
+      return res.status(400).json({ error: 'authorization_pending' });
+    }
+
+    if (record.status === 'denied') {
+      await col.deleteOne({ deviceCode: device_code });
+      return res.status(400).json({ error: 'access_denied' });
+    }
+
+    // status === 'approved' — issue tokens
+    const scopes = record.scopes.join(' ');
+    const accessToken = issueAccessToken(record.userId, client_id, scopes, record.resource);
+
+    const refreshToken = crypto.randomBytes(32).toString('hex');
+    await prisma.oAuthRefreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: record.userId,
+        clientId: client_id,
+        scopes: record.scopes,
+        resource: record.resource,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    // Clean up used device code
+    await col.deleteOne({ deviceCode: device_code });
+
+    return res.json({
+      access_token: accessToken,
+      token_type: 'Bearer',
+      expires_in: 3600,
+      refresh_token: refreshToken,
+      scope: scopes,
+    });
+  } catch (err) {
+    console.error('[OAuth] device code exchange error', err);
+    return res.status(500).json({ error: 'server_error' });
+  }
+}
+
 // ── Token Revocation (RFC 7009) ───────────────────────────────────────────
 
 router.post('/oauth/revoke', async (req, res) => {
@@ -612,6 +863,229 @@ router.post('/oauth/revoke', async (req, res) => {
 });
 
 // ── Cleanup expired tokens (called periodically or on-demand) ─────────────
+
+// ── Device Flow HTML pages ───────────────────────────────────────────────────
+
+const devicePageSharedStyles = `
+  .code-input-group { margin: 1.5rem 0; }
+  .code-input {
+    width: 100%; padding: 0.75rem 1rem; border-radius: 8px;
+    border: 1px solid #27272a; background: #18181b; color: #fafafa;
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.1rem;
+    text-align: center; letter-spacing: 0.25em; text-transform: uppercase;
+    outline: none; transition: border-color 0.15s;
+  }
+  .code-input:focus { border-color: #52ddeb; }
+  .code-input::placeholder { color: #3f3f46; letter-spacing: 0.1em; text-transform: none; font-size: 0.85rem; }
+  .status-icon {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 1.5rem; font-size: 1.25rem;
+  }
+  .status-icon.success { background: rgba(82, 221, 235, 0.1); color: #52ddeb; }
+  .status-icon.denied { background: rgba(248, 113, 113, 0.1); color: #f87171; }
+  .status-icon.error { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
+`;
+
+function buildDeviceLoginPage(prefillCode: string): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const apiBase = API_BASE_URL;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect Device | Visant Labs</title>
+  <style>${oauthPageStyles()}${devicePageSharedStyles}</style>
+</head>
+<body>
+  <div class="card" style="text-align:center;">
+    <div class="brand">VISANT LABS&reg;</div>
+    <h1>Connect your agent</h1>
+    <p class="subtitle">Sign in to authorize the device code shown by your agent.</p>
+    <div class="divider"></div>
+    <div class="code-input-group">
+      <input class="code-input" id="deviceCode" type="text" maxlength="9" placeholder="ABCD-1234" value="${esc(prefillCode)}" />
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" />
+    </div>
+    <button class="btn btn-primary" id="submitBtn">Sign in & continue</button>
+    <div class="error" id="error"></div>
+    <div class="footer" style="margin-top:1.5rem;">
+      <a href="${apiBase}/oauth/device">Having trouble?</a>
+    </div>
+  </div>
+  <script>
+    document.getElementById('submitBtn').addEventListener('click', async function() {
+      var btn = this;
+      var errorEl = document.getElementById('error');
+      var code = document.getElementById('deviceCode').value.trim();
+      if (!code) { errorEl.textContent = 'Enter the code from your agent'; errorEl.style.display = 'block'; return; }
+      btn.disabled = true; btn.textContent = 'Signing in...'; errorEl.style.display = 'none';
+      try {
+        var res = await fetch('${apiBase}/api/auth/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value }),
+        });
+        var data = await res.json();
+        if (!res.ok || !data.token) throw new Error(data.message || data.error || 'Invalid credentials');
+        window.location.href = '${apiBase}/oauth/device?code=' + encodeURIComponent(code) + '&token=' + encodeURIComponent(data.token);
+      } catch (err) {
+        errorEl.textContent = err.message; errorEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Sign in & continue';
+      }
+    });
+    document.getElementById('deviceCode').addEventListener('input', function() {
+      var v = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      if (v.length > 4) v = v.slice(0, 4) + '-' + v.slice(4, 8);
+      this.value = v;
+    });
+  </script>
+</body>
+</html>`;
+}
+
+function buildDeviceCodeEntryPage(token: string): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const apiBase = API_BASE_URL;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enter Code | Visant Labs</title>
+  <style>${oauthPageStyles()}${devicePageSharedStyles}</style>
+</head>
+<body>
+  <div class="card" style="text-align:center;">
+    <div class="brand">VISANT LABS&reg;</div>
+    <h1>Enter device code</h1>
+    <p class="subtitle">Enter the code displayed by your agent to authorize access.</p>
+    <div class="code-input-group">
+      <input class="code-input" id="deviceCode" type="text" maxlength="9" placeholder="ABCD-1234" autofocus />
+    </div>
+    <button class="btn btn-primary" id="submitBtn">Continue</button>
+    <div class="error" id="error"></div>
+  </div>
+  <script>
+    document.getElementById('deviceCode').addEventListener('input', function() {
+      var v = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      if (v.length > 4) v = v.slice(0, 4) + '-' + v.slice(4, 8);
+      this.value = v;
+    });
+    document.getElementById('submitBtn').addEventListener('click', function() {
+      var code = document.getElementById('deviceCode').value.trim();
+      if (!code) { document.getElementById('error').textContent = 'Enter the code from your agent'; document.getElementById('error').style.display = 'block'; return; }
+      window.location.href = '${apiBase}/oauth/device?code=' + encodeURIComponent(code) + '&token=' + encodeURIComponent('${esc(token)}');
+    });
+  </script>
+</body>
+</html>`;
+}
+
+function buildDeviceConsentPage(p: { clientName: string; userCode: string; scopes: string; token: string }): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authorize | Visant Labs</title>
+  <style>${oauthPageStyles()}</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">VISANT LABS&reg;</div>
+    <h1><span class="app-name">${esc(p.clientName)}</span> wants access</h1>
+    <p class="subtitle">This agent is requesting permission to access your Visant Labs account.</p>
+    <div class="divider"></div>
+    <div class="scopes">
+      ${p.scopes.includes('read') ? '<div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>' : ''}
+      ${p.scopes.includes('write') ? '<div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>' : ''}
+      ${p.scopes.includes('generate') ? '<div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>' : ''}
+    </div>
+    <div class="divider"></div>
+    <div class="actions">
+      <form method="POST" action="${BASE_URL}/oauth/device" style="flex:1;display:contents;">
+        <input type="hidden" name="user_code" value="${esc(p.userCode)}" />
+        <input type="hidden" name="token" value="${esc(p.token)}" />
+        <input type="hidden" name="action" value="deny" />
+        <button type="submit" class="btn btn-deny">Deny</button>
+      </form>
+      <form method="POST" action="${BASE_URL}/oauth/device" style="flex:1;display:contents;">
+        <input type="hidden" name="user_code" value="${esc(p.userCode)}" />
+        <input type="hidden" name="token" value="${esc(p.token)}" />
+        <input type="hidden" name="action" value="approve" />
+        <button type="submit" class="btn btn-approve">Approve</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+function buildDeviceDonePage(approved: boolean): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${approved ? 'Connected' : 'Denied'} | Visant Labs</title>
+  <style>${oauthPageStyles()}${devicePageSharedStyles}</style>
+</head>
+<body>
+  <div class="card" style="text-align:center;">
+    <div class="brand">VISANT LABS&reg;</div>
+    <div class="status-icon ${approved ? 'success' : 'denied'}">${approved ? '&#10003;' : '&#10005;'}</div>
+    <h1>${approved ? 'Agent Connected' : 'Access Denied'}</h1>
+    <p class="subtitle">${
+      approved
+        ? 'Your agent is now connected. You can close this window and return to your conversation.'
+        : 'The authorization request was denied. You can close this window.'
+    }</p>
+  </div>
+</body>
+</html>`;
+}
+
+function buildDeviceErrorPage(message: string): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error | Visant Labs</title>
+  <style>${oauthPageStyles()}${devicePageSharedStyles}</style>
+</head>
+<body>
+  <div class="card" style="text-align:center;">
+    <div class="brand">VISANT LABS&reg;</div>
+    <div class="status-icon error">!</div>
+    <h1>Something went wrong</h1>
+    <p class="subtitle">${esc(message)}</p>
+    <a href="${BASE_URL}/oauth/device" class="btn btn-primary" style="display:inline-block;text-decoration:none;text-align:center;margin-top:1rem;">Try again</a>
+  </div>
+</body>
+</html>`;
+}
 
 async function cleanupExpiredOAuthData() {
   const now = new Date();

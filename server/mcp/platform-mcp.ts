@@ -292,7 +292,13 @@ You are connected via OAuth 2.1 or API key. If you need to authenticate a new ag
 4. Exchange: \`POST /oauth/token\` with \`grant_type=authorization_code&code=...&code_verifier=...&client_id=...\`
 5. Refresh: \`POST /oauth/token\` with \`grant_type=refresh_token&refresh_token=...\`
 
-**No local server?** Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — the auth code is displayed on screen for the user to copy back to you.
+**No local server? Use Device Flow (recommended):**
+1. \`POST /oauth/device/code\` with \`{"client_id":"...","scope":"read write generate"}\`
+2. Show user the \`verification_uri_complete\` link
+3. Poll \`POST /oauth/token\` with \`grant_type=urn:ietf:params:oauth:grant-type:device_code&device_code=...&client_id=...\` every 5s
+4. When user approves, poll returns access_token + refresh_token automatically
+
+**Fallback (OOB):** Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — the auth code is displayed on screen for the user to copy back to you.
 
 ## Tool Workflows (follow these sequences)
 
