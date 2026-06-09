@@ -197,7 +197,8 @@ export function createApp() {
     'http://127.0.0.1:5173',
   ];
 
-  const allAllowedOrigins = [...new Set([...envFrontendOrigins, ...claudeOrigins, ...devOrigins])];
+  const selfOrigin = API_BASE_URL; // OAuth login page is served from the API domain
+  const allAllowedOrigins = [...new Set([...envFrontendOrigins, ...claudeOrigins, ...devOrigins, selfOrigin])];
 
   app.use(
     cors({
