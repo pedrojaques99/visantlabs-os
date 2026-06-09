@@ -3398,6 +3398,21 @@ export const AdminPage: React.FC = () => {
                   </div>
                 ) : mcpStats ? (
                   <>
+                    {/* Refresh */}
+                    <div className="flex justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchMcpStats()}
+                        disabled={mcpStatsLoading}
+                        className="border-neutral-800 hover:bg-neutral-800/50 text-xs gap-1.5"
+                        aria-label="Refresh MCP stats"
+                      >
+                        <RefreshCw className={cn('h-3 w-3', mcpStatsLoading && 'animate-spin')} />
+                        Refresh
+                      </Button>
+                    </div>
+
                     {/* KPI Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {[
@@ -3540,6 +3555,16 @@ export const AdminPage: React.FC = () => {
                       <Activity className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
                       <p className="text-sm text-neutral-500">No MCP usage data yet</p>
                       <p className="text-xs text-neutral-600 mt-1">Tool calls will appear here once agents start using the MCP server</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchMcpStats()}
+                        disabled={mcpStatsLoading}
+                        className="mt-4 border-neutral-800 hover:bg-neutral-800/50 text-xs gap-1.5"
+                      >
+                        <RefreshCw className={cn('h-3 w-3', mcpStatsLoading && 'animate-spin')} />
+                        Load Stats
+                      </Button>
                     </CardContent>
                   </Card>
                 )}

@@ -5,7 +5,7 @@ import {
   AVAILABLE_IMAGE_MODELS,
   getModelConfig,
 } from '../../constants/geminiModels';
-import { supportsOutputConfig, resolveGenerationContext } from '@/utils/canvas/generationContext';
+import { supportsOutputConfig, resolveGenerationContext, resolveProvider } from '@/utils/canvas/generationContext';
 import {
   SEEDREAM_IMAGE_MODELS,
   SEEDREAM_MODEL_CONFIG,
@@ -52,15 +52,6 @@ import { useAvailableProviders } from '@/hooks/useAvailableProviders';
 
 export function getPreferredImageModel(): string {
   return _getPreferredImageModel() || DEFAULT_MODEL;
-}
-
-function resolveProvider(modelId: string): ImageProvider {
-  if (isSeedreamModel(modelId)) return 'seedream';
-  if (isOpenAIImageModel(modelId)) return 'openai';
-  if (isImagenModel(modelId)) return 'imagen';
-  if (isIdeogramModel(modelId)) return 'ideogram';
-  if (isReveModel(modelId)) return 'reve';
-  return 'gemini';
 }
 
 const CONFIG_RESOLVERS: Record<string, (id: string) => { defaultResolution?: string } | undefined> = {
