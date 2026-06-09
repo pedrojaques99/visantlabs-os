@@ -1143,16 +1143,18 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           const toneMaps = TONE_MAPPING_OPTIONS.map((t) => t.id) as ToneMappingType[];
           const bgTypes = ['solid', 'linear', 'radial'] as const;
 
+          const randDepth = r(0.5, 3, 0.1);
+          const maxBevel = Math.max(0.1, randDepth * 0.6);
           set({
             material: pick(materials),
             color: randHex(),
-            depth: r(0.1, 3, 0.1),
+            depth: randDepth,
             objectScale: r(0.5, 2, 0.1),
             fov: pick([35, 50, 65, 75]),
             smoothness: r(0, 1, 0.1),
             bevelEnabled: Math.random() > 0.3,
-            bevelThickness: r(0.1, 2, 0.1),
-            bevelSize: r(0.1, 2, 0.1),
+            bevelThickness: r(0.1, maxBevel, 0.1),
+            bevelSize: r(0.1, maxBevel, 0.1),
             metalness: r(0, 1, 0.05),
             roughness: r(0, 1, 0.05),
             opacity: r(0.5, 1, 0.05),
@@ -1182,6 +1184,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
             envMapIntensity: r(0.5, 3.5, 0.1),
             fresnelStrength: Math.random() > 0.6 ? r(0.2, 0.8, 0.05) : 0,
             fresnelColor: randHex(),
+            resetKey: Date.now(),
           });
         },
       }),
