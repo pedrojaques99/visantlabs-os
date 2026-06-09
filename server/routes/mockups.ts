@@ -973,9 +973,13 @@ router.post(
       let usedSeed: number | undefined;
 
       if (provider === 'imagen') {
+        const hasImagenRefs = finalReferenceImages && finalReferenceImages.length > 0;
         console.log(`${logPrefix} [GENERATION] Using Imagen provider`, {
           model,
           aspectRatio,
+          hasBaseImage: !!finalBaseImage,
+          referenceImagesCount: finalReferenceImages?.length ?? 0,
+          willUseEditImage: hasImagenRefs,
         });
 
         const imagenResult = await generateImagenImage({
@@ -983,6 +987,13 @@ router.post(
           model: model as any,
           aspectRatio: aspectRatio as any,
           apiKey: userApiKey,
+          referenceImages: hasImagenRefs
+            ? finalReferenceImages.map((img: any) => ({
+                base64: img.base64,
+                mimeType: img.mimeType || 'image/png',
+              }))
+            : undefined,
+          subjectDescription: brandGuidelineId ? 'brand logo' : undefined,
         });
         imageBase64 = imagenResult.base64;
       } else if (provider === 'seedream') {
@@ -1000,12 +1011,15 @@ router.post(
           effectiveModel: seedreamModel,
           resolution,
           aspectRatio,
+          hasBaseImage: !!finalBaseImage,
+          referenceImagesCount: finalReferenceImages?.length ?? 0,
           seed: validSeed ?? 'random',
         });
 
         const seedreamResult = await generateSeedreamImage({
           prompt: finalPromptText,
           baseImage: finalBaseImage as any,
+          referenceImages: finalReferenceImages as any,
           model: seedreamModel as any,
           resolution: resolution as any,
           aspectRatio: aspectRatio as any,
@@ -1015,7 +1029,12 @@ router.post(
         imageBase64 = seedreamResult.base64;
         usedSeed = seedreamResult.seed;
       } else if (provider === 'reve' || isReveModel(model)) {
-        // Use REVE API
+        // Use REVE API (text-to-image only — no reference image support)
+        if (finalReferenceImages?.length) {
+          console.warn(
+            `${logPrefix} [GENERATION] REVE is text-to-image only — ${finalReferenceImages.length} reference image(s) will be embedded in prompt context only`
+          );
+        }
         console.log(`${logPrefix} [GENERATION] Using REVE provider`, {
           model,
           aspectRatio,
@@ -1024,6 +1043,7 @@ router.post(
 
         const reveResult = await generateReveImage({
           prompt: finalPromptText,
+          model: model as any,
           aspectRatio: aspectRatio as any,
           apiKey: userApiKey,
           seed: validSeed,
@@ -1031,7 +1051,12 @@ router.post(
         imageBase64 = reveResult.base64;
         usedSeed = reveResult.seed;
       } else if (provider === 'ideogram' || isIdeogramModel(model)) {
-        // Use Ideogram API
+        // Use Ideogram API (text-to-image only — no reference image support)
+        if (finalReferenceImages?.length) {
+          console.warn(
+            `${logPrefix} [GENERATION] Ideogram is text-to-image only — ${finalReferenceImages.length} reference image(s) will be embedded in prompt context only`
+          );
+        }
         const ideogramModel = isIdeogramModel(model) ? model : IDEOGRAM_MODELS.V4;
         console.log(`${logPrefix} [GENERATION] Using Ideogram provider`, {
           model: ideogramModel,

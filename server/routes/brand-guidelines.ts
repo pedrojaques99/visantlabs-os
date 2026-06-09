@@ -1588,18 +1588,35 @@ router.post('/:id/suggest-mockups', apiRateLimiter, authenticate, async (req: Au
     const brandContext = buildBrandContext(guideline as any);
     const count = Math.min(Math.max(req.body.count || 10, 3), 15);
 
-    const systemPrompt = `You are a creative director for a branding agency. Given a brand's identity, strategy, colors, typography and voice, suggest ${count} compelling mockup scene prompts.
+    const systemPrompt = `You are a creative director for a branding agency. Given a brand's identity, suggest ${count} compelling mockup scene prompts.
 
-Each prompt should describe ONLY the physical scene/context — NOT the brand's logo, text, or visual design (those are injected automatically as reference images).
+CRITICAL RULES:
+- Each prompt must describe ONLY the physical scene, object, material, lighting, and camera angle.
+- NEVER mention the brand name, tagline, logo description, text content, typography, or any written words in the prompt. The brand's logo is automatically composited as a reference image — describing it causes the AI to hallucinate garbled text.
+- Focus on PHOTOREALISTIC physical mockups: describe the product/surface where the logo will appear, the environment, lighting setup, and camera perspective.
+- Be specific about materials (matte paper, glossy cardstock, brushed aluminum, kraft paper, frosted glass, embossed leather).
+- Be specific about lighting (soft diffused studio light, warm golden hour, dramatic side lighting, overhead flat lay lighting).
+- Be specific about camera angle (45-degree hero shot, flat lay top-down, shallow depth of field close-up, environmental wide shot).
 
-Vary across these categories: stationery (cards, letterhead), packaging (boxes, bags, bottles), apparel (t-shirts, caps), signage (storefront, banners), digital (phone screen, laptop), environmental (wall mural, vehicle wrap), merchandise (mugs, pens, notebooks), editorial (magazine spread, poster).
+GOOD prompt examples:
+- "Thick matte white business card on dark walnut desk, shallow depth of field, warm studio lighting, 45-degree angle"
+- "Kraft paper shopping bag on concrete floor, soft natural window light from the left, minimal background"
+- "White ceramic coffee mug on marble countertop, steam rising, soft morning light, close-up 3/4 view"
+- "Black fitted t-shirt on wooden hanger against white brick wall, even studio lighting, front view"
 
-Pick categories that match the brand's industry and personality. A luxury brand gets marble + gold foil; a tech startup gets clean gradients + device mockups; a food brand gets rustic surfaces + natural light.
+BAD prompt examples (NEVER do this):
+- "Business card with company name and tagline in elegant font" ← text hallucination
+- "Laptop showing a dashboard with brand colors and logo" ← screen content hallucination
+- "Magazine spread featuring the brand manifesto" ← text content hallucination
 
-Return ONLY a JSON array of objects:
+Vary across these categories matching the brand's industry: stationery, packaging, apparel, signage, digital, environmental, merchandise, editorial.
+
+Match the aesthetic to the brand's personality: luxury → marble/gold foil/embossing; tech → clean minimal/device mockups; organic → kraft/natural textures/wood.
+
+Return ONLY a JSON array:
 [
   {
-    "prompt": "scene description for image generation (English, 1-2 sentences)",
+    "prompt": "photorealistic scene description in English, 1-2 sentences, NO brand name or text",
     "category": "stationery|packaging|apparel|signage|digital|environmental|merchandise|editorial",
     "aspectRatio": "1:1|16:9|9:16|4:3|4:5",
     "label": "short human-readable label (brand's language, max 4 words)"

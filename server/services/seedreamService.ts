@@ -17,6 +17,8 @@ const BYTEPLUS_ENDPOINT = 'https://ark.ap-southeast-1.byteplusapi.com/api/v3/ima
 interface SeedreamGenerateOptions {
   prompt: string;
   baseImage?: UploadedImage;
+  /** Additional reference images (logos, brand assets) appended to image array */
+  referenceImages?: UploadedImage[];
   model?: SeedreamModel;
   resolution?: Resolution;
   aspectRatio?: AspectRatio;
@@ -70,6 +72,7 @@ export async function generateSeedreamImage(
   const {
     prompt,
     baseImage,
+    referenceImages,
     model = SEEDREAM_MODELS.SD_4_5,
     resolution = '2K',
     aspectRatio,
@@ -135,16 +138,29 @@ export async function generateSeedreamImage(
     body.output_format = outputFormat;
   }
 
-  // Reference image(s) — passed as array of base64 data URLs
+  // Image inputs — base image + reference images as array of base64 data URLs
+  const imageArray: string[] = [];
   if (baseImage) {
-    const imageData = await resolveImageBase64(baseImage);
-    body.image = [imageData];
+    imageArray.push(await resolveImageBase64(baseImage));
+  }
+  if (referenceImages?.length && modelConfig.maxRefImages > 0) {
+    const maxRefs = modelConfig.maxRefImages - imageArray.length;
+    for (const ref of referenceImages.slice(0, maxRefs)) {
+      try {
+        imageArray.push(await resolveImageBase64(ref));
+      } catch {
+        // non-critical — skip failed ref images
+      }
+    }
+  }
+  if (imageArray.length > 0) {
+    body.image = imageArray;
   }
 
   console.log(
     `[Seedream] Generating: model=${model}, size=${
       resolvedSize ?? 'adaptive'
-    }, seed=${usedSeed}, keySource=${specificApiKey ? 'user' : 'server'}`
+    }, seed=${usedSeed}, images=${imageArray.length}, keySource=${specificApiKey ? 'user' : 'server'}`
   );
 
   const response = await safeFetch(BYTEPLUS_ENDPOINT, {
