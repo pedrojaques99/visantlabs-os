@@ -929,7 +929,7 @@ Content-Type: application/json
 
   server.tool(
     'mockup-presets',
-    'Browse available mockup presets filtered by design type (e.g. business-card, social-media, packaging).',
+    'Browse proven scene descriptions (presets) by category. Returns prompt templates you can use directly as the prompt parameter in mockup-generate. These are NOT image references — they are scene descriptions.',
     {
       type: z
         .enum([
@@ -1026,19 +1026,26 @@ Content-Type: application/json
 
   server.tool(
     'mockup-generate',
-    'Generate a mockup image placing a design into a realistic scene. Pass the design as referenceImages URL; describe only the scene in the prompt. See server instructions for the full workflow.',
+    `Generate a mockup image placing a design into a realistic scene.
+
+Two workflows:
+A) With referenceImages: upload-image first to get a URL, then pass it in referenceImages array. Prompt describes the SCENE only (surface, lighting, angle), never the design content.
+B) With brandGuidelineId: pass the brand guideline ID and the logo/colors/typography are auto-injected. No upload needed.
+
+Example call: { "prompt": "laptop on marble desk, soft studio lighting, top-down", "referenceImages": ["https://...logo.png"] }
+Example call: { "prompt": "business card on white surface, natural light", "brandGuidelineId": "abc123" }`,
     {
       prompt: z
         .string()
         .min(1)
         .describe(
-          'Scene/environment ONLY — surface, lighting, camera angle, wear, background. Never describe the design content here; pass it via referenceImages instead.'
+          'Scene/environment ONLY — surface material, lighting, camera angle, wear/texture, background color. NEVER describe the design content (text, logo, layout) here — the AI will hallucinate it. Pass the actual design via referenceImages or brandGuidelineId instead.'
         ),
       brandGuidelineId: z
         .string()
         .optional()
         .describe(
-          'Brand guideline ID. Auto-injects logo, colors, typography, voice into generation.'
+          'Brand guideline ID. Auto-injects logo, colors, typography into generation. Alternative to referenceImages — use one or the other.'
         ),
       model: z
         .enum(IMAGE_MODEL_IDS)
@@ -1059,12 +1066,12 @@ Content-Type: application/json
         .string()
         .optional()
         .describe('Hint: business-card, social-media, packaging, apparel, signage, sticker, etc.'),
-      baseImageUrl: z.string().optional().describe('Base image URL for image-to-image generation.'),
+      baseImageUrl: z.string().optional().describe('Base image for img2img transformation (rare). For placing a design in a scene, use referenceImages instead.'),
       referenceImages: z
         .array(z.string())
         .optional()
         .describe(
-          'URLs of the design/artwork to place in the scene. Get URLs via upload-image. Also accepts base64 strings.'
+          'URLs of the design/artwork to place in the scene (e.g. logo, poster, card). Get URLs via upload-image tool first. Also accepts base64 data URIs. This is NOT a preset ID — it must be an image URL.'
         ),
       seed: z.number().int().optional().describe('Random seed for reproducible results.'),
     },
