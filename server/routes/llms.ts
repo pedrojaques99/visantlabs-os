@@ -58,7 +58,7 @@ MCP uses JSON-RPC 2.0 over HTTP. All requests are POST to \`${MCP_ENDPOINT}\`.
 3. Discover tools: \`{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}\`
 4. Call a tool: \`{"jsonrpc":"2.0","method":"tools/call","params":{"name":"account-profile","arguments":{}},"id":3}\`
 
-**Important:** This is NOT a REST API. Do NOT call \`GET /auth/profile\` — use \`tools/call\` with the tool name. Persist the access token (1h lifetime) and session ID across requests. Add \`Accept: application/json\` header if your client cannot read SSE streams.
+**Important:** This is NOT a REST API. Do NOT call \`GET /auth/profile\` — use \`tools/call\` with the tool name. \`"arguments": {}\` is REQUIRED in every tools/call, even for parameterless tools. Persist the access token (1h lifetime) and session ID across requests. Add \`Accept: application/json\` header if your client cannot read SSE streams.
 
 Full reference: ${API_BASE_URL}/llms-full.txt
 

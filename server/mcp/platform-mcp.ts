@@ -300,6 +300,31 @@ You are connected via OAuth 2.1 or API key. If you need to authenticate a new ag
 
 **Fallback (OOB):** Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — the auth code is displayed on screen for the user to copy back to you.
 
+## JSON-RPC Protocol (for custom agents using raw HTTP)
+
+If you are NOT using a native MCP client, all communication is JSON-RPC 2.0 via a single endpoint: \`POST https://api.visantlabs.com/api/mcp\`
+
+**Required headers:**
+- \`Authorization: Bearer <access_token>\`
+- \`Content-Type: application/json\`
+- \`Accept: application/json\` (recommended — returns plain JSON instead of SSE streams)
+- \`Mcp-Session-Id: <id>\` (after initialize — include in all subsequent requests)
+
+**Step 1 — Initialize:**
+\`{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"YourAgent","version":"1.0"}},"id":1}\`
+→ Save the \`mcp-session-id\` response header.
+
+**Step 2 — List tools:**
+\`{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}\`
+
+**Step 3 — Call a tool:**
+\`{"jsonrpc":"2.0","method":"tools/call","params":{"name":"account-profile","arguments":{}},"id":3}\`
+
+**IMPORTANT:**
+- \`"arguments": {}\` is REQUIRED in every \`tools/call\`, even for tools with no parameters. Omitting it causes a validation error.
+- This is NOT a REST API. Do NOT call paths like \`GET /auth/profile\`. Use \`tools/call\` with the tool name.
+- Persist the access token (1h lifetime) and reuse it. Use refresh token when it expires. Do NOT re-authenticate for every call.
+
 ## Tool Workflows (follow these sequences)
 
 ### Mockup from existing design (logo, sticker, poster, card)

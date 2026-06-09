@@ -386,7 +386,7 @@ export function createApp() {
         grant_types_supported: ['authorization_code', 'refresh_token', 'urn:ietf:params:oauth:grant-type:device_code'],
         scopes: [...MCP_SCOPES],
       },
-      protocol_hint: 'MCP uses JSON-RPC 2.0. POST to the endpoint with: (1) {"method":"initialize",...} to start session, (2) {"method":"tools/list",...} to discover tools, (3) {"method":"tools/call","params":{"name":"tool-name","arguments":{...}},...} to call tools. Include Authorization: Bearer <token> and Mcp-Session-Id headers.',
+      protocol_hint: 'MCP uses JSON-RPC 2.0. POST to the endpoint with: (1) {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"...","version":"1.0"}},"id":1} → save mcp-session-id header, (2) {"method":"tools/list","params":{},"id":2}, (3) {"method":"tools/call","params":{"name":"tool-name","arguments":{}},"id":3}. IMPORTANT: "arguments":{} is required even for parameterless tools. Headers: Authorization: Bearer <token>, Content-Type: application/json, Mcp-Session-Id: <id>. Add Accept: application/json for plain JSON responses instead of SSE streams.',
       capabilities: ['tools', 'prompts', 'resources'],
       toolCount: getMcpToolCount(),
       docsUrl: `${API_BASE_URL}/llms-full.txt`,

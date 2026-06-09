@@ -177,7 +177,7 @@ router.get('/.well-known/oauth-protected-resource', (_req, res) => {
     bearer_methods_supported: ['header'],
     resource_documentation: `${BASE_URL}/llms-full.txt`,
     _agent_hint: {
-      message: 'To connect, use OAuth 2.1 (PKCE) or an API key (visant_sk_xxx).',
+      message: 'To connect, use OAuth 2.1 (PKCE), Device Flow, or an API key (visant_sk_xxx).',
       oauth_discovery: `${BASE_URL}/.well-known/oauth-authorization-server`,
       quick_start: [
         `1. Register: POST ${BASE_URL}/oauth/register with {"client_name":"Your Agent","redirect_uris":["http://localhost:3456/callback"],"grant_types":["authorization_code"]}`,
@@ -186,6 +186,8 @@ router.get('/.well-known/oauth-protected-resource', (_req, res) => {
         `4. Exchange code: POST ${BASE_URL}/oauth/token with grant_type=authorization_code&code=<code>&code_verifier=<verifier>&client_id=<id>`,
         '5. Use token: Authorization: Bearer <access_token>',
       ],
+      device_flow: `For agents without localhost (Telegram, CLI): POST ${BASE_URL}/oauth/device/code → show user verification_uri_complete link → poll POST ${BASE_URL}/oauth/token with grant_type=urn:ietf:params:oauth:grant-type:device_code`,
+      json_rpc_protocol: `After auth, POST JSON-RPC to ${MCP_RESOURCE}: (1) {"method":"initialize",...} → save mcp-session-id header, (2) {"method":"tools/list",...}, (3) {"method":"tools/call","params":{"name":"tool-name","arguments":{}}}. arguments:{} is REQUIRED even for parameterless tools. Add Accept: application/json header for plain JSON responses (otherwise SSE).`,
       full_reference: `${BASE_URL}/llms-full.txt`,
     },
   });
