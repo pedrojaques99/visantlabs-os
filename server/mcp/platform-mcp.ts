@@ -52,14 +52,15 @@ function validateColors(colors?: Array<{ hex: string; name: string; role?: strin
 function mergeStrategy(existing: any, patch: any): any {
   if (!patch) return existing;
   const base = existing || {};
-  return {
-    ...base,
-    ...(patch.manifesto !== undefined ? { manifesto: patch.manifesto } : {}),
-    ...(patch.positioning !== undefined ? { positioning: patch.positioning } : {}),
-    ...(patch.archetypes !== undefined ? { archetypes: patch.archetypes } : {}),
-    ...(patch.personas !== undefined ? { personas: patch.personas } : {}),
-    ...(patch.voiceValues !== undefined ? { voiceValues: patch.voiceValues } : {}),
-  };
+  const merged = { ...base };
+  const keys = [
+    'manifesto', 'positioning', 'archetypes', 'personas', 'voiceValues',
+    'coreMessage', 'pillars', 'marketResearch', 'graphicSystem',
+  ];
+  for (const key of keys) {
+    if (patch[key] !== undefined) merged[key] = patch[key];
+  }
+  return merged;
 }
 
 // ═══════════════════════════════════════════
@@ -1893,6 +1894,9 @@ Content-Type: application/json
           donts: z.array(z.string()).optional(),
           imagery: z.string().optional(),
           accessibility: z.string().optional(),
+          person: z.enum(['first', 'second', 'third']).optional(),
+          emojiPolicy: z.enum(['none', 'informal', 'free']).optional(),
+          casingRules: z.array(z.string()).optional(),
         })
         .optional(),
       strategy: z
@@ -1931,12 +1935,45 @@ Content-Type: application/json
               })
             )
             .optional(),
+          coreMessage: z
+            .object({
+              product: z.string(),
+              differential: z.string(),
+              emotionalBond: z.string(),
+            })
+            .optional(),
+          pillars: z
+            .array(z.object({ value: z.string(), description: z.string() }))
+            .optional(),
+          marketResearch: z
+            .object({
+              competitors: z.array(z.string()).optional(),
+              gaps: z.array(z.string()).optional(),
+              opportunities: z.array(z.string()).optional(),
+              notes: z.string().optional(),
+            })
+            .optional(),
+          graphicSystem: z
+            .object({
+              patterns: z.array(z.string()).optional(),
+              grafisms: z.array(z.string()).optional(),
+              imageRules: z.array(z.string()).optional(),
+              editorialGrid: z.string().optional(),
+            })
+            .optional(),
         })
         .optional(),
       tokens: z
         .object({
           spacing: z.record(z.string(), z.number()).optional(),
           radius: z.record(z.string(), z.number()).optional(),
+          shadows: z
+            .record(
+              z.string(),
+              z.object({ x: z.number(), y: z.number(), blur: z.number(), spread: z.number(), color: z.string(), opacity: z.number() })
+            )
+            .optional(),
+          components: z.record(z.string(), z.any()).optional(),
         })
         .optional(),
     },
@@ -2019,6 +2056,9 @@ Content-Type: application/json
           donts: z.array(z.string()).optional(),
           imagery: z.string().optional(),
           accessibility: z.string().optional(),
+          person: z.enum(['first', 'second', 'third']).optional().describe('Point of view for brand copy.'),
+          emojiPolicy: z.enum(['none', 'informal', 'free']).optional().describe('When emojis are acceptable.'),
+          casingRules: z.array(z.string()).optional().describe('Capitalization rules, e.g. "Always capitalize product name"'),
         })
         .optional(),
       strategy: z
@@ -2057,18 +2097,164 @@ Content-Type: application/json
               })
             )
             .optional(),
+          coreMessage: z
+            .object({
+              product: z.string(),
+              differential: z.string(),
+              emotionalBond: z.string(),
+            })
+            .optional()
+            .describe('Core brand message: what the product is, how it differs, emotional connection.'),
+          pillars: z
+            .array(
+              z.object({
+                value: z.string(),
+                description: z.string(),
+              })
+            )
+            .optional()
+            .describe('Brand pillars / core values.'),
+          marketResearch: z
+            .object({
+              competitors: z.array(z.string()).optional(),
+              gaps: z.array(z.string()).optional(),
+              opportunities: z.array(z.string()).optional(),
+              notes: z.string().optional(),
+            })
+            .optional()
+            .describe('Competitive landscape and market opportunities.'),
+          graphicSystem: z
+            .object({
+              patterns: z.array(z.string()).optional(),
+              grafisms: z.array(z.string()).optional(),
+              imageRules: z.array(z.string()).optional(),
+              editorialGrid: z.string().optional(),
+            })
+            .optional()
+            .describe('Graphic system rules: patterns, grafisms, image guidelines, editorial grid.'),
         })
         .optional(),
       tokens: z
         .object({
           spacing: z.record(z.string(), z.number()).optional(),
           radius: z.record(z.string(), z.number()).optional(),
+          shadows: z
+            .record(
+              z.string(),
+              z.object({
+                x: z.number(),
+                y: z.number(),
+                blur: z.number(),
+                spread: z.number(),
+                color: z.string(),
+                opacity: z.number(),
+              })
+            )
+            .optional()
+            .describe('Named shadow tokens, e.g. { "sm": { x:0, y:1, blur:2, ... } }'),
+          components: z
+            .record(z.string(), z.any())
+            .optional()
+            .describe('Component-level design tokens as key-value pairs.'),
         })
         .optional(),
       tags: z
         .record(z.string(), z.array(z.string()))
         .optional()
         .describe('Industry/keyword tags by category, e.g. { "style": ["premium", "minimal"] }'),
+      gradients: z
+        .array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            type: z.enum(['linear', 'radial']),
+            angle: z.number(),
+            stops: z.array(z.object({ color: z.string(), position: z.number() })),
+            usage: z.enum(['hero', 'decorative', 'fill', 'overlay']),
+            css: z.string().optional(),
+          })
+        )
+        .optional()
+        .describe('Replaces the full gradients array.'),
+      shadows: z
+        .array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            x: z.number(),
+            y: z.number(),
+            blur: z.number(),
+            spread: z.number(),
+            color: z.string(),
+            opacity: z.number(),
+            type: z.enum(['outer', 'inner', 'glow']),
+            css: z.string().optional(),
+          })
+        )
+        .optional()
+        .describe('Replaces the full shadows array.'),
+      motion: z
+        .object({
+          easing: z.string().optional(),
+          durations: z
+            .object({
+              fast: z.number(),
+              medium: z.number(),
+              slow: z.number(),
+            })
+            .optional(),
+          philosophy: z.enum(['minimal', 'moderate', 'expressive']).optional(),
+          respectsReducedMotion: z.boolean().optional(),
+        })
+        .optional()
+        .describe('Motion/animation design tokens. Shallow-merged with existing.'),
+      borders: z
+        .array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            width: z.number(),
+            style: z.enum(['solid', 'dashed', 'dotted']),
+            color: z.string(),
+            opacity: z.number(),
+            role: z.enum(['default', 'emphasis', 'scaffold', 'divider']),
+            css: z.string().optional(),
+          })
+        )
+        .optional()
+        .describe('Replaces the full borders array.'),
+      colorThemes: z
+        .array(
+          z.object({
+            id: z.string().optional(),
+            name: z.string(),
+            colors: z.array(
+              z.object({
+                hex: z.string(),
+                name: z.string(),
+                role: z.string().optional(),
+              })
+            ),
+          })
+        )
+        .optional()
+        .describe('Replaces the full color themes array.'),
+      activeSections: z
+        .array(z.string())
+        .optional()
+        .describe('Which guideline sections are visible/active in the UI.'),
+      orderedBlocks: z
+        .array(z.string())
+        .optional()
+        .describe('Custom ordering of guideline blocks in the UI.'),
+      validation: z
+        .record(z.string(), z.enum(['pending', 'approved', 'needs_work']))
+        .optional()
+        .describe('Per-section validation state, e.g. { "colors": "approved", "typography": "needs_work" }'),
+      folder: z
+        .string()
+        .optional()
+        .describe('Folder name for organizing guidelines.'),
     },
     { title: 'Update Brand Guideline', destructiveHint: false },
     async ({ id, ...patch }) => {
@@ -2085,34 +2271,69 @@ Content-Type: application/json
         const quota = await getQuotaMeta(currentUserId);
         const updateData: Record<string, any> = {};
 
-        if (patch.identity !== undefined) {
-          updateData.identity = { ...((existing.identity as any) || {}), ...patch.identity };
+        // Shallow-merge fields (preserve existing sub-keys not in patch)
+        for (const key of ['identity', 'guidelines', 'motion'] as const) {
+          if (patch[key] !== undefined) {
+            updateData[key] = { ...((existing as any)[key] || {}), ...patch[key] };
+          }
         }
-        if (patch.colors !== undefined) updateData.colors = patch.colors;
-        if (patch.typography !== undefined) updateData.typography = patch.typography;
-        if (patch.guidelines !== undefined) {
-          updateData.guidelines = { ...((existing.guidelines as any) || {}), ...patch.guidelines };
-        }
+
+        // Deep merge: each sub-field replaced independently, others preserved
         if (patch.strategy !== undefined) {
-          // Deep merge: each sub-field replaced independently, others preserved
           updateData.strategy = mergeStrategy(existing.strategy, patch.strategy);
         }
+
+        // Nested merge for tokens (each token category independent)
         if (patch.tokens !== undefined) {
           const existingTokens = (existing.tokens as any) || {};
-          updateData.tokens = {
-            ...existingTokens,
-            ...(patch.tokens.spacing !== undefined ? { spacing: patch.tokens.spacing } : {}),
-            ...(patch.tokens.radius !== undefined ? { radius: patch.tokens.radius } : {}),
-          };
+          const tokenPatch: Record<string, any> = {};
+          for (const [k, v] of Object.entries(patch.tokens)) {
+            if (v !== undefined) tokenPatch[k] = v;
+          }
+          updateData.tokens = { ...existingTokens, ...tokenPatch };
         }
-        if (patch.tags !== undefined) updateData.tags = patch.tags;
+
+        // Full-replacement fields (array or scalar, no merge needed)
+        const replaceFields = [
+          'colors', 'typography', 'tags', 'gradients', 'shadows',
+          'borders', 'colorThemes', 'activeSections', 'orderedBlocks',
+          'validation', 'folder',
+        ] as const;
+        for (const key of replaceFields) {
+          if ((patch as any)[key] !== undefined) updateData[key] = (patch as any)[key];
+        }
 
         if (!Object.keys(updateData).length) return ERR.validation('No fields provided to update');
+
+        // Recalculate completeness
+        const { calculateCompleteness } = await import('../types/brandGuideline.js');
+        const fullData = { ...existing, ...updateData } as any;
+        const completeness = calculateCompleteness(fullData);
+        const extraction = ((updateData.extraction || existing.extraction || { sources: [] }) as any);
+        extraction.completeness = completeness;
+        updateData.extraction = extraction;
 
         const updated = await prisma.brandGuideline.update({
           where: { id: existing.id },
           data: updateData,
         });
+
+        // Invalidate cached brand context
+        try {
+          const { redisClient } = await import('../lib/redis.js');
+          const { CacheInvalidation } = await import('../lib/cache-utils.js');
+          const keysToInvalidate = CacheInvalidation.onBrandEdit(updated.id);
+          for (const pattern of keysToInvalidate) {
+            const matches = await redisClient.keys(pattern);
+            if (matches.length > 0) await redisClient.del(...matches);
+          }
+        } catch { /* Redis down — graceful degradation */ }
+
+        // Dispatch webhook
+        try {
+          const { dispatchWebhookEvent } = await import('../utils/webhookDispatch.js');
+          dispatchWebhookEvent(currentUserId, 'brand.updated', { id: updated.id });
+        } catch { /* webhook dispatch is best-effort */ }
 
         return jsonResponse({
           id: updated.id,
