@@ -17,7 +17,7 @@
     },
     {
       "source": "/docs",
-      "destination": "https://api.visantlabs.com/api/docs/full"
+      "destination": "https://api.visantlabs.com/api/docs/"
     },
     {
       "source": "/(.*)",

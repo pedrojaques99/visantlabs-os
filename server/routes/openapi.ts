@@ -54,6 +54,6 @@ const swaggerOptions: swaggerUi.SwaggerUiOptions = {
   },
 };
 
-router.use('/docs', swaggerUi.serve, swaggerUi.setup(spec, swaggerOptions));
+router.use('/swagger', swaggerUi.serve, swaggerUi.setup(spec, swaggerOptions));
 
 export default router;
