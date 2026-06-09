@@ -222,12 +222,13 @@ router.get('/oauth/authorize', async (req, res) => {
     scope,
   } = req.query as Record<string, string>;
 
-  // Validate required params — report exactly which ones are missing
+  // Validate required params — state is optional for OOB (no redirect to CSRF-protect)
+  const isOobRequest = redirect_uri === OOB_REDIRECT_URI;
   const missingParams = [
     !client_id && 'client_id',
     !redirect_uri && 'redirect_uri',
     !code_challenge && 'code_challenge',
-    !state && 'state',
+    !state && !isOobRequest && 'state',
   ].filter(Boolean);
   if (missingParams.length > 0) {
     return res
@@ -298,7 +299,7 @@ router.get('/oauth/authorize', async (req, res) => {
           redirectUri: redirect_uri,
           codeChallenge: code_challenge,
           codeChallengeMethod: code_challenge_method || 'S256',
-          state,
+          state: state || '',
           resource: resource || MCP_RESOURCE,
           responseType: response_type || 'code',
           scopes: resolvedScopes.join(' '),
@@ -314,7 +315,7 @@ router.get('/oauth/authorize', async (req, res) => {
       redirectUri: redirect_uri,
       codeChallenge: code_challenge,
       codeChallengeMethod: code_challenge_method || 'S256',
-      state,
+      state: state || '',
       resource: resource || MCP_RESOURCE,
       scopes: resolvedScopes.join(' '),
       token: rawToken,
@@ -341,11 +342,11 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     action,
   } = req.body as Record<string, string>;
 
-  if (!client_id || !redirect_uri || !code_challenge || !state || !action) {
+  const isOob = redirect_uri === OOB_REDIRECT_URI;
+
+  if (!client_id || !redirect_uri || !code_challenge || (!state && !isOob) || !action) {
     return res.status(400).send('Missing required parameters');
   }
-
-  const isOob = redirect_uri === OOB_REDIRECT_URI;
 
   if (action === 'deny') {
     if (isOob) {
