@@ -276,6 +276,22 @@ export function createPlatformMcpServer(): McpServer {
       },
       instructions: `Visant Labs MCP — AI design platform for mockups, branding, creative studio, and image generation.
 
+## Authentication
+
+You are connected via OAuth 2.1 or API key. If you need to authenticate a new agent or check your own access:
+
+- **OAuth discovery:** \`GET https://api.visantlabs.com/.well-known/oauth-authorization-server\`
+- **Scopes:** \`read\` (list/get), \`write\` (create/update), \`generate\` (AI generation — costs credits)
+- **Token lifetime:** access token = 1 hour (JWT), refresh token = 30 days (rotated on use)
+- **Manage connected apps:** use \`oauth-authorized-apps\` tool to list, \`oauth-revoke-app\` to revoke
+
+### For custom agents connecting via OAuth:
+1. Register: \`POST /oauth/register\` → get \`client_id\`
+2. PKCE: generate \`code_verifier\` (random 43+ chars) → \`code_challenge\` = base64url(sha256(verifier))
+3. Authorize: open \`/oauth/authorize?client_id=...&redirect_uri=...&code_challenge=...&code_challenge_method=S256&state=...&response_type=code&scope=read+write+generate\` in user's browser
+4. Exchange: \`POST /oauth/token\` with \`grant_type=authorization_code&code=...&code_verifier=...&client_id=...\`
+5. Refresh: \`POST /oauth/token\` with \`grant_type=refresh_token&refresh_token=...\`
+
 ## Tool Workflows (follow these sequences)
 
 ### Mockup from existing design (logo, sticker, poster, card)
@@ -372,7 +388,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'campaign-generate', 'playground-generate',
   ]);
 
-  const WRITE_PATTERN = /-(create|update|delete|remove|save|duplicate|invite|share|upload|restore|fork|publish|link|sync|ingest|render|iterate|like|quickstart)($|-)/;
+  const WRITE_PATTERN = /-(create|update|delete|remove|save|duplicate|invite|share|upload|restore|fork|publish|link|sync|ingest|render|iterate|like|quickstart|revoke)($|-)/;
   const WRITE_PREFIXES = /^(auth-|pdf-|images-to-)/;
   const READ_OVERRIDES = new Set([
     'api-key-list', 'brand-guidelines-compile', 'brand-guidelines-export',
@@ -550,6 +566,140 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
         return ERR.internal(err.message);
       }
     }
+  );
+
+  // ═══════════════════════════════════════════
+  // OAuth — Connected Apps Management
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'oauth-authorized-apps',
+    'List all AI agents and applications authorized to access the user\'s account via OAuth. Shows client name, scopes granted, and when access was granted.',
+    {},
+    { title: 'List Connected OAuth Apps', readOnlyHint: true },
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/oauth/authorized-apps`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = (await resp.json()) as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Failed to list apps (${resp.status})`);
+        return jsonResponse(result);
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'oauth-revoke-app',
+    'Revoke OAuth access for a connected app. The app will no longer be able to act on behalf of the user. Requires confirm: true.',
+    {
+      appId: z.string().describe('The ID of the authorized app grant to revoke (from oauth-authorized-apps).'),
+      confirm: z.boolean().describe('Must be true to confirm revocation.'),
+    },
+    { title: 'Revoke Connected App', destructiveHint: true },
+    async ({ appId, confirm }) => {
+      if (!confirm) return ERR.validation('Set confirm: true to revoke access.');
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/oauth/authorized-apps/${appId}`, {
+          method: 'DELETE',
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = (await resp.json()) as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Failed to revoke (${resp.status})`);
+        return jsonResponse(result);
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // Prompts — OAuth setup guide
+  // ═══════════════════════════════════════════
+
+  server.prompt(
+    'oauth-setup',
+    'Step-by-step guide for connecting an AI agent to Visant Labs via OAuth 2.1 + PKCE',
+    async () => ({
+      messages: [{
+        role: 'user' as const,
+        content: {
+          type: 'text' as const,
+          text: `# OAuth 2.1 Setup Guide for AI Agents
+
+## Step 1 — Register a Dynamic Client
+\`\`\`
+POST https://api.visantlabs.com/oauth/register
+Content-Type: application/json
+
+{
+  "client_name": "My Agent",
+  "redirect_uris": ["http://localhost:3000/callback"],
+  "grant_types": ["authorization_code"],
+  "token_endpoint_auth_method": "none"
+}
+\`\`\`
+Save the \`client_id\` from the response.
+
+## Step 2 — Generate PKCE Challenge
+Generate a random \`code_verifier\` (43–128 chars, base64url).
+Compute \`code_challenge = BASE64URL(SHA256(code_verifier))\`.
+
+## Step 3 — Authorize
+Open in browser:
+\`\`\`
+https://api.visantlabs.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=http://localhost:3000/callback&code_challenge=YOUR_CHALLENGE&code_challenge_method=S256&state=RANDOM_STATE&response_type=code&scope=read+write+generate
+\`\`\`
+User signs in and approves → redirected to callback with \`?code=AUTH_CODE&state=STATE\`.
+
+## Step 4 — Exchange Code for Token
+\`\`\`
+POST https://api.visantlabs.com/oauth/token
+Content-Type: application/json
+
+{
+  "grant_type": "authorization_code",
+  "code": "AUTH_CODE",
+  "code_verifier": "YOUR_VERIFIER",
+  "client_id": "YOUR_CLIENT_ID",
+  "redirect_uri": "http://localhost:3000/callback"
+}
+\`\`\`
+Returns \`access_token\` (JWT, 1h) and \`refresh_token\` (90d).
+
+## Step 5 — Use the Token
+\`\`\`
+Authorization: Bearer <access_token>
+\`\`\`
+
+## Step 6 — Refresh When Expired
+\`\`\`
+POST https://api.visantlabs.com/oauth/token
+Content-Type: application/json
+
+{
+  "grant_type": "refresh_token",
+  "refresh_token": "YOUR_REFRESH_TOKEN",
+  "client_id": "YOUR_CLIENT_ID"
+}
+\`\`\`
+
+## Available Scopes
+- \`read\` — List and get resources
+- \`write\` — Create and modify resources
+- \`generate\` — AI generation (costs credits)
+
+## Discovery
+\`GET https://api.visantlabs.com/.well-known/oauth-authorization-server\``,
+        },
+      }],
+    })
   );
 
   // ═══════════════════════════════════════════

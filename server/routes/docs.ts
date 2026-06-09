@@ -159,7 +159,19 @@ function getPlatformSpec() {
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
-router.get('/', (_req, res) => res.redirect('/docs'));
+/**
+ * GET /docs/ — always serves pre-rendered HTML documentation.
+ * Vercel rewrites direct /docs visits here; in-app navigation uses the React SPA route.
+ */
+router.get('/', (_req, res) => {
+  try {
+    const html = renderFullDocsHTML(VERSION, SERVER_URL);
+    sendCachedHTML(res, html, 3600);
+  } catch (err) {
+    handleDocsError(err, res);
+  }
+});
+
 router.get('/api', (_req, res) => res.redirect('/docs'));
 router.get('/plugin', (_req, res) => res.redirect('/docs'));
 router.get('/plugin/mcp', (_req, res) => res.redirect('/docs'));

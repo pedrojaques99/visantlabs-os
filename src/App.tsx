@@ -131,6 +131,9 @@ const DocsPage = lazyWithRetry(() =>
 const ApiKeysPage = lazyWithRetry(() =>
   import('./pages/ApiKeysPage').then((m) => ({ default: m.ApiKeysPage }))
 );
+const ConnectedAppsPage = lazyWithRetry(() =>
+  import('./pages/ConnectedAppsPage').then((m) => ({ default: m.ConnectedAppsPage }))
+);
 const UsageDashboardPage = lazyWithRetry(() =>
   import('./pages/UsageDashboardPage').then((m) => ({ default: m.UsageDashboardPage }))
 );
@@ -338,6 +341,7 @@ const App: React.FC = () => {
                   <Route path="/docs" element={<DocsPage />} />
                   <Route path="/developer" element={<DeveloperPortalPage />} />
                   <Route path="/settings/api-keys" element={<ApiKeysPage />} />
+                  <Route path="/settings/connected-apps" element={<ConnectedAppsPage />} />
                   <Route path="/developer/usage" element={<UsageDashboardPage />} />
                   <Route path="/developer/getting-started" element={<GettingStartedPage />} />
                   <Route path="/connect/:token" element={<ConnectPage />} />

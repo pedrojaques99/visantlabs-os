@@ -64,6 +64,7 @@ export async function browserOAuthFlow(): Promise<string> {
     code_challenge_method: 'S256',
     state,
     response_type: 'code',
+    scope: 'read write generate',
   });
   const authUrl = `${OAUTH_BASE}/oauth/authorize?${params}`;
 

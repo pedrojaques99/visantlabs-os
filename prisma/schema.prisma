@@ -601,6 +601,7 @@ model OAuthClient {
   redirectUris String[]
   grantTypes   String[]
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("oauth_clients")
 }
@@ -631,6 +632,8 @@ model OAuthRefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@index([clientId])
+  @@index([expiresAt])
   @@map("oauth_refresh_tokens")
 }
 

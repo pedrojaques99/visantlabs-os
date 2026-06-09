@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Key, BarChart2, BookOpen, FileText, ArrowRight } from 'lucide-react';
+import { Key, BarChart2, BookOpen, FileText, ArrowRight, Unplug } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { useLayout } from '@/hooks/useLayout';
 import { SEO } from '../components/SEO';
@@ -25,6 +25,16 @@ const PORTAL_CARDS = [
     accent: 'text-brand-cyan',
     bg: 'bg-brand-cyan/5 hover:bg-brand-cyan/10',
     border: 'border-brand-cyan/20 hover:border-neutral-700',
+  },
+  {
+    title: 'Connected Apps',
+    description: 'Manage AI agents authorized via OAuth to access your account.',
+    icon: Unplug,
+    href: '/settings/connected-apps',
+    external: false,
+    accent: 'text-emerald-400',
+    bg: 'bg-emerald-500/5 hover:bg-emerald-500/10',
+    border: 'border-emerald-500/20 hover:border-emerald-500/40',
   },
   {
     title: 'Usage Analytics',

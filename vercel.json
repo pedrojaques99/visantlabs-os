@@ -8,8 +8,16 @@
       "destination": "https://api.visantlabs.com/api/$1"
     },
     {
+      "source": "/oauth/(.*)",
+      "destination": "https://api.visantlabs.com/oauth/$1"
+    },
+    {
       "source": "/docs/reference",
       "destination": "https://api.visantlabs.com/api/docs/full"
+    },
+    {
+      "source": "/docs",
+      "destination": "https://api.visantlabs.com/api/docs/"
     },
     {
       "source": "/(.*)",

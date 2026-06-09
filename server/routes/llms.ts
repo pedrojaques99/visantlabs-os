@@ -48,6 +48,23 @@ router.get('/llms.txt', (_req, res) => {
 9. **Budget** — AI-powered project budget estimation.
 10. **Campaign** — Batch-generate creatives for a full campaign.
 
+## Authentication
+
+**Option A — OAuth 2.1 (recommended for AI agents)**
+Full Authorization Code + PKCE flow. No API key needed — the user authorizes you via browser.
+
+1. Register: \`POST ${API_BASE_URL}/oauth/register\` with \`{"client_name": "Your Agent", "redirect_uris": ["http://localhost:..."], "grant_types": ["authorization_code"]}\`
+2. Authorize: open \`${API_BASE_URL}/oauth/authorize?client_id=...&redirect_uri=...&code_challenge=...&code_challenge_method=S256&state=...&response_type=code&scope=read+write+generate\` in the user's browser
+3. Exchange: \`POST ${API_BASE_URL}/oauth/token\` with \`grant_type=authorization_code&code=...&code_verifier=...&client_id=...\`
+4. Refresh: \`POST ${API_BASE_URL}/oauth/token\` with \`grant_type=refresh_token&refresh_token=...\`
+
+Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
+Scopes: \`read\`, \`write\`, \`generate\`
+
+**Option B — API Key (manual)**
+Header: \`Authorization: Bearer visant_sk_xxx\`
+Create keys at: ${FRONTEND_BASE_URL}/settings/api-keys
+
 ## Public endpoint (no auth)
 
 \`\`\`
@@ -73,12 +90,56 @@ router.get('/llms-full.txt', (_req, res) => {
 
 ## Authentication
 
-**Option A — OAuth 2.1 (recommended for Claude Connectors)**
-Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
-Flow: Authorization Code + PKCE (S256) + Dynamic Client Registration. Refresh tokens supported.
-Scopes: \`read\`, \`write\`, \`generate\`.
+**Option A — OAuth 2.1 (recommended for AI agents and Claude Connectors)**
+Full Authorization Code + PKCE (S256) + Dynamic Client Registration. This is the recommended flow for AI agents — no API key needed.
 
-**Option B — API Key**
+Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
+Scopes: \`read\`, \`write\`, \`generate\`
+
+### Step-by-step OAuth flow for agents:
+
+1. **Register your client** (one-time):
+   \`\`\`
+   POST ${API_BASE_URL}/oauth/register
+   Content-Type: application/json
+
+   {"client_name": "Your Agent Name", "redirect_uris": ["http://localhost:3456/callback"], "grant_types": ["authorization_code"]}
+   \`\`\`
+   Response: \`{"client_id": "uuid-here", ...}\`
+
+2. **Generate PKCE pair** (per auth attempt):
+   - Create a random \`code_verifier\` (43-128 chars, base64url)
+   - Compute \`code_challenge\` = base64url(sha256(code_verifier))
+
+3. **Open authorization URL** in user's browser:
+   \`\`\`
+   ${API_BASE_URL}/oauth/authorize?client_id=<client_id>&redirect_uri=<redirect_uri>&code_challenge=<code_challenge>&code_challenge_method=S256&state=<random>&response_type=code&scope=read+write+generate
+   \`\`\`
+   The user sees a login page (if needed) then a consent screen. After approval, the browser redirects to your \`redirect_uri?code=<auth_code>&state=<state>\`.
+
+4. **Exchange code for tokens**:
+   \`\`\`
+   POST ${API_BASE_URL}/oauth/token
+   Content-Type: application/x-www-form-urlencoded
+
+   grant_type=authorization_code&code=<auth_code>&code_verifier=<code_verifier>&client_id=<client_id>&redirect_uri=<redirect_uri>
+   \`\`\`
+   Response: \`{"access_token": "jwt...", "token_type": "Bearer", "expires_in": 3600, "refresh_token": "hex...", "scope": "read write generate"}\`
+
+5. **Use the access token**:
+   \`\`\`
+   Authorization: Bearer <access_token>
+   \`\`\`
+
+6. **Refresh when expired**:
+   \`\`\`
+   POST ${API_BASE_URL}/oauth/token
+   Content-Type: application/x-www-form-urlencoded
+
+   grant_type=refresh_token&refresh_token=<refresh_token>&client_id=<client_id>
+   \`\`\`
+
+**Option B — API Key (manual, for scripts)**
 Header: \`Authorization: Bearer visant_sk_xxx\`
 Create keys at: ${FRONTEND_BASE_URL}/settings/api-keys
 
@@ -256,6 +317,11 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 - \`payments-usage\` (R) — Usage breakdown
 - \`payments-plans\` (R) — Available plans and pricing
 - \`settings-byok-status\` (R) — BYOK (Bring Your Own Key) status
+
+### OAuth Management
+
+- \`oauth-authorized-apps\` (R) — List AI agents/apps authorized via OAuth
+- \`oauth-revoke-app\` (D) — Revoke OAuth access for a connected app (requires \`confirm: true\`)
 
 ---
 

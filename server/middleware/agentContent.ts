@@ -8,6 +8,15 @@ const AI_USER_AGENTS = [
   'Google-Extended',
   'ChatGPT-User',
   'CCBot',
+  'Googlebot',
+  'bingbot',
+  'Applebot',
+  'facebookexternalhit',
+  'Twitterbot',
+  'Slurp',
+  'DuckDuckBot',
+  'Baiduspider',
+  'YandexBot',
 ];
 
 /**

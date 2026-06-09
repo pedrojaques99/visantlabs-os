@@ -247,8 +247,8 @@ router.get('/oauth/authorize', async (req, res) => {
 
     if (rawToken) {
       try {
-        const decoded = jwt.verify(rawToken, JWT_SECRET) as { userId: string };
-        userId = decoded.userId;
+        const decoded = jwt.verify(rawToken, JWT_SECRET) as { userId?: string; sub?: string };
+        userId = decoded.userId || decoded.sub || null;
       } catch {
         // invalid token, treat as not logged in
       }
@@ -262,22 +262,21 @@ router.get('/oauth/authorize', async (req, res) => {
     const resolvedScopes = requestedScopes.length > 0 ? requestedScopes : [...MCP_SCOPES];
 
     if (!userId) {
-      // Redirect to frontend /login with redirect_back to come back after auth
-      const params = new URLSearchParams({
-        client_id,
-        redirect_uri,
-        code_challenge,
-        code_challenge_method: code_challenge_method || 'S256',
-        state,
-        response_type: response_type || 'code',
-        ...(resource ? { resource } : {}),
-        scope: resolvedScopes.join(' '),
-      });
-      const frontendUrl =
-        process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
-      const authorizeUrl = `${API_BASE_URL}/oauth/authorize?${params.toString()}`;
-      const loginUrl = `${frontendUrl}/login?redirect_back=${encodeURIComponent(authorizeUrl)}`;
-      return res.redirect(loginUrl);
+      // Serve standalone login page (no SPA dependency) so browser-based OAuth flows
+      // and agents that open a browser window can complete authentication.
+      return res.send(
+        buildLoginPage({
+          clientName: oauthClient.clientName,
+          clientId: client_id,
+          redirectUri: redirect_uri,
+          codeChallenge: code_challenge,
+          codeChallengeMethod: code_challenge_method || 'S256',
+          state,
+          resource: resource || MCP_RESOURCE,
+          responseType: response_type || 'code',
+          scopes: resolvedScopes.join(' '),
+        })
+      );
     }
 
     // User is logged in — show consent page
@@ -347,8 +346,8 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     let userId: string | null = null;
     if (rawToken) {
       try {
-        const decoded = jwt.verify(rawToken, JWT_SECRET) as { userId: string };
-        userId = decoded.userId;
+        const decoded = jwt.verify(rawToken, JWT_SECRET) as { userId?: string; sub?: string };
+        userId = decoded.userId || decoded.sub || null;
       } catch {
         // fall through
       }
@@ -610,6 +609,7 @@ interface LoginPageParams {
   state: string;
   resource: string;
   responseType: string;
+  scopes: string;
 }
 
 function oauthPageStyles(): string {
@@ -700,6 +700,7 @@ function buildLoginPage(p: LoginPageParams): string {
     state: p.state,
     response_type: p.responseType,
     resource: p.resource,
+    scope: p.scopes,
   }).toString();
 
   return `<!DOCTYPE html>
@@ -744,7 +745,7 @@ function buildLoginPage(p: LoginPageParams): string {
       btn.disabled = true;
       btn.textContent = 'Signing in…';
       try {
-        const res = await fetch('${esc(apiBase)}/api/auth/login', {
+        const res = await fetch('${esc(apiBase)}/api/auth/signin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -826,11 +827,11 @@ function buildConsentPage(p: ConsentPageParams): string {
     <div class="divider"></div>
 
     <div class="actions">
-      <form method="POST" action="/oauth/authorize" style="flex:1; display:contents;">
+      <form method="POST" action="${BASE_URL}/oauth/authorize" style="flex:1; display:contents;">
         ${hiddenFields('deny')}
         <button type="submit" class="btn btn-deny">Deny</button>
       </form>
-      <form method="POST" action="/oauth/authorize" style="flex:1; display:contents;">
+      <form method="POST" action="${BASE_URL}/oauth/authorize" style="flex:1; display:contents;">
         ${hiddenFields('approve')}
         <button type="submit" class="btn btn-approve">Approve</button>
       </form>
@@ -839,5 +840,89 @@ function buildConsentPage(p: ConsentPageParams): string {
 </body>
 </html>`;
 }
+
+// ── Connected Apps (authorized OAuth grants) ─────────────────────────────────
+
+router.get('/oauth/authorized-apps', async (req, res) => {
+  let userId: string | null = null;
+
+  // Internal MCP calls pass user ID directly
+  const mcpUserId = req.headers['x-mcp-user-id'] as string | undefined;
+  if (mcpUserId) {
+    userId = mcpUserId;
+  } else {
+    const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '');
+    if (!bearer) return res.status(401).json({ error: 'unauthorized' });
+    try {
+      const decoded = jwt.verify(bearer, JWT_SECRET) as { userId?: string; sub?: string };
+      userId = decoded.userId || decoded.sub || null;
+    } catch {
+      return res.status(401).json({ error: 'invalid_token' });
+    }
+  }
+  if (!userId) return res.status(401).json({ error: 'unauthorized' });
+
+  try {
+    const tokens = await prisma.oAuthRefreshToken.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const clientIds = [...new Set(tokens.map((t) => t.clientId))];
+    const clients = await prisma.oAuthClient.findMany({
+      where: { clientId: { in: clientIds } },
+    });
+    const clientMap = new Map(clients.map((c) => [c.clientId, c]));
+
+    const apps = tokens.map((t) => ({
+      id: t.id,
+      clientId: t.clientId,
+      clientName: clientMap.get(t.clientId)?.clientName || t.clientId,
+      scopes: t.scopes,
+      createdAt: t.createdAt,
+      expiresAt: t.expiresAt,
+    }));
+
+    return res.json({ apps });
+  } catch (err) {
+    console.error('[OAuth] GET /oauth/authorized-apps error', err);
+    return res.status(500).json({ error: 'server_error' });
+  }
+});
+
+router.delete('/oauth/authorized-apps/:id', async (req, res) => {
+  let userId: string | null = null;
+
+  const mcpUserId = req.headers['x-mcp-user-id'] as string | undefined;
+  if (mcpUserId) {
+    userId = mcpUserId;
+  } else {
+    const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '');
+    if (!bearer) return res.status(401).json({ error: 'unauthorized' });
+    try {
+      const decoded = jwt.verify(bearer, JWT_SECRET) as { userId?: string; sub?: string };
+      userId = decoded.userId || decoded.sub || null;
+    } catch {
+      return res.status(401).json({ error: 'invalid_token' });
+    }
+  }
+  if (!userId) return res.status(401).json({ error: 'unauthorized' });
+
+  const tokenId = req.params.id;
+  if (!tokenId || !/^[a-f\d]{24}$/i.test(tokenId)) {
+    return res.status(400).json({ error: 'invalid_id' });
+  }
+
+  try {
+    const deleted = await prisma.oAuthRefreshToken.deleteMany({
+      where: { id: tokenId, userId },
+    });
+    if (deleted.count === 0) return res.status(404).json({ error: 'not_found' });
+    return res.json({ message: 'Access revoked' });
+  } catch (err) {
+    console.error('[OAuth] DELETE /oauth/authorized-apps error', err);
+    return res.status(500).json({ error: 'server_error' });
+  }
+});
 
 export default router;

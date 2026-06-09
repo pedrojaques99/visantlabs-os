@@ -406,6 +406,25 @@ export const GettingStartedPage: React.FC = () => {
                         Create an API key <ExternalLink size={12} />
                       </Link>
                     </div>
+                    <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4">
+                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                        OAuth 2.1 (for AI agents &amp; third-party apps)
+                      </p>
+                      <p className="text-neutral-400 text-sm leading-relaxed">
+                        Agents and apps can authenticate via{' '}
+                        <code className="text-brand-cyan bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">
+                          OAuth 2.1 + PKCE
+                        </code>{' '}
+                        with dynamic client registration. See{' '}
+                        <Link
+                          to="/developer"
+                          className="text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+                        >
+                          Developer Portal
+                        </Link>{' '}
+                        for full documentation.
+                      </p>
+                    </div>
                     <div>
                       <p className="text-xs font-mono text-neutral-500 mb-2">
                         List available tools

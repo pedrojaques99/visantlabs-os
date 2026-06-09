@@ -151,8 +151,8 @@ describe('OAuth 2.1 MCP Flow', () => {
         response_type: 'code',
       });
 
-      expect(res.status).toBe(302);
-      expect(res.headers.location).toContain('/login');
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('Sign in to continue');
     });
 
     it('shows consent page when user is authenticated', async () => {
