@@ -288,9 +288,11 @@ You are connected via OAuth 2.1 or API key. If you need to authenticate a new ag
 ### For custom agents connecting via OAuth:
 1. Register: \`POST /oauth/register\` → get \`client_id\`
 2. PKCE: generate \`code_verifier\` (random 43+ chars) → \`code_challenge\` = base64url(sha256(verifier))
-3. Authorize: open \`/oauth/authorize?client_id=...&redirect_uri=...&code_challenge=...&code_challenge_method=S256&state=...&response_type=code&scope=read+write+generate\` in user's browser
+3. Authorize: open \`/oauth/authorize?client_id=...&redirect_uri=...&code_challenge=...&code_challenge_method=S256&state=<random>&response_type=code&scope=read write generate\` in user's browser
 4. Exchange: \`POST /oauth/token\` with \`grant_type=authorization_code&code=...&code_verifier=...&client_id=...\`
 5. Refresh: \`POST /oauth/token\` with \`grant_type=refresh_token&refresh_token=...\`
+
+**No local server?** Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — the auth code is displayed on screen for the user to copy back to you.
 
 ## Tool Workflows (follow these sequences)
 

@@ -10,6 +10,7 @@ const router = express.Router();
 const BASE_URL = API_BASE_URL;
 const MCP_RESOURCE = MCP_ENDPOINT;
 const REFRESH_TOKEN_TTL_DAYS = 30;
+const OOB_REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -135,6 +136,9 @@ router.get('/.well-known/oauth-authorization-server', (_req, res) => {
     token_endpoint_auth_methods_supported: ['none'],
     scopes_supported: [...MCP_SCOPES],
     client_id_metadata_document_supported: true,
+    _agent_hint: 'Register via POST ' + BASE_URL + '/oauth/register, then open '
+      + BASE_URL + '/oauth/authorize in the user\'s browser for consent. '
+      + 'Full step-by-step: ' + BASE_URL + '/llms-full.txt',
   });
 });
 
@@ -145,6 +149,20 @@ router.get('/.well-known/oauth-protected-resource', (_req, res) => {
     resource: MCP_RESOURCE,
     authorization_servers: [BASE_URL],
     scopes_supported: [...MCP_SCOPES],
+    bearer_methods_supported: ['header'],
+    resource_documentation: `${BASE_URL}/llms-full.txt`,
+    _agent_hint: {
+      message: 'To connect, use OAuth 2.1 (PKCE) or an API key (visant_sk_xxx).',
+      oauth_discovery: `${BASE_URL}/.well-known/oauth-authorization-server`,
+      quick_start: [
+        `1. Register: POST ${BASE_URL}/oauth/register with {"client_name":"Your Agent","redirect_uris":["http://localhost:3456/callback"],"grant_types":["authorization_code"]}`,
+        '2. Generate PKCE: code_verifier (43+ chars) → code_challenge = base64url(sha256(verifier))',
+        `3. Open in user browser: ${BASE_URL}/oauth/authorize?client_id=<id>&redirect_uri=<uri>&code_challenge=<challenge>&code_challenge_method=S256&state=<random>&response_type=code&scope=read+write+generate`,
+        `4. Exchange code: POST ${BASE_URL}/oauth/token with grant_type=authorization_code&code=<code>&code_verifier=<verifier>&client_id=<id>`,
+        '5. Use token: Authorization: Bearer <access_token>',
+      ],
+      full_reference: `${BASE_URL}/llms-full.txt`,
+    },
   });
 });
 
@@ -204,11 +222,17 @@ router.get('/oauth/authorize', async (req, res) => {
     scope,
   } = req.query as Record<string, string>;
 
-  // Validate required params
-  if (!client_id || !redirect_uri || !code_challenge || !state) {
+  // Validate required params — report exactly which ones are missing
+  const missingParams = [
+    !client_id && 'client_id',
+    !redirect_uri && 'redirect_uri',
+    !code_challenge && 'code_challenge',
+    !state && 'state',
+  ].filter(Boolean);
+  if (missingParams.length > 0) {
     return res
       .status(400)
-      .send('Missing required parameters: client_id, redirect_uri, code_challenge, state');
+      .send(`Missing required parameters: ${missingParams.join(', ')}`);
   }
 
   if (code_challenge_method && code_challenge_method !== 'S256') {
@@ -226,12 +250,15 @@ router.get('/oauth/authorize', async (req, res) => {
       return res.status(400).send('Unknown client_id');
     }
 
-    // Validate redirect_uri
-    const uriMatch = oauthClient.redirectUris.some((stored) =>
-      redirectUriMatches(redirect_uri, stored)
-    );
-    if (!uriMatch) {
-      return res.status(400).send('redirect_uri not registered for this client');
+    // Validate redirect_uri — OOB is always allowed for agents without a local server
+    const isOob = redirect_uri === OOB_REDIRECT_URI;
+    if (!isOob) {
+      const uriMatch = oauthClient.redirectUris.some((stored) =>
+        redirectUriMatches(redirect_uri, stored)
+      );
+      if (!uriMatch) {
+        return res.status(400).send('redirect_uri not registered for this client');
+      }
     }
 
     // Check if user is logged in.
@@ -257,7 +284,7 @@ router.get('/oauth/authorize', async (req, res) => {
     // Validate requested scopes — default to all if not specified
     const validScopes = new Set(MCP_SCOPES as readonly string[]);
     const requestedScopes = scope
-      ? scope.split(' ').filter((s) => validScopes.has(s))
+      ? scope.split(/[\s+]+/).filter((s) => validScopes.has(s))
       : [...MCP_SCOPES];
     const resolvedScopes = requestedScopes.length > 0 ? requestedScopes : [...MCP_SCOPES];
 
@@ -318,7 +345,12 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     return res.status(400).send('Missing required parameters');
   }
 
+  const isOob = redirect_uri === OOB_REDIRECT_URI;
+
   if (action === 'deny') {
+    if (isOob) {
+      return res.send(buildOobPage({ code: null, error: 'access_denied' }));
+    }
     const url = new URL(redirect_uri);
     url.searchParams.set('error', 'access_denied');
     if (state) url.searchParams.set('state', state);
@@ -332,11 +364,13 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
       return res.status(400).send('Unknown client_id');
     }
 
-    const uriMatch = oauthClient.redirectUris.some((stored) =>
-      redirectUriMatches(redirect_uri, stored)
-    );
-    if (!uriMatch) {
-      return res.status(400).send('redirect_uri not registered');
+    if (!isOob) {
+      const uriMatch = oauthClient.redirectUris.some((stored) =>
+        redirectUriMatches(redirect_uri, stored)
+      );
+      if (!uriMatch) {
+        return res.status(400).send('redirect_uri not registered');
+      }
     }
 
     // Re-verify user session: accept token from form body or Authorization header
@@ -373,6 +407,10 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
         used: false,
       },
     });
+
+    if (isOob) {
+      return res.send(buildOobPage({ code, error: null }));
+    }
 
     const url = new URL(redirect_uri);
     url.searchParams.set('code', code);
@@ -437,8 +475,8 @@ async function handleAuthCodeExchange(req: express.Request, res: express.Respons
         .json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
     }
 
-    // Validate redirect_uri if provided
-    if (redirect_uri) {
+    // Validate redirect_uri if provided (OOB is always accepted)
+    if (redirect_uri && redirect_uri !== OOB_REDIRECT_URI) {
       const oauthClient = await prisma.oAuthClient.findUnique({ where: { clientId: client_id } });
       if (!oauthClient) {
         return res.status(400).json({ error: 'invalid_client' });
@@ -685,6 +723,91 @@ function oauthPageStyles(): string {
     .footer { text-align: center; margin-top: 1.5rem; font-size: 0.75rem; color: #3f3f46; }
     .footer a { color: #52ddeb; text-decoration: none; }
   `;
+}
+
+function buildOobPage(p: { code: string | null; error: string | null }): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const oobStyles = `
+    .card { text-align: center; }
+    .status-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem; font-size: 1.25rem;
+    }
+    .status-icon.success { background: rgba(82, 221, 235, 0.1); color: #52ddeb; }
+    .status-icon.denied { background: rgba(248, 113, 113, 0.1); color: #f87171; }
+    .code-container { margin: 1.5rem 0; }
+    .code-label {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.65rem; font-weight: 500; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #52ddeb; margin-bottom: 0.5rem;
+    }
+    .code-box {
+      background: #18181b; border: 1px solid #27272a; border-radius: 8px;
+      padding: 1rem 1.25rem; font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem; word-break: break-all; color: #fafafa;
+      user-select: all; cursor: pointer; position: relative;
+      transition: border-color 0.15s;
+    }
+    .code-box:hover { border-color: #52ddeb; }
+    .copy-btn {
+      margin-top: 1rem; padding: 0.55rem 1.5rem; border-radius: 8px;
+      background: #52ddeb; color: #09090b; font-size: 0.8rem; font-weight: 600;
+      border: none; cursor: pointer; transition: opacity 0.15s;
+    }
+    .copy-btn:hover { opacity: 0.85; }
+    .copy-btn.copied { background: #27272a; color: #52ddeb; }
+    .hint {
+      color: #3f3f46; font-size: 0.7rem; margin-top: 1.5rem;
+      font-family: 'SF Mono', 'Fira Code', monospace; letter-spacing: 0.02em;
+    }
+  `;
+
+  if (p.error) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Denied — Visant Labs</title>
+  <style>${oauthPageStyles()}${oobStyles}</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">VISANT LABS&reg;</div>
+    <div class="status-icon denied">&#10005;</div>
+    <h1>Access Denied</h1>
+    <p class="subtitle">The authorization request was denied. You can close this window.</p>
+  </div>
+</body>
+</html>`;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authorization Successful — Visant Labs</title>
+  <style>${oauthPageStyles()}${oobStyles}</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">VISANT LABS&reg;</div>
+    <div class="status-icon success">&#10003;</div>
+    <h1>Authorization Successful</h1>
+    <p class="subtitle">Copy this code and paste it back into your agent to complete the connection.</p>
+    <div class="code-container">
+      <div class="code-label">Authorization Code</div>
+      <div class="code-box" id="code">${esc(p.code!)}</div>
+      <button class="copy-btn" id="copyBtn" onclick="navigator.clipboard.writeText(document.getElementById('code').textContent).then(()=>{const b=document.getElementById('copyBtn');b.textContent='Copied';b.classList.add('copied');setTimeout(()=>{b.textContent='Copy code';b.classList.remove('copied')},2000)})">Copy code</button>
+    </div>
+    <p class="hint">Expires in 10 minutes &middot; Close this window after pasting</p>
+  </div>
+</body>
+</html>`;
 }
 
 function buildLoginPage(p: LoginPageParams): string {

@@ -61,7 +61,10 @@ Full Authorization Code + PKCE flow. No API key needed — the user authorizes y
 Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
 Scopes: \`read\`, \`write\`, \`generate\`
 
-**Option B — API Key (manual)**
+**Option B — OOB flow (agents without a local server, e.g. Telegram bots)**
+Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — user sees the code on screen and pastes it back to the agent.
+
+**Option C — API Key (manual)**
 Header: \`Authorization: Bearer visant_sk_xxx\`
 Create keys at: ${FRONTEND_BASE_URL}/settings/api-keys
 
@@ -139,7 +142,12 @@ Scopes: \`read\`, \`write\`, \`generate\`
    grant_type=refresh_token&refresh_token=<refresh_token>&client_id=<client_id>
    \`\`\`
 
-**Option B — API Key (manual, for scripts)**
+**Option B — OOB flow (for agents without a local server, e.g. Telegram bots)**
+If your agent can't listen on a local port, use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\`.
+After the user approves, the authorization code is displayed on screen for them to copy back to the agent.
+Everything else (register, PKCE, token exchange) is the same as Option A.
+
+**Option C — API Key (manual, for scripts)**
 Header: \`Authorization: Bearer visant_sk_xxx\`
 Create keys at: ${FRONTEND_BASE_URL}/settings/api-keys
 

@@ -501,7 +501,13 @@ export function createApp() {
       );
       return res.status(401).json({
         jsonrpc: '2.0',
-        error: { code: -32600, message: 'Unauthorized' },
+        error: {
+          code: -32600,
+          message: 'Unauthorized — OAuth 2.1 or API key required. '
+            + 'Start here: GET ' + mcpApiBase + '/.well-known/oauth-authorization-server '
+            + 'for OAuth discovery, or use an API key (Authorization: Bearer visant_sk_xxx). '
+            + 'Full guide: ' + mcpApiBase + '/llms-full.txt',
+        },
         id: null,
       });
     }
