@@ -1006,8 +1006,10 @@ Content-Type: application/json
           }),
         });
         const result = (await response.json()) as any;
-        if (!response.ok)
-          return ERR.internal(result.error || `Image generation failed (${response.status})`);
+        if (!response.ok) {
+          const detail = [result.error, result.message, result.hint].filter(Boolean).join(' — ');
+          return ERR.internal(detail || `Image generation failed (${response.status})`);
+        }
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
           imageUrl: result.imageUrl || null,
@@ -1109,8 +1111,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           }),
         });
         const result = (await response.json()) as any;
-        if (!response.ok)
-          return ERR.internal(result.error || `Generation failed (${response.status})`);
+        if (!response.ok) {
+          const detail = [result.error, result.message, result.hint].filter(Boolean).join(' — ');
+          return ERR.internal(detail || `Generation failed (${response.status})`);
+        }
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
           imageUrl: result.imageUrl || null,
@@ -1231,10 +1235,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           }),
         });
         const result = (await response.json()) as any;
-        if (!response.ok)
-          return ERR.internal(
-            result.error || result.message || `Video generation failed (${response.status})`
-          );
+        if (!response.ok) {
+          const detail = [result.error, result.message, result.hint].filter(Boolean).join(' — ');
+          return ERR.internal(detail || `Video generation failed (${response.status})`);
+        }
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
           videoUrl: result.videoUrl || null,
@@ -1383,7 +1387,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
               }),
             });
             const result = (await response.json()) as any;
-            if (!response.ok) return ERR.internal(result.error || `Visant step ${stepNum} failed`);
+            if (!response.ok) {
+              const detail = [result.error, result.message, result.hint].filter(Boolean).join(' — ');
+              return ERR.internal(detail || `Visant step ${stepNum} failed`);
+            }
             // Accumulate data for cascading context
             if (result.data) {
               if (stepNum === 101) {
@@ -1421,8 +1428,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           }),
         });
         const result = (await response.json()) as any;
-        if (!response.ok)
-          return ERR.internal(result.error || `Branding generation failed (${response.status})`);
+        if (!response.ok) {
+          const detail = [result.error, result.message, result.hint].filter(Boolean).join(' — ');
+          return ERR.internal(detail || `Branding generation failed (${response.status})`);
+        }
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, step, _meta: quota });
       } catch (err: any) {
@@ -3471,11 +3480,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           body: JSON.stringify({ prompt, brandGuidelineId, format, feature: 'agent' }),
         });
         const result = await response.json();
-        if (!response.ok)
-          return jsonResponse({
-            error: result.error || 'Creative generation failed',
-            status: response.status,
-          });
+        if (!response.ok) {
+          const detail = [result.error, result.message, result.hint].filter(Boolean).join(' — ');
+          return ERR.internal(detail || `Creative generation failed (${response.status})`);
+        }
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({ ...result, _meta: quota });
       } catch (err: any) {
@@ -3535,8 +3543,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           body: JSON.stringify({ plan, backgroundImageUrl, format, accentColor }),
         });
         const result = (await response.json()) as any;
-        if (!response.ok)
-          return jsonResponse({ error: result.error || 'Render failed', status: response.status });
+        if (!response.ok) {
+          const detail = [result.error, result.message, result.hint].filter(Boolean).join(' — ');
+          return ERR.internal(detail || `Render failed (${response.status})`);
+        }
 
         // If render returned only base64, upload to R2 for a public URL
         if (!result.imageUrl && result.imageBase64) {

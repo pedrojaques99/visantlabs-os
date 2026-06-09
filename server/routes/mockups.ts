@@ -1489,10 +1489,12 @@ router.post(
       } else {
         errorResponse = {
           error: 'generation_failed',
-          message: 'Image generation failed. Please try again.',
+          message: msg || 'Image generation failed. Please try again.',
           hint: 'If the issue persists, try a different model.',
         };
       }
+
+      console.error('[mockup-generate] Error classified as', errorResponse.error, '— raw:', msg || error);
 
       res.status(statusCode).json(errorResponse);
     }
