@@ -13,6 +13,9 @@ import { abacatepayService } from '../services/abacatepayService.js';
 import { prisma } from '../db/prisma.js';
 import { rateLimit } from 'express-rate-limit';
 import { validateSafeId } from '../utils/securityValidation.js';
+import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
+import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
+import { claimPaymentEvent, releasePaymentEvent } from '../lib/paymentIdempotency.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -51,8 +54,7 @@ const router = express.Router();
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_PRICE_ID_USD = process.env.STRIPE_PRICE_ID_USD || process.env.STRIPE_PRICE_ID || '';
 const STRIPE_PRICE_ID_BRL = process.env.STRIPE_PRICE_ID_BRL || '';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-const FREE_GENERATIONS_LIMIT = 4;
+const FRONTEND_URL = FRONTEND_BASE_URL;
 
 // Helper function to get the first valid frontend URL from environment variable
 // Handles cases where FRONTEND_URL contains multiple comma-separated URLs
@@ -99,6 +101,9 @@ const getPriceId = (currency?: string): string => {
 const stripe = STRIPE_SECRET_KEY
   ? new Stripe(STRIPE_SECRET_KEY, {
       apiVersion: '2025-10-29.clover',
+      // Fetch-based client (vs node:http): identical in production on
+      // Node 18+, and interceptable by MSW in tests.
+      httpClient: Stripe.createFetchHttpClient(),
     })
   : null;
 
@@ -822,7 +827,7 @@ router.post(
                 $set: {
                   subscriptionStatus: 'canceled',
                   subscriptionTier: 'free',
-                  monthlyCredits: 20,
+                  monthlyCredits: FREE_MONTHLY_CREDITS,
                 },
               }
             );
@@ -1649,10 +1654,23 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
           }
 
+          // Idempotency: AbacatePay retries webhooks and this payment can also
+          // arrive via /abacate-webhook or the reconciliation job
+          const claimed = await claimPaymentEvent(db, 'abacatepay', billId);
+          if (!claimed) {
+            return res.json({ received: true, duplicate: true });
+          }
+
           // Add credits to user
-          const updateResult = await db
-            .collection('users')
-            .updateOne({ _id: userId }, { $inc: { totalCreditsEarned: credits } });
+          let updateResult;
+          try {
+            updateResult = await db
+              .collection('users')
+              .updateOne({ _id: userId }, { $inc: { totalCreditsEarned: credits } });
+          } catch (grantError) {
+            await releasePaymentEvent(db, 'abacatepay', billId);
+            throw grantError;
+          }
 
           if (updateResult.modifiedCount > 0) {
             console.log('✅ Credits added via AbacatePay webhook:', {
@@ -1665,6 +1683,10 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                 ? 'payment_record'
                 : 'calculated',
             });
+            // Keep payment record in sync so the reconciliation job skips it
+            await db
+              .collection('payments')
+              .updateOne({ billId }, { $set: { status: 'paid', paidAt: new Date() } });
           } else {
             console.warn('⚠️ Credit update returned 0 modified documents:', {
               userId,
@@ -2162,10 +2184,24 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                 email: user.email,
                 foundBy: userFoundBy,
               });
+
+              // Idempotency: Stripe redelivers webhooks on timeout/5xx
+              const claimed = await claimPaymentEvent(db, 'stripe', session.id);
+              if (!claimed) {
+                console.log('⏭️ Stripe session already processed, skipping:', session.id);
+                break;
+              }
+
               // Atomically increment totalCreditsEarned
-              const updateResult = await db
-                .collection('users')
-                .updateOne({ _id: user._id }, { $inc: { totalCreditsEarned: credits } });
+              let updateResult;
+              try {
+                updateResult = await db
+                  .collection('users')
+                  .updateOne({ _id: user._id }, { $inc: { totalCreditsEarned: credits } });
+              } catch (grantError) {
+                await releasePaymentEvent(db, 'stripe', session.id);
+                throw grantError;
+              }
 
               if (updateResult.modifiedCount > 0) {
                 console.log('✅ Credits added to user account:', {
@@ -2389,7 +2425,7 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                 subscriptionStatus: 'canceled',
                 subscriptionTier: 'free',
                 stripeSubscriptionId: null,
-                monthlyCredits: 20,
+                monthlyCredits: FREE_MONTHLY_CREDITS,
                 creditsUsed: 0,
                 creditsResetDate: freeCreditsResetDate,
               },
@@ -2876,44 +2912,63 @@ router.post(
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Find pending payment
-      const pendingPayment = await db.collection('pending_payments').findOne({
+      // Peek first so we can enforce ownership before claiming
+      const pendingPeek = await db.collection('pending_payments').findOne({
         sessionId,
         resolved: false,
       });
 
-      if (!pendingPayment) {
+      if (!pendingPeek) {
         return res.status(404).json({ error: 'Pending payment not found or already resolved' });
       }
 
-      // Verify email matches (optional security check)
-      if (pendingPayment.customerEmail && user.email !== pendingPayment.customerEmail) {
-        console.warn('⚠️ Email mismatch in pending payment resolution:', {
+      // Ownership check: the payment's customer email must match the
+      // requesting account — otherwise any authenticated user who learns a
+      // sessionId could claim someone else's credits.
+      if (pendingPeek.customerEmail && user.email !== pendingPeek.customerEmail) {
+        console.warn('🚫 Email mismatch in pending payment resolution — denied:', {
           userId: user._id,
           userEmail: user.email,
-          paymentEmail: pendingPayment.customerEmail,
+          paymentEmail: pendingPeek.customerEmail,
         });
-        // Still allow resolution but log it
+        return res.status(403).json({ error: 'This payment belongs to a different account' });
+      }
+
+      // Atomically claim the pending payment BEFORE crediting so concurrent
+      // requests cannot double-credit
+      const claimResult = await db.collection('pending_payments').findOneAndUpdate(
+        { sessionId, resolved: false },
+        {
+          $set: {
+            resolved: true,
+            resolvedUserId: user._id,
+            resolvedAt: new Date(),
+          },
+        }
+      );
+      const pendingPayment = claimResult?.value ?? claimResult;
+      if (!pendingPayment || !pendingPayment.credits) {
+        return res.status(404).json({ error: 'Pending payment not found or already resolved' });
       }
 
       // Credit the user
-      const updateResult = await db
-        .collection('users')
-        .updateOne({ _id: user._id }, { $inc: { totalCreditsEarned: pendingPayment.credits } });
+      let updateResult;
+      try {
+        updateResult = await db
+          .collection('users')
+          .updateOne({ _id: user._id }, { $inc: { totalCreditsEarned: pendingPayment.credits } });
+      } catch (creditError) {
+        // Roll back the claim so the user can retry
+        await db
+          .collection('pending_payments')
+          .updateOne(
+            { sessionId },
+            { $set: { resolved: false }, $unset: { resolvedUserId: '', resolvedAt: '' } }
+          );
+        throw creditError;
+      }
 
       if (updateResult.modifiedCount > 0) {
-        // Mark payment as resolved
-        await db.collection('pending_payments').updateOne(
-          { sessionId },
-          {
-            $set: {
-              resolved: true,
-              resolvedUserId: user._id,
-              resolvedAt: new Date(),
-            },
-          }
-        );
-
         console.log('✅ Pending payment resolved:', {
           sessionId,
           userId: user._id,
@@ -2926,6 +2981,13 @@ router.post(
           message: 'Payment resolved and credits added',
         });
       } else {
+        // User document not modified — roll back the claim so it can be retried
+        await db
+          .collection('pending_payments')
+          .updateOne(
+            { sessionId },
+            { $set: { resolved: false }, $unset: { resolvedUserId: '', resolvedAt: '' } }
+          );
         return res.status(500).json({ error: 'Failed to credit user account' });
       }
     } catch (error: any) {

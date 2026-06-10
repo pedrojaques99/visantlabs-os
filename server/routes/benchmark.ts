@@ -16,7 +16,11 @@ import { isIdeogramModel, IDEOGRAM_MODELS } from '../../src/constants/ideogramMo
 import { isReveModel, REVE_MODELS } from '../../src/constants/reveModels.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { IMAGE_MODEL_REGISTRY } from '../../src/constants/imageModelRegistry.js';
-import { chargeCredits, refundCredits, type DeductionSource } from '../lib/credits.js';
+import {
+  chargeCredits,
+  refundCreditsWithRetry as refundCredits,
+  type DeductionSource,
+} from '../lib/credits.js';
 import { getCreditsRequired } from '../utils/usageTracking.js';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { uploadImage, isR2Configured, StorageLimitExceededError } from '../services/r2Service.js';

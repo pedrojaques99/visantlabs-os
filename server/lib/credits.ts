@@ -7,6 +7,16 @@
 
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
+import { Sentry } from './sentry.js';
+
+/**
+ * Free-tier generation cap, enforced by checkSubscription middleware and
+ * reported by status endpoints. Keep ONE value — UI paywall copy depends on it.
+ */
+export const FREE_GENERATIONS_LIMIT = 10;
+
+/** Monthly credits granted to free accounts on signup and on monthly reset. */
+export const FREE_MONTHLY_CREDITS = 20;
 
 export interface DeductionSource {
   fromEarned: number;
@@ -244,6 +254,7 @@ export async function refundCreditsWithRetry(
           creditsToRefund,
           error: error.message,
         });
+        await recordFailedRefund(userId, creditsToRefund, deductionSource, error);
       } else {
         const delayMs = Math.pow(2, attempt - 1) * 1000;
         console.warn(
@@ -260,6 +271,42 @@ export async function refundCreditsWithRetry(
   }
 
   throw lastError;
+}
+
+/**
+ * Last line of defense when every refund attempt fails: alert Sentry and
+ * persist a failed_refunds record so the credit can be restored manually
+ * (or by a reconciliation job) instead of vanishing into logs.
+ */
+async function recordFailedRefund(
+  userId: string,
+  creditsToRefund: number,
+  deductionSource: DeductionSource | undefined,
+  error: any
+): Promise<void> {
+  Sentry.captureMessage('CRITICAL: credit refund failed after all retries', {
+    level: 'fatal',
+    extra: { userId, creditsToRefund, deductionSource, error: error?.message },
+  });
+
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    await db.collection('failed_refunds').insertOne({
+      userId,
+      creditsToRefund,
+      deductionSource: deductionSource ?? null,
+      error: error?.message ?? String(error),
+      resolved: false,
+      createdAt: new Date(),
+    });
+  } catch (persistError: any) {
+    console.error(`${LOG_PREFIX} [recordFailedRefund] Could not persist failed refund`, {
+      userId,
+      creditsToRefund,
+      error: persistError?.message,
+    });
+  }
 }
 
 /**

@@ -7,6 +7,8 @@ import {
 import { ObjectId } from 'mongodb';
 import { sendCreditsPurchasedEmail, isEmailConfigured } from './emailService.js';
 import { validateSafeId } from '../utils/securityValidation.js';
+import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
+import { claimPaymentEvent, releasePaymentEvent } from '../lib/paymentIdempotency.js';
 
 // Support both ABACATEPAY_API_KEY and ABACATE_API_KEY for compatibility
 const ABACATEPAY_API_KEY = process.env.ABACATEPAY_API_KEY || process.env.ABACATE_API_KEY || '';
@@ -96,25 +98,7 @@ export const abacatepayService = {
       );
     }
 
-    // Helper function to get the first valid frontend URL (handles comma-separated URLs)
-    const getFrontendUrl = (): string => {
-      const rawUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      const urls = rawUrl
-        .split(',')
-        .map((url) => url.trim())
-        .filter((url) => url.length > 0);
-      const firstUrl = urls[0] || 'http://localhost:3000';
-
-      try {
-        const url = new URL(firstUrl);
-        return url.toString().replace(/\/+$/, '');
-      } catch (error) {
-        console.warn('⚠️ Invalid FRONTEND_URL format, using default:', firstUrl);
-        return 'http://localhost:3000';
-      }
-    };
-
-    const normalizedFrontendUrl = getFrontendUrl();
+    const normalizedFrontendUrl = FRONTEND_BASE_URL.replace(/\/+$/, '');
 
     // Get credit package to ensure we use the correct price (supports coupons)
     const creditPackage = getCreditPackage(data.credits);
@@ -1228,16 +1212,29 @@ export const abacatepayService = {
             abacateCustomerId = data.customer.email;
           }
 
+          // Idempotency: same payment may also arrive via the inline /webhook
+          // handler or the reconciliation job
+          const claimed = await claimPaymentEvent(db, 'abacatepay', billId);
+          if (!claimed) {
+            return { success: true, message: 'Payment already processed (duplicate webhook)' };
+          }
+
           // Add credits to user
-          const updateResult = await db.collection('users').updateOne(
-            { _id: userId },
-            {
-              $inc: { totalCreditsEarned: credits },
-              ...(abacateCustomerId && !user.abacateCustomerId
-                ? { $set: { abacateCustomerId } }
-                : {}),
-            }
-          );
+          let updateResult;
+          try {
+            updateResult = await db.collection('users').updateOne(
+              { _id: userId },
+              {
+                $inc: { totalCreditsEarned: credits },
+                ...(abacateCustomerId && !user.abacateCustomerId
+                  ? { $set: { abacateCustomerId } }
+                  : {}),
+              }
+            );
+          } catch (grantError) {
+            await releasePaymentEvent(db, 'abacatepay', billId);
+            throw grantError;
+          }
 
           if (updateResult.modifiedCount > 0) {
             console.log('✅ Credits added via AbacatePay webhook service:', {

@@ -119,9 +119,6 @@ async function getQuotaMeta(userId: string) {
   const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
   if (!user) return null;
 
-  const FREE_GENERATIONS_LIMIT = 10;
-  const FREE_MONTHLY_CREDITS = 20;
-
   // Auto-renew credits if reset date has passed
   let creditsUsed = user.creditsUsed || 0;
   const creditsResetDate = user.creditsResetDate ? new Date(user.creditsResetDate) : null;
@@ -204,8 +201,10 @@ import {
   MCP_ENDPOINT,
   MCP_SPEC_VERSION,
   API_BASE_URL,
+  FRONTEND_BASE_URL,
   MCP_HINTS,
 } from '../lib/mcp-constants.js';
+import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 
 function jsonResponse(data: unknown) {
   const text = JSON.stringify(data, null, 2);
@@ -2653,7 +2652,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           },
         });
 
-        const baseUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+        const baseUrl = FRONTEND_BASE_URL;
         const connectUrl = `${baseUrl}/connect/${token}`;
 
         const quota = await getQuotaMeta(currentUserId);
@@ -5450,7 +5449,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const sceneId = data.scene?._id || data.scene?.id;
 
         const frontendBase =
-          process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+          FRONTEND_BASE_URL;
         const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
 
         return jsonResponse({
@@ -5504,7 +5503,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const data = await res.json();
 
         const frontendBase =
-          process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+          FRONTEND_BASE_URL;
         const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
 
         return jsonResponse({ ...data, deepLink });

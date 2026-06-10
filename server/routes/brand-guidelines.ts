@@ -6,6 +6,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { rateLimit } from 'express-rate-limit';
 import { dispatchWebhookEvent } from '../utils/webhookDispatch.js';
+import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { Liveblocks } from '@liveblocks/node';
 import {
   BrandGuideline,
@@ -1251,8 +1252,7 @@ router.post('/:id/invite', apiRateLimiter, authenticate, async (req: AuthRequest
       },
     });
 
-    const baseUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
-    const connectUrl = `${baseUrl}/connect/${token}`;
+    const connectUrl = `${FRONTEND_BASE_URL}/connect/${token}`;
 
     res.status(201).json({
       invite: { ...invite, _id: invite.id },

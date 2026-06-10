@@ -2,9 +2,7 @@ import { Response, NextFunction } from 'express';
 import { ObjectId } from 'mongodb';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { AuthRequest } from './auth.js';
-
-const FREE_GENERATIONS_LIMIT = 10;
-const FREE_MONTHLY_CREDITS = 20;
+import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 
 // Helper function to renew credits if reset date has passed
 const renewCreditsIfNeeded = async (user: any, db: any) => {

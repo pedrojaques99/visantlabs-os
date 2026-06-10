@@ -5,34 +5,35 @@ import { signTestToken, bearer } from '../../helpers/auth.js';
 
 // Mock Stripe
 vi.mock('stripe', () => {
-  return {
-    default: function () {
-      return {
-        checkout: {
-          sessions: {
-            create: vi.fn().mockRejectedValue({ message: 'Stripe rejected' }),
-          },
+  const StripeMock = function () {
+    return {
+      checkout: {
+        sessions: {
+          create: vi.fn().mockRejectedValue({ message: 'Stripe rejected' }),
         },
-        prices: {
-          retrieve: vi.fn().mockResolvedValue({
-            id: 'price_123',
-            unit_amount: 1000,
-            currency: 'usd',
-            product: 'prod_123',
-            recurring: { interval: 'month' },
-          }),
-        },
-        products: {
-          retrieve: vi.fn().mockResolvedValue({
-            id: 'prod_123',
-            name: 'Premium Plan',
-            description: 'Premium subscription',
-            metadata: { tier: 'premium', monthlyCredits: '100' },
-          }),
-        },
-      };
-    },
+      },
+      prices: {
+        retrieve: vi.fn().mockResolvedValue({
+          id: 'price_123',
+          unit_amount: 1000,
+          currency: 'usd',
+          product: 'prod_123',
+          recurring: { interval: 'month' },
+        }),
+      },
+      products: {
+        retrieve: vi.fn().mockResolvedValue({
+          id: 'prod_123',
+          name: 'Premium Plan',
+          description: 'Premium subscription',
+          metadata: { tier: 'premium', monthlyCredits: '100' },
+        }),
+      },
+    };
   };
+  // Static helper used by payments.ts when constructing the client
+  (StripeMock as any).createFetchHttpClient = vi.fn().mockReturnValue({});
+  return { default: StripeMock };
 });
 
 /**

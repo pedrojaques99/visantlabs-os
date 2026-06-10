@@ -1,8 +1,9 @@
 import { Resend } from 'resend';
+import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@example.com';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = FRONTEND_BASE_URL;
 const WHATSAPP_GROUP_URL = process.env.WHATSAPP_GROUP_URL || '';
 
 // Template IDs from Resend dashboard — leave empty to use HTML fallback

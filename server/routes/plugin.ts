@@ -12,6 +12,7 @@ import { isSafeId, ensureString } from '../utils/validation.js';
 import { sanitizeForPrompt, sanitizePromptArray } from '../utils/promptSanitize.js';
 import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
+import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { CACHE_TTL, CacheKey, hashObject } from '../lib/cache-utils.js';
 import {
   buildSystemPrompt,
@@ -22,7 +23,7 @@ import {
   type AssembledPrompt,
 } from '../lib/figmaAgentPrompt.js';
 import { quickTextCall } from '../services/geminiService.js';
-import { chargeCredits } from '../lib/credits.js';
+import { chargeCredits, FREE_GENERATIONS_LIMIT } from '../lib/credits.js';
 
 // ── Session error feedback (in-memory, auto-expires) ──
 const sessionErrors = new Map<string, { errors: string[]; ts: number }>();
@@ -237,8 +238,6 @@ function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction) {
   }
   next();
 }
-
-const FREE_GENERATIONS_LIMIT = 4;
 
 /**
  * Check if user can generate (reuses same logic as /payments/usage)
@@ -1929,7 +1928,7 @@ router.get('/proxy-image', proxyRateLimiter, async (req: Request, res: Response)
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=3600');
     // MED-004 fix: Use configured frontend URL instead of wildcard
-    const allowedOrigin = process.env.FRONTEND_URL?.split(',')[0] || '*';
+    const allowedOrigin = FRONTEND_BASE_URL || '*';
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
 
     const buffer = Buffer.from(await response.arrayBuffer());

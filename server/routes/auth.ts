@@ -35,14 +35,11 @@ import {
 import { isValidEmail } from '../utils/validation.js';
 import { bruteForceGuard } from '../middleware/bruteForceGuard.js';
 import crypto from 'crypto';
+import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
+import { FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 
 const router = express.Router();
-// Helper to get the primary frontend URL (handles comma-separated lists)
-const getFrontendUrl = () => {
-  const url = process.env.FRONTEND_URL || 'http://localhost:3000';
-  const primaryUrl = url.split(',')[0].trim();
-  return primaryUrl.replace(/\/+$/, '');
-};
+const getFrontendUrl = () => FRONTEND_BASE_URL.replace(/\/+$/, '');
 
 // In-memory store for plugin OAuth sessions (sessionId → { token, createdAt })
 const pluginOAuthSessions = new Map<
@@ -442,7 +439,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
           subscriptionStatus: 'free',
           subscriptionTier: 'free',
           freeGenerationsUsed: 0,
-          monthlyCredits: 20,
+          monthlyCredits: FREE_MONTHLY_CREDITS,
           creditsUsed: 0,
           stripeCustomerId: null,
           stripeSubscriptionId: null,
@@ -775,7 +772,7 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
         subscriptionStatus: 'free',
         subscriptionTier: 'free',
         freeGenerationsUsed: 0,
-        monthlyCredits: 20,
+        monthlyCredits: FREE_MONTHLY_CREDITS,
         creditsUsed: 0,
         stripeCustomerId: null,
         stripeSubscriptionId: null,
