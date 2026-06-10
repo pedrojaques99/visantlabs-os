@@ -45,6 +45,31 @@ export async function visantFetch(path: string, init: RequestInit = {}) {
   }
 }
 
+// ---------- Mockup Store (local PSD renderer) ----------
+// Bridge para a mockup-store local: sugestões brand-aware sobre a biblioteca
+// real de PSDs + render headless (logo da marca aplicado no smart object).
+const MOCKUP_STORE_URL = process.env.MOCKUP_STORE_URL || 'http://localhost:3000';
+const MOCKUP_STORE_AGENT_KEY = process.env.MOCKUP_STORE_AGENT_KEY || '';
+
+export async function mockupStoreFetch(path: string, init: RequestInit = {}) {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...((init.headers as Record<string, string>) || {}),
+  };
+  if (MOCKUP_STORE_AGENT_KEY) headers.Authorization = `Bearer ${MOCKUP_STORE_AGENT_KEY}`;
+
+  const res = await fetch(`${MOCKUP_STORE_URL}/api/agent/v1${path}`, { ...init, headers });
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`Mockup Store ${res.status} ${path}: ${text.slice(0, 300)}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
 export function toolResult(data: unknown) {
   return {
     content: [
@@ -899,6 +924,71 @@ export const TOOLS = [
       required: ['imageUrl'],
     },
   },
+  {
+    name: 'mockup_store_suggest',
+    description:
+      'Suggest the best REAL PSD mockup templates from the local Mockup Store library for a brand, ranked by brand-fit (niche, style, vibe, material match against the brand guideline). Returns refIds usable with mockup_store_render. Requires the Mockup Store app running (MOCKUP_STORE_URL).',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        brandId: { type: 'string', description: 'Brand guideline ID (from list_brand_guidelines).' },
+        limit: { type: 'number', default: 12, maximum: 60 },
+        hasPsd: {
+          type: 'boolean',
+          default: true,
+          description: 'Only suggestions with a renderable PSD on disk (default true).',
+        },
+      },
+      required: ['brandId'],
+    },
+  },
+  {
+    name: 'mockup_store_render',
+    description:
+      'Render a real PSD mockup headlessly in the local Mockup Store: applies the brand logo (or a custom artUrl) into the PSD smart object with perspective warp and returns a job. Use refId from mockup_store_suggest. Free (local render, no credits). Poll with mockup_store_get_job, or pass wait=true to block until done.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        brandId: { type: 'string', description: 'Brand whose logo will be applied (omit if artUrl given).' },
+        refId: { type: 'string', description: 'Library reference ID (from mockup_store_suggest).' },
+        psdPath: { type: 'string', description: 'Direct PSD path on disk (alternative to refId).' },
+        artUrl: { type: 'string', description: 'Custom artwork URL instead of the brand logo.' },
+        logoVariant: {
+          type: 'string',
+          enum: ['primary', 'dark', 'light', 'icon', 'accent', 'custom'],
+          description: 'Which logo variant to use. Default: primary.',
+        },
+        smartObject: { type: 'string', description: 'Smart object name (auto-detected if omitted).' },
+        mode: {
+          type: 'string',
+          enum: ['contain', 'cover', 'stretch'],
+          description: 'Art framing. Default: contain for logos, cover for artUrl.',
+        },
+        bg: { type: 'string', description: 'Hex background for contain letterbox (default transparent).' },
+        preview: { type: 'boolean', default: false, description: 'Fast low-res JPEG preview.' },
+        wait: { type: 'boolean', default: true, description: 'Block until the render finishes.' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'mockup_store_get_job',
+    description:
+      'Get the status/result of a Mockup Store render job. format="base64" returns the finished image as a data URL.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        jobId: { type: 'string', description: 'Job ID returned by mockup_store_render.' },
+        format: {
+          type: 'string',
+          enum: ['status', 'base64'],
+          default: 'status',
+          description: 'status = JSON only; base64 = include the image as data URL.',
+        },
+      },
+      required: ['jobId'],
+    },
+  },
 ];
 
 // ---------- Tool handlers ----------
@@ -1344,6 +1434,39 @@ export async function handleTool(name: string, args: ToolArgs) {
           outputFormat: args.outputFormat,
         }),
       });
+      return toolResult(data);
+    }
+    case 'mockup_store_suggest': {
+      const params = new URLSearchParams({ brandId: String(args.brandId) });
+      if (args.limit != null) params.set('limit', String(args.limit));
+      if (args.hasPsd === false) params.set('has_psd', 'false');
+      const data = await mockupStoreFetch(`/suggest?${params.toString()}`);
+      return toolResult(data);
+    }
+    case 'mockup_store_render': {
+      const body: Record<string, unknown> = { wait: args.wait !== false };
+      for (const k of [
+        'brandId',
+        'refId',
+        'psdPath',
+        'artUrl',
+        'logoVariant',
+        'smartObject',
+        'mode',
+        'bg',
+        'preview',
+      ]) {
+        if (args[k] != null) body[k] = args[k];
+      }
+      const data = await mockupStoreFetch('/render', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      return toolResult(data);
+    }
+    case 'mockup_store_get_job': {
+      const qs = args.format === 'base64' ? '?format=base64' : '';
+      const data = await mockupStoreFetch(`/jobs/${args.jobId}${qs}`);
       return toolResult(data);
     }
     default:

@@ -5982,6 +5982,96 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
     }
   );
 
+  // ═══════════════════════════════════════════
+  // Mockup Store bridge — local PSD renderer (registered only when configured)
+  // ═══════════════════════════════════════════
+
+  const MOCKUP_STORE_URL = process.env.MOCKUP_STORE_URL || '';
+  if (MOCKUP_STORE_URL) {
+    const mockupStoreFetch = async (path: string, init: RequestInit = {}) => {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...((init.headers as Record<string, string>) || {}),
+      };
+      const key = process.env.MOCKUP_STORE_AGENT_KEY || '';
+      if (key) headers.Authorization = `Bearer ${key}`;
+      const resp = await fetch(`${MOCKUP_STORE_URL}/api/agent/v1${path}`, { ...init, headers });
+      const result = (await resp.json().catch(() => ({}))) as any;
+      if (!resp.ok) throw new Error(result?.error || `Mockup Store ${resp.status}`);
+      return result;
+    };
+
+    server.tool(
+      'mockup-store-suggest',
+      'Suggest the best REAL PSD mockup templates from the Mockup Store library for a brand, ranked by brand-fit (niche/style/vibe/material match against the brand guideline). Returns refIds usable with mockup-store-render.',
+      {
+        brandId: z.string().describe('Brand guideline ID.'),
+        limit: z.number().max(60).default(12).describe('Max suggestions.'),
+        hasPsd: z.boolean().default(true).describe('Only refs with a renderable PSD on disk.'),
+      },
+      { title: 'Suggest PSD Mockups', readOnlyHint: true },
+      async ({ brandId, limit, hasPsd }) => {
+        try {
+          const params = new URLSearchParams({ brandId, limit: String(limit) });
+          if (hasPsd === false) params.set('has_psd', 'false');
+          return jsonResponse(await mockupStoreFetch(`/suggest?${params.toString()}`));
+        } catch (err: any) {
+          return ERR.internal(err.message);
+        }
+      }
+    );
+
+    server.tool(
+      'mockup-store-render',
+      'Render a real PSD mockup headlessly: applies the brand logo (or a custom artUrl) into the PSD smart object with perspective warp. Free — local render, no credits. Use refId from mockup-store-suggest; pass wait=true (default) to block until done, then fetch the image via mockup-store-get-job.',
+      {
+        brandId: z.string().optional().describe('Brand whose logo will be applied.'),
+        refId: z.string().optional().describe('Library reference ID from mockup-store-suggest.'),
+        psdPath: z.string().optional().describe('Direct PSD path (alternative to refId).'),
+        artUrl: z.string().optional().describe('Custom artwork URL instead of the brand logo.'),
+        logoVariant: z
+          .enum(['primary', 'dark', 'light', 'icon', 'accent', 'custom'])
+          .optional()
+          .describe('Logo variant. Default: primary.'),
+        smartObject: z.string().optional().describe('Smart object name (auto-detected if omitted).'),
+        mode: z
+          .enum(['contain', 'cover', 'stretch'])
+          .optional()
+          .describe('Art framing. Default: contain for logos, cover for artUrl.'),
+        preview: z.boolean().default(false).describe('Fast low-res preview.'),
+        wait: z.boolean().default(true).describe('Block until the render finishes.'),
+      },
+      { title: 'Render PSD Mockup', destructiveHint: false },
+      async (input) => {
+        try {
+          return jsonResponse(
+            await mockupStoreFetch('/render', { method: 'POST', body: JSON.stringify(input) })
+          );
+        } catch (err: any) {
+          return ERR.internal(err.message);
+        }
+      }
+    );
+
+    server.tool(
+      'mockup-store-get-job',
+      'Get the status/result of a Mockup Store render job. format="base64" returns the finished image as a data URL.',
+      {
+        jobId: z.string().describe('Job ID returned by mockup-store-render.'),
+        format: z.enum(['status', 'base64']).default('status'),
+      },
+      { title: 'Get Render Job', readOnlyHint: true },
+      async ({ jobId, format }) => {
+        try {
+          const qs = format === 'base64' ? '?format=base64' : '';
+          return jsonResponse(await mockupStoreFetch(`/jobs/${encodeURIComponent(jobId)}${qs}`));
+        } catch (err: any) {
+          return ERR.internal(err.message);
+        }
+      }
+    );
+  }
+
   // Restore original tool method and persist collected names
   (server as any).tool = originalTool;
   _registeredToolNames = collectedNames;
