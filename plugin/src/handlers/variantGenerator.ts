@@ -42,8 +42,8 @@ export const DEFAULT_PRESETS: VariantPreset[] = [
   {
     id: 'terra',
     label: 'Terra',
-    overlay: { r: 0.40, g: 0.22, b: 0.10 },
-    ellipse: { r: 0.65, g: 0.48, b: 0.30 },
+    overlay: { r: 0.4, g: 0.22, b: 0.1 },
+    ellipse: { r: 0.65, g: 0.48, b: 0.3 },
     ellipseMid: { r: 0.72, g: 0.56, b: 0.38 },
   },
 ];
@@ -117,17 +117,13 @@ export async function generateVariants(presets: VariantPreset[] = DEFAULT_PRESET
 
     // Texture opacity
     if (preset.textureOpacity !== undefined) {
-      const texture = clone.findOne(
-        (n) => n.type === 'INSTANCE' && n.name.includes('Terra Lines')
-      );
+      const texture = clone.findOne((n) => n.type === 'INSTANCE' && n.name.includes('Terra Lines'));
       if (texture) texture.opacity = preset.textureOpacity;
     }
 
     // Sedimentum opacity
     if (preset.sedimentumOpacity !== undefined) {
-      const sed = clone.findOne(
-        (n) => n.type === 'INSTANCE' && n.name.includes('SEDIMENTUM')
-      );
+      const sed = clone.findOne((n) => n.type === 'INSTANCE' && n.name.includes('SEDIMENTUM'));
       if (sed) sed.opacity = preset.sedimentumOpacity;
     }
 

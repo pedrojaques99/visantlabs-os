@@ -109,24 +109,26 @@ export function useColorRename() {
 
         // Step 3: Build rename payload mapping AI names → frame renames + text updates
         setStatus('applying');
-        const renames = scanResult.items.map((item, idx) => {
-          const ai = aiColors[idx];
-          if (!ai) return null;
+        const renames = scanResult.items
+          .map((item, idx) => {
+            const ai = aiColors[idx];
+            if (!ai) return null;
 
-          const num = String(idx + 1).padStart(2, '0');
-          const newName = `${num} ${ai.name.toUpperCase()}`;
+            const num = String(idx + 1).padStart(2, '0');
+            const newName = `${num} ${ai.name.toUpperCase()}`;
 
-          // Match text children to their code type and update
-          const textUpdates = buildTextUpdates(item.textChildren, ai);
+            // Match text children to their code type and update
+            const textUpdates = buildTextUpdates(item.textChildren, ai);
 
-          return {
-            nodeId: item.nodeId,
-            newName,
-            textUpdates,
-            createVariable: createVariables,
-            createStyle: createStyles,
-          };
-        }).filter(Boolean);
+            return {
+              nodeId: item.nodeId,
+              newName,
+              textUpdates,
+              createVariable: createVariables,
+              createStyle: createStyles,
+            };
+          })
+          .filter(Boolean);
 
         // Step 4: Apply via sandbox
         const applyResult = await new Promise<{ renamed: number }>((resolve, reject) => {

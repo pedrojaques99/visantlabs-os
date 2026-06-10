@@ -2,11 +2,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowRightLeft, Scan, Eye } from 'lucide-react';
 import { Select } from '@/components/ui/select';
 
-interface Project { id: string; name: string }
-interface Milestone { id: string; name: string }
+interface Project {
+  id: string;
+  name: string;
+}
+interface Milestone {
+  id: string;
+  name: string;
+}
 
 function Dot({ state }: { state: 'off' | 'on' | 'busy' | 'err' }) {
-  const c = { off: 'bg-white/20', on: 'bg-emerald-400', busy: 'bg-amber-400 animate-pulse', err: 'bg-red-400' };
+  const c = {
+    off: 'bg-white/20',
+    on: 'bg-emerald-400',
+    busy: 'bg-amber-400 animate-pulse',
+    err: 'bg-red-400',
+  };
   return <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${c[state]}`} />;
 }
 
@@ -49,7 +60,10 @@ export function ConnectorsSection() {
       }
       if (msg.type === 'PRESETS_SCANNED') {
         setPresets(msg.presets);
-        const total = Object.values(msg.presets as Record<string, string[]>).reduce((s, v) => s + v.length, 0);
+        const total = Object.values(msg.presets as Record<string, string[]>).reduce(
+          (s, v) => s + v.length,
+          0
+        );
         setStatus(`${total} templates`);
         setDotState('on');
         setBusy(false);
@@ -59,9 +73,10 @@ export function ConnectorsSection() {
         setDotState('busy');
       }
       if (msg.type === 'BRIDGE_DONE') {
-        setStatus(msg.dryRun
-          ? `${msg.operations?.length || 0} ops · ${msg.issueCount} issues`
-          : `${msg.created} frames created`
+        setStatus(
+          msg.dryRun
+            ? `${msg.operations?.length || 0} ops · ${msg.issueCount} issues`
+            : `${msg.created} frames created`
         );
         setDotState('on');
         setBusy(false);
@@ -94,17 +109,27 @@ export function ConnectorsSection() {
   }, [projectId]);
 
   const handleScan = () => {
-    setBusy(true); setDotState('busy'); setStatus('Indexing…');
+    setBusy(true);
+    setDotState('busy');
+    setStatus('Indexing…');
     post({ type: 'SCAN_PRESETS' });
   };
 
   const handleRun = (dryRun: boolean) => {
-    if (!apiKey || !projectId) { setStatus('Select a project'); setDotState('err'); return; }
-    setBusy(true); setDotState('busy');
+    if (!apiKey || !projectId) {
+      setStatus('Select a project');
+      setDotState('err');
+      return;
+    }
+    setBusy(true);
+    setDotState('busy');
     setStatus(dryRun ? 'Previewing…' : 'Generating…');
 
     const filterIssues = filterText.trim()
-      ? filterText.split(',').map(s => s.trim()).filter(Boolean)
+      ? filterText
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
       : undefined;
 
     post({
@@ -120,7 +145,7 @@ export function ConnectorsSection() {
   };
 
   const toggleFormat = (f: string) => {
-    setFormats(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]);
+    setFormats((prev) => (prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]));
   };
 
   const connected = projects.length > 0;
@@ -141,11 +166,11 @@ export function ConnectorsSection() {
             type={showKey ? 'text' : 'password'}
             placeholder="lin_api_..."
             value={apiKey}
-            onChange={e => setApiKey(e.target.value)}
+            onChange={(e) => setApiKey(e.target.value)}
             className="w-full h-7 pl-2 pr-10 text-[10px] font-mono bg-white/[0.04] border border-white/[0.08] rounded-md focus:border-indigo-500/50 focus:outline-none transition-colors"
           />
           <button
-            onClick={() => setShowKey(v => !v)}
+            onClick={() => setShowKey((v) => !v)}
             className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/25 hover:text-white/50"
           >
             {showKey ? 'hide' : 'show'}
@@ -166,14 +191,14 @@ export function ConnectorsSection() {
           <Select
             value={projectId}
             onChange={setProjectId}
-            options={projects.map(p => ({ value: p.id, label: p.name }))}
+            options={projects.map((p) => ({ value: p.id, label: p.name }))}
             placeholder="Select project…"
           />
           {milestones.length > 0 && (
             <Select
               value={milestoneId}
               onChange={setMilestoneId}
-              options={milestones.map(m => ({ value: m.id, label: m.name }))}
+              options={milestones.map((m) => ({ value: m.id, label: m.name }))}
               placeholder="All milestones"
             />
           )}
@@ -184,7 +209,7 @@ export function ConnectorsSection() {
       {connected && projectId && (
         <>
           <div className="flex gap-1.5">
-            {['Story', 'Feed'].map(f => (
+            {['Story', 'Feed'].map((f) => (
               <button
                 key={f}
                 onClick={() => toggleFormat(f)}
@@ -215,7 +240,7 @@ export function ConnectorsSection() {
             type="text"
             placeholder="Filter: VSN-675, VSN-680 (optional)"
             value={filterText}
-            onChange={e => setFilterText(e.target.value)}
+            onChange={(e) => setFilterText(e.target.value)}
             className="w-full h-7 px-2 text-[10px] font-mono bg-white/[0.04] border border-white/[0.08] rounded-md focus:border-indigo-500/50 focus:outline-none transition-colors placeholder:text-white/15"
           />
 
@@ -250,16 +275,22 @@ export function ConnectorsSection() {
       {presets && (
         <div className="flex gap-3 text-[9px] text-white/25">
           {Object.entries(presets).map(([fmt, vars]) => (
-            <span key={fmt}><span className="text-white/40">{fmt}</span> {vars.length}</span>
+            <span key={fmt}>
+              <span className="text-white/40">{fmt}</span> {vars.length}
+            </span>
           ))}
         </div>
       )}
       {status && (
-        <div className={`text-[9px] leading-tight ${
-          dotState === 'err' ? 'text-red-400/80' :
-          dotState === 'on' ? 'text-emerald-400/70' :
-          'text-white/35'
-        }`}>
+        <div
+          className={`text-[9px] leading-tight ${
+            dotState === 'err'
+              ? 'text-red-400/80'
+              : dotState === 'on'
+              ? 'text-emerald-400/70'
+              : 'text-white/35'
+          }`}
+        >
           {status}
         </div>
       )}

@@ -123,18 +123,18 @@ As tools aparecem com o prefixo `mcp__visant__` na próxima sessão.
 
 ### AI Tools (10 tools)
 
-| Tool                           | O que faz                                                                              | Custo   |
-| ------------------------------ | -------------------------------------------------------------------------------------- | ------- |
+| Tool                           | O que faz                                                                                   | Custo   |
+| ------------------------------ | ------------------------------------------------------------------------------------------- | ------- |
 | `ai-generate-image`            | Gerar imagem do zero (sem brand injection). Models: gpt-image-2, gemini, seedream-5-0-lite. | Credits |
-| `ai-describe-image`            | Descrever imagem (URL ou base64)                                                       | Free    |
-| `ai-improve-prompt`            | Melhorar prompt text                                                                   | Free    |
-| `ai-suggest-prompt-variations` | Gerar variações criativas de um prompt                                                 | Free    |
-| `ai-extract-colors`            | Extrair paleta de cores de qualquer imagem                                             | Free    |
-| `ai-generate-naming`           | Gerar nomes de marca/produto a partir de um brief                                      | Credits |
-| `ai-change-object`             | Substituir/modificar objetos em mockup existente                                       | Credits |
-| `ai-apply-theme`               | Aplicar temas visuais (christmas, cyberpunk, minimalist...)                            | Credits |
-| `smart-analyze`                | Auto-detectar tipo de design + gerar prompt pronto para mockup-generate                | Free    |
-| `upload-image`                 | Upload base64 → URL pública (R2). Sempre usar antes de mockup-generate.                | Free    |
+| `ai-describe-image`            | Descrever imagem (URL ou base64)                                                            | Free    |
+| `ai-improve-prompt`            | Melhorar prompt text                                                                        | Free    |
+| `ai-suggest-prompt-variations` | Gerar variações criativas de um prompt                                                      | Free    |
+| `ai-extract-colors`            | Extrair paleta de cores de qualquer imagem                                                  | Free    |
+| `ai-generate-naming`           | Gerar nomes de marca/produto a partir de um brief                                           | Credits |
+| `ai-change-object`             | Substituir/modificar objetos em mockup existente                                            | Credits |
+| `ai-apply-theme`               | Aplicar temas visuais (christmas, cyberpunk, minimalist...)                                 | Credits |
+| `smart-analyze`                | Auto-detectar tipo de design + gerar prompt pronto para mockup-generate                     | Free    |
+| `upload-image`                 | Upload base64 → URL pública (R2). Sempre usar antes de mockup-generate.                     | Free    |
 
 ### Creative Studio (8 tools)
 

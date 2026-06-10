@@ -1,8 +1,8 @@
 /// <reference types="@figma/plugin-typings" />
 
 interface PresetOptions {
-  format?: string;   // 'Story' | 'Feed' | custom
-  variant?: string;  // 'Lava' | 'Off-White' | custom (only for single frame)
+  format?: string; // 'Story' | 'Feed' | custom
+  variant?: string; // 'Lava' | 'Off-White' | custom (only for single frame)
 }
 
 const SECTION_NAMES: Record<string, string> = {
@@ -25,12 +25,14 @@ function isLockedIn(node: BaseNode, root: FrameNode): boolean {
 async function processFrame(frame: FrameNode, format: string, variant: string) {
   // ── 1. Collect text nodes (skip locked) ──
   const textNodes: { node: TextNode; fontSize: number; absY: number }[] = [];
-  frame.findAll(n => n.type === 'TEXT' && !isLockedIn(n, frame)).forEach(n => {
-    const t = n as TextNode;
-    const size = typeof t.fontSize === 'number' ? t.fontSize : 0;
-    const absY = t.absoluteTransform[1][2] - frame.absoluteTransform[1][2];
-    textNodes.push({ node: t, fontSize: size, absY });
-  });
+  frame
+    .findAll((n) => n.type === 'TEXT' && !isLockedIn(n, frame))
+    .forEach((n) => {
+      const t = n as TextNode;
+      const size = typeof t.fontSize === 'number' ? t.fontSize : 0;
+      const absY = t.absoluteTransform[1][2] - frame.absoluteTransform[1][2];
+      textNodes.push({ node: t, fontSize: size, absY });
+    });
 
   if (textNodes.length === 0) return { skipped: true, name: frame.name, reason: 'no text nodes' };
 
@@ -47,9 +49,7 @@ async function processFrame(frame: FrameNode, format: string, variant: string) {
     used.add(bySizeDesc[1].node.id);
   }
 
-  const remaining = textNodes
-    .filter(t => !used.has(t.node.id))
-    .sort((a, b) => a.absY - b.absY);
+  const remaining = textNodes.filter((t) => !used.has(t.node.id)).sort((a, b) => a.absY - b.absY);
 
   const metaSlots = ['{{data}}', '{{canal}}', '{{codigo}}'];
   remaining.forEach((t, i) => {
@@ -100,7 +100,7 @@ async function processFrame(frame: FrameNode, format: string, variant: string) {
       continue;
     }
     if (child.type === 'GROUP') {
-      const hasText = (child as GroupNode).findOne(n => n.type === 'TEXT');
+      const hasText = (child as GroupNode).findOne((n) => n.type === 'TEXT');
       if (!hasText) {
         child.name = `Graphic/Elements${graphicIdx > 0 ? ` ${graphicIdx + 1}` : ''}`;
         graphicIdx++;
@@ -108,7 +108,9 @@ async function processFrame(frame: FrameNode, format: string, variant: string) {
       }
     }
     if (child.type === 'ELLIPSE') {
-      child.name = `Ellipse ${child.name.match(/\d+/) ? child.name.match(/\d+/)![0] : graphicIdx + 1}`;
+      child.name = `Ellipse ${
+        child.name.match(/\d+/) ? child.name.match(/\d+/)![0] : graphicIdx + 1
+      }`;
       continue;
     }
   }
@@ -126,7 +128,7 @@ async function processFrame(frame: FrameNode, format: string, variant: string) {
 
 export async function convertToPreset(opts: PresetOptions = {}) {
   const sel = figma.currentPage.selection;
-  const frames = sel.filter(n => n.type === 'FRAME') as FrameNode[];
+  const frames = sel.filter((n) => n.type === 'FRAME') as FrameNode[];
 
   if (frames.length === 0) {
     throw new Error('Selecione ao menos 1 frame para converter em preset.');
@@ -136,17 +138,15 @@ export async function convertToPreset(opts: PresetOptions = {}) {
   const results = [];
 
   for (const frame of frames) {
-    const variant = frames.length === 1 && opts.variant
-      ? opts.variant
-      : frame.name;
+    const variant = frames.length === 1 && opts.variant ? opts.variant : frame.name;
     const result = await processFrame(frame, format, variant);
     results.push(result);
   }
 
   return {
     total: frames.length,
-    converted: results.filter(r => !r.skipped).length,
-    skipped: results.filter(r => r.skipped).length,
+    converted: results.filter((r) => !r.skipped).length,
+    skipped: results.filter((r) => r.skipped).length,
     results,
   };
 }

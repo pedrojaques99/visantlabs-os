@@ -88,9 +88,7 @@ export async function exportTextToMarkdown(opts: {
   const useSelection = opts.nodeIds && opts.nodeIds.length > 0;
   let roots: readonly SceneNode[];
   if (useSelection) {
-    const resolved = await Promise.all(
-      opts.nodeIds!.map((id) => figma.getNodeByIdAsync(id))
-    );
+    const resolved = await Promise.all(opts.nodeIds!.map((id) => figma.getNodeByIdAsync(id)));
     roots = resolved.filter((n): n is SceneNode => n !== null && 'visible' in n);
   } else {
     roots = page.children;

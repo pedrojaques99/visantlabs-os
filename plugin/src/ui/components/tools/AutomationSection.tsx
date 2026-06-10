@@ -21,7 +21,10 @@ export function AutomationSection() {
     ? Array.from(store.selectedColors.values()).map((c) => ({ hex: c.hex, name: c.role }))
     : [];
 
-  const isRenaming = colorRename.status !== 'idle' && colorRename.status !== 'done' && colorRename.status !== 'error';
+  const isRenaming =
+    colorRename.status !== 'idle' &&
+    colorRename.status !== 'done' &&
+    colorRename.status !== 'error';
   const renameLabel =
     colorRename.status === 'scanning'
       ? 'Scanning colors…'
