@@ -5,7 +5,7 @@ import { prisma } from '../db/prisma.js';
 import type { Prisma } from '@prisma/client';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
-import { chargeCredits, refundCredits } from '../lib/credits.js';
+import { chargeCredits, refundCreditsWithRetry as refundCredits } from '../lib/credits.js';
 import { PLAYGROUND_SYSTEM_PROMPT, PLAYGROUND_ITERATE_PROMPT } from '../lib/playground-prompts.js';
 import { rateLimit } from 'express-rate-limit';
 import { isValidObjectId } from '../utils/validation.js';

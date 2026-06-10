@@ -1440,9 +1440,8 @@ router.post(
             }
           );
 
-          // [ENHANCEMENT] Optional: Integrate with monitoring/alerting system (Sentry, DataDog, etc.)
-          // This could trigger an alert to administrators when credit refunds fail.
-          // Contributions welcome - see CONTRIBUTING.md
+          // Sentry alert + failed_refunds record are written by
+          // refundCreditsWithRetry (server/lib/credits.ts) before it throws.
         }
       }
 

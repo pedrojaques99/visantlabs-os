@@ -8,7 +8,7 @@ import { generateVideo } from '../services/videoService.js';
 import { generateKlingVideo } from '../services/klingService.js';
 import { generateSeedanceVideo } from '../services/seedanceService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
-import { deductCreditsAtomically, refundCredits } from '../lib/credits.js';
+import { deductCreditsAtomically, refundCreditsWithRetry as refundCredits } from '../lib/credits.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
 import { calculateVideoCost } from '../../src/utils/pricing.js';

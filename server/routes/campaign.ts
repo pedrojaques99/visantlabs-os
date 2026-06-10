@@ -13,7 +13,7 @@ import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import OpenAI from 'openai';
-import { chargeCredits, refundCredits } from '../lib/credits.js';
+import { chargeCredits, refundCreditsWithRetry } from '../lib/credits.js';
 import { getCreditsRequired } from '../utils/usageTracking.js';
 
 const router = express.Router();
@@ -233,8 +233,20 @@ async function runCampaign(params: {
   formats: string[];
   model: string;
   userId: string;
+  creditsCharged: number;
+  perImageCredits: number;
 }): Promise<void> {
-  const { job, brandGuidelineId, productImageUrl, brief, formats, model, userId } = params;
+  const {
+    job,
+    brandGuidelineId,
+    productImageUrl,
+    brief,
+    formats,
+    model,
+    userId,
+    creditsCharged,
+    perImageCredits,
+  } = params;
 
   try {
     // Step 1: Resolve brand context
@@ -298,10 +310,33 @@ async function runCampaign(params: {
 
     job.status = 'done';
     await saveJob(job);
+
+    // Refund credits for images that failed — user only pays for delivered results
+    const failedCount = job.results.filter((r) => r.status === 'error').length;
+    if (creditsCharged > 0 && failedCount > 0 && perImageCredits > 0) {
+      const refundAmount = Math.min(failedCount * perImageCredits, creditsCharged);
+      await refundCreditsWithRetry(userId, refundAmount).catch(() => {});
+      console.log(`[campaign] Refunded ${refundAmount} credit(s) for ${failedCount} failed image(s)`, {
+        jobId: job.jobId,
+        userId,
+      });
+    }
   } catch (err: any) {
     job.status = 'error';
     job.error = err.message;
     await saveJob(job);
+
+    // Planning (or setup) failed before any image was delivered — refund everything
+    // minus images already completed.
+    const doneCount = job.results.filter((r) => r.status === 'done').length;
+    const refundAmount = Math.max(0, creditsCharged - doneCount * perImageCredits);
+    if (refundAmount > 0) {
+      await refundCreditsWithRetry(userId, refundAmount).catch(() => {});
+      console.log(`[campaign] Refunded ${refundAmount} credit(s) after campaign failure`, {
+        jobId: job.jobId,
+        userId,
+      });
+    }
   }
 }
 
@@ -373,6 +408,8 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     formats: safeFormats,
     model,
     userId: req.userId,
+    creditsCharged: chargeResult.creditsDeducted,
+    perImageCredits,
   }).catch((err) => {
     console.error('[campaign] Unhandled error in runCampaign:', err);
   });

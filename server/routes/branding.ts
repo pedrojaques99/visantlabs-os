@@ -11,7 +11,7 @@ import { checkSubscription, SubscriptionRequest } from '../middleware/subscripti
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { rateLimit } from 'express-rate-limit';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
-import { chargeCredits, refundCredits as refundCreditsShared } from '../lib/credits.js';
+import { chargeCredits, refundCreditsWithRetry as refundCreditsShared } from '../lib/credits.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition

@@ -7,7 +7,7 @@ import { buildBrandContextJSON, BRAND_SECTION_PRESETS } from '../lib/brandContex
 import { planFromBrand, type CreativeFormat } from '../lib/creative-plan-engine.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
-import { chargeCredits, refundCredits } from '../lib/credits.js';
+import { chargeCredits, refundCreditsWithRetry as refundCredits } from '../lib/credits.js';
 import { getCreditsRequired } from '../utils/usageTracking.js';
 import { generateMockup as generateGeminiImage } from '../services/geminiService.js';
 import { generateIdeogramImage, remixIdeogramImage } from '../services/ideogramService.js';

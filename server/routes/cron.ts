@@ -113,4 +113,21 @@ router.post('/email-drip', verifyCronAuth, async (_req, res) => {
   }
 });
 
+// Payment reconciliation: catches PIX payments whose webhook never arrived.
+// Also runs on an in-process scheduler (see server/index.ts) — this endpoint
+// exists for external schedulers and manual runs. Safe to overlap: the
+// idempotency claim makes double-grants impossible.
+router.post('/reconcile-payments', verifyCronAuth, async (_req, res) => {
+  try {
+    const { reconcilePayments } = await import('../services/paymentReconciliation.js');
+    const result = await reconcilePayments();
+    res.json({
+      message: `Reconciliation done: ${result.recovered} recovered, ${result.stillPending} still pending, ${result.errors} errors`,
+      ...result,
+    });
+  } catch (error: any) {
+    console.error('Payment reconciliation cron error:', error);
+    res.status(500).json({ error: 'Reconciliation cron failed' });
+  }
+});
 export default router;
