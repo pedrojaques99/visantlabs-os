@@ -124,6 +124,18 @@ if (!process.env.VERCEL) {
 
     initPluginWebSocket(server);
     initAdminChatWebSocket(server);
+
+    // Self-scheduled safety net for missed payment webhooks — no external
+    // cron required. Disabled in dev unless explicitly enabled.
+    if (
+      process.env.NODE_ENV === 'production' ||
+      process.env.ENABLE_PAYMENT_RECONCILIATION === 'true'
+    ) {
+      const { startPaymentReconciliationScheduler } = await import(
+        './services/paymentReconciliation.js'
+      );
+      startPaymentReconciliationScheduler();
+    }
   })();
 }
 
